@@ -1,0 +1,61 @@
+#+title: Gitea/PostgreSQL Connection Scenario
+
+This maintained Scenario composes the selected =services/postgresql= and
+=services/gitea= scopes. It owns their connection requirements and the
+=Application= admission entry; the reusable service modules have no fixed
+consumer target. Native plan construction starts no services.
+
+* Ownership and configuration roles
+
+The maintained example service entries live in [[file:postgresql/interface.ss][postgresql/]] and
+[[file:gitea/interface.ss][gitea/]], not Core's built-in modules/. They retain the same native
+module role and publication mechanism; a Scenarios window is a namespace, not
+another evaluator. Core owns only the general admission/source protocols.
+
+[[file:config.ss][config.ss]] contains ordinary Scenario defaults. [[file:objects.ss][objects.ss]] applies those
+defaults to selected service values and constructs the application. Explicit
+service JSON values win, including null; only missing fields receive defaults.
+The missing Gitea client port stays missing here so that object construction can
+bind it to the final PostgreSQL receiver. [[file:types.ss][types.ss]] owns scope Contracts;
+each service's types.ss owns its value/child Contracts. interface.ss binds and
+publishes these existing values once.
+
+An empty, unused Config was not a configuration abstraction. The Scenario now
+passes its default object to application-scope; it is not a second copy of the
+JSON documents. Enabled-service selection, optional GraphQL behavior and their
+conditional dependency rules require actual domain Contracts; this example
+does not invent those settings or imply that booleans activate services.
+
+See [[file:../../docs/10-19-design/10-configuration/10.15-json-service-construction.org][10.15]] for JSON data, default/null/explicit semantics, field sources,
+currentness, source-runtime receipts and packaging limitations.
+
+* Selected package relocation
+
+JSON assets are collected from actual config-json-file reads, not an assets
+list. The selected build Graph publishes the source package explicitly through
+=(.call graph .package output-directory)=. See
+[[file:../../docs/10-19-design/10-configuration/10.16-selected-json-package-relocation.org][10.16]] for source identity, moved field locators, currentness and limits.
+
+The Core implementation qualification is
+[[file:../../t/gitea-postgresql-relocation-test.ss][t/gitea-postgresql-relocation-test.ss]]. It tests packaging/source/currentness
+mechanisms using this maintained Scenario, so it belongs in Core t/, not this
+Scenario's module-unit test directory. Run it with the bounded Core launcher:
+
+#+begin_src sh
+just test-file t/gitea-postgresql-relocation-test.ss
+#+end_src
+
+The suite also reads real Scheme overrides after relocation, checks exact
+slot-token positions alongside the JSON baseline, and refuses edits even after
+the child plan is cached. See [[file:../../docs/10-19-design/10-configuration/10.17-scheme-field-origins.org][10.17]] for the authoring-binding and AOT boundaries.
+
+The native operator control additionally combines .+, .cc and delayed =>.+,
+checks copied right-hand sources without making that operand an ancestor, and
+rejects stale derived sources while leaving the cached parent admissible.
+See [[file:../../docs/10-19-design/10-configuration/10.18-native-copy-source-boundaries.org][10.18]] for opaque-write attribution and the common MOP query.
+
+Core qualifications share the native Service/Relocated Fixture library rather
+than importing other test suites or repeating temporary-directory setup.
+See [[file:../../docs/10-19-design/10-configuration/10.19-service-publication-fixtures.org][10.19]] for preparation/release ownership and executable cleanup controls.
+
+Loading this Scenario does not package files, run tests or start services.

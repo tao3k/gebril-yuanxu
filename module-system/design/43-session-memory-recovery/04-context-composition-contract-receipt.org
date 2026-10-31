@@ -1,0 +1,140 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.04 Context Composition and Contract Revision Receipt
+:PROPERTIES:
+:ID: agentic-ai-lab-context-composition-contract-revision-20261014
+:STATUS: local-composition-contract-consumer-pass-storage-open
+:DATE: 2026-10-14
+:END:
+
+* Owner and execution
+
+This receipt records the pre-rename =modules/context= source cut. The current
+owner is =modules/ai-agentic-context=. Historical input paths and hashes below
+are retained unchanged; they do not qualify the renamed compiled consumer.
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns the design; [[file:../../../../modules/ai-agentic-context/framework.org][Modules/ai-agentic-context]] owns Scheme/POO semantics,
+Contract-data revision and ASCENT rules. Proofs imports those implementations.
+RFC 0015 remains an SDLC consumption Case, not a second Context owner.
+
+The [[file:../../../../packages/proofs/context-lifecycle/README.org][joint verifier]] exited zero. No store executor, binding, old Memory,
+authorization engine or orchestration runtime is changed or executed. These
+are uncommitted local working-tree results, not remote CI or a fresh installation.
+
+| Gate | Actual result | Boundary |
+|------+---------------+----------|
+| Quint 0.33.0 / TLC | 21 checks passed: 15 lifecycle plus 6 composition checks | 60s total / 12s silence each, one worker, 512MiB heap |
+| Lean 4.34.0 / LeanPOO | 14 build jobs passed; 17 laws / 15 guards | Existing 120s total |
+| ASCENT Scheme replay | 23 controls passed using Modules rules | 120s total / 5s output deadline, 1GiB heap |
+| Real ORG/Session replay | 54 controls passed, including 22 composition controls | Same Scheme limits |
+
+Lifecycle safe exploration generated 30549 states / 5257 distinct / zero queued.
+Composition safe exploration generated 13661 states / 2200 distinct / zero queued.
+Reachability and mutation checks require actual violated-invariant traces and
+expected checker exit 1; they are not accepted on parse errors or timeouts.
+
+| New Quint check | Distinct states | Expected evidence |
+|-----------------+-----------------+-------------------|
+| composition-safe | 2200 | Safe graph exhausted |
+| composition-accepted | 11 | Current consumer assessment reachable |
+| composition-scoped-reopen | 244 | Affected reopening while another document stays accepted |
+| composition-stale-contract | 46 | Unsafe old review after Contract revision refused |
+| composition-private-use-leak | 20 | Unsafe transfer of use evidence refused |
+| composition-local-id-collapse | 9 | Unsafe unqualified identity collapse refused |
+
+* Real Module/ORG controls
+
+The consumer parses two real ORG documents from the versioned fixture and its
+document-ID variation. Each has the same three local Context IDs. Orgize
+Elements/Contract/Query execute; the module projects and composes the objects.
+The Contract variation adds a real ENVIRONMENT coverage assertion with the same
+Contract ID, producing a different data-derived revision while source bytes
+remain unchanged. No user-declared version label substitutes for that check.
+
+- Six document-qualified Contexts coexist; exact duplicates share a member.
+- Delimiter-bearing identity controls do not collide under the length encoding.
+- Conflicting Contract cuts of one key refuse instead of silently overwriting.
+- Reader A sees two selected members; reader B sees only its selected document.
+- Unknown reader, duplicate Session view and out-of-composition cut refuse.
+- Use in reader A does not establish use in reader B. A local conflict in A
+  does not automatically invalidate B.
+- Contract-only revision reopens reader A for document A; document B remains
+  current even with the same local Element ID and Contract ID.
+- A fresh review of the new Contract closes that current obligation; neither
+  the shared source nor reassessment derives an effect grant.
+
+Source admission, review, outcome truth and declared challenge coverage are
+explicit owner/domain premises. Consumer slices are structural selections, not
+security capabilities. Protected source access, principal authentication and
+effect authorization still require Governance. No privacy/process isolation
+is inferred from a successful getter or relational join.
+
+LeanPOO uses document-specific Contract keys in functional patches: affected
+obligations enter pending while complete unaffected dependencies transport their
+certificates. The pair-identity law is not a proof of the Scheme string encoder;
+concrete controls test that wire projection. Consumer review is indexed by
+Session and source/Contract stamp. Missing review and changed Contract refuse.
+No mechanical cross-language bisimulation or utility improvement is claimed.
+
+* Failure corrected
+
+The first real replay refused a string Contract ID at ASCENT scalar admission.
+Orgize owns the string ID; the Context declaration boundary now converts it
+to a symbol before relation projection. The Contract fingerprint still derives
+from the original declaration data. ASCENT validation and all runtime limits
+were preserved. The corrected standard Gerbil executable then passed all 54
+controls and the final identity-stable joint gate. No temporary SDK was used.
+
+* Input identities
+
+SHA-256 records raw source bytes; it is not source-owner authentication. All
+declared source, compiled-library and executable identities were checked
+before/after the final successful execution and remained unchanged.
+
+| Repository-relative input | SHA-256 |
+|---------------------------+---------|
+| packages/proofs/context-lifecycle/ContextLifecycle.qnt | 1acb82ae629e00291ce8d723ea186838b672570c2c38b130202eea2cb17d6e46 |
+| packages/proofs/context-lifecycle/ContextComposition.qnt | 18917b00885b0cedf4a50e0359553edf2f613af1624eac3a9d110ec8ca6a9503 |
+| packages/proofs/context-lifecycle/relations.ss | cda875bfd6c634925bb765790889b0b108a750e96f9f72de855d672b561cf7ca |
+| packages/proofs/context-lifecycle/check_quint.py | 57670bfe44d21a205984ea802b471938f7ecba87faf5350d872162fecfca889f |
+| packages/proofs/context-lifecycle/verify.py | 9c492c02aaddb068482a458cc978a8944535c06f24980019db9b5f210c82f244 |
+| packages/proofs/context-lifecycle/tlc-config.json | 080c5753f5321f32cd29cc140144a2d659b3dc6b7b1950c23a2ad59e981764b1 |
+| packages/proofs/lean-poo/lakefile.lean | 456ca8fe8477d3fac1970f626cedf0a74df5a3c7dda7b739fb673750afef44aa |
+| packages/proofs/lean-poo/lake-manifest.json | a1201108b02524eebc7a8bc053943b316cd4ff283ffbfe7b80a7c92eaec6d88a |
+| packages/proofs/lean-poo/lean-toolchain | 8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean | 56a03b4c30740b16c596b59fe8be5760a4c4feb6dde222c20d4065cce421533c |
+| scripts/temporal/run_with_progress.py | 07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611 |
+| gerbil.pkg | b0d65d51ed0690021c9b3d96a72298a4b38a69309d51db51e9e1c00ff089c3e2 |
+| modules/context/consumers.ss | 88d71cc956f189299d185a127c505c96382b1edc6bd50bb359b2b066eed09b32 |
+| modules/context/contracts.ss | b262609280ef8865afc478ca74e2e9821c64cafeead97b4e6dbc3fcc1d4cc072 |
+| modules/context/funs.ss | 766fb3648ed6ce87c35ca507fff47ec8d76f7cff6487afa16d8dccc9b979dccb |
+| modules/context/interface.ss | 71f3b0782a18a62daa3e7f5c70ac0f092d35c9e04d4d2c118caa6f704e633685 |
+| modules/context/objects.ss | c68c1256ea302d75cae17f4d3fd9489836517829000237baec4f22f4caf6c19d |
+| modules/context/reasoning.ss | 0662f901a8c1f612b89ae1702028ca372c8fa28de962aaf93edfac982b8d373a |
+| modules/context/source.ss | 56c0a64f92d2b113d43b708f484e247116d3181bfd843a0e055a3c8a44dd1ad3 |
+| packages/proofs/context-lifecycle/org-context.ss | f994ad5f8e14d3db18527ca7809030446ada9bb8c64447b66bc1a4e93e2ab49d |
+| packages/proofs/context-lifecycle/context-source.org | b11cfcb19cec1efcfa85b44b233ed4447ceb75c8cc4e83b2504354bbd49e18a1 |
+
+Compiled inventory: =inputs=14626 sha256=93f858b620ab3bc6d0af921999cbc37cb59d503d25bb1b8a25ee1b73e15611f1=.
+Consumer executable SHA-256: =53490c87cfc4e7e829eaea6d549380d957efd1598c01af32acdc83b052698530=.
+
+Selected producer checkouts remain parser
+=f90aadcf7be91a0d299b9ab0e83405f7d1dda322=, Orgize
+=d63f5e4b9e22fdfe59ed355f0cefc5d21c333fb5= and ASCENT
+=f53a9a3954685111c751140090dfd95e3d081717=. LeanPOO remains
+=71609603d45bead8eec6375471991a4f76dbb430=. Current package library selection
+is explicit; compiled identity alone does not certify build derivation,
+producer CI or fresh root dependency installation.
+
+* Remaining scope
+
+Contract-data fingerprints conservatively change with declaration order or
+diagnostic text; semantic equivalence is not normalized. Global Contract rollout
+authority, cross-Session evidence admission, physical-time/value estimation,
+full dependency discovery, storage, bindings, protected disclosure and autonomous
+orchestration remain separate obligations. The finite age field is a policy
+tag, not elapsed seconds or Shannon entropy.
+
+[[file:03-context-module-consumer-receipt.org][The prior single-document receipt]] and [[file:02-context-lifecycle-proof-receipt.org][earlier proof-only receipt]] remain historical
+cuts. No limits were widened; old Memory and its performance experiments were
+not deleted, repaired or optimized.

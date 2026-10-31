@@ -1,0 +1,202 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Configuration 05: Concrete Field Contracts and Recipe Capabilities
+#+property: STATUS design-only-not-installed-or-executed
+
+* What these declarations prove
+
+This module supplies the field values referenced by
+[[file:01-surface-and-schema.org][the canonical Check/Pipeline/Profile schema]]. These are design declarations,
+not new runtime definitions. They use the existing
+yuanxu-predicate-contract constructor and ordinary Scheme predicates. No new
+configuration syntax is introduced. Bootstrap owners supply canonical bindings;
+downstream users keep the bounded module interface in the complete case.
+
+The source distinction matters. In [[file:../../../../modules/workflow/types.ss][workflow/types.ss]],
+yuanxu-cicd-command-vector? accepts a nonempty proper string list and
+yuanxu-cicd-profile-ref? accepts symbols, native objects or nonempty recursive
+reference lists. [[file:../../../../modules/workflow/objects.ss][workflow/objects.ss]] mainly checks list shape for inputs,
+config, artifacts, cache, secrets and result. Its durable action vocabulary
+comes from [[file:../../../../modules/memory-core/durable/policy.ss][the durable policy owner]]. Those checks do not establish complete
+payload semantics, source authority or runtime availability.
+
+The stricter first-argv, uniqueness, metadata and recipe policy rules below are
+proposed domain admission. They must not be described as existing guarantees.
+
+* Complete structural field Contract declarations
+
+#+begin_src scheme
+(def (no-field-obligations _candidate _context)
+  '())
+
+(def (field-contract identity-value predicate)
+  (yuanxu-predicate-contract
+    identity-value predicate no-field-obligations))
+
+(def (named-symbol? value)
+  (and (symbol? value)
+       (positive? (string-length (symbol->string value)))))
+
+(def (unique-symbols? value)
+  (and (list? value)
+       (every named-symbol? value)
+       (= (length value)
+          (length (delete-duplicates/hash value)))))
+
+(def (nonempty-unique-symbols? value)
+  (and (pair? value) (unique-symbols? value)))
+
+;; The existing low-level predicate retains its runtime name. Only the proposed
+;; public field/Contract and this design helper use task-oriented naming.
+(def (commands? value)
+  (and (yuanxu-cicd-command-vector? value)
+       (positive? (string-length (car value)))))
+
+(def (optional-object? value)
+  (or (eq? value #f) (object? value)))
+
+(def (object-list? value)
+  (and (list? value) (every object? value)))
+
+(def (metadata-shape? value)
+  (and (list? value)
+       (every (lambda (entry)
+                (and (pair? entry) (symbol? (car entry))))
+              value)
+       (= (length value)
+          (length (delete-duplicates/hash (map car value))))))
+
+(def (durable-action? value)
+  (and (symbol? value)
+       (if (memq value +yuanxu-durable-action-classes+) #t #f)))
+
+(def RequiredSymbolContract
+  (field-contract 'funflow/named-symbol named-symbol?))
+(def UniqueSymbolsContract
+  (field-contract 'funflow/unique-symbols unique-symbols?))
+(def NonemptyUniqueSymbolsContract
+  (field-contract 'funflow/nonempty-unique-symbols
+                  nonempty-unique-symbols?))
+(def CommandsContract
+  (field-contract 'funflow/argv commands?))
+(def SandboxReferenceContract
+  (field-contract 'funflow/sandbox-reference
+                  yuanxu-cicd-profile-ref?))
+(def ProperListContract
+  (field-contract 'funflow/proper-list list?))
+(def OptionalObjectContract
+  (field-contract 'funflow/optional-object optional-object?))
+(def EffectiveChecksContract
+  (field-contract 'funflow/check-object-list object-list?))
+(def ApplicationMetadataContract
+  (field-contract 'funflow/metadata-shape metadata-shape?))
+(def DurableActionContract
+  (field-contract 'funflow/durable-action durable-action?))
+(def FalseContract
+  (field-contract 'funflow/false (cut eq? <> #f)))
+(def EmptyListContract
+  (field-contract 'funflow/empty-list null?))
+(def CheckKindContract
+  (field-contract 'funflow/check-kind
+                  (cut eq? <> 'yuanxu.funflow.check.prototype)))
+(def PipelineKindContract
+  (field-contract 'funflow/pipeline-kind
+                  (cut eq? <> 'yuanxu.funflow.pipeline.prototype)))
+
+;; These aliases deliberately prove structure only.
+(def InputBindingsContract ProperListContract)
+(def ConfigSourcesContract ProperListContract)
+(def ResultProtocolContract ProperListContract)
+(def RuntimeModeContract RequiredSymbolContract)
+(def RetentionContract RequiredSymbolContract)
+(def OptionalObservabilityContract OptionalObjectContract)
+(def OptionalReportContract OptionalObjectContract)
+(def ObservedReferencesContract ProperListContract)
+(def GuardReferencesContract ProperListContract)
+#+end_src
+
+These predicates are the intended ordinary finite-data checks, not a new
+resource-bounded or total evaluator. User getters, cyclic/improper values,
+unsupported serialization values and evaluation failures require explicit
+boundary handling/qualification. Metadata shape checks keys and associations;
+it does not promise that every possible cdr can be serialized. The eventual
+wire consumer must admit its payload separately.
+
+Field aliases share a structural Contract identity intentionally. They do not
+pretend that a list has acquired a domain-specific payload proof. The outer
+responsibility path supplies which field failed. EffectiveChecksContract proves
+only a proper object list; the Pipeline obligation proves nominal Check roles,
+receiver identity and the selected graph.
+
+* Explicit capability declaration for the complete CI/CD recipe
+
+#+begin_src scheme
+(.def GerbilCICDCapabilities.
+  runtime-modes: '(manifest-handoff)
+  result-protocols: '((read :lines))
+  action-classes: '(replayable idempotent compensatable terminal manual)
+  artifact-retentions:
+  '(workflow-retained project-retained release-retained)
+  sandbox-references: '(ci/build ci/check)
+  inline-sandbox-profiles: '()
+  compensation-actions:
+  '(cleanup/package-artifacts cleanup/release-metadata)
+
+  payload-contracts:
+  (.o input-bindings: EmptyListContract
+      config-sources: EmptyListContract
+      observability: FalseContract
+      observes: EmptyListContract
+      guards: EmptyListContract
+      report: FalseContract))
+#+end_src
+
+This is a proposed narrow recipe policy, not an assertion that every listed
+runtime action has been deployed or its proof produced. The admission owner
+must select/validate the declaration and separately require reference-resolution
+and handoff evidence where applicable. An arbitrary object with these slots
+cannot authenticate itself. A missing association or required receipt blocks
+that admission stage; no Loader is implied.
+
+For this recipe, nonempty inputs/config/observation payloads fail the selected
+payload Contracts instead of passing through an unqualified list? check. A
+future supported consumer publishes an actual stronger payload Contract and
+native capability refinement. This policy does not remove existing forwarding
+APIs or claim those consumers can never support nonempty values.
+
+Likewise, '(unknown-decoder) passes the structural ResultProtocolContract but
+fails membership in result-protocols. A known durable action may still fail a
+particular selected provider's action-classes. A symbolic retention policy is
+accepted only when the selected capability declares it supported.
+
+* Context is supplied by the admission owner
+
+The context used by [[file:06-admission-algorithms.org][the admission algorithms]] and their
+[[file:07-admission-source.org][complete proposed source bodies]] has these native values:
+
+| Slot | Owner and meaning |
+|------+-------------------|
+| scenario | final selected Scenario object, such as ExtendedCI |
+| module-slot | occurrence slot, here 'funflow |
+| profile-name | selected dynamic publication key, here 'gerbil-scheme |
+| owner | canonical, independently selected module publication, here Funflow |
+| check-contract | owner-associated Check Contract, not a candidate.contract slot |
+| capabilities | the selected declaration; external readiness evidence is a separate stage |
+| effective-profile | constructed by the planner and verified by Profile admission |
+| profile-path | diagnostic path including Scenario occurrence, module, profiles and Profile name |
+| check-slot / path | installed for each selected Check by Pipeline admission |
+
+Required context/capability fields must be structurally validated before use.
+The required declaration has proper unique symbolic vocabularies, a proper list
+of result-protocol values, native objects for inline-sandbox-profiles,
+and all six payload-contracts entries as native Contracts. Missing or malformed
+context produces invalid-admission-context. The complete source checks declared
+local compatibility and retained source identity, not the provenance of those
+declarations or actual runtime availability. A later boundary must report
+capability-evidence-pending when required readiness evidence is absent; this
+code does not implement that boundary. Shape acceptance is not authentication.
+
+Runtime execution, source authority and configuration compatibility remain
+distinct evidence scopes. The examples establish the target configuration
+relationship; they do not mint runtime or source evidence.

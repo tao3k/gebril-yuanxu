@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: Services Lifecycle Boundaries
+
+* Status and purpose
+
+Design only. Ops currently executes one-shot Scripts. This document adds no
+Service types, lifecycle functions, task DSL or hidden background process.
+A process exiting successfully and a long-lived service becoming ready are
+different observations and must not share a success predicate.
+
+* Functional model before runtime
+
+Service declarations remain inert native POO values, with domain Contracts and
+maintained defaults. Pure functions should validate declarations, resolve the
+selected dependency graph and project required lifecycle actions. They must
+not start processes, poll readiness, acquire ports or create state directories.
+The Module interface publishes selected functions and prototypes through the
+same role mechanism as Ops; loading a service scope must remain inert.
+
+| Concern | Required design obligation |
+|---------+----------------------------|
+| Selection | Service activation must be explicit; dependency selection is distinct from ordering |
+| Dependencies | Define whether an edge waits for started, ready, succeeded or completed; diagnose cycles and missing targets |
+| Readiness | Exit zero from a launch command is insufficient; readiness needs bounded, service-specific observation |
+| Runtime handle | Own process identity, cancellation, logs and cleanup; a PID alone is insufficient identity |
+| Stop | Define timeout, escalation, process-group ownership and idempotent cleanup |
+| Restart | Bound attempts/backoff, preserve failure history and specify dependency propagation |
+| Configuration changes | Define which changes require replacement/restart and reject stale generations |
+| Failure | Preserve the original failure when cleanup also fails; distinguish optional dependencies from required ones |
+
+* Runtime boundary and reuse
+
+Service start/stop/restart belong to explicit lifecycle operations and an owned
+supervision backend. They cannot be implemented by leaving Script.run blocked
+indefinitely, reusing a Script timeout as a readiness timeout or treating preview
+as a live service handle. A completed one-shot task may contribute setup or
+cleanup work, but the supervisor owns its ordering and cancellation.
+
+Reuse the native environment merging, command preparation and Contract primitives
+where their semantics match. Source/config generation belongs in every lifecycle
+projection and handle; cached plans must not turn an old handle into a current
+one. No automatic per-method source lease is claimed by current Ops.
+
+Named pure functions and one-receiver POO methods are the default abstractions.
+If independently extensible service kinds and supervisor backends require open
+crossings, use the existing Core .defgeneric/.defmethod protocol rather than
+creating a second dispatcher. That crossing is not implemented in this draft.
+
+* Validation required before implementation acceptance
+
+Use real bounded services and negative controls to verify inert loading,
+readiness versus exit status, dependency failure, restart exhaustion, cancellation,
+child cleanup and stale-generation rejection. Demonstrate both cold start and
+reconfiguration, and preserve failed runs. A passing Script suite does not prove
+any of these service properties.

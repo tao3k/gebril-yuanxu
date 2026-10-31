@@ -1,0 +1,56 @@
+#+title: 21.04 Service Package and Command Ownership
+#+property: DOCUMENT_ID 21.04
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS primary-source-audit-not-service-execution
+
+* Actual maintained services
+
+The [[https://github.com/cachix/devenv/blob/main/src/modules/services/redis.nix][devenv Redis module]] declares a typed package default and derives its launcher
+from that package. Short source excerpts:
+
+#+begin_src nix
+default = pkgs.redis;
+exec ${cfg.package}/bin/redis-server ${redisConfig} --daemonize no --dir "$REDISDATA"
+#+end_src
+
+An analyst-written consumer is:
+
+#+begin_src nix
+{ ... }: {
+  services.redis = { enable = true; port = 6380; };
+}
+#+end_src
+
+The module also contributes process readiness and state settings. Package
+selection, configuration generation and process setup have one maintained owner;
+users do not reconstruct the executable path to change a port.
+
+The [[https://github.com/NixOS/nixpkgs/blob/nixos-unstable/nixos/modules/services/web-servers/nginx/default.nix][NixOS nginx module]] similarly derives execCommand from cfg.package and its
+configuration path, then assigns:
+
+#+begin_src nix
+ExecStart = execCommand;
+#+end_src
+
+It also owns assertions and service lifecycle settings. Neither observation means
+that importing a module starts a service or that a typed configuration guarantees
+runtime readiness. Both URLs are moving sources inspected on the date above;
+this is not a pinned-source evaluation or cross-platform execution receipt.
+
+* Reflection and conclusion
+
+The useful comparison is who maintains each relationship, not token count.
+Our Scenario examples should inherit package-backed behavior without repeating
+paths, commands or lifecycle logic. Typed field data alone is insufficient.
+POO gives us effective receiver values and extensible object behavior, but a
+manual package-to-object handoff still loses this ecosystem-level UX comparison.
+
+The Core-specific consequences are in
+[[file:../../10-19-design/12-contracts-types/12.22-selected-packages-and-scenario-binding.org][selected packages and Scenario binding]]. Those conclusions are a design audit,
+not a claim that the missing binding mechanism is implemented.
+
+Questions for the design: does changing a business field retain the selected
+package? Does an explicit package replacement update its Schema and command
+together? Can an unresolved package fail clearly without starting a hidden build?
+Can two consumers request different versions without sharing a mutable binding?

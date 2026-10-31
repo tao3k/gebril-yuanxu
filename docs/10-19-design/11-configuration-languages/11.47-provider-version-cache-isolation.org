@@ -1,0 +1,173 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.47 Config Languages 46: Real Provider Version Cache Isolation
+#+property: DOCUMENT_ID 11.47
+#+property: STATUS implemented-qualification-no-loader
+
+* Question and actual inputs
+
+After a parent Module's Security Group Contract is cached, can a child change
+only its config artifact reference and obtain a Contract bound to its own
+Provider package, without changing the parent's configuration, source or cache?
+
+The actual controls use hashicorp/aws 5.99.0 and 5.100.0 on aarch64-darwin,
+packaged by Nix and exported by Nix-packaged OpenTofu 1.11.5. Both schemas were
+produced by the existing Core =provider-schema.nix= derivation. No manifest was
+edited to simulate a second version. The test graph is product
+=t/fixtures/opentofu/versioned-schemas.nix=; the reusable package fixture accepts
+an exact version and archive hash. Its default remains the existing 5.100.0
+control, and neither pin enters runtime =config.ss=.
+
+The 5.99.0 archive SHA-256 is
+=d77fc7e17730eb40cde656e67fc206e9d7ca2a346d9e1819e6f3bd71289207e2=,
+checked against the [[https://releases.hashicorp.com/terraform-provider-aws/5.99.0/terraform-provider-aws_5.99.0_SHA256SUMS][official historical checksum list]]. The 5.100.0 control retains its earlier
+reviewed archive pin. Package acquisition and hashing are Nix responsibilities;
+Scheme consumes the resulting immutable directories. This is fixed-checksum
+qualification, not a new general signature policy or an assertion of current
+signer validity.
+
+| Input | 5.99.0 | 5.100.0 |
+|-------+--------+---------|
+| Provider address in actual exports | registry.opentofu.org/hashicorp/aws | registry.opentofu.org/hashicorp/aws |
+| Exported resource count | 1514 | 1526 |
+| aws_dsql_cluster slot | absent | present |
+| Security Group block | equal to the other version | equal to the other version |
+
+The full schema SHA-256 values are:
+
+- 5.99.0: =4be90d628d38051610695d62058f6699c6e4e39322b591494a73f1e5f6b93d9b=.
+- 5.100.0: =7e4fc064120609e23bc317629f1308d72891b7241993fbf68be523f03b6c633c=.
+
+Equal Security Group shapes make a shape-only test insufficient: using the
+stale parent Contract would still accept the same valid candidate. The test
+therefore checks native Contract identity, package version, source location,
+Schema digest and the Contract identity in each native admission result.
+Equal resource shapes do not permit replacing package association with a cache
+hit from another scope. Different versions need not always export different
+schemas; the differing full digests are a fact about this particular pair.
+
+* Native upstream injection; unchanged downstream configuration
+
+The following is the exact configuration shape used by the executable control.
+The two paths are build inputs supplied to the test, not resource-user fields:
+
+#+begin_src scheme
+(.def (Parent @ OpenTofuModule.)
+  config: (.o provider-artifact: parent-path purpose: 'deployment))
+
+;; Force the parent publication before defining or using the child.
+(def parent-contract (.get Parent types resources aws_security_group))
+(def parent-source (.get Parent source))
+
+(.def (Child @ Parent)
+  config: =>.+ (.o provider-artifact: child-path))
+#+end_src
+
+Only =config.provider-artifact= changes. The child's source, provider and types
+methods are inherited; =purpose= remains inherited. Native receiver-aware slots
+recompute the child provider and its lazy Contract catalog from the child's
+config. No reset, manual cache invalidation, copied types table or special child
+factory is involved. The parent continues using its original package snapshot.
+
+Resource authors use the same bounded module API for either selected Module:
+
+#+begin_src scheme
+(def Web
+  (.o name: "web" ingress:
+    (list (.o from_port: 443 to_port: 443 protocol: "tcp"
+              cidr_blocks: '("10.0.0.0/16")))))
+
+(use-module Parent as tf
+  (.call (.get tf types resources aws_security_group) .admit Web #f))
+
+(use-module Child as tf
+  (.call (.get tf types resources aws_security_group) .admit Web #f))
+#+end_src
+
+The actual test admits the parent candidate before creating the child, so the
+parent's provider, Contract and validation path have already been exercised.
+The child alias remains inert until its types are demanded. Accessing the
+resource catalog uses native =object<-fun=; discovery of =aws_dsql_cluster=
+reflects the selected package without compiling that unselected Contract.
+The separate module-scope regression also uses the exported =OpenTofu= default
+with the 5.99.0 artifact injected by the environment. Resource code still has no
+=getenv=, directory factory, source lock or manual evidence construction.
+
+* What is checked in both directions
+
+The executable owner is product =t/opentofu-provider-versions-test.ss=. It runs
+5.99.0 -> 5.100.0 (upgrade), then 5.100.0 -> 5.99.0 (rollback), each with a newly
+created and cached parent. The existing heap-fenced launch is:
+
+#+begin_src sh
+just test-opentofu-provider-versions PARENT_SCHEMA_OUTPUT CHILD_SCHEMA_OUTPUT
+#+end_src
+
+Here the arguments identify the 5.99.0 and 5.100.0 Nix output directories;
+the gate reverses their roles internally. Missing paths fail rather than falling
+back to synthetic data. The checks cover:
+
+- Parent Contract cached before child creation; child alias binding does not
+  read the package or reuse the parent's evaluated provider.
+- Child provider, catalog, Contract and Contract identity are distinct, even
+  though the generated Security Group shape is equal for this pair.
+- Child source is generated provenance for its own artifact directory. Its
+  Provider/version/Schema digest agree with its published Contract.
+- Child admission evidence names the child Contract; retained parent evidence
+  continues naming the parent Contract.
+- Parent config, version, source identity, provider object, catalog and cached
+  Contract remain unchanged. Parent admission still works after child use.
+- Both sides reject an invalid port type. Unselected IAM and newly discovered
+  DSQL Contracts remain uncompiled. The 5.100.0-only catalog entry is present
+  only on the corresponding side in either direction.
+
+These controls validate the existing native Module implementation; no Core
+runtime repair or new public macro was required.
+
+* Scope, comparison and remaining qualifications
+
+[[https://github.com/nickel-lang/tf-ncl/pull/83][tf-ncl PR 83]], inspected at =6f62152b359497e0a9435d30adb4c13efc35711c=,
+shows a Provider selector with AWS and Null plus =withPlugins= schema-producing
+builds. That is a useful ecosystem reference for selecting dependencies before
+configuration evaluation. Its validation commands were not replayed here.
+
+This receipt covers one Provider family at two real versions. It does not claim
+new qualification for Null, awscc or other Provider families. The existing awscc
+structural fixture retains its earlier, narrower qualification. Each selected
+Provider artifact has its own scope; broader heterogeneous composition needs its
+own real controls. Two separate per-version engine derivations produced these
+artifacts. No engine workspace was asked to plan against both versions, and no
+such planning claim follows from their coexistence as Scheme Contracts.
+
+The existing CIDR boundary is unchanged: exported Schema enforces structural
+fields and Types; unexported SDK validators remain Provider responsibilities.
+No Provider validate RPC, plan, apply, cloud access, mutable-folder watcher,
+Loader or cross-process cache was added to native admission. SourceRef metadata
+retains origin but does not independently authenticate a caller-supplied package.
+
+* Executed default-runtime receipt (2026-10-17)
+
+Both Nix schema derivations built successfully. The realized outputs are:
+
+- 5.99.0: =/nix/store/2xp0mjg0spwff7zxfcn4xbinccydxryl-terraform-provider-aws-5.99.0-schema=.
+- 5.100.0: =/nix/store/2rlwphdsarjzllarlr64vw25y05fl3pv-terraform-provider-aws-5.100.0-schema=.
+
+The default-runtime upgrade/rollback gate passed 84 assertions, 42 per direction.
+The existing module-scope suite passed 20 assertions with the actual 5.99.0
+output injected, including its public =OpenTofu= object. Both processes returned
+exit 0 with =MODULE-OK=, =HARNESS-OK= and final =OK= and no case/check/harness
+errors or heap/stack overflows. Tests ran serially through existing heap-fenced
+Just entrypoints; no compatibility runtime was used.
+
+The structured local receipt is product
+=t/fixtures/opentofu/version-isolation-control.json=. It retains exact package
+paths, manifests, raw schema digests, resource counts and the equal-Security-Group
+observation. Raw logs and Provider binaries remain outside source control. This
+is local focused qualification, not complete-suite, remote-CI or a general proof
+of cache behavior. Production runtime code was unchanged for this qualification.
+
+* Subsequent heterogeneous qualification
+
+[[file:11.48-real-provider-family-publication.org][Chapter 47]] adds actual AWS, awscc and Null package exports and selected
+Contract controls. That later receipt extends family coverage; it does not
+retroactively change this chapter's AWS-only version/cache receipt.

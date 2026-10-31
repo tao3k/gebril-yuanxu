@@ -1,0 +1,205 @@
+#+title: 32.10 Isolated native cold-read recording and warm replay
+#+language: en
+#+property: DOCUMENT_ID 32.10
+#+property: STATUS isolated-native-qualified
+#+date: [2026-10-18]
+
+* Scope and source identity
+
+This gate tests the narrow read-delivery part of [[file:32.09-contract-demand-and-cache-replay.org][32.09]]. It does not install
+that design into the production MOP, remove production preflight leaf guards,
+change a dependency pin, or integrate a Loader. The native object source is
+gerbil-poo 26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5; its original object.ss
+SHA-256 is 8b856fe93ba69033692d83e64e89e9f0d81ae4e02564932b73c7c09c8366e0e6.
+The historical experiment altered only its temporary dependency copy. Its injection
+patch/include are no longer repository artifacts; they remain under
+/private/tmp/core-slot-replay-run06/withdrawn-injection/. Core now requires a
+complete dependency candidate checkout rather than maintaining a second MOP implementation.
+Native object files and the dependent Core test closure are compiled into a
+private library. Installed native libraries are not edited or monkey-patched.
+
+* Real Scenario and configuration ownership
+
+The maintained Gitea/PostgreSQL example lives under
+[[file:../../../scenarios/gitea-postgresql/README.org][scenarios/gitea-postgresql/]], including its gitea/ and postgresql/ service
+entries. These are regular module-role directories, published by the same
+interface mechanism. Scenarios denotes ownership/namespace, not another loader.
+Core retains only reusable admission, source and object-integration mechanisms.
+Existing historical manifests retain their old paths.
+
+The previously unused empty Scenario Config now has real ordinary defaults:
+
+#+begin_src scheme
+;; scenarios/gitea-postgresql/config.ss
+(.def Config
+  postgresql: (.o settings: (.o port: 5432))
+  gitea: (.o database: (.o)))
+
+;; objects.ss, Scenario slot's value: defaults fill only omissions.
+((.get client application)
+ (config-defaults (.get defaults postgresql) (.get database config))
+ (config-defaults (.get defaults gitea) (.get client config)))
+#+end_src
+
+The objects.ss excerpt shows only the changed construction call;
+the maintained file retains both contributions and the Application Contract.
+interface.ss passes Config to that constructor once. Config is not an alias
+for an implementation factory, nor a duplicated Contract field table. types.ss
+owns shapes/obligations; objects.ss owns lexical dependencies and plan projection.
+The service config.ss files continue to load JSON and supply ordinary defaults.
+
+The authority is the supplied scope's *final config*, including downstream .def
+changes. Do not reconstruct it from its old document merely to distinguish
+default layers: that would discard valid scope refinements. Scenario Config
+fills missing values, not fields already supplied by that final scope. An
+intentional override remains an ordinary assignment on the Scenario config.
+[[file:../../../scenarios/gitea-postgresql/tests/config-test.ss][The three public-constructor controls]] distinguish missing fields, a derived
+scope whose port differs from its old JSON baseline, and explicit null.
+
+Explicit JSON null must not become a missing field. A missing client port is
+intentionally not set to 5432 here: its native default follows the final database
+receiver. Service enablement or optional GraphQL functionality would require
+actual conditional domain requirements, not invented booleans that purport to
+start services. This gate does not implement those features or start services.
+
+* Cold capture, hot delivery and source joining
+
+Every successful cold .ref computation seals a receiver/slot/revision/instance
+node with its actual read dependencies, even outside admission. Value and trace
+are committed together after successful computation and revision checks. A warm
+.ref delivers that existing node; it does not call the getter again. New receiver
+instances have separate trace tables. No parent's computed node is copied into
+a child. A stale revision/cache-entry identity rejects instead of silently
+re-evaluating effects.
+
+The [[file:../../../t/qualification/slot-read-replay/admission.ss][experimental adapter]] projects delivered nodes to the existing
+admit-field-sources! query, using the actual receiver and slot. Original located
+specifications supply source snapshots; callers do not supply port leaf lists.
+Metadata inspection disables its own observer/frame callbacks. Nested scopes
+fan out to enclosing collectors, and final dependency replay uses a fresh
+visited set. The existing SourceAdmissionContract still owns inherited .admit,
+child evidence, locator decoration and collected-source currentness before
+return. The experiment checks revisions/sources again after that call.
+
+The test preflight diagnoses the existing value Contract rather than replacing
+its source-path argument with another list. This deliberately narrow fixture
+does not qualify production staged preflight ordering for malformed intermediate
+values. Production guards therefore remain intact. No separate Contract demand
+hook, container source association or default-provenance hook is implemented.
+
+* User chain and acceptance controls
+
+[[file:../../../t/slot-read-replay-test.ss][The test suite]] uses the maintained Scenario constructor, PostgreSQL and
+Gitea Contracts, native ObjectContract normalization and public .admit. It warms
+both scalar parent plan values, refines the child's database port to 5433 and
+checks that the final candidate's plan aliases the final candidate's config.
+The parent's cached values remain 5432. Capturing the parent plan explicitly is
+still rejected by the real stale-parent-plan domain check.
+
+The other controls cover a warm Scheme-source dependency without re-running its
+getter, changed Scheme source on full .admit, changed JSON source during the
+admission obligations, an unselected erroring branch, and explicit client-port
+mismatch with actual/expected paths and JSON origin. The counting child
+obligation is a fixture; the child evidence/normalization path is production.
+DirectoryFixture, temporary source mutations and the native observation adapter
+are qualification machinery, not a new public configuration interface.
+
+The Scenario tests use minimal dependency scopes to exercise the public pure
+constructor; they do not manufacture source/publication evidence. The Core
+publication/JSON/relocation controls exercise the actual selected-record and
+publication path against role files under Scenarios. No new Loader adapter is
+introduced by either set of controls.
+
+* Reproduction and evidence limits
+
+Run [[file:../../../t/qualification/slot-read-replay/README.org][the bounded Just recipe]]. Cold native compilation and runtime acceptance are
+separate gates. Retain each timeout/failure log outside version control. Successful
+per-module source-content checkpoints permit another 120-second compile pass;
+they do not turn a failed pass into a successful receipt. The runtime gate must
+finish with MODULE-OK, HARNESS-OK, final OK, exit zero and no failure markers.
+
+The private trace cache is strong, finite-test/process-local bookkeeping. It does
+not establish production weak ownership, memory bounds or a performance gain.
+.ref/cached, bootstrap anchors, inline/layout routes, default provenance, full
+.put! provenance and automatic cross-object invalidation remain unqualified. An
+explicit instance value is recognized from native overrides and receives a
+revision/instance token; it is not mistaken for an untraced computation or given
+an invented parent source. Changed
+source is rejected before admission returns; arbitrary cold getters are not
+sandboxed or rolled back. These controls cannot authorize removal of all explicit
+source prechecks or claim that callbacks cannot have effects before refusal.
+
+The experiment assumes native cache writes go through the qualified evaluator
+or the native mutation API. Direct mutation of exported raw instance hashes,
+foreign code and mutable non-POO container contents are outside this gate. An
+object returned by an earlier constructor does not automatically acquire a
+creation-frame lineage; the tested Contract follows its owned object paths.
+General construction provenance remains a separate MOP protocol requirement.
+
+* Negative preparation results retained
+
+Initial preparation attempts failed on a library name, source lookup and an
+incomplete fixture form; none are passing receipts. Cold closure compilation
+also reached the unchanged 120-second watchdog. Successful module checkpoints
+allowed later bounded passes to finish; the timeout logs remain failures.
+
+The first runtime attempt refused CLOS effective-slots as an unqualified cached
+slot. Investigation identified a real native .put! assignment. The experiment
+now distinguishes explicit instance values from computed cache entries; it still
+refuses an untraced computation.
+
+A byte comparison of regenerated object.ssi also failed: only disjoint import
+aliases within one unchanged support module were permuted. The
+[[file:../../../t/qualification/slot-read-replay/interface-check.ss][interface check]] permits that alias permutation only; module load order,
+exports, layouts, macro forms and all other forms stay exact. Negative controls
+reject changed bindings, changed module order and ambiguous aliases. It reports
+NATIVE-BINDINGS-UNCHANGED, not byte-identical artifacts. The earlier failed byte
+comparison is not relabeled as success.
+
+* Execution receipt
+
+The final focused gates completed serially under the Core Justfile's 1 GiB
+pre-import heap fence and per-process 120-second watchdog:
+
+| Gate | Cases | Result |
+|------+-------+--------|
+| t/slot-read-replay-test.ss | 6 | Native cold capture / warm replay and public .admit pass |
+| scenarios/gitea-postgresql/tests/config-test.ss | 3 | Missing / final derived / null configuration behavior pass |
+| t/gitea-postgresql-publication-test.ss | 11 | Real publication, exact child evidence, joint requirements and parent-cache controls pass |
+| t/gitea-json-configuration-test.ss | 4 | JSON/default/null/currentness controls pass |
+| t/gitea-postgresql-relocation-test.ss | 4 | Relocated assets, source positions and native-copy controls pass |
+
+All five gates emitted MODULE-OK, HARNESS-OK and final OK and exited zero,
+without ERROR CASE/CHECK/HARNESS, heap or stack overflow markers. This is 28
+local cases, not a full-suite, CI, deployment or universal MOP correctness claim.
+The counting obligation in the six-case gate runs once and its returned child
+evidence names the exact final PostgreSQL object.
+
+The runtime is native Gerbil 1cfb032 / Gambit ea114fc with host SDK libraries and
+the privately compiled, instrumented POO/Core closure. It is neither an installed
+production hook nor a compatibility evaluator. The host emits an existing
+undefined macro-writeenv-style warning while loading the pinned io module, plus
+the std/net/request deprecation warning. Both are retained; no I/O-printer
+coverage or warning-free dependency acceptance is claimed.
+
+The Core base HEAD is 7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e, inside a dirty
+concurrent working tree. [[file:32.10-source-manifest.sha256][The 32-file source manifest]] binds the relevant actual
+sources separately; it is not complete external dependency attestation. The
+product HEAD is a74fc2fd63437252175b5a67649ee54b886d3bf4. Historical manifests
+and other sessions' edits were retained. No raw logs are committed.
+
+Final local logs under /private/tmp/core-slot-replay-run05/ are:
+
+- test-scJUNQ.log (six-case read replay, including exact child identity);
+- regression-GKEhZ2.log (Scenario config);
+- regression-c1ONYw.log (publication);
+- regression-cAfFC7.log (JSON);
+- regression-RfDa9O.log (relocation).
+
+The first runtime refusal remains in test-QvTESs.log. Earlier compile-* logs,
+including watchdog exits, remain in the same directory; earlier setup failures
+remain in /private/tmp/core-slot-replay-run01 through run04. Interface comparison
+retains the original and regenerated SSI files and validates bindings rather
+than claiming equal bytes. The corresponding SHA-256 values are
+5c3f23e58cecb9a74fce6dc0f6406689bb370863b2d336ccab301802948a02c4 and
+3bcc4223067b689fb0fc3652da21d3ff774550847b0a521c2394a63954f723f6.

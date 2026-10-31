@@ -1,0 +1,368 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Export Contract Index and Derived Scenario Resolution: Concrete POO Design
+#+property: STATUS design-source-only-not-implemented-no-loader
+
+* Native-parent correction
+
+[[file:18-mop-derived-profile-association.org][Module 18]] supersedes the manual origin-record output and origin resolver in
+this module for native inheritance. object-supers already retains parent objects;
+children need no separately generated declaration record. Keep the contribution
+indexes, requirements, method bundle and final admission entry bodies below.
+
+* Scope and checked owners
+
+This makes module 16's association rules concrete without a per-Profile
+publication wrapper. Existing owners checked: src/authoring/module-interface.ss,
+src/authoring/module-source-collection.ss, core/module-system/source/objects.ss,
+core/module-system/loader/objects.ss and Core's poo-clos declarations/tests.
+The current Interface has schemas/schema-index, authoring and metadata, but no
+export Contract index. SourceRef equality ignores metadata/revision. Contribution
+location/re-export validation is not per-export provenance or authentication.
+
+All new declarations below are DESIGN SOURCE. The factories, domain Contracts,
+capability objects and cicd-checked-evidence have bodies in modules 13 and 15;
+this module provides the new association/resolution bodies. No Loader, filesystem
+resolution, runtime registration or new public syntax is implemented here.
+
+* One package interface, two separate indexes and lazy value exports
+
+The interface type and configuration protocol are two independently extensible
+axes: a contributor interface may host different protocols, and a protocol may
+be supported by multiple interface families. Use Core CLOS for that crossing.
+Do not dispatch on package names or use CLOS to replace a Contract's own .admit.
+The CLOS .defgeneric below is distinct from Core's slot-generic admission binding.
+Canonical owner imports must preserve those distinct lexical bindings.
+
+#+begin_src scheme
+(.def ProfileContributionInterface.
+  package: #f
+  revision: #f
+  exports: (.o)
+  profile-contracts: (.o)
+  profile-requirements: (.o))
+
+(.def ConfigurationProtocol.)
+(.def (CICDPipelineProtocol. @ ConfigurationProtocol.))
+
+#+end_src
+
+The requirements below belong to the contribution, not to a test bindings map.
+They reference the actual configured-feature Contract, pure Funflow owner and
+language-specific policy declarations. CICDDeclaredCapabilities.,
+GerbilCICDCapabilities. and RustCICDCapabilities. have complete definitions in
+[[file:15-open-profile-composition/02-profile-admission.org][module 15 source 02]]: manifest-handoff, line results, action/retention choices,
+ci/build and ci/check references, closed optional payloads, and the respective
+cleanup/package-artifacts or cleanup/rust-package-artifacts compensation action.
+These are requested supported policies, not evidence of runtime availability.
+
+#+begin_src scheme
+(.def GerbilCIRequirements
+  contract: GerbilCIProfileContract
+  plan-modules: '(funflow)
+  module-policies:
+  (.o funflow:
+      (.o contract: ConfiguredFunflowContract
+          owner: Funflow
+          capabilities: GerbilCICDCapabilities.)))
+
+(.def RustCIRequirements
+  contract: RustCIProfileContract
+  plan-modules: '(funflow)
+  module-policies:
+  (.o funflow:
+      (.o contract: ConfiguredFunflowContract
+          owner: Funflow
+          capabilities: RustCICDCapabilities.)))
+#+end_src
+
+The package interface now associates those maintained values explicitly:
+
+#+begin_src scheme
+(def LanguageCIInterface
+  (let ((gerbil-value GerbilCIProfile)
+        (rust-value RustCIProfile))
+    (.o (:: @ ProfileContributionInterface.)
+      package: 'language-ci
+      revision: 'design-fixture-revision
+      exports:
+      (.o GerbilCIProfile: gerbil-value
+          RustCIProfile: rust-value)
+      profile-contracts:
+      (.o GerbilCIProfile: GerbilCIProfileContract
+          RustCIProfile: RustCIProfileContract)
+      profile-requirements:
+      (.o GerbilCIProfile: GerbilCIRequirements
+          RustCIProfile: RustCIRequirements))))
+#+end_src
+
+These requirements are defined before LanguageCIInterface. They are
+separate maintained policy facts, not wrappers around Profile values. A shared
+requirements object may serve compatible exports. The index Contract must match
+the requirements' Contract exactly; neither is silently preferred on mismatch.
+The lexical value aliases in LanguageCIInterface capture canonical exports once
+and avoid same-name slot capture; no recipe factory is called a second time.
+
+revision above is explicitly a fixture label, not a verified digest. In production
+the publication owner must bind an interface instance to an admitted immutable
+package/export/revision snapshot. Neither a revision slot nor membership in a
+list cryptographically authenticates anything. The following algorithms take a
+trusted stable planning view as a PRECONDITION. They cannot manufacture it.
+
+The trusted view contains interfaces (exact admitted interface instances), origins
+(exact declaration-origin records in the selected closure), and
+permitted-requirements (requirements explicitly accepted by the planning owner).
+The initial adapter conservatively requires approved exact requirement objects;
+it does not implement a general capability intersection/Contract implication
+solver. A broader or incompatible request is refused pending an approved policy.
+These are planning inputs, never editable fields read from the candidate Scenario.
+
+* Multi-dispatch selects an integration, not an admission exemption
+
+#+begin_src scheme
+(def ProfileAssociationProtocol
+  (poo-clos-generic-protocol 'configuration/profile-association))
+
+(.defgeneric profile-export-association
+  (interface protocol export-key view)
+  (protocol ProfileAssociationProtocol))
+
+(defrules association-method ()
+  ((_ interface-proto protocol-proto)
+   (.defmethod
+     (profile-export-association
+       (interface (prototype interface-proto))
+       (protocol (prototype protocol-proto))
+       export-key view)
+     (unless (memq interface (.get view interfaces))
+       (error "unadmitted-interface-snapshot" export-key))
+     (unless (and (.slot? (.get interface exports) export-key)
+                  (.slot? (.get interface profile-contracts) export-key)
+                  (.slot? (.get interface profile-requirements) export-key))
+       (error "unresolved-profile-export" export-key))
+     (let* ((descriptor (.ref (.get interface profile-contracts) export-key))
+            (requirements (.ref (.get interface profile-requirements) export-key)))
+       (unless (and (eq? descriptor (.get requirements contract))
+                    (memq requirements (.get view permitted-requirements)))
+         (error "unapproved-profile-requirements" export-key))
+       (.o contract: descriptor
+           plan-modules: (.get requirements plan-modules)
+           module-policies: (.get requirements module-policies)
+           requirement-origin: requirements)))))
+
+(.defmethod-bundle ProfileAssociationMethods
+  ProfileAssociationProtocol
+  (.defmethod
+    (profile-export-association
+      (interface (prototype ProfileContributionInterface.))
+      (protocol (prototype ConfigurationProtocol.))
+      export-key view)
+    (error "unsupported-interface-protocol" interface protocol export-key))
+  (association-method ProfileContributionInterface. CICDPipelineProtocol.))
+
+;; Explicit integration-owner activation, not expansion/declaration behavior:
+(poo-clos-compose-method-bundle
+  profile-export-association$poo-clos-generic ProfileAssociationMethods)
+#+end_src
+
+The private defrules removes repeated method structure; it expands to ordinary
+.defmethod, not another user DSL. The bundle is inert at declaration. Composition
+is an explicit registration boundary shown for the future integration owner,
+not an action performed by this document. Further interface/protocol families
+provide their own methods/bundles. Protocol-identity matching is Core's existing
+bundle admission. Unsupported crossings refuse, rather than treating arbitrary
+objects as Funflow Pipelines. No new method below bypasses the Profile Contract.
+
+* Origin preservation: native user forms and explicit internal output
+
+Users keep ordinary POO definitions. These forms do not require a public macro:
+
+#+begin_src scheme
+(.def (TeamCIProfile @ GerbilCIProfile)
+  funflow: =>.+
+  (.o build: =>.+
+      (.o commands: '("gerbil" "build" "release"))))
+
+(.def (ProjectCI @ CICDScenario.)
+  application: TeamCIProfile
+  composition: =>.+ (.o participants: '(application)))
+#+end_src
+
+The pending declaration/publication owner must retain native syntax bindings and
+emit association data alongside these objects. Its internal output has this
+concrete shape, rather than a hidden ProfilePublication object or candidate slot:
+
+#+begin_src scheme
+;; Internal output only; not additional user declarations.
+(def GerbilExportOrigin
+  (.o value: (.get LanguageCIInterface exports GerbilCIProfile)
+      interface: LanguageCIInterface
+      export-key: 'GerbilCIProfile
+      parents: '()))
+
+(def TeamDeclarationOrigin
+  (.o value: TeamCIProfile
+      parents: (list GerbilExportOrigin)))
+
+(def ProjectCIOrigins
+  (.o application: TeamDeclarationOrigin))
+#+end_src
+
+The value binding used to construct TeamCIProfile must be the same canonical
+export as the root origin's value, not a second factory call. Alias/import rename
+retains that binding's origin. A derived origin records the actual new value and
+its already-resolved parent origins; re-export adds the user's own package/revision
+association and keeps the derivation dependencies. Native inheritance is not
+proof of publication authority. The trusted origin recorder, not an editable
+parents slot inside a Profile, owns these records. Generated forms must retain
+hygienic bindings; scanning names or guessing @ parents from runtime shape is
+not an implementation of this recorder.
+
+The internal example's top-level defs may demand their values during module
+evaluation. Actual origin records/value demand must be assembled for the selected
+closure, not generated by forcing a whole catalog. That staged recorder remains
+to be implemented. We show its data output, not a fake completed macro expansion.
+
+* Complete origin resolution and selected association projection
+
+Origin traversal uses all parents. The initial design accepts multiple origins
+only when they refer to exactly the same Contract, approved requirements and
+policy objects. Distinct but compatible obligations need an explicit integration
+method/approved composite descriptor; otherwise refuse. It does not silently
+choose the first parent or pretend to solve arbitrary Contract implication.
+
+#+begin_src scheme
+(def (same-profile-requirements? left right)
+  (and (eq? (.get left contract) (.get right contract))
+       (eq? (.get left requirement-origin) (.get right requirement-origin))
+       (equal? (.get left plan-modules) (.get right plan-modules))
+       (eq? (.get left module-policies) (.get right module-policies))))
+
+(def (resolve-profile-origin origin protocol view trail)
+  (unless (memq origin (.get view origins))
+    (error "unrecorded-profile-origin" origin))
+  (when (memq origin trail)
+    (error "cyclic-profile-origin" origin))
+  (let* ((parents (.get origin parents))
+         (own
+          (if (.slot? origin 'interface)
+            (let* ((interface (.get origin interface))
+                   (key (.get origin export-key))
+                   (association
+                    (profile-export-association interface protocol key view)))
+              (unless (eq? (.get origin value) (.ref (.get interface exports) key))
+                (error "export-value-origin-mismatch" key))
+              (list association))
+            '()))
+         (inherited
+          (map (lambda (parent)
+                 (resolve-profile-origin parent protocol view (cons origin trail)))
+               parents))
+         (associations (append own inherited)))
+    (when (null? associations)
+      (error "missing-profile-contract-origin" origin))
+    (let ((first (car associations)))
+      (unless (every (cut same-profile-requirements? first <>) (cdr associations))
+        (error "incompatible-profile-origins" origin))
+      first)))
+
+(def (resolve-scenario-profile-associations scenario-value origins protocol view)
+  (let ((names (.get scenario-value composition participants)))
+    (unless (nonempty-unique-symbols? names)
+      (error "invalid-participants" names))
+    (map
+      (lambda (name)
+        (unless (and (.slot? scenario-value name) (.slot? origins name))
+          (error "missing-selected-profile-origin" name))
+        (let ((candidate (.ref scenario-value name))
+              (origin (.ref origins name)))
+          (unless (eq? candidate (.get origin value))
+            (error "final-profile-origin-mismatch" name))
+          (let ((association-value (resolve-profile-origin origin protocol view '())))
+            (.o binding: name
+                profile: candidate
+                association: association-value))))
+      names)))
+
+(def (admit-selected-profile-associations scenario-value resolved)
+  (map
+    (lambda (entry)
+      (let* ((name (.get entry binding))
+             (candidate (.get entry profile))
+             (association-value (.get entry association))
+             (descriptor (.get association-value contract))
+             (context
+              (.o scenario: scenario-value
+                  profile-binding: name
+                  effective-profile: candidate
+                  profile-path: (list name)
+                  module-policies: (.get association-value module-policies))))
+        (unless (eq? candidate (.ref scenario-value name))
+          (error "changed-selected-profile" name))
+        (let ((evidence (yuanxu-contract-admit descriptor candidate context)))
+          (cicd-checked-evidence descriptor candidate context evidence)
+          (.o binding: name
+              profile: candidate
+              association: association-value
+              admission-context: context
+              admission: evidence))))
+    resolved))
+#+end_src
+
+All new called helpers have bodies above; nonempty-unique-symbols? and
+cicd-checked-evidence are the existing design definitions in source family 15.
+Core/POO/list operations and the .admit protocol remain canonical dependencies.
+The admitted entries have the same shape as module 15's preparation.profiles;
+this replaces that preparation path when integrated, rather than admitting twice
+and comparing evidence with two different context objects. The composition owner
+must retain this same preparation/context for the stable view and recheck the
+selected bindings before projection. These calls admit the Profile and its
+configured features, not the consumer plan or a runtime Session.
+
+The view's interfaces/origins/permitted-requirements lists are bounded selected
+closure fixtures for this design. Membership is linear and repeated lineage
+traversal is not a claimed scalable implementation. A production view requires
+indexed membership and view-local memoization by origin plus protocol/policy
+snapshot; it must not scan thousands of unselected exports. No performance or
+first-demand bound follows from these bodies.
+
+* Final receiver and admission boundary remain mandatory
+
+A Profile's inherited Pipeline computes checks from its native effective-config
+and final selected-checks. The association resolver never substitutes the root
+export value for the derived candidate. Domain admission compares projected
+Checks pairwise by final object identity and order; a fixed parent list is
+rejected after any relevant child refinement, even after the parent Pipeline was
+cached and even if selected names/length match. New selected smoke is resolved
+from that final config; an unselected smoke does not become a plan task.
+
+Any source revision, derivation, policy, Contract, selection or dependency change
+invalidates affected associations/evidence/projection. Exact membership in an
+admitted stable view is the assumption here, not SourceRef metadata equality.
+Native receiver/cache probe evidence does not validate these new functions.
+Configuration admission precedes pure candidate projection; admitted-preview
+additionally needs the actual consumer Contract, and publication/runtime remain
+explicit separate boundaries. No command, scheduler or Loader is invoked.
+
+* Existing versus proposed
+
+Existing declaration mechanisms: native .def/.o, inheritance and lexical slots;
+Core CLOS prototype specializers, protocol identity, private defrules and deferred
+.defmethod-bundle registration; Core slot-generic .admit and responsibility
+traversal; contribution location, role checks and inert SourceRefs.
+
+Proposed only: ProfileContributionInterface. extension/indexes; validated exact
+revision interface views; trusted binding-aware origin recording; methods in
+ProfileAssociationMethods; origin/selected resolution and its integration into
+module 15; consumer plan admission. New language exports using the same supported
+protocol require maintained indexes/requirements, not a language-name branch.
+Different independently extensible protocol/interface integrations can add method
+bundles. Multiple distinct Contract requirements still need explicit composition;
+method dispatch alone never discharges all of them.
+
+Before implementation: validate native expansion, no declaration-time method
+registration, alias/rename hygiene, identity across exports, child/re-export
+origins, spoofed metadata, revision/policy invalidation, multi-parent conflict,
+selected-only demand and both parent-cache controls. Only static documentation
+checks are performed for this design edit; no Scheme execution or Loader change.

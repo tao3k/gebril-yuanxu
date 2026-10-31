@@ -1,0 +1,2 @@
+Observed during runner development: ValueError: unexpected pinned POO package identity
+The runner expected an extra trailing newline. The source archive was unchanged; the expected literal was corrected to its exact archived bytes before the recorded successful run. No native probe ran in this setup failure.

@@ -1,0 +1,168 @@
+#+title: 12.27.07 Progress-aware Execution and GC Recovery
+#+property: DOCUMENT_ID 12.27.07
+#+language: en
+#+property: STATUS retained-evidence
+
+* Progress-aware execution after garbage collection
+
+The user subsequently reported a Nix garbage collection. Previous receipts of
+available provider outputs do not establish availability after that collection.
+Native evaluation-cache reuse, derivation registration, output availability and
+realization progress are separate observations. A new realization or substitution
+after GC is not evidence that native evaluation caching failed.
+
+The current implementation has three elapsed-time ceilings: the Case watchdog,
+TestingScript's Ops process timeout derived from the Case duration, and the
+outer focused-test watchdog. Neither the Case nor Ops currently implements an
+inactivity timeout. A process making genuine progress can therefore be killed
+at 60 seconds. This is an execution-policy gap, not a reason to discard source
+or admission checks, or to report an interrupted integration as successful.
+
+The required distinction is between an explicit total resource budget and a
+no-progress deadline. The latter must follow bounded native activity evidence:
+advancing transfer/build counters, completed dependencies, and completed
+evaluation or publication stages. Arbitrary output, repeated diagnostics,
+unchanged progress counters and synthetic heartbeats must not renew it.
+Silent evaluation is not automatically a deadlock; unsupported progress
+observation must remain explicit rather than inventing activity. Observation
+formatting (=emit?=) must not switch execution safety on or off.
+
+This policy is implemented in the existing Ops execution and testing Case mechanisms,
+with native Nix activity supplied at the process boundary. It must cover the
+parent waiting for the child as well as the child, preserve process-group
+termination and fixture cleanup, and retain a finite overall bound. Merely
+raising the 60-second constant, disabling the watchdog, or changing only the
+inner Ops timeout would not implement these semantics.
+
+The shared Scheme policy now declares a 60-second inactivity deadline and a
+600-second finite total. Case memory sampling also checks inactivity, while
+Ops owns external process supervision. TestingScript receives both limits from
+the Case Profile; the Just recipe reads the shared total for its outer ceiling.
+Nested spans receive the same advancing events. Monotonic, bounded child
+records bridge genuine work into the supervising Ops span independently of
+=emit?=. Completed source imports also advance liveness; repeated source reads
+and guard traversals do not count as new completed imports. The outer ceiling
+includes native import time but does not yet detect pre-Case import inactivity.
+
+=t/execution-progress-test.ss= passes its native controls: progress keeps the
+parent Case and child Ops alive beyond the idle interval; repeated messages,
+replayed counters and changing expected amounts do not; a late event cannot
+revive an expired span; the total cannot be renewed; emission-disabled Cases
+still reject inactivity; and cancellation removes owned descendants. These
+small protocol controls inject Nix-shaped activity records and are not real
+downloads. The initial failed control exposed an interrupt/join deadlock during
+unwinding; the fix terminates the sampler just as the existing Case watchdog
+does. The failed receipt remains a failure, not acceptance evidence.
+
+The existing Ops process-script regression also passes, preserving exact
+unterminated stdout, argument/environment boundaries, descendant cancellation,
+and the existing timeout receipt behavior with =check-status: #f=. Only GNU
+timeout produces that process-total exit code; the new Ops sampler handles
+inactivity instead of racing it with another total exception.
+
+The first AWS run under this policy reaches closure publication and package-set
+resolution, then hits inactivity in native =flake lock=. This is not a total-
+duration rejection or successful AWS acceptance. Lock setup now uses the same
+Ops supervision and forwards native activity; talkative native activity output
+is enabled without enabling debug dumps on every query. The focused Nix cache
+controls still pass after the Ops integration. AWS rebuilding, Schema change,
+stale-evidence rejection and final cleanup are qualified separately below.
+
+* GC recovery and authentic transfer progress
+
+The observed cold recovery actually downloads missing cache outputs, including
+a 106625560-byte transfer, and runs beyond the old 60-second wall limit. Its
+subsequent AWS archive attempt supplies a curl header followed by repeated
+native =woken up= diagnostics, with no advancing transfer record. It is refused
+for inactivity; neither those messages nor their count renews the deadline.
+This receipt does not establish whether the unobserved curl transfer itself
+was stalled or merely lacked usable telemetry.
+
+The first attempt to use =stdenv.fetchurlBoot= did not solve that boundary:
+in this package set it resolves to a later curl bootstrap stage. The actual
+derivation, not the helper's name, exposed that mistake. The maintained archive
+now uses Nix's shipped =<nix/fetchurl.nix>= fixed-output builder. URL, content
+hash and archive name are unchanged; both the earlier and native builders
+identify the same fixed output. No prefetch wrapper, replacement provider,
+mock Schema, independent cache or upstream Nix modification is introduced.
+Native transfer progress and the complete AWS receipt are qualified below.
+
+The immutable package-set input exposed another concrete source of repeated
+work. A store path whose name is a prefixed =...-source= is recopied by the
+native path fetcher; merely supplying its NAR hash did not eliminate the scan.
+The setup now asks Nix for the stored NAR identity using explicit
+=path-info --json --json-format 1=, and uses =builtins.path= with that identity
+and the name =source= to obtain Nix's canonical store tree. Subsequent path
+inputs use that immutable canonical path. This asks Nix to reuse an existing
+content-addressed path, rather than maintaining a Scheme hash/result cache.
+The supplied NAR hash still constrains a required reconstruction after GC.
+The source tree is 197181024 NAR bytes in this receipt; the initial NAR-only
+attempt still spent about 34 seconds in lock setup and is not a speedup.
+
+The source references explaining these boundaries are Nix's
+[[https://github.com/NixOS/nix/blob/master/src/libutil/include/nix/util/logging.hh][activity protocol]],
+[[https://github.com/NixOS/nix/blob/master/src/libexpr/fetchurl.nix][shipped fetchurl derivation]]
+and [[https://github.com/NixOS/nix/blob/master/src/libfetchers/path.cc][path fetcher]].
+These moving source references are architectural explanations; installed-version
+derivations and native test results, rather than reference-code inspection,
+qualify this implementation.
+
+* Qualified cold recovery and cached-output receipts
+
+Both runs use the same observed JsonSchema/Funflow/AWS Case, source-loaded
+POO =fdeadfa40=, 2 GiB heaps, the shared 60-second inactivity window and
+600-second total. Neither disables observation or changes assertions to pass.
+The native-fetch run completes with exit zero, seven =MODULE-OK= markers,
+two =HARNESS-OK= markers, two final =OK= markers and no harness/overflow error.
+After GC it reconstructs the real 5.99.0 and 5.100.0 provider/Schema outputs;
+their archive transfers report advancing byte counts, not a curl heartbeat.
+The following run, after the progress-record line-boundary repair, also exits
+naturally with all markers and performs no native build, substitution or
+file-transfer activity. These are distinct receipts, not a controlled estimate
+of a universal speedup.
+
+| Observed span | GC recovery milliseconds | Outputs available milliseconds |
+|---------------+--------------------------+--------------------------------|
+| Complete aggregate Case through qualification completion | 590180 | 194450 |
+| Ops child process span | 550828 | 185074 |
+| AWS Case through final publication | 498746 | 170157 |
+
+Both retain actual parent-cached final-value checks, the optional transitive
+file invalidation, a real Schema upgrade, same-label Contract/reference
+rejection, Context mutation refusal, failed-publication previous-value
+preservation, and fixture cleanup. The aggregate also retains Graph identity,
+unselected branch laziness and the existing injected Ops-failure cleanup Case.
+The focused execution-progress controls pass seven Cases, including finite-
+budget rejection before execution, a relayed
+record after unterminated stdout and duplicate activity-stop rejection; the
+ordinary Ops regression and public Nix cache controls also pass.
+
+Each aggregate performs 20 currentness/derivation queries and two realizations.
+Both recordings contain seven actual package-body traces and thirteen queries
+with no package-body evaluation. The cold queries emit 329 file-evaluation
+messages (330 with the injected optional file); cache-hit queries emit only
+three entry/internal-file messages. These are native evaluation messages, not
+OS read-syscall measurements or a claim of zero filesystem access. All 20
+identity/source boundaries still run; no admission evidence is reused because
+Nix hits its cache.
+
+There are also four fixture setup Nix commands: resolve the installed package
+set, read its native store identity, obtain the canonical hashed source, and
+lock the publication. They are outside the Source query counters and must not
+be omitted from process accounting: this route has 26 Nix commands, not a
+claim that all process launches have been eliminated. Canonical source
+publication takes about 943 ms and subsequent lock setup about 959 ms in the
+cold accepted receipt; there is no whole-package-set copy activity in that
+lock operation. The earlier 34-second noncanonical scan remains a recorded
+failed approach.
+
+Those receipts left the seven body evaluations unclassified. The follow-up
+fingerprint audit below resolves that boundary; they must not all be counted
+as necessary semantic changes. Cached-output execution still
+takes minutes in this source-only aggregate. Allocation counters become
+nonmonotonic and are flagged =allocation-current? #f=, so these receipts do not
+support allocation-rate claims. The outer watchdog still provides only a total
+ceiling before a Case starts. No full build, runtime Loader, upstream library
+patch, compiled Core/POO cache or push is part of this qualification.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

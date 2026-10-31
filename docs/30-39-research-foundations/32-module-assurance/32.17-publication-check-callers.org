@@ -1,0 +1,203 @@
+#+title: 32.17 Attribution of the Six Gitea/PostgreSQL Publication Checks
+#+language: en
+
+* Finding and scope
+
+The six 101-file checks are NOT six independent admissions. They occur inside
+ONE direct =ApplicationContract.admit= invocation, in this order:
+
+| Window | Active descriptor / caller | Exact check site | Classification |
+|--------+----------------------------+------------------+----------------|
+| W1 | =postgresql/config= | =contributions.ss:194= | Internal PostgreSQL child analysis |
+| W2 | =gitea/config= | =contributions.ss:194= | Internal Gitea child analysis |
+| W3 | =gitea/configuration-context= | =contributions.ss:194= | Internal configuration-container analysis |
+| W4 | =gitea/application= before contribution callback | =contributions.ss:194= | Root callback entry guard |
+| W5 | =gitea/application= after contribution callback | =contributions.ss:208= | Independent post-callback guard |
+| W6 | =source-contract-admit= calls Context =admit-current= | =source.ss:81= → =contributions.ss:187,172= | Root return-context guard |
+
+The root then rechecks its own source inputs, finishes MOP dependency replay and
+runs the independent collected-source check at =source.ss:99–100=. That final
+102-file pass is NOT W6 and must not disappear from the accounting.
+
+Cold and warm attribution both observed exactly six groups, 101 distinct files
+per group, with identical ordered path lists. The totals reproduce the repaired
+baseline: 606 publication + 6 graph + 4 direct source + 102 return-currentness =
+718 actual file reads. Parent plan port remains 5432; the admitted child plan has
+PostgreSQL port 5433 and Gitea client port 5433, with exact plan/config association.
+
+* Call chain behind the attribution
+
+[[file:../../../types.ss::233][Core responsibility admission]] admits all child responsibilities before its
+own local and platform obligations. The maintained Application responsibility is
+=config=; [[file:../../../scenarios/gitea-postgresql/gitea/types.ss::28][ConfigurationAdmission.]] has the two service responsibilities.
+Their observed platform-callback order is PostgreSQL, Gitea, then Configuration.
+
+The three descriptors are registered children. They have no inherited platform
+callback and are not the root descriptor that handles contributions. Consequently
+[[file:../../../admission/contributions.ss::188][the platform callback]] executes =current! @= once and returns an empty platform
+diagnostic list. This does NOT skip their local classifiers or obligations:
+those already ran in =types.ss=. They are internal analytic calls in this trace,
+not SourceAdmissionContract wrappers returning independent source-bound receipts.
+
+At the root, =contributed?= is true. W4 precedes the generic contribution callback,
+which dispatches through =.contribution-obligations= to =port-contributions=.
+W5 follows that callback. These two windows therefore share a descriptor identity
+but have different semantic positions; grouping by descriptor name alone would
+incorrectly report one root window.
+
+After root domain admission, =source-contract-admit= computes diagnostics and
+calls the replaceable Context =admit-current= slot. Its maintained contribution
+Context calls the same =current!= routine, producing W6. It also checks selected
+Graph/generation, registration/coverage, source/export associations and object
+revisions. W6 is not merely a file-content equality helper.
+
+The callback returns, root-owned source inputs are checked again, selected MOP
+reads are replayed, and the outer collector performs the fresh final pass. The
+source-only collector cannot replace W6's graph/coverage/object checks by itself.
+
+* Two contributions and parent-cache isolation
+
+The measured Context retains TWO distinct contributions, =postgresql-port= and
+=gitea-port=. The Scenario publishes them at =requirements.postgresql= and
+=requirements.gitea=. Both originate from the Scenario publication, which binds
+their service payloads; they must not be mislabeled as separate service-owner
+publication records. =coverage!= retains exact rows, origins, export paths and
+payload identities; =port-contributions= checks both allowed-port sets against
+the final database port.
+
+No contribution is removed to obtain the attribution. The diagnostic consumer
+asserts the two keys and checks final child values after first forcing the parent's
+plan. Root normalization, service child obligations and the stale-parent-plan
+check are unchanged. An explicit Gitea port still does not become a default:
+the maintained application relation must reject a mismatch with PostgreSQL.
+
+* What can converge, and what must remain
+
+| Window / operation | Decision supported by this attribution | Additional condition before changing Scheme |
+|--------------------+-----------------------------------------+--------------------------------------------|
+| W1–W3 whole-publication file checks | Candidates for root-owned source certification | These calls remain internal analysis, all child obligations still execute, observations reach the root, and analysis grants no effect/publication authority |
+| W1–W3 descriptor/object provenance | Preserve the guarantee | Registration, exact final child identity and contribution/source observations must not be lost when the expensive source pass moves |
+| W4 before an open contribution callback | Retain the pre-callback validity boundary | Do not let a callback consume known-stale publication data merely because the root will reject later |
+| W5 after that callback | Retain fresh post-effect validation | The callback is an open native Generic/slot boundary; old bytes are not evidence after it |
+| W6 Context callback | Retain invocation and graph/coverage/revision guarantees | The slot is replaceable; it cannot be assumed a pure inspector for all callers |
+| Final collector after W6 and replay | Retain an independent fresh source check | No bytes from W6 may hide a write performed by that very callback |
+| A genuinely standalone child admission | Retain its promised return-time checks | It cannot return the proposed internal analytic evidence as a source-bound receipt |
+| Package/publication effects after root admission | Retain new post-effect checks | Those operations are outside this direct-admission trace |
+
+The actual =port-contributions= body in this Scenario is read/validate/diagnose
+code; this run did not execute a package or process. W4/W5 are nevertheless an
+OPEN extension boundary, not an established generic purity guarantee. A future
+closed pure method-package qualification could justify more convergence, but
+this attribution alone does not grant it.
+
+W5 and W6 could participate in ONE final root certification only after all
+intervening callbacks finish, with their graph/provenance checks retained as
+callback-free inspectors in a new stable final window. That is a separate protocol
+change. It is not an instruction to share a cache across W5, diagnostic callbacks
+and the replaceable W6 callback. The earlier 614-read candidate failed precisely
+when a Context callback checked a source and then changed it.
+
+Therefore the first bounded candidate is the redundant WHOLE-PUBLICATION part
+of W1–W3, not deletion of their domain or identity checks. No 718-to-smaller runtime
+result has been obtained. Even the arithmetic saving is conditional on moving
+no additional effect or public-admission boundary into the interval.
+
+* Relation to the Lean and QNT premises
+
+[[file:32.16-root-child-admission.org][32.16]] supplies the laws; this attribution identifies their proposed runtime
+scope. It does not prove a Scheme optimization merely by assigning the labels.
+
+- =requirements_retained= and =conflicting_ports_rejected=: W4/W5's contribution
+  interpretation must retain both parties even if W1–W3 stop reading the full
+  source closure. The Lean equality-port example is narrower than the actual
+  allowed-port-list domain check; its list semantics are not silently assumed.
+- =candidate_bound= / =cached_parent_rejected=: normalizing once must retain the
+  exact child; neither warm parent analysis nor a parent plan is a valid substitute.
+- =child_sources= and =batching_equivalent=: a complete final root source
+  Certificate covers selected child source obligations in ONE stable world.
+  They do not justify skipping pre-read guards on effectful getters.
+- =post_effect_change_rejected= / =stale_return_keeps_previous=: a callback or
+  package effect creates a new observation obligation, not a cache hit.
+- QNT =omit= rejects missing party coverage, =parent= rejects the parent plan,
+  =analyticAuthority= rejects promoting child analysis to root authority,
+  =crossEffect= rejects reused pre-effect bytes, and =lateEffect= exposes the
+  required stable interval between the final read and return.
+
+The full observation set, publication coverage, faithful receiver/revision
+projection and absence of concurrent writes in the pure final interval remain
+production premises. A source Certificate does not authenticate files or grant
+execution authority.
+
+* Diagnostic method and evidence limits
+
+The consumer resides ONLY at
+=/private/tmp/core-admission-call-attribution/attribution-test.ss=. No repository
+Scheme, Loader or dependency source was changed. It delegates native Context
+=.contract-obligations= and =admit-current= calls through =.cc= wrappers, labels
+their dynamic extent, and uses the existing =current-module-source-observer= to
+count actual =file-read= events. It does not replace admission, alter registered
+descriptors, remove contributions or hold a source-byte cache around callbacks.
+
+The first publication path delimits a window. Every completed window must have
+101 unique paths and the exact same ordered list; arbitrary splitting by a fixed
+count is not accepted. Cold/warm totals must both equal 718. The test additionally
+asserts both contribution keys, parent isolation and exact child plan/config
+identity. The original unwrapped 718-read receipt remains the matched baseline.
+
+The default Gerbil/Gambit runtime and existing heap-fenced =just test-file= gate
+run the consumer against the already-qualified isolated native library at
+=/private/tmp/core-source-window-after/lib=. This is a diagnostic wrapper around
+real maintained Contracts and the real selected publication, not a reimplementation
+of their admission semantics.
+
+The source text embedded in the successful compile checkpoints for =types.ss=,
+=admission/source.ss=, =admission/contributions.ss=, =admission/publication.ss=,
+=module-system/source/admission.ss= and the service Fixture is byte-for-byte equal
+to the live checkout at attribution time. The service role sources used by the
+Fixture are also checked against the maintained Scenario.
+
+IMPORTANT: the concurrently edited live =module-system/source/reader.ss= and
+=link.ss= differ from the qualified library snapshot. Their currentness and
+observation optimizations were not overwritten or recompiled here. The dynamic
+101-file/718-read result qualifies the repaired baseline library. The live
+admission call sites above are source-matched; this is NOT a new whole-current-
+checkout Loader or startup-performance qualification. Current reader/link source
+hashes and the snapshot hashes are retained separately in the local receipt.
+
+* Local validation record
+
+Qualification date: 2026-10-18. Runtime: Gerbil =1cfb032= on Gambit =ea114fc=.
+The final consumer passed the heap-fenced =just test-file= gate with =MODULE-OK=,
+=HARNESS-OK=, final =OK=, natural exit 0 and no error/overflow markers.
+
+The final run checked the two contribution keys, both cold/warm six-window
+sequences, six identical 101-path closures, the 718-read totals, parent plan
+isolation and final child plan/config identity. Twenty-one source comparisons
+bind the baseline and live attribution, with the two reader/link differences
+explicitly recorded. No current-source runtime speedup is claimed.
+
+Local artifacts, not committed raw logs:
+- =/private/tmp/core-admission-call-attribution/attribution-final.log=: final
+  diagnostic and gate output.
+- =/private/tmp/core-admission-call-attribution/attribution-receipt.json=: exact
+  live/snapshot hashes, window order, work counts and diagnostic/output digests.
+- =attribution-04.log=: initial successful cold/warm attribution; the final run
+  adds explicit two-contribution-key assertions.
+- =attribution-01.log=, =attribution-02.log=, =attribution-03.log=: retained failed
+  private-consumer expansions (unbound list helper, unavailable helper import,
+  then an internal definition inside =when=). The helper was removed and the
+  binding scoped with native =let=; no production behavior or assertion was
+  weakened to obtain success.
+
+The wrapper and receipt are diagnostic artifacts only; no second test framework,
+public API, production role or Fixture family was introduced. Existing Scheme,
+Lean and QNT implementations were left unchanged.
+
+* Current reader/link follow-up
+
+[[file:32.18-current-core-check-attribution.org][32.18]] supersedes this document's baseline-library limitation with a fresh
+current-source build, dynamic role dependency audit and final source-bound
+reconciliation. The six caller positions remain, with 87 files per current
+window and 620 total reads; the independent final collector reads 88 files.
+This document's 101/718 figures remain the historical baseline, not the latest
+current-source qualification or a same-input performance comparison.

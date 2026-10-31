@@ -1,0 +1,387 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.21 Config Languages 20: JsonSchema and Guestbook Role-File Design Review
+#+property: DOCUMENT_ID 11.21
+#+date: [2026-10-16]
+#+property: STATUS design-examples-not-runtime-files-no-loader
+
+* Scope and target bindings
+
+These are proposed source contents, not .ss files installed by this work. The
+[[file:../../../module-system/design/01-source-roles.org][Core source-role Contract]] owns the shell. Common Gerbil/POO/Core bindings are
+assumed supplied by the corresponding module's admitted implementation imports;
+local role imports are shown. This does not assert that current code auto-injects
+unbound names or that source discovery replaces Gerbil's phase/import rules.
+
+The bridge is now implemented under [[file:../../../modules/json-schema/interface.ss][Core modules/json-schema]], and the Feature
+System implementation lives under [[file:../../../feature-system/interface.ss][Core feature-system]]. These are reusable moved
+owners, not future source extractions. The four-role object assembly, publication
+linker and Guestbook/Kubernetes adapter examples below remain proposed. The shorter
+YuanxuObjectContract. export rename remains pending independently. See the
+[[file:11.22-migrated-core-guestbook-chain.org][current chain audit]] for the exact distinction between existing calls and design.
+
+All Core-owned procedure bindings in the proposed code below use the target
+yuanxu- prefix. Their mechanisms may already exist under legacy names;
+the renamed exports do not yet exist. See the [[file:../../../module-system/design/05-namespace-and-build-ownership.org][current/target naming ledger]].
+Product yuanxu-load-modules is not a dependency of these role implementations.
+
+* JsonSchema/types.ss: one configuration boundary
+
+The only new configuration in this bounded example is whether publication refuses
+all generation diagnostics. Fatal generation errors are always refused. This is
+a concrete proposed publication policy, not an existing compiler keyword.
+
+#+begin_src scheme
+(def (schema-no-obligations _candidate _context) '())
+
+(def (schema-config? value)
+  (and (object? value)
+       (.slot? value 'reject-diagnostics?)
+       (boolean? (.get value reject-diagnostics?))
+       (equal? (.all-slots value) '(reject-diagnostics?))))
+
+(def SchemaConfigContract
+  (yuanxu-predicate-contract
+   'json-schema/config schema-config? schema-no-obligations))
+#+end_src
+
+Do not reproduce schema property Contracts here: the existing bridge produces
+them. Scope operation contracts additionally need signature/effect qualification;
+procedure? alone cannot prove algorithm semantics. The one-field policy is used
+below and is not a filler config created to satisfy a filename requirement.
+
+* JsonSchema/func.ss: optional role, justified by two real adapters
+
+This example needs a small function owner for publication checks and full-root
+Contract adaptation. No wrapper is added around validation or native admission.
+
+#+begin_src scheme
+(import "types.ss")
+
+(def (compile-schema config-contract effective-config schema options)
+  (let (config-evidence
+         (yuanxu-contract-admit config-contract effective-config #f))
+    (unless (yuanxu-validation-evidence-accepted? config-evidence)
+      (error "invalid JsonSchema configuration" config-evidence)))
+  (let (artifact (yuanxu-json-schema->contract-artifact schema options))
+    (unless (yuanxu-json-schema-contract-artifact-valid? artifact)
+      (error "schema generation failed" artifact))
+    (when (and (.get effective-config reject-diagnostics?)
+               (pair? (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
+      (error "schema publication requires diagnostic review" artifact))
+    artifact))
+
+(def (schema-errors artifact candidate _context)
+  (if (object? candidate)
+    (yuanxu-json-schema-object-contract-validation-diagnostics
+     (yuanxu-json-schema-contract-artifact-validate artifact candidate))
+    (list (.o kind: 'object-required))))
+
+(def (schema-contract artifact)
+  (.cc (yuanxu-json-schema-contract-artifact-object-contract artifact)
+       '.obligations (cut schema-errors artifact <> <>)))
+#+end_src
+
+This strengthens generation publication policy without claiming unsupported JSON
+Schema features are implemented. Full-root validation preserves additionalProperties
+and other root constraints beyond a generated slot inventory. Evidence/diagnostic
+shape and schema coverage remain unexecuted adapter controls.
+
+* JsonSchema/objects.ss: receiver-aware configured scope
+
+#+begin_src scheme
+(import "types.ss" "func.ss")
+
+(.def JsonSchemaScope.
+  types: #f
+  config: #f
+  compile: (cut compile-schema (.get types Config) config <> <>)
+  contract: schema-contract
+  validate: yuanxu-json-schema-contract-artifact-validate
+  admit: yuanxu-contract-admit)
+#+end_src
+
+types and config are intentionally supplied once by the public assembly. compile
+reads its effective receiver's types.Config and config; no copied closure over a fixed parent configuration is required.
+No schema is compiled merely by constructing this prototype.
+
+* JsonSchema/configs.ss: one actual default
+
+#+begin_src scheme
+(import "types.ss")
+
+(.def JsonSchemaDefaultConfig
+  reject-diagnostics?: #t)
+#+end_src
+
+The default is defined once. Do not also define it independently in the prototype,
+compiler body and interface. In particular, the bridge's existing owner/object-key
+fallbacks are not copied into this config merely to populate the file.
+
+* JsonSchema/interface.ss: assembly, not duplicated implementations
+
+#+begin_src scheme
+(.def JsonSchema
+  identity: 'core/json-schema
+  core:
+  (.o requires: (.o)
+      scope-contract: JsonSchemaScopeContract
+      exports:
+      (.o (:: @ JsonSchemaScope.)
+        types: (.o Config: SchemaConfigContract)
+        config: JsonSchemaDefaultConfig
+        from-file:
+        (cut yuanxu-json-schema-from-file (.get types Config) config <>)))
+  features: (.o))
+#+end_src
+
+The public config and types slots are ordinary native object fields, not extra
+Module registries. They are declared once in this interface; core does not repeat
+config or a second config-contract field. The native scope Contract admits the
+publication shape, and operation entrypoints admit the effective config through
+types.Config. The from-file function is defined in [[file:11.30-workflow-module-contract-and-simple-user-config.org][module 29]]; it is not a second
+implementation or a forwarding prototype. Build roots are inferred from the
+admitted interface/import graph; non-inferable assets/FFI remain explicit.
+
+* Guestbook/types.ss: generated fields plus final relationship obligations
+
+GuestbookServerSchema is the full bounded input schema printed in
+[[file:11.14-guestbook-module-contract-admission.org][module 13]]. Package preparation supplies its JSON-like Scheme data binding;
+users do not decode a path. The following factory takes the admitted JsonSchema
+scope explicitly so importing types does not compile all schemas or resolve a
+filesystem name. The type anchor is empty; operational defaults live in objects.
+
+#+begin_src scheme
+(.def GuestbookScenario.)
+
+(def (make-guestbook-types JsonSchema)
+  (use-module JsonSchema as schema
+    (with-slots (compile contract) schema
+      (let* ((artifact
+              (compile GuestbookServerSchema
+                '((owner . guestbook)
+                  (source-ref . guestbook/server-schema-v1)
+                  (object-kind . GuestbookServer)
+                  (object-key . guestbook/server))))
+             (ServerContract (contract artifact)))
+        (define-type (ScenarioContract @ YuanxuObjectContract.)
+          identity: 'guestbook/scenario
+          proto: GuestbookScenario.
+          responsibilities:
+          (.o frontend: ServerContract
+              leader: ServerContract
+              follower: ServerContract)
+          .obligations: guestbook-links)
+        (.o artifact ServerContract ScenarioContract)))))
+#+end_src
+
+The relationship procedures belong to this Contract owner too. The fixed frontend
+Service-port policy below is the earlier strict recipe. The
+[[file:11.24-guestbook-effective-services.org][effective-service study]] supersedes it for the external 8080 -> container 80
+experiment, while retaining the Redis listener constraints:
+
+
+#+begin_src scheme
+(def (guestbook-port-errors scenario role expected-name expected-port)
+  (let* ((profile (.ref scenario role))
+         (container (.get profile mainContainer))
+         (container-port (car (.get container ports)))
+         (service (car (.get profile services)))
+         (service-port (car (.get service ports)))
+         (target (if (.slot? service-port 'targetPort)
+                   (.get service-port targetPort) (.get service-port port))))
+    (if (and (equal? (.get profile name) expected-name)
+             (= (.get container-port containerPort) expected-port)
+             (= (.get service-port port) expected-port)
+             (= target expected-port))
+      '()
+      (list (.o kind: 'guestbook-endpoint-mismatch role profile)))))
+
+(def (guestbook-links scenario _context)
+  (let* ((frontend (.get scenario frontend))
+         (container (.get frontend mainContainer))
+         (dns? (and (.slot? container 'env)
+                    (object? (.get container env))
+                    (.slot? (.get container env) 'GET_HOSTS_FROM)
+                    (object? (.get container env GET_HOSTS_FROM))
+                    (.slot? (.get container env GET_HOSTS_FROM) 'value)
+                    (equal? (.get container env GET_HOSTS_FROM value) "dns"))))
+    (append
+     (guestbook-port-errors scenario 'frontend "frontend" 80)
+     (guestbook-port-errors scenario 'leader "redis-leader" 6379)
+     (guestbook-port-errors scenario 'follower "redis-follower" 6379)
+     (if dns? '() (list (.o kind: 'guestbook-dns-mode-required))))))
+#+end_src
+
+These functions assume successful field/role admission against the single-port
+schema, as specified in module 13. They refuse unsupported recipe port/name/DNS
+changes; they do not prove image-level listener behavior or Kubernetes connectivity.
+A missing role is rejected by existing native responsibility admission first.
+
+* Guestbook/objects.ss: independent reusable Profiles, then a Scenario
+
+#+begin_src scheme
+(import "types.ss")
+
+(.def ServerDefaults.
+  (replicas ? 1)
+  (workloadType ? "Deployment")
+  (labels ? (.o)))
+
+(.def TinyResource
+  cpu: "100m" memory: "100Mi" disk: "1Gi")
+
+(.def (FrontendProfile @ ServerDefaults.)
+  name: "frontend"
+  mainContainer:
+  (.o name: "php-redis"
+      env: (.o GET_HOSTS_FROM: (.o value: "dns"))
+      ports: (list (.o containerPort: 80)))
+  schedulingStrategy: (.o resource: TinyResource)
+  services: (list (.o ports: (list (.o port: 80)))))
+
+(.def (LeaderProfile @ ServerDefaults.)
+  name: "redis-leader"
+  image: "docker.io/redis:6.0.5"
+  mainContainer: (.o ports: (list (.o containerPort: 6379)))
+  schedulingStrategy: (.o resource: TinyResource)
+  services: (list (.o ports: (list (.o port: 6379)))))
+
+(.def (FollowerProfile @ ServerDefaults.)
+  name: "redis-follower"
+  image: "gcr.io/google_samples/gb-redis-follower:v2"
+  mainContainer: (.o ports: (list (.o containerPort: 6379)))
+  schedulingStrategy: (.o resource: TinyResource)
+  services: (list (.o ports: (list (.o port: 6379)))))
+
+(.def (GuestbookBase @ GuestbookScenario.)
+  frontend: FrontendProfile
+  leader: LeaderProfile
+  follower: FollowerProfile)
+#+end_src
+
+Each list/.o constructs new data; no inherited port/list is implicitly merged.
+Profiles are independent values, not children inheriting the Module descriptor.
+TinyResource quantities use explicit string representation in this design. The
+resource consumer must qualify their translation; this is not full KCL type/output
+parity. A shared three-line Server factory is not added merely to shorten this
+small example and hide the actual service values.
+
+The optional extension's metadata is also an inert publication object, not a
+baseline Profile or eagerly loaded verification implementation:
+
+#+begin_src scheme
+(def GuestbookPreviewCapability
+  (feature-adapter-capability
+   'guestbook/preview 'custom/guestbook 'guestbook/preview-contract 1))
+
+(def SmokePreviewRequirement
+  (feature-adapter-requirement
+   'guestbook/smoke-preview 'guestbook/preview 'guestbook/preview-contract 1))
+
+(defpoo-feature GuestbookSmoke
+  (feature-id 'guestbook/smoke)
+  (owner-module-id 'custom/guestbook)
+  (category 'verification)
+  (adapter-requirements SmokePreviewRequirement)
+  (projections
+   (.o kind: 'build-public-entries
+       roots: '("contributions/guestbook/smoke.ss"))))
+#+end_src
+
+* Guestbook/configs.ss: maintained V2 selection/defaults
+
+#+begin_src scheme
+(import "types.ss" "objects.ss")
+
+(.def (GuestbookDefaults @ GuestbookBase)
+  frontend: =>.+
+  (.o image: "gcr.io/google-samples/gb-frontend:v3"
+      replicas: 2
+      labels: (.o app: "guestbook"
+                  owner: "platform-v2"
+                  costCenter: "infra")))
+#+end_src
+
+This is the explicit V2 evolution experiment, not a historical upstream KCL change
+or image-version ordering claim. Port/Service/Redis recipes remain in objects.
+configs selects values, while types enforces the same final schema/relationships.
+
+* Guestbook/func.ss: compose admission and a pure resource-provider boundary
+
+The configured Kubernetes scope must publish pure project and public admission
+operations. They are explicit dependency inputs, not undefined local helpers.
+Their actual implementation and parity are still pending. The following adapter
+composes their results; it neither deploys resources nor calls a smoke check:
+
+#+begin_src scheme
+(def (guestbook-preview contracts candidate Kubernetes context)
+  (let ((input-evidence
+          (yuanxu-contract-admit
+           (.get contracts ScenarioContract) candidate context)))
+    (unless (yuanxu-validation-evidence-accepted? input-evidence)
+      (error "Guestbook input refused" input-evidence))
+    (with-slots (project admit) Kubernetes
+      (let* ((resources (project candidate context))
+             (resource-evidence (admit resources context)))
+        (unless (yuanxu-validation-evidence-accepted? resource-evidence)
+          (error "Guestbook resources refused" resource-evidence))
+        (.o status: 'admitted-preview
+            candidate resources input-evidence resource-evidence)))))
+#+end_src
+
+The provider Contract must guarantee projection from the same candidate, source/
+schema generation, and output checks of selectors, namespace, endpoints and resource
+schema. Candidate fields inside a result are not proof by themselves. This is the
+precise remaining Kubernetes capability obligation; no complete implementation or
+runtime claim is hidden behind project/admit. A parent-cache result for another
+generation is inadmissible. Provider plan success never authorizes execution.
+
+* Guestbook/interface.ss: one declarative publication
+
+The complete declarative Guestbook interface and its generated compiler boundary
+are in [[file:11.23-source-ref-to-admitted-scope.org][module 22]]. They replace the previous author-written
+make-guestbook-module factory and manual import/export frame. The author declares
+core.requires, core.exports, scope-contract, capabilities and optional features
+once; source preparation generates the dependency-bound scope factory.
+
+The Schema, Profile and projection code above remains owned by its role files.
+The smoke descriptor stays associated with the Guestbook Module; disabled smoke
+must not load its verification implementation. Kubernetes is required because this
+publication offers preview; a baseline-only publication should not require it.
+The binding lowerer and provider/renderer qualification remain proposed.
+
+* init, loader admission and build: one definition, explicit remaining gaps
+
+The complete auto/explicit declarations and normalized intent are in
+[[file:11.19-feature-system-guestbook-selection.org][module 18]]. The loader facade should:
+
+1. Validate required source roles and selected source identity without executing
+   every interface or schema body.
+2. Read admitted publication/dependency metadata. An interface factory needs
+   statically available dependencies before invoking it: extracting/binding those
+   facts from this bounded form is still a source protocol adapter, not magic
+   introspection of arbitrary Scheme code.
+3. Close Module baseline requirements and retained module disables; supply selected
+   dependency scopes to publication. Resolve only published optional Features,
+   retaining -feature and refusing unknown/required-disabled identities.
+4. Expose the resulting Core export scope to bounded use-module. Baseline access
+   must not force contracts; .admit demands the selected schema and final children.
+5. Build from selected interface/import closure and admitted optional projections;
+   explicitly include schema generation assets and phase/FFI needs. No per-module
+   source list is repeated in init or build.ss.
+
+This review found real repetition/cost: one compilation-policy adapter, explicit
+contract factory/dependency wiring, two references to one scope config, and the
+required source/Contract binding for the now-explicit preview/feature publication. Those should be simplified through
+existing shared Module/Contract protocols once qualified, not hidden by yet another
+macro or stamped into every user config. Do not let the required shell justify
+fake factories, empty role files or a second descriptor catalog.
+
+Already implemented: bridge generation/validation, native POO slots/refinement,
+Contract/responsibility admission, bounded scope binding, module closure and
+Feature resolution/composition. Pending: shorter Contract export name, source-role
+migration, reusable bridge publication/default-policy adapter, interface factory
+metadata/linking, optional capability publication, complete resource consumer and
+selected graph -> build integration. No runtime source or Loader is added.

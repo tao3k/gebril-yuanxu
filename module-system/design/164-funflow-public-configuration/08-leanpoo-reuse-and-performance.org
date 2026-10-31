@@ -1,0 +1,155 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Configuration 08: LeanPoo PR Revision, Reuse Laws and Performance Hypotheses
+#+property: STATUS pinned-source-research-no-dependency-or-runtime-change
+
+* Exact source cut and exclusions
+
+The inspected open upstream PR is
+[[https://github.com/tao3k/lean-poo/pull/13][lean-poo #13, feat: unify generalized prototype construction (research)]].
+GitHub reported head 932497569748b69f2e9622c67bbd341e5a310f8c, base
+d8adf138948c854e7564234bc046387b4a5ee63b. The head's returned check rollup had
+17 completed successful checks in
+[[https://github.com/tao3k/lean-poo/actions/runs/38701781763][Lean CI run 38701781763]]. This is an inspected upstream receipt, not a new
+local Lean run or a Funflow integration result.
+
+The local sibling checkout at /Users/guangtao/ghq/github.com/tao3k/lean-poo
+had the same HEAD and branch feat/generalized-prototype-protocol. It also had
+an unstaged LeanPoo/Functional/HybridClosure.lean edit and an untracked
+LeanPoo/Functional/QueueSelection.lean. Research reads used git show against
+the exact committed head, excluding both working-tree changes. No external
+checkout was reset or edited.
+
+At the time of this research, packages/proofs/lean-poo was a parent-owned Lake consumer,
+not a separate checkout of the upstream repository. Its current local
+[[file:../../../../packages/proofs/lean-poo/lakefile.lean][lakefile]] and [[file:../../../../packages/proofs/lean-poo/lake-manifest.json][manifest]] select v0.1.1 at d8adf138948c854e7564234bc046387b4a5ee63b.
+They already have unrelated working-tree changes. This research does not update
+that dependency, claim the latest PR is imported, or run Lake/build/package repair.
+The original source proposal remains labelled future work upstream; upstream's
+whole_paper_implemented flag remains false.
+
+* Existing support that changes the design choices
+
+[[file:09-consolidation-and-ecosystem-gaps.org][Module 09]] turns these reuse conditions into the 31-function consolidation
+decision, minimum parent-cache/smoke case and six remaining ecosystem/UX gaps.
+It retains the same evidence boundary and adds no runtime implementation.
+
+All upstream links below are fixed to the inspected commit.
+
+| Upstream support | Exact property available in source | Funflow design implication |
+|------------------+------------------------------------+---------------------------|
+| [[https://github.com/tao3k/lean-poo/blob/932497569748b69f2e9622c67bbd341e5a310f8c/LeanPoo/Functional/ContextSlot.lean][ContextSlot]] | Snapshot binds data to the exact factory family and context; read_value equals uncached build, read_hit retains the snapshot | receiver/context equality is a cache prerequisite, not a pipeline-name match |
+| [[https://github.com/tao3k/lean-poo/blob/932497569748b69f2e9622c67bbd341e5a310f8c/LeanPoo/Functional/CachedPreparation.lean][CachedPreparation]] | cached outcomes include success and failure; unaffected transactions retain them, affected ones prepare fresh data without silently retaining the old joint proof | cache the prepared schema/selection family only with explicit impact conditions; preserve failure identity |
+| [[https://github.com/tao3k/lean-poo/blob/932497569748b69f2e9622c67bbd341e5a310f8c/LeanPoo/Functional/ContractConsequence.lean][ContractConsequence]] | Certified.entails retains factories and Snapshot.entails retains data under an explicit logical implication | a proved consequence need not rerun construction; adding an unproved condition still requires admission |
+| [[https://github.com/tao3k/lean-poo/blob/932497569748b69f2e9622c67bbd341e5a310f8c/LeanPoo/Functional/AnalyzedCache.lean][AnalyzedCache]] | exact computation/provider/context indexing; Cache.rebind requires universal evaluation equality | equal sampled results, a source digest or a matching kind is insufficient for cache transport |
+| [[https://github.com/tao3k/lean-poo/blob/932497569748b69f2e9622c67bbd341e5a310f8c/LeanPoo/Functional/GeneralizedGraph.lean][GeneralizedGraph]] | declaration locality, transitive invalidation and Scheduled.unaffected under unchanged-resolver equality | selected-path/field presence must enter an explicit dependency model before selective reuse is sound |
+| [[https://github.com/tao3k/lean-poo/blob/932497569748b69f2e9622c67bbd341e5a310f8c/LeanPoo/Functional/ConstructionCache.lean][ConstructionCache]] | Cache.reference equals full construction; Partial.step_reused bypasses the builder; absence and failures are completed outcomes too | discriminate actual skipped validation/construction from a cache flag reported after recomputation |
+| [[https://github.com/tao3k/lean-poo/blob/932497569748b69f2e9622c67bbd341e5a310f8c/LeanPoo/Functional/StagedPublication.lean][StagedPublication]] | exact completed candidate admission, publish_refused retains the whole old snapshot, publish_accepted selects the whole new one | prepare, validate and publish a complete selected plan atomically at the semantic boundary; do not publish half a repaired Pipeline |
+
+These are concrete Lean definitions/proofs and executable reference structures,
+not a proof that the Scheme source in module 07 implements them. Generalized
+construction metadata operates on its typed Computation language. It does not
+automatically inspect arbitrary Scheme getters or infer their hidden reads.
+Opaque/effectful Scheme computation needs conservative treatment or an explicit
+supported projection, not an invented dependency certificate.
+
+* Apply the laws to the same parent-cache / child-smoke example
+
+ProjectCI publishes build/test/package and a Pipeline. ReleaseCI refines those
+Checks; ExtendedCI adds smoke and changes membership to include it. The
+[[file:07-admission-source.org][complete native Scheme source]] already checks actual selected values and
+pairwise object identities. The Lean models suggest the following safe reuse
+boundaries without changing the user's configuration:
+
+1. Reuse a prepared declared-field index across candidates only when the
+   effective Contract family and immutable declaration revision are established
+   unchanged. Native .all-slots already caches slot-name/precedence information;
+   a separate membership index could remove repeated memq scans, not claim that
+   native POO currently rebuilds its entire schema on every access.
+2. Keep final receiver, selected membership, source occurrence and applicable
+   policy/Contract context in the preparation/snapshot boundary. A new child
+   receiver must not inherit the parent's cached Check list as current data.
+3. An unselected extra smoke need not invalidate an independent selected
+   computation if its absence/presence is not observed and the unchanged-frame
+   premise is proved. Adding smoke to selected-checks changes the selected
+   family and graph; it is not a same-context cache hit.
+4. Value or validation reuse under a changed receiver needs an explicit semantic
+   transport. The new candidate still needs current identity/occurrence checks.
+   Returning an old ValidationEvidence unchanged would fail module 07's
+   Contract/candidate/context correlation and is not justified by ContextSlot.
+5. A failed typo must remain failed under a genuine unchanged view. Correcting
+   commmands changes the relevant declaration/value footprint and requires
+   fresh admission. Failure caching is not permanent refusal after an edit.
+6. A Contract implication can reuse a completed proof only when that implication
+   is supplied and applies to the same data family. Adding a stronger arbitrary
+   domain rule is not an implication from an old, weaker rule.
+
+The existing native receiver cache and LeanPoo materialized construction cache
+are different mechanisms. The former already serves getter values per native
+receiver. The latter models explicit cross-revision transport with equality
+premises. Neither a new wrapper nor a copied stamp is a substitute for those
+premises. User-visible native paths and =>.+ remain unchanged.
+
+* Performance results actually inspected at this cut
+
+The PR also supplies
+[[https://github.com/tao3k/lean-poo/blob/932497569748b69f2e9622c67bbd341e5a310f8c/LeanPoo/Functional/HybridClosure.lean][HybridClosure]],
+[[https://github.com/tao3k/lean-poo/blob/932497569748b69f2e9622c67bbd341e5a310f8c/docs/contracts/hybrid-queues.org][its queue/cost contract]],
+[[https://github.com/tao3k/lean-poo/blob/932497569748b69f2e9622c67bbd341e5a310f8c/docs/performance/closure-hybrid-v2.json][the Lean raw receipt]] and
+[[https://github.com/tao3k/lean-poo/blob/932497569748b69f2e9622c67bbd341e5a310f8c/docs/performance/closure-hybrid-parity-v2.json][the cross-runtime counter receipt]]. The read-only inspection checked:
+
+- All six recorded Lean-side source hashes match committed files at this head.
+- The raw Lean receipt SHA-256 matches the counter-parity receipt's input hash.
+- The raw matrix has 360 rows, all marked pass. The parity receipt records
+  360 matching observations and 4680 counter assertions.
+- For each of 40 family/size/width/seed/scope settings, compute each raw
+  query_ns/repetitions value, take the three-trial median per queue, then divide
+  append's median by hybrid's median. These within-Lean ratios range from about
+  0.581 to 2.025; hybrid is slower in 35 of those 40 settings.
+
+These are analyses of retained observations, not rerun benchmarks. The companion
+Scheme checkout/source hashes were not revalidated here. Its timer is CPU time,
+while Lean's is elapsed time; no cross-runtime speed ratio follows.
+
+HybridClosure proves exact work-order/refinement and bounded declared scheduling
+fees with explicit prices. The default copy/suspend/resume prices are abstract
+relative costs, not measured hardware constants. Its local-minimum fee is not
+a universal wall-time optimum; the retained regressions matter. Allocation
+requests, live memory, RSS and GC behavior remain distinct measurements.
+
+Most importantly, this is a finite positive-Boolean closure solver, not Funflow's
+Check DAG scheduler. Its support for cycles does not permit cyclic CI/CD plans.
+Its chunk/hybrid queue cannot replace module 07's stable ready-node priority
+without a separate semantic correspondence. The current O(K^2 + E) reference
+topological implementation remains honest; an appropriate maintained priority
+queue needs its own ordering/control tests, not an unrelated closure theorem.
+
+* Concrete improvement experiments before making an advantage claim
+
+| Experiment | Baseline and candidate | Required parity and boundary |
+|------------+------------------------+------------------------------|
+| Prepared schema membership | repeated closed-field memq scans vs owner-bound immutable field index | identical unknown-field failures and fields demanded; count index builds and validation work |
+| Prepared selected family | repeated selected-name/role preparation vs retained exact family/context | same success/error objects and paths; changed membership must miss |
+| Construction reuse | full new candidate vs certified unaffected-node retention | refuse the builder on every claimed retained node; successful result must still match fresh construction |
+| Contract consequence | reconstruct/revalidate vs explicit supported consequence | same final claim/data, no dropped obligations; stronger unsupported claim must not pass |
+| Context snapshot | warm current receiver vs parent/sibling/changed-policy controls | same-context identity holds; stale-parent list rejected; new receipt inputs remain current |
+| Plan publication | complete candidate success/refusal | no partial plan/method publication; old accepted snapshot retained on refusal |
+
+For each experiment vary catalog N independently of selected K, include 1000
+and 10000 descriptors, retain cold/warm and negative results, count getters,
+schema preparations, selected resolutions, payload admissions and graph work.
+Measure elapsed/CPU and allocation/memory separately. Schema freezing, ownership,
+reflection/registration costs and Scheme-to-Lean correspondence are premises
+to establish, not free performance wins supplied by a proof language.
+
+This study is useful now as an implementation/design reference. It makes no
+dependency update, new Lean proof, performance speedup, Scheme runtime change or
+Loader adaptation claim.
+
+* Current ownership after migration
+
+The Core Profile association consumer is now maintained in
+[[file:../../../dev/proofs/lean/README.org][core/dev/proofs/lean]], with the same immutable LeanPoo revision.
+The product package retains its temporal and Context consumers. The historical
+research statements above do not assign Core proof ownership to the product.

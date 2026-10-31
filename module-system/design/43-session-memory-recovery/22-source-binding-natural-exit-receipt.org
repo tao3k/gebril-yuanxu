@@ -1,0 +1,158 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.22 Source Binding — Natural Exit Joint Receipt
+:PROPERTIES:
+:ID: agentic-ai-lab-context-source-binding-natural-exit-20261015
+:STATUS: source-stable-joint-pass-darwin-unload-latency-observed
+:DATE: 2026-10-15
+:END:
+
+* Diagnosis and bounded conclusion
+
+[[file:21-source-binding-verification.org][The historical failed gate]] remains a failure, not a revised successful
+receipt. A live one-second macOS stack sample immediately after the 123
+assertions found the main thread in Gambit's =___cleanup_dyn_module=,
+=dyld4::APIs::dlclose=, =decDlRefCount= and =notifyDebuggerUnload=.
+854 samples were under dynamic-module cleanup, including synchronous dyld
+notification =mach_msg2_trap= waits and image-list updates. The observed
+post-assertion work was normal dynamic-library unloading, not registry lock
+or thread join. Both concurrency fixture threads had already joined.
+
+This identifies the sampled shutdown phase. It does not establish an exact
+causal measurement for every earlier failed run, identify the external
+notification responder or prove that unload latency cannot recur. The
+sampled invocation itself returned zero under the unchanged gate. No Scheme
+business deadlock or storage/bindings defect was demonstrated; no unrelated
+runtime repair is justified by this trace.
+
+* Normal completion, not forced exit
+
+The previous explicit =(exit 0)= attempts were ineffective for unloading and
+have been removed from both private replay launchers. =main= returns normally;
+the interpreter and Python parent complete naturally and propagate status.
+No forced exit, cleanup suppression, watchdog exception, timing extension or
+padding output was introduced. Real canonical phased imports remain: each
+milestone follows an actual completed import, never a timer.
+
+Two subsequent natural-termination focused replays returned zero with all
+123 assertions: one in the ordinary restricted context and one in the scoped
+diagnostic execution context. The final whole joint gate likewise returned
+zero and completed its source/compiled-input stability audit. This qualifies
+the current run, not a comparative toolchain-performance claim or permanent
+Darwin unload-latency repair.
+
+* Final joint results and identities
+
+[[file:20-designated-session-source-admission.org][The designated-source protocol]] passed all 71 Quint Cases; eight Context
+Lean roots built in 79 jobs (64 theorems / 62 guards); ASCENT passed 23 checks;
+the historical ORG executable passed 90 regressions; the newly consumed
+Scheme library passed 123 assertions (28 added to the previous 95).
+Overlapping harness counts are not independent obligations.
+
+All 75 declared source inputs and the compiled pool stayed unchanged:
+=CONTEXT-SCHEME-CUT inputs=31722 sha256=4b2fd9e5d0baa46cdf5b381cb7dfabbfb260401b813a39d53967ca80a2b82022=.
+Historical ORG executable SHA256:
+=8becf9154b39e78a64724a1dac1c4d691b78a8cdf16029acbb0c89d6ac1849da=.
+It qualifies historical regression only, not new source-binding behavior.
+Handoff interface SHA256:
+=be88f0bb78c8f2ee0d9872dab445f9b6644e6bc422bcd866523e744b6571a5ab=.
+The interface alone is insufficient; it is bound together with the whole
+compiled pool and the source identities below.
+
+| Input | SHA256 |
+|-------+--------|
+| =packages/proofs/context-lifecycle/ContextLifecycle.qnt= | =1acb82ae629e00291ce8d723ea186838b672570c2c38b130202eea2cb17d6e46= |
+| =packages/proofs/context-lifecycle/ContextComposition.qnt= | =18917b00885b0cedf4a50e0359553edf2f613af1624eac3a9d110ec8ca6a9503= |
+| =packages/proofs/context-lifecycle/GraphContext.qnt= | =cd6353cb8204494b637765bd121583861a8e37bf2a24f2036efeb68d41e45195= |
+| =packages/proofs/context-lifecycle/GitContext.qnt= | =a8cfb43931ba6051409d512b1964aa31a4796016ce7e6781dfa42ba03bd8a963= |
+| =packages/proofs/context-lifecycle/ContextHandoff.qnt= | =412111ba64a26348c8754a571ba155dd4723fb9aa716080d0d0381e312d265eb= |
+| =packages/proofs/context-lifecycle/relations.ss= | =81feee5206c0f8f667c86865fc7aa3ed9726b5873a297482ebd1b753e44b3b3f= |
+| =packages/proofs/context-lifecycle/check_quint.py= | =21a5a928c6a51a8fd81facc6443999c85808d54ca81af240ba9200d9d948dbcb= |
+| =packages/proofs/context-lifecycle/verify.py= | =adc284fea77613c8c2b8d27d1e3e843da281ee9998e28043dfa7c2ef63b8aaa3= |
+| =packages/proofs/context-lifecycle/tlc-config.json= | =080c5753f5321f32cd29cc140144a2d659b3dc6b7b1950c23a2ad59e981764b1= |
+| =packages/proofs/lean-poo/lakefile.lean= | =837a4f5a46adceec6883e6bb21d401b02883b836d24a24143e27d86d01d936f0= |
+| =packages/proofs/lean-poo/lake-manifest.json= | =56538fae427d7c81fc6ae7812e3c12c43a9232af15eb6129a4f0b1a9a35f09fc= |
+| =packages/proofs/lean-poo/lean-toolchain= | =8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean= | =2814d15e106b066ebc32fda370b94648d8ea6b39338e2bf72c0cd3dd56ad536b= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/FunctionalComposition.lean= | =434aa485fedcb059cd928b69a724b4befba1bcc76662f290461d345bbe232793= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GraphContext.lean= | =ae9a12e947a85801c628559728727687742ebc9bd885e65b0868cc4d135a6785= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GitContext.lean= | =708948b0ff7a4aec56de1dfc49a03d3f67e2a052a0ff1c1b4e28cc786a0d1630= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Handoff.lean= | =4bc0f3062529655354fe3c7af26f59d784317f4a64746477cf881696bf798f43= |
+| =scripts/temporal/run_with_progress.py= | =07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611= |
+| =gerbil.pkg= | =b0d65d51ed0690021c9b3d96a72298a4b38a69309d51db51e9e1c00ff089c3e2= |
+| =modules/ai-agentic-context/admission.ss= | =37595df5cface1bfed64fd6629cec52aec2b833b3490b226aebbd1d0293e0369= |
+| =modules/ai-agentic-context/consumers.ss= | =a75f0e2d08c2edfe2983d8a1663df4517f0f321b21fbfe47300492bbda146f52= |
+| =modules/ai-agentic-context/contracts.ss= | =b262609280ef8865afc478ca74e2e9821c64cafeead97b4e6dbc3fcc1d4cc072= |
+| =modules/ai-agentic-context/funs.ss= | =e8f954fe78172af4bb1271bfca6f47bc876cbaefd6754a71373b8ae866a6d1c9= |
+| =modules/ai-agentic-context/interface.ss= | =5ff841b8071b903bd542f795aafd2343efc81d27164a7d418d94164c11c68fca= |
+| =modules/ai-agentic-context/objects.ss= | =c68c1256ea302d75cae17f4d3fd9489836517829000237baec4f22f4caf6c19d= |
+| =modules/ai-agentic-context/reasoning.ss= | =3a9c844fba1fd2724260e85a2d638fbb9198521af2fd9282bf201f4ce9c26312= |
+| =modules/ai-agentic-context/source.ss= | =56c0a64f92d2b113d43b708f484e247116d3181bfd843a0e055a3c8a44dd1ad3= |
+| =packages/proofs/context-lifecycle/org-context.ss= | =a69cacd52b1f0cc95eb34847facf5e02d0abfbeb0cdb4afd04dc6b446cb9b629= |
+| =packages/proofs/context-lifecycle/context-source.org= | =b11cfcb19cec1efcfa85b44b233ed4447ceb75c8cc4e83b2504354bbd49e18a1= |
+| =packages/proofs/context-lifecycle/handoff-controls.ss= | =9c4c6d09ef369e6cb0be65d1c89591cbf28d8db38c76e9dd23a0af54167ac600= |
+| =packages/proofs/context-lifecycle/run_handoff.py= | =9e2a185d342cacedd2063f443273c6fea590d6f05dd92195515458957f5b6205= |
+| =src/policy/authorized-effect-token.ss= | =ef9abd5335f478d15b5b5a782be5ece07380995b009f504c3d5ae41a618281fb= |
+| =src/graph/types-core.ss= | =316e922bcb1cdd1ffcb30b2fb20f168938b65c0574c9ec6d27950d0eaff15a00= |
+| =packages/proofs/context-lifecycle/admission-controls.ss= | =66a6f14de437d11dc67c76ec2519d25dc0cea72b59a89957e8e1baa9c4d342c9= |
+| =packages/lambda-aitia/modules/assurance/context-consumer.ss= | =43ce452732b3d6692034afef17509b797debbd79a3725cf1a65736a334eb8435= |
+| =packages/lambda-aitia/t/formal/lifecycle-fixture.ss= | =6b67f705ba963c484ad049724d238d06d383f4663f4a44a83c6bd3a9478cd8bd= |
+| =core/contribution/verification.ss= | =e190bcb2d426f9d730d172facd417011b669c0c647e15b7db3056bf0b5b8456c= |
+| =modules/governance/types.ss= | =633dd24e50ea80662d7a26e15d98f9419e3e79a867a4b5c2328009191548c5b1= |
+| =modules/governance/objects.ss= | =c81773a19f1248f081a80c39a00618908cd71e8ffaf785d4f787b6893368cba7= |
+| =packages/lambda-aitia/modules/assurance/types.ss= | =ea13ca72b85ac4c7635d0192242ac82771f82d75c6abcba27ba8c73f64c50419= |
+| =packages/lambda-aitia/modules/assurance/objects.ss= | =56f76d0ab65c1bee10524bc59944890df3c2e334a80b528a2ab1933c484f0e35= |
+| =packages/lambda-aitia/modules/assurance/funs.ss= | =9f70e669e21fd349343539bea5b150362c799004f8c895ede62bf2b39e3200e2= |
+| =packages/lambda-aitia/modules/assurance/evidence-admission.ss= | =a63a9b357d213f0273541744dff31b75f6a90b790a984efb0224c5b2e946b263= |
+| =packages/lambda-aitia/modules/assurance/host.ss= | =116b0d743f481d2cfde27e409b6719cee788f74d11d379f98bebf7d3f5a4ab26= |
+| =packages/lambda-aitia/modules/assurance/effect-host.ss= | =a274a81d4cc6331a8d5dfc9e56b3eb40a44b797a557f99731b8f55597152d569= |
+| =packages/lambda-aitia/modules/assurance/config.ss= | =6badb8eabcb67c64725623019f8e4b1cd1c2e17aaac82b39db2bd7bdeeed6d3e= |
+| =src/graph/algorithms-list-support.ss= | =c549a62b7d5d164ffea0a97bae9d4824e9197c29ce7a4d545f6d08b3ae7a0b9b= |
+| =src/graph/algorithms.ss= | =7dbcabe5d125ff292ae3cf709e3b5519c06ee35e0f5082b2533bac8d4df75f6a= |
+| =src/graph/types-contracts.ss= | =25c7d63a39a9ce4372213fea7d9d249c3061bf4035631e0ff4a3ee02be6e3af5= |
+| =modules/temporal-causality/types.ss= | =70f2e2fc5dba0250ebf533b2cc356877a2db18e2655249442b810a45a4f765db= |
+| =modules/temporal-causality/objects.ss= | =8dabf9c3655aa2ce59fb92d8a7dfbfb1ac2ea1ee16ea52d09d6898b986f35c63= |
+| =modules/temporal-causality/funs.ss= | =42a16245370476cef379c85805320384831b379cf9068c0b5fdd394af45004f4= |
+| =packages/lambda-aitia/modules/assurance/invalidation-projection.ss= | =3f8499f1ff93a70b040e58c63229fc2a36009c5d4b7233e9da77daa42817d2d5= |
+| =packages/lambda-aitia/modules/assurance/verification-projection.ss= | =7b65ebde0aa33b7f2861797b41d125c3e2a1ee2e4385e8d9d6f945c53e9286d1= |
+| =src/core/roles.ss= | =f2cbe4e4c7aa60f7a4ec9953b185e74db835fbc8a2f9d337edcb4d746b4846d0= |
+| =src/utilities/functional.ss= | =c6d7c71cadaa1fe54efe211d5d0b93e7fe7203c1060696c2116443dee0d3e8d1= |
+| =src/feature-system/model.ss= | =44d4b37e5baf1eda31af58b74629964b4039b7a9dffc40538e5b21ee2f04deb8= |
+| =src/feature-system/source-lock-feature.ss= | =3b480b232c28ac9ef1932fe66115841e3eb82f26174dd31927014d6dbaeb62bd= |
+| =modules/authorization/providers/cedar/objects.ss= | =4f157fc03c7ca233bc566c44fd76b25130251d3ff783d46805998c70f1aee24d= |
+| =modules/authorization/types.ss= | =34416b636b699e75a5e99ff54e91ea3edb737d378e5f455ae23989cbc6b3f7d6= |
+| =modules/authorization/objects.ss= | =421c3dcec6c22419fc1ff65a7bea6fbc2ad8e909ebfdf0f879e12fefb6a05b43= |
+| =modules/authorization/providers/cedar/config.ss= | =7617f1219f9ffc3e5a25b9a6273aceeeee26b1a591db83a54ce73477618ab77c= |
+| =modules/authorization/contracts.ss= | =d878cb9c5e954074db574a777e04263f5692e1341e165a7442a1b5a308003039= |
+| =modules/authorization/providers/cedar/contracts.ss= | =1dc971992ebc7fe767c7af65bce98dd99b83347ad787c21c2f3d896be2dfda18= |
+| =modules/authorization/providers/cedar/funs.ss= | =1a84b41c34b8914321098d5bd544cd8b3cffab62a8bdb281845e021ba13a2bdd= |
+| =modules/authorization/providers/cedar/decision.ss= | =30a79e4c41df665c41e9db52617364d77ba8476da1ef7d1f1dccbd5815c5b29c= |
+| =packages/proofs/context-lifecycle/ContextRegistry.qnt= | =faa99e7356b6c3f164ae1f224637c540c6e449bab5854212c58789be4dd6d1c3= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Registry.lean= | =4595145078bb104a1c95bd192f76a7bc781ebd15cea6258feae0787ba9cab6e1= |
+| =packages/proofs/context-lifecycle/concurrency-controls.ss= | =ef4023bb3079bdaeea18a70524350b16e8003de75f6c634f7e78a716dcf63062= |
+| =packages/proofs/context-lifecycle/ContextConcurrent.qnt= | =a55788e4d93adc2aa6c95bb9614401f221343c428091956d2bbd0b2942e06904= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Concurrency.lean= | =385e94606bba3bed0c4b5009e5cc99dfdccd28b466e2d5bd0877df6c1ecb75a4= |
+| =packages/proofs/context-lifecycle/source-binding-controls.ss= | =6d674afa4348f441dd99b439697beb9947e4c93b6b059f47800f3c5fc588b767= |
+| =packages/proofs/context-lifecycle/ContextSourceBinding.qnt= | =f522a6be177a495bfe4b2898daf47d33e9901f57cdd01ee4cf02c4f0228c039c= |
+| =packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/SourceBinding.lean= | =6c6852741419137af76285b52adf12aa783e5ef40990428ff5e3116eabb63aea= |
+| =packages/proofs/context-lifecycle/run_relations.py= | =790e9c415c15df913516978d81a8368e6a15a6014f42a80337ee279b6009699b= |
+
+* Reproduction and remaining boundaries
+
+From repository root, select existing installed packages:
+#+begin_src sh
+CONTEXT_ASCENT_GERBIL_PATH="$ASCENT_PACKAGE_PATH" \
+CONTEXT_SCHEME_PACKAGE_PATH="$POO_SCHEME_PACKAGE_PATH" \
+python3 packages/proofs/context-lifecycle/verify.py
+#+end_src
+
+TLC retains 60s total / 12s silence, one worker / 512 MiB; Lean 120s;
+Scheme 120s total / 5s silence / 1 GiB. The final gate includes natural
+process termination. No temporary SDK or artificial progress is used.
+
+Trusted bootstrap, remote source authentication, protected Query/disclosure,
+Session reincarnation, durable/multi-process registry and external adapters
+remain open. Storage executors, bindings, old Memory and effect delivery are
+unchanged. No producer CI, deployment, performance gain or permanent macOS
+teardown correction is claimed.
+

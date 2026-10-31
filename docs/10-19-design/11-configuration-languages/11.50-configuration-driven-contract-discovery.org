@@ -1,0 +1,207 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.50 Config Languages 49: Configuration-driven Contract Discovery
+#+property: DOCUMENT_ID 11.50
+#+property: STATUS implementation-qualification-no-loader
+
+* Audit and decision
+
+[[file:11.51-indexed-opentofu-artifacts.org][Chapter 50]] implements the package-index follow-up and directly migrates the
+reader to v2 artifacts. The whole-export IO/association-lookup limitation below
+describes this chapter's historical control, not the current reader. Rebuild
+packages with the current producer; v1 artifact paths are historical receipts.
+
+The explicit SelectedTypes object in [[file:11.49-multi-provider-configuration-admission.org][chapter 48]] repeated names already
+present in the configuration. It remains a lower-level finite-schema control,
+not the recommended ordinary user interface. A missing item in that manual list
+must not become the reason a valid newly configured type is rejected.
+
+Existing mechanisms already provide bounded =use-module= scopes, native
+receiver-local slots, package-bound Contract caching by =(kind . name)= and
+native =.admit=. They did not automatically discover a candidate's required
+Contracts. This change supplies that missing object-layer composition, not a
+Loader or a new configuration language.
+
+The implementation adds =OpenTofuConfiguration.=, whose =modules= slot binds
+the available Provider scopes. Its =types.configuration= slot is one native
+Contract. Each admission reads the final candidate and invokes the original
+native Contracts of only its referenced types. No second field table, generated
+SelectedTypes declaration or whole-configuration recompilation is needed.
+Only immutable package-bound member Contracts are cached. Discovery and child
+admission results are recomputed for each effective candidate; the shared
+=opentofu/configuration= family identity is not an admission-result cache key.
+
+* Upstream publishes the binding once
+
+The existing package integration creates AWS, AWSCC and Null instances of
+=OpenTofuModule.= with their actual Nix artifact paths, as in chapter 47. Then:
+
+#+begin_src scheme
+(.def (Infrastructure @ OpenTofuConfiguration.)
+  modules: (.o aws: AWS awscc: AWSCC null: Null))
+#+end_src
+
+The local names are ownership bindings: =aws_*= belongs to =modules.aws=,
+=awscc_*= to =modules.awscc= and =null_*= to =modules.null=. Provider configuration
+keys refer to the same local names. Resolution never probes all modules to find
+one that happens to export a matching name. Arbitrarily renamed local providers,
+Provider aliases and an explicit per-instance =provider= meta-argument are not
+implemented by this ownership convention and must not be inferred silently.
+
+Defining the object or obtaining its configuration Contract does not read any
+Provider package. The inherited =modules= slot is receiver-aware: a child may
+replace its registry without reusing its parent's captured bindings.
+
+* Ordinary configuration and native admission
+
+#+begin_src scheme
+(def Configuration
+  (.o
+    provider: (.o aws: (list (.o region: "us-east-1"))
+                  awscc: (list (.o region: "us-east-1"))
+                  null: (list (.o)))
+    resource:
+    (.o aws_security_group:
+        (.o web: (.o name: "web" ingress:
+                  (list (.o from_port: 443 to_port: 443 protocol: "tcp"
+                            cidr_blocks: '("10.0.0.0/16")))))
+        awscc_ec2_security_group:
+        (.o web: (.o group_description: "web" security_group_ingress:
+                  (list (.o ip_protocol: "tcp" from_port: 443 to_port: 443
+                            cidr_ip: "10.0.0.0/16"))))
+        null_resource: (.o smoke: (.o triggers: (.o release: "smoke"))))
+    data:
+    (.o aws_region: (.o current: (.o name: "us-east-1"))
+        awscc_ec2_security_group: (.o existing: (.o id: "sg-1234"))
+        null_data_source: (.o release: (.o inputs: (.o name: "smoke"))))))
+
+(use-module Infrastructure as tf
+  (.call (.get tf types configuration) .admit Configuration #f))
+#+end_src
+
+These are the same actual input shapes as the three-family control. The user
+does not enumerate a type selection or retrieve individual Contracts. The
+provider lists follow OpenTofu JSON's block representation. IDs are structural
+inputs, not evidence that the corresponding cloud objects exist. The legacy
+Null data source is used because it is genuinely exported by this package.
+
+* Demand, provenance and error paths
+
+1. A shared generated ConfigurationEnvelopeContract first checks only the
+   provider/resource/data container structure. Malformed envelopes are rejected
+   before any Provider package is demanded.
+2. The object layer visits only the keys present in that final candidate.
+   A resource/data key identifies one bound module by its prefix. A provider
+   configuration key identifies one binding directly.
+3. That module's existing package scope performs an exact raw-export lookup,
+   returning or compiling just that =(kind . name)= Contract. The resolver
+   bypasses the public catalogs: no =object<-fun= catalog is constructed or
+   enumerated to discover types.
+4. Each configured instance is passed to that original Contract's native
+   =.admit=, with the original context. Default obligations are preserved;
+   admission is not reduced to copying only a child's schema.
+5. Child JSON Schema diagnostics are prefixed with the actual root-relative
+   path and retain their constraint plus the Contract's native SourceRef and
+   qualified identity. A missing binding/type becomes a path-bearing diagnostic.
+
+The outer Contract uses native =.classify= and inherited =.admit=; traversal is a
+named functional orchestration helper. Child admission receipts live in its
+classification result for inspection/tests. Ordinary configurations contain
+none of this metadata and do not maintain a completed-children list.
+
+The three =provider= nodes remain different Contracts. awscc resource and data
+both retain the name =awscc_ec2_security_group=, but resolve using different
+kinds. Versions and Schema digests come from the owning package; no independent
+user-supplied version or origin is consulted during discovery.
+
+| Candidate problem | Reason/path |
+|-------------------+-------------|
+| AWS ingress port string | resource.aws_security_group.web.ingress.0.from_port |
+| awscc ingress port string | resource.awscc_ec2_security_group.web.security_group_ingress.0.from_port |
+| Null numeric trigger | resource.null_resource.smoke.triggers.release |
+| Null provider receives region | provider.null.0.region |
+| awscc data receives resource input | data.awscc_ec2_security_group.existing.id |
+| awscc resource receives data input | resource.awscc_ec2_security_group.web.group_description |
+| aws_not_a_real_type | provider-type-not-found at resource.aws_not_a_real_type |
+| absent_resource without a binding | provider-binding-not-found at resource.absent_resource |
+
+An absent exported type retains the selected package SourceRef. An absent
+binding has no source and does not force unrelated modules. Package corruption,
+missing build artifacts and unsupported source constraints remain explicit
+package/generation errors, not successful admission or an invitation to search
+another module.
+
+* Cached parent, final child and lazy boundaries
+
+#+begin_src scheme
+;; The Infrastructure configuration Contract and original candidate are cached.
+(.def (WithGroup @ Configuration)
+  resource: =>.+
+  (.o aws_iam_group: (.o release: (.o name: "release"))))
+
+(use-module Infrastructure as tf
+  (.call (.get tf types configuration) .admit WithGroup #f))
+#+end_src
+
+This admission discovers the new AWS IAM Group from the effective child. It
+does not require a SelectedTypes edit. The previous receipt still refers to
+its original nine instances; the new candidate has ten child admissions.
+The numbers describe this fixture, never a fixed supported-type/task limit.
+
+An empty candidate forces no Provider. An AWS-only resource candidate leaves
+awscc/Null unforced and does not compile AWS's provider-configuration Contract.
+An unused registry binding contains a throwing expression in the control: it
+must remain unforced throughout. After full admission, unselected AWS/ awscc
+types remain absent from the actual package Contract cache, and even their
+public type catalogs remain unconstructed. Null has no fictitious extra type.
+
+The first selected package still reads, hashes and decodes its whole Schema
+file. Raw decoded export tables currently use association lookup; a missing
+name can traverse that table. This change eliminates cross-module discovery
+scans and whole-catalog compilation, not all linear metadata work or first-use
+IO. Package-time indexed/partitioned schemas and measured lookup bounds remain
+separate work. No claim of constant-time raw-export lookup is made.
+
+* Reproduction and remaining boundaries
+
+#+begin_src sh
+just test-opentofu-configuration-discovery AWS_OUTPUT AWSCC_OUTPUT NULL_OUTPUT
+just test-opentofu-configuration-families AWS_OUTPUT AWSCC_OUTPUT NULL_OUTPUT
+just test-opentofu-provider-families AWS_OUTPUT AWSCC_OUTPUT NULL_OUTPUT
+just test-file t/opentofu-schema-test.ss
+#+end_src
+
+The executable owner is =t/opentofu-configuration-discovery-test.ss=. It uses
+the existing real Nix outputs and the normal default-runtime heap fence. No
+compatibility runtime, Provider RPC, plan/apply or Loader is introduced.
+
+On 2026-10-17 the default runtime passed 49 discovery assertions and 157
+regression assertions (36 explicit-selection, 64 family-publication and 57
+Schema-conversion), 206 total. Each serial gate completed with exit 0,
+MODULE-OK, HARNESS-OK and final OK, without error/overflow markers. The source
+Contract cache and catalog laziness checks inspect actual native state, not
+only a simulated resolver trace. The structured consumer receipt is
+=t/fixtures/opentofu/configuration-discovery-control.json=. Raw logs remain
+local artifacts. The immutable Nix outputs were reused, not rebuilt this run.
+
+The envelope is structural; per-instance fields come solely from the generated
+Provider Contracts. Arbitrary custom diagnostic transports need an explicit
+path/source adapter; the current child adapter handles the existing JSON Schema
+diagnostic type. Unexported Provider validations and runtime dependencies remain
+Provider-phase responsibilities.
+
+This automatic resolver is not a capability allowlist. It accepts any supported
+type exported by a bound package when the final candidate actually uses it.
+An upstream restriction policy must be explicit; omission from a hand-maintained
+SelectedTypes list is no longer an accidental policy mechanism.
+
+* Reflection
+
+The user-facing gain is removal of duplicated type declarations while retaining
+ordinary assignment and native extension. The platform obtains actual child
+admission receipts instead of treating provenance metadata as proof. Candidate
+changes cannot reuse a stale list of required types.
+
+Remaining UX work includes source-aware binding-name diagnostics, explicit
+Provider alias ownership, package indexing and a restriction-policy surface.
+Those belong to the corresponding owning modules rather than another user DSL.

@@ -1,0 +1,157 @@
+#+title: 20.10 Receiver Captures and Issuer Parent Snapshots
+#+language: en
+
+* Question and ownership
+
+Which independently allocated payloads can be removed without treating a shared
+SDK reference as another SDK allocation? This follows [[file:20.09-fixture-compiler-budget.org][20.09]]. SysML
+[[file:20.04-payload-ownership.sysml][20.04]] assigns identity/representation equivalence to Lean, temporal refusal
+to existing ReadRetention QNT controls, and source correspondence to Scheme.
+No second temporal model or Core cache protocol is introduced.
+
+* Measured baseline
+
+The bounded 16/32 census uses the default =just test-file= route, unchanged
+2 GiB/120-second compiler/60-second idle/600-second overall boundaries.
+The SDK shell has 376 contexts and 1,079,304 covered nodes at both sizes.
+Receiver shell nodes are 132,540/257,672. These overlap other categories and
+must not be added as exclusive memory. Whole-VM GC live is not owner cost.
+
+| Actual retained item | 16 modules | 32 modules |
+|----------------------+------------+------------|
+| Original signed reads | 9231 | 18159 |
+| Ordered dependency occurrences | 22619 | 42923 |
+| Receiver identities | 875 | 1691 |
+| Issuer closures | 9231 | 18159 |
+| Issuer capture fields | 73848 | 145272 |
+| Singleton private parent vectors | 7807 | 15407 |
+| Distinct thunks repeating an exact code/capture signature | 1614 | 3278 |
+| Fields in repeated thunk signatures | 1640 | 3304 |
+
+The signature census hashes primitive identity codes and compares code plus
+ALL captures with =eq?= on collisions; it never calls a thunk. Repeated capture
+signatures do not authorize merging function identities: =compute-slot= can
+observe the standard function. Likewise, the 297 invocation frames already
+share their effective-method argument spines; there are zero independent
+argument spines in that measured set. Neither is a new sharing repair.
+
+Singleton-vector counting inspects the registered issuer closure, excludes the
+candidate value, requires a vector of length one containing the sole original
+dependency, and deduplicates the vector identity. Inspector-created snapshot
+copies are not counted as retained issuer storage. The bound native source
+confirms the captured vector is =parent-copy=; this is a source correspondence,
+not a compiler-independent introspection theorem.
+
+* Narrow producer repair
+
+The native =object-record-read= keeps a single non-vector parent identity
+directly. Empty and multiple-parent snapshots remain vectors. A vector-valued
+singleton also takes the dense fallback, making the private variants disjoint.
+The public list is unchanged. Inspection still allocates a fresh list; callers
+cannot mutate issuer authority through that copy. Authentication still compares
+all original identities in order, including repeated occurrences.
+
+This removes a private wrapper allocation only. It does not remove a read,
+edge, receiver, observer callback or authentication pass. Receiver instances,
+revisions, callback environments and successful admission results are not pooled.
+No receiver state is shared because it happens to have equal values.
+
+* Structural and temporal evidence
+
+=PayloadSharing.snapshotParentsExact= proves exact restoration of the identity
+sequence. =snapshotAcceptsExactlyOriginal= preserves the acceptance predicate;
+=snapshotPreservesEveryOccurrence= preserves every position, not merely a set.
+The finite model does not prove the compiler's capture layout or GC ownership.
+The vector-valued fallback is checked by source correspondence, with native
+mutation/copy-isolation tests closing the executed non-vector read path.
+
+Existing ReadRetention QNT qualification passes seven matched cases, including
+negative controls for receiver-only deduplication, omitted transient reads,
+cached approval, dropping the second requirement and eager unselected demand.
+These are temporal controls, not proof that a compiled Scheme edit implements
+the model. Native issuance tests and real Scenario regressions remain required.
+
+* Baseline receipts and limitations
+
+The signature census and singleton baseline both pass MODULE-OK, HARNESS-OK and
+final OK without harness/heap/stack error markers. Singleton baseline cold/hot:
+
+| Modules | Cold query CPU us | Hot query CPU us | Expansions cold/hot | Source reads cold/hot |
+|---------+-------------------+------------------+---------------------+-----------------------|
+| 16 | 3968104 | 63167 | 32 / 0 | 6960 / 106 |
+| 32 | 5592216 | 127944 | 64 / 0 | 13968 / 170 |
+
+Do not compare timings across SDK/revision changes as an isolated speedup. The
+producer was aligned from Core's fixed =40c61fe= to PR13 =df0a620= for the
+candidate validation. That update includes unrelated table/library work and
+must be named in any subsequent measurement. No capacity or 10,000-module
+claim follows from these small-scale receipts. The removed one-cell vectors
+cannot explain the entire retained graph or close the capacity gate alone.
+
+Raw logs remain local under =/private/tmp/yuanxu-plan-audit-20261024/=;
+source control holds this structured account and executable checks only.
+
+* Executed candidate receipt
+
+The native library build passes (72.823 seconds), as does its existing objects
+test/support build (44.703 seconds). The existing native test-file gates pass
+17 issuance, 22 observation and 6 MOP cases with all required harness markers
+and no failure/overflow markers. The issuance case now checks singleton-list
+inspection isolation and rejection of deleted, appended and replaced public
+parents, followed by restoration. Its original multi-parent/order and forged
+record controls remain in place.
+
+Core's default full build passes. The default bounded 16/32 census passes:
+
+| Measure | 16 before / after | 32 before / after |
+|---------+-------------------+-------------------|
+| Singleton private parent vectors | 7807 / 0 | 15407 / 0 |
+| Original records | 9231 / 9231 | 18159 / 18159 |
+| Ordered edges | 22619 / 22619 | 42923 / 42923 |
+| Receivers | 875 / 875 | 1691 / 1691 |
+| Issuer capture fields | 73848 / 73848 | 145272 / 145272 |
+| Cold role expansions | 32 / 32 | 64 / 64 |
+| Hot role expansions | 0 / 0 | 0 / 0 |
+| Cold source reads | 6960 / 6960 | 13968 / 13968 |
+| Hot source reads | 106 / 106 | 170 / 170 |
+
+Candidate cold/hot query CPU is 3.866424/0.063969 seconds at 16 and
+5.502090/0.127247 at 32. Wall is 4.287631/0.064121 and
+5.512742/0.127563 seconds. These are trace-enabled observations, not an isolated
+speedup claim. The candidate test inherited background scheduling at startup;
+only that owned process had its background marker cleared. Neither startup
+delay nor a scheduling adjustment is proof of the root cause of wall/CPU gaps.
+
+The real Gitea/PostgreSQL publication regression passes all 11 existing cases:
+parent-cached final child port, stale parent plan refusal, both independent
+requirements, explicit client mismatch, contextual child obligation, typo
+laziness, changed deep sources, changed sources during admission, omitted or
+substituted contributions, and changed role source. Its required MODULE-OK,
+HARNESS-OK and final OK markers are present. No parallel Scheme tests were run.
+
+The covered receiver union drops from 132540/257672 to 124631/242140 nodes;
+the SDK support stays 1079304 nodes. Whole-VM GC live is
+193600520/221609304 before and 193304088/220803672 after. These are descriptive
+observations across the named revision change, not exclusive byte savings or
+an attribution of every changed graph node to this edit. The directly verified
+result is removal of the counted private vectors with unchanged read/edge
+identities and controls. This remains a small repair, not scale-gate closure.
+
+563 Core Scheme inputs, the proof inputs and the three native edited/observed
+files were frozen and rechecked unchanged across final validation. Candidate
+=object.ss= SHA256 is
+=0c28298e1047e17b9fc67c5489f4f3d48ce07a79f93adc8e00ef101893737ced=.
+The candidate is local and unpushed; Core's declared REV has not been changed.
+No full CI, 10000-module retry, new cache protocol, success caching or compiler
+source modification is claimed. SysML remains a design allocation, not a
+qualified executable SysML model.
+
+* Publication follow-up
+
+The native repair is now committed and pushed on the existing
+=feat/positive-closure-costs= branch as
+=29c58aa9c5be103ba843767e3d22ef8802b79342=, retaining intervening build-recovery
+commits. Core's package REV and its SelectionReplay/MetadataProjection bindings
+now select that SHA. The previous local-candidate section records the earlier
+validation state; it does not describe the subsequent publication state.
+See [[file:20.11-thunk-demand-and-capture-retention.org][20.11]] for the merged-source proof checks and remaining thunk-demand work.

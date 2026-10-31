@@ -1,0 +1,152 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Programming Style 01 - Module Interface And Source Roles
+
+* Purpose
+
+Every maintained, contributor and user module has one default public
+=interface.ss=.  The stable owner is =modules/<name>/=; role files such as
+=types.ss=, =objects.ss=, =funs.ss=, =config.ss=, and =syntax.ss= exist only
+when they own real content.  File names alone are not evidence: each role
+must own its declared responsibility.  The functional Funflow module has
+=funs.ss=, =config.ss=, and =interface.ss= without empty type or object files.
+
+| Role | Sole responsibility | Normal mechanism |
+|------+---------------------+------------------|
+| =types= | value boundary, shapes and invariants | =define-type=, predicates, closed vocabulary |
+| =objects= | inert POO values and one-receiver behavior | =.o=, =.def=, slot =.defgeneric= |
+| =funs/contracts= | pure algorithms, indexes, relations and receipts | named functions and Contract objects |
+| =config/provider= | Profile composition and open crossings | POO composition; CLOS only for independent axes |
+| =interface= | one public POO entry and closed re-export | imports/exports only |
+
+For roles that are present, imports flow
+=types -> objects -> funs/contracts -> config/provider=.
+=interface.ss= closes and re-exports the surface but owns no behavior.  A
+specialized Provider interface may be opt-in; it is never a second default
+entrypoint.
+
+* Executable admission
+
+The Module Interface's =authoring= slot owns a role-indexed Profile.  Loader
+admission dispatches over =AuthoringExecutor x SourceRole x ModuleInterface=
+and returns POO diagnostics.  A vertical author may refine a role object but
+must preserve all unrelated base rules.
+
+Ordinary root user config selects maintained Profiles and Standards.  It may
+not reopen =.def=, =.o=, CLOS or MOP internals.  Maintainers retain those
+facilities in their role-owned modules.
+
+* Rejections
+
+- behavior in =interface.ss=;
+- a lower role importing a higher role;
+- hand-maintained source lists beside the module loader;
+- empty role files used to disguise misplaced responsibility;
+- a package build root that imports the package loader while building it.
+
+* Pending design revision: published Module role shell
+
+The [[file:../01-source-roles.org][Core Module source-role design]] specifies a stronger target for published
+reusable Modules: required types.ss (Types/Contracts), objects.ss, config.ss and
+interface.ss, with func.ss optional. interface may assemble the detailed public
+Module object but owns no business algorithm or runtime effects. Profiles,
+Scenarios and ordinary compilation units do not each acquire that shell.
+
+This is not yet executable policy: the current checker and modules still follow
+the present-file role conventions described above, including config/funs spellings.
+Source admission, public surface checks and existing modules must migrate together
+when implementation is authorized. Do not add empty alias files or enforce a
+half-migrated policy. The design eliminates duplicate export/build registration;
+it does not require restating the same definition in multiple role files.
+
+** Interface field declarations use native Record and Slot contracts
+
+A Module Interface's =schemas= value is a gerbil-poo =Record= descriptor, not
+an object containing symbolic type names. Required fields, optional absence,
+constants and defaults belong to the native effective =Slot= declarations:
+
+#+begin_src scheme
+(def WorkspaceConfig
+  (Record workspace: [String]
+          mode: [String default: "development"]
+          surface: [String constant: "agentic-ai-lab"]
+          note: [String optional: #t]
+          layers: [(List String) default: '("base") policy: 'append]))
+#+end_src
+
+Use =[String]= for a required Record field; a bare =String= argument is not
+this Record constructor's field-option syntax. Ordinary configuration remains
+an ordinary POO value, for example =(.o workspace: "demo")=.
+
+The interface's receiver-bound index projects its current =effective-slots=.
+A derived interface with a different Record must compute its own index even
+when its parent's index has already been read. Product descriptors compose the
+supplied configuration over the Record's native =proto=, preserving defaults
+without replacing an explicit value. A missing optional field is not synthesized.
+
+Option receipts retain the actual native Slot and contributing module. Their
+Type, constant/default and merge-rule presentation are derived from that Slot;
+there is no second symbolic type evaluator. Validation delegates to the native
+Record diagnostic protocol, retaining the exact native issue path. This replaces
+the previous constant-only check, which silently accepted wrong nonconstant
+field types. Unknown option diagnostics retain the existing source module.
+
+The =policy= annotation describes contribution combination (append, override,
+conflict); it is not a Type or an alternative contract system. Native Record
+owns field constraints. The existing contribution resolver owns cross-source
+conflicts, and publication owns source currentness and plan applicability.
+Neither an effective-slot index nor a diagnostic receipt caches admission.
+
+The retired =yuanxu-string-*= and =yuanxu-option-*= constructors have no
+compatibility aliases. Consumers declare native Records, including empty
+Records for authoring-only interfaces. The indexed option performance scenario
+constructs native =RecordSlot= inputs rather than symbolic schema objects.
+
+Verification uses the heap-fenced =just test-file= entrypoint. The focused
+interface suite covers native defaults/constants/optional fields and derived
+index isolation. The option suite covers native diagnostics and source/order
+receipts; the maintained Gitea/PostgreSQL publication suite retains the domain
+checks for both requirements, parent-plan isolation, source-change rejection
+and unused-branch laziness. These bounded checks do not qualify the 10k gate.
+
+*** Migration qualification (2026-10-25)
+
+The bounded Core qualification ran against the local current gerbil-poo MOP
+integration, using the unchanged heap-fenced Just entrypoint:
+
+- =t/module-interface-test.ss=: four cases passed, including inherited Record
+  defaults and parent-index/child-index separation.
+- =t/module-option-objects-test.ss=: three cases passed, including rejection of
+  a nonconstant String field with its native =(endpoint)= diagnostic path and
+  the original contributing module.
+- =t/gitea-postgresql-publication-test.ss=: eleven maintained Scenario cases
+  passed, including both requirements, parent-cached child plans, explicit-port
+  conflicts, source mutation rejection and unused-branch laziness.
+
+Each passed run emitted =MODULE-OK=, =HARNESS-OK= and final =OK=. No admission
+result is cached by this migration. Product interface/descriptor/projection
+sources also compiled against these declarations.
+
+The product's default owner-contract test was separately attempted: its first
+attempt was blocked by sandbox access to the existing Nix SQLite cache; the
+retry reached the Harness but exhausted the existing 120-second outer limit.
+That attempt is retained as a failure and is not counted as a passing consumer
+qualification. The Core's 600-second policy and the product's 120-second policy
+were left unchanged. This evidence is not a full product-suite or scale result.
+
+The product's user-interface consumer test also reached its default Harness
+but exceeded the same 120-second boundary and was killed after the unchanged
+five-second grace period (exit 137). No passing consumer-suite claim is made.
+Both product failures retain their local logs; they did not relax any gate.
+
+*** Consumer follow-up
+
+The failures above are retained historical attempts, not the final status.
+After removing unused aggregate imports, replacing repeated reverse traversals
+with ordinary functional/native-slot projections and fixing the sparse
+constructor's empty Record default, both product consumers passed cold and
+fresh-process hot runs under the original budgets. Both hot runs compiled zero
+targets. The detailed attribution, failure evidence and remaining costs are in
+[[file:../../../dev/sysml/20-module-loading/20.07-fixture-preparation-and-native-make.org][20.07 Fixture Preparation and Native Make Attribution]].

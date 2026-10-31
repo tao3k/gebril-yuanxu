@@ -1,0 +1,131 @@
+#+title: 11.70 Core Funflow Jobs and the Ops Execution Boundary
+#+language: en
+#+date: [2026-10-17]
+
+* Ownership
+
+=modules/funflow= belongs to the Core repository. Its task values, dependency
+analysis, functional projections and explicit Job execution are reusable by
+product modules and contribution repositories. Core imports no product namespace.
+
+The product no longer contains a second Funflow implementation or forwarding
+files. Product-specific selection flags and Marlin/Sandbox projections belong to
+=modules/workflow=. Concrete Gerbil CI defaults are independently maintained in
+=core/scenarios/funflow=, outside the pure Module. Profiles compose into Scenarios;
+they are not mandatory children of the Module.
+
+* One declarative user window
+
+The maintained module publication exports =prototypes.Task= and =prototypes.Job=.
+A Task inherits the existing Ops =ProcessScript.=; commands are argv values, not
+shell fragments. A Job declares tasks and selected targets. Dependency edges,
+not prototype precedence or declaration placement, define execution requirements.
+
+#+begin_src scheme
+;; Upstream authors maintain this object once, using the selected Funflow scope.
+(def Deployment
+  (use-module (.get selection modules funflow) as ff
+    (with-slots (Task Job) (.get ff prototypes)
+      (.o (:: @ Job)
+        name: 'deployment
+        tasks:
+        (.o init: (.o (:: @ Task)
+                    command: '("tofu" "init" "-backend=false" "-input=false"))
+            validate: (.o (:: @ Task)
+                        needs: '(init)
+                        command: '("tofu" "validate" "-no-color"))
+            deploy: (.o (:: @ Task)
+                      needs: '(validate)
+                      command: '("tofu" "apply" "-input=false" "reviewed.tfplan")))
+        selected: '(validate)))))
+
+;; Ordinary user: select an already maintained target. No Validation object.
+(.def (CheckConfiguration @ Deployment) selected: '(validate))
+(.call CheckConfiguration .run workspace)
+
+;; Advanced user: refine an existing task and retain the other inherited tasks.
+;; This existing path syntax refines the task object; command itself is replaced.
+(.def (Release @ Deployment)
+  tasks.validate: =>.+ (.o command: '("tofu" "validate" "-json")))
+#+end_src
+
+This is the Job interface, not a claim that an unbound =tofu= command has selected
+package provenance. OpenTofu package binding must provide its maintained command
+through the selected publication. Resource rendering and credential policy remain
+OpenTofu responsibilities. No command above is automatically executed on import.
+
+* Projection and execution
+
+=Job.graph= uses the final receiver's =tasks= and =selected=. Only the selected
+transitive closure is inspected. Missing dependencies, duplicate selected names,
+duplicate dependency references, invalid Ops declarations and cycles are rejected
+before any process. The Core Graph implementation supplies topological ordering;
+Funflow does not introduce another graph parser or sorting algorithm.
+
+=.run workspace= recomputes that projection from the invoked object, executes the
+ordered closure sequentially through Ops, and returns per-task process receipts together with the functional Flow receipt.
+An unsuccessful process raises through Ops and blocks remaining tasks. An inherited
+parent's cached Graph cannot substitute for the child's final tasks.
+
+The local interpreter now uses the existing functional Flow runner and supports
+explicit after-start finalizers. It does not provide parallel scheduling, durable
+retries or transactional rollback. Deployment workflows requiring
+those policies must not infer them from ordinary dependency edges. The existing
+Marlin handoff remains a distinct product/runtime boundary. External validate is
+a task in this Graph; it is not a second user-created validation callback.
+
+* Contracts and effects
+
+The Funflow scope contract checks the public prototype surface. Selected Task
+values use the existing Ops ProcessScript contract, including argv, environment,
+timeout and status policy. Funflow requires checked status for dependency release.
+Domain configuration contracts and Core publication evidence remain separate from
+process success. In particular, OpenTofu validate is not cloud deployment proof.
+
+The workspace is supplied only at execution. Graph preview does not read ambient
+environment, launch a process or demand an unselected task. Ops owns environment
+sampling, working directory adaptation, timeouts, output and exit-status handling.
+
+* Verification boundary
+
+=t/Modules/funflow/funflow-job-test.ss= covers inert projection,
+selected closure, failure blocking, invalid dependency graphs, unselected task
+laziness and a parent-cached Graph followed by a child command replacement.
+=t/Modules/funflow/funflow-profile-test.ss= retains the independent Gerbil Profile's original
+build/test/package/Pipeline defaults and final-receiver/cache controls.
+
+The init publication and Ops dependency order are qualified by
+=t/module-testing-isolation-test.ss= on the same init-owned Graph. Module
+qualification is selected through =tests.qualification= rather than a second
+root selection inside the Job suite.
+
+Neither test establishes runtime Loader integration, automatic realized-package
+rebinding, deployment authorization or distributed execution. Those capabilities
+must be qualified separately; moving Funflow into Core does not prove them.
+
+The focused Core Job and Profile gates passed with MODULE-OK, HARNESS-OK, final
+OK and exit zero. The product =t/funflow-functional-dag-test.ss= was also attempted
+but stopped during import: =:orgize/languages/org/modules/org-elements/runtime-interface=
+was unavailable in the isolated dependency environment. That is an uncompleted
+product integration gate, not a Funflow assertion pass. The Core Profile gate
+separately executes the moved functional DAG projection over the complete maintained
+Gerbil build/test/package Pipeline.
+
+The final source-only Job gate also passed after retiring this task's earlier
+compiled Funflow objects. The product public-prototype gate passed separately.
+No full build or runtime Loader qualification was performed.
+
+* Source roles and remaining domain integration
+
+=types.ss= owns scope admission; =objects.ss= owns Task/Job prototypes;
+=config.ss= instantiates an inert default Job; =func.ss= owns projection and
+execution; =interface.ss= publishes the Core Module with its Ops requirement.
+The migrated report algorithms live in =graph-projection.ss= rather than being
+misclassified as configuration defaults. Config imports Objects, never the reverse.
+
+Null and AWS now inherit the same Funflow Job. Validation is a dependency node;
+Null declares destroy as an apply-triggered finalizer. Existing publication and
+Context guards remain in the domain Task interpreter. See
+[[file:11.71-functional-kernel-alignment.org][the corrected functional kernel audit]] and the Scenario READMEs for actual
+qualification and remaining package-binding limitations. No runtime Loader was
+connected and nothing was pushed.

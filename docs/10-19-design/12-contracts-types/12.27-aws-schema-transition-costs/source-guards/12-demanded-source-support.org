@@ -1,0 +1,136 @@
+#+title: 12.27.25 Demanded Source Support On One Graph
+#+property: DOCUMENT_ID 12.27.25
+#+language: en
+
+* Dependency ownership, not another skipped guard
+
+The former reader checked the union of every compiler tool reachable from its
+bootstrap capability catalog at each publication boundary. Import eligibility
+and actual dependency support were therefore conflated. A larger tool catalog
+made an unrelated declaration's guard larger, even without another side effect.
+
+The existing native context topology now projects two distinct facts:
+
+- The complete catalog continues to authorize exact canonical tool contexts.
+  No same-name foreign context, reload, escaping source or Module implementation
+  gains permission from appearing in a dependency list.
+- Currentness checks cover the reader implementation's native transitive
+  imports and actual tool import demands, together with the existing selected
+  role, asset, package, init and directory observations.
+
+The projection uses the existing reader and selected Graph. It does not retain
+an accepted result, a source epoch shortcut, another selection tree, a new
+runtime Loader or a compiler cache. Each retained guard still checks current
+file kinds and bytes. Negative package/role observations remain obligations.
+This retains the existing trusted Gerbil SDK boundary; it does not claim to
+recheck every Standard Library implementation source.
+
+* Follow the real operation into its narrow owner
+
+OpenTofu's Build role formerly imported the whole build projection for a byte
+check implemented as a one-line alias. Its actual operation now directly uses
+the existing source admission owner:
+
+#+begin_src scheme
+(import
+  (only-in :yuanxu/module-system/building/configuration-source
+           yuanxu-configuration-source)
+  (only-in :yuanxu/module-system/source/admission
+           call-with-module-source-read-cache module-source-admit-current!))
+
+(def (current!)
+  (call-with-module-source-read-cache
+    (lambda ()
+      ((.get configuration-input admit-current))
+      (module-source-admit-current! observed))))
+#+end_src
+
+The redundant build-specific alias was removed, including its test imports;
+there is no forwarding layer. Actual build projection still belongs to Building
+and uses the same source primitive. This removes an unnecessary dependency
+edge instead of declaring its code irrelevant after importing it.
+
+* Deferred values must retain their support
+
+Narrowing the initial tool set alone is insufficient. A deferred Build role
+can import additional tools after its publication has already been read. A
+returned closure still depends on them after the private evaluator returns.
+
+The existing prepared-source evaluator therefore hands its actual source
+support back before its final source check:
+
+#+begin_src scheme
+(module-prepared-source-binding input 'Build related
+  role-imports?: #t
+  shared-contexts: kernel-contexts
+  shared-inputs: kernel-inputs
+  source-inputs:
+  (cut record-source-observations! tool-observations <>)
+  private-sources: private-inputs)
+#+end_src
+
+This is an internal evaluator call, not author configuration. The implementation
+unions native tool and admitted input observations by path, rejects inconsistent
+expected bytes, publishes that ordinary source projection, and checks currentness
+again. The enclosing publication reader retains the requirements in its existing
+observation map. It never treats the callback return as admission evidence.
+
+Configuration evaluation similarly retains its evaluator support inside its
+existing currentness function. Compiler support is not serialized into the Nix
+provider configuration payload: interpreter identity and provider data inputs
+are different dependency roles. No author maintains either list.
+
+* Qualified AWS work and limits
+
+The same source-only init tests object selects JsonSchema, Funflow and AWS and
+calls .run with observation enabled. It retains the locked gerbil-poo source
+revision, the 2 GiB fence, progress-aware idle handling and finite total budget.
+
+| Measure | Boundary-normalized baseline | Demanded support |
+|---------+------------------------------+------------------|
+| Files per build-admit-before pass | 167 | 153 |
+| Before passes | 84 | 84 |
+| Before physical reads | 14028 | 12852 |
+| AWS physical reads at publication-complete | 41326 | 37785 |
+| Publication guard bodies | 222 | 222 |
+| Nix process starts | 22 | 22 |
+| File requests | 100968 | 103891 |
+
+The before reduction is exactly 84 times 14, or 1176 reads. It comes from a
+smaller supported closure, not another removal of operation boundaries. The
+whole-Case reduction is reported separately and is not added to that subtotal.
+These are work counts, not a wall-time performance claim.
+Logical file requests increased because evaluator support is now explicitly
+enrolled and checked. Existing pure-window sharing still prevents those
+overlapping requirements from becoming duplicate physical reads. The result
+does not establish that all request/dispatch overhead has been optimized.
+
+The aggregate exits naturally with seven MODULE-OK, two HARNESS-OK and two OK
+markers. Real Schema changes, rejected old evidence, final child values after
+parent caching, failed-publication previous-value retention and cleanup remain
+in the same Case. Raw logs remain outside source control.
+
+The [[file:../../../../../t/module-publication-test.ss][publication regression]] checks that an unused tool root is not read, that
+forcing a deferred Build enrolls both that root and its transitive dependency,
+that later checks still read those bytes, and that changing a required role is
+rejected. A smaller read count without deferred support enrollment is not a
+passing implementation.
+An isolated control removes only the deferred Build handoff. The new test then
+fails at the required root-membership assertion (false instead of true), rather
+than passing with a misleading smaller closure. The control is not retained.
+
+One final-code run was refused by the unchanged idle guard during Nix's
+missing-path query before realization. It is retained as a failure, not counted
+as qualification. The exact derivation and its existing local output were then
+queried without building; a subsequent complete run passed at the original
+limits. This observation locates the refusal, not its daemon/network root cause.
+
+This remains a source-only qualification, excluding the concurrent compiled
+build-publication integration. The native import graph and observed data must
+cover legitimate dependencies; arbitrary hidden IO does not acquire support
+merely by returning a POO object. The remaining 153 files are not proven
+removable. Cross-operation slicing, native compiler artifact identity and
+concurrent mutation need their own coverage arguments.
+
+[[file:13-scale-and-model-correspondence.org][Scale tests and model correspondence]]
+[[file:../../12.27-aws-schema-transition-costs.org][Read map]]

@@ -1,0 +1,245 @@
+#+title: 32.43 Core Build Issuance And Publication Admission
+#+language: en
+#+startup: overview
+
+Managed parent-to-worker handoff continues in
+[[file:32.44-managed-build-process-handoff.org][32.44]]. Historical local receipts below remain unchanged. A readable disk
+record alone still carries no cross-process authority.
+
+* Corrected boundary: use installed Gerbil, change Core
+
+The installed Gerbil compiler, runtime loader and their sources are unchanged.
+[[file:32.42-source-built-loader-call-edges.org][32.42]] is a historical isolated experiment, NOT the production implementation
+plan. Its original-loader cache return is normal Gerbil behavior, not by itself
+a Gerbil defect. Core publication authority is different from native loading.
+
+This change uses the installed =std/build-script= / =std/make= dispatcher and
+the existing Core selected Graph and =AdmissionPublication.= protocol. It neither
+rebinds =load-module= nor intercepts SDK imports, eval, FFI or raw primitive load.
+An ordinary Gerbil cache hit never stands in for Core publication admission.
+The installed loader/compiler source hashes still equal those recorded in
+32.42. No =.data/gerbil= source file, installed SDK file or dependency revision
+was changed for this implementation.
+
+* Existing build entry, with a Core-owned completion boundary
+
+The root =build.ss= keeps the installed native dispatcher:
+
+#+begin_src scheme
+(def native-main
+  (let ()
+    (defbuild-script (init.build-spec core-spec)
+      libdir: (current-build-output-directory))
+    main))
+(def (main . args)
+  (init.build-run core-spec native-main args))
+#+end_src
+
+[[file:../../../module-system/building/interface.ss][The init build owner]] emits =init.build-run= from the existing hygienic
+=yuanxu!= expansion. Only compile/default-build commands execute the projected
+POO =.compile= method; spec/meta stay inert and clean invalidates prior issuance.
+The installed dispatcher still owns command parsing, scheduling and compilation.
+The output directory defaults to the same =gerbil-path/lib= as native make.
+
+[[file:../../../module-system/building/build-projection.ss][The source projection]] provides compiler identities and exact source observations
+from its already merged selected/retained entries. Its native POO =.compile=
+delegates to [[file:../../../module-system/building/artifacts.ss][artifacts.ss]] around that native dispatcher. No additional module,
+asset or artifact checklist is maintained by a user. Importing init does not
+compile, enumerate compiler outputs or execute an Ops Script.
+
+The completion sequence is:
+
+1. Recheck the source projection and mark this exact build Graph unavailable.
+2. Execute the installed compiler through the native build dispatcher.
+3. Require normal completion and recheck source inputs.
+4. Discover actual outputs for selected compiler identities only.
+5. Retain their digests and source observations in a private Graph association.
+6. Write an ordinary readable record; retain its digest separately in memory.
+7. Recheck before returning success. Failure leaves =build-required=, rather
+   than falling back to an earlier successful build.
+
+For a first or invalidated build, Core supplies a fresh temporary output
+directory through the native =libdir:= setting. Missing outputs cause actual
+compilation; untrusted existing files are not adopted. Verified produced bytes
+are copied to the requested output directory and compared there before issuance.
+The publisher refuses additional selected outputs not belonging to that completed
+job and does not delete another job's files. Unknown higher object generations
+require an explicit clean/rebuild. Per-file copy is not an atomic multi-file
+filesystem commit; Core remains unavailable until the final checks pass.
+
+On the SAME Graph with a valid retained issuance, native make may reuse its
+ordinary output directory. No new compiler scheduler or dependency engine is
+introduced. The installed =std/make= accepts a =force:= setting but its observed
+build predicate does not consume it; native run 08 retained the resulting
+poisoned-cache failure. The fresh-directory mechanism replaces that ineffective
+setting without changing Gerbil source. Compiler correctness and exclusive job
+ownership of temporary output remain premises.
+
+Output discovery groups selected names by directory and visits each selected
+directory once per check. It includes native named runtime sections such as
+=types~TypeName~0.o1= and later object generations such as =.o2=. Unselected
+directories are never visited, and unselected files are not hashed or compiled.
+This is filesystem observation, not a second compiler dependency scheduler.
+
+* Private issuance, readable records and cache admission
+
+The internal =issued-build= is a compact private struct, not a user DSL or an
+Evidence object users have to construct. Its association uses a weak identity
+table keyed by the exact build Graph. The stored value contains plain copied
+source observations, identities, generation and output hashes, not a closure
+back to the Graph key. A live saved publication retains its Graph normally.
+
+Disk records NEVER refresh the retained expected digests. Replacing the output
+and updating its record to match still differs from the completed build's
+retained record. Missing/non-regular/symlinked files, changed selected outputs,
+new runtime generations and source changes reject.
+
+[[file:../../../admission/publication.ss][Publication]] checks artifacts at =module-admission-publication= before resolving
+an exported admission, and in the existing context currentness function before
+and after its source checks. The normal =.publish= entry, Contract work, effect
+boundaries and dependent meaning/return checks therefore retain their existing
+order. No artifact/source approval is cached across an arbitrary Contract or
+package callback.
+
+Saving the actual =.publish= function is safe within this protocol:
+
+#+begin_src scheme
+(def saved (.get publication .publish))
+(saved Parent Release) ; always invokes publish-current, including on hot slots
+#+end_src
+
+It does not cache a successful authorization decision. A new =.for-export=
+request must also check the same Graph's issuance before exporting an admission.
+Neither Core entry relies on replacing an already captured Gerbil procedure.
+
+* Source mode, process lifetime and explicit limits
+
+An existing source-reader publication with no managed compiled build remains a
+source publication: the actual reader checks its source closure and constructs
+its source-bound scope. The change does not infer code authority from the
+native loaded-module table or adopt arbitrary compiled files it finds on disk.
+Once THIS Graph starts a managed build, failed/incomplete issuance refuses;
+it cannot silently downgrade that Graph back to the source-only path.
+
+The private association is process-local. A standalone build command may emit
+a record and exit; that file is useful for inspection, but another process must
+NOT treat it as a trusted issuer. Portable compiled-publication admission needs
+an authenticated build-service/parent-process handoff or a protected signer and
+verification policy. This patch does not claim that cross-process trust has
+already been established. Fresh source-mode Graphs are also not a mechanism for
+authenticating arbitrary previously loaded native code.
+
+Additional limits remain explicit: trusted Core/build code, filesystem/host
+authority, single build owner per Graph, and no external atomic commit guarantee.
+This is not a hostile-Scheme sandbox. Byte equality at checks does not lock the
+filesystem through a later external deployment. Hashing/re-enumeration costs
+must be measured before introducing any cross-check reuse.
+
+* Native verification and model correspondence
+
+[[file:../../../t/build-artifact-publication-test.ss][The native test]] compiles a real one-unit library using installed Gerbil and
+the same completion function as =init.build-run=. It attaches it to the REAL
+Gitea/PostgreSQL selected Graph. The narrow compiler projection is a fixture;
+Core issuance, native compilation, =.for-export=, =.publish=, source linking,
+contribution collection and domain Contracts are real implementations.
+
+It verifies saved cold/hot calls, coherent record+binary replacement, fresh
+export rejection, restoration, artifact-only replacement, a new =.o2=,
+independent build Graphs and failed-build refusal. Parent plan stays at 5432,
+the child uses 5433 for PostgreSQL AND Gitea, and both contributions remain.
+The maintained service fixture's unread invalid JSON stays unforced.
+It also first creates and poisons an UNISSUED native cache, then requires a real
+fresh native compilation to replace it. A valid same-Graph warm build must not
+print another native =compile probe= job. These controls distinguish output
+ownership from simply hashing whatever native make happened to leave on disk.
+
+[[file:../../../t/module-build-process-test.ss][The normal root-entry regression]] independently executes actual copied
+=build.ss= with its init, compile, clean and new-process rebuild. Copying a
+source fixture isolates destructive outputs; it does not replace the native
+build dispatcher or invent a different root script.
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/CoreBuildPublication.lean][Lean]] proves joint replacement refusal, final-check necessity, both requirements,
+saved/direct gate equivalence and native-cache independence. The compiler,
+filesystem and Scheme extraction are premises, not proved by these theorems.
+[[file:../../../dev/proofs/lean/CoreBuildPublicationCheck.lean][The independent decoder]] checks six actual native decisions; changing a measured
+refusal to acceptance must make it fail.
+
+[[file:../../../dev/proofs/quint/CoreBuildPublication.qnt][QNT]] keeps nine scoped outcomes: positive safety plus adopting an unissued cache,
+trusting disk, skipping
+saved-entry checks, skipping return checks, dropping the second requirement,
+parent corruption, eager unused work and an acceptance witness. Ordinary native
+cache return remains possible in every model state and grants no Core authority.
+
+* Reproduction
+
+#+begin_src sh
+just --justfile core/Justfile compile-build-publication /private/tmp/core-publication
+CORE_BUILD_PUBLICATION_TRACE=/private/tmp/core-publication.json \
+  just --justfile core/Justfile test-build-publication /private/tmp/core-publication
+just --justfile core/Justfile check-build-publication /private/tmp/core-publication.json
+just --justfile core/Justfile test-build-publication /private/tmp/core-publication t/module-build-process-test.ss
+#+end_src
+
+The overlay contains only rebuilt Core libraries and uses the installed compiler.
+The focused test entry explicitly fixes =GERBIL_PATH= so package startup cannot
+prepend an older installed Core library ahead of the overlay. Heap fencing,
+timeouts and native harness markers remain required. Raw failed/successful logs
+stay in local artifacts; they are not committed.
+
+* Local results and retained failures
+
+- =/private/tmp/core-build-publication-compile-10.log=: installed Gerbil compiled
+  the five changed Core library owners successfully. Its
+  =/private/tmp/core-build-publication-20261019/candidate-10/core-sources.sha256=
+  still matches all five current sources. These are Core files, not compiler
+  implementation files.
+- =/private/tmp/core-build-publication-10.log=: native test exited zero with
+  =MODULE-OK=, =HARNESS-OK= and final =OK=. Six measured publication decisions
+  are =true,true,false,false,true,true= for saved cold/hot, joint replacement,
+  fresh export, restoration and an independent peer build. Additional assertions
+  cover unissued poisoned cache replacement, valid warm reuse without another
+  compiler job, artifact-only changes, a new object generation and failed-build
+  refusal. The compiler projection is one fixture unit; the two-party service
+  publication is real.
+- =/private/tmp/core-build-entry-process-05.log=: real root-entry regression,
+  both cases and all harness markers passed with natural exit zero. The 37-unit
+  source fixture compiled, cleaned, rebuilt in a new process and cleaned again;
+  the separate source-package currentness test also passed. The root script is
+  copied unchanged; only selection and retained roots are narrowed. No timeout
+  was increased. The current count includes =object-types/facts= required by
+  JsonSchema receipts, not an extra build-tool Module target.
+- =/private/tmp/core-build-publication-services-01.log=: all eleven maintained
+  Gitea/PostgreSQL publication controls passed on the final Core overlay,
+  retaining child obligations, both requirements, source diagnostics, parent
+  cache isolation and final plan identity. =core-build-publication-admission-01.log=
+  also passes the existing generic admission-publication suite.
+- =/private/tmp/core-build-publication-decoder-05.log=: independent Lean decoder
+  accepts actual final native observations. The matched negative receipt
+  =core-build-publication-decoder-negative-02.log= refuses a measured rejection
+  changed to acceptance with =native Core publication/Lean decision mismatch=.
+- =/private/tmp/core-build-publication-lean-04.log=: 182 jobs, 6210 declarations,
+  standard Lean axioms only and no arbitrary Prop-valued model fields.
+- =/private/tmp/core-build-publication-quint-04.ss= and its log qualify nine
+  scoped outcomes, including expected counterexamples. All 397 bound sources
+  matched a post-run comparison. This is a scoped receipt, not full-suite CI.
+
+Earlier failures are retained: missing new library/old package-path precedence,
+hidden-file enumeration, initial standard-library sort lookup, ineffective
+native =force:= and the first QNT adoption mutant whose change step incorrectly
+reset poisoned state. The QNT mutation now preserves it. Decoder startup races
+with a rebuilding Lean object were rerun sequentially; they are not semantic
+counterexamples. An accidentally overlapping native run was interrupted
+(run 07, exit 130) and is not counted as passing.
+
+The root regression exposed two fixture issues, also retained in process runs
+01--04: outdated expected target counts, and trying to bootstrap test policy
+from a fixture AFTER its compiled Core had deliberately been cleaned. The test
+host now supplies that policy library; its actual source/context assertions
+still target the isolated fixture. No source-admission assertion was removed.
+
+Remaining qualification includes portable issuer handoff, authenticated reusable
+cross-process caches, external atomic commit and concurrent build owners. Exotic
+module-root names colliding with native runtime-section separators also need
+dedicated ownership/index controls; the current native receipts use ordinary
+Core role names and a =probe= unit. These local results do not establish a
+general native binary dependency-closure certificate or a performance speedup.

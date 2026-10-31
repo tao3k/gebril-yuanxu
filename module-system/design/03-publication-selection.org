@@ -1,0 +1,105 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Module Publication, Init Selection and Optional Extensions
+#+date: [2026-10-16]
+#+property: STATUS protocol-design-no-implementation
+
+* interface.ss publishes; init.ss selects
+
+The [[file:../../docs/10-19-design/11-configuration-languages/11.32-modular-configurations-core-principle.org][modular-configuration core principle]] constrains the published interface:
+configurations remain inspectable native values, algorithms remain callable
+slots, and selected admission reads final values. Module packaging alone does
+not satisfy these requirements. Native composition does not inherit Nix/Nickel
+merge policies by analogy.
+
+interface.ss assembles the detailed native Module object, its baseline/Core
+requirements and public exports, Types/Contracts, defaults and declared extension
+surface. It references role owners; it does not reproduce their implementations.
+init.ss expresses source selection, optional feature intent and exclusions.
+A consumer may supply a bounded syntax frontend, but must lower to native intent
+values rather than define a second evaluator or module descriptor authority.
+
+A common loading facade may coordinate these operations. Coordination does not
+collapse source discovery, admission, compilation and runtime execution into one
+undifferentiated effect. The public name/branding and default filesystem policy
+belong to the consumer; shared Contracts and pure composition belong to Core.
+
+* Module baseline versus optional Feature
+
+Module System owns the selected Module's Core. Selecting that Module includes its
+baseline contributions and requires its dependency edges to pass the selection
+policy; explicit mode still requires those Modules to be declared. This is not
+a user-optional Feature descriptor. Selecting
+one Module does not select every Module or eagerly evaluate all baseline slots.
+Global framework bootstrap roots are a separate admitted policy.
+
+Optional Feature resolution belongs to the feature/extension provider. Its
+requires edges name Features, not arbitrary Module ids. Cross-boundary capability
+requirements bind to Module-provided contracts/exports. Consumers may implement
+this using an existing Feature System; Core must not depend on that product
+implementation or reclassify its own mechanisms as optional Features.
+
+Technology names cannot decide these roles. A provider's admitted Contract decides
+whether an operation is baseline functionality, an optional extension or a
+separate required provider. A category label alone cannot confer authority.
+
+* Intent and dependencies
+
+Auto discovery makes admitted sources eligible on demand, not eagerly active.
+Explicit selection authorizes only enabled module declarations. Every required
+Module must be declared; core.requires cannot silently enable an undeclared or
+disabled owner. Literal (module @ directory) bindings join the same SourceRef
+tree and do not fall back to a same-named directory or an SDK search path.
+Both retain qualified module disable and negative Feature decisions as explicit
+facts with source/generation identity. False differs from an absent override.
+
+Module disable is checked at required owner edges. Feature negatives are checked
+when expanding selected optional needs. Hard dependents fail with the requester,
+required identity and denying source; no silent re-enable. Unknown feature names
+and conflicting same-layer decisions fail. Ordered downstream policy may override
+an optional upstream decision; filesystem/prototype order is not selection policy.
+
+Changing init produces a new graph generation, not mutation of past receipts or
+a promise to unload an already-running process. Runtime revocation is separate.
+
+* Demand and build
+
+Admit the selected source graph before exposing executable exports. A namespace
+must not be an unfiltered catalog that lets a slot read bypass disable. Metadata
+and implementation realization have separate boundaries. Generation changes must
+invalidate stale selected views/evidence, including negative directory lookups.
+
+A selected build view joins baseline entry contributions and admitted optional
+contributions, then hands roots to a qualified build provider. Required for-syntax,
+FFI, generated assets and dynamic-dependency declarations remain explicit. Core
+can own contribution Contracts and pure projection; it does not own a product
+PackageSpec, deployment authority or provider execution.
+
+* Conclusion
+
+One ordinary consumer facade is useful; one universal resolver replacing all
+owners is not. Reuse [[file:../graph/funs.ss][module closure]], native source/Contract values and
+existing extension-provider protocols. New integration must retain negative intent,
+selected demand, complete evidence and phase/source currentness. This document
+adds no source loader, Feature implementation or runtime behavior.
+
+* Init source location is an explicit input
+
+A package may publish init.ss beside modules/, or publish modules/init.ss. These
+are alternative layouts with one authoritative init object. A source declaration
+must retain both the exact init source and the module root; neither filename
+placement nor category grouping introduces another object container. Resolve
+relative references against that declared source, not an incidental process cwd.
+The current product uses a root init.ss containing an inert source collection.
+The existing yuanxu-load-modules collection projection remains unchanged;
+init-file resolution, discovery and selected build integration are still pending.
+
+* Concrete SourceRef-to-scope refinement
+
+The [[file:../../docs/10-19-design/11-configuration-languages/11.23-source-ref-to-admitted-scope.org][explicit interface/link design]] specifies one static interface declaration,
+typed alias requirements, pure scope assembly and generation-bound admission
+behind the consumer facade. It separates existing backend loaded receipts from
+source/interface/scope admission and retains negative intent. The bounded linker
+is design code with an explicit source-context protocol, not a new filesystem
+backend or an implemented public Loader API.

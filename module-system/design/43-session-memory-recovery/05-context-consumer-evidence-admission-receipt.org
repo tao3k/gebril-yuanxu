@@ -1,0 +1,152 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.05 Cross-Session Evidence Admission Receipt
+:PROPERTIES:
+:ID: agentic-ai-lab-context-consumer-evidence-admission-20261014
+:STATUS: historical-local-pass-pre-leanpoo-v011
+:DATE: 2026-10-14
+:END:
+
+* Owner and scope
+
+This is the pre-LeanPOO-v0.1.1 dependency cut. [[file:07-leanpoo-functional-design.org][10.06.43.07]] records the later
+dependency update and functional consumer projection. The hashes below remain
+historical; they are not rewritten or borrowed to qualify the updated package.
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns AI Agentic Context. [[file:../../../../modules/ai-agentic-context/framework.org][The parent Module]] owns requests,
+review subjects, consumer admission and ASCENT observation projection.
+[[file:../../../../packages/lambda-aitia/modules/assurance/context-consumer.ss][AITIA's optional Module adapter]] supplies the existing Assurance/effect Host
+checks. RFC 0015 is the SDLC consumption Case, never a parent dependency.
+Proofs supplies observations and controls, not another admission predicate.
+
+The final joint verifier exited zero with:
+=CONTEXT-PROOF-PASS source-stable=true storage-bindings=not-executed=.
+These are uncommitted local working-tree results, not producer CI, a fresh
+dependency installation, a deployed authorization policy or a completed Memory
+executor. Storage, bindings and old Memory sources were not changed.
+
+| Gate | Actual result | Retained bound |
+|------+---------------+----------------|
+| Quint 0.33.0 / TLC | 21 lifecycle/composition checks, including expected counterexamples | 60s total / 12s silence per check; one worker; 512MiB |
+| Lean 4.34.0 / LeanPOO | 14 build jobs; 21 laws / 19 guards | 120s build |
+| ASCENT Scheme | 23 lifecycle controls | 120s total / 5s output; 1GiB |
+| Real ORG / Session / domain consumer | 90 controls: prior 54 plus 36 admission controls | Same Scheme limits |
+
+Quint models are unchanged bounded lifecycle/composition projections, not a
+new authorization model. Four new Lean conditional laws distinguish missing
+permission, stale review, revocation/revalidation and old epochs. Their seal,
+identity and dependency-completeness premises are checked in Scheme, not proven
+by those Boolean laws. No new axioms or sorry declarations were introduced.
+
+* Positive and negative controls
+
+- Shared current support is a candidate, not a consumer review or grant.
+- Session A's issued review cannot admit B; A's configured mapping cannot review B.
+- B's explicit configured mapping and its own fresh review admit B.
+- Source-cut, scope and Governance revision substitution stale the review.
+- Blocked Governance refuses consumption and review issuance.
+- Copied seal and grant presentations fail private Host issuance checks.
+- Review expiry reopens the obligation while domain support remains current.
+- Permission revocation preserves candidate evidence but refuses admission.
+- ASCENT withdraws the admitted relation and reports revalidation after revocation.
+- A new grant does not revive the old grant or refresh an old review.
+- Current new grant plus explicit fresh review admits the same consumption scope.
+- Effect authorization remains false; delivery calls and service effects are not invoked.
+
+Review-clock and Host-clock controls are independent monotonic inputs so review
+expiry can be isolated while Host evidence remains current. This does not prove
+cross-clock synchronization or a universal Context decay policy.
+
+* Failures retained and repaired
+
+The first real replay reached the prior 54 controls and failed because a
+Governance constructor used an ordinary @ slot rather than POO inheritance.
+Constructors now use the existing (:: @ ...) syntax, including copied-presentation
+controls and the Context Profile prototype. A subsequent replay exposed a
+same-named consumers variable/slot recursion; the argument now uses consumer-values.
+The next replay reached ASCENT consumption and rejected source replacement
+before the session's first run; both proof sessions now initialize with run.
+
+A dynamic cold-load replay failed the existing five-second output gate; that
+negative result was not relabeled or hidden by a wider timeout. The final
+consumer uses the ordinary compiled executable. An attempted recorded-command
+incremental rebuild stopped before compilation because standard executable
+intermediates had already been cleaned; the final executable was rebuilt with
+the standard Gerbil compile pipeline, not a temporary SDK or hand-written C.
+
+The existing Assurance compile-time module also required recompiling its
+existing Scheme-generated macro unit for the current compiler options. This
+changed generated package outputs, not Assurance, storage or bindings source.
+
+* Source and compiled input identity
+
+Installed source checkout observations:
+parser =f90aadcf7be91a0d299b9ab0e83405f7d1dda322=;
+Orgize =d63f5e4b9e22fdfe59ed355f0cefc5d21c333fb5=;
+ASCENT =f53a9a3954685111c751140090dfd95e3d081717=.
+These checkout IDs do not replace the compiled package binding below or qualify
+latest-head producer CI. LeanPOO remains pinned by its existing lockfile.
+
+The verifier compared all 34 declared local inputs, the executable, and the
+selected compiled package pool before/after execution. Numbered .oN files are
+now included, not only .o1; this binds the actual macro library variants too.
+
+- Compiled package pool files: 30837.
+- Pool aggregate SHA256: =afe5ecb9de146ff3142b6a075bc5e3ae06f944b2b3cf12326e056ce43a2fd903=.
+- Executable SHA256: =8becf9154b39e78a64724a1dac1c4d691b78a8cdf16029acbb0c89d6ac1849da=.
+- Source, compiled pool and executable remained unchanged during the final gate.
+
+| Repository-relative input | SHA256 |
+|---------------------------+--------|
+| packages/proofs/context-lifecycle/ContextLifecycle.qnt | 1acb82ae629e00291ce8d723ea186838b672570c2c38b130202eea2cb17d6e46 |
+| packages/proofs/context-lifecycle/ContextComposition.qnt | 18917b00885b0cedf4a50e0359553edf2f613af1624eac3a9d110ec8ca6a9503 |
+| packages/proofs/context-lifecycle/relations.ss | 81feee5206c0f8f667c86865fc7aa3ed9726b5873a297482ebd1b753e44b3b3f |
+| packages/proofs/context-lifecycle/check_quint.py | 57670bfe44d21a205984ea802b471938f7ecba87faf5350d872162fecfca889f |
+| packages/proofs/context-lifecycle/verify.py | 39e28691cbb924b679b342a3f8ed837afcc70703271d134d3312f1f2bbd97210 |
+| packages/proofs/context-lifecycle/tlc-config.json | 080c5753f5321f32cd29cc140144a2d659b3dc6b7b1950c23a2ad59e981764b1 |
+| packages/proofs/lean-poo/lakefile.lean | 456ca8fe8477d3fac1970f626cedf0a74df5a3c7dda7b739fb673750afef44aa |
+| packages/proofs/lean-poo/lake-manifest.json | a1201108b02524eebc7a8bc053943b316cd4ff283ffbfe7b80a7c92eaec6d88a |
+| packages/proofs/lean-poo/lean-toolchain | 8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean | 2814d15e106b066ebc32fda370b94648d8ea6b39338e2bf72c0cd3dd56ad536b |
+| scripts/temporal/run_with_progress.py | 07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611 |
+| gerbil.pkg | b0d65d51ed0690021c9b3d96a72298a4b38a69309d51db51e9e1c00ff089c3e2 |
+| modules/ai-agentic-context/admission.ss | 08114f145c31b7fa97f8a8b72010ccfbafbf6e515d25bc7d366a1e871a0c493e |
+| modules/ai-agentic-context/consumers.ss | 88d71cc956f189299d185a127c505c96382b1edc6bd50bb359b2b066eed09b32 |
+| modules/ai-agentic-context/contracts.ss | b262609280ef8865afc478ca74e2e9821c64cafeead97b4e6dbc3fcc1d4cc072 |
+| modules/ai-agentic-context/funs.ss | e8f954fe78172af4bb1271bfca6f47bc876cbaefd6754a71373b8ae866a6d1c9 |
+| modules/ai-agentic-context/interface.ss | 5ff841b8071b903bd542f795aafd2343efc81d27164a7d418d94164c11c68fca |
+| modules/ai-agentic-context/objects.ss | c68c1256ea302d75cae17f4d3fd9489836517829000237baec4f22f4caf6c19d |
+| modules/ai-agentic-context/reasoning.ss | 3a9c844fba1fd2724260e85a2d638fbb9198521af2fd9282bf201f4ce9c26312 |
+| modules/ai-agentic-context/source.ss | 56c0a64f92d2b113d43b708f484e247116d3181bfd843a0e055a3c8a44dd1ad3 |
+| packages/proofs/context-lifecycle/org-context.ss | a69cacd52b1f0cc95eb34847facf5e02d0abfbeb0cdb4afd04dc6b446cb9b629 |
+| packages/proofs/context-lifecycle/context-source.org | b11cfcb19cec1efcfa85b44b233ed4447ceb75c8cc4e83b2504354bbd49e18a1 |
+| packages/proofs/context-lifecycle/admission-controls.ss | ae170d3640481e19a8edf722263371af6bae9a7f50f76e5f2b77c3db92a3c150 |
+| packages/lambda-aitia/modules/assurance/context-consumer.ss | a38f4537be4e70c8c364e8e326139307596acd253f1a81178b8aa65072a92453 |
+| packages/lambda-aitia/t/formal/lifecycle-fixture.ss | 6b67f705ba963c484ad049724d238d06d383f4663f4a44a83c6bd3a9478cd8bd |
+| core/contribution/verification.ss | e190bcb2d426f9d730d172facd417011b669c0c647e15b7db3056bf0b5b8456c |
+| modules/governance/types.ss | 633dd24e50ea80662d7a26e15d98f9419e3e79a867a4b5c2328009191548c5b1 |
+| modules/governance/objects.ss | c81773a19f1248f081a80c39a00618908cd71e8ffaf785d4f787b6893368cba7 |
+| packages/lambda-aitia/modules/assurance/types.ss | fd9df8e1e53365b20dc77cd92a297bfaee3a0957067247c6fb58deead4379db7 |
+| packages/lambda-aitia/modules/assurance/objects.ss | e5a2dfcf5dec17ae9c5e13a68749425af8c1f7cb1275bed3247e3bd2b84b6a02 |
+| packages/lambda-aitia/modules/assurance/funs.ss | 91e0f08035617a83052457aed57cfdcf1f51a810d85e45dfde579dd334eef826 |
+| packages/lambda-aitia/modules/assurance/evidence-admission.ss | f1d9eb576d95ed4c2a4990f83851afde5c014eefb21a8ee56f9726fd5a0a7d31 |
+| packages/lambda-aitia/modules/assurance/host.ss | abfb782fe8ae3c081d6e59a64a5324d5118c379f9ec7e7b56b7e17eda929f660 |
+| packages/lambda-aitia/modules/assurance/effect-host.ss | a274a81d4cc6331a8d5dfc9e56b3eb40a44b797a557f99731b8f55597152d569 |
+
+* Reproduction and remaining obligations
+
+Follow [[file:../../../../packages/proofs/context-lifecycle/README.org][the current proof reproduction entry]] using existing Scheme packages,
+the optional AITIA Module adapter and lifecycle fixture, and the ordinary Gerbil
+compiler. Run verify.py with CONTEXT_ASCENT_GERBIL_PATH and
+CONTEXT_SCHEME_PACKAGE_PATH selecting those packages; no machine-specific path
+or temporary SDK is a contract input. Rebuilding can change package/binary
+hashes; a new run must issue its own receipt instead of borrowing this cut.
+
+Protected Context disclosure, principal authentication, recreated Session ID
+generations, arbitrary Governance policy equivalence, production clock
+coordination and persistence/orchestration remain outside this local result.
+Configured Host checks may use source readers; those Hosts must authorize I/O.
+These controls use no source reader. Admitted observations and live SDLC grants
+never replace effect authorization or provider admission. Reopen outputs report
+a current obligation, not a durable transition or an erased historical artifact.
+

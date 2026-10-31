@@ -9,86 +9,86 @@
 
 (import (only-in :clan/poo/object .def .o .ref object?)
         (only-in :clan/poo/mop .defgeneric validate)
-        (only-in :core/types poo-flow-contract-admit)
-        (only-in :core/object-family/syntax defpoo-object-family)
-        :core/observability/funcs
-        (only-in :core/observability/types
-                 PooFlowObservationIdentityContract PooFlowObservationProvenanceContract
-                 PooFlowObservationContextContract PooFlowAdmissionObservationContract
-                 poo-flow-observability-diagnostic-contract?
-                 poo-flow-observability-receipt-contract?
-                 poo-flow-observability-require-diagnostic!
-                 poo-flow-observability-require-receipt!))
+        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit)
+        (only-in :yuanxu/object-family/syntax defpoo-object-family)
+        :yuanxu/observability/funcs
+        (only-in :yuanxu/observability/types
+                 YuanxuObservationIdentityContract YuanxuObservationProvenanceContract
+                 YuanxuObservationContextContract YuanxuAdmissionObservationContract
+                 yuanxu-observability-diagnostic-contract?
+                 yuanxu-observability-receipt-contract?
+                 yuanxu-observability-require-diagnostic!
+                 yuanxu-observability-require-receipt!))
 
-(export poo-flow-observability-event-prototype
-        poo-flow-admission-observation-prototype
-        poo-flow-observation-identity
-        poo-flow-observation-provenance
-        poo-flow-observation-context
-        poo-flow-observe-admission-evidence
-        poo-flow-observe-contract-admission
-        poo-flow-observation-explain
-        poo-flow-observation-summary
-        poo-flow-observability-span-prototype
-        poo-flow-observability-diagnostic-prototype
-        poo-flow-observability-receipt-prototype
-        poo-flow-observability-projection-prototype
-        +poo-flow-observability-object-families+
-        poo-flow-observability-family?
-        poo-flow-observability-prototype?
-        poo-flow-observability-prototype-id
-        poo-flow-observability-prototype->alist
-        poo-flow-observability-diagnostic?
-        poo-flow-observability-diagnostic-family
-        poo-flow-observability-diagnostic-severity
-        poo-flow-observability-diagnostic-boundary
-        poo-flow-observability-diagnostic-validator
-        poo-flow-observability-diagnostic-node
-        poo-flow-observability-diagnostic-edge
-        poo-flow-observability-diagnostic-reason
-        poo-flow-observability-diagnostic-message
-        poo-flow-observability-diagnostic-repair-target
-        poo-flow-observability-diagnostic-artifacts
-        poo-flow-observability-diagnostic-record
-        poo-flow-observability-diagnostic-code
-        poo-flow-observability-diagnostic->alist
-        poo-flow-observability-receipt?
-        poo-flow-observability-receipt-family
-        poo-flow-observability-receipt-schema
-        poo-flow-observability-receipt-source
-        poo-flow-observability-receipt-graph
-        poo-flow-observability-receipt-diagnostics
-        poo-flow-observability-receipt-repair
-        poo-flow-observability-receipt-readiness
-        poo-flow-observability-receipt-artifacts
-        poo-flow-observability-receipt-record
-        poo-flow-observability-receipt-valid?
-        poo-flow-observability-receipt-diagnostic-codes
-        poo-flow-observability-receipt-next-action
-        poo-flow-observability-graph
-        poo-flow-observability-repair
-        poo-flow-observability-readiness
-        poo-flow-observability-feedback-receipt
-        poo-flow-observability-domain-next-action
-        poo-flow-observability-agent-feedback
-        poo-flow-observability-receipt->alist)
+(export yuanxu-observability-event-prototype
+        yuanxu-admission-observation-prototype
+        yuanxu-observation-identity
+        yuanxu-observation-provenance
+        yuanxu-observation-context
+        yuanxu-observe-admission-evidence
+        yuanxu-observe-contract-admission
+        yuanxu-observation-explain
+        yuanxu-observation-summary
+        yuanxu-observability-span-prototype
+        yuanxu-observability-diagnostic-prototype
+        yuanxu-observability-receipt-prototype
+        yuanxu-observability-projection-prototype
+        +yuanxu-observability-object-families+
+        yuanxu-observability-family?
+        yuanxu-observability-prototype?
+        yuanxu-observability-prototype-id
+        yuanxu-observability-prototype->alist
+        yuanxu-observability-diagnostic?
+        yuanxu-observability-diagnostic-family
+        yuanxu-observability-diagnostic-severity
+        yuanxu-observability-diagnostic-boundary
+        yuanxu-observability-diagnostic-validator
+        yuanxu-observability-diagnostic-node
+        yuanxu-observability-diagnostic-edge
+        yuanxu-observability-diagnostic-reason
+        yuanxu-observability-diagnostic-message
+        yuanxu-observability-diagnostic-repair-target
+        yuanxu-observability-diagnostic-artifacts
+        yuanxu-observability-diagnostic-record
+        yuanxu-observability-diagnostic-code
+        yuanxu-observability-diagnostic->alist
+        yuanxu-observability-receipt?
+        yuanxu-observability-receipt-family
+        yuanxu-observability-receipt-schema
+        yuanxu-observability-receipt-source
+        yuanxu-observability-receipt-graph
+        yuanxu-observability-receipt-diagnostics
+        yuanxu-observability-receipt-repair
+        yuanxu-observability-receipt-readiness
+        yuanxu-observability-receipt-artifacts
+        yuanxu-observability-receipt-record
+        yuanxu-observability-receipt-valid?
+        yuanxu-observability-receipt-diagnostic-codes
+        yuanxu-observability-receipt-next-action
+        yuanxu-observability-graph
+        yuanxu-observability-repair
+        yuanxu-observability-readiness
+        yuanxu-observability-feedback-receipt
+        yuanxu-observability-domain-next-action
+        yuanxu-observability-agent-feedback
+        yuanxu-observability-receipt->alist)
 
 (def ObservationIdentity.
-  (.ref PooFlowObservationIdentityContract 'proto))
+  (.ref YuanxuObservationIdentityContract 'proto))
 (def ObservationProvenance.
-  (.ref PooFlowObservationProvenanceContract 'proto))
+  (.ref YuanxuObservationProvenanceContract 'proto))
 (def ObservationContext.
-  (.ref PooFlowObservationContextContract 'proto))
+  (.ref YuanxuObservationContextContract 'proto))
 (def AdmissionObservation.
-  (.ref PooFlowAdmissionObservationContract 'proto))
+  (.ref YuanxuAdmissionObservationContract 'proto))
 
-;; +poo-flow-observability-object-families+
+;; +yuanxu-observability-object-families+
 ;;   : [Symbol]
 ;;   | doc m%
 ;;       Canonical observability object families. Module-specific diagnostics
 ;;       extend these families instead of adding central string-only cases.
 ;;     %
-(def +poo-flow-observability-object-families+
+(def +yuanxu-observability-object-families+
   '(observability/event
     observability/span
     observability/diagnostic
@@ -96,69 +96,69 @@
     observability/projection))
 
 ;; : (POOObject Symbol Symbol [Symbol] [Symbol])
-(.def poo-flow-observability-event-prototype
+(.def yuanxu-observability-event-prototype
   id: 'observability/event
   boundary: 'observability
   owns: '(atomic-evidence state-change validation-fact projection-fact)
   requires: '(source-provenance evidence-kind))
 
 ;; : (POOObject Symbol Symbol [Symbol] [Symbol])
-(.def poo-flow-observability-span-prototype
+(.def yuanxu-observability-span-prototype
   id: 'observability/span
   boundary: 'observability
   owns: '(bounded-operation graph-rebuild validator-run projection-run)
   requires: '(source-provenance start-event end-event))
 
 ;; : (POOObject Symbol Symbol [Symbol] [Symbol])
-(.def poo-flow-observability-diagnostic-prototype
+(.def yuanxu-observability-diagnostic-prototype
   id: 'observability/diagnostic
   boundary: 'observability
   owns: '(validator-owned-rejection graph-positioned-finding repair-target)
   requires: '(severity validator reason repair-target))
 
 ;; : (POOObject Symbol Symbol [Symbol] [Symbol])
-(.def poo-flow-observability-receipt-prototype
+(.def yuanxu-observability-receipt-prototype
   id: 'observability/receipt
   boundary: 'observability
   owns: '(agent-feedback graph-diagnostics repair-readiness drill-down-artifacts)
   requires: '(graph diagnostics repair readiness))
 
 ;; : (POOObject Symbol Symbol [Symbol] [Symbol])
-(.def poo-flow-observability-projection-prototype
+(.def yuanxu-observability-projection-prototype
   id: 'observability/projection
   boundary: 'observability
   owns: '(doctor-report graph-preview proof-preview runtime-preview)
   requires: '(producer source-receipt projection-kind))
 
-;; : (-> PooFlowObservabilityFamilyCandidate Boolean)
-(def (poo-flow-observability-family? family)
+;; : (-> YuanxuObservabilityFamilyCandidate Boolean)
+(def (yuanxu-observability-family? family)
   (and (symbol? family)
-       (member family +poo-flow-observability-object-families+)
+       (member family +yuanxu-observability-object-families+)
        #t))
 
-;; : (-> PooFlowObservabilityPrototypeCandidate Boolean)
-(def (poo-flow-observability-prototype? value)
+;; : (-> YuanxuObservabilityPrototypeCandidate Boolean)
+(def (yuanxu-observability-prototype? value)
   (and (object? value)
        (with-catch
         (lambda (_failure) #f)
         (lambda ()
-          (poo-flow-observability-family? (.ref value 'id))))))
+          (yuanxu-observability-family? (.ref value 'id))))))
 
-;; : (-> PooFlowObservabilityPrototype Symbol)
-(def (poo-flow-observability-prototype-id prototype)
+;; : (-> YuanxuObservabilityPrototype Symbol)
+(def (yuanxu-observability-prototype-id prototype)
   (.ref prototype 'id))
 
-;; : (-> PooFlowObservabilityPrototype Alist)
-(def (poo-flow-observability-prototype->alist prototype)
+;; : (-> YuanxuObservabilityPrototype Alist)
+(def (yuanxu-observability-prototype->alist prototype)
   (list
    (cons 'id (.ref prototype 'id))
    (cons 'boundary (.ref prototype 'boundary))
    (cons 'owns (.ref prototype 'owns))
    (cons 'requires (.ref prototype 'requires))))
 
-;; : (-> Symbol Symbol Symbol PooFlowGraphNodeRef PooFlowGraphEdgeRef Symbol String PooFlowRepairTarget [Alist] PooFlowObservabilityDiagnostic)
-(def (poo-flow-observability-diagnostic-record severity boundary validator node edge reason message repair-target . maybe-artifacts)
-  (let ((prototype poo-flow-observability-diagnostic-prototype)
+;; : (-> Symbol Symbol Symbol YuanxuGraphNodeRef YuanxuGraphEdgeRef Symbol String YuanxuRepairTarget [Alist] YuanxuObservabilityDiagnostic)
+(def (yuanxu-observability-diagnostic-record severity boundary validator node edge reason message repair-target . maybe-artifacts)
+  (let ((prototype yuanxu-observability-diagnostic-prototype)
         (severity-value severity)
         (boundary-value boundary)
         (validator-value validator)
@@ -168,7 +168,7 @@
         (message-value message)
         (repair-target-value repair-target)
         (artifacts-value (if (null? maybe-artifacts) '() (car maybe-artifacts))))
-    (poo-flow-observability-require-diagnostic!
+    (yuanxu-observability-require-diagnostic!
      (.o (:: @ [prototype])
          family: 'observability/diagnostic
          severity: severity-value
@@ -181,46 +181,46 @@
          repair-target: repair-target-value
          artifacts: artifacts-value))))
 
-(def (poo-flow-observability-diagnostic? value)
-  (poo-flow-observability-diagnostic-contract? value))
+(def (yuanxu-observability-diagnostic? value)
+  (yuanxu-observability-diagnostic-contract? value))
 
 (defpoo-object-family
   (accessors
-   (poo-flow-observability-diagnostic-family family)
-   (poo-flow-observability-diagnostic-severity severity)
-   (poo-flow-observability-diagnostic-boundary boundary)
-   (poo-flow-observability-diagnostic-validator validator)
-   (poo-flow-observability-diagnostic-node node)
-   (poo-flow-observability-diagnostic-edge edge)
-   (poo-flow-observability-diagnostic-reason reason)
-   (poo-flow-observability-diagnostic-message message)
-   (poo-flow-observability-diagnostic-repair-target repair-target)
-   (poo-flow-observability-diagnostic-artifacts artifacts))
+   (yuanxu-observability-diagnostic-family family)
+   (yuanxu-observability-diagnostic-severity severity)
+   (yuanxu-observability-diagnostic-boundary boundary)
+   (yuanxu-observability-diagnostic-validator validator)
+   (yuanxu-observability-diagnostic-node node)
+   (yuanxu-observability-diagnostic-edge edge)
+   (yuanxu-observability-diagnostic-reason reason)
+   (yuanxu-observability-diagnostic-message message)
+   (yuanxu-observability-diagnostic-repair-target repair-target)
+   (yuanxu-observability-diagnostic-artifacts artifacts))
   (projections))
 
-;; : (-> PooFlowObservabilityDiagnostic Symbol)
-(def (poo-flow-observability-diagnostic-code diagnostic)
-  (poo-flow-observability-diagnostic-reason diagnostic))
+;; : (-> YuanxuObservabilityDiagnostic Symbol)
+(def (yuanxu-observability-diagnostic-code diagnostic)
+  (yuanxu-observability-diagnostic-reason diagnostic))
 
-;; : (-> PooFlowObservabilityDiagnostic Alist)
-(def (poo-flow-observability-diagnostic->alist diagnostic)
+;; : (-> YuanxuObservabilityDiagnostic Alist)
+(def (yuanxu-observability-diagnostic->alist diagnostic)
   (list
-   (cons 'family (poo-flow-observability-diagnostic-family diagnostic))
-   (cons 'severity (poo-flow-observability-diagnostic-severity diagnostic))
-   (cons 'boundary (poo-flow-observability-diagnostic-boundary diagnostic))
-   (cons 'validator (poo-flow-observability-diagnostic-validator diagnostic))
-   (cons 'node (poo-flow-observability-diagnostic-node diagnostic))
-   (cons 'edge (poo-flow-observability-diagnostic-edge diagnostic))
-   (cons 'reason (poo-flow-observability-diagnostic-reason diagnostic))
-   (cons 'message (poo-flow-observability-diagnostic-message diagnostic))
+   (cons 'family (yuanxu-observability-diagnostic-family diagnostic))
+   (cons 'severity (yuanxu-observability-diagnostic-severity diagnostic))
+   (cons 'boundary (yuanxu-observability-diagnostic-boundary diagnostic))
+   (cons 'validator (yuanxu-observability-diagnostic-validator diagnostic))
+   (cons 'node (yuanxu-observability-diagnostic-node diagnostic))
+   (cons 'edge (yuanxu-observability-diagnostic-edge diagnostic))
+   (cons 'reason (yuanxu-observability-diagnostic-reason diagnostic))
+   (cons 'message (yuanxu-observability-diagnostic-message diagnostic))
    (cons 'repair-target
-         (poo-flow-observability-diagnostic-repair-target diagnostic))
+         (yuanxu-observability-diagnostic-repair-target diagnostic))
    (cons 'artifacts
-         (poo-flow-observability-diagnostic-artifacts diagnostic))))
+         (yuanxu-observability-diagnostic-artifacts diagnostic))))
 
-;; : (-> String PooFlowSourceRef Alist [PooFlowObservabilityDiagnostic] Alist Alist [Alist] PooFlowObservabilityReceipt)
-(def (poo-flow-observability-receipt-record schema source graph diagnostics repair readiness . maybe-artifacts)
-  (let ((prototype poo-flow-observability-receipt-prototype)
+;; : (-> String YuanxuSourceRef Alist [YuanxuObservabilityDiagnostic] Alist Alist [Alist] YuanxuObservabilityReceipt)
+(def (yuanxu-observability-receipt-record schema source graph diagnostics repair readiness . maybe-artifacts)
+  (let ((prototype yuanxu-observability-receipt-prototype)
         (schema-value schema)
         (source-value source)
         (graph-value graph)
@@ -228,7 +228,7 @@
         (repair-value repair)
         (readiness-value readiness)
         (artifacts-value (if (null? maybe-artifacts) '() (car maybe-artifacts))))
-    (poo-flow-observability-require-receipt!
+    (yuanxu-observability-require-receipt!
      (.o (:: @ [prototype])
          family: 'observability/receipt
          schema: schema-value
@@ -239,41 +239,41 @@
          readiness: readiness-value
          artifacts: artifacts-value))))
 
-(def (poo-flow-observability-receipt? value)
-  (poo-flow-observability-receipt-contract? value))
+(def (yuanxu-observability-receipt? value)
+  (yuanxu-observability-receipt-contract? value))
 
 (defpoo-object-family
   (accessors
-   (poo-flow-observability-receipt-family family)
-   (poo-flow-observability-receipt-schema schema)
-   (poo-flow-observability-receipt-source source)
-   (poo-flow-observability-receipt-graph graph)
-   (poo-flow-observability-receipt-diagnostics diagnostics)
-   (poo-flow-observability-receipt-repair repair)
-   (poo-flow-observability-receipt-readiness readiness)
-   (poo-flow-observability-receipt-artifacts artifacts))
+   (yuanxu-observability-receipt-family family)
+   (yuanxu-observability-receipt-schema schema)
+   (yuanxu-observability-receipt-source source)
+   (yuanxu-observability-receipt-graph graph)
+   (yuanxu-observability-receipt-diagnostics diagnostics)
+   (yuanxu-observability-receipt-repair repair)
+   (yuanxu-observability-receipt-readiness readiness)
+   (yuanxu-observability-receipt-artifacts artifacts))
   (projections))
 
-;; : (-> PooFlowObservabilityReceipt Boolean)
-(def (poo-flow-observability-receipt-valid? receipt)
-  (and (poo-flow-observability-receipt? receipt)
-       (null? (poo-flow-observability-receipt-diagnostics receipt))
-       (eq? (cdr (assq 'state (poo-flow-observability-receipt-readiness receipt)))
+;; : (-> YuanxuObservabilityReceipt Boolean)
+(def (yuanxu-observability-receipt-valid? receipt)
+  (and (yuanxu-observability-receipt? receipt)
+       (null? (yuanxu-observability-receipt-diagnostics receipt))
+       (eq? (cdr (assq 'state (yuanxu-observability-receipt-readiness receipt)))
             'ready)))
 
-;; : (-> PooFlowObservabilityReceipt [Symbol])
-(def (poo-flow-observability-receipt-diagnostic-codes receipt)
-  (map poo-flow-observability-diagnostic-code
-       (poo-flow-observability-receipt-diagnostics receipt)))
+;; : (-> YuanxuObservabilityReceipt [Symbol])
+(def (yuanxu-observability-receipt-diagnostic-codes receipt)
+  (map yuanxu-observability-diagnostic-code
+       (yuanxu-observability-receipt-diagnostics receipt)))
 
-;; : (-> PooFlowObservabilityReceipt Symbol)
-(def (poo-flow-observability-receipt-next-action receipt)
-  (if (poo-flow-observability-receipt-valid? receipt)
+;; : (-> YuanxuObservabilityReceipt Symbol)
+(def (yuanxu-observability-receipt-next-action receipt)
+  (if (yuanxu-observability-receipt-valid? receipt)
     'accept-graph
     'repair-graph))
 
-;; : (-> Symbol PooFlowGraphSummary [Alist] Alist)
-(def (poo-flow-observability-graph kind summary . maybe-metadata)
+;; : (-> Symbol YuanxuGraphSummary [Alist] Alist)
+(def (yuanxu-observability-graph kind summary . maybe-metadata)
   (list
    (cons 'kind kind)
    (cons 'summary summary)
@@ -281,7 +281,7 @@
          (if (null? maybe-metadata) '() (car maybe-metadata)))))
 
 ;; : (-> (Or Symbol False) (Or Symbol False) [Alist] Alist)
-(def (poo-flow-observability-repair target-layer repair-target . maybe-hints)
+(def (yuanxu-observability-repair target-layer repair-target . maybe-hints)
   (list
    (cons 'target-layer target-layer)
    (cons 'repair-target repair-target)
@@ -289,16 +289,16 @@
          (if (null? maybe-hints) '() (car maybe-hints)))))
 
 ;; : (-> Symbol Boolean [Alist] Alist)
-(def (poo-flow-observability-readiness state valid? . maybe-metadata)
+(def (yuanxu-observability-readiness state valid? . maybe-metadata)
   (list
    (cons 'state state)
    (cons 'valid? valid?)
    (cons 'metadata
          (if (null? maybe-metadata) '() (car maybe-metadata)))))
 
-;; : (-> String PooFlowSourceRef Alist [PooFlowObservabilityDiagnostic] Alist Alist [Alist] PooFlowObservabilityReceipt)
-(def (poo-flow-observability-feedback-receipt schema source graph diagnostics repair readiness . maybe-artifacts)
-  (poo-flow-observability-receipt-record
+;; : (-> String YuanxuSourceRef Alist [YuanxuObservabilityDiagnostic] Alist Alist [Alist] YuanxuObservabilityReceipt)
+(def (yuanxu-observability-feedback-receipt schema source graph diagnostics repair readiness . maybe-artifacts)
+  (yuanxu-observability-receipt-record
    schema
    source
    graph
@@ -308,87 +308,87 @@
    (if (null? maybe-artifacts) '() (car maybe-artifacts))))
 
 ;; : (-> Boolean Symbol Symbol Symbol)
-(def (poo-flow-observability-domain-next-action valid? accept-action repair-action)
+(def (yuanxu-observability-domain-next-action valid? accept-action repair-action)
   (if valid? accept-action repair-action))
 
-;; : (-> Symbol Symbol Symbol PooFlowObservabilityReceipt Alist)
-(def (poo-flow-observability-agent-feedback kind accept-action repair-action receipt)
+;; : (-> Symbol Symbol Symbol YuanxuObservabilityReceipt Alist)
+(def (yuanxu-observability-agent-feedback kind accept-action repair-action receipt)
   (cons
    (cons 'kind kind)
    (cons
     (cons 'next-action
-          (poo-flow-observability-domain-next-action
-           (poo-flow-observability-receipt-valid? receipt)
+          (yuanxu-observability-domain-next-action
+           (yuanxu-observability-receipt-valid? receipt)
            accept-action
            repair-action))
-    (poo-flow-observability-receipt->alist receipt))))
+    (yuanxu-observability-receipt->alist receipt))))
 
-;; : (forall (a) (-> PooFlowObservabilityReceipt (List (Pair Symbol a))))
-;; : (-> PooFlowObservabilityReceipt Alist)
-(def (poo-flow-observability-receipt->alist receipt)
+;; : (forall (a) (-> YuanxuObservabilityReceipt (List (Pair Symbol a))))
+;; : (-> YuanxuObservabilityReceipt Alist)
+(def (yuanxu-observability-receipt->alist receipt)
   (list
-   (cons 'family (poo-flow-observability-receipt-family receipt))
-   (cons 'schema (poo-flow-observability-receipt-schema receipt))
-   (cons 'source (poo-flow-observability-receipt-source receipt))
-   (cons 'graph (poo-flow-observability-receipt-graph receipt))
+   (cons 'family (yuanxu-observability-receipt-family receipt))
+   (cons 'schema (yuanxu-observability-receipt-schema receipt))
+   (cons 'source (yuanxu-observability-receipt-source receipt))
+   (cons 'graph (yuanxu-observability-receipt-graph receipt))
    (cons 'diagnostics
-         (map poo-flow-observability-diagnostic->alist
-              (poo-flow-observability-receipt-diagnostics receipt)))
+         (map yuanxu-observability-diagnostic->alist
+              (yuanxu-observability-receipt-diagnostics receipt)))
    (cons 'diagnostic-codes
-         (poo-flow-observability-receipt-diagnostic-codes receipt))
-   (cons 'repair (poo-flow-observability-receipt-repair receipt))
-   (cons 'readiness (poo-flow-observability-receipt-readiness receipt))
+         (yuanxu-observability-receipt-diagnostic-codes receipt))
+   (cons 'repair (yuanxu-observability-receipt-repair receipt))
+   (cons 'readiness (yuanxu-observability-receipt-readiness receipt))
    (cons 'next-action
-         (poo-flow-observability-receipt-next-action receipt))
-   (cons 'artifacts (poo-flow-observability-receipt-artifacts receipt))))
+         (yuanxu-observability-receipt-next-action receipt))
+   (cons 'artifacts (yuanxu-observability-receipt-artifacts receipt))))
 
 ;;; Boundary: native framework behavior is resolved by upstream slots,
 ;;; not the legacy metadata-family catalog or an event-kind switch.
-(.defgeneric (poo-flow-observation-explain observation) slot: .explain)
+(.defgeneric (yuanxu-observation-explain observation) slot: .explain)
 ;;; Boundary: summary dispatch shares the same native observation receiver contract.
-(.defgeneric (poo-flow-observation-summary observation) slot: .summary)
+(.defgeneric (yuanxu-observation-summary observation) slot: .summary)
 
-(def poo-flow-admission-observation-prototype
+(def yuanxu-admission-observation-prototype
   (.o (:: self AdmissionObservation.)
-      (.explain (poo-flow-observation-admission-explanation self))
-      (.summary (poo-flow-observation-admission-summary self))))
+      (.explain (yuanxu-observation-admission-explanation self))
+      (.summary (yuanxu-observation-admission-summary self))))
 
-(def (poo-flow-observation-identity namespace-value name-value revision-value)
-  (validate PooFlowObservationIdentityContract
+(def (yuanxu-observation-identity namespace-value name-value revision-value)
+  (validate YuanxuObservationIdentityContract
     (.o (:: @ ObservationIdentity.)
         namespace: namespace-value name: name-value revision: revision-value)))
 
-(def (poo-flow-observation-provenance producer-value provider-value phase-value)
-  (validate PooFlowObservationProvenanceContract
+(def (yuanxu-observation-provenance producer-value provider-value phase-value)
+  (validate YuanxuObservationProvenanceContract
     (.o (:: @ ObservationProvenance.)
         producer: producer-value provider: provider-value phase: phase-value)))
 
 ;;; Identity/provenance are supplied explicitly by the producer. They provide
 ;;; correlation, not a cryptographic assertion of producer authority.
-(def (poo-flow-observation-context identity-value source-value generation-value
+(def (yuanxu-observation-context identity-value source-value generation-value
                                    causes-value provenance-value
                                    detail-budget: (budget-value 256))
-  (validate PooFlowObservationContextContract
+  (validate YuanxuObservationContextContract
     (.o (:: @ ObservationContext.)
         identity: identity-value source: source-value generation: generation-value
         causes: causes-value provenance: provenance-value detail-budget: budget-value)))
 
-(def (poo-flow-observe-admission-evidence context receipt)
-  (let ((facts-value (poo-flow-observation-admission-facts receipt context))
+(def (yuanxu-observe-admission-evidence context receipt)
+  (let ((facts-value (yuanxu-observation-admission-facts receipt context))
         (identity-value (.ref context 'identity))
         (source-value (.ref context 'source))
         (generation-value (.ref context 'generation))
         (causes-value (.ref context 'causes))
         (provenance-value (.ref context 'provenance)))
-    (validate PooFlowAdmissionObservationContract
-      (.o (:: @ poo-flow-admission-observation-prototype)
+    (validate YuanxuAdmissionObservationContract
+      (.o (:: @ yuanxu-admission-observation-prototype)
           identity: identity-value source: source-value generation: generation-value
           causes: causes-value provenance: provenance-value
           disclosure: 'internal evidence: facts-value))))
 
-(def (poo-flow-observe-contract-admission context contract candidate
+(def (yuanxu-observe-contract-admission context contract candidate
                                          evaluation-context: (evaluation-context #f))
   ;; Validate observation metadata before evaluating the subject exactly once.
-  (validate PooFlowObservationContextContract context)
-  (poo-flow-observe-admission-evidence
-   context (poo-flow-contract-admit contract candidate evaluation-context)))
+  (validate YuanxuObservationContextContract context)
+  (yuanxu-observe-admission-evidence
+   context (yuanxu-contract-admit contract candidate evaluation-context)))

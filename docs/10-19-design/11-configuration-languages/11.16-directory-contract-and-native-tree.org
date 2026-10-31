@@ -1,0 +1,144 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.16 Config Languages 15: Directory Contract, Native Lazy Tree and Guestbook
+#+property: DOCUMENT_ID 11.16
+#+date: [2026-10-16]
+#+filetags: :config-language:modules:contracts:design:
+#+property: STATUS complete-bounded-design-code-not-implemented-or-executed
+
+The public design name YuanxuObjectContract. follows the [[file:11.01-index.org][chapter naming policy]];
+its Core export rename is pending. This example does not introduce an alias.
+
+* Ownership and executable boundary
+
+This concretizes [[file:../../../../docs/10-19-design/10.08-config-languages/14-directory-module-tree-design.org][the directory/tree proposal]]. The public result is a native POO
+object. The directory resolver performs filesystem I/O and source admission;
+Contracts validate the resulting immutable metadata. Directory projection must not
+invent another runtime object system or import module bodies during macro expansion.
+[[file:11.17-init-selection-core-features-and-build.org][Init selection, Core/feature policy and build projection]] is the companion design.
+
+The code below is a bounded design, not product implementation. Existing native
+operators and Core evidence APIs are reused. The proposed filesystem resolver
+and interface realizer are explicit procedure parameters, not hidden undefined helpers.
+Their production implementations, security/currentness evidence and source adapter
+are outside this task. No Loader is implemented or connected.
+
+* Generic directory Contract and native projection: Core owns the design
+
+The complete [[file:../../../module-system/design/02-directory-sources.org][DirectorySnapshot Contract and directory-view design code]] now lives
+in the Core submodule. Source-role rules and publication/selection protocols are
+also owned there. This Agentic AI Lab document keeps only JsonSchema and Guestbook
+consumer wiring. Do not duplicate or evolve a second generic directory protocol here.
+
+* interface.ss publishes the existing Core schema capability
+
+JSON Schema is Core contract infrastructure, not +json-schema. The code below is
+the proposed native scope published from modules/core/json-schema/interface.ss.
+Its implementation owner resolves these procedure bindings; downstream authors
+do not repeat their imports. This is the module publication interface; root/user init.ss selects it instead of
+repeating its exports. No current module is migrated here.
+
+#+begin_src scheme
+(def (schema-errors artifact candidate _context)
+  (if (object? candidate)
+    (yuanxu-json-schema-object-contract-validation-diagnostics
+     (yuanxu-json-schema-contract-artifact-validate artifact candidate))
+    (list (.o kind: 'native-config-object-required))))
+
+(def (schema-contract artifact)
+  (.cc (yuanxu-json-schema-contract-artifact-object-contract artifact)
+       '.obligations (cut schema-errors artifact <> <>)))
+
+(.def JsonSchema
+  compile: yuanxu-json-schema->contract-artifact
+  contract: schema-contract
+  admit: yuanxu-contract-admit
+  accepted?: yuanxu-validation-evidence-accepted?)
+
+(export JsonSchema)
+#+end_src
+
+The implementation procedures and generated native Contract representation already
+exist. The full-root obligation wrapper, module publication and interface source adapter
+are pending. Full-root validation retains additionalProperties and normalized root
+constraints; do not replace it with only a generated slot checklist. Generated
+Contracts are already native predicate Contracts, as verified in
+[[file:../../../module-system/schema/slot-contracts.ss][slot-contracts.ss]]. This is not a new schema engine.
+
+* Guestbook navigation through the same module tree
+
+The following is a proposed composition function with explicit inputs. tree is
+the directory-view object above; baseline is the independently maintained
+GuestbookBaselineV2 with the qualified default-bearing Profiles from module 13.
+server-schema is the package-owned JSON-like schema value printed in module 13.
+No caller reads a schema path. The private package assembler supplies these
+values; ordinary application users receive the resulting Guestbook scope.
+
+#+begin_src scheme
+(def (make-guestbook-scope tree baseline server-schema)
+  (let (JsonSchema (.get tree core json-schema))
+    (use-module JsonSchema as schema
+      (with-slots (compile contract) schema
+        (let (admit-final (.get schema admit))
+          (.o
+         baseline
+         contracts:
+         (let* ((artifact
+                 (compile server-schema
+                          '((owner . guestbook)
+                            (source-ref . guestbook/server-schema-v1)
+                            (object-kind . GuestbookServer)
+                            (object-key . guestbook/server))))
+                (ServerContract (contract artifact)))
+           (define-type (ScenarioContract @ YuanxuObjectContract.)
+             identity: 'guestbook/scenario
+             proto: GuestbookScenario.
+             responsibilities:
+             (.o frontend: ServerContract
+                 leader: ServerContract
+                 follower: ServerContract)
+             .obligations: guestbook-links)
+           (.o artifact ServerContract ScenarioContract))
+         admit:
+         (cut admit-final (.get contracts ScenarioContract) <> <>)))))))
+#+end_src
+
+admit-final deliberately binds the module procedure outside the new object: an
+inner slot named admit must not shadow the procedure used to implement it.
+GuestbookScenario. and guestbook-links are fully defined in
+[[file:11.14-guestbook-module-contract-admission.org][module 13]], with the bounded input schema, full-role responsibility map and
+name/port/DNS checks. This is code reuse, not an undefined new helper. contracts is
+a lazy slot; obtaining baseline does not compile the schema. Core admission walks
+the final frontend/leader/follower and retains responsibility evidence. Full
+resource generation, rendered selector/namespace checks and output-schema admission
+remain pending; the projection excerpt and final evolution previews in modules
+11–13 are not a complete executable renderer.
+
+Downstream may use the native Guestbook scope once:
+
+#+begin_src scheme
+(def Development
+  (use-module Guestbook as gb
+    (.o (:: @ (.get gb baseline))
+      frontend: =>.+
+      (.o image: "gcr.io/google-samples/gb-frontend:v5"))))
+#+end_src
+
+Its original frontend is the one inherited from the maintained baseline. The image
+is a replacement. Direct frontend.image assignment remains pending path syntax.
+No schema imports, compilation policy or manual child-evidence lists are required.
+
+* Conclusion and next checks
+
+Already native: object<-fun, .ref/.get, lazy .o slots, bounded use-module, Contracts,
+responsibilities and public .admit. Pending: DirectorySnapshot resolver/provenance,
+interface publication metadata/admission, directory-view integration, module selection
+policy and source/currentness/cache qualification. Guestbook scope/default/schema
+integration and complete resource consumption remain pending separately.
+
+Test the design with missing init, mixed nodes, export collisions, root escape,
+source changes, one selected child among thousands, unselected init effects and
+warm publication reuse. Then exercise Guestbook field errors and effective-child
+admission after a warmed baseline. This work defines the design; it executes none
+of those controls and connects no Loader.

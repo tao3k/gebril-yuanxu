@@ -5,11 +5,11 @@
 
 ;;; Two-phase CLOS load forms, proper class names, and circular references.
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  test-suite test-case check-equal? check-exception check)
         (only-in :clan/poo/object .ref)
-        :core/poo-clos/interface)
+        :yuanxu/poo-clos/interface)
 
 (export poo-clos-load-form-test)
 
@@ -47,7 +47,7 @@
 
 (def poo-clos-load-form-test
   (test-suite "POO-native CLOS two-phase load forms"
-    (poo-flow-test-case "saving slots allocates without initforms and closes a self cycle"
+    (yuanxu-test-case "saving slots allocates without initforms and closes a self cycle"
       (set! load-form-initform-count 0)
       (let (source (poo-clos-make-instance LoadFormEntity))
         (poo-clos-set-slot-value! source 'name 'saved)
@@ -76,7 +76,7 @@
             (check (eq? (poo-clos-slot-value loaded 'link) loaded) => #t)
             (check (poo-clos-slot-bound? loaded 'spare) => #f)))))
 
-    (poo-flow-test-case "an explicit slot list preserves only selected bound slots"
+    (yuanxu-test-case "an explicit slot list preserves only selected bound slots"
       (let (source (poo-clos-make-instance LoadFormEntity))
         (poo-clos-set-slot-value! source 'name 'selected)
         (poo-clos-set-slot-value! source 'link 'not-selected)
@@ -92,7 +92,7 @@
           (check (poo-clos-slot-bound? loaded 'link) => #f)
           (check (poo-clos-slot-bound? loaded 'spare) => #f))))
 
-    (poo-flow-test-case "invalid slot requests fail before either form is published"
+    (yuanxu-test-case "invalid slot requests fail before either form is published"
       (let (source (poo-clos-make-instance LoadFormEntity))
         (check-exception
          (poo-clos-make-load-form-saving-slots
@@ -103,7 +103,7 @@
           source slot-names: '(unknown))
          (failure-code? 'invalid-load-form-slot))))
 
-    (poo-flow-test-case "make-load-form is extensible and rejects its ANSI default"
+    (yuanxu-test-case "make-load-form is extensible and rejects its ANSI default"
       (let (source (poo-clos-make-instance LoadFormEntity))
         (check-equal?
          (length
@@ -114,7 +114,7 @@
        (poo-clos-make-load-form (poo-clos-make-instance NonLoadableEntity))
        (failure-code? 'make-load-form-unavailable)))
 
-    (poo-flow-test-case "class creation forms resolve only proper FIND-CLASS names"
+    (yuanxu-test-case "class creation forms resolve only proper FIND-CLASS names"
       (let* ((forms
               (call-with-values
                (lambda () (poo-clos-make-load-form LoadFormEntity)) list))

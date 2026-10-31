@@ -1,0 +1,251 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Unified Constructor Sketch and Selected Admission Laws
+#+date: [2026-10-15]
+#+property: STATUS scheme-design-and-checked-lean-reference-laws-no-kernel-implementation-no-module-adapter-no-loader
+
+* Scope and current result
+
+[[file:25-isolated-combined-validation.org][Module 25]] now rebuilds the lost isolated environment and executes the complete
+multi-parent -> .+ -> .cc -> deferred =>.+ combination, including stale lists
+and a TEST-LOCAL selected-child closure Contract. It does not implement the
+constructor sketch or establish complete dependency discovery.
+
+This makes module 23's constructor protocol concrete and adds five checked Lean
+reference theorems plus two controls. It does not implement the protocol in the
+native dependency, and does not claim that the Scheme sketch has been executed.
+Module 21's native receiver/cache evidence remains separate and unchanged.
+
+The public surface stays .def, native multiple inheritance, .+, .cc and =>.+.
+The common constructor owns capture; callers supply extra sources only when
+native semantic parents omit a consumed source identity. No user-maintained
+Contract list, provenance record, public annotation or new configuration DSL
+is required. The source audit and mutation exclusions in module 23 still apply.
+
+* Complete key constructor body: proposed internal fields and keyword
+
+The native object struct would acquire a private %construction field. The
+following accessor, metadata record and sources: keyword do NOT exist today.
+The kernel's existing make-object/:init! path would initialize them. The sketch
+uses ordinary native constructor dispatch, not a public raw self/super hook.
+
+#+begin_src scheme
+;; DESIGN ONLY. Internal metadata; do not allocate it through POO itself.
+(defstruct construction-node (token parents))
+
+(def (capture-construction parents sources)
+  (make-construction-node
+    (gensym 'construction)
+    (map
+      (lambda (source)
+        (unless (object? source)
+          (error "construction-source-is-not-native-object" source))
+        (let ((origin (object-%construction source)))
+          (unless (construction-node? origin)
+            (error "untracked-object-construction" source))
+          origin))
+      (delete-duplicates (append parents sources) eq?))))
+
+(defmethod {:init! object}
+  (lambda (self
+           supers: (supers '())
+           slots: (slots '())
+           defaults: (defaults '())
+           sources: (sources '()))
+    (let* ((parents (flatten supers))
+           (origin (capture-construction parents sources)))
+      (set! (object-supers self) parents)
+      (set! (object-%slots self) slots)
+      (set! (object-%defaults self) defaults)
+      (set! (object-%construction self) origin)
+      (set! (object-%instance self) #f)
+      (set! (object-%precedence-list self) #f)
+      (set! (object-%slot-funs self) #f)
+      (set! (object-%all-slots self) #f))))
+#+end_src
+
+The proposed dependency adds the ordinary delete-duplicates import if absent.
+This is a correctness sketch, not a qualified large-input algorithm: list
+deduplication may be quadratic. A private identity-set implementation must
+preserve the same membership without touching semantic supers or forcing slots.
+Its runtime/memory cost and metadata retention need measurement.
+
+gensym is an in-process identity token, not a source-authentication credential,
+wire identity or persistent identifier. The sealed publication view still binds
+canonical tokens to authenticated source/Contract/policy associations. The
+construction-node record is immutable BY PROTOCOL in this sketch; generated
+record setters, object metadata access and constructor source inputs must be
+encapsulated by the real kernel implementation. A record declaration alone does
+not establish protection against arbitrary Scheme code.
+
+Capturing all sources precedes exposing the newly initialized object. Nothing
+here invokes Contracts or demands business SlotSpecs. Parent nodes must already
+be complete. Trusted initial descriptor setup and later immutable-generation
+sealing are distinct boundaries; this constructor does not freeze a Class.proto
+before the existing slot-definer has finished building it.
+
+* Lowering and source-loss owners
+
+#+begin_src scheme
+;; Existing native .def / .o / multi-parent lowering reaches this shape.
+;; slot-specs are native SlotSpecs; they are not eagerly read business values.
+(make-object supers: (list A B) slots: slot-specs defaults: defaults)
+
+;; Proposed .+ owner: semantic supers remain EXACTLY the existing ones.
+(def (.+ base override)
+  (make-object slots: (object-slots override)
+               supers: [(object-supers override)... base]
+               defaults: (object-defaults override)
+               sources: (list base override)))
+
+;; Proposed final call inside .cc; current slot-copy preparation is unchanged.
+(make-object slots: copied-slots
+             supers: (object-supers original)
+             defaults: (object-defaults original)
+             sources: (list original))
+#+end_src
+
+.mix and .extend already provide their operands as supers. MOP instance, the
+descriptor form of define-type and Lens setters inherit .cc coverage once that
+single native owner is adapted. A data decoder or map-object-values is not
+automatically a certified semantic copy; module 23 classifies those boundaries.
+
+The existing native object/slot-spec rule expands =>.+ to => .+. Therefore the
+same allocation capture runs when a selected nested refinement is demanded.
+There is no separate eager provenance pass over all nested slots and no separate
+instrumentation of .def, braces or Core's merged path-prefix expansion.
+
+* Actual receiver/cache control and final-value admission
+
+The following is the structure of module 21's executed native control, with
+force counters omitted. value is a fixture field, not a Funflow public schema.
+
+#+begin_src scheme
+(def Root
+  (.o (:: effective-config [])
+    build: (.o value: 'build)
+    test: (.o value: 'test)
+    package: (.o value: 'package)
+    pipeline:
+    (.o selected-checks: '(build test package)
+        checks:
+        (map (lambda (name) (.ref effective-config name)) selected-checks))))
+
+(def parent-checks (.get Root pipeline checks))
+
+(.def (Child @ Root)
+  build: =>.+ (.o value: 'child-build)
+  smoke: (.o value: 'smoke)
+  pipeline: =>.+ (.o selected-checks: '(build test package smoke)))
+
+(yuanxu-contract-admit
+  ProfileShapeContract Child (.o target: Child))
+#+end_src
+
+The public ProfileShapeContract and final identity obligations are defined in
+module 21's probe: native proto ancestry plus build/pipeline responsibilities,
+then ordered identity comparison against the final candidate's selected slots.
+That public Core path is executed evidence. It is not the complete proposed
+automatic provenance collector or a full Funflow domain Contract.
+
+The final Child Pipeline reads Child's effective lexical slots after the parent
+Pipeline has cached its own list. Reusing parent-checks explicitly is rejected,
+including a same-count but different-build control. Provenance retention does
+not fix an incorrect value expression; it preserves the policies that reject it.
+
+For a real Scenario, selected Profile/module/Pipeline/Check identities are
+separate admission demands. For each demand:
+
+1. Resolve the selected effective candidate and its declared Contract associations
+   in the sealed publication view, forcing only the necessary native slots.
+2. Complete any constructor work triggered by that demand, then collect the
+   resulting candidate's immutable construction history against the same index.
+3. Invoke public yuanxu-contract-admit for every retained requirement, with
+   THAT final candidate and its actual context. Validate evidence correlation,
+   not just accepted?.
+4. Discover declared child demands, validate candidate/context/view identities,
+   and continue until the selected dependency graph is closed. Reject unsupported
+   in-progress cycles or exhausted resource budgets; never accept a partial graph.
+5. Publish a plan only if closure, all correlated receipts and unchanged view
+   validation hold. Preview is not execution or a substitute for this boundary.
+
+No implicit global scan of all exports is allowed. A cached, already constructed
+selected object still needs its own provenance associations and correlated
+receipt; it need not reconstruct merely to be discovered. Undeclared demands
+inside arbitrary custom .admit methods remain outside the qualified protocol.
+
+* Five new checked reference laws
+
+[[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Construction.lean][Construction.lean]] imports the existing receipt/provenance model. It
+encodes a constructor's n-ary source union as a requirement-algebra fold:
+
+#+begin_src lean
+def capture (token : Nat) (inputs : List Trace) : Trace :=
+  inputs.foldr (fun source rest => .plus token source rest) (.fresh token)
+
+theorem capture_membership (index : Nat → List Nat) (token requirement : Nat)
+    (inputs : List Trace) :
+    requirement ∈ requirements index (capture token inputs) ↔
+      requirement ∈ index token ∨
+        ∃ source ∈ inputs, requirement ∈ requirements index source
+#+end_src
+
+This is exact membership, not only a lower bound. inputs is parents ++ sources.
+It covers arbitrary many source nodes and shared roots. The repeated token in
+the algebraic fold denotes the ONE constructor's own requirement contribution;
+fold nodes are NOT additional native allocations or distinct fresh tokens.
+Duplicate requirements do not alter membership. Native identity deduplication
+and collector order remain separate correspondence obligations.
+
+source_receipt_checked proves that a requirement from ANY such input must be
+retained and have a successful correlated receipt for the final candidate/context
+when the constructor's modeled compositionGate accepts. Thus .cc's original
+object can contribute requirements without becoming a semantic parent, and
+both .+ operands can contribute without changing native precedence.
+
+The selected-demand model makes closure a separate premise:
+
+#+begin_src lean
+def nestedGate (selected : List Nat) (contracts : Nat → List Nat)
+    (candidate context : Nat → Nat) (receipts : Nat → Nat → Receipt) : Bool :=
+  selected.all fun demand => (contracts demand).all fun contract =>
+    receiptGate contract (candidate demand) (context demand) (receipts demand contract)
+
+def Closed (selected : List Nat) (dependencies : Nat → List Nat) : Prop :=
+  ∀ parent ∈ selected, ∀ child ∈ dependencies parent, child ∈ selected
+#+end_src
+
+selected_receipt_checked proves every selected required receipt passes.
+nested_dependency_checked proves the same for a child of a selected demand,
+under Closed. missing_dependency_not_closed proves omission of such a child
+violates closure. Two kernel-checked controls exhibit an outer gate that passes
+while its selected list omits a required child. Therefore nestedGate ALONE is
+not sufficient to authorize plan publication.
+
+These theorems do not prove that a native discovery procedure reports all
+dependencies or that all reported candidate/context IDs are final. Those are
+explicit projection/protocol premises. The existing ContextSlot and native
+receiver controls continue to provide separate cache evidence, not a theorem
+about mutable native heaps.
+
+* Qualification and implementation boundary
+
+The five new theorems use only ordinary Lean axioms; no sorry or custom axiom is
+introduced. They are included in the existing YuanxuProof.ModuleSystem.Schema.Association
+target. The original three ConstructionRequirements theorems and the historical
+native receipts remain unchanged.
+
+Validation on 2026-10-15: lake env lean on UnifiedConstruction.lean passed;
+lake build YuanxuProof.ModuleSystem.Schema.Association passed with 47 jobs, including the
+two controls. The axiom output contains only propext, Quot.sound and
+Classical.choice; the missing-dependency theorem needs no axioms. Scheme code
+was reviewed against the source audit but was not compiled or executed.
+
+Still pending: protected metadata storage, every native entrypoint's capture
+coverage, source-token authentication, native n-ary union/dedup correspondence,
+complete selected dependency discovery and closure, immutable-generation
+enforcement, mutation invalidation and plan-publication view validation.
+Foreign objects, raw copies and wire reconstruction do not get certified source
+identity merely by matching field shapes. No kernel, module adapter, Loader,
+runtime consumer, dependency version or historical receipt is changed here.

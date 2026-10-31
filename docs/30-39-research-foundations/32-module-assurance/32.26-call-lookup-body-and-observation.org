@@ -1,0 +1,307 @@
+#+title: 32.26 Function Lookup, Call Bodies and Observation Scope
+#+language: en
+
+* Decision and evidence boundary
+
+[[file:32.25-serial-computation-and-conditional-use.org][32.25]] audited the native =.call= expansion without a dedicated execution
+control. This chapter closes that specific native test gap. It changes only
+qualification tests, formal models, proof gates and documentation. Production
+Scheme and Loader remain unchanged.
+
+The actual expansion remains:
+
+#+begin_src scheme
+(defrules .call ()
+  ((_ object slot args ...) ((.get object slot) args ...)))
+#+end_src
+
+The procedure application occurs after function acquisition returns. A cold
+operation slot has an acquisition frame; a warm lookup does not re-enter it.
+The returned procedure runs on every call. Its body inherits ambient caller
+frames, not the acquisition frame that has already unwound.
+
+Consequently a method body is neither automatically pure nor automatically
+receiver-locked. An allowed mutation may be rejected by the enclosing complete
+read replay, while a mutation intersecting a genuine outer cold receiver is
+rejected immediately. These are different rejection points. None rolls back
+arbitrary effects already performed by the body.
+
+* Recorded producer and production consumers
+
+Producer: gerbil-poo =fdeadfa40ca5cee5fe20308985aef1577f2eb49b=.
+Core HEAD: =80e2e74022c9c4053445475402856c5f369aec48= with unrelated dirty work
+preserved. LeanPoo: =6e6a706e14fa6f8199e4f36711440355b42ef335=.
+
+Actual =object.ss= entries are =compute-slot-value=, =check-object-edit= and
+=.call=. =slot-observation.ss: replay-slot-reads!= checks recorded dependencies
+and repeats currentness checks after callbacks. The production
+[[file:../../../admission/source.ss][SourceAdmissionContract.]] already wraps execution of =source-contract-admit=
+with =call-with-source-slot-reads= and independently rechecks collected sources
+before returning. It does not merely record acquisition of =.admit='s function.
+This chapter does not replace or weaken that boundary.
+
+* Six actual Scheme controls
+
+Owner: [[file:../../../t/mop-call-phases-test.ss][mop-call-phases-test.ss]], run through the unchanged heap-fenced Core
+=just test-file= entrypoint. It samples actual =active-slot-computations= values;
+it never installs, clears or shadows that registry. =has-frame?= compares the
+actual receiver by =eq?= and slot symbol by =eq?=. The unused branch raises if
+forced. No timing race or manual purity/generation marker is involved.
+
+** Cold acquisition and warm call
+
+The operation expression increments =acquired= and samples =lookup-frames=;
+its returned lambda increments =invoked=, samples =body-frames= and reads port:
+
+#+begin_src scheme
+(.def Root
+  port: 5432
+  operation:
+  (begin
+    (set! acquired (+ acquired 1))
+    (set! lookup-frames (active-slot-computations))
+    (lambda ()
+      (set! invoked (+ invoked 1))
+      (set! body-frames (active-slot-computations))
+      (.get Root port))))
+(check-equal? (.call Root operation) 5432)
+(check-equal? (has-frame? lookup-frames Root 'operation) #t)
+(check-equal? (has-receiver? body-frames Root) #f)
+(def function (.get Root operation))
+(check-equal? (.call Root operation) 5432)
+(check-equal? (eq? function (.get Root operation)) #t)
+(check-equal? acquired 1)
+(check-equal? invoked 2)
+#+end_src
+
+The warm function retains actual identity, but its body is invoked again. The
+actual ambient frame parameter restores to its prior identity. This is native
+behavioral evidence, not a Lean proof of compiled closure identity.
+
+** Top-level body mutation of the receiver
+
+The body reads Root.port, replaces it with 5433 and returns the old 5432. No
+Root receiver frame is active when the body begins. The supported write
+succeeds, Root revision advances once, and complete-call replay rejects:
+
+#+begin_src scheme
+(def roots
+  (recorded (lambda () (set! returned (.call Root operation)))))
+(check-equal? returned 5432)
+(check-equal? (.get Root port) 5433)
+(refuses "stale slot dependency"
+  (cut replay-slot-reads! roots (lambda (_receiver _key) (void))))
+#+end_src
+
+The rejected replay does not restore port 5432. A bare =.call= does not itself
+invoke final replay; that boundary belongs to admission/observation consumers.
+
+** Warm function body and external dependency
+
+Root.operation is explicitly warmed before the observed call. Its lambda reads
+Database.port and changes that independent object to 5433. Neither Root nor
+Database has an active computation frame at the body entry. Root revision
+remains unchanged, but the observer surrounding the complete call records an
+actual Database read. Native replay raises =stale slot dependency=.
+
+Root's revision or the validity of its cached procedure is therefore not a
+certificate for the procedure's later demands.
+
+** Nested caller frame still protects the receiver
+
+#+begin_src scheme
+(.def Root
+  port: 5432
+  operation:
+  (lambda ()
+    (set! body-frames (active-slot-computations))
+    (.putslot! Root 'port ($constant-slot-spec 5433)))
+  preview: (.call Root operation))
+(refuses "object mutation during computation" (cut .get Root preview))
+(check-equal? (has-frame? body-frames Root 'preview) #t)
+(check-equal? (has-frame? body-frames Root 'operation) #f)
+#+end_src
+
+Root.preview is still computing when the procedure runs. The mutation is
+refused before revision/value changes, and exceptional unwinding restores the
+original frame parameter. The protection comes from the actual outer frame,
+not from an invented method-body guard.
+
+** Nested caller does not freeze an independent dependency
+
+Root.preview invokes Root.operation; the body records the actual preview frame,
+reads Database.port and changes Database independently. Root's revision remains
+unchanged. The operation acquisition frame and Database frame are absent at body
+entry, and complete-call replay rejects the stale Database read. This explicitly
+covers the nested external-demand combination rather than inferring it solely
+from separate top-level tests.
+
+** Acquisition-only observation is insufficient
+
+The same external-reading function is acquired inside =recorded=, but invoked
+outside that observer. It changes Database.port. Replaying only the acquisition
+records succeeds: those roots contain no Database receiver. This is an explicit
+negative-scope control, not a recommended client API:
+
+#+begin_src scheme
+(def lookup-roots (recorded (cut .get Root operation)))
+(check-equal? (.call Root operation) 5432)
+(replay-slot-reads! lookup-roots (lambda (_receiver _key) (void)))
+#+end_src
+
+Compare the complete-call control above, which rejects. A runtime cannot infer
+arbitrary future lambda reads from acquisition metadata; the observation window
+must encompass the procedure's actual execution. No second field table or
+manual list of anticipated body dependencies is added. Complete-call observation
+here means actual reads through the supported MOP/source entrypoints; it does
+not discover arbitrary raw I/O or prove all effects of an unknown lambda.
+
+* Lean correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/CallPhases.lean][Admission/CallPhases]] projects frames as receiver/slot identities. Native
+=.get= entry/exit and complete identity-based projection remain correspondence
+premises; this is not a compiler/continuation semantics proof. The lookup
+projection describes successful non-cyclic acquisition: no same receiver/slot
+frame is already active. Native cyclic acquisition raises instead of pushing
+a duplicate frame; that error path is not newly qualified here.
+
+- =cold_lookup_pushes= and =warm_lookup_adds_no_frame= distinguish acquisition.
+- =body_restores_ambient= expresses the audited expansion and native observations.
+- =top_level_receiver_edit_allowed= uses the existing concrete invalidation
+  =commit= model with no active receiver; no artificial frame is created.
+- =nested_receiver_edit_vetoed= uses the same model with an actual outer receiver.
+- =rejected_edit_not_certified= prevents a failed body edit from becoming
+  normal certification.
+- =unrelated_demand_edit_allowed= shows that an ambient frame for one receiver
+  does not block a disjoint mutation closure.
+- =lookup_only_misses_body_change= proves that lookup projection can remain
+  current while the complete call projection is stale.
+- =both_requirements_and_identity= reuses SerialUse's complete acceptance law.
+- =diagnostic_schedule= retains the earlier ordered-failure law.
+
+The frames for top-level, nested and unrelated objects are finite projections
+of the actual test configurations; they are not user-supplied runtime flags.
+The native weak invalidation closure and observed read graph are not identical;
+neither model nor consumer may silently replace one with the other.
+
+* Quint correspondence
+
+[[file:../../../dev/proofs/quint/CallPhases.qnt][CallPhases]] distinguishes lookup, body entry, mutation and ordered
+certification. Cold/warm and top-level/nested contexts are explicit alternatives.
+A blocked body propagates its failure and cannot certify. Source-first final
+diagnostics apply to bodies that complete; an escaping body exception is not
+replaced with a later final-check error. Terminal states retain a self-step. Each call invokes its body once; the native
+two-call test separately verifies reuse of the same cached function identity.
+
+| Control | Meaning |
+|---------+---------|
+| positive | Lookup shape, acquisition unwind, body invocation, nested protection, allowed top-level edit, complete final reads, both requirements, child identity and source-first diagnostics |
+| acceptVeto | Incorrectly certify after the nested body throws a mutation-veto exception |
+| lookupOnly | Omit the body demand from final replay; stale external dependency is accepted |
+| leak | Incorrectly retain the acquisition frame into the body |
+| dropCaller | Incorrectly discard the enclosing preview frame |
+| dropB | Omit the second independent contribution requirement |
+| parent | Accept the parent's identity for the child |
+| prefix | Report stale reads before an earlier source failure |
+| protected | Limitation witness on the correct algorithm: =.call= does not prevent every body mutation |
+| acceptance | Valid configuration reaches certification |
+
+=protected= does not mean the positive algorithm failed: it intentionally asks
+for a guarantee that native =.call= does not supply. The retained
+frame facts are samples at lookup/body entry, not a claim that the ambient
+frame remains installed after a returned/failed caller. Native controls separately
+check actual stack restoration. The root/demand/source counters model concrete observed changes; no native
+observer epoch or purity label is inferred from them.
+
+* Real Scenario controls and remaining external premise
+
+The unchanged Gitea/PostgreSQL regressions cache the parent plan at 5432, derive
+a child at 5433, retain two contributions and admit through the real published
+Contract. The child Gitea plan reads 5433; the cached parent scalar remains 5432.
+The lifetime source-write control then rejects changed JSON, and preserves the
+earlier =configuration source changed= diagnostic when a read record is also
+stale. Source immutability after those shared-file edits is not claimed for the
+parent; its cached scalar alone is not source authority.
+
+These controls validate configuration certification. The current chapter does
+not introduce a new deployment executor. External compare-and-apply remains the
+explicit provider/runtime premise established in 32.25; acquiring a cached
+function, returning from =.call= or restoring dynamic scope supplies no external
+atomicity or rollback. No check is removed across arbitrary method execution.
+Parallel mutation, manual registry shadowing, raw unsupported writes and
+continuation re-entry are outside the current native qualification.
+
+* Qualification
+
+Completed gates and retained failures are recorded below. Raw outputs remain
+local, never source-controlled. No production Scheme, Loader or timeout change
+is part of this work.
+
+
+** Native and Lean gates
+
+The final six-case call suite passed =MODULE-OK=, =HARNESS-OK= and final =OK=,
+with no harness/error/overflow markers. Four serial-use controls, seven lifetime
+controls and eleven real service-publication controls also passed: 28 native
+cases in total. The initial five-case run is retained separately; it is not
+counted twice. Native frame samples were never replaced by fabricated stacks.
+
+The final Lean build passed 166 jobs, the structure-shape audit and the standard
+axiom audit over 5231 declarations. Ten CallPhases theorems are explicitly
+required by the aggregate gate. The earlier successful model build (5228
+declarations) was superseded when the native veto-exception path was represented
+explicitly. No axiom, execution limit or timeout was enlarged.
+
+The first full Quint run used a model that did not yet explicitly reject a body
+whose nested receiver edit throws. Correspondence auditing against the native
+exception control exposed that omission. The model now derives =blocked= from
+the actual projected target/frame relation, refuses certification of that body,
+and preserves its escaping failure instead of substituting a later diagnostic.
+The matched =acceptVeto= variant demonstrates why that rejection matters.
+
+The in-flight older run failed the final source-cut gate after these deliberate
+qualification-source changes; no passing receipt was issued. Its input/difference
+manifests, full output, and exact initial QNT source (hash matched to its input
+cut) are retained under =/private/tmp/core-call-phases-20261018/=. This is a model
+correction, not a production-code repair or a passing gate relabeled after edits.
+The final six-case native source is bound by the subsequent qualification cut.
+
+
+** Final source-bound Quint gate
+
+Quint 0.33.0 / Apalache 0.62.1 / TLC typechecked 109 QNT sources and obtained all
+108 expected outcomes: 14 positive cases, 79 unsafe variants, five
+correct-algorithm limitation witnesses and ten acceptance witnesses. The final
+source-cut assertion passed and produced =quint-final-receipt.ss= with its
+=.inputs.json= manifest. No invariant, heap or timeout was relaxed.
+
+| Model | Predicate | Generated / distinct | Result |
+|-------+-----------+----------------------+--------|
+| CallPhases | safety | 576 / 480 | Exhaustive pass |
+| CallPhases_acceptVeto | FailedBodyRejected | 420 / 420 | Expected counterexample |
+| CallPhases_lookupOnly | CurrentPlan | 404 / 404 | Expected counterexample |
+| CallPhases_leak | MethodUnwound | 241 / 241 | Expected counterexample |
+| CallPhases_dropCaller | NestedProtected | 321 / 321 | Expected counterexample |
+| CallPhases_dropB | TwoRequirements | 387 / 387 | Expected counterexample |
+| CallPhases_parent | ReceiverIdentity | 388 / 388 | Expected counterexample |
+| CallPhases_prefix | OrderedDiagnostic | 397 / 397 | Expected counterexample |
+| CallPhases_protected | NoBodyMutation | 297 / 297 | Expected counterexample |
+| CallPhases_acceptance | RejectAll | 388 / 388 | Expected counterexample |
+
+The positive model exhausts 480 distinct states, with zero states queued. The
+=protected= counterexample concerns a deliberately stronger claim than native
+.call provides; it is not a failing positive invariant. The external conditional
+commit assumptions of 32.25 remain unchanged and are also retained in the full
+catalog. No provider commit implementation was added.
+
+The audited production/admission/helper and gerbil-poo source identities remained
+unchanged during the final audit. Native controls and formal results qualify the
+recorded cuts, not every unrelated dirty file or reproducibility of installed
+binaries. Raw logs, the rejected earlier cut and exact initial model remain only
+under =/private/tmp/core-call-phases-20261018/=. =qualification.json= joins
+source identities and output hashes. No production Scheme or Loader was edited.
+
+* Follow-up
+
+[[file:32.27-source-admission-body-observation.org][32.27]] exercises full body observation through the actual
+SourceAdmissionContract. without a test-side recorded/replay wrapper.

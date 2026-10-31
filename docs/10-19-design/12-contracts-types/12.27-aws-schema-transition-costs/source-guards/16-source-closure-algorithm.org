@@ -1,0 +1,130 @@
+#+title: 12.27.29 Source Closure Algorithm And Evidence Responsibilities
+#+property: DOCUMENT_ID 12.27.29
+#+language: en
+
+* Capacity target and non-overlapping responsibilities
+
+The target is at least several thousand real Modules, with 1000, 5000 and
+10000 as qualification bands. It is not a ten-million-Module requirement.
+Directory entries, pure graph nodes and actual native declarations are separate
+workloads. None can substitute for another's capacity result.
+
+| Owner | Question it answers | What it does not establish |
+|-------+---------------------+----------------------------|
+| Quint SourceClosureWork | Can ordering, sharing, demand or an effect boundary produce a bad execution? | An arbitrary-size complexity theorem or native capacity |
+| Lean SourceClosureWork | What work accounting and identity properties hold for any finite input/fuel? | Real filesystem completeness, hash cost, macro memory or wall time |
+| Scheme module-closure-work-test | Does the production kernel match the oracle and counted-work laws at scale? | Native publication expansion, module loading or linking capacity |
+| Native declaration gates | Can real role files expand and remain within the unchanged budgets? | An asymptotic theorem from a single successful run |
+
+Quint's finite counters detect bad traces. Lean owns the general work argument;
+we do not duplicate that proof by making Quint enumerate thousands of Modules.
+The source digest binds the artifacts; it does not prove a semantic refinement
+between the languages. Native correspondence tests remain necessary.
+
+* Quint: interactions and counterexamples
+
+[[file:../../../../../dev/proofs/quint/SourceClosureWork.qnt][SourceClosureWork]] uses a shared diamond, a topology cycle, multiple roots and
+an unrelated cold identity. This is a source-support topology, not permission
+to accept a cyclic native module import. The DFS worklist is checked against
+an independent finite saturation oracle, rather than its own resulting list.
+
+The model distinguishes discovery, pure pre-effect checking, an opaque effect,
+pure post-effect checking and completion. A source version abstracts bytes and
+native name resolution. A changed selected dependency refuses acceptance;
+an unrelated change does not invalidate this operation's source support.
+
+The final focused source-bound qualification passes all nine expected outcomes
+through the existing pinned checker. A run edited during qualification was
+correctly refused as a changed source cut and is not counted as a passing run.
+
+Nine existing-runner entries cover positive safety plus eight expected
+counterexamples: repeated expansion, eager unrelated traversal, omitted shared
+dependency, reuse across an effect, duplicate checks in a pure epoch, leaked
+fixture, whole-catalog guard scanning and a reject-all assertion. The guard-scope
+control directly rejects checking an unrelated identity from the same catalog;
+one visit per file is insufficient if it still visits the wrong closure. The
+final assertion must fail on a valid
+acceptance path, preventing a vacuous always-reject positive result.
+
+The positive closure fits below the 16-pop counterexample horizon. That cap is
+not a production timeout or a general termination proof. Topology is immutable
+inside the model; source checks are pure within each epoch. Open callbacks,
+macro expansion, changing dependency topology and external check-to-use races
+are not silently classified as pure by this model.
+
+* Lean: cardinality-independent work accounting
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork.lean]] reuses TestAdmission's discovery semantics instead of
+defining another closure relation. The costed state projects to the existing
+discovery exactly. It proves:
+
+- step_accounting / run_accounting: pops + remaining queue length equals
+  root occurrences + charged dependency edges.
+- run_edge_accounting: charged edges equal the sum of dependency-list lengths
+  over expanded identities.
+- expanded_identities_unique: those identities are distinct, including shared
+  dependencies and back edges.
+- queue_work_bound: queue removals cannot exceed root occurrences plus the
+  charged edges. Existing demand-coverage theorems constrain the visited region.
+
+Thus the algorithm charges each expanded identity once and each outgoing edge
+occurrence once. Duplicate queue entries still cost a lookup; they are not
+misreported as free. With expected constant-time identity hashing and fixed
+topology, the kernel has expected O(R + Vd + Ed) work, where R counts root
+occurrences and Vd/Ed belong to the demanded closure. Hash collision behavior,
+source byte sizes, native expansion, retained read records and garbage collection
+need separate measurements. These theorems do not prove their cost bounds or
+the fairness/termination of arbitrary external callbacks.
+
+The focused Lean source check passes without added axioms or sorry placeholders.
+
+* Production Scheme correspondence
+
+[[file:../../../../../t/module-closure-work-test.ss][The focused test]] calls the unchanged production module-closure. The finite
+model fixture is compared with a separate saturation implementation. The scale
+fixture contains a deep chain, shared roots, duplicate roots and back edges;
+its exact ordered result must equal the expected identity sequence.
+
+| Nodes | Unique expansions | Charged edges | Queue removals |
+|-------+-------------------+---------------+----------------|
+| 1000 | 1000 | 2998 | 3001 |
+| 5000 | 5000 | 14998 | 15001 |
+| 10000 | 10000 | 29998 | 30001 |
+
+These counts are derived from the declared fixture and asserted individually,
+not extrapolated timings. The observed aggregate is 16000 expansions, 47994
+edges and 48003 queue removals. The native harness passes with MODULE-OK,
+HARNESS-OK, final OK and natural exit zero under the unchanged heap policy.
+
+* What this changes about the optimization strategy
+
+The pure iterative kernel already satisfies the counted-work law at these
+bands. Replacing it with another DFS or an additional cache is not justified.
+The open capacity failure is native declaration retention, not proof that this
+kernel repeatedly expands shared identities. Follow actual reader/native
+import roots and effective support closures; compare repeated work within the
+same effect-free epoch, never erase mandatory checks across opaque effects.
+
+The real thousand-Module declaration gate previously refused under its memory
+policy. This work does not relabel it as passed, change gerbil-poo, add a cache,
+raise heap/time limits or establish a complete incremental invalidation index.
+Schema/source refusal and publication cleanup remain covered by the separate
+native AWS qualification. No runtime Loader or push is part of this change.
+
+* Reproduction
+
+From Core, use the existing qualification tools:
+
+#+begin_src text
+python3 dev/proofs/quint/check.py --case-prefix SourceClosureWork --typecheck-scope selected --receipt .data/qualification/source-closure-work.scm
+cd dev/proofs/lean
+lake env lean YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean
+cd ../..
+just test-file t/module-closure-work-test.ss true
+#+end_src
+
+The Python invocation is the existing pinned proof-checker orchestration,
+not a replacement for Scheme semantic tests. No new runner is introduced.
+
+[[file:14-declaration-capacity.org][Real declaration capacity boundary]]
+[[file:15-public-preparation-and-read-retention.org][Core-only preparation and read retention]]

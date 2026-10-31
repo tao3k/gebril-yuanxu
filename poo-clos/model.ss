@@ -7,8 +7,8 @@
 ;;; These are pure model values, not mutable CLOS lifecycle instances.
 (import (only-in :clan/poo/object .ref .slot? object?)
         (only-in :std/list/list every)
-        (only-in :core/poo-clos/types clos-instance?)
-        (only-in :core/poo-clos/classes poo-clos-class-effective-slots))
+        (only-in :yuanxu/poo-clos/types clos-instance?)
+        (only-in :yuanxu/poo-clos/classes poo-clos-class-effective-slots))
 (export poo-clos-model-prototype poo-clos-model-validation-failure
         poo-clos-model? poo-clos-check-model)
 

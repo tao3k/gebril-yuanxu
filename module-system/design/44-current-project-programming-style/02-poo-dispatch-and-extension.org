@@ -1,0 +1,95 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Programming Style 02 - POO Dispatch And Extension
+
+* Public object law
+
+The ordinary surface consists of noun-valued slots such as =events=, =edges=,
+=trajectories=, =profiles= and =queries=.  Native =gerbil-poo= slot algebra
+expresses default values, functional refinement, nested-object refinement and
+ordinary override.  Do not publish =add-*=, =remove-*=, =replace-*= or a patch
+language that restates those operations.
+
+* Native lexical slot law
+
+** Start from a maintained use case, not from an extension operator
+
+Before choosing syntax, name the actual Profile or Scenario, its maintained
+defaults, the consumer of the changed field, and the user's intended change.
+An example must make the resulting business behavior visible. A language/cache
+probe is useful semantic evidence, but is not by itself a user-interface example.
+
+Use direct assignment when the user knows the complete desired value, including
+when replacing an inherited field. Use an inherited-value transformation only
+when retaining the upstream value is part of the requirement: for example,
+append a release flag to a maintained build command without copying that command.
+Use object refinement to retain other slots of a maintained object; explain
+which defaults or behavior it preserves. Reuse/derive a Profile when that recipe
+is useful, not merely to demonstrate inheritance. New objects and core protocol
+extensions have separate prototype/Contract requirements.
+
+Simple configuration must be a first-class path. The suggested 80%/90% ordinary
+configuration share is a user-experience hypothesis, not a measured distribution
+or a target quota. Different users and Scenarios need different disclosure levels.
+The implementation may preserve intermediate objects through native refinement;
+that does not require ordinary authors to write those intermediate operations.
+
+Every configuration example must state whether a later upstream change is
+inherited, replaced, or transformed. Do not present replacement of a complete
+commands list as evidence of inherited-command extension. Receiver/cache tests
+must support that business distinction, not substitute for it.
+
+** Receiver semantics supporting those use cases
+
+Use gerbil-poo's native lexical slot references for relationships between an
+outer object and a nested object. A nested Pipeline can compute =checks= as
+=(list build test package)= from its enclosing effective Profile. Those names
+are receiver-aware slot identifiers, not eagerly extracted parent values.
+Inheritance must retain the effective receiver and receiver-local lazy cache.
+Do not replace this relationship with a fixed parent list, manual extraction/
+reinsertion, or an ad hoc self/super hook in ordinary configuration.
+
+Native lexical shadowing still applies when an inner object defines the same
+slot name. Preserve syntax objects/bindings through macros; textual identifier
+substitution is not equivalent. At a real function boundary, pass the effective
+receiver/values explicitly rather than assuming a free slot name is available.
+The [[file:../164-pipeline-receiver-cache-validation.org][pinned-source receiver/cache controls]] preserve the explicit-receiver baseline,
+the shorter lexical variants and the stale-parent-list negative control.
+This law is existing native POO semantics, not an unimplemented module adapter.
+
+* Dispatch ownership
+
+| Behavior shape | Owner |
+|----------------+-------|
+| One receiver family, descendants replace one behavior | slot =.defgeneric= |
+| Pure validation, indexing or graph traversal | named pure function |
+| Provider/executor crossed with Profile, Scenario, Case or Contract kind | CLOS generic and method bundle |
+| Boundary shape and admission | =define-type= and Contract |
+
+CLOS is mandatory only when at least two axes grow independently.  Reviewers
+must name both axes and the owner of each method bundle.  Otherwise use slot
+dispatch or a function.  A base Provider method fails closed for unsupported
+crossings; symbolic =case= and provider-name tables are not substitutes.
+
+Use declarative =.defgeneric= and =.defmethod= for normal CLOS authoring.
+Native prototype parameters use =(value (prototype NativePrototype.))=; real
+CLOS class parameters retain =(value ClosClass)=. Their lowering uses
+=poo-clos-prototype-specializer= and =poo-clos-class-specializer= respectively.
+Handwritten specializer lists and invocation-frame lambdas belong to kernel/
+expansion references, not the normal Module authoring surface. A private
+=defrules= frame may remove repeated declarations while preserving bindings.
+Canonical package imports preserve prototype identity; mixing relative and
+package identities for one owner is forbidden. Generic protocol clauses and
+deferred method declarations inside .defmethod-bundle are implemented in Core;
+use explicit composition as the registration boundary. Standalone .defmethod
+keeps its immediate behavior. See the [[file:../164-funflow-contract-and-dispatch-design.org][declaration-layer convergence design]] for
+source-runtime evidence and the separate, still-proposed Funflow Loader bridge.
+
+* Composition law
+
+Extract a capability prototype only for a stable orthogonal behavior axis with
+a disjoint slot set, a named operation, at least two real consumers and valid
+C4 composition semantics.  Shared field names alone do not justify
+inheritance.  Prototype metadata never leaks into JSON, ABI or receipt rows.

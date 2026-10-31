@@ -1,0 +1,168 @@
+#+title: 12.27.12 Remaining Costs and Diagnostic Limits
+#+property: DOCUMENT_ID 12.27.12
+#+language: en
+#+property: STATUS retained-evidence
+
+* Disjoint attribution of the 29767 ms receipt
+
+The 29767 ms clock starts inside the AWS Case. It does NOT include cold
+process/SDK/test-module import before that Case. Its first checkpoint reports
+9656 ms process CPU versus 35 ms Case CPU: 9621 ms precedes the Case, but that
+is process CPU, not an import-only or wall-time measurement. A whole-worker
+receipt is needed to quantify that separate startup remainder.
+
+| Non-overlapping AWS span | Milliseconds |
+|--------------------------+--------------|
+| Setup through first source-context | 1475 |
+| First Graph | 5832 |
+| Schema-transition Graph | 3874 |
+| Four native evaluation misses | 4793 |
+| Sixteen native attribute-cache-hit queries | 4424 |
+| Two cached-output realizations | 782 |
+| Other admission/publication/checkpoint/source work | 8587 |
+| Total AWS Case | 29767 |
+
+The four misses are 2128, 859, 853 and 953 ms respectively. Already-hit queries
+still perform live source/derivation checks at effect boundaries. Their 4424 ms
+is not evidence that the checks can be removed or reused after validators.
+
+Existing bracketed observation allows a disjoint split INSIDE each Graph.
+Nested import spans take precedence, followed by source guards, publication
+work and the remaining interval. Millisecond event rounding applies:
+
+| Graph work | First Graph ms | Transition Graph ms |
+|------------+----------------+---------------------|
+| Native source import union | 1578 | 0 |
+| Source guards outside imports | 665 | 759 |
+| Publication outside imports/guards | 1287 | 1383 |
+| Other selection/preparation/finalization | 2302 | 1732 |
+
+The slowest inclusive native import spans are OpenTofu objects (1186 ms),
+OpenTofu execution (1007 ms) and Funflow objects (787 ms). They are nested and
+must NOT be summed. The transition Graph's 3874 ms is fresh declaration and
+source work, not another 3874 ms of cold importing. This attribution does not
+invent a per-module timer for imports that precede the Case.
+
+** Rejected candidate: moving every prepared guard into byte admission
+
+A candidate moved raw prepared-role/build-source comparisons to the public
+source-admission producer. Focused controls and the full init-owned Case
+passed, including independent checks and collector replay. However, actual
+physical reads remained 8321 at the first Graph and 49595 at AWS completion.
+Counted comparisons grew from 49901 to 126325; source-guard CPU grew from
+5072020 to 7622983 microseconds. Some comparisons previously occurred outside
+that counter, so the counts are not a claim that every extra event is new
+work. They nevertheless do not establish a reduction. AWS took 43895 ms and
+24002 ms Case CPU in that local receipt, versus 29767/20768 ms previously.
+The candidate was reverted, including its expanded guard/enrollment behavior.
+No collector or source-contract semantics change is shipped as a supposed
+performance optimization.
+
+That diagnostic run also supplies the whole-worker boundary through the
+EXISTING parent TestingScript observation. Ops reports a 63719 ms child span;
+43895 ms belongs to AWS, leaving 19824 ms for startup/import/profile setup,
+sibling qualifications and harness completion. This is a measured remainder,
+not 19824 ms of pure cold import. Parent preparation ends at worker launch
+10314 ms; parent qualification completes at 74159 ms. Its source-only startup
+and the child's pre-Case import must not be silently folded into the AWS clock.
+
+** Shared package entries within the existing pure read window
+
+The smaller candidate keeps every original guard and Context callback. It
+changes only the granularity of the already memoized package-snapshot query:
+each expected =(path . bytes-or-absent)= entry is checked through the existing
+=module-source-observe= window. No state survives that window. A source in a
+child directory has additional negative ancestors, but it shares its final
+positive =gerbil.pkg= entry with a source at the package root. Previously the
+different complete ancestor lists caused repeated parsing of that same package
+and repeated checks against the same SDK package metadata.
+
+The focused native control prepares two such sources, then invokes both guards
+in one pure window. The package has one read request, rather than merely one
+physical read with two parsing/check requests. A later independent invocation
+requests it again. Adding a closer =gerbil.pkg= still rejects the earlier
+negative lookup; changing the original package still rejects its old snapshot.
+No extra cache, global index, observation category or Context bypass is added.
+Macro expansion, initialization, policy validation and Nix calls retain their
+original boundaries. The aggregate Case remains the acceptance gate for this
+candidate's actual work-count effect.
+
+The old-implementation control runs the SAME new native assertion and reports
+two package requests where the candidate reports one. Its expected failure is
+retained as the control, not relabelled a passing gate or hidden by changing
+the assertion. The ordinary independent call still requests the package again.
+
+The candidate's complete init-owned aggregate exits naturally with seven
+MODULE-OK, two HARNESS-OK and two final OK markers, with no error/overflow
+markers. Observation remains enabled at parent/child boundaries with the
+ordinary four-command debug allowance, 60-second idle and 600-second total
+budgets. Schema upgrade, old evidence refusal, failed-publication value
+preservation and cleanup pass in the same Case. Its disjoint AWS receipt is:
+
+| Span | Milliseconds |
+|------+--------------|
+| Setup through first source-context | 1503 |
+| First Graph | 5891 |
+| Transition Graph | 3845 |
+| Four misses (1849, 937, 971, 1306) | 5063 |
+| Sixteen attribute-cache-hit queries | 4486 |
+| Two output realizations | 1084 |
+| Other admission/publication/checkpoint/source work | 8516 |
+| AWS total | 30388 |
+
+The Ops worker is 44384 ms, leaving 13996 ms outside AWS for cold
+startup/import/profile setup, sibling qualifications and harness completion.
+The first AWS checkpoint's pre-Case CPU is 9750 ms. Native imports within the
+first Graph have 1644006 microseconds union duration; the second Graph adds no
+new import union. Parent preparation is 9146 ms, with 113 ms completion
+remainder: 9146 + 44384 + 113 = 53643 ms parent qualification time. These
+boundaries prevent labelling either the entire worker remainder or a second
+Graph as cold imports. Per-module attribution before Case observation remains
+unresolved, rather than a fabricated timing breakdown.
+
+File requests fall from 129397 to 126253 (3144 fewer package parsing/lookup
+requests); first-Graph requests fall from 13048 to 12752. Physical file reads
+remain 49595 overall / 8321 at the first Graph. Read windows remain 530 and
+byte-comparison counts remain 49901. Required source/effect boundaries have
+not been removed. The tradeoff is 5304 additional generic query misses for the
+finer-grained index. Source-guard CPU is 5646182 microseconds versus 5072020 in
+the earlier receipt. Case CPU is 20989 ms versus 20768 ms. Therefore the
+3144-request reduction is qualified, but an overall speedup is NOT established:
+30388 ms is not an improvement over 29767 ms. The entry-level change is a
+behavior/work-count-qualified local candidate, not a completed performance
+claim. Remaining costs include repeated physical reads across real boundaries,
+declaration evaluation and pre-Case source imports; no metadata-only shortcut
+or new persistent cache is used to conceal them.
+
+An intermediate aggregate failed before the Schema refresh because two added
+observation counters exhausted the existing bounded Case-category allowance.
+That run is not a publication receipt. The two aggregate counters were removed;
+the focused control uses its already captured native messages instead. The
+observation bound, heap and progress budgets remain unchanged. Observability
+must not silently consume an unbounded set of categories as diagnostics grow.
+
+* Diagnostic boundary
+
+The existing test adapter gives detailed observation a fresh four-process
+debug logging allowance per Case. The progress-aware route always requests
+=--log-format internal-json --verbose= for native activity, independently of
+observation emission; only the bounded diagnostic calls additionally receive
+=--debug=. Those verbosity flags grant no admission authority. Ops owns the
+existing process boundary; no independent runner or Scheme evaluation-result
+cache is introduced. Disabled observation does not allocate the debug
+allowance and does not disable inactivity checks. Native controls check scope restoration, renewed
+allowances, exhaustion without extra processes, and zero domain MOP reads.
+
+Native diagnostics distinguish derivation queries, store queries, realization
+and registration; they also retain Nix's own lock/goal messages in the local
+Ops log. Raw JSON/logs are not versioned. Their output has a cost, so these
+measurements are diagnostic receipts, not an uninstrumented benchmark.
+
+The recorded historical time window was also queried for retained system
+events naming Nix executables or store paths. It provides no attributable Nix
+wait record. Unrelated SQLite messages from =syspolicyd= are not evidence of
+a Nix security-assessment delay. No system daemon, trust policy, timeout or
+heap allowance was changed. A reproduced slow call with these native activity
+records is still required to close the 24.195-second root cause.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

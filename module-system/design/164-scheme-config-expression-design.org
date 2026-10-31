@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Scheme Config Expression Design
+#+property: STATUS superseded-by-consolidated-design
+
+* Consolidated design
+
+The earlier exploratory examples have been removed. Read
+[[file:164-profile-module-targeting-design.org][Scenario CompositionContracts and Native Profiles Objectification]] for the single complete
+example, Module/Profile roles, inherited slot refinement, automatic composition and
+existing-versus-proposed capability matrix. Native POO remains the semantic
+owner; the document explicitly records unimplemented syntax and admission.

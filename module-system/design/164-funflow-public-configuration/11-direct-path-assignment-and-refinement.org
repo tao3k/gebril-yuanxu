@@ -1,0 +1,485 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Configuration 11: Direct Path Assignment and Refinement
+#+date: [2026-10-15]
+#+property: STATUS proposed-path-assignment-no-implementation-or-loader-change
+
+* Corrected publication model
+
+[[file:13-independent-profiles-and-scenario-composition.org][Module 13]] supplies the independent Profile and Scenario publications used
+here. gerbil is a normal Scenario reference to a Profile occurrence; funflow is
+its configured feature binding. Neither Profile ownership under a Module nor a
+Scenario.Profiles container is implied. The lexical Check-container receiver is
+effective-config, distinct from the enclosing Profile occurrence.
+
+* Decision: write a value, or explicitly depend on its inherited value
+
+Ordinary configuration assigns the complete intended value. It does not need
+an override wrapper merely because the slot was inherited. Native functional
+refinement is for deriving a new value from an inherited value; =>.+ is for
+extending an existing object while retaining its other slots. Constructing a
+new Check uses its published prototype and is a separate operation.
+
+| Intent | Native expression within the owning object | Meaning |
+|--------+-------------------------------------------+---------|
+| Set commands | commands: '("gerbil" "build" "release") | Replace the slot value; no implicit shell |
+| Set all artifacts | artifact-outputs: '(release-build-log) | Replace, not append |
+| Keep artifacts and add another | (artifact-outputs => append '(extra-log)) | Transform the inherited list |
+| Refine an existing Check | build: =>.+ {(commands => append '("--release"))} | Retain its defaults and append to its maintained command |
+| Add a Check | smoke: (.o (:: @ (.get ff prototypes check)) ...) | New object with an explicit module-owned prototype |
+
+The last row is notation describing an existing native constructor, not a new
+form or a complete example. The complete example below has no omitted fields.
+The Contract defines representation and constraints; commands names the task
+attribute, not its string/list implementation type.
+
+* Normative disclosure rule: start from the user's intent
+
+Expose only the native mechanism needed for the requested operation. The same
+admitted object graph serves ordinary configuration and advanced extension;
+there is no separate user data model translated into a second extension model.
+The fact that a value is inherited or happens to be a POO object is not, by
+itself, a reason to require explicit object-extension syntax from its user.
+
+| User intent | Default expression | What the user must understand |
+|-------------+--------------------+-------------------------------|
+| Set or completely replace an ordinary value | Native slot assignment | Field meaning and Contract; no inherited-value operation |
+| Set a field inside a known inherited object | Proposed direct path assignment | Target path and field Contract; intermediate =>.+ is lowering machinery |
+| Append, filter or calculate from the inherited value | Native => with a named pure transformation | The original value and the transformation; do not silently append |
+| Explicitly extend an existing object or strategy | Native =>.+ or prototype inheritance | Which object is retained and which slots/behavior are refined |
+| Create a genuinely new domain object | Module-scoped prototype plus native construction | Prototype origin, required fields and containing extension position |
+| Change a core mechanism or extend a protocol | Native prototype methods and Contract extension; Generic only for independent axes | Upstream extension boundary, consumer support and admission obligations |
+
+Assignment replaces the complete leaf. Object refinement retains other inherited
+slots. A path assignment uses refinement internally to retain intermediate
+objects, but does not make the leaf value a merge. The user chooses intent;
+the expander must not guess from the runtime value's type whether to replace,
+append, construct, or invoke a strategy. Explicit methods/protocol changes belong
+in their admitted extension source role, not a normal business-value field.
+
+** CI/CD examples at the appropriate disclosure level
+
+Start with an independent Gerbil CI Profile that maintains the build command,
+Check defaults and Pipeline selection, reused by a project's CI/CD Scenario.
+The user wants either a complete replacement command or the same maintained
+build with one additional release flag. These are different requirements:
+
+#+begin_src scheme
+;; Complete replacement: no dependency on the previous commands value.
+commands: '("custom-builder" "release")
+
+;; Alternative: retain the upstream command and append one flag.
+(commands => append '("--release"))
+#+end_src
+
+Both snippets belong inside the existing build Check. When the upstream Profile
+adds a build option, the replacement remains the user's complete command; the
+append form retains the upstream option and adds --release. Revalidate the final
+command against its Contract in either case. Appending is appropriate only when
+the maintained command's argument protocol supports that flag.
+
+Similarly, selected-checks can be assigned when the user wants an exact selection,
+or transformed with (selected-checks => append '(smoke)) when all upstream selections should remain.
+Creating smoke does not implicitly select it. A cached-parent test must show that
+the effective child Pipeline resolves the modified build and selected smoke;
+it does not establish that extension was necessary for a replacement operation.
+
+The [[file:../44-current-project-programming-style/02-poo-dispatch-and-extension.org][programming-style use-case rule]] requires examples to identify the maintained
+recipe, intended behavior, preserved defaults and actual consumer before exposing
+POO mechanisms. Cache probes stay evidence fixtures; they do not stand in for
+practical configuration examples. Ordinary direct assignment remains the default
+when the complete desired value is known. No numerical usage share is assumed.
+
+For the ordinary author, replacing a build command is the proposed expression:
+
+#+begin_src scheme
+gerbil.funflow.build.commands:
+'("gerbil" "build" "release")
+#+end_src
+
+For an author who wants the inherited artifact list plus one more item, use the
+already available enclosing-object refinement shape and a native transformation:
+
+#+begin_src scheme
+gerbil.funflow.build: =>.+
+{(artifact-outputs => append '(additional-log))}
+#+end_src
+
+These are alternative intent examples, not overlapping declarations to combine
+for the same slot. The first requires the proposed dotted-assignment adapter;
+the second uses existing syntax shape, without claiming the complete domain
+Contract/consumer path is implemented. Adding smoke, unlike editing build,
+exposes the Check prototype because a new object really is being created. Its
+complete construction and selected-checks assignment remain below.
+
+For a core-mechanism change, the maintained Check Contract exposes a different
+level. Its existing design contains the following native method/obligation
+extension, rather than a callback stored in commands:
+
+#+begin_src scheme
+;; Within the upstream Check Contract declaration:
+(.admit (inherited)
+  (let ((base-admit (inherited)))
+    (cut funflow-admit-check @ base-admit <> <>)))
+.obligations: (cut funflow-check-obligations @ <> <>)
+#+end_src
+
+This retains the inherited admission and adds domain guards/obligations. It is
+an upstream extension example, not another declaration ordinary CI users must
+write. Native method/Contract syntax exists; the named Funflow guard/obligations
+remain the reference design in module 07. A genuinely new protocol needs its
+own compatible Contract and consumer qualification. Merely editing a policy
+value or constructing smoke does not require a new Generic method family.
+
+The four user-facing intents are therefore: assign a value; transform an old
+value; create an object; extend a mechanism. Path assignment is the first intent
+at depth, not a fifth object model. Explicit =>.+ remains for real object
+extension and internal lowering. Do not remove it from those legitimate uses.
+
+** Dmerge: borrow user needs, expose small Scheme functions
+
+[[file:29-functions-and-overlay-use-cases.org][Module 29]] specifies complete function definitions, shared/Funflow/user
+ownership, bounded module-scope publication and examples covering every operation
+documented by dmerge. It is the authority for helper publication; the shorter
+examples here describe the same user intents without introducing a DSL.
+
+The [[https://github.com/divnix/dmerge#semantics][dmerge examples]] document concrete overlay needs: append/prepend items,
+update an array position, and update records by a stable field through updateOn.
+Its decorate operation separates data from merge instructions. Borrow these
+requirements, not its decoration language. Dmerge protects its collection spine
+and constrains changes by the preceding value's type; those are library policy
+choices, not requirements to copy into POO assignment semantics.
+
+Native => supplies the inherited value to an ordinary function. Maintained
+libraries should offer small, task-appropriate functions so configuration authors
+need not repeat filter/lambda/cut expressions. These are regular callable Scheme
+values, usable and testable outside configuration, not syntax decorations or a
+new merge evaluator. Functions may be parameterized or composed internally.
+Do not create one public helper for every conceivable field or transformation.
+
+All four alternatives below reuse the same CICDScenario.gerbil occurrence of
+GerbilCIProfile. For this illustration its build commands are
+'("gerbil" "build" "--verbose"), its selection is '(build test package), and test
+does not depend on package. The command flags are recipe assumptions, not a
+claim of command execution. The task owner must verify their supported semantics.
+
+The contribution library owns the following illustrative business definitions;
+module 29 supersedes generic operation naming/signatures with the data namespace
+and value-first native argument forms. These unary business policies need no
+extra parameter binding. They are design code, not newly installed runtime
+exports. The function names state the user's intent; general sequence machinery
+stays in the library:
+
+#+begin_src scheme
+(def (add-release-flag commands)
+  (append commands '("--release")))
+
+(def (without-package names)
+  (filter (lambda (name) (not (eq? name 'package))) names))
+
+(def (quiet-build-command commands)
+  (filter (lambda (argument) (not (equal? argument "--verbose")))
+          commands))
+
+(def (release-build-command commands)
+  (add-release-flag (quiet-build-command commands)))
+#+end_src
+
+Downstream configuration only chooses the intended operation. These are four
+independent alternatives, not four patches implicitly combined:
+
+#+begin_src scheme
+;; A project owns its complete build command.
+(.def (ScriptCI @ CICDScenario)
+  gerbil.funflow.build.commands: '("sh" "./ci/build.sh"))
+
+;; Keep the maintained build command, adding the release flag.
+(.def (FlagCI @ CICDScenario)
+  gerbil.funflow.build: =>.+
+  {commands: => add-release-flag})
+
+;; Reuse the recipe for verification without its packaging task.
+(.def (VerificationCI @ CICDScenario)
+  gerbil.funflow.pipeline: =>.+
+  {selected-checks: => without-package})
+
+;; Apply a maintained release convention: quiet first, then add the flag.
+(.def (ReleaseCI @ CICDScenario)
+  gerbil.funflow.build: =>.+
+  {commands: => release-build-command})
+#+end_src
+
+The deep assignment in ScriptCI still needs the proposed assignment adapter.
+The other forms use existing path-object refinement and native => function
+application. Module publication, domain admission and preview integration remain
+separate adaptation work. No imports, Loader behavior or new DSL is prescribed.
+
+*** Order, final admission and preview
+
+Function composition is explicit: release-build-command computes
+add-release-flag(quiet-build-command(inherited-commands)). It does not modify the
+parent. More generally f(g(value)) need not equal g(f(value)); appending an item
+and then excluding it differs from excluding it before appending. Neither parent
+prototype order nor dotted-path grouping supplies task execution order or an
+implicit conflict-resolution policy. Group independent paths; reject conflicting
+duplicate paths under the existing path rules. Do not silently sequence them.
+
+After selecting the effective Scenario/Profile, resolve only the values needed
+for its selected plan, apply their declared transformations, and validate the
+final values. The commands field Contract checks representation; Check
+obligations check required business constraints; Pipeline admission checks final
+selection names, uniqueness, dependencies and effective Check identities. Removing
+package is invalid if a retained task requires it. A function cannot bypass those
+checks merely because its input was admitted upstream.
+
+Illustrative preview, not runtime output:
+
+#+begin_example
+Scenario        effective build commands                   selected checks
+ScriptCI        [sh, ./ci/build.sh]                         [build, test, package]
+FlagCI          [gerbil, build, --verbose, --release]       [build, test, package]
+VerificationCI  [gerbil, build, --verbose]                  [build, test]
+ReleaseCI       [gerbil, build, --release]                 [build, test, package]
+status: projected-unadmitted
+#+end_example
+
+Only successful admission of these exact effective values permits the status
+admitted-preview; neither status starts execution. Preview renders final data,
+not functions or POO metadata. If the upstream command later gains --cache,
+ScriptCI stays unchanged; the other three inherit that option, and ReleaseCI
+still removes only --verbose. Adoption of a new immutable upstream revision
+requires projection/admission again, not reuse of old evidence.
+
+Even if the parent Pipeline was previously cached, the descendant Pipeline must
+resolve checks from the descendant's effective Profile. Each Check in the preview
+and admission evidence must match that final receiver's selected object by
+identity. A frozen parent Check list fails that condition. Existing receiver/cache
+controls support the native semantic boundary; these four domain examples and
+their rendered previews are design illustrations, not additional execution or
+Loader qualification. Unselected task commands must remain undemanded.
+
+** Maintained contributions and downstream libraries
+
+An upstream/contribution package may publish reusable Profiles and Scenarios
+with complete defaults and declared extension points. A downstream project
+retains only its business-value differences and deliberate transformations.
+That project may itself publish a reusable native Profile/Scenario for another
+consumer; it need not copy the upstream defaults, rewrite Contracts, or invent
+its own patch/collector language. Explicit protocol extensions still carry their
+own compatible Contract and consumer support.
+
+This can reduce duplicated configuration, but does not guarantee that an upstream
+default change is harmless: inherited values continue to follow that change,
+explicit assignments remain replacements, and transformations may depend on the
+old shape. Publication revisions, compatibility and re-admission therefore remain
+necessary. Source trust, conflict policy and catalog loading are not solved by
+the disclosure rule or implemented in this revision.
+
+[[file:12-ecosystem-organization-and-demand.org][Module 12]] specifies ecosystem ownership, descriptor navigation and demand
+stages when modules, Profiles, Scenarios and contribution roots grow. Ordinary
+selection must not instantiate the Cartesian product of available recipes.
+
+** Field discovery must explain the operation, not just the type
+
+[[file:10-discovery-conflicts-and-plan-preview.org][The descriptor/inspection owner]] must distinguish ordinary replacement,
+derived output, existing-object refinement, new-object positions and advanced
+protocol extension. For each field, show relevant syntax guidance, inherited
+value/default provenance, applicable Contract and actual implementation status.
+A suggested direct path must be labelled proposed until supported. Missing
+guidance is unavailable information, not permission to guess a writable field.
+
+Acceptance: changing commands needs no prototype tutorial; extending artifacts
+explains native =>; adding smoke identifies the scoped Check prototype; inspecting
+pipeline.checks points to selected-checks rather than inviting manual list edits;
+and core extension points explain their Contract/consumer boundary. Description
+mode does not force task values or install method bundles to produce this advice.
+
+* Existing support and the proposed extension
+
+[[file:../../../object-syntax/path-slots.ss][The current path adapter]] lower-path-spec accepts dotted leaves only with
+native =>.+ and reports "path slots require native =>.+" or "path slots require
+one =>.+ object expression" for other shapes. It already groups shared prefixes
+and rejects duplicate/overlapping paths. Native non-dotted assignment and =>
+already exist. Neither commands as a runtime field nor direct dotted assignment
+is implemented by this document.
+
+The bounded proposal adds dotted leaf assignment, preserving native assignment
+semantics. It is not a recursive patch language or a new object evaluator.
+Do not use =>.+ on a string/list simply to satisfy the current path adapter.
+Use the existing enclosing-object form until an assignment adapter is qualified.
+This revision does not broaden dotted => support; an inherited list transform
+can use native => within an existing dotted object refinement.
+
+* Complete minimum downstream example: proposed user surface
+
+The [[file:13-independent-profiles-and-scenario-composition.org][corrected publication design]] separates pure Funflow features from the
+independent Gerbil Profile and the Scenarios composing it. Bind the source once; ff remains bounded.
+Rebinding the already effective module for prototype access is an object lookup,
+not another source load. The following proposed dotted assignments are not
+accepted by the current adapter:
+
+#+begin_src scheme
+(.def (ProjectCI @ CICDScenario))
+
+;; Verification-only demand; users need not build or cache a Check list.
+(def parent-checks
+  (.get ProjectCI gerbil funflow pipeline checks))
+
+(def ReleaseCI
+  (let ((EffectiveFunflow (.get ProjectCI gerbil funflow)))
+    (use-module EffectiveFunflow as ff
+      (.o (:: @ ProjectCI)
+        gerbil.funflow.build.commands:
+        '("gerbil" "build" "release")
+        gerbil.funflow.build.artifact-outputs:
+        '(release-build-log)
+        gerbil.funflow.smoke:
+        (.o (:: @ (.get ff prototypes check))
+          check-name: 'smoke
+          profile-ref: 'ci/check
+          commands: '("sh" "./ci/smoke.sh")
+          artifact-outputs: '(smoke-receipt)
+          result-protocol: '(read :lines)
+          dependency-refs: '(package)
+          durable-task-id: 'task/smoke)
+        gerbil.funflow.pipeline.selected-checks:
+        '(build test package smoke)))))
+#+end_src
+
+This changes build only, inherits test/package, creates smoke, and replaces the
+selection list. Adding a task and selecting it remain distinct. The script is
+a recipe requirement, not a verified file or an execution claim.
+
+* Corresponding native lowering: one inherited object per shared prefix
+
+Replace only the inner .o above with this native expression. The surrounding
+let/use-module keeps ff hygienic; the expansion must not inject global bindings.
+This is the specified lowering, not captured output from an implemented adapter:
+
+#+begin_src scheme
+(.o (:: @ ProjectCI)
+  gerbil: =>.+
+  (.o funflow: =>.+
+      (.o build: =>.+
+              (.o commands: '("gerbil" "build" "release")
+                  artifact-outputs: '(release-build-log))
+              smoke:
+              (.o (:: @ (.get ff prototypes check))
+                check-name: 'smoke
+                profile-ref: 'ci/check
+                commands: '("sh" "./ci/smoke.sh")
+                artifact-outputs: '(smoke-receipt)
+                result-protocol: '(read :lines)
+                dependency-refs: '(package)
+                durable-task-id: 'task/smoke)
+              pipeline: =>.+
+              (.o selected-checks: '(build test package smoke)))))
+#+end_src
+
+Each intermediate gerbil/funflow/build/pipeline object derives
+from its corresponding effective inherited slot. Other slots retain native
+inheritance; they are not copied from a forced parent snapshot. The leaf commands
+and artifact-outputs are ordinary replacements. smoke is a new object assignment,
+not an attempt to refine a missing inherited Check.
+
+Two assignments sharing build produce one build refinement containing both
+leaves, not two competing build values. The same principle groups all branches
+under the single gerbil/funflow prefix. This structural grouping
+does not merge list values or resolve contributions from independent publishers.
+
+* Bounded lowering rules and ambiguity
+
+1. Parse dotted names into a compile-time prefix tree. A terminal records plain
+   assignment or the already supported object refinement. Preserve source and
+   lexical context; never evaluate user payloads while grouping declarations.
+2. Emit every implicit shared prefix once as a native =>.+ object refinement.
+   Emit a terminal assignment as an ordinary native slot assignment. Preserve
+   the payload expression without inserting getters, collectors or validation.
+3. Support nonadjacent sibling declarations under the same prefix. Retain stable
+   source order among siblings. This is not a promise about evaluation order of
+   arbitrary side-effectful lazy getters; ordinary configuration remains pure.
+4. Reject duplicate terminal paths within the declaration. Reject explicit
+   ancestor/descendant overlap, including assignment of build together with
+   build.commands. Do not invent a last-wins rule. Put both changes in one native
+   owning-object expression if both are intentional. Keep existing bounded overlap
+   behavior for explicit ancestor =>.+ plus a separate descendant declaration.
+5. Intermediate inherited slots must exist and resolve to native objects when
+   demanded. Do not silently create a missing module/Profile, autoload a source,
+   or infer its prototype. A missing/nonobject prefix needs a qualified diagnostic.
+   Domain field validity remains a Contract responsibility, not macro inference.
+6. A new terminal Check is allowed only at its declared extension position and
+   admitted via its owner Contract. At an existing terminal, direct assignment
+   replaces the whole value; if retaining that object's other slots is intended,
+   use native =>.+. Assignment does not change the module's retained source claim.
+
+The prefix tree is expansion machinery only. It is not runtime state, a Loader
+catalog, a mutable patch plan or an alternate contract authority.
+
+* Smoke admission, parent cache and preview
+
+Upstream keeps the original native outer receiver relationship:
+
+#+begin_src scheme
+;; Inside (.o (:: effective-config ...)), on the inherited Pipeline:
+checks: (funflow-selected-checks effective-config selected-checks)
+#+end_src
+
+Plain leaf assignment does not relax admission. CommandsContract admits commands;
+the effective Check Contract rejects commmands. The selected-name preflight
+rejects missing/duplicate/non-Check targets before checks is forced. smoke must
+match its containing name, resolve ci/check against the supplied policy, use a
+supported result protocol, and satisfy the other inherited field/domain rules.
+Its selected package dependency must exist and the selected graph must be acyclic
+with unique applicable durable identities. Source association is not source trust.
+
+The parent control first caches three Checks. The child must then resolve its
+four selected Check objects on its own effective Profile. Compare actual and
+expected lists in order and pairwise by native object identity, not just names
+or commands. The parent must retain its original build/default selection; it
+is neither mutated nor entitled to supply the child's cached result.
+
+| Check | Expected effective commands | Artifacts | Dependency |
+|-------+-----------------------------+-----------+------------|
+| build | gerbil build release | release-build-log | none |
+| test | gerbil env ./unit-tests.ss | test-receipt | build |
+| package | sh ./ci/package.sh | dependency-graph-receipt | test |
+| smoke | sh ./ci/smoke.sh | smoke-receipt | package |
+
+These are expected design results, not executed output. A candidate projection
+without completed configuration and consumer evidence is projected-unadmitted:
+inspection only, publication prohibited. admitted-preview requires both Contracts
+to accept this same stable input-view with current correlated evidence. It is
+still not publication or execution. The consumer order respects the dependency
+chain build -> test -> package -> smoke, never prototype-parent order.
+
+A fixed parent checks list causes effective-checks-mismatch and blocks admission.
+Conflicting independent smoke sources or projected consumer-key collisions also
+block publication; explicit local leaf replacement is not that conflict. Retain
+the previous admitted plan if one exists and label it previous to this edit.
+See [[file:10-discovery-conflicts-and-plan-preview.org][the discovery/diagnostic/preview design]] for rendering requirements.
+
+Changing the receiver or selected family is not a ContextSlot same-context hit.
+ConstructionCache needs established unchanged-dependency premises to skip work;
+ContractConsequence requires an applicable implication before proof transport.
+No syntax abbreviation changes those [[file:08-leanpoo-reuse-and-performance.org][LeanPoo conditions]]. Arbitrary mutation,
+opaque/effectful getters or unsupported dependencies need conservative treatment.
+
+* Existing versus proposed evidence and future acceptance
+
+| Capability | Status |
+|------------+--------|
+| Native assignment, inherited => and object =>.+ | Existing native mechanisms |
+| Bounded module alias and dotted object =>.+ with shared-prefix grouping | Existing syntax support in the inspected source |
+| Native parent/child receiver behavior | Historical domain-free executed probe; unchanged receipt |
+| Dotted ordinary leaf assignment and its mixed lowering | Proposed adapter extension; no implementation/test result here |
+| commands producer/consumer migration | Proposed public design; existing runtime spelling remains unchanged |
+| Dynamic Check admission, rich provenance and admitted plan preview/publication | Proposed domain/consumer adapters; no Loader integration |
+
+Future qualification must compare the new surface with its native lowering;
+merge nonadjacent same-prefix edits; reject duplicates/overlaps; preserve alias
+hygiene and payload source locations; verify no expansion-time evaluation;
+and diagnose missing/nonobject prefixes. The same test then caches the parent,
+applies build/test/package/Pipeline edits plus smoke, and checks final identities,
+selection, errors and nonexecution. Include existing dotted =>.+ compatibility
+and the fixed-parent-list negative control. No such new test is claimed run.

@@ -1,0 +1,167 @@
+#+title: 32.52 Demanded Read Graph Retention and Identity Costs
+#+date: [2026-10-21]
+#+filetags: :module-assurance:retention:lean:quint:performance:
+
+* Question and source cut
+
+[[file:32.51-types-contracts-and-issued-reobservation.org][32.51]] authenticates original issued records. This study asks which retained
+identities can be shared without weakening that boundary. It does not change
+production Scheme, the installed Gerbil compiler, or concurrent work.
+
+Native source: gerbil-poo =46d1b9322d5464c2224dc32a7334fae121a0cb72=,
+=object.ss:call-with-issued-reads= and =slot-observation.ss=. Core uses the
+existing 47-unit qualification closure, with its source manifest checked before
+the runs. LeanPoo stays at =6e6a706e14fa6f8199e4f36711440355b42ef335=.
+No dependency refresh or platform installation is part of this study.
+
+* What must be retained, and what may be deduplicated
+
+| Item | Required boundary | Permitted sharing |
+|------+-------------------+-------------------|
+| Issued record identity | Original registry token and immutable birth payload | Same record object once per traversal |
+| Dependency edges | Every demanded descendant, including preparation, bootstrap and miss records | Repeated visits to the same record; not deletion of a distinct edge target |
+| Receiver, key, revision, instance and value | Original receiver-local currentness | Receiver equality cannot merge records |
+| Transient miss | A genuine native-issued token, outside the persistent read cache | No forced cache insertion or eager slot evaluation |
+| Selected receiver/ancestor frame | Derived from the authenticated reachable graph | Receiver identity once in the protection set |
+| Independent requirements | Both publication origins and their obligations | No deduplication by equal port/value |
+| Callback/return currentness | Fresh checks after the relevant callback/effect | Never a previously successful approval |
+
+Native replay ALREADY marks records by =eq?= before descending and separately
+deduplicates protected receivers. This is not a proposal for a new identity map.
+An unselected branch is absent from the demanded graph. A cycle of already
+demanded records terminates without forcing another branch.
+
+The public dependency list and birth closure's copied parent spine both retain
+references to the original children. Deduplicating traversal work does not
+remove those list cells or shorten object lifetimes. Mutating that signed list
+would fail native issuance authentication. Equal keys, values, source paths or
+receiver objects are not evidence that two tokens are interchangeable.
+
+For U unique reachable records and E stored edge occurrences, the native walk
+has expected hash-table work O(U+E), O(U) temporary visited/order/receiver state,
+and existing retained graph O(U+E). This excludes recursive stack depth, arbitrary
+checker work, record payload reachability, hash worst cases and GC costs. Birth
+authentication compares the recorded dependency lists on repeated passes, so
+"one visit" does not mean "one list comparison". These are structural bounds,
+not measured byte residency or an end-to-end speedup claim.
+
+* LeanPoo reuse and correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReadRetention.lean][ReadRetention.lean]] reuses the existing =IdentityDFS=/=DFSFrames= proof of
+LeanPoo's pending/unseen-weight termination argument. =shared_record_once=
+proves the replay order is duplicate-free; =finite_cycle_drains= proves a closed
+finite graph drains. =closure_coverage= and =omitted_dependency_refused= preserve
+all demanded tokens and reject dropping one. =receiver_equality_not_record_equality=
+gives the concrete obstruction to receiver-only compaction.
+
+=same_declaration_shares_closed= directly uses LeanPoo ConstructionCache's
+immutable-declaration sharing. =child_context_keeps_joint_claim= uses ContextSlot's
+exact-context Snapshot and its joint Claim. =changed_child_context_misses= refuses a
+parent cache hit when the child context identity differs. ContractConsequence provides proof
+transport for strengthened claims; it is not authority to omit a contributor.
+These do not identify arbitrary Scheme values with Lean dependent values.
+
+Premises remain: token IDs faithfully represent native object identity; graph
+extraction is complete and stable during protected traversal; selected native
+writes obey the supported MOP guard. The proof does not establish arbitrary
+reflective/FFI isolation, a VM heap bound, or atomic external-source commits.
+Existing ordered-diagnostic/recursive-frame results retain the native order;
+no receiver sorting or cross-callback approval reuse is introduced here.
+
+* QNT controls
+
+[[file:../../../dev/proofs/quint/ReadRetention.qnt][ReadRetention.qnt]] has a diamond, a cycle, distinct slots sharing a receiver,
+and a transient miss. The normal model checks coverage, unique work, both
+requirements, fresh post-callback currentness, parent/child isolation and laziness.
+Matched controls deliberately drop receiver-colliding records or misses, reuse
+approval across a callback, drop the second requirement, or force an unused
+branch. An acceptance witness prevents an always-reject implementation passing.
+This finite model does not model Scheme diagnostic order or GC residency.
+
+* Executable Scenario measurement
+
+[[file:../../../t/read-retention-cost-test.ss][read-retention-cost-test.ss]] uses the actual ServicesFixture reader/link,
+Scenario contracts and public =.admit=. The fixture supplies temporary owned
+source files and selection; it does not manufacture native read records.
+Three fresh child receivers each run cold and then warm after the parent's
+5432 plan has been cached. Every admitted child must have both final ports 5433,
+its plan's Config must be the exact normalized Config, child receipts must
+remain present, and the parent's plan must remain unchanged.
+
+Cold means a fresh child receiver, not a cold process, filesystem or source
+module cache. Warm reuses that child; root normalization can still allocate new
+objects. The collector measures externally observed roots and their complete
+reachable original graph, not every private temporary frame in the process.
+It captures an operation trace across phases; it does not prove every observed
+token stays reachable from the returned receipt or is current at one instant.
+Reported allocations include instrumentation/snapshot overhead and are NOT
+retained bytes. Structural inspection is outside the timed/allocation span.
+No time threshold, widened timeout, or favorable warm/cold relation is assumed.
+
+The paired controls remain the real publication suite: conflicting requirements,
+explicit client mismatch, stale parent plan, changed source and unselected module.
+No new Fixture hierarchy is introduced.
+
+** Recorded results
+
+The final instrumented run completed all three pairs with natural exit 0,
+=MODULE-OK=, =HARNESS-OK= and final =OK=. The additional native miss control
+retained two separately issued miss records, left both outside the read cache,
+and refused replay after installing that missing field. The Scenario itself
+observed zero misses; the separate control prevents treating that absence as
+permission to drop misses from the protocol.
+
+| Pair | Fresh child seconds | Same child warm seconds |
+|------+---------------------+-------------------------|
+| 1 | 0.096589 | 0.086956 |
+| 2 | 0.088138 | 0.162859 |
+| 3 | 0.084709 | 0.085191 |
+
+Every sample had 1,488 root deliveries, 489 unique roots, 901 unique reachable
+records, 158 receiver identities, 1,992 stored edges and 224 physical source
+reads. Thus 999 root references repeat an identity, while 412 demanded records
+are reachable only below the roots. None may be replaced with a synthetic
+"bundle". These 999 duplicates are references, not 999 distinct record objects
+whose entire memory could be reclaimed. Receiver-only compaction would also
+conflate many distinct tokens. Warm normalization still constructs receiver-local
+values; these samples do NOT establish a warm speedup or a decreased graph size.
+
+The VM allocation stream regressed between measured intervals. The final
+=allocation-current?= is false even though that interval's delta is positive.
+An earlier run had a negative interval delta. Neither stream qualifies allocation
+or retained-heap improvements. The test reuses Observability's monotonicity
+predicate, preserves raw deltas and never repairs the stream by clamping/resetting
+it. Graph counts and semantic assertions are independent of this invalid metric.
+
+Lean's integrated project completed 195 jobs and its 6,639-declaration
+model-shape/standard-axiom audit. QNT's seven ReadRetention controls include the
+expected negative traces and a positive acceptance witness. Source binding includes
+the new Scheme measurement, existing publication controls and read-projection.
+These are model/consumer qualification, not automatic extraction or a GC proof.
+
+The real publication suite completed all 11 cases, and original issued-root
+forwarding completed all five cases. Both had natural exit 0, complete harness
+markers and no error/overflow markers. The 47 compiled Core source hashes still
+matched the current production sources. No full Core all-suite result or remote
+CI result is inferred from these focused gates.
+
+Local failed runs remain separate: the first measurement used definitions in an
+expression-only =unless= body; the next exposed lexical =roots:= slot shadowing;
+another imported a helper from a module that does not reexport it. They were fixed
+with ordinary =let=, a distinct lexical argument name and the existing function
+owner import. No production assertion or timeout was weakened. Raw logs stay in
+local qualification artifacts rather than source control.
+
+* Reflection and next boundary
+
+The first safe sharing boundary is duplicate ROOT REFERENCES in a single retained
+collection, not distinct records on the same receiver. Any future collector
+compaction must retain original token order and deliver every observer event;
+source observers can be callbacks, so event suppression is not justified by
+token equality alone. This study does not implement that optimization.
+
+Measuring token/edge counts answers graph size, not whether the graph pins dead
+receipts, values, owner prototypes or process memory after return. A future
+retention change needs native-issued lifetime/GC controls and an unchanged
+currentness/diagnostic suite. Replacing strong children with synthetic weak
+witnesses is not justified by the current results.

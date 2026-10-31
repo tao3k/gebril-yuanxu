@@ -1,0 +1,193 @@
+#+title: 10.04 Declared Revision and Issuer-Owned Replay Projection
+#+language: en
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+* Exact dependency boundary
+
+This follow-up qualifies the dependency declared by Core's =gerbil.pkg=:
+=ecaa8a6f51c746f974b2db4c220838647a82af3b=. It supersedes the dependency-version
+limitation of [[file:10.03-replay-structure-ownership.org][10.03]] for the runs below,
+without rewriting that study's historical receipts.
+
+The exact commit was fetched into an isolated temporary Git checkout. All native
+library roots and =t/closure-measure= were compiled with the installed Gerbil and
+the dependency's authoritative =build-request= entries, including per-module
+compiler/linker options. No compiler/runtime source, Core dependency pin or
+shared package installation was edited. The source checkout remains clean.
+
+Compared with the previous =096da65e= source, the only changed production file
+is =table.ss=; the other changes are build/test declarations and tests. In
+particular =object.ss= remains SHA256
+=c28abad72240d848b98a8cf062af1aa727064eb44b97046d1c7a2327f68fb2bb=.
+This is source equality, not permission to label old binaries as rebuilt ones.
+
+The runtime =object.ssi=, =mop.ssi=, =slot-observation.ssi= and =table.ssi= paths
+were inspected through the native expander. All resolve beneath the freshly
+compiled dependency directory. Core bootstrap layers expose only =yuanxu= and
+=tao3k=; old =clan= directories are absent from those layers. The first load-path
+entry and =GERBIL_PATH/lib= both name the exact new dependency. Existing compiled
+Core bootstrap modules are retained; this is not a clean full Core rebuild.
+The existing selected test build/admission boundary still owns their consumers.
+
+The first temporary build projected module names and lost =fq='s macOS linker
+options. Its link failure is retained. A subsequent make invocation could leave
+the missing phase product unnoticed because the interface already existed; that
+was NOT accepted as qualification. The two affected interfaces were invalidated
+only inside this owned temporary prefix, and rebuilt using the original spec
+options. The =fq~0.o1= phase product was checked explicitly. No timeout was widened.
+
+* Where the native MOP can own a projection
+
+| Existing entry | Authority | What it cannot supply |
+|----------------+-----------+-----------------------|
+| Private =object-record-read= | Mints registry/closure association and copied dependency payload | Not accessible as a Core-issued certificate |
+| =object-read-issuance= | Inspects the original native association and copied payload | Does not grant authority to mint a replacement record |
+| =object-read-issued?= | Re-authenticates record, original closure and exact dependency sequence | Does not certify current external sources |
+| Private =call-with-issued-reads= | Authenticates closure, builds preorder and receiver set, installs dynamic frame, checks after consumer | No retained structural projection in this REV |
+| =replay-slot-reads!= | Checks before each visitor and again after the consumer | Passing a cached list still reconstructs traversal structures |
+| =reobserve-slot-reads!= | Delivers ORIGINAL tokens within the same protected native traversal | Not a shortcut around issuance or final checking |
+| =ConstructionCache.start / refresh= | Reuses checked component values/schedules for its declared source | Does not authenticate MOP reads or automatically observe reflected payload edits |
+
+The common ownership location is =call-with-issued-reads=, not Core's reader.
+Both public replay routes already delegate to it. A future retained projection
+must remain a private native derived value under that same issuer and boundary.
+It may retain preorder and a read-only receiver membership table; it must not
+retain a mutable DFS visited state or a successful admission verdict.
+
+The actual entry currently contains:
+
+#+begin_src scheme
+(without-observation (lambda () (for-each collect roots)))
+(let (traversal (reverse ordered))
+  (parameterize ((active-read-replays
+                 (cons receivers (active-read-replays))))
+    (begin0 (consume traversal require-current!)
+      (without-observation
+        (lambda () (for-each require-current! traversal))))))
+#+end_src
+
+The producer can derive a structural reuse key from ordered root identities and
+their signed dependency sequences. Each hit must authenticate every retained
+record against the live registry/original closure; same root identity or receiver
+revision alone is insufficient. A changed signed sequence is refused, not silently
+normalized. New roots require a new projection; new child receivers require their
+own issued records. Supported invalidation clears native value/read state.
+Native frame installation/unwind and preflight ordering remain per invocation.
+
+This REV has no retained projection entry. Introducing a POO object in Core with
+a cached traversal slot would neither obtain issuer authority nor avoid native
+traversal construction. No such object, Core cache protocol or Builder was added.
+Implementation of a native projection remains a separate dependency change;
+this study does not claim it has been implemented or benchmarked.
+
+* Stronger correspondence
+
+[[file:../../proofs/lean/YuanxuProof/Admission/SelectionReplay.lean][SelectionReplay]]
+now imports the existing =IssuerProjection= model. Its new theorem
+=authenticated_edges_match_frozen= derives exact dependency-sequence equality
+from registry lookup, original closure environment and successful authentication.
+It does not accept a user-supplied immutable/Birth marker as authority.
+Combined with =topology_reuse_keeps_identity_order=, it explains the producer
+boundary needed by the structural reuse law. Complete selected-closure coverage
+still comes from =IdentityDFS=; native extraction, weak-registry lifetime and
+supported sequential write-boundary correspondence remain explicit premises.
+
+The Lean correspondence records =declaredPooRevision=. The existing Quint gate
+checks that it matches Core's package pin as well as the model source digest.
+This is a stale-proof binding, not a cryptographic compiler/source proof.
+=SelectionReplayTopology= additionally distinguishes revised receiver state from
+stale external source state: either must refuse despite unchanged graph shape.
+The finite model preserves both requirements, parent state and untouched unused
+branches. Three existing negative controls retain verdict, root-order and seen
+state failures. No configuration/admission conclusion is cached.
+
+SysML allocates these owners in =ReplayStructure=; it is not a qualified solver.
+Lean/QNT and native regression receipts have distinct claims. External concurrent
+file replacement is not made atomic merely by checking it before return.
+
+* Serial validation
+
+Results below use the same Just entrypoints and the exact dependency prefix.
+No formal verification or dependency compilation overlaps timing samples.
+Original 2 GiB heap, 60 s idle and 600 s total test limits remain unchanged;
+dependency compilation uses the unchanged 120 s bound. Core production Scheme
+has no traversal optimization in this change, so these are alignment controls,
+not before/after speedup evidence.
+
+** Timing results
+
+Both new Just processes passed the original Scenario's three Cases. Each used
+the existing trace mode for 20 same-VM warm demands, then ran the native Harness
+once. Both reported zero support compilation actions. Cold selection means a
+new POO graph in a new process; package/compiler/store caches were not erased.
+
+| Dimension | Round 1 | Round 2 |
+|-----------+---------+---------|
+| First selected graph | 4.088 s | 3.639 s |
+| Warm graph lookup, median | 0.0031 ms | 0.0041 ms |
+| Warm currentness, min / median / max | 23.450 / 23.901 / 68.965 ms | 19.525 / 23.499 / 96.251 ms |
+| Warm replay, min / median / max | 15.210 / 15.411 / 16.363 ms | 10.915 / 11.351 / 26.104 ms |
+| Warm physical source IO, median | 5.130 ms | 6.212 ms |
+| Warm calls / visited records | 6 / 5647 | 6 / 5647 |
+| Native Harness | 4.791 s | 6.427 s |
+| Observed runner total | 19.975 s | 21.913 s |
+
+Medians here average the two middle observations. The slow second-round source
+sample contains 74.248 ms GC wall in its 80.822 ms IO span. GC is charged to the
+span in which collection occurs, not necessarily the producer of all garbage.
+The two replay medians also vary despite unchanged work. Old and rebuilt binary
+images and process conditions are not a matched isolated REV intervention;
+neither a version regression nor a speedup is established by this comparison.
+No physical allocation estimate is inferred from signed VM accounts.
+
+The existing =t/slot-read-cost-test.ss= separately measures REAL application
+admission, not selected-graph lookup. Three batches of three calls each produced:
+
+| Application .admit | Wall ms per call, batch averages | Collections per batch |
+|--------------------+---------------------------------+-----------------------|
+| Fresh child each call | 64.546 / 67.830 / 66.428 | 1 / 1 / 1 |
+| Same warmed child | 50.918 / 66.730 / 65.359 | 0 / 1 / 1 |
+
+The parent plan is cached at 5432 before child configuration changes to 5433.
+Each call still admits and checks its final normalized candidate and both service
+requirements. Reusing the input receiver does not reuse an admission result.
+The first four columns of the upstream measurement vector provide CPU/wall/GC
+information; its final allocation-account column is unqualified and is ignored.
+No forced collection or timing acceptance threshold was added.
+
+The existing shared-dependency control increases declared repeated reads from
+1 to 8, 64 and 512. Native replay still visits 12 unique records, while dependency
+edge counts are 11, 18, 74 and 522 respectively. Identity deduplication already
+works; signed edge occurrences are preserved. These counters come from a
+separate observer pass, not the unobserved admission timing windows. Cached
+preorder could reduce DFS allocation, but dependency authentication still has
+work proportional to signed edge sequences. It cannot become a constant-time
+passing certificate.
+
+** Evidence status
+
+The exact dependency prefix, clean source Git identity, source/product digests,
+native resolution paths and raw transcripts remain under
+=/private/tmp/yuanxu-declared-ecaa8a6f-20261022/=. No raw log is committed.
+=dependency-inputs.json= records the fetched source and rebuilt native products;
+=runtime-resolution.log= records native module lookup. The original failed
+=dependency-build.log= is retained alongside =dependency-build-final.log=.
+
+Lean passed 105 jobs, including issuer payload correspondence, identity DFS
+and source-window boundaries. Quint passed the 10 catalogued positive/negative
+cases after source digest and declared REV checks. These are focused closures,
+not full repository or complete upstream library qualification.
+
+The native checker-origin suite passed 10 Cases; service publication passed 11;
+field-read/replay passed 16; the existing service-cost owner passed three. These
+40 focused Cases and both three-Case Scenario runs have =MODULE-OK=, =HARNESS-OK=
+and final =OK=, with no error/heap/stack failure markers. Coverage includes the
+added-edge refusal before delivery, original transient-miss authentication,
+parent/child plan identity, both contributed requirements, explicit-port conflict,
+source changes, nested obligations and unused-branch laziness. The service-cost
+suite also rejects a source change after nested child analysis. Native source
+and product digests were rechecked after execution and remain unchanged.
+
+The boundary is now qualified against the declared dependency for these consumers.
+It remains a boundary qualification: no retained native traversal projection has
+been implemented, and no performance improvement is claimed.

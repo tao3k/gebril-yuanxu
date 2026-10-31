@@ -1,0 +1,309 @@
+#+title: 32.27 Actual Source Admission Observes Nested Function Bodies
+#+language: en
+
+* Decision
+
+[[file:32.26-call-lookup-body-and-observation.org][32.26]] exercised MOP observation scopes directly. This chapter uses the real
+[[file:../../../admission/source.ss][SourceAdmissionContract.]] admission method, rather than a test-side =recorded=
+window or an explicit replay call. Qualification tests, Lean/Quint models and
+English documentation change; production Scheme and Loader do not.
+
+The native results distinguish:
+
+1. Hot =.admit= reuses its function but runs classification, child admission and
+   obligations again. Cached function identity is not a cached accepted receipt.
+2. An ordinary nested child Contract can return after an effect; the outer
+   SourceAdmissionContract still observes its body reads and rejects before
+   returning to its caller.
+3. A source-aware child performs its own guarded return and rejects earlier.
+   Its escaping failure is not replaced by a later root diagnostic.
+4. The source-first check order is preserved for a body that completes. Both a
+   source change and an invalidated read produce the original source diagnostic.
+
+The mutation itself can succeed; rejecting admission does not roll it back.
+These controls certify a refusal boundary, not an external execution transaction.
+
+* Implementation and dependency identity
+
+Core HEAD is =80e2e74022c9c4053445475402856c5f369aec48= with existing dirty changes
+preserved. gerbil-poo is =fdeadfa40ca5cee5fe20308985aef1577f2eb49b=; LeanPoo is
+=6e6a706e14fa6f8199e4f36711440355b42ef335=. Current source identities, rather
+than clean-HEAD assumptions, are retained with the qualification artifacts.
+
+The production path is:
+
+#+begin_src scheme
+;; Existing SourceAdmissionContract. body, unchanged.
+(def evidence
+  (call-with-source-slot-reads
+    (cut source-contract-admit @ (inherited) candidate context)))
+(parameterize ((current-module-source-phase 'return-currentness))
+  (sources-current!))
+evidence
+#+end_src
+
+=call-with-source-slot-reads= wraps actual execution, collects native read roots,
+then invokes the real MOP replay before returning its result. It starts a fresh
+source-read window for that replay. =source-contract-admit= retains entry and
+post-obligation source checks, including replaceable context callbacks. The
+outer collected-source return check remains independent. None is bypassed here.
+
+The native responsibility kernel delegates to each child's =.admit= while
+consuming its one-shot root-owned analysis edge. That optimization does not make
+child obligations disappear or convert an arbitrary child body into a pure one.
+
+* Executable test ownership
+
+[[file:../../../t/source-admission-body-test.ss][source-admission-body-test.ss]] imports the actual SourceAdmissionContract,
+YuanxuContract and existing test/Directory/Services fixtures. It imports neither
+=recorded= nor =replay-slot-reads!= and does not wrap =.admit= in a substitute
+observer, replace its implementation or install synthetic active frames.
+
+A private =admission-probe= builds two actual Contracts and a candidate. The
+minimal classifier deliberately accepts its fixture data: this isolates source
+observation, not port-range validation. The maintained Gitea/PostgreSQL control
+separately exercises actual domain classification, plan identity and contribution
+coverage. No claim about all domain Types is inferred from the minimal classifier.
+
+The probe's obligation callback is replaceable through a private box solely for
+fault injection after a successful warm call. The box is not a purity marker,
+source catalog or permission recognized by production. The returned POO probe
+contains data/Contracts; it does not implement admission.
+
+** Hot root and child methods
+
+#+begin_src scheme
+(warm! probe)
+(def function (.get Contract .admit))
+(def child-function (.get Child .admit))
+(def evidence (.call Contract .admit candidate #f))
+(check-equal? (.get evidence accepted?) #t)
+(check-equal? (eq? function (.get Contract .admit)) #t)
+(check-equal? (eq? child-function (.get Child .admit)) #t)
+(check-equal? (vector->list (.get probe calls)) '(2 2))
+#+end_src
+
+The vector counts root and child obligation bodies, not field getters. The
+child receipt retains the exact selected child candidate and Contract identity.
+An unused candidate branch throws if evaluated and remains unforced.
+
+** Nested obligation edits its Contract receiver
+
+An ordinary YuanxuContract child reads its marker and changes that same
+Contract receiver. The warm method's acquisition frame has already unwound, so
+the supported write succeeds and advances the child Contract revision once.
+The child and root obligation bodies each complete for the second time, but
+root admission raises =stale slot dependency= before returning evidence.
+
+#+begin_src scheme
+(set-box! (.get probe effect)
+  (lambda (actual _candidate _context)
+    (.get actual marker)
+    (.putslot! actual 'marker ($constant-slot-spec 1))
+    (set! applied? #t)
+    '()))
+(reject-admission (.get probe contract) (.get probe candidate) #f
+  "stale slot dependency")
+(check-equal? applied? #t)
+(check-equal? (vector->list (.get probe calls)) '(2 2))
+#+end_src
+
+=reject-admission= only calls the public =.admit=, catches the actual error and
+asserts that normal return was never reached. It performs no source check or
+read replay of its own.
+
+** Nested candidate and independent dependency edits
+
+A second control reads the child candidate's port and replaces it with 5433;
+root admission rejects the stale record. The value remains 5433 after refusal:
+no rollback claim is made.
+
+The external-object control is stronger than a receiver revision test. The
+nested body reads External.port and changes External; the root Contract revision
+stays unchanged. Both configurations use the same production root adapter:
+
+| Child prototype | Child obligation count | Root obligation count | Refusal boundary |
+|-----------------+------------------------+-----------------------+------------------|
+| YuanxuContract. | 2 | 2 | Root adapter's return replay |
+| SourceAdmissionContract. | 2 | 1 | Child adapter's own return replay |
+
+Counts include the initial successful warm admission. The ordinary-child row
+shows that an outer adapter can collect reads from nested obligations even when
+there is no inner source adapter to reject for it. The source-aware-child row
+preserves the earlier escaping child failure.
+
+** Source error before stale dependency
+
+DirectoryFixture owns a single =input.json=. A narrow test declares its expected
+bytes through the existing =source-inputs= slot, warms admission, then the child
+obligation changes both External.port and the file. It returns normally. Root
+obligations complete, but =.admit= raises =configuration source changed= before
+read replay can replace it with =stale slot dependency=.
+
+The single declared source is test data, not a new user-maintained asset list.
+The real Scenario below retains automatically linked publication sources.
+
+** Real Gitea/PostgreSQL, two requirements and parent cache
+
+ServicesFixture uses the maintained Scenario and actual publication. Its parent
+plan is cached at 5432. Release refines PostgreSQL to 5433. A derived Context
+keeps the original contributions/currentness implementation and delegates every
+=.responsibility-obligations= call to the real inherited analyzer. A test-only
+callback additionally reads/changes an independent External.port on one nested
+responsibility; no domain check is skipped.
+
+#+begin_src scheme
+(def evidence (.call Contract .admit Release Observed))
+(check-equal? (.get evidence accepted?) #t)
+(check-equal? (.get evidence candidate plan gitea database-port) 5433)
+(def function (.get Contract .admit))
+(set! armed? #t)
+(reject-admission Contract Release Observed "stale slot dependency")
+(check-equal? (eq? function (.get Contract .admit)) #t)
+(check-equal? (.get cached postgresql port) 5432)
+(check-equal? (eq? cached (.get Parent plan)) #t)
+#+end_src
+
+The callback asserts its analyzed Contract is nested rather than the root;
+the context protocol receiver remains the derived Context.
+The root adapter observes the additional actual dependency and refuses before
+return. A subsequent independent admission with the original Context succeeds
+at 5433, demonstrating that a failed observation scope does not poison the next
+call. Both contribution rows remain bound to the original publication; the
+existing contribution/Scenario regressions independently check their identities,
+coverage and conflicting requirements. Cached parent bytes are not used as
+child plan authority.
+
+* Lean correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/AdmissionBody.lean][Admission/AdmissionBody]] imports the existing CallPhases and LeanPoo-backed
+admission closure. Its =Read= rows project actual receiver identities and
+revisions, not configuration field names. This is a necessary revision projection: native currentness also checks cache,
+instance, checker and dependency identity. Unchanged projected revisions alone
+never authorize admission. Existing SnapshotEntry/DFS controls retain those
+stronger checks. The native checker and complete selected observation remain
+correspondence premises; list concatenation represents observation union and
+does not prescribe duplicate work or change native identity-based deduplication.
+
+- =nested_window_current=: complete outer/inner observation requires both
+  portions to be current.
+- =member_current= and =changed_nested_read_rejected=: one selected stale nested
+  record prevents the complete graph from being current.
+- =changed_child_prevents_root_return=: changed nested reads cannot produce an
+  accepted root return under that complete observation relation.
+- =accepted_preserves_all=: acceptance retains source currentness, read
+  currentness, both independent requirements and child identity.
+- =completed_body_source_first=: a completed body with both source/read failure
+  retains the earlier source diagnostic.
+- =nested_adapter_failure_preserved=: an escaping child-adapter failure is not
+  replaced by a later root check. =diagnostic_schedule= retains the earlier
+  general ordered-failure theorem.
+
+These are laws of the projected admission boundary, not a proof that every
+possible raw Scheme I/O operation is observed. Native tests supply the current
+production correspondence cases; no manual source-path or completed-check list
+is passed into the admission consumer.
+
+* Quint correspondence
+
+[[file:../../../dev/proofs/quint/AdmissionBody.qnt][AdmissionBody]] begins after a successful warm call and models another nested
+obligation execution. It distinguishes ordinary and source-aware children, a
+completed body, child-adapter refusal, root source checks, root replay and normal
+return. Terminal states have a self-step. An escaping child error is distinct
+from ordinary rejected domain evidence, which follows normal completed-body
+checks. The two requirement booleans project domain analyzer results; they do
+not replace the actual service Contracts or authenticate contribution sources.
+
+| Control | Meaning |
+|---------+---------|
+| positive | Warm bodies execute, nested guarded return is retained, observed stale values cannot certify, two requirements/child identity/parent cache/source order remain |
+| acquisitionOnly | Incorrectly observe only function acquisition, omitting nested body reads |
+| skipReplay | Collect actual body reads but omit the root replay |
+| trustHot | Incorrectly treat cached .admit function as cached successful execution |
+| skipChild | Incorrectly remove the source-aware child's own return rejection |
+| dropB | Omit the second requirement |
+| parent | Accept parent identity for the child |
+| prefix | Check stale reads ahead of an earlier source error |
+| noWrites | Limitation witness on the correct algorithm: rejecting admission does not undo prior body writes |
+| acceptance | A stable valid configuration can return accepted evidence |
+
+The model deliberately keeps the seven unsafe policies separate from the
+correct-algorithm limitation. The finite checks do not infer concurrency safety
+or run effectful callbacks during metadata inspection.
+
+* Remaining boundaries
+
+The real adapter owns observation through the actual function body and checks
+before return. This does not make nested obligations pure, prohibit arbitrary
+writes at body entry, or implement rollback. A caller that overrides/bypasses the
+adapter, reads through unsupported raw I/O, mutates from another thread or runs
+an effect after admission needs a separate qualified boundary.
+
+The external conditional-commit requirement from 32.25 remains. Returning an
+accepted configuration does not atomically reserve its external resources or
+freeze future source changes. This work does not remove source checks, change
+production caching, introduce a new admission wrapper or connect Loader.
+
+* Qualification
+
+Completed gates and retained failures follow below. Raw logs and receipts stay
+outside source control.
+
+
+** Actual gates (2026-10-18)
+
+- Six new SourceAdmissionContract test cases passed (the external-dependency
+  case tests both ordinary and source-aware child prototypes).
+- Existing source-admission controls (six), real root/child attribution (one)
+  and maintained service-publication controls (eleven) also passed: 24 native
+  cases in total. Every log has MODULE-OK, HARNESS-OK and final OK, with no
+  ERROR CASE/CHECK/HARNESS/MODULE or heap/stack overflow markers.
+- The real attribution control names both =postgresql-port= and =gitea-port=;
+  cold and warm callers retain their independent return/currentness boundaries.
+  This work makes no new read-count or performance improvement claim.
+- Lean completed 167 jobs; shape and standard-axiom audits passed over 5271
+  declarations. Eight AdmissionBody theorems are explicitly required by the
+  aggregate gate. No new axioms or proof limits were added.
+- Quint 0.33.0 / Apalache 0.62.1 / TLC typechecked 119 sources and obtained all
+  118 expected outcomes: 15 positives, 86 unsafe variants, six correct-algorithm
+  limitation witnesses and eleven acceptance witnesses. The final source-cut
+  assertion passed and emitted =quint-receipt.ss=.
+
+| Model | Predicate | Generated / distinct | Result |
+|-------+-----------+----------------------+--------|
+| AdmissionBody | safety | 280 / 240 | Exhaustive pass |
+| AdmissionBody_acquisitionOnly | ObservedCurrent | 212 / 212 | Expected counterexample |
+| AdmissionBody_skipReplay | ObservedCurrent | 212 / 212 | Expected counterexample |
+| AdmissionBody_trustHot | HotBodies | 41 / 41 | Expected counterexample |
+| AdmissionBody_skipChild | ChildOwnReject | 93 / 93 | Expected counterexample |
+| AdmissionBody_dropB | TwoRequirements | 203 / 203 | Expected counterexample |
+| AdmissionBody_parent | ChildIdentity | 204 / 204 | Expected counterexample |
+| AdmissionBody_prefix | DiagnosticOrder | 193 / 193 | Expected counterexample |
+| AdmissionBody_noWrites | NoWritesBeforeReject | 49 / 49 | Expected counterexample |
+| AdmissionBody_acceptance | RejectAll | 204 / 204 | Expected counterexample |
+
+The =noWrites= result is an intentional limitation, not a failing positive
+invariant: native refusal can occur after the hostile obligation's write.
+The raw native error and mutated value are both retained in the controls.
+
+The first native attempt failed because the test probe used =calls: calls= and
+=effect: effect= inside a POO object: native lexical slot binding resolved them
+recursively. The test now uses unambiguous enclosing names =observed-calls= and
+=obligation-effect=. The initial test source and failure log are retained; it is
+not a production MOP defect and was not fixed with a compatibility layer or
+weakened expected errors. The complete corrected test passes.
+
+Production/admission/helper and producer source identities remained unchanged
+through the final audit. All raw logs, input manifests, initial failing test and
+receipts remain under =/private/tmp/core-admission-body-20261018/=, not Git.
+=qualification.json= joins hashes and gates. These are qualifications of the
+recorded source cuts, not proof of installed-binary reproducibility, arbitrary
+function purity, every dirty workspace file or an external atomic transaction.
+No production Scheme, Loader or timeout was changed.
+
+* Later boundary qualification
+
+[[file:32.28-post-replay-source-tail.org][32.28]] demonstrates actual late source-observer writes after the MOP pass.
+The body-observation controls above remain valid, but do not establish current
+objects/plans/source sets at the final return under an effectful source tail.
+That stronger claim requires a separate closed-tail/currentness premise.

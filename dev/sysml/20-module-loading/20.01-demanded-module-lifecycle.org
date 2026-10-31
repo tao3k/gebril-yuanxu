@@ -1,0 +1,234 @@
+#+title: 20.01 Demand-Driven Module Loading Architecture
+#+filetags: :sysml:modules:poo:quint:capacity:
+
+* Decision and evidence boundary
+
+The repeated two-GiB failure near 2000 completed declarations is sufficient to
+reject the current design as a qualified 10000-module solution. Suspend full
+capacity reruns until a modeled architectural change has a measured bounded
+control. Do not raise the budget, delete native read edges, suppress observers,
+or replace the existing all-selected gate with a smaller-demand demonstration.
+
+This is an architectural design, not an implemented Loader, a heap proof or
+qualified SysML parsing. [[file:20.01-demanded-module-lifecycle.sysml][The SysML model]] allocates phases;
+[[file:../../proofs/quint/ModuleDemand.qnt][ModuleDemand.qnt]] checks finite scheduling counterexamples. Native runtime
+correspondence remains a separate acceptance requirement.
+
+* Current source and the coupling to remove
+
+| Source entry | Current responsibility | Coupling |
+|--------------+------------------------+----------|
+| =source/link.ss:resolve-selection-graph= | Resolve selected dependency graph | Calls =publication-for= to obtain module values |
+| =source/link.ss:publication-for= | Source-bound declaration publication | Enters the guarded reader candidate |
+| =source/reader.ss:call-with-publication-reads= | Preserve authentic original read roots | Correctly retains every actual demanded read |
+| =source/reader.ss:reader-evaluation-observers= | Expand/compile/evaluate role wrappers | Types/objects/config implementation joins declaration work |
+| =source/declaration.ss:lower-core= | Hygienically lower native POO fields | Already separates generated =link= from =exports= |
+
+The graph collector is doing necessary work for the objects it receives.
+Shrinking its list cannot undo eagerly constructed Generic invocation frames,
+authoring admissions or implementation-role contexts without losing support.
+The proposed change moves construction to its owning phase instead of throwing
+away evidence after constructing it.
+
+* Three scale workloads, not one substituted benchmark
+
+Let C be catalogued entries, S the selected declaration closure, and D the
+actually demanded business-scope closure, with D subset S subset C.
+
+More generally use D_p for the implementation-role closure demanded by phase p.
+Build-spec projection, test-spec projection and runtime scope activation have
+different demands and identities. The finite model below instantiates the
+business-scope phase only; it does not unify production/test authorization.
+Reading the existing =std-make-spec= may demand Build declarations, but must not
+run a Build or Script. Core's own library spec remains independent of module
+selection; module Build contributions never reverse-load the root selection.
+
+1. C=10000, small S: catalogue discovery does not expand unused modules.
+2. C=S=10000, D=0: keep the existing declaration gate; selected metadata must
+   not imply constructing every role implementation or domain admission.
+3. C=S=D=10000: all business scopes really are demanded. Their original issued
+   graph, domain obligations and context-specific values still cost memory.
+   This workload needs independent qualification and cannot be claimed cheap.
+
+The intended retained shape is catalogue descriptors O(C), selected metadata
+O(S+E_S), and native role/read support for D and E_D. This is a structural
+bound, not a byte bound. The two-GiB inequality must use measured catalogue,
+metadata, role, native-read, shared-runtime and transient compiler costs; it
+cannot be justified by choosing convenient per-module constants in the model.
+
+* Phase contract
+
+| Phase | May construct | Must not imply |
+|-------+---------------+----------------|
+| Discover | Canonical package/window/SourceRef and role-file locations | Macro execution or business scope |
+| Select | Explicit/disabled/feature decisions and requirement graph | Config normalization, domain acceptance or Build execution |
+| Declare | Source-associated native Module metadata | Full types/objects/config expansion on the closed path |
+| Publication preflight | Native scope/dependency Type descriptors | Config, Objects, Func, export-body execution or domain acceptance |
+| Demand scope | Existing POO lazy role slots and dependency scopes actually needed | Unselected modules or unrelated branches |
+| Admit | Final receiver Contracts, all contributors, original read support | A reusable successful approval |
+| Publish/build/run | Phase-specific admitted values and existing issuance/effect boundaries | A metadata-only declaration treated as deployable |
+
+Disabled required modules and selected dependency cycles still refuse through
+the existing graph solver. Disabled features remain explicit decisions; they
+are not deleted from the index. Requirement edges, source/build inputs,
+runtime ordering and actual field-read edges remain different relations.
+
+The observable rejection boundary must be explicit:
+
+| Invalid input | Required refusal boundary |
+|---------------+--------------------------|
+| Missing mandatory role file or non-module directory | Selected source-layout validation, without evaluating its body |
+| Required module explicitly disabled or missing | Dependency selection, before its initializer |
+| Selected dependency cycle | Existing graph resolver, before linking a business scope |
+| Unknown macro, calculated requirement or custom policy not covered by the projection | Existing full guarded path; no silent fast-path acceptance |
+| Malformed demanded Config or role export | Owning scope/role Contract before exposing an admitted scope |
+| Missing contributor or inconsistent final plan | Final admission before publication/effect handoff |
+| Source change across a callback | Existing independent currentness checks before use/return/publication |
+
+An indexed or metadata-selected entry is not an admitted business scope. This
+distinction must be reflected in the existing graph/publication Contracts,
+not conveyed only in comments or another user-visible configuration flag.
+
+Missing mandatory role files can be rejected by source-location/role-layout
+checks without expanding their bodies. The existing gate also counts three
+role expansions per selected module; that is the current architecture's work
+receipt, not a timeless semantic requirement. Do not merely remove that check.
+A future change must keep all 10000 selected identities/dependency decisions,
+assert zero heavy-role work on the qualified metadata path, and separately
+exercise the complete role obligations on activation. Rejection phase and
+custom-hook behavior must be specified and qualified before changing tests.
+
+* Native mechanisms and the unsolved projection boundary
+
+Keep =yuanxu!=, the existing source/role wrapper, native =.def/ctx= and =.o/ctx=,
+and receiver-owned POO lazy slots. Do not introduce another user manifest,
+loader DSL, Builder, publication name or manually maintained dependency table.
+Metadata must be a projection of the same source declaration and retain its
+source revision, package/window identity and disabled/feature decisions.
+
+Keep one existing native Module object, not a metadata registry plus another
+full-module registry. Its existing scope/role/build slots remain lazy values;
+metadata selection is an internal Contract projection of that same object.
+The SysML parts are responsibility views, not new user classes or configuration
+layers. Shared prototype/type definitions belong to the package; per-module
+source/selection facts belong to the selected declaration; realized role values
+belong to the exact native receiver. Ordinary users keep the existing directory
+window and native configuration interface.
+
+The existing lowering already recognizes explicit native dependency aliases
+and builds a dependency-injected =link= closure. It does NOT yet prove that
+every requirement value is a closed literal or that a role's exported binding
+can be resolved without expanding that role. Scheme macros, calculated
+requirements, protocol hooks and arbitrary source observers are real boundaries.
+
+Therefore the fast path requires an automatically derived native ownership/
+syntax/phase proof; a public =closed?= or purity flag is unacceptable. An
+unresolved case uses the existing full guarded path, preserving custom methods
+and diagnostic order. The QNT Boolean =closed= abstracts this missing proof;
+it is not its implementation. A proposed path must not silently defer an
+existing mandatory rejection or relabel an unadmitted field as a Contract.
+
+The finite model explicitly charges opaque fallback role work during metadata
+selection itself. It does not hide that work until a later phase to manufacture
+a lazy-loading result. A disabled mandatory module refuses selection before
+fallback construction begins.
+
+A closed metadata projection can use the source-lowered native dependency
+slots while leaving =scope-contract= and =exports= unforced. It cannot replace
+either slot with a placeholder that merely claims to be a Contract. How the
+existing role wrapper hygienically binds deferred exports, including macro
+phases and lexical shadowing, is an implementation proof obligation. Literal
+dependency aliases alone do not discharge it.
+
+Before production changes, specify which metadata obligations can be checked
+without the domain Contract, where actual Contract references resolve, and
+which exact build/scope boundary must complete deferred obligations. Unknown
+export/macro resolution is a blocker, not permission to invent an identifier.
+
+* Existing mechanism allocation
+
+| Concern | Existing owner | Required change or limitation |
+|---------+----------------+-------------------------------|
+| Directory names and role locations | =source/collection.ss:directory-names= and =role-entrypoints= | Reuse SourceRefs; do not call interface evaluation merely to enumerate a catalogue |
+| Dependency selection | =source/link.ss:resolve-selection-graph= and existing graph solver | Accept the same source-bound metadata without forcing implementation-role exports |
+| Hygienic export/dependency binding | =source/declaration.ss:lower-core= | Qualify deferred role-binding resolution; do not duplicate user declarations |
+| Lazy values and context isolation | Native =.def/ctx=, =.ref=, =.cc= and receiver caches | Preserve original receiver/source/feature/phase context |
+| Actual read support | Native =call-with-issued-reads= and issuer association | Reauthenticate complete support; never shorten dependency/event sequences |
+| Publication and Build | Existing =.for-export=, =.publish= and =std-make-spec= | Require the owning phase's final obligations; no second Builder |
+
+* Cache and evidence ownership
+
+Native POO caches may retain inert metadata/role values under the exact
+receiver, native object revision, source revision, selected feature context and phase. Native issued
+records and their original edge sequences remain attached to real demanded
+computation. Reuse never reconstructs tokens or caches an admission decision.
+The existing issuer projection, ContextSlot/parent-isolation results and fresh
+return-currentness guards remain required.
+
+Selected metadata may be shared only when its originating source and declaration
+identity really match. A child's Config or feature refinement must not use the
+parent's scope/plan merely because module IDs match. Source changes invalidate
+metadata before role use and again before publication, including changes across
+callbacks. External atomic commit conditions remain external premises.
+
+* Verification allocation and implementation gate
+
+The finite model contrasts narrow/wide demand, closed/opaque policies,
+required-module disable, source changes before and after admission, two
+independent requirements, exact repeated issued-edge/observer sequences and
+parent/child port isolation. Mutants must expose early heavy construction,
+premature acceptance, dropped edges/events, stale publication, missing
+requirements, ignored disable, parent reuse and an incomplete opaque fallback.
+It does not replace the existing cycle/DFS/issuance proofs.
+
+Reuse LeanPoo ConstructionCache for immutable declaration structure and
+ContextSlot for exact-context values through the existing =ReadRetention=
+theorems. Those theorems do not prove that the new metadata extractor or any
+macro lowering is correct. That correspondence must be added once the exact
+native lowering is designed, before changing production scheduling.
+
+** Finite qualification
+
+The existing checker qualifies eleven cases for =ModuleDemand=: one positive
+safety run, nine matched faulty schedules, and a progress counterexample to
+=NoPublication=. The source SHA-256 is
+=a3a6705921df0804db0fb7d15a5db17f4cff83f814ba455d8523a744d1f2efe0=.
+Bounds are six catalogue identities, four selected identities, two demanded
+closures and the explicit closed/opaque/source/disable/requirement choices.
+This is not a 10000-node state-space or heap test.
+
+The fixed selected and demand sets assume that the existing dependency solver
+has supplied closed sets. Cycle detection and automatic discovery are NOT
+proved by that assumption. Feature closure and =-feature= semantics remain
+with the existing Feature resolver, rather than being reimplemented here.
+The opaque/closed classification is also a native
+correspondence gap. The model preserves a supplied ordered original token
+sequence; it does not manufacture or authenticate native Scheme records.
+Those boundaries stay with the existing DFS and issuer proofs and runtime gates.
+SysML remains a textual design with unqualified parsing/semantic validation.
+
+The existing Lean owner targets for Selection.Requirements, Workflow and
+ReadRetention rebuild successfully (120 jobs). Their origin, context and
+retention guarantees are reused without claiming an unbounded proof of this
+new QNT phase machine or a verified Scheme metadata extractor.
+
+Next implementation sequence:
+
+1. Establish the current heavy-role dependency and shared-memory ownership in
+   bounded controls. Separate direct storage, shared reachable storage and
+   compiler/runtime roots; do not divide global heap by record counts.
+2. Define and qualify the closed metadata projection and conservative fallback
+   against actual declaration syntax and source/MOP ownership. Preserve phase
+   diagnostics and source positions with existing macro governance.
+3. Qualify metadata-only selection with a small structural work-count control;
+   then qualify scope activation and final admission against the existing real
+   Gitea/PostgreSQL controls, callbacks and source-change failures.
+4. Only after those changes pass, rerun the original 10000-selected gate once
+   under two GiB. Retain the previous failures and do not claim full-scale
+   business-scope activation from a declaration-only pass.
+
+The subsequent [[file:20.02-metadata-projection-correspondence.org][20.02 source correspondence control]]
+pins the latest audited LeanPoo PR, derives closed/opaque classification from
+source shapes, and qualifies a small actual declaration/role binding experiment.
+It supersedes the supplied-Boolean classification in the first finite model;
+production hygiene, general fallback and the original capacity gate remain open.

@@ -1,0 +1,129 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 10.06.43.11 Graph Context Query Boundary
+:PROPERTIES:
+:ID: agentic-ai-lab-graph-context-query-boundary
+:STATUS: design-existing-query-core-context-adapter-open
+:DATE: 2026-10-14
+:END:
+
+* Decision
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns Context design. Query is the unified POO interface; GQL
+is the currently selected Query Language. ORG Elements is the only content
+window for Context Query. C3/C4 orders inheritance, composition and override;
+it is neither a Query Language nor the Agent's retrieval route.
+
+This specializes [[file:../165-native-semantic-element-relation-query-model.org][RFC 165]] and [[file:../44-current-project-programming-style/04-semantic-query-and-relation.org][Style 04]], not a second Query system. The
+existing graph-read Module publishes only =gql= in its =languages= slot.
+Scheme POO AST authoring and emitted GQL source express that one language.
+No raw string, JSON/alist query, private Context traversal DSL or public
+resolver callback becomes an alternate ordinary interface.
+
+* Owners and windows
+
+| Layer | Responsibility | Does not own |
+|-------+----------------+---------------|
+| Query interface | Immutable bounded POO Query, admission, result Contract and receipt binding | C3/C4 precedence or arbitrary effects |
+| GQL language | Graph selection/path/property/projection expression | Context lifecycle or authorization |
+| Parser dependency | GQL POO syntax and byte-exact pure source projection | Context policy or causal truth |
+| ORG Elements | Addressable Context content and source relations at a declared source cut | A second Query Language |
+| ORG Contract | Source structure, applicable constraints and revision binding | Automatic truth or an action grant |
+| Context Module | ORG-bound interpretation and consumer scope, composition and reassessment | Alternate GQL parser or Context content store |
+| LeanPOO C3/C4 | Declared inheritance graph resolution and object composition | Query traversal, prompt order or chronology |
+| ASCENT | Relations over admitted source-bound facts and proposed dependencies | Bypass access to protected content or grant issuance |
+
+ORG source topology and prototype inheritance have different edge roles.
+An ORG section parent does not automatically become a C3/C4 parent. A composed
+Context may have multiple prototype parents without rewriting the ORG document
+tree. GQL can select explicit relations of either role; neither relation role
+is inferred merely from an edge label or source order.
+
+The only-window rule does not require every code byte, binary or log to be
+embedded in ORG. ORG Elements may carry immutable references and declared
+relations to external artifacts. Dereferencing protected data still requires
+current scope/authority and source-bound admission. GitOps tracks those external
+revisions; an arbitrary filesystem scan is not another Context Query window.
+Indexes and caches are implementation projections of ORG Element cuts, never
+independent semantic content authorities. Normal PO slot access used to evaluate
+a selected Context object is not a replacement public retrieval interface.
+
+* Query and composition are distinct activities
+
+#+begin_src d2
+direction: right
+consumer: Session / task consumer
+query: Unified POO Query
+gql: GQL language / parser-owned projection
+elements: ORG Elements at source cut
+contract: ORG Contract at revision
+receipt: Admitted bounded result
+composition: Selected prototype composition (C3 / C4)
+view: Consumer Context view
+consumer -> query: scoped demand
+query -> gql: one program representation
+gql -> elements: declared content window
+contract -> elements: structural / applicability constraints
+elements -> receipt: source-bound candidate result
+query -> receipt: result Contract / receipt admission
+receipt -> composition: selected composition inputs
+composition -> view: inherited / overridden interpretation
+view -> query: further demand (not a prescribed next action)
+#+end_src
+
+This diagram is one demand-led use path, not a mandatory one-way lifecycle.
+GQL can also query already composed, ORG-bound relations or request lineage;
+composition may cause further Query demand. No traversal order is forced on
+Agent exploration. Current disclosure checks precede protected source I/O and
+final disclosure; result admission afterwards cannot authorize earlier access.
+
+A Query result binds its Query identity, program/semantic revision, selected
+Element space and source cut, result Contract, Provider and completeness/bounds
+receipt. The Context consumer additionally needs ORG Contract revisions,
+qualified Element identity, applicable graph/root cut and consumer scope.
+These Context additions are proposed obligations, not claimed current Query
+receipt fields. A cached result, successful linearization or valid ORG Contract
+alone does not establish any of those other bindings or current permission.
+
+* Existing implementation versus design gap
+
+[[file:../../../../modules/query/interface.ss][Query interface]], [[file:../../../../modules/query/objects.ss][Query objects]] and
+[[file:../../../../modules/query/contracts.ss][Query receipt contracts]] already own the unified POO model. The object layer
+imports parser-owned GQL syntax instead of implementing another syntax graph.
+
+[[file:../../../../modules/ai-agentic-context/funs.ss][Context functions]] currently validate actual Orgize Contract/Element Query
+objects and call =org-contract-select=. They capture and project ORG source,
+then compose qualified Element collections and bind Session slices. This is
+existing internal source-selection behavior, not evidence of a finished
+unified Query-to-Context adapter or GQL Provider over the Context space.
+
+The design keeps Orgize Element selection behind the Context source boundary;
+it must not be published as a peer Query Language or a second Context query
+registry. The missing adapter must consume the existing Query objects and
+receipt/result Contracts, retain Element/source/Contract cuts and refuse
+unbound candidates. It must not expose raw projection plumbing to consumers.
+No runtime, Scheme source, storage executor or bindings are changed here.
+
+* Required positive and negative Cases
+
+These are open verification obligations, not new passing controls:
+
+| ID | Positive Case | Negative Case / refusal |
+|----+---------------+-------------------------|
+| CQ01 | Unified POO Query with current GQL program selects declared ORG space | Raw Context query string or resolver-order traversal presented as another language |
+| CQ02 | Equal local IDs in different documents retain qualified origins | Index-only or fabricated Element lacks current ORG source binding |
+| CQ03 | Current source and ORG Contract revisions bind a result | Old query result after source/Contract revision cannot reuse previous applicability |
+| CQ04 | Query-selected roots compose with explicit C3/C4 metadata | ORG tree-parent relation silently treated as inheritance; conflicting precedence silently resolved |
+| CQ05 | Shared candidate content receives each consumer's current admission | Shared Query receipt treated as shared grant or protected-data access permission |
+| CQ06 | Bounded results retain incomplete/truncated status | Partial graph results treated as the complete Context or complete challenge inventory |
+| CQ07 | Index/cache projection reproduces its declared ORG cut | Cached projection replaces source authority, or external reference bypasses disclosure checks |
+| CQ08 | Agent expands demand using new relations and counterexamples | Query answer hardcodes a next action or grants an execution effect |
+
+Lean consumes Query/C3/C4 contracts under their actual premises. Quint models
+Query selection, cut changes, composition and consumer review as separate
+transitions. ASCENT derives support, conflict and reopening candidates from
+admitted facts. Scheme controls must exercise the real Query Module and real
+ORG Elements/Contract together; no duplicate admission predicate belongs in
+Proofs. The prior [[file:10-graph-context-model-receipt.org][Graph Context receipt]] remains composition/model evidence,
+not proof that CQ01-CQ08 or the Context Query adapter have passed.

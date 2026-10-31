@@ -1,0 +1,266 @@
+#+title: 32.45 Recovery From A Selected Nix Release
+#+language: en
+#+startup: overview
+
+* Question and persistent trust root
+
+[[file:32.46-selected-source-build-recovery.org][32.46]] extends this result with automatic selected-Source recovery through
+Core's actual publication boundary. This document preserves the original explicit
+pin experiment and its evidence limits.
+
+[[file:32.44-managed-build-process-handoff.org][32.44]] transfers a retained Core issuance through an owned process pipe. What
+remains after the issuer and every receiving Core worker exit?
+
+The durable root is a conjunction, not another writable receipt:
+
+1. A trusted release selection identifies ONE exact Nix store path. The selection
+   comes from the approved package/build configuration, independently of candidate
+   metadata. A mutable output link, GC root or candidate-supplied path is not an
+   authorization policy.
+2. The local Nix store database registers that path, and content verification
+   succeeds against its recorded NAR hash. The store/database and administrative
+   boundary remain trusted.
+3. The sealed Core packet must still match the restarted reader's selected
+   compiler identities, source observations and output directory. The actual
+   outputs and record must match the packet before existing Contract admission.
+
+Nix checks content integrity; it does not choose the authorized publisher for us.
+A different, perfectly valid registered store object must still be refused when
+the selected release remains unchanged. Changing both the candidate AND its
+allegedly trusted selection is not a defended attack: that compromises the root.
+
+There is an unavoidable bootstrap distinction. A Nix database entry survives the
+Core issuer, but does not remember which entry the application approved. If ALL
+approved selection state is also lost, the restarted application cannot derive
+authorization from an attacker-replaceable packet. Recovery must obtain the
+exact selection from independently governed persistent package/build policy.
+This experiment supplies that selection explicitly to restarted readers; it does
+not yet implement or qualify rediscovery of that policy after every trusted
+process has terminated. It qualifies recovery WITHOUT issuer memory, conditional
+on the retained selection, rather than unconditional cold-start authentication.
+
+No keys, signatures or new issuer database are introduced. We reuse local Nix
+registration and verification plus Core's existing handoff/publication gate.
+
+* Existing mechanism audit
+
+- =module-system/building/artifacts.ss= already owns private issuance, selected
+  output observations and =accept-build-artifact-handoff!=.
+- =AdmissionPublication.= already guards =.for-export= and saved/hot =.publish=,
+  including final source checks, child obligations and two independent demands.
+- =module-system/building/package.ss= publishes selected SOURCE packages. It does
+  not authenticate separately compiled binaries. Renaming that receipt would
+  not solve this problem.
+- =modules/nix/objects.ss= prepares receiver-local =NixSource.= / =NixFlakeSource.=
+  publications and checks current derivation selection. Current derivation or
+  =--check-validity= alone is not the same as verifying stored content, nor does
+  it establish release authorization.
+- Existing =core/ops= Functional First execution supplies bounded process status,
+  output and logs for the isolated Nix calls. Gerbil's installed compiler remains
+  untouched.
+
+The native experiment uses =nix-store --store daemon --add= for an owned packet
+directory, then =--check-validity= and =--verify-path= on its exact selected root.
+It does not download providers, alter existing store objects, repair the store,
+update locks or restart the host daemon.
+The installed Nix used here reports =2.34.4+1=. The linked 2.34 manual currently
+renders a later patch revision; these command behaviors are also exercised
+against the installed executable rather than inferred solely from the manual.
+
+* Concrete isolated construction
+
+=t/qualification/build-publication/store-producer.ss= prepares the real service
+Scenario and compiles a fresh one-unit probe using Core completion. A managed
+worker receives the actual retained packet, validates it through the existing
+Core gate, writes =issuance.ss= into an owned directory and registers that
+directory in Nix. A final Core currentness check follows publication.
+
+Both Core issuer processes then exit. The orchestrator retains the selected
+store path only, not their =issued= maps or a live handoff pipe. Independent exec
+workers read the sealed packet from that selected store object, match their own
+projection and invoke the unchanged Core receiver through a string input port
+containing the verified packet. Domain publication continues through the real
+=.for-export= / =.publish=.
+
+The root adapter is an ISOLATED fixture (=store.ss=), not a new public restore API
+or completed Loader integration. It compares selected and candidate paths,
+verifies the Nix object, reads one packet, invokes Core admission, then verifies
+the store object and actual Core observations again. Refusal leaves that graph
+=build-required=; there is no fallback to source-only publication.
+The packet asset must be a regular file. NAR integrity of a symlink authenticates
+the link text, not mutable external bytes reached through it; a registered
+symlink capsule is explicitly refused before reading the packet.
+
+The trusted selection argument is a fixture for approved package/release
+selection. Automatically rediscovering that approved selection after restart
+is NOT implemented by accepting any path found beside the binaries. Production
+must obtain it from the existing governed selected package/build publication.
+The packet contains public fixture source snapshots. Nix store data is readable;
+this experiment must not be generalized into silently publishing private config
+or secret text. Production must use the project's protected-input boundary or
+an admitted source-identity projection for private inputs, preserving currentness
+without making a second user-maintained source table. That adaptation is pending.
+
+* Clean-build gap found by the experiment
+
+The first cold-to-restart run exposed a real Core omission. Installed
+=std/make.ss= declares =gxc-outputs= as BOTH the =.ssi= and the static Scheme
+output. Its =static-path= flattens identity separators with =__=: for example,
+=static/package__probe.scm=, not =static/package/probe.scm=.
+
+Core previously published dynamic families but omitted that required static
+output. Earlier controls primed the destination with a raw compile, which left
+the missing static file behind and masked the omission. Without priming, warm
+=std/make= correctly compiled again, producing =.o2=; Core correctly refused
+that unissued generation. Runs 03/04 retain this failure, including the actual
+=... compile probe= output. It is not a Nix cache failure.
+
+The production correction is confined to Core's selected artifact collection:
+include and hash each selected identity's exact static Scheme output, copy it
+from fresh compilation, and reject missing output or ambiguous flattened owners.
+There is no static-directory catalogue traversal, timestamp manipulation,
+prewarming, deletion of unrelated generations or Gerbil source change. This
+qualifies the ordinary installed =gxc= route, not all possible compiler modes.
+
+* Native controls and observable decisions
+
+The current experiment covers:
+
+- Two fresh exec recoveries after all original Core issuers have exited, with no
+  additional probe compilation. Each invokes saved =.publish= cold and hot.
+- Parent plan 5432 remains cached; child PostgreSQL and Gitea plans both read
+  5433. Both independently published port contributions remain present.
+- Joint output/record mutation after hot publication is refused.
+- A missing required static output is refused.
+- A registered, selected capsule whose packet is an external symlink is refused.
+- Mutable output AND matching mutable record replacement before restoration is
+  refused against the immutable selected packet.
+- A coherent forged packet is itself registered in Nix. Nix verifies that new
+  object, but unchanged release selection refuses it.
+- The deliberate unanchored control selects the forged root as its own policy:
+  admission succeeds. This is a counterexample to integrity-implies-authorization,
+  not a security success or hidden failure.
+- Changed source bytes are refused by restarted projection matching.
+
+Actual decisions come from the worker's admission/failure values, not a table of
+predicted booleans. The disabled malformed service and unread JSON stay
+unselected. Tests never load the deliberately corrupted probe binary.
+
+* Lean and Quint correspondence
+
+=CoreStoreRecovery.lean= models selected/candidate equality, registered content,
+source matching and actual artifact/record matching. It proves valid-other-root
+refusal, stable restart, joint replacement refusal, source-change refusal and
+necessity of registered content. It also proves a counterexample to content
+integrity alone being release authorization. Existing handoff theorems continue
+to own receiver isolation and final checking with both requirements.
+
+=CoreStoreRecovery.qnt= distinguishes root selection, restoration and subsequent
+callback/publication. Negative controls remove the selected-root gate, registry
+check, NAR check, regular-asset check, final check or second requirement; others mutate parent state
+or force an unselected branch. An acceptance witness excludes reject-everything.
+
+=CoreStoreRecoveryCheck.lean= checks actual worker decisions, including the
+deliberately successful unanchored control. These are protocol/extraction proofs.
+They do not prove the Nix daemon, SQLite durability, OS isolation or compiler.
+
+* Reflection and remaining production boundary
+
+The useful reuse is Nix's independently registered immutable data combined with
+Core's receiver-local semantics. It avoids a second key-management system and
+keeps domain users configuring services rather than maintaining Evidence.
+The strongest lesson is the successful unanchored negative control: a valid
+store object must never be allowed to nominate itself as the release root.
+
+This experiment restarts Core processes, NOT the host or Nix daemon. The durable
+database's preservation across daemon/host restart is a Nix/host premise, not an
+experiment performed here. GC roots preserve availability, not authorization.
+A missing object must fail closed or be rebuilt from the same approved source;
+it must not select a different release implicitly.
+
+Further production work must bind the governed selected publication to this
+restore adapter, retain the artifact/GC lease, and own the restoration phase
+before concurrent publication can start. The isolated adapter assumes one
+serial owner. Full compiler dependency closure, artifact relocation, cross-host
+ABI qualification, external atomic/conditional commit and privileged store/DB
+tampering remain outside this result. Native field/source currentness cannot
+prove an external writer never changed and restored bytes between checks.
+The release selection is fixed for each test receiver. Live revocation or a
+change of approved release is not inferred from a mutable "latest" link. The
+production selected graph must include the release selector's source/revision
+and currentness in its existing admission context; a new approved selection
+requires a new receiver rather than an in-place approval rewrite.
+
+* References
+
+- [[https://nix.dev/manual/nix/2.34/command-ref/nix-store/verify-path][Nix 2.34 manual: verify-path]]: content comparison against the Nix database,
+  including nonzero refusal when changed. Registration is not authorization.
+- [[https://nix.dev/manual/nix/2.34/command-ref/nix-store/add][Nix 2.34 manual: add]]: existing local store registration, reused here.
+- Installed Gerbil =src/std/make.ss=: =gxc-outputs= and =static-path= are read
+  as the output contract; the source is not modified.
+
+* Validation receipts
+
+Raw logs remain in local artifacts; final qualified results are appended after
+the focused runs. Failed attempts are retained and never relabeled as passes.
+
+Early fixture failures retain a self-referencing =root= slot and accidental
+top-level =main= dispatch. Runs 03/04 expose the actual missing-static-output
+bug described above. Run 05 completes several real worker controls but hits the
+unchanged 60-second Case idle limit: process completion was not yet reported to
+the outer Case. Run 06 used the same phase checkpoint with count 1 repeatedly;
+the existing replay guard correctly treated repetitions as no progress. The
+final test uses EXISTING =execution-progress!= with a per-Case monotone total
+of successfully returned checked processes. Failed processes never increment
+it. It never emits timer heartbeats or extends the 60-second idle / 600-second
+total Case policy. Both idle refusals remain failed receipts.
+
+Run 08 encountered stale declaration/prelude compilation metadata after the
+shared Core dependency cache changed. Qualification now compiles the current
+four declaration/prelude units into its owned overlay, with Core's own package
+directory as a source fallback. It neither repairs the shared cache nor installs
+an alternative runtime. Run 09 exposed a test script's top-level =identity=
+binding shadowing the standard function while dependencies were interpreted;
+the probe binding is now =probe-identity=. Both failures remain unqualified.
+
+The final native receipt is =core-build-store-recovery-10=: natural exit zero,
+=MODULE-OK=, =HARNESS-OK= and final =OK=. All nine observed decisions match:
+
+#+begin_src scheme
+((restart-one . #t) (restart-two . #t)
+ (hot-joint . #f) (missing-static . #f) (symlink . #f)
+ (mutable-joint . #f) (other-store . #f)
+ (unanchored . #t) (source-change . #f))
+#+end_src
+
+The actual JSON trace passes =CoreStoreRecoveryCheck.lean=. Changing the observed
+=other-store= decision to acceptance makes the decoder fail with
+=native store recovery/Lean decision mismatch=. The full Lean project builds
+184 jobs and audits 6259 declarations using only standard Lean axioms. These
+numbers describe the proof project, not 6259 new recovery theorems.
+
+The final =core-store-recovery-quint-08= receipt qualifies all ten selected cases:
+one safety model and nine expected counterexamples, including an acceptance
+witness. Its hashes bind the current Core/qualification sources; model checking
+does not prove the subprocess extraction or Nix implementation. The final native
+run supplies the separate executable correspondence evidence.
+
+The first additional normal-build regression (=build-process-01=) compiled and
+cleaned successfully, then failed an old assertion that selected generated
+=object-family/syntax.scm= must survive clean. Existing Core
+=clean-build-artifacts!= and =module-build-artifact-clean-test.ss= explicitly
+own removal of selected generated =.scm= files. The regression now checks BOTH
+removal of that selected output and exact retention of an independently created
+unselected output across clean/recompile/clean. No production cleanup rule was
+changed to satisfy this assertion; the failed receipt remains retained.
+The corrected =build-process-02= passes with natural exit zero and both outer
+and nested =MODULE-OK= / =HARNESS-OK= / final =OK= markers. It selects 37 ordinary
+Core units, compiles, cleans, recompiles with the same identities, then cleans
+again; the separate unselected sentinel survives both cleans. Package/source
+input refusal controls also pass. Observed invocation times are spec 18.13 s,
+compile 37.01 s, clean 14.37 s, recompile 40.78 s and clean 11.53 s. This is a
+correctness receipt, not a matched performance comparison or speedup claim.
+
+Installed Gerbil loader/compiler source hashes were rechecked unchanged. No
+Gerbil source, global compiler installation, release keys or lockfiles were
+modified. Raw logs, store paths and generated receipts remain local artifacts.

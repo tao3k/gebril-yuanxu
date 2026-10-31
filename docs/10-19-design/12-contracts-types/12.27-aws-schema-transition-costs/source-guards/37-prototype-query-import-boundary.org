@@ -1,0 +1,188 @@
+#+title: 12.27.50 Prototype Query Import Boundary And Declaration Qualification
+#+property: DOCUMENT_ID 12.27.50
+#+language: en
+#+property: STATUS sixteen-module-qualified-thousand-incomplete
+
+* Remove a construction dependency from a read-only operation
+
+The [[file:36-carrier-candidate-admission.org][carrier admission change]] removes a repeated check. The next actual import
+edge is independent: prototype authoring dispatch imported =poo-clos/classes.ss=
+for only two read-only projections. That import also initialized logical Class
+construction/registration, although prototype dispatch does not need it.
+
+The two functions now live in the existing =poo-clos/objects.ss= value layer:
+
+#+begin_src scheme
+(def (poo-clos-class-precedence-list class-value)
+  (unless (element? ClosClass class-value) (clos-fail 'invalid-class))
+  (.ref class-value 'class-precedence-list))
+
+(def (poo-clos-class-precedence-position class-value target-value)
+  (unless (and (element? ClosClass class-value)
+               (element? ClosClass target-value))
+    (clos-fail 'invalid-class))
+  (hash-get (.ref class-value 'class-precedence-index) target-value))
+#+end_src
+
+These are the same Type checks and class-owned C4 list/index. There is no new
+linearizer, approval cache or registry. =classes.ss= no longer defines or
+re-exports these functions. =dispatch.ss= gets them from its existing objects
+import and no longer imports Class construction. The existing full
+=interface.ss= still exposes the query and explicitly loads Class lifecycle
+support when that full interface is requested. The product C4 scenario's direct
+query import moves to =:yuanxu/poo-clos/objects=; there is no forwarding layer.
+
+This implements the distinction between a native POO projection and a heavier
+Class lifecycle style. It does not make Class data untyped or bypass multiple
+dispatch. A caller using Class construction still imports its actual owner.
+
+* Real init test and measured support
+
+The existing scale fixture creates actual =types/objects/config/interface=
+sources, imports one init namespace, and runs the Module's tests through =.run=.
+Its worker additionally counts physical reads of =poo-clos/classes.ss= and
+requires zero for this prototype-only workload. It still requires all source
+bodies to expand/evaluate, unused business Scope to stay cold, source changes
+to be rejected and the fixture to be released.
+
+The sixteen-module run completes those assertions and natural exit zero with
+all parent/child harness markers and no error/overflow marker. Baseline and
+candidate use the same locked source environment and original limits; native
+tests are serial. The source lock is =gerbil-poo@fdeadfa40ca5cee5fe20308985aef1577f2eb49b=.
+
+| Observation | Original control | Staging only | Staging + query boundary |
+|-------------+------------------+--------------+--------------------------|
+| Read deliveries | 230724 | 193028 | 193024 |
+| Delivered direct edges | 280910 | 243214 | 243210 |
+| Retained support tokens | 5442 | 5442 | 5442 |
+| Retained support edges | 17082 | 17082 | 17082 |
+| Metadata replay visits | 137336 | 137336 | 137336 |
+| Physical reads at Graph ready | 6634 | 6634 | 6564 |
+| Retained SDK tools | 316 | 316 | 315 |
+| Collected process live bytes, Graph held | 511654720 | 511767872 | 503476352 |
+
+The final pair removes 37700 read deliveries (about 16.3%) and 70 physical
+reads. Collected process live bytes are 8178368 lower (about 7.8 MiB). This is a
+single whole-process pair, not exclusive Graph ownership, a per-module memory
+slope or a thousand-module peak-memory bound. The unchanged support census is
+important: semantic dependencies were not discarded to get a smaller number.
+Allocation-counter validity is false in these Graph Cases; no allocation-delta
+or end-to-end speedup claim is made from those counters or wall times.
+
+* Diagnose the triggering deadline, not the interrupted dynamic scope
+
+During the deferred field-row experiment described in topic 36, the child
+observation file stayed empty before its worker harness. The Case stopped at
+about 70 seconds but reported =duration-exceeded 600000 70302=. This was not a
+completed 600-second capacity run, nor proof that macro lowering caused the
+startup delay. The unqualified field macro was removed.
+
+The watchdog checked its own progress state, then its exception closure
+re-read =current-execution-progress= in the interrupted owner. That owner
+could be inside a different nested Ops extent. An outer idle refusal could
+therefore be labeled with an unrelated total budget.
+
+=observability/memory.ss= now captures status, limit and elapsed in the
+watchdog thread before interrupting. The stop condition, budgets and cleanup
+are unchanged. The existing progress suite adds an outer 100ms idle / inner
+still-current 1000ms negative case and checks the public duration receipt.
+The final suite passes all nine cases, including genuine progress, noisy-stall
+refusal and descendant cleanup. A preceding attempt failed in the existing
+0.6-second Ops case inside =open-process=, before child output; that failed
+run is retained and no bound or assertion was relaxed.
+
+* Consumer and capacity results
+
+The final CLOS dispatch suite passes 19 cases, including native prototypes,
+Class/eql specificity, qualifier order, replacement arguments, next-method,
+multiple values, ownership projection and policy invalidation. The focused
+authoring suite passes four cases, including exact one/two-check boundaries,
+fresh carrier identity on repeated constructor demand and mutated-hook refusal.
+
+The final =admission-checked-publication-test.ss= passes all seven cases through
+the production producer, =AdmissionPublication.= and public =bind-evidence=.
+It covers one actual value check, exact Contract/Context references, cached
+parent versus current child, same-name Contract mismatch, source/Schema edits,
+changes during admission, unresolved network and failed-publication old-value
+preservation. Its selected declaration is a small dependency-free fixture and
+its Schema is an actual temporary JsonSchema input. This is a guard-regression
+control, not the real AWS provider integration described next.
+
+The final =module-candidate-metadata-test.ss= also passes both native cases:
+initializer scratch reads do not become enduring admission requirements, while
+actual authoring-policy and Contract edits reject an earlier candidate. No
+open-boundary trace is relabeled as a closed continuation to obtain this result.
+
+The first six-file AWS/JsonSchema/Funflow integration reached five completed
+non-AWS consumers, but AWS failed before Schema admission: Nix =path-info=
+could not access the daemon socket inside the sandbox. This is not a failed
+Schema/Contract assertion or a passed integration. The unchanged init tests
+entrypoint was then run with daemon access, without changing limits or
+deploying cloud resources. That run completed selection and launched the worker
+at 37088ms, but the child emitted no harness output before the parent refused
+with =idle-exceeded 60000 60001=. The captured watchdog receipt now identifies
+the actual idle boundary correctly. This is an unresolved pre-harness import/
+launch qualification, NOT an AWS Schema, publication or 600-second capacity
+pass. No unchanged retry, added compilation cache or larger idle budget is used
+to hide it.
+
+The final cancellation gate passes its real TERM/descendant cleanup case and
+then acquires and releases a fresh fixture. This is independent of the
+capacity gate below; it does not turn an interrupted capacity run into a pass.
+
+* Thousand-declaration result and remaining ownership work
+
+The unchanged thousand-module gate runs actual declarations through the init
+test object's =.run=, with observation enabled and the original 2 GiB heap,
+60-second idle and 600-second total policy. It completes 614 publications.
+The last completed publication reports 550158ms elapsed, 159963ms CPU and
+230554 physical reads; the next publication stops during =types.ss= import.
+The parent reports =Ops execution terminated= with signal 15, followed by
+the outer guard's kill and exit 137. No heap-overflow marker is present.
+Exit 137 is not, by itself, evidence of an out-of-memory kill.
+
+The fixture directory is absent after termination and a scoped process query
+finds no surviving worker. These observations support cleanup on this run;
+the child's Graph-ready, source-change refusal and collected live-memory
+assertions were NOT reached. There is no thousand-module memory receipt or
+capacity acceptance, and the failed run is not retried unchanged.
+
+Physical reads increase by 375 per completed publication in the final observed
+stretch. That is not a renewed historical-prefix scan, but it remains costly.
+At 576 publications, the existing phase observations report 16.60s import CPU,
+20.26s metadata-replay CPU and 33.68s source-guard CPU. The overlapping reader
+boundaries report 66.64s preparation CPU and 36.38s interface CPU; they must
+not be summed as disjoint costs. At 614 publications the reader retains 315
+SDK tools, 1842 private contexts/source objects and 2456 source guards. These
+are ownership counts, not exclusive retained bytes or a proof of a leak.
+
+The next candidate must therefore address repeated support replay and the
+three private role contexts per publication along the real preparation and
+interface boundaries. It must establish which context/binding references can
+escape to lazy formulas before releasing or projecting them. The failed
+field-row macro experiment is not used to explain this result. Neither the
+finite Quint carrier schedule nor the Lean single-check law proves SDK
+context non-escape, native GC behavior or thousand-module capacity. Open
+callbacks continue to retain complete guards; the remaining work cannot be
+justified by dropping their support or clearing SDK state.
+
+* Reproduction and evidence boundaries
+
+#+begin_src sh
+just test-file t/module-authoring-dispatch-work-test.ss true
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/poo-clos-dispatch-test.ss true
+just test-file t/execution-progress-test.ss true
+just test-file t/admission-checked-publication-test.ss true
+just test-file t/module-candidate-metadata-test.ss true
+just test-file t/module-testing-isolation-test.ss true
+just test-file t/execution-cancellation-test.ss true
+just test-file t/module-declaration-1000-test.ss true
+#+end_src
+
+Use the repository-locked source environment and the real Nix daemon for AWS.
+Run native gates serially; do not substitute directory/publication fixtures for
+the actual declaration gate. No full build, upstream edit, new cache, larger
+heap/deadline or push is part of this qualification. Raw logs remain local;
+expected error markers, interrupted runs and cleanup results must be retained
+as distinct evidence rather than overwritten by later passes.

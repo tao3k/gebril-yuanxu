@@ -1,0 +1,168 @@
+#+title: 32.44 Managed Build Process Handoff
+#+language: en
+#+startup: overview
+
+Durable-root qualification continues in
+[[file:32.45-selected-nix-release-recovery.org][32.45]]. That experiment also exposes and corrects a selected static-output
+omission masked by this section's pre-existing raw compile; the historical
+32.44 receipts do not qualify an unprimed complete compiler output publication.
+
+* Existing authority and question
+
+Can a fresh process reuse a completed Core build while refusing jointly replaced
+artifacts and readable records? [[file:32.43-core-build-publication-authority.org][32.43]] already owns retained issuance and the
+publication gate. Source-package publication does not authenticate independently
+compiled artifacts. The compiler-pipe experiment in
+=t/qualification/mop-state/artifact-authority.ss= supplies a useful parent-retained
+transfer pattern; its loader interception is NOT reused.
+
+The solution extends the same Core association, not a signature system, disk
+issuer registry or second publication protocol. Gerbil remains unchanged.
+
+* Production ownership and transfer
+
+=module-system/building/artifacts.ss= owns the existing private =issued-build=.
+The source build projection adds =.process= alongside =.compile=. Its named
+functional implementation, =run-build-artifact-process=, checks the existing
+association, starts the selected worker through =std/misc/process= and sends
+only retained expectations on the parent-owned stdin pipe:
+
+#+begin_src scheme
+(list 'yuanxu-build-handoff-v1
+      (issued-build-identities state) (issued-build-inputs state)
+      libdir (issued-build-files state)
+      (issued-build-record state) (issued-build-record-digest state))
+#+end_src
+
+The parent closes the pipe's write half after one datum. Failed process output
+is retained in the error. A successful child return is followed by an independent
+artifact/source check: child execution is an effect boundary.
+
+=accept-build-artifact-handoff!= is INTERNAL trusted worker bootstrap, before
+compiled-publication scope resolution. It is not an ordinary Module export or
+a disk-record import API. Calling it on arbitrary stdin is NOT authentication.
+Trusted parent/worker executables and the OS-owned pipe remain premises.
+
+The receiver independently constructs its selected graph. It checks exactly one
+packet followed by EOF, matching compiler identities, complete ordered source
+observations and output directory. No unselected catalogue is enumerated.
+Graph =generation= is a process-local gensym, so it cannot be compared across
+processes. Only after projection matching are the parent's retained observations
+installed under the CHILD's receiver/generation. The existing artifact and
+projection currentness gates then run before returning.
+
+Parsing starts with =build-required=. Refusal leaves that graph blocked; it
+cannot downgrade to source-only admission. An already-associated graph refuses
+replacement handoff. The existing =.for-export= and =.publish= perform subsequent
+checks, including saved procedures, hot slots and post-callback currentness.
+
+* First build, warm reuse and publication
+
+| State | Behavior |
+|-------+----------|
+| No completed association | Fresh empty output directory invokes installed compiler; existing binary is not adopted |
+| Valid local association | Existing checked warm completion |
+| Fresh managed worker with matching transfer | Receiver-local association enables the same warm completion |
+| Coherently replaced binary and record | Refused against private expected values |
+| Different selected projection | Refused; graph remains build-required |
+| New independent process with only a disk record | No compiled authority recovered |
+
+Warm child completion can produce a new readable record without replacing its
+parent's association. No process infers its authority from the record filename.
+
+* Executable scenario and fixture boundary
+
+The regression uses real Gitea/PostgreSQL selection, linker, =.for-export=,
+=.publish= and Contract admission. The one-unit =probe.ss= compiler projection
+is a fixture; it does not qualify the entire compiled service/dependency closure.
+The worker script is a test bootstrap, not another production Loader.
+
+Independent exec workers cover warm compilation with no new probe compiler job,
+joint replacement after hot saved publication, mismatched selected identities,
+and selected source modification before a successful child exit. The last case
+must be refused by the PARENT's post-process check. Parent plan 5432 and child
+plan 5433 stay independent; both port contributions remain required. Existing
+malformed unselected service/unread JSON controls remain. Additional existing
+controls retain artifact-only changes, added object generation, poisoned initial
+cache and failed-build refusal.
+
+* Lean and Quint correspondence
+
+=CoreBuildHandoff.lean= proves exact projection equality for acceptance, joint
+replacement refusal, warm transfer, receiver-indexed parent isolation, and final
+checking plus both-requirement necessity. =CoreBuildHandoffCheck.lean= decodes
+four actual worker outcomes in fixed order; a changed rejection must fail.
+These are protocol/extraction proofs, not compiler or operating-system proofs.
+
+=CoreBuildHandoff.qnt= separates transfer binding, callback and final publication.
+Six negative variants expose disk-derived expectations, omitted selection
+matching, omitted final artifact/source checking, parent mutation and eager unselected access.
+An acceptance witness excludes an implementation that rejects everything.
+
+* Reflection and remaining boundary
+
+The benefit is reuse of existing build/publication responsibilities across an
+owned process channel, without putting keys or Evidence objects in user config.
+The cost is an explicit managed-parent lifetime and trusted worker bootstrap.
+This is supervised cross-process reuse, not autonomous durable authentication.
+
+When every trusted owner exits, a later process cannot recover authority solely
+from disk. That requires a governed protected build-service handoff or other
+durable authority. No writable sidecar hash can replace it. Hostile same-user
+processes, multi-file atomic publication, concurrent build owners, external
+conditional deployment commit and full binary dependency closure remain outside
+this result. Workers must accept handoff before resolving compiled scopes.
+Byte currentness at the checked boundaries is not proof that an external writer
+never changed and restored a file between checks; external atomic/conditional
+commit remains a separate requirement.
+
+* Validation receipts
+
+Raw logs and failed attempts stay outside Git. Focused receipts are recorded
+after validation; no timeout is widened and no Gerbil source is modified.
+
+- =/private/tmp/core-build-handoff-compile-04.log=: the installed compiler built
+  the five changed Core library owners. The source hash list in
+  =/private/tmp/core-build-handoff-20261019/candidate-04/core-sources.sha256=
+  matches the current files. This overlay contains Core libraries, not a
+  replacement compiler/runtime.
+- =/private/tmp/core-build-handoff-07.log=: natural exit zero, =MODULE-OK=,
+  =HARNESS-OK= and final =OK=. Actual worker decisions in
+  =core-build-handoff-07.json= are warm=true, joint=false, mismatch=false and
+  source-change=false. The original six publication decisions remain
+  true,true,false,false,true,true.
+- =core-build-handoff-decoder-01.log= and
+  =core-build-handoff-publication-decoder-01.log= accept those actual traces.
+  =core-build-handoff-decoder-negative-01.log= rejects a copied trace whose
+  joint-replacement refusal was changed to acceptance, with exit 1 and
+  =native Core handoff/Lean decision mismatch=.
+- =/private/tmp/core-build-handoff-lean-03.log=: full Core Lean target passes,
+  183 jobs and 6247 audited declarations, standard Lean axioms only.
+- =/private/tmp/core-build-handoff-quint-07.log= and its =.ss= receipt qualify
+  eight scoped outcomes, including expected counterexamples. The checker
+  binds the actual worker/projection, Core sources, Lean extraction and fenced
+  launcher, and rejects a source cut that changes during verification.
+
+Retained failed attempts include worker block-definition syntax and command-line
+indexing errors (runs 01--03), and the destructive source-change control causing
+a subsequent native recompilation into an unissued =.o2= (run 05). That native
+refusal was correct. The source-change control now runs AFTER warm checks rather
+than weakening generation checks or manipulating timestamps. Run 06 was
+interrupted and is not qualified.
+
+The initial Quint managed-backend attempts could not bind in the sandbox, then
+failed their existing readiness deadline because a concurrently edited helper
+called an unexported =tryConnect=. That helper was not overwritten. Final scoped
+verification uses an explicitly owned installed Apalache 0.62.1 server through
+the checker's existing =--server-endpoint= option. Its ordinary model checks and
+deadlines remain intact. No platform was installed and no timeout was increased.
+
+The first maintained service-suite run completed nine controls, then correctly
+refused a concurrent change to =module-system/source/preparation.ss= with
+=compiler tool source changed; use a fresh reader= and =stale prepared build
+source=. That failed run (=core-build-handoff-services-01.log=) is retained; the
+other session's change is not reverted. The fresh-reader rerun is separate.
+=/private/tmp/core-build-handoff-services-02.log= passes all eleven maintained
+service controls with natural exit zero, =MODULE-OK=, =HARNESS-OK= and final
+=OK=. The final scoped Quint receipt still matches all 410 bound source files.
+The installed Gerbil loader/compiler source hashes remain identical to 32.43.

@@ -1,0 +1,206 @@
+#+title: 32.14 Source-check windows in real service admission
+#+language: en
+#+property: DOCUMENT_ID 32.14
+#+property: STATUS final-window-merge-rejected-by-counterexample
+#+date: [2026-10-18]
+
+* Qualification boundary
+
+The 614-open Scheme candidate was withdrawn after the effectful-currentness
+callback counterexample in 32.15. Its measurements below are historical.
+The Scheme performance goal remains open. Its new per-source replay-count
+control failed before the formal-model pass; it is not a completed performance
+change. Further runtime optimization is paused in favor of the source-window
+model and matched counterexamples in [[file:32.15-source-window-model.org][32.15]]. No native correspondence or
+net speedup is claimed by the 614-open measurement.
+
+* Question
+
+[[file:32.13-read-record-costs.org][32.13]] counted 310 source-file opens per cold and warm admission. This
+follow-up attributes the opens before changing the cache boundary. A read here
+means opening/reading source text, not physical disk I/O. A warmed POO value
+or dependency record is not an accepted source-currentness result.
+
+The workload retains the maintained Gitea/PostgreSQL Scenario, its actual
+selected publication/context, contextual child obligations and normalization.
+The parent plan is already cached at port 5432; the derived candidate uses 5433.
+No Loader integration, producer change or admission-result cache is introduced.
+
+* Attribution, not an assumed replay bottleneck
+
+The existing module-source observer emits (file-read phase path). The cost
+consumer now keeps these rows instead of discarding all non-symbol keys.
+Only counter runs install this observer; timed runs still omit it.
+
+| Original phase | Cold opens | Warm opens |
+|----------------+------------+------------|
+| publication-current | 202 | 202 |
+| graph-current | 2 | 2 |
+| configuration/source | 4 | 4 |
+| final collected currentness | 102 | 102 |
+| Total | 310 | 310 |
+
+The publication phase reads the same 101 files twice. The final collector
+checks 102 distinct observed files. Thus 310 is not 310 redundant reads of a
+single file, and native dependency replay is not the main source-I/O owner.
+The inherited Contract kernel previously ran under one source-byte cache;
+that scope included independent child/local/platform obligation calls.
+
+A negative performance control removes that broad window without combining
+the final checks. It passes the three semantic/cost cases but performs 1024
+opens in both modes (909 publication, 9 graph, 4 configuration and 102 final).
+This regression is retained. A faster broad window must not be presented as
+proof that currentness can safely be reused across obligations or effects.
+
+* Rejected boundary experiment (614 opens)
+
+This section describes the withdrawn experiment, not the current adapter.
+The replaceable-inspector purity assumption was refuted by a native control;
+see 32.15 for the repaired boundary and its final qualification.
+
+
+The source admission adapter no longer wraps inherited .admit in a file-byte
+cache. It retains the original child receipts and domain obligations. After
+domain callbacks and diagnostic decoration finish, the collector opens a new
+fresh pure window. Its source/graph identity inspection and final observed-input
+comparison share bytes inside that window only. Every expected revision is
+still compared; deduplicating a file read never replaces competing requirements.
+
+The collector's optional inspect argument is an internal source-only guard,
+not a validator/effect hook. Existing zero-argument currentness calls remain
+fresh. No domain obligation, process, publication effect or independent admission
+may run inside inspect. The production adapter passes the existing context
+admit-current guard and the descriptor's source-input check. Invalid configuration
+also receives the final context/source check before returning a refusal.
+
+MOP replay separately receives a fresh pure source-check window. Its callback
+inspects one-slot source metadata; it does not call a candidate getter. Native
+replay still checks receiver/revision/instance validity. This helps Scheme slot
+sources but is not credited with removing the real Scenario's 202 publication
+opens. The collector remains independent of this replay window.
+
+The bound contribution protocol also distinguishes actual callbacks from an
+empty platform contribution. A registered child without either an inherited
+platform obligation or a root contribution callback performs one currentness
+guard and returns the empty platform diagnostics. Its domain obligation is
+unchanged. Previously the root's handles? flag caused a second whole-publication
+guard even for these callback-free children. Real callbacks retain independent
+pre/post guards; inherited-only callbacks now also receive a post guard.
+
+This distinction removes repeated adjacent pure work, not an obligation or a
+source requirement. It does not treat a successful parent admission, previously
+cached plan or earlier file version as authority for a derived receiver.
+
+* Executable controls
+
+
+- [[file:../../../t/slot-read-cost-test.ss][slot-read-cost-test.ss]]: full-context cold/warm admission, parent-cache
+  isolation, stale parent-plan refusal, inherited child obligation count,
+  nested post-child source mutation and an unselected raising getter.
+- [[file:../../../t/source-observation-test.ss][source-observation-test.ss]]: two warmed fields from the same Scheme source
+  produce one file read in each replay; a second invocation must read again.
+  An enclosing old byte window cannot hide a mutation before replay.
+  A deliberately effectful obligation then reads the changed field: it must
+  fail before the following counter increments, not merely at outer return.
+  Existing diagnostic mutation, nested source collection, conflicting revisions
+  and unselected source controls remain.
+- [[file:../../../t/source-admission-test.ss][source-admission-test.ss]] retains the public adapter's single inherited call,
+  source changes and independent authority boundary controls.
+- [[file:../../../t/slot-read-replay-test.ss][slot-read-replay-test.ss]] retains the producer/consumer cold/hit dependency,
+  child obligation, receiver isolation, source mutation and lazy-branch controls.
+
+Source-bound checks remain sequential observations, not an atomic filesystem
+snapshot. A file may change after the last comparison. This work does not
+claim immutable storage, provider/runtime authority or an external transaction.
+
+* Counter result and limit
+
+The final window/callback change passes two complete fresh-process cost/control runs with identical counts:
+
+| Variant | Cold requests / opens | Warm requests / opens | Pure-check entries |
+|---------+-----------------------+-----------------------+--------------------|
+| Original broad inherited window | 1834 / 310 | 1834 / 310 | 642 |
+| Independent obligation boundaries, no final batching | 2716 / 1024 | 2716 / 1024 | 649 |
+| Independent boundaries plus pure final/callback batching | 1846 / 614 | 1846 / 614 | 434 |
+
+For the final variant, the 614 opens are 606 publication (101 files in six
+independent guard windows), six graph checks and two configuration checks.
+The final collector still compares all 102 observed files. Its comparisons
+reuse the bytes obtained by the source-only inspector in that *same fresh
+return window*; a missing inspector input still requires a fresh read. It has
+not been removed or satisfied by an earlier obligation's cache.
+
+The native observed dependency graph remains 871 nodes / 1938 edges and 871
+replay callbacks for both full-context cold/warm modes. Read events fall to
+2396/2383 because callback-free duplicate platform guards and the redundant
+separate post-kernel guard are gone. Nested contextual controls go from 8 to
+6 opens (two boundaries), and 10 to 8 (three boundaries). These envelopes still
+do not substitute for full publication-context work.
+
+614 is 410 fewer opens than the strict unbatched control, but 304 *more* than
+the original 310. This is not a net I/O or latency optimization over the original
+implementation. Do not merge these different safety boundaries into a speedup
+claim. Existing old controls already rejected a persistent source mutation at
+return; the stronger boundary additionally refuses the changed field *during*
+a deliberately effectful obligation, before subsequent code executes.
+
+The remaining repetition is a protocol-granularity question, not a proved lower bound: contextual child
+admissions currently validate the entire selected publication's mutable source
+closure. A claim below 310 would require reducing that authority/dependency
+scope or relying on an independently established immutable artifact boundary.
+Neither follows from a POO value-cache hit. In particular, do not suppress a
+child's guard, reuse a previous obligation's bytes, or replace source bytes by
+mtime merely to meet the earlier count. Further work must first specify and
+verify standalone child-receipt validity and final whole-publication coverage.
+That redesign and Loader changes are outside this change.
+
+* Reproduction and retained failures
+
+Runs use default Gerbil 1cfb032 / Gambit ea114fc with compiled gerbil-poo ece6f60,
+the existing heap-fenced Just gates and unchanged 120-second watchdogs. Private
+input copies pin the earlier audit's Core closure while other sessions edit the
+workspace; these are source snapshots, not compatibility runtimes. Only the
+five changed consumer/guard/test sources are overlaid in the candidate. Baseline
+and candidate use the same maintained Scenario/fixtures, native dependency and
+configuration values. No raw logs are committed.
+
+The baseline input and first run are under /private/tmp/core-source-window-before;
+the candidate and controls are under /private/tmp/core-source-window-after.
+run-isolated.log retains the 1024-open negative performance result. Compilation
+attempts that changed input mid-flight, the first attribution syntax failure,
+the wrong-directory recipe invocation and the 120-second compile timeout remain
+local failure records; none count as passing gates. Compilation resumes only
+completed content-bound checkpoints, without widening the watchdog.
+
+* Cold/warm timing, not an optimization acceptance
+
+The four cost processes run in A-B-B-A order, with three samples per mode in
+each process and three admissions per sample. CPU/wall medians below are
+milliseconds per admission (six samples per cell); every sample includes GC.
+No allocation figure is accepted from the known-invalid signed VM statistic.
+
+| Variant | Cold CPU / wall | Warm CPU / wall |
+|---------+-----------------+-----------------|
+| Original | 71.864 / 184.009 | 64.890 / 215.176 |
+| Final stricter boundary | 111.830 / 543.639 | 110.875 / 402.303 |
+
+These host-contaminated timings do not qualify stable latency ratios. They do
+not support a speedup claim: both open counts and descriptive CPU costs exceed
+the original. The unbatched strict negative control has three samples per mode,
+with CPU medians 134.912/135.562 ms; it is not silently combined with the six-sample
+A/B cells. Safety-boundary qualification and net performance acceptance remain
+separate gates. The latter is not achieved.
+
+The [[file:32.14-source-manifest.sha256][source manifest]] fingerprints the fixed candidate's 102 selected source/test
+inputs. This manifest belongs to the rejected 614-open experiment, not the repaired
+working tree. The final source-bound receipt and controls are described in 32.15;
+unrelated concurrent changes are not certified by this historical receipt. The native dependency remains ece6f60 in both variants.
+
+* Repair and current result
+
+The callback experiment was reproduced and rejected, then the original
+independent fresh collector boundary was restored. The repaired cold/warm
+control reads 718 files, with all 31 focused native cases passing. The new
+source-window laws, exact dependency pins, 20 Quint controls and remaining
+premises are recorded in [[file:32.15-source-window-model.org][32.15]]. This supersedes the experimental boundary
+description above without rewriting its failed performance history.

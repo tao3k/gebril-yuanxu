@@ -1,0 +1,324 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.22 Config Languages 21: Guestbook Through the Migrated Core
+#+property: DOCUMENT_ID 11.22
+#+date: [2026-10-16]
+#+filetags: :config-language:guestbook:module-system:feature-system:design:
+#+property: STATUS current-api-audit-and-design-no-implementation-no-loader
+
+* Historical revision inspection
+
+This is a frozen source audit, superseded for current package/import guidance by
+[[file:../13-module-loading/13.16-yuanxu-package-and-prelude.org][13.16 Yuanxu Package Identity]]. It does not establish compatibility entries.
+The product imports below identify the inspected product revision, not Yuanxu
+imports to copy into current code.
+
+This audit uses Core worktree 06fe336bc671 and product revision 921152c088d1 after the
+migration, not removed product src paths or a historical gitlink. It records source
+inspection, not a fresh test execution. Core owns JSON Schema under
+[[file:../../../modules/json-schema/interface.ss][modules/json-schema]], [[file:../../../feature-system/interface.ss][Feature System]], Module graph primitives and
+[[file:../../../module-system/design/README.org][shared module design]]. Agentic AI Lab owns root init/source conventions, actual
+business modules and resource-provider adapters. No Core -> product runtime import
+is proposed. Consumer file links outside this checkout are workspace references.
+
+The target four-role module shell is [[file:../../../module-system/design/01-source-roles.org][specified in Core]] but is not enforced by
+today's product checker. Guestbook role contents are fully printed in
+[[file:11.21-jsonschema-guestbook-role-examples.org][module 20]]; its Kubernetes provider remains a required pending integration,
+not an implemented renderer hidden behind a procedure name.
+
+* 1. Root init.ss: an existing source object, not a selection interpreter
+
+Actual product [[file:../../../../init.ss][root init.ss]]:
+
+#+begin_src scheme
+(import (only-in :clan/poo/object .def)
+        (only-in :agentic-ai-lab/modules/module-authoring/module-source-collection
+                 agentic-ai-lab-maintained-module-source))
+(export AgenticAILabModules)
+
+(.def (AgenticAILabModules @ agentic-ai-lab-maintained-module-source))
+#+end_src
+
+This declares a source collection. It neither enumerates files nor initializes
+modules. Root init is one maintained declaration; an explicitly supplied alternative
+modules/init.ss is not a second source list to keep synchronized. The facade must
+respect the declared location/root, not assume an extra namespace object layer.
+
+Directly reusable current consumer call:
+
+#+begin_src scheme
+(import (only-in :agentic-ai-lab/init AgenticAILabModules)
+        (only-in :agentic-ai-lab/modules/module-authoring/module-source-collection
+                 yuanxu-load-modules))
+
+(def ProductInterfaceSources
+  (yuanxu-load-modules AgenticAILabModules))
+#+end_src
+
+Current [[file:../../../../modules/module-authoring/module-source-collection.ss][yuanxu-load-modules]] projects the collection's conventional interface.ss
+SourceRefs and validates directory naming. It enumerates the direct collection
+when asked for the collection. It does not return a linked module namespace,
+resolve root/user init policy, normalize disable, bind Guestbook or build anything.
+Do not treat ProductInterfaceSources as a module scope or pass it to use-module.
+Selected keyed source location exists separately; it should avoid enumerating the
+whole catalog for one selected leaf. Hierarchical source/namespace integration is
+still pending. Discovery cost must not be conflated with execution cost.
+
+The [[file:11.23-source-ref-to-admitted-scope.org][link protocol design]] now specifies static interface declarations and a
+checked dependency-scope factory behind the facade. Direct procedure imports
+below are implementation reuse evidence, not the desired user interface.
+
+* 2. interface.ss: actual Core publication versus target object assembly
+
+The actual Core JSON Schema interface imports source/normalizer/emitter/receipt/
+validator and re-exports their public procedures. The actual Feature interface
+re-exports its model, resolver, manifests, composition and binding owners.
+These are real moved implementations, not remaining extraction proposals.
+No JsonSchemaModule object with a new core slot is exported by that file today.
+
+A library can already call the migrated bridge through its interface:
+
+#+begin_src scheme
+(import (only-in :yuanxu/modules/json-schema/interface
+                 yuanxu-json-schema->contract-artifact
+                 yuanxu-json-schema-contract-artifact-validate))
+
+(def (guestbook-field-artifact schema)
+  (yuanxu-json-schema->contract-artifact
+   schema
+   '((owner . guestbook)
+     (source-ref . guestbook/server-schema-v1)
+     (object-kind . GuestbookServer)
+     (object-key . guestbook/server))))
+
+(def (guestbook-field-validation artifact effective-profile)
+  (yuanxu-json-schema-contract-artifact-validate artifact effective-profile))
+#+end_src
+
+These are current API signatures in a consumer example; they are not a new public
+user configuration wrapper. The schema value comes from the maintained input
+schema in module 13/20. Current generation/validation is reusable; scope publication
+and per-role public .admit integration are designed but not connected by discovery.
+
+The target Guestbook interface is maintained only in the
+[[file:11.23-source-ref-to-admitted-scope.org][canonical complete Guestbook chain]]. It supersedes this audit's earlier
+handwritten make-guestbook-module factory, imports and export. Role definitions
+remain in module 20; generated dependency injection replaces user assembly.
+The current :core imports and agentic-ai-lab- bindings printed in this audit describe
+actual implementation, not target naming. Do not copy them as the final Core API.
+
+Here Core means the selected Module's baseline. Schema compilation and Guestbook
+admission/preview are not optional Feature descriptors. A selected module includes
+its required baseline. Optional smoke verification is separate and does not change
+the three-workload KCL baseline or run during preview.
+
+* 3. User init expresses intent; its extended grammar is pending
+
+Both target examples accept a directory-valued source: "./modules". Directory
+admission constructs the internal source collection; users do not supply it. The
+source: keyword is a target bounded declaration extension, not accepted by the
+current yuanxu! macro. Common Gerbil bindings must be imported/provided by the
+framework's admitted source environment; no implicit global name resolution is
+claimed. Current syntax owns declaration lowering only, never runtime discovery.
+
+Auto policy:
+
+#+begin_src scheme
+(yuanxu! mode: auto source: "./modules"
+  :infrastructure
+  (kubernetes)
+  :sandbox
+  (nono-sandbox disable: #t)
+  :custom
+  (guestbook @ "./contributions/guestbook" -smoke))
+#+end_src
+
+Explicit alternative:
+
+#+begin_src scheme
+(yuanxu! mode: explicit source: "./modules"
+  :infrastructure
+  (kubernetes)
+  :sandbox
+  (nono-sandbox disable: #t)
+  :custom
+  (guestbook @ "./contributions/guestbook" -smoke))
+#+end_src
+
+Auto makes discovered publications eligible for requested exports; explicit
+restricts optional owner eligibility to admitted declarations/dependency policy.
+Neither activates every module. The target init extension lowers to native intent:
+
+#+begin_src scheme
+(.def GuestbookAutoIntent
+  source: "./modules"
+  mode: 'auto
+  module-decisions:
+  (list (.o identity: 'infrastructure/kubernetes disabled?: #f)
+        (.o identity: 'sandbox/nono-sandbox disabled?: #t)
+        (.o identity: 'custom/guestbook source: "./contributions/guestbook"
+            disabled?: #f))
+  feature-decisions: (.o guestbook/smoke: #f)
+  requested: '(guestbook/preview))
+
+(.def (GuestbookExplicitIntent @ GuestbookAutoIntent)
+  mode: 'explicit)
+#+end_src
+
+Current custom collection conventions still expect their declared module-root
+layout; a direct contribution interface path is not implicitly interchangeable
+with a collection of modules. The new source adapter must distinguish/admit both
+explicitly instead of guessing or scanning arbitrary trees. This is one of the
+remaining source-policy gaps, not a silent repair of the example's directory.
+
+No new general parser is needed: extend the existing bounded init lowering and
+hand its admitted values to Module/Feature owners. Keep original source locations
+with decisions; false overrides remain present instead of being removed.
+
+* 4. Existing Feature System resolves extensions, not baseline modules
+
+The following uses current Core APIs. GuestbookSmoke is the proposed optional
+contribution explicitly defined here, not an existing product feature:
+
+#+begin_src scheme
+(import :yuanxu/feature-system/interface)
+
+(def SmokePreviewRequirement
+  (feature-adapter-requirement
+   'guestbook/smoke-preview 'guestbook/preview 'guestbook/preview-contract 1))
+
+(defpoo-feature GuestbookSmoke
+  (feature-id 'guestbook/smoke)
+  (owner-module-id 'custom/guestbook)
+  (category 'verification)
+  (adapter-requirements SmokePreviewRequirement)
+  (projections
+   (.o kind: 'build-public-entries
+       roots: '("contributions/guestbook/smoke.ss"))))
+
+(def SmokeDisabledPlan
+  (resolve-feature-profile
+   (feature-profile 'guestbook/extensions '())))
+
+(def SmokeEnabledPlan
+  (resolve-feature-profile
+   (feature-profile 'guestbook/extensions
+                    (list (feature-selection GuestbookSmoke)))))
+#+end_src
+
+The existing resolver checks selected-feature duplicates, required dependencies,
+conflicts and cycles. It does not interpret -smoke, refuse Core/module disable,
+discover missing catalog entries or bind adapter requirements merely by producing
+a ready plan. Existing capability binding owns the latter check. Turning an init
+negative into an absent selection loses its reason/protection unless the policy
+record is separately retained and checked when dependent roots are expanded.
+
+Required new integration: normalize signed flags by qualified descriptor identity,
+retain source-qualified denials, reject unknown flags and hard feature requests
+contradicting those denials, then call the existing resolver. Do not wrap JSON
+Schema, Guestbook baseline or Module System itself as Features to fit its API.
+
+* 5. Selected graph, refusal cases and build handoff
+
+Expected complete logical graph for the -smoke preview selection:
+
+#+begin_example
+bootstrap: Module System baseline -> Contract protocol and Feature System baseline
+custom/guestbook baseline
+  -> Module System baseline
+  -> core/json-schema baseline -> Contract protocol
+  -> infrastructure/kubernetes baseline
+       -> Contract protocol
+       -> selected resource-schema validation
+
+Guestbook baseline values: frontend, Redis Leader, Redis Follower Profiles
+Guestbook request: final Scenario admission -> effective Deployment/Service preview
+retained exclusions: sandbox/nono-sandbox disabled; guestbook/smoke = false
+#+end_example
+
+Module closure can reuse [[file:../../../module-system/graph/funs.ss][module-closure]] after source/descriptor admission.
+Feature plan/composition can reuse Core resolution/manifest/composition. No new
+traversal engine or synthetic Core feature graph is required. Source identity,
+disabled owner lookup, cycle/phase qualification and graph generation association
+still require the directory/interface adapter described in the shared protocol.
+
+Expected refusal records, not observed runtime output:
+
+#+begin_example
+module-disabled:
+  Guestbook preview -> Kubernetes consumer -> infrastructure/kubernetes
+  rejected by: the explicit module disable decision, with its init source
+feature-disabled:
+  explicit smoke task request -> guestbook/smoke
+  rejected by: retained -smoke; no automatic re-enable
+required-schema-owner-disabled:
+  Guestbook admission -> Server input Contract -> core/json-schema
+  rejected before publishing preview; no input/schema check is skipped
+#+end_example
+
+Build entry generation must join selected module baseline roots with the selected
+feature build projections, then use the existing compiler/build owner's full
+import closure. [[file:../../../module-system/design/04-selected-build-view.org][The bounded adapter]] defines the pure union; it is not a connected
+production path. Core/JSON Schema entries exist. Guestbook/Kubernetes renderer and
+smoke units remain proposed, so an accepted full per-file build manifest cannot
+honestly be printed yet. Unknown dynamic imports, for-syntax, FFI and generated
+schema inputs must be qualified before build execution. No manually duplicated
+module list should remain in build.ss after integration is authorized/qualified.
+
+With -smoke, its proposed build contribution is absent, but its negative decision
+remains. Unused/disabled Sandbox contributes no selected baseline or feature roots.
+Shared baseline sources remain if another selected module needs them. Building a
+required compilation unit is distinct from executing module initialization.
+
+* 6. User values, final admission and demand
+
+Once a selected interface supplies Guestbook's export scope, the existing native
+body is:
+
+#+begin_src scheme
+(def Development
+  (use-module Guestbook as gb
+    (.o (:: @ (.get gb baseline))
+      frontend: =>.+
+      (.o image: "gcr.io/google-samples/gb-frontend:v5"
+          labels: =>.+ (.o team: "checkout")))))
+#+end_src
+
+Guestbook is the admitted core.exports scope, not its SourceRef or whole descriptor.
+Current bounded use-module only accepts an existing scope object; automatic source
+linking is pending. The modified frontend and labels retain upstream defaults;
+image/team are replacements. With the maintained V2 example, expected final image
+is v5, replicas=2 and Deployment label keys app/owner/costCenter/team. Ports remain
+80/TCP and 6379/TCP. These are proposed effective values, not rendered manifests.
+
+The Contract adapter reuses Core JSON Schema validation through responsibilities;
+the provider must project from that exact admitted candidate and validate final
+selectors/namespaces/resource schemas. The full Kubernetes consumer, its image
+capability evidence and warm-parent/child plan controls are still pending.
+
+Demand boundaries: root source declaration does no discovery; collection projection
+reads source metadata; scope binding does not force all export slots; final .admit
+demands selected schemas/children; preview demands its selected pure provider.
+Unselected module/feature implementations must remain cold. An interface's eager
+imports can still violate those goals. Metadata publication, import-phase separation,
+cache invalidation and first-use cost require negative-demand tests rather than
+an assertion that using POO or Core automatically makes startup fast.
+
+* Conclusion: what to reuse, what to strengthen
+
+| Boundary | Reusable now | Missing integration |
+|----------+--------------+---------------------|
+| Root publication | AgenticAILabModules source object | Init-source selection/normalization |
+| Interface discovery | Current collection -> interface SourceRefs | Hierarchical/keyed namespace and source-to-scope linkage |
+| Schema | Core interface, artifacts, generated native Contracts, validation | Full-root/public .admit/default association for Guestbook |
+| Module baseline | Existing descriptors and module-closure | One qualified target core layout, retained module denials |
+| Features | Core descriptors/resolver/manifests/composition/capability binding | -feature intent and hard-denial/source chain integration |
+| Build | Existing selected-view design and compiler/build executor owners | Admitted projection kinds, source/phase closure and build-root handoff |
+| Guestbook resource UX | Real KCL input/schema/backend references | Actual provider parity, final graph evidence and effective-plan preview |
+
+The facade should hide wiring from configuration users while preserving precise
+ownership and evidence. Core owns shared contracts/algorithms; product module
+adapters bind real source/default/provider choices. Migration gives reusable
+implementation, not proof that every adapter is connected. No source, declaration,
+Loader, renderer or build adapter is implemented or tested by this document.

@@ -1,0 +1,1185 @@
+#+title: 13.26 Unified Preview Ownership: Closure, Diagnostics and Doctor
+
+* Architecture and complete refactor boundary
+
+This document is the owner of the complete preview dataflow, not a sequence of
+independent helper optimizations. Evaluation owns the module closure and root
+diagnostics; workflow and doctor consume evaluation; pure diagnostic algorithms
+operate on that already-closed list. Admission/publication retain their separate
+source and effect boundaries.
+
+| Data | One owner | Consumers |
+|------+-----------+-----------|
+| Final root module | preview config slot | evaluation, runtime/root projections |
+| Ordered module closure | evaluation.modules | ids, phase order, hooks, options, diagnostics, doctor |
+| Root value diagnostics | evaluation.root-validation-receipts | root view and aggregate view |
+| Structural report | doctor.doctor-report | status, warning details |
+| Admission/currentness | existing publication/Contract invocation | explicit independent release only |
+
+The earlier doctor path computed a closure in its factory, then computed it again
+in doctor, diagnostics, missing-import findings and evaluation. Source inspection
+identified five reachable closure constructions in that path. This is a source
+call-path count, not a runtime profiler measurement. Those calls now terminate at
+the one native modules slot; ordinary metadata passes over its list remain.
+
+#+begin_src scheme
+;; Existing evaluation object:
+config: module
+modules: (agentic-ai-lab-module-closure (list config))
+module-ids: (agentic-ai-lab-module-names modules)
+;; Phase order, projections and aggregate diagnostics also consume modules.
+
+;; Existing doctor object:
+config: root-module
+evaluation: (agentic-ai-lab-module-evaluate config)
+doctor-report: (agentic-ai-lab-module-doctor/closed (.get evaluation modules))
+module-ids: (.get evaluation module-ids)
+#+end_src
+
+The closure is no longer captured in an eager outer let. Native lexical config
+references bind it to the final receiver, so derived evaluation/doctor objects
+do not accidentally reuse a captured parent graph. No extra graph wrapper,
+per-module preview-node family, revision registry or global memo is added.
+
+Public standalone doctor/diagnostic functions still accept roots and close them
+once. Their internal pure algorithms accept the closed list. The explicit
+doctor/closed and missing-imports/closed functions allow existing preview owners
+to supply that list without reclosing it. They are data-processing APIs, not
+tokens certifying completeness or permission. Missing import semantics remain
+owned by Core module-missing-imports; Core DFS, key deduplication and cycle
+termination are unchanged.
+
+The delivery boundary for future edits is this entire ownership chain. A local
+helper count is insufficient: changes must jointly check producer demand,
+all consumers, fresh/derived receivers, diagnostic order and real publication
+refusal. This refactor updates the existing call sites together rather than
+leaving a parallel old preview pipeline.
+
+* Source finding and ownership
+
+Workflow root-validation-receipts called the module diagnostic producer directly.
+Its evaluation's aggregate validation-receipts called the same producer again
+for the root. Reading both views therefore repeated the root analysis.
+The two fields were native slots, but they did not share the same producer slot.
+
+The existing evaluation object is now the owner of root-validation-receipts.
+Workflow root and aggregate views both read that object. No per-module cache-node
+family, promise, hash memo, restore protocol or admission cache was introduced.
+The implementation lives in Agentic AI Lab's existing
+modules/workflow/scenario/configuration/module-runtime-presentation.ss.
+
+#+begin_src scheme
+;; Inside the existing evaluation object:
+root-validation-receipts:
+(agentic-ai-lab-module-option-validation-receipts config)
+validation-receipts:
+(agentic-ai-lab-module-append-projection
+  modules
+  (lambda (current)
+    (if (eq? current config) root-validation-receipts
+      (agentic-ai-lab-module-option-validation-receipts current))))
+#+end_src
+
+The root is identified by actual object identity, not an invented name-to-result
+registry. Existing closure order/deduplication remains owned by Core's module
+closure function. The root still occupies its original position in the aggregate;
+its diagnostic objects are reused rather than reconstructed.
+
+The native correspondence is the pinned
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/object.ss][POO lexical slot/read implementation]]. Ordinary cache-hit read/dependency
+replay remains native. No raw read records are manufactured or dependency edges
+removed, and no observer is disabled to obtain sharing.
+
+* Final receiver rather than a captured parent evaluation
+
+Workflow previously constructed runtime/evaluation objects in its outer let.
+Deriving the workflow's config could therefore retain a captured parent view.
+Those views now depend on the workflow's native lexical config slot:
+
+#+begin_src scheme
+;; Inside the existing workflow object:
+config: module
+runtime-module: (agentic-ai-lab-module-apply config)
+evaluation: (agentic-ai-lab-module-evaluate config)
+root-options: (agentic-ai-lab-module-option-configs config)
+option-schemas: (agentic-ai-lab-module-option-schemas config)
+root-validation-receipts: (.get evaluation root-validation-receipts)
+validation-receipts: (.get evaluation validation-receipts)
+#+end_src
+
+Runtime projection is still data construction, not handle creation/execution.
+Both evaluation and its diagnostics are demanded through existing native slots.
+The inherited expression receives the final workflow receiver; a child whose
+config differs constructs its own evaluation. Parent evaluation/results retain
+their identities. No second wrapper object is added around evaluation.
+
+* Minimal actual observations
+
+The user-interface regression supplies root and child Records whose whole-value
+checks record a trace. The root imports the same child twice.
+
+| Within one workflow | Root checks | Child checks |
+|---------------------+-------------+--------------|
+| Construct only | 0 | 0 |
+| Root view, then aggregate | 1 | 1 |
+| Fresh workflow: aggregate, then root view | 1 | 1 |
+| Derived workflow with changed config: both views | 1 | 1 |
+
+These rows are separate scopes, not process-wide reuse. Fresh previews rerun the
+checks. Shared import traversal keeps its existing first-owner order. Aggregate
+root receipt objects are eq? to those in the root view; workflow and evaluation
+root views expose the same list. The derived trace observes its changed value,
+while the parent options and root-result identities remain unchanged.
+
+* Real Gitea/PostgreSQL integration and currentness
+
+The product owner-contract suite now uses the existing ServicesFixture, which
+copies maintained service roles into an owned directory and selects them through
+the real Core reader/.for-export/publication mechanisms. Its controlled JSON
+inputs allow 5432 and 5433; the Application value Contract is obtained from the
+actual publication. A native Record delegates to that real Type. A test-only
+.diagnose counter measures producer dispatch without replacing domain checks.
+The Record is a preview adapter, not another admission implementation.
+
+The integrated run verifies:
+
+- Root plus aggregate reads dispatch the preview Record once.
+- After the parent plan is cached at 5432, a derived workflow previews the actual
+  service config at 5433. The parent plan remains 5432.
+- The bound publication retains two real contributions. Independent .publish
+  succeeds and returns the final client/server port 5433.
+- Changing the selected PostgreSQL JSON asset leaves the old preview data
+  available but independent .publish refuses with selected configuration asset
+  changed. A warm preview cannot serve as publication authority.
+
+The first integration attempt expected the later configuration-source error;
+it failed because the earlier selected-asset guard correctly refused first.
+The assertion now requires the actual precise error. No guard was changed or
+assertion weakened; the failed log remains a local artifact.
+
+Separate default Core Gitea/PostgreSQL regression also completed all eleven
+controls, including conflicting requirements, parent-plan identity, source
+changes, contextual child obligations and unselected branches. This complements
+the integrated preview test; the preview itself does not run contextual admission
+obligations or source certification.
+
+* Qualification and limits
+
+Default serial Just gates passed for user-interface tests, product owner contracts
+including the real-service integration, module-system regression and all eleven
+Core service publication controls. Final output has MODULE-OK, HARNESS-OK and OK
+without harness errors or heap/stack overflow. Qualification used fixed runtime
+85a7673 with the installed compiler, unchanged budgets and dependency REV.
+No compiler source or Core cache protocol was changed.
+
+Sharing ends at the evaluation preview object. New previews and publication
+admissions do not share an accepted verdict. Native slot invalidation remains
+responsible for actual object dependency changes; merely reusing a preview is
+not a claim of fresh external-file contents or a conditionally committed plan.
+Source currentness, callback boundaries and before-return certification remain
+owned by existing admission/publication mechanisms.
+
+The reductions qualified here are producer demand and duplicate root analysis
+within one preview. They are not wall-time, retained-heap, full-CI or 10k-module
+capacity results. Broader projection allocation remains separate work. No new
+Lean/QNT theorem is claimed; these results qualify consumer use of the existing
+native mechanism.
+
+* Joint closure acceptance matrix
+
+The unified user-interface case supplies a diamond with a shared leaf, a cycle
+back to the root and a missing named import. It refines the real native modules
+slot with an ordinary inherited => function that counts completed production.
+It does not replace Core DFS, alter imported procedures or mark a path pure.
+
+The same observed evaluation is attached through native slot assignment to a
+workflow and doctor. Reading ids, phase orders, hooks, extensions, scripts,
+options, value diagnostics, structural status, import graph and contributions
+leaves that native producer count at one. The doctor report matches the existing
+standalone root entry. A fresh evaluation raises the production count separately;
+a derived config changes the graph without changing the cached parent list.
+The default doctor factory also passes an independent derived-receiver control.
+
+This instrumentation counts the actual native slot expression, not every replay
+or every access to the cached list. Source correspondence establishes that the
+consuming algorithms no longer invoke DFS. It does not equate dependency replay
+events to producer recomputation, remove edges, or suppress observer delivery.
+
+The real-service integration now supplies the same evaluation to workflow and
+doctor. Metadata/report reads share its exact closure list and leave Application
+diagnosis cold. Root and aggregate diagnosis still dispatch once. The 5432/5433
+parent/child plans, two bound contributions, successful independent publication
+and selected-asset-change refusal remain verified together.
+
+Four final default serial gates passed: user-interface integration, product owner
+contracts with actual service publication, module-system compatibility and all
+eleven Core Gitea/PostgreSQL controls. Output was checked for MODULE-OK, HARNESS-OK
+and final OK, with no harness/heap/stack failure markers. Budgets, dependency REV
+and compiler sources remain unchanged. Publication still performs its own fresh
+checks; no admission conclusion is cached in this preview ownership graph.
+
+* Unified runtime measurement protocol
+
+The product's =t/module-preview-cost-test.ss= measures the complete shared
+evaluation/workflow/doctor dataflow rather than separate helper benchmarks.
+The 16/32 cohorts contain real product descriptors and native Record declarations;
+they are not Loader capacity qualifications. A shared imported leaf must still
+occur once in the selected closure. The service cohort uses ServicesFixture's
+actual reader, publication, Application Contract and two bound requirements.
+
+Each cohort consumes closure metadata, root and aggregate value diagnostics,
+doctor structural diagnostics, import graph and contribution projections. It
+then repeats the same preview and constructs a fresh preview over the same final
+config. Fresh previews must independently dispatch diagnosis; a cache hit must
+not be presented as a new admission. The service cohort additionally publishes
+on every phase, checking final 5433 ports, normalized plan/config association,
+the unchanged cached parent 5432 plan and both contributions. A subsequent
+selected JSON asset modification must refuse publication.
+
+Measurement channels remain distinct:
+
+- Gambit's native =##exec-stats= measures instrumented workload wall, CPU and GC
+  time. VM allocation accounting is labelled explicitly, never owned heap bytes.
+- Native slot observers count all delivered events without deduplication. Actual
+  source-observer replay start/end and visit events measure reader replay; zero
+  events mean no such reader hook ran, not that all MOP work disappeared.
+- After timing, an identity DFS inspects original issued records and every
+  dependency occurrence. Shared record/receiver identities are counted once;
+  edges and deliveries remain distinct. The census neither replaces replay nor
+  retains strong record roots after its frame returns.
+- Explicit post-GC process live bytes are auxiliary process measurements. Weak
+  record keys report surviving identities while the preview is held and after
+  its construction frame returns. These observations do not assign Gerbil memory
+  to every preview or establish exclusive transitive closure bytes.
+
+SysML 20.04's existing allocation applies: Lean PayloadSharing owns identity-union
+and exact-edge representation laws; QNT ReadRetention owns fresh certification,
+callbacks and parent/child event controls; Scheme owns actual correspondence;
+runtime measurements own residency. This observational change modifies neither
+production caching nor the proof premises, and needs no duplicate model.
+
+The first measurement attempt failed while reading a mismatched parenthesis in
+the new qualification source. Its log remains local. A subsequent complete pass
+exposed that the memory sampler's default does not collect; those initial live
+figures are not used as post-GC evidence. The qualification explicitly requests
+collection and keeps census traversal outside workload timing.
+
+Cold means first demand of a newly constructed preview, not a cold Gerbil process
+or a cold filesystem. Fixture acquisition, role compilation, descriptor creation,
+explicit GC and graph census are outside workload timing. The closure-access
+subinterval includes the actual MOP lookup and cold closure computation; it is
+not an isolated DFS instruction benchmark. Reader replay timing is inclusive
+over reported start/end intervals, so nested intervals must not be added again
+to workload wall time. Slot observer deliveries are not replay visits.
+
+The product gate retains its existing 1 GiB heap and 120-second test execution
+limit. This narrower cohort neither changes the Loader's 2 GiB scale budget nor
+reruns the known failing ten-thousand-module case. Instrumentation overhead and
+collector effects prevent treating these samples as an unobserved throughput
+certificate. The service source-change refusal is executed after all measured
+phases; new preview diagnosis and fresh publication remain separate operations.
+
+This cohort uses the existing local native qualification runtime
+=/private/tmp/yuanxu-refactor-85a7673= and source archive for gerbil-poo
+=85a76738093622aff7e2a3482ad00d035ff38c1e=. Core's declared package REV remains
+=29c58aa9c5be103ba843767e3d22ef8802b79342=; this report is not a declaration-pin
+upgrade, complete dependency qualification or remote CI result. The installed
+compiler is unchanged. A later measurement-source compile attempt found a
+missing explicit =slot-read-key= import; it was corrected before the final
+unchanged-source repetitions, with its failure log retained locally.
+
+* Three-process cold/hot/fresh receipt (2026-10-26)
+
+Three serial default Just invocations over identical final measurement source
+passed MODULE-OK, HARNESS-OK and final OK without harness or overflow markers.
+Local receipts are =unified-preview-cost-final-{2,3,4}.log= under
+=/private/tmp/yuanxu-plan-audit-20261024/=. Raw logs remain execution artifacts.
+Times below are observed ranges in milliseconds, not percentile estimates:
+
+| Cohort | Cold workload | Hot same preview | Fresh preview | Cold closure access | Hot closure access |
+|--------+---------------+------------------+---------------+---------------------+--------------------|
+| 16 product modules | 1.966--2.093 | 0.015--0.022 | 0.930--3.258 | 0.349--0.352 | 0.0019--0.0021 |
+| 32 product modules | 4.105--4.620 | 0.020--0.023 | 2.212--18.260 | 0.687--0.753 | 0.0019--0.0021 |
+| Gitea/PostgreSQL plus independent publication | 138.656--158.849 | 132.010--161.075 | 136.741--158.705 | 0.030--0.032 | 0.0021--0.0069 |
+
+The 32-module fresh-preview outlier is preserved: 18.260 ms wall versus 3.057 ms
+CPU, with no reported GC. Its signed wall/CPU residual is not attributed to disk,
+host load or scheduling without further evidence. Likewise, the service fresh
+sample's VM allocation account ranges from approximately 65.9 to 181.5 million
+bytes despite stable surviving record counts; it is not retained heap growth.
+
+| Observed structure/work | 16 modules | 32 modules | Real services |
+|-------------------------+------------+------------+---------------|
+| Closure productions, cold / hot / fresh | 1 / 0 / 1 | 1 / 0 / 1 | 1 / 0 / 1 |
+| Record diagnoses, cold / hot / fresh | 16 / 0 / 16 | 32 / 0 / 32 | 1 / 0 / 1 |
+| Distinct issued records, each phase | 431 | 783 | 1086 |
+| Ordered dependency occurrences, each phase | 2287 | 5487 | 2697 |
+| Distinct observed receivers, each phase | 82 | 146 | 197 |
+| Post-GC weak-live records while preview held | 431 | 783 | 786 |
+| Weak-live records after cohort frame returns | 9 | 9 | Not a service-unload measurement |
+| Source file reads per phase | 0 | 0 | 417 |
+| Reader metadata replay visits per phase | 0 | 0 | 54312 |
+
+The diagnosis counter covers the preview's Record declaration only. It does
+not count or suppress domain Contract obligations inside =.publish=. The service
+cohort asserts three independent successful publications per acquisition.
+
+The two released scale cohorts share the EXACT same nine remaining record
+identities. Their keys are preparation, presence, proto, slot-descriptor-class,
+=.slot.check=, =.slot.shape= and =.element?=. This establishes shared surviving
+metadata rather than 16/32 separate copies; it does not identify every transitive
+Gerbil byte. No observer delivery or ordered dependency occurrence was suppressed.
+Zero reader replay in the descriptor-only cohorts does not mean zero native MOP
+cache work. Source guards can replay graphs outside the outer recording scope;
+dividing 54312 by 1086 would not establish a duplicate-work factor.
+
+Explicit-GC process live increments, relative to each already loaded Gerbil and
+constructed-config baseline, are 1,092,424--1,092,616 bytes (16),
+2,024,080--2,024,128 bytes (32), and 1,518,944--1,519,168 bytes (services).
+These are measured process deltas with the preview demonstrably held through
+the sample, NOT exclusive closure-environment sizes or per-module Gerbil costs.
+Original read graphs are inspected only through issued dependency edges;
+unselected values and full reflective method tables are not forced for census.
+Opaque procedure-environment byte ownership remains unmeasured.
+
+** Interpretation and next complete boundary
+
+Shared preview computation is working: same-preview hot demand avoids closure
+production and value diagnosis, while a new preview performs both independently.
+This is not permission to skip admission. The real service hot workload still
+spends 81.764--96.739 ms in reported reader replay and performs 417 source reads
+(3,245,919 characters) on every publication. Currentness and two-party admission
+remain significant even when preview closure access takes only microseconds.
+
+The next investigation boundary is the complete publication/currentness path:
+attribute replay and source reads to their existing analysis, callback and
+return boundaries before considering reuse. This cohort does not prove that
+any of those certifications can be deleted, moved across effects or cached.
+The linear-looking live increments at two small sizes are not a ten-thousand-
+module capacity result or an asymptotic complexity proof. No production cache,
+admission verdict, dependency protocol, Loader algorithm or budget changed.
+
+After the measured cohort, the existing Core default
+=just test-file t/gitea-postgresql-publication-test.ss= also passed all eleven
+controls, MODULE-OK, HARNESS-OK and final OK. This retains conflicting independent
+requirements, explicit client mismatch, parent/child final-plan association,
+contextual child obligations, source omission/replacement/change refusals and
+the poisoned unselected typo value. Its local receipt is
+=unified-preview-currentness-controls.log=. No new negative-control family,
+Fixture hierarchy or production implementation was introduced for this study.
+
+* Complete publication attribution and permitted convergence
+
+The next attribution uses existing =admission-stage-start/end= events,
+=current-module-source-phase= and real =read-windows/check-seconds= events.
+IDs are assigned when an actual byte window opens, not supplied as purity tags.
+The observer chains its predecessor and does not change callbacks or replay.
+Path sets live only in the measurement frame. They assert that every nonzero
+window physically reads each observed path once. Window zero means NO active
+window; its separated observations must never be treated as one pure interval.
+
+The default service's cold, hot and fresh phases have the following same work
+decomposition. Window IDs describe this measured execution, not a public API:
+
+| Window | Actual caller / role | Byte requests | Physical reads | Reader replay visits |
+|--------+----------------------+---------------+----------------+----------------------|
+| 0 | SourceAdmissionContract entry/exit source-inputs, separated by open work | 4 | 4 (two paths) | 0 |
+| 1 | =publish-current=: entry-current | 126 | 59 | 9052 |
+| 2 | Contribution Context =.contract-obligations=: before callbacks | 126 | 59 | 9052 |
+| 3 | Contribution Context =.contract-obligations=: after callbacks | 126 | 59 | 9052 |
+| 4 | =source-contract-admit=: replaceable Context admit-current | 126 | 59 | 9052 |
+| 5 | =call-with-source-slot-reads=: recorded source replay | 0 | 0 | 0 |
+| 6 | =call-with-collected-module-sources=: independent return certification | 59 | 59 | 0 |
+| 7 | Native bound evidence invocation: dependent meaning | 126 | 59 | 9052 |
+| 8 | Outer native =metadata.publish= invocation: dependent meaning | 126 | 59 | 9052 |
+| Total | Complete preview plus independent publication | 819 | 417 | 54312 |
+
+For every full pass, 58 paths are read under publication-current and one under
+graph-current/build-admit-before. Window 6 rechecks the collected 59 paths in
+the return-currentness phase. Window 5 still executes native signed-read replay;
+zero reader replay events and zero source reads here do NOT mean zero native
+work, or permission to delete that replay for other demanded origins.
+
+The dynamic stage stack identifies 1, 7 and 8 directly. Windows 2--4 lie inside
+contract-admit; their distinct calls are matched to contributions.ss's guards
+and source.ss's Context callback in source order. No test substitutes a fake
+Context or manufactures a read record for attribution.
+
+** Existing convergence versus unsafe reductions
+
+Inside the six 126-request windows, the existing byte cache serves 67 requests
+without another physical read, for 402 avoided reads across the invocation.
+The path census finds ZERO repeated physical paths inside each active window.
+This does not make identical paths across different windows redundant: their
+observed worlds can differ. It also does not merge two contributors' expected
+revisions or their diagnostic origins.
+
+The six reader passes occur at distinct boundaries. Within a pass, the existing
+link-current query reuse and native issuer-owned traversal projection already
+apply. A structural projection hit still authenticates original tokens and
+installs/unwinds its own frame. This study does not derive a right to reuse a
+previous token-current result, suppress an observer, concatenate callback frames
+or erase repeated signed edges.
+
+The 54312 count is visitor deliveries, not the count of all authentication
+instructions or distinct records. In the fixed native =object.ss=,
+=replay-slot-reads!= calls =current!= before delivering each record and
+=call-with-issued-reads= calls it again over the traversal before returning.
+Thus the six successful 9052-visit reader passes imply 108624 =current!= calls
+in those passes, by source correspondence. Projection acquisition also checks
+issuance. This is a source-derived count, not separately instrumented timing,
+and excludes SourceAdmissionContract's own recorded-source replay. It must not
+be used as an exclusive allocation or duplicate-work estimate.
+
+Consequently this unit does NOT claim a new 417-to-smaller read reduction or a
+54312-to-smaller authentication reduction. It closes the end-to-end attribution
+and adds executable convergence checks to the same cohort. Arbitrarily widening
+the byte window would implement the QNT cross-effect bug rather than an
+optimization. Further work must distinguish topology preparation, fresh token
+authentication, domain callbacks and filesystem observations at these boundaries.
+
+** Actual late-callback counterexample
+
+The existing service cohort additionally derives the real publication's native
+invocation. Its meaning procedure first calls the ORIGINAL meaning/currentness
+function, then appends a newline to the selected PostgreSQL JSON on its first
+context-current call. The inner evidence invocation completes that callback;
+the outer invocation calls meaning again and refuses with phase =logic= and
+cause =selected configuration asset changed=. The test asserts exactly two
+meaning calls and identity-preserving return of the original parent state.
+An ordinary subsequent publication also refuses the changed source.
+
+This is an actual =AdmissionPublication.= and native metadata Contract extension,
+not a manufactured approval. It demonstrates why the final two windows cannot
+be merged by procedure-name equality or by remembering the inner success.
+It does not prove arbitrary final callbacks read-only, roll back their external
+effects, or establish an atomic filesystem snapshot. Existing closed-tail and
+conditional-commit premises remain separate; no new last-check loop is added.
+
+** Assurance ownership and receipts
+
+SysML =PublicationWindowOwnership= and =PublishWithSourceAdmission= in
+=dev/sysml/10-evaluation/10.01-efficient-caching.sysml= own the architecture.
+No new cache protocol, Builder or duplicate mathematical model was added.
+
+- Lean =SourceWindows.check_exact= retains every source expectation;
+  =two_requirements_one_read= permits byte reuse without merging requirements.
+- =ReturnWindows.check_append= and =covered_suffix_zero_reads= compose only a
+  stable, sound window. =fresh_after_callback_rejects_change= requires a new
+  empty observation state after the callback.
+- =ReplayBoundary.ordered_diagnostic_exact= preserves the first failure in the
+  original order; =RootChild.cached_parent_rejected= retains receiver isolation.
+- QNT SourceWindows, ReturnWindows, RootChild and ReplayBoundary own temporal
+  counterexamples: cross-callback bytes, skipped final checks, dropped parties,
+  missing observations, stale parent authorization and unsafe ordering changes.
+
+The existing pinned LeanPoo dependency remains
+=5d4587a30e2333fc5f935dac6163aa56ff16a2dc=. Targeted Lean rebuilding passed
+(81 jobs); the existing Quint runner passed 8/10/10/6 cases respectively, with
+both expected counterexamples and accepting witnesses. An initial sandboxed
+Quint run could not bind its required loopback socket; that failure is preserved
+separately and the unchanged native runner was rerun with socket access.
+
+The default product cohort passed with window uniqueness assertions, late
+meaning mutation refusal, independent fresh previews, parent 5432/child 5433
+plans and both contributions. Local logs are
+=preview-admission-attribution-before.log= and
+=preview-admission-attribution-qualified.log= in the established artifact
+directory. Attribution instrumentation changes timing overhead, so these are
+diagnostic/semantic receipts, not a claimed speedup over the three-process table.
+
+After the final SysML edit, the existing Quint gate was rerun to bind that exact
+architecture source: =preview-chain-final-SourceWindows= (8), =ReturnWindows=
+(10), =RootChild= (10) and =ReplayBoundary= (6), each with its own local =.log=
+and =.ss= receipt. All 34 positive/negative controls qualified. Targeted Lean
+output is =preview-chain-lean.log=. SysML is reviewed architecture, not a claimed
+machine-verified SysML execution.
+
+The unchanged Core service suite was also rerun through default Just after
+attribution: all eleven controls, MODULE-OK, HARNESS-OK and final OK passed
+(=preview-chain-service-controls-final.log=). The new meaning callback is a
+controlled test extension of real native objects; it is not installed in any
+production module. Production source/admission code and dependency pins were
+not changed, no independent guard was removed, and no cache or budget added.
+
+* Native replay phase accounting (2026-10-26)
+
+** Architectural and proof boundary
+
+SysML =ReplayPhaseAccounting= assigns the native projection and its cache to
+POO, stable first-error equivalence to Lean, effect schedules and fresh frames
+to QNT, and actual allocation/residency to runtime measurement. No duplicate
+QNT arithmetic model or Core cache was introduced. The existing
+=SelectionReplay= gate qualified eleven positive/negative cases against producer
+=85a76738093622aff7e2a3482ad00d035ff38c1e=. Lean
+=SelectionReplay.immediate_issuance_query_redundant= built successfully with
+the existing LeanPoo dependency (105 jobs). It proves only two contiguous
+queries of the SAME native state equivalent to one, preserving the first
+failure. The absence of a callback between those queries is a source-call-graph
+obligation, not a user purity flag or a theorem about arbitrary Scheme effects.
+
+The diagnostic build copies that producer under a temporary directory; the
+installed Gerbil and compiler sources are unchanged. The explicit qualification
+entry =t/qualification/module-preview/phase-profile.ss= runs the original full
+16/32 and real ServicesFixture cohort. It samples original issued records
+inside their actual protected frame. It does not manufacture a read bundle.
+Private diagnostic entrypoints are excluded from public exports, and this
+qualification file is not a normal production test dependency.
+
+** What one 9052-visit window contains
+
+Six original root-spine identities select traversals of 1199, 134, 1363, 83,
+1814 and 83 records. The three larger traversals are delivered twice in each
+window; the smaller ones once. Thus 9052 is nine replay calls, not 9052 unique
+records, and not a global graph union. All six windows remain independent.
+Across cold/hot/fresh publication, the diagnostic baseline recorded 162 calls:
+
+| Native operation | Samples | Wall seconds | CPU seconds | VM allocation account |
+|------------------+---------+--------------+-------------+-----------------------|
+| owner/cache lookup | 162 | 0.000719 | 0.000486 | 152928 |
+| cold DFS with issuance | 11 | 0.005944 | 0.005914 | 3185072 |
+| native owner construction | 11 | 0.000077 | not isolated | 38016 |
+| cached projection issuance | 151 | 0.056345 | 0.054259 | 27520400 |
+| currentness and visitor | 162 | 0.237970 | 0.192393 | 57728800 |
+| independent final currentness | 162 | 0.281070 | 0.231864 | invalid aggregate sample |
+
+These are one instrumented run, not a production speed certificate. The final
+interval includes one GC (0.048244 seconds), and a negative VM-account sample
+invalidates its allocation total. Cold DFS interleaves authentication in the
+original failure order; splitting it by regrouping validations would change
+semantics. Additional issuance/route/live-state microprobes run after final
+validation on the original records, under the same frame. They are NOT additive
+slices of the production interval. Instrumentation, extra microprobes and GC
+can change weak-cache eviction; wall totals cannot be compared to an ordinary
+uninstrumented preview as a speedup.
+
+Acquisition authenticated 162936 visits. Each consumption and final pass
+performed 325872 issuance queries, because private =require-current!= first
+called =require-issued!= and then the public =object-read-current?=, which
+immediately authenticated again. The resulting 814680 queries are not 814680
+distinct dependencies. The visitor, route checks, live-state checks and final
+pass still have separate responsibilities.
+
+** Reuse and retention decision
+
+The original topology projection is already a native POO cached value. Keep its
+original record identities, ordered edges, root-shape guard and receiver set.
+Reacquire its native frame and authenticate on EVERY replay. Neither a cached
+topology nor a retained receiver set licenses reusing currentness, source bytes
+across callbacks, or an admitted result.
+
+At post-GC diagnostic cleanup, six root spines and 3096 distinct original
+records survived; no private projection owners survived the weak index. Native
+eviction is therefore possible even while roots remain alive, and is a legal
+cold reconstruction. The 186708664 process-live byte account includes the Gerbil,
+fixtures and diagnostic code. It is NOT exclusive graph retention. Overlapping
+traversals and their Gerbil nodes must not be summed as independent allocations.
+
+The baseline receipt is =replay-phase-baseline-fixed-counter.log= in the local
+artifact directory. An earlier per-record hash counter increased temporary
+allocation and GC, so it was replaced with one vector counter per batch. Those
+earlier receipts remain diagnostic failures of the measurement method, not
+performance evidence. Some initial diagnostic builds/imports failed; their
+logs remain local. No timeout or heap budget was changed to make them pass.
+
+** Candidate closed-operation reduction
+
+The candidate changes only the already authenticated private operation:
+
+#+begin_src scheme
+(def (require-current! read)
+  (require-issued! read)
+  (require-object-read-route! read)
+  (unless (object-issued-read-current? read)
+    (error "stale slot dependency" (slot-read-key read))))
+#+end_src
+
+Both route and live-state operations already exist in POO. The public standalone
+=object-read-current?= keeps its own issuance guard. Acquisition, pre-visitor
+authentication and final authentication remain fresh; no dependency, callback
+or observer is removed. The candidate is first exercised in the separate
+diagnostic producer copy, not silently applied to the declared dependency.
+Production release qualification remains separate from these measurements.
+
+The candidate diagnostic cohort passed MODULE-OK, HARNESS-OK and final OK,
+including both 16/32 sizes, independent cold/hot/fresh previews, the three real
+service publications, cached parent 5432/child 5433 isolation, both contributions
+and late source mutation refusal. Across the same 162 replay calls:
+
+| Measurement | Baseline | Candidate |
+|-------------+----------+-----------|
+| original issuance queries (excluding extra microprobes) | 814680 | 488808 |
+| acquisition issuance queries | 162936 | 162936 |
+| pre-visitor issuance queries | 325872 | 162936 |
+| final issuance queries | 325872 | 162936 |
+| consume VM allocation account, no GC in either interval | 57728800 | 29014496 |
+| total instrumented replay CPU seconds | 0.495065 | 0.366937 |
+| total instrumented replay wall seconds | 0.592300 | 0.702605 |
+| topology hit / cold samples | 151 / 11 | 150 / 12 |
+| post-GC distinct original records | 3096 | 3096 |
+
+Every visited record still authenticates at acquisition, before delivery and in
+the final pass. Neither source reads nor observer visits were eliminated.
+The CPU reduction does NOT establish wall-time improvement: wall regressed in
+this pair, while baseline final validation had a GC and the candidate did not.
+The native weak cache also had a different legal eviction schedule. No aggregate
+allocation improvement is claimed from the baseline's invalid final sample.
+The candidate's process-live account was 186716696, versus 186708664 baseline;
+this small process-wide difference is not exclusive retention attributable to
+the algorithm. No resident-graph memory reduction is claimed by this change.
+Receipts are =replay-phase-candidate-fixed-counter.log= and the baseline named
+above. Fresh-process performance qualification and exact retained payload bytes
+remain separate work; no production dependency or budget was changed.
+
+The producer's existing =issued-read-test= was then reused through
+=t/qualification/module-preview/issuance-controls.ss=, rather than copying its
+cases into Core. All seventeen cases completed with MODULE-OK, HARNESS-OK and
+final OK under the same default Just gate. This includes forged/replaced birth
+refusal, genuine transient misses, changed metadata routes, mutations during
+delivery, original warm records, root-order reconstruction, weak eviction and
+changed-constructor fallback. The local receipt is
+=replay-phase-candidate-issuance-controls.log=. This is a diagnostic producer
+build result, not a claim that Core's declared REV has been updated.
+
+The unchanged Core =t/gitea-postgresql-publication-test.ss= was subsequently
+run serially through default =just test-file=: all eleven controls completed
+with MODULE-OK, HARNESS-OK and final OK. It retains direct/published child
+obligations, both conflicting port requirements, stale/captured parent-plan
+refusal, exact source/currentness diagnostics and the unselected branch control.
+Receipt: =replay-phase-candidate-service-controls.log=. Existing fixture
+compilation, idle/total watchdogs and heap fences were retained.
+
+The installed Gerbil runtime =mop.ss= implements reflective =slot-ref= with a
+continuation lambda passed to =__slot-e=. Native issuance currently uses that
+reflective entry for birth/checker payloads. A source lambda does not prove a
+heap allocation survives compilation. In particular, the route-only microprobe
+uses reflective reads too but reported only 5952 VM-account bytes over 4676
+records. Therefore the larger issuance account cannot simply be charged to
+=slot-ref=. The generated-code and whole authentication path correspondence
+still needs qualification; it is not permission to bypass metadata routing.
+Any typed-accessor replacement must first preserve class/slot applicability,
+original issuance identity, route rejection and the first diagnostic. No Gerbil
+source or accessor implementation was changed in this unit.
+
+* CPU versus wall follow-up (2026-10-26)
+
+** Fixed-source comparison and measurement ownership
+
+SysML =ReplayCostAttribution= distinguishes three evidence cuts. Ordinary
+producer builds compare the SAME 16/32 and actual service workload, with no
+native phase hook compiled in. Separate diagnostic builds attribute lookup,
+issuance, consumption and final verification. Finally, quiet microprobes run
+the SAME original issuance predicates with the diagnostic hook parameter
+disabled, inside the original protected frame. They repeat authentication;
+they do not retain a successful result or alter any independent boundary.
+
+Source cuts are frozen before measurement. Ordinary A is the archived fixed
+producer; B differs only in the private contiguous duplicate-issuance reduction
+shown above. Diagnostic A/B add the identical phase-observation instrumentation.
+No source/compiler installation is modified. The default serial Just gate,
+native Make preparation, heap fences and watchdogs remain unchanged. Preparation
+and Harness startup are outside the reported cohort intervals. Alternating
+fresh processes avoids treating one increasing-time order as an A/B result.
+Existing independent previews, parent/child plans, two contributors and the
+late source-mutation refusal run in every full cohort.
+
+The workload now prints native GC CPU, GC wall, collection count and minor/major
+faults alongside its existing CPU/wall metrics. The diagnostic-only
+=process-accounting.ss= uses the maintained =std/ffi= declarations and POSIX
+=getrusage(RUSAGE_SELF)=; it starts no sampler or process. It samples voluntary
+and involuntary context switches, faults and block input/output around each
+diagnostic phase. Its two result vectors allocate outside the measured action,
+but enclosing intervals still include nested probes. No diagnostic aggregate
+is silently substituted for ordinary production-path timing.
+
+CPU already includes GC CPU. GC wall is a component of elapsed wall, not an
+additional elapsed interval to sum with CPU. Raw wall-minus-process-CPU is
+reported without clamping; it may reflect descheduling, waiting, parallel
+runtime work or clock effects. A context-switch count is a scheduling clue,
+NOT measured descheduling duration or a proof of causality. Zero block I/O or
+major faults cannot rule out every wait. Native processor endpoint changes
+detect some migrations; equal endpoints do not exclude a return migration.
+
+The existing Lean SelectionReplay, RootChild and SourceWindows targets rebuilt
+successfully (105 jobs). Existing SelectionReplay QNT qualification passed all
+eleven catalogued positive/negative cases against the updated SysML source.
+The =FewerMeansFaster= counterexample remains deliberate: fewer checks do not
+prove a wall bound when collection/scheduling can differ. Structural laws belong
+to Lean; callback/eviction/frame schedules belong to QNT; neither model proves
+a host timing or exclusive allocation claim. No duplicate performance model,
+Core cache protocol, admission cache or producer purity flag was added.
+
+** Generated-code correction
+
+The installed =lib/static/gerbil__runtime__mop.scm= definition =__slot-ref__%=
+contains a direct class/offset lookup followed by =unchecked-field-ref= or the
+existing error procedure. The source continuation in =runtime/mop.ss= has
+already disappeared at this compilation boundary. Therefore an automatic
+"one continuation closure allocated per reflective access" explanation is
+incorrect. This does not prove all called primitives allocate nothing; it
+removes that specific proposed explanation without editing the Gerbil.
+
+VM-account corrections remain those of installed =##exec-stats=, as audited in
+[[file:../../../dev/sysml/10-evaluation/10.02-runtime-accounting.org][10.02 Runtime Accounting]]. A nonnegative sample is not a physical allocation
+census, especially across processor/GC state changes. Quiet authentication
+samples, graph identities and post-GC live accounts remain distinct evidence.
+
+** Three ordinary-runtime pairs
+
+The frozen-source order was A1, B1, B2, A2, A3, B3, each a fresh default Just
+process. All six completed MODULE-OK, HARNESS-OK and final OK. All 54 timed
+cohort intervals had zero collections and zero major faults. Every service
+interval retained 417 source reads and 54312 metadata visits. The 16/32 graph
+counts, independent new previews and source-change rejection controls remained
+unchanged. Preparation and test startup are excluded from the following table.
+
+Wall is median [minimum, maximum]; CPU is median, all in milliseconds:
+
+| Cohort | A wall | B wall | A CPU | B CPU |
+|--------+--------+--------+-------+-------|
+| 16 cold | 2.081 [1.979,2.637] | 2.112 [1.944,2.214] | 2.037 | 2.098 |
+| 16 hot | 0.018 [0.016,0.059] | 0.017 [0.016,0.018] | 0.018 | 0.017 |
+| 16 fresh | 0.941 [0.937,2.752] | 0.943 [0.941,0.949] | 0.941 | 0.943 |
+| 32 cold | 3.951 [3.935,11.066] | 3.948 [3.932,3.968] | 3.951 | 3.947 |
+| 32 hot | 0.020 [0.016,0.051] | 0.018 [0.018,0.019] | 0.020 | 0.018 |
+| 32 fresh | 2.128 [2.042,5.765] | 2.152 [2.115,2.204] | 2.122 | 2.153 |
+| services cold | 223.551 [214.185,259.828] | 190.241 [144.132,199.025] | 166.094 | 137.679 |
+| services hot | 219.750 [215.386,231.874] | 124.271 [124.032,239.652] | 165.377 | 123.441 |
+| services fresh | 176.286 [173.815,247.848] | 178.607 [120.545,190.422] | 168.231 | 150.506 |
+
+The service CPU reduction repeats across these samples; the unrelated 16/32
+path provides a largely unchanged control. A universal wall improvement does
+NOT follow: fresh wall's median is slightly worse, and B's hot maximum exceeds
+A's hot maximum. This small sample is not a capacity qualification or a
+statistical proof of a latency bound. No outlier is discarded.
+
+Service wall-minus-CPU spans 0.591 to 97.360 milliseconds, despite no collection
+or major fault in those intervals. Therefore GC cannot explain that part of
+these ordinary-run fluctuations. The historical instrumented A/B pair lacked
+these scheduling counters, so this study cannot retroactively assign every
+millisecond of its regression. In particular, "the host was busy" is not an
+exclusive causal measurement.
+
+Native VM accounts vary sharply even with zero collections. They must not be
+used to claim proportional physical allocation or algorithm-owned residency.
+The ordinary service post-GC census retained 786 original records in every run;
+the process-live increase was approximately 1.527 MB in both cuts. These are
+identity survival and process-wide deltas, not exclusive byte ownership or a
+claimed graph memory reduction.
+
+Local receipts are =replay-wall-ordinary-{a1,b1,b2,a2,a3,b3}.log=;
+=replay-wall-summary.json= retains all 54 rows and =replay-wall-summary.org=
+projects the table. The local parser validates success markers and row count.
+Harness progress can interrupt a worker write mid-symbol; the parser removes
+only explicit progress frames and reconstructs complete balanced rows. It does
+not rerun tests to obtain easier output or silently omit incomplete samples.
+Initial local parser failures are retained separately; no raw logs are committed.
+The ordinary and diagnostic source checksum lists are measurement manifests,
+not new build credentials, cache keys or an admission protocol.
+
+** Diagnostic observer allocation and preparation control
+
+The corrected method found a qualification error before accepting a diagnostic
+A/B comparison. The first temporary diagnostic A copied B's output directory;
+those outputs were newer than A's source, so native Make skipped that target.
+Its observed pre-visitor/final issuance counts were 162936 each, identifying B,
+not A. The captured generated =object~0.scm= is byte-identical to B's generated
+file. That run is retained as =replay-wall-diagnostic-a-unqualified.log= and is
+NOT included as a baseline. A default Harness pass proves functional controls,
+not that the requested source cut was compiled.
+
+The ordinary six-process comparison is separate and unaffected: its A generated
+code calls public =object-read-current?= after =require-issued!=; B calls private
+route/live-state primitives. A's ordinary runtime was never replaced. For the
+temporary diagnostic A only, the installed native =make-clean= for =("object")=
+and native Make =force: #t= rebuilt the explicit source cut. No output fingerprint
+was patched, no source timestamp was forged and no global Gerbil/package was
+cleaned or modified. The rebuild receipt and the incorrectly copied generated
+file remain in local artifacts. Emitted-code and actual-count correspondence
+are prerequisites for a qualified comparison, not a new cache credential.
+
+In diagnostic B, one hook-enabled issuance sweep over 4676 original records
+reported 828928 VM-account bytes. Four quiet sweeps over the SAME records
+(18704 checks) reported 29728 bytes, with zero collections. Five of six graph
+batches reported exactly 992 bytes per quiet sweep despite graph sizes ranging
+from 83 to 1814 records; the remaining graph had a small additional account.
+The incorrectly labelled A, which actually ran the same candidate, also showed
+this distinction: 840832 bytes enabled, 23808 bytes for four quiet sweeps.
+Neither is evidence for 177 physical heap bytes per native authentication.
+The large proportional account is inseparable from the hook-enabled path and
+its VM accounting. No proportional retained-payload increase is observed by
+these quiet sweeps, but zero physical allocation is NOT proved.
+
+The quiet switch disables only the private diagnostic hook. Native source
+observers, original records/edges, live-state checks, delivery callbacks and
+independent admissions are unchanged. There is no production switch to bypass
+authentication. This is a measurement correction, not a cache optimization.
+
+** Qualified diagnostic result and limits
+
+After native cleanup/rebuild, emitted code again calls public
+=object-read-current?= after the first issuance guard. The actual consume and
+final counts are 325872 EACH for A, versus 162936 EACH for B, with 162936
+acquisition checks in both cuts. The qualification summary asserts those
+multiplicities before accepting the source-cut labels. Both corrected A and B
+passed the default complete cohort, with all original guards. Receipts:
+=replay-wall-diagnostic-a-qualified.log= and =replay-wall-diagnostic-b.log=.
+
+The following totals cover the three service phases' 162 replay calls. CPU
+includes GC CPU; intervals are diagnostic, not ordinary latency gates:
+
+| Metric | Diagnostic A | Diagnostic B |
+|--------+--------------+--------------|
+| total replay wall ms | 794.909 | 363.549 |
+| total replay CPU ms | 561.921 | 346.939 |
+| GC wall / CPU ms | 69.802 / 50.461 | 0 / 0 |
+| GC count | 1 | 0 |
+| non-GC wall-minus-CPU ms | 213.647 | 16.610 |
+| voluntary / involuntary switches | 22 / 471 | 3 / 301 |
+| major faults / block input / block output | 0 / 0 / 0 | 0 / 0 / 0 |
+| processor endpoint changes | 0 | 0 |
+| projection hits / cold constructions | 151 / 11 | 150 / 12 |
+| original records after final GC census | 3096 | 3096 |
+
+Non-GC gap subtracts GC wall from total wall AND GC CPU from total CPU; it
+does not add GC twice. GC explains only a component of A's elapsed interval,
+not its approximately 214 ms remaining gap. The switch counts corroborate that
+these are not uninterrupted CPU intervals, but cannot turn that gap into an
+exclusive scheduling-duration claim. Equal processor endpoints do not prove
+that no migration happened. Block I/O/fault statements apply to the measured
+replay intervals, not every source-read or preparation operation.
+
+The properly rebuilt A's quiet sweep result is 23808 VM-account bytes over
+18704 authentications: exactly 992 bytes per batch across all six graph sizes
+and all four repeats. Its enabled single sweeps report 834720 bytes over only
+4676 authentications. Together with B's quiet control and the emitted-code
+correction, this rejects the old proportional payload-allocation explanation.
+It does not measure exact exclusive physical bytes. A's final replay has one
+negative VM-account sample; its aggregate allocation is unqualified. Neither
+that invalid total nor the unchanged weak record count supports a retained-memory
+improvement claim.
+
+The ordinary candidate subsequently passed the existing Core service suite:
+all eleven controls, MODULE-OK, HARNESS-OK and final OK. This separately covers
+both conflicting contributions, direct and published admission, normalized
+child obligations, explicit-client mismatch, stale/captured parent plan refusal,
+source currentness and the unselected branch. Receipt:
+=replay-wall-ordinary-service-controls.log=.
+
+The final SysML source-cut requirement was rebound with the unchanged existing
+Quint gate: =replay-wall-selection-final-quint.ss= / =.log=, eleven qualified
+positive/negative controls. Lean output is =replay-wall-lean.log=. The final
+ordinary and diagnostic measurement manifests are
+=replay-wall-ordinary-source.sha256= and =replay-wall-diagnostic-source.sha256=;
+both compare unchanged after execution. These remain local measurement
+artifacts, not signed approval or a new admission/cache format.
+
+The justified convergence is to correct measurement attribution and keep the
+closed-operation duplicate-query candidate distinct from a latency guarantee.
+No extra topology cache or authentication-result cache is justified by these
+data. Production source/admission behavior, declared dependencies, budgets and
+independent authentication boundaries are unchanged. No ten-thousand-module
+run, commit or push was performed. Remaining work includes exclusive allocation
+evidence and a defensible wall-latency bound; neither can be inferred from query
+counts, a quiet probe, or a bounded QNT execution.
+
+* Native Record adoption: retained dependency attribution (2026-10-26)
+
+** Comparable scope before interpreting 786 -> 935
+
+Those two historical post-GC preview counts use different producer revisions:
+=85a7673= and =e281ad2=. Neither is a byte count. Their difference is not proof
+that each module now owns another 149 records. The ordinary 16/32 module
+cohorts still retain 431/783 records; the change is in service admission.
+
+A controlled follow-up uses the SAME =e281ad2= library and maintained final
+Gitea/PostgreSQL Profile, with the pre-refactor versus refactored Contract and
+SourceAdmission kernels. It reuses the existing =read-retention-cost-test=,
+including all three raw/unique cold/warm rounds, complete original-token and
+ordered-observer controls, parent 5432 / final child 5433, both requirements
+and fresh physical source checks. This graph is held during observation; its
+896/1048 counts are NOT the historical post-GC 786/935 subset.
+
+| Same-producer complete admission graph | Old kernel | Before this follow-up |
+|---------------------------------------+------------+-----------------------|
+| Original issued records | 896 | 1048 |
+| Receiver identities | 158 | 188 |
+| Ordered dependency occurrences | 1978 | 2147 |
+| Physical source reads per admission | 240 | 240 |
+| Exploratory broad-container body bytes | 5,096,232 | 5,254,032 |
+| Receiver shell body bytes (included above) | 18,960 | 22,560 |
+| Inspected payload identities | 76,377 | 81,372 |
+| Explicit opaque frontiers | 1207 | 1253 |
+
+The exploratory body increase is 157,800 bytes, approximately 3.1%, versus a
+17.0% record increase. Its traversal boundary was subsequently narrowed: it
+included interface method tables and too much callback environment. Do NOT
+compare this table's byte column with the final issuer-owned census below or
+use it as a domain-only allocation result. It is inclusive reachable payload within the declared
+frontiers, NOT exclusive or dominator size. The observer follows actual cached
+fields and original read edges. It deduplicates identity across roots and
+shared specifications, never equal values, record keys or receivers.
+
+Native lengths are interpreted under the installed 64-bit-word / 32-bit-character
+ABI. Headers, padding, executable code, class descriptors, opaque POO referents,
+Gerbil contexts and GC-table policy are not inferred. Process-wide post-GC samples
+remain separate; VM allocation deltas remain unqualified. A byte count cannot
+be obtained by multiplying 149 by an assumed entire receiver footprint.
+
+** Required dependencies versus avoidable assembly
+
+The added read families include 17 Record descriptor, 73 Slot and 38 field-map
+observations. They enforce field presence, constant tags, field Types and
+cross-field evidence relations. They cannot be removed without replacing the
+native Record contract with weaker hand-written predicates. The field maps
+come from the actual cached Class metadata, not another maintained field table.
+
+The two native around/primary contributions retain six original observations
+(preparation, body and qualifier for each). These belong to the effective
+receiver's method plan: its inherited producer and source extent must remain
+receiver-specific. Registration identity is inspected through the pinned
+producer's existing registry, not guessed from a user-supplied kind tag. No
+public introspection API or new registry is added.
+
+The two evidence Types are module-global. Their already computed slots,
+effective slots and field Types identify shareable schema owners by identity.
+This is diagnostic attribution only; it grants no authentication or reuse of
+an admission verdict. Do not multiply those shared schema nodes by the number
+of Scenarios or modules. Conversely, a receiver-bound method plan cannot simply
+be made global without proving that changed inherited methods and constructor
+hooks still invalidate correctly.
+
+Three context-only child descriptors unnecessarily demanded
+=prepared-value-action= despite =value-contract: #f=. Their value stage is now
+absent; contextual classification, child obligations and contribution checks
+still run. A cold error probe on that prepared slot verifies non-demand.
+The remaining value stage retains native FUN normalization and its narrow
+TypeError-to-refusal conversion.
+
+Empty source diagnostics return the fresh inherited receipt. Nonempty diagnostics
+still use the real locator. The experiment passing child receipts through an
+extra public constructor argument was withdrawn: it did not establish a retained
+heap improvement, and the public seven-argument interface remains unchanged.
+Child receipts retain the existing aggregation/attachment step and ownership
+enrollment; no constructor capability is inferred from a copied receipt.
+No passing receipt is retained across calls. The source regression checks
+exact inherited receipt identity and distinct receipts across two admissions.
+The scope's final source checks and callback boundaries are unchanged.
+
+** Final bounded census and unresolved measurements
+
+The final current-kernel Core consumer gate completes all twelve matched
+admission samples. It retains 1045 original records, 188 receivers and 2141
+ordered edges, with 240 physical source reads per admission. Avoiding the absent
+value stage removes THREE issued preparation records, not six; Type membership
+presence checks remain required. No original edge or observer event is filtered.
+
+The source-based metadata projection attributes 138 current records to the two
+module-global evidence Types and their already cached schema metadata. This is
+an observed owner set, not a claim that all 138 are new relative to the old kernel.
+Native qualifier registration identifies the two method contributions without
+executing arbitrary validators or guessing from a kind label.
+
+The revised memory boundary follows the actual interface backing object while
+excluding Gerbil method tables, compiler records and continuations. It expands
+closure environments only for the native issuer code family obtained from
+the ORIGINAL =object-read-issuance= checker, not a freshly copied inspection
+projection. Arbitrary callback environments remain opaque. Within this boundary,
+the stable-public-ABI current sample reports 4,300,392 body bytes: 781,720 structure,
+544,920 closure, 359,240 vector, 2,031,072 string and 560,880 pair bytes, plus
+22,560 receiver-shell bytes (included in the total). There are 58,020 inspected
+identities, 2568 explicit frontiers and zero multiple-value frontiers.
+
+This is NOT total retained or exclusive heap. A matched old-kernel sample under
+this final boundary is unqualified: the later partial-library comparison exited
+139 before completing. Partial artifact substitution cannot establish a complete
+consumer ABI closure, even with a fixed POO producer revision. Keep the earlier
+successful same-producer structural controls as their own historical evidence;
+do not silently relabel their wider byte projection as the final one. A fresh
+whole-package baseline build is needed for a final retained-byte improvement claim.
+
+The product default entry is also unqualified: its Nix worker build reaches its
+unchanged 240-second refusal. Separate =just --no-deps test-file= DIAGNOSTIC
+attempts preserve the existing Harness and 1 GiB / 120-second test body, but do
+not qualify those omitted prerequisites. Early prefixes observe 932 post-GC
+service records versus the historical 935, then the broad probe fails; later
+attempts time out in preparation. Neither is a passing product regression.
+The product test source is restored to its original probe surface. No deadline,
+assertion, admission rule or mandatory dependency is weakened to call this green.
+
+** Qualification and limits
+
+SysML owns the architectural distinction in =AdmissionRetentionSample= and
+=ContextOnlyAdmission=. Lean's existing =ReadRetention= identity/coverage laws
+and =RootChild= child/root/source laws are reused. Existing QNT negative controls
+own omitted dependencies, missing second requirements, eager branches and stale
+approvals. These are not new proofs of physical heap size or arbitrary hooks.
+
+Local artifacts are under =/private/tmp/yuanxu-retention-20261026/=; no raw log
+is committed. Failed exploratory runs remain there: an idle-limited diagnostic,
+full worker builds that hit their unchanged 240-second fence, a refused
+cross-package compiler prefix, and rejected FFI/undefined-binding probes.
+The final maintained probe is ordinary Scheme; no Gerbil source was changed.
+The Core consumer gate retains the normal Just heap/watchdog entry. The matched
+diagnostic additionally used a stricter 1 GiB / 120-second outer fence.
+No ten-thousand-module run, new Builder, cache protocol or admission-result
+cache is introduced. A smaller record count alone is not a retained-memory or
+latency improvement.
+
+The final existing Lean targets (ReadRetention, RootChild, OwnedReads) rebuilt
+successfully in 104 jobs. The current QNT ReadRetention attempt is NOT qualified:
+the first invocation could not bind local IPC under the sandbox; the permitted
+rerun typechecked but hit the unchanged five-second real-output verification
+deadline. Its failure is retained. Historical QNT successes remain historical;
+no new state model or relaxed watchdog is substituted for this run.
+
+The final serial regression on the restored seven-argument receipt ABI passes
+=contract-diagnostics=, =source-admission=, =contract-analysis= and the real
+=gitea-postgresql-publication= tests through the default Just entry. Each has
+=MODULE-OK=, =HARNESS-OK= and final =OK=. The following JSON configuration test
+starts its Harness but exceeds the unchanged idle budget; the batch stops there,
+so relocation and retention are not qualified by that batch. The separate final
+=read-retention-cost= run does complete with those success markers and the
+4,300,392-byte bounded census above. Do not combine these results into a passing
+full regression. Concurrent edits to the testing runner are preserved; the idle
+failure needs its own preparation/Harness attribution before another cohort is
+claimed comparable. No commit or push is made for this investigation.
+
+** Follow-up: close the consumer controls before another optimization
+
+The same fixed =e281ad2= producer now passes both the observed and the ordinary
+default =just test-file t/gitea-json-configuration-test.ss= entries. All four
+controls complete: missing/null/explicit values, invalid null settings before
+dependent client forcing, and JSON edits after a cached parent. The observed
+entry takes 12.82 seconds for selection, reuses the issued support artifact with
+zero compilations, spends 1.87 seconds in preparation and 23.89 seconds in the
+native Harness (41.49 seconds inside the entry). These spans include observation
+overhead and are not an unobserved latency baseline. The earlier idle refusal
+remains a failed run; it is not evidence of a fixed root cause or a reason to
+increase its deadline. The maintained testing-runner changes from another
+session are preserved, not claimed as this investigation's implementation.
+
+The ordinary relocation entry also passes all four existing controls. No source
+admission, parent/child identity check, or deployment dependency is omitted to
+obtain either result. These runs close the two consumer controls left unexecuted
+by the stopped batch; they do not qualify the product Nix prerequisite or the
+unfinished matched retained-byte baseline.
+
+The production review also distinguishes Type membership from admission:
+=yuanxu-contract-element?= first tests membership of the original value;
+=.admit= can normalize that value. Removing the first operation is not justified
+by the presence of the second. Similarly, the repeated classification check
+cannot simply be removed after arbitrary candidate/context getters: those are
+open execution boundaries, not a proven read-only window. No manual purity tag
+or cached approval is used to hide these dependencies. The safe current cuts
+remain absent value-action preparation and empty diagnostic decoration.
+
+The retained-payload probe now accepts only a single ordinary value per visited
+edge. The experimental variadic fallback that silently classified unexpected
+multiple values as a frontier is removed. Malformed native inspection fails
+instead of producing a successful partial census. This tightens measurement;
+it does not prune the production read graph or claim knowledge of arbitrary
+callback environments.
+
+The stricter single-value census passes the default retention gate: all twelve
+matched raw/unique cold/warm admissions complete, with exactly the same full
+observer-key sequences, 1045 issued records, 188 receivers, 2141 ordered edges,
+and 240 physical source reads per admission. Its bounded payload remains
+4,300,392 body bytes across 58,020 identities and 2568 explicit opaque frontiers.
+Removing the permissive measurement fallback neither changes this census nor
+reduces its scope. An initial edit with an unclosed form was refused during
+native source reading, corrected, and rerun; it is retained as a failed local
+attempt, not merged into the passing result. Source inspection proves no more
+than this bounded projection: an exclusive-heap improvement still requires the
+matched whole-package baseline, and the earlier product/QNT failures remain open.
+
+** Complete consumer cohort and real backend progress
+
+The next comparison uses a frozen source snapshot and separate native libraries,
+not replacement of individual files in the active runtime. Existing
+=package-library-spec= projects the native import closure; three explicit Core
+roots account for imports made by generated service roles (source admission,
+ports and configuration diagnostics). Together with the package prelude the
+native Make spec has 90 units. Compilation keeps its 120-second / 2 GiB fence.
+The final consumer loads only its cohort library, the frozen source root and
+the same fixed =e281ad2= POO library; the active Core library is absent from its
+runtime load path. The same snapshot path is used sequentially for both kernels
+so path-string length is not a hidden variable. Only the two kernel source files
+differ; all maintained Scenario roles and probes are identical.
+
+The current cohort passes the default retention entry with 1045 records, 188
+receivers, 2141 edges and 236 source reads in each sample. Its bounded census is
+4,263,836 body bytes. This is a new cohort, not a reduction from the previous
+4,300,392-byte measurement in another source/library environment. Its VM
+allocation stream becomes non-monotone, so allocation deltas are unqualified;
+they are not used as a memory improvement claim.
+
+The earlier QNT refusal has a concrete tooling cause. While the CLI waits for
+gRPC compilation, the owned Apalache process emits genuine output on its own
+stream. The runner printed that output but did not feed it into the existing
+=QuintCLI.request backend_progress= input. The caller now supplies the timestamp
+of actual nonempty backend output. External endpoints supply no owned progress
+stream. This changes neither the 45-second wall deadline nor the five-second
+idle deadline and introduces no heartbeat or result cache. The same ReadRetention
+safety case and all six existing counterexample controls qualify. Existing
+watchdog tests also check that fresh backend output cannot defeat an expired
+wall deadline, and stale backend output cannot defeat an expired idle deadline.
+No new model or duplicate checker is introduced.
+
+*** Matched complete-cohort result
+
+Both kernels complete all twelve default-entry retention samples after native
+Make successfully builds their consumer closure. The baseline is the earlier
+handwritten evidence-Type/source-admission kernel, not a promise of equivalent
+validation strength. Only those two source files differ; the producer, Scenario,
+probe, source path and resource policy match. Separate native libraries prevent
+ABI substitution inside a running process. The temporary source snapshot is
+restored to the current kernel after the baseline process exits.
+
+| Same-producer complete cohort | Earlier kernel | Current kernel | Delta |
+|-------------------------------+----------------+----------------+-------|
+| Original issued records | 896 | 1045 | 149 |
+| Receiver identities | 158 | 188 | 30 |
+| Ordered dependency edges | 1978 | 2141 | 163 |
+| Shared evidence-Schema owner reads | 4 | 138 | 134 |
+| Bounded body bytes | 4,119,104 | 4,263,836 | 144,732 |
+| Receiver-shell bytes (included above) | 18,960 | 22,560 | 3,600 |
+| Inspected payload identities | 54,415 | 57,992 | 3,577 |
+| Explicit opaque frontiers | 2228 | 2567 | 339 |
+| Physical source reads per admission | 236 | 236 | 0 |
+
+The body-byte delta is about 3.51%, not the record-count increase of 16.63%.
+Its components are 10,156 string, 17,736 closure, 36,640 pair, 38,256 vector,
+38,344 structure and 3,600 receiver-shell bytes. Headers, code, padding and
+opaque environments are still excluded. Neither table proves an exclusive-heap
+bound or a process-live reduction. The VM allocation account is invalid in this
+cohort and is explicitly excluded from performance conclusions.
+
+Source-level families account for the record delta: 17 Record-descriptor reads,
+38 field-map reads, 73 Slot reads, 12 other native-Type reads, six reads of the
+two standard method contributions, and three contextual presence reads. The
+prepared-preflight/prepared-value-action replacement has zero net record count.
+The Schema owner-set delta of 134 is a DIFFERENT, overlapping partition of these
+149 records, not another 134 records to add. Descriptor/schema metadata belongs
+to the canonical module-global evidence Types; do not multiply it by the module
+count. Effective method preparation and contextual presence still belong to
+their actual receiver. No equal-name/receiver aggregation grants permission to
+discard distinct original records.
+
+This closes the failed partial-library byte comparison with a complete-source
+consumer comparison. It does not retroactively authenticate the historical
+786/935 post-GC subset or turn the separately refused product Nix prerequisite
+into a pass. The justified production changes remain removal of empty
+decoration and absent value-stage preparation. Reverting native Record checking,
+dropping method dependencies or retaining a prior approval would trade away
+actual guarantees to reduce a counter; none is done.
+
+The restored current cohort also passes all eleven maintained Gitea/PostgreSQL
+publication controls through default =just test-file=. These include both port
+requirements, source substitution/change refusal, child policies, stale parent
+plans and default-following behavior. The retained read graph has not been
+shortened to qualify the new native Type implementation. The three existing
+Quint runner tests pass with the added wall/idle backend-progress subcases.
+No active library or checkout was replaced, no budget changed, and no commit
+or push was made. The unrelated product Nix prerequisite remains unqualified;
+this result closes the matched memory-attribution and QNT-runner gaps only.

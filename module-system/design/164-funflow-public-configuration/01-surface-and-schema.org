@@ -1,0 +1,255 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Configuration 01: Public Attributes and Schema Ownership
+#+property: STATUS proposed-domain-contracts-existing-native-syntax
+
+* One schema authority, separate default values
+
+[[file:13-independent-profiles-and-scenario-composition.org][Module 13]] corrects publication/context ownership. The Check/Pipeline field
+Contracts below remain the field-design reference, but FunflowProfileContract
+and its context historically name a configured Funflow Check container, not an
+independent ecosystem Profile. Their role/name/context must migrate before use
+with independently published Profiles and Scenario composition. Neither a module
+Profile catalog nor an automatic Scenario-owned Profile family is implied here.
+
+The implementation baseline is [[file:../../../../modules/funflow/config-prototypes.ss][config-prototypes.ss]],
+[[file:../../../../modules/funflow/profiles/gerbil-scheme.ss][the Gerbil Profile]] and
+[[file:../../../../modules/funflow/config-adapter.ss][the current list projection]]. The current adapter reads effective fields;
+it does not enforce the closed public surface below. Core's
+[[file:../../../types.ss][YuanxuObjectContract.]] already checks prototype ancestry,
+recursively admits declared responsibilities, and runs obligations. It does not
+reject undeclared slots automatically. That requires an explicit domain rule.
+
+The upstream schema is a native Contract whose responsibilities map slot names
+to native Contract values. Human/agent documentation is ordinary metadata on
+those field Contracts. This is analogous to the purpose of NixOS options, not
+an implementation of their definition merge machinery.
+
+The following categories are progressive disclosure, not an access-control
+system. Native POO remains extensible. Advanced attributes are documented and
+validated too; hiding them from a short tutorial cannot make them immutable.
+
+* Check attributes: ordinary configuration
+
+Set complete ordinary values by assignment. Use native => to transform an
+inherited value and =>.+ to extend an inherited object. The proposed
+[[file:11-direct-path-assignment-and-refinement.org][direct dotted assignment]] retains intermediate inheritance through native
+lowering; the current dotted adapter supports only object =>.+. These are
+different implementation states, not two different configuration value models.
+
+All defaults below are inherited from the current base Check unless the
+maintained Gerbil Profile supplies a more specific value. Empty defaults are
+construction defaults, not evidence that a selected runnable Check is valid.
+
+| Attribute | Base default | Admission and meaning |
+|-----------+--------------+-----------------------|
+| commands | '() | nonempty proper list of strings; first string nonempty; argv, never implicit shell evaluation |
+| profile-ref | #f | selected Check requires a sandbox Profile reference; this is not its Funflow Profile name |
+| artifact-outputs | '() | unique artifact symbols produced by this Check |
+| cache-intents | '() | unique declared cache symbols; no cache is accessed during configuration |
+| input-bindings | '() | existing input-binding data protocol; validate before projection |
+| config-sources | '() | existing configuration-source data protocol; no file read merely to describe it |
+| secret-requirements | '() | secret reference symbols; configuration contains no resolved secret values |
+| dependency-refs | '() | unique Check references in the same effective Profile; selected dependency closure must be complete |
+| artifact-retention | 'workflow-retained | retention symbol supported by the selected handoff capability; not any arbitrary symbol |
+| metadata | '() | application data associations; cannot override reserved workflow/projection keys |
+
+Public names express task intent: commands, not a representation-bearing name
+such as command-vector. CommandsContract owns the nonempty string-list and
+executable constraints. This design still represents one executable plus its
+arguments per Check; the plural name does not imply a shell script or a batch
+of independent commands. No implicit shell conversion is added.
+
+This is a direct proposed public-field rename, not an alias layer. The existing
+runtime still uses command-vector; no runtime source or adapter is changed here.
+The target declarations, defaults, refinements and diagnostics in this design
+consistently use commands. Historical source extracts and executed probes remain
+unchanged. A future direct migration must update both producer and consumer;
+these documentation examples do not already run against the old field layout.
+
+* Advanced policy, identity and output
+
+| Attribute | Base default | Boundary |
+|-----------+--------------+----------|
+| result-protocol | '() | advanced data protocol; runnable admission requires a decoder supported by the selected consumer; Gerbil supplies '(read :lines) |
+| runtime-mode | 'manifest-handoff | advanced handoff mode; configuration never executes it |
+| action-class | 'idempotent | durable action policy; accepted classes come from the existing durable protocol |
+| compensation-refs | '() | declared cleanup/action references; compensatable requires a nonempty resolvable set |
+| durable-task-id | #f | upstream supplies a local durable name; projection checks uniqueness under qualified identity |
+| check-name | #f | identity; must equal the containing named Check slot; not an ordinary rename mechanism |
+| kind | 'yuanxu.funflow.check.prototype | structural compatibility marker; not source authentication or sufficient admission |
+| observability | #f | inherited advanced observability configuration; absent or supported native value |
+| observes / guards | '() / '() | supported existing declarative references; no arbitrary callback injection |
+| report | #f | inherited report configuration; absent or supported native value |
+| runtime-executed | #f | projection invariant; configuration cannot assert execution by setting #t |
+
+The [[file:05-field-contracts-and-capabilities.org][concrete field declarations and recipe capabilities]] distinguish structural
+acceptance from supported payload semantics. Current workflow constructors
+mainly check list shape for inputs/config/result; the proposed CI/CD recipe
+admits only empty/false unsupported payloads and the explicitly supported result
+protocol. Broader consumer semantics require actual Contracts and qualification,
+not a stronger-sounding name for list?.
+
+The public slot vocabulary admits data and native POO values. Ordinary config
+does not add function-valued control hooks. New behavior belongs in an upstream
+native prototype method or a named functional consumer, with the appropriate
+Contract and runtime support.
+
+* Pipeline and Profile attributes
+
+| Object | Attribute | Target default and rule |
+|--------+-----------+-------------------------|
+| Pipeline | pipeline-name | base #f; maintained Profile supplies 'default; nonempty identity symbol when selected |
+| Pipeline | selected-checks | NEW proper, unique list of Check slot symbols; base '(); Gerbil supplies '(build test package) |
+| Pipeline | checks | derived selected effective Check objects; not an independently configured list |
+| Pipeline | metadata | '(); application data only, reserved keys rejected |
+| Pipeline | kind / runtime-executed | existing Pipeline kind / #f; invariant fields |
+| Configured Funflow | pipeline | required native Pipeline |
+| Configured Funflow | other named slots | open namespace of Check objects, admitted by the Check Contract when selected |
+
+There is no new checks container. Existing paths remain
+Scenario.gerbil.funflow.build. A Profile may publish more named Checks
+than a Pipeline selects. Availability and execution selection are different.
+Profile names are publication keys, not a hard-coded development/production
+enum. The new nominal FunflowProfile. is a reusable module family, not a Scenario.
+
+* Native Contract declarations
+
+This is target upstream code, not an executable integration claim. Canonical
+bootstrap bindings and owner values are supplied by the maintained source role.
+Every field Contract below is declared in
+[[file:05-field-contracts-and-capabilities.org][module 05]]. The selector, three obligations and admission guard algorithms
+are specified in [[file:06-admission-algorithms.org][module 06]], with complete proposed Scheme bodies and every internal
+helper in [[file:07-admission-source.org][module 07]]. These replace the earlier undefined-name placeholders
+without claiming that the proposed domain library is implemented.
+
+#+begin_src scheme
+(define-type (FunflowCheckContract @ YuanxuObjectContract.)
+  identity: 'funflow/check-v2
+  proto: funflow-check
+  reserved-metadata:
+  '(source check dependency-refs observability durable-task-id action-class
+    compensation-refs artifact-retention observes guards report)
+  responsibilities:
+  (.o kind: CheckKindContract
+      check-name: RequiredSymbolContract
+      profile-ref: SandboxReferenceContract
+      commands:
+      (.o (:: @ CommandsContract)
+        audience: 'ordinary
+        description: "Executable and argv; no implicit shell."
+        default-path: '(prototypes check commands))
+      input-bindings: InputBindingsContract
+      config-sources: ConfigSourcesContract
+      artifact-outputs: UniqueSymbolsContract
+      cache-intents: UniqueSymbolsContract
+      secret-requirements: UniqueSymbolsContract
+      result-protocol: ResultProtocolContract
+      runtime-mode: RuntimeModeContract
+      dependency-refs: UniqueSymbolsContract
+      durable-task-id: RequiredSymbolContract
+      action-class: DurableActionContract
+      compensation-refs: UniqueSymbolsContract
+      artifact-retention: RetentionContract
+      observability: OptionalObservabilityContract
+      observes: ObservedReferencesContract
+      guards: GuardReferencesContract
+      report: OptionalReportContract
+      metadata: ApplicationMetadataContract
+      runtime-executed: FalseContract)
+  (.admit (inherited)
+    (let ((base-admit (inherited)))
+      (cut funflow-admit-check @ base-admit <> <>)))
+  .obligations: (cut funflow-check-obligations @ <> <>))
+
+(define-type (FunflowPipelineContract @ YuanxuObjectContract.)
+  identity: 'funflow/pipeline-v2
+  proto: FunflowPipeline.
+  reserved-metadata: '(source pipeline)
+  responsibilities:
+  (.o kind: PipelineKindContract
+      pipeline-name: RequiredSymbolContract
+      selected-checks: NonemptyUniqueSymbolsContract
+      checks: EffectiveChecksContract
+      metadata: ApplicationMetadataContract
+      runtime-executed: FalseContract)
+  (.admit (inherited)
+    (let ((base-admit (inherited)))
+      (cut funflow-admit-pipeline @ base-admit <> <>)))
+  .obligations: (cut funflow-pipeline-obligations @ <> <>))
+
+(define-type (FunflowProfileContract @ YuanxuObjectContract.)
+  identity: 'funflow/profile-v2
+  proto: FunflowProfile.
+  responsibilities: (.o pipeline: FunflowPipelineContract)
+  (.admit (inherited)
+    (let ((base-admit (inherited)))
+      (cut funflow-admit-profile @ base-admit <> <>)))
+  .obligations: (cut funflow-profile-obligations @ <> <>))
+#+end_src
+
+Field descriptions/audience/default-path are proposed plain Contract metadata.
+They do not change Contract dispatch. Every field needs a description before
+publication; the single annotated command field above demonstrates the pattern,
+not a claim that documentation generation exists. Helpers that fill repeated
+metadata may be private Scheme functions or defrules, never a public options DSL.
+
+* Responsibilities are not the whole admission policy
+
+funflow-check-obligations rejects unknown effective Check slots, identity
+mismatch, unsupported policy crossings, false execution claims and reserved
+metadata collisions. The accepted field names come from the selected schema's
+responsibilities; there is no second manually maintained allowlist. Every
+ordinary Check/Pipeline field in these families is represented there. Native
+framework bookkeeping is not a wildcard exception for extra candidate slots.
+
+The native .obligations getter uses cut to bind its effective Contract receiver
+and returns the existing two-argument candidate/context procedure. Each named
+algorithm therefore takes (descriptor candidate context). It derives accepted
+names from that descriptor, rather than hard-coding the base schema and thereby
+rejecting legitimate fields of a stronger derived Contract. This is native slot
+binding plus an ordinary Scheme higher-order function, not a new compute hook.
+The domain context carries the effective Profile, qualified Check path and
+capability evidence. The admission owner supplies it; candidate metadata cannot
+choose its own descriptor or claim capability evidence.
+
+The .admit refinements add structural/context/name preflight before invoking
+the inherited admission procedure. This ordering is necessary: native
+responsibility admission reads checks before invoking Pipeline obligations.
+Invalid membership must be rejected before that getter can throw. The guard
+preserves the effective descriptor, inherited validation and caller context;
+it does not replace the POO Contract kernel.
+
+The Profile differs deliberately: additional named Check slots are legal.
+Its guarded admission validates selected roles and name consistency,
+while rejecting scalar junk or non-Check values at selected positions. A new
+attribute inside a Check is not a new Check: unknown fields there are errors.
+Unselected additional names remain outside this selected-closure receipt;
+full-catalog role checking requires an explicit audit.
+
+funflow-pipeline-obligations checks that checks is exactly the native objects
+resolved by selected-checks from the effective enclosing Profile, with the same
+identities, and validates dependency closure and acyclicity. A caller cannot
+bypass the rule by replacing the computed checks list. Structural equality alone
+is insufficient when it would substitute another receiver's objects.
+
+The applicable Contract is associated by the module/Scenario admission owner.
+An arbitrary candidate.contract slot cannot authorize itself. SourceRef,
+prototype ancestry, Contract admission, supported runtime handoff and execution
+evidence remain five distinct claims.
+
+* Extension without erasing the schema
+
+A new Check using existing attributes needs no new schema. A genuinely new
+attribute requires an upstream extension prototype, a derived native Contract
+whose responsibilities include it, and a consumer that gives it meaning.
+Publish that association through the same native module surface. Derived
+Contracts may strengthen base obligations; replacing .obligations must preserve
+them through a named pure composition function. It must not quietly disable
+base rejection rules. Documentation should flag weakening of the base contract
+as a different, incompatible protocol rather than ordinary extension.
+
+Open POO authoring and closed configuration admission coexist: construction can
+produce more objects than a particular domain Contract accepts. This is a
+framework boundary, not a new restriction in the POO kernel.

@@ -1,0 +1,145 @@
+#+title: 13.24 Whole Configuration Diagnostics
+
+* Observed problem and scope
+
+The product module evaluator and doctor consume diagnostic summaries. They do
+not authorize execution. Their former object-config path constructed an isolated
+one-field Record for each present option. That retained a field Type but lost
+absent required fields and the original Record's whole-value membership check.
+The remedy is to diagnose the original final declaration, not introduce another
+admission protocol or wrap it in an unnecessary ObjectContract.
+
+A real existing negative control exposed the gap. UserRootProfile declares:
+
+#+begin_src scheme
+(Record
+  surface: [String constant: "agentic-ai-lab"]
+  mode: [String default: "interactive"]
+  layers: [(List String) policy: 'append default: '("base")]
+  priority: [String policy: 'override default: "base"]
+  mode-lock: [String policy: 'conflict])
+#+end_src
+
+The invalid user configuration supplied a wrong surface and an unknown option,
+but no mode-lock. Previously the test expected two failures. Whole-Record
+inspection reports a third: missing-field at (mode-lock). Its old count assertion
+failed (six receipts instead of five); it was strengthened with the precise
+missing id and native path, retaining the two original refusal assertions.
+The failed run is retained in local artifacts, not committed as a raw log.
+
+* Native authority and functional consumer
+
+[[file:../../../module-system/projection/option-validation.ss][Core option-validation]] now supplies
+=yuanxu-module-config-validation-receipts=. It calls native =diagnose-value=
+once on the supplied Record and final config, then =checked-issues= on that
+result. It does not call the per-field validator again. The existing
+=ModuleOptionSchema= remains useful for schema discovery and legacy row inputs;
+ordinary object-config diagnostics no longer construct one such object per field.
+
+The product adapter uses the final declaration's native =effective-slots= object
+for lookup. POO owns its metadata/cache and signed reads. No new field hash table,
+parent Interface index reuse, declaration copy or cache protocol is required:
+
+#+begin_src scheme
+(let* ((fields (.ref declaration 'effective-slots))
+       (field-ref
+        (lambda (id)
+          (and (string? id)
+            (let (name (string->symbol id))
+              (and (.slot? fields name) (.ref fields name)))))))
+  (yuanxu-module-config-validation-receipts declaration field-ref config owner))
+#+end_src
+
+The source of that integration is Agentic AI Lab's
+=modules/module-authoring/module-option-projection.ss=. A real descriptor test
+warms its parent Interface schema index, changes the child's declaration and
+config, and verifies the child's new field and annotation. The parent result
+remains unchanged. A separate test replaces the config with 42: an
+Interface-backed descriptor reports expected-object rather than falling through
+to an empty list of legacy options.
+
+Native authority at the qualified gerbil-poo source cut is
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/class-validation.ss][class-validation.ss]]: =class-slot-shape= handles absence/optionality;
+=class-diagnostics= preserves whole membership after structural diagnostics.
+[[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/object-diagnostics.ss][checked-issues]] owns diagnostic structure checks. We do not reproduce either
+algorithm in Core or maintain another list of required fields.
+
+* Presentation rules, not another Contract
+
+The temporary tables in the Core function group returned issues by their first
+symbolic path component. They are result indexes, not field declarations or
+cached approval. Native issue objects and their nested paths remain identical;
+expected Types and extension details are neither copied nor eagerly traversed.
+
+- Present-field receipts retain config enumeration order. New absent-field
+  receipts follow first appearance in the native issue sequence.
+- Issues with no symbolic top-level field are retained in a whole-value receipt
+  with id #f. No fictitious field name is invented. Whole-value receipts follow
+  field receipts; grouping is a display order, not a native execution trace.
+- Issue order within each group is preserved; its first issue supplies the code.
+- Original Slot metadata supplies field annotations. Whole-value issues retain
+  their own details and owner label without pretending to have field metadata.
+- The existing unclaimed-option policy remains missing-schema when an open
+  Record supplies no native issue. This compatibility diagnostic is not a claim
+  that open Record membership itself forbids extras.
+- A sealed Record's native unknown-field issue is preserved, including its path.
+  The unknown payload is not demanded just to produce the error.
+
+Whole diagnostics run in the original Record's declared checking order, followed
+by annotation projection. This intentionally replaces the old interleaving of
+one-field checks and annotations. We do not claim identical callback/read traces
+to that incomplete decomposition. Native MOP observer delivery is unchanged;
+there is no event suppression, manual read-record construction or purity tag.
+
+* Minimal verified evolution
+
+Controlled fixtures use the existing interface constructor and ordinary POO:
+
+#+begin_src scheme
+(def Interface (yuanxu-module-interface "Network" (Record endpoint: [String]) '()))
+(def Parent
+  (agentic-ai-lab-modules Interface
+    (.o id: 'network config: (.o endpoint: "localhost"))))
+(def parent-preview (agentic-ai-lab-module-option-validation-receipts Parent))
+(.def (Missing @ Parent) config: (.o))
+
+;; Projection from the actual native missing-field issue:
+;; id: "endpoint", code: missing-field, path: (endpoint)
+(agentic-ai-lab-module-option-validation-receipts Missing)
+#+end_src
+
+This does not instantiate or silently fill a replacement config. Defaults still
+come from normal construction and inherited config values. Merely replacing a
+child declaration is not claimed to reconstruct its config from a new proto.
+A controlled whole-membership fixture also verifies that two individually valid
+String fields can jointly fail the original Record, producing class-rejected at
+the empty path. The parent's earlier preview stays unchanged. Domain diagnostics
+run again for the child; no accepted result is reused as approval.
+
+* Qualification and reflection
+
+Default serial Just gates passed against fixed runtime 85a7673 with the installed
+Gerbil: nine Core option tests, product owner contracts, user-interface consumers,
+module-system composition, and all eleven real Gitea/PostgreSQL publication
+controls. Final logs have MODULE-OK, HARNESS-OK and OK without harness errors or
+heap/stack overflow. No budgets were widened, compiler sources changed, or
+Builder/cache protocol introduced. The declared dependency REV remains unchanged.
+
+Core fixtures establish optional-Type coldness, one diagnostic dispatch per
+selected field, whole membership, issue identity, malformed root rejection and
+sealed-extra paths. Product controls use actual facade and descriptor consumers.
+Gitea/PostgreSQL verifies both requirements, parent-cache isolation, source-change
+refusal and unselected branches; those are regression results, not a theorem
+about the new presentation function.
+
+The benefit is semantic coverage with one native declaration: adding a required
+field or whole Record rule affects the preview without editing field tables.
+The cost retained deliberately is receipt grouping for existing consumers. A
+future consumer migration may use native issues directly, but must explicitly
+handle owner annotations, whole-value errors and the existing unclaimed-option
+policy before deleting that compatibility projection.
+
+A preview does not normalize Function fields, bind publication evidence, perform
+.admit, or authorize a plan/effect. SourceAdmissionContract and native publication
+remain responsible for those obligations. No new Lean/QNT theorem, full CI,
+performance improvement or 10k-module capacity is claimed by these focused gates.

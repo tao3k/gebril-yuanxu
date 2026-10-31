@@ -1,0 +1,80 @@
+#+title: 23.07 Terraform Research 06: Practitioner Experience and Restriction Costs
+#+language: en
+#+property: DOCUMENT_ID 23.07
+#+date: [2026-10-17]
+#+property: STATUS first-person-articles-and-issue-review-not-reproduced
+
+* Research question
+
+HCL's ordinary configuration can be concise. The question is where real module
+composition creates repeated work, surprising plans or restrictions, and which
+layer owns that cost. Practitioner articles are primary evidence of their authors'
+experience and interpretation, not automatic confirmation of engine defects.
+Sources below were read on 2026-10-17; their historical claims remain versioned.
+
+* Issues and Engineering Limitations
+
+** TF-05: nested merge requirements do not have one agreed meaning
+
+- Reference: [[https://github.com/hashicorp/terraform/issues/31815][Generic deepmerge function request and maintainer discussion]].
+- Marks: ISSUE-REPORTED; MAINTAINER-EXPLAINED; CLOSED-ENHANCEMENT;
+  DESIGN-TRADEOFF; NOT-REPRODUCED.
+- Reported: 2022-09-19 against Terraform 1.2.9; observed state: closed.
+- Layer: configuration transformation library and extension distribution.
+
+The reporter needs recursive merging of decoded JSON/YAML and describes expensive
+workarounds. On 2024-05-29, apparentlymart explains the choice to encourage external
+provider functions because deep-merge semantics lack consensus. Closure therefore
+does not mean the need disappeared or that a builtin universal merge was added.
+
+Our lesson: ordinary Scheme functions can avoid packaging every data transform as
+a provider. However, we still must specify list order, identity matching, deletion,
+type mismatch and conflicting requirements. Native composition is not a substitute
+for those semantics. Do not declare one universal deep merge to be the solution.
+
+** TF-06: a module abstraction can broaden an operational dependency
+
+- Reference: [[https://sanderknape.com/2024/11/terraform-data-source-read-during-apply-messages-fix/][Sander Knape: data sources read during apply]], 2024-11-09.
+- Marks: PRACTITIONER-ARTICLE; WORKED-EXAMPLE; NOT-REPRODUCED.
+- Version: no exact executable engine/provider lock established in this review.
+- Layer: module boundaries, dependency granularity and plan diagnostics.
+
+The author connects VPC/instance modules and an AMI data source. A broad dependency
+can make a VPC tag change defer an otherwise unrelated AMI read, propagating unknowns.
+The article also discusses the cost of using modules merely to organize directories
+and the extra interfaces required to narrow a behavioral dependency. Cross-check:
+[[file:23.05-issues-and-user-costs.org][TF-01]] records the corresponding maintainer explanation.
+
+Do not copy the article's workaround code as a verified fixture. In particular,
+omitting an edge because an operation will probably finish first is not our default
+correctness policy. Preserve the required relationship with the narrowest supported
+meaning and report what cannot be determined before effects.
+
+** TF-07: lifecycle and plan requirements beyond authoring convenience
+
+- Reference: [[https://josnyder.com/blog/2025/missing_terraform_features.html][Josh Snyder: Eleven missing Terraform features]], 2025-07-13.
+- Marks: FIRST-PERSON-EXPERIENCE; AUTHOR-PROPOSAL; NOT-REPRODUCED.
+- Version: no single pinned runtime covers the whole article; not a current feature matrix.
+- Layer: lifecycle policy, resource operations, planning UX and organizational cost.
+
+The author values understandable plans and provider reuse while criticizing several
+lifecycle/control-plane boundaries. One example wants prevent_destroy to differ by
+for_each instance. The article also describes the operational burden when deletion
+is prohibited through credentials. Compare the documented lifecycle restriction
+in [[file:23.03-arguments-types-and-phase-boundaries.org][the phase study]]; do not adopt the author's proposed remedies as tested behavior.
+
+Reflection: a richer configuration language can prepare concrete policies, but
+approval, deletion, state and recovery remain operational decisions. We should
+retain the explainable plan and existing provider ecosystem rather than assuming
+that a programmable object eliminates their maintenance value.
+
+* Conclusion and Onwards
+
+Research must retain both concise ordinary HCL usage and expensive complex cases.
+For our Module System, evaluate contributor-maintained definitions, dependency
+granularity, extension distribution and upgrade costs, not only line counts.
+The articles motivate matched controls; none is a benchmark or a reproduced defect.
+
+The [[file:23.06-module-system-reflection.org][architecture reflection]] remains the owner of proposed changes. No Module,
+Loader, provider or execution behavior is implemented by this reading record.
+

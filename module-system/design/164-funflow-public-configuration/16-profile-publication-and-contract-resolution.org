@@ -1,0 +1,311 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Profile Publication, Contract Resolution and Intent-Based Configuration
+#+property: STATUS design-only-no-implementation-or-loader-change
+
+For concrete POO indexes, method bundle, origin record output and complete
+resolution/admission bodies, see [[file:17-export-index-and-derived-resolution.org][module 17]]. Its association adapter is
+design source only; declaration-origin capture and Loader integration are not
+implemented. No per-Profile publication wrapper is reintroduced.
+
+[[file:18-mop-derived-profile-association.org][Module 18]] corrects the derivation mechanism after auditing native .def and
+object-supers: standard inheritance needs no per-child origin records. The root
+export index and trusted revision/source association remain pending adapters.
+
+* Admission is a protocol, not a particular Contract
+
+Core types.ss already declares the following single-receiver slot generic:
+
+#+begin_src scheme
+(.defgeneric (yuanxu-contract-admit contract candidate context)
+  slot: .admit)
+#+end_src
+
+yuanxu-contract-admit is an admission operation dispatched through the supplied
+Contract descriptor's .admit slot. It is neither a Module Contract nor a new
+universal CI/CD Contract. The result is validation evidence, not a boolean or an
+execution receipt. Call sites must name the expected Contract, actual candidate
+and occurrence context. The candidate must not select its own authority by
+inserting a contract or accepted slot.
+
+| Descriptor or boundary | Candidate and responsibility | Does not establish |
+|------------------------+------------------------------+--------------------|
+| CommandsContract | commands value: the declared argv representation and element constraints | Command availability or successful execution |
+| FunflowCheckContract | Final Check: field names/types and applicable domain/policy obligations | That a script is safe or has run |
+| FunflowPipelineContract | Final Pipeline: selection, effective Check identities/order and dependency rules | A runtime Session |
+| ConfiguredFunflowContract | Configured Funflow occurrence inside a Profile: valid named Checks, Pipeline and supported capability/payload requirements | Authenticity of a Module publication |
+| GerbilCIProfileContract or another published Profile Contract | Independent Profile: declared module positions; position obligations deeply admit their configured values with derived contexts | That its language name implies a schema |
+| CICDCompositionContract | Final Scenario: selected Profile admissions, qualified identities, explicit handoffs and combined graph consistency | Consumer format admission or permission to run |
+| Publication/source boundary | Export identity, exact revision, trusted expected descriptors and compatible feature origins | Domain admission of every unselected value |
+| Consumer plan Contract, still to be supplied by its consumer owner | Current candidate plan: consumer format, identifiers and supported failure/handoff protocol | Execution success |
+
+The publication/source boundary is an architectural responsibility, not a claim
+that a concrete new PublicationContract has already been implemented. Likewise,
+there is no silently assumed universal consumer Contract. Its actual descriptor
+must be provided before an admitted-preview can be produced.
+
+* Contribution interfaces associate exports; no per-Profile wrapper
+
+Modules remain pure functionality. Profiles are independent reusable values;
+Scenarios select Profile occurrences. The contribution's publication interface
+owns export-to-Contract/source associations. Do not introduce a separately named
+ProfilePublication object for each Profile, repeat the Profile body in metadata,
+or require downstream users to inherit publication descriptors.
+
+The maintainer defines the ordinary value and the actual Contract, then exports
+them through the existing Scheme interface boundary. The recipe factory and
+Contract constructor below are the design definitions in modules 13 and 15:
+
+#+begin_src scheme
+(def GerbilCIProfile
+  (make-gerbil-ci-profile Funflow))
+
+(def GerbilCIProfileContract
+  (make-cicd-profile-contract
+    'profiles/gerbil-ci
+    (.o funflow:
+        (cicd-module-position-contract
+          'funflow ConfiguredFunflowContract))))
+
+(export GerbilCIProfile GerbilCIProfileContract)
+#+end_src
+
+These replace the corresponding illustrative declarations when read together;
+do not evaluate duplicate same-name definitions. export is existing Scheme
+syntax; exporting both values does not itself establish their association.
+The package publication interface must associate the resolved Profile export
+binding with its expected Contract and feature requirements once. Name suffixes
+are not a pairing algorithm. A package-level index can group common requirements
+and reference their owners without copying capability lists into each Profile.
+Module 17 specifies the proposed package-level index objects and resolver bodies;
+no new public declaration syntax is introduced.
+
+| Package-owned association fact | Authority and interpretation |
+|--------------------------------+------------------------------|
+| Package identity, exact revision/content identity and export binding | Admitted contribution interface; a name string alone is insufficient |
+| Expected Profile Contract binding | Maintainer's explicit interface association, not a contract slot supplied by the candidate |
+| Feature origins and configuration requirements | Referenced feature owners and Profile requirements; no Module-local ownership of Profiles |
+| Compatible plan projection declarations | Maintained output protocol; not inferred from arbitrary object shape |
+| Derivation dependencies | Upstream export/revision references needed for inherited requirements and invalidation |
+
+The planning owner restricts requested capabilities against its allowed policies.
+A package declares requirements; it cannot grant execution permission to itself.
+Admission of the interface/source association is distinct from .admit on an
+actual selected Profile. Unselected recipe bodies must not be forced merely to
+inspect the interface index. A top-level def may evaluate when its Scheme module
+loads; separating metadata discovery from recipe-module evaluation still needs
+an adapter and measurement. Native slot laziness alone does not establish that.
+
+* Downstream declares only native objects
+
+The user's own contribution can publish these ordinary derived objects:
+
+#+begin_src scheme
+;; Replace ordinary values while retaining other inherited fields.
+(.def (TeamCIProfile @ GerbilCIProfile)
+  funflow: =>.+
+  (.o build: =>.+
+      (.o commands: '("gerbil" "build" "release")
+          artifact-outputs: '(team-build-log))))
+
+;; Transform inherited values only when that is the intended operation.
+(.def (ExtendedCIProfile @ GerbilCIProfile)
+  funflow: =>.+
+  (.o build: =>.+
+      (.o commands: => append '("release")
+          artifact-outputs: => append '(release-log))))
+
+(export TeamCIProfile ExtendedCIProfile)
+#+end_src
+
+These use native nested refinement and ordinary leaf assignment, not the pending
+direct dotted-assignment adapter. The user does not write a second publication
+object, repeat module-policies, or attach an editable authority/accepted slot.
+The publication interface adapter records each derived export's own source and
+its upstream derivation dependency. Value changes preserve applicable upstream
+requirements but never inherit the upstream publisher's authority/revision.
+A new language recipe uses the same package export boundary; its maintainer must
+supply its actual Contract association if it has no admitted inherited association.
+Changing module positions/schema requires an appropriate Contract extension;
+additional capabilities require explicit approval by the policy owner.
+
+* Existing mechanisms and missing association support
+
+The repository source audit gives a narrower foundation than automatic pairing:
+
+| Source | Existing mechanism | Missing for this design |
+|--------+--------------------+-------------------------|
+| src/authoring/module-source-collection.ss | Identity-driven contribution location, role entrypoints and interface import/re-export checks | Per-export Profile Contract association and derivation provenance |
+| src/building/official-contributions.ss | Official packages root; Git gitlinks/URLs own checked-out contribution revision/location | Validated per-export revision/Contract index |
+| src/authoring/module-interface.ss | schemas/schema-index, authoring policy and metadata over the Core Interface | A specified Profile export association field/protocol; do not reinterpret arbitrary schemas as Profile Contracts |
+| core/module-system/source/objects.ss | Inert SourceRef; equality compares kind and value | Revision-sensitive source validation; metadata does not participate in current equality |
+| core/module-system/loader/objects.ss | Source-to-descriptor entries, lazy plans and explicit force boundary | Profile-specific association propagation/resolution, not added here |
+| Bounded use-module scope | Native scoped access to module values/prototypes | General export provenance for arbitrary .def descendants |
+
+SourceRef is metadata, not authentication. Reuse these owners rather than adding
+a parallel publication object family, but do not claim that their current
+implementation already resolves Profile Contracts automatically. The current
+Funflow local implementation still contains Module-local Profiles; module 13's
+independent ownership correction remains a design migration.
+
+* Resolve selected occurrences without a second user policy file
+
+The ordinary Scenario surface remains native values and native refinement:
+
+#+begin_src scheme
+(.def (ProjectCI @ CICDScenario.)
+  application: TeamCIProfile
+  tooling: RustCIProfile
+  composition: =>.+
+  (.o participants: '(application tooling)))
+#+end_src
+
+The published names above are example exports, not reserved language categories.
+A contribution may provide different bindings/counts; Scenario templates can
+already supply participants so an ordinary user only overrides needed values.
+The following is the proposed association-resolution contract for the declaration
+and planning owners, not implemented behavior of plain .def:
+
+1. Resolve each selected binding in the final Scenario. Use the declaration's
+   preserved export provenance to identify its admitted publication and revision;
+   never infer the Contract from application/tooling or a language name.
+2. Follow direct references and native inherited refinements to their publication
+   origins while retaining the actual final receiver. An origin association is
+   maintained outside editable business slots. Native prototype ancestry alone
+   is not publication authentication and does not prove domain validity.
+3. Resolve the package interface's export association: expected Profile Contract,
+   supported plan-module declarations and module requirements. Intersect requested capabilities with
+   the planning owner's allowed capabilities. A Scenario may impose additional
+   checks, but cannot erase a Profile's requirements or grant its own permission.
+4. Materialize the internal profile-bindings association consumed by module 15's
+   cicd-prepare-profiles. For application this includes the expected Contract and
+   policies retained through TeamCIProfile's recorded derivation, but the
+   candidate is the final ProjectCI.application object, not the upstream default.
+5. Build its context with the final Scenario, binding, effective-profile and
+   applicable module policies. Invoke yuanxu-contract-admit on that expected
+   Contract; responsibilities derive each configured-feature context and invoke
+   the corresponding configured-feature/Check/Pipeline admission.
+6. Project only after checking accepted evidence against the exact descriptor,
+   candidate and context. Refuse missing/ambiguous origins, incompatible source
+   identities, unsupported protocols or any rejected requirement. Do not silently
+   fall back to a generic object-shape check.
+
+The pending association adapter preserves derivation under these explicit rules:
+
+| Native operation | Association rule |
+|------------------+------------------|
+| Reference/alias of an exported Profile | Retain the resolved export/revision association; binding spelling does not choose a Contract |
+| .def inheritance and nested =>.+ | Record the parent association plus new declaration origin; admit the final child, not the parent default |
+| Leaf assignment or => transformation | Preserve origin/requirements; invalidate affected effective-value evidence |
+| Replace a Profile with another exported Profile | Resolve the replacement's association; keep independent Scenario requirements |
+| Multiple parents | Retain all applicable associations and reject incompatible requirements rather than choosing one by order |
+| Re-export a derived value from a user package | Publish its own export/revision and derivation dependency in that package's interface index |
+
+The declaration/publication owner must preserve hygienic binding identity and
+native expansion origin through aliases/refinements. Object identity can index
+an association within one view but cannot by itself represent two distinct
+published exports of a shared value. Neither string matching nor textual scans
+of .def names prove the relationship. Generated declarations must carry equivalent
+origin information. This tracking is pending integration; plain native .def
+continues to construct objects without silently implementing it.
+
+Multiple publication origins require all applicable requirements, with explicit
+compatibility checks. Contradictory requirements are an association conflict;
+prototype order must not select the weaker Contract. This is not a proposed
+general theorem prover for arbitrary Contract implication. Unknown compatibility
+is refused until the publication owner supplies an admitted compatible boundary.
+
+For arbitrary Scheme functions returning newly constructed objects, export
+provenance cannot be recovered reliably from spelling or runtime shape. Such a
+factory must carry an owner-validated result association, or publish a new
+Profile export as above. The ordinary user must not repair this by repeating
+module-policies. The mechanism preserving associations through declarations,
+factories and refinements is a pending adapter, not an existing native POO feature.
+
+ExampleBindings in module 15 is an internal fixture for the resulting association,
+not a public second configuration file. Source resolution supplies that input;
+existing Scheme design functions do not yet generate it automatically. Rebinding
+the same publication under another name changes occurrence identity, not its
+requirements; replacing it with another publication resolves that publication's
+own requirements. Missing associations produce a binding/source diagnostic.
+
+* Effective receiver, evidence and invalidation
+
+Preserve the Pipeline's native relationship to its effective enclosing config:
+
+#+begin_src scheme
+checks:
+(funflow-selected-checks effective-config selected-checks)
+#+end_src
+
+These are receiver-aware lexical slots, not values captured from an already
+forced parent. Parent Pipeline caches remain attached to their parent receivers.
+After child assignment/refinement or adding smoke, demand final selected-checks,
+resolve each Check from the final configured Funflow and compare the Pipeline's
+returned objects pairwise by identity and order. A cached parent list is rejected
+even when names/length match. Unselected smoke is not a selected plan task;
+explicit whole-configuration auditing is a separate demand.
+
+Admission evidence binds Contract, candidate and occurrence context on one stable
+input view. A changed binding, source revision, descriptor, capability policy,
+selection or dependency/handoff invalidates the affected admission/projection.
+Unchanged names or a matching source digest alone do not justify evidence reuse.
+LeanPoo cache/reuse laws apply only with their actual context/input premises;
+there is no automatic Lean proof of these proposed Scheme adapters.
+
+Metadata discovery must not traverse every Profile body. Selected association
+resolution demands only the selected publication/dependency closure, followed by
+its relevant domain admission and projection. Module import side effects and
+first-access work still require separate measurement; laziness does not prove
+bounded latency. Configuration admission, projected-unadmitted candidate,
+consumer-admitted preview, atomic publication and runtime Session are distinct
+boundaries. No preview runs commands.
+
+* Reveal abstraction according to intent, not a percentage
+
+There is no assumed 80/20 population split. Different users need different
+surfaces, including loading a maintained Scenario and changing only an address
+or another ordinary value. Field discovery must recommend the least mechanism
+that expresses the requested change:
+
+| User intent | Surface | What remains upstream |
+|-------------+---------+-----------------------|
+| Use maintained defaults | Reference/inherit the maintained Scenario | Composition, prototypes, policies and derived outputs |
+| Replace a value such as an IP or commands | Ordinary slot assignment; deep assignment retains inherited intermediate objects | Contract and source association |
+| Append to or transform the inherited value | Native inherited-value transformation, e.g. => append | Original value and default behavior |
+| Refine an existing object | Native =>.+ only at the object being extended | Unchanged inherited slots |
+| Create a genuinely new Check/object | Obtain its prototype from the bounded module scope | Source and construction defaults |
+| Change core behavior | Native slots/generics/method bundles under their extension Contracts | Unchanged protocols and explicit runtime boundaries |
+
+Do not force ordinary value replacement to spell out object extension or internal
+policy plumbing. Human and Agent users share the same native semantics; neither
+should need to rediscover all module internals. Field discovery reports origin,
+Contract, documented defaults, writable/derived status and the relevant operation.
+The deeper POO layer remains available when intent requires it.
+
+Devenv's concise extends interface is backed by Nix module merging, option types
+and priority rules; it is not its entire composition mechanism. Our independent
+POO objects offer a different extension model, not evidence of blanket superiority.
+The useful comparison is ordinary configuration effort, explainable conflicts,
+field discovery, reusable publications and measured demand costs.
+
+* Implementation and acceptance boundary
+
+Existing: Core's slot-generic admission protocol, native responsibility Contract
+machinery, inheritance/lexical receiver semantics and the historical domain-free
+parent-cache controls. Module 15's full domain guards/projection remain design
+source. New in this document: package-interface export/Contract association,
+derivation tracking, trusted selected resolution, capability restriction and
+their diagnostics. No per-Profile publication wrapper is required.
+Direct dotted value assignment and commands migration remain pending as recorded
+in module 11. No compiler/runtime source, Loader, module imports or package
+registration is changed here.
+
+Future checks must cover user-owned publications, value-only inheritance without
+policy repetition, new language exports, arbitrary participant names/counts,
+association spoofing/missing/multiple origins, incompatible revisions/contracts,
+capability escalation, deselected publications, and final Check identity after
+both parent caches are forced. Checks must separately demonstrate metadata-only
+nonconstruction, selected-closure demand and measured first-use costs. This edit
+provides no new execution, performance or source-authentication receipt.

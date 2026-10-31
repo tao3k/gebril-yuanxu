@@ -1,0 +1,348 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Configuration 29: Data Overlays, Scoped Functions and User Intent
+#+date: [2026-10-16]
+#+filetags: :config-language:data-overlays:design:
+#+property: STATUS design-code-only-no-runtime-implementation-no-loader
+
+* Decision and evidence
+
+Use data.append, data.prepend, data.replace-at and data.replace as namespace
+paths, not artifact-specific copies of generic collection operations. The data
+namespace describes ordinary value transformations, not a new object layer in
+the configured Profile and not a merge instruction language. Actual business
+conventions may have separate meaningful names. Native => supplies the inherited
+value first, followed by explicit arguments; do not return a unary closure merely
+to adapt an operation that already accepts an old value and parameters.
+
+The [[https://github.com/divnix/dmerge#semantics][dmerge README]] documents append/prepend, positional update, keyed updateOn,
+recursive collection updates, decorate, chainable/chainMerge, collection-spine
+protection and typed-by-precedent. Borrow the user needs, not its DSL. This is
+coverage of documented requirements, not source-level or edge-case equivalence;
+implementation-file fetches were unavailable in this research pass. See the
+[[file:../../../docs/10-19-design/11-configuration-languages/11.01-index.org][Configuration Language research entry]] for KCL and the wider comparison.
+
+Native syntax was inspected in .data/gerbil-poo/object.ss (normalize-slot-specs,
+%normalize-named-slot-specs, object/slot-spec) and
+core/profile-composition/selection-syntax.ss plus scope-declaration.ss.
+These sources establish the following distinction:
+
+#+begin_src scheme
+;; Native normalized slot form: accepts extra arguments.
+(artifact-outputs => append '(release-log))
+;; Its computed-slot body calls:
+(append (superfun) '(release-log))
+#+end_src
+
+The second form illustrates the internal slot-method body, not user code. Named
+colon shorthand consumes only one expression after =>. Do not write
+artifact-outputs: => append '(release-log) and assume it includes the extra
+argument. Use the existing parenthesized slot form, without a new public macro.
+
+* Ownership and signatures
+
+| Owner | Responsibility |
+|-------+----------------|
+| Shared contribution library | data namespace: pure, domain-independent operations with value-first signatures |
+| Funflow/recipe library | Named task policy such as verification-checks; declared field/consumer preconditions |
+| User project | Local composition of those functions for its actual requirement |
+
+The pure Funflow Module owns features, not language Profiles. GerbilCIProfile
+remains an independent publication reused by Scenarios. Package export association
+records library source/revision; a function name is not proof of origin or trust.
+No automatic package resolution or implicit dependency on a global helper registry
+is added. Small business functions are useful when they encode policy; appending
+artifacts does not need a separately named append-artifacts operation.
+
+* Shared data library: complete design definitions
+
+These operate on finite immutable proper lists. append is the ordinary Scheme
+procedure, captured as a function value in DataOperations. Helper-local lambdas
+are library implementation, not repeated configuration code. Indexes are zero
+based. User-visible operations take the inherited value first.
+
+#+begin_src scheme
+(def (prepend items prefix) (append prefix items))
+
+(def (update-at items index transform)
+  (unless (and (integer? index) (exact? index)
+               (>= index 0) (< index (length items)))
+    (error "update-at: index outside selected list" index))
+  (let loop ((rest items) (position 0))
+    (if (= position index)
+      (cons (transform (car rest)) (cdr rest))
+      (cons (car rest) (loop (cdr rest) (+ position 1))))))
+
+(def (update-by items key-of wanted transform)
+  (let ((matches (filter (lambda (item) (equal? (key-of item) wanted)) items)))
+    (unless (= (length matches) 1)
+      (error "update-by: expected one matching identity" wanted))
+    (map (lambda (item)
+           (if (equal? (key-of item) wanted) (transform item) item))
+         items)))
+
+(def (replace-at items index replacement)
+  (update-at items index (lambda (previous) replacement)))
+
+(def (replace items wanted replacement)
+  (update-by items (lambda (item) item) wanted
+             (lambda (previous) replacement)))
+
+;; Apply transformations left to right. Each receives the preceding result.
+(def (compose initial . transforms)
+  (let loop ((value initial) (rest transforms))
+    (if (null? rest) value
+      (loop ((car rest) value) (cdr rest)))))
+
+(def DataOperations
+  (.o append prepend update-at update-by replace-at replace compose))
+
+(def (make-data-scope source-handle)
+  (.o source: source-handle
+      operations: DataOperations))
+#+end_src
+
+replace matches the existing value itself (suitable for selected symbols), while
+update-by accepts an explicit key projection for structured items. Missing or
+non-unique identity is rejected, rather than silently inserted or applied to
+multiple items. List order is retained. These explicit policies are not claimed
+to match every dmerge updateOn policy. Adding a new item is an append/construct
+operation. No type-directed recursive merge is inferred.
+
+* Scope publication and real CI/CD baseline
+
+The contribution publishes a data namespace alongside the feature scope. Its
+source is retained separately; source associations and callable discovery need
+qualification before this becomes a runtime API. Constructors below assume their
+arguments are already resolved local native objects, not Loader keys.
+
+#+begin_src scheme
+;; Business policy, owned by the CI contribution, not the generic data library.
+(def (verification-checks names)
+  (filter (lambda (name) (not (eq? name 'package))) names))
+
+(def (make-ci-function-scope feature-scope data-scope)
+  (.o (:: @ feature-scope)
+    data: (.get data-scope operations)
+    data-source: (.get data-scope source)
+    verification-checks))
+
+(def CIHelpers (make-ci-function-scope Funflow DataScope))
+#+end_src
+
+DataScope is the shared contribution's export made with make-data-scope and its
+real SourceRef. Bare-slot captures in .o refer to surrounding lexical function
+values; do not use same-name slot expressions such as append: append, which can
+resolve to the new object's own slot. The wrapper does not republish Profiles.
+The helper contribution still needs its own package export source association;
+keeping feature.source and data-source is not automatic multi-source provenance.
+
+All four alternatives use the same actual [[file:13-independent-profiles-and-scenario-composition.org][module 13 GerbilCIProfile]] occurrence
+CICDScenario.gerbil. Its build command is '("gerbil" "build"), its artifacts are
+'(build-log), and its Pipeline selects '(build test package). No command flag or
+script assumption is changed to make an example work. These examples configure
+artifact declarations, not file production. The recipe's producer/collection
+rules must support each new output name. Prepend changes declaration order,
+not task execution order.
+
+* Four complete configurations in one bounded lexical scope
+
+Use native with-slots as the preferred selective binding. It obtains the data
+namespace once and introduces only the listed lexical slot names; no repeated
+individual let/.get declarations are needed. A project using one alternative
+lists just that function. The four resulting objects below are alternatives,
+returned as ordinary multiple values, not automatically composed or executed.
+See the design-level [[file:../../../docs/10-19-design/11-configuration-languages/11.03-native-slot-binding.org][native binding study]] and
+[[file:../../../docs/10-19-design/11-configuration-languages/11.04-common-operations-comparison.org][matched dmerge/KCL/Scheme comparison]].
+
+#+begin_src scheme
+(use-module CIHelpers as ff
+  (with-slots (append prepend replace-at replace) (.get ff data)
+
+    (.def (AppendCI @ CICDScenario)
+      gerbil.funflow.build: =>.+
+      (.o (artifact-outputs => append '(release-log))))
+
+    (.def (PrependCI @ CICDScenario)
+      gerbil.funflow.build: =>.+
+      (.o (artifact-outputs => prepend '(release-log))))
+
+    (.def (PositionCI @ CICDScenario)
+      gerbil.funflow.build: =>.+
+      (.o (artifact-outputs => replace-at 0 'release-build-log)))
+
+    (.def (IdentityCI @ CICDScenario)
+      gerbil.funflow.build: =>.+
+      (.o (artifact-outputs => replace 'build-log 'release-build-log)))
+
+    (values AppendCI PrependCI PositionCI IdentityCI)))
+#+end_src
+
+The results are '(build-log release-log), '(release-log build-log),
+'(release-build-log), '(release-build-log). PositionCI expresses a positional
+requirement: if upstream prepends another item it changes index 0. IdentityCI
+still targets build-log and refuses missing/duplicate identity. Prefer stable
+identity when the requirement names an upstream-maintained output. Direct
+assignment remains simpler when the complete desired list is known.
+
+Native use-module lowers to a lexical let binding ff to
+(yuanxu-module-scope CIHelpers). It evaluates the scope expression once;
+with-slots captures the data object once and selected names expand to native
+slot reads at their reference sites. Their getters are not forced merely because
+the names were declared. Macro-introduced helper identifiers retain definition-site
+binding and body syntax
+retains its lexical context. Inner names can shadow outer append without
+changing the library procedure's binding. Returned POO methods retain closures;
+neither ff nor the selected function identifiers become sibling/global bindings.
+This design uses existing native syntax and existing hygiene tests, not a newly
+executed qualification of these function exports.
+
+A genuinely project-specific convention stays an ordinary local function:
+
+#+begin_src scheme
+(def TeamCI
+  (use-module CIHelpers as ff
+    (with-slots (verification-checks) ff
+      (with-slots (append) (.get ff data)
+      (def (team-checks names)
+        (append (verification-checks names) '(smoke)))
+      (.o (:: @ CICDScenario)
+        gerbil.funflow.pipeline: =>.+
+        (.o (selected-checks => team-checks)))))))
+#+end_src
+
+This selection requires a separately constructed/admitted smoke Check in the
+same effective Profile. Merely naming smoke does not create it. The business
+function is meaningful because the project deliberately retains the upstream
+verification tasks and adds its own Check. Final dependencies still decide
+whether excluding package is permitted.
+
+* Dmerge requirement coverage beyond the four primary examples
+
+| Documented need | POO/Scheme design response |
+|-----------------+----------------------------|
+| Scalar replacement | Ordinary native slot assignment; no function required |
+| Append/prepend | data.append/data.prepend, demonstrated above |
+| Position update | data.replace-at for replacement, data.update-at for transformation |
+| Multiple positions | Explicit sequential calls, with the second receiving the first result |
+| Recursive array/object update | Native .+ / =>.+ inside an ordinary update function |
+| Keyed updateOn | data.update-by plus a stable key function; refuse ambiguous identity |
+| decorate external data | A named adapter selects an operation separately from inert external data |
+| chainable/chainMerge | Explicit data.compose for functions, native .+ for object overlays |
+| Collection spine | Transform helpers retain list structure; assignment may replace a whole list |
+| Typed-by-precedent | Final field Contract controls valid representation, not an implicit merge rule |
+
+The following library examples cover structured updates and external input. The
+lower-level callbacks belong here, not in every user's configuration:
+
+#+begin_src scheme
+(def (retain-extra-log check)
+  (.+ check (.o (artifact-outputs => append '(extra-log)))))
+
+(update-at (list BuildCheck TestCheck) 0 retain-extra-log)
+(update-at (update-at (list BuildCheck TestCheck) 0 retain-extra-log)
+           1 retain-extra-log)
+
+(def (green-egg item)
+  (.+ item (.o egg: =>.+ (.o color: "green"))))
+(update-at (list (.o egg: (.o color: "yellow" size: "large"))) 0 green-egg)
+
+(def (person-name person) (.get person name))
+(def (age-43 person) (.+ person (.o age: 43)))
+(update-by (list (.o name: "bert" age: 42)) person-name "bert" age-43)
+
+;; Input shape must first pass the external input Contract.
+(def (apply-person-update people external-person)
+  (let ((wanted (.get external-person name))
+        (next-age (.get external-person age)))
+    (def (set-age person) (.+ person (.o age: next-age)))
+    (update-by people person-name wanted set-age)))
+(apply-person-update (list (.o name: "bert" age: 42))
+                     (.o name: "bert" age: 43))
+
+(def (include-smoke names) (append names '(smoke)))
+(compose '(build test package) verification-checks include-smoke)
+
+;; Native overlay order is explicit, with the second based on the first result.
+(def (extend-build scenario)
+  (.+ scenario (.o gerbil: =>.+
+    (.o funflow: =>.+
+      (.o build: =>.+
+        (.o (artifact-outputs => append '(release-log))))))))
+(def (select-verification scenario)
+  (.+ scenario (.o gerbil: =>.+
+    (.o funflow: =>.+
+      (.o pipeline: =>.+
+        (.o (selected-checks => verification-checks)))))))
+(compose CICDScenario extend-build select-verification)
+#+end_src
+
+BuildCheck/TestCheck mean existing effective objects, not additional publications.
+The list-update examples never replace Pipeline.checks with a captured parent
+list. Pipeline checks must still be projected from the final Profile receiver.
+External data is inert: unknown fields require input Contract diagnostics and
+only whitelisted fields may update the object. This example permits only age;
+it does not interpret executable operations from JSON. Multiple external updates
+need explicit sequencing and duplicate/conflict policy. Required right-hand .+
+Contract/source requirements must be retained or composition refused; native .+
+alone does not implement that pending source-association boundary.
+
+* Final contracts, preview, order and demand
+
+compose executes functions left to right. Append smoke then remove smoke differs
+from remove then append. Operations are not generally commutative/idempotent;
+helper names and parent order do not establish task execution order. Existing
+path lowering groups independent shared prefixes and rejects duplicate/overlapping
+paths; it must not silently sequence duplicate field declarations.
+
+Final field Contracts check element representation, uniqueness and allowed output
+names. Artifact producer/collection obligations must also hold; a declaration
+alone is not a generated file or evidence. Pipeline admission checks selected
+names, dependencies and effective Check identities. Scenario admission checks
+cross-Profile relations. Function output is not exempt because input was admitted.
+For example commands: 42 and a command list containing 42 both fail the field
+Contract, even if a helper preserved the outer list structure.
+
+Preview reads the same final child receiver and selected values used by admission:
+
+#+begin_example
+Scenario     effective build artifacts       build command
+AppendCI     [build-log, release-log]          [gerbil, build]
+PrependCI    [release-log, build-log]          [gerbil, build]
+PositionCI   [release-build-log]              [gerbil, build]
+IdentityCI   [release-build-log]              [gerbil, build]
+All: selected-checks = [build, test, package]
+Initial status: projected-unadmitted
+After final admission succeeds: admitted-preview
+#+end_example
+
+These are expected design results, not executed previews; neither status starts
+execution. A cached parent Pipeline does not authorize reuse of its frozen Check
+list. The descendant Pipeline must resolve final selected objects from its own
+effective Profile and evidence must match those exact objects. Existing native
+receiver/cache controls support this semantic boundary, not this new library's
+runtime qualification.
+
+Scope binding does not enumerate function/Module/Profile catalogs. Looking up a
+function may evaluate that function slot's getter, but does not invoke its body.
+The selected method demands its inherited list and parameters when the final
+field is demanded. update-by reads keys of its supplied collection; it is not
+constant-cost and must not scan a global catalog. Preview can demand selected
+commands, while unselected task commands remain cold. Description mode uses
+metadata instead of calling functions. Ordinary Scheme permits effects: purity,
+stable dependencies and bounded computation are library premises, not a sandbox
+guarantee. Cache reuse is receiver/generation-bound, not valid across arbitrary
+upstream changes or impure closure state.
+
+* Status
+
+Existing: native value-first => with extra arguments; parenthesized slot forms;
+native object refinement; bounded hygienic use-module and native with-slots;
+receiver-aware lazy semantics with separate historical native tests.
+
+Proposed: data namespace publication, these concrete library functions, callable
+export metadata/source association, artifact producer qualification and integrated
+final admission/preview. No function library, module adapter or Loader is
+implemented here. Returning-function factories and artifact-suffixed generic
+helpers in earlier drafts are superseded by the value-first scoped API above.

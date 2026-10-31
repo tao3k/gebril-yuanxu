@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+* Current Gerbil project receipt boundary (corrected 2026-07-27)
+
+Agentic AI Lab uses the public Gerbil-Bazel =gerbil_project_compile= rule directly.
+The project receipt is a Gerbil-Bazel-owned output. Its generic schema,
+dependency-resolution semantics, validator, and owner regression tests remain
+in Gerbil-Bazel; Agentic AI Lab has no local receipt wrapper or generic validator.

@@ -1,0 +1,459 @@
+#+title: 32.20 Remaining Admission Reads: Pure Windows and Callback Barriers
+#+language: en
+
+* Scope and result
+
+This extends [[file:32.19-root-owned-child-analysis.org][32.19]], without modifying Scheme or integrating a Loader.
+The question is which of its remaining 356 reads are redundant certification,
+not whether repeating a path name implies repeating the same observation.
+
+The new owners are [[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReturnWindows.lean][Admission.ReturnWindows]] and
+[[file:../../../dev/proofs/quint/ReturnWindows.qnt][ReturnWindows]]. They reuse LeanPoo's actual =ensureLookup= through
+=Admission.SourceWindows=, the existing =ContextSlot= laws, and
+=Admission.RootChild='s concrete candidate/contribution predicate. No new cache,
+user-facing record format, purity DSL or authority-bearing success flag is added.
+
+Result: keep the three open-callback whole-closure boundaries. A covered check
+can be deferred into a complete final pass ONLY inside a qualified pure suffix.
+This is a proved conditional acceptance boundary, not an implemented 356-to-N optimization.
+The producer follow-up below adds a first-error counterexample: coverage and
+read-only execution alone do not justify moving the JSON checks.
+The current native result remains 356; no new native timing/read-count run was
+performed in this proof-only task.
+
+* Attribute all 356 reads
+
+This table refers to the accepted Gitea/PostgreSQL source cut qualified in 32.19,
+with both parent plan and warmed child controls. It does not describe every
+possible rejection path or arbitrary Scenario.
+
+| Site | Reads | Why it exists | Disposition |
+|------+-------+---------------+-------------|
+| Contract entry =source-inputs= | 2 | PostgreSQL and Gitea JSON documents, before preflight/obligations | Keep across arbitrary domain work |
+| W4 contribution/platform callback entry | 88 = 87 publication + 1 graph | Prevent entering the callback with stale selected inputs | Keep |
+| W5 contribution/platform callback return | 88 | Callback may have changed sources | Keep independent from W4 |
+| W6 replaceable Context =admit-current= callback | 88 | The current bound callback checks the closure; a replacement remains executable code | Execute; do not infer purity from its slot name |
+| Contract exit =source-inputs= | 2 | Check the two JSON documents after the replaceable callback returns | Candidate ONLY with a closed pure suffix AND preserved diagnostic order |
+| MOP source replay | 0 additional file reads in this cut | Revalidate receiver/dependency records and discover their actual source demands | Preserve traversal and any newly found requirements |
+| Independent final source collector | 88 | Recheck all actually collected requirements after callbacks/replay | Keep complete return certification |
+| Total | 356 | 264 + 4 + 88 | No unconditional deletion proved |
+
+The two document entries follow directly from =gitea/types.ss='s append of the
+PostgreSQL/Gitea document inputs and =configuration/json.ss='s one source/text
+pair per document. The entry and exit calls account for the four =source= reads.
+The measured three =graph-current= reads accompany W4/W5/W6; they are already
+included in each row's 88. The return collector covers 88 distinct observed
+paths. Distinct path coverage does not establish matching expected text or
+complete semantic requirements on its own.
+
+Inside each W4/W5/W6 pass, repeated base/Graph/reader guards already share the
+existing pure source-read window. Those repeated calls must not be counted as
+additional physical reads: the 88 actual reads are the deduplicated cut.
+
+* Why the open boundaries cannot be merged
+
+1. W4 authenticates callback entry, even if a later final check would reject.
+   Deleting it may let an effectful callback run on stale inputs.
+2. W5 obtains a new observation after the contribution callback. Sharing W4's
+   cache can hide that callback's write.
+3. Diagnostic locators are replaceable too. Success with empty diagnostics may
+   invoke none, but that does not qualify all admissions or future locators.
+4. A Context callback can check sources, then write one and return normally.
+   Its own successful check is therefore not a post-callback certificate.
+5. MOP =replay-slot-reads!= invokes the =current?= procedure stored in each read
+   record. =make-slot-read= is exported by gerbil-poo's observation module. The
+   native producer in =object.ss= uses =object-read-current?=, a structural
+   revision/instance/value check. This does not prove every constructible or
+   injected record uses that producer or is effect-free.
+
+Consequently, the default open replay path ends with an independent fresh check.
+A byte cache is never made current merely by retaining a receiver, epoch label,
+previously accepted receipt, or callback function name.
+
+The read-record inspection above is bound to gerbil-poo
+=ece6f609357ea918038090559ac051a8d9f3e52f=. No dependency change is proposed.
+
+* What the Lean proofs establish
+
+=check= is the existing SourceWindows operation backed by LeanPoo
+=ConstructionCache.ensureLookup=. Its filesystem argument is an actual function
+=String -> Option String=; =Sound= says every cached byte observation agrees with
+that function. A fresh empty cache establishes this condition constructively.
+
+| Theorem | Derived result |
+|---------+----------------|
+| =check_append= | Sequential pure checks equal concatenation in acceptance, resulting cache and read count |
+| =check_sound= | Checking in one stable world preserves source-cache soundness |
+| =covered_suffix_zero_reads= | Already covered requirements require no new I/O in the same sound window; comparisons still execute |
+| =conflicting_suffix_rejected= | Reusing a path does not erase a conflicting expectation |
+| =defer_covered_check= | If the complete pass includes every exact earlier source/text pair, it also establishes the earlier predicate |
+| =admission_same_world= | Sound byte reuse preserves the complete existing root predicate, not just object shape |
+| =joint_requirements_retained= | Every selected port requirement still holds on the final configuration |
+| =cached_parent_rejected= | A parent's analytic candidate cannot authorize a different final child |
+| =fresh_after_callback_rejects_change= | A new check rejects a changed selected source |
+
+Through =admission_same_world=, the existing root source-certificate and exact
+contribution-coverage laws still apply. Source-cache hits are not admission
+receipts. The native value-cache distinction is supplied independently by
+LeanPoo =ContextSlot.read=: =SourceWindows.child_misses_parent= and =final_value=
+prove that a different final receiver misses the retained parent and reads its
+own constructed values. Mapping native references/revisions to these contexts
+remains an explicit correspondence premise.
+
+A small computed two-path witness checks cost 3 versus 2. An attempted synthetic
+88-path kernel reduction reached Lean's existing recursion limit; that failed
+attempt is retained. It was replaced by the general coverage/composition proof
+and a small computational witness, not a higher recursion or trust limit.
+
+* Conditional optimization frontier, not a new performance claim
+
+After the LAST open callback has returned, consider the two document checks and
+the final complete source projection. The final collector has already observed
+the earlier successful document checks, so their exact requirements must remain
+in that projection. Under a qualified read-only replay, no further callback,
+no dropped/new unobserved requirement, stable source observations and a frozen
+receiver/revision, the earlier document predicate can be discharged by the
+complete final predicate. The final pass still checks all 88 requirements.
+
+For the recorded cut, this identifies two potentially redundant document reads,
+not another 87/88-read callback pass. A hypothetical 356-to-354 count would ALSO
+require native validation of these premises and equivalent failure behavior.
+It has NOT been measured, implemented or proved as an end-to-end Scheme cost.
+
+The current replay API alone does not establish the closed-producer premise.
+Nor does =Sound= prove a callback pure: soundness must be rebuilt after effects.
+Any future adapter must qualify the actual replay producer and passive observer
+behavior, materialize requirements without hidden getters, retain late demands,
+and preserve the independent final certification. Until then, retain the open
+path and all 356 reads.
+
+The theorems establish acceptance/certificate and abstract read-count laws.
+They do not establish identical first-error ordering, diagnostic message/source
+positions, regular-file adapter completeness, exception traces or arbitrary
+Scheme callback behavior. A future change must preserve those observations too;
+set inclusion alone is insufficient justification for moving an exception across
+another potentially failing operation.
+
+* Quint positive schedules and matched counterexamples
+
+The finite model executes pre-callback checking, two actual port requirements,
+contribution writes, post-callback checking, diagnostic writes, a Context check
+followed by a possible write, exit checking, replay/discovery and final checking.
+World values change through explicit transitions. The pure-replay instance
+excludes replay writes; the open instance permits them and starts the final
+source cache afresh. Path 1 is a selected dependency discovered late, while path
+2 remains undemanded. Initializing the environment map is not module loading.
+
+| Instance / control | Checked property | Generated / distinct / queued |
+|--------------------+------------------+-------------------------------|
+| =ReturnWindows= | Open replay safety | 106 / 76 / 0 |
+| =ReturnWindows_pure= | Qualified pure replay safety and shared-read budget | 90 / 68 / 0 |
+| =skipBefore= | Callback entry must be current | 20 / 18 / 7 |
+| =crossContribution= | Post-contribution check cannot reuse pre-callback bytes | 32 / 27 / 7 |
+| =trustReturn= | Check-then-write Context callback cannot certify return | 82 / 68 / 7 |
+| =crossReplay= | A replay callback can invalidate previously read bytes | 88 / 69 / 8 |
+| =omitLate= | Final projection must include the late requirement | 81 / 64 / 4 |
+| =dropParty= | Both independent port requirements remain present | 81 / 64 / 4 |
+| =repeat= | Qualified pure sharing has the derived smaller read count | 81 / 64 / 4 |
+| =acceptance= | Witness that the safe protocol actually accepts | 81 / 64 / 4 |
+
+The last eight results are EXPECTED counterexamples to their named predicates.
+Nonzero remaining queues are correct for those stopped-on-first-violation
+checks; both positive exhaustive searches terminate with an empty queue.
+The seven unsafe schedules fail their intended invariants, not syntax, timeout
+or backend health. The acceptance witness deliberately violates =RejectAll=.
+Existing RootChild cases also reran, including omitted parties, parent-cache
+reuse, source omission, child-obligation omission and source effects.
+
+Concrete =crossReplay= trace: the exit check caches source 0 as 0; replay changes
+world[0] to 1; an incorrectly retained cache still holds 0; final acceptance is
+true with world[0] = 1. =trustReturn= produces the analogous trace when the write
+occurs after the Context callback's own check. =skipBefore= invokes the callback
+with source 0 already changed, even though a later check could still reject.
+
+* Qualification and evidence boundary
+
+- Lean 4.34.0; LeanPoo locked AND checked out at
+  =6e6a706e14fa6f8199e4f36711440355b42ef335=. Relevant CacheLookup, ContextSlot and
+  DeclarativeMetadata dependency sources were clean.
+- =lake build= completed 149 jobs. Aggregate shape audit: no arbitrary Prop-valued
+  fields. Axiom audit: 4,185 declarations, standard Lean axioms only. The new
+  module and critical theorems are required by the existing aggregate.
+- Quint 0.33.0 / Apalache 0.62.1 / TLC: all 40 catalogued cases passed their
+  expected outcomes after native source typechecking. The source-bound Scheme
+  v1 proof receipt retains predicates, exits, source/output hashes and counts.
+- The successful run retained the existing 5-second typecheck timeout,
+  45-second case deadline, 5-second real-output watchdog and 1GB TLC heap.
+  No deadlock suppression or larger limit was introduced.
+- Initial backend startup was blocked by the sandbox's local bind restriction;
+  an owned local server used port 18838. One subsequent startup rejected CLI
+  syntax. Both failures remain artifacts, not proof results.
+- The first catalog attempt timed out while typechecking the existing
+  GraphOperations_orphanDelete wrapper during parallel Lean compilation. A
+  diagnostic measured 4.76 seconds with 0.97 seconds user CPU. The successful
+  rerun removed the owned concurrent compilation; this is not a proved causal
+  attribution of all host delay. Limits were unchanged.
+
+Local artifacts: =/private/tmp/core-return-windows-proof-20261018/=; the successful
+native model receipt is =quint-receipt.ss=. Raw logs, generated backend files and
+traces are not committed. The 356-read native run and its 24 regressions remain
+32.19 evidence; they were not rerun or relabeled as new runtime qualification.
+
+* Reflection and next design questions
+
+The useful result is the semantic boundary, not a promise to remove most of 356.
+Most observed reads have distinct callback/return responsibilities. Deduplicating
+path names across those boundaries would weaken the module system's guarantee.
+The remaining narrow pure-tail opportunity is small in this Scenario.
+
+Before a Scheme refactor, answer and validate:
+
+1. Can Core obtain a closed, producer-qualified replay projection without trusting
+   arbitrary =current?= callbacks or adding user-visible purity flags?
+2. Does that projection preserve every selected requirement and newly discovered
+   source, including different expectations for the same path?
+3. Can the private final checker preserve diagnostic ordering and actual source
+   locations while checking the same frozen final receiver/plan association?
+4. Are object revisions and payload immutability sufficient throughout the final
+   suffix, and are all tracing observers actually passive?
+5. Does removing two reads improve real latency enough to justify the additional
+   protocol surface? Read counts alone do not answer this.
+
+No new user configuration syntax or manual source/evidence declarations follow
+from these proofs. Users still configure the Scenario; Core owns certification.
+
+* Producer audit: structural tokens do not close the entire replay
+
+This follow-up changes the qualification of the two-read opportunity above:
+acceptance equivalence is necessary but NOT sufficient. Even a genuinely
+read-only replay may fail before the deferred JSON check, changing the first
+reported error. Keep the current schedule until both operation closure and
+ordered failure behavior have a native correspondence.
+
+The audit reread Core's dependency pin, and downloaded =object.ss= and
+=slot-observation.ss= at immutable gerbil-poo revision
+=ece6f609357ea918038090559ac051a8d9f3e52f=. Both files exactly match the preserved
+32.18/32.19 source. Their SHA-256 values are:
+
+| Source | SHA-256 |
+|--------+---------|
+| =object.ss= | =ea7d7bf7ed5230e3f1b35817b12ad64fd30b060710bbf69162c07bc2f13d6d1f= |
+| =slot-observation.ss= | =5d821cba62ef52723bc8070b8673aef3e6f274960d63e32d0ce9605962844ace= |
+
+Producer references:
+[[https://github.com/tao3k/gerbil-poo/blob/ece6f609357ea918038090559ac051a8d9f3e52f/object.ss#L301-L326][native structural checker and producer]],
+[[https://github.com/tao3k/gerbil-poo/blob/ece6f609357ea918038090559ac051a8d9f3e52f/object.ss#L359-L420][read entry points]],
+[[https://github.com/tao3k/gerbil-poo/blob/ece6f609357ea918038090559ac051a8d9f3e52f/slot-observation.ss#L45-L62][replay]].
+
+| Route | Concrete producer / replay behavior | Consequence |
+|-------+------------------------------------+-------------|
+| Cold =.ref= | Capture actual getter dependencies; =object-record-read= installs =object-read-current?= | The native checker compares revision, instance, read-table/value identity; bootstrap/cache-miss variants have their own structural conditions |
+| Hot =.ref=, =.ref/cached=, =.ref/inline= under observation | Deliver the receiver's retained record; cached miss captures its default computation | Receiver-local dependencies remain visible; a hot value does not authorize parent reuse |
+| Structural/query/bootstrap reads | Also use =object-record-read=; preparation dependencies are attached | Coverage includes demands beyond ordinary value slots |
+| Exported low-level =make-slot-read= / =%deliver-slot-read= | Can construct/deliver records with a procedure-valued =current?=, including from a getter | Native roots alone do not prove every reachable dependency was made by the structural producer |
+| =replay-slot-reads!= | Identity-based DFS: check token, call observer, recurse through dependencies, then check all seen tokens again | Later invalidation is checked; callbacks are still executable, not passive by declaration |
+
+For the accepted Gitea/PostgreSQL cut, before-read checks, parent/child records
+and collected source demands are already observed by the existing regressions.
+This audit does not claim the arbitrary-record route was exercised in that cut,
+nor that the native checker itself writes a file.
+
+** Two additional openings in the Core observer chain
+
+The actual source adapter passes a singleton path:
+
+#+begin_src scheme
+(admit-field-sources! receiver (list (list key)))
+#+end_src
+
+This avoids the deeper =.ref= path-walk branch of =admit-field-sources!=. It does
+NOT prove the whole call pure:
+
+1. =slot-origins= calls =compute-precedence-list!=. A warm linearization is a
+   structural read. A cold one can invoke =compute-precedence-list= through
+   =invoke-object-hook=. The hook can have effects even if it returns the required
+   C3 order. A preparation invariant would need to cover every replay receiver
+   and ancestor; it is not established merely by the singleton path.
+2. =module-source-read= and its guards invoke =current-module-source-observer=.
+   The parameter is exported and accepts executable code. Slot replay's
+   =without-observation= suppresses POO read observers/prechecks, not this source
+   observer. Existing numeric-counter observers are not a proof about all
+   replaceable observers.
+
+Accordingly, the comment in =admission/source.ss= calling this pass pure is an
+intended adapter discipline, not a proof of all producer/hook/observer closure.
+No Scheme comment or behavior is changed in this proof-only work.
+
+* Ordered replay projection and exact source coverage
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReplayBoundary.lean][Admission.ReplayBoundary]] reuses =SourceWindows.fetch= and therefore LeanPoo's
+=ConstructionCache.ensureLookup=. Its closed operation algebra has only concrete
+source requests and structural token-coordinate comparisons. It has no
+function-valued operation, getter, observer, public purity flag or alternate
+runtime evaluator. It is a proof projection of a restricted program, not a
+claim that every MOP replay already lowers to that program.
+
+#+begin_src lean
+inductive Op where
+  | source (request : Request)
+  | token (key : String) (recorded current : Binding)
+
+-- Request includes path, expected bytes, message and location.
+theorem ordered_diagnostic_exact (ops : List Op) (world : World) (cache : Bytes)
+    (sound : Sound cache world) :
+    (run ops world cache).issue = firstIssue ops world
+
+theorem successful_coverage (ops : List Op) (world : World) (cache : Bytes)
+    (accepted : (run ops world cache).issue = none) :
+    (run ops world cache).observed = sources ops
+#+end_src
+
+These declarations are excerpts; the linked source contains the executable
+recursive interpreters and proofs. In the same stable world, keeping operations
+in the SAME order preserves the first error, including its request/message and
+location. Successful execution discovers exactly the source operations on the
+actual lowered trace. It does not enumerate every object field or unselected
+module. The binary replay projection preserves both dependency branches.
+Native cyclic/shared graphs still require correspondence to the actual
+identity-deduplicated DFS; the tree lemma alone does not prove that refinement.
+The model Request also retains a location, whereas the native source collector
+stores input/message and raises with the source path. Mapping complete Scheme
+exception payloads and field-locator positions to Request is still a premise,
+not an assertion that the current collector stores that entire record.
+This narrow Request uses present expected text, matching the two JSON documents;
+full native projection must also account for expected absence and regular-file
+checks. Their Scheme adapter semantics are not proved by this new model.
+
+The collector projection uses the actual first-observed =(path, expected-text)=
+policy, not path-only overriding:
+
+#+begin_src lean
+def enroll (seen : List Request) (request : Request) : List Request :=
+  if input request ∈ seen.map input then seen else seen ++ [request]
+
+theorem enroll_complete (seen : List Request) (request : Request)
+    (key : String × String) :
+    key ∈ (enroll seen request).map input ↔
+      key ∈ seen.map input ∨ key = input request
+#+end_src
+
+=successful_coverage=, =both_branches_retained=, =enroll_complete= and
+=enroll_retains_earlier= establish ordered coverage for this concrete projection.
+The existing Core collector checks BEFORE enrollment, copies path/text, retains
+different expected revisions, enrolls into all enclosing scopes, and performs
+its final pass without traversing the candidate. This is the audited native
+correspondence; no automatic extraction/refinement proof of that Scheme code
+has been added.
+
+Coverage is not the same as diagnostic order: native roots come from =hash-keys=,
+and the collector uses first successful enrollment order. Equal input pairs may
+have different messages. Preserve that actual order/first origin; do not sort
+or replace it with a manually maintained field catalog.
+
+* Why moving the two checks is still unqualified
+
+The Lean computed counterexample uses changed =postgresql.json= and a retained
+parent Pipeline token against the final child binding:
+
+#+begin_example
+Current schedule:
+  check JSON -> "configuration source changed", postgresql.json
+  [the stale Pipeline token is never reached]
+
+Deferred JSON:
+  check parent Pipeline token -> "stale slot dependency", pipeline
+  [the final collector is never reached]
+#+end_example
+
+=moving_check_changes_diagnostic= proves those first results differ, even though
+both schedules reject and the complete source requirements are retained.
+=changing_first_origin_changes_diagnostic= separately shows that replacing a
+JSON request with an acceptance-equivalent publication request can change the
+message/location. =failing_prefix_preserved= proves that merely appending a
+complete final collector cannot repair an earlier failure.
+
+This is not a new native failure measurement. It is an executable Lean
+counterexample and a matched QNT schedule, consistent with the audited native
+check/replay order. The existing =defer_covered_check= theorem remains correct
+for acceptance; it never proved identical first errors.
+
+A valid future optimization could share byte observations while KEEPING the
+ordered early JSON checks, but only through a closed, stable, effect-free suffix.
+It must still execute token checks and compare every contribution requirement.
+Removing/moving the early checks additionally needs a proof that intervening
+operations cannot report a competing error, or a semantics-preserving ordered
+failure protocol. Neither is currently established. No public purity marker
+or manual evidence declaration is proposed to bypass that obligation.
+
+* New finite controls and retained guarantees
+
+=ReplayBoundary.qnt= executes source checks, structural token checks, an optional
+cold metadata hook write, an optional source-observer write, and final source
+certification. Writes are actual state transitions, not trusted purity labels.
+The positive protocol starts the final source observation afresh.
+The finite operations represent selected writes and failure codes, not every
+exception or possible mutation of an arbitrary Scheme procedure.
+
+| Instance | Property / intended result |
+|----------+----------------------------|
+| =ReplayBoundary= | Fresh final sources, complete selected coverage, ordered diagnostics on effect-free traces and unselected-branch laziness |
+| =move= | First-error mismatch when JSON is stale AND parent token is stale |
+| =reuse= | A metadata hook/source observer changes JSON; retaining earlier bytes can falsely accept |
+| =omit= | An otherwise accepted result omits the late source |
+| =effects= | Counterexample to assuming the whole adapter has no effects |
+| =acceptance= | Witness that a valid configuration reaches acceptance |
+
+The conditional diagnostic invariant uses the trace's actual write count; this
+is a finite-model observation, not a producer's purity assertion. Source 2
+remains unselected. The abstract token compares projected receiver/revision
+coordinates; the Lean binding comparison includes instance/record/value too.
+All previous RootChild and ReturnWindows controls remain in the catalog, so
+both independent port requirements, child obligations, parent isolation and
+source-change rejection remain independent gates.
+
+The 356 native reads remain unchanged. Proof qualification and local artifact
+results follow; no Scheme or Loader implementation is part of this follow-up.
+
+** Follow-up qualification
+
+- =lake build=: 150 jobs; aggregate shape audit passed; 4,410 declarations
+  audited with standard Lean axioms only. No =sorry= or new axioms were added.
+- Native Quint 0.33.0 typechecked all 47 source files; TLC through pinned
+  Apalache 0.62.1 completed all 46 catalogued expected outcomes: eight positive
+  cases, 34 matched controls and four acceptance witnesses.
+- New results, generated/distinct/remaining queue:
+  =ReplayBoundary= 25/18/0; =move= 12/12/3; =reuse= 21/17/2;
+  =omit= 20/16/2; =effects= 14/12/2; =acceptance= 20/16/2.
+  The last five are expected invariant counterexamples, not backend failures.
+- The first full attempt passed typechecking but the sandbox denied local RPC;
+  Quint attempted a fallback server whose bind was also denied. That failed log
+  is retained. The unchanged runner then completed with local-server access;
+  no case deadlines, output watchdogs, heaps or assertions were widened.
+- Sources in =admission/source.ss=, =configuration/slot-origin.ss=,
+  =module-system/source/admission.ss=, =types.ss= and =gerbil.pkg= matched their
+  pre-task hashes after qualification. No Scheme consumer tests or native read
+  measurements were rerun; the 356-read receipt remains the earlier evidence.
+
+Artifacts are local at =/private/tmp/core-replay-boundary-20261018/=:
+=producer-audit.json= binds the immutable MOP downloads and Core consumers;
+=quint-receipt.ss= is the source-bound native Scheme v1 verification receipt;
+=qualification.json= joins its hashes with the Lean outputs and explicit open
+premises. Raw logs and generated traces remain outside source control.
+
+** Updated decision
+
+Keep all current checks and the current first-error schedule. Before proposing
+any Scheme optimization, establish a producer-derived closed replay projection,
+not a hand-maintained purity flag; prove its coverage of the selected native
+DFS, including preparation/absence/file-kind observations; and prove ordered
+exception/source-location equivalence. Sound same-order byte reuse is proved
+for the closed projection. Deleting/reordering the two JSON checks is NOT yet
+justified for the current native adapter. Both port requirements and final
+receiver checks remain mandatory regardless of byte reuse.
+
+* Identity-graph follow-up
+
+[[file:32.21-identity-dfs-and-read-boundaries.org][32.21]] extends the tree projection to identity-based DFS, shared nodes and cycles,
+with a recursive-frame refinement and complete final-token pass. It retains
+this document's diagnostic-order counterexample and callback boundaries. Graph
+termination does not certify arbitrary callbacks or permit moving JSON checks.

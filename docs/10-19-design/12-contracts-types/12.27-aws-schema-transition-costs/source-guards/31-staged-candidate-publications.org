@@ -1,0 +1,279 @@
+#+title: Candidate Publication Support and Complete Graph Commit
+#+property: DOCUMENT_ID 12.27.44
+#+language: en
+#+property: STATUS source-read-qualified-capacity-open
+
+* Decision and semantic boundary
+
+An unpublished candidate uses its actual role, import, compiler and selected
+configuration-input support. Before the selected Graph becomes visible, the
+same source epoch checks all observed sources and the actual native metadata
+evidence. An open callback keeps complete entry and return guards. This is an
+explicit change to candidate visibility semantics, not a proof that arbitrary
+Scheme initialization is pure or confined to its imports.
+
+The public reader's =read= and =read-located= retain complete reader entry and
+return checks. The previous [[file:30-reader-effect-support.org][ambient-effect counterexamples]] remain valid for
+those public operations. A candidate can temporarily exist after another
+candidate's unrelated source changed, but the selected Graph must refuse it at
+commit. Candidate admission is not permission to publish or perform deployment.
+This does not roll back arbitrary initializer IO. Nor is the final freshness
+check an atomic filesystem transaction: later external changes require the next
+public guard to refuse the old Graph. Native replay correctness and the
+existing source-window discipline remain explicit correspondence premises.
+
+* Existing owners, separated phases
+
+The implementation extends the existing reader and linker; it does not create
+a second Graph, discovery tree, currentness cache or execution runner.
+
+| Phase | Existing owner and retained identity | Effect boundary |
+|-------+-------------------------------------+-----------------|
+| Discovery | Reader =preparations= contains parsed source-role/publication headers | Reads source; does not evaluate native role bodies |
+| Role execution | Same reader's native private contexts and demanded input objects | Native expansion and initialization; local source support is checked before and after |
+| Admission | Existing unified producer returns evidence's actual checked candidate | Value validation occurs once; open Context/MOP/Contract behavior widens the guard |
+| Candidate storage | Linker's existing =publications= index | Private record retains checked value, evidence, dependency projection and native evidence guard |
+| Graph commit | Existing selector's closure and final source guards | All source observations and retained native evidence must still be current before insertion into =graphs= |
+
+The internal =read-candidate= operation has a fixed Core admission continuation.
+It does not accept an author-supplied assertion of purity. Its short-lived
+support object holds local source guards, actual SDK demands, a sticky open
+flag and the containing epoch guard. It is released after the operation. The
+interpreter clears its completed admission continuation so retained build
+resolvers do not retain the candidate's temporary membership table.
+
+* SDK support is an identity relationship
+
+Compiler discovery already captures SDK module contexts. The reader now puts
+every captured source-backed SDK context into the existing compiler input and
+dependency indexes, including the actual =gerbil-poo= sources. A Core-only
+namespace filter was insufficient: it treated an already initialized POO
+library as an unknown initializer on each declaration.
+
+Returning a captured context requires its exact native identity and normalized
+source path. Its actual transitive source closure is enrolled in the current
+candidate. Merely sharing a module-name prefix, filename or past successful
+import grants no such permission. A fresh or unrecognized public native import
+widens to the complete epoch guard BEFORE native expansion/initialization.
+Compiled SDK contexts retain the pre-existing package/runtime trust boundary.
+Identity plus path is not a loaded-code digest. The source-only qualification
+keeps SDK inputs stable from native loading through snapshot construction;
+arbitrary hot edits before that snapshot need a separate loaded-code provenance
+mechanism. This change does not claim to provide one.
+
+Every candidate starts with the interpreter's actual support, then adds its
+own actual imports and selected configuration assets. It does not start with
+the accumulated demands of all earlier candidates. The reader still retains
+their union for complete source admission at Graph commit.
+
+* Open behavior and metadata evidence
+
+Existing =owned-read-open!= notifications cover unknown CLOS methods and open
+obligations. The native slot precheck detects an actual receiver protocol before
+its MOP hook runs. In a candidate these notifications call the enclosing Link
+epoch guard and make support widening sticky through return. Replaced default
+authoring policy or publication Contract behavior also takes this route.
+
+Native source checks alone cannot detect edits to a policy or Contract object.
+Each candidate snapshots actual policy/Contract references BEFORE roles run,
+then captures the preparation and unified admission producers' actual native
+support in their own recording frames. Replay remains a public native operation:
+
+#+begin_src scheme
+(def (publication-read-current reads)
+  (lambda ()
+    (replay-slot-reads! reads (lambda (_receiver _key) (void)))))
+#+end_src
+
+The existing =publications= index owns the combined guard. It checks policy
+revisions, preparation support, admission support and policy/preparation again.
+The active candidate checks preparation support before open execution and at
+ordinary return guards. Complete Link checks use retained evidence without
+reclassifying the publication or re-running its value Contract. Actual native
+receiver identity, revision and transitive support determine validity; names
+do not reconstruct it. Restoring the same procedure is another revision.
+Closures are constructed outside collector frames and do not retain their
+temporary delivery indexes. Revision laws assume versioned native mutations.
+
+The preparation-only guard has the framework's fixed primitive =void=
+continuation. It replays preparation once, with raw policy revision checks on
+both sides; a second replay across those pure comparisons has no additional
+support. A real admission continuation retains preparation/admission/preparation
+checks. This is an exact internal function-identity case, not an author-supplied
+purity flag or an approval reused across callbacks. Existing guard observation
+brackets now include metadata replay rather than leaving its cost unattributed.
+
+The whole-interpreter replay draft was WRONG: AWS failed with a stale
+=(presence identity)= query issued during normal SDK construction, before the
+actual publication producer ran. Initializer scratch queries are not enduring
+admission requirements. The corrected design keeps the interpreter's original
+observation bundle and every original observer delivery, but issues metadata
+support at the actual preparation/admission boundaries. It does not omit
+arbitrary reads inside those producers. Open producer traces remain
+conservative. No SDK state is cleared to make the test pass.
+
+* Native controls
+
+=t/module-candidate-stage-test.ss= covers inert discovery, actual role execution,
+tentative unrelated-source mutation, complete commit refusal and open Context
+entry/return guards. Replaced policy behavior is refused before it can run
+against an already stale prior source. The actual producer's checked receiver
+is the object consumed by subsequent dependency projection.
+
+=t/module-candidate-metadata-test.ss= selects two real modules through an
+explicit init. The second role mutates the actual policy or publication
+Contract after the first candidate was admitted. The retained policy guard refuses
+the Graph and the replacement obligation's marker remains absent. The first
+attempt at this test incorrectly used an auto directory with no selected roots;
+it failed to exercise declaration execution. That failed harness is not a
+correctness result. Explicit selection fixes the test without weakening its
+exception, cache-absence or callback-execution assertions.
+Another native case performs a real scratch-object presence query followed by
+mutation during initialization. The ready Graph and repeated currentness
+check succeed, while actual policy/Contract mutation schedules still fail.
+
+The capacity worker is a real generated module test obtained from =init.tests=
+and executed by its existing =.run= projection. Every selected Module has actual
+=types.ss=, =objects.ss=, =config.ss= and =interface.ss= sources. Every module
+after the first requires the first publication. Assertions require exactly
+=4N= native bodies expanded and evaluated, the SAME selected Graph, unforced
+business scopes and unused Features, source-change refusal and fixture release.
+An unexpected open-import fallback fails immediately; it is not silently
+counted as a closed support sample.
+
+The dependency-continuation regression retains its real source mutation,
+unexecuted callback marker and original-Contract assertions. Its old phase
+expectation moved to =candidate-admitted=: a mutation of this candidate's OWN
+config is now refused locally before the old next-location/Feature boundary.
+This is an earlier refusal, not removal of the negative control.
+
+* Quint and Lean correspondence
+
+=dev/proofs/quint/CandidatePublication.qnt= explores local entry, native effects,
+open admission, late mutation, commit visibility and termination. Its eleven
+catalog entries include safety plus expected counterexamples for a missing
+import, either open guard, final commit, Schema support, early visibility,
+replacement on failure, cleanup and rejecting all valid candidates. This is a
+finite transition model, not a source interpreter or a memory measurement.
+The additional =retainScratch= control exposes false refusal from initializer
+scratch outside semantic support. This classification is a correspondence
+premise, not an inference from variable names or arbitrary Scheme source.
+
+Lean =candidate_commit_current= proves full selected-support currentness from
+coverage and a fresh commit check. =staged_guard_bound= bounds local support
+work plus independently charged full passes and open work. Coverage of actual
+native inputs remains a Scheme correspondence obligation. The small
+=failed_candidate_keeps_previous= conditional law describes the update rule;
+it is not a proof of native publication failure handling or OS termination.
+=scratch_outside_support_preserves_guard= states the disjoint-scratch law under
+explicit stability of actual support; it does not certify unknown callbacks.
+
+Neither model makes dense imports or =N= arbitrary full-Graph callbacks linear.
+Neither proves that native allocation, CLOS construction, compiler queries or
+filesystem metadata traversal have the same bound as physical source reads.
+
+* Current producer-boundary qualification
+
+The corrected preparation/admission boundary passes the native scratch and
+actual policy/Contract mutation controls. Its 256-module source-only run also
+passes: 98,489 physical reads, 1,024 actual native bodies expanded/evaluated,
+1,024 local guards, no open fallback, the same ready Graph and 730,672,544 live
+bytes at the collected Graph-held snapshot. Source mutation refusal and fixture
+cleanup passed. The final source-bound Quint run has eleven expected outcomes;
+the corresponding focused Lean target builds successfully.
+
+After the preparation-only =void= coalescing, the exact final code again passed
+all candidate-stage and metadata controls and the real 256-module =.run=:
+98,489 reads, 1,024 expanded/evaluated bodies and local guards, no open fallback,
+same Graph, source refusal and cleanup. The collected held Graph had 730,680,560
+live bytes. This does not establish a matched CPU/wall-time or memory speedup.
+The native TERM test also passed with nested fixture release.
+The exact final code then passed the same observed init-owned AWS/JsonSchema/
+Funflow consumer suite, including Schema change refusal, retained previous
+publication and cleanup. Its worker completed in 104,945 ms; the outer
+allocation counter again became non-current, so no allocation saving is claimed.
+
+The final preparation/admission code also passes the real init-owned
+JsonSchema/Funflow/AWS suite: shared selected Graph, real Schema replacement,
+rejection of old evidence, retained previous publication and fixture cleanup.
+The observed worker completed in 96,743 ms. The outer allocation counter became
+non-current while individual final memory checks remained within budget; this
+is a diagnostic counter-validity limit, not a collected allocation comparison
+or a claim of overall memory optimization. The thousand-module receipt is
+recorded separately. Earlier failures are preserved, not relabeled as current
+capacity acceptance.
+
+* Capacity receipts and remaining qualification
+
+The old complete-prefix implementation's 256-module control performed 293,401
+physical source reads for 1,024 native expanded/evaluated bodies. The historical
+1,000-module attempt did not produce a ready Graph: it reached 837 completed
+publications and at least 2,900,474 physical reads before exit 137.
+
+The candidate implementation with complete source-backed SDK support completed
+a 1,000-module run before the final metadata-replay strengthening: 383,441
+physical source reads, 4,000 expanded/evaluated bodies, 4,000 local guard bodies,
+no open fallback and a ready Graph. The Graph-held snapshot contained
+1,425,168,976 live bytes under the unchanged 2 GiB fence. A 16-module sample had
+6,569 reads. These samples fit =383N + 441= for this fixed closed-support
+fixture; that is an empirical count, not a universal loader bound.
+
+The whole-frame metadata draft's 16-module run passed with 6,569 reads and all
+64 native bodies expanded/evaluated. Its 256-module run passed with
+98,489 reads, all 1,024 native bodies expanded/evaluated, 1,024 local guard
+bodies, no open fallback and 729,228,952 collected live bytes while holding the
+same ready Graph. Its source mutation and fixture-release assertions passed.
+This is about 66.4% fewer physical reads than the historical 256-module control,
+despite the added SDK source coverage. It is not a matched wall-time or collected
+memory speedup comparison. The completed 16/256 counts fit =383N + 441= for this
+fixture on that draft. Its later AWS failure prevents using those receipts
+as qualification of the corrected producer-boundary code.
+
+That draft's thousand-module attempt did NOT
+pass: the unchanged 600-second outer budget returned 124 after 813 completed
+publications and 305,182 physical reads at the last completed publication.
+There was no ready Graph or complete collected live-memory result. The last
+completed publication reported 546,248 ms since Graph entry and 254,452 ms CPU;
+these clocks exclude the outer source import and fixture setup. No unexpected
+open fallback or heap-overflow diagnosis was observed. This distinguishes the
+removed prefix scan from the remaining capacity/time gate; it does not explain
+away the failed gate. The owned child was absent after termination and the
+fixture's existing release path propagated the Ops termination failure.
+The count bound does not settle the remaining runtime: directory/intent
+metadata checks, native dependency replay, expansion, allocation and observation
+must be attributed on that actual call chain. No matched result currently
+establishes which component dominates the remaining thousand-module budget.
+
+The corrected producer/preparation draft was also actually run at 1,000 modules.
+It reached 581 complete publications, with 218,182 reads at the last completed
+publication, before the same 600-second outer budget returned 124. The last
+complete publication was at 554,296 ms Graph time and 199,301 ms CPU. Its worker
+did not reach a ready Graph. This failure predates only the preparation-only
+=void= replay coalescing and observed-interval attribution adjustment. Those
+changes are not a thousand-module capacity acceptance receipt.
+
+Earlier
+candidate samples with a narrower SDK observation boundary, parser failures,
+misclassified public imports and manually terminated diagnostic runs do not
+qualify that final source state. Wall times are not matched speedup evidence.
+
+No cache is cleared or added, no upstream source changes, and heap, progress
+timeout and total budget remain unchanged. Raw logs stay outside source control.
+Reproducible focused entrypoints from the Core root are:
+
+#+begin_src text
+just test-file t/module-candidate-stage-test.ss true
+just test-file t/module-candidate-metadata-test.ss true
+just test-file t/module-reader-effect-support-test.ss true
+just test-file t/module-declaration-1000-test.ss true
+python3 dev/proofs/quint/check.py --case-prefix CandidatePublication --typecheck-scope selected
+#+end_src
+
+Source-only capacity qualification assumes an isolated dependency environment
+at the repository-locked REV, with no compiled Core cache. The commands alone
+do not establish that environment or certify native loaded-code provenance.
+
+The thousand-declaration gate uses existing init/fixture/Ops ownership, not a
+directory-only benchmark. Model qualification, native correctness controls,
+physical source work and end-to-end capacity are separate receipts. Unknown
+callbacks and genuinely wide source support retain their required cost.

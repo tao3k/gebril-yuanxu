@@ -1,0 +1,176 @@
+#+title: 12.27.46 SDK Enrollment And The Real Declaration Budget
+#+property: DOCUMENT_ID 12.27.46
+#+language: en
+#+property: STATUS enrollment-qualified-capacity-open
+
+* Why the previous model did not close capacity
+
+The execution policy has a 600-second total budget, in addition to its progress
+watchdog. The retained thousand-declaration controls in
+[[file:32-location-support-and-replay-cost.org][topic 32]] did not finish. Neither the earlier 784-publication control nor the
+741-publication candidate is a thousand-module acceptance result.
+
+The source-support theorem bounds filesystem work under explicit coverage
+premises. It does not bound native parsing, import expansion, dependency-token
+edges, predicate-internal replay, initialization, or garbage collection. A
+linear source-read result therefore cannot establish the runtime budget.
+
+The native controls already contradict two overly broad explanations:
+
+- Sixteen declarations made 113 SDK closure requests but only four distinct
+  closure traversals. The existing identity-indexed DFS does not discover the
+  entire SDK afresh for every request.
+- They expanded and evaluated 64 actual bodies: three roles and one interface
+  per declaration. These are real source declarations, not directory entries.
+  Deferring these bodies would change this particular capacity workload.
+
+* One concrete redundant algorithm, now removed
+
+The existing =dependency-index= stores the immutable source-input closure of
+each exact native SDK context. Its hit path nevertheless walked that complete
+list again to enroll the same expected bytes into =tool-observations=.
+
+The reader now performs that enrollment when constructing the existing index
+entry, before exposing it. It does not add an index or cache an approval:
+
+#+begin_src scheme
+;; Inside inputs-for: the existing miss branch, after native DFS.
+(let (ordered (reverse inputs))
+  (for-each record-tool-input! ordered)
+  (hash-put! dependency-index context ordered)
+  ordered)
+
+;; Every demanded import still executes this existing admission path.
+(for-each
+  (lambda (input)
+    (module-source-admit-current! (.ref input 'source-inputs))
+    (visit input))
+  (inputs-for context))
+#+end_src
+
+The excerpt omits observation events only. Source admission and the actual
+visitor remain outside enrollment. A closure hit is not permission to skip
+byte checks, role confinement, candidate dependency enrollment, policy checks,
+or the complete publication boundary. Existing opaque callbacks remain open.
+
+For demand stream =D= and demanded closure width =k(r)=:
+
+- Previous registration work: =sum(r in D, k(r))=.
+- New registration work: =sum(r in distinct(D), k(r))=.
+- Source admission work remains charged on every actual demand.
+
+With one repeated root, registration becomes =k(root)= rather than
+=length(D) * k(root)=. This is an asymptotic improvement to registration, not
+a claim that parsing, native expansion or complete declaration work is solved.
+
+* Model responsibilities and executable correspondence
+
+[[file:../../../../../dev/proofs/quint/CompilerEnrollment.qnt][CompilerEnrollment]] owns finite demand/change interleavings. Its safety case
+requires complete enrolled source support and fresh admission on every demand.
+The reuse-approval and dropped-enrollment mutants must fail. The acceptance
+control must find a successful demand; rejecting everything is not success.
+The existing candidate models continue to own open effects, final commit,
+previous-value preservation and cleanup; this model does not replace them.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] owns arbitrary-list work accounting:
+
+- =enrollment_covers_demands= and =enrollment_preserves_source_support=
+  establish complete source coverage from existing and newly enrolled roots;
+- =enrollment_bounded_by_demands=;
+- =repeated_root_enrolled_once=;
+- =enrolled_repeat_has_no_registration_work=;
+- =repeated_root_still_admitted_on_every_demand=.
+
+Its =DeclarationCost= separates preparation, expansion, initialization,
+admission, replay, source guards and collection. These are accounting fields,
+not automatically measured machine-time charges. The simple numerical
+counterexample shows why even linear 0.7-second declarations would exceed the
+600-second budget at 1000 modules. It is not a measured per-module estimate.
+
+The native correspondence requires unchanged exact SDK contexts, structurally
+fixed closure entries, monotonic expected-byte enrollment, and fresh demanded
+admission. The public SDK and private role identity checks remain unchanged.
+Quint/Lean do not prove native context immutability, arbitrary initializer
+confinement, collector memory, or a machine-time bound.
+
+The final source-bound qualifications pass all four enrollment controls and
+all fifteen existing candidate/location controls. The focused Lean target
+builds successfully (40 dependency jobs). An intermediate qualification was
+correctly refused when its bound Lean source changed while coverage lemmas
+were being completed; only the subsequent stable-source receipts qualify.
+
+* Native results and the limited benefit
+
+The source-only snapshot retains the same dependency revision, heap and
+watchdog limits. Tests use the existing init test object and Ops =.run=.
+
+The new native control executes two real module declarations through the same
+reader. The second declaration makes new closure requests but performs no new
+SDK enrollment. After changing the first module's source, the complete reader
+guard still rejects. All eight candidate-stage cases pass, including open
+Context effects, policy replacement, cached path changes and final rejection.
+
+The sixteen-declaration calibration reaches a completed Graph and exits
+naturally with both module/harness markers and final =OK=:
+
+| Observed work | Previous control | Enrollment candidate |
+|---------------+------------------+----------------------|
+| SDK closure requests / traversals | 113 / 4 | 113 / 4 |
+| Expanded and evaluated bodies | 64 / 64 | 64 / 64 |
+| Physical reads at Graph ready | 6634 | 6634 |
+| Native read deliveries | 231793 | 230724 |
+| Delivered direct dependency edges | 343323 | 342254 |
+| Retained Graph tokens / edges | 5738 / 20005 | 5738 / 20005 |
+| Graph interval, wall / CPU | 11.933 s / 5.206 s | 14.278 s / 5.056 s |
+
+The 1069 fewer deliveries and edges are real but only about 0.46% of prior
+deliveries. There is no wall-clock speedup claim and no retained-Graph size
+reduction. This optimization does not justify rerunning an unchanged dominant
+thousand-module path and reporting another timeout as progress.
+
+* What the algorithm still has to account for
+
+The next optimization must reduce the dominant operations, not rename them:
+
+1. Preparation: the candidate recorded 1.740 seconds CPU for sixteen inert
+   preparations. Resolve how much is field/type/authoring checking versus
+   source parsing before altering its semantic support.
+2. Interface: 1.520 seconds CPU includes private role imports and native
+   expansion. The owned compilation timer is not a macro-expansion timer.
+3. Metadata: 198904 unique native replay visits remain, with 0.874 seconds
+   CPU. Unique visits do not count duplicate outgoing edges or work inside
+   currentness predicates. The retained Graph alone has 20005 edges.
+4. Cold entry: the process had consumed 9.596 seconds CPU when the Case's
+   Graph-start checkpoint had consumed 0.463 seconds. The difference includes
+   imports and setup; it cannot honestly be labeled pure import time.
+
+A valid root optimization needs independent accounting for traversed edges
+and repeated predicate work, plus phase-complete support. An immutable SDK
+topology index cannot stand in for current source or Contract evidence. Nor
+can arbitrary native initializers be classified as pure from their imports.
+Do not erase SDK state, raise limits or remove open guards to obtain capacity.
+
+* Reproducible focused gates
+
+Run native gates serially in the qualified source-only environment:
+
+#+begin_src text
+just test-file t/module-candidate-stage-test.ss true
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/module-testing-isolation-test.ss true
+python3 dev/proofs/quint/check.py --case-prefix CompilerEnrollment --typecheck-scope selected --receipt ../.data/qualification/compiler-enrollment.scm
+cd dev/proofs/lean
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
+#+end_src
+
+The observed real JsonSchema/Funflow/AWS init-owned qualification also passes:
+all six child source files, the outer module and harness report success and
+natural exit zero. The same selected Graph and final checked identities remain
+in use; Schema transition and stale-evidence rejection, previous-value
+preservation and fixture cleanup are retained. Its measured worker interval is
+161186 milliseconds, versus 153395 in the previous control. This is no AWS
+performance improvement. It remains a semantic consumer gate, not a
+thousand-module benchmark. The independent real-OS-TERM control also passes:
+nested fixtures release and a later fixture can acquire/release normally.
+No upstream change, new result cache, runtime Loader
+integration, full build or push belongs to this change.

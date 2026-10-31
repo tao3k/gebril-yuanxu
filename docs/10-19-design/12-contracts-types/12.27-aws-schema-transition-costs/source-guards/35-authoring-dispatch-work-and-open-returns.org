@@ -1,0 +1,147 @@
+#+title: 12.27.48 Authoring Dispatch Work And Open Return Boundaries
+#+property: DOCUMENT_ID 12.27.48
+#+language: en
+#+property: STATUS native-work-and-return-qualified-capacity-open
+
+This topic records the pre-staging probe. The follow-up
+[[file:36-carrier-candidate-admission.org][EffectiveMethod candidate admission]] implements the closed-path construction/
+handoff split without removing the public-hook return check.
+
+* Question and terminology
+
+The [[file:34-authoring-construction-and-admission.org][construction/admission split]] removed constructor receipts from the shared
+default getter. It did not close the real thousand-declaration budget. The
+largest observed interval was preparation, which includes source inspection,
+Interface admission and per-datum authoring dispatch. These overlapping spans
+do not identify a single dominant predicate or establish a time improvement.
+
+=ModuleAuthoringProfile= is the existing internal source-authoring policy
+object. It is not a new business Profile category. Reusable business Profiles
+and Scenarios use the common Module publication, Graph and extension mechanism;
+their roles do not require independent loaders or another namespace tree.
+
+This investigation asks which repeated work occurs inside actual authoring
+dispatch, and which checks remain necessary after an extensible callback.
+It does not change the user configuration surface or weaken admission.
+
+* Actual call chain
+
+The relevant owners are:
+
+1. =source/preparation.ss= calls the selected source policy.
+2. =source/admission.ss= builds the Interface through its current Contract and
+   passes the same inert source datums to authoring admission.
+3. =authoring/admission.ss= calls the CLOS generic for every datum.
+4. =poo-clos/dispatch.ss= checks the Generic, computes applicability and builds
+   an EffectiveMethod; its public protocol may replace or mutate that result.
+5. =poo-clos/objects.ss= checks the invocation Frame before calling a method.
+
+The descriptor predicates in =poo-clos/types.ss= recursively inspect children:
+EffectiveMethod checks its Generic and Method lists; Frame checks its
+EffectiveMethod and Method. This is an actual nesting of validation work, not
+a new source-directory traversal. A read delivered during native dependency
+replay must not be relabeled as a fresh predicate invocation.
+
+* Native work probe
+
+=t/module-authoring-dispatch-work-test.ss= uses the existing Case macro and a
+passive public slot observer. It warms the actual operation, then admits 1, 4
+and 8 ordinary =objects= datums through the production entrypoint. The observer
+counts =.element?= deliveries for exact policy receiver identities:
+
+| Datums | Generic | EffectiveMethod | InvocationFrame | Method |
+|--------+---------+-----------------+-----------------+--------|
+|      1 |       4 |               4 |               2 |     12 |
+|      4 |      16 |              16 |               8 |     48 |
+|      8 |      32 |              32 |              16 |     96 |
+
+These are policy-slot deliveries, including native replay. They are not
+predicate execution counts, allocation attribution or a capacity result.
+The probe does not replace predicates or clear SDK state. For this fixed
+method family the measured delivery component is linear in datum count;
+it cannot by itself explain or refute prefix-dependent work elsewhere.
+
+* Why a construction check is insufficient at an open return
+
+The second native probe installs a public =compute-effective-method= hook on
+a private derived Generic. It deliberately edits the already checked default
+before returning it. This is negative injection, not module-authoring code.
+
+#+begin_src scheme
+(lambda (_generic _arguments _methods checked-default)
+  (.put! checked-default 'arguments #f)
+  checked-default)
+#+end_src
+
+The native run rejects this result with =invalid-effective-method-result=,
+after exactly one hook invocation and before executing a method. Merely
+remembering that the constructor checked the same object identity is unsound.
+Both native cases finish with =MODULE-OK=, =HARNESS-OK=, final =OK= and natural
+exit zero, without error/overflow markers.
+
+The first hook probe failed earlier with =no-applicable-method= and zero hook
+calls. Native =.cc= copies formulas, not receiver runtime caches/overrides;
+the registered Generic's constructor default has an empty method list. The
+final private probe explicitly retains the original Method descriptors when
+copying the Generic. This is test-only hook injection, not a new Generic
+publication or registration API. The earlier failure is not return-boundary
+evidence and remains a local artifact.
+
+* Separate formal responsibilities
+
+[[file:../../../../../dev/proofs/quint/CarrierReturn.qnt][CarrierReturn]] explores finite callback/return schedules: an unchanged return
+can execute, a mutated invalid return cannot, and skipping the return check
+has a counterexample. Acceptance has its own expected-counterexample control.
+It does not model the SDK interpreter or prove effect confinement.
+
+Lean's =checkCallbackReturn= in
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] separately states the arbitrary-value law: acceptance
+implies the returned value satisfies the supplied predicate. A concrete
+counterexample shows construction-time validity does not imply post-callback
+validity. This assumes the predicate represents the actual boundary check;
+it does not prove predicate purity or identify native read costs.
+
+The three scoped Quint entries typecheck and qualify against the current
+source cut: the safe model passes, while skipped-return and acceptance controls
+produce their expected counterexamples. Lean builds the focused target and its
+40 dependency jobs. Early model syntax/type errors and a separate Apalache
+gRPC readiness timeout were not model passes; one unchanged-limit retry reached
+the owned backend and completed qualification. No backend deadline was changed.
+
+* Optimization decision
+
+Do not replace per-datum dispatch with a method selected once per role file:
+contributors may specialize the datum axis or change policy through a public
+hook. Executor and source Role are also independently extensible axes.
+Likewise, do not remove recursive Contract checks merely because objects have
+already passed construction, retain validation success in a cache, or infer
+closed behavior from a method name.
+
+A future closed continuation must establish all of the following at its actual
+call boundary: original policy and predicate identities/revisions, no escaped
+mutable carrier, no intervening open callback, preserved method combination
+and next-method semantics, and complete semantic dependency support. Unknown
+or changed policies must retain the ordinary checked path. Existing read
+projection proves only its stated ownership/support conditions; it does not
+automatically certify skipped admission.
+
+The present change adds a bounded diagnostic and refusal control, not a runtime
+fast path. The failed thousand-declaration gate remains open. A real reduction
+requires a measured change at the identified owner, followed by the existing
+init tests =.run= capacity and invalidation controls; this probe does not replace
+them. No upstream code, limits, cache policy or Loader is changed.
+
+* Reproduction
+
+Run the native probe serially with the repository-locked source environment:
+
+#+begin_src sh
+just test-file t/module-authoring-dispatch-work-test.ss true
+python3 dev/proofs/quint/check.py --case-prefix CarrierReturn --typecheck-scope selected --receipt ../.data/qualification/carrier-return.scm
+cd dev/proofs/lean
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
+#+end_src
+
+Only a completed native run with all harness markers and no error/overflow
+markers qualifies the two cases. Source-bound formal receipts must name their
+current source cut. Raw logs remain local artifacts.

@@ -1,0 +1,368 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.39 Config Languages 38: Provider-Schema-First AWS Contracts and Native Refinements
+#+property: DOCUMENT_ID 11.39
+#+property: STATUS researched-design-only-no-loader-no-provider-execution
+
+* Correct the source of truth before expanding the type library
+
+Provider-owned fields must come from the selected provider's versioned schema,
+not a parallel hand-written collection of AWS strings/enums/required-field lists.
+This refines the module 37 proposal: shared native types supplement generated
+constraints; they do not replace the existing JSON Schema subsystem.
+
+The checked [[https://github.com/nickel-lang/tf-ncl][tf-ncl README]] describes automatic Contract generation and a Nix-managed workflow.
+Its [[https://github.com/nickel-lang/tf-ncl/blob/main/nix/terraform_schema.nix][schema acquisition source]] prepares provider-specific Terraform configuration,
+initializes the selected plugin, runs terraform providers schema -json and feeds
+schema-merge. The [[https://github.com/nickel-lang/tf-ncl/blob/main/examples/hello-tf/flake.nix][hello-tf flake]] delegates setup to mkDevShell. Local Omnibus
+aws/flake.nix selects aws/null/external through that same library boundary.
+These are inspected source routes, not executed deployment results.
+
+The requested [[https://github.com/nickel-lang/tf-ncl/pull/83/changes][PR 83]] diff could not be fetched in this environment. Its precise functional
+changes, revision and status are UNVERIFIED. Do not attribute the inspected main
+branch behavior to that PR. A later exact-head diff review is still required.
+
+[[https://developer.hashicorp.com/terraform/cli/commands/providers/schema][Terraform's official output format]] describes provider_schemas, attributes,
+block_types and required/optional/computed metadata. A JSON representation of
+Terraform's provider schema is NOT automatically a standard JSON Schema document.
+The selected source requires a format-aware conversion/normalization stage before
+our generic JSON Schema compiler. Unsupported format versions must be explicit.
+
+* Pipeline and responsibility boundaries
+
+#+begin_example
+selected provider lock + Terraform version + generator revision
+  -> explicit acquisition/extraction job
+  -> provider schema JSON with source identity
+  -> format-aware conversion + Terraform builtins/backend support
+  -> supported JSON Schema and retained coverage/mapping metadata
+  -> existing Core normalization / emitted Contract artifacts
+  -> generated AWS field/resource Contract scope
+  -> native value refinements + high-level Profile/Scenario Contracts
+  -> final effective Scenario admission
+  -> pure Terraform JSON candidate and output Contract admission
+  -> separate Terraform validate/plan -> explicitly authorized apply
+#+end_example
+
+Acquisition may download/run provider tooling; it is an explicit generation/build
+operation, not a side effect of .get/.def/.admit. One facade can coordinate these
+steps, but must retain build/validation/plan/apply boundaries and execution policy.
+No such workflow was executed or implemented here. Provider/resource version,
+source digests, converter/compiler revisions and supported features qualify reuse.
+Unselected providers and schemas must not be fetched/compiled merely for discovery.
+
+* What current Core already provides, and exact gaps
+
+Current source interfaces live in core/modules/json-schema/interface.ss. Existing
+names, before the pending namespace migration, include:
+
+- yuanxu-json-schema->contract-artifact: compilation from JSON-like schema data.
+- yuanxu-json-schema-contract-artifact-object-contract: emitted native Contract.
+- yuanxu-json-schema-contract-artifact-validate: recursive object-root diagnostics.
+- yuanxu-json-schema-node-valid? / node-validate: normalized-node value checks.
+- artifact diagnostics/type facts/Lean facts with runtime-executed false.
+
+The module already compiles pattern, length/count and numeric bounds. format is
+retained as metadata/checked for string shape, but is NOT in the executable
+constraint keyword list. multipleOf also cannot be assumed implemented merely
+because its metadata is inspected. The bridge is explicitly not a full JSON
+Schema evaluator. Scalar roots currently become a synthetic value slot in emitted
+object Contracts, while artifact validation requires an object-like root.
+
+These observations motivate a native protocol adapter, not a replacement parser.
+No-warning artifact generation is necessary but NOT sufficient for complete
+coverage: silently unsupported keywords need a mandatory coverage manifest/gate.
+That gate must be built before provider production admission is claimed. Unknown
+format behavior and assertion/annotation policy must be explicit by dialect.
+
+* Reuse Gerbil address parsing only where semantic coverage requires it
+
+The public :std/net/address API exports string->address and native address
+structures. Bare string->ip4-address exists in the parser source but is not
+exported from that API facade. Use its explicit ip4:/ip6: parsing form internally;
+config values remain bare text. No resolver/network lookup is used.
+
+The following is proposed SHARED LIBRARY code using existing native forms, not
+installed exports. The only regular expression splits the address/prefix envelope;
+Gerbil owns address parsing. AddressPrefixText permits host bits; IPv4NetworkBlock
+checks a canonical network base separately. They must not be conflated.
+
+#+begin_src scheme
+(def (ip-text? family address? value)
+  (and (string? value)
+       (with-catch
+        (lambda (failure)
+          (if (ContractViolation? failure) #f (raise failure)))
+        (lambda ()
+          (address? (string->address (string-append family ":" value)))))))
+
+(define-type (IPv4Text @ String)
+  .element?: (cut ip-text? "ip4" IP4Address? <>))
+(define-type (IPv6Text @ String)
+  .element?: (cut ip-text? "ip6" IP6Address? <>))
+(define-type (IPv4PrefixLength @ Type.)
+  .element?:
+  (lambda (value)
+    (and (integer? value) (exact? value) (<= 0 value 32))))
+
+(def (address-prefix-text? value)
+  (and (string? value)
+       (let (parts (pregexp-match "^(.+)/([0-9]+)$" value))
+         (and parts
+              (let ((address (list-ref parts 1))
+                    (prefix (string->number (list-ref parts 2))))
+                (or (and (element? IPv4Text address) (<= 0 prefix 32))
+                    (and (element? IPv6Text address) (<= 0 prefix 128))))))))
+(define-type (AddressPrefixText @ String)
+  .element?: address-prefix-text?)
+
+(def (ipv4-network-base? text prefix)
+  ;; Called only after IPv4 text and prefix-length checks accepted.
+  (let (bytes (IPAddress-bytes (string->address (string-append "ip4:" text))))
+    (let loop ((index 0) (number 0))
+      (if (= index 4)
+        (zero? (modulo number (expt 2 (- 32 prefix))))
+        (loop (+ index 1) (+ (* number 256) (u8vector-ref bytes index)))))))
+
+(define-type (IPv4NetworkBlock @ Type.)
+  .element?:
+  (lambda (value)
+    (and (object? value)
+         (.slot? value 'prefix) (.slot? value 'length)
+         (= (length (.all-slots value)) 2)
+         (element? IPv4Text (.get value prefix))
+         (element? IPv4PrefixLength (.get value length))
+         (ipv4-network-base? (.get value prefix) (.get value length)))))
+
+(def (value-type->contract identity type)
+  (yuanxu-predicate-contract
+    identity (cut element? type <>)
+    (lambda (candidate context) '())))
+
+(def IPv4TextContract
+  (value-type->contract 'network/ipv4-text IPv4Text))
+(def AddressPrefixTextContract
+  (value-type->contract 'network/address-prefix-text AddressPrefixText))
+(def IPv4NetworkBlockContract
+  (value-type->contract 'network/ipv4-network-block IPv4NetworkBlock))
+#+end_src
+
+Source dependencies are native POO Type/String/element?, Core Contract protocol,
+:std/net/address, :std/error and pregexp. Exception handling catches only the
+ContractViolation category used by the inspected parser; unexpected failures
+propagate. Parser/version error behavior, IPv6 edge cases, numeric-prefix input
+limits and cost bounds still require qualification. Native address structures
+are reused, not redefined. A new defstruct is unnecessary for this boundary.
+
+The simple Type bridge returns existing predicate evidence. Rich field-level CIDR
+errors should be constructed from responsibilities (prefix/length Contracts) plus
+a network-base obligation, retaining the exact path and code. Do not present this
+single predicate's generic rejection as already providing those detailed messages.
+Schema-derived count/field constraints must be reused rather than hand-copied.
+
+* Concrete native adapter for generated artifacts and conjunction
+
+This private library design reuses the existing normalized-node validator, so it
+also handles scalar values without pretending the object-root API accepts them.
+All referenced diagnostic accessors already exist; the adapter itself is NEW.
+The existing emitted Contract path remains usable for its supported object forms.
+
+#+begin_src scheme
+(def (schema-diagnostic->fact diagnostic)
+  (let* ((metadata
+          (yuanxu-json-schema-validation-diagnostic-metadata diagnostic))
+         (entry (assq 'path metadata)))
+    (.o kind: (yuanxu-json-schema-validation-diagnostic-reason diagnostic)
+        path: (if entry (cdr entry) '())
+        message: (yuanxu-json-schema-validation-diagnostic-message diagnostic))))
+
+(def (schema-artifact->contract identity artifact)
+  (unless (and (yuanxu-json-schema-contract-artifact-valid? artifact)
+               (null? (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
+    (error "Schema compilation requires review"))
+  (let (node
+        (yuanxu-json-schema-normalization-schema
+          (yuanxu-json-schema-contract-artifact-normalization artifact)))
+    (.cc YuanxuContract.
+         'identity identity
+         'proto (.o)
+         'schema-artifact artifact
+         '.classify
+         (lambda (candidate context)
+           (let (diagnostics
+                 (if (yuanxu-json-schema-node-valid? node candidate)
+                   '()
+                   (yuanxu-json-schema-node-validate node candidate '())))
+             (yuanxu-classification-evidence
+               identity candidate (null? diagnostics)
+               (map schema-diagnostic->fact diagnostics) context)))
+         '.obligations (lambda (candidate context) '()))))
+
+(def (contracts-all identity contracts)
+  (.cc
+    (yuanxu-predicate-contract
+      identity (lambda (candidate) #t)
+      (lambda (candidate context)
+        (filter
+          (lambda (receipt)
+            (not (yuanxu-validation-evidence-accepted? receipt)))
+          (map (lambda (contract)
+                 ((.get contract .admit) candidate context))
+               contracts))))
+    'requirements contracts))
+#+end_src
+
+The schema adapter gives a proto only for native object-construction compatibility;
+an empty proto does not supply required values or change a scalar into an object.
+The generated field descriptors need not expose proto to ordinary callers. The
+conjunction preserves every rejecting receipt and mandatory requirement rather
+than overriding an inherited .obligations slot. It does not implement Core-wide
+automatic association across .+/copies. Coverage gating remains a prerequisite,
+not proven by this adapter's no-warning check. The adapter requires access to the
+existing IR accessor in its owning module; today's facade does not expose all of
+these internals as an already prepared public scope.
+
+* Generated AWS field Contracts and module-private refinements
+
+Target generated publication (not currently available): Provider.types exposes
+contracts compiled from the selected, locked schema. The following paths describe
+the proposed publication shape, not asserted contents of an acquired AWS artifact.
+No AWS provider schema was downloaded/generated in this turn.
+
+#+begin_src scheme
+;; AWS types.ss: aliases, NOT repeated field predicates or required-field tables.
+(def ProviderVpcContract (.get Provider types resources aws_vpc))
+(def ProviderInstanceContract (.get Provider types resources aws_instance))
+(def AWSImageIdContract
+  (.get Provider fields resources aws_instance ami))
+(def AWSInstanceTypeContract
+  (.get Provider fields resources aws_instance instance_type))
+(def ProviderVpcCidrContract
+  (.get Provider fields resources aws_vpc cidr_block))
+
+;; Reuse generated constraints AND the shared semantic value check.
+(def AWSCidrTextContract
+  (contracts-all 'aws/cidr-text
+    (list ProviderVpcCidrContract AddressPrefixTextContract)))
+#+end_src
+
+If the provider only exports a string type, the generated Contract only proves
+that constraint. Do not invent a provider-supplied ARN pattern, AMI availability
+rule or instance-type enumeration. An organization can add an explicitly named
+policy Contract, keeping its source separate from generated provider constraints.
+Local logical references such as network-ref/key-ref are private application
+concepts absent from the raw resource schema; their Types and relational checks
+remain maintained Scheme code in AWS types.ss/obligations, not fake provider data.
+
+* High-level Profile data and provider wire resources differ
+
+Our ordinary network input is a prefix/length object, while Terraform aws_vpc
+accepts cidr_block text. Instance type is exposed as type but projects to
+instance_type. Network refs are logical names and project to resource expressions.
+A raw provider resource Contract cannot be applied blindly to this input object.
+Use the same explicit pure projections for checking and final resource generation:
+
+#+begin_src scheme
+(def (network->provider-input network)
+  (.o cidr_block: (aws-cidr-string network)))
+
+(def (instance->provider-input instance)
+  (.o ami: (.get instance ami)
+      instance_type: (.get instance type)))
+
+(def (projected-obligations contract project candidate context)
+  (let (receipt ((.get contract .admit) (project candidate) context))
+    (if (yuanxu-validation-evidence-accepted? receipt) '() (list receipt))))
+#+end_src
+
+These are partial provider-input views, not entire deployable resources. A
+ProviderInstanceContract may require more fields than that view; the GENERATED
+binding for such partial checks must be the selected field/subset Contract, with
+its requiredness derived from the source, not the full resource Contract. Only
+validate complete projected resources against the full resource Contract.
+
+Source diagnostics must map cidr_block back to the contributing prefix/length
+fields and instance_type back to type. A many-to-one mapping must retain both
+contributors, not arbitrarily blame one. Mapping metadata must be emitted by the
+same projection/source machinery, not duplicated in a handwritten field table.
+This automatic source/projection association is pending; the functions above do
+not magically produce it. Failure must report both config and provider paths.
+
+* Complete AWS Case remains ordinary configuration
+
+The full [[file:11.37-aws-complete-consumer-case-and-capability-boundary.org][consumer Case]] and [[file:scenarios/modular-configuration/contributions/aws-project/config.ss][config.ss]] still own region, AMI, role/session,
+backend bucket/key/region, key path, networks, machine fields and outputs. objects.ss
+applies the canonical domain Contract proto and combines Development/Build before
+the optional Production override. interface.ss publishes once. Users do not write
+schema acquisitions, parser structures, coverage records or per-field adapters.
+
+On final Production:
+
+1. Check shared value/shape constraints and every selected mandatory policy.
+2. Resolve final network/key/output links in the final Scenario.
+3. Project resources from that SAME effective object.
+4. Admit the complete generated Terraform config/resource output with the qualified
+   generated Contracts, including Terraform builtins/backend handling.
+5. Publish the bounded preview, then separately validate/plan/apply as authorized.
+
+Earlier parent previews do not substitute for any final-child check. Parsed value
+and compiled schema reuse must be qualified by input/source/parser/compiler
+identities. Missing image/role/key/backend facts cannot be supplied by inheritance.
+
+Expected diagnostics (DESIGN, not observed output):
+
+#+begin_example
+networks.test.cidr-block.prefix = 10.999.0.0
+  -> invalid-ipv4, config source path; no provider execution
+networks.test.cidr-block.length = 40
+  -> invalid-prefix-length, field path retained
+instances.build.tyep
+  -> unknown-field in domain vocabulary; inherited type does not hide the typo
+instances.build.network-ref = absent
+  -> missing-network from final Scenario relationship admission
+resource.aws_instance.build.instance_type
+  -> generated provider constraint failure; mapped back to instances.build.type
+schema keyword format not asserted by configured policy
+  -> coverage failure for a required assertion; never silently claim IP validation
+#+end_example
+
+The detailed CIDR/source diagnostics require the stated responsibilities/source
+adapters; the simple predicate code alone returns a coarser rejection. Provider
+availability, permissions and plan-time invariants remain outside schema proof.
+
+* Reflection and acceptance boundary
+
+The gain over hand-maintained types is a single versioned external field source,
+reusable native semantic checks and POO composition for complex user Scenarios.
+The burden is an honest format converter, coverage accounting, expression/unknown-
+value semantics, computed/sensitive fields, default provenance and path mapping.
+Terraform expressions, null/unknown/computed values must not be mistaken for
+ordinary literal strings/JSON values by a simplified generated Contract. Schema
+conversion is not provider execution or full Terraform semantic equivalence.
+
+A cohesive selected graph may give an integrated user command while keeping all
+phase receipts and explicit execution authorization. Do not copy tf-ncl's surface
+syntax or add a second ad hoc config DSL. Next evidence must qualify the locked
+converter, schema keyword coverage, Type adapters, final-child source paths and a
+full output/plan comparison against the reference. The PR 83 review is still open.
+Only English design documentation was changed; no Loader/runtime code or tests.
+
+* OpenTofu module ownership
+
+[[file:11.40-opentofu-module-and-complete-aws-contract-flow.org][The OpenTofu capability design]] assigns provider conversion/generation upstream
+and connects concrete mapping, generated field Contracts and the complete
+consumer role files. OpenTofu is the target engine; prior Terraform terminology
+identifies the reference wire format, not a requirement to run Terraform.
+
+* Concrete generated values and selection pipeline
+
+[[file:11.41-opentofu-generation-and-lazy-publication.org][The modular OpenTofu generation design]] expands lock selection, extraction,
+conversion, GeneratedProviders, ConfigurationContract and native lazy publication.
+Its bounded converter is design-only and cannot yet qualify full AWS output.
+
+* Current design correction
+
+The [[file:11.69-aws-case-index.org][current AWS source layout]] supersedes this study's Deployment wrapper and
+hand-maintained Resource field vocabulary. Keep this chapter as research history;
+use ordinary Provider-shaped configuration and generated Contracts for the
+current design. Module Loader injection is not implemented by this study.

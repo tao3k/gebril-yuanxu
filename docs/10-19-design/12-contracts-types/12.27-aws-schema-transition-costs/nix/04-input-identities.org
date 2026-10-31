@@ -1,0 +1,93 @@
+#+title: 12.27.08 Input Fingerprints and Attribute Selection
+#+property: DOCUMENT_ID 12.27.08
+#+language: en
+#+property: STATUS retained-evidence
+
+* Input fingerprints and exact native attribute selection
+
+The follow-up uses installed Nix =2.34.4+1= and the same observed aggregate,
+source-loaded POO revision, Graph ownership and progress budgets. It changes
+only the derived-path spelling for fully qualified =packages.*= and
+=legacyPackages.*= outputs in the existing Nix Source function:
+
+#+begin_src scheme
+;; Public Source attribute remains "packages.aarch64-darwin.default".
+;; Internal Nix installable: skip shorthand-prefix candidate discovery.
+(string-append reference "#." attribute)
+#+end_src
+
+Short attribute names retain their existing package-prefix lookup. Applied
+functions retain =eval --apply=. Neither route gains a Scheme result cache,
+new Graph, prefetch process or retained successful-admission receipt.
+The serialized guard still calls the same Source function against live inputs.
+
+The audit records each query's root NAR, root =lastModified=, overridden
+selection NAR and selection =lastModified= from native debug records. The
+immutable package-set identity remains unchanged. Named fingerprints below
+denote values within this single run, not hard-coded expected fixture hashes:
+
+| Name | Observed NAR hash |
+|------+-------------------|
+| Root A | =sha256-NdcYwvSpfJveZ+J1Cg++FRZnuCynWrvkKkegFpWsrrA== |
+| Root B, optional file added | =sha256-q3zeQ01dSHX0kMaCxHNoKm6P3PV7Vc/hVkOdiCRQXDE== |
+| Root C, Schema version changed | =sha256-K9XBg227ebgIDSGbIWq4+vrbQRILffCzGqRWZzbhz0U== |
+| Selection S0 | =sha256-IBYZusnMcqNFqeDRIDT0uPX3AuEcS6qAUyhWgYsQDzE== |
+| Selection S1 | =sha256-3lDwtf3xAKwlZBS3ef9YfItvDi5a3nC1YWw73k/3j/Q== |
+
+| Query | Actual input relation | Earlier full body | Exact-path full body |
+|-------+-----------------------+-------------------+----------------------|
+| 1 | Root A at t0, S0 | yes | yes |
+| 2 | Identical to query 1, after realization | yes | no |
+| 6 | Root B at t1, S0; undeclared transitive file added | yes | yes |
+| 7 | Root A restored, but root timestamp t2 differs from t0; S0 | yes | yes |
+| 8 | Identical to query 7, before Context denial | yes | no |
+| 11 | Root C at t3, S1; real Schema upgrade | yes | yes |
+| 12 | Identical to query 11, after realization | yes | no |
+
+Queries 2, 8 and 12 were repeated work, not invalidation. Native package-prefix
+candidate discovery traversed ancestor attributes even though the Source had
+already supplied a fully qualified output. Exact selection removes those
+candidate traversals. Nix 2.34's cache implementation replaces attribute rows
+when sealing an attribute set; the installed-version A/B receipt establishes
+the operational effect without patching that implementation. See Nix's
+[[https://github.com/NixOS/nix/blob/2.34.4/src/libexpr/eval-cache.cc][attribute-cache implementation]]
+and [[https://github.com/NixOS/nix/blob/master/src/libcmd/installable-flake.cc][exact-attribute versus prefix selection]].
+The latter is an explanatory moving reference; the installed binary and
+focused native test qualify support for the leading dot.
+
+Query 7 is deliberately retained. A restored content NAR is not the complete
+flake fingerprint: directory modification time changed, and flake consumers
+can observe source metadata. This run produces the original derivation again,
+but that does not authorize erasing a native input dimension or reusing Core
+admission evidence. Query 6 must detect the transitive file despite its absence
+from Scheme's explicit observation list; query 11 must resolve the new Schema.
+
+The complete diagnostic aggregate exits naturally with seven =MODULE-OK=,
+two =HARNESS-OK= and two final =OK= markers, with no harness/overflow error.
+It retains all 20 queries, two realizations and four setup commands. Four
+queries now execute a body and sixteen use native cached attributes. Native
+file-evaluation messages fall from 2343 to 1365; these are evaluator messages,
+not OS filesystem-read counts. Qualification completion is 125668 ms, the Ops
+child span is 116113 ms, and AWS publication completion is 101817 ms. These
+local wall times are not a controlled speedup claim.
+
+Only the isolated diagnostic copy expands the existing debug allowance from
+four to twenty-four commands to capture all fingerprints. Observation remains
+enabled, inactivity remains 60 seconds and total remains 600 seconds. The
+normal policy stays at four diagnostic commands. The focused public Source
+test checks cold evaluation, warm attribute reuse and identical derivation
+identity; existing controls still reject transitive changes and unapproved
+lock updates. A cache hit does not bypass any required realization or
+evidence/currentness check.
+
+After restoring the normal four-command diagnostic allowance, the same
+observation-enabled aggregate passes again with natural exit zero and the same
+seven module, two harness and two final success markers. It retains 20 queries
+and four body evaluations; qualification completion is 128837 ms and AWS
+publication completion is 105540 ms. Schema update refusal, old-evidence
+rejection, failed-publication previous-value retention and fixture cleanup
+remain assertions in that same Case. This removes three repeated evaluations;
+it does not establish second-scale end-to-end execution or close the remaining
+source-import and Graph preparation costs.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

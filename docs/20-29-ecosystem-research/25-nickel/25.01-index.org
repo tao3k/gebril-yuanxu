@@ -1,0 +1,122 @@
+#+title: 25.01 Nickel: Independent Configuration-System Research
+#+language: en
+#+property: DOCUMENT_ID 25.01
+#+date: [2026-10-17]
+#+property: STATUS primary-source-notes-case-reproduction-pending
+
+* Research scope
+
+Research merge/Contract interaction, local consistency, language rationale and the actual Omnibus/tf-ncl ecosystem separately from a generic language tutorial.
+
+This dossier is the owner of Nickel-specific observations and conclusions.
+See [[file:../../30-39-research-foundations/30-method/30.01-evidence-protocol.org][the evidence protocol]] for claim classes and completion criteria.
+No platform command, deployment or issue reproduction is claimed here.
+
+* Configuration and scenario baseline
+
+Related shared corpus: [[file:../../10-19-design/11-configuration-languages/11.34-aws-main-source-parity-and-profile-families.org][existing source-derived case]]. This link
+provides the workload context, not execution evidence for this platform.
+
+Use the source-derived Omnibus AWS case and its complete input mapping. Study tf-ncl provider-schema generation as an ecosystem pipeline. Do not substitute a two-field toy object for the complete deployment configuration.
+
+The current baseline is source/document review. A complete version-pinned
+configuration fixture, resolved result and matched negative control remain
+required before calling this an end-to-end case comparison.
+
+* Nickel: composition does not remove local interface obligations
+
+Primary source: [[https://www.tweag.io/blog/2024-06-20-nickel-modules/][Nickel modules]], 2024-06-20.
+
+The article combines a Schema field with a config field and demonstrates both
+merged validation and stricter local consistency. When a fragment depends on
+fields declared elsewhere, it makes that dependency explicit rather than relying
+only on a globally successful merge. It also demonstrates source-located Contract
+errors and editor integration. These are concrete UX expectations, not just type
+system terminology.
+
+Our response: native responsibilities/Contracts constrain published values;
+the dependency graph records which owner supplies each referenced interface.
+An args tree must not turn local code into an unconstrained global participant.
+Schema-derived field discovery and diagnostics must reuse existing JSON Schema
+Contracts rather than maintain a separate manual list of option names.
+
+Conclusion: local checking and final composition checking answer different
+questions. Remaining gap: a generic object-shape Contract on an inferred edge
+does not replace an explicit domain requirement or all inherited obligations.
+Test strict edge Contracts separately before claiming automatic association is
+complete. How can an Agent inspect required versus optional fields without
+forcing every unrelated value? That is an outstanding tooling requirement.
+
+
+* Why use a general language? Accept the cost explicitly
+
+Primary source: [[https://github.com/nickel-lang/nickel/blob/master/RATIONALE.md][Nickel language rationale]].
+
+The rationale discusses the configuration role, effects and the tradeoffs of a
+dedicated language versus an embedded one. Scheme makes library reuse and
+domain-specific functions available, but it also permits effects, nontermination
+and arbitrary macros. Choosing Scheme does not make those problems disappear.
+
+For this system, assignment remains ordinary data, a transformation remains a
+named function, and prototype inheritance is used only when retaining an existing
+object matters. Macros own contextual/phase bindings and source-preserving
+lowering; they must not grow into a second configuration evaluator.
+
+Conclusion: the advantage sought is reusing one language and object system across
+simple values and advanced extension. The cost is macro governance and effect
+discipline. Declaration scanning is not a security sandbox for hostile Scheme.
+We must report whether loading merely avoids published run methods or actually
+constrains all initializer effects; those are different claims.
+
+
+* Issues and Engineering Limitations
+
+Reference marks: documented restrictions are DOCUMENTED-LIMITATION; user
+reports are ISSUE-REPORTED and NOT-REPRODUCED unless stated otherwise. Upstream
+state and report dates below retain their original observation scope. No new
+CONFIRMED-DEFECT classification is made by this editorial update.
+
+No platform-specific GitHub issue has been independently examined in this
+dossier yet. The current observations are based on the specifically cited
+primary documentation. Do not infer that all documented restrictions are bugs,
+or that absence of an issue review establishes absence of user problems.
+
+The source links above remain the authority for each report. Pin missing versions
+and run an isolated reproduction before promoting an issue-reported observation
+to reproduced behavior.
+
+* Independent reflection and questions
+
+1. Which Contract requirements survive merging and derivation?
+2. Can a partial contribution be valid locally while depending explicitly on another contribution?
+3. What diagnostic identifies the field, expected Contract and originating value?
+
+* Onwards and evidence status
+
+| Work item | Current status | Required artifact |
+|-----------+----------------+-------------------|
+| Primary sources cited above | Reviewed in the initial research pass | Preserve source URL, access date and version where available |
+| Configuration corpus | Scenario specified; not reproduced | Upstream files/revision and complete required inputs |
+| Issue evidence | Only specifically cited reports are evidence | Version, reported/confirmed behavior, status date and minimal reproduction |
+| Scheme response | Design inference only | Matched user configuration and explicit failure cases |
+| Runtime/performance comparison | Not performed | Separate reproducible receipt and bounded claim |
+
+Do not create placeholder bug IDs or infer that an unreported limit is an
+upstream bug. If no relevant public issue has been examined, record that gap.
+An official documented restriction can be evidence without being a defect.
+
+Continue this dossier when adding Nickel-specific source analysis. If it
+grows, extract configuration/source evidence, issue records and reflection into
+separate numbered Org modules under this directory, keeping this file as their
+reading map. Cross-platform documents link conclusions rather than owning copies.
+
+* Conclusion
+
+The reviewed material identifies a concrete design boundary; it does not establish
+Scheme/POO superiority. The questions above and the matched scenario determine
+what must be investigated next. Do not mark this dossier complete merely because
+its organizational structure exists.
+
+Research map: [[file:../README.org][independent dossiers]]. Comparison owner:
+[[file:../../../module-system/design/08-infrastructure-platforms-and-design-gates.org][cross-platform architecture synthesis]].
+

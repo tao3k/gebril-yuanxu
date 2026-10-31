@@ -1,0 +1,189 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 10.06.43.12 Git Project, Worktree and Context Model
+:PROPERTIES:
+:ID: agentic-ai-lab-git-project-worktree-context-model
+:STATUS: design-joint-model-pass-runtime-correspondence-open
+:DATE: 2026-10-14
+:END:
+
+* Fundamental distinction
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns generic Context; this chapter specializes one Git Project.
+It is not a requirement that every future Project has exactly one repository.
+Three graphs cooperate without being identified:
+
+| Graph | Nodes and edges | What an edge does not mean |
+|-------+-----------------+---------------------------|
+| Git source graph | Repository, Worktrees, refs, commits/trees/blobs and observed working content | Review, authority or Context inheritance |
+| Context composition graph | ORG-bound Project roots, workspace views, domain/task increments, explicit parent order and overrides | Git directory containment or automatic fact promotion |
+| Consumer graph | Session collections, tasks, selected Contexts and operation-scoped admission | Owning a Context's lifetime or inheriting its grants |
+
+Worktree Context is a situated derivation within a Project's Context system,
+not a disconnected memory database. However, it does not inherit every Project
+Element unconditionally. A selected Project cut supplies applicable shared
+declarations; the Worktree view combines those with observed source and local
+increments. Scope/visibility, Contract and explicit precedence still apply.
+Other domain Contexts can be composition inputs with declared origins.
+
+The Project graph organizes shared and local Contexts but is not a union of
+all private facts available to every consumer. A Project-root Query must obey
+visibility just as a Worktree Query does. A Session can consume several
+Worktrees; several Sessions can collaborate on one Worktree. Shared workspace
+use needs operation ownership/concurrency admission and cannot claim physical
+isolation merely from different Session names. Detached HEAD and main Worktree
+are legitimate cases, not missing branch errors.
+
+* Git identities and observations
+
+[[https://git-scm.com/docs/git-worktree][Git's worktree model]] supplies per-Worktree HEAD/index/working files while
+sharing repository resources and most refs. This is not a security sandbox:
+processes may access other paths, shared refs or external services unless
+another authority/runtime boundary prevents it. Context composition cannot
+provide that protection by itself.
+
+Keep logical Project identity distinct from a local repository instance and
+its Worktree identity. Git plumbing resolves current topology; directory or
+remote spelling is not a portable Project identity or an authorization proof.
+A clone can be related to the same logical Project without being the same
+local repository instance. Moves/replacements and nested repositories require
+explicit rebinding rather than silently reusing an absolute-path identity.
+
+An observation binds the chosen repository/Worktree and content lens:
+HEAD tree, selected index entries (including conflict stages), working bytes
+and selected untracked content. [[https://git-scm.com/docs/git-diff][Git diff]] distinguishes these comparisons;
+HEAD, index and working bytes may all differ simultaneously. Ignored/private
+files require explicit selection and authorization, not automatic discovery.
+Untracked input does not cease to matter because it lacks an index entry.
+
+Reuse Git object identities where available; retain bytes or explicit
+unavailability for observations not durably represented in Git. An OID alone
+does not prove storage, source authorship or applicability. Observation is
+read-only: modeling edit/stage/commit describes external events, not permission
+for the Context subsystem to add, commit, reset or overwrite user files.
+
+Git/source capture is an internal producer boundary. Its observations must
+enter Context through source-bound ORG Elements and applicable Contracts;
+GQL does not open a competing raw-filesystem Context window. Capture's actual
+I/O needs its own authorization and bounded race checks. The finite model
+uses asserted observations and does not authenticate that producer.
+
+* Extension and isolation
+
+A proposed Worktree Context revision binds:
+
+- A selected Project Context parent revision and any additional ordered parents.
+- The local repository/Worktree association and selected Git observation cut.
+- Query/program and ORG Contract cuts, source-qualified Elements and coverage.
+- Local declarations, overridden origins and unresolved conflicts.
+- Consumer scope and separate current review/authority subject.
+
+These are responsibilities of existing POO objects and relations, not a demand
+for a new per-file JSON bundle or custom hash registry. Runtime representation
+and storage layout remain undecided here.
+
+There are distinct isolation properties:
+
+| Isolation | Intended property | Required limitation |
+|-----------+-------------------+---------------------|
+| Working state | An ordinary edit/stage/commit in A does not rewrite B's index/files | Shared ref changes and explicit checkout/update still need observation |
+| Persistent Context | Local override returns a derived Context without mutating retained base/siblings | Final-self-dependent computed values may change in the derived instance |
+| Evidence interpretation | A-scoped observation/review is not a Project-wide or B-scoped acceptance | Identical content may be reusable only after current target admission |
+| Visibility/authority | A's content or grant is not automatically available to B | Must be enforced before protected source I/O and disclosure, not by inheritance |
+| Execution | Side effects are admitted against their actual resource and owner | Worktree placement alone does not isolate effects |
+
+Hard Project invariants are Contract obligations, not defaults that become
+safe merely because C3/C4 can resolve an override. A local proposal may change
+a declaration and remain queryable as a proposal while failing its applicable
+Contract. Open exploration is retained; execution and promotion stay separate.
+
+* Reconciliation and feedback
+
+GitOps observation/reconciliation and Context revision are separate events.
+A Project ref update does not rewrite an existing derived Context's recorded
+parent cut. That view can remain useful historically; current applicability
+may require a scoped reopen/rebase. Relevant source, query, Contract and
+environment changes have different dependency footprints. A changed index
+does not invalidate a working-byte-only observation if its actual dependencies
+are unchanged; an index-based review must instead bind the changed index.
+
+Rebase of a Context means selecting current parents and resolving increments
+again. It is not necessarily =git rebase=. Git merge/commit supplies integrated
+code identity, not integrated rationale, evidence or authority. Worktree
+findings return as source-bound Contribution candidates: preserve the branch
+observation, assess target Project scope/constraints/conflicts and current
+coverage, then record an explicit target acceptance or refusal. A Human decision
+is needed where the configured Governance policy requires one, not at every
+local derivation and not inferred from a Git operation.
+
+Retiring a Worktree or ending a Session must not erase retained evidence or
+counterexamples. It removes live consumption/resource bindings and may affect
+availability. Persistent origin and historical applicability are separate.
+
+The source repo and Artifact repo remain separate Git-versioned repositories.
+Association pins source and Artifact revisions explicitly; matching branch
+names is not a cross-repository atomic snapshot. Incomplete reconciliation
+retains a frontier. Git index staging belongs to GitOps; Developing is a work
+mode, while SDLC Staging/Release/Backport are separate process concepts.
+
+* Query and composition topology
+
+#+begin_src d2
+direction: right
+project: Project Context @ p1
+repo: Git repository instance
+wa: Worktree A observed cut
+wb: Worktree B observed cut
+ca: A Context @ a1
+cb: B Context @ b1
+sa: Session A
+sb: Session B
+query: Unified Query / GQL
+org: ORG Elements / Contract
+candidate: A finding (Project promotion candidate)
+repo -> wa: linked worktree
+repo -> wb: linked worktree
+project -> ca: selected parent / C3-C4 composition
+project -> cb: selected parent / C3-C4 composition
+wa -> ca: source-cut association
+wb -> cb: source-cut association
+sa -> ca: consumption
+sa -> cb: separate admitted consumption
+sb -> cb: shared workspace, not inherited grant
+sa -> query: scoped demand
+query -> org: sole Context content window
+org -> project: source-bound declarations
+ca -> candidate: propose, preserve origin
+candidate -> project: target review (not automatic inheritance)
+#+end_src
+
+The topology is not a fixed action route. [[file:11-context-query-boundary.org][Query is the unified interface,
+GQL its current language and ORG Elements its content window]]. C3/C4 resolves
+selected prototype inputs; it neither runs Query nor provides a clock.
+
+* Formal scope and remaining obligations
+
+[[file:../../../../packages/proofs/context-lifecycle/GitContext.qnt][GitContext.qnt]] isolates a finite two-Worktree source-state instance.
+Its Query lens intentionally selects working bytes plus one selected untracked
+input, not HEAD/index. It explores edit, new file, stage, commit and review;
+retains historical observations; and rejects stale selected bytes and implicit
+Project-wide scope promotion. Tokens stand for content versions, not actual
+OIDs. Session bindings are a declared example, not dynamic orchestrator proof.
+
+[[file:../../../../packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GitContext.lean][GitContext.lean]] uses the existing functional Focus API for local edits and
+proves scope preservation/composition and receipt distinction for changed
+Worktree, selected untracked content or Query revision. It is a typed proof
+projection, not another Scheme source/Query evaluator. Actual C3/C4 object
+composition remains qualified by [[file:10-graph-context-model-receipt.org][the previous Graph Context consumer]].
+
+Verification is recorded separately in [[file:13-git-context-verification.org][10.06.43.13]]; model success does not
+close the real source/Query correspondence or runtime obligations below.
+
+The system still needs real ORG/Query-to-prototype correspondence, conflict/
+delete/mode/filter-aware Git observations, capture-race detection, dynamic
+Session bindings, scoped multi-repository identity, target promotion and
+Worktree retirement models. Existing Module controls remain their original
+bounded semantic slice. This chapter does not claim complete runtime closure.
+[[file:../../../../packages/lambda-aitia/docs/rfcs/0009-incremental-architecture-map-and-rfc-case.org][Aitia RFC 0009]] supplies the incremental GitOps source Case; RFC 0015 remains
+the SDLC consumer, not the generic Context owner.

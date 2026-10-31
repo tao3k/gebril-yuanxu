@@ -1,0 +1,115 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 12.09 Isolated Evidence Binding Validation
+#+property: DOCUMENT_ID 12.09
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS native-scheme-fixture-validated-no-production-integration
+
+* Source boundary and runner
+
+This is the historical fixture-only gate. It is superseded by
+[[file:12.10-public-binding-and-core-producer-implementation.org][the public-binding/Core-producer implementation]]: the fixture producer and
+extracted binding module have now been removed. The original results below
+retain their original source and scope.
+
+This validates [[file:12.08-evidence-binding-and-publication-boundary.org][the invocation/publication binding design]] using actual
+gerbil-poo =declarative-metadata= and Core's public =yuanxu-contract-admit=.
+The qualification source is
+[[file:../../../t/qualification/contract-adaptation/evidence-binding-test.ss][evidence-binding-test.ss]]. Native Scheme preparation extracts =bind-evidence=
+verbatim from the design document into a private temporary module and copies
+the test there. No Python preparation, custom shell runner or new Justfile is
+used. The existing heap-fenced =just test-file= recipe supplies the 120-second
+limit and checks native harness failure markers.
+
+Public gerbil-poo checkout advanced independently to
+=850d7c81e77a92b261d16a0c081018244e22370a=. The final control uses that checkout;
+this task did not commit, fetch or push it. Core's admission source is the
+isolated snapshot of =types.ss= from Core =7595bed=, verified byte-identical to
+the active file:
+=cff7774aa8e6a6daaeae866984fb8a5ec291fe2045a326f846b6e1f4f22a325f=.
+JsonSchema value contracts are loaded from the local implementation. No module
+publication or runtime Loader is invoked.
+
+* One producer, existing result, no domain receipt construction
+
+The following function is TEST FIXTURE integration, not a newly installed Core
+API. Every tested domain uses this one producer:
+
+#+begin_src scheme
+(def (produce-evidence descriptor candidate context)
+  (.cc (yuanxu-contract-admit descriptor candidate context)
+    admission-contract: descriptor))
+
+(def (publish-admission previous subject descriptor context)
+  (metadata.publish
+    (bind-evidence AdmissionCall subject descriptor context evidence-view)
+    previous
+    (lambda (candidate)
+      (values (produce-evidence descriptor candidate context) candidate))
+    subject))
+#+end_src
+
+=produce-evidence= dispatches the actual public =.admit= and retains its
+validation/classification/obligation evidence. It records the exact descriptor
+at this one boundary; no AWS/domain function appends it. =AdmissionCall= checks
+the existing accepted-evidence predicate and presence of =admission-contract=.
+The binding relationship checks the exact subject, descriptor and context.
+No =fixture-current?= or separate success-receipt constructor is used by this
+suite. Earlier fixture-current controls remain historical qualification sources,
+not the proposed public interface.
+
+Production work still needs to record this reference inside the existing
+admission producer and expose it through its output contract. This experiment
+does not alter =core/types.ss= or install a forwarding admission API.
+
+* Bounded native results
+
+The final suite has 9 cases. Preparation has one separate native case.
+
+| Control | Observed result |
+|---------+-----------------|
+| Unified producer | Existing accepted evidence contains the exact descriptor, candidate and context; fresh publication succeeds |
+| Same symbolic name, different Contract objects | Both Contracts accept independently; replaying the first receipt under the second fails in the logic phase; fresh second-Contract admission succeeds |
+| Legacy symbol-only receipt | Existing acceptance predicate returns true, but the bound call rejects it in the output phase because the descriptor reference is absent |
+| Parent resource cached before child refinement | Parent stays =t3.small=; child resource and admitted candidate read =t3.medium=; parent receipt replay fails; fresh child publication succeeds |
+| Graph, source and Schema revision changes | Each new context rejects the old accepted receipt; fresh admission returns the current context |
+| Separate context with the same fields | Conservative identity binding rejects the old receipt; equal-looking data is not enough |
+| Fresh obligation refusal | Proposed child differs from old parent; output-phase refusal returns false result and the exact old parent |
+| Existing invocation formula | Its refusal remains effective after binding; logic-phase failure retains the old value |
+| Deliberately relabeled POO receipt | A forged descriptor field passes the identity relationship; this is an explicit non-authentication counterexample, not a claimed rejection |
+
+Replay controls return =#f= as result, preserve the exact previous value and
+report a metadata logic failure. Fresh rejected admission reports an output
+failure. All final suites report MODULE-OK, HARNESS-OK and final OK, with no
+ERROR CASE/CHECK/HARNESS or heap/stack overflow marker. Temporary sources and
+raw logs remain outside source control. No full build or remote CI is claimed.
+
+* Actual mechanisms versus premises
+
+Actual mechanisms exercised: public Type/Schema projection, diagnostic checking,
+Core classification and obligations through public =.admit=, native POO receiver
+and cache behavior, metadata input/output/relation checking, formula composition
+and =metadata.publish= refusal preserving the old state.
+
+Fixture-only: =bind-evidence=, the shared reference-recording producer, small
+instance Schema, evidence view, immutable context values and intentionally bad
+replay executors. This is not a new real-AWS schema acquisition run. It does not
+validate =cyclic-publication= successor readmission, concurrent Graph selection,
+process boundaries or result-cache performance.
+
+Identity binding requires immutable subject/descriptor/context contents. The
+test's context changes are distinct Graph/source/Schema policy values, not an
+implemented live invalidation service. Core must detect external input changes
+and ensure the selection remains current at publication. Contract preparation
+may be reused under existing premises; successful old evidence is not cached
+as approval for a new subject or context.
+
+The relabeling counterexample is intentional: ordinary public POO fields are
+not authentic certificates. Only the controlled producer/publication path may
+be used for approval. No new cryptographic or evidence-store system is proposed.
+No automatic freeze, source authentication, portable evidence, mutation detection
+or Lean correspondence was established by these controls.
+
+No module adaptation, runtime Loader, production admission change, dependency
+lock update or push was performed.

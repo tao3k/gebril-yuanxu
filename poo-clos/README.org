@@ -9,7 +9,7 @@
 Core owns this POO-native CLOS metaprotocol extension.  The Common
 Lisp HyperSpec supplies semantic conformance vectors, but it does not own the
 runtime architecture.  Class precedence is the upstream Gerbil POO prototype
-C4, projected back to the exact CLOS class metaobjects.  POO Flow owns its
+C4, projected back to the exact CLOS class metaobjects.  Agentic AI Lab owns its
 lightweight module descriptor and Loader selection; the Core CLOS runtime
 facade remains lazy and opt-in.
 
@@ -17,7 +17,7 @@ The implementation provides:
 
 - POO-native generic-function, method, specializer, effective-method, invocation
   frame, and typed-failure values;
-- =class=, =eql=, and universal specializers;
+- =class=, native =prototype=, =eql=, and universal specializers;
 - multiple-dispatch applicability and =argument-precedence-order=;
 - identity-preserving method addition, replacement, and removal;
 - the standard =around=, =before=, primary, and =after= method combination;
@@ -59,6 +59,79 @@ POO invocation-frame API for low-level construction, while ordinary
 =.defmethod= bodies receive hygienic lexical =call-next-method= and
 =next-method-p= bindings over the same runtime object.  There is no second
 evaluator.
+
+* Native prototype method declarations
+
+Core .defmethod accepts an explicit native prototype specializer alongside the
+existing class and eql forms. It reuses the existing prototype applicability
+and native C4 precedence; it never constructs a shadow CLOS class.
+
+#+begin_src scheme
+(.def Resolver.)
+(.def Publication.)
+(.def (PrototypePublication. @ Publication.))
+
+(.defgeneric publication-kind (resolver publication))
+(.defmethod (publication-kind
+             (resolver (prototype Resolver.))
+             (publication (prototype PrototypePublication.)))
+  'native-prototype)
+#+end_src
+
+=(value Class)= remains a CLOS class specializer. =(value (eql expression))=
+retains eql matching. =(value (prototype expression))= lowers to the existing
+=poo-clos-prototype-specializer=; its target is evaluated when admitting the
+method, not on every call. Annotation markers use lexical binding identity,
+so a shadowed =prototype= identifier remains an ordinary class expression.
+Malformed prototype/eql annotations are syntax errors; an invalid native target
+fails before generic method registration/generation changes. Generic inline
+methods support the same annotation. Existing =call-next-method= and
+=next-method-p= bindings retain their normal behavior.
+
+* Generic protocol and deferred method-bundle declarations
+
+A Generic accepts =(protocol expression)=. The expression is evaluated once
+when the generic is constructed and the actual object identity reaches the
+kernel; omission retains the existing default protocol. Duplicate/malformed
+clauses fail in declaration parsing. Existing inline methods use the same
+configured Generic.
+
+#+begin_src scheme
+(def RenderProtocol (poo-clos-generic-protocol 'render))
+(.defgeneric render (object) (protocol RenderProtocol))
+
+(defrules render-prototype-method ()
+  ((_ target result)
+   (.defmethod (render (object (prototype target))) result)))
+
+(.defmethod-bundle RenderMethods RenderProtocol
+  (render-prototype-method Resolver. 'resolver))
+
+;; Before composition the bundle has not registered its method.
+(poo-clos-compose-method-bundle render$poo-clos-generic RenderMethods)
+#+end_src
+
+Direct .defmethod and privately defrules-generated declarations inside a bundle
+produce checked method objects. They do not register methods or advance a
+Generic generation. A bundle may even precede its Generic declaration; native
+specializer targets must still exist when evaluated. Explicit composition uses
+existing protocol identity and lambda-list admission. Same-labelled but distinct
+protocol objects do not match. Failed bundle construction cannot leak an earlier
+method into the Generic. Composition remains ordered method admission, not an
+atomic whole-bundle transaction.
+
+Method bodies preserve hygienic call-next-method/next-method-p. The deferred
+context does not leak into executable method bodies; a .defmethod explicitly
+executed there retains ordinary immediate registration. Standalone .defmethod,
+legacy bundles of method-object expressions, class/eql/prototype specializers
+and default Generic behavior remain compatible. Explicit source expressions can
+still have their own effects; deferred registration does not promise zero work
+or runtime execution of arbitrary code is magically delayed.
+
+Local pinned-source qualification passed 56 cases across syntax (18), dispatch
+(12), combinations/protocol (13) and bundles (13). Declaration modules passed
+gxc -S source compilation. These receipts do not qualify native/AOT binaries,
+remote CI, product module loading or Funflow source/admission adapters.
 
 * MOP ownership boundary
 

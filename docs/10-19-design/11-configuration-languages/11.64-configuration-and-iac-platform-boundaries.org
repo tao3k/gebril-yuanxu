@@ -1,0 +1,178 @@
+#+title: 11.64 Configuration Languages and IaC Platforms: What POO Must Earn
+#+property: DOCUMENT_ID 11.64
+#+language: en
+#+filetags: :config-language:research:comparison:reflection:aws:
+#+property: STATUS research-and-design-not-platform-parity-or-performance-proof
+
+* Research purpose and method
+
+The decision is whether our abstraction removes enterprise maintenance work,
+not whether Scheme has more language features. Use the existing AWS workload,
+the same provider inputs, upstream evolution and the same release failure to
+evaluate two expression layers. See [[file:11.63-aws-two-layer-interface.org][the matched AWS interface analysis]].
+
+The user supplied
+[[https://futurepicker.com/terraform-alternatives-opentofu-pulumi-spacelift-env0-crossplane-2026/][the Terraform-alternatives comparison]] as a research prompt. That exact
+page could not be retrieved during this review; no ranking or unseen claim is
+attributed to it. The comparison below uses inspected primary documentation and
+actual checked-out library sources. It distinguishes languages, engines and
+operational platforms instead of ranking them as interchangeable tools.
+
+* Comparison A: configuration languages and maintained libraries
+
+| Need | Existing solution | Consequence for our design |
+|------+-------------------+----------------------------|
+| AWS input shape and defaults | Omnibus recipe/contract modules; KCL Schema; Nickel field contracts | Reuse generated Schema and maintained values. Another field validator is not differentiation. |
+| Field replacement and inherited values | KCL config operators; Nickel merge/priorities; ordinary POO slots | Keep simple assignment. Reject a UX requiring an explicit refinement for every scalar. |
+| Cross-field constraints | KCL check blocks; Nickel arbitrary predicate/validator contracts | Logical network checks are useful domain maintenance, not a unique capability. |
+| Higher-order behavior checking | Nickel includes higher-order/delayed contracts; gerbil-poo includes checked Function Types | Never claim Function contracts alone are something Nickel cannot express. |
+| Specialized object behavior in the Agent's host | POO methods, prototype identity, MOP and host functions | A candidate integration benefit, provided source/effect boundaries remain explicit. |
+| Approval freshness over selected versions | Requires an application/platform lifecycle in addition to pure configuration | Core must use its existing observations and public binding, not expose receipts in user values. |
+
+Primary references: [[https://www.kcl-lang.io/docs/reference/lang/spec/schema][KCL Schema specification]],
+[[https://nickel-lang.org/user-manual/contracts/][Nickel Contracts]] and
+[[https://nickel-lang.org/user-manual/merging/][Nickel merging]]. KCL documents a single base Schema and limited
+polymorphism, but also mixins, checks and attribute dependency calculation.
+Nickel documents contract-produced checked values and an idempotency expectation;
+our root-call counter does not establish idempotency or equivalent deduplication.
+
+The actual Omnibus maintained module at
+[[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/modules/aws-simple-ec2.ncl][aws-simple-ec2.ncl]] already turns its public type/network inputs into
+provider instance_type/subnet/security-group fields. A useful comparison must
+retain that elaboration layer. Comparing its short recipe to our raw provider
+resource object would conceal a missing domain library, not prove POO is worse
+or better as a language.
+
+HiveBus at =edc6095bed63a3c14f9f7147c931378d3e9d1609= provides another useful
+separation: [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/hosts/host-1/meta.nix][ordinary deployment values]] and
+[[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/units/self/flakeOutputs.nix][maintainer export-renaming behavior]] are not the same user task. Copying
+its syntax is unnecessary; the intent separation is the valuable lesson.
+
+Conclusion: basic configuration and reusable library recipes are already well
+served. POO needs a demonstrated host integration/maintenance benefit, and its
+ordinary layer must match this ecosystem's brevity. No claim of absolute
+inexpressibility in KCL, Nickel or an extensible surrounding application follows.
+
+Questions to answer before adding public abstraction:
+
+1. Which real user cannot express the requirement with a maintained value and
+   two assignments? Is it a language gap or our missing reusable Profile?
+2. Does an inherited method actually need the final receiver, or could a pure
+   function over data be clearer?
+3. Does the specialization have independent extension axes and multiple real
+   consumers, or are we introducing dispatch for a single case?
+4. Can an Agent discover the valid field and source without inspecting an
+   implementation method or understanding Context identity?
+
+* Comparison B: OpenTofu and Nix are infrastructure we should keep
+
+[[https://opentofu.org/docs/cli/commands/plan/][OpenTofu's plan command]] already computes an execution artifact from
+configuration and state. Its [[https://opentofu.org/docs/cli/commands/apply/][apply command]] can consume that saved artifact.
+Core's selected Graph and in-process checked-object evidence are DIFFERENT
+things. Use Graph for our configuration/build selection; retain the backend's
+actual command/format names when referring to its artifacts.
+
+Nix realizes reproducible tool/provider inputs; it does not establish AWS runtime
+state. OpenTofu owns provider RPC behavior, resource dependency ordering and
+state transitions; it cannot be replaced by a JSON Schema check. Core's current
+OpenTofu module already selects provider artifacts and contracts. Reimplementing
+provider downloading, resource state, diff/apply or a competing execution Graph
+would duplicate the existing engine.
+
+The useful additional question is whether the checked object that was approved
+is the one exported under the selected contracts and sources. The new Core
+handoff tests that in-process subject relation and rejects changed observed
+inputs. It does not yet bind the resulting JSON digest to a saved backend
+artifact or to live cloud state. That missing consumer handoff must be explicit;
+an admitted preview is not a deployment or rollback capability.
+
+Conclusion: extend configuration authoring and typed library boundaries while
+delegating infrastructure state/effects to the existing engine. Our evidence is
+not uniquely powerful simply because it has a different name from an approved
+backend artifact.
+
+Questions: what exact exported bytes are consumed? Which source/provider digest
+selects their schema? What changed after preview? Which authority permits apply?
+Which existing backend check already protects the same boundary? Never add a
+second check without a distinct consumer or invalidation condition.
+
+* Comparison C: operational platforms are not configuration languages
+
+| System | Documented responsibility | What Core should reuse or learn | What is NOT implemented here |
+|--------+---------------------------+---------------------------------+------------------------------|
+| Pulumi | Resource programming plus provider lifecycle; dynamic provider check/diff/create/update | Ordinary host-language libraries and explicit construction/effect phases | A replacement engine, dynamic provider lifecycle or state backend |
+| Spacelift | OPA/Rego policy points, run approval and stack dependencies/output references | Policy decisions tied to concrete run inputs; successful outputs as dependency inputs | Enterprise RBAC, run orchestration, drift management or approval UI |
+| env zero | Runtime governance and OPA-based deployment policies | Clear deployment-policy boundary and operational limits | A control plane, secret distribution, environment limits or drift service |
+| Crossplane | Reconciliation and Composition function pipelines | Explicit desired-state composition and observable runtime handoff | A Kubernetes controller, managed-resource lifecycle or reconciliation loop |
+
+Sources: [[https://www.pulumi.com/docs/iac/concepts/providers/dynamic-providers/][Pulumi dynamic providers]],
+[[https://docs.spacelift.io/concepts/policy][Spacelift policies]],
+[[https://docs.spacelift.io/concepts/stack/stack-dependencies][Spacelift stack dependencies]],
+[[https://docs.envzero.com/guides/policies-governance/policies][env zero policies]], and
+[[https://docs.crossplane.io/v1.20/concepts/compositions/][Crossplane 1.20 Compositions]]. The Crossplane reference is explicitly
+versioned, not an assertion that 1.20 is the latest release.
+
+The underlying examples matter: Spacelift can order Infrastructure -> Database
+-> PaymentService and pass successful upstream outputs. Crossplane's function
+pipeline receives observed/desired state and context. These systems already
+address enterprise composition and lifecycle. A Scheme function or multiple
+prototype list is not evidence of parity with them.
+
+Conclusion: expose adapters when a real workload needs these operational
+capabilities. Do not build another orchestration platform to justify object
+contracts. Exact in-process descriptor identity is a local guard, not enterprise
+identity, remote authorization, a signed artifact or a persistent audit trail.
+
+Questions: do we need authoring, evaluation, approval, deployment or continuous
+reconciliation? Who owns retries and partial effects? Can the current platform
+already provide that service? Which unsupported operational promises would be
+created by calling all of these steps simply admission?
+
+* What could justify the advanced layer in a complex enterprise case?
+
+A maintained Agent/runtime library may hold checked callbacks and receiver-aware
+resource projections, specialize provider and organization behaviors through
+ordinary public POO protocols, and publish selected effective configurations
+under a source-sensitive policy. Keeping those behaviors in one host library can
+reduce manual translation between configuration, validation and executable
+extension packages. This is an architectural opportunity, not an exclusivity
+theorem or an already measured enterprise result.
+
+The current narrowly demonstrated benefit is concrete: normalize once, pass the
+returned receiver through Core policy, retain the actual descriptor, and reject
+old evidence when expected subject/descriptor/Context or observed inputs change.
+The [[file:../12-contracts-types/12.17-checked-core-publication-implementation.org][Core implementation record]] separates tested production mechanisms from
+fixture source declarations, missing association and concurrency premises.
+
+To earn further complexity, require a matched case where multiple organizations
+extend a maintained executable Profile without copying it; an upstream behavior
+change propagates as intended; incompatible contract composition refuses with a
+source-specific diagnostic; and the resulting release is demonstrably bound to
+the final exported bytes. Test change-and-change-back, multiple parent sources,
+same-name different contracts, dormant branches and failed runtime effects.
+
+An expressive language can implement much of this with enough surrounding code.
+The comparison must therefore count that surrounding code, operational risk and
+maintenance effort on BOTH sides. We must not prove superiority by excluding
+KCL plugins, Nickel libraries, Pulumi host code or existing platform policies.
+
+* Design gates and deliberate non-goals
+
+- Ordinary layer: zero explicit Context/evidence/Graph setup in user config;
+  assignments use domain field names and generated contracts own representation.
+- Extension layer: original value/receiver and preserved obligations are visible
+  when needed. Named functions own algorithms; native slots own inheritance.
+- Publishing layer: one authoritative normalization, exact checked subject and
+  actual contract association, independently fresh source checks and explicit
+  failure state. These are platform concerns, not extra syntax per user field.
+- Scale: measure declaration discovery, selected evaluation, first-demand cost,
+  source reads and invalidation separately. Do not enumerate all Profile/Scenario
+  combinations or use a warm cache as evidence of cold-start performance.
+- Security: provider validation, secret isolation, authority and cloud drift are
+  separate checks. The current checks do not imply a sandbox or safe arbitrary
+  Scheme execution.
+
+If a matched case gains only extra objects and no reduction in duplicated
+maintenance or release mistakes, the correct design decision is to simplify or
+delegate. The purpose of this comparison is to make that decision possible,
+not to defend the architecture regardless of the outcome.

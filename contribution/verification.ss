@@ -6,9 +6,9 @@
 ;;; submitted POO facts and their claimed verification flags are not.
 (import (only-in :clan/poo/object .o .ref .slot? object?)
         (only-in :std/hash/misc hash-remove!))
-(export poo-flow-verification-adapter poo-flow-verify poo-flow-verification-valid?
-        poo-flow-revoke-verification! poo-flow-verification-admission
-        poo-flow-verification-admission-valid?)
+(export yuanxu-verification-adapter yuanxu-verify yuanxu-verification-valid?
+        yuanxu-revoke-verification! yuanxu-verification-admission
+        yuanxu-verification-admission-valid?)
 (def (instant? value) (and (exact-integer? value) (>= value 0)))
 (def (text? value) (and (string? value) (> (string-length value) 0)))
 ;;; Public POO objects are presentations, not authority. Keep the exact
@@ -39,7 +39,7 @@
          (equal? (.ref admission 'instant) (vector-ref entry 1))
          (eq? (.ref admission 'admits?) (vector-ref entry 2))
          entry)))
-(def (poo-flow-verification-adapter identity-value operation snapshot)
+(def (yuanxu-verification-adapter identity-value operation snapshot)
   (unless (and (text? identity-value) (procedure? operation) (procedure? snapshot))
     (error "verification adapter requires an identity, operation and snapshot function"))
   ;; Private issuance and revocation state is confined to this explicit boundary.
@@ -115,15 +115,15 @@
                  (vector (string-copy identity-value) verify-value valid?
                          admission-value revoke-value!))
       adapter)))
-(def (poo-flow-verify adapter value now until)
+(def (yuanxu-verify adapter value now until)
   ((vector-ref (required-adapter-entry adapter) 1) value now until))
-(def (poo-flow-verification-valid? adapter receipt value now)
+(def (yuanxu-verification-valid? adapter receipt value now)
   (let (entry (adapter-entry adapter))
     (and entry ((vector-ref entry 2) receipt value now))))
-(def (poo-flow-revoke-verification! adapter receipt)
+(def (yuanxu-revoke-verification! adapter receipt)
   ((vector-ref (required-adapter-entry adapter) 4) receipt))
-(def (poo-flow-verification-admission adapter receipts now)
+(def (yuanxu-verification-admission adapter receipts now)
   ((vector-ref (required-adapter-entry adapter) 3) receipts now))
-(def (poo-flow-verification-admission-valid? admission value)
+(def (yuanxu-verification-admission-valid? admission value)
   (let (entry (admission-entry admission))
     (and entry ((vector-ref entry 2) value))))

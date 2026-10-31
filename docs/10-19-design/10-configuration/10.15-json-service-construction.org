@@ -1,0 +1,253 @@
+#+title: 10.15 JSON Service Construction and Scenario-Owned Integration
+#+language: en
+#+property: DOCUMENT_ID 10.15
+
+* Source-package implementation successor
+
+[[file:10.16-selected-json-package-relocation.org][10.16]] now implements automatic selected JSON observation and source-package
+relocation for this Scenario. The earlier packaging-gap statements below are
+historical; compiled/AOT and product Loader qualification remain separate.
+
+* Implemented boundary
+
+This supersedes the integration placement in [[file:10.14-gitea-postgresql-publication.org][10.14]]. Ordinary PostgreSQL
+values now live in [[file:../../../scenarios/gitea-postgresql/postgresql/postgresql.json][postgresql.json]]; [[file:../../../scenarios/gitea-postgresql/gitea/gitea.json][gitea.json]] supplies client values.
+The maintained interfaces bind native behavior, Types and Contracts. They do not
+resolve strings as executable Scheme or copy Module API declarations into JSON.
+The separate [[file:../../../scenarios/gitea-postgresql/interface.ss][Gitea/PostgreSQL Scenario]] owns dependency composition,
+contribution routes and the Application admission entry.
+
+No product Loader adapter, deployment or service process is added. The same
+Core selected-record, .for-export, native .admit and .publish path is used.
+
+* Ordinary data and native defaults
+
+#+begin_src json
+{"settings": {"port": 5432}, "allowed-ports": [5432]}
+#+end_src
+
+The JSON bridge in [[file:../../../configuration/json.ss][configuration/json.ss]] uses Gerbil's native JSON reader.
+JSON objects become native POO values with =object<-alist=; arrays become Scheme
+lists. Empty objects, empty arrays, false and null retain distinct values.
+Null is canonicalized to =json-null= and is never treated as an absent slot.
+Exactly one JSON document with optional trailing whitespace is accepted.
+
+#+begin_src scheme
+;; PostgreSQL config.ss
+(def Document
+  (config-json-file
+    (path-expand "postgresql.json" (path-directory (this-source-file)))))
+(def Config
+  (config-defaults
+    (.o settings: (.o port: 5432) allowed-ports: '(5432))
+    (.get Document value)))
+#+end_src
+
+=config-defaults= uses native prototype parents for omitted fields, recursively
+for object/object pairs. It does not reconstruct every default slot. A supplied
+scalar, array or null replaces that subtree; it is not deep-merged as an object.
+The merged value still has to pass the existing domain Contract. JSON is a data
+entry, not an automatic Type generator and not a second module declaration DSL.
+
+| Input | Construction and admission |
+|-------+----------------------------|
+| PostgreSQL settings.port missing | Inherit 5432 |
+| PostgreSQL settings.port null | Preserve null; port Contract rejects |
+| PostgreSQL settings null | Preserve null; reject database structure before demanding client default |
+| Gitea database.port missing | Native default follows effective database port |
+| Gitea database.port 5440 | Preserve 5440; refuse mismatch with server 5432 |
+| Gitea database.port null | Preserve null; refuse invalid-port |
+| JSON false | Keep #f, independent of absence and null |
+
+The Gitea constructor applies its native default only to an object-valued
+client database. An explicit null/scalar database is retained for final rejection,
+rather than used as a prototype or silently replaced by an empty object.
+
+#+begin_src scheme
+(let (supplied (.get client database))
+  (if (object? supplied)
+    (.o (:: @ supplied) (port ? (.get postgresql settings port)))
+    supplied))
+#+end_src
+
+* Pure Module scopes and Scenario-owned relationships
+
+PostgreSQL publishes =config=, =document=, its Port Type, Config Contract and
+local allowed-port policy. It contains no Gitea identity or contribution target.
+Gitea likewise publishes config/document, an application constructor, its
+unbound Application Contract prototype and its own policy. It has no implicit
+PostgreSQL loading edge. Both remain reusable without selecting the integration.
+
+The Scenario declares both dependencies explicitly and binds actual scope Types:
+
+#+begin_src scheme
+;; scenarios/gitea-postgresql/objects.ss
+(def (application-scope database client)
+  (.o Scenario:
+      ((.get client application) (.get database config) (.get client config))
+      requirements:
+      (.o postgresql: (.get database policy requirements database-port)
+          gitea: (.get client policy requirements database-port))
+      types:
+      (.o Application:
+          (.cc (.get client types Application)
+            database-contract: (.get database types Config)
+            port-type: (.get database types port)
+            documents: (.o postgresql: (.get database document)
+                            gitea: (.get client document))))))
+#+end_src
+
+Its interface declares =applications/gitea-postgresql=, admission =Application=,
+with two routes: =requirements.postgresql= and =requirements.gitea=. The user
+still does not assemble a Requirements list. Core collects and fences both
+published routes before checking the candidate. Both route origins now correctly
+name the Scenario publication; each payload additionally carries its service
+JSON field source. A Scenario contribution origin and a JSON input origin are
+separate facts, not competing owner identities.
+
+* Field sources and diagnostics
+
+=config-field-origin= returns the JSON file and a symbol path, together with
+=presence= (=missing/null/explicit=). An explicit scalar/null blocking a deeper
+path reports the actual ancestor path and the requested path separately.
+A scalar value different from its recorded JSON value is labeled =derived-value=.
+That label is not a fabricated .def assignment location: equal-value replacement
+and exact Scheme override spans cannot be recovered by comparing values.
+
+The Application Contract reports both sides of a connection mismatch:
+
+#+begin_src scheme
+(.cc (issue 'connection-mismatch '(config gitea database port)
+            (.get client database port))
+  expected: (.get database settings port)
+  origin:
+  (config-field-origin (.get documents gitea)
+                      '(database port) (.get client database port))
+  expected-origin:
+  (config-field-origin (.get documents postgresql)
+                      '(settings port) (.get database settings port)))
+#+end_src
+
+For explicit gitea.json port 5440 versus server 5432, the result identifies
+=config.gitea.database.port=, actual 5440, expected 5432, client JSON source/path
+and database JSON source/path. Invalid-port diagnostics also retain the JSON
+field locator, including explicit null. Joint policy diagnostics retain both
+Core route origins and each policy's =source-origin= at =allowed-ports=.
+
+Exact JSON line/column spans, schema-driven field discovery and arbitrary
+identity-aware array transformations are not implemented by this JSON bridge.
+The follow-up [[file:10.17-scheme-field-origins.org][10.17]] adds Scheme slot-token provenance through the existing
+authoring bindings; it retains these JSON locators rather than inferring
+assignment positions by comparing values. Raw uninstrumented writes and AOT
+source authentication remain outside that qualification.
+
+* Currentness and final-value identity
+
+The JSON constructor captures exact regular-file bytes and canonical source path.
+The bound Application Contract's =source-inputs= comes from the two actual
+Documents. Core =AdmissionPublication.= merges and defensively copies those
+inputs into its existing currentness Context. Conflicting snapshots for one path
+are refused by existing =unique-build-inputs=. JSON data is not reread as new
+configuration during admission: changed bytes invalidate the old publication.
+
+Direct Application .admit also checks its bound JSON snapshots before reading
+the candidate. .publish checks Context currentness before candidate admission.
+An edit that adds only a newline is still a source revision and is refused.
+The descriptors/documents are trusted maintained capabilities, not a sandbox
+against malicious mutation of Core policy or arbitrary mutable Scheme data.
+
+The pure plan retains =configuration: config= and uses native lexical slots.
+After forcing the parent's ports at 5432, a derived server port 5433 yields both
+child plan ports 5433 while the parent remains 5432. A fixed parent plan still
+fails the effective Config identity check. Explicit client values never become
+default-following values merely to make the Contract pass.
+
+* Core tool publication and loading boundary
+
+The JSON constructor is an explicit closed Core bootstrap tool alongside build
+projection. Both bootstrap context discovery and source-spec discovery use the
+same root list in [[file:../../../module-system/building/source-closure.ss][source-closure.ss]]. This avoids weakening source confinement,
+copying the helper into service directories, or requiring user-selected service
+implementations in the bootstrap kernel. Ordinary module sources remain selected
+through their existing declared source tree. The config prelude is unchanged.
+
+Only selected service config demands its JSON file. There is no scan of all
+JSON files, no Provider discovery and no directory-to-product-Loader adapter.
+The existing disabled-module and deep selected-sibling controls remain distinct
+from the eager decoding of one demanded JSON document.
+
+* Executable receipts and remaining gates
+
+[[file:../../../t/gitea-postgresql-publication-test.ss][Service publication controls]] exercise the repository's actual module and
+Scenario directories, with source-isolated copies only for destructive controls.
+[[file:../../../t/gitea-json-configuration-test.ss][JSON controls]] exercise missing/null/false/explicit values, field locators,
+null client/server rejection and JSON source changes after the parent plan is
+cached. The test helper exports are internal test plumbing, not production APIs.
+Raw development failures remain local under =/private/tmp/json-*=.
+
+The service pair remains a connection-plan adapter, not a full PostgreSQL/Gitea
+configuration Schema, renderer, installer or runtime executor. Full AOT/package
+and product Loader qualification are separate gates. Existing 10.14 test receipts
+remain historical; the migrated Scenario and JSON controls require fresh results.
+
+** Selection example (paths relative to Core root)
+
+#+begin_src scheme
+(yuanxu! mode: explicit
+  :services
+  (postgresql @ "./modules/postgresql")
+  (gitea @ "./modules/gitea")
+  :applications
+  (gitea-postgresql @ "./scenarios/gitea-postgresql"))
+#+end_src
+
+The root selection is separate from JSON values and domain construction. It is
+not loaded by either service module or the Scenario itself.
+
+** Explicit qualification limits
+
+The closed constructor library and its parser code are bootstrap capabilities;
+this change does not claim zero parser startup cost. Data loading remains
+selected: merely having other JSON files or module directories does not read
+those files. No thousand-module startup or installed-package performance result
+is inferred from these focused controls.
+
+Standalone/AOT materialization and relocation of JSON data assets is not
+qualified by the source-runtime tests. In particular, the old role-only compiler
+materializer must not be assumed to copy arbitrary JSON sidecars. That packaging
+work is separate from the source-bound Contract currentness implemented here.
+
+** Focused validation and retained failure (2026-10-17)
+
+The default host runtime and pinned POO dependency documented in 10.13 were used,
+with current Core source and the existing =just test-file= heap/timeout fence.
+Fresh passing files:
+
+- =t/gitea-json-configuration-test.ss=: four completed cases, including native
+  bootstrap-context and generated source-spec discovery of the constructor;
+- =t/gitea-postgresql-publication-test.ss=: eight completed service cases after
+  the Scenario migration;
+- =t/contribution-deep-publication-isolation-test.ss=: ten completed controls;
+- =t/admission-checked-publication-test.ss=: seven completed controls.
+
+Each has =MODULE-OK=, =HARNESS-OK=, standalone =OK= and no error/overflow marker.
+The explicit-client test was rerun successfully with assertions for expected
+server value and both JSON file locators. The additional
+=t/admission-publication-test.ss= and =t/module-role-projection-test.ss= files
+also passed with the same required markers. Six distinct focused test files
+passed; this does not erase the broader standalone-route failure below.
+
+A broader =t/module-config-role-test.ss= run passed its initial config-role
+controls but failed its final standalone configuration-source case:
+=configuration import requires an admitted role or prebuilt library=,
+referring to source-only =module-system/source/declaration.ss=. A separate
+source control removing only the new JSON bootstrap root reproduced the same
+failure, under the same host runtime. No reader policy was weakened and no
+compatibility shim was introduced. This standalone source-reader route remains
+an open qualification gate; it is not reported as green or as an installed-build
+result. Failed logs, including the first control setup's missing dependency
+search path, are retained locally rather than rewritten.
+
+The shared linker =module-system/source/link.ss= was untouched; its Git blob
+remained =f2ccf2cd1a5715ed0dd81aad2ac44540f14f4eb6=. Concurrent index/staging changes
+were left alone; this work performed no staging, commits or resets.

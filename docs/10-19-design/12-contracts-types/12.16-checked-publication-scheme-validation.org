@@ -1,0 +1,160 @@
+#+title: 12.16 Checked Object Admission and Publication: Isolated Scheme Validation
+#+property: DOCUMENT_ID 12.16
+#+language: en
+#+property: STATUS isolated-scheme-validated-no-module-adapter-loader-or-push
+
+* Executed scope
+
+This records the original isolated adapter run. The
+[[file:12.17-checked-core-publication-implementation.org][production Core implementation]] removes that adapter, runs the retained
+controls through the actual producer and adds real platform Context tests.
+The original source hashes/results below remain historical receipts.
+
+The native Scheme suite is
+[[file:../../../t/qualification/contract-adaptation/checked-publication-test.ss][checked-publication-test.ss]]. It exercises the composition proposed in
+[[file:12.15-checked-object-admission-publication.org][the handoff design]], including inherited .admit receiver binding, an actual
+Function wrapper, nested Schema validation and the existing Core evidence
+producer. The adapter and publication functions live ONLY in the qualification
+suite. Production Core/admission/publication.ss is unchanged.
+
+Sources for this run:
+
+- gerbil-poo PR 13 pinned to =26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=,
+  obtained as an exact-revision source archive; no upstream code was edited.
+- Core types.ss from the active working tree, SHA-256
+  =0cbfe5c821bbaeb037177606d279a59a51fed595a4271457d66aa7baf4dd25a5=.
+  The isolated copy was compared byte-for-byte after the run.
+- Active modules/json-schema source, copied without edits and compared against
+  the working tree after the run. This is the existing pure Schema library.
+- Test source SHA-256
+  =1e4049567799d75a75b2a02960028239ae25b5bdcd841d51f0919419151755d1=.
+- Original installed Gerbil SDK =1cfb032= and its std/test/gxtest implementation.
+
+The fixture source namespace contains clan/poo from that exact archive and core
+with package: yuanxu, types.ss and modules/json-schema. The isolated GERBIL_PATH
+has no installed Core/POO package artifacts. GERBIL_LOADPATH points to this
+source namespace. These test-only environment settings do not change the
+production build entry or require downstream users to configure load paths.
+
+From the Core checkout, after preparing that namespace under a chosen fixture
+directory, use the existing entrypoint:
+
+#+begin_src sh
+GERBIL_PATH="$fixture/state" GERBIL_LOADPATH="$fixture/source" \
+  just test-file t/qualification/contract-adaptation/checked-publication-test.ss
+#+end_src
+
+No separate runner, Python program, upstream modification, dependency lock
+update or runtime Loader is involved. The existing Justfile supplies its 1G
+heap fence and unchanged 120-second timeout. Runs were serial; no full build
+or full test suite was run. No raw logs are added to the repository.
+
+* Checked subject and the actual descriptor
+
+The fixture's value Contract includes an existing public Function Type:
+
+#+begin_src scheme
+(def WebContract
+  (.cc ObjectContract. responsibilities:
+    (.o network-ref: Symbol settings: InstanceInput
+        decorate: (Fun String <- String))))
+
+;; Inside the test admission descriptor, using a counted value Contract:
+(.admit =>
+  (lambda (previous)
+    (lambda (candidate context)
+      (previous (validate value-contract candidate) context))))
+#+end_src
+
+The existing Core producer records the effective derived descriptor. No test
+code patches admission-contract into its result. The classifier receives the
+same checked object that the receipt and publication return. The Function
+forces the distinction: the checked root differs from the raw input and its
+callback is wrapped. Calling that wrapper with a number raises the public
+TypeError before entering
+the raw body; a valid string reaches the body once.
+
+Root validation is instrumented through an ordinary inherited .validate slot.
+One publication invokes it exactly once; replay invokes it zero times; a fresh
+admission invokes it once more. This does NOT claim one internal field read,
+one Schema traversal or one structural/diagnostic pass. Those are separate
+parts of upstream validation. No wrapper is added by the publication phase.
+
+* Final results
+
+The final run exited 0 with all eight cases completed. The exported native
+test-cleanup! checks that all eight bodies reached completion, so import-only
+success cannot be mistaken for execution. Output included
+=CHECKED-PUBLICATION: 8 cases completed=, MODULE-OK, HARNESS-OK and final OK,
+without ERROR CASE/CHECK/HARNESS, Heap overflow or Stack overflow markers.
+
+| Control | Observed result |
+|---------+-----------------|
+| One normalization and real Function field | Root validation count 1; raw and checked roots differ; classifier, receipt candidate and returned next state are the same checked object; invalid Function input refuses without running its body |
+| Actual descriptor association | Evidence admission-contract is the exact derived descriptor; that descriptor retains its actual watched value Contract; context is the exact supplied reference |
+| Cached parent, final child | Parent resource was demanded before inheritance; it retains t3.small; checked child config and resource both read t3.medium; parent evidence replay against the child refuses |
+| Same-named Contract replacement | Two independently constructed value Contracts and admission descriptors retain identical diagnostic names but different references; old evidence refuses under the new descriptor; fresh admission succeeds |
+| Equal-looking Context replacement | A copied Context with the same generation and guard still has different identity; old evidence refuses; fresh admission succeeds under it |
+| Schema spelling error | instnace_type is rejected before contextual classification; root validation ran once and classifier was not entered |
+| Contextual policy refusal | Validated value is not published; exact previous value is returned |
+| Version change during admission | Final currentness check refuses; exact previously published checked value is retained; previously valid evidence also refuses under the now-stale Context; another admission with that stale Context refuses before another validation |
+| Fixed parent projection or missing logical network | Stale-resource relation and unresolved logical reference refuse; neither replaces the previous value |
+
+The first two rows share one test case; this is eight test cases, not nine
+independently executed suites. Each refusal helper checks
+false result, exact previous-state identity and a public metadata failure.
+
+The final-value path exercised is:
+
+#+begin_src scheme
+(def evidence (yuanxu-contract-admit descriptor raw context-value))
+(def checked (.get evidence candidate))
+(def bound
+  (metadata.bind-evidence call checked descriptor context-value evidence-view))
+(metadata.invoke bound (lambda (_value) (values evidence checked)) checked)
+#+end_src
+
+This runs inside metadata.publish, retaining its original accepted-evidence
+output check and final context-current meaning. It uses the original unbound
+invocation template for each new binding. No cached approval or hand-maintained
+list of completed child checks is used.
+
+* Fixture versus production and proof premises
+
+Actual libraries exercised: public ObjectContract/refine/validate and Function
+validation; JsonSchema schema-value-contract and its evaluator; Core public
+yuanxu-contract-admit with its existing producer; public metadata binding,
+invocation and publication. Parent/child receiver behavior is actual POO code.
+
+Test-only integration: counted descriptor adapter, AWS-shaped small Schema,
+logical network rule, resource-input preview, boolean contextual policy and
+vector-backed revision guard. The revision guard demonstrates callback order
+and stale evidence refusal; it does not exercise Core's filesystem/Graph/Schema
+observation collector. This run does not claim real AWS provider coverage,
+deployment correctness or production AdmissionPublication. integration.
+
+Still required for production: complete automatic export/Schema/Contract
+association; a platform-generated Context retaining those observations; and
+the checked-root handoff in the real publication implementation. JsonSchema's
+arbitrary ProjectionContract write-back is not implemented or needed by this
+fixture's complete Scenario responsibilities.
+
+Premises remain controlled evidence production, immutable descriptor/subject/
+Context contents while in use, complete watched dependencies, terminating
+callbacks and sequential access. Exact identity does not authenticate fabricated
+receipts or detect untracked interior writes. Failure preserves the returned
+previous value, not arbitrary external callback effects. Concurrent publication
+and ABA mutation require the relevant upstream guards, not this fixture vector.
+
+The new recursive Graph/approval snapshot APIs and pre-retirement admit: hook
+were source-reviewed previously but NOT invoked in this suite. A post-install
+observer failure must not be described as Graph rollback. No Lean model was
+run or strengthened here; executable fixture results do not discharge host
+identity correspondence, complete dependency discovery or deployment premises.
+
+The initial test draft had unmatched parentheses; the reader rejected it before
+execution. Source review also corrected Fun's import to its public mop owner.
+An intermediate successful run was followed by the
+explicit eight-case completion guard and stronger stale-existing-evidence
+control. Only the final completed run supports the results above; earlier
+temporary logs remain outside source control.

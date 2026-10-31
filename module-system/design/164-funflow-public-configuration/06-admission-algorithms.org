@@ -1,0 +1,314 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Configuration 06: Selection, Obligations and Admission Guards
+#+property: STATUS normative-design-algorithms-not-product-implementation
+
+* Scope and dependency order
+
+The occurrence/owner layout in this earlier reference is superseded by
+[[file:13-independent-profiles-and-scenario-composition.org][module 13]]. Selected-Check obligations remain necessary, but independent
+Profile composition and effective configured-Funflow admission are different
+roles. The current context algorithms are not already a migrated adapter.
+
+The complete proposed bodies now live in
+[[file:07-admission-source.org][module 07]], including all three obligations, all three inherited .admit
+adapters and every new internal helper. This module retains their behavior and
+ordering specification. Source blocks in either document are design material,
+not an installed library or execution receipt. No Core kernel, Loader or
+runtime is changed.
+
+The owning abstractions are native Contracts, their inherited .admit methods,
+and named pure algorithms. One receiver axis does not require CLOS. No public
+strategy callback, raw self/super compute hook or new syntax is introduced.
+
+The current [[file:../../../types.ss][Core native object admission]] classifies a candidate, reads/admit its
+responsibilities, and invokes obligations only if those responsibilities pass.
+Therefore invalid selected-checks must be diagnosed before the checks getter
+is traversed. Adding a late obligation alone cannot enforce that order.
+
+* Concrete selector
+
+#+begin_src scheme
+(def (native-check? value)
+  (and (object? value)
+       (if (memq funflow-check (compute-precedence-list! value)) #t #f)))
+
+(def (funflow-selected-checks profile names)
+  (unless (object? profile)
+    (error "Expected a native Funflow Profile" profile))
+  (unless (nonempty-unique-symbols? names)
+    (error "Expected nonempty unique Check names" names))
+  (map
+    (lambda (name)
+      (unless (.slot? profile name)
+        (error "Selected Check does not exist" name))
+      (let ((check (.ref profile name)))
+        (unless (native-check? check)
+          (error "Selected slot is not a Funflow Check" name))
+        check))
+    names))
+#+end_src
+
+funflow-check is the canonical family prototype owned by Funflow, not a name
+looked up in an ambient registry. A stronger owner-associated Check Contract
+can require a narrower descendant at admission. The selector performs only the
+broad family test. It does not validate every field or grant source authority.
+
+The returned list contains the exact native objects from the supplied effective
+Profile, in selection order. There is no copied Check or saved parent list.
+Construction may demand those Check objects, but not all their fields. Other
+Profiles and unselected Check objects remain unforced.
+
+Direct reads of an invalid checks getter may raise ordinary evaluation errors.
+The guarded domain admission path below prechecks names and roles, so expected
+selection failures become diagnostic evidence before checks is read. Unexpected
+getter failures must be reported as configuration-evaluation-failed by the
+outer evaluation boundary, never converted to an empty list or success. The
+future boundary must preserve the original cause and requested path; it cannot
+guarantee interruption of a diverging getter without a separate resource policy.
+
+* Shared closed-field check and evidence shape
+
+The complete unknown-field-problems, ff-issue, ff-reject,
+ff-evaluation-rejection and ff-admit-problems bodies are in
+[[file:07-admission-source.org][the single source listing]]. They construct native evidence, reject
+unrecognized field names without evaluating them, and check returned evidence
+against the requested Contract/candidate/context. No helper is a name-only
+extension point. The source supersedes the earlier standalone rejection sketch.
+
+
+For these Check/Pipeline families every ordinary field, including kind and
+runtime-executed, is in responsibilities. Native object bookkeeping is not a
+wildcard exception for arbitrary candidate fields. Derived field extensions
+must refine responsibilities; allowed names derive from the effective
+descriptor. Contract metadata itself lives on the descriptor, not the candidate.
+
+.all-slots inspects native slot names/precedence; it does not force the unknown
+field's getter. The algorithm never reads commmands to reject that name.
+Suggestions may compare that spelling with declared fields; they are advisory,
+preserve the original path and never rewrite input. A source location is emitted
+only if expansion/MOP provenance is actually available.
+
+ff-reject returns the existing validation-evidence representation with
+accepted? false and nonempty failure facts. It does not introduce a second
+admission-result DSL. Returned evidence preserves the candidate and caller's
+context; nested evidence may contain explicit child contexts.
+
+* Native .admit refinement and guard algorithms
+
+The canonical declarations in [[file:01-surface-and-schema.org][module 01]] use the same inherited form for
+Check, Pipeline and Profile. For example:
+
+#+begin_src scheme
+(.admit (inherited)
+  (let ((base-admit (inherited)))
+    (cut funflow-admit-pipeline @ base-admit <> <>)))
+#+end_src
+
+The named functions have these exact signatures:
+
+#+begin_example
+funflow-admit-check    descriptor base-admit candidate context -> ValidationEvidence
+funflow-admit-pipeline descriptor base-admit candidate context -> ValidationEvidence
+funflow-admit-profile  descriptor base-admit candidate context -> ValidationEvidence
+#+end_example
+
+All three follow this algorithm:
+
+1. Use descriptor classification to establish the candidate's native prototype
+   family. On classification failure invoke base-admit for the ordinary native
+   mismatch evidence; never read domain fields on an unrelated value.
+2. Validate the required context fields before reading them. Report
+   invalid-admission-context for malformed/missing fields.
+3. Run the family-specific preflight below. If it returns failures, return
+   ff-reject with the established classification and failures; do not call base-admit.
+4. Otherwise call (base-admit candidate context) exactly once. It retains
+   classification, responsibility admission and the effective descriptor's
+   obligations. This is not a replacement implementation of Core admission.
+
+The planner constructs the effective context before the top-level Profile call.
+Profile preflight verifies that context instead of silently replacing it and
+returning evidence for different inputs. This preserves Core's evidence/context
+correspondence. A Profile Contract requiring selected-domain context cannot be
+used as a context-free proof that an entire Scenario is ready.
+
+Pipeline diagnostic paths are profile-path followed by pipeline; Check paths
+are profile-path followed by the selected Check slot. A local derived path need
+not mutate the caller's context. Rejected inherited field evidence is rendered
+with the family path and responsibility breadcrumbs; preserving these paths in
+domain diagnostics is part of the future adapter, not a current Core feature.
+
+| Preflight | Ordered checks before inherited admission |
+|-----------+-------------------------------------------|
+| Check | validate check-slot/path/effective-profile; scan unknown field names; verify the named effective slot exists and is this object |
+| Profile | resolve scenario -> module-slot -> profiles -> profile-name with guarded .slot?/.ref; compare that object with candidate and context.effective-profile; verify owner/source association according to the boundary's evidence requirements |
+| Pipeline | scan unknown names; establish .slot? for selected-checks; admit that value with NonemptyUniqueSymbolsContract; verify candidate eq? effective-profile.pipeline; for each selected name require presence and broad native-check? role |
+
+Profile preflight accepts dynamic symbolic publication names, not a fixed SDLC
+enum. A missing pipeline responsibility remains an ordinary inherited
+missing-responsibility failure; preflight must not force a nonexistent slot.
+Pipeline preflight reports missing-selection, invalid-selection,
+selected-check-missing or selected-slot-not-check with the requested path before
+reading checks. Check preflight reports unknown-attribute even if an unrelated
+known field also has an invalid value. These are bounded structural inspections,
+not a full-catalog audit.
+
+The module source comparison in the local example can establish retained
+SourceRef identity only. If authenticated ownership/reference evidence is
+required but unavailable, return the appropriate pending/rejected result. Do
+not upgrade a source handle equality into authentication.
+
+* Check obligations: exact relational and capability algorithm
+
+Signature: (funflow-check-obligations descriptor check context) -> diagnostics.
+The inherited responsibility traversal has already established field shapes.
+The guard established native family and effective slot identity. Rechecking
+those invariants here is permitted; they cannot be omitted from the admission
+contract merely because the unguarded function can be called internally.
+
+Collect failures for each independent row below, using the actual field path:
+
+| Rule | Exact condition / computation | Failure code |
+|------+-------------------------------+--------------|
+| Closed fields | unknown-field-problems on the effective descriptor | unknown-attribute |
+| Check name | check.check-name eq? context.check-slot | check-name-mismatch |
+| Effective identity | check eq? (.ref context.effective-profile context.check-slot) | effective-check-mismatch |
+| Runtime mode | member under symbol equality in capabilities.runtime-modes | unsupported-runtime-mode |
+| Result protocol | member under structural equality in capabilities.result-protocols | unsupported-result-protocol |
+| Durable policy | action-class in selected capabilities.action-classes as well as structural vocabulary | unsupported-action-class |
+| Retention | artifact-retention in capabilities.artifact-retentions | unsupported-retention |
+| Compensation presence | action-class compensatable implies nonempty compensation-refs | missing-compensation |
+| Compensation membership | every reference has a matching admitted action; collect missing references | unresolved-compensation |
+| Sandbox references | resolve every symbolic/list/inline reference as specified below | unresolved-sandbox-reference |
+| Payloads | admit all six named values against capabilities.payload-contracts entries | unsupported-payload, with nested evidence |
+| Metadata | intersect metadata keys with descriptor.reserved-metadata | reserved-metadata-key |
+
+Sandbox reference resolution is an ordinary recursive pure algorithm: a symbol
+must be in the admitted symbolic reference set; a native object must be eq? to
+an admitted inline profile; a nonempty proper list must have every element
+resolved by the same rule. It does not load or execute anything. Object shape
+alone is insufficient. Missing required resolution evidence remains pending.
+
+Payload admission iterates exactly input-bindings, config-sources,
+observability, observes, guards and report. For each field it calls
+yuanxu-contract-admit on the corresponding selected payload Contract with a
+field child context. Rejected evidence is retained as the diagnostic's nested
+evidence. The recipe's empty/false policies in [[file:05-field-contracts-and-capabilities.org][module 05]] make this concrete;
+there is no unnamed universal payload validator.
+
+Check reserved-metadata is the projection-owned key set in the canonical
+declaration. It matches the keys written by the current adapter. Defaults and
+application metadata do not become an alternate authority for durable policy.
+Full wire-value serialization admission is still a separate consumer gate.
+
+* Pipeline obligations: final identities, child admission and graph
+
+Signature: (funflow-pipeline-obligations descriptor pipeline context) -> diagnostics.
+The preflight has already validated selection structure, existence and nominal
+roles without demanding checks. Inherited responsibilities have now validated
+pipeline-name, selected-checks, the object-list shape of checks, metadata, kind
+and the false execution marker.
+
+Execute these steps in order:
+
+1. Verify pipeline eq? context.effective-profile.pipeline; reject
+   effective-pipeline-mismatch if not.
+2. Resolve expected-checks with funflow-selected-checks using the effective
+   Profile and the current Pipeline's selected-checks. Read actual-checks from
+   the current Pipeline. Require equal length and pairwise eq? in the same order.
+   On mismatch emit effective-checks-mismatch and stop before projecting or
+   admitting that substituted list.
+3. Zip selected names with expected objects. For each pair derive a native
+   child context with check-slot = name and path = profile-path followed by name.
+   Invoke the owner-associated check-contract. Collect rejected evidence with
+   those paths. Do not choose a Contract from a Check-authored slot.
+4. If any Check failed, return those failures without treating its unvalidated
+   fields as graph input. Otherwise validate dependency closure, task identity
+   and graph order as defined below.
+5. Also reject unknown Pipeline fields and projection-owned metadata keys.
+
+The identity predicate is ordinary Scheme:
+
+#+begin_src scheme
+(and (= (length actual-checks) (length expected-checks))
+     (every eq? actual-checks expected-checks))
+#+end_src
+
+For graph validation build an index from selected slot name to its admitted
+Check and selection position. For each dependency d of Check c, require d in
+that index and add edge d -> c. Report missing-selected-dependency at c's
+dependency-refs path; never auto-select it. Compute indegrees and use Kahn's
+algorithm, taking ready nodes in ascending original selection position. If
+nodes remain, report cyclic-dependencies with their names. Residual nodes are
+not necessarily all cycle members; a precise cycle witness requires a separate
+DFS/SCC pass and must not be fabricated from the residual set.
+
+Group selected durable-task-id values under the same qualified occurrence.
+Repeated IDs for distinct selected nodes produce duplicate-durable-task-id.
+Cross-Profile/Scenario flattening must qualify the source/occurrence/Profile/Check
+tuple or reject a collision; this local algorithm does not invent a safe wire
+encoding. Parent order in C4 is never an execution graph.
+
+* Profile obligations: selected occurrence, not a global audit
+
+Signature: (funflow-profile-obligations descriptor profile context) -> diagnostics.
+Inherited responsibilities have already admitted the pipeline using this same
+effective context. Do not repeat Pipeline/Check admission or force unused slots.
+
+1. Reconstruct the selected path from context.scenario, module-slot and dynamic
+   profile-name. Require that the resulting Profile is eq? profile and is eq?
+   context.effective-profile. Otherwise return effective-profile-mismatch.
+2. Require that the profile.pipeline object is the Pipeline belonging to that
+   selected occurrence. Do not accept an independently saved parent Pipeline
+   as though it established the child recipe's identity.
+3. Require that the selected names denote Check positions, never the reserved
+   pipeline position. Pipeline preflight/obligations establish those roles and
+   their full field admission; this step preserves the Profile namespace law.
+4. Record the scope as the selected closure. Unselected additional names are
+   available but not proven Check values by this receipt. They may be inspected
+   by a separate explicit audit; do not force them here merely to classify them.
+
+There is an important boundary: if a user explicitly replaces the entire
+Profile/Pipeline with a saved parent value, then that is the value selected by
+their configuration. Identity checks cannot infer an unrealized intention to
+inherit different child values. The schema validates the selected object graph;
+it is not a provenance-based prohibition on all explicit native replacement.
+What it rejects is a Pipeline checks list inconsistent with the currently
+selected Profile and membership. The same limitation applies to singleton
+objects deliberately reused at several paths; qualified occurrence context is
+needed for planning, not a claim that eq? proves unique provenance.
+
+* End-to-end required outcomes
+
+| Input or action | First relevant boundary | Required outcome |
+|-----------------+-------------------------+------------------|
+| commmands under build | closed Check preflight | unknown-attribute; do not force the unknown getter or emit an admitted plan |
+| smoke added but unselected | selected-closure scope | leave it unforced/unprojected; optional unused-name audit |
+| smoke selected but missing | Pipeline preflight | selected-check-missing before checks is read |
+| smoke.check-name = smok | Check obligation | check-name-mismatch |
+| smoke selected without package | graph closure | missing-selected-dependency |
+| unknown result decoder in a proper list | Check capability obligation | unsupported-result-protocol |
+| duplicate selection | Pipeline preflight | invalid-selection |
+| dependency cycle | validated graph algorithm | cyclic-dependencies |
+| package placed first in selection | graph order | dependencies still run first; selection position only breaks ready-node ties |
+| parent checks cached, child refines Checks | native receiver + identity obligation | resolve child objects, preserve parent/sibling caches |
+| saved parent checks assigned under child | Pipeline identity obligation | effective-checks-mismatch |
+| caller supplies candidate.contract | owner association | ignored as authority; independently selected Contract still applies |
+| required source/capability evidence absent | later readiness boundary, outside the local source listing | pending/rejected, not runtime-ready |
+
+* Verified versus proposed
+
+The [[file:04-selection-probe.org][ten-assertion source probe]] verifies only the native receiver pattern,
+grouped refinements, selected new name, warm identity and stale-parent negative
+control. Its map/.ref stand-in does not execute this selector's guards or any
+of the field/capability/graph algorithms above. Historical real Funflow tests
+verify fixed-list effective values and identities through the current adapter.
+
+The complete Scheme bodies in module 07 are documentation only. Everything
+newly specified here remains to be implemented and tested: structural
+field declarations, selected capabilities, guarded .admit methods, three domain
+obligations, diagnostic/context propagation, product selector and qualified
+projection. Reader checks on these document blocks are syntax-reading evidence
+only. No source authentication, runtime execution, Loader integration or new
+end-to-end acceptance receipt follows from this design.

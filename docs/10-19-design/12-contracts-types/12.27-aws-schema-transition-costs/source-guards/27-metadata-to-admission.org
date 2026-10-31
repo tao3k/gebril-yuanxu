@@ -1,0 +1,146 @@
+#+title: 12.27.40 Metadata Completion Is Not Admission Purity
+#+property: DOCUMENT_ID 12.27.40
+#+language: en
+
+* Question and implementation boundary
+
+The remaining principal role-byte cost is =6N^2 + 2N=. The next proposed fusion
+is the reader's =declaration-after= guard followed by
+=admit-module-publication!= and =publication-admitted=. This note audits that
+actual interval. It does not relabel a publication receiver as checked metadata
+and does not claim a further read reduction.
+
+The native reader returns the value of the interface binding. It does NOT
+return a =ModulePublicationContract= admission receipt. A successful source
+and authoring check establishes different facts from a successful value check.
+The current declaration macro preserves native lazy slots. Neither its literal
+=.o= syntax nor the maintained name of the predicate certifies getter purity.
+
+* Actual call chain and support
+
+| Owner | Actual work | Effect boundary |
+|-------+-------------+-----------------|
+| [[file:../../../../../module-system/source/reader.ss][Reader]] | Evaluate the interface binding, check complete observed source support, return the receiver | Native expansion/initializers remain open |
+| [[file:../../../../../module-system/source/admission.ss][Publication admission]] | Call the public Contract producer, check accepted evidence and source owner identity | Contract execution precedes owner comparison |
+| [[file:../../../../../module-system/source/publication.ss][ModulePublicationContract]] | Read identity/core/features, requirements, contribution/admission declarations and Contract methods | Cold receiver and descriptor slots can execute contributor code |
+| [[file:../../../../../types.ss][Unified producer]] | Normalize the value if requested, classify, admit responsibilities, execute local and Context obligations, create evidence | Normalizers, classifiers, children and obligations are extensible |
+| [[file:../../../../../module-system/source/link.ss][Linker]] | Allocate the constant source/publication/evidence record, run publication-admitted, then insert it | No Graph insertion before the tail guard succeeds |
+
+The source owner comparison and private table insertion are closed continuations
+only AFTER their inputs have been obtained without further callback execution.
+This does not make the preceding producer closed. Public accepted evidence
+binds the actual Contract/candidate/Context; it does not independently certify
+source currentness at a later publication boundary.
+
+Native =.ref/cached= is not a purity oracle either: it still participates in
+read demand and observer delivery. Cached values, active observation and
+unknown MOP/Context callbacks must not be conflated with a callback-free
+continuation. The existing read-window cache cannot span these effects.
+
+* Two executable native counterexamples
+
+[[file:../../../../../t/module-publication-test.ss][The existing publication test suite]] now checks both sides independently.
+These are deliberate negative injections, not author configuration APIs.
+
+#+begin_src scheme
+;; Actual interface declaration in a temporary module. The test writes this
+;; source with concrete fixture paths; source control stores no absolute path.
+(.def Fixture
+  identity:
+  (begin
+    (call-with-output-file (list path: config-file truncate: #t)
+      (lambda (out) (display replacement-config out)))
+    'custom/example)
+  core: (.o requires: (.o) scope-contract: FixtureContract
+            exports: FixtureScope)
+  features: (.o))
+
+;; Reading the binding did not execute identity. The actual .admit does.
+(def publication (.call reader read source))
+(check-equal? (yuanxu-validation-evidence-accepted?
+               (admit-module-publication!
+                 source 'custom/example publication context)) #t)
+(check-exception (.call reader admit-current) error?)
+#+end_src
+
+The second case uses an inherited Context with an actual declared
+=.contract-obligations= slot. Its callback changes the already observed config
+source after structural classification succeeds. The test requires exactly one
+callback invocation, accepted Contract evidence, and rejection by the reader's
+fresh source guard. It does not treat accepted evidence as source authorization.
+
+These controls establish why an open callback must retain the full tail guard.
+They do not establish atomicity against an independent external filesystem
+writer or rollback of arbitrary user callback side effects.
+
+* Quint and Lean have different responsibilities
+
+[[file:../../../../../dev/proofs/quint/SourcePrefix.qnt][SourcePrefix]] now separates cold metadata computation from the subsequent
+Context admission transition. Metadata completion is recorded explicitly.
+Both stages can change owner/import/policy/Schema support. The ordinary
+protocol must stay current and clean; the existing carry mutant still fails
+even though metadata has been checked before publication. Two additional
+mutants isolate cold-getter-only and Context-only changes. All ten catalogued
+outcomes remain required, including acceptance and termination controls.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] retains the size-independent recurrence and support laws.
+Its revision-preservation premise is deliberately NOT discharged by a shape
+receipt. The Quint source digest is updated. No duplicate theorem or second
+effect system is introduced: the missing native fact is unchanged actual
+support across the continuation, not another algebraic cost identity.
+
+* Focused measurement and next implementation requirement
+
+The existing real sixteen-module init test was rerun with observation enabled.
+It invokes the same =init.modules.module-0.tests= object and its =.run=, forces
+=init.tests.selected-graph= once, leaves business scope/unselected Feature cold,
+then changes init source and requires stale-Graph rejection and fixture cleanup.
+The Graph-ready result remains 4,351 physical file reads and 52 full reader
+guard runs, with 64 role parses and 64 native body expansions/evaluations.
+This matches the preceding implementation. It is a retained baseline, NOT a
+new optimization or a thousand-module capacity result.
+
+The source-only isolated qualification used the locked gerbil-poo dependency
+without altering its source or adding compiled caches. The focused publication
+suite, real JsonSchema/Funflow/AWS selection through =init.tests .run=, and
+native execution-cancellation suite all exited normally with their module,
+harness and final success markers. The AWS selection retained actual Schema,
+Contract and Context transition controls, stale-evidence rejection and accepted
+value preservation. The cancellation control retained owned-fixture release
+under TERM. None of these receipts establishes arbitrary SIGKILL cleanup.
+
+Reproduction uses the existing heap-fenced entrypoints in a locked source
+qualification environment; the four native tests run serially:
+
+#+begin_src text
+just test-file t/module-publication-test.ss true
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/module-testing-isolation-test.ss
+just test-file t/execution-cancellation-test.ss true
+#+end_src
+
+The first test attempt used a value override for a previously undeclared
+Context method. Native slot presence correctly did not treat that as a declared
+method; the callback-count assertion failed. The final fixture declares the
+method through native object inheritance and asserts presence before admission.
+This test correction is not a production change to slot or Contract semantics.
+
+Before the next source sweep can be removed, the real producer must supply
+the following native correspondence, without a contributor-supplied pure flag:
+
+1. The actual normalized subject and actual Contract reference are the ones
+   consumed by the continuation, including any contextual child admissions.
+2. Every getter, normalizer, policy method, Context obligation and observation
+   callback in that interval is either completed before the guard or remains
+   behind an independent full guard. Descriptor names and warm cache state
+   cannot substitute for this audit.
+3. Parent/prototype revisions, source support and Context support remain the
+   same; mutations including edit-and-restore invalidate the handoff.
+4. The evidence/record continuation does not escape into a later operation or
+   authorize reuse across a native import, initializer or open callback.
+
+Moving .admit into the reader without establishing these facts merely moves
+the effect boundary. Adding the necessary guard back before an open callback
+does not reduce =6N^2 + 2N=. This round therefore preserves the production
+guards rather than publishing an unsafe lower recurrence. Dependency-closed
+admission remains an implementation gap, not a completed performance claim.

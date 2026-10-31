@@ -11,39 +11,39 @@
         (only-in :clan/poo/mop Type. define-type element? validate)
         (only-in :std/error deferror-class)
         (only-in :std/list/list append-map delete-duplicates/hash every filter-map)
-        (only-in :core/module-system/types
+        (only-in :yuanxu/module-system/types
                  SemanticModuleContract)
-        (only-in :core/module-system/schema/relations poo-flow-empty-profiles)
-        (only-in :core/profile-composition/bindings
-                 poo-flow-scenario-module-binding
-                 poo-flow-scenario-profile-binding))
+        (only-in :yuanxu/module-system/schema/relations yuanxu-empty-profiles)
+        (only-in :yuanxu/profile-composition/bindings
+                 yuanxu-scenario-module-binding
+                 yuanxu-scenario-profile-binding))
 
-(export +poo-flow-profile-export-kind+
-        +poo-flow-profile-selection-proof-kind+
-        +poo-flow-profile-bundle-kind+
-        +poo-flow-profile-composition-strategy-kind+
-        PooFlowProfileExport
-        PooFlowProfileSelectionProof
-        PooFlowProfileBundle
-        PooFlowStageSpace
-        PooFlowProfileCompositionStrategy
+(export +yuanxu-profile-export-kind+
+        +yuanxu-profile-selection-proof-kind+
+        +yuanxu-profile-bundle-kind+
+        +yuanxu-profile-composition-strategy-kind+
+        YuanxuProfileExport
+        YuanxuProfileSelectionProof
+        YuanxuProfileBundle
+        YuanxuStageSpace
+        YuanxuProfileCompositionStrategy
         profiles
         compose
-        poo-flow-profile-export
-        poo-flow-module-profiles
-        poo-flow-select-module-profiles
-        poo-flow-profile-bundle
-        poo-flow-profile-bundle?
-        PooFlowProfileCompositionConflict?
-        PooFlowProfileCompositionConflict-receipt
-        poo-flow-profile-composition-conflict-presentation)
+        yuanxu-profile-export
+        yuanxu-module-profiles
+        yuanxu-select-module-profiles
+        yuanxu-profile-bundle
+        yuanxu-profile-bundle?
+        YuanxuProfileCompositionConflict?
+        YuanxuProfileCompositionConflict-receipt
+        yuanxu-profile-composition-conflict-presentation)
 
-(deferror-class PooFlowProfileCompositionConflict (receipt))
+(deferror-class YuanxuProfileCompositionConflict (receipt))
 
 ;;; Provenance is a maintainer claim, never an inferred source location.
-(def (poo-flow-profile-conflict-source value)
+(def (yuanxu-profile-conflict-source value)
   (let (claim
-        (if (element? PooFlowProfileSelectionProof value)
+        (if (element? YuanxuProfileSelectionProof value)
           (.ref (.ref value 'profile-export) 'provenance)
           (if (and (object? value) (.slot? value 'provenance))
             (.ref value 'provenance)
@@ -60,18 +60,18 @@
           status: 'declared)
       (.o source-path: #f source-line: #f status: 'undeclared))))
 
-(def (poo-flow-profile-conflict-source-label source)
+(def (yuanxu-profile-conflict-source-label source)
   (if (eq? (.ref source 'status) 'declared)
     (string-append (.ref source 'source-path) ":"
                    (number->string (.ref source 'source-line)))
     "source undeclared"))
 
-(def (poo-flow-profile-composition-conflict-presentation failure (level 'default))
-  (unless (PooFlowProfileCompositionConflict? failure)
+(def (yuanxu-profile-composition-conflict-presentation failure (level 'default))
+  (unless (YuanxuProfileCompositionConflict? failure)
     (error "not a Profile composition conflict" failure))
   (unless (memq level '(default advanced))
     (error "unknown Profile conflict presentation level" level))
-  (let* ((receipt (PooFlowProfileCompositionConflict-receipt failure))
+  (let* ((receipt (YuanxuProfileCompositionConflict-receipt failure))
          (ordinary
           (.o identity: (.ref receipt 'identity)
               reason: (.ref receipt 'reason)
@@ -85,13 +85,13 @@
           previous-value: (.ref receipt 'previous-value)
           candidate-value: (.ref receipt 'candidate-value)))))
 
-(def (poo-flow-raise-profile-composition-conflict
+(def (yuanxu-raise-profile-composition-conflict
       identity-value reason-value constraint-value
       prior-profile candidate-profile)
   (let* ((previous-source-value
-          (poo-flow-profile-conflict-source prior-profile))
+          (yuanxu-profile-conflict-source prior-profile))
          (candidate-source-value
-          (poo-flow-profile-conflict-source candidate-profile))
+          (yuanxu-profile-conflict-source candidate-profile))
          (receipt-value
           (.o identity: identity-value
               reason: reason-value
@@ -101,26 +101,26 @@
               previous-value: prior-profile
               candidate-value: candidate-profile))
          (failure
-          (PooFlowProfileCompositionConflict
+          (YuanxuProfileCompositionConflict
            (string-append
             "Profile " (symbol->string identity-value) " conflicts on "
             (symbol->string reason-value) " ("
-            (poo-flow-profile-conflict-source-label previous-source-value)
+            (yuanxu-profile-conflict-source-label previous-source-value)
             " vs "
-            (poo-flow-profile-conflict-source-label candidate-source-value)
+            (yuanxu-profile-conflict-source-label candidate-source-value)
             ")")
            irritants: '())))
-    (set! (PooFlowProfileCompositionConflict-receipt failure) receipt-value)
+    (set! (YuanxuProfileCompositionConflict-receipt failure) receipt-value)
     (raise failure)))
 
-(def +poo-flow-profile-export-kind+ 'poo-flow.profile-export.v1)
-(def +poo-flow-profile-selection-proof-kind+
-  'poo-flow.profile-selection-proof.v1)
-(def +poo-flow-profile-bundle-kind+ 'poo-flow.profile-bundle.v1)
-(def +poo-flow-profile-composition-strategy-kind+
-  'poo-flow.profile-composition-strategy.v1)
+(def +yuanxu-profile-export-kind+ 'yuanxu.profile-export.v1)
+(def +yuanxu-profile-selection-proof-kind+
+  'yuanxu.profile-selection-proof.v1)
+(def +yuanxu-profile-bundle-kind+ 'yuanxu.profile-bundle.v1)
+(def +yuanxu-profile-composition-strategy-kind+
+  'yuanxu.profile-composition-strategy.v1)
 
-(def (poo-flow-object-shape? value kind slots)
+(def (yuanxu-object-shape? value kind slots)
   (and (object? value)
        (every (cut .slot? value <>) slots)
        (eq? (.ref value 'kind) kind)))
@@ -129,24 +129,24 @@
 ;;; a POO object so named stages inherit and override natively, while each slot
 ;;; may remain an inert data value.  An object-valued slot opts into recursive
 ;;; POO extension.  Executable procedures are never Stage data.
-(def (poo-flow-stage-value-shape? value)
+(def (yuanxu-stage-value-shape? value)
   (or (object? value) (not (procedure? value))))
 
-(def (poo-flow-stage-space-shape? value)
+(def (yuanxu-stage-space-shape? value)
   (and (object? value)
        (every
         (lambda (stage-name)
           (and (symbol? stage-name)
-               (poo-flow-stage-value-shape? (.ref value stage-name))))
+               (yuanxu-stage-value-shape? (.ref value stage-name))))
         (.all-slots value))))
 
-(define-type (PooFlowStageSpace @ Type.)
-  .element?: poo-flow-stage-space-shape?)
+(define-type (YuanxuStageSpace @ Type.)
+  .element?: yuanxu-stage-space-shape?)
 
-(def (poo-flow-profile-export-shape? value)
-  (and (poo-flow-object-shape?
+(def (yuanxu-profile-export-shape? value)
+  (and (yuanxu-object-shape?
         value
-        +poo-flow-profile-export-kind+
+        +yuanxu-profile-export-kind+
         '(kind identity profile dependency-roots capability-requirements
                revision generation provenance runtime-executed?))
        (symbol? (.ref value 'identity))
@@ -157,29 +157,29 @@
        (symbol? (.ref value 'generation))
        (eq? (.ref value 'runtime-executed?) #f)))
 
-(define-type (PooFlowProfileExport @ Type.)
-  .element?: poo-flow-profile-export-shape?)
+(define-type (YuanxuProfileExport @ Type.)
+  .element?: yuanxu-profile-export-shape?)
 
-(def (poo-flow-profile-selection-proof-shape? value)
-  (and (poo-flow-object-shape?
+(def (yuanxu-profile-selection-proof-shape? value)
+  (and (yuanxu-object-shape?
         value
-        +poo-flow-profile-selection-proof-kind+
+        +yuanxu-profile-selection-proof-kind+
         '(kind module-definition module-instance profile-identity revision
                generation profile-export accepted? diagnostics
                runtime-executed?))
-       (element? PooFlowProfileExport (.ref value 'profile-export))
+       (element? YuanxuProfileExport (.ref value 'profile-export))
        (symbol? (.ref value 'profile-identity))
        (eq? (.ref value 'accepted?) #t)
        (null? (.ref value 'diagnostics))
        (eq? (.ref value 'runtime-executed?) #f)))
 
-(define-type (PooFlowProfileSelectionProof @ Type.)
-  .element?: poo-flow-profile-selection-proof-shape?)
+(define-type (YuanxuProfileSelectionProof @ Type.)
+  .element?: yuanxu-profile-selection-proof-shape?)
 
-(def (poo-flow-profile-bundle-shape? value)
-  (and (poo-flow-object-shape?
+(def (yuanxu-profile-bundle-shape? value)
+  (and (yuanxu-object-shape?
         value
-        +poo-flow-profile-bundle-kind+
+        +yuanxu-profile-bundle-kind+
         '(kind module-bindings profiles profile-identities imports capabilities
                selection-proofs stages profile-bindings provenance
                runtime-executed?))
@@ -193,31 +193,31 @@
        (list? (.ref value 'imports))
        (list? (.ref value 'capabilities))
        (list? (.ref value 'selection-proofs))
-       (every (cut element? PooFlowProfileSelectionProof <>)
+       (every (cut element? YuanxuProfileSelectionProof <>)
               (.ref value 'selection-proofs))
-       (element? PooFlowStageSpace (.ref value 'stages))
+       (element? YuanxuStageSpace (.ref value 'stages))
        (list? (.ref value 'profile-bindings))
        (list? (.ref value 'provenance))
        (= (length (.ref value 'profiles))
           (length (.ref value 'provenance)))
        (eq? (.ref value 'runtime-executed?) #f)))
 
-(define-type (PooFlowProfileBundle @ Type.)
-  .element?: poo-flow-profile-bundle-shape?)
+(define-type (YuanxuProfileBundle @ Type.)
+  .element?: yuanxu-profile-bundle-shape?)
 
-(def (poo-flow-profile-composition-strategy-shape? value)
-  (and (poo-flow-object-shape?
+(def (yuanxu-profile-composition-strategy-shape? value)
+  (and (yuanxu-object-shape?
         value
-        +poo-flow-profile-composition-strategy-kind+
+        +yuanxu-profile-composition-strategy-kind+
         '(kind identity compose runtime-executed?))
        (symbol? (.ref value 'identity))
        (procedure? (.ref value 'compose))
        (eq? (.ref value 'runtime-executed?) #f)))
 
-(define-type (PooFlowProfileCompositionStrategy @ Type.)
-  .element?: poo-flow-profile-composition-strategy-shape?)
+(define-type (YuanxuProfileCompositionStrategy @ Type.)
+  .element?: yuanxu-profile-composition-strategy-shape?)
 
-(def (poo-flow-profile-export
+(def (yuanxu-profile-export
       identity-value profile-value
       dependency-roots: (dependency-root-values '())
       capability-requirements: (capability-values '())
@@ -225,8 +225,8 @@
       generation: (generation-value 'initial)
       provenance: (provenance-value 'declared))
   (validate
-   PooFlowProfileExport
-   (.o kind: +poo-flow-profile-export-kind+
+   YuanxuProfileExport
+   (.o kind: +yuanxu-profile-export-kind+
        identity: identity-value
        profile: profile-value
        dependency-roots: dependency-root-values
@@ -238,11 +238,11 @@
 
 ;;; Build the export index once.  Selection performs O(1) membership lookup and
 ;;; never reconstructs or rescans a Module export surface.
-(def (poo-flow-module-profiles . export-values)
-  (unless (every (cut element? PooFlowProfileExport <>) export-values)
+(def (yuanxu-module-profiles . export-values)
+  (unless (every (cut element? YuanxuProfileExport <>) export-values)
     (error "Module profiles require typed Profile exports" export-values))
   (let ((index (make-hash-table-eq))
-        (prototype (poo-flow-empty-profiles)))
+        (prototype (yuanxu-empty-profiles)))
     (for-each
      (lambda (export-value)
        (let (export-identity-value (.ref export-value 'identity))
@@ -254,11 +254,11 @@
         contributions: export-values
         export-index: index)))
 
-(def (poo-flow-profile-selection-proof
+(def (yuanxu-profile-selection-proof
       module-definition-value module-instance-value export-value)
   (validate
-   PooFlowProfileSelectionProof
-   (.o kind: +poo-flow-profile-selection-proof-kind+
+   YuanxuProfileSelectionProof
+   (.o kind: +yuanxu-profile-selection-proof-kind+
        module-definition: module-definition-value
        module-instance: module-instance-value
        profile-identity: (.ref export-value 'identity)
@@ -269,13 +269,13 @@
        diagnostics: '()
        runtime-executed?: #f)))
 
-(def (poo-flow-profile-bundle
+(def (yuanxu-profile-bundle
       module-bindings-value profile-values profile-identity-values
       import-values capability-values proof-values stage-values
       profile-binding-values provenance-values)
   (validate
-   PooFlowProfileBundle
-   (.o kind: +poo-flow-profile-bundle-kind+
+   YuanxuProfileBundle
+   (.o kind: +yuanxu-profile-bundle-kind+
        module-bindings: module-bindings-value
        profiles: profile-values
        profile-identities: profile-identity-values
@@ -287,10 +287,10 @@
        provenance: provenance-values
        runtime-executed?: #f)))
 
-(def (poo-flow-profile-bundle? value)
-  (element? PooFlowProfileBundle value))
+(def (yuanxu-profile-bundle? value)
+  (element? YuanxuProfileBundle value))
 
-(def (poo-flow-profile-ref/default profile slot default)
+(def (yuanxu-profile-ref/default profile slot default)
   (if (.slot? profile slot) (.ref profile slot) default))
 
 ;;; Stage spaces are POO objects whose slot names are Scenario stage names.
@@ -299,7 +299,7 @@
 ;;; Empty Stage spaces carry no semantics, so discard them before asking the
 ;;; native POO engine for one flat precedence list.  This avoids manufacturing
 ;;; one empty object and one prototype layer per selected Profile.
-(def (poo-flow-compose-stage-spaces stage-spaces)
+(def (yuanxu-compose-stage-spaces stage-spaces)
   (let (effective-stage-spaces
         (filter-map
          (lambda (stage-space)
@@ -311,7 +311,7 @@
       (.o)
       (apply .mix effective-stage-spaces))))
 
-(def (poo-flow-profile-export-ref profiles-value profile-identity)
+(def (yuanxu-profile-export-ref profiles-value profile-identity)
   (unless (and (object? profiles-value)
                (.slot? profiles-value 'export-index))
     (error "Module does not publish an indexed Profile export surface"
@@ -322,8 +322,8 @@
     (hash-get index profile-identity)))
 
 ;;; Selection is intentionally shallow: dependency closure and cycle handling
-;;; remain owned by the fixed-point boundary after the root is admitted.
-(def (poo-flow-select-module-profiles module-value instance-identity profile-identities)
+;;; remain owned by selected Graph admission after the root is admitted.
+(def (yuanxu-select-module-profiles module-value instance-identity profile-identities)
   (unless (element? SemanticModuleContract module-value)
     (error "use-module requires a semantic Module" module-value))
   (unless (and (or (symbol? instance-identity)
@@ -341,32 +341,32 @@
             (.ref instance-identity 'name)))
          (module-profiles (.ref module-value 'profiles))
          (exports
-          (map (cut poo-flow-profile-export-ref module-profiles <>)
+          (map (cut yuanxu-profile-export-ref module-profiles <>)
                selected-profile-identities))
          (profile-values (map (cut .ref <> 'profile) exports))
          (proof-values
-          (map (cut poo-flow-profile-selection-proof
+          (map (cut yuanxu-profile-selection-proof
                     module-definition instance-identity <>)
                exports))
          (stage-values
-          (poo-flow-compose-stage-spaces
+          (yuanxu-compose-stage-spaces
            (filter-map
             (lambda (profile)
               (and (.slot? profile 'stages) (.ref profile 'stages)))
             profile-values))))
-    (poo-flow-profile-bundle
-     (list (poo-flow-scenario-module-binding instance-name module-value))
+    (yuanxu-profile-bundle
+     (list (yuanxu-scenario-module-binding instance-name module-value))
      profile-values
      selected-profile-identities
      (append-map (cut .ref <> 'dependency-roots) exports)
      (append-map (cut .ref <> 'capability-requirements) exports)
      proof-values
      stage-values
-     (map (cut poo-flow-scenario-profile-binding instance-name <>)
+     (map (cut yuanxu-scenario-profile-binding instance-name <>)
           selected-profile-identities)
      (map (cut .ref <> 'provenance) exports))))
 
-(def (poo-flow-profile-identity profile)
+(def (yuanxu-profile-identity profile)
   (let* ((identity-value
           (and (.slot? profile 'identity) (.ref profile 'identity)))
          (name-value
@@ -380,23 +380,23 @@
       (error "Profile operand requires a symbolic or string identity"
              identity-value name-value)))))
 
-(def (poo-flow-direct-profile-bundle profile)
+(def (yuanxu-direct-profile-bundle profile)
   (unless (object? profile)
     (error "profiles composition accepts only POO-native Profile values"
            profile))
-  (let (profile-identity-value (poo-flow-profile-identity profile))
-    (poo-flow-profile-bundle
+  (let (profile-identity-value (yuanxu-profile-identity profile))
+    (yuanxu-profile-bundle
      '()
      (list profile)
      (list profile-identity-value)
-     (poo-flow-profile-ref/default profile 'imports '())
-     (poo-flow-profile-ref/default profile 'capabilities '())
+     (yuanxu-profile-ref/default profile 'imports '())
+     (yuanxu-profile-ref/default profile 'capabilities '())
      '()
-     (poo-flow-profile-ref/default profile 'stages (.o))
+     (yuanxu-profile-ref/default profile 'stages (.o))
      '()
-     (list (poo-flow-profile-ref/default profile 'provenance 'declared)))))
+     (list (yuanxu-profile-ref/default profile 'provenance 'declared)))))
 
-(def (poo-flow-profile-bundle-selection-keys bundle)
+(def (yuanxu-profile-bundle-selection-keys bundle)
   (if (pair? (.ref bundle 'selection-proofs))
     (map (lambda (proof)
            (list (.ref proof 'module-instance)
@@ -406,7 +406,7 @@
 
 ;;; Fuse operands in source order while using one hash index for idempotence.
 ;;; The first admitted selection owns its stable position and evidence.
-(def (poo-flow-compose-profile-bundles operand-values)
+(def (yuanxu-compose-profile-bundles operand-values)
   (unless (pair? operand-values)
     (error "compose profiles requires at least one Profile operand"))
   (let ((seen (make-hash-table))
@@ -425,10 +425,10 @@
     (for-each
      (lambda (operand)
        (let* ((bundle
-               (if (poo-flow-profile-bundle? operand)
+               (if (yuanxu-profile-bundle? operand)
                  operand
-                 (poo-flow-direct-profile-bundle operand)))
-              (keys (poo-flow-profile-bundle-selection-keys bundle)))
+                 (yuanxu-direct-profile-bundle operand)))
+              (keys (yuanxu-profile-bundle-selection-keys bundle)))
          (for-each
           (lambda (key profile identity proof profile-binding provenance)
             (if (hash-key? seen key)
@@ -439,7 +439,7 @@
                                     (.ref proof 'revision))
                                (eq? (.ref previous 'generation)
                                     (.ref proof 'generation)))
-                    (poo-flow-raise-profile-composition-conflict
+                    (yuanxu-raise-profile-composition-conflict
                      identity 'selection-revision
                      (.o previous-revision: (.ref previous 'revision)
                          previous-generation: (.ref previous 'generation)
@@ -447,7 +447,7 @@
                          candidate-generation: (.ref proof 'generation))
                      previous proof))
                   (unless (eq? previous profile)
-                    (poo-flow-raise-profile-composition-conflict
+                    (yuanxu-raise-profile-composition-conflict
                      identity 'distinct-direct-values
                      'one-profile-value-per-identity
                      previous profile))))
@@ -502,26 +502,26 @@
          (set! stage-spaces-rev
                (cons (.ref bundle 'stages) stage-spaces-rev))))
      operand-values)
-    (poo-flow-profile-bundle
+    (yuanxu-profile-bundle
      (reverse module-bindings-rev)
      (reverse profiles-rev)
      (reverse profile-identities-rev)
      (reverse imports-rev)
      (reverse capabilities-rev)
      (reverse proofs-rev)
-     (poo-flow-compose-stage-spaces (reverse stage-spaces-rev))
+     (yuanxu-compose-stage-spaces (reverse stage-spaces-rev))
      (reverse profile-bindings-rev)
      (reverse provenance-rev))))
 
 (def profiles
   (validate
-   PooFlowProfileCompositionStrategy
-   (.o kind: +poo-flow-profile-composition-strategy-kind+
+   YuanxuProfileCompositionStrategy
+   (.o kind: +yuanxu-profile-composition-strategy-kind+
        identity: 'profiles
-       compose: poo-flow-compose-profile-bundles
+       compose: yuanxu-compose-profile-bundles
        runtime-executed?: #f)))
 
 (def (compose strategy . operands)
-  (unless (element? PooFlowProfileCompositionStrategy strategy)
+  (unless (element? YuanxuProfileCompositionStrategy strategy)
     (error "compose requires a POO-native composition strategy" strategy))
   ((.ref strategy 'compose) operands))

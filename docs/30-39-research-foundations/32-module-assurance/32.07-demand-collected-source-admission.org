@@ -1,0 +1,170 @@
+#+title: 32.07 Demand-collected source admission
+#+language: en
+#+property: DOCUMENT_ID 32.07
+#+property: STATUS partial-implementation-source-collector-only
+#+date: [2026-10-18]
+
+The narrow first step is now implemented in
+[[file:32.08-collected-source-observations.org][32.08]]. Collection is attached to the existing shared source-check authority,
+so JSON-only nested admissions are covered too. The native field-access/cache
+hooks below remain design work; the explicit preflight paths are retained.
+
+* Finding
+
+The implementation in [[file:32.06-source-aware-admission-convergence.org][32.06]] repeats the same field demand in ApplicationContract's
+source-paths and the sources argument of source-diagnose-at. The former exists
+only to repeat source checks after inherited admission. It should be replaced
+by an admission-local record of the source specifications actually checked.
+
+Do not derive a complete path list by walking responsibilities, calling
+.all-slots recursively, or evaluating the entire candidate. Contract structure
+defines legal fields; the running admission determines demanded fields.
+
+* Existing facilities and missing hooks
+
+| Facility | Current implementation | Design consequence |
+|----------+------------------------+--------------------|
+| located-slot | Stores source location and original input observations on native specifications | Reuse this metadata, never regenerate source assertions from current bytes |
+| admit-origins! | Checks exact stored inputs | Suitable place to report checked origins to a private scoped collector |
+| source-diagnose-at | Traverses a chosen path with source guards before diagnose | Its current sources argument can seed a first narrow extraction |
+| Contract field validation | Uses native field access and validation | Observe those accesses, rather than separately enumerating fields |
+| Public Contract field-access observer | Not exposed by the inspected installed interfaces | Required before removing the explicit leaf guards from preflight |
+| Receiver cache dependency replay | Not established by the current source admission tests | Required for claims about arbitrary cached computed dependencies |
+| fresh source reads | Implemented in 32.06 | Final observation rechecks must use this boundary |
+
+The checked-in .data/gerbil-poo corpus is a reference copy, not the runtime
+dependency. The installed object-contract-validation interface exports
+validation-fields, prepare-validation and validate-object; it does not expose
+a field-access observer. The installed object interface also does not expose
+a public read observer. This note does not treat a proposed hook as native
+functionality already available.
+
+* Narrow extraction versus full target
+
+The narrow Core-only extraction can collect inputs at admit-origins! while
+retaining current preflight guards. It removes the root source-paths list and
+keeps today's Gitea coverage. It does not discover reads that never pass through
+those guards. Report that boundary explicitly instead of calling it complete
+automatic dependency discovery.
+
+The full target also removes the source-diagnose-at sources argument. Native
+Contract field access must notify the source adapter before demanding a field,
+including a cached field. Required/object/unknown-field structural checks must
+still precede value access. In particular, detecting an unknown field must not
+evaluate its value just to collect provenance.
+
+The domain still specifies safe stage order and each stage's root location:
+
+#+begin_src scheme
+;; Target design, not current source-diagnose-at behavior.
+;; Fields below these roots come from actual Contract access, not this list.
+(source-diagnose-at database-type '(config postgresql))
+(source-diagnose-at client-type '(config gitea))
+
+;; Target Application slots: no source-paths and no replacement field table.
+.preflight: (.get value-contract preflight)
+.locate-diagnostic: (config-diagnostic-locator documents '(config))
+#+end_src
+
+The remaining root paths identify where a staged Contract applies. They are not
+a second catalog of every leaf field. PostgreSQL must be shape-safe before
+Gitea can demand the default that follows PostgreSQL's port; collecting sources
+does not remove this domain dependency ordering.
+
+* Private scoped observation protocol
+
+During one source-bound .admit, keep an ephemeral observation set. An entry
+retains the actual receiver, slot/specification identity and original source
+input observations; diagnostic locations remain attached to those specifications.
+This set is execution bookkeeping, not a public configuration object, another
+field schema, an acceptance receipt or a global provenance registry.
+
+1. Open the collector before preflight, with dynamically scoped restoration on
+   success and exception. Nested admission reports its dependencies to its own
+   scope and all enclosing active admission scopes; child success alone cannot
+   authorize a root after its source changes later.
+2. Before a Contract field read, query native provenance for that receiver and
+   slot without forcing sibling values. Check and record the actual retained
+   input observations. Never read the file anew and adopt those bytes as a new
+   baseline: doing so would bless a stale object with a changed source.
+3. Let native diagnose/validate and contextual child admission continue. They
+   own normalization, child obligations and candidate identity exactly as in
+   32.06. Record additional guarded reads from classification and contributions.
+4. De-duplicate identical observations without dropping conflicting revisions.
+   Two observations of the same file with different bytes must refuse, not
+   select the last one. Retain receiver/specification observations when their
+   revision can change; file equality alone is not object applicability.
+5. Finalize any source diagnostic decoration within the collector. Keep raw
+   candidate provenance separate from the normalized evidence subject. Child
+   receipts remain the original receipts, not reconstructed field failures.
+6. Leave the shared read cache and run the existing context/publication
+   currentness gates while collection is still active. Then freeze the set and
+   freshly recheck all retained inputs and applicable specification revisions.
+   This final pass checks retained observations only; it must not discover or
+   force new domain values. No open-ended collect-until-stable loop is proposed.
+
+The root source-inputs for loaded JSON documents and the selected publication
+Context remain authoritative. Collecting Scheme field demands does not replace
+package source closure, JSON input binding or contribution coverage.
+
+* Cached values: do not claim coverage from computation alone
+
+Wrapping located-slot's computation is insufficient: a cached read can bypass
+that wrapper. A read observation must occur before returning either a cached
+or computed value. A cached computed field may also depend on another field
+that is no longer evaluated during the current admission.
+
+For the maintained Gitea case, ordered preflight validates the final PostgreSQL
+and Gitea configuration, and the domain plan check compares the plan's exact
+configuration identity and both port projections. These controls remain useful,
+but do not prove general cached dependency replay.
+
+For general computed relationships, a native cache entry needs its own guarded
+dependency trace, collected when computed and replayed on a cache hit without
+re-evaluating dependency values. A trace must be bound to the effective receiver,
+slot specification and relevant revision; it cannot be borrowed from the parent
+when a child inherits the computation. Constant/default/override and cached-read
+routes need explicit coverage too. Existing untraced cache entries cannot be
+silently treated as complete. Any recomputation/rejection policy needs separate
+native semantics validation; do not invalidate caches or execute effects merely
+to populate a trace.
+
+The implementation must identify the canonical POO source/dependency revision
+before adding these hooks. Core's source adapter consumes native metadata; it
+must not become a second slot evaluator or monkey-patch .get/.ref bindings.
+
+* Gitea control matrix for the next implementation
+
+| Control | Required result |
+|---------+-----------------|
+| Remove root source-paths only; keep actual preflight guards | Existing source refusal coverage remains |
+| Remove explicit leaf guards after field hook integration | Same final observation coverage, obtained from actual access |
+| Parent plan cached; child PostgreSQL=5433 | Final client and plan follow 5433; parent unchanged |
+| Explicit Gitea=5432 against PostgreSQL=5433 | Refuse with both source locations |
+| Two independent policies conflict | Preserve both rows and origins; refuse |
+| Child domain obligation refuses | Preserve exact final child receipt and Contract ancestry |
+| Mutation after an earlier source guard | Fresh collected-input check refuses |
+| Nested child observes source, later sibling changes it | Root final check refuses |
+| Unknown field value raises if forced | Diagnose name without evaluating its value |
+| Unselected branch raises if demanded | No source collection or evaluation of that branch |
+| Same file observed under two revisions | Refuse inconsistent observations |
+| Cached computation depends on a non-revisited slot | Replay a verified trace or report unsupported coverage; never claim complete observation |
+
+Contract-directed collection preserves the laziness of the underlying admission;
+it does not make an eager Contract lazy. Selected projections must already
+exclude branches that should not be admitted. Reading field names for closed
+shape checking differs from evaluating their values. JSON parsing remains a
+whole-document operation; no field-level JSON streaming claim is made.
+
+* Reflection and boundary
+
+The useful abstraction is a single source-aware admission boundary with demand
+collection, not a shorter manual list hidden behind another helper. A narrow
+Core collector can remove today's duplicate final list immediately once tested;
+removing all explicit guards requires native access coverage and cache analysis.
+Separate these claims rather than postponing the narrow gain or overstating it.
+
+This note changes documentation only. The 35 focused cases in 32.06 qualify
+the existing explicit-guard implementation, not the collector or proposed POO
+hooks. No Loader integration, runtime implementation or new test result is
+claimed here.

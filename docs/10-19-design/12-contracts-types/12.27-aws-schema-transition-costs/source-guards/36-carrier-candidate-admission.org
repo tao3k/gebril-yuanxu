@@ -1,0 +1,279 @@
+#+title: 12.27.49 EffectiveMethod Candidate Admission
+#+property: DOCUMENT_ID 12.27.49
+#+language: en
+#+property: STATUS staged-native-controls-qualified-capacity-pending
+
+* Actual owner and use case
+
+The [[file:35-authoring-dispatch-work-and-open-returns.org][dispatch work probe]] found recursive Generic/Method checks within every
+authoring datum call. That work occurs while preparing real Module Interfaces,
+before their declarations are expanded. A source-file count or DFS theorem
+does not account for it. This change removes one complete repeated carrier
+check at its actual consumer boundary; it does not cache a successful check.
+
+Profiles and Scenarios remain reusable roles on the common Module mechanism.
+The source-authoring policy in this call chain is an internal policy, not an
+additional domain Profile namespace or a second Graph.
+
+* Construction is not admission
+
+Previously =default-effective-method= called the public checked constructor.
+=compute-effective-method= then looked up the protocol hook and checked the
+same default again even when there was no hook. Recursive carrier predicates
+therefore traversed the Generic and its Methods twice before execution.
+
+The private dispatch path now prepares constructor payloads, then constructs
+and admits a fresh candidate at the actual handoff. A public hook still receives a checked object, and its returned
+object is checked anew. The public =make-effective-method= constructor retains
+its immediate check and original failure code.
+
+#+begin_src scheme
+;; objects.ss -- the public constructor still checks immediately.
+(def (make-effective-method generic arguments around before primary after
+                           groups: (groups '()) executor: (executor #f))
+  (checked-call-carrier ClosEffectiveMethod
+    (.o (:: @ ClosEffectiveMethod.)
+        generic arguments around before primary after groups executor)
+    'invalid-effective-method))
+
+(def (%prepare-effective-method generic arguments around before primary after
+                               groups: (groups '()) executor: (executor #f))
+  (lambda ()
+    (make-effective-method generic arguments around before primary after
+      groups: groups executor: executor)))
+#+end_src
+
+This cross-file private function returns an admission continuation, not the
+unchecked candidate. It accepts constructor payloads, never an arbitrary
+borrowed receiver. Exporting an =admit-any-candidate= helper would allow callers
+to claim ownership of shared objects through =owned-read-value!=. The actual
+factory creates and enrolls a fresh object on EVERY demand, after a real
+successful check. Reusing the continuation cannot re-enroll a previously
+exposed receiver. It stores no
+approval, identity index or previous result.
+
+#+begin_src scheme
+;; dispatch.ss -- condensed from the actual implementation.
+(let* ((admit-default (prepare-default-effective-method generic arguments ranked))
+       (protocol (.ref generic 'protocol))
+       (hook (.ref protocol 'compute-effective-method))
+       (effective-method
+        (begin
+          (owned-read-hook-owner! protocol)
+          (if hook
+            (begin
+              (owned-read-open!)
+              (hook generic arguments (map car ranked) (admit-default)))
+            (admit-default)))))
+  (unless (and (or (not hook) (element? ClosEffectiveMethod effective-method))
+               (eq? (.ref effective-method 'generic) generic))
+    (clos-fail 'invalid-effective-method-result
+      generic: (.ref generic 'identity)))
+  effective-method)
+#+end_src
+
+The no-hook branch performs one complete current check after protocol lookup;
+there is no public callback between that check and the existing Generic
+identity assertion. Protocol lookup need not be pure: its effects precede
+construction/admission of the private candidate. On the hook branch the first check follows
+the existing open guard and precedes the hook; the returned value then receives
+the original full check and identity assertion. Callback ordering relative to
+the old internal construction check is intentionally different; arbitrary
+callback-for-callback equivalence is not claimed.
+
+Standard, short and long combinations still use their original applicability
+and combination rules. Long builders and open hooks retain the existing full
+read/currentness guards. No method-set cache, fixed per-file dispatch choice,
+skipped Frame check or next-method ABI change is introduced. Empty applicability
+keeps its existing immediately checked constructor and ANSI failure ordering.
+
+* Descriptor queries do not require Class construction
+
+The separate [[file:37-prototype-query-import-boundary.org][prototype query boundary topic]] owns the actual import migration,
+zero-Class-read assertion and combined retained-memory comparison. Pure C4
+queries move to the existing descriptor value layer; Class construction is
+requested only by its consumers. There is no duplicate implementation or
+forwarding layer.
+
+* Deferred field-row lowering experiment
+
+Staging alone did not reduce retained memory. The nested predicates also
+rebuilt fixed predicate lists and short-lived =cut=/=andmap= closures on every
+check. Their rows are private static declarations; building those lists is
+not a domain operation and does not discover additional fields.
+
+A local experiment lowered those same literal rows with private =defrules=.
+The following is research code, NOT the retained runtime implementation:
+
+#+begin_src scheme
+(defrules field-valid? (cut element? <>)
+  ((_ candidate name (cut element? type <>))
+   (and (.slot? candidate name) (element? type (.ref candidate name))))
+  ((_ candidate name predicate)
+   (and (.slot? candidate name) (predicate (.ref candidate name)))))
+
+(defrules fields? (quote list)
+  ((_ value (quote (name ...)) (list predicate ...))
+   (let ((candidate value))
+     (and (field-valid? candidate (quote name) predicate) ...))))
+#+end_src
+
+The experimental rows contained predicate identifiers and side-effect-free
+=element?= cuts over fixed lexical Type bindings. Their actual field getters,
+MOP operations and predicates remain dynamic and execute in the same order,
+with the same short circuit. No public macro, Schema DSL, predicate-result
+cache or field admission is added or removed. A future effectful predicate
+factory would require its own evaluation-order review, not silent use here.
+
+Its four unit cases passed, including a legacy algorithm oracle for valid and
+invalid Frame results and actual field-read order. The real sixteen-module
+init test did not complete: the child observation file remained empty before
+any worker harness, and a Case guard stopped the parent at about 70 seconds.
+That is not the 600-second capacity gate and does not establish that macro
+lowering caused the delay. The historical diagnostic incorrectly reported
+=duration-exceeded 600000 70302=; see the watchdog correction below.
+
+Without real-chain qualification or a retained-memory improvement, the field
+macro and its temporary oracle case were removed. =types.ss= retains the
+original runtime =fields?=/=andmap= implementation. The independent Lean
+field-order law remains research evidence, not an implementation claim.
+Eliminating temporary lists by source inspection would not establish a native
+heap reduction; expanded code has a footprint too.
+
+* Native boundary controls
+
+=t/module-authoring-dispatch-work-test.ss= has four retained focused cases:
+
+1. Warm production authoring calls retain linear policy-delivery work for
+   1/4/8 datums. Per datum, Generic/EffectiveMethod/Frame/Method deliveries
+   change from =4/4/2/12= to =3/3/2/9=. These include replay and must not be
+   reported as predicate execution counts or time.
+2. Public reflection observes one actual EffectiveMethod policy read on the
+   closed path. A private hook sees that first check already completed and
+   the observer sees a second check after it returns. No validator is replaced.
+3. Mutating the checked default in that hook is still refused with
+   =invalid-effective-method-result= after one hook invocation.
+4. Reusing a prepared constructor after mutating its first returned carrier
+   creates a different valid object with the original argument payload. No
+   previously exposed receiver is reused or enrolled as a fresh construction.
+
+The continuation-based implementation passes all four retained cases with natural
+exit zero, all native harness markers and no error/overflow markers. An earlier
+private staging probe exposed a caller-supplied candidate admission helper;
+it was replaced before final qualification to prevent borrowed-object
+enrollment. It is not the implemented API.
+
+* Quint and Lean correspondence
+
+[[file:../../../../../dev/proofs/quint/CarrierAdmission.qnt][CarrierAdmission]] models private preparation, effects during lookup, first
+admission, optional callback, return admission and execution. It requires a
+checked valid value at hook entry and execution, with exactly one check for a
+successful closed call and two for a successful hook call. Skipping either
+boundary has its own negative control; acceptance has a non-vacuity control.
+Existing [[file:../../../../../dev/proofs/quint/CarrierReturn.qnt][CarrierReturn]] still owns the focused mutation-after-construction counterexample.
+
+With the final carrier/query/watchdog sources bound by the existing source-cut
+receipt, =CarrierAdmission= qualifies all four cases and =CarrierReturn=
+qualifies all three. The skip-before and skip-after variants produce the
+required counterexamples; the acceptance controls prevent vacuous rejection.
+Earlier backend readiness timeouts are retained as failed infrastructure
+attempts, not model counterexamples. The backend limits were not changed.
+
+Lean's [[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] separately proves arbitrary-value functional laws:
+
+- =closed_carrier_admission_is_one_check=;
+- =refused_carrier_cannot_reach_hook=;
+- =hook_receives_checked_carrier_and_return_is_rechecked=;
+- =closed_carrier_recursive_check_work=.
+- =lowering_preserves_effectful_field_order=.
+
+The focused Lean build completes successfully (40 jobs), with an existing
+unnecessary-=simpa= lint warning. This checks the functional laws below the
+declared Scheme correspondence premises; it does not certify the native
+expander, heap lifetime or import performance.
+
+The last, experimental law quantifies over an arbitrary stateful field operation, including
+a read trace or getter effects. It equates ordered short-circuit interpretation
+with a statically nested continuation fold. Correspondence to Gerbil's actual
+private macro expansion was checked by the local trace oracle only; real-chain
+qualification did not complete, so that lowering was not retained. Lean does
+not prove the Gerbil compiler.
+
+* Correct timeout attribution without changing a deadline
+
+The [[file:37-prototype-query-import-boundary.org][qualification topic]] records the interrupted-scope attribution defect, its
+fixed snapshot boundary, the unchanged-limit negative control and actual
+consumer/cancellation/capacity results. The failed field experiment remains
+failed evidence; it was not a completed 600-second declaration gate.
+
+The check function represents the actual current boundary producer. Scheme's
+native object construction, source guard coverage and MOP remain correspondence
+premises controlled by native tests, not consequences of these functional
+equalities. The cost law accounts only for the removed recursive-check
+component. It is not a theorem about GC, total interpreter time or capacity.
+
+* Real declaration and consumer gates
+
+The existing =declaration-scale-case= selects actual generated Modules through
+one init namespace and calls its test object's =.run=. It expands/evaluates four
+source bodies per selected Module, leaves business Scope unforced, rejects a
+source mutation and releases its temporary tree. The sixteen-module baseline
+was completed before the isolated source snapshot was updated. No Scheme test
+processes share that snapshot concurrently.
+
+The completed staging-only paired sixteen-module control reports:
+
+| Observation | Before staging | After staging |
+|-------------+----------------+---------------|
+| Native read deliveries | 230724 | 193028 |
+| Delivered direct dependency edges | 280910 | 243214 |
+| Retained support tokens | 5442 | 5442 |
+| Retained support edges | 17082 | 17082 |
+| Metadata replay visits | 137336 | 137336 |
+| Physical reads at Graph ready | 6634 | 6634 |
+| Collected process live bytes, Graph held | 511654720 | 511767872 |
+
+Both runs finish the actual 64 source-body expansions/evaluations, source
+mutation refusal, unused business-Scope check and cleanup through the existing
+init test object's =.run=. Deliveries fall by 37696 (about 16.3%), and delivered
+edges by about 13.4%. The complete retained Graph support is unchanged; this
+does not remove semantic dependencies or cache freshness decisions.
+
+There is no demonstrated retained-memory reduction. The collected process
+sample is 113152 bytes higher in this pair; it is a whole-process sample, not
+exclusive Graph allocation. Allocation-counter validity is false for these
+Graph Cases, so those counters cannot support an allocation-savings claim.
+Preparation CPU is 1869131 versus 2122813 microseconds; the different wall
+times do not qualify an end-to-end speedup. The remaining reader/SDK retention
+and replay work must be investigated separately. Neither a removed check nor
+a structural allocation argument establishes the outstanding memory target.
+
+Final consumer and thousand-declaration results are recorded in
+[[file:37-prototype-query-import-boundary.org][the query boundary qualification]]. The sixteen-module combined change reduces
+collected process live bytes, but the actual thousand-declaration run stops
+after 614 completed publications. Neither that memory pair nor the single-check
+theorem establishes capacity acceptance.
+No full build, upstream edit, heap/deadline increase, cache reset or push is
+part of this change. A completed small Graph does not qualify a thousand
+real declarations; timeout/termination remains a failed capacity gate.
+
+* Focused reproduction
+
+#+begin_src sh
+just test-file t/module-authoring-dispatch-work-test.ss true
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/poo-clos-dispatch-test.ss true
+just test-file t/module-candidate-stage-test.ss true
+just test-file t/module-candidate-metadata-test.ss true
+just test-file t/module-testing-isolation-test.ss true
+just test-file t/execution-cancellation-test.ss true
+python3 dev/proofs/quint/check.py --case-prefix CarrierAdmission --typecheck-scope selected --receipt ../.data/qualification/carrier-admission.scm
+cd dev/proofs/lean
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
+#+end_src
+
+Run Scheme cases serially in the locked source environment. Preserve raw
+outputs locally, inspect all harness/error markers and distinguish policy
+deliveries, retained Graph support, physical reads, allocation and elapsed time.
+Run =t/module-declaration-1000-test.ss= only after the changed path's controls;
+it uses the existing init tests =.run= and original resource limits.

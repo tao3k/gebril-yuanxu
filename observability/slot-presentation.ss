@@ -12,10 +12,10 @@
                  $computed-slot-spec?
                  object-%precedence-list object-defaults object-slots))
 
-(export poo-flow-slot-view
-        poo-flow-slot-presentation)
+(export yuanxu-slot-view
+        yuanxu-slot-presentation)
 
-(def (poo-flow-direct-slot-mode prototype slot)
+(def (yuanxu-direct-slot-mode prototype slot)
   (let (method (assq slot (object-slots prototype)))
     (cond
      (method
@@ -25,7 +25,7 @@
      ((assq slot (object-defaults prototype)) 'default)
      (else #f))))
 
-(def (poo-flow-prototype-source-index registry)
+(def (yuanxu-prototype-source-index registry)
   (unless (object? registry)
     (error "POO slot source registry must be a POO object" registry))
   (let (index (make-hash-table-eq))
@@ -52,19 +52,19 @@
      (.all-slots registry))
     index))
 
-(def (poo-flow-prototype-source index prototype)
+(def (yuanxu-prototype-source index prototype)
   (let (entry (hash-get index prototype))
     (unless entry
       (error "unlabeled POO prototype" prototype))
     entry))
 
-(def (poo-flow-slot-declaration-steps subject slot index)
+(def (yuanxu-slot-declaration-steps subject slot index)
   (let (reversed '())
     (for-each
      (lambda (prototype)
-       (let (mode-value (poo-flow-direct-slot-mode prototype slot))
+       (let (mode-value (yuanxu-direct-slot-mode prototype slot))
          (when mode-value
-           (let (source (poo-flow-prototype-source index prototype))
+           (let (source (yuanxu-prototype-source index prototype))
              (set! reversed
                    (cons (.o label: (.ref source 'label)
                              mode: mode-value
@@ -77,17 +77,17 @@
 ;;; The declaration lineage is not a claim that every ancestor contributed to
 ;;; the returned value: native methods may replace or combine earlier values.
 ;;; All precedence members must be named, including non-declaring prototypes.
-(def (poo-flow-slot-view subject slot-name registry)
+(def (yuanxu-slot-view subject slot-name registry)
   (unless (and (object? subject) (symbol? slot-name)
                (.slot? subject slot-name))
     (error "cannot present missing POO slot" slot-name))
-  (let* ((source-index (poo-flow-prototype-source-index registry))
+  (let* ((source-index (yuanxu-prototype-source-index registry))
          (precedence-value
           (map (lambda (prototype)
-                 (poo-flow-prototype-source source-index prototype))
+                 (yuanxu-prototype-source source-index prototype))
                (object-%precedence-list subject)))
          (declarations-value
-          (poo-flow-slot-declaration-steps
+          (yuanxu-slot-declaration-steps
            subject slot-name source-index))
          (resolved-value (.ref subject slot-name))
          (source-labels
@@ -103,11 +103,11 @@
         declaration-sources: declarations-value
         precedence-sources: precedence-value
         slot: slot-name
-        kind: 'poo-flow.slot-view.v1)))
+        kind: 'yuanxu.slot-view.v1)))
 
 ;;; The default view needs no source declarations. Detailed views use the
 ;;; prototype-bound registry and still read the effective value through `.ref`.
-(def (poo-flow-slot-presentation
+(def (yuanxu-slot-presentation
       subject slot-name (level 'default) (registry #f))
   (unless (and (object? subject) (symbol? slot-name)
                (.slot? subject slot-name))
@@ -118,7 +118,7 @@
     ((default)
      (.o effective-value: (.ref subject slot-name)))
     (else
-     (let* ((view (poo-flow-slot-view subject slot-name registry))
+     (let* ((view (yuanxu-slot-view subject slot-name registry))
             (provenance-view
              (.o effective-value: (.ref view 'effective-value)
                  declaration-lineage: (.ref view 'provenance))))

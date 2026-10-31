@@ -5,25 +5,33 @@
 
 ;;; Inert Profile selection and lexical binding values used by composition.
 
-(import (only-in :clan/poo/object .o .ref))
+(import (only-in :clan/poo/object .o .ref object?))
 
-(export poo-flow-profile-ref
-        poo-flow-scenario-module-binding
-        poo-flow-scenario-profile-binding)
+(export yuanxu-module-scope
+        yuanxu-profile-ref
+        yuanxu-scenario-module-binding
+        yuanxu-scenario-profile-binding)
 
-(def (poo-flow-profile-ref module slot)
+;; A bounded declaration binds an existing native scope, without copying it,
+;; forcing publication/source slots, or manufacturing source admission evidence.
+(def (yuanxu-module-scope value)
+  (unless (object? value)
+    (error "use-module bounded body requires a native POO scope" value))
+  value)
+
+(def (yuanxu-profile-ref module slot)
   (.ref module slot))
 
-(def (poo-flow-scenario-module-binding alias module)
+(def (yuanxu-scenario-module-binding alias module)
   (let ((alias-value alias)
         (module-value module))
-    (.o (kind 'poo-flow.scenario.module-binding.v1)
+    (.o (kind 'yuanxu.scenario.module-binding.v1)
         (alias alias-value)
         (module module-value))))
 
-(def (poo-flow-scenario-profile-binding alias slot)
+(def (yuanxu-scenario-profile-binding alias slot)
   (let ((alias-value alias)
         (slot-value slot))
-    (.o (kind 'poo-flow.scenario.profile-binding.v1)
+    (.o (kind 'yuanxu.scenario.profile-binding.v1)
         (alias alias-value)
         (slot slot-value))))

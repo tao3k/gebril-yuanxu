@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-15",
+  "scope": "narrow-reference-model-not-Scheme-implementation-proof",
+  "lean_toolchain": "leanprover/lean4:v4.34.0",
+  "LeanPoo_revision": "d8adf138948c854e7564234bc046387b4a5ee63b",
+  "dependency_pin_changed_in_this_task": false,
+  "build": {
+    "command": "lake build PooFlowProfileAssociationProof",
+    "cwd": "packages/proofs/lean-poo",
+    "exit": 0,
+    "log": "build.log"
+  },
+  "axiom_audit": {
+    "exit": 0,
+    "theorems": [
+      "ancestors_sound",
+      "ancestors_complete",
+      "association_sound",
+      "association_complete",
+      "derived_root_preserved",
+      "shared_root_keeps_both",
+      "plus_keeps_left",
+      "plus_omits_right",
+      "gate_accepts_iff",
+      "accepted_keeps_right_requirement",
+      "missing_right_requirement_refused",
+      "right_requirement_preserved_or_refused",
+      "composition_accepts_iff",
+      "accepted_right_requirement_checked",
+      "cached_checks_are_final",
+      "parent_cache_misses_for_child",
+      "cached_value_passes_final_gate",
+      "stale_parent_value_refused",
+      "consequence_keeps_factories"
+    ],
+    "sorryAx": false,
+    "log": "axioms.log",
+    "allowed_standard_axioms": [
+      "propext",
+      "Quot.sound",
+      "Classical.choice"
+    ]
+  },
+  "finite_guards": 21,
+  "source_sha256": {
+    "packages/proofs/lean-poo/PooFlowProfileAssociationProof/Model.lean": "18d6985ce5d2443301bcccef89205384c6baac82f4e8f40ad85a9224822e516a",
+    "packages/proofs/lean-poo/PooFlowProfileAssociationProof/Checks.lean": "b3e8dd691231a8b1ee65a5d60f3310f97111cbfa0bbc6c222d2e5abdfd29eb90"
+  },
+  "native_control": {
+    "receipt": "../19-native-parent-validation/receipt.json",
+    "probe_sha256": "74573b1527ca69b2d16ee1176641924b8ed09bec166d36b977d29e1d8477a501",
+    "assertions": 44,
+    "modified": false,
+    "rerun_this_task": false
+  },
+  "not_claimed": [
+    "Scheme-DFS-correctness",
+    "native-to-model-projection-correctness",
+    "source-authentication",
+    "automatic-obligation-discovery",
+    "module-adapter",
+    "Loader",
+    "performance"
+  ]
+}

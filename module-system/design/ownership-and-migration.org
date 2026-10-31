@@ -1,0 +1,86 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Core Design Ownership and Product Integration Boundary
+#+date: [2026-10-16]
+#+property: STATUS documentation-migration-no-runtime-change
+
+* One design owner
+
+The complete former =docs/10-19-design/10.06-poo-module-system/= chapter is
+maintained in this Core directory. Its diagrams, expansions, probes and receipts
+move with the discussion they qualify. The product location retains only an
+index and a programming-style navigation entry for existing agent instructions.
+Neither entry carries a second normative body.
+
+| Subject | Owner |
+|---------+-------|
+| Module directory roles, source identity and publication | Core Module System |
+| Directory discovery, init selection and negative decisions | Core Module System design |
+| A selected Module's mandatory baseline | Core Module System |
+| Optional extension descriptors, dependencies and projections | Core Feature System |
+| Contracts, native POO composition, scope and generic protocols | Corresponding Core mechanism and its design |
+| Configuration-language UX and ecosystem comparison methodology | Core Config Languages design |
+| Actual Funflow, JsonSchema, Kubernetes and other provider wiring | Agentic AI Lab or contributing package |
+| Maintained application Profiles, Scenarios and deployment cases | Agentic AI Lab or contributing package |
+| External KCL, HiveBus and Omnibus reference repositories | Pinned product research submodules |
+
+Module, Profile and Scenario are distinct responsibilities. Relocating design
+does not put language-specific Profiles inside a pure Module's feature API or
+make the product package a dependency of Core.
+
+* Related design locations
+
+- [[file:README.org][Current Module directory/publication/selection/build protocols]].
+- [[file:../../feature-system/design/README.org][Feature System extraction and product-dependent units]].
+- [[file:../../docs/10-19-design/11-configuration-languages/11.01-index.org][Configuration language design and comparisons]].
+- [[file:../../docs/10-19-design/11-configuration-languages/11.18-guestbook-auto-explicit-init-examples.org][Complete auto/explicit init example and negative selection facts]].
+- [[file:../../docs/10-19-design/11-configuration-languages/11.21-jsonschema-guestbook-role-examples.org][JsonSchema and Guestbook source-role review]].
+
+* Preserve evidence without manufacturing new acceptance
+
+The chapter relocation preserves 131 non-document artifacts byte for byte,
+including Scheme/Lean fixtures, runners, diagrams and receipts. Relative Org
+links are rebased; recorded command strings, SHAs, allocation measurements and
+failed results are not rewritten to imply a new run. A runner containing a
+historical checkout path or dependency layout must be qualified against its
+original receipt before replay. Merely moving a probe is not a passing test.
+
+The collection includes earlier Agentic AI Lab runtime architecture and consumer
+integration discussions. Their historical presence is not an instruction for
+Core to import those adapters or own application execution policy. Existing
+interfaces, proposed interfaces and experimental fixtures retain their original
+evidence status; use the current ownership guide when they disagree.
+
+* Source migrations remain separate work
+
+The earlier chapter migration moved documentation and associated evidence.
+Shared proof packages have subsequently moved into [[file:../../dev/proofs/README.org][Core proof ownership]];
+this remains separate from runtime source migration.
+The shared Feature System implementation has now migrated into Core. Product
+Scenario/Plan conversion is a separate downstream module; generic Bundle output
+remains in Core. The former product src tree has been replaced by named module
+owners. No compatibility re-export tree is introduced.
+
+The directory Loader adapter, stronger role-file admission, init selection
+integration and selected build entry generation remain proposals where their
+own design identifies gaps. Moving documents does not implement those APIs.
+No directory Loader adapter is connected by this migration.
+
+* Repository-local module publication
+
+Core, Agentic AI Lab and each contributing repository own their module directory and
+init declaration. The shared Module System specifies one publication and
+selection protocol: a repository exports its collection through its own
+interface; =yuanxu-load-modules= consumes that declared collection. No parent
+repository copies another repository's module implementation or maintains a
+second per-file catalog. JSON Schema is a Core-provided module under
+=modules/json-schema/=; generic schema/contract machinery remains under the
+Module System schema owner. Public JSON Schema operations are collected by its
+=interface.ss=; there is no old-path forwarding implementation.
+
+The current collection projection does not implement arbitrary directory
+recognition, init-source resolution, feature selection or selected-build graph
+generation. Those integrations remain proposed. Existing explicit build entries
+are the honest transitional build mechanism, not a claim that the directory
+Loader has been connected. This distinction applies equally to all repositories.

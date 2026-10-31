@@ -1,0 +1,419 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.67 OpenTofu Generation 03: Concrete Generated Scopes and Configuration Contract
+#+property: DOCUMENT_ID 11.67
+#+property: STATUS native-scheme-design-only-not-installed
+
+* Snapshots and Demands are derived, not user-maintained registries
+
+The explicit acquisition job yields normalized extraction rows as Extracted.
+After lock/toolchain/source admission, Snapshot construction is pure:
+
+#+begin_src scheme
+(def (snapshots-from-extraction Requests extracted)
+  (let ((format (jrequired extracted 'format_version))
+        (providers (jrequired extracted 'provider_schemas)))
+    (unless (and (string? format) (pregexp-match "^1[.][0-9]+$" format))
+      (error "Unsupported provider-schema format" format))
+    (object<-fun
+      (lambda (alias)
+        (jrequired providers
+          (string->symbol (.get (.ref Requests alias) source))))
+      keys: (.all-slots Requests))))
+
+(def (member-owner Requests Snapshots raw-category name)
+  (let (owners
+        (filter
+          (lambda (alias)
+            (assq name (jref (.ref Snapshots alias) raw-category '())))
+          (.all-slots Requests)))
+    (unless (= (length owners) 1)
+      (error "Unknown or ambiguous selected member" raw-category name owners))
+    (car owners)))
+
+(def (category-demands Requests Snapshots wire category raw-category)
+  (let* ((names (if (.slot? wire category)
+                 (.all-slots (.ref wire category)) '()))
+         (owners (map (lambda (name)
+                        (cons name (member-owner Requests Snapshots raw-category name)))
+                      names)))
+    (object<-fun
+      (lambda (alias)
+        (map car (filter (lambda (row) (eq? alias (cdr row))) owners)))
+      keys: (.all-slots Requests))))
+
+(def (demands-from-wire Requests Snapshots wire)
+  (.o resources:
+      (category-demands Requests Snapshots wire 'resource 'resource_schemas)
+      data:
+      (category-demands Requests Snapshots wire 'data 'data_source_schemas)))
+#+end_src
+
+Requests derives from selected-provider-requests in chapter 01. Snapshots derives
+from the admitted Extracted result above; Demands derives from a complete pure
+candidate wire tree. No resource inventory is copied into config.ss. Field-level
+Contract demands use the same index before the full candidate exists. Selected
+resource ownership discovery reads metadata; it does not compile every resource.
+Ambiguous aliases require explicit qualified provider selection in a future
+adapter, not a guessed owner. Provider package version comes from the lock; the
+member schema version is a different field and must not be confused with it.
+
+These constructors do not authenticate Extracted or prove source stability. The
+prepared graph boundary verifies the associated receipt, expected provider set,
+checksums, exact source/engine identity, currentness and conversion coverage. An
+unknown demanded member is distinguished from a known member whose artifact is
+not prepared. The latter yields build-required and can only be satisfied by an
+explicit prepare/build operation that produces a new frozen generation.
+
+* GeneratedProviders is an ordinary lazy POO object
+
+This code consumes immutable, admitted extraction snapshots. Requests derive from
+the selected lock; Snapshots is a matching prepared alias-to-raw-provider map.
+No functions below perform file/network/process I/O. Source preparation verifies
+source/version/digests/coverage before supplying these values; missing artifacts
+return build-required instead of triggering a build from a slot read.
+
+#+begin_src scheme
+(def (contract-id request group name)
+  (string->symbol
+    (string-append (.get request source) "@" (.get request version)
+                   "/" (symbol->string group) "/" (symbol->string name))))
+
+(def (attribute-scope Schema request group attributes)
+  (let (inputs (filter (lambda (row) (input-attribute? (cdr row))) attributes))
+    (object<-fun
+      (lambda (name)
+        (field-contract Schema (contract-id request group name)
+          (jrequired inputs name)))
+      keys: (map car inputs))))
+
+(def (member-scope Schema request group members)
+  (object<-fun
+    (lambda (name)
+      (resource-contract Schema (contract-id request group name)
+                         (jrequired members name)))
+    keys: (map car members)))
+
+(def (member-path group name)
+  (string->symbol (string-append (symbol->string group) "/"
+                                (symbol->string name))))
+
+(def (member-field-scopes Schema request group members)
+  (object<-fun
+    (lambda (name)
+      (attribute-scope Schema request
+        (member-path group name)
+        (jref (jrequired (jrequired members name) 'block) 'attributes '())))
+    keys: (map car members)))
+
+(def (provider-scope Schema request raw)
+  (let ((resources (jref raw 'resource_schemas '()))
+        (data-sources (jref raw 'data_source_schemas '()))
+        (provider (jrequired raw 'provider)))
+    (.o source: (.get request source)
+        version: (.get request version)
+        types:
+        (.o configuration:
+            (resource-contract Schema
+              (contract-id request 'configuration 'provider) provider)
+            resources: (member-scope Schema request 'resource resources)
+            data: (member-scope Schema request 'data data-sources))
+        fields:
+        (.o configuration:
+            (attribute-scope Schema request 'configuration
+              (jref (jrequired provider 'block) 'attributes '()))
+            resources:
+            (member-field-scopes Schema request 'resource resources)
+            data:
+            (member-field-scopes Schema request 'data data-sources)))))
+
+(def (generated-providers Schema Requests Snapshots)
+  (object<-fun
+    (lambda (alias)
+      (provider-scope Schema (.ref Requests alias) (.ref Snapshots alias)))
+    keys: (.all-slots Requests)))
+#+end_src
+
+object<-fun is an EXISTING gerbil-poo constructor: it installs thunk slot specs.
+The generated object is not a procedure pretending to be a Module scope, and no
+new lazy wrapper language is introduced. .get Generation GeneratedProviders aws fields
+resources aws_instance instance_type demands only that selected field descriptor.
+It does not demand aws_vpc, another provider, or the whole output Contract.
+Each scope's native slot cache belongs to its immutable generation.
+
+Field identities include provider/version, resource/data category and the member
+path via member-path, preventing collisions between similarly named members.
+The complete artifact identity additionally carries graph/source/compiler versions.
+
+* ConfigurationContract is generated from actual selected member demands
+
+The top-level Contract cannot be extracted from provider resources alone.
+Language/backend structure is maintained upstream, separately versioned. The
+following concrete JSON Schema builders describe a bounded JSON configuration
+subset for the current AWS case. They use the private wire representation from
+chapter 02 and intentionally do not claim full OpenTofu language coverage.
+
+#+begin_src scheme
+(def (object-schema properties required)
+  (list (cons 'type "object") (cons 'properties properties)
+        (cons 'required required) (cons 'additionalProperties #f)))
+(def (named-schema value-schema)
+  (list (cons 'type "object") (cons 'additionalProperties value-schema)))
+(def StringSchema '((type . "string")))
+
+(def S3BackendSchema
+  (object-schema
+    (list (cons 'bucket StringSchema) (cons 'key StringSchema)
+          (cons 'region StringSchema))
+    '("bucket" "key")))
+
+(def OutputSchema
+  (object-schema
+    (list (cons 'value #t)
+          (cons 'description StringSchema)
+          (cons 'sensitive '((type . "boolean"))))
+    '("value")))
+
+(def (literal-schema value)
+  (list (cons 'enum (list value))))
+
+(def (locked-requirement-schema request)
+  (object-schema
+    (list (cons 'source (literal-schema (.get request source)))
+          (cons 'version
+            (literal-schema (string-append "= " (.get request version)))))
+    '("source" "version")))
+
+(def (selected-member-rows category raw-category Requests Snapshots Demands)
+  (yuanxu-append-map
+    (lambda (alias)
+      (let* ((by-provider (.ref Demands category))
+             (names (if (.slot? by-provider alias) (.ref by-provider alias) '()))
+             (raw (.ref Snapshots alias))
+             (members (jref raw raw-category '())))
+        (map
+          (lambda (name)
+            (cons name
+              (named-schema
+                (block->schema
+                  (jrequired (jrequired members name) 'block)))))
+          names)))
+    (.all-slots Requests)))
+
+(def (configuration-schema Requests Snapshots Demands)
+  (let* ((aliases (.all-slots Requests))
+         (requirements
+          (map (lambda (alias)
+                 (cons alias (locked-requirement-schema (.ref Requests alias))))
+               aliases))
+         (providers
+          (map (lambda (alias)
+                 (cons alias
+                   (list (cons 'type "array")
+                         (cons 'items
+                           (block->schema
+                             (jrequired (jrequired (.ref Snapshots alias) 'provider)
+                                        'block))))))
+               aliases))
+         (resources
+          (selected-member-rows 'resources 'resource_schemas
+                                Requests Snapshots Demands))
+         (data
+          (selected-member-rows 'data 'data_source_schemas
+                                Requests Snapshots Demands)))
+    (object-schema
+      (list
+        (cons 'terraform
+          (object-schema
+            (list (cons 'required_providers
+                    (object-schema requirements (map symbol->string aliases)))
+                  (cons 'backend
+                    (object-schema (list (cons 's3 S3BackendSchema)) '())))
+            '("required_providers")))
+        (cons 'provider (object-schema providers '()))
+        (cons 'resource (object-schema resources '()))
+        (cons 'data (object-schema data '()))
+        (cons 'output (named-schema OutputSchema)))
+      '("terraform"))))
+
+(.def Generation
+  GeneratedProviders:
+  (generated-providers Schema Requests Snapshots)
+  ConfigurationContract:
+  (compile-schema Schema 'opentofu/configuration
+    (configuration-schema Requests Snapshots Demands)))
+#+end_src
+
+Requests, Snapshots and Demands above are the same selected graph generation,
+not additional author-written resource/schema inventories. Known resource/data
+ownership is indexed from the raw extraction; demanded names come from declared
+field dependencies and the candidate projection. Reject duplicate generated names,
+ambiguous ownership, out-of-selection providers and inconsistent demand categories
+BEFORE assembling JSON Schema rows. A different prepared demand generation needs
+a different ConfigurationContract, even when its readable identity symbol is the
+same. Artifact identity includes the generation/source tuple, not that symbol alone.
+
+S3BackendSchema/OutputSchema are concrete maintained language-subset definitions,
+not provider-derived truth. Support for other backends, aliases/meta-arguments,
+lifecycle/provisioners/modules/encryption/variables/etc needs separate versioned
+language-schema contributions. Unsupported selected constructs must be rejected;
+additionalProperties false must not misleadingly report a valid-but-unprepared
+OpenTofu construct as a typo. Discovery identifies unsupported/build-required
+cases before the bounded Schema check. Output value #t only accepts JSON structure;
+it does not establish expression semantics or output availability. This subset
+cannot claim a complete OpenTofu semantic checker.
+
+The AWS candidate currently omits required_providers. The upstream engine boundary
+injects its LOCKED requirements rather than asking the user to repeat them:
+
+#+begin_src scheme
+(def (same-provider-pins? expected actual)
+  (and (object? actual)
+       (= (length (.all-slots expected)) (length (.all-slots actual)))
+       (every
+         (lambda (alias)
+           (and (.slot? actual alias)
+                (let ((want (.ref expected alias)) (got (.ref actual alias)))
+                  (and (object? got)
+                       (= (length (.all-slots got)) 2)
+                       (.slot? got 'source) (.slot? got 'version)
+                       (equal? (.get want source) (.get got source))
+                       (equal? (.get want version) (.get got version))))))
+         (.all-slots expected))))
+
+(def (seal-wire wire Requests)
+  (let* ((expected
+          (object<-alist
+            (map (lambda (row) (cons (car row) (object<-alist (cdr row))))
+                 (required-provider-rows Requests))))
+         (terraform (if (.slot? wire 'terraform) (.get wire terraform) (.o))))
+    (if (.slot? terraform 'required_providers)
+      (if (same-provider-pins? expected (.get terraform required_providers))
+        wire
+        (error "Provider requirements conflict with selected lock"
+          (.o kind: 'provider-pin-conflict
+              path: '(terraform required_providers))))
+      (.cc wire 'terraform
+        (.cc terraform 'required_providers expected)))))
+#+end_src
+
+Existing requirements are preserved only if their selected source/exact-version
+pins match. A conflicting source/version/extra alias is rejected, not overwritten.
+This bounded output policy deliberately requires exact generated pin syntax;
+it does not claim to decide general version-constraint equivalence.
+The frozen request set, not the installed registry's newest version, determines
+both the injected wire and output Contract.
+
+* Native publication: two names are now fully derived
+
+#+begin_src scheme
+(.def OpenTofu
+  identity: 'opentofu
+  core:
+  (.o requires: (.o Schema: (.o module-id: 'core/json-schema))
+      exports:
+      (.o config: Config
+          providers: (.get Generation GeneratedProviders)
+          types: (.o Configuration: (.get Generation ConfigurationContract))
+          seal: (cut seal-wire <> Requests)))
+  features: (.o))
+#+end_src
+
+Generation.GeneratedProviders is the lazy object defined above;
+Generation.ConfigurationContract is the
+existing compiler plus native adapter applied to the concrete assembled schema.
+The two generated results are native lazy SLOTS, not eager top-level def calls
+to the compiler. Inspecting/publishing the interface does not demand the output
+Contract. No root scope access may perform acquisition/builds. Canonical typed publication
+must check the shared generation/coverage/source context before exposing an
+ADMITTED scope; this .def expression alone is not that producer/gate. Its standard
+role/source wrapping remains pending Core work. The readable interface requires
+no explicit imports, link factory or duplicate build list from the author.
+
+AWS binds Tofu once and uses:
+
+#+begin_src scheme
+(def Provider (.get Tofu providers aws))
+(def AWSInstanceTypeContract
+  (.get Provider fields resources aws_instance instance_type))
+
+;; After existing final Scenario admission and complete pure AWS projection:
+(def wire ((.get Tofu seal) (.get candidate terraform)))
+(def receipt ((.get Tofu types Configuration .admit) wire #f))
+#+end_src
+
+These last two def bindings illustrate the inside of a prepared preview operation,
+not top-level user configuration or startup work. It must also preserve the final
+candidate, source/projection associations and all remaining mandatory policy
+gates. Success remains distinct from provider validate/plan/apply.
+
+* Honest laziness and remaining cost
+
+- Selection reads declarations/lock/index metadata, not every Profile value.
+- Extraction is explicit and provider-granular: the CLI can return all member
+  metadata for that selected provider. It is NOT a per-resource RPC here.
+- Preparing member chunks/indexes from that output has real CPU/I/O/memory cost.
+- object<-fun defers individual member/field Contract compilation. It does not
+  eliminate compilation cost or prove bounded first access.
+- ConfigurationContract is demanded only for the prepared candidate/demand set.
+- An unprepared member returns build-required; no hidden extraction/build occurs.
+- Explicit prewarming may prepare the measured working set, not all providers.
+
+No first-access performance or whole-provider memory advantage is claimed. Tests
+must measure discovery, extraction, member preparation, first/warm field access,
+full output admission and invalidation separately. No acquisition, build, new
+runtime Module or Loader integration was executed in this design turn.
+
+* Integrated final AWS admission and missing-artifact result
+
+The following is a PRIVATE preview operation, not a new user API. Field-level AWS
+Contracts must already be available for final Scenario admission. The generic
+selected graph computes output-node-key from lock/toolchain/schema/converter/
+builtin identities and selected member demands; callers do not hand-write a cache
+key. artifacts is an already admitted source-qualified artifact view. Its value
+is the prepared OpenTofu scope for that exact output demand. The lookup helper is
+fully defined in chapter 01. No worker is called from this operation.
+
+#+begin_src scheme
+(def (aws-configuration-preview final options executable-path
+                                generation output-node-key artifacts)
+  ;; Existing pure projector admits options and the FINAL domain Scenario.
+  (let* ((candidate
+          (aws-project ProjectionContract ApplicationContract
+                       final options executable-path))
+         (available
+          (prepared-artifact generation output-node-key artifacts)))
+    (if (not (eq? (.get available status) 'ready))
+      available
+      (let* ((Tofu (.get available value))
+             (wire ((.get Tofu seal) (.get candidate terraform)))
+             (receipt ((.get Tofu types Configuration .admit) wire #f)))
+        (if (yuanxu-validation-evidence-accepted? receipt)
+          (.o status: 'projected-unadmitted
+              config: final terraform: wire
+              configuration-evidence: receipt)
+          (.o status: 'rejected
+              phase: 'configuration-contract
+              config: final
+              diagnostics: (.get receipt diagnostics)))))))
+#+end_src
+
+Missing field-level input artifacts must be surfaced by source preparation BEFORE
+entering this function; missing output-demand artifacts return build-required from
+the lookup. Neither case returns a fake Contract or auto-installs providers. The
+candidate may discover additional selected types; only an explicit prepare extends
+the frozen graph and retries. A pure local predicate compile from prepared inputs
+is distinct from a worker build. Output schema success still does not establish
+complete inherited-policy admission or authorize validate/plan/apply. Parent cached
+resources/receipts never substitute for this final candidate.
+
+* Why no new Go exporter is required
+
+OpenTofu itself exports provider schema via its CLI. The Scheme process boundary
+in chapter 01 calls that CLI; chapter 02 converts its JSON and reuses Core's
+compiler. tf-ncl's schema-merge language is an implementation choice, not a
+requirement imposed by the provider schema format. This design introduces no Go
+component, embedded plugin protocol client or duplicate provider SDK. A future
+measured/compatibility need could justify a foreign adapter, but none is assumed
+or built here. OpenTofu still runs its own compiled executable/provider plugins;
+keeping our adapter in Scheme does not reimplement that engine.

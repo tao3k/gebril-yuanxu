@@ -1,0 +1,974 @@
+#+title: 12.26 Selected Packages and Init-Owned AWS Tests
+#+property: DOCUMENT_ID 12.26
+#+language: en
+#+property: STATUS source-guard-work-reduced-aws-transition-validated-startup-latency-open-no-loader-or-push
+
+* Root init and Scenario mount ownership
+
+The continued second-version timeout investigation and guarded reuse boundaries
+are recorded in [[file:12.27-aws-schema-transition-costs.org][AWS Schema transition costs]]. Historical timings below remain
+historical; the mounted-root integration has its own completion gate.
+
+The intended architecture is one repository root =init.ss= selecting directory
+windows through the Module System. The =scenarios/= directory is mounted under
+the name =Scenarios= using =rename:=; it does not require an independent
+=scenarios/init.ss= which repeats the Module dependency selection. Scenario
+owners and their tests use that mounted namespace and the same selected Graph.
+See the [[file:../13-module-loading/13.13-root-directory-windows.org][implemented root-window boundary]] for grammar and identity rules.
+Renaming a mount changes its namespace route, not its publication identity.
+
+The historical performance receipts below used a separate single-window
+qualification root. That root has been removed: current atomic and integration
+callers import root =init.Scenarios=. Window parsing, source ownership and the
+selected Graph implement this mount; it is not merely a Scheme import rename.
+Historical timings are not re-labelled as measurements of the new mounted root.
+
+* Test ownership is not another Scenario model
+
+AWS atomic controls belong to [[file:../../../scenarios/aws/tests/atomic-test.ss][scenarios/aws/tests/atomic-test.ss]]. Real package qualification belongs to
+[[file:../../../t/Scenarios/aws/context-publication-test.ss][Core publication qualification]]. Its private
+[[file:../../../t/Scenarios/aws/fixtures.ss][fixtures.ss]] prepares a temporary version input and an explicit upstream Nix
+Source over the real module publications. It imports no other test suite,
+bootstrap fixture, copied Module implementation or test runner.
+
+The existing module test projection discovers the atomic file; helper files are
+observed for currentness but are not harness inputs. The standard fixture macro
+owns acquisition and cleanup. The selected test uses the existing std/test and
+Ops execution boundary:
+
+#+begin_src scheme
+(import :clan/poo/object
+        (only-in "./init.ss" init.Scenarios))
+(.call (.get init.Scenarios aws tests) .run)
+(.call (.get init.Scenarios aws tests qualification) .run)
+#+end_src
+
+Publication fault injection is Core mechanism qualification, not an AWS suite.
+=t/aws-context-publication-test.ss= directly selects the existing init test
+object's =qualification= projection. Discovery automatically binds the Core
+qualification source to its selection guard and invokes the same =.run= / Ops
+path. AWS authors maintain neither that file list nor boundary
+callbacks. The ordinary AWS integration projection is empty after relocation.
+See [[file:../13-module-loading/13.12-declarative-module-testing.org][automatic qualification discovery and table-driven controls]].
+
+[[file:../../../t/aws-module-test.ss][The atomic caller]] checks cold/warm execution and independent scope/integration demand.
+[[file:../../../t/aws-context-publication-test.ss][The integration caller]] retains its original real-package assertions via the explicit endpoint.
+Neither maintains a second test-path list or creates an
+Atomic/TestingScript object. Its business scope stays cold before and after the
+run; the atomic test's separate fixture is the deliberately isolated subject.
+The selection Graph that chooses tests is not a replacement for that subject's
+per-version package Graph.
+
+Test discovery and execution are not package-selection responsibilities. AWS
+Selection must not import test suites, fixture macros, test probes or harness
+state. The dependency direction is from the module-owned test to the production
+Graph, SelectedPackages and publication APIs. init owns test discovery and the
+existing test object; module authors declare cases with yuanxu-test-fixture.
+No second test registry, execution object or success-marker protocol is needed.
+Version-switching inputs remain private test data, not exported AWS configuration.
+
+Module ownership does not make every case an atomic unit test. The real provider
+upgrade is an integration case selected through the same module test endpoint.
+Small contract and publication cases retain their own focused suites; importing
+those suites into AWS Selection would obscure both dependency and failure scope.
+
+* Build demand and actual package binding
+
+The maintained AWS Config now reuses its actual Profile:
+
+#+begin_src scheme
+(.def Config resource: (.o aws_instance: (.o web: WebProfile)))
+#+end_src
+
+The maintained AWS interface declares the existing provider capability:
+
+#+begin_src scheme
+requires:
+(.o Tofu: (.o module-id: 'opentofu contract: OpenTofuScopeContract))
+exports: (aws-scenario-scope Tofu config)
+#+end_src
+
+OpenTofu's existing configuration-build projects resource keys from this Config
+to demand aws, without forcing Profile field values or loading the provider
+catalog. The selected build Graph creates the consumer-qualified request. The
+existing SelectedPackages operation realizes it; the existing .with-packages
+operation binds its actual scope to the consumer's Tofu dependency:
+
+#+begin_src scheme
+(def packages
+  (.call (.cc SelectedPackages.
+           selection: selection directory: workspace) .run))
+(def realized (.call selection .with-packages packages))
+(def publication
+  (.call AdmissionPublication. .for-export realized 'aws 'Scenario))
+#+end_src
+
+The AWS scope obtains provider from Tofu.modules.aws.provider, and obtains its
+public input Type from that same provider. There is no provider-directory field,
+directory reader or SchemaArtifact assembly in the AWS scope or user Profile.
+The publication's maintained association still owns descriptor/Schema resolution.
+
+Selecting names cannot choose a trusted package source implicitly. The upstream
+OpenTofu Source is an explicit maintainer input. This fixture uses the existing
+publication-reader customization hook to refine the actual OpenTofu Config and
+Build module with the same Source. It does not define another publication reader
+or import copied roles. Production source/default policy is not invented here.
+
+* Guard responsibilities
+
+SelectedPackages now exposes the sources-current callback already required by
+the realized linker. It checks selected/source/generated-input identity without
+re-entering package realization during linking. Its existing admit-current is the
+full Nix derivation/publication guard. The realized selection's public
+admit-current invokes that full guard as well as the source guard; internal link
+traversal uses the narrow check. Both refer to the original selected build Graph.
+
+Publication binds the full package guard from the realized selection and checks
+it before and after admission. Contextual child checks retain source, Schema and
+descriptor currentness without repeating external package effects at each child.
+Failure at either publication guard must preserve the previous published value.
+This separation is a production correctness boundary, not a test execution layer.
+
+A changed version.nix causes an old generation to refuse. A fresh generation
+reprojects the same Config and resolves a new package, Contract and Context.
+The atomic test retains parent-cache/final-child assertions, child Context
+refusal, same-name descriptor refusal, stale evidence refusal and exact previous
+value retention. It also asserts the real AWS config.ss bytes never change.
+
+The earlier direct-directory Schema-shadow control in
+[[file:12.25-aws-contextual-publication-validation.org][12.25]] is historical evidence, not an automatically bound package route. This
+test uses the real immutable package versions for update validation. It does not
+mutate the Nix store or claim live AWS deployment validity.
+
+* Source phase defects exposed by the real module test
+
+The corrected path also requires these existing boundaries to agree:
+
+- For the standard modules/ collection whose parent owns a regular gerbil.pkg,
+  the declared package source root supplies kernel authority, even if init.ss
+  lives in scenarios/. The manifest is observed. Arbitrary collection parents
+  do not gain source authority; Module confinement checks remain.
+- Public dependency source imports reuse the SDK only when the parsed non-Core
+  identity resolves to that exact canonical source. A namespace label alone does
+  not authorize an escaping file. Core tool reuse remains limited to exact
+  SDK-observed bootstrap contexts.
+- Publication and configuration role evaluation now share the same compiler-tool
+  observation builder. Config can reuse its actual prelude/declaration context
+  without wrapping the compiler tool again or requiring a caller-prebuilt Core.
+
+These are build-time native expander paths, not a runtime Loader. Failed source
+or authoring checks are repaired rather than disabled. In particular, the AWS
+scope constructor avoids a real lexical self-reference between its Scenario
+slot and the imported Scenario prototype.
+
+* Verification boundary
+
+** Failure-stage repair
+
+The post-admission Context check previously ran inside the checked executor.
+The public calling Contract correctly classified an exception there as source,
+although the existing tests require a dependent-meaning refusal at logic phase.
+The redundant executor check is removed. The bound public Contract still checks
+Context currentness after the result, preserving its original logical phase and
+the outer publication's source-phase cause. No assertion is relaxed.
+
+** Bounded source work
+
+The AWS timeout exposed repeated compiler projection and recursive source
+comparisons. Package versions share one fixture-owned reader over unchanged
+module source; each version still creates its own Graph, package, scope,
+descriptor and Context. A source change refuses reader reuse.
+
+SDK compiler-tool projections are retained by exact context identity in a weak
+cache. Reuse validates the original path, source bytes and native package
+metadata. This cache contains prepared source, never admission evidence.
+
+Inside the existing synchronous, effect-free source observation boundary,
+file kinds, bytes and repeated reader/link source checks are shared. Newly
+registered reader guards change the observation key. The boundary ends before
+expansion, input writes, external Nix effects or value admission; each subsequent
+independent check starts fresh. Package derivation checks and publication checks
+are not skipped. Replacement with a directory or symlink must still reject.
+
+Ops now includes already-captured process output with a failing status rather
+than discarding it. The original fixture/test macros and init-owned endpoint
+remain the execution path; temporary profiling is not a public testing protocol.
+
+Earlier init-owned AWS attempts returned exit 124 from the existing Ops test
+endpoint. The outer harness reported ERROR CASE and ERROR HARNESS; its
+MODULE-OK/HARNESS-OK markers did not establish success. Duration and memory
+watchdog failures are retained as failed attempts, including one run with inner
+OK markers but a nonzero process status. No timeout increase or separate runner
+is used to mask these results.
+
+One intermediate integration invocation completed with exit 0, but the final
+diagnostic-free invocation again returned 124 while waiting for Nix derivation
+re-evaluation. The integration gate remains failing and performance-unqualified.
+The intermediate pass does not override that result. Merely avoiding one timeout
+is not the required latency or repeatability evidence.
+
+The earlier file called atomic-test actually performed two package generations,
+Nix realization and full publication checks. It has moved intact to the explicit
+integration projection. Default atomic controls now own the five existing small
+Contract cases, using the native case macro instead of manual completion counts.
+All field, nominal identity, cached-parent and stale projection assertions are
+retained. No integration assertion is removed or relabeled as an atomic pass.
+
+Two local cold/warm atomic observations through the existing Ops endpoint were
+11.39/6.39 seconds and 18.02/7.65 seconds. Worker times were 5.80/6.11 and
+8.15/7.39 seconds; the rest includes namespace discovery and source guards.
+The latter run includes the standard case watchdogs. Scope and integration
+execution remain cold; selecting integration metadata reuses the exact Graph.
+These are uncontrolled local observations, not a speedup claim for equivalent
+integration work. Cold source expansion and worker startup still need attention.
+
+A Nix store output hit does not memoize repeated expression evaluation. The full
+derivation guard currently re-evaluates potentially transitive inputs. Caching
+that check across effects without a complete, immutable input closure would
+weaken source integrity. That remains an integration design/performance gap;
+atomic execution must not silently pay this cost or hide its failing gate.
+
+** Same-Graph diagnosis: registration versus currentness
+
+The maintained AWS path was instrumented at the existing Nix process boundary,
+not inferred from a timeout. One selection and one successful publication used
+six =nix-instantiate= invocations with identical arguments, plus one
+=nix-store --realise=. The six evaluations came from:
+
+1. The receiver-local initial derivation demanded by the generated guard.
+2. SelectedPackages' full package currentness check.
+3. The OpenTofu configuration admission's own currentness check.
+4. The explicit =.with-packages= handoff to a realized selection.
+5. Publication's pre-admission package check.
+6. Publication's post-admission package check.
+
+This was repeated /instantiation/, not six provider builds. The same selected
+Graph, derivation and realized output were already reused. The defect was that
+an identity check also requested derivation registration in the Nix database.
+The first command now selects =drvPath= directly with =--read-write-mode=, so
+the required derivation is registered for realization. Subsequent checks select
+the same attribute without write permission:
+
+#+begin_src text
+nix-instantiate --eval --raw --attr drvPath <expression> --argstr <name> <value>
+#+end_src
+
+The existing Source dispatch, process observers, Nix realization and Graph are
+retained. A dynamically bounded query mode changes the command inside the
+existing instantiate function; it is not a second Source hierarchy, runner,
+result cache or public configuration syntax. Flake Sources retain their own
+existing =nix eval= implementation. Exceptions restore the previous query mode.
+The serialized guard uses the same identity-query path.
+
+This distinction is observable, not just a renamed command: the real-Nix control
+requires the initial =.drv= to exist, requires an unseen changed query's =.drv=
+not to exist, and then requires explicit construction of that changed identity
+to register the same path. The expression includes a per-fixture salt to avoid
+mistaking an earlier test's registered path for a newly written derivation.
+
+The exact-input diagnostic observed 3.399 seconds for registration and 0.724
+seconds for a subsequent read-only query with the same derivation identity.
+A later complete successful AWS observation retained one registration, five
+queries and one realization. The five queries took 1.719, 0.928, 0.535, 1.196
+and 0.586 seconds. Initial registration in that run took 13.889 seconds; the
+total path took 43.386 seconds. These locally variable samples establish the
+command/identity boundary, /not/ an end-to-end speedup or a subsecond SLA.
+
+The focused real-Nix control in
+[[file:../../../t/nix-derivation-query-test.ss][nix-derivation-query-test.ss]] checks undeclared transitive import changes,
+negative-path changes, and restoration of registration mode after refusal. A
+query must not be replaced by a lookup keyed only on expression path, argv or
+the expected derivation. None of those describes the full evaluation closure.
+
+** Cold startup is a separate measured cost
+
+[[file:../../../t/aws-startup-cost-test.ss][aws-startup-cost-test.ss]] uses existing TestingScript/Ops execution and
+the original std/test harness for three import controls. In the same source-only
+qualification environment, process durations were 3.014 seconds for std/test,
+8.294 seconds with the standard guarded case, and 5.115 seconds for the actual
+AWS atomic file. Every process was fresh; the latter controls benefited from
+earlier filesystem activity, and the host was not isolated. They do not support
+subtracting those numbers to assign an exact cost to the watchdog.
+
+They do establish that multi-second startup exists without any Nix request.
+The 11--18 second init-owned cold observations include metadata/source guards,
+the first lazy test-executor import and a fresh source-importing Gerbil worker.
+They must not be described as Nix cache misses. This qualification state has no
+precompiled Core cache; a cached Nix store output does not supply that cache.
+Further import/expansion profiling and qualified compiled-artifact reuse remain
+open. Splitting tests does not close this performance requirement.
+
+** Consolidating the five queries by effect boundary
+
+The five-query observation above is historical. Two checks were adjacent on the
+initial selection path: SelectedPackages checked packages, then OpenTofu's lazy
+=admission= slot checked the same package before validating its configuration.
+The outer owner then checked only source files after the validators returned.
+The second precheck did not cover mutations performed /by/ a validator.
+
+The current ordering separates value evidence from package publication:
+
+#+begin_src scheme
+;; OpenTofu's existing candidate publication (inside its Build role).
+admission: (.call (.get scope types configuration) .admit configuration #f)
+
+;; SelectedPackages: after writing guard.ss, for every candidate package.
+(for-each
+  (lambda (value)
+    (when (.slot? value 'admission)
+      (unless (yuanxu-validation-evidence-accepted? (.get value admission))
+        (error "external package configuration admission rejected"))))
+  values)
+(current!) ; all package identities AND sources, after all validators
+#+end_src
+
+An =admission= slot is cached value evidence over a realized immutable artifact;
+it never grants freshness authority by itself. Nix's prepared phase remains a
+candidate until its explicit currentness boundary succeeds. Source preflight,
+initial derivation registration and realization are retained. A cached value
+receipt already did not execute a guard on subsequent slot reads; therefore
+freshness must be owned by the operation publishing the package result, not an
+incidental first evaluation of that receipt.
+
+The single post-validation check replaces both pre-validation queries. No query
+result is memoized around arbitrary Scheme effects. In particular, a validator
+changing another package's source cannot escape merely because an earlier check
+succeeded. =ops-selected-packages-test.ss= adds a negative control whose accepted
+value validator invalidates package provenance: the one final package check must
+reject the operation. The old precheck/source-only-postcheck order would accept
+that case. Existing failed-admission and changed-guard cases remain unchanged.
+
+| Current query | Intervening boundary | Why retained |
+|---------------+----------------------+--------------|
+| SelectedPackages post-validation | Nix realization and arbitrary configuration validators | Reject changed inputs before returning any selected package result |
+| .with-packages handoff | Caller regains control after .run | The same Graph identity does not prove that transitive Nix inputs stayed unchanged |
+| Publication pre-admission | Caller configuration and source changes | Establish current package association before checking the final candidate |
+| Publication post-admission | Public value Contracts and contextual obligations | Refuse changes during admission; preserve the prior published value |
+
+Thus one selection plus one successful publication should use one registration,
+four read-only queries and one realization. =aws-publication-cost-test.ss= checks
+two queries at selection completion, no extra query while binding the actual
+Contract/Schema association, and four at publication completion. Existing
+selected-Graph process budgets change from three evaluations to two per package
+selection (registration plus final query); type read/compile and realization
+budgets are unchanged. These are intended operation counts, not timing thresholds.
+
+The handoff's check is redundant only if a caller can prove an effect-free
+handoff or a complete immutable evaluation closure. The general public method
+cannot assume that property merely because this fixture calls it immediately.
+
+** Import, expansion and discovery attribution
+
+The native Ops probe now runs the public expander in its child process. It times
+incremental imports, then =core-expand=, =current-expander-compile= and
+=current-expander-eval= separately for a real inherited Profile. It also observes
+source reads while demanding the actual =init.modules.aws.tests= projection.
+No alternative harness, parser, test-discovery list or business scope is used.
+
+Two observations locate the cost more precisely than a whole-worker duration:
+
+| Incremental phase | Earlier sample (seconds) | Later sample (seconds) |
+|-------------------+--------------------------+------------------------|
+| clan/poo/mop after object | 3.044 | 0.955 |
+| core/types after mop | 0.082 | 0.018 |
+| init-syntax import | 5.602 | 1.397 |
+| Scenario init import after init-syntax | 0.0022 | 0.0027 |
+| First namespace demand | 0.258 | 0.110 |
+| Actual module test discovery | 17.075 | 4.770 |
+| Test executor import | 0.186 | 0.064 |
+| Profile expansion | 0.000291 | 0.000295 |
+| Profile compilation / evaluation | 0.000020 / 0.000026 | 0.000018 / 0.000026 |
+| Guarded test macro expansion | 0.00162 | 0.00168 |
+| Cached testing-case import | 0.000261 | 0.000107 |
+
+Imports include their source/dependency expansion and initialization; these are
+incremental costs in one process, not standalone cold-import benchmarks. In
+particular, charging the whole first =core/types= import to Core would be wrong:
+the explicit =mop= step shows that most of that first-load cost belongs upstream.
+The comparison does not attribute all timing differences to the code changes.
+
+Discovery made 10,468 source reads and 391 guard calls in the earlier sample,
+with 7.441 seconds spent inside pure source-check scopes. The later sample made
+9,912 reads and 385 guard calls, with 2.212 seconds in those scopes. These expose
+repeated source validation and eager declaration/role importing during metadata
+discovery; an unforced business =scope= does not mean zero declaration expansion.
+Macro sugar itself is not the observed multi-second cost. Many source reads and
+first-import costs remain; neither observation establishes a subsecond startup.
+
+Two bounded duplicate operations have been removed:
+
+- On a new test-projection cache entry, =module-test-projection= has already
+  checked the full snapshot. The init owner now performs only inert POO
+  composition/cache insertion before returning it. Cache hits still recheck;
+  no observation is reused across caller actions or execution.
+- A prepared publication retains the compiler identity determined by its exact
+  header/role bytes and native package snapshot, just as prepared build sources
+  already do. Its guard checks all those bytes, negative role/package lookups,
+  native package metadata and prelude inputs without reopening/parsing the
+  interface just to derive the same identity again. The native regression checks
+  one identity read over preparation plus five independent guards, then refuses
+  a changed header and a newly inserted closer gerbil.pkg. Existing manifest,
+  role-byte and init-change controls remain unchanged. The later discovery
+  sample records eight identity reads for its eight selected declarations.
+
+The CLI contributes another concrete cost. The installed original Standard
+Library maps =gerbil env= to =gxpkg env=, whose module imports =std/net/request=
+and whose env command invokes the requested test tool as a child process.
+=gxtest= itself already calls the native local-environment setup helper. A
+same-file Ops control with the same heap options measured 3.715 seconds through
+the package wrapper versus 2.168 seconds through =gerbil test=. This is a local,
+ordered observation, not a portable speedup ratio.
+
+TestingScript now uses the original =gerbil test= directly when the effective
+environment already has GERBIL_PATH and its package-bin directory has first PATH
+priority. That condition is checked inside every guarded execution, including
+Ops overrides, rather than cached in a POO slot. Missing setup delegates to the
+original =gerbil env gxtest= implementation, retaining its package/PATH behavior.
+Explicitly different command declarations remain honored. Both routes retain
+the same source guard, fixture cleanup, heap cap, timeout and completion checks;
+the existing Ops completion receipt remains the result. No user initializes Context,
+maintains a runner, imports gxpkg, or declares an extra function to obtain this.
+
+The prepared environment pair is frozen into the actual Ops request so ambient
+changes after the decision do not change the tested PATH priority. A native
+same-source regression also changes PATH via an Ops override; the delegated
+route must restore package-bin priority in the child. This tests effective
+environment behavior, not an assumed argv field on Ops receipts (they do not
+have one). The first probe attempted that nonexistent field and was rejected;
+the corrected probe checks the actual child environment instead.
+
+The consolidated real AWS count probe passed with one registration, four
+read-only queries, one realization and final-child/parent-cache assertions.
+Queries took 0.691, 0.718, 0.884 and 0.484 seconds; registration took 2.378 seconds
+and realization 0.330 seconds. Selection completed at 11.089 seconds, Contract
+binding at 12.143 and publication at 14.207. This receipt validates the reduced
+call count, not a stable speedup ratio against observations at different load.
+
+The launch regression passed with wrapped/direct/changed-PATH durations of
+3.935/1.392/3.120 seconds for the same plain file and heap settings. A subsequent
+module-testing gate passed with natural exit zero, covering lazy scope/test
+selection, source guards, fixture cleanup and actual JsonSchema/Funflow tests.
+The existing TestingScript policy unit gate also passed. No full build or
+aggregate test run is used as a substitute for these focused controls.
+
+An intermediate real AWS integration printed all completion markers but Ops
+still received status 124. It remains a failed natural-exit gate: markers alone
+do not establish successful completion. That observation preceded the direct
+native test launch, and was not converted to success or assigned to Nix time.
+
+After the native launch and environment snapshot changes, a fresh invocation of
+=t/aws-context-publication-test.ss= passed through the actual init-owned endpoint
+with MODULE-OK, HARNESS-OK, final OK and natural exit 0. The full existing Schema
+upgrade, cached-parent/final-child, Context refusal, stale receipt, typo and
+requirement-map mutation assertions were retained. This is the current functional
+receipt; the earlier status-124 observation remains a separate failure.
+
+Residual startup work is explicit: roughly ten thousand reads still occur while
+discovering the eight declarations in this init. Selected declarations import
+their role/dependency sources even though business scopes are not forced. More
+reuse across those imports would cross macro/initialization effects; it cannot
+be obtained by widening a source-read cache. A qualified compiled declaration
+closure or narrower metadata/role boundary requires separate evidence. The
+current change removes bounded duplicates and the unnecessary prepared-env
+process, and does not claim that remaining discovery is optimal.
+
+** File and stage attribution of declaration discovery
+
+The existing source observer now accepts numeric events keyed by
+=(file-request phase path)= and =(file-read phase path)= in addition to its
+unchanged aggregate symbol keys. Requests include cache hits; reads count actual
+=module-source-read= byte reads. These events are emitted only while an observer
+is installed. They do not measure the SDK's own file IO or prove that filesystem
+data came from disk rather than the OS cache. The native Ops startup probe emits
+stage totals and the ten busiest files, rather than a complete path transcript.
+
+The eight-declaration control initially recorded:
+
+| Stage | Actual reads before Graph reuse | After Graph reuse |
+|-------+---------------------------------+-------------------|
+| Publication currentness | 8,730 | 6,692 |
+| Compiler import closure checks | 738 | 738 |
+| Compiler tool preparation | 66 | 66 |
+| Other source preparation/discovery | 378 | 365 |
+| Total | 9,912 | 7,861 |
+
+This is 2,051 fewer byte reads (20.7%), with the same eight declaration identity
+reads. Aggregate guard invocations changed from 385 to 359 and read requests from
+13,678 to 10,537. The initial attribution attempt completed discovery but its
+reporting failed on unavailable sorting helpers; a subsequent malformed reporting
+form also failed. Those runs are not passing gates. Reporting now uses the
+existing core =list-sort= and a bounded ordinary Scheme traversal; the complete
+Ops probe subsequently passed with natural exit zero.
+
+Selected file counts after the change, relative to the Core checkout:
+
+| File | Reads | Publication checks | Compiler import checks | Other |
+|------+-------+--------------------+------------------------+-------|
+| gerbil.pkg | 213 | 42 | 157 | 14 |
+| module-system/source/role-forms.ss | 161 | 42 | 118 | 1 |
+| module-system/source/declaration.ss | 156 | 42 | 113 | 1 |
+| modules/gerbil.pkg | 122 | 36 | 0 | 86 |
+| types.ss | 71 | 42 | 28 | 1 |
+
+The principal duplicate was not repeated Profile macro expansion. Graph closure
+discovery obtained a publication, then Core-node and Feature-node assembly asked
+the source resolver for the same publication again. Each lookup could trigger a
+whole reader/tool-source validation even though the resolver already held that
+publication object. =select-module-graph= now retains each actual publication once
+for this candidate Graph and uses it for its existing nodes and dependency edges.
+This index stores objects, not accepted freshness results or source bytes. No
+second module namespace, resolver, execution Graph or initialization cache exists.
+After lazy author slots have been evaluated, an independent source check must
+succeed before the candidate Graph can be returned. The existing outer selection
+guard remains. A native regression mutates source-currentness from a lazy Feature
+slot, observes exactly one publication acquisition, and requires final refusal.
+
+An un-realized selection also no longer performs the same source guard twice
+with no intervening operation. A realized selection still rechecks after its
+package admission, which may execute external effects. The configuration-role
+reader's own pure currentness traversal now shares the existing bounded read
+cache across tool and role observations. This scope ends before wrapper writes,
+native imports, expansion or evaluation and begins afresh on the post-check. It
+does not account for the discovery reduction above: that control did not enter
+the configuration-role stage.
+
+The configuration-role regression exposed a separate, reproducible stale-value
+bug. A new role session read the edited source but returned the old imported
+object (=1= rather than =2=). Removing the proposed pure observation window did
+not fix it. A temporary native import trace located the problem: importing the
+generated entry disabled our role interceptor before its relative imports were
+expanded, so the SDK original-path registry supplied the previous role context.
+The generated entry now keeps interception active; SDK/library delegation still
+uses its original boundary. No upstream expander code or registry was changed,
+and the temporary trace was removed. The unchanged regression then passed: the
+new child sees =2=, the parent retains =1=, stale source refuses and unadmitted
+imports remain forbidden. This is context isolation, not permission to reuse
+expanded modules across source epochs.
+
+The real AWS gate then exposed a previously masked dependency-closure omission:
+the Build role received only owner-local private sources, so the now-active
+interceptor refused an already-publication-observed Nix type dependency. Build
+role evaluation now consumes those exact recorded transitive inputs as well;
+it still excludes data assets, owner roles already supplied separately and SDK
+tools with canonical checked contexts. This uses the existing publication input
+Graph, not an arbitrary-directory exception, Core namespace exemption or a new
+Loader. Inputs not present in that admitted closure remain refused. The initial
+AWS failure is retained separately from any subsequent successful run.
+
+The next AWS attempt correctly refused a source-only public POO dependency that
+the configuration reader had treated as prebuilt-only. Both readers now use the
+same existing canonical-library identity/path check, extracted into one private
+function. A configuration import outside its recorded Core closure is accepted
+only as an exact SDK-resolved non-Core library source; its byte/package guard
+joins the current input observations. A Core-like name or same-name foreign file
+does not qualify. The added native configuration control accepts the actual
+public metadata library and rejects a foreign same-identity file before its
+initialization marker can run. Parent/child isolation and the original unadmitted
+local-import rejection pass unchanged. These corrections do not relax source
+confinement or add another dependency resolver.
+
+One subsequent AWS attempt reached the unchanged Ops deadline (status 124).
+The single-version cost probe then failed the existing debug memory policy
+before its first Nix invocation. That is a Scheme preparation failure, not
+evidence that Nix evaluation is slow; neither limit was increased. Two further
+duplicate traversals were identified in the corrected role path:
+
+- Each SDK import checked every selected private role. It now uses the same
+  demanded SDK dependency-subgraph check as the publication reader. Complete
+  role/input checks still bracket evaluation. Every import check gets its own
+  pure read window; observations never span macro expansion or initialization.
+- Build evaluation re-expanded the publication's already-observed dependency
+  sources. It now references the exact existing =kernel-contexts= entries from
+  that reader, paired with their recorded guarded input. Owner-local roles keep
+  fresh private wrappers. Shared dependency references check their source again;
+  reloads and changed source epochs refuse. No global path-to-expanded-value
+  cache is added. The native importer still owns each module context's evaluation
+  promise; this layer neither forces nor memoizes initialization results itself.
+
+A native initialization-effect control edits the configuration from an imported
+role initializer. The final guard must reject it. Its private entry is read by
+exactly the two complete pre/post guards, rather than once for every SDK import.
+This control passes with the original memory policy and watchdog, alongside the
+fresh-child/unchanged-parent and public/foreign dependency controls.
+
+The SDK-only build-tool closure now explicitly includes the existing
+=building/configuration-source= entry used by Build roles. Build-only imports
+from another already-selected module use the reader's existing
+=kernel-contexts=/=kernel-inputs= association on demand. The exact dependency
+input closure joins the pre/post guards. No new directory traversal, role scan
+or second namespace is introduced for this lookup.
+
+The later native memory diagnostic found an execution-boundary defect as well:
+=just test-file= reported =##get-max-heap = 0= inside its test process, despite a
+heap option on the parent command. The original SDK =gxpkg env-exec= invokes a
+child and does not inherit the dispatcher's VM options. Justfile and the Ops
+fallback now retain the original package setup and explicitly pass those same
+options to =gerbil test= in that child:
+
+#+begin_src scheme
+;; argv structure, not a new runner or a Scheme build protocol
+'("gerbil" "-:max-heap=1G,debug=q" "env"
+  "gerbil" "-:max-heap=1G,debug=q" "test" "t/module-source-cost-test.ss")
+#+end_src
+
+The native control now reports =1073741824= in the actual test VM and asserts a
+nonzero cap. No memory policy, assertion, timeout or worker count was weakened.
+The prepared direct route keeps its existing command; delegated routes keep
+their original package/PATH setup. Earlier wrapper/direct timing observations
+used the same nominal flags but were not matched actual-heap controls. They must
+not be presented as matched memory-bounded speedups. The startup probe now
+asserts the actual child cap in direct, delegated and changed-PATH cases.
+
+Two rejected experiments are explicit. Early symbol-import routing recorded zero
+hits on the measured source path and was removed; it does not explain this
+gate's memory growth. A known-size IO comparison allocated less in one local
+control but took 0.103 seconds versus 0.042 for ordinary reads of the same 200
+source snapshots. It did not demonstrate a latency benefit and was removed.
+Production still uses the original SDK read-all implementation and existing
+phase-local cache. The retained source-cost control compares 200 independent
+reads with the same 200 checks inside one pure window and verifies actual opens.
+
+The completed native control used the same 30,686-character source snapshot:
+200 independent checks opened it 200 times and allocated 4,519,856 bytes; the
+same checks in one pure window opened it once and allocated 1,719,472 bytes.
+Observed work times were 0.0298 and 0.0067 seconds. This isolates source reads,
+not declaration expansion or AWS startup. Concurrent unrelated test activity
+precludes treating these local times as an end-to-end speedup claim.
+
+A second execution-budget defect was a units mismatch: the Ops profile stored
+bytes but passed that integer as an unsuffixed Gambit heap size, interpreted as
+KiB. =TestingScript.= now emits an explicit =K= suffix after rounding the byte
+budget down. The one-GiB profile therefore yields =1048576K=, not an effective
+one-TiB allowance. The Justfile's original =1G= setting remains unchanged.
+
+The real Schema association also requires one public nominal type identity.
+Cloning JsonSchema receipt/IR library definitions into private Build contexts
+produced structurally similar but nonidentical artifacts and correctly failed
+the unchanged association checks. The compiler tool closure now includes the
+existing JsonSchema receipt and configuration JSON libraries. This preserves
+their SDK type identity; it does not link a module's business scope, admit a
+foreign source, cache evidence, or initialize a selected Profile early.
+
+The warm single-version AWS cost probe completed with natural exit zero and all
+native harness markers. It recorded one registration, one realization and four
+read-only queries (0.93, 0.93, 0.87 and 0.76 seconds). Its complete selected-build
+workload recorded 17,959 reads, including configuration and later admission
+guards. That is a different workload from the eight-declaration table above;
+it must not be presented as that table's final discovery count. These receipts
+validate the single-version assertions, not the complete version-transition
+integration gate or a subsecond cold start.
+
+A later full init-owned integration invocation was refused by the sandbox at
+the Nix daemon socket before package selection. The native harness correctly
+rejected its captured error even though the child exited zero. This is an
+environmental failure, not Schema-upgrade validation. The authorized daemon
+route must be qualified separately under the unchanged watchdog and heap cap.
+That authorized warm-store run reached parent selection, binding and publication
+but failed the unchanged Ops 60-second deadline (status 124) before completing
+the version transition. It reported the actual one-GiB child heap cap. Parent
+publication is not a pass for the later refusal/upgrade assertions. The full
+init-owned integration therefore remained open at that revision; the
+historical integration pass recorded below does not qualify these newer reader
+and execution-budget changes. No immediate unchanged rerun, larger timeout or
+weakened assertion is used to turn this failure into acceptance.
+
+After the real heap fence was restored, the AWS probe passed declaration
+preparation and reached Nix. That run was not a warm-store measurement: Nix
+fetched roughly 141 MiB for the 5.99.0 provider plus its missing dependencies and
+generated the actual Schema. It exceeded the original deadline and remains a
+failure. The resulting artifact's validity was then checked explicitly before
+any warm rerun. The test expression currently imports ambient =<nixpkgs>=;
+this does not establish a repository-pinned package-input reproducibility claim.
+Its actual derivation identity/currentness checks remain mandatory.
+
+One module-testing run also refused a concurrent edit to
+=configuration/slot-origin.ss= with =compiler tool source changed=. That refusal
+is retained as a contaminated run, not reported as a pass or used in timing
+comparisons. Concurrent source work is not reverted to obtain a green gate.
+
+The earlier sample spent 3.861 seconds discovering tests; the reduced-read sample
+spent 7.077 seconds. This is deliberately not reported as a latency improvement:
+they were not isolated matched-load timing trials. Work counts identify removed
+operations; host scheduling, source imports and initialization still dominate
+variable wall time. The separate import/expansion controls remain necessary.
+
+Remaining repeated checks are explicit. Each compiler import can follow author
+expansion/initialization, so declaration.ss and role-forms.ss must not acquire a
+cross-import byte cache merely to reduce these counts. Likewise independent
+publication, package and execution guards must see changed source and Schema.
+The initial residual 7,861 reads are an open performance issue, not a claim of optimal
+discovery. Further reduction needs a narrower pure snapshot traversal or a
+qualified immutable declaration closure, with its own invalidation evidence.
+These checks observe a filesystem; they do not lock it or create an atomic
+filesystem snapshot. Qualification requires stable inputs throughout the run.
+Independent post-checks detect persistent edits across effect boundaries; they
+do not prove the absence of an external writer's undetectable change-and-restore.
+
+Earlier focused verification for this read-reduction change used the existing serial
+=test-file= entrypoint and original watchdogs, before the child-cap defects above
+were corrected. The startup Ops probe,
+selected-Graph gate, module source-admission gate, publication gate,
+configuration-source gate and fresh-process module-testing rerun all completed
+with natural exit zero and the required harness markers. The configuration gate
+also passed after restoring its bounded pure observation window, separately from
+the interceptor fix. No marker-only, skipped or source-contaminated run counts
+as a pass. These source-only qualification runs do not establish compiled-cache
+startup performance.
+
+The later actual-heap controls use the dependency pinned in =gerbil.pkg=
+(=gerbil-poo@26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=) and source-only Core,
+through the existing serial =just test-file= entrypoint. Reproduce attribution
+with =just test-file t/aws-startup-cost-test.ss= and the bounded pure-read control
+with =just test-file t/module-source-cost-test.ss=. Neither command replaces the
+separate real-package integration gate. No generated receipt or raw log belongs
+in the repository.
+
+*** Final source-only receipt after correctness fixes
+
+The final startup Ops probe passed with natural exit zero, every required
+MODULE-OK/HARNESS-OK marker, final OK and no failure markers. Direct, delegated
+and changed-PATH children asserted an actual =1073741824=-byte heap cap.
+The later canonical type/tool closure is larger than the initial A/B closure:
+do not subtract its counts from the earlier baseline to claim a matched speedup.
+
+| Final discovery stage | Actual reads |
+|-----------------------+--------------|
+| Publication currentness | 6,842 |
+| Compiler import closure checks | 892 |
+| Compiler tool preparation | 85 |
+| Source preparation/discovery | 355 |
+| Total | 8,174 |
+
+The same eight declaration identity reads remain. The observer recorded 11,079
+requests and 376 pure guard entries. The busiest files, relative to Core, were
+=gerbil.pkg= (209), =modules/gerbil.pkg= (159),
+=module-system/source/role-forms.ss= (156),
+=module-system/source/declaration.ss= (151) and =types.ss= (78).
+Each of those files had 42 publication-current reads. Those are separate guard
+boundaries, not 42 opens inside one pure cache window. Coalescing their byte
+observations across author expansion or initialization would violate the
+accepted freshness boundary.
+
+Discovery took 7.070 seconds, of which the observer measured 3.071 seconds in
+guard scopes. Incremental import measurements identified =init-syntax= at 1.844
+seconds, POO MOP at 0.891, slot-debug at 0.403 and JsonSchema Contracts at 0.232.
+These are observed incremental source imports in that order, not independently
+measured module costs. The small user Profile expanded in 0.000277 seconds;
+its expansion is not the dominant startup cost. Native module loading and
+declaration execution remain separate from the pure read optimization.
+No end-to-end startup speedup is established by this receipt.
+
+After the actual child-cap correction, the focused source-cost,
+source-admission, selected-Graph, configuration-source, public-dependency,
+bootstrap, TestingScript policy and module-testing gates all passed separately
+and serially. Together they retain changed-byte/file-kind refusal, initializer
+effects, final Graph currentness, parent/child role isolation, confined imports,
+source-only JsonSchema use, test laziness and failure cleanup. They do not
+substitute for the still-failing full AWS version-transition gate above.
+
+** Reuse and invalidation rules
+
+*** Publication guard boundaries, not just file totals
+
+An opt-in reader bracket reports the caller phase, actual guard runs and byte
+reads. It closes on exceptions and does not change the cache key. A second
+observation of the unchanged discovery workload reproduced all 6,842
+publication-current reads before the following coalescing changes:
+
+| Caller boundary | Runs | Reads | Decision |
+|-----------------+------+-------+----------|
+| Module eligibility | 8 | 1,298 | Retain source-policy check before demand |
+| Before declaration evaluation | 8 | 1,298 | Retain; no cache spans expansion/initialization |
+| After declaration evaluation | 8 | 1,398 | Retain; author code may change sources |
+| After publication Contract admission | 8 | 1,398 | Retain; admission forces author slots |
+| Before selected Graph resolution | 1 | 85 | Retain generation/source precheck |
+| Selected Graph currentness | 2 | 370 | Share observations for adjacent source-only test checks |
+| Immediately after Graph return | 1 | 185 | Remove duplicate; resolver has just checked after author slots |
+| Other init/test entry guards | 6 | 810 | Retain independent demands; do not assume caller purity |
+| Total | 42 | 6,842 | |
+
+This table does not establish that every retained traversal is irreducible.
+Eligibility and reader entry still check overlapping inputs, but locating a
+source and preparing its declaration lie between them. The generic interfaces
+allow callbacks there. Reusing a prior Graph's acceptance is not proof that
+those callbacks are pure. This change does not widen a read window over them;
+further coalescing must qualify that concrete prefix rather than presume purity
+from a matching Graph generation.
+
+Deleting the post-Graph duplicate leaves the resolver's actual final check
+intact. Only an internal hash insertion follows it. It does not remove the
+check after lazy Feature evaluation. Test projection combines selection and
+Graph guards only when the existing selection explicitly has no package guard.
+Realized or foreign selection admission stays outside the pure window: its
+package callbacks can execute effects. Both guards still run; only repeated
+source observations inside that one synchronous window are reused.
+
+Two other adjacent pure traversals use the same existing read cache. Prepared
+publication currentness and its immediately following link guard share one
+window, after preparation has finished. Platform Context currentness brackets
+its source/Schema observations with the source-only build Graph guard inside
+one window. This does not encompass Contract evaluation, module initialization,
+Nix, public handoff, or two independent publication attempts. Package pre/post
+checks remain unchanged and outside that cache. No new freshness authority,
+TTL, epoch counter or execution Graph is introduced.
+
+The Context regression counts exactly one source read and one Schema read in a
+single guard, then changes the Schema and requires refusal by the next
+publication. The test-projection effect probe reads a test file, changes it in
+the package-admission callback and requires the following source check to
+refuse. These probes test cache lifetime rather than replacing the existing
+real-module and during-admission mutation controls.
+
+The instrumented pre-change probe completed naturally and reproduced 8,174
+total reads. After the coalescing changes, declaration discovery recorded 7,802
+total reads and 6,472 publication reads: 370 fewer publication reads (5.4%) and
+two fewer other reads. Each busy tool file now has 40 rather than 42 publication
+reads. Declaration identity reads remain eight; compiler-import reads remain
+892 and compiler-tool reads 85. Only the redundant post-Graph check and the
+overlapping test-projection check disappeared from the publication work counts.
+
+The larger multi-process startup control printed its completion markers but
+then exited 124 under the original 120-second outer watchdog. That invocation
+is a failed gate, not a pass. Its discovery counters describe completed work,
+not accepted whole-run performance. Discovery took 19.416 seconds versus 8.250
+in the instrumented pre-change run; this does not establish a latency speedup.
+No timeout or heap budget was raised, and the unchanged failed route was not
+immediately rerun. Correctness regression gates and real AWS integration remain
+separate qualifications.
+
+*** AWS transition phases under the unchanged execution budget
+
+The integration test's opt-in trace now reports relative phase/step times and
+the existing Nix process-completion observations. The init-owned Ops endpoint
+prints its captured receipt only when that trace is requested; it still owns
+the same native test, command, Graph, fixture and original 60-second deadline.
+The post-coalescing invocation completed naturally with both child and outer
+MODULE-OK/HARNESS-OK/final OK and the actual one-GiB child heap cap.
+
+| Completed phase | Body elapsed seconds | Step seconds |
+|-----------------+----------------------+--------------|
+| Fixture ready | 0.167 | 0.167 |
+| Parent selected/realized | 14.128 | 13.961 |
+| Parent publication bound | 15.534 | 1.406 |
+| Parent published, effective child retained | 18.032 | 2.498 |
+| Same-label descriptor clone refused | 18.033 | 0.0005 |
+| Context-policy refusal returned | 21.469 | 3.436 |
+| Old source refused after version edit | 21.494 | 0.024 after edit |
+| New provider selection realized | 29.973 | 8.479 |
+| New publication bound | 31.264 | 1.291 |
+| Old receipt replay refused | 31.359 | 0.095 |
+| Fresh child published | 33.857 | 2.497 |
+| Typo refused | 35.858 | 2.002 |
+| Changed responsibility association refused | 35.902 | 0.044 |
+
+These times start after importing the child test module. The Ops deadline also
+includes its process startup/imports; 35.902 seconds is not the complete Ops
+duration or a matched speedup. The original timeout only located its last
+completed checkpoint at parent publication, before the Context refusal/source
+replacement interval. It did not record the precise interrupted instruction.
+The finer trace now distinguishes that interval from child provider realization
+if it recurs; a later successful run cannot prove a unique historical cause.
+
+This warm-store run executed two derivation registrations, two realizations and
+eleven read-only derivation queries, totaling about 19.28 seconds in observed
+Nix commands. Realization took 0.161/0.697 seconds. Queries ranged from 0.745 to
+1.822 seconds. They straddle distinct package/admission/publication effects and
+were not removed by caching a previous Nix success. The Context pure-read
+coalescing does not bypass them or reuse candidate/Contract evidence.
+The real 5.99.0 → 5.100.0 transition, final child after parent cache, actual
+Contract association, old receipt refusal and failed-publication value retention
+all passed in that same test. No cloud resources were deployed.
+
+The five focused regression files also passed naturally after these changes:
+=admission-publication-test.ss=, =module-selected-graph-test.ss=,
+=module-testing-test.ss=, =module-configuration-source-test.ss= and
+=module-source-admission-test.ss= (all under =t/=). They retain the existing
+before/during-admission source and Schema edits, failed-publication old value,
+source mutation from author slots/initializers, real module test isolation and
+cleanup, plus the new narrow-window controls. No compatibility layer, runtime
+Loader, full build, new runner or upstream change was introduced.
+
+*** Independent authority boundaries
+
+| Item | Reuse boundary | Required refusal/recheck |
+|------+----------------+-------------------------|
+| Selected Graph and prepared source | Same selected generation and compiler context | Changed bytes, source identity, package metadata or generation |
+| Derivation and realized package slots | Same immutable Source receiver | Re-evaluate derivation identity at independent effect/publication boundaries |
+| Source-read observations | One synchronous effect-free guard | End reuse before Nix, writes, expansion or Contract execution |
+| Provider Schema entry and compiled value Type | Exact published package/digest and receiver | New provider selection creates a fresh association/Context |
+| Admission evidence | Exact final value, actual Contract and current Context | Never reuse acceptance solely because the Nix output is cached |
+| Compiled Scheme artifacts | Only after source/compiler/dependency identity qualification | This run does not establish that reusable compiled cache |
+
+The remaining repeated read-only evaluations are explicit safety boundaries,
+not a claim that every call is irreducible. Removing another call requires a
+proof that no arbitrary Contract, source write or caller action lies between it
+and the retained check, or a complete immutable evaluation closure. A guessed
+dependency list, timestamp TTL or previous success is insufficient. No timeout
+was widened, no runtime Loader was introduced, and no upstream Nix code changed.
+
+The first full init-owned AWS integration attempt after the read-only guard
+change still refused with Ops status 124 and a duration anomaly while demanding
+a derivation. Its original limits and assertions were retained. The successful
+single-Graph publication diagnostic does not replace this failing two-version
+integration gate. After direct =drvPath= construction was added and its write
+behavior tested, a fresh invocation of the same init-owned integration passed
+with exit 0, MODULE-OK, HARNESS-OK and final OK. No integration assertion or
+watchdog was changed. That gate covers the actual 5.99.0 to 5.100.0 upgrade,
+cached-parent/final-child identity, contextual rejection, old-evidence refusal,
+typo refusal, requirement-map mutation and retaining the previously accepted
+object on failure. Its success is not a subsecond latency measurement and does
+not erase the earlier duration failure.
+
+The focused construction/query control and existing =module-nix-phase-test.ss=
+also passed with the same completion/exit requirements. They cover registration
+versus query writes, transitive and negative inputs, exception-safe mode
+restoration, lazy receiver-local derivation/realization and specialized Source
+dispatch. The startup controls passed through existing Ops execution; their
+timings remain observations rather than a performance acceptance threshold.
+
+The final single-Graph timing invocation, after direct construction was added,
+failed its existing 60-second case watchdog. Its first Nix command was
+interrupted after 17.225 seconds; selection had not completed. At that point the
+host load average was approximately 70 and concurrent Lean/GCC work was visible.
+No foreign workload was stopped. This observation is not assigned entirely to
+contention, nor counted as a pass or a final speedup. The unchanged failed timing
+route was not immediately repeated. Functional integration success and stable
+latency are separate gates; the latter remains open.
+
+The earlier admission-publication failure was source instead of logic for the
+nested cause. After restoring the public Contract's dependent-meaning boundary,
+the unchanged assertions pass, alongside pre/post package-refusal cases. Neither
+the new case nor an altered expectation substitutes for the existing controls.
+
+Completed focused regressions use the existing heap-fenced Justfile test-file
+entrypoint, serially, with exit 0, MODULE-OK, HARNESS-OK and final OK:
+
+| Gate | Covered boundary |
+|------+------------------|
+| t/admission-publication-test.ss | Original nested failure phases; pre/post package refusal retains previous value |
+| t/module-source-admission-test.ss | Independent checks see edited bytes; directory/symlink replacement rejects |
+| t/module-reader-tool-context-test.ss | Actual isolated-source run: tool-byte changes, foreign identity, cycles and reverse roles reject |
+| t/module-public-dependency-test.ss | Canonical public dependency; foreign same-name source never executes; manifest invalidation |
+| t/ops-process-script-test.ss | Failed process retains diagnostic output; existing status/timeout/log behavior |
+| t/testing-script-test.ss | Existing harness admission and pre/post guards; execution/cleanup causes retained |
+| t/ops-selected-packages-test.ss | Source-only guard stays pure; full package guard still runs; edited guard rejects |
+| t/aws-module-test.ss | Cold/warm atomic Ops execution; scope/integration stay cold; explicit integration shares the Graph |
+| t/module-testing-test.ss | Atomic/integration file discovery; shared Graph; integration edits reject only its own projection |
+
+One module-testing attempt rejected a concurrent module-prelude.ss source change
+with stale Module prelude source. The source guard was retained, the unrelated
+phase-one export change was not reverted, and a fresh-process rerun passed.
+That stale attempt is not counted as either a pass or a latency observation.
+
+The tool-context gate requires an isolated source copy with its existing
+CORE_QUALIFICATION_ROOT input: it deliberately edits and restores that copy's
+tool/role files. The earlier invocation without that input printed SKIP and is
+not counted as validation. No active checkout source was edited by that gate.
+These receipts establish bounded correctness controls, not a benchmark or a
+general performance claim.
+
+Focused native gates are recorded after completion. A test that only discovers
+the atomic filename, reports a nested harness error, times out or skips a
+source-only control is not a passing AWS integration. Existing heap fences and
+timeouts are retained. No full Core build, cloud deployment or push is part of
+this change. Raw execution logs are not stored in the repository.

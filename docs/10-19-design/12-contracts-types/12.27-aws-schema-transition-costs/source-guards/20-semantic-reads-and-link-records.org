@@ -1,0 +1,129 @@
+#+title: 12.27.33 Semantic Reads And Link Record Retention
+#+property: DOCUMENT_ID 12.27.33
+#+language: en
+
+* Relationship to the later bounded projection
+
+This page records the original full-trace control and its small lexical-record
+contraction. The subsequent [[file:21-owned-call-read-projection.org][owned authoring-call projection]] implements a
+narrower lifetime boundary using public native read witnesses. Unknown CLOS
+execution-state callbacks still retain their full trace. The limitations below
+remain applicable to unrestricted token filtering and arbitrary Scheme effects.
+
+* Separate lifetimes without losing requirements
+
+Graph semantic dependencies include mutable authoring policies, actual Type and
+Contract objects, Generic generations, source identities and their transitive
+read dependencies. Source-byte equality alone does not establish currentness.
+A completed CLOS invocation frame is an operational carrier; its allocation
+class alone does not establish that its reads are disposable. A public method,
+MOP hook or validator can retain it or make its state semantically relevant.
+
+The current production implementation therefore keeps the complete native read
+trace. Core neither suppresses observer deliveries nor reconstructs native
+tokens. The public native token holds its receiver, instance, value, dependent
+tokens and private currentness procedure. Replay checks the complete closure
+and checks visited tokens again after callbacks. Filtering receiver classes
+cannot substitute for that behavior.
+
+* A safe contraction in the existing owner
+
+[[file:../../../../../module-system/source/link.ss][The linker]] already owns publication, dependency and linked-scope records.
+Their fields were lazy closures over already evaluated local values. They now
+use existing constant lexical slots; no new record owner or result cache is
+introduced. Factory invocation, value admission, source checks and index
+insertion keep their original order. Only pure local variable capture changes.
+
+#+begin_src scheme
+;; Values have already been produced and admitted, in the same order as before.
+(let ((source source-value) (publication publication-value)
+      (evidence evidence-value))
+  (.o source publication evidence))
+
+(let ((provider record) (requirement-evidence evidence))
+  (.o provider requirement-evidence))
+#+end_src
+
+This contracts initializer environments, not the declared semantic payloads.
+The [[file:../../../../../dev/proofs/lean/YuanxuProof/PooClos/CarrierCapture.lean][existing carrier theorem]] proves payload membership is unchanged. Full
+publication and linked-record values still retain their required evidence.
+This does not remove the native trace's ownership of CLOS frames.
+
+* Quint and Lean have different duties
+
+[[file:../../../../../dev/proofs/quint/SemanticReads.qnt][SemanticReads]] checks finite schedules: finish a call, optionally escape its
+frame, change a policy/Contract/source/Generic identity, then attempt publication.
+Unknown callbacks fall back to the complete trace. Its eight outcomes include
+six independently failing mutation controls and an acceptance witness. Mutation
+controls for policy and Contract require no source-byte change. A certificate
+in this model is an explicit assumption, not something Core currently issues.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SemanticReads.lean][The Lean correspondence]] proves for arbitrary identities:
+
+- A complete projection that is current implies every required identity is current.
+- A change to any required identity makes projected publication inadmissible.
+- An escaping frame must be included if it is a required dependency.
+- Every omitted required identity has an adversarial freshness assignment that
+  passes the projected check and fails the required check.
+- The full-trace fallback is sound under the existing trace-coverage premise.
+
+These are logical projection properties. They do not prove that native source
+execution has supplied the complete requirements, that a callback cannot escape,
+or that replacement native read tokens are constructible through public APIs.
+Quint does not prove arbitrary-size heap bounds; Lean does not measure GC bytes.
+
+* Native gates and measured boundary
+
+The 16-real-Module comparison uses the same fixture generation, same init-owned
+Module tests object and observation settings, same source-only dependency cut
+and standard heap fence. The worker retains its Graph, takes a collected sample
+through existing Observability, checks Graph identity again, then mutates the
+actual init source to verify refusal. Fixture cleanup remains automatic. It
+does not invalidate Graph slots, clear SDK state or warm a replacement cache.
+
+| Sample | Collected live bytes |
+|--------+----------------------|
+| Original link-record initializers | 567182592 |
+| Constant lexical link-record slots | 567167744 |
+| Observed difference | 14848 |
+
+Both runs naturally passed MODULE-OK, HARNESS-OK and final OK. This is one small
+local allocation observation, not a capacity or performance closure. Both keep
+288 effective methods, 288 frames and 7488 related read records. The earlier
+thousand-Module refusal remains open; this result cannot justify rerunning or
+relabelling that gate as passed.
+
+The focused link test checks native constant slot specs as well as cold scope
+factories, requirement Contracts, source refusal, disabled dependencies and
+cycles. CLOS native negative controls mutate policy, actual Type predicate,
+Generic generation and an escaped frame after a lazy call has returned, then
+require public replay to refuse the old trace. These are deliberate negative
+mutations, not a cache. The frame is retained by a real public method body;
+its validation reads cannot be dropped based on its CLOS allocation class.
+
+The real AWS/JsonSchema/Funflow init-owned aggregate passed naturally with seven
+MODULE-OK, two HARNESS-OK and two final OK markers and no error/overflow marker.
+It retains Schema/source transitions, old-evidence refusal, accepted-value
+preservation and cleanup. The link suite and CLOS suite are separate focused
+gates, not a full Core build or thousand-Module acceptance.
+
+* Remaining projection requirement
+
+Removing operational carriers needs producer-established ownership, non-escape
+and complete promotion of external dependencies, including open callbacks and
+transitive preparation reads. Public native replay does not expose a way to
+rebuild a token's private currentness predicate without retaining that token.
+The present Core change does not invent a certificate, trust class names or
+silently treat source guards as a replacement for mutable object dependencies.
+The trace projection is therefore still open under the Core-only constraint.
+
+#+begin_src text
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/module-scope-link-test.ss true
+just test-file t/poo-clos-dispatch-test.ss true
+just test-file t/module-testing-isolation-test.ss
+python3 dev/proofs/quint/check.py --case-prefix SemanticReads --typecheck-scope selected --receipt .data/qualification/semantic-reads.scm
+#+end_src
+
+Run native gates serially. No upstream modification, new cache, heap/timeout
+increase, full build or push is part of this qualification.

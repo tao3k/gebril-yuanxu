@@ -1,0 +1,174 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.65 OpenTofu Generation 01: Selection, Lock and Build Inputs
+#+property: DOCUMENT_ID 11.65
+#+property: STATUS design-only-not-executed-no-loader
+
+* Input ownership
+
+modules/opentofu/config.ss contains source selection and generation policy, not
+account credentials. The following is a DESIGN input, not an existing lock asset:
+
+#+begin_src scheme
+(def Config
+  (.o lock-file: "./.terraform.lock.hcl"
+      providers:
+      (.o aws: "registry.opentofu.org/hashicorp/aws"
+          external: "registry.opentofu.org/hashicorp/external")))
+#+end_src
+
+The selected graph supplies an admitted OpenTofu executable/toolchain identity,
+platform and source snapshot. Versions/checksums come from the lock source, not
+a second user-written versions table. A qualified HCL lock decoder must produce
+an internal providers map keyed by canonical source address, whose rows contain
+version and hashes. That decoder is NEW, must not evaluate arbitrary HCL, and
+must retain source spans and duplicate/conflict rejection. No such parsed lock
+or checksum is fabricated in this study. Engine/toolchain pinning is separate
+from the provider lock; .terraform.lock.hcl does not pin the OpenTofu executable.
+
+The precise native request construction after lock admission is:
+
+#+begin_src scheme
+(def (selected-provider-requests selected lock)
+  (object<-fun
+    (lambda (alias)
+      (let* ((source (.ref selected alias))
+             (key (string->symbol source))
+             (entry (.ref (.get lock providers) key)))
+        (unless (and (string? (.get entry version))
+                     (not (string=? (.get entry version) ""))
+                     (list? (.get entry hashes))
+                     (pair? (.get entry hashes))
+                     (every string? (.get entry hashes)))
+          (error "Provider lock is incomplete" alias source))
+        (.o alias: alias source: source
+            version: (.get entry version) hashes: (.get entry hashes))))
+    keys: (.all-slots selected)))
+
+(def (required-provider-rows requests)
+  (map
+    (lambda (alias)
+      (let (request (.ref requests alias))
+        (cons alias
+          (list (cons 'source (.get request source))
+                (cons 'version (string-append "= " (.get request version)))))))
+    (.all-slots requests)))
+#+end_src
+
+The lazy request values capture immutable admitted input. Missing entries fail
+before execution; source normalization, constraint compatibility, duplicate aliases,
+package authenticity and complete lock admission are prerequisites, not proved
+by the small row-shape check above. Two aliases for the same source must not
+produce two inconsistent version selections. There is no automatic registry
+fallback for an absent/disabled provider. Lock update is an explicit separate job.
+
+* Acquisition/extraction node
+
+A generated minimal root contains only terraform.required_providers, built from
+required-provider-rows, and the frozen lock bytes. No deployment backend, remote
+module, provisioner or customer credentials belong in this root. The explicit
+worker's command body is ordinary Gerbil, not a slot initializer:
+
+#+begin_src scheme
+(def (extract-provider-schema tofu workspace environment)
+  (run-process
+    (list tofu "init" "-backend=false" "-input=false" "-lockfile=readonly")
+    directory: workspace environment: environment
+    check-status: #t)
+  (string->json
+    (run-process
+      (list tofu "providers" "schema" "-json")
+      directory: workspace environment: environment
+      check-status: #t)))
+#+end_src
+
+The build worker serializes the generated root, stages the original lock bytes,
+then invokes this function with the admitted executable, isolated workspace and
+explicit environment. Those staging/scheduling services are not implemented by
+this code block. The existing :std/misc/process and :std/encoding/json APIs own
+process/JSON operations. No Bash is needed. Hash keys from string->json must be
+normalized once into the converter's documented symbol-key JSON-like rows; do
+not pass arbitrary runtime JSON representations between phases.
+
+OpenTofu readonly initialization checks the existing lock and prevents silent
+updates. It is still effectful: plugin installation/schema extraction may execute
+third-party code. It is an explicit job, not .get/.def/.admit behavior. Package
+checksums qualify selected artifacts; they are not a substitute for initial trust.
+The worker needs timeout/cancellation/output limits and post-run source/lock
+identity checks. Retain evidence before publishing a generated artifact.
+
+* One selected graph; two projections
+
+#+begin_example
+selected AWS domain scope + selected provider sources + lock/toolchain identity
+  -> request nodes
+  -> isolated provider extraction nodes
+  -> immutable schema/index nodes
+  -> selected member conversion + Schema compilation nodes
+  -> generated provider scopes / output Contract nodes
+  -> scope projection and build-input projection of SAME graph generation
+#+end_example
+
+Initial field demands come from declared domain Contract/projection dependencies.
+Full resource/data demands may be discovered from a pure candidate projection.
+A dynamic demand not prepared in the current generation returns build-required;
+it cannot trigger provider installation, an external build, or a new graph
+generation inside .admit. Pure native Schema predicate construction may remain
+lazy within an already prepared generation; its first-access CPU cost is real. An explicit prepare
+operation can extend/freeze the selected generation, then retry admission. A
+source import scan alone cannot predict every Scheme-computed resource name.
+
+The Core build projector derives nodes from these semantic dependencies, not
+an authored assets/build-entries inventory. Product Loader delegates; Core must
+not import the product Loader to construct its own graph. Cycles across phases,
+missing required denied sources and inconsistent generations are rejected.
+
+Cache identity includes normalized selection, exact lock bytes/selected package
+identities, engine digest/version, platform, schema format, raw-schema digest,
+converter/compiler/bridge revisions and builtin/backend definition revisions.
+Inputs must remain stable throughout acquisition/generation. A changed selected
+provider invalidates its dependent member/config artifacts; a deployment value
+change can reuse qualified schemas but not the prior config admission/plan.
+Hash cache keys and build execution are still required Core adapters, not claimed
+existing operations. The graph must preserve -feature/disable decisions.
+
+* Source references and boundaries
+
+[[https://opentofu.org/docs/language/files/dependency-lock/][OpenTofu lock documentation]] explains provider versions/checksums.
+[[https://opentofu.org/docs/cli/commands/init/][init documentation]] describes readonly mode and backend control.
+This study implements none of those jobs. No lock, provider version, raw schema,
+checksum receipt or acquisition success is asserted as current local evidence.
+
+* Concrete missing-artifact result, before exposing a scope
+
+This proposed pure lookup is inside Core preparation, not user configuration.
+expected-key is the content/source/version identity derived from the selected
+node inputs; artifacts is a prepared native object indexed by that key.
+
+#+begin_src scheme
+(def (prepared-artifact generation expected-key artifacts)
+  (if (not (.slot? artifacts expected-key))
+    (.o status: 'build-required
+        reason: 'missing-artifact
+        generation: generation
+        node: expected-key)
+    (let (artifact (.ref artifacts expected-key))
+      (if (and (equal? generation (.get artifact generation))
+               (equal? expected-key (.get artifact input-key)))
+        (.o status: 'ready
+            generation: generation
+            value: (.get artifact value))
+        (.o status: 'build-required
+            reason: 'stale-artifact
+            generation: generation
+            node: expected-key)))))
+#+end_src
+
+This is an availability/currentness check AFTER canonical artifact/source/coverage
+admission, not a replacement authentication predicate. A disabled requirement
+returns a selection rejection instead, and unsupported conversion is a coverage
+rejection; neither is fixed by silently retrying a build. The source facade must
+surface build-required before returning an admitted scope, or raise its typed
+preparation result for a new demand. Never place that result in a slot expected
+to contain a Contract/provider object. Explicit preparation satisfies the node,
+freezes the generation and retries; native slot access does not start the worker.

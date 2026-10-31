@@ -1,0 +1,88 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Evidence Ledger and Follow-up Experiments
+#+date: [2026-10-15]
+#+property: STATUS research-and-design-not-loader-implementation
+
+* What was read
+
+The Omnibus snippets in module 01 are exact line slices of the pinned archive.
+The HiveBus snippets in module 02 use git show of the named commit. Local dirty
+HiveBus files are excluded. POO extracts in module 04 are copies of current
+working-tree source, with direct links to the executable owners. Re-reading a
+source does not imply executing its output backend.
+
+* Execution status
+
+| Material | Evidence in this revision | Limit |
+|----------+---------------------------+-------|
+| Omnibus sandbox and matrix | source extraction and interface audit | Nickel interpreter unavailable; no sandbox/CI output run |
+| HiveBus | source extraction at fixed commit | no deployment, flake evaluation or POP internals qualification |
+| Nix receiver probe | local strict JSON evaluation, output retained below | bare language only; no nixpkgs or NixOS evaluation |
+| NixOS illustrative module | parse check only | no evaluated option/type/merge integration claim |
+| Jsonnet, Dhall, Nickel probes | source supplied and official-reference analysis | interpreters unavailable; proposed comparison outputs are not measured receipts |
+| POO interface reflection probe | local execution: inherited artifact transformation, new Check outside the fixed list, unused misspelled slot | direct native route; does not test an admitted domain boundary |
+| POO receiver probe | local execution against pinned POO source and current Core | object semantics only; not a scale or performance measurement |
+| Full local Funflow | existing 95-case source receipts from preceding implementation | no new product code or test gate added by this documentation revision |
+
+The local Nix executable reports version 2.34.4+1. The official reference page
+consulted is a live manual, so this is not a same-version implementation claim.
+The Nix receiver output is:
+
+#+begin_src json
+{"parent":["build-log"],"reconstructedChild":["release-log"],"shallowChild":["build-log"]}
+#+end_src
+
+The POO probe checks a refined child's artifact value and exact Check identity,
+retains the parent cache and verifies the frozen-parent-list negative control.
+Its successful marker is:
+
+#+begin_example
+PASS: effective child, retained parent cache and frozen-list control
+#+end_example
+
+Run these bounded documentation probes from the repository root:
+
+#+begin_src sh
+nix-instantiate --eval --strict --json docs/10-19-design/10.06-poo-module-system/164-module-interface-comparison/probes/receiver.nix
+# With the existing isolated pinned-source package environment:
+GERBIL_PATH=/tmp/agenticailab-core-prototype-specializer/home \
+GERBIL_LOADPATH=/tmp/agenticailab-core-prototype-specializer \
+/opt/homebrew/bin/gxi docs/10-19-design/10.06-poo-module-system/164-module-interface-comparison/probes/receiver.ss
+#+end_src
+
+The separate [[file:probes/poo-interface.ss][POO interface reflection probe]] also verifies the documented artifact
+transformation and two current limitations: a newly declared smoke Check does
+not enter the fixed three-Check Pipeline, and a misspelled commmand-vector slot
+can exist while the consumed command-vector remains unchanged. This probes the
+direct native route, not a source-role-admitted closed domain configuration.
+
+* Follow-up experiments that could change the design
+
+1. Run the same late-bound/frozen-value probes on pinned Nickel, Jsonnet and
+   Dhall interpreters. Compare values and error timing, not invented object
+   identity equivalences between different language models.
+2. Evaluate the NixOS CI module with pinned nixpkgs. Check wrong command types,
+   conflicting definitions, missing order entries and user-visible file locations.
+   Compare the corresponding admitted POO boundary once that boundary exists.
+3. Give users the same five tasks: change a command, relocate a root path, append
+   an artifact, add/select a Check and resolve two owners' same-named Check.
+   Record concepts, searches, diagnostics and successful consumer output.
+4. Build 1000/10000-module metadata catalogs with independently varied selected K.
+   Separate source import, index building, object/factory demand, admission and
+   projection. Include cold/warm and failure controls with unchanged watchdogs.
+5. Inspect published attribute descriptions for both a scalar business field and
+   a native strategy object. A user must identify the supported extension without
+   opening every internal component or inventing a new Contract annotation.
+
+* Claims deliberately withheld
+
+This study establishes neither faster evaluation than Nix/Nickel nor stronger
+configuration safety than Dhall. It does not prove a full-contract user route,
+authenticated source provenance, general cycle detection, or a completed Loader.
+The previous combined-source memory-guard failure remains a failure record; a
+successful isolated lane does not turn it into scalability evidence.
+
+The research result is a set of concrete interface changes to design and qualify,
+not a declaration that POO already wins every comparison category.

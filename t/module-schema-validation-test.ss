@@ -5,39 +5,39 @@
 
 (import (only-in :clan/poo/object .ref object?)
         (only-in :std/test check-equal? test-suite)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/module-system/schema/interface
-        :core/module-system/schema/validation)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/module-system/schema/interface
+        :yuanxu/module-system/schema/validation)
 
 (export module-schema-validation-test)
 
 (def (schema-field identity type merge default metadata)
-  (poo-flow-module-field-contract identity type merge default metadata))
+  (yuanxu-module-field-contract identity type merge default metadata))
 
 (def module-schema-validation-test
   (test-suite "native POO module schema validation"
-    (poo-flow-test-case "uses native Type and C4 without an ASP harness"
+    (yuanxu-test-case "uses native Type and C4 without an ASP harness"
       (let* ((parent
-              (poo-flow-module-object
+              (yuanxu-module-object
                'schema.parent '()
-               (list (schema-field 'name PooFlowModuleStringType
+               (list (schema-field 'name YuanxuModuleStringType
                                    'override "parent" '()))
                '()))
              (child
-              (poo-flow-module-object
+              (yuanxu-module-object
                'schema.child (list parent)
-               (list (schema-field 'enabled PooFlowModuleBooleanType
+               (list (schema-field 'enabled YuanxuModuleBooleanType
                                    'override #t '()))
                '()))
-             (validation (poo-flow-module-object-validation child))
+             (validation (yuanxu-module-object-validation child))
              (summary
-              (poo-flow-module-objects-validation-summary
-               (poo-flow-module-objects-validation (list parent child)))))
-        (check-equal? (poo-flow-module-object-validation? validation) #t)
+              (yuanxu-module-objects-validation-summary
+               (yuanxu-module-objects-validation (list parent child)))))
+        (check-equal? (yuanxu-module-object-validation? validation) #t)
         (check-equal? (eq? validation
-                          (poo-flow-module-object-validation child))
+                          (yuanxu-module-object-validation child))
                       #t)
-        (check-equal? (poo-flow-module-object-validation-valid? validation)
+        (check-equal? (yuanxu-module-object-validation-valid? validation)
                       #t)
         (check-equal? (.ref validation 'inheritance-chain)
                       '(schema.child schema.parent))
@@ -49,17 +49,17 @@
         (check-equal? (.ref summary 'object-count) 2)
         (check-equal? (.ref summary 'invalid-count) 0)))
 
-    (poo-flow-test-case "rejects invalid merge, metadata, and native default"
+    (yuanxu-test-case "rejects invalid merge, metadata, and native default"
       (let* ((bad
-              (poo-flow-module-object
+              (yuanxu-module-object
                'schema.invalid '()
-               (list (schema-field 'name PooFlowModuleStringType
+               (list (schema-field 'name YuanxuModuleStringType
                                    'unknown 42 'bad-metadata))
                '()))
-             (validation (poo-flow-module-object-validation bad))
+             (validation (yuanxu-module-object-validation bad))
              (field-validation
               (car (.ref validation 'fieldContractValidations))))
-        (check-equal? (poo-flow-module-object-validation-valid? validation)
+        (check-equal? (yuanxu-module-object-validation-valid? validation)
                       #f)
         (check-equal? (object? field-validation) #t)
         (check-equal? (map (lambda (diagnostic) (.ref diagnostic 'code))
@@ -67,35 +67,35 @@
                       '(unsupported-merge metadata-not-association-list
                         default-not-in-native-type))))
 
-    (poo-flow-test-case "rejects merge operations incompatible with native types"
+    (yuanxu-test-case "rejects merge operations incompatible with native types"
       (let* ((bad
-              (poo-flow-module-object
+              (yuanxu-module-object
                'schema.bad-merge '()
-               (list (schema-field 'node PooFlowModuleStringType
+               (list (schema-field 'node YuanxuModuleStringType
                                    'node-extend #f '())
-                     (schema-field 'target PooFlowModuleStringType
+                     (schema-field 'target YuanxuModuleStringType
                                    'node-remove #f '()))
                '()))
-             (validation (poo-flow-module-object-validation bad)))
-        (check-equal? (poo-flow-module-object-validation-valid? validation) #f)
+             (validation (yuanxu-module-object-validation bad)))
+        (check-equal? (yuanxu-module-object-validation-valid? validation) #f)
         (check-equal? (map (lambda (diagnostic) (.ref diagnostic 'code))
                            (.ref validation 'diagnostics))
                       '(merge-type-incompatible merge-type-incompatible))))
 
-    (poo-flow-test-case "returns diagnostics for malformed field entries"
-      (let* ((bad (poo-flow-module-object
+    (yuanxu-test-case "returns diagnostics for malformed field entries"
+      (let* ((bad (yuanxu-module-object
                    'schema.bad-field '() '(not-a-contract) '()))
-             (validation (poo-flow-module-object-validation bad)))
-        (check-equal? (poo-flow-module-object-validation-valid? validation) #f)
+             (validation (yuanxu-module-object-validation bad)))
+        (check-equal? (yuanxu-module-object-validation-valid? validation) #f)
         (check-equal? (map (lambda (diagnostic) (.ref diagnostic 'code))
                            (.ref validation 'diagnostics))
                       '(invalid-field-contract))))
 
-    (poo-flow-test-case "rejects duplicate catalog identities"
-      (let* ((first (poo-flow-module-object 'schema.duplicate '() '() '()))
-             (second (poo-flow-module-object 'schema.duplicate '() '() '()))
-             (summary (poo-flow-module-objects-validation-summary
-                       (poo-flow-module-objects-validation
+    (yuanxu-test-case "rejects duplicate catalog identities"
+      (let* ((first (yuanxu-module-object 'schema.duplicate '() '() '()))
+             (second (yuanxu-module-object 'schema.duplicate '() '() '()))
+             (summary (yuanxu-module-objects-validation-summary
+                       (yuanxu-module-objects-validation
                         (list first second)))))
         (check-equal? (.ref summary 'valid) #f)
         (check-equal? (.ref summary 'duplicate-identities)
@@ -104,7 +104,7 @@
          (with-catch
           (lambda (_) #t)
           (lambda ()
-            (poo-flow-require-module-objects-validation!
+            (yuanxu-require-module-objects-validation!
              (list first second))
             #f))
          #t)))))

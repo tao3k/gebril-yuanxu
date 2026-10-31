@@ -1,0 +1,253 @@
+#+title: 32.35 Receiver Ownership During Read Replay
+#+language: en
+#+startup: overview
+
+* Repair scope
+
+[[file:32.34-metadata-write-boundary.org][32.34]] demonstrated that arbitrary SDK metadata restoration is invisible to
+the receiver revision. This follow-up separates two guarantees before making a
+production change:
+
+1. Supported POO mutation of selected receivers can be rejected BEFORE the
+   first write by reusing =invalidate-state!= and =check-object-edit=.
+2. SDK raw structure writes do not enter that protocol. A receiver frame does
+   not reject them, even when its affected object is selected. The matched raw
+   restoration test remains required; it must not be rewritten to expect success
+   of a nonexistent SDK write barrier.
+
+Here "supported write" specifically means the existing
+=before-object-edit!/uninstantiate-object!= mutation protocol. It must not be
+read as "every exported procedure with a setter name": generated low-level
+MOP setters such as =object-%reads-set!=, =object-%instance-set!= and
+=object-%state-set!= also bypass that protocol. They need a separate export/
+ownership review; this release does not claim their mediation or confinement.
+
+This is not a Loader change, a user-facing read-only flag, a callback purity
+annotation or a process-wide freeze. The public replay signature is unchanged.
+
+* Native implementation
+
+The candidate was first built from a copy of the CURRENT installed producer at
+=/private/tmp/core-replay-write-guard-20261018/source/clan/poo/=. The original
+32.33/32.34 receipts are preserved. Seven isolation cases and the real services
+consumer passed before the identical =object.ss= change was applied to the
+installed producer source. The new [[file:32.35-producer-source.sha256][source manifest]] binds that cut. No patch
+file or alternate runtime is maintained. The new parameter is
+private, excluded from exports; its frames are created from the actual
+authenticated selected-read graph, never supplied by a user.
+
+#+begin_src scheme
+(def active-read-replays (make-parameter '()))
+
+;; Additional branch in the existing check-object-edit, after the existing
+;; active-construction/computation guard:
+(when (any (lambda (receivers) (hash-key? receivers self))
+           (active-read-replays))
+  (error "object mutation during read replay"))
+#+end_src
+
+The existing identity-based DFS registers the receiver at the same point where
+it accepts a genuinely issued read. It does not force values or discover
+unselected slots. Before invoking any replay observer:
+
+#+begin_src scheme
+(parameterize ((active-read-replays
+                 (cons receivers (active-read-replays))))
+  (for-each
+    (lambda (read)
+      (require-current! read)
+      (observe (slot-read-receiver read) (slot-read-key read)))
+    traversal)
+  (for-each require-current! traversal))
+#+end_src
+
+The guard remains active through the native final pass. Nested calls retain
+outer frames; parameter restoration on both success and exception is Gerbil's
+existing dynamic-scope operation. Ordinary writes outside replay retain their
+current behavior. No additional operation is inserted into ordinary .ref hot
+or cold paths.
+
+The dynamic frame is thread-local. It protects the serial callback executing
+inside that replay, not a concurrent writer running on another thread. The
+existing invalidator explicitly requires callers to serialize mutation and
+evaluation. This change does not silently turn that premise into a transaction.
+
+* Invalidation closure and parent cache
+
+A callback may try editing an ancestor whose dependent child is currently
+selected. The existing invalidator first visits and checks the ENTIRE affected
+closure, then increments revisions and clears caches. Thus reaching a selected
+child rejects the ancestor edit without partially clearing the parent's cache.
+It would be incorrect to clear one visited receiver before checking the next.
+
+This relies on the existing dependency edges being complete. It does not prove
+that an undiscovered raw alias belongs to that closure. Independent unselected
+receivers remain editable. Both ownership and dependency closure follow actual
+native object identity, not equal names or paths.
+
+* Executable controls
+
+[[file:../../../t/mop-replay-write-guard-test.ss][mop-replay-write-guard-test.ss]] uses the existing Core test macro and actual
+native replay/mutation entries:
+
+- selected receiver edit/restoration refuses before the first write; no
+  revision change, then a normal edit succeeds after unwinding;
+- ancestor mutation reaches the selected child during preflight and leaves
+  both cached parent and final child unchanged;
+- nested replay cannot erase outer ownership, but the inner frame is released
+  when it returns; a later independent inner edit is allowed;
+- unrelated receiver edits are allowed, with an error-producing unselected
+  slot left unevaluated;
+- callback exception identity is preserved, and a later normal write succeeds;
+- a genuine transient miss protects its receiver without entering either the
+  read cache or the value cache;
+- raw runtime =ref= replacement/invocation/restoration is STILL accepted. This
+  negative control is part of qualification, not an expected production fix.
+
+The existing actual Gitea/PostgreSQL consumer must still check both contributor
+requirements and child Contract obligations, final child ports after parent
+plan caching, stale-plan rejection, explicit client mismatch and source changes.
+No domain check is replaced by the replay ownership frame.
+
+The old receiver-ABA projection control now performs its supported edits before
+entering replay and still requires =stale slot dependency=. Its observation
+labels and independent Lean decoding remain unchanged. Callback edits are tested
+separately for the STRICTER pre-write rejection, not admitted by broadening the
+old =stale?= predicate. The native slot-observation regression checks the exact
+new diagnostic and verifies the original value and revision remain unchanged.
+
+* Lean and Quint
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReplayOwnership.lean][ReplayOwnership.lean]] models actual receiver sets and the affected invalidation
+closure. =selected_write_refused= and =nested_frame_keeps_outer= establish
+pre-write refusal under complete membership. =rejected_edit_has_no_partial_clear=
+requires preflight before state update. =independent_edit_allowed= and
+=unaffected_parent_unchanged= avoid a global freeze. Exceptional-return laws
+state the required dynamic-scope/error identity result; native parameterize
+correctness remains a runtime premise checked separately, not a proved compiler.
+The raw write transition still inherits the retained 32.34 side-effect history.
+
+[[file:../../../dev/proofs/quint/ReplayOwnership.qnt][ReplayOwnership.qnt]] has matched mutants for missing guard, dropping the outer
+frame, partial invalidation, failure to unwind, missing second requirement,
+parent-plan reuse and eager unselected access. A normal-model raw-callback
+counterexample is mandatory, as is a non-vacuous acceptance witness.
+This is bounded protocol evidence, not proof of arbitrary Scheme effects.
+
+* SDK and compiler boundary still open
+
+The inspected SDK =struct-instance-init!= inliner emits
+=##unchecked-structure-set!= directly. The reference compiler likewise lowers
+structure mutation to that primitive. Wrapping =runtime.slot-set!= or even
+=unchecked-field-set!= cannot mediate those generated stores or backend raw
+setters. The source reference under =.data/gerbil= is a learning/reference tree,
+not a runtime dependency and not modified by this work.
+
+A complete metadata-history guarantee needs an owned write boundary below all
+supported generated setters, or a capability boundary that prevents writable
+metadata aliases from reaching untrusted extensions. FFI and unrestricted raw
+primitives cannot be sandboxed merely by a POO parameter. A post-write epoch
+can reject a result but does not undo an already executed effect. The narrower
+pre-write receiver guarantee must not be described as solving that problem.
+
+* Cost and release criteria
+
+The candidate adds one identity set per replay, filled during the already
+required DFS. Supported edit preflight queries each active frame for each
+affected receiver. It introduces no all-module scan, getter forcing or currentness
+cache across callbacks. Complexity and allocation are source-level observations,
+not benchmarked latency claims; concurrent compiler activity makes timing claims
+inappropriate in this run.
+
+Promotion requires a coherent native producer build, the new isolated cases,
+existing producer issuance/read suites, real Core consumers, and current Lean/
+Quint receipts. A crash, deadline or stale source cut is retained as a failure,
+never interpreted as a semantic pass. Qualification results are appended below
+after each gate has completed.
+
+** Reflection
+
+The concrete gain is earlier refusal: a supported observer edit no longer
+invalidates a selected object before admission discovers the problem. Users do
+not add a lock, source list or purity declaration, and ordinary configuration
+syntax is unchanged. Ownership is intentionally receiver-grained because the
+existing invalidator clears that receiver's whole cache. An edit to an unread
+slot on a selected receiver is therefore also refused; slot-grained permission
+would require a different invalidation proof, not a shortcut in this guard.
+
+This is not the missing universal metadata write barrier. The SDK/generated
+setter surface and callback execution after the replay segment remain separate
+boundaries. The change must not be advertised as eliminating arbitrary callback
+effects or closing every check-to-return interval of SourceAdmissionContract.
+
+** Runtime and Lean results
+
+- The optimized native candidate compiled from the copied current sources;
+  seven new isolation cases and the real two-case SourceAdmissionContract
+  consumer passed before promotion. Its =object.ss= matched the promoted source
+  byte-for-byte.
+- The current installed producer then compiled with the ordinary SDK and
+  optimized package options. The final six test-file runs used only the normal
+  product Gerbil library, with no temporary library on their load path. All
+  required MODULE-OK, HARNESS-OK and final OK markers were checked, with natural
+  exit 0 and no harness/error/overflow markers.
+- Those six files cover 38 cases: seven new ownership controls, two actual
+  services consumers, four issuer/projection cases, four retained metadata
+  restoration controls, ten producer issuance cases, and eleven native
+  read/cache/inline/bootstrap cases. The independent Lean decoder accepted all
+  twelve actual native observations from the final projection run.
+- The full Lean library passed 175 jobs, auditing 5939 declarations with only
+  the standard Lean axioms. Eight new ownership theorems supplement the existing
+  issuance/history laws. The locked and actual LeanPoo checkout both remain
+  =6e6a706e14fa6f8199e4f36711440355b42ef335=.
+
+** Failed attempts are not qualification
+
+The first sparse non-optimized object overlay crashed before the test harness.
+Narrowing the test import did not fix that overlay; both exit-139 failures are
+retained. A complete clone of the CURRENT compiled dependency artifacts, followed
+by compilation with the package's normal optimize/generate-ssxi settings, passed
+the isolation tests. This is a matched setup correction, not proof that every
+possible crash cause was identified. No compatibility interpreter or alternate
+SDK was introduced. An initial all-target build exceeded the 120-second ceiling
+(exit 124); a library-only attempt also exceeded it and was forcibly bounded
+(exit 137). The successful route targeted the changed owner with coherent
+artifacts rather than widening either deadline. One clone command failed because
+GNU cp lacks the macOS clone option; that incomplete setup was abandoned before
+using /bin/cp for the complete artifact clone.
+
+The first Quint attempt hit the unchanged five-second typecheck deadline on an
+unmodified CallPhases source. The next run produced all ten expected model
+outcomes, but correctly rejected the source cut after the required ABA regression
+was changed during its run. That rejection is retained; it is not the final
+receipt. Final qualification is rerun only after the maintained test sources
+are fixed. No timeout, assertion or currentness condition was weakened.
+
+A later all-source run hit that same five-second limit on the unchanged
+=MetadataRoute_parent= entry. This is also retained as a failed all-source gate.
+The proof runner now offers an explicitly separate =--typecheck-scope selected=
+mode: Quint typechecks the named cases AND their imports. It requires a case
+prefix and records its scope/entry names in the receipt. The default all-source
+gate and all its deadlines remain unchanged. A focused pass must not be called
+an aggregate all-source pass. No manually asserted purity, skipped import or
+cached successful checker result substitutes for native typechecking.
+
+** Final scoped Quint result
+
+The explicit selected-source run passed all ten model checks. Quint typechecked
+the ten entries and their native transitive imports; the positive model explored
+288 distinct states with no states left on the queue. Seven unsafe variants,
+the normal-model raw-write counterexample and the acceptance witness produced
+their required counterexamples. The final Scheme v1 receipt records
+=typecheck-scope: selected= and the entry names. All 293 bound source rows were
+rechecked after completion, as were the ten entries in the producer manifest.
+This is current scoped qualification, NOT a passing all-source gate.
+
+The CLI also rejects selected-source checking without an explicit case prefix
+(exit 2, no receipt). This prevents an unnamed partial run from being mistaken
+for the aggregate gate. Local artifacts include =quint-04.ss=,
+=quint-04.inputs.json= and =final-proof-sources.log=. The current API change is
+locally verified, not a remote CI/commit/push result.
+
+All raw logs and temporary source/artifact copies are under
+=/private/tmp/core-replay-write-guard-20261018/=. They are not committed. Loader,
+source-currentness windows and the public replay signature remain unchanged.

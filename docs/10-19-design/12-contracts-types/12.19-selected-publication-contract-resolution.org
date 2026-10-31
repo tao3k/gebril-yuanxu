@@ -1,0 +1,144 @@
+#+title: 12.19 Selected Publication Contract Resolution and AWS Source Organization
+#+property: DOCUMENT_ID 12.19
+#+language: en
+#+property: STATUS implemented-focused-native-validation-no-runtime-loader
+
+* Reuse, not a parallel admission system
+
+This replaces the integration test's publisher/build-view helpers. The existing
+directory reader admits actual interface.ss publications. The existing resolver
+creates the selected Graph and its source/build observations. A bounded
+.selected-record method reuses the existing per-generation link cache for one
+selected owner; it does not link every selected sibling or expand the selection.
+
+The module kernel does NOT import Schema admission to offer that method.
+AdmissionPublication.'s .for-export consumes the selected record, verifies its
+publication is in the same selected Graph and follows the owner's declared
+export-path/contract-path. It retains the ACTUAL Core descriptor from that scope.
+No descriptor is reconstructed from an identity label.
+
+#+begin_src scheme
+(def selection (yuanxu-load-modules "./init.ss"))
+(def release
+  (.call AdmissionPublication. .for-export selection 'aws 'Scenario))
+;; Internally reuse selection.build-graph, the selected owner's publication,
+;; its already-linked scope and the existing AdmissionPublication. constructor.
+(def Scenario (.get release value))
+#+end_src
+
+core.admissions is ordinary POO declaration data retained by existing hygienic
+lowering. Publication admission now checks that each entry contains nonempty
+symbol paths. Resolution rejects missing endpoints, absent associations,
+unselected owners, foreign publication objects and a leaf that is not a checked
+Core Type with value-contract. Source preparation/currentness is unchanged.
+Neither author nor test handwrites core.link or compiler role imports.
+
+* Real public Contract layers
+
+The provisional predicate-only AWS types.ss was inadequate. It is replaced by
+[[file:../../../scenarios/aws/types.ss][the public ObjectContract design already supported by gerbil-poo]]:
+
+#+begin_src scheme
+(define-type (AWSProfileContract. @ ObjectContract. input-type)
+  identity: 'aws/profile
+  extra-fields: 'delegate
+  constraints: (list input-type))
+
+(define-type (AWSScenarioContract. @ ObjectContract. input-type profile-contract)
+  identity: 'aws/scenario-value
+  profile-contract: (.cc AWSProfileContract. 'input-type input-type)
+  responsibilities:
+  (.o profile: profile-contract resource: profile-contract)
+  obligations:
+  (lambda (value location)
+    (if (eq? (.get value profile) (.get value resource)) '()
+      (list (.o kind: 'stale-resource path: (append location '(resource)))))))
+#+end_src
+
+Provider Schema owns optionality, field representations and unknown fields.
+ObjectContract owns required domain endpoints and final projection relationships.
+required-prototype remains #f unless a consumer explicitly opts into nominal
+identity. A same-shaped independent Profile is valid; a caller-supplied origin
+symbol is not evidence of publication ownership.
+
+The direct resource projection in this sample must be the actual final Profile
+object. Equal instance_type strings alone are insufficient. This is appropriate
+for this alias projection, not a universal rule that independently rendered
+AWS resources must share object identity with configuration input.
+
+AWSAdmissionContract. inherits the existing Core producer. Its value-contract is
+the public value Type. Classification adds no AWS authorization policy; the real
+Graph/source/Schema Context guards publication. AWSInterfaceContract instead
+uses public ProjectionContract./ObjectContract./True to inspect declared scope
+endpoints WITHOUT forcing their payloads. Profile admission remains separate.
+Gerbil using checks the package-directory function boundary. No new validator,
+receipt, Core responsibility checker or duplicate Schema interpreter is added.
+
+* Selected Schema dependency discovery
+
+The existing Provider publication now retains artifact/schema/source-inputs on
+its actual public value-type as well as on the contextual Contract. Resolution
+walks declared Type edges: value-contract, responsibilities, constraints,
+expected-type and prepared-constraint. Repeated references are shared by object
+identity. Existing unique-build-inputs merges observations and rejects conflicting
+snapshots for one source path. Candidate getters are not used for this discovery.
+
+POO .cc copies structure and does not guarantee nominal ancestry. Therefore
+discovery must not test whether SchemaContract. occurs in a precedence list:
+that incorrectly omitted real generated Schema Types. A Schema node must retain
+its artifact association, and schema-observations checks actual node identity,
+normalized schema and reader-observed source bytes. A missing association must
+refuse, not produce an empty Schema dependency list. The real gate requires all
+three selected manifest/index/input observations.
+
+This walk discovers dependency metadata, not candidate fields or validation
+evidence. Public validate and Core .admit still perform the actual checks.
+Opaque callbacks and unmodeled Type/container edges cannot be inferred by code
+inspection. This implementation covers the stated public edges, not arbitrary
+Scheme closure dependencies or all recursive Contract families. Such owners must
+provide a source-aware adapter before claiming complete automatic coverage.
+
+* Source organization and user cost
+
+The entire AWS source directory moved from the Config Languages example module
+tree to [[file:../../../scenarios/aws/README.org][scenarios/aws]]. No forwarding copy remains. Its implemented root roles
+now expose maintained values and the association; obsolete recipe fragments
+were removed rather than retained as parallel entry points. Design documents reference
+this one source directory.
+
+Ordinary users still assign instance_type on a maintained Profile. Platform code
+no longer supplies schemas or descriptor, nor constructs a selected Graph by
+hand. Schema changes require a fresh selection/publication snapshot and admission.
+Context is not a mutable user version record. .for-export creates a publication
+snapshot; retaining it avoids unintended Context identity changes on repeated
+factory calls. This is not a global cache or deployment authorization mechanism.
+
+* Qualification boundary
+
+[[file:../../../t/aws-scenario-contract-test.ss][Five native Contract controls]] passed for delegated fields, diagnostics,
+optional nominal identity, receiver-aware final projections and cold interface
+payloads and publication path declarations. Their tiny Schema is explicitly a fixture; the AWS Schema comes from
+the separate real Nix integration gate. The latter retains actual Null
+init/validate/plan/apply/output/destroy through existing Ops, without AWS apply.
+
+The source reader correctly refused external SOURCE-only public libraries.
+Qualification prepares only the required locked POO/Core public interfaces with
+the original Gerbil compiler in an isolated dependency directory, ahead of the
+source overlay. No source confinement exemption or upstream edit is introduced.
+This is prerequisite preparation, not a successful cold full-build claim.
+
+The revised integration gate passed 49 assertions, MODULE-OK, HARNESS-OK and
+final OK. It uses the default directory reader and actual role files; there is
+no test-supplied publication-reader, Graph constructor, schemas list or admission
+descriptor in the positive path. Negative controls deliberately corrupt Type
+metadata and replay receipts; they are not normal configuration interfaces.
+Actual Null init/validate/plan/apply/output/destroy completed. Earlier results
+in record 17 remain receipts for the earlier hand-associated version; this is
+a separate run. No runtime Loader, AWS deployment or push is part of this work.
+
+Eight focused regression suites passed on this revision: aws-scenario-contract,
+module-scope-link, module-publication, module-build-graph,
+admission-checked-publication, admission-publication, json-schema-value-contract
+and opentofu-indexed-inputs. Each completed the existing MODULE-OK/HARNESS-OK/OK
+gate. No full build or full test suite was run. Core remains a Git submodule;
+the concurrent module-system/design documents were not edited for this task.

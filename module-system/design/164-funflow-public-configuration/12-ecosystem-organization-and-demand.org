@@ -1,0 +1,222 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Configuration 12: Ecosystem Organization and Bounded Demand
+#+date: [2026-10-15]
+#+property: STATUS organization-and-loader-requirements-only-no-implementation
+
+* Problem and source basis
+
+[[file:13-independent-profiles-and-scenario-composition.org][Module 13]] is authoritative for ownership, interfaces, instantiation and
+invalidation: Profiles are independent of Modules and Scenarios; Scenarios
+compose them. This document retains the scale/demand requirements under that
+correction, not either former containment model.
+
+Thousands of modules are an ownership and dependency-management problem, not
+only a syntax problem. Independent Profiles configure features exposed by pure
+Modules; Scenarios compose those Profiles. Downstream organizations may publish further
+contributions. The number of possible combinations can grow combinatorially.
+The number of authored or instantiated Scenarios need not do so: never generate
+the Cartesian product of available choices merely to publish a library or answer
+field help.
+
+This design follows the [[file:../164-module-interface-comparison/08-nixos-doom-organization.org][NixOS/Doom organization study]], the
+[[file:11-direct-path-assignment-and-refinement.org][user-intent disclosure rule]] and the existing
+[[file:../44-current-project-programming-style/01-module-interface-and-source-roles.org][module source roles]] / [[file:../44-current-project-programming-style/06-import-build-and-performance.org][import/build rules]]. It is a set of requirements for
+future adaptation of existing source and Loader owners, not a replacement Loader,
+new scheduler, registry DSL or eagerly generated family of objects.
+
+* Organize by owner, public identity and role
+
+| Layer | Maintained responsibility | Not its responsibility |
+|-------+---------------------------+------------------------|
+| Distribution/contribution package | Revision, source authority, compatible module publications and release policy | Instantiating every Profile/Scenario |
+| Domain/category index | Navigation and searchable metadata | Object-container inheritance or automatic execution |
+| Module owner | Pure functionality, Feature extension, neutral prototypes/Contracts and public algorithms | Profile recipes/catalogs and Scenario ownership |
+| Independent Profile owner | Reusable configured feature values, requirements and extension positions | Belonging to a Module or to one owning Scenario |
+| Scenario owner | Selection/composition of independent Profiles, relationships and Composition Contract | Owning the Profile publications or enumerating all combinations |
+| Project/user owner | A selected base and the differences needed locally | Copies of upstream defaults, schemas or internal component lists |
+
+Categories group navigation but do not insert new configuration object layers.
+The corrected example path is Scenario.gerbil.funflow.build: gerbil references
+an independent Profile occurrence, and funflow is its configured feature binding.
+Physical categories also do not confer source trust or redefine prototype order.
+
+Retain a publication identity consisting of its source/owner, revision and export
+identity. Preserve configured occurrence identity separately: two occurrences may
+derive from the same publication while carrying different values. A lexical ff
+alias is neither a package identity nor a globally registered module name.
+Cross-package short-name collisions require qualification or explicit selection;
+filesystem search order must not silently substitute an independent publisher.
+
+** Source layout and ownership rules
+
+Reuse existing types/objects/funs/config/interface roles. Pure Modules,
+independent Profile recipes and Scenario owners have distinct source owners.
+Do not make interface.ss a wildcard import of all concrete Profiles and Scenarios. Documentation, tests and compatibility notes follow the
+owner whose behavior they describe. Contribution roots follow the same source
+roles instead of acquiring a parallel user-module abstraction.
+
+This is a logical partition, not a mandated new directory migration. Current
+Funflow has config-prototypes.ss, profiles/gerbil-scheme.ss and native-scope.ss.
+native-scope.ss statically imports the prototype and Profile factory definitions;
+its lazy slots do not demonstrate source-level selective loading. A future
+catalog/source adapter must address this boundary without a facade that imports
+every contribution. Do not report this design as having removed current imports.
+
+* Sparse publications and one metadata authority
+
+Publish independently reusable Profiles and only intentionally authored Scenario
+recipes. Compose selected objects when requested; do not create a separate
+Scenario for every language/provider/environment permutation. Avoid a giant
+flag matrix that becomes another public configuration language. Users can
+publish their refined native objects as their own reusable library, subject to
+the same Contracts and publication policy.
+
+Catalog descriptors are ordinary native POO metadata projections of the owning
+publication. Proposed metadata includes qualified identity/revision, category,
+description, public owner locator, Contract/field-description locator, named
+Profile/Scenario exports, supported extension boundaries, and declared source-role
+requirements. It contains no constructed Check list, secret, runtime Session,
+eager factory result or registered methods. A locator identifies an owner; it
+does not authenticate it or make arbitrary metadata computation safe.
+
+Build searchable metadata once per supported publication revision and partition
+it by owner/domain where useful. Do not duplicate executable defaults or Contract
+rules in the index. A future generated index must have a fixed source identity
+and be checked against current owner declarations; stale descriptors are not
+admission evidence. Cached metadata with unknown freshness must be labelled stale
+or refused for current guidance. Do not invent a second currentness system.
+
+Discovery has two different operations:
+
+- A known qualified lookup and selected field description should consult only
+  the relevant descriptor/Contract owner and its necessary dependencies.
+- An explicit search/list-all may enumerate metadata, with pagination and a
+  visible revision/cost scope. It must not instantiate every exported Profile.
+
+Initial index construction and a complete listing can legitimately cost O(N).
+No constant-time lookup or zero-cost cold import is claimed without measurement.
+Show incomplete/unavailable metadata rather than calling every arbitrary getter
+to reconstruct an index at interaction time.
+
+* Demand stages and forbidden incidental work
+
+| User/planning action | Intended demanded work | Must not happen incidentally |
+|----------------------+------------------------+------------------------------|
+| Search available modules | Selected metadata partitions and result page | Profile construction, method registration or service activation |
+| Describe build.commands | Known owner Contract and immutable descriptive metadata | Evaluate all task values or all Scenario variants |
+| Bind a known module scope | Source association and necessary supported owner resolution | Construct independent Profiles or Scenarios |
+| Obtain a Check prototype | Prototype owner and its source/build dependencies | Load a Profile merely to find its own prototype |
+| Select Gerbil Profile | Selected factory and its declared value dependencies | Construct Rust, unrelated Scenarios or all community contributions |
+| Assign/refine user values | Native object construction/lowering and demanded getters | Execute commands or mutate the shared upstream object |
+| Admit selected Pipeline | Selected names, fields, applicable policies and graph closure | Audit every unselected Profile as a hidden side effect |
+| Preview consumer plan | Effective admitted inputs, pure projection and consumer schema | Publish automatically, obtain secrets or start a runtime Session |
+| Explicit method composition | Only selected compatible method bundles, with identity checks | Register every package's methods at declaration/discovery time |
+| Publish/run selected plan | Explicit complete publication, then runtime handoff | Treat a preview or retained parent cache as current execution evidence |
+
+This table defines future behavior, not current Loader support. Gerbil source
+imports still close dependencies and may compile/load prerequisite modules before
+values are demanded. Separating a prototype from a Profile getter alone does not
+remove that work. Preserve one existing source/build graph and use the ASP Build
+API/std/make boundaries; do not add another scheduler to meet the table.
+
+** Cycles, prerequisites and failures
+
+Pure Module dependencies must not point back through independent Profile or
+Scenario publishers. The earlier local prototype-scope pattern avoids a narrow
+self-reference but its Module-local Profile catalog is not the target ownership
+model. Module 13 supplies the corrected independent recipe wiring.
+Distinguish source/import cycles, recursive value demand and task-graph cycles;
+each needs a qualified diagnostic identifying the owner and phase. This is not
+a requirement to reject all native recursive object relationships.
+
+Record a demand chain for active resolutions. Define behavior for repeated or
+concurrent demands on the same supported key before implementing it: shared
+successful resolution must not duplicate side effects, pending self-demand must
+not deadlock silently, and cancellation/failure must not publish partial objects
+or retain an unsupported success. No new concurrency engine is proposed here.
+Reusing failures requires revision/context premises; a corrected publication
+must not remain permanently poisoned by a cached old refusal.
+
+* The smoke journey across these owners
+
+1. The user finds the maintained CI Scenario and Gerbil Profile using descriptor
+   metadata, not an enumeration of every materialized Scenario.
+2. Field discovery recommends direct assignment for commands/selection, => for
+   inherited-list transforms, a scoped prototype for smoke, and the Contract
+   owner for core changes. It labels proposed versus implemented syntax.
+3. User configuration inherits the selected Scenario, assigns ordinary values
+   and constructs only the requested new Check. Same-prefix path grouping remains
+   syntax lowering, not a runtime catalog operation.
+4. Admission resolves build/test/package/smoke on the effective child Profile,
+   validates the selected closure and checks actual Check identities. The parent
+   Pipeline cache remains the parent's cache. Unselected sibling Profiles do not
+   become part of that admission merely because their descriptors exist.
+5. Pure projection checks qualified consumer identities and output collisions.
+   projected-unadmitted cannot publish; admitted-preview needs both configuration
+   and consumer evidence for the stable input-view and still does not execute.
+
+The complete user construction and native lowering remain in module 11, and
+[[file:10-discovery-conflicts-and-plan-preview.org][module 10]] owns the preview/diagnostic result. Organization must not create
+a new wrapper around that same configuration or make users assemble checks.
+
+* Revisions, invalidation and ecosystem governance
+
+Pin a selected publication family and its supported policy/Contract references
+for one preparation/admission/publication interval. Record inherited origins and
+local changes so upgrades can explain differences. An assignment remains a
+replacement; a native transformation may depend on an upstream default's shape.
+Compatibility checks and explicit migration remain necessary even when source
+duplication is reduced. Alias scope is not an upgrade or trust policy.
+
+Do not eagerly revalidate every possible combination on each package change.
+Owner releases should qualify their published Contracts/recipes and representative
+dependency crossings; downstream admission still qualifies its actual selected
+Scenario. Use targeted affected consumers only where dependency coverage is known;
+unknown or opaque reads require conservative treatment, not a false unaffected
+claim. An explicit full-catalog audit remains an intentionally broader operation.
+
+ConstructionCache can skip actual work under unchanged-resolver premises;
+ContextSlot requires the correct factory/context; ContractConsequence requires
+an applicable implication. A revision label or source digest alone proves none
+of these equalities. See [[file:08-leanpoo-reuse-and-performance.org][the pinned LeanPoo source study]]. Stable admitted
+views and atomic whole-plan publication remain separate from cache retrieval.
+
+* Scale qualification: vary catalog size and selected closure independently
+
+These are future experiments, not passing receipts. Use N=1000 and N=10000
+publication descriptors, several Profiles per module, and sparse authored
+Scenarios. Vary the selected closure K independently, plus inheritance depth,
+fan-out and the number of third-party roots. Do not benchmark only a single
+descriptor lookup after an unreported eager warmup.
+
+| Experiment/control | Required observations |
+|--------------------+-----------------------|
+| Cold metadata discovery and paged listing | Index/import cost, bytes/entries visited, latency, memory and no Profile factory calls |
+| Known field description | Bounded relevant owner demand; no effective task getter calls |
+| First selected prototype/Profile | Source reads, compile/import closure, actual factory count and first-access latency |
+| Warm repeat | Hit/miss counters and real skipped construction; no cache flag after recomputation |
+| Parent cached then smoke selected | Four final child identities, unchanged parent and correct dependency projection |
+| Unrelated contribution added | Selected work unchanged only under established dependency premises |
+| Changed selected default/Contract | Fresh applicable admission or valid transport; no old evidence returned unchanged |
+| Duplicate publishers, bad metadata, output-key conflict | Qualified conflict and no partial new plan |
+| Source/value/task cycles and failed/cancelled demand | Phase-specific bounded failure, no hidden retry loop or poisoned permanent result |
+| Repeated/concurrent selected demand | Defined resolution ownership and no duplicate activation/publication |
+
+Report cold and warm elapsed time, source/build work, constructor/getter/validator
+counts, memory and explicit runtime/backend calls separately. Include failure
+receipts. Optional prewarming is an explicit policy with a bounded budget, not
+hidden startup work used to advertise free first access. Set concrete measured
+budgets before implementation acceptance; no current cross-ecosystem speed claim
+or universal O(K) end-to-end guarantee follows from these requirements.
+
+* Implementation boundary
+
+Native inheritance/assignment/refinement, bounded scopes and the current dotted
+object-refinement adapter are reusable foundations. Direct dotted assignment,
+the commands runtime migration, metadata indexing/navigation, provenance-aware
+conflicts, selective source/Profile resolution, consumer-plan preview/publication
+and their scale qualification remain proposed adaptations. Current local static
+imports and historical cache probes are not evidence that these gaps are closed.
+This document implements none of them and connects no Loader.

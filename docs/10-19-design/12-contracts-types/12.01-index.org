@@ -1,0 +1,126 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 12.01 Contracts and Types
+#+property: DOCUMENT_ID 12.01
+#+language: en
+#+property: STATUS local-public-and-json-schema-contracts-no-loader
+
+* Current package-binding audit
+
+[[file:12.27-aws-schema-transition-costs.org][AWS Schema transition costs read map]] links focused modules for source guards,
+Nix reuse, contextual admission, progress-aware Ops execution and retained evidence.
+
+[[file:12.26-selected-packages-and-owned-aws-tests.org][Selected packages and init-owned AWS tests]] moves test ownership to the module's
+tests directory and connects AWS to the existing selected-package dependency scope.
+
+[[file:12.25-aws-contextual-publication-validation.org][AWS contextual publication validation]] connects real provider Schemas, the
+maintained AWS Profile, contextual child evidence and selected publication;
+it covers Schema updates, stale receipts and refusal preserving the previous value.
+
+[[file:12.24-unified-contextual-responsibility-admission.org][Unified contextual responsibility admission]] implements the producer convergence:
+public value normalization, contextual children and Context obligations now use
+one Core producer, retaining checked values and child evidence.
+
+[[file:12.23-contract-mainline-resumption.org][Contract mainline resumption]] records fresh focused regressions and the remaining
+split between checked-value admission and legacy contextual responsibilities.
+It also distinguishes the existing realized selection path from the remaining
+AWS package-demand integration gap.
+
+[[file:12.22-selected-packages-and-scenario-binding.org][Selected packages and Scenario binding]] explains why the passing execution gate
+still needs manual package inputs, and how existing owners should close the gap.
+
+* Execution examples
+
+[[file:12.21-scenario-execution-and-configuration-validation.org][Null local execution and AWS configuration validation]] separate real local
+effects from credentials-free configuration checking.
+
+* Current entry
+
+Start with [[file:12.20-aws-alignment-and-dynamic-typing.org][AWS alignment and dynamic typing]] for the current vocabulary,
+checked boundaries and proposed field discovery. Older articles below retain
+their historical revision and implementation status.
+
+* Purpose
+
+Continue with [[file:12.19-selected-publication-contract-resolution.org][selected publication Contract resolution]] for replacing test-owned
+associations with actual selected Module declarations and the migrated AWS
+contribution under scenarios/aws. Its public ObjectContract definitions supersede
+the provisional predicate-only definitions.
+
+The [[file:12.18-provider-publication-admission-execution.org][real provider-publication and local execution test]] connects Nix/OpenTofu
+AWS Schemas to checked Core publication without manually assembling artifacts,
+and executes an admitted Null hello-world through existing Ops.
+
+The [[file:12.17-checked-core-publication-implementation.org][production Core checked-subject handoff]] supersedes the test-only adapter:
+the existing producer normalizes through an optional public value Contract,
+and AdmissionPublication. binds/publishes that returned object with real Context.
+
+The [[file:12.16-checked-publication-scheme-validation.org][isolated checked-publication Scheme validation]] executes the checked-root
+handoff with the real Core producer and public gerbil-poo publication APIs.
+It separates eight passing fixture cases from production integration and
+Graph/Schema association premises.
+
+Continue the checked-value handoff in
+[[file:12.15-checked-object-admission-publication.org][Checked objects, contextual admission and publication]]. It aligns with
+PR 13 at =26b4b58=, preserves actual descriptor binding, and distinguishes
+pre-install joint admission from post-install observer refusal.
+
+For the current alignment with gerbil-poo PR 13 at =df6a9e5=, start with
+[[file:12.14-object-contract-alignment.org][Object Contract alignment]]. It supersedes older capability assumptions,
+distinguishes the locked package from the reviewed PR, and identifies the
+normalized-object handoff still missing from JsonSchema/Core integration.
+
+Define how Gerbil contracts, gerbil-poo Types and contracts, and Core module
+admission cooperate. A need for configuration validation does not by itself
+justify a second foundational type system in Core.
+
+Read [[file:12.02-contract-ownership-and-aws-collaboration.org][Contract ownership and AWS collaboration]] for the symbol-by-symbol Core audit,
+the upstream PR revision inspected, responsibilities versus prototype identity,
+admission evidence, and one AWS Profile evolution example.
+
+Continue with [[file:12.03-object-contract-schema-adapters-and-aws-admission.org][Concrete object contracts, Schema adapters and AWS admission]] for the
+proposed Scheme definitions and [[file:12.04-reflection-research-and-design-decisions.org][Reflection, research and design decisions]] for
+when to use each layer, ecosystem comparisons, costs and validation questions.
+The [[file:12.05-isolated-scheme-validation.org][isolated Scheme validation record]] separates standalone public-library controls
+from the existing Schema/Core consumer and explicitly marks test-only evidence.
+The [[file:12.06-public-object-contract-implementation.org][public object-contract implementation record]] supersedes the private generic
+fixture: the qualification now imports the Core-independent gerbil-poo module.
+The [[file:12.07-json-schema-value-contract-implementation.org][JsonSchema value-contract implementation record]] describes the pure library,
+real AWS input controls and the separate receipt boundary.
+The [[file:12.08-evidence-binding-and-publication-boundary.org][evidence-binding and publication design]] reuses public invocation relations
+and existing admission results, separating reference binding from Core version policy.
+The [[file:12.09-isolated-evidence-binding-validation.org][native evidence-binding validation record]] reports exact-reference rejection,
+cached-parent/final-child behavior and refusal preserving the previous value.
+The [[file:12.10-public-binding-and-core-producer-implementation.org][public binding and unified Core producer implementation record]] supersedes
+that fixture-only gate: the helper is upstream and actual .admit results record
+their descriptor automatically, with no domain receipt wrapper.
+The [[file:12.11-platform-context-and-publication-currentness.org][platform Context and publication-currentness record]] explains how selected
+Graph/source/Schema observations drive automatic Context, and the practical
+benefits, ecosystem comparison, costs and remaining concurrency boundary.
+The [[file:12.12-publication-owned-admission-associations.org][publication-owned Contract association design]] removes the proposed
+caller-maintained Schema list and specifies completeness and derivation requirements.
+The [[file:12.13-graph-association-and-final-object-admission.org][Graph association and final-object admission design]] expands operand
+retention, final-object admission and evidence checks.
+
+[[file:../13-module-loading/13.01-index.org][Module loading and building]] is a separate design track. Its init selection,
+native build-spec integration and startup dependencies do not belong to the
+Contract-system implementation or its validation claims.
+
+This section belongs to Core design. Domain libraries own AWS/Kubernetes/CI/CD
+vocabularies. Generic object mechanisms can live upstream in gerbil-poo while
+remaining available through the same integrated Module System to authors.
+
+Do not add =Native= to new Contract, object, module or file names. Existing
+identifiers containing that word are cited only to locate current code; this
+design does not rename implementation symbols or add compatibility aliases.
+
+The [[file:12.28-gerbil-poo-clos-alignment.org][gerbil-poo and Core CLOS alignment audit]] distinguishes upstream receiver
+generics and contribution interpreters from Core multi-argument dispatch,
+and records the dependency qualification and refactoring gates.
+
+The [[file:12.29-contract-function-core-audit.org][Contract, Function and FUN source audit]] records the exact PR revision,
+shared Record normalization, Ops callback composition and qualification boundary.
+
+The [[file:12.30-core-function-boundary-migration.org][Core Function boundary migration proposal]] inventories module operations,
+user-supplied functions and runtime callbacks against PR 13 revision =d87c44e=,
+with readable authoring examples, native signatures and duplicate-mechanism removals.

@@ -1,0 +1,196 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.17 Config Languages 16: init.ss, Core, Features and One Build Graph
+#+property: DOCUMENT_ID 11.17
+#+date: [2026-10-16]
+#+filetags: :config-language:modules:init:build:design:
+#+property: STATUS proposed-init-source-protocol-no-implementation
+
+* Source-grounded starting point
+
+Doom's [[file:../../../../.data/doomemacs-core/static/init.example.el][init example]] lists categories, modules and +flags through doom!.
+[[file:../../../../.data/doomemacs-core/lisp/doom-modules.el][doom-modules.el]] documents declared order/depth as initialization policy.
+Its modulep! negative flag is a test for absence of a positive flag, not a general
+proof that a package/dependency was removed. [[file:../../../../.data/doomemacs-core/lisp/doom-packages.el][doom-packages.el]] really implements:
+
+#+begin_src emacs-lisp
+(package! name-of-package :disable t)
+#+end_src
+
+That explicit package override is useful UX evidence. Module selection, feature
+selection and package dependency suppression are nevertheless different operations.
+Do not inherit Doom's initialization-order semantics as a POO execution or build
+ordering rule; dependency edges must determine those relationships explicitly.
+
+Agentic AI Lab already has [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/init-declaration-syntax.ss][yuanxu!]], [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/module-selection-syntax.ss][yuanxu-modules!]] and an actual
+[[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/user-interface/init.ss][user init.ss]]. Those declarations lower to native selection values without
+reading source files. The current grammar has fixed categories and flag rows;
+[[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/selection-flags.ss][flag extension]] merges raw flag keys. Core [[file:../../../module-system/funs.ss][negative-flag queries]] exist, but a
+negative query does not implement disabling an auto-selected feature/dependency.
+Do not call the extended policy below already implemented.
+
+The [[file:11.18-guestbook-auto-explicit-init-examples.org][complete Guestbook init/config examples]] carry these policies through Core
+Schema admission, required Kubernetes selection and optional Guestbook verification, build closure and retained
+negative decisions. Gerbil uses disable: #t; Doom uses :disable t.
+
+* Core is a capability role, not a user-selectable feature flag
+
+JSON Schema -> native Contract belongs to Core infrastructure, alongside the
+module/source/Contract mechanisms. Do not require +json-schema or present it as an
+optional module enhancement. Its native scope should be available under
+modules.core.json-schema. Scope/phase availability does not require compiling all
+schemas, constructing all Profiles or loading every optional backend at startup.
+
+| Concept | Owner and meaning | Disable behavior |
+|---------+-------------------+------------------|
+| Module Core | Module System owns the selected module baseline | Cannot turn off required baseline functionality while keeping the module; whole-module exclusion follows dependency policy |
+| Optional module | Selected extension with published dependencies | May be disabled unless still required by admitted roots |
+| Feature | Named optional capability of one module | -feature removes it; validate remaining feature/dependency requirements |
+| Dependency package | Build/runtime artifact supporting capabilities | May be suppressed only when no remaining mandatory dependency requires it |
+| Category/tag | Namespace/presentation group | Cannot grant or remove Core status or override dependency policy |
+
+Module Core composition and mandatory dependencies must come from the admitted
+Module publication and framework policy, not just a folder named core or a user's category label. Schema
+implementation imports still need phase/dependency qualification; Core is not an
+excuse for eager schema decoding in init. No global exclusion can make a required
+Schema Contract silently disappear from Guestbook admission.
+
+* One init policy supports discovery and explicit selection
+
+Two modes use the same native selection representation. Directory discovery makes
+modules available, not necessarily evaluated or built. auto permits discovered
+optional modules to satisfy requested exports/Scenario dependencies according to
+policy; explicit permits only modules named by declarations plus mandatory Core
+and required admitted dependencies. Auto does not mean run every directory.
+An explicitly disabled required dependency is an error in both modes.
+
+Target extension of the existing public declaration macro, not new implemented
+syntax (arbitrary categories and keyword attributes require review/lowering):
+
+#+begin_src scheme
+;; user-interface/init.ss: auto discovery, only local exceptions.
+(yuanxu! mode: auto root: "./modules"
+  :workflow
+  (funflow -cicd)
+  :sandbox
+  (nono-sandbox disable: #t)
+  :custom
+  (team-checks @ "./custom/team-checks" +smoke))
+#+end_src
+
+When init.ss is absent, use the admitted framework auto default. There is no obligation
+to repeat every discovered package. The team-checks declaration adds a selected
+external module source; nono-sandbox is retained as an explicit disabled decision,
+not removed so that discovery could bring it back. -cicd disables one
+Funflow feature while retaining other selected Funflow capabilities.
+
+The Funflow example uses its source-declared CI/CD feature from
+[[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/modules/funflow/config.ss][Funflow config]], not a guessed Kubernetes capability.
+
+The explicit mode describes the desired optional set instead:
+
+#+begin_src scheme
+(yuanxu! mode: explicit root: "./modules"
+  :workflow
+  (funflow +cicd)
+  :custom
+  (team-checks @ "./custom/team-checks" +smoke))
+#+end_src
+
+Both are target extensions of yuanxu!, not a new package! DSL. Existing grammar
+does not interpret mode:/root:/disable: this way today. The init parser should
+lower once, retaining syntax locations, to native POO decisions such as:
+
+#+begin_src scheme
+(.o mode: 'auto
+    root: "./modules"
+    decisions:
+    (list
+     (.o path: '(workflow funflow)
+         disabled?: #f features: (.o cicd: #f))
+     (.o path: '(sandbox nono-sandbox)
+         disabled?: #t features: (.o))
+     (.o path: '(custom team-checks)
+         source: "./custom/team-checks"
+         disabled?: #f features: (.o smoke: #t))))
+#+end_src
+
+These are declaration/decision objects, not yet admitted directory snapshots or
+loaded module scopes. Stable qualified paths preserve namespace identity; paths
+are not prototype or execution order. Existing raw +flag/-flag storage cannot
+replace normalization by the same logical feature key. +smoke and -smoke concern
+one feature, not two independent keys.
+
+* Module System owns Core; Feature System owns optional extensions
+
+The earlier core?/default-features resolver and subsequent all-Core-as-Feature
+proposal are both withdrawn. Reuse [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-descriptor.ss][Module descriptors]] and [[file:../../../module-system/graph/funs.ss][module-closure]] for
+module baseline/import dependencies. Reuse Feature descriptors/resolution and
+capability binding only for selected extensions. [[file:11.19-feature-system-guestbook-selection.org][Module 18]] specifies the corrected
+boundaries and complete bounded design adapters.
+
+Init is user intent. Module System resolves eligible owners, retains module
+disable and includes each selected module's Core. Feature System maps optional
+flags to descriptors and resolves their contributions. No Feature category symbol
+can replace Module Core admission or bootstrap policy. Cross-system capability
+requirements connect the two without converting Core functions into Features.
+
+Changing init creates a new selected graph/generation. It affects subsequent builds
+and Sessions; it does not magically unload a live process or revoke already-running
+work. Runtime cancellation/revocation needs a separate explicit protocol.
+
+* interface.ss publishes; init.ss selects
+
+A module's interface.ss publishes its native object, Core dependencies/exports,
+schemas and optional features. Root/contribution/user init.ss selects sources and
+applies enable/disable intent at its allowed policy level. It does not duplicate
+that publication. Existing Module System already uses interface.ss for public
+entrypoints; retain that division rather than renaming the public entry to init.
+
+The [[file:11.16-directory-contract-and-native-tree.org][directory projection design]] admits interface metadata and keeps unselected
+interface bodies cold. [[file:11.19-feature-system-guestbook-selection.org][yuanxu-load-modules is the common facade]] for directory
+sources and init selection. Internally it delegates to existing module closure,
+Feature System and build owners. It is not another all-purpose resolver. Metadata
+must be inspectable without running every interface body; arbitrary Scheme
+computation cannot be assumed statically knowable.
+
+* Build from the selected admitted graph, not a second module list
+
+The target build roots are selected public exports. Their closure must include
+compile-time and runtime imports, macro/for-syntax dependencies, native/FFI inputs,
+generated schema assets, enabled feature edges and required toolchain inputs.
+An exports-only list cannot infer hidden imports, dynamic loads or generated files.
+Publication must declare dynamic edges or refuse unqualified build closure.
+
+The existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/build.ss][build.ss]] still lists module public entries and native build details.
+The design removes repeated per-module registration from that list. build.ss
+remains a small bootstrap/coordinator for the existing ASP PackageSpec/std-make
+execution owner; init does not replace the compiler/toolchain or grant execution
+authority. The same admitted graph generation should drive source selection,
+feature closure, build projection and runtime activation decisions. Do not maintain
+a second handwritten build catalog that can disagree with user init.
+
+| Decision example | Consequence for selected graph/build |
+|------------------+--------------------------------------|
+| Auto discovers unused optional provider | Available metadata; no body evaluation/build without a root/dependency request |
+| Negative feature intent | Remove that optional capability from selected roots; reject hard dependents; retain shared dependencies if needed elsewhere |
+| nono-sandbox disable: #t | Exclude optional activation/build roots; reject remaining hard dependents |
+| Add custom team-checks | Resolve/admit source, include its requested exports and declared dependency closure |
+| Disable Core json-schema | Refuse with Core/Guestbook dependency explanation before plan publication |
+| A dependency is already compiled | Reuse only if source/features/compiler/dependency generations match; never skip admission |
+
+* Conclusion and acceptance agenda
+
+The benefit borrowed from Doom is centralized declarative intent and explicit
+negative overrides. The improvement sought is one typed, source-qualified graph
+across discovery, native scopes, features and build projection, without eager
+catalog initialization. Existing macros, source selection, lazy slots and build
+execution are assets; hierarchical interface publication, policy normalization and the
+unified selected-graph adapter remain new design.
+
+Test auto versus explicit eligibility, no-init namespace traversal, unknown flag
+rejection, +f/-f conflicts, disabling a shared dependency, immutable generation
+updates, no execution of disabled module entries, complete for-syntax/FFI closure and
+selected first-use/warm costs. Thousands-module claims need measured controls.
+No declarations, runtime semantics, build registrations or Loader were changed.

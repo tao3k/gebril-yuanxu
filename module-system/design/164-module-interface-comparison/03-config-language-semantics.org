@@ -1,0 +1,193 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Nix, Nickel, Jsonnet and Dhall: Types, Contracts and Effective Values
+#+date: [2026-10-15]
+#+property: STATUS research-and-design-not-loader-implementation
+
+* The language question behind the framework question
+
+The [[https://nix.dev/manual/nix/latest/language/index.html][Nix language manual]] describes dynamic typing and lazy functional evaluation.
+It has assertions and data types. NixOS adds runtime option checking and merging
+in a library. That is a real contract-like boundary, although it is not an
+integrated contract calculus or static checking of arbitrary Nix functions.
+
+Nickel's [[https://nickel-lang.org/user-manual/introduction/][own introduction]] explicitly identifies Nix as a motivation and presents
+Nickel as an evolution addressing limitations. It is a separate configuration
+language, not a NixOS module-system feature or a direct extension of Nix syntax.
+Language-level limitations help explain the design space; they do not explain
+every cost of a framework that must combine distributed definitions.
+
+Nickel combines [[https://nickel-lang.org/user-manual/typing/][opt-in static typing]] with [[https://nickel-lang.org/user-manual/contracts/][runtime contracts]]. Its
+[[https://nickel-lang.org/user-manual/types-vs-contracts/][annotation guidance]] favors typing reusable functions and contracts for
+configuration data, with exceptions for properties outside the static type
+language. This is relevant to our upstream/downstream split: routine user
+configuration should not require the machinery used to validate reusable code.
+
+* Four different merge questions
+
+A scalar replacement, combining two lists, recursively merging records and
+rebinding derived computations are different operations. Calling all of them
+merge obscures the contract users need to understand.
+
+| System | Mechanism | Consequence for the configuration author |
+|--------+-----------+------------------------------------------|
+| Bare Nix | right-biased attribute update; functions/fixed points can build richer schemes | shallow update alone does not rebuild every dependent field |
+| NixOS modules | option-type merge plus definition and order priorities | defaults and conflicts belong to declared option policies |
+| Nickel | recursive record merge with field metadata/priorities | defaults, contracts and documentation travel with definitions |
+| Jsonnet | object inheritance and self/super; explicit +: for nested inheritance | derived fields can see the effective object; nested replacement is otherwise normal |
+| Dhall | typed records, explicit record operations and total functions | a checked function can reconstruct derived outputs explicitly |
+| Current Agentic AI Lab | native inheritance, replacement, => and =>.+ | effective receiver relationships work; cross-owner semantic merge is not automatic |
+
+The Nickel [[https://nickel-lang.org/user-manual/merging/][merge specification]] describes conflicts rather than an unconditional
+last-writer-wins policy, and metadata determines priority. Native POO's ordered
+inheritance is not that algebra. Converting one into the other requires a stated
+policy, not a renamed operator.
+
+* Matched probe: changing build must change a derived Check list
+
+The following programs are original semantic probes, not repository extracts.
+They isolate a shared question; they are not language ports of the full Funflow
+product. The exact files are retained in [[file:probes/receiver.nix][probes/]]. Execution status is recorded in
+[[file:06-evidence-and-acceptance.org][the evidence module]].
+
+** Bare Nix: update versus explicit reconstruction
+
+#+begin_src nix
+let
+  base = rec {
+    build = { command = [ "gerbil" "build" ]; artifacts = [ "build-log" ]; };
+    checks = [ build ];
+  };
+  child = base // {
+    build = base.build // { artifacts = [ "release-log" ]; };
+  };
+  makeProfile = check: { build = check; checks = [ check ]; };
+  fresh = makeProfile child.build;
+in {
+  parent = (builtins.head base.checks).artifacts;
+  shallowChild = (builtins.head child.checks).artifacts;
+  reconstructedChild = (builtins.head fresh.checks).artifacts;
+}
+#+end_src
+
+The shallow child still contains the base list. Reconstructing with a function
+uses the changed Check. This does not show that Nix cannot express late binding;
+NixOS config and library fixed points provide stronger composition patterns.
+
+** Jsonnet: native receiver-dependent inheritance
+
+#+begin_src jsonnet
+local base = {
+  build: { command: ['gerbil', 'build'], artifacts: ['build-log'] },
+  checks: [self.build],
+};
+local child = base + { build+: { artifacts: ['release-log'] } };
+local saved = base.checks;
+local frozen = child + { checks: saved };
+{
+  parent: base.checks[0].artifacts,
+  inheritedChild: child.checks[0].artifacts,
+  frozenChild: frozen.checks[0].artifacts,
+}
+#+end_src
+
+The [[https://jsonnet.org/ref/language.html][language reference]] explains self as a lookup on the effective object and
+super as the inherited layer. Its distinction between a fixed object reference
+and self closely matches the issue our frozen-parent-list control tests.
+Nested inheritance is explicit; ordinary nested field replacement does not
+silently merge siblings. Jsonnet is therefore an essential comparison for POO,
+not just another JSON emitter.
+
+Reflection: late-bound values and programmable object inheritance are shared
+capabilities. Our possible benefit is integration with native POO Contracts,
+Generic/MOP extension and a common module/plan object model. That benefit must be
+shown in a real extension task; object inheritance alone cannot establish it.
+
+** Dhall: typed reconstruction is a different design trade-off
+
+#+begin_src dhall
+let Check = { command : List Text, artifacts : List Text }
+let base : Check =
+      { command = [ "gerbil", "build" ], artifacts = [ "build-log" ] }
+let makeProfile = \(check : Check) -> { build = check, checks = [ check ] }
+let childCheck = base // { artifacts = [ "release-log" ] }
+in { parent = (makeProfile base).checks
+   , child = (makeProfile childCheck).checks
+   }
+#+end_src
+
+Dhall's [[https://docs.dhall-lang.org/tutorials/Getting-started_Generate-JSON-or-YAML.html][records and functions]] support reusable typed configuration. Its
+[[https://docs.dhall-lang.org/discussions/Safety-guarantees.html][safety discussion]] describes total evaluation for well-typed expressions under
+the language's assumptions; imports and resource costs still need operational
+consideration. Our Scheme host has no corresponding general termination or
+no-arbitrary-effects guarantee.
+
+Reflection: a reconstruction function makes dependencies explicit and checkable;
+open inheritance makes future refinements convenient. Neither is uniformly
+better. For an audited fixed schema, Dhall may be the more appropriate boundary.
+For an open family of native strategies, POO may offer less adapter work, while
+requiring stronger policy around effects and validation.
+
+** Nickel: recursive configuration and contract-carrying defaults
+
+#+begin_src nickel
+let base = {
+  build = {
+    command | default = ["gerbil", "build"],
+    artifacts | default = ["build-log"],
+  },
+  checks = [build],
+} in
+let child = base & { build.artifacts = ["release-log"] } in
+{
+  parent = base.checks,
+  child = child.checks,
+}
+#+end_src
+
+This probe asks whether recursive field relationships follow the refined record.
+It is retained as an unexecuted language-reference probe here, not claimed as
+an observed interpreter/cache result. Nickel field contracts also provide a
+place to validate the resulting data; our native inheritance alone does not.
+
+** POO: the actual native relationship
+
+#+begin_src scheme
+(import :yuanxu/object-syntax/path-slots
+        (only-in :clan/poo/object .get))
+(.def Base
+  build: (.o command: '("gerbil" "build") artifacts: '(build-log))
+  pipeline: (.o checks: (list build)))
+(def parent-checks (.get Base pipeline checks))
+(.def (Child @ Base) build: =>.+ {artifacts: '(release-log)})
+(def child-checks (.get Child pipeline checks))
+(.def (Frozen @ Child) pipeline: =>.+ {checks: parent-checks})
+(unless (and
+          (equal? (.get (car parent-checks) artifacts) '(build-log))
+          (equal? (.get (car child-checks) artifacts) '(release-log))
+          (eq? (car child-checks) (.get Child build))
+          (eq? parent-checks (.get Base pipeline checks))
+          (equal? (.get (car (.get Frozen pipeline checks)) artifacts) '(build-log)))
+  (error "receiver probe failed"))
+(displayln "PASS: effective child, retained parent cache and frozen-list control")
+#+end_src
+
+This uses implemented bindings and explicitly forces the parent list before
+creating the child. The identity assertion has no direct counterpart in a
+JSON-only manifestation; it verifies the relationship consumed by our current
+object adapter. It does not claim a stronger abstract configuration semantics
+than Jsonnet self or a NixOS config-derived plan.
+
+* Validation and safety: the improvement we still owe users
+
+Current bounded use-module checks object? and preserves identity. That does not
+validate a Check's command, reject a misspelled public attribute, establish
+source trust, or typecheck a higher-order function. A define-type declaration
+can express boundary obligations, but users need to see those obligations
+actually attached to publication/selection/projection.
+
+Our next design should distinguish function contracts, public configuration
+shape, cross-field/domain obligations, source admission and effect policy. One
+universal valid? flag would collapse different questions. Stronger host-language
+abstraction is not a substitute for a configuration-facing correctness story.

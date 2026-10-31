@@ -1,0 +1,6 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: Explicit native support fixture
+
+This package selects no business Module. Its standard Gerbil build consumes the
+init-owned test support declaration; the original Suites execute independently.

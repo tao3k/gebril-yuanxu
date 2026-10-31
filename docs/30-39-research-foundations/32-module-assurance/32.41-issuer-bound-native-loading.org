@@ -1,0 +1,319 @@
+#+title: 32.41 Local Issuer Binding And Native Load Consumption
+#+language: en
+#+startup: overview
+
+Current route: [[file:32.43-core-build-publication-authority.org][32.43]] keeps installed Gerbil unchanged and implements Core
+publication/build authority. This document retains the stronger native-loader
+experiment and its counterexamples; native loading is not Core publication.
+
+* Result: a qualified path, not a closed production boundary
+
+[[file:32.40-compiler-artifacts-and-selected-closure.org][32.40]] trusted local files containing compiler issuance and stopped before an
+authoritative load handoff. This experiment retains issuance in the supervising
+process, derives the actual SDK loader bodies with internal checks, and tests
+ordinary =load-module= calls. There is no user =safe-load= wrapper, purity flag
+or callback annotation.
+
+Nine native controls pass on that installed experimental route. Coherently
+replacing an artifact and its record cannot replace the parent process's
+retained issuance. Changes after native resolution or after snapshot creation
+are refused before consumption. Cached requests still check issuance.
+
+Two important limits remain explicit:
+
+- Changing only public artifact bytes AFTER the final check does not alter the
+  private bytes actually consumed. This is byte-snapshot safety under a trusted
+  private-pool premise, NOT latest-path currentness or an atomic filesystem view.
+- A procedure value captured from the original SDK before installation returns
+  its cached module WITHOUT entering the installed issuer check. The actual
+  observation is =[true,false]=: cached return, no new authority event. It does
+  not demonstrate execution of new malicious code, but it disproves a claim
+  that live rebinding closes every existing dispatch path.
+
+The second result is a retained native bypass, not a successful safety case.
+Production requires native source/build integration rather than promoting this
+process-local installation to an unavoidable security boundary.
+
+[[file:32.42-source-built-loader-call-edges.org][32.42]] tests that next step by compiling the actual native loader source in
+isolation before capturing its procedure values. It preserves this original-SDK
+bypass and does not claim a complete production SDK rebuild.
+
+* Compiler completion to a parent-owned issuance association
+
+[[file:../../../t/qualification/mop-state/artifact-authority.ss][artifact-authority.ss]] starts a compiler child through the existing native
+=run-process= API and the factored compile-only Just recipe. It accepts exactly
+one complete =COMPILER-ISSUANCE= record and one =RESOURCE-ISSUANCE= record from
+THAT child process's output pipe, after normal exit zero. Prefix strings frame
+records; they are not authenticity badges. The trusted child handle and job
+execution are the local association.
+
+The compiler emits source observations, selected code facts, derived native
+setter bindings and hashes of its generated record files. Resource completion
+emits generated kernel Scheme/binary hashes. The parent retains these values
+in a private in-memory authority structure and validates the actual selected
+closure against them. It never reloads a writable sidecar to replace its
+expected values.
+
+#+begin_src scheme
+(def compilation (one-record transcript "COMPILER-ISSUANCE "))
+(def resources (one-record transcript "RESOURCE-ISSUANCE "))
+(def input-rows
+  (append (car compilation) (list-ref compilation 3) resources))
+(def issued
+  (capture-closure "core/t/qualification/mop-state/precompiled-stores"
+    input-rows (list-ref compilation 2) (list-ref compilation 1)))
+#+end_src
+
+The artifact-and-record attack is deliberately stronger than malformed syntax:
+the fixture swaps an old binary beneath the callback and calls
+=compiler-code-facts= to write a newly computed, structurally coherent record
+for that modified tree. The private expected data still comes from the earlier
+compiler pipe. Both cold and cached requests refuse =issued source or record
+changed= before consuming another module.
+
+This is local trusted-job provenance. It does not authenticate a remote
+publisher, a malicious compiler, arbitrary compile-time macros, a substituted
+PATH executable, or a hostile supervising host. Ordinary files containing the
+captured transcript are local evidence, not reusable signing authority.
+
+* Actual native loader cut
+
+[[file:../../../t/qualification/mop-state/compile-store-boundary.ss][compile-store-boundary.ss]] reads the ACTIVE SDK's emitted
+=gerbil/runtime/loader~0.scm=. It requires exactly the native =load-module= and
+=__load-module= definitions, each with its expected argument shape, and exactly
+one native =load= site. Changed SDK structure fails qualification.
+
+The derived bodies retain the SDK's real load mutex, condition variable,
+loaded/error table and load order. This is not a reimplementation of loading.
+The derivation introduces:
+
+1. =authorize-request!= at the internal entry before the native cache branch;
+2. =load-owned!= at the original native =load path= expression;
+3. ordinary references between the derived entry bodies.
+
+The isolated Gambit artifact installs these bodies into the process's native
+bindings. The SDK files themselves are untouched. Tests invoke the existing
+=load-module= binding and verify that both the outer callback and its =~0=
+unit actually pass the internal transfer route. The old captured SDK procedure
+measurement below is why this installation is not production closure.
+
+Entry authorization rechecks retained input/record/resource hashes and native
+resolution. A selected callback root also rechecks its retained dependency
+closure. A native resident callback must be associated with a successful load
+by this authority; a string in the native cache is insufficient by itself.
+Native error entries from deliberately failed loads are cleared only for this
+fixture's known units before another control.
+
+* Transfer: verified bytes rather than a second public-path open
+
+The private helper follows this order:
+
+1. At the native resolved-file seam, reauthorize the request.
+2. Read bytes once and compare their digest with the retained compiler result.
+3. Write those bytes to the authority-private snapshot pool, preserving the
+   native object basename inside a content-addressed directory.
+4. At the snapshot handoff seam, reauthorize source/closure state and validate
+   the private copy's digest.
+5. Invoke native =load= on the private snapshot, retaining the resulting native
+   resident-code association.
+
+Key executed code:
+
+#+begin_src scheme
+(def data (bytes path))
+(unless (equal? (digest data) (.get row digest))
+  (error "issued native bytes changed" name))
+(def snapshot
+  (path-expand
+    (string-append (.get row digest) "/" (path-strip-directory path))
+    (authority-pool state)))
+(unless (file-exists? snapshot) (write-bytes snapshot data))
+((current-transfer-probe) 'snapshot name path)
+(authorize-request! name)
+(def checked-snapshot (file-digest snapshot))
+(unless (equal? checked-snapshot (.get row digest))
+  (error "private native snapshot changed" name))
+((current-transfer-probe) 'consuming name path)
+(def result (load snapshot))
+#+end_src
+
+The probes are qualification fault injection, not user-extensible callbacks
+inside a production verifier. The private pool is in the trusted host boundary.
+Directory/file permissions are not a sandbox against the same host owner or
+an FFI-capable process. The checked digest is not an independently measured
+hash of memory mapped by dyld after the last check.
+
+The policy's generated store kernel is also copied from the verified compiler
+resource output; its process-local resource lookup uses that private pool.
+The environment switch and native binding installation are serial experiments,
+not thread-local or multi-tenant authority mechanisms.
+
+* Actual native controls and two different failure classes
+
+[[file:../../../t/artifact-authority-test.ss][artifact-authority-test.ss]] uses the existing POO DirectoryFixture. Its one
+native test case contains nine measured controls and a separate legacy dispatch
+measurement. The supervising process's expected data survives all artifact-tree
+mutations; fixture preparation owns rollback and cleanup.
+
+| Control | Actual result |
+|---------+---------------|
+| Replace old runtime binary and coherently recompute record | Refuse; zero completed consumption |
+| Add identical bytes as higher =.o2= | Refuse; zero completed consumption |
+| Replace file after native resolution | Refuse before consumption |
+| Replace dependency at snapshot handoff | Refuse before consumption |
+| Replace source file after private copying | Refuse before consumption |
+| Corrupt private copy before its check | Refuse before consumption |
+| Replace only public file after final check | Load verified private bytes; latest public path differs |
+| Valid issuer-associated cache hit | Return cache; no additional consumption |
+| Replace coherent record/binary before a cache hit | Refuse before another consumption |
+
+The successful cold route records 32 completed selected native unit loads.
+Its last callback-root consumption observes public-path currentness=false,
+while executing the verified snapshot. Subsequent cache observations retain
+that HISTORICAL last-consumption fact; they are not fresh measurements of a
+now-restored public file.
+
+The actually loaded, compiler-prepared callback is invoked under native replay
+after Parent has cached 5432. Its attempted shared-specification write refuses
+before Cold is prepared; Parent, Hot and Cold later read 5432. The unselected
+error slot and unselected broken module remain unforced.
+
+* Preserved original SDK procedure: actual bypass
+
+The fixture captures a real SDK procedure value BEFORE installing the derived
+entry, then calls it while the coherent forged record/binary is still present:
+
+#+begin_src scheme
+(def captured-sdk-entry load-module)
+;; After installation and the normally loaded cache:
+(def result (with-catch values (cut captured-sdk-entry entry)))
+#+end_src
+
+The installed entry refuses the same request. The saved SDK procedure instead
+returns the cached module and adds no authority event: =[true,false]= in
+=legacy-dispatch.json=. This is an actual dispatch limitation of this active
+SDK, not a universal theorem inferred from source text. No new malicious code
+is claimed to have executed through this particular cached-return probe.
+
+It establishes why copying native function bodies and rebinding live globals
+cannot be the final production solution. Older procedure values and compiled
+internal edges must be covered by the original source/build boundary, or their
+capability must be excluded. Direct =load= and arbitrary host code remain
+separate capabilities too.
+
+* Lean and QNT correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/IssuedLoading.lean][IssuedLoading.lean]] proves changed source/record, artifact and private-snapshot
+facts refuse the declared protocol. It also separates byte consumption from
+latest-path state:
+
+#+begin_src lean
+def allows (sourceExpected sourceChecked unitsExpected unitsChecked
+    snapshotExpected snapshotChecked : String) : Bool :=
+  sourceExpected == sourceChecked && unitsExpected == unitsChecked &&
+    snapshotExpected == snapshotChecked
+
+theorem public_replace_preserves_consumed_bytes
+    (t : Transfer) (bytes : String) :
+    consume (replacePublic t bytes) = consume t := rfl
+#+end_src
+
+=latest_path_not_implied= gives a concrete public/private mismatch, and
+=private_writer_breaks_consumption= shows that permission to change the private
+snapshot after its check defeats the consumption guarantee. The latter is a
+model/environment counterexample, not a native late-pool code-execution test.
+
+[[file:../../../dev/proofs/lean/IssuedLoadingCheck.lean][IssuedLoadingCheck.lean]] decodes nine actual controls, recomputes their protocol
+decisions and requires zero completed consumption for rejected requests. It
+also requires the actual original-SDK cache bypass observation; the positive
+decoder does NOT certify that bypass as safe. Changing a native refusal field
+to acceptance makes it fail. Extraction, hashing, trusted child identity,
+private-pool ownership and native compiler semantics remain bridge premises.
+
+[[file:../../../dev/proofs/quint/IssuedLoading.qnt][IssuedLoading.qnt]] has eleven scoped outcomes. The positive model admits only
+the controlled entry and private-pool authority. Negative controls cover
+self-reissuing sidecars, skipped handoff checks, loading the public path,
+skipped cache authority, late private-pool writes, latest-path currentness,
+dropped second requirements, corrupted Parent values, eager unselected work,
+and an acceptance witness. The cache mutant matches the native saved-entry
+limitation; the latest-path counterexample matches the native late public write.
+
+Publication combines the load outcome with BOTH domain requirements. The
+loader itself does not decide Gitea/PostgreSQL port policy. The real
+SourceAdmissionContract consumer was rerun separately, retaining both port
+contributions, child obligations, final values after Parent caching, explicit
+port mismatch, stale-plan rejection and changed-source rejection.
+
+* Production obligations
+
+1. Integrate the boundary into the native SDK source/build and qualify old
+   compiled clients, not just live bindings. The saved original procedure
+   counterexample prevents calling this route unavoidable.
+2. Define issuer authority beyond this local host: trusted compiler identity,
+   exact invocation/toolchain/options, protected keys or issuer associations,
+   rollback/revocation and remote distribution. A pipe from a trusted child is
+   not a portable publisher signature or a proof of compiler honesty.
+3. Enforce private snapshot ownership at the operating-system/runtime boundary.
+   Same-user arbitrary writes or FFI defeat a directory-only trust assumption.
+   No late private-pool writer is ruled out by the current native experiment.
+4. State the required commit semantics. Loading pinned bytes can be safe while
+   the public configuration is no longer current. Publication or external
+   effects requiring latest state still need conditional commit/snapshot
+   authority; another final hash loop cannot establish global atomicity.
+5. Close all phase/capability routes: source and optimizer imports, dynamic
+   loads, eval, foreign linking, original captured loader values and direct
+   primitive loads. Existing SDK/base capabilities are trusted here, not proved
+   to be a sandbox for arbitrary contributed Scheme code.
+6. Qualify concurrency and reuse. The singleton issuer and process environment
+   are serial fixtures. Multiple issuers, resident code across jobs and threads
+   need real ownership/revocation rules rather than copying this test registry.
+
+* Reproduction and receipt lifetime
+
+#+begin_src sh
+just --justfile core/Justfile test-artifact-authority /private/tmp/issued-load-check
+just --justfile core/Justfile check-issued-loading /private/tmp/issued-load-check/authority-observations.json
+#+end_src
+
+The native fixture cleans its temporary compiler outputs and private pool.
+The parent retains the compiler transcript outside rollback-owned storage,
+the actual observations and the legacy dispatch measurement. It does not
+publish a reusable authority token. Compiler jobs retain the existing per-stage
+120-second bounds; the supervising whole job has a 240-second bound and the
+existing heap-fenced test entry is unchanged.
+
+Successful local native evidence is =/private/tmp/core-artifact-authority-05.log=
+and =/private/tmp/core-artifact-authority-20261018/candidate-05/=. Earlier syntax
+failures are retained as runs 01/02, rather than relabeled as a runtime failure
+or pass. Runs 03/04 retain the earlier nine-control results. The current decoder
+receipts are =/private/tmp/core-issued-loading-decoder-03.log= and the rejected
+=/private/tmp/core-issued-loading-decoder-negative-02.log=. Raw logs remain
+outside source control.
+
+** Completed checks and concurrent-source boundary
+
+- The native issuer experiment exited normally with =MODULE-OK=, =HARNESS-OK=
+  and final =OK=: one test case containing nine transfer controls, plus the
+  separately retained original-SDK cache-dispatch bypass measurement.
+- The original compiler/closure regressions exited zero: thirteen artifact
+  controls and twelve store-boundary controls, both with the harness markers.
+  =StoreLoweringCheck.lean= independently accepted the six compiled routes;
+  =ArtifactClosureCheck.lean= checks the corresponding closure observations.
+  The raw receipt is =/private/tmp/core-issued-loading-regression-01.log=.
+- The real SourceAdmission consumer exited zero with two cases and all harness
+  markers: =/private/tmp/core-issued-loading-domain-01.log=. This is a separate
+  consumer regression, not a claim that its complete Scenario was loaded under
+  the experimental issuer.
+- The Lean build completed 180 jobs; the audit covered 6134 declarations with
+  standard Lean axioms only and no arbitrary Prop-valued model fields. Receipt:
+  =/private/tmp/core-issued-loading-lean-01.log=.
+- The final scoped QNT run qualified eleven expected outcomes, including the
+  retained counterexamples: =/private/tmp/core-issued-loading-quint-03.ss= and
+  =/private/tmp/core-issued-loading-quint-03.log=. Negative outcomes are expected
+  counterexamples, not successful safety invariants.
+
+The QNT receipt binds 366 source files at its execution cut. A subsequent
+comparison found a concurrent change to =module-system/building/source-closure.ss=.
+The issuer experiment, decoder and model files still match that cut. Therefore
+this receipt is evidence for its recorded source cut, not certification of the
+entire subsequently modified Core checkout. The concurrent change is preserved.

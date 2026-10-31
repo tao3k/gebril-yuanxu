@@ -1,0 +1,118 @@
+#+title: 20.09 Nix Immutability and Module-System Assurance Boundaries
+#+language: en
+#+property: DOCUMENT_ID 20.09
+#+date: [2026-10-17]
+#+property: STATUS primary-documents-reviewed-no-new-nix-execution
+
+* Research question and evidence
+
+Does immutable storage establish that a composed service configuration is
+correct? No: storage stability and semantic applicability have different owners.
+This is a boundary comparison, not an upstream bug report.
+
+Primary references checked on 2026-10-17:
+
+- [[https://nix.dev/manual/nix/2.34/][Nix 2.34.9 introduction]] describes built packages as stable values and package
+  management as adding versions instead of overwriting existing packages.
+- [[https://nix.dev/manual/nix/2.34/store/store-object.html][Nix Store objects]] describes object contents, references and their graph.
+- [[https://reproducible.nixos.org/][NixOS reproducible builds]] explicitly distinguishes good build isolation and
+  dependency accounting from eliminating all build nondeterminism.
+- [[file:20.08-real-service-composition-and-design-decisions.org][20.08]] owns the pinned nixpkgs Gitea/PostgreSQL source study and exact fields.
+  Its source inspections are not newly executed VM tests.
+
+* Same Gitea/PostgreSQL workload
+
+The source-derived ordinary user edit remains small:
+
+#+begin_src nix
+{ ... }: {
+  services.gitea.enable = true;
+  services.gitea.database = {
+    type = "postgres";
+    createDatabase = true;
+  };
+  services.postgresql.settings.port = 5433;
+}
+#+end_src
+
+In the pinned source study Gitea's default database port reads the effective
+PostgreSQL settings port. This useful behavior comes from maintained module
+logic and final configuration evaluation, not from immutable Store contents.
+The source also owns generated configuration and lifecycle integration.
+
+Our derived child can likewise read a new final port while the parent retains
+its old plan. Reusing that old plan is semantically wrong even if the plan's
+bytes never change. Our domain admission rejects that particular mismatch;
+it does not follow that NixOS lacks equivalent validation mechanisms.
+
+* Reflection and design transfer
+
+Retain stable input/artifact identities, dependency tracking, final-config
+defaults and the small ordinary-user surface. Keep policy or relationship
+validation separate from the storage model. A source-currentness guard checks
+observed inputs; immutable generation pinning can help close a check/use gap,
+but it is not interchangeable with a field Contract.
+
+Our proposed distinction is preserving selected requirements and source
+associations through native object derivation into a guarded final-plan
+publication. That needs controls for missing contributions, stale source and
+wrong receiver caches; it cannot be established by a vocabulary comparison.
+The current Core source guards are not a Nix Store replacement and do not
+provide an atomic snapshot spanning execution.
+
+* Issues and Engineering Limitations
+
+This addition reports no new GitHub defect. Existing issue evidence remains
+owned by [[file:20.07-issues-and-evidence.org][20.07]]. Non-reproducibility is a documented boundary, not evidence
+that Nix routinely produces wrong builds. Endpoint agreement and actual service
+readiness must be assessed in the real module and runtime, respectively.
+No matched deployment, adversarial Store modification or benchmark was run.
+
+* Conclusion, questions and onwards
+
+Immutability is useful supporting machinery; it does not establish all module
+assurance guarantees. Can a preview name the exact final instance and all
+requirements that admitted it? Can a concurrent edit invalidate a pending
+publication? Which inputs must be pinned before effects are authorized?
+
+These are shared design obligations. Their concrete Scheme case, current
+receipts and missing consumers are owned by
+[[file:../../10-19-design/10-configuration/10.20-module-system-assurance.org][10.20 Module-System Assurance]], not by an expanded Fixture subsystem.
+
+* Concrete source and issue follow-up
+
+The rendered [[https://github.com/NixOS/nixpkgs/issues/379855][#379855]] report was inspected on 2026-10-17. It shows a module
+branching on an argument supplied through _module.args and reporting recursion.
+This is phase/diagnostic evidence, not proof of endpoint-cache failure. The
+report discusses specialArgs as an earlier-visible alternative. No resolving
+PR or local reproduction is claimed by this update.
+
+A fresh master source excerpt for [[https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/misc/gitea.nix][Gitea]] corroborates the PostgreSQL port
+default and shows existing assertions and socket-versus-TCP endpoint selection.
+It is unpinned evidence. Re-fetching the historical 20.08 SHA failed through the
+web reader in this pass; the old source receipt is not relabeled as newly
+verified. A matched port-use test must select database.socket = null and supply
+other required settings; changing a port field alone does not prove a TCP
+connection was used. This correction makes the consumer boundary explicit.
+
+* Narrow local observation before returning to source-first research
+
+One isolated evaluation completed on 2026-10-17 with the already installed
+Nix 2.34.4+1 and the source store path
+=/nix/store/cx86xlxyvlai8iwr7hkmg3pri4zynbyc-cb2gvzqf4lc8qzlrw1ywwviw7phvjyl5-source=
+(nixpkgs library version =26.05pre-git=). The research-only source is
+[[file:scenarios/gitea-postgresql/evaluation.nix][evaluation.nix]]. With input port 5433, both contributing policies permitting
+5432/5433 and guarded mode enabled, strict evaluation returned database port
+5433, client port 5433 and the real Gitea HOST projection =127.0.0.1:5433=.
+The fixture chose TCP explicitly. It evaluated actual NixOS service modules but
+did not build a system, start a service or check credentials/connectivity.
+
+The source digest recorded for that input was
+=0cce44a164bb303f960cd3b4a049677ed4627009e2e667f443c6d10ce40ea62f=.
+Raw output is retained locally at
+=/private/tmp/poo-platform-comparison-20261017/nix-smoke.out=;
+error output at the matching =nix-smoke.err= was empty. This positive control
+supports the final-value default already observed in source. Other branches
+of the research adapter were not executed; their assertions are not results.
+The broader runtime campaign was stopped at the user's direction. It yields
+neither a cross-platform ranking nor a measured maintenance-cost advantage.

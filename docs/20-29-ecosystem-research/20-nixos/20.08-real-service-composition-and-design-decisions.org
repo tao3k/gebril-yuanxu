@@ -1,0 +1,185 @@
+#+title: 20.08 Real NixOS Service Composition: Gitea, PostgreSQL and Our Design Decisions
+#+language: en
+#+property: DOCUMENT_ID 20.08
+#+date: [2026-10-17]
+#+property: STATUS pinned-maintained-code-and-upstream-tests-inspected-not-run
+
+* Real case and source identity
+
+Use nixpkgs =50ab793786d9de88ee30ec4e4c24fb4236fc2674=. The maintained case is
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/modules/services/misc/gitea.nix][Gitea's PostgreSQL integration]], not an invented Guestbook-to-NixOS port.
+Supporting owners are the
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/modules/services/databases/postgresql.nix][PostgreSQL service module]] and
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/tests/postgresql/postgresql.nix][official PostgreSQL VM tests]].
+This historical release has different integration details from newer releases;
+do not substitute a current postgresql.target into the pinned service graph.
+
+* Ordinary user surface grounded in the maintained interface
+
+The following is an analyst-written configuration using real module fields. It
+is a configuration study, not a deployed or production-complete machine:
+
+#+begin_src nix
+{ ... }: {
+  services.gitea = {
+    enable = true;
+    database = {
+      type = "postgres";
+      createDatabase = true;
+    };
+  };
+  services.postgresql.settings.port = 5433;
+}
+#+end_src
+
+The maintainer's database.port default reads the selected PostgreSQL settings.port.
+Gitea requests a local database/user, derives its database HOST setting and
+contributes systemd ordering/requirements. Exact source anchors: database options
+lines 127–166; HOST projection lines 491–503; database contribution lines 553–563;
+service edges lines 610–618. This is working ecosystem source, not proof this
+particular consumer has been executed here.
+
+** Small source excerpt: the default is a dependency
+
+The following is the actual port declaration, not a proposed replacement API:
+
+#+begin_src nix
+port = mkOption {
+  type = types.port;
+  default = if usePostgresql then pg.settings.port else 3306;
+#+end_src
+
+The excerpt omits documentation and the closing declaration. In the same module,
+pg is bound to config.services.postgresql, and the HOST projection uses the final
+cfg.database.host/port unless the socket configuration selects the socket branch.
+An ordinary user supplies neither a copied PostgreSQL port nor the database
+startup script. The maintained module owns the dependency and its consumer.
+
+For our architecture, binding the PostgreSQL Module scope is not the same as
+binding one final configured PostgreSQL instance. Publication may expose the
+factory/Contract and pure operations; a Scenario must select the actual instance
+whose final endpoint is read. Caching a scope cannot justify caching every
+consumer result across derived Scenarios. This distinction prevents a global
+module alias from accidentally becoming a global mutable database instance.
+
+** What a downstream change means
+
+| User change | Source-derived expected configuration | Boundary |
+|-------------+---------------------------------------+----------|
+| PostgreSQL port 5433 | Gitea default database port also becomes 5433 | Default dependency, not textual replacement |
+| Explicit Gitea database port 6000 as well | Explicit value defeats its default | Both ports can type-check while endpoints disagree |
+| Gitea createDatabase false | Local database contribution/requirement changes | External database may be intentional; not automatically an error |
+| PostgreSQL disabled despite local Gitea intent | Competing configuration intent requires inspection | Do not claim one generic type check proves local connectivity |
+
+The disabled case is particularly instructive. Gitea's local enable contribution
+uses mkDefault; an ordinary false can defeat it. We have not evaluated all
+assertions for this configuration and do not claim an upstream missing check.
+Our domain policy should explicitly distinguish local-provider-required from
+externally supplied endpoint rather than infer either from an absent service.
+
+* What the real PostgreSQL module owns
+
+The module provides defaults, option migrations, generated configuration,
+database/user ownership assertions and lifecycle integration. State-version-based
+package selection protects compatibility. Its readiness path uses the effective
+port. The official VM tests configure real service objects and check database
+behavior after unit startup, including role permissions and restart behavior.
+
+One exact test configuration fragment at lines 200–202 is:
+
+#+begin_src nix
+{
+  name = "default-clauses";
+}
+#+end_src
+
+It appears beside an explicitly configured role; the test checks effective role
+properties in PostgreSQL. This illustrates a valuable distinction: a default
+accepted by configuration needs a consumer test, not merely a successful parse.
+We inspected those tests; we did not run their VM harness or translate its
+Python driver into a new project test.
+
+* Transfer to Guestbook without inventing new syntax
+
+The corresponding concrete native design for this SAME Gitea/PostgreSQL case is
+[[file:../../10-19-design/10-configuration/10.10-gitea-postgresql-native-module-design.org][10.10]]. It separates published interface bindings from configured instances,
+shows native lexical endpoint defaults and keeps independent contribution
+requirements distinct from child assignment. It is design code, not a new run.
+
+The corresponding architectural case has frontend, Redis Leader and Follower
+Profiles plus a Scenario that binds their relationships. An ordinary user sets
+an image, label or port. Maintainers own defaults, connection derivation, resource
+generation and admission. Reusable Profiles remain independent of one Scenario.
+
+| Requirement | Proposed Module System owner | Tradeoff and unresolved obligation |
+|-------------+------------------------------+-----------------------------------|
+| Discover ports and legal labels | Published Contract/type metadata | Do not create a duplicate field catalogue; dynamic fields need explicit open regions |
+| Bind the Redis interface | Root-selected instance and hygienic lexical dependency | Mount alias must not become provider identity; role-wide binding is not already complete |
+| Derive frontend connection | Pure domain projection from final selected exports | Lazy cycles still need a defined policy; arbitrary functions are not dependency analysis |
+| Change only a port | Ordinary assignment into maintained configuration | Intermediate object preservation/path lowering must be verified |
+| Extend maintained behavior | Native prototype/slot refinement when required | C4 precedence does not settle independent policy conflicts |
+| Admit a resource preview | Final objects plus field and connection Contracts | Resource correspondence/currentness are separate from field shape |
+| Start or reconcile services | Explicit runtime boundary | POO is not a process supervisor or cloud reconciler |
+
+If a parent preview was already forced, the child's Service must be projected
+from the child's final frontend/Redis values. Passing parent resources with child
+admission is refused by identity/context checks. Passing a self-consistent parent
+pair still needs the enclosing selected-instance/currentness authority to reject
+it as the child's result. Object identity alone cannot establish source freshness.
+This is a design obligation, not a new validated end-to-end Guestbook result.
+
+* Current Core mechanisms and actual gaps
+
+Current checkout inspected: Core HEAD =7595bed= plus concurrent local changes on
+2026-10-17. The following are source observations, not fresh test receipts:
+
+- [[file:../../../module-system/source/declaration.ss][declaration.ss]] lower-core generates a dependency binder around exports,
+  with a generated identifier and native references. This is evidence for bounded
+  lexical binding, not automatic injection throughout every role file.
+- [[file:../../../module-system/source/link.ss][link.ss]] checks eligibility/disabled decisions, active link cycles and
+  generation currentness, then admits requirement and scope values. It traverses
+  the declared requires before publishing a scope; unused exports do not imply
+  unused declared dependencies are already demand-linked.
+- [[file:../../../types.ss][types.ss]] admits native responsibility children. This provides a Contract
+  mechanism; automatic selected-domain projection and complete resource checks
+  remain separate integration work.
+- [[file:../../../object-syntax/path-slots.ss][path-slots.ss]] currently requires dotted paths to use =>.+. Ordinary
+  deep path assignment in design examples is not claimed as implemented by this
+  source inspection.
+
+Thus we should reuse the native kernel and strengthen orchestration rather than
+announce that a universal args replacement or selective admission already exists.
+
+* Issues and Engineering Limitations
+
+[[file:20.07-issues-and-evidence.org][The independent register]] owns NX-01 through NX-05. It distinguishes user
+reports, maintainer warnings and intentional lazy semantics. No issue proves
+that our proposed design is faster or that Scheme prevents recursion by itself.
+
+* Reflection: what improvement would actually count?
+
+1. Better ordinary-user experience means a small value input plus explainable
+   defaults and relationships, not mandatory prototype syntax for every edit.
+2. Better maintainer experience means reusable domain integration and explicit
+   independent-contribution semantics, not only fewer source lines.
+3. Better Agent experience means discoverable fields, allowed operations, exact
+   source paths and stable expanded semantics. Generated code needs reviewable
+   origins; macros must not hide effects or silently broaden a selected graph.
+4. Better performance means bounded discovery and selected demand measured with
+   correct invalidation. A warm parent cache must not become child authority.
+
+* Conclusion and Onwards: decisions with refusal controls
+
+The design direction is metadata-led selection, bounded lexical interface
+binding, domain-owned merge/admission, and pure effective-value projection before
+explicit execution. Preserve NixOS's integration and diagnostic strengths.
+
+Before implementation claims, require these controls: relocated mount retains its
+provider binding; disabled required Redis names its dependent chain; incompatible
+port contributions name both sources; changing a Service/selector invalidates the
+right preview; an unused provider remains unread; parent resources cannot pass as
+child resources; required admission cannot be skipped by laziness. A source-demand
+cycle should report its phase/path, while legal deferred relationships need an
+explicit separate evaluator policy. These controls define falsifiable progress;
+they are not a claim that this research has run them.
+

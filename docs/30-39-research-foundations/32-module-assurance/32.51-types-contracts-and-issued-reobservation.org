@@ -1,0 +1,276 @@
+#+title: 32.51 Types, Contracts And Authenticated Reobservation
+#+language: en
+#+startup: overview
+
+Revision qualification: [[file:32.54-current-poo-feature-alignment.org][32.54]] records the newer upstream PR head and
+separates the partial adoption below from qualification against that revision.
+
+Retention follow-up: [[file:32.52-demanded-read-graph-retention.org][32.52]] separates record-identity sharing from receiver
+identity, with LeanPoo/QNT bounds and real Scenario cold/warm measurements.
+
+* Refactor the boundary, not just the dependency revision
+
+[[file:32.50-issued-roots-and-object-system-direction.org][32.50]] restored original issued-read graphs. This step integrates that protection
+with the newer object system and removes repeated domain classification code.
+Functional configuration is the default authoring surface; object inheritance
+is exposed when retaining/extending a maintained Profile is the actual intent.
+
+The concrete ownership split is:
+
+| Concern | Owner |
+|---------+-------|
+| Field Types, structural errors and Function normalization | Native Types / ObjectContract |
+| Pure whole-value domain relations | Native =refine= and named diagnostic functions |
+| Contextual child obligations and independent contributions | Core admission protocol |
+| Source locations, currentness and publication subject identity | Source admission / publication |
+| Final plan values | Effective Scenario receiver, never a captured parent plan |
+
+These are semantic boundaries, not five new user wrappers. Ordinary configuration
+still contains values. A domain author should not construct a success receipt
+for every structurally checked object or introduce a new configuration DSL.
+
+* Native value checks replace domain classification plumbing
+
+PostgreSQL declares its native value Contract once. Its contextual adapter no
+longer repeats an always-successful =.classify= lambda:
+
+#+begin_src scheme
+(def PostgreSQLValueContract
+  (.cc ObjectContract. identity: 'postgresql/config-value
+    responsibilities:
+    (.o settings: (.cc ObjectContract. responsibilities: (.o port: Port))
+        allowed-ports: (List Port))))
+(define-type (PostgreSQLConfigContract @ YuanxuContract.)
+  identity: 'postgresql/config
+  value-contract: PostgreSQLValueContract)
+#+end_src
+
+Gitea's connection/plan relations are now a named native diagnostic function
+composed with its native ObjectContract, rather than a domain-owned receipt
+factory:
+
+#+begin_src scheme
+value-contract:
+(application-value-contract (.get database-contract value-contract) port-type)
+#+end_src
+
+The private constructor composes native ObjectContract values and =refine= in
+an ordinary function. It does not require a second parameterized prototype
+family, a captured type directory or finite inference for these fixed fields.
+=application-issues= remains the named relation passed to =refine= inside that
+constructor. The public Application admission descriptor remains extensible.
+
+=application-issues= consumes =(candidate location)=. Its diagnostic and related
+expected paths are relative to that location. It still rejects mismatched
+client/server ports and a plan whose configuration identity or port values do
+not describe the final checked Config. Independently published allowed-port
+requirements remain in =.contribution-obligations=; structural success cannot
+stand in for either contributor's requirement.
+
+Core projects an already validated native value into its existing receipt
+protocol with one default implementation:
+
+#+begin_src scheme
+.classify: (cut yuanxu-classification-evidence identity <> #t '() <>)
+#+end_src
+
+The inherited producer validates =value-contract= before this classification,
+then executes contextual child obligations and contribution policy. Existing
+nontrivial classifiers retain their override semantics. The default does not
+authenticate sources, authorize effects or replace contextual admission.
+
+Scope inspection uses the existing native higher-order predicate rather than
+repeating =object?= / field loops or forcing payloads:
+
+#+begin_src scheme
+(def PostgreSQLScopeContract
+  (yuanxu-predicate-contract 'postgresql/scope
+    (o?/slots '(config document))))
+#+end_src
+
+The predicate-Contract constructor defaults to the kernel's empty obligations;
+an actual contextual policy remains an explicit third argument. Five Scope
+declarations no longer repeat empty callbacks. This is an ordinary optional
+function parameter and native predicate composition, not a new macro or DSL.
+
+* Recognition and normalization must not be conflated
+
+=SourceAdmissionContract.= composes the domain demand guard with the native
+whole-value diagnosis on the effective descriptor:
+
+#+begin_src scheme
+prepared-preflight:
+(diagnostic-then .preflight
+  (if value-contract (cut diagnose value-contract <> <>)
+    (lambda (_candidate _path) '())))
+#+end_src
+
+The composition is receiver-local and lazy. It caches a function, never an
+acceptance verdict. The demand guard prevents an invalid PostgreSQL value from
+forcing Gitea's dependent default. Native diagnosis then reports shape and
+refinement errors. Recognition does not normalize; on success the inherited
+producer still performs the single root validation. Its child receipts must
+refer to that root's exact checked children.
+
+Do NOT expose a shape-only =.diagnose= on the contextual Core Contract itself.
+Native =as-value-contract= would treat it as a complete diagnostic Type and
+could skip its contextual obligations. The native value descriptor remains
+explicitly separate from the contextual admission descriptor. A regression
+uses a rejecting child admission Contract as an ObjectContract field Type:
+native validation must still reject it. This boundary is more important than
+removing another descriptor or a few lines.
+
+Demand ordering is real domain knowledge. The existing Gitea preflight stages
+are retained; they are not a second source-leaf catalogue. Their field Types
+come from the same native descriptors, while MOP observations discover actual
+source demands. No successful currentness result is shared across callbacks.
+
+* New warm Type paths must retain the original protection
+
+The existing =feat/positive-closure-costs= branch advanced from the reviewed
+=b8f487d= to =c50c730e185b3230b0a6dbb0c1621fa5212df8c9=. That revision includes
+warm Type-catalog dependency reobservation. Merely applying the older mint
+protection would leave this newer path outside its selected receiver frame.
+Another session then published =41cde0f9aa75f7653795cef47b5d010871cd3ef9=.
+The integration commit was replayed after it without conflicts or force-pushing,
+preserving its complete signature-field capture changes. The resulting commit is
+=46d1b9322d5464c2224dc32a7334fae121a0cb72= on the existing branch, published in
+[[https://github.com/tao3k/gerbil-poo/pull/13][PR 13]]. No new feature branch was published.
+
+The integration moves replay/reobservation authority into =object.ss=:
+
+1. Authenticate the complete selected dependency graph before consumer calls.
+2. Derive receiver protection from those actual issued records, including
+   transient misses outside the read cache.
+3. Keep work and original-record delivery inside the same private replay frame.
+4. Reauthenticate and check currentness before successful return.
+5. Restore dynamic frames on normal and exceptional exits.
+
+=slot-observation.ss= transports observations; it cannot authenticate arbitrary
+checker closures. =optional-validation.ss= and the public MOP use the same
+object-engine bindings. The common helper is not publicly exported. No new
+issuer, compatibility layer, purity flag or user-maintained evidence is added.
+
+Native controls cover forged tokens, borrowed/replaced birth closures, modified
+checker payloads, metadata routes, transient miss GC and original identity
+delivery. Supported writes from both the work callback and the observation
+callback must refuse before changing the selected receiver. Reflection, FFI,
+private-runtime replacement and concurrent external writes retain their
+previous explicit limits; this is not a sandbox or effect rollback protocol.
+
+* Failures that the integration gate must retain
+
+The first common-helper implementation authenticated roots but constructed its
+traversal in the internal definition group before collection completed. Native
+controls caught the resulting empty currentness/delivery pass: expected
+refusals returned void. The traversal now uses an explicit =let= AFTER collection.
+No assertion or authenticity check was removed to make that run pass.
+
+The old reobservation test expected post-write staleness. The integrated frame
+now rejects the supported write BEFORE mutation; the test checks that exact
+diagnostic, the unchanged field value and unchanged object revision. The older
+failed receipt remains a failure rather than being relabelled as acceptance.
+
+* Formal correspondence
+
+Existing =IssuedRootForwarding= proves that identity deduplication retains roots
+and their dependency closure; it does not turn a foreign token into an issued
+one. Existing =ReplayOwnership= supplies selected/ancestor write refusal,
+parent isolation and nested-frame restoration.
+
+The latter now includes =delivery_write_refused=. Its premise explicitly keeps
+delivery/work in the selected frame. The matched =dropDelivery= QNT variant
+violates pre-write refusal when that boundary is removed. The model retains
+both independent requirements, final child plan ownership, parent cache
+isolation and unselected-branch controls. The raw-write counterexample is still
+expected; these models do not prove reflective stores enter native guards.
+
+Native running controls establish the concrete entry coverage. Lean/QNT do not
+prove the compiler, the private registry implementation or filesystem atomicity.
+No performance improvement follows from declaration simplification or these
+finite safety models. Full graph retention from 32.50 remains a cost to qualify.
+The added native recognition stage also has work cost; one root normalization
+does not mean one field observation. Do not remove native Type overrides or
+contextual checks to manufacture a lower count.
+
+* Qualification and dependency publication
+
+Use the installed, unmodified Gerbil. Build/test outputs live in an owned
+temporary dependency environment, selected through normal =GERBIL_LOADPATH=.
+The existing Core qualification recipes now preserve that dependency path;
+they do not replace the runtime or intercept its Loader. The dirty installed
+dependency and unrelated Core/index edits remain untouched.
+
+The target gates are native issuance/Type/Contract regressions, Core native
+Contract projection, source/child admission, complete CLOS consumers and the
+real Gitea/PostgreSQL persistent Scenario. Final receipts and the published
+dependency revision are recorded only after those gates complete.
+
+** Source and publication receipts
+
+The integrated native revision is
+=46d1b9322d5464c2224dc32a7334fae121a0cb72=. A normal fast-forward push to the
+existing =feat/positive-closure-costs= branch preserved =41cde0f= and all its
+ancestors. The exact-head [[https://github.com/tao3k/gerbil-poo/actions/runs/39545834458][Native Scheme CI run]] completed 42 successful checks;
+no pending or failed checks remained at the recorded query.
+
+The installed dependency's dirty =object.ss=, =slot-observation.ss=, =mop.ss=
+and =read-route.ss= hashes still match the pre-integration cut. They were not
+reset, installed over or committed. Tests used the published revision's owned
+compiled library via the normal load path, with the same installed Gerbil.
+The Core and parent-package =gerbil.pkg= pins now name =46d1b93=; this is not a
+claim that a concurrent dirty package installation was silently updated.
+
+Native =just test= completed all 122 compiled modules, 122 suites and 1,115
+successful cases, with final =OK=, no error/overflow marker and natural exit 0.
+The earlier 12-module / 147-case focused cut is retained separately from this
+full integrated result.
+
+The first Core integration control caught lexical shadowing in a test-created
+=path:= slot; its callback now calls the outer argument =location=. The actual
+Gitea diagnostic function already uses that naming. The failing receipt is not
+reported as a native MOP defect or silently discarded.
+
+A Core compile under concurrent compiler load reached the existing 120-second
+deadline at the final unit. That run remains exit 124. The same 47-unit source
+closure then compiled successfully under the unchanged fence, and was compiled
+again after the final default-argument cleanup. No timeout or assertion was
+weakened; there is no cold/hot performance claim from these contended runs.
+
+Lean's integrated root passed 193 build tasks, including the new required
+=delivery_write_refused= theorem and the 6,625-declaration model-shape/standard-
+axiom audit. Final-source QNT/TLC checks passed all 11 =ReplayOwnership= controls
+and all 7 =IssuedRootForwarding= controls, including genuine negative and
+acceptance witnesses. These receipts bind the final Core dependency pin and
+source cut; they do not prove automatic runtime extraction.
+
+** Final Core consumer receipts
+
+All nine modules below passed against =46d1b93= after the final pin/default
+cleanup, using the final 47-unit compiled Core closure. Each has =MODULE-OK=,
+=HARNESS-OK=, final =OK=, no error/overflow marker and natural exit 0. The
+compiled input manifest still matched all 47 sources after the runs.
+
+| Core test module | Cases | Protected boundary |
+|------------------+-------+--------------------|
+| =contract-diagnostics= | 6 | Lazy metadata predicates, one root normalization, native refinements, child obligations, warm parent/child Contracts and malformed callbacks |
+| =issued-root-forwarding= | 5 | Original token identities, forged-read refusal, ancestor policy and failed-action support |
+| =source-admission= | 6 | Inherited admission once, nested observations, callback effects and return currentness |
+| =root-child-admission= | 1 multi-control fixture | Both requirements, 55/55 observations, parent isolation and independent source refusal |
+| =poo-clos-dispatch= | 19 | Current CLOS/native MOP consumers and complete trace invalidation |
+| =gitea-postgresql-publication= | 11 | JSON/field origins, final ports, mismatches, stale plans, changed source and unselected branches |
+| =persistent-selected-head= | 2 | Real domain admission, restart recovery, stale-token refusal and conflicting requirements |
+| =mop-replay-write-guard= | 7 | Selected/ancestor pre-write refusal, nested/exceptional restoration, misses and explicit raw bypass |
+| =issuer-projection= | 4 | Actual private association projection; 12 original native observations |
+
+The persistent store remains the existing qualification adapter, not a new
+production database service. It commits an admitted immutable snapshot; source
+changes after that snapshot still require fresh admission for a live-source
+publication. There is no claim of atomic Nix/provider effects or raw-reflection
+isolation. The remaining optimization-specific weak-retention suites from 32.50
+are not promoted to passing evidence or silently removed.
+
+This qualifies the migrated type/admission boundary and the real Scenario,
+not every Core module or unrestricted Type inference. Further migrations must
+keep the same separation of native value semantics, contextual obligations and
+source/effect authority instead of wrapping every field in another framework.

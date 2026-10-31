@@ -1,0 +1,150 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Published Module Source Roles
+#+date: [2026-10-16]
+#+property: STATUS target-source-contract-not-yet-enforced
+
+* Standard source Contract
+
+The [[file:06-directory-windows-and-context-args.org][directory-window and shared-arguments design]] applies this same shell to
+Scenarios selected as independently published directory owners. A mount named
+scenarios does not exempt its children from role admission. Ordinary nested
+Scenario/Profile values do not each require their own directory. Package-backed
+built-ins and uniform contextual role injection remain proposed integration.
+
+The target shell for an independently published reusable Module has four required
+roles, an optional algorithm role and an optional build-publication role. This is a shared Module System design,
+not a Agentic AI Lab-specific configuration language rule.
+
+#+begin_example
+<namespace>/<module>/
+  types.ss       # required: Types/Contracts and public invariants
+  objects.ss     # required: reusable objects/prototypes/receiver behavior
+  config.ss     # required: configuration and default objects
+  interface.ss   # required: assemble/publish the detailed Module object
+  func.ss        # optional: named pure algorithms when actually needed
+  build.ss       # optional: phase-isolated build contribution, published as Build
+#+end_example
+
+Contracts live with Types; configs consumes them. interface may define a thin
+native Module assembly object referring to these owners. It must not contain
+business algorithms, source scans or hidden runtime activation. Object defaults
+and configured selections have distinct owners; do not independently repeat the
+same default. Reuse schema-generated Contract bindings rather than copying fields.
+
+An absent configuration vocabulary must have an explicit closed no-options
+Contract, not an unexplained empty file. Before creating a four-file wrapper with
+no meaningful responsibility, consider whether it is a compilation unit inside an
+existing Module. Ordinary values, functions, Profiles and Scenarios do not each
+become independently published Modules.
+
+* Source direction and publication
+
+Roles define ownership and an acyclic dependency graph, not one compulsory
+evaluation order. Pure func may depend on types; reusable objects may bind func
+procedures; configs imports only needed defaults/Types; interface joins the role
+owners. Unneeded edges are omitted. Lower roles cannot import the assembled interface to
+retrieve their own definitions. Existing third-party/Core implementation owners
+may be referenced directly; a function does not need a new wrapper merely to fit
+a role file.
+
+Publish one closed public Module object or explicitly declared additional values.
+Do not require flat re-export of every private role binding. Do not reconstruct
+Module metadata in init, source registration and build scripts. A native core
+slot grouping, if adopted, maps to the existing Module descriptor authority once;
+it does not create a second parallel descriptor model.
+
+* Declarative interface and generated wrapper
+
+The target author-facing interface is one native Module declaration. core.exports
+is its public scope; it is not a request to re-export every private role binding.
+Source preparation generates the role imports and Gerbil compilation-unit export
+from that declaration. Do not require authors to repeat (export ModuleName), a
+link factory or ordinary source build entries. Existing role checkers requiring
+manual re-exports must migrate together with this wrapper protocol.
+
+The [[file:../../docs/10-19-design/11-configuration-languages/11.23-source-ref-to-admitted-scope.org][concrete interface and lowering design]] separates discovery/source preparation,
+hygienic syntax lowering and dependency admission. Macro expansion consumes an
+already resolved syntax graph; it performs no filesystem discovery or activation.
+Generated compiler exports remain necessary even though authors do not write them.
+This is pending design, not current yuanxu-load-modules behavior.
+
+* Public config/types and function slots
+
+The [[file:../../docs/10-19-design/11-configuration-languages/11.31-module-config-types-and-function-slots.org][config/types/function-slot design]] publishes values and native Contracts through
+one admitted Module scope. types.ss owns the Contract, config.ss owns its actual
+default and func.ss owns algorithms. interface.ss binds them once, inheriting an
+objects.ss prototype only where real reuse warrants it. Do not add a forwarding
+prototype for each exported function or duplicate config/type fields in core and
+exports. A generated compiler wrapper does not invent another field registry.
+
+The config/types paths are normal native slots; actual import/discovery/selection
+admission is still separate. Namespace access cannot bypass dependency/disable
+policy, and a shared view does not justify eagerly loading all module Types.
+
+* Admission is more than checking file names
+
+Source resolution records the requested directory and regular role files without
+initializing every Module. Source-role admission then checks ownership, direction,
+public association and required real content. The interpreter/compiler's ordinary
+import graph supplies phase information; arbitrary source computation cannot be
+assumed statically knowable. Generated metadata must retain generation/source
+identity and cannot become a second handwritten catalog.
+
+This is a target for published Modules, not an already enforced rule for every
+Core compilation unit. Existing config/funs roles and consumer checkers must
+migrate in a coordinated implementation. Do not create empty compatibility files
+or enforce a half-migrated checker. No current files are renamed by this design.
+
+* Conclusion
+
+The shell supports stable Agent/maintainer navigation at ecosystem scale. Its
+benefit must be evaluated through wrong-role edits, repeated definitions, source
+admission quality and bounded selected work. Four files alone establish neither
+correctness nor runtime performance. Public configuration should remain small.
+
+* Implemented optional build role
+
+The Core directory source adapter now admits build.ss, retains its presence or
+absence in currentness, and supplies a lazy hygienic Build identifier to the
+interface. Only the selected build-publication phase may force it. Ordinary
+runtime/config roles do not import or evaluate it; it is not an ordinary runtime
+compiler root. Root init remains above all Module roles. See
+[[file:../../docs/10-19-design/11-configuration-languages/11.57-module-build-role-and-final-admission.org][chapter 56]] for implementation and native controls; product Loader integration
+remains separate from this source/build protocol.
+
+* Implemented Config role defaults
+
+Admitted config.ss uses a native POO prelude and automatically exports Config
+when that binding exists after native expansion. Private helpers remain private;
+explicit extension imports override weak prelude bindings. Interpreter and
+compiler projections retain the original body/source observations. See
+[[file:../../docs/10-19-design/11-configuration-languages/11.58-config-role-native-defaults.org][the config-role implementation boundary]]. This does not require build.ss in
+consumer Modules or implement cross-owner build/config injection.
+
+* Upstream configuration-build contributions
+
+A Core may publish configuration-build as a lazy Build-role value. The selected
+build graph associates it with a direct consumer's conventional Config through
+that consumer's existing requires edge. It reuses external-package admission,
+source preparation and final domain admission. Consumer Modules do not copy
+build.ss or root-selection logic. The [[file:../../docs/10-19-design/11-configuration-languages/11.59-upstream-configuration-builds.org][implemented association protocol]] separates
+producer ownership, final configuration ownership and consumer-qualified outputs.
+Runtime exports are not linked to perform that association.
+
+** Function definitions and Module API publication are distinct roles
+
+func.ss owns named pure algorithms and explicit, clearly named runtime adapters.
+Its Gerbil exports make bindings available to higher source roles; they do not
+implicitly publish every helper to users. The existing source-role wrapper owns
+discovery/import mechanics and does not call exported functions during loading.
+
+interface.ss explicitly selects those bindings as native Module scope slots and
+its scope Contract checks the declared API. Consumers obtain the admitted scope
+through the Loader and use native use-module/with-slots. This is one publication
+path with two responsibilities, not two user-facing APIs. Do not add a funcs
+registry/container or a macro DSL just to forward function names. objects.ss
+owns inert native objects and thin receiver methods that delegate to the same
+named algorithms/adapters. Keep stateful service lifecycle separate from a
+one-shot process runner.

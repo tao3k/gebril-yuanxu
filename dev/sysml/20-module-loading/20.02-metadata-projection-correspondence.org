@@ -1,0 +1,293 @@
+#+title: 20.02 Metadata Projection and Delayed Role Binding Correspondence
+#+filetags: :sysml:modules:lean:quint:correspondence:
+
+* Decision
+
+This work qualifies a small source-to-object boundary before changing the
+production Loader. It does not rerun the known failing 10000-module workload,
+change its two-GiB budget, or delete support from an already constructed read
+graph. The intended saving is to avoid constructing implementation roles during
+metadata selection, while retaining every dependency and observer event when a
+role is actually demanded.
+
+Use the existing native Module, declaration, role layout, source preparation,
+POO slots, selected graph, and admission protocol. There is no second public
+Module model, Builder, publication protocol, author purity flag, or cache of
+successful admission decisions.
+
+* Versions and proof ownership
+
+| Owner | Fixed revision | Responsibility |
+|-------+----------------+----------------|
+| gerbil-poo PR 13 | =40c61fe6afc8313f297599da0e511f96e3a23dcf= | Actual receiver-local values, issued reads and replay |
+| LeanPoo PR 13 | =5d4587a30e2333fc5f935dac6163aa56ff16a2dc= | Closed construction, typed factories, exact-context data and contract consequences |
+| Core | =lakefile.lean= and =lake-manifest.json= pin the same LeanPoo revision | Model, source/runtime controls and consumer regressions |
+
+The Lean dependency update uses =lake update LeanPoo=. It does not modify
+Gerbil, Gambit or gerbil-poo sources. The complete pre-change proof baseline
+passes at the new revision (203 jobs, 7152 audited declarations).
+
+[[file:../../proofs/lean/YuanxuProof/ModuleSystem/Loading/MetadataProjection.lean][MetadataProjection.lean]]
+uses these dependency APIs directly:
+
+- =ConstructionCache.Cache.retain=: share closed immutable construction state;
+  retain the original requested work order. This does not validate external files.
+- =Requirements.prepare=: retain original factories without constructing their
+  results; preserve the complete ordered capability family.
+- =ContextSlot=: a parent receiver is not a child cache hit. Source, object,
+  selection and phase revisions are part of the modeled semantic context.
+- =ContractConsequence=: strengthening analytic claims leaves factories intact.
+  The runtime Contract and return-time currentness still execute independently.
+
+Neither these theorems nor the QNT model authenticate a synthesized Scheme read.
+The runtime control only accepts records issued by the actual native MOP.
+
+* Source classification, not asserted purity
+
+The isolated decoder reads actual syntax using Gerbil's =core-read-module/sexp=.
+Its closed path accepts one direct Module declaration, literal identity and
+requirement targets, direct native Core objects, no inherited metadata, no
+duplicate keyword fields, and an empty Feature set. A native explicit self
+binder with an empty parent expression is allowed. Export names come from actual
+role export declarations; conflicting names are refused.
+
+Computed dependencies, inherited metadata, extra top forms and duplicate fields
+must not enter this path. The decoder refuses them without executing their
+expressions. A production implementation must delegate unsupported declarations
+to the existing guarded reader, retaining its cost and diagnostics. This isolated
+experiment implements refusal, not that production fallback. In particular it
+does not claim support for arbitrary macro-generated exports or Feature policies.
+
+Gerbil preserves the empty bracket expression as a reader form involving
+=@list=; it is not the runtime empty list. Treating it as such caused a retained
+negative run. The classifier now compares the actual reader representation.
+
+The declaration projection in Lean preserves dependency and source lists
+exactly. It proves body irrelevance for that first-order representation. The
+Scheme decoder and compiler are not verified by Lean: their correspondence is
+checked by the source controls below, within this closed grammar.
+
+* Delayed bindings and the actual declaration
+
+The fixture discovers role files with the existing role layout and uses the
+existing private source preparer and =module-prepared-source-binding=. Role
+values live in ordinary lazy native slots. An exported value tuple is created
+only for a demanded role; it is not an issued-read bundle or copied provenance.
+
+The actual Core =.def= declaration still owns its generated =link= function.
+The isolated syntax helper inserts native =with-slots= bindings only into value
+expressions. It keeps the Module declaration at module level and the =requires=
+objects literal, because the declaration macro checks those structures before
+expanding their payloads. =syntax/loc= is used for original value locations. The declaration control now
+inspects the actual production macro output before allowing ordinary expansion:
+the original =core= identifier context and both row/token source positions must
+match the source declaration. This checks emitted positions, not every later
+compiler diagnostic span.
+
+The helper is in =t/qualification/module-demand=, is imported through the normal
+test dependency closure, and is not a new public macro. Role files in this
+experiment have self-contained imports. General cross-role import rewriting,
+phase-aware export indexing and production fallback remain separate obligations.
+
+The initial experiment required an explicit outer self reference because the
+production declaration macro replaced the outer =core= row with an introduced
+identifier. The declaration fix retains the original row identifier and uses
+=syntax/loc row= for the replacement. The fixture now writes =(.get core link)=
+directly. Native =.def/ctx= still owns lexical slot binding and receiver-local
+caching; no lookup alias or second binding protocol is added.
+
+* Small correspondence control
+
+[[file:../../../t/module-demand-projection-test.ss][The default Just test]] uses
+actual role sources under [[file:../../../t/qualification/module-demand/sources/interface.ss][the interface fixture]].
+It compares parsed dependency targets with actual native Module fields, runs the
+existing =select-module-graph=, and counts actual =reader-body-expanded= events.
+Selection must add no role expansion and must leave role and scope slots cold.
+
+After explicit scope demand, a child refines =core.config.port= from 5432 to
+5433. The parent scope remains cached at 5432. The final native Contract checks
+that the child scope holds the exact effective Config and its current port,
+and that both independent port requirements allow it. A second requirement
+excluding 5433 must reject it. The unselected function role contains an error
+tripwire and must remain cold.
+
+Two hot observations must return the same nonempty original native issued
+records in the same order. Native replay must authenticate the complete reachable
+graph twice in the same order, without substituting a fabricated bundle. No test reconstructs records or suppresses observers. A source edit
+after parent and child cache population must still fail final =.admit=.
+
+The Database resolver value, its unused injected scope, the two allowed-port
+sets, and the role-binding syntax adapter are isolated fixtures. They do not
+replace the production Gitea/PostgreSQL contribution or publication protocol.
+The real Scenario regression must run separately through =just test-file=.
+
+* Temporal controls and limitations
+
+[[file:../../proofs/quint/ModuleDemand.qnt][ModuleDemand]] derives the closed-path
+choice from a declaration shape class, not a supplied Boolean. A matched fault
+misclassifies a computed declaration at selection. The finite model also retains
+controls for eager expansion, premature admission, dropped read edges, suppressed
+observers, stale sources, disabled dependencies, a missing second requirement,
+parent-cache contamination, and missing opaque fallback. A progress control
+ensures publication is reachable when every obligation holds.
+
+This finite machine does not prove arbitrary native graph termination, parser
+correctness, role purity, heap bytes or ten-thousand-module capacity. Those
+claims require their existing graph, issuer, source and resource gates. SysML
+allocates phases and responsibilities; its parsing remains unqualified.
+
+* Cost boundary and next production decision
+
+The experiment reads source bytes and scans literal role exports while preparing
+the source snapshot. Zero role expansion is not zero file I/O, zero metadata
+objects, or an asymptotic memory result. It also creates fresh private wrappers
+when a role is demanded. No timing advantage is inferred from these controls.
+
+Before production integration:
+
+1. Qualify the declaration hygiene fix and the real publication preflight
+   independently of the isolated metadata-selection path.
+2. Preserve one native Module and its selection/publication identities through
+   a source-owned metadata projection; do not turn fixture descriptors into a
+   competing registry or trust domain.
+3. Qualify dynamic dependencies, cross-role imports, Features, build/test roles,
+   unsupported exports and opaque fallback against real consumers.
+4. Preserve real declaration admission: =ModulePublicationContract= must validate
+   actual native Type descriptors for both dependency and scope contracts.
+   This legitimately demands Types. Structural selection remains role-free;
+   publication preflight must leave Config, Objects, Func and the export body
+   cold. Do not weaken descriptor checks to pretend that preflight has zero cost.
+5. Attribute retained bytes on a bounded sample: descriptors, shared source data,
+   roles, native records, Generic frames and compiler roots are distinct owners.
+6. Only then change the Loader and run the original two-GiB gate once. Keep the
+   earlier failure near 2000 completed modules and the all-business-scope workload
+   distinct from declaration-only acceptance.
+
+* Qualification receipt
+
+The integrated work preserves PR 19's concurrent build-product recovery change
+=0abf245c9e03156049e4514dcfa2508939a7ae5f= and its canonical-prefix follow-up
+=09dc269=. The default build, both Scheme regressions and the source-bound QNT
+receipt were rerun after that integration. The Lean source/dependency closure
+was unchanged. No production Loader, native MOP or
+compiler source is changed by this work.
+
+| Gate | Observed result |
+|------+-----------------|
+| Updated LeanPoo baseline | 203 jobs; 7152 Core declarations audited |
+| Complete proof build with this model | 204 jobs; 7302 Core declarations; standard axioms only |
+| Source-bound ModuleDemand QNT controls | 12 qualified cases, including matched counterexamples |
+| Default Core build | Passed on the integrated source |
+| Default =just test-file t/module-demand-projection-test.ss= | MODULE-OK, HARNESS-OK, final OK |
+| Real =just test-file t/gitea-postgresql-publication-test.ss= | 11 cases; MODULE-OK, HARNESS-OK, final OK |
+| Metadata selection | 0 added role expansions; disabled dependency and selected cycle refused |
+| Explicit scope/Contract demand | 5 actual role expansions across parent and child |
+| Parent/child values | Cached parent 5432; admitted child 5433 |
+| Hot observed root / full replay | 1 original root; 388 reachable visits; two ordered traversals agree |
+| Source support and obligations | Exact source rows retained; second requirement and changed source refused |
+| Unselected implementation | Function role remains cold |
+| Unsupported declaration shapes | Duplicate fields, computed dependency, extra top form and inherited metadata refused |
+
+One root is not one retained object. The 388-visit observation is a structural
+receipt for this fixture, not memory attribution or proof that all business
+scopes fit within two GiB. No dependency edge or observer delivery was removed.
+
+Retained local failures include invalid prototype syntax assumptions, loss of
+Module visibility under a whole-declaration lexical block, introduced outer
+=core= binding, noncanonical owner spelling, a serialized uninterned export
+identifier, and an undeclared extra scope field rejected by ObjectContract.
+The extra field was removed from the fixture; the Contract was not weakened.
+The generated-source control also required ordinary explicit empty-parent code
+and the maintained list-builder to preserve emitted keyword/value order. Raw
+logs and generated diagnostic source copies remain local artifacts, not Git
+content. These failures constrain the production integration; they are not
+relabeled as successful capacity tests.
+
+* Declaration hygiene and real preflight follow-up
+
+The production change is limited to =module-system/source/declaration.ss=.
+The lowered core payload replaces the value of the original row, preserving its
+identifier and location; it is no longer paired with a macro-introduced =core=.
+The production Loader, native MOP and Gerbil compiler are unchanged.
+
+#+begin_src scheme
+(syntax-case row ()
+  ((field-name _)
+   (with-syntax ((value core-value))
+     (syntax/loc row (field-name value)))))
+#+end_src
+
+The existing isolated fixture calls actual =admit-module-publication!= using a
+SourceRef for its actual interface path and the expected fixture owner, which
+is independently compared with the parsed declaration identity. It performs
+existing =module-source-admit-current!= checks around the call, because a
+SourceRef alone does not authenticate current bytes. The admitted candidate must
+retain the module identity. A mismatched source owner is refused. Subsequent
+scope admission still runs the native SourceAdmissionContract and both domain
+requirements, independently of publication shape admission.
+
+The existing private include helper uses Gerbil =core-expand1= on the real production
+=.def=, then compares the emitted binder with the original syntax context using
+=bound-identifier=?=. Both emitted row and identifier positions must equal the
+source =core:= token position. It emits original syntax through the same include frame for ordinary expansion;
+adding another inspection macro frame changed export marks and caused retained
+negative runs. This inspection is a test, not Loader logic. A same-named outer
+=core= sentinel also verifies that the native slot binding wins over a free
+outer value.
+
+Lean separates descriptor preflight from domain admission, retains both domain
+requirements and currentness, and continues to use LeanPoo ContextSlot for the
+parent/child boundary. QNT adds matched eager-preflight and invalid-descriptor
+controls. These are model/source correspondence checks, not a verified Gerbil
+macro expander or a capacity proof. Exact downstream diagnostic rendering,
+general role imports, Feature and opaque-reader integration remain to qualify.
+
+The real preflight is repeated on a hot declaration without another role
+expansion. An invalid scope descriptor is rejected by the existing publication
+Contract; source-owner mismatch is rejected by the existing admission protocol.
+Neither case activates Objects, Config or Func. The preflight does not reuse a
+domain admission verdict. Earlier qualification receipts above describe the
+initial fixture before the additional parent-Type preflight demand.
+
+** Final follow-up receipt
+
+| Gate | Observed result |
+|------+-----------------|
+| Default Core build | Passed with the declaration hygiene fix |
+| Complete Lean build | 204 jobs; 7338 audited declarations; standard axioms only |
+| Source-bound QNT | 14 qualified positive/matched-negative controls |
+| Default projection test | MODULE-OK, HARNESS-OK, final OK; no error markers |
+| Structural selection | 0 role expansions; disabled dependency and cycle refused |
+| Parent publication, then hot publication | 1 Type expansion total; scope and business roles cold |
+| Invalid derived publication | Rejected; one receiver-local dependency Type expansion; scope and business roles cold |
+| Parent/child scope demand plus preflights | 7 role expansions total, including the additional invalid-declaration control |
+| Final values | Parent cache remains 5432; child admission reads 5433 |
+| Original issued roots / ordered replay | 1 original root; 388 visits; both traversals agree |
+| Domain/source controls | Second requirement and changed source refused; Func remains cold |
+
+The seven expansions are three Types (parent, invalid derived declaration and
+child), two Configs and two Objects. They include more preflight work than the
+initial five-expansion receipt; no speedup is inferred by comparing these totals.
+A retained negative run expected no extra Type demand for the invalid derived
+declaration; its actual dependency-contract validation required its own Type.
+The corrected control asserts that demand explicitly and separately checks that
+all business roles remain cold. A source comment changed during another run was
+rejected with =compiler tool source changed; use a fresh reader=; final validation
+uses a frozen source set and freshly rebuilt tools.
+
+No production Loader, graph, observer, native issuer or admission implementation
+was changed. Real Scenario qualification is recorded separately below; the small
+closed-source fixture still does not prove general Loader fallback or capacity.
+
+The real Gitea/PostgreSQL publication regression also passes all 11 cases through
+the default Just entry: MODULE-OK, HARNESS-OK and final OK without error markers.
+It retains the actual source/publication mechanisms and contribution checks;
+the small projection fixture does not replace it. The SysML lifecycle now names
+publication preflight separately from role-free declaration projection, and its
+source is included in the QNT receipt. SysML parser qualification remains open.
+
+The existing module-publication regression also passes through the default
+Just entry with MODULE-OK, HARNESS-OK and final OK, without error markers. It
+exercises checked dependency scopes, normalized publication identity, source
+mutation guards, and open declaration callbacks. No assertion or timeout was
+relaxed. The known failing ten-thousand-module workload was not rerun.

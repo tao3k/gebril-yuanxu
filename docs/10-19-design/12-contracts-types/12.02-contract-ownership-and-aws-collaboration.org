@@ -1,0 +1,335 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 12.02 Contract Ownership and AWS Collaboration
+#+property: DOCUMENT_ID 12.02
+#+language: en
+#+property: STATUS source-reviewed-discussion-no-implementation-or-loader
+
+* Question and scope
+
+Why retain a Core Contract when Gerbil and gerbil-poo already provide checks?
+The answer must identify additional semantics, not merely a different name.
+Use Gerbil at language boundaries, gerbil-poo for extensible object/type
+mechanisms, Core for module admission and its context, and domain libraries for
+provider schemas and resource relationships. These are cooperating layers, not
+independent type universes. Source ownership need not become user-visible API
+fragmentation: the Module System can publish their composed capabilities.
+
+This is a design audit. No implementation, dependency lock, runtime Loader,
+existing design document, or remote branch is changed by this document.
+
+* Source and revision boundary
+
+Historical source snapshot below. The current source-level alignment is in
+[[file:12.14-object-contract-alignment.org][13 Object Contract alignment]]; do not treat this table's earlier PR capabilities
+or missing adapters as a description of that newer revision.
+
+| Source | Inspected version | What this review establishes |
+|--------+-------------------+------------------------------|
+| Core =types.ss= | Local Core HEAD =7595bed=; types.ss has no local diff at review | Current protocol and evidence behavior |
+| Installed gerbil-poo | =099b381588360a8a49fd772f666a1a00351366f5= | Existing Type, slot and Function mechanisms |
+| Reference corpus =.data/gerbil-poo= | =240695a7461ec2d7fbbad4b83cab86508ec9c748= | Reference only; not the installed dependency |
+| gerbil-poo [[https://github.com/tao3k/gerbil-poo/pull/13][PR 13]] | =54798ba86c6d3ec2b10dd4bd9c9fb6f4424fbd71= | New metadata, ContractFamily and joint-admission sources |
+| [[https://gerbil.tungo.org/guide/intro.html#Contracts][Gerbil guide: Contracts]] | Documentation inspected for this review | Interface checks, predicates, assertions and using |
+
+The PR source is ahead of the installed dependency. Source review is not a
+claim that Core imports it, its CI passes at this revision, or it has been
+qualified against Core. The PR can advance; this analysis names its exact head.
+
+* What is already upstream
+
+Gerbil's interface contracts and =using= support class/interface checks and
+predicate checks. An unchecked =:-= assertion is not admission. POO Type
+descriptors are not automatically Gerbil class/interface identifiers; a checked
+predicate can bridge a POO Type through its existing =element?= protocol without
+manufacturing a second object representation.
+
+Installed gerbil-poo =mop.ss= already owns =Type.=, =element?=, =validate=,
+slot validation, and =Function.= input/output checking. =Function.= membership
+alone checks =procedure?=; =.validate= supplies the actual invocation wrapper.
+Neither mechanism proves arbitrary higher-order behavior statically. Its source
+also records limitations involving tail calls, continuations and wrapper reuse.
+
+PR 13 adds concrete capabilities that must be considered before designing more:
+
+- [[https://github.com/tao3k/gerbil-poo/blob/54798ba86c6d3ec2b10dd4bd9c9fb6f4424fbd71/declarative-metadata.ss][declarative-metadata.ss]]: Predicate descriptors reuse Type; =typed= lifts an existing Type.
+  =Contract.= owns input, output, meaning and rule; =wrap/invoke= check calls.
+  =with-meaning= can share invariant checks under input/output/rule identity
+  guards. It still uses the current meaning and executor.
+- [[https://github.com/tao3k/gerbil-poo/blob/54798ba86c6d3ec2b10dd4bd9c9fb6f4424fbd71/contract-family.ss][contract-family.ss]]: Source., prepare and refresh construct selected checked
+  families from closed inputs. Descriptor reuse needs matching source/inputs;
+  wrapper reuse additionally needs identical execute. Current view remains an
+  invocation argument. Full support is checked before family preparation.
+- [[https://github.com/tao3k/gerbil-poo/blob/54798ba86c6d3ec2b10dd4bd9c9fb6f4424fbd71/doc/joint-admission.md][Joint admission]]: local endpoint checks and an independent whole-candidate
+  relation cooperate before guarded publication. Completeness, immutable inputs
+  and pure builders remain explicit premises.
+
+The PR's invocation Contract is not identical to Core's value-admission
+Contract. Reuse its predicate, check preparation and publication mechanisms
+where their semantics match; do not rename it and claim responsibilities,
+Schema traversal or Core provenance are already integrated. Family support
+must be the selected dependency closure, not every installed module. Cost
+selectors and source guards are not measured configuration startup improvements.
+
+* Inventory of current Core types.ss
+
+Every definition is assigned below. Names identify current code, not proposed
+new public names. "Upstream candidate" requires compatibility review against
+the PR above; it does not mean implementation is missing upstream everywhere.
+
+| Current definitions | Current role | Ownership decision to discuss |
+|---------------------+--------------+-------------------------------|
+| yuanxu-type-classify; YuanxuType.; yuanxu-type-element?; yuanxu-type-validate | Derive Type membership/validation from evidence-bearing classification | Keep upstream Type as foundation; classification/diagnostic adapter is generic upstream candidate; Core context policy stays Core |
+| yuanxu-contract-obligations; yuanxu-contract-empty-obligations | Dispatch pure obligations returning failure diagnostics | Generic object/value relation protocol is upstream candidate; concrete module obligations stay Core and AWS obligations stay AWS |
+| yuanxu-contract-admit; YuanxuContract.; yuanxu-contract-admit-evidence; yuanxu-contract-element?; yuanxu-contract-validate | Classification followed by obligations, receipt, boolean/throwing projections | Split generic value validation from context-bound module admission; do not duplicate upstream invocation Contract |
+| yuanxu-predicate-classifier; yuanxu-predicate-type; YuanxuPredicateType.; yuanxu-predicate-type-element?; yuanxu-predicate-contract | Predicate adaptation and unchanged-classifier boolean fast path | Reuse Gerbil predicates and upstream Type/PR Predicate; evidence adaptation only where needed |
+| yuanxu-responsibility-evidence; yuanxu-object-admit; YuanxuResponsibilityContract. | Validate declared slots, then obligations | Generic structural responsibilities belong with gerbil-poo object contracts; Core selects which module objects require admission |
+| yuanxu-prototype-classify; YuanxuObjectContract. | Require a specified proto in the candidate precedence list before responsibilities | Generic prototype test belongs gerbil-poo; make it an explicit policy separate from structural conformance; remove Native from target naming |
+| yuanxu-evidence-object?; yuanxu-type-identity? | Recognize receipt shape and identity vocabulary | Generic diagnostic envelope may be shared; Core identity vocabulary is not a universal POO Type restriction |
+| yuanxu-classification-evidence-element?; YuanxuClassificationEvidence; yuanxu-classification-evidence; yuanxu-classification-evidence?; yuanxu-classification-evidence-accepted?; yuanxu-classification-evidence->alist | Construct, recognize and project classification receipts | Separate reusable diagnostics from Core source/selection context; serialization stays an output projection |
+| yuanxu-validation-evidence-element?; YuanxuValidationEvidence; yuanxu-validation-evidence; yuanxu-validation-evidence?; yuanxu-validation-evidence-accepted?; yuanxu-validation-evidence->alist | Construct, recognize and project validation receipts | Same separation; Core must bind module admission to actual candidate/context/revisions |
+
+The current predicate fast path avoids classification receipt allocation for
+unchanged =.element?=; it is not permission to skip a refined classifier or
+contextual admission. A simple value check should not require Core receipts.
+
+Adjacent mechanisms also matter. =module-system/schema/slot-contracts.ss= already
+checks slot Types through =element?= and has required/metadata fields. Meanwhile
+responsibilities calls =yuanxu-contract-admit= for each field. Those paths must
+converge semantically rather than independently evolving field vocabularies.
+=modules/json-schema/json-schema-contract.ss= already builds a Contract from
+the normalization/validation machinery and preserves Schema diagnostic paths;
+it refuses unsupported/invalid schema artifacts. Reuse it, do not author a
+parallel AWS field checker.
+
+* Three independent questions
+
+** Responsibilities: what must the final object provide?
+
+The current map is a POO object from slot name to Contract. Admission reads the
+candidate's effective =.ref= for every declared responsibility. It does not
+inject defaults, create child objects or infer a prototype from a Contract.
+It currently expects each field descriptor to support =.admit=; arbitrary
+Gerbil predicates and POO Types do not automatically satisfy that protocol.
+
+The target adapter should accept existing Type constraints without requiring
+every primitive to acquire a Core-branded Contract. Its boolean, throwing and
+diagnostic projections must agree on membership. An upstream invocation
+Contract requires an explicit value-check adapter, not accidental duck typing.
+It must also distinguish =Function.= membership from invocation validation:
+admitting a procedure-valued slot does not by itself install its checked
+wrapper. Wrapper installation belongs at the declared callable boundary, with
+one authoritative input/output contract rather than stacked duplicate wrappers.
+
+Current responsibilities checks required entries but does not reject unknown
+candidate fields. Closed schema validation must own spelling rejection. An
+extension map or an explicitly refined schema can allow additional fields.
+Optionality, default injection and extra-field policy must be visible metadata,
+not guessed from whether a slot happens to evaluate successfully.
+
+** Prototype identity: where did behavior come from?
+
+Prototype ancestry is useful when a consumer requires inherited behavior, MOP
+invariants or a specific implementation family. It is not a substitute for
+checking values. Conversely, independently implemented objects can satisfy
+the same structural responsibilities without sharing a default prototype.
+
+The target distinguishes structural object conformance from an optional
+prototype requirement. A descriptor's =proto= can provide an initialization
+default without making ancestry compulsory. This is a design decision, not
+current behavior: the existing object Contract makes ancestry mandatory.
+Schema-generated data should not be rejected merely for lacking that ancestor.
+Contract association is not the same as prototype identity, and deriving a
+value does not by itself establish a source publication or valid receipt.
+
+Use =ObjectContract.= as the descriptive target name; its exact public API and
+upstream export remain unresolved. Do not silently rename the existing symbol
+or introduce an alias during this discussion-only change.
+
+** Evidence: what was checked, against which inputs?
+
+Current evidence carries candidate, context, descriptor identity, acceptance
+and diagnostics. Responsibility evidence is attached to the returned object.
+The validators check receipt shape and internal consistency. This does not
+authenticate its producer, prove complete child discovery, pin Schema versions,
+or establish cache freshness. The basic admission path does not check every
+same identity condition that object admission checks; unify that invariant.
+
+In particular, current code uses =equal?= for candidate/context consistency;
+this is not a demonstrated guarantee of exact object identity. Identity and
+revision requirements must be specified and tested, not inferred from a field
+named candidate. Context-free =element?= with context =#f= cannot establish a
+context-dependent resource relationship.
+
+Core admission must bind the effective receiver and selected graph to concrete
+descriptor/Schema/source generations and relevant dependency observations.
+Those are proposed requirements, not fields already enforced by all receipts.
+Expected contract violations become diagnostics; programming errors must retain
+their causes and must not be indiscriminately reported as ordinary bad config.
+An accepted configuration is neither a deployment authorization nor a promise
+that a provider will accept or successfully deploy it.
+
+* One AWS configuration, cooperating layers
+
+The AWS Module publishes reusable functions and provider-backed Contracts.
+An independent contribution publishes the following maintained Profile.
+The Module System associates its export with the Profile Contract and source;
+ordinary users do not repeat that association for every inherited object.
+This association remains an integration requirement, not a claim that all
+publication/derivation paths currently preserve it automatically.
+
+#+begin_src scheme
+;; Contribution objects/config: ordinary values; no deployment effect.
+(.def TeamAWSProfile
+  region: "us-east-1"
+  network:
+  (.o cidr_block: "10.1.0.0/16"
+      tags: (.o Name: "team-network" Owner: "platform"))
+  web:
+  (.o instance_type: "t3.small"
+      network-ref: 'network
+      tags: (.o Name: "team-web" Owner: "platform")))
+
+;; Full desired value: replace one slot, preserving other web slots.
+(.def (ProjectAWS @ TeamAWSProfile)
+  web: =>.+ (.o instance_type: "t3.medium"))
+
+;; Retain maintained tags and add one tag: refine that actual object.
+(.def (ProductionAWS @ ProjectAWS)
+  web: =>.+
+  (.o tags: =>.+ (.o Environment: "production")))
+#+end_src
+
+These examples use existing object and slot syntax, not a new configuration
+DSL or a Contract as the parent value. Nesting is shown to expose the exact
+objects being retained. User path assignment can shorten the same edit where
+qualified; this example does not depend on a new path API. A later upstream
+instance_type change is replaced; later upstream Owner or other tag defaults
+remain inherited. No original-value transformation is needed for the complete
+instance_type value.
+
+Contract composition at the library boundary is represented below. This is
+target design code: =ObjectContract.= and Type/Schema responsibility adaptation
+are NOT claimed current exports. The mapped Schema Contracts come from a
+locked provider schema through existing JSON Schema compilation, with an
+explicit POO-to-wire projection. No hand-maintained duplicate provider schema
+or fabricated provider resource field named network-ref is introduced.
+
+#+begin_src scheme
+;; ProviderVpcContract and ProviderInstanceContract are compiled constraints.
+;; NetworkProfileContract maps network data to provider fields.
+;; WebProfileContract checks instance data plus the local network-ref Type.
+(define-type (AWSProfileContract @ ObjectContract.)
+  identity: 'aws/profile
+  responsibilities:
+  (.o region: RegionType
+      network: NetworkProfileContract
+      web: WebProfileContract))
+#+end_src
+
+There is intentionally no =proto= ancestry requirement here: another valid
+contribution can satisfy the data contract. =RegionType= checks the supported
+region vocabulary/policy supplied by the library, not just =string?= and not a
+universal claim that any region is currently deployable. Cross-resource checks
+run on the same final Profile/Scenario view:
+
+The following smaller library obligation illustrates code expressible through
+the CURRENT Core protocol. It deliberately checks only the local reference in
+this one-Profile example; full region/account/provider relations are separate
+domain obligations. Structural field validation must precede this relation.
+The object classifier alone is not presented as the full AWS Profile Contract.
+
+#+begin_src scheme
+(def AWSLocalReferenceContract
+  (yuanxu-predicate-contract
+    'aws/local-network-reference
+    object?
+    (lambda (effective-profile _context)
+      (let* ((web-value (.ref effective-profile 'web))
+             (target-name (.ref web-value 'network-ref)))
+        (if (and (eq? target-name 'network)
+                 (.slot? effective-profile target-name)
+                 (object? (.ref effective-profile target-name)))
+          '()
+          (list (.o kind: 'unresolved-network-reference
+                    path: '(web network-ref)
+                    target: target-name)))))))
+
+;; Inside the admission coordinator, after successful field checks:
+;; effective-profile-value and selected-context-value are actual inputs.
+(def (admit-local-network-reference effective-profile-value selected-context-value)
+  (yuanxu-contract-admit AWSLocalReferenceContract
+                          effective-profile-value selected-context-value))
+#+end_src
+
+This returns existing validation evidence; it does not authenticate the source
+or publish a graph. The coordinator must retain all field and relation results
+against the same candidate. It cannot replace that conjunction with this one
+relation result. A missing field fails the prior structural step; the relation
+must not catch such programming/order errors and pretend they are reference
+mismatches. The native helper boundary can independently use
+=(using (value :~ object?) ...)= without creating another object representation.
+
+| Step | Input and consumer | Validation / retained observation |
+|------+--------------------+-----------------------------------|
+| Module selection | AWS contribution plus its required schema/compiler scope | Core resolves selected publication sources; unselected providers stay unloaded |
+| Field checks | Effective ProductionAWS values | Gerbil guards helper calls; POO Types and provider Schema Contracts check values and extra fields |
+| Relationship checks | Final web.network-ref and selected network | AWS obligation resolves 'network, checks existence, region/account policy and selected dependency membership |
+| Configuration admission | Final receiver plus all required field/relation results | Core binds actual context and observations; missing required child evidence refuses admission |
+| Resource preview | Same effective view | Render VPC fields and instance fields, map network-ref to a provider reference; do not reuse a parent resource list |
+| Execution | Explicit authorized consumer | Outside configuration admission; no network call is required by these configuration checks |
+
+A targeted preview of the example is:
+
+#+begin_example
+status: projected-unadmitted (until context-bound admission succeeds)
+region: us-east-1
+network.cidr_block: 10.1.0.0/16
+web.instance_type: t3.medium
+web.tags: { Name: team-web, Owner: platform, Environment: production }
+web.network-ref: network -> selected network (provider reference pending render)
+#+end_example
+
+After successful admission of that same view the status can be admitted-preview.
+An unknown =instnace_type= is rejected by the closed field schema; a missing
+=network-ref= target is rejected by the AWS relationship obligation. Both
+diagnostics should identify effective object path and originating contribution.
+Those source-aware diagnostics are integration requirements, not demonstrated
+output from a new test in this review.
+
+If the parent resource preview was already forced, a child must recompute or
+reuse only under a guard covering the effective receiver, relevant values,
+Schema/Contract revisions and selected dependency context. Upstream invariant
+check-template sharing can be reused; it does not authorize sharing a parent's
+resource result or admission evidence. Selected checks may demand fields, but
+admission must not traverse every published Profile. Required selected children
+cannot remain unchecked under the excuse of laziness.
+
+* Integration decisions before implementation
+
+1. Compare responsibilities and diagnostic needs against the exact upstream PR
+   APIs. Propose generic structural/value adapters upstream where absent; keep
+   module/source admission policy in Core. Do not transplant domain AWS rules.
+2. Specify structural versus ancestry-required object contracts independently.
+   Keep existing objects working through a deliberate migration, not a second
+   permanent contract hierarchy or forwarding layer.
+3. Specify one Type-to-responsibility adapter and narrow failure translation.
+   Reuse predicate/Function checks; avoid duplicate primitive validation and
+   unconditional receipt allocation at every helper call.
+4. Specify selected-child completeness, effective identity and generation guards
+   before claiming reusable admission. Validate both matching-input reuse and
+   negative controls for changed children, changed Schema and stale contexts.
+
+* Conclusion and design questions
+
+The gain is a maintained configuration library whose simple values remain
+simple, while reusable Profiles, independent implementations and whole-Scenario
+relationships remain expressible. That gain does not require Core to own all
+generic contracts. Upstream already implements more than the installed package
+exposes, and its invocation/family machinery should be reused where appropriate.
+
+The remaining questions are concrete: which structural adapters belong in the
+upstream API, which callers actually need ancestry rather than shape, and what
+observations make Core admission current? This review answers ownership and
+exposes those boundaries; it does not establish an integrated runtime, proof of
+complete discovery, provider deployment, or startup/performance result.

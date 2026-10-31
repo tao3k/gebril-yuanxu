@@ -1,0 +1,178 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.59 Config Languages 58: Upstream Construction over Final Consumer Config
+#+property: DOCUMENT_ID 11.59
+#+property: STATUS implemented-local-native-no-product-loader
+
+* Ownership and actual association
+
+An Infrastructure Module supplies deployment configuration. It does not duplicate
+OpenTofu's package adapter, Nix Source, or build.ss. A reusable upstream Module
+publishes core.configuration-build once. The existing selected Graph's
+core.requires edges associate that contribution with each consumer's conventional
+Config binding. This is an ordinary POO slot and the existing external-package
+Contract, not new syntax, a provider registry, runtime scope linking or a Loader.
+
+The generic association owns no OpenTofu-specific names. It indexes selected
+Core nodes once, then visits their declared dependency aliases. Only an actual
+incoming dependency forces a provider's configuration-build slot. Selecting a
+builder alone does not activate it. Two consumers receive two separately
+prepared requests. A request preserves build-owner, configuration-owner,
+dependency-alias and package-identity; its bounded artifact key hashes the producer /
+consumer / package tuple without filesystem separators. The tuple is retained
+as readable provenance; duplicate keys (including a hypothetical hash collision)
+reject rather than implicitly ordering or merging configurations.
+
+* Maintained upstream publisher
+
+The single publisher now lives in Core modules/opentofu/interface.ss. Its
+build.ss defines Build over the native outer module slot; objects.ss owns
+OpenTofuScope., and Config.source supplies the upstream native Nix Source.
+There is no generated tools/opentofu shell or flat import/export facade.
+See [[file:11.60-opentofu-single-module-publication.org][the formal publication and migration]]. The legacy source-shell examples have
+been removed from this chapter rather than retained as a second current entry.
+
+* Consumer files
+
+#+begin_src scheme
+;; project/init.ss -- the root selection; dependencies enter its same closure
+(yuanxu! mode: explicit source: "./modules"
+  :app (infrastructure))
+
+;; modules/app/infrastructure/types.ss
+(import (only-in :clan/poo/object object?)
+        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
+        (only-in :yuanxu/modules/opentofu/types OpenTofuScopeContract))
+(def Scope
+  (yuanxu-predicate-contract 'app/infrastructure/scope object?
+                             (lambda (_value _context) '())))
+(export Scope OpenTofuScopeContract)
+
+;; modules/app/infrastructure/objects.ss
+(import (only-in :clan/poo/object .o))
+(def Defaults (.o))
+(export Defaults)
+
+;; modules/app/infrastructure/config.ss -- AWS-only
+(def Config
+  (.o resource: (.o aws_security_group: (.o web: (.o name: "web")))))
+
+;; modules/app/infrastructure/interface.ss
+(.def Infrastructure
+  identity: 'app/infrastructure
+  core:
+  (.o requires: (.o Tofu: (.o module-id: 'opentofu contract: OpenTofuScopeContract))
+      scope-contract: Scope
+      exports: (.o config: Config))
+  features: (.o))
+#+end_src
+
+There is no build.ss or projections list in Infrastructure. The minimal objects
+role is present for the current admitted source-shell Contract; it is not another
+build factory. Config is exported by its role wrapper. Independent explicit
+imports in types/objects retain their ordinary native ownership.
+
+The next config revision adds a resource, without changing init, interface,
+upstream build code, or any Provider list:
+
+#+begin_src scheme
+(def Config
+  (.o resource:
+      (.o aws_security_group: (.o web: (.o name: "web"))
+          null_resource: (.o smoke: (.o triggers: (.o release: "smoke"))))))
+#+end_src
+
+The test intentionally checks configuration admission, not an apply-ready cloud
+account: credentials, remote state, region policy and Provider plan/apply remain
+external deployment concerns. Other ordinary provider/resource/data values use
+the same final-config association.
+
+* Selected graph and success boundary
+
+1. Root selection closes existing Module/Feature dependencies. A disabled
+   required builder rejects before any construction effect. Unselected Modules
+   are not imported or executed.
+2. The build graph prepares admitted source roles. For a dependency whose
+   upstream Core publishes configuration-build, it invokes that external
+   contribution with the consumer's root and prepared publication. Config
+   evaluation reuses the native role wrapper, includes related admitted roles,
+   and excludes build.ss / interface.ss from ordinary config evaluation.
+3. OpenTofu's .build-inputs sees the final Config value. It writes the existing
+   source-bound demand, while Nix applies demand to locked capabilities. AWS-only
+   includes AWS; adding Null includes AWS+Null. awscc is never realized merely
+   because it exists in the capability set.
+4. Each realized request returns its own native scope and lazy generated
+   configuration Contract. The existing writer forces its .admit result before
+   returning successfully. Invalid final fields reject with full domain paths.
+   Module scope-shape Contracts and this generated domain Contract are separate.
+5. Source currentness covers the upstream publisher's and consumer's declarations, consumer roles,
+   negative optional-role observations, generated demand and Nix dependencies.
+   Config changes reject held graphs/artifacts; new source sessions obtain new
+   requests and Contracts. A cached parent's value remains its own value.
+
+No Module loads the root init in reverse. This association does not recursively
+build a selection, link runtime exports, or inject realized artifacts into a
+product Loader. Build results expose the admitted scope through the existing
+build artifact object. Normal runtime scope publication remains separate.
+
+* Cost and limits
+
+The association index is linear in selected Core nodes and dependency edges;
+it does not enumerate every installed Module or compile every Provider type.
+The existing graph/prepared-publication and native Build slots own per-generation
+reuse. An upstream Build value is shared, but prepared consumer inputs and
+configuration Contracts are not shared across distinct consumers. No global
+currentness cache is introduced. Independent currentness still rechecks external
+Nix derivation identity; a cached value is not a validity assertion.
+
+Only direct Core requirement edges opt into this protocol. Feature decisions
+still determine the same selected graph, and existing Feature projections retain
+their own protocol. Transitive descendants do not implicitly inherit a direct
+configuration-build relationship. Multiple aliases producing the same consumer /
+provider / package tuple currently reject explicitly. Aggregate cross-consumer
+Provider builds and product Loader admission are not implemented here.
+
+* Executable qualification
+
+The source-based generic control is
+[[file:../../../t/module-configuration-build-test.ss][module-configuration-build-test.ss]]. It covers two consumers, one upstream Build
+evaluation, distinct final inputs/keys, normal scope access before/after build,
+consumer source rejection, unused builder laziness and disabled-dependency denial.
+
+The enclosing repository's
+[[file:../../../t/opentofu-selected-graph-test.ss][real OpenTofu graph control]] uses the maintained Core publisher and no consumer
+build.ss. It retains the real AWS 5.100.0 / Null 3.2.4 indexed artifacts, awscc
+exclusion, frozen Flake lock, final .admit, invalid-field paths, parent isolation,
+generated guards, source/indirect Nix changes and realization-time mutation
+rejection. These are default-runtime local controls, not remote CI or deployment.
+
+** Historical association result before formal publication
+
+At the preceding association-only revision, twelve focused default-runtime suites passed, including 18 named generic
+association assertions. Three serial final-source-stable locked-Flake rounds
+passed 73 assertions each (219 total). Every run required MODULE-OK, HARNESS-OK,
+final OK and no ERROR CASE/CHECK/HARNESS or heap/stack overflow marker.
+
+AWS-only performs one selected type read/compilation; AWS+Null performs two.
+Each build phase starts three owned Nix evaluation CLIs and one realization CLI.
+Five repeated cached accesses add zero Nix starts, type reads or compilations.
+Independent currentness starts one Nix evaluation CLI. These are fresh Scheme
+scopes over an existing store, not download-cold or deployment performance claims.
+The structured source-bound receipt is
+[[file:../../../t/fixtures/opentofu/upstream-configuration-build-control.json][upstream-configuration-build-control.json]] in the enclosing repository.
+
+The expanded regression exposed an existing tool-projection gap: native
+precompiled .ssi contexts were omitted by an .ss-only path test. The reader now
+reuses bootstrap's trusted-Core source mapping, still admitting only exact
+SDK-observed compiler contexts. Its byte guards and identity checks remain in
+force. Publication tests retain exactly four domain roles while accounting for
+actual tool roots separately; the generated spec must cover the entire graph.
+A separate source-only reader qualifier requires its staged environment; an
+unconfigured invocation failed setup and is not counted as a passing gate here.
+
+The final Config is the captured native object in this build source epoch:
+the same value supplies demand projection and final domain admission. It is not
+a claim that independently evaluating effectful configuration yields the same
+object, or that the product runtime's scope has been linked/injected. Configuration
+values follow the project's pure/functional authoring rule; runtime effects
+remain explicit handoffs.

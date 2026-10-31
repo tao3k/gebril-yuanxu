@@ -1,0 +1,98 @@
+#+title: 12.27.06 Final Derivation Publication
+#+property: DOCUMENT_ID 12.27.06
+#+language: en
+#+property: STATUS retained-evidence
+
+* AWS final-derivation publication
+
+The implementation now connects the existing NixFlakeSource and OpenTofu Build
+publication. A zero-argument Flake Source consumes a *package* attribute through
+=nix path-info --derivation=; parameterized function exports retain =nix eval
+--apply=. The former uses Nix's native derived-path cursor and prints the
+derivation identity without realizing its outputs. Realization remains the
+existing, explicit =nix-store --realise= operation. There is no Scheme result
+cache, new evaluator service, alternate Graph or alternate publication protocol.
+
+The maintained OpenTofu configuration may name =selection-input: 'selection=.
+Its existing Build projection then binds the already-generated directory
+containing =selection.json= as an explicit, non-flake data input. It does not
+serialize the demand into =--apply=. A NixFlakeSource retains these overrides in
+its ordinary =inputs= object, and its generated guard preserves the same input
+names and paths. Input paths are normalized without trailing directory
+separators: otherwise =path:/input= and =path:/input/= can produce different
+native cache identities for identical bytes. This was observed and repaired in
+the public Source/serialized-guard control.
+
+#+begin_src scheme
+;; Maintainer-side configuration; ordinary AWS users still only change values.
+(.def (Source @ NixFlakeSource.)
+  reference: package-reference
+  attribute: "packages.aarch64-darwin.default")
+(.def (Packages @ (.get OpenTofuScope. config))
+  source: Source
+  selection-input: 'selection)
+#+end_src
+
+The AWS integration publishes a bounded local Nix tree containing its catalog,
+version, provider-package definition, Schema producer and artifact collector.
+All imports inside that tree are relative. The existing immutable store-backed
+package set is resolved once during fixture setup and recorded as a locked
+non-flake input. Only the explicit selected demand is overridden during queries;
+no =<nixpkgs>= lookup or =--impure= evaluation occurs in the final derivation.
+The native lock is created once during setup, not silently rewritten by guards.
+Original maintained files copied into that publication also retain their Core
+source observations. This is an explicit test publication closure, not a claim
+that arbitrary mutable Nix expressions can be closed automatically.
+
+#+begin_src nix
+# Shape of the maintained final-package export; inputs are locked at publication.
+outputs = { self, nixpkgs, selection }:
+let
+  pkgs = import nixpkgs { system = "aarch64-darwin"; };
+  artifacts = import ./selected-provider-artifacts-flake.nix {
+    inherit pkgs;
+    schemas = import ./providers.nix { inherit pkgs; };
+  };
+in {
+  packages.aarch64-darwin.default = artifacts {
+    selection = builtins.readFile (selection + "/selection.json");
+  };
+}
+#+end_src
+
+Nix hashes the published root and explicit data input on every guard invocation.
+An unchanged fingerprint can reuse native evaluation; a changed transitive file
+or selected demand produces a different fingerprint. Core still checks its
+observed source bytes before and after effects, and compares the freshly
+obtained derivation identity with the prepared identity. Configuration admission
+does not reuse evidence simply because Nix's evaluation cache hits.
+
+The original AWS Case additionally creates an undeclared optional
+=profile-options.nix= inside the published tree, changing the final package's
+name. Its package-current guard must reject the old identity even though that
+file was absent from Scheme's observation list. Removing it restores the
+original package identity. The file is a negative-test injection; the
+=aws-final-package-evaluated= native trace is a test probe identifying actual
+evaluation, not a production policy or a timing-based cache claim. Existing
+Schema replacement, Contract/Context faults, old-evidence refusal,
+previous-value preservation and cleanup assertions remain unchanged.
+
+The first aggregate attempt at this revision failed the original 60-second
+Case watchdog during the parent Graph's native source import, before launching
+the AWS worker or making a Nix query. Its failure is retained; it cannot qualify
+the new AWS path or be attributed to Nix evaluation. Focused native controls
+have qualified the public Source, serialized input binding, external transitive
+invalidation and unchanged lock bytes after path normalization. Aggregate
+qualification and actual AWS evaluation/read counts must be recorded separately.
+
+The focused native control also adds an unrelated, unlocked input while retaining
+the explicit selection override. Nix rejects that query under
+=--no-update-lock-file= and leaves the lock unchanged. Explicit demand overrides
+therefore do not authorize unrelated dependency changes in this tested version.
+A subsequent aggregate attempt exposed a missing =pregexp-match= import in the
+new OpenTofu configuration check; the import now uses =:std/text/pregexp=.
+The next attempt reaches worker launch at 49.296 seconds but exhausts the
+unchanged parent Case deadline before AWS starts. Neither failure supplies AWS
+cache-hit, Schema-transition or end-to-end performance acceptance evidence.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

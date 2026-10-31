@@ -1,0 +1,244 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.25 Config Languages 24: Guestbook Field Discovery and User Diagnostics
+#+property: DOCUMENT_ID 11.25
+#+date: [2026-10-16]
+#+filetags: :config-language:guestbook:kcl:ux:diagnostics:design:
+#+property: STATUS proposed-ux-not-executed-no-loader
+
+* One matched task, not a comparison with provider internals
+
+Continue [[file:11.23-source-ref-to-admitted-scope.org][the init/interface/build chain]] and [[file:11.24-guestbook-effective-services.org][effective Guestbook Contracts]].
+The user changes only the frontend Pod environment label and external Service
+port. Keep the image, Redis Profiles, namespace and listener assumptions unchanged.
+Do not expose cache records, input evidence, provider contexts or resource rows in
+ordinary authoring, field discovery or default diagnostics.
+
+The inspected KCL baseline is konfig commit
+12025e8e250ca409006879126761c40e0eb0c0e0. Its actual
+[[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/examples/appops/guestbook/dev/main.k][development file]] changes only image, through a short frontend.Server instance.
+Its [[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/examples/appops/guestbook/dev/kcl.mod][entries]] combine base, environment input and renderer. The port/label example
+below is our proposed matched experiment using the inspected public fields, not
+a quotation of the upstream development file or an executed KCL result.
+
+* User source: same outcome, each library's actual field model
+
+KCL experiment, applied to the inspected Guestbook base:
+
+#+begin_src python
+import konfig.models.kube.frontend
+
+guestbookFrontend: frontend.Server {
+    podMetadata.labels.env = "dev"
+    services = [{
+        ports = [{port = 8080, targetPort = 80, protocol = "TCP"}]
+    }]
+}
+#+end_src
+
+Scheme target, applied to the published Guestbook baseline:
+
+#+begin_src scheme
+(.def (Development @ GuestbookDefaults)
+  frontend.labels.env: "dev"
+  frontend.services:
+  (list (.o ports:
+         (list (.o port: 8080 targetPort: 80 protocol: "TCP")))))
+#+end_src
+
+The base contains the other two Profiles on both sides. Neither user repeats
+Redis objects, Contracts or renderer internals. Each services assignment deliberately
+replaces the one-Service list, rather than adding another Service.
+
+Important semantic distinction: KCL ServerBackend obtains resource metadata from
+MetadataBuilder(config), whose labels are config.labels. Pod labels also use the
+application defaults and config.podMetadata. See the actual
+[[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/models/kube/backend/server_backend.k][backend]], [[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/models/kube/utils/metadata_builder.k][MetadataBuilder]],
+[[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/models/kube/frontend/server.k][Server fields]] and [[https://github.com/kcl-lang/konfig/blob/12025e8e250ca409006879126761c40e0eb0c0e0/models/kube/mixins/service_mixin.k][Service mixin]]. Thus labels.env alone is not an equivalent
+Pod-label edit. Scheme's bounded mapper currently uses Profile labels for Pod
+labels; it does not promise propagation to Deployment/Service metadata. Discovery
+must state this scope explicitly. A future general Kubernetes Module must decide
+whether to adopt the domain's explicit podMetadata/metadata split; do not call the
+shorter labels spelling an advantage if it hides a different behavior.
+
+The earlier V2 upstream-evolution experiment is separate. Do not compare its extra
+labels/replicas with an unchanged KCL baseline and attribute the difference to the
+languages. For execution, freeze equivalent effective defaults and environment
+options, then compare selected fields and documented intentional differences.
+
+* Field discovery is a Contract projection, not a second field catalog
+
+The editor/help/Agent consumer requests the frontend field view from the selected
+Guestbook scope. A proposed native describe procedure may expose this through the
+existing bounded use-module/with-slots binding pattern, but no new config syntax
+or command language is required. Its export/adapter is not yet implemented.
+Ordinary users need only the configuration block above.
+
+Discoverable information combines three authorities:
+
+1. The qualified JSON Schema artifact supplies allowed fields, representations,
+   requiredness and open/closed boundaries. Keep the full-root validator.
+2. The effective Profile supplies values/default origins. Schema default annotations
+   alone do not define POO operational defaults.
+3. The Scenario Contract supplies supported relationships and reserved values, with
+   a maintained explanation owned beside the actual obligation. Do not attempt to
+   infer arbitrary Scheme predicate meaning or reimplement it as a parallel rule
+   evaluator. Tests must keep that explanation consistent with its obligation.
+
+Proposed field-help output (illustrative; not produced by a running tool):
+
+#+begin_example
+frontend.labels.<key>
+  string; open map; affects Pod labels in this bounded Guestbook projection
+  set one key: frontend.labels.env: "dev"
+  retains other inherited label keys; replace frontend.labels to replace the map
+  reserved key: app.k8s.io/component must equal frontend.name
+
+frontend.services
+  one Service in this recipe; assignment replaces the complete list
+  ports: exactly one entry; protocol: TCP
+  port: integer 1..65535; external Service port, currently 80
+  targetPort: integer 1..65535; omitted => port
+  relationship: targetPort must equal frontend.mainContainer.ports[0].containerPort
+  current listener: 80; use port=8080,targetPort=80 for this task
+
+frontend.mainContainer.ports[0].containerPort
+  current: 80; constrained by this image recipe
+  changing this field does not configure the process inside the container
+#+end_example
+
+The field view may read the requested Profile and compile its selected Schema.
+It must not render resources, force sibling Profiles, scan all modules or load
+optional smoke code. Read relevant dependency facts such as frontend.name and the
+listener when explaining a relationship; do not claim zero demand. Display source
+locations only when preserved by declaration/schema tooling. Otherwise report
+origin unavailable, rather than reconstructing a fictitious source location.
+
+* Errors give the field, source, related value and a concrete correction
+
+The paths below use array indices for diagnostics, not a proposed Scheme index
+assignment syntax. For the Scheme block above, illustrative source locations refer
+to user/development.ss:2 for the label and :5 for the port record. These are example
+locations, not claims that such a file currently exists in this checkout.
+
+** Misspelled closed field
+
+If line 2 says frontend.lables.env instead:
+
+#+begin_example
+Unknown field: frontend.lables
+  at user/development.ss:2
+  allowed field: frontend.labels (string-valued map)
+  fix: frontend.labels.env: "dev"
+  field definition: published Guestbook Server Schema, properties.labels
+#+end_example
+
+By contrast, labels.envr is a valid custom key in an open label map. Do not reject
+it as a spelling error merely because env is familiar. An organization can publish
+a stricter label-key Contract; then diagnostics must name that actual requirement.
+Suggestions are bounded to known Schema fields and cannot silently change values.
+
+** Valid number, invalid relationship
+
+If line 5 says port: 8080 targetPort: 8080:
+
+#+begin_example
+Service target does not match the container listener.
+  field: frontend.services[0].ports[0].targetPort
+  actual: 8080
+  at: user/development.ss:5
+  related: frontend.mainContainer.ports[0].containerPort = 80
+  inherited from: FrontendProfile, contributions/guestbook/objects.ss
+  fix for this task: keep port=8080 and set targetPort=80
+  output affected: Service/frontend.spec.ports[0].targetPort
+#+end_example
+
+The origin is source metadata retained by the admitted publication, not another
+entry users write. With targetPort omitted, explain the fallback port -> targetPort
+and point to the actual port assignment, rather than inventing an absent-field span.
+Never suggest changing the container listener as a safe automatic repair.
+
+** Source resolution versus source conflict
+
+A discovery/why-value view should show that frontend.labels.env is local while
+other label keys and frontend listener are inherited. Distinguish ordinary override
+from a conflicting declaration. Different parent values resolved by a declared
+native prototype precedence are not automatically an error. Show the selected
+origin and shadowed origins, without replacing C4 with a new conflict engine.
+
+For two assignments to the same leaf in one local declaration, the proposed
+authoring policy reports both spans instead of silently depending on incidental
+syntax order:
+
+#+begin_example
+Two local assignments target frontend.labels.env.
+  "dev"  at user/development.ss:2
+  "prod" at user/development.ss:3
+  choose one value in this declaration
+  inherited defaults may still be overridden normally
+#+end_example
+
+This duplicate-local-write gate is proposed, not existing native POO behavior.
+A value computed by an arbitrary function may only have a function-definition/
+call-site origin; do not fabricate per-element provenance from the resulting data.
+Wrapper/path lowering must preserve original spans before same-prefix edits merge.
+
+* Preview explains the change without leaking internal bookkeeping
+
+Default user-facing preview expectation, not executed output:
+
+#+begin_example
+Development — configuration changes
+  frontend Pod label env: absent -> "dev"
+  frontend Service port: 80 -> 8080
+  frontend Service targetPort: 80 (unchanged; matches container listener)
+  Redis Leader/Follower endpoints: unchanged, TCP 6379
+  inherited label keys: retained
+
+Resource validation: pending in this design; no deployable plan published.
+#+end_example
+
+An eventual admitted resource preview must show the final 8080 -> 80 and matching
+selectors, with all output checks complete. It must not show an old warmed-parent
+plan as current. When an internal reuse attempt is stale, reproject from current
+configuration if permitted. If current output cannot be established, suppress the
+old preview and report: "Preview could not be refreshed for the current
+configuration." Do not ask an ordinary user to manufacture evidence, edit cache
+keys, clear caches or select a Provider internal mode to obtain correctness.
+Maintainer diagnostics may preserve the typed internal failure separately.
+
+* Reflection and overall next design decisions
+
+| Question | Answer for this matched task | Next falsifiable check |
+|----------+------------------------------+------------------------|
+| Is Scheme shorter or easier here? | Not established; it still exposes list construction and .o for new records. Native refinement is hidden for direct edits, which is useful but pending. | Give both blocks and field help to users/Agents; compare successful edits, corrections and ability to predict replacement versus retention. |
+| What does KCL already do well? | Published Server/Service models, short environment instances and a real backend/renderer. | Run the port/Pod-label experiment with its actual package/options; retain emitted resources and real errors rather than guessing error quality. |
+| What could be better in Agentic AI Lab? | One final-value/origin view across Profiles and concrete relationship errors, without exposing admission bookkeeping. | Reject a wrong targetPort with the correct input/output path and preserved upstream origin; preview the corrected final child after warming its parent. |
+| What is still weak? | Generic mismatch codes lack paths; field discovery and origin projection are not implemented; labels scope differs from KCL; full resource translation is incomplete. | Qualify these gaps before claiming ecosystem parity or a usability advantage. |
+| Why not just add a special port helper? | This edit is ordinary assignment. Another helper could hide list replacement or listener policy. | First test discovery and diagnostics. Add a maintained domain function only if repeated real operations require it; no new patch DSL. |
+| What if inference cannot recover an origin? | Say it is unavailable; retain the computation call site and qualified artifact instead. | Exercise macro lowering, function-generated values and missing source metadata without fabricated line numbers. |
+
+The next coherent revision is: establish label/metadata scope and replacement
+semantics; project discoverable fields from the existing Schema/native Contract;
+preserve spans through path lowering; add structured field/related-path diagnostics
+at obligation owners; then expose a simple current preview. Keep the user surface
+small while testing the internal projection/admission correspondence separately.
+After those controls, test cross-Profile composition and selected demand at scale.
+Neither more helper names nor a shorter example by itself establishes better UX.
+
+* Evidence boundary
+
+Inspected: pinned KCL user source, manifest entries, Server/Service fields, backend,
+MetadataBuilder and Service selector fallback. Existing Core JSON Schema/POO
+mechanisms remain reusable; their proposed renamed exports are not yet available.
+Unexecuted: the matched KCL experiment, Scheme path assignment, discovery/origin
+view, diagnostic rendering, duplicate-local-write gate and effective resource
+preview. No Loader, runtime implementation, cache integration or deployment was
+performed. The existing D2 diagrams remain linked from module 23 as ordinary Org
+file attachments and are not rewritten into another configuration authority.
+
+The [[file:11.26-schema-discovery-source-lowering-and-macro-governance.org][concrete Schema/source projection and macro governance design]] now defines
+bounded normalized-node discovery, original-syntax origin rows and diagnostic-path
+joining. It refines the illustrative line-level diagnostics above: exact nested
+field source spans are not assumed available for arbitrary computed Service lists.

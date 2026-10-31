@@ -1,0 +1,195 @@
+#+title: 32.36 Metadata Ownership And A Unified Write Boundary
+#+language: en
+#+startup: overview
+
+* Decision and scope
+
+[[file:32.35-replay-receiver-ownership.org][32.35]] implements receiver protection for the supported POO mutation protocol.
+This follow-up audits the other write capabilities and tests ONE ownership
+gateway in isolation. No producer or SDK mutation entry is changed here. The
+gateway is not advertised as an installed security barrier.
+
+The existing init/reader/link Loader already works. This task changes neither
+its selection nor loading behavior. Loaded objects already use the production
+replay entry when their consumers request it; module loading does not itself
+execute all admission or runtime effects.
+
+* Actual export and ownership audit
+
+The current compiled =clan/poo/object.ssi= exports 28 object-field setters,
+including checked and =&=-prefixed generated variants, plus eight slot-spec
+payload setters. This is an export-surface count, not 36 independent mutation
+protocols. The =export (except-out #t ...)= in =object.ss= excludes the private
+issuer and replay parameter but still exports those generated bindings.
+The executable negative case imports =object-%reads-set!= through the normal
+object module and successfully replaces/restores a live receiver's read table.
+The export audit and source cut are retained with the local verification artifacts.
+
+| Storage | Native owner | Escaping capability / necessary review |
+|---------+--------------+----------------------------------------|
+| Receiver fields, including supers, protocol and caches | Receiver | Generated normal/unchecked setters; runtime reflection on the receiver |
+| Read and instance HashTable wrappers and raw backends | Receiver(s) using that actual identity | Wrapper =ref/object= fields; raw hash/test/lock and table mutation |
+| Issued read payload, checker and birth fields | Issuing receiver and private issuer | Public getters retain raw aliases; reflected writes can restore their endpoints |
+| Revision, sealed state and weak dependent edges | Receiver; edges also refer to dependent receivers | State getter, exported sealed setter, =depend-on-state!=, callback-taking =invalidate-state!= |
+| Slot specifications | Potentially several derived receivers | Four transparent mutable payload structures; eight generated payload setters |
+| Layout cells and access-site caches | Receiver-local cells; access site owns cache binding | =slot-layout-put!=, =slot-cache-bind!=, reflected layout/vector aliases |
+| Persistent specification maps / shared shapes | Shared structural identity | Persistence of normal operations does not make every underlying alias immutable |
+
+The audit follows =object.ss=, =object-state.ss=, =slot-observation.ss=,
+=read-route.ss=, =slot-layout.ss=, =prototype-map.ss= and =io.ss= in the current
+installed producer. The generated export manifest is checked as well as source.
+Mutable specification payloads deserve a shared-owner or immutable-storage
+solution; a single caller-provided owner label would be unsound.
+
+SDK reference source explains why wrapping one reflective procedure is
+insufficient: =slot-set!=, class/cached mutator factories and unchecked setters
+reach unchecked structure stores, while the =struct-instance-init!= inliner
+emits =##unchecked-structure-set!= directly. Runtime negative tests independently
+establish the bypass; the =.data/gerbil= reference tree is not an SDK runtime
+dependency or proof that every installed compiler lowering is identical.
+
+* Isolation: derive association from genuine reads
+
+[[file:../../../t/qualification/mop-state/metadata-ownership.ss][metadata-ownership.ss]] walks the actual issued dependency graph by identity.
+It associates each receiver, read, state, existing read/instance wrapper and
+their backend identities with its receiver, without invoking an object getter.
+One target may have several owners; the implementation retains a list rather
+than overwriting the previous owner. Nested frames remain stacked and unwind
+with =parameterize=. A transient miss owns its actual read without entering the
+value or read cache. No caller supplies an ownership assertion.
+
+The gateway delegates to the EXISTING producer guard before a field write:
+
+#+begin_src scheme
+(def (metadata-set! target slot value)
+  (def found? #f)
+  (for-each
+    (lambda (owners)
+      (let (associated (hash-get owners target))
+        (when associated
+          (set! found? #t)
+          (for-each
+            (lambda (owner)
+              (check-object-edit owner (object-%state owner)))
+            associated))))
+    (metadata-frames))
+  (unless found? (error "unowned metadata write"))
+  (runtime.slot-set! target slot value))
+#+end_src
+
+This is a qualification-only adapter, not a new public DSL or user requirement.
+It tests pre-write refusal only. It does NOT yet implement allowed-write cache
+repair, all metadata allocation sites, shared specification/shape traversal,
+or authority to mutate unknown metadata. Unknown targets fail closed. Outside
+the frame the adapter also refuses; ordinary supported POO edits still work.
+No production caller is asked to use this test adapter.
+
+* Replacement/restoration results
+
+[[file:../../../t/mop-metadata-ownership-test.ss][mop-metadata-ownership-test.ss]] contains six native cases:
+
+1. Replacement through the gateway is refused before the first write or
+   replacement callback, for receiver, read/state, wrapper and backend targets.
+   The original field identity and final value remain unchanged.
+2. An unassociated target cannot grant itself ownership.
+3. Nested calls retain outer ownership; the original exception survives;
+   dynamic associations are unavailable after exit and ordinary edits resume.
+4. A real transient miss is protected without read-cache insertion; an
+   error-producing unselected slot remains unevaluated.
+5. The actual exported generated setter can STILL replace and restore a read
+   table outside the gateway. Its intermediate effect is observed.
+6. The actual SDK reflective setter can STILL replace =HashTable.ref=, invoke
+   the replacement, and restore it. Replay accepts the restored endpoint.
+
+Cases 5 and 6 are retained counterexamples, not repaired behavior. An export
+filter alone cannot prevent reflection on an already exposed writable object.
+The rejected gateway writes do not establish interception of generated stores.
+
+* Lean and Quint correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/MetadataOwnership.lean][MetadataOwnership.lean]] derives target owners from an association relation.
+=unknown_refused= rejects missing association; =associated_selected_refused=
+checks ANY associated selected owner; =nested_keeps_outer= retains outer
+membership. =restored_raw_route_keeps_effect= proves equal endpoint observation
+can coexist with an additional callback. It reuses 32.35 rather than creating
+another receiver guard model. Complete native alias coverage, SDK interception,
+and serial dynamic-scope correctness remain correspondence premises; these
+are not eliminated by giving them theorem names.
+
+[[file:../../../dev/proofs/quint/MetadataOwnership.qnt][MetadataOwnership.qnt]] checks nine scoped outcomes: conditional positive safety;
+missing guard, unknown-target allowance, missing backend coverage, missing
+second requirement, parent-plan reuse, eager branch access, the normal-model
+raw bypass, and an acceptance witness. Association coverage is required AFTER
+capture completes. Omitting a backend while retaining fail-closed handling
+violates coverage, but does not by itself authorize a write. The model keeps
+that distinction explicit. This new model does not independently establish
+exception unwinding; the 32.35 laws and native nesting/exception cases own it.
+
+* A unified production boundary, not per-setter patches
+
+The production refactor needs two coordinated parts:
+
+1. Native metadata allocation/association owns receiver identity. Shared
+   metadata retains every relevant owner or becomes immutable. Internal cache
+   maintenance and semantic mutation need separate private capabilities;
+   legitimate cold computation must not be mistaken for extension mutation.
+2. An owned mutation entry checks ALL affected owners before ANY write or
+   invalidation. The normal extension surface exposes native functional
+   operations, read-only projections and supported POO mutation, without raw
+   metadata aliases, constructors or generated unchecked write capabilities.
+
+Under restricted extension capabilities this can be a module/ownership boundary.
+Under unrestricted Scheme with raw MOP, unchecked structure primitives or FFI,
+it requires an SDK/compiler-level mediated store boundary or a separate trust
+boundary. Merely renaming exports, adding an epoch AFTER the effect, or
+wrapping =runtime.slot-set!= does not provide pre-write refusal. This experiment
+therefore does not promote a partial facade as a universal barrier.
+
+The ownership path must not invoke overridable callbacks to authorize itself.
+Its tables/parameters cannot remain writable public capabilities. Existing
+read-only currentness and diagnostic ordering are retained, not replaced by a
+cached successful ownership decision. Concurrent mutation remains outside the
+existing serial invalidation contract.
+
+* Qualification
+
+Local artifacts: =/private/tmp/core-metadata-ownership-20261018/=. Raw logs stay
+outside version control.
+
+- Six new isolation cases pass through the heap-fenced Just entrypoint.
+- Seven existing replay-ownership cases pass, including ancestor preflight,
+  nested/exception restoration, temporary misses and unselected laziness.
+- Two actual Gitea/PostgreSQL consumer cases pass: both contribution keys and
+  child obligations survive, parent plan remains 5432, child default-following
+  values become 5433, explicit client mismatch and stale parent plans refuse,
+  and changed JSON source refuses. These are production consumers with a
+  temporary publication fixture, not the new metadata gateway.
+- Full Lean build passes 176 jobs, 5947 declarations and the standard-axiom audit.
+- Scoped Quint qualification passes all nine expected outcomes; native typecheck
+  covers the nine entries and their imports. Positive exploration visits 360
+  distinct states with an empty queue. This is not an aggregate all-source pass.
+
+The receipt's source cut was valid at its checked return. A later independent
+recheck found concurrent changes in =ops/func.ss= and =ops/process-script.ss=,
+which the existing runner also binds. The new model and isolation inputs remain
+unchanged. The receipt is retained for its recorded cut; it is NOT presented as
+current qualification of those subsequent Ops edits or the whole dirty tree.
+Neither the source binding nor another session's edits were changed to hide it.
+
+Retained failures: the initial fixture treated missing hash lookup as a list;
+native type errors correctly failed the harness until the missing association
+was normalized to the empty list. An initial backend launch was denied by the
+sandbox's local bind restriction. The next Quint run found backend omission in
+an INITIAL state, for which the strict receipt runner had no final state-count
+summary and refused qualification. The model now checks coverage after actual
+association capture; runner assertions and deadlines are unchanged. Final
+runtime/proof runs use the corrected, source-bound cut.
+
+* Reflection
+
+The useful gain is automatic owner association and one pre-write decision, not
+a shorter list of setters. The negative results rule out a tempting but unsound
+implementation: leaving writable metadata exported while claiming one guarded
+procedure covers the whole runtime. Ordinary user assignment and native POO
+extension remain unchanged. The remaining work is capability/representation
+ownership, not another user-visible flag, manual source table or purity label.

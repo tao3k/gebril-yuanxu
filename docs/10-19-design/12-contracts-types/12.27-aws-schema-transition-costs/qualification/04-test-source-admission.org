@@ -1,0 +1,107 @@
+#+title: 12.27.04 Test Source and Configuration Admission
+#+property: DOCUMENT_ID 12.27.04
+#+language: en
+#+property: STATUS retained-evidence
+
+* Test-source admission split
+
+=module-test-projection= now obtains requested owners from the existing init
+selection, rather than forcing =selected-graph.module-order=. Each requested
+owner reuses =selection.prepare-publication=, including its existing publication
+cache and SDK-observed private/compiler source dependencies. This is still real
+source preparation: selected role expansion is not claimed to be free or pure.
+Other init roots are not prepared merely to discover one owner's test files.
+No business scope is linked and no second resolver or dependency tree is built.
+
+The projection's =selected-graph= slot remains lazy and delegates to the same
+selection. Explicit demand still performs complete Module/Feature dependency,
+conflict and ordering admission. A missing required module may therefore leave
+test-source discovery valid while making configuration Graph admission fail.
+Test enumeration follows requested owner order, or init root order without a
+filter, then filename; it is not the configuration/task execution order.
+
+=init.test-spec owners= checks only that acquired test projection. It no longer
+invokes the aggregate =init.test-current!= traversal of previously acquired
+suites. The aggregate entry remains available explicitly. Existing source guards
+continue to check actual bytes; package-effect callbacks remain outside the
+shared pure-read window, followed by fresh checks. The shared reader retains
+all observations already demanded within this source epoch, so a previously
+demanded dependency change can still invalidate the epoch.
+
+The focused native =t/module-testing-source-admission-test.ss= gate passed with
+natural exit zero and MODULE-OK/HARNESS-OK/final OK at the locked
+=gerbil-poo ece6f609357ea918038090559ac051a8d9f3e52f= revision. It verifies:
+
+- A broken /selected/ sibling is untouched by a one-owner source request; test
+  bodies that raise during macro expansion or evaluation remain untouched too.
+- The test projection and selection retain cold Graph slots through repeated
+  source admission. Explicit Graph demand still rejects that broken sibling.
+- Changing the owner's SDK-observed private helper rejects old test admission.
+- Missing required Module policy is still rejected by full Graph admission.
+- On a valid selection, an explicitly demanded Graph is identical through the
+  test projection and the original selection.
+
+The initial run failed on the fixture's noncanonical macOS temporary path;
+the expectation now uses the same native path normalization as SourceRef.
+That failure was not a production admission failure. The successful gate does
+not establish a startup speedup or complete the AWS Schema-transition endpoint.
+The AWS endpoint no longer forces full root Graph identity just before running
+one module's tests; explicit identity coverage remains in the focused gate.
+Its Schema-upgrade, stale-evidence and failed-publication assertions are retained.
+
+This split does not claim automatic discovery of arbitrary test-only imports
+outside adjacent helpers and the publication reader's observed dependency
+closure. Runtime-generated imports and other dynamic test inputs still need
+their existing explicit source authority. Full dynamic test closure discovery
+is a separate boundary, not permission to cache across macro effects.
+
+** Qualification after the split
+
+The original =t/module-testing-test.ss= regression passed with natural exit zero,
+MODULE-OK, HARNESS-OK and final OK. This retains its package-effect source-mutation
+control, native fixture isolation/exception cleanup, test edits/additions and
+execution of the real JsonSchema, Funflow and AWS atomic suites.
+
+The traced =t/aws-context-publication-test.ss= endpoint remains failed. Its outer
+test returned 1 with an Ops child status of 137; no timeout or heap setting was
+increased. Before execution, only the AWS publication was prepared. Namespace
+acquisition took 3.40 seconds, followed by 2.32 seconds for the atomic test-source
+projection (987 actual reads, 1,125 read requests). These are one-run phase
+observations, not a controlled performance comparison or an end-to-end pass.
+
+The integration child explicitly requested its own complete build Graph. The
+last completed phase was that first Graph at 30.50 seconds of test-body time:
+8,492 actual reads, 12,236 requests, 424 pure observation windows, 280 compiler
+closure requests and 39 structural walks. OpenTofu publication expansion alone
+took 12.39 seconds. Reported heap size was near the existing 1 GiB fence, with
+about 589 MB live. There was no explicit heap-overflow diagnostic, so status 137
+does not prove an out-of-memory cause. No Nix/package phase had completed.
+
+Thus removing premature root-Graph admission fixes the tested atomicity defect,
+but does not qualify the full AWS Schema transition. All Schema-update,
+stale-evidence and previous-value preservation assertions remain unchanged;
+this run did not reach them. The remaining full-Graph preparation/expansion and
+guard cost must be addressed on its own authority boundary, without widening
+the deadline, dropping currentness checks, or caching initializer effects.
+
+** Subsequent native import and deadline diagnosis
+
+The follow-up qualification in
+[[file:../../../13-module-loading/13.15-import-and-source-guard-correspondence.org][Import and source-guard correspondence]]
+records actual SDK context identities, native import boundaries and refreshed
+source registrations. With the unchanged Ops deadline, GNU timeout explicitly
+reported TERM followed by KILL in the run returning 137. This identifies that
+run's termination mechanism; it does not establish an OOM kill.
+
+One retained bounded run completed both Graphs and the second provider package,
+then returned Ops status 124 before refreshed publication completed. Thus the
+remaining endpoint failure spans native expansion, source checks and package
+handoffs, rather than a Graph algorithm that never returns. Schema-transition
+acceptance remains incomplete; the linked record separates completed negative
+controls from assertions not reached before the deadline.
+
+The subsequent import/preparation changes and current failed endpoint are
+recorded in that follow-up document. Later runs did not reach all those phases;
+do not combine different attempts into one successful Schema transition.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

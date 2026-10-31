@@ -1,0 +1,148 @@
+#+title: 20.04 Generic Payload and Private Binding Retention
+#+filetags: :modules:retention:lean:quint:source:
+
+* Question and source correspondence
+
+Do not equate a Generic frame count, a captured-cell count, a binding-table
+entry count, or a read count with retained physical bytes. The current native
+constructors in =poo-clos/objects.ss= create a distinct checked effective method
+and invocation receiver. =poo-clos/dispatch.ss:invoke= passes the SAME argument
+list to the frame and the method. That is already sharing, not two copies of
+all argument values. Different calls may have different receivers, arguments,
+continuations, qualifiers, method generations and external effects.
+
+Each issued read has a separate native registry identity and private birth
+closure. At gerbil-poo =40c61fe6afc8313f297599da0e511f96e3a23dcf=,
+=object-record-read= privately snapshots dependency identities in a vector;
+=call-with-issued-reads= owns traversal projection reuse. Core must not replace
+those records with reconstructed bundles or cache their successful approval.
+
+The previous 32-Module receipt retains 298 Generic frames, 297 distinct argument
+lists and 7724 frame-related read records. Its weak SDK-context census also
+reports 32 private role contexts with 7104 local bindings: 222 bindings per role.
+The outer reader's zero-private-context index is therefore not a complete
+retention census. The resolver's role helper is another actual retention route.
+
+* Structures and permitted sharing
+
+| Structure | Rule | Status |
+|-----------+------+--------|
+| Exact canonical SDK Module/context | Reference the same existing native context and its source closure; retain all actual source checks | Existing reader owns this catalogue |
+| Generated role's local binding index | Bind only its private constructor; preserve original source bindings and the native import dependency | Narrow reader candidate |
+| One call's argument list | Effective method and invocation may point to the same existing list | Already implemented; measure identities |
+| Arguments/continuations across calls | No sharing inferred from a method name, equal printed data or equal Type labels | Remain distinct |
+| Immutable private dependency snapshot | Equal COMPLETE ordered identity sequences may share immutable storage, including repeated edges | Value theorem only; Core has no authority to intern native private payloads |
+| Native records/births | Preserve every original identity, receiver and signature association | Never merged |
+| Approval/currentness | Recompute at existing use/callback/return boundaries | Never shared as a cached verdict |
+
+A snapshot-interning table is NOT introduced. Its ownership, eviction and actual
+immutability would need a producer-side proof; a persistent strong table could
+increase retention. The Lean value theorem does not prove those properties or
+justify sharing exposed mutable Scheme lists.
+
+* Model and controls before the reader change
+
+[[file:../../proofs/lean/YuanxuProof/ModuleSystem/Loading/PayloadSharing.lean][PayloadSharing.lean]]
+proves that injection under a fresh private identifier leaves other source
+bindings unchanged and selects the canonical constructor. Binding projection
+retains the exact context, read identity list, adjacency function and observation
+sequence. The immutable-snapshot theorem requires full ordered equality; equal
+contents do not justify merging different read identities. Fresh currentness is
+reused from the existing admission theorem, not replaced by a cached result.
+
+The former =PayloadSharing.qnt= family duplicated these structural properties
+and has been removed. Structural sharing now has one formal owner, Lean.
+Callback/currentness transitions reference the existing =IssuedRootForwarding=,
+=ReadRetention= and =IncrementalRoles= QNT models. The earlier ten-case receipts
+below are retained as historical runs, not an additional current gate.
+
+These are mathematical environment/support projections. Gerbil hygiene,
+source-to-model extraction, native metadata authenticity and actual heap sizes
+still require the runtime controls. Compiler-table reflection into generated
+private bindings is not a preserved public interface.
+
+* Reader change
+
+The old generated role tail imported the entire =:clan/poo/object= interface to
+build one native export tuple. This creates strong local aliases for names the
+generated tail never uses; it can also interfere with the original role's own
+bindings. The new generated tail is structurally:
+
+#+begin_src scheme
+(import (rename-in (only-in :clan/poo/object .o)
+                   (.o private-constructor)))
+(def private-values (private-constructor bind-these: #f ExportedValue))
+#+end_src
+
+The actual names are fresh private identifiers. The original role include,
+prelude, explicit imports and exports remain authoritative. The canonical native
+Module/context and demanded source closure are still imported, authenticated and
+observed. No record, edge, MOP callback or replay boundary is pruned. No Core
+cache, Builder, public macro or compiler modification is added.
+
+* Bounded runtime evidence
+
+Use the existing =ModuleTestingProfile.= and default serial =just test-file=.
+The extended weak diagnostic census inspects cached frame fields only: distinct
+argument-spine cells, whether a frame shares its effective method's argument
+pointer, distinct next-closure identities and shallow captured-cell counts.
+It neither executes those closures nor traverses argument values. Diagnostic
+tables are local to reporting and do not become retained graph owners.
+
+The source-owned-binding case in =t/module-deferred-reader-test.ss= checks that a
+role's =object?= value survives the synthetic tuple construction. Existing tests
+retain Type preflight, delayed business roles, unselected Features, source
+refusal, both requirements and parent-cache isolation. The capacity limit remains
+two GiB. No unchanged ten-thousand-module run is scheduled by this investigation.
+
+Measurements and final qualification results follow after the serial run. A
+smaller private binding table alone is not a claim that the capacity gate passes.
+
+** Final bounded results (2026-10-24)
+
+All four default serial commands complete naturally with MODULE-OK, HARNESS-OK
+and final OK, with no error/overflow markers: deferred reader (four cases),
+16/32 retention census, Gitea/PostgreSQL publication (11 cases), and 16-declaration
+calibration. Source-owned binding, invalid Type preflight and unused Feature
+controls remain effective. Build succeeds with the installed Gerbil; compiler
+sources and the gerbil-poo revision are unchanged. The final source-bound
+PayloadSharing receipt qualifies all ten cases.
+
+| Quantity | Previous deferred candidate | Narrow private binding candidate |
+|----------+-----------------------------+----------------------------------|
+| Private role bindings, N=16 | 3552 (222 per role) | 112 (7 per role) |
+| Private role bindings, N=32 | 7104 (222 per role) | 224 (7 per role) |
+| Live bytes, N=16 | 194157056 | 193099176 |
+| Live bytes, N=32 | 224211296 | 221033896 |
+| Native role body expansions | 2N | 2N |
+| Generic frames/effective methods, N=32 | 298 / 298 | 298 / 298 |
+
+The canonical SDK context count stays 376. The narrow candidate observes 297
+argument-list identities / 1188 distinct cons cells at N=32. Of the frames with
+cached argument values, all 297 share the argument pointer of their own
+effective method; zero have a separate argument list. It observes 66 cached
+next closures / 132 shallow captured cells. These are cache-only lower bounds:
+unforced fields and transitive callback payloads are not measured as zero.
+The extra Generic frame with no cached argument list is not forced by profiling.
+
+The complete original selected-graph support contains 18159 native records,
+1691 receivers and 42923 dependency occurrences; its widest direct dependency
+list has 22166 entries. The source-bound issuer census observes 18159 birth
+closures / 145272 shallow captured cells. Edges and repeated identities in these
+actual records are forwarded unchanged. The constructor/import change avoids
+unnecessary binding work; no code suppresses observer events or rewrites an
+issued record's dependency list.
+
+This repair demonstrates a smaller private binding index and preserves the
+bounded safety controls. The roughly 3.18 MB difference at N=32 is not a matched
+CPU benchmark, attributable object-byte proof or capacity qualification. It does
+not justify claiming the two-GiB ten-thousand-Module gate is fixed. Do not merge
+calls, intern mutable argument lists, shorten recorded edges, introduce a
+persistent snapshot pool, or trigger another known-failing scale run on that
+basis. Automatic read-edge enrollment remains gated on complete CI.
+
+The remaining question is the transitive payload retained by original record
+receivers, their instance/slot metadata and callback environments, not duplicated
+argument-list spines. Native issuer payload sharing remains a producer-side
+proof obligation. The Core reader may share canonical lexical bindings; it
+cannot certify a replacement for private native issuance metadata.

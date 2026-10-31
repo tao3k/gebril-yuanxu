@@ -1,0 +1,205 @@
+#+title: 11.63 AWS Configuration: Two Expression Layers and a Complexity Budget
+#+property: DOCUMENT_ID 11.63
+#+language: en
+#+filetags: :config-language:aws:ux:reflection:
+#+property: STATUS source-grounded-design-with-separate-contract-integration-results
+
+* The problem is maintaining infrastructure, not demonstrating inheritance
+
+A team needs to choose a region, instance size and network; inherit maintained
+defaults when useful; evolve those defaults; and prevent a stale approval from
+publishing a different configuration. The user's configuration must not become
+a tutorial in Context records, evidence identity or lazy-cache internals.
+
+POO is justified when it lowers maintenance cost over the lifetime of that
+configuration. It is not justified merely because every value can be an object.
+There is no fixed percentage of users who need the advanced layer.
+
+Core owns the implementation of module/build selection and admission. Reusable
+Profiles remain independent from pure capability Modules; Scenarios compose
+selected Profiles and their domain relationships. Contributions publish these
+values with their contracts once. This change implements the checked-value
+handoff, not that entire publication association or a new Loader.
+
+* Real baseline: what the existing ecosystem already does
+
+The local Omnibus source is tao3k/omnibus-ncl at
+=c5d37eb51961fd7bd32f775843044ca7f8191715=. Its
+[[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/main.ncl][AWS main.ncl]] configures a maintained higher-level recipe:
+
+#+begin_src nickel
+aws.simple.ec2.instances = {
+  test = {
+    ami = ami-id aws.region,
+    type = "t2.micro",
+    network = aws.simple.networks.test,
+    public_key_name = "${resource.aws_key_pair.ssh_key.key_name}",
+  },
+},
+#+end_src
+
+Its [[https://github.com/tao3k/omnibus-ncl/blob/c5d37eb51961fd7bd32f775843044ca7f8191715/aws/modules/aws-simple-ec2.ncl][maintained EC2 module]] generates aws_instance.instance_type, subnet and
+security-group references. The final recipe is constrained by Aws.Simple,
+Aws.S3Backend and Tf.Config. It already hides elaboration and carries meaningful
+dependencies. More nested Scheme objects would not automatically improve it.
+The historical local checkout lacks the imported generated tf-ncl-schema.ncl;
+this source review is not a new successful Nickel export/deploy receipt.
+
+The maintained Core OpenTofu capability also has a real chain:
+
+1. Nix Source/package realization produces selected provider artifacts.
+2. The OpenTofu scope reads a manifest, then the demanded type index/input;
+   it does not compile every AWS resource on scope inspection.
+3. Provider block input is converted through the existing JsonSchema machinery.
+4. Provider contracts admit configuration and retain provider/version information.
+5. Projection/export and actual OpenTofu validation/execution remain distinct.
+
+See [[file:../../../modules/opentofu/interface.ss][the declarative Module]],
+[[file:../../../modules/opentofu/objects.ss][provider objects and selected contracts]],
+[[file:../../../modules/opentofu/build.ss][the existing Nix-backed configuration build]], and
+[[file:11.60-opentofu-single-module-publication.org][its implementation record]]. The checked-object release boundary does not
+replace these parts. Existing package acquisition is not evidence of cloud apply.
+
+The [[file:../12-contracts-types/12.18-provider-publication-admission-execution.org][new Scheme integration test]] retains the generated artifact/Type/source
+association from the existing provider publication, admits AWS inputs against
+real 5.99.0/5.100.0 Schemas and rejects stale Context/evidence. It also executes
+an admitted Null hello-world through Ops and destroys it. This is local execution
+evidence, separate from AWS apply and complete Module association discovery.
+
+* Layer one: ordinary values, no admission plumbing
+
+At the provider-input level, the whole EC2 object has ordinary provider fields.
+A minimal illustrative contribution is:
+
+#+begin_src scheme
+;; Data expression only. The platform associates the generated AWS input Type.
+(.def WebProfile
+  ami: "ami-REPLACE_ME"
+  instance_type: "t3.small"
+  subnet_id: "subnet-REPLACE_ME"
+  tags: (.o Name: "web" Environment: "development"))
+
+(.def (Production @ WebProfile)
+  instance_type: "t3.medium")
+#+end_src
+
+Only the scalar changes; omitted values remain inherited. Users may instead
+author a complete ordinary .o value. They do not construct an AdmissionPublication,
+Context or schema artifact. The POO form names the reused Profile, but exposes no
+core policy mechanism. The account-specific identifiers above are placeholders,
+not deployment-ready resources. This is a matched provider-input illustration,
+not equivalent to the richer Omnibus VPC recipe by itself.
+
+At the recipe level, the desired ordinary user edit remains a value assignment:
+
+#+begin_src scheme
+;; DESIGN TARGET, not currently accepted by the path-slot implementation.
+(.def (Production @ MaintainedAWSScenario)
+  instances.test.type: "t3.medium")
+#+end_src
+
+The current [[file:../../../object-syntax/path-slots.ss][path-slot lowering]] only accepts dotted =>.+ forms. Deep direct
+assignment is STILL A UX GAP, despite the existing design examples. Do not
+invent a successful run for the target above or require ordinary users to learn
+several explicit nested refinements as its permanent replacement. Correct path
+assignment must preserve intermediate inheritance, merge shared prefixes and
+apply replacement only at the leaf; it is outside this implementation request.
+
+Conclusion: schema-backed values and maintained recipes already solve this layer
+well in Nickel/KCL. Our minimum standard is comparable input size and diagnostics.
+If users must repeat contracts, artifact lists or Context, this layer has failed.
+
+* Layer two: extension of maintained behavior and its release contract
+
+The advanced layer belongs to authors maintaining reusable behavior, not everyone
+changing instance_type. Existing POO exposes inherited value transformations:
+
+#+begin_src scheme
+;; The function is maintained by the team's library, not an overlay DSL.
+(def (release-tags inherited service)
+  (.+ inherited (.o Service: service ManagedBy: "platform")))
+
+(.def (Payments @ WebProfile)
+  (tags => (lambda (inherited) (release-tags inherited "payments"))))
+#+end_src
+
+Upstream tag additions survive this transformation; a whole-object tags assignment
+would replace them. This operation alone is NOT an advantage over Nickel merge or
+KCL configuration composition. Use the simpler language/library operation when
+it already solves the workload.
+
+The distinctive candidate is a maintained executable platform library: checked
+Function fields, receiver-aware projections, provider/organization specializations,
+and an exact contract/context-bound release boundary in the same host object
+system. It can change the implementation without copying every downstream recipe.
+Gerbil functions, public ObjectContract/refine and POO dispatch own these behaviors;
+Core adds only selected provenance/version policy and publication orchestration.
+
+The [[file:../12-contracts-types/12.17-checked-core-publication-implementation.org][implemented handoff]] now validates once, supplies the returned checked
+receiver to contextual policy, records the real descriptor and publishes that
+same receiver. A cached parent cannot substitute for the child. A different
+actual contract or stale source/Schema Context refuses old evidence and retains
+the old returned value. This is demonstrated in focused Scheme tests, not an
+end-to-end cloud deployment or proof of global ecosystem superiority.
+
+Conclusion: expose advanced behavior only when the application actually needs
+it. POO's nominal identity, MOP or multiple dispatch are not mandatory checks for
+a plain structurally valid EC2 input. Adding an abstraction must remove repeated
+authoring work or protect a named release boundary.
+
+* Three real evolution questions
+
+| Change | User action | Library/platform responsibility | Evidence limit |
+|--------+-------------+---------------------------------+----------------|
+| Platform changes the default AMI | Omit ami to inherit, or explicitly replace it | Preserve the chosen reference/default semantics | No claim that an AMI exists or is authorized |
+| Team needs extra inherited tags | Use a maintained transformation only for that field | Preserve unrelated fields; validate the final result | Function effects/termination remain governed assumptions |
+| Provider Schema or release source changes after approval | No manual receipt editing or Context arguments | Reassociate actual contracts; recapture Context; re-admit before publication | Returned old value is preserved; cloud rollback is not implied |
+
+These must be tested with upstream evolution, not static snippets alone. The
+same baseline and same field/element types must be compared across languages.
+Provider-native fields, a higher-level recipe and a deployment platform are
+different comparison levels.
+
+* Reflection: improvements we must earn
+
+1. Field discovery must show the final provider field, source default, allowed
+   representation and whether assignment/replacement/transformation is intended.
+   A list of internal components is not field discovery.
+2. Diagnostics need field paths, responsible contribution/contract revision and
+   actionable fixes. An eq? failure or a printed MOP object is not an ordinary
+   user's diagnostic. Current evidence checks do not yet provide this full UX.
+3. Composition must explain conflicts and precedence before deployment. C4
+   prototype order is not resource execution order or policy-strength ordering.
+4. Thousands of Profiles must not imply all combinations are materialized.
+   Discover lightweight declarations, resolve the selected Graph, load selected
+   contracts, and measure first-demand and repeated-validation cost separately.
+   This change is not a scalability benchmark or a new Loader.
+5. Separate normalization once per admission from recognition passes and source
+   currentness checks. Do not claim deduplicated validation or O(1) release from
+   a root invocation counter.
+6. Public value Contracts cannot prove provider SDK validators, IAM, live AWS
+   availability, secrets handling or external state synchronization. Keep the
+   backend's validation, state and operational controls.
+
+The acceptance experiment should compare maintained recipe effort across an AMI
+update, a new service, a policy change and an approval-time source change. Measure
+edits, user-visible forms, diagnostic repair time, forced modules and cold/warm
+cost. If advanced POO does not improve those outcomes, remove its exposure or
+integrate the existing tool rather than adding more syntax.
+
+* Research direction
+
+The [[https://nickel-lang.org/user-manual/contracts/][Nickel contract documentation]] explicitly includes higher-order/delayed
+checks and contract-produced values; it is not just a JSON validator. Its
+idempotency assumption supports deduplication, whereas our once-per-admission
+handoff does not establish idempotence of arbitrary user contracts. The
+[[https://www.kcl-lang.io/docs/reference/lang/spec/schema][KCL schema specification]] includes checks, inheritance, mixins and
+dependency-aware calculation. Its documented restriction to one base Schema
+and limited polymorphism is a precise comparison point, not proof that KCL
+cannot solve a business case through composition or its host ecosystem.
+
+The useful question is not whether those languages can ever emulate us. It is
+whether a library can express and maintain the target extensible Agent/runtime
+boundary with fewer independently synchronized mechanisms. That remains an
+empirical and formal correspondence task. See
+[[file:11.64-configuration-and-iac-platform-boundaries.org][the separate platform comparison]] before proposing more orchestration.

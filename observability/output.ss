@@ -7,10 +7,10 @@
 (import (only-in :gerbil/core write-substring)
         (only-in :std/format format))
 
-(export poo-flow-write-observation-line!)
+(export yuanxu-write-observation-line!)
 
 ;;; Materialize a complete receipt before it reaches the shared native port.
-(def (poo-flow-write-observation-line! template . values)
+(def (yuanxu-write-observation-line! template . values)
   (let* ((line (apply format template values))
          (record (string-append "\n" line "\n"))
          (port (current-output-port)))

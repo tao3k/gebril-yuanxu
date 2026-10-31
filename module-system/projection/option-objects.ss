@@ -6,86 +6,43 @@
 ;;; Core POO values for Module option configuration, schema, and validation.
 ;;; Product descriptors decide how these values are projected and presented.
 
-(import (only-in :core/object-family/syntax defpoo-object-family))
+(import (only-in :clan/poo/object .cc .ref .slot? object<-alist)
+        (only-in :clan/poo/type Record String Symbol Or)
+        (only-in :clan/poo/mop define-type Slot))
 
-(export poo-flow-module-option-config-prototype
-        make-poo-flow-module-option-config
-        poo-flow-module-option-config?
-        poo-flow-module-option-config-id
-        poo-flow-module-option-config-value
-        poo-flow-module-option-config-source-module
-        poo-flow-module-option-config-metadata
-        poo-flow-module-option-schema-prototype
-        make-poo-flow-module-option-schema
-        poo-flow-module-option-schema?
-        poo-flow-module-option-schema-id
-        poo-flow-module-option-schema-source-module
-        poo-flow-module-option-schema-type
-        poo-flow-module-option-schema-rule
-        poo-flow-module-option-schema-value
-        poo-flow-module-option-schema-metadata
-        poo-flow-module-option-validation-receipt-prototype
-        make-poo-flow-module-option-validation-receipt
-        poo-flow-module-option-validation-receipt?
-        poo-flow-module-option-validation-receipt-id
-        poo-flow-module-option-validation-receipt-source-module
-        poo-flow-module-option-validation-receipt-valid?
-        poo-flow-module-option-validation-receipt-code
-        poo-flow-module-option-validation-receipt-messages
-        poo-flow-module-option-validation-receipt-metadata)
+(export ModuleOptionSchema
+        yuanxu-module-option-schema-contract
+        yuanxu-module-option-schema-rule
+        yuanxu-module-option-schema-value
+        yuanxu-module-option-schema-metadata)
 
-(defpoo-object-family
-  (prototype poo-flow-module-option-config-prototype
-             option-config?
-             poo-flow-module-option-config?)
-  (constructor make-poo-flow-module-option-config
-               (id-value id)
-               (option-value value)
-               (source-module-value source-module)
-               (metadata-value metadata))
-  (accessors
-   (poo-flow-module-option-config-id id)
-   (poo-flow-module-option-config-value value)
-   (poo-flow-module-option-config-source-module source-module)
-   (poo-flow-module-option-config-metadata metadata))
-  (projections))
+;; Keep the effective Slot itself, rather than copying its Type/default/policy.
+(define-type ModuleOptionSchema
+  (Record id: [String]
+          source-module: [(Or String Symbol)]
+          field: [Slot]))
 
-(defpoo-object-family
-  (prototype poo-flow-module-option-schema-prototype
-             option-schema?
-             poo-flow-module-option-schema?)
-  (constructor make-poo-flow-module-option-schema
-               (id-value id)
-               (source-module-value source-module)
-               (type-value type)
-               (rule-value rule)
-               (schema-value value)
-               (metadata-value metadata))
-  (accessors
-   (poo-flow-module-option-schema-id id)
-   (poo-flow-module-option-schema-source-module source-module)
-   (poo-flow-module-option-schema-type type)
-   (poo-flow-module-option-schema-rule rule)
-   (poo-flow-module-option-schema-value value)
-   (poo-flow-module-option-schema-metadata metadata))
-  (projections))
+;; Reporting projections read the native effective Slot, never a shadow type DSL.
+(def (yuanxu-module-option-schema-rule schema)
+  (let (field (.ref schema 'field))
+    (cond ((.slot? field 'policy) (.ref field 'policy))
+          ((.slot? field 'constant) 'constant)
+          ((.slot? field 'default) 'default)
+          ((.ref field 'optional) 'optional)
+          (else 'required))))
+(def (yuanxu-module-option-schema-value schema)
+  (let (field (.ref schema 'field))
+    (cond ((.slot? field 'constant) (.ref field 'constant))
+          ((.slot? field 'default) (.ref field 'default))
+          (else #f))))
 
-(defpoo-object-family
-  (prototype poo-flow-module-option-validation-receipt-prototype
-             option-validation-receipt?
-             poo-flow-module-option-validation-receipt?)
-  (constructor make-poo-flow-module-option-validation-receipt
-               (id-value id)
-               (source-module-value source-module)
-               (valid-value valid?)
-               (code-value code)
-               (messages-value messages)
-               (metadata-value metadata))
-  (accessors
-   (poo-flow-module-option-validation-receipt-id id)
-   (poo-flow-module-option-validation-receipt-source-module source-module)
-   (poo-flow-module-option-validation-receipt-valid? valid?)
-   (poo-flow-module-option-validation-receipt-code code)
-   (poo-flow-module-option-validation-receipt-messages messages)
-   (poo-flow-module-option-validation-receipt-metadata metadata))
-  (projections))
+;; Diagnostic annotations remain owned by the effective Slot.
+(def (yuanxu-module-option-schema-metadata schema)
+  (let (field (.ref schema 'field))
+    (if (.slot? field 'metadata) (.ref field 'metadata) '())))
+
+(def (yuanxu-module-option-schema-contract schema)
+  (.cc (Record) 'slots
+    (object<-alist
+      (list (cons (string->symbol (.ref schema 'id))
+                  (.ref schema 'field))))))

@@ -5,11 +5,12 @@
 
 ;;; Checked construction and identity-preserving generic-function evolution.
 
-(import (only-in :clan/poo/object .o .ref .put!)
-        (only-in :clan/poo/mop element?)
+(import (only-in :clan/poo/object .o .ref .put! object-revision object-slots $constant-slot-spec?)
+        (only-in :clan/poo/mop element? .defgeneric)
         (only-in :std/hash/misc hash-ref/default)
         (only-in :std/list/list iota)
-        "types.ss" "funcs.ss")
+        "types.ss" "funcs.ss"
+        (only-in :yuanxu/object-family/read-projection owned-read-value! owned-read-open!))
 
 (export poo-clos-any-specializer poo-clos-class-specializer
         poo-clos-prototype-specializer
@@ -33,8 +34,10 @@
         poo-clos-register-generic-function! poo-clos-find-generic-function
         clos-fail clos-unbound-slot-fail checked
         require-clos-generic require-clos-method
+        poo-clos-class-precedence-list poo-clos-class-precedence-position
         make-synthetic-effective-method
-        make-effective-method make-invocation-frame)
+        make-effective-method make-invocation-frame clos-call-carrier-policy-guard
+        %prepare-effective-method)
 
 ;;; Cached owner-local prototype avoids repeated descriptor demand in constructors.
 ;; : POOObject
@@ -45,7 +48,18 @@
 ;; : POOObject
 (def ClosMethod. (.ref ClosMethod 'proto))
 ;; : POOObject
-(def ClosMethodCombination. (.ref ClosMethodCombination 'proto))
+(def ClosMethodCombination.
+  (.o (:: @ (.ref ClosMethodCombination 'proto) kind identity)
+    ;; This is one receiver policy, not an independently extensible argument
+    ;; crossing. Use upstream slot dispatch; derived policies can refine this
+    ;; method without adding a CLOS registry or editing the generic caller.
+    .admits-qualifier?:
+    (lambda (qualifier)
+      (case kind
+        ((standard) (if (memq qualifier '(around before primary after)) #t #f))
+        ((short) (or (eq? qualifier 'around) (eq? qualifier identity)))
+        ((long) #t)
+        (else #f)))))
 ;; : POOObject
 (def ClosMethodGroup. (.ref ClosMethodGroup 'proto))
 ;; : POOObject
@@ -63,6 +77,9 @@
 ;;; Invocation frames are typed independently from reusable effective methods.
 ;; : POOObject
 (def ClosInvocationFrame. (.ref ClosInvocationFrame 'proto))
+
+(def (clos-call-carrier-policy-guard)
+  (clos-carrier-policy-guard ClosEffectiveMethod. ClosInvocationFrame.))
 
 ;;; Name lookup is a binding projection, not a second generic-function owner.
 ;;; Two native identity tables preserve O(1) lookup for both symbols and fresh
@@ -154,6 +171,19 @@
 ;; : (forall (a) (-> a ClosMethod))
 (def (require-clos-method value)
   (checked ClosMethod value 'invalid-method))
+
+;; Read-only native class projections belong with descriptor values. Dispatch
+;; must not import class construction/registration merely to query a CPL.
+;; Keep the same public Type checks and the class-owned native index.
+(def (poo-clos-class-precedence-list class-value)
+  (unless (element? ClosClass class-value) (clos-fail 'invalid-class))
+  (.ref class-value 'class-precedence-list))
+
+(def (poo-clos-class-precedence-position class-value target-value)
+  (unless (and (element? ClosClass class-value)
+               (element? ClosClass target-value))
+    (clos-fail 'invalid-class))
+  (hash-get (.ref class-value 'class-precedence-index) target-value))
 
 ;;; The universal specializer has no target and ranks after applicable classes.
 ;; : (-> ClosSpecializer)
@@ -397,13 +427,8 @@
    (else (clos-fail 'unsupported-method-combination))))
 
 ;; : (-> ClosMethodCombination SchemeValue Boolean)
-(def (poo-clos-method-combination-admits-qualifier? combination qualifier)
-  (case (.ref combination 'kind)
-    ((standard) (if (memq qualifier '(around before primary after)) #t #f))
-    ((short) (or (eq? qualifier 'around)
-                 (eq? qualifier (.ref combination 'identity))))
-    ((long) #t)
-    (else #f)))
+(.defgeneric (poo-clos-method-combination-admits-qualifier? combination qualifier)
+  slot: .admits-qualifier?)
 
 ;;; A default protocol has no override procedures; dispatch therefore follows
 ;;; its closed built-in path and emits typed terminal failures.
@@ -659,30 +684,45 @@
 
 ;;; Effective-method construction validates the finished POO value so malformed
 ;;; qualifier lists cannot enter execution.
+(def (checked-call-carrier type value code)
+  (def revision (object-revision value))
+  (checked type value code)
+  ;; No mutation or source/MOP wrapper may hide inside the certified carrier.
+  ;; Native observers still receive every actual read; any edit during that
+  ;; observation/validation keeps this call's complete dependency trace.
+  (unless (and (= revision (object-revision value))
+               (andmap (lambda (entry) ($constant-slot-spec? (cdr entry))) (object-slots value)))
+    (owned-read-open!))
+  (owned-read-value! value))
+
 ;; : (-> ClosGenericFunction [SchemeValue]
 ;;        [ClosMethod] [ClosMethod] [ClosMethod] [ClosMethod]
 ;;        ClosEffectiveMethod)
-(def (make-effective-method generic-value argument-values around-values
-                          before-values primary-values after-values
-                          groups: (group-values '())
-                          executor: (executor-value #f))
-  (checked ClosEffectiveMethod
-           (.o (:: @ ClosEffectiveMethod.)
-               generic: generic-value arguments: argument-values
-               around: around-values before: before-values
-               primary: primary-values after: after-values
-               groups: group-values executor: executor-value)
-           'invalid-effective-method))
+(def (make-effective-method generic arguments around before primary after
+                          groups: (groups '()) executor: (executor #f))
+  (checked-call-carrier ClosEffectiveMethod
+    (.o (:: @ ClosEffectiveMethod.)
+        generic arguments around before primary after groups executor)
+    'invalid-effective-method))
+
+;; Private dispatch staging retains payloads only. Each demand calls the
+;; existing public constructor, producing a FRESH checked object. Even an
+;; escaped/reused continuation cannot enroll a previously exposed receiver as
+;; a new owned value. No approval, receiver index or method cache is retained.
+(def (%prepare-effective-method generic arguments around before primary after
+                               groups: (groups '()) executor: (executor #f))
+  (lambda ()
+    (make-effective-method generic arguments around before primary after
+      groups: groups executor: executor)))
 
 ;;; Frames bind one effective method, current argument set, continuation, qualifier, and
 ;;; exact method descriptor into a native POO value.
 ;; : (-> ClosEffectiveMethod [SchemeValue] (Maybe Procedure)
 ;;        MethodQualifier ClosMethod ClosInvocationFrame)
-(def (make-invocation-frame effective-method-value argument-values next-value
-                            qualifier-value method-value)
-  (checked ClosInvocationFrame
+(def (make-invocation-frame effective-method arguments next qualifier method)
+  (checked-call-carrier ClosInvocationFrame
+           ;; Keep native inheritance and extensibility; these are value slots,
+           ;; not receiver-dependent formulas or deferred argument computations.
            (.o (:: @ ClosInvocationFrame.)
-               effective-method: effective-method-value
-               arguments: argument-values next: next-value
-               qualifier: qualifier-value method: method-value)
+               effective-method arguments next qualifier method)
            'invalid-invocation-frame))

@@ -1,0 +1,58 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Configuration Interface Research: Omnibus NCL, HiveBus, NixOS, Jsonnet, Dhall and POO
+#+date: [2026-10-15]
+#+property: STATUS modular-research-and-reflection
+
+* Research purpose
+
+Design a configuration experience that supports both upstream ownership of
+thousands of modules/Profiles and downstream progressive disclosure: ordinary
+business configuration first, native extension when required. Compare actual
+authoring tasks, validation and effective-value semantics rather than ranking
+languages by syntax brevity or implementation power.
+
+This research replaces the previous compressed comparison. It uses configuration
+languages and their module frameworks as peers. There is no general-purpose
+systems-language comparison. No Loader or runtime implementation is added here.
+
+* Read by question
+
+The dedicated [[file:../../docs/10-19-design/11-configuration-languages/11.01-index.org][Configuration Language design entry]] organizes user-intent,
+data-overlay and comparison work, including KCL, without relocating source evidence.
+
+| Module | Research question | Concrete material |
+|--------+-------------------+-------------------|
+| [[file:164-module-interface-comparison/00-research-contract.org][00 Research contract]] | What are we trying to improve and what counts as evidence? | two axes, comparison levels and source pins |
+| [[file:164-module-interface-comparison/01-omnibus-ncl-cases.org][01 Omnibus NCL cases]] | What has our existing configuration interface already solved? | verbatim sandbox, contracts, CI and matrix code; POO comparison and gaps |
+| [[file:164-module-interface-comparison/02-hivebus-nixos.org][02 HiveBus and NixOS]] | How do ordinary values, upstream ownership and module extensions meet? | verbatim host/POP consumers; an explicit NixOS option/consumer example |
+| [[file:164-module-interface-comparison/03-config-language-semantics.org][03 Language semantics]] | Which differences are language-level rather than framework conventions? | matched Nix/Nickel/Jsonnet/Dhall/POO effective-value probes |
+| [[file:164-module-interface-comparison/04-poo-current-interface.org][04 Current POO interface]] | What can users actually do today, and what remains exposed? | real Funflow Module/Profile source, ordinary refinements and native extension |
+| [[file:164-module-interface-comparison/05-reflection-and-improvement-plan.org][05 Reflection and improvements]] | What should change before we claim better UX? | upstream scale, two user layers, ranked gaps and acceptance criteria |
+| [[file:164-module-interface-comparison/06-evidence-and-acceptance.org][06 Evidence and experiments]] | Which observations have run and which could falsify our decisions? | execution ledger, negative controls and next experiments |
+| [[file:164-module-interface-comparison/07-ecosystem-task-interfaces.org][07 Ecosystem task interfaces]] | How do maintained libraries turn task inputs into useful consumer outputs? | actual Omnibus AWS/Sandbox/CI, HiveBus value/POP layers, BAML tooling lessons and smoke design follow-through |
+| [[file:164-module-interface-comparison/08-nixos-doom-organization.org][08 NixOS and Doom organization]] | How do large ecosystems separate navigation, selection, configuration and activation? | actual NixOS inventory/service/module evaluation and local Doom selection/package/demand owners |
+| [[file:164-module-interface-comparison/09-devenv-open-ecosystem.org][09 devenv open ecosystem]] | How do maintained language interfaces, organization defaults and deferred Profile combinations support contributions? | actual Rust module, external defaults guide, Profile guide/source and dynamic POO follow-through |
+
+* Findings that change the design
+
+For KCL's documented replacement/insertion/merge distinctions and the associated
+POO UX obligations, see [[file:../../docs/10-19-design/11-configuration-languages/11.02-kcl-data-overlays.org][10 KCL and data overlays]]. This official-language
+comparison is distinguished from the actual library/ecosystem cases above.
+
+NixOS complexity is partly language/framework layering and partly the real cost
+of composing distributed typed definitions. Nickel integrates contracts and
+merge metadata, while Jsonnet already supports effective-object inheritance and
+Dhall provides a different typed/total trade-off. Those capabilities prevent us
+from claiming that POO alone introduces safe composition or late binding.
+
+Agentic AI Lab has a useful demonstrated continuity between configuration objects,
+inheritance and Pipeline consumption. Current weaknesses include incomplete
+public-attribute admission/discovery, ambiguous front-door terminology, source-role
+alignment, fixed Check membership and missing effective-value explanations.
+The improvement plan treats each as a concrete design obligation.
+
+The actual [[file:164-funflow-local-publication.org][local Funflow publication]] remains the implementation baseline.
+The earlier [[file:164-config-language-case-research.org][case research]] is background; it is not a substitute for the extracted
+code, matched semantics and reflection modules in this study.

@@ -1,0 +1,327 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.19 Config Languages 18: Module Core, Optional Features and Guestbook Selection
+#+property: DOCUMENT_ID 11.19
+#+date: [2026-10-16]
+#+filetags: :config-language:module-system:feature-system:guestbook:design:
+#+property: STATUS corrected-ownership-design-no-implementation-no-loader
+
+* Correction: Core belongs to the Module System
+
+A module has a baseline/Core definition managed by Module System. Feature System
+manages optional extensions of that module. Do not declare the module system,
+JSON Schema compiler, baseline Profiles or resource consumer as Feature descriptors
+merely to fit them into one feature resolver. The previous all-capabilities-as-
+features design and FrameworkCoreRoots list are withdrawn.
+
+The existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-descriptor.ss][Module descriptor]] already separates imports, interface, schemas,
+config, features and extensions. The existing [[file:../../../module-system/graph/funs.ss][module-closure]] computes module
+closure with caller-supplied accessors. Existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/model.ss][Feature descriptors]] separately
+model requires/optional-requires/conflicts and projections; [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/resolver.ss][resolve-feature-profile]]
+resolves selected features. These owners should collaborate, not be replaced.
+
+The [[file:../../../module-system/design/README.org][Core design]] owns shared directory, publication/selection and build-view protocols.
+This chapter owns their Agentic AI Lab and Guestbook consumption.
+
+The explicit core layout below is a proposed native descriptor refinement, not an
+already exported field layout. It makes baseline dependencies/exports/build inputs
+unambiguous. Map it to the existing descriptor authority once; do not keep a second
+catalog alongside interface/imports/schemas. The narrow constructor/projection
+adapter and its Contracts still need implementation when authorized.
+
+Selecting a module includes its Core. That does not select every module or eagerly
+evaluate each Core operation. JSON Schema compilation is baseline functionality of
+the schema module, not +json-schema. Global framework bootstrap roots are a separate
+Module System policy; an owner's core slot does not by itself make that module a
+global bootstrap requirement.
+
+* Maintained baseline and optional extension use different native values
+
+The canonical JsonSchema and Guestbook interface declarations are now in
+[[file:11.23-source-ref-to-admitted-scope.org][the complete Guestbook chain]]. They replace this chapter's earlier Module-suffix
+bindings, handwritten compiler exports and repeated build-entries inventory.
+JsonSchema's compile/validate/Contract operations remain Module baseline exports,
+not Features. Module source roles publish them once; init only selects them.
+
+For an explicit optional-extension example, this design proposes post-deployment
+Guestbook smoke-verification task generation. It is not part of the pinned KCL
+Guestbook baseline. Reuse existing Feature System capability/requirement objects
+to depend on a module-provided preview, rather than promoting that preview to a
+Feature just to create an edge:
+
+#+begin_src scheme
+(def GuestbookPreviewCapability
+  (feature-adapter-capability
+   'guestbook/preview 'custom/guestbook 'guestbook/preview-contract 1))
+
+(def SmokePreviewRequirement
+  (feature-adapter-requirement
+   'guestbook/smoke-preview 'guestbook/preview 'guestbook/preview-contract 1))
+
+(defpoo-feature GuestbookSmoke
+  (feature-id 'guestbook/smoke)
+  (owner-module-id 'custom/guestbook)
+  (category 'verification)
+  (adapter-requirements SmokePreviewRequirement)
+  (projections
+   (.o kind: 'build-public-entries
+       roots: '("contributions/guestbook/smoke.ss"))))
+#+end_src
+
+Existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/capability-model.ss][capability constructors]] and [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/feature-system/adapter-projection-binding.ss][adapter/projection binding]] can represent/check
+this boundary. Their actual contract/version matching must be qualified for this
+integration. Do not use feature requires with a module id: that field expects a
+feature identity. The smoke source path is a proposed owner unit, not a file that
+exists or was built. This optional extension never executes during plan preview.
+
+Helm has no assumed classification here. Its owner may make it a module baseline
+requirement or an independent feature/provider. The user's Contract and selected
+consumer decide; technology names cannot decide. No Kubernetes/Helm source in this
+repository was found to justify the earlier -helm example.
+
+The [[file:11.20-module-structure-contract-and-authoring-ux.org][standard Module shell decision]] owns the proposed types.ss/objects.ss/
+configs.ss/interface.ss organization (func.ss optional), its UX rationale and the
+separate pending migration from current role conventions.
+
+* One loader facade consumes publication and user intent
+
+The public call should converge at yuanxu-load-modules. That does not move
+module definitions into init.ss or hide a second parser/resolver behind the name.
+Existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/authoring/module-source-collection.ss][source collection code]] already projects interface.ss entrypoints.
+The target enhancement combines a directory source and normalized init policy,
+then delegates each responsibility to its existing owner.
+
+| Input/operation | Owning mechanism |
+|-----------------+------------------|
+| Directory/root and explicit contribution source | Directory Contract/source resolver; admitted interface.ss metadata |
+| init.ss declarations | Existing bounded yuanxu! lowering, with reviewed mode/root/disable extension |
+| Module Core inclusion and owner disable | Module System descriptor/import closure |
+| Optional flag selection and capability binding | Existing Feature System model/resolver/binding |
+| Build entries and compiler closure | Selected Core + selected feature projections, then PackageSpec build owner |
+| Public namespace | Native lazy directory/export view and existing bounded use-module |
+
+The proposed facade accepts the admitted init object; a directory string is a
+shorthand for its auto-policy default. Neither signature is implemented by the
+current one-collection SourceRef projector. These are target public calls:
+
+#+begin_src scheme
+(def AutoModules (yuanxu-load-modules AutoInit))
+(def ExplicitModules (yuanxu-load-modules ExplicitInit))
+#+end_src
+
+The facade must resolve the selected source graph before exposing executable module
+exports. Its namespace preserves source-qualified identity, rejects disabled owner
+access and does not realize unrelated interfaces. Policy/build diagnostics are
+projections of that same selection generation. Do not expose a raw unfiltered
+catalog as the selected namespace or allow .get to bypass a module disable.
+
+The shared Core composition protocol shows what can be converged without
+inventing another engine. Its helpers are owned by the Core design linked below. catalog, root-ids, denied-module-ids and feature-descriptors are already
+admitted/normalized inputs from the source/init boundary. build-projections are
+already qualified build contributions of that same selected feature composition;
+this is not a complete Loader or an implementation of automatic scope binding.
+
+The generic lazy view is [[file:../../../module-system/design/04-selected-build-view.org][module-build-view in Core]]. Agentic AI Lab supplies an
+admitted optional-contribution adapter derived from its existing Feature System;
+Core has no dependency on that implementation.
+
+
+Native lazy slots keep this a demand-driven view. Before build-entries is exposed,
+the input projection list must be checked against feature-composition.projections,
+not trusted from a different graph generation. Source/currentness, capability binding,
+cycle and complete compiler-dependency gates remain required. No extra public
+calls to these internal steps should be required from ordinary users.
+
+* One canonical init declaration, not duplicated policy objects
+
+The [[file:11.23-source-ref-to-admitted-scope.org][complete Guestbook chain]] contains the canonical explicit init.ss and minimal
+build.ss alongside both interface declarations. [[file:11.22-migrated-core-guestbook-chain.org][Module 21]] preserves the auto-policy
+alternative and explains its bounded lowering. They are alternative policies,
+not files or normalized objects users maintain together. Earlier root-only init
+examples and copied AutoInit/ExplicitInit objects are superseded.
+
+Normalization retains qualified false Feature decisions and disabled Module rows,
+including source locations. Directory discovery must not erase them. Module/Feature
+owners consume that same intent for the namespace and build views. The extended
+init grammar and generated publication are pending, not current Loader behavior.
+
+* Module System closes required module metadata using existing graph code
+
+The following complete small adapter uses existing module-closure, without a new
+graph traversal engine. catalog indexes admitted Module values. Its new core
+layout and source adapter are pending. The disabled identity list is normalized
+lookup input; the original POO decisions/source records remain retained for tools.
+
+The complete selected-module-closure design is owned by
+[[file:../../../module-system/design/04-selected-build-view.org][Core selected build views]]. The Agentic AI Lab adapter supplies its admitted source,
+init and Feature System values to that protocol; it does not duplicate the helper.
+
+
+Selecting each module automatically selects its core requirements/exports. No
+core-enable flag is required. The supplied callback only resolves required metadata;
+source directory lookup and metadata admission do not initialize module bodies.
+Existing closure de-duplicates identity; it does not itself provide cycle/topology
+or phase-complete build validation. Those gates must remain explicit. Source-qualified
+full refusal chains and conflicting-source detection are also required adapters;
+the short error above is not claimed to supply the final diagnostic UX.
+
+For Guestbook, the admitted root request resolves to custom/guestbook. Its baseline
+requires core/module-system, core/json-schema and infrastructure/kubernetes.
+The bootstrap root and dependency graph are Module System values, not Features.
+The following is the complete bounded logical module graph for this case:
+
+#+begin_example
+framework bootstrap:
+  core/module-system.core
+    -> core/contracts.core -> external POO/MOP runtime
+    -> core/feature-system.core -> external POO/MOP runtime
+
+Guestbook preview:
+  custom/guestbook.core
+    -> core/module-system.core
+    -> core/json-schema.core -> core/contracts.core
+    -> infrastructure/kubernetes.core
+         -> core/contracts.core
+         -> core/json-schema.core
+
+custom/guestbook.core owns/associates:
+  independently published Frontend/Redis Leader/Redis Follower Profiles
+  Server input schema and final Scenario .admit integration
+  preview consumer relationship and GuestbookPreviewCapability
+
+retained negative intent:
+  sandbox/nono-sandbox disabled
+  guestbook/smoke false
+#+end_example
+
+core/feature-system here is the module implementing the existing Feature System,
+not a Feature descriptor that replaces Module System. Source catalogs may locate
+it differently; publication adapters preserve exact owner/source identity. This
+figure is a logical dependency model, not verified per-file build closure.
+
+If custom/guestbook's requested preview needs Kubernetes and that owner is disabled,
+Module System refuses the request. If JSON Schema is disabled, the Guestbook schema
+admission dependency similarly fails. A user cannot keep a selected module while
+turning off the baseline operation its Contract requires. An otherwise unused
+optional module can be disabled as a whole. Framework bootstrap protection is an
+explicit root policy, not a special category in Feature System.
+
+* Feature System resolves only selected extensions
+
+GuestbookSmoke is published under its owner but omitted from selections by -smoke.
+The normalized decision remains present. Existing feature resolution receives
+only eligible selected descriptors, not synthetic copies of module Core:
+
+#+begin_src scheme
+(def (selected-feature-plan selected-descriptors)
+  (resolve-feature-profile
+   (feature-profile 'guestbook/extensions
+     (map feature-selection selected-descriptors))))
+
+(def (selected-feature-composition plan)
+  (unless (eq? (.get plan status) 'ready)
+    (error "feature selection refused" (.get plan diagnostics)))
+  (feature-composition-plan
+   (feature-manifest-bundle 'guestbook/extensions
+     (map (lambda (selection) (.get selection descriptor))
+          (.get plan ordered-selections)))))
+#+end_src
+
+For this -smoke case, selected-descriptors is the empty list: the Guestbook baseline
+still works. +smoke would add GuestbookSmoke and bind its preview requirement to the
+module-provided capability. Its only declared feature-level dependencies, if any,
+must also be selected before the existing resolver is called. That resolver
+currently reports missing-dependency rather than discovering an entire catalog.
+
+The pending selection adapter must map owner flag names to descriptor identities,
+validate unknown/conflicting flags, retain negative records and reject hard requests
+for disabled features. It must not silently re-add a denied dependency to satisfy
+a feature requires edge. Cross-owner capability failures go through the existing
+binding model, while missing/disabled module owners go through Module System.
+These are cooperating adapters at existing boundaries, not a second universal
+feature/module resolver.
+
+* Build entries combine selected Core and admitted feature contributions
+
+After Module admission and Feature composition, the build adapter receives the
+selected Module list and already-admitted build projections. Core entries always
+come from selected modules; optional entries come only from selected features.
+The following pure-output construction gives a deterministic de-duplicated list:
+
+The complete selected-build-entries design is owned by
+[[file:../../../module-system/design/04-selected-build-view.org][Core selected build views]]. The Agentic AI Lab adapter supplies its admitted source,
+init and Feature System values to that protocol; it does not duplicate the helper.
+
+
+This is an adapter over admitted inputs, not a new resolver. A projection-kind
+Contract and routing step must first select valid build-public-entries objects
+from existing composition.projections. Other projection kinds go to their owners;
+unknown malformed contributions cannot be silently treated as valid build roots.
+Module core build-entries is a target descriptor field mapped to the existing
+PackageSpec authority, not another handwritten list to keep in parallel.
+
+Core Schema's actual entry roots are printed in JsonSchemaModule above. Guestbook
+and Kubernetes source units remain unimplemented, so this design cannot honestly
+print an accepted complete filesystem build manifest. It can specify the complete
+logical module/feature graph and the exact new adapter needed. Build projection
+then delegates compile-time/runtime import closure, for-syntax inputs, FFI and
+schema-generated resources to the existing build owner. Topological/cycle/source
+currentness checks must pass before execution. exports alone cannot discover
+arbitrary dynamic Scheme loads.
+
+The target build.ss becomes bootstrap/toolchain coordination, not a repeated module
+registration catalog. -smoke yields no smoke build contribution; disabling an
+unused Sandbox yields neither its Core nor its features in the selected graph.
+Shared Core entries remain if another selected module needs them. No runtime
+module initialization is implied merely by compiling a required source unit.
+
+* Complete user config and final Guestbook boundary
+
+Both init choices supply the selected Guestbook interface scope to this same
+config.ss. The source-to-lexical-scope handoff is pending facade integration;
+the body itself uses existing native POO syntax:
+
+#+begin_src scheme
+(def Development
+  (use-module Guestbook as gb
+    (.o (:: @ (.get gb baseline))
+      frontend: =>.+
+      (.o image: "gcr.io/google-samples/gb-frontend:v5"
+          labels: =>.+ (.o team: "checkout")))))
+#+end_src
+
+The original frontend comes from Guestbook's maintained baseline. Its labels object
+is retained except team; image is directly replaced. The final schema obligations
+and Deployment/Service consumer must read this effective Development value.
+
+* Final Guestbook values and demand remain the same
+
+The native user body and default-bearing Profile evolution are preserved in
+modules 11–17. JSON Schema's existing generated Contract/full-root validator feeds
+Scenario responsibilities, and public .admit checks the effective frontend/Redis
+objects. Resource consumers must read those same admitted candidates, never a
+cached parent resource list. The expected image/label/port previews are unchanged.
+Full renderer parity and warm-parent final-object controls remain pending.
+
+Source selection demands only required metadata. Scope binding does not compile
+all schemas. Baseline access does not force unrelated feature providers. Admission
+forces selected Schema/Contracts; resource preview forces the selected consumer;
+post-deployment smoke execution remains a separate runtime action. An eager init
+import can violate those goals and needs a measured negative-demand control.
+
+* Conclusion: strengthen the correct owners
+
+Already implemented: Module descriptors/import closure, Feature descriptors and
+resolver, capability/requirement matching, manifest/composition, native scopes and
+Schema Contracts. Pending: explicit Module core publication mapping/Contract,
+directory/interface discovery and init selection and retained negatives, automatic Core inclusion for
+selected modules, cross-boundary capability binding and selected build projection.
+No Core functionality is reclassified as an optional Feature to make this design
+fit an existing API.
+
+This is design only. No Module/Feature resolver, build adapter, renderer or Loader
+was implemented or run. The questions to test are whether source/owner identity is
+preserved, negative intent cannot be undone, module/feature dependencies fail at
+the right boundary, selected graph build closure is complete, and unselected init
+bodies stay cold.

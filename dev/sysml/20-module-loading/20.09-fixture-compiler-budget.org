@@ -1,0 +1,210 @@
+#+title: 20.09 Fixture Native Compiler Budget Attribution
+#+language: en
+
+* Question and fixed source authority
+
+Why did the selected Fixture fail the existing 120-second preparation budget?
+Do not equate the whole interval with compiler CPU or attribute it solely to
+host load. The native std/make scheduler and the existing .compile issuance
+boundary remain the only build path. No new Builder, cache, timeout or approval
+protocol is introduced.
+
+The latest observed gerbil-poo PR 13 head is
+=7e13f72beb840c052f7ebf5ed8527195a7d8d501= (2026-10-25). Its changes after
+=f1fea22= add checked finite collection-prefix decomposition. Neither those
+changes nor the preceding collection projections change the MOP read issuer,
+receiver cache, publication or closure machinery used by this consumer.
+The consumer runtime is still explicitly pinned to =40c61fe=; a source audit
+against the newer PR is not a newer-PR-wide execution receipt.
+
+* Attribution from actual entrypoints
+
+The failing log =owner-shell-final-cold-20261025.log= contains fourteen selected
+support targets and nine compile announcements, each with a distinct target.
+An announcement is a start, not a completed unit. Installed std/make rejects
+duplicate target paths before scheduling, tracks completions by module identity,
+and derives source/output paths from one settings object. There is no force
+request. Thus no within-invocation repeated target compilation was observed.
+
+A failed fresh issuance discards its temporary output directory and publishes
+no approval. A subsequent attempt can legitimately repeat cold work. Reusing
+these unissued partial products would weaken the current publication boundary
+and is not the repair.
+
+The 120-second outer preparation watchdog includes projection, currentness,
+recovery, the child Make process and completion admission. The old failure has
+10.303 seconds of support projection, plus a 64.306-second selection span that
+is outside that watchdog. Nested selection/currentness/GC spans are inclusive;
+they must not be added to their parent spans. The old log has no successful
+Make receipt or descendant CPU total, so it does not justify assigning all
+remaining time to the compiler or to host scheduling.
+
+* Concrete scheduling defect and native repair
+
+=prepare-testing-script= overrode =GERBIL_BUILD_CORES= with the literal =1=.
+This silently discarded the existing caller's explicit =2= worker budget.
+Installed std/make derives both its worker count and its compiler parallel flag
+from this native setting. With one worker it invokes the backend synchronously;
+with more than one, native Make drains pending compiler jobs before returning.
+The same native completion barrier, products and .compile checks remain in use.
+
+Remove only the forced worker override. Preserve explicit Script environment
+settings and the inherited process environment. An unset setting retains the
+SDK's native default; no CPU-count inference or unbounded worker policy is
+added here. The focused Scheme tests still run serially, and the caller's
+existing two-worker compiler allocation is not increased. The VM heap fence,
+60-second idle watchdog, 120-second preparation and 600-second outer limits
+remain unchanged.
+
+* Measurement without a second execution system
+
+The existing opt-in observation now emits compiler-entry elapsed time and the
+already-collected recovery/currentness totals before launching Make. The child
+reports its actual native worker setting. POSIX =/usr/bin/time -p= surrounds only
+that observed compiler command, reporting wall, user and system time including
+its descendants. Normal unobserved commands gain no timing wrapper.
+These lines do not count as work in the existing progress reader.
+
+CPU/wall residual can include IO, daemon/process waits, paging, GC clock effects
+and host scheduling. Do not label it scheduler time without further evidence.
+The existing source-read metrics and make target/job announcements separate
+actual repeated work from waiting. No Scheme checker is memoized, no source
+fingerprint is rewritten, and no currentness guard crosses the compile effect.
+
+* SysML verification allocation
+
+SysML owns this attribution and measurement plan. Existing Lean ownership and
+identity results still constrain sharing; no structural sharing changed here.
+Existing QNT effect/currentness transitions still constrain .compile entry,
+callback and return. No duplicate timing/state model is added: the SDK source
+owns its compiler scheduler, and real Just/Harness runs own runtime evidence.
+
+* Acceptance
+
+First publish through the normal full native build. Then run the existing
+16/32 census cold and in a fresh hot process and the real Gitea/PostgreSQL
+consumer. Require new shell rows, MODULE-OK, HARNESS-OK and final OK without
+error/overflow markers. Record target counts, native worker count, compiler
+wall/CPU and preparation currentness separately. Preserve failed attempts.
+Do not rerun the known failing 10,000-module gate or claim an exclusive-memory
+saving from a VM total or a reference-union count.
+
+* First repaired execution and newly exposed diagnostic work
+
+The repaired Fixture producer completed all fourteen native targets. Make
+reported =cores=2=, process wall =12.394 s=, POSIX =real 12.24 / user 17.11 /
+sys 3.62=. Projection was =0.840 s=, compiler-entry preparation =0.146 s=,
+and the complete .compile span =13.881 s=. Recovery was =0.000243 s= and
+recorded currentness =1.282 s=. CPU exceeding wall is consistent with native
+parallel descendants; it is not an exclusive attribution of the historical
+timeout. Host load dropped sharply, so this is not a matched speedup estimate.
+
+That run then failed later, inside the new diagnostic: after walking the SDK
+shell it attempted to copy 1,079,814 unique SDK nodes into another union table.
+No actual work progress was relayed during that final copy; the unchanged idle
+watchdog refused it. This is a different failure from Fixture compilation.
+
+Before changing that algorithm, Lean =partitionLength= and
+=unionCountWithoutCopy= were checked in the existing PayloadSharing model.
+The diagnostic now counts the intersection by scanning the smaller existing
+support and uses =|A| + |B| - |A intersection B|=. It does not allocate a second
+million-node union. The existing Ops progress reports only actual processed
+identities, in the same 1024-node batches as the existing walker. No timer or
+synthetic heartbeat is used. Production read edges and deliveries are untouched.
+
+Source inspection also found that exact descriptor-id comparison failed to
+exclude GC-table subclasses. Use the installed native
+=##structure-instance-of?= predicate with =gerbil#__gc-table::t=, preserving the
+conservative frontier for all such containers until weak/strong policy is
+modeled. Previous raw SDK counts cannot be advertised as a complete strong
+retention census. The corrected series must be labeled separately.
+
+* Final same-source bounded results
+
+The corrected native full build succeeded. The final census source was then
+frozen for both independent Just processes and the real service regression.
+All three completed with MODULE-OK, HARNESS-OK and final OK, without error or
+overflow markers. The new owner-shell rows were present in both census runs.
+
+| Preparation span | Cold process | Fresh hot process |
+|------------------+--------------+-------------------|
+| Selected support targets | 14 | 14 |
+| Actual compile announcements | 14 | 0 |
+| Actual native worker budget | 2 | 2 |
+| Support projection seconds | 2.602 | 0.852 |
+| Compiler-entry elapsed seconds | 0.407 | 1.304 |
+| Make receipt wall seconds | 14.837 | 4.568 |
+| POSIX real seconds | 14.61 | 4.40 |
+| POSIX user seconds | 17.69 | 4.04 |
+| POSIX sys seconds | 4.05 | 0.33 |
+| Native Make body seconds | 13.107 | 3.524 |
+| Full .compile span seconds | 16.697 | 7.315 |
+| Recovery seconds | 0.000144 | 0.965 |
+| Recorded currentness seconds | 1.434 | 2.649 |
+| Harness seconds | 27.123 | 15.773 |
+| Driver total seconds | 64.898 | 31.374 |
+
+Recovery/currentness spans are inclusive of their nested checks and must not
+be added blindly. Zero compilation does not imply zero Make work. The hot
+compiler process still imports native Make and traverses the dependency DAG;
+its 4.37 CPU seconds versus 4.40 real seconds leave little residual in this
+particular cohort. It does not exhibit the earlier large wall/CPU discrepancy.
+This does not retrospectively identify the exclusive cause of the old timeout.
+The earlier host load and worker settings were different, so no controlled
+serial-versus-parallel speedup is claimed.
+
+| Effective graph query | 16 cold / hot | 32 cold / hot |
+|-----------------------+---------------+---------------|
+| First process wall seconds | 4.169 / 0.065 | 5.913 / 0.148 |
+| Fresh hot process wall seconds | 4.277 / 0.067 | 5.879 / 0.147 |
+| Additional role expansion | 32 / 0 | 64 / 0 |
+| Physical source reads | 6,960 / 106 | 13,968 / 170 |
+| Original issued records | 9,231 | 18,159 |
+| Original dependency-edge occurrences | 22,619 | 42,923 |
+
+Each hot query still performs explicit source admission. The test requires the
+same cached graph by identity and an unforced unselected scope. No admission
+verdict is cached.
+
+* Corrected owner-shell accounting
+
+| Covered raw identity graph | 16 modules | 32 modules |
+|----------------------------+------------+------------|
+| Observed receivers | 875 | 1,691 |
+| Receiver-shell reachable nodes | 132,540 | 257,672 |
+| Receiver-shell payload words | 614,336 | 1,188,931 |
+| SDK contexts reached | 376 | 376 |
+| SDK-shell reachable nodes | 1,079,304 | 1,079,304 |
+| SDK-shell payload words | 3,646,602 | 3,646,602 |
+| All-category identity union | 1,211,833 | 1,336,965 |
+| Final intersection scan identities | 132,540 | 257,672 |
+
+The receiver graph includes the complete observed specification/thunk union;
+charging those categories again would duplicate the same identities. The SDK
+support is identical in these two bounded observations, not another full SDK
+copy per module. This is a shared support graph, not proof that the selected
+root exclusively retains those nodes. The SDK/receiver intersection has eleven
+identities. Headers, string backing, foreign/code storage and frontier interiors
+remain unaccounted. Whole-VM post-GC live is kept as a separate observation, not
+an exclusive-memory estimator. No production-memory saving follows directly.
+
+The diagnostic no longer copies the SDK graph into another large identity
+table. Existing Lean checks cover partition cardinality, no-copy union count
+and symmetry under duplicate-free enumeration, including either smaller-side
+choice. Actual native identity-table correspondence and conservative frontier
+classification are runtime/source obligations, not secretly discharged by that
+abstract theorem. No temporal QNT model was duplicated.
+
+The real Gitea/PostgreSQL regression completed all eleven existing cases:
+parent-cache isolation and child final values, both independent requirements,
+invalid ports and explicit mismatches, closed-field typo laziness, nested
+obligations, changed sources, and omitted/substituted contribution refusal.
+
+The existing =module-test-observation-test= and =testing-script-test= also pass
+serially via the default Just entry: observer order/delivery, no forced cold
+Contract/Context, independent progress frames, expired budgets, failure cleanup
+and the original Harness result policy remain covered. All five final Scheme
+runs have complete success markers and no forbidden errors. The changed Lean
+module checks successfully with no admitted theorem. The frozen 562 Scheme
+source inputs remain unchanged through the run. No new tests, Builder, cache
+protocol, timeout extension or capacity rerun was introduced.

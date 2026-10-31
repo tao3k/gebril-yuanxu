@@ -1,0 +1,257 @@
+#+title: 32.46 Automatic Recovery From A Selected Module's Nix Source
+#+language: en
+#+startup: overview
+
+* Question and authority
+
+Follow-up: [[file:32.47-conditional-build-publication.org][32.47]] qualifies a serial conditional head transition and retains
+the external-write counterexample. It does not convert package currentness into
+an atomic deployment effect.
+
+[[file:32.45-selected-nix-release-recovery.org][32.45]] qualified recovery with an independently supplied exact release path.
+This step removes that path from restarted readers' arguments. The existing
+selected Module graph now discovers an upstream =core.build-publication= value,
+an ordinary Nix Source. The Source's native publication derives and realizes
+the approved package. Core's normal =.for-export= boundary invokes recovery on
+demand; domain callers do not reconstruct a projection or read a receipt.
+
+This relocates authority to the governed package/deployment configuration; it
+does not manufacture authority from Nix integrity. The bootstrap entry and the
+selected upstream Module must themselves be approved. A party able to replace
+that entire authoritative configuration can select a new valid release. A fresh
+process cannot distinguish that from an authorized deployment without a stronger
+external deployment policy. No new signature or approval database is introduced.
+
+* Upstream declaration and ordinary consumer
+
+The qualification publishes these ordinary roles under =building/release=:
+
+#+begin_src scheme
+;; config.ss: ordinary upstream package configuration
+(def Config (.o expression: "release.nix"))
+
+;; objects.ss: reuse the maintained Nix Source prototype
+(.def (ReleaseSource @ NixSource.)
+  expression:
+  (path-expand (.get Config expression) (path-directory (this-source-file))))
+
+;; interface.ss: normal selected Module publication
+(.def Release
+  identity: 'building/release
+  core:
+  (.o requires: (.o)
+      build-publication: ReleaseSource
+      scope-contract: ScopeContract
+      exports: (.o Source: ReleaseSource))
+  features: (.o))
+#+end_src
+
+Imports and native role exports remain ordinary module-authoring declarations;
+the executable fixture provides them explicitly. The type role's ScopeContract
+checks publication shape, not artifact authenticity. Nix content verification
+and Core's retained build protocol own the latter boundaries.
+
+The package publisher creates =release.nix= after its Core build completes. It
+references the registered immutable issuance input, rather than reading a mutable
+sidecar to invent expectations. A native derivation copies that regular input to
+its output's =issuance.ss=. Its output path is derived by the existing Source;
+neither the controller nor a reader chooses a candidate store path at recovery.
+The initial producer and the original pipe receiver exit before the new reader.
+
+#+begin_src scheme
+;; Same normal publication call as before: no restore step and no release pin.
+(.call AdmissionPublication. .for-export selection
+       'applications/gitea-postgresql 'Application)
+#+end_src
+
+The package-generation fixture remains a bounded publisher driver around the
+existing managed Core handoff. It is not a completed distribution service. The
+consumer implementation lives in Core and the Nix module, not in that driver.
+
+* Selected graph and one recovery phase
+
+Only explicitly selected Core contributions participate. =build-publication=
+looks for this field among those contributions without demanding other scopes.
+Zero contributors preserves ordinary source-only publication. Two contributors
+are rejected before either Source is demanded. There is no catalogue scan or
+implicit selection of an undeclared module.
+
+When the graph lacks process-local issuance, =admit-build-artifacts!= demands
+the one selected Source's =.restore-build=. A dynamic receiver-local recovery
+frame rejects recursion before demanding the Source. Errors leave that graph
+=build-required=; a refused restore cannot degrade to source-only publication.
+Independent parent and child graphs have separate issuance and recovery state.
+The field is a release of this complete selected compiler graph, not a provider
+artifact declaration to repeat in every service Module. Existing external-package
+contributions remain the mechanism for independent provider/package dependencies.
+Its native BuildPublicationContract checks the method protocol. A Source which
+returns without installing real Core issuance, or recursively requests the same
+recovery, is refused and cannot silently enable source-only publication.
+
+The approved packet must cover EVERY =graph.compiler-inputs= observation with
+the same value, and all packet inputs are revalidated. Additional retained build
+roots are permitted because a selected build can include compiler/bootstrap
+tools. Their observations are also checked. A candidate cannot replace the
+selected graph's observations or omit them to make its own projection match.
+The wire parser is shared with the existing Core handoff, not a second decoder.
+Wire export produces a detached readable value, never mutable references to the
+issuer's private expected digests. The warm control mutates its exported copy and
+then verifies that real artifact admission is unaffected.
+
+* Approval survives publication and warm compilation
+
+The Nix adapter uses the existing =Source .prepare= publication. Core retains two
+different boundaries in its private issued-build state: a source-only observation
+guard and an effectful Nix package guard. Internal artifact admission may reuse
+the existing pure source-read window; it NEVER starts Nix for an already restored
+receiver. The effectful guard is composed with the existing publication
+=package-current= hook, before and after root Contract admission. Initial export,
+compiler invocation and managed child-process boundaries also own fresh package
+checks. Saved =.publish= and hot exports retain both boundaries.
+
+An earlier attempt put the full Nix guard in every internal artifact check.
+Run 08 performed more than 300 native Nix operations and correctly hit the
+unchanged 120-second process limit. More importantly, that put package effects
+inside the source-only Context check window. The correction is an ownership
+split using the existing package protocol, not a cross-callback success cache.
+
+A successful warm =call-with-build-artifact-issuance= must preserve that SAME
+guards. Recompilation is not a capability to replace them with =void=. A warm
+build also cannot substitute different output bytes for the approved artifact
+family. A fresh
+receiver is required for a new approved selection. Ordinary locally issued
+builds use the existing trusted build authority rather than silently restoring
+an external release.
+
+The guard retains the Source publication, not an explicit Graph back-reference.
+It does not memoize currentness across callbacks or external processes. Source
+observations, derivation selection and registered Nix contents remain distinct
+checks. Source lifetime/GC at ecosystem scale is not qualified by this small run.
+
+* Native validation and formal correspondence
+
+The executable is =t/approved-build-recovery-test.ss=. Its restarted worker
+receives only a source workspace and a control name. Local artifact paths are
+computed for fault injection only, never used as approval expectations.
+
+Controls cover fresh automatic recovery; a saved hot publication after coherent
+artifact/record replacement; semantic changes to the approved Nix derivation;
+the same change after a warm build; source mutation after restoration; and source
+or joint artifact/record mutation before another fresh process starts. Successful
+publication retains parent plan 5432, child PostgreSQL/Gitea port 5433 and both
+independent contributions. Disabled malformed interfaces and unread malformed
+JSON remain undemanded.
+
+=CoreApprovedRecovery.lean= models restoration followed by final approval,
+source, file and two-requirement checks. The decoder compares actual native
+decisions with that projection. Existing handoff theorems own receiver-indexed
+installation. =CoreApprovedRecovery.qnt= adds the warm-compilation edge and
+negative controls for losing its guard, omitting approval/source/file checks,
+dropping the second requirement, mutating parent state or forcing an unused
+branch. An accepting witness excludes a reject-everything implementation.
+
+These are protocol and finite-model results. They do not prove Nix, filesystem
+atomicity, OS isolation, the compiler, or the initial authority of an arbitrary
+local deployment directory. Source changes restored between observations remain
+an external ABA/conditional-commit boundary. Host/daemon restart, GC retention,
+private-input distribution and cross-host relocation are not exercised here.
+The configured Nix tools, bootstrap configuration and passive process/source
+observers remain trusted. This model does not prove arbitrary observer callbacks
+read-only. A writer acting after the last foreign dependency observation still
+requires an external conditional/atomic commit; repeating checks is not a proof
+of atomicity. Direct value Contract =.admit= is not itself a package-release or
+runtime execution authorization; the root =.publish= owns that package boundary.
+
+Approval-change controls modify =release-name.nix=, imported by =release.nix=.
+The explicit entry file stays unchanged. The expected refusal is the existing
+Nix =stale external package derivation= diagnostic, including after a warm build.
+This specifically exercises the foreign derivation guard, not merely an explicit
+Scheme file-byte observation. An incomplete but approved store input separately
+tests selected-input coverage. The omitted row comes from the actual selected
+Graph, avoiding filesystem alias assumptions such as =/var= versus =/private/var=.
+
+A new process with a newly authorized deployment configuration may legitimately
+select a different release. The rejection guarantee concerns changes to a retained
+publication and stale artifacts against the current selected configuration. It
+does not identify an unauthorized replacement of the bootstrap authority itself.
+
+* Validation receipts and failures
+
+Raw outputs remain local artifacts. No failure is relabeled as a pass.
+
+Early runs encountered mixed compiled/current-source ABI references in the shared
+Core cache. The private overlay now compiles the current dependencies it uses;
+it does not modify the shared installation or Gerbil. Further fixture failures
+exposed missing native role exports and a top-level conditional definition. Those
+are fixture corrections, not evidence that recovery passed. Final executable
+and formal outcomes are recorded below only after qualification.
+
+Other retained refusals include the 60-second idle fence when completed worker
+checks were not decoded, and the 120-second process fence in the over-eager Nix
+guard version described above. The final harness reuses the existing progress
+decoder; worker progress counts only successfully completed native Nix operations.
+It has no timer heartbeat and does not expand any watchdog.
+
+The publisher declares its generated policy filenames before source selection;
+adding members to an already observed directory correctly invalidates that epoch.
+Fault injection captures the original record before warm builds create new ones,
+and a hot worker obtains its actual active record through Core's existing wire
+projection. Nix =--raw= output lacks a newline, so result rows explicitly terminate
+stderr and flush their own stdout framing rather than weakening prefix parsing.
+
+The omission fixture originally restored its policy in the execution body before
+the reader ran; the reader correctly accepted the complete original publication.
+Recovery runs 12/13 remain failed controls. Restoration now belongs to the
+=dynamic-wind= release phase. A separate assertion confirms that a real selected
+observation was removed before the deliberately incomplete package is registered.
+Compilation 11 separately refused a concurrent source edit; the subsequent
+overlay preserves the other session's changes and recompiles current sources.
+
+Run 14 completed all eight behavior controls but failed its final JSON export:
+the installed Gerbil writer takes the output port before the value. That run is
+NOT a successful harness receipt. Run 15 hit the unchanged idle fence during the
+multi-stage producer. The producer now reports only completed selection,
+compilation and managed-publication phases through the existing progress API;
+readers report completed native Nix operations. Neither uses a periodic heartbeat.
+
+Recovery 16 is the first fully qualified native receipt: natural exit zero,
+=MODULE-OK=, =HARNESS-OK= and final =OK=. Its eight observed decisions are:
+
+#+begin_src scheme
+((warm . #t) (joint . #f) (policy-change . #f)
+ (warm-policy-change . #f) (core-source . #f)
+ (cold-source . #f) (cold-joint . #f) (cold-omitted . #f))
+#+end_src
+
+The actual JSON trace passes =CoreApprovedRecoveryCheck.lean=. Flipping only
+=policy-change= to acceptance fails that decoder with
+=native approved recovery/Lean decision mismatch=. This is an extraction
+consistency control, not a proof of Nix's implementation.
+
+The focused =build-recovery-boundary= regression passes its three controls for
+no-op recovery, recursion and inert source-only admission. The targeted Lean
+build completes 186 jobs and audits 6313 declarations with standard Lean axioms
+only. An earlier 120-second full-build timeout is retained; the targeted run
+reuses the genuinely completed dependencies, without widening its limit.
+
+Subsequent current-source receipts are kept distinct from recovery 16 because
+another session modified Core source/build and admission code during this work.
+Compilation's before/after source hashes and the final overlay hash check own
+that distinction; an old private overlay is not relabeled as current source.
+
+The final integrated receipt is recovery 17 against overlay 13, with the other
+session's current source/build and admission changes preserved. All eight
+decisions, natural exit zero and complete harness markers pass. Its actual trace
+also passes the Lean decoder. The three recovery-boundary controls and the
+existing build-artifact-publication/managed-process regression pass serially
+against that same overlay. They preserve ordinary local build issuance, warm
+reuse, saved publication and post-child source refusal.
+
+The final =core-approved-quint-09= receipt qualifies eleven outcomes: positive
+safety and ten matched counterexample/witness controls. All 451 bound file hashes
+and every compiled-overlay source hash were rechecked against the current tree.
+This does not qualify later edits or replace executable correspondence with a
+source-hash claim. Installed Gerbil loader/compiler source hashes remain unchanged.
+No Gerbil source, compiler installation, lockfile or signature system was changed.
+Raw runs remain local artifacts; only executable controls and this structured
+summary belong in source control.

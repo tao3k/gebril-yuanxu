@@ -1,0 +1,197 @@
+#+title: 32.19 Root-Owned Responsibility Analysis
+#+language: en
+
+* Scope
+
+This implements only W1--W3 from [[file:32.18-current-core-check-attribution.org][32.18]]. The current source reader/link
+remains the consumer; there is no Loader integration. Historical baseline logs
+and source cuts remain unchanged. The optimization removes redundant whole-
+publication certification, not child admission, domain requirements, or source
+observation.
+
+* Ownership in the existing Contract kernel
+
+=SourceAdmissionContract.= supplies a pending exact descriptor/candidate/context
+edge around its inherited kernel invocation. The kernel consumes this one-shot edge and
+clears it before running normalization, classification, obligations, or platform
+callbacks. Only its own responsibility traversal installs the next exact edge.
+A separate admission invoked by an obligation therefore starts independently.
+An overridden =.admit= calling its inherited producer twice cannot reuse the
+consumed edge on its second call.
+This is internal execution provenance, not an unforgeable security capability.
+
+The ordinary =.contract-obligations= callback remains the independent admission
+entry. Root-owned children may use =.responsibility-obligations= on the same
+Context. The contribution Context uses this entry only without an inherited
+platform callback, without the root contribution callback, and with its exact
+bound platform handler unchanged. A replaced/derived handler remains an open
+callback and is not silently skipped. Otherwise it
+falls back to the original guarded entry. Nested SourceAdmission adapters start
+their own root and retain their own source certification.
+
+#+begin_src scheme
+;; Kernel-owned responsibility delegation; no user-side Requirements list.
+(parameterize ((current-contract-analysis
+                (and owned? (make-contract-analysis descriptor value context #t))))
+  (yuanxu-contract-admit descriptor value context))
+
+;; The contribution Context's internal analysis entry.
+(lambda (actual candidate)
+  (unless (hash-get contracts actual)
+    (error "admission descriptor differs from selected publication"))
+  (observations-current! observations)
+  (if (or (.slot? base '.contract-obligations) (eq? actual descriptor)
+          (not (eq? (.get @ .contract-obligations) platform-obligations)))
+    (yuanxu-context-contract-obligations @ actual candidate)
+    '()))
+#+end_src
+
+=contracts= and =observations= are the existing publication-bound collection,
+including descriptor/responsibility revisions and deep contribution receivers.
+There is no second field catalog, cached admission decision, or source-byte
+window across child obligations. Actual cold field checks and MOP cache replay
+continue to feed the root source collector. Root certification still checks
+complete contribution coverage, payload/origin identity, graph generation,
+prepared source records, and the selected source closure.
+
+* Boundaries retained
+
+| Boundary | Behavior |
+|----------+----------|
+| Child classification, obligations and receipt identity | Execute exactly as before; rejection remains rejection |
+| Two independent port requirements | Both collected before prototype merging; root checks both |
+| W4 before root contribution/platform callbacks | Full currentness |
+| W5 after callbacks | New full currentness; no cache spans callbacks |
+| W6 replaceable Context return callback | Full currentness; callback remains outside final read cache |
+| MOP dependency replay | Fresh source inspection of actual observed dependencies |
+| Root return collector | Independent fresh recheck after callbacks and replay |
+| Direct contextual child admission | Original guarded callback, not internal analysis |
+| Independent admission inside an obligation | Original guarded callback |
+| Parent cached plan | Cannot authorize a child receiver/configuration |
+
+* Unchanged Scenario behavior
+
+#+begin_src scheme
+(def parent (.get publication value))
+(def cached (.get parent plan)) ; PostgreSQL and default client both 5432
+(.def (Release @ parent)
+  config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+(def evidence (.call (.get publication contract) .admit Release
+                    (.get publication context)))
+;; evidence.candidate.config is the one normalized configuration;
+;; evidence.candidate.plan.configuration must be that exact object.
+;; Its server and default-following client are 5433; cached parent stays 5432.
+#+end_src
+
+An explicit client port 5440 is still rejected with its actual field origin.
+Conflicting independent allowed-port requirements remain separate diagnostics.
+Capturing =cached= as the child plan is still rejected, including when projected
+scalar values happen to match but configuration identity does not.
+
+* Formal correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/RootChild.lean][Admission.RootChild]] supplies conditional =child_sources=,
+=requirements_retained=, =coverage_bound=, =cached_parent_rejected=,
+=post_effect_change_rejected= and =batching_equivalent=. Its =Analysis= has no
+source certificate. The implementation keeps child evidence analytic and the
+source guarantee at the owning root. The QNT =crossEffect=, =skipchild=,
+=omitSource= and =parent= counterexamples constrain the boundaries above.
+
+The prior proofs are not a machine-checked refinement of this Scheme code.
+Complete MOP observation/replay, authoritative contribution collection, exact
+receiver identity, and the read-to-return stability interval remain explicit
+premises. No atomic filesystem snapshot, rollback of external effects, or
+arbitrary callback purity is claimed.
+
+* Executable qualification
+
+The matched source-cut control replaces only the internal analysis callback
+with the existing guarded callback. It uses the same reader/link, exact selected
+rows, final child and runtime. A separate unwrapped Context control verifies that
+observer wrappers do not cause the reduction.
+
+| Actual file reads | Full child guards (control) | Root-owned analysis (cold) | Root-owned analysis (warm) |
+|-------------------+-----------------------------+---------------------------+---------------------------|
+| Whole-publication passes | 6 | 3 | 3 |
+| Publication files | 522 = 6 * 87 | 261 = 3 * 87 | 261 |
+| Graph-current files | 6 | 3 | 3 |
+| Independent return certification | 88 | 88 | 88 |
+| Direct source checks | 4 | 4 | 4 |
+| Total | 620 | 356 | 356 |
+
+These are observed operation counts, not a wall-clock speedup claim. The initial
+assertion expected only 261 saved reads and failed: the phase trace established
+three additional avoided graph-current reads. The corrected gate asserts both
+phase differences separately, identical observed path coverage, and unchanged
+return certification. The failed gate/input remain retained.
+
+The five ownership controls passed through the default heap-fenced native test
+entry: exact child receipts and all obligations, independent admission from an
+obligation, one-shot inherited invocation, rejecting child policy, and a child
+source mutation rejected at root return. The first test-only build lacked the
+abstract Contract's required identity; that failed log/build remains retained.
+
+All five focused gates completed with natural exit zero, =MODULE-OK=,
+=HARNESS-OK= and final =OK=, without error/overflow markers: 24 cases total.
+
+| Gate | Cases | Preserved behavior |
+|------+-------+--------------------|
+| =t/contract-analysis-test.ss= | 5 | Exact receipts, obligations, one-shot delegation, independent nested admission, child source collection after mutation |
+| =t/root-child-admission-test.ss= | 1 | Matched cold/warm counts, unwrapped control, full observed cut, parent isolation, independent source refusal, all four replaced-platform callbacks |
+| =t/source-admission-test.ss= | 6 | Inherited admission once, preflight refusal, child obligations, outer-cache isolation, obligation and replaceable return-callback mutations |
+| =t/gitea-postgresql-publication-test.ss= | 11 | Two requirements, conflicts, explicit client mismatch, exact plan/config identity, omitted/substituted origins, changed role sources and unselected branches |
+| =t/root-child-effect-test.ss= | 1 | Accepted admission followed by a normally returning package callback that edits JSON cannot publish |
+
+The last gate reaches both package callbacks, then observes the actual error
+=selected configuration asset changed=. No receipt is returned, the previous
+parent is retained, and its cached port stays 5432. This is a real filesystem
+mutation through the production publisher; the injected package callback is a
+test hook, not a package build or deployment.
+
+The method-dispatch counters in the five ownership tests are test contexts,
+not source certificates. The performance and service gates use real
+=ServicesFixture= selection, =.selected-record=, =.for-export=, contribution
+binding, source origins, Contract admission and publication. The fixture owns
+a temporary copy of maintained Scenario modules; it does not replace reader/link.
+Disabled =services/unused= contains intentionally invalid syntax and remains
+unselected. Unknown-field diagnosis also leaves its deliberately failing value
+cold.
+
+** Current source and reproducibility
+
+Core checkout: =80e2e74022c9c4053445475402856c5f369aec48= with the qualified
+working-tree inputs, gerbil-poo =ece6f609357ea918038090559ac051a8d9f3e52f=.
+The default Gerbil/Gambit runtime uses a rebuilt qualification library, not a
+compatibility evaluator or the older isolated Core library. Final reconciliation
+matched all 92 compiled Core checkpoints and all 635 captured input files to the
+live checkout. Concurrent passive reader/publication observations were included;
+other sessions' code was neither reverted nor overwritten.
+
+For the recorded source cut, the cold/warm gate was run as:
+
+#+begin_src sh
+qualification=/private/tmp/core-current-admission-attribution
+GERBIL_LOADPATH="$qualification/lib:$qualification/source:$PWD:$HOME/.gerbil/lib" \
+  just test-file "$qualification/core-input/t/root-child-admission-test.ss"
+#+end_src
+
+The other gates use the same heap-fenced =just test-file= entry, serially.
+The source-admission regression ran its rebuilt =.ssi=; the new ownership and
+consumer gates ran their captured Scheme source. The new tests are included in
+Core's =Justfile= test selection. The local structured receipt is
+=/private/tmp/core-current-admission-attribution/analysis-receipt.json=, with
+per-input and per-log digests. Raw logs are not committed.
+
+Two initial compilation attempts reached the unchanged 120-second fence and
+were resumed only from successful checkpoints. One accidentally overlapping
+qualification compile was stopped before acceptance; its exit 143 is retained.
+The obsolete identity-incomplete test build is archived separately. No timeout,
+source gate, child obligation or effect boundary was relaxed for acceptance.
+The Lean/QNT models were reused at their existing qualified revisions, not
+rerun or claimed as a new end-to-end Scheme refinement proof.
+
+* Proof-only review of the remaining reads
+
+[[file:32.20-remaining-read-boundaries.org][32.20]] attributes the remaining 356 reads and proves the conditional pure
+suffix boundary with LeanPoo and Quint. It does not modify this Scheme
+implementation or claim a new native read count. Open callback guards remain.

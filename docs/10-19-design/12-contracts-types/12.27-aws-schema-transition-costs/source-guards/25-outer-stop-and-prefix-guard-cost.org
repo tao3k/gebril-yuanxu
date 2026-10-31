@@ -1,0 +1,135 @@
+#+title: 12.27.38 Outer Stop Cleanup and Prefix Guard Cost
+#+property: DOCUMENT_ID 12.27.38
+#+language: en
+
+* The retained failure
+
+The preceding [[file:24-checked-role-receiver-lifetime.org][checked-receiver experiment]] reached 684 publication returns
+before the unchanged outer 600-second limit. The last completed publication
+reported 581759 worker milliseconds, 528045 CPU milliseconds and 3877064
+physical source reads. The outer budget also includes startup and fixture
+preparation. Starting another full-duration child budget does not align those
+deadlines. No completed thousand-module Graph or collected final heap sample
+was produced. This remains a failed capacity gate.
+
+* Cleanup belongs to the existing resource owner
+
+=ops/progress.ss= now provides =call-with-execution-cancellation=. The existing
+fixture and Ops effect paths enter it internally; authors declare the same
+fixture and invoke the same tests object .run. There is no runner, new test
+execution object or environment-variable cancellation protocol.
+
+The scope lazily installs the standard-library SIGTERM handler. It records
+only active owner threads and cancellation flags, not fixtures or Graphs.
+Nested scopes on one thread share the owner. Dispatch snapshots the owners
+under a lock, releases the lock, then interrupts the owner with an exception.
+Each registration is interrupted once, allowing dynamic-wind to release
+nested fixtures and the existing Ops unwind to terminate its owned process
+group. Unregistration removes the holder; the last scope restores the prior
+OS signal disposition through the standard library. No SDK state is cleared.
+
+This uses the standard library's single SIGTERM registration API. Another
+library must not replace that handler during the owned extent; this is not a
+general multiplexer for independently installed application signal handlers.
+The library does not expose retrieval of an earlier Scheme handler closure.
+
+The native =t/execution-cancellation-test.ss= delivers a real OS SIGTERM while
+an owner is blocked in ProcessScript .run. Nested fixtures release in reverse
+order, the temporary directory disappears, and a subsequent fixture executes
+normally. The existing =t/ops-process-script-test.ss= also passes its owned
+descendant cancellation, failure-output and timeout assertions.
+
+These gates qualify TERM delivery and ordinary Scheme unwinding. They do NOT
+promise cleanup after SIGKILL, a native thread unable to service interrupts,
+or a release method taking longer than the existing external kill grace.
+Neither the 600-second budget nor the five-second hard-kill grace is raised.
+Acquisition still owns rollback until it returns a resource. A normal body
+failure and a cleanup failure retain the existing combined diagnostic.
+
+* The actual prefix traversal
+
+The same sixteen-module source-only init tests .run passed after this change:
+64 role bodies expanded and evaluated; business scopes remained cold; actual
+init-source mutation refused; the fixture released. Its child trace contains
+70 publication guard runs over the whole Case, including 68 by Graph-ready.
+
+The relevant call chain is:
+
+1. selection resolver -> link =eligible!= -> context =current?=;
+2. publication reader -> =declaration-before= -> reader =current!=;
+3. native role imports, expansion and evaluation;
+4. reader =declaration-after= -> reader =current!=;
+5. publication Contract admission -> link =publication-admitted= -> context
+   =current?= -> reader =current!=.
+
+The reader's =guards= includes all previously observed role sources. Each
+reader check walks the compiler observations and that complete accumulated
+list. Identity-based DFS uniqueness does not bound this repeated guard work.
+Within each pure observation window, existing source observation reuse already
+avoids repeated physical reads; it cannot span arbitrary initialization.
+
+For four independent role files, the four principal prefix barriers contribute
+=4(n-1) + 4(n-1) + 4n + 4n= reads at publication n. Across N publications this
+is =8N^2=. Tool sources, package metadata, other boundary checks and duplicate
+physical reads introduced by separate admission windows are excluded.
+
+The sixteen-module trace independently shows 120 reads for config.ss at each
+preceding-prefix barrier and 136 at each completed-prefix barrier: the sums
+0+1+...+15 and 1+2+...+16. Across all four role filenames and all
+publication-current boundaries it records 2310 reads. The principal four-role
+term predicts 2048, not the entire measured total. At N=684 that term alone is
+3742848 reads. This explains the observed scale problem without claiming an
+exclusive attribution of every read or a completed 684-Graph result.
+
+* Model responsibilities and the remaining optimization boundary
+
+Quint's existing TestSourceAdmission model now includes delivered termination.
+The normal model retains cleanup, freshness, one Graph identity and demand-only
+discovery. The added hardStop mutant leaves the fixture held after termination
+and must violate FailureCleanup. The focused family passes eight expected
+outcomes. This is finite state exploration, not a proof about OS scheduling or
+native heap capacity.
+
+Lean's existing SourceClosureWork module proves:
+
+- =prefix_guard_reads_quadratic=: the audited principal recurrence is =8N^2=;
+- =covered_guard_preserves_currentness=: checking a superset of actual support
+  preserves every required revision equality;
+- =omitted_support_can_escape=: an unchecked identity can change while every
+  checked identity remains current.
+
+The projection theorem quantifies over arbitrary identities. Its coverage
+premise must be established at the actual Scheme operation boundary; a
+publication name, native POO syntax or CLOS method label is insufficient.
+Source bytes are not permission to reuse macro/initializer results. Policies,
+Contracts and Schema associations remain part of semantic support.
+
+No prefix guard was removed in this change. Opaque macro, initialization and
+Contract callbacks still receive full support checks. Narrowing to demanded
+support without establishing that premise would merely hide stale-source
+failures. The remaining work is operation-specific support completeness at
+these boundaries, with a complete selected-Graph check before publication.
+The existing Graph and its native source identities remain the owner; there
+is no second namespace tree, result cache or approval cache.
+
+* Evidence limits
+
+Focused native TERM, Ops and sixteen-declaration gates passed with observation
+enabled, natural exit zero and complete native test success markers. The Lean
+TestAdmission and SourceClosureWork targets built successfully. These do not
+replace the thousand-module gate. No time or memory capacity improvement is
+claimed from the cleanup repair, and the preceding 684 timeout is retained.
+
+The real JsonSchema/Funflow/AWS aggregate also passed through the same init
+tests selection and .run, with observation enabled and one Graph. It reported
+seven MODULE-OK, two HARNESS-OK and two final OK markers, natural exit zero,
+and no error/heap/stack-overflow markers. Real Schema transition, stale-evidence
+refusal, preservation of the accepted publication on failure, cold unselected
+branches and fixture cleanup remain intact. The first attempt was refused by
+the sandbox at the local Nix daemon socket; it is retained as an unsuccessful
+attempt. The unchanged test was rerun with daemon access, not weaker checks.
+
+All measurements use the existing locked source-only qualification and native
+Just test entrypoints. No upstream source, heap limit, execution budget,
+runtime loader, cache contents or Git remote was changed. Raw observations
+remain local artifacts rather than files in this documentation tree.

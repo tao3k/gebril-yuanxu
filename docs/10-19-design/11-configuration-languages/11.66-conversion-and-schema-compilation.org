@@ -1,0 +1,149 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.66 OpenTofu Generation 02: Conversion and Existing Core Schema Compilation
+#+property: DOCUMENT_ID 11.66
+#+property: STATUS native-scheme-design-not-executed
+
+* Internal wire representation and bounded converter
+
+The normalized extraction input uses symbol-key JSON-like alists, matching the
+existing Core source decoder. Generated JSON Schema is another private wire value,
+not a new user configuration DSL. Public scopes/Contracts remain native POO.
+The first code block below records the earlier bounded converter. Its rejection
+branches for set/tuple/nested_type are superseded by the complete collection design
+in [[file:11.42-provider-collections-and-nested-types.org][module 41]], which also retains required native semantic residuals.
+Neither version is an implemented or fully qualified provider converter.
+
+#+begin_src scheme
+(def (jref rows key fallback)
+  (let (entry (assq key rows)) (if entry (cdr entry) fallback)))
+(def (jrequired rows key)
+  (let (entry (assq key rows))
+    (if entry (cdr entry) (error "Missing provider-schema field" key))))
+
+(def (cty->schema type)
+  (cond
+    ((and (string? type) (member type '("string" "number" "bool")))
+     (list (cons 'type (if (string=? type "bool") "boolean" type))))
+    ((and (list? type) (= (length type) 2) (equal? (car type) "list"))
+     (list (cons 'type "array") (cons 'items (cty->schema (cadr type)))))
+    ((and (list? type) (= (length type) 2) (equal? (car type) "map"))
+     (list (cons 'type "object")
+           (cons 'additionalProperties (cty->schema (cadr type)))))
+    ((and (list? type) (= (length type) 2) (equal? (car type) "object"))
+     (let (fields (cadr type))
+       (list (cons 'type "object")
+             (cons 'properties
+               (map (lambda (row) (cons (car row) (cty->schema (cdr row)))) fields))
+             (cons 'required (map (lambda (row) (symbol->string (car row))) fields))
+             (cons 'additionalProperties #f))))
+    (else (error "Unsupported selected cty type" type))))
+
+(def (input-attribute? attribute)
+  (or (eq? (jref attribute 'required #f) #t)
+      (eq? (jref attribute 'optional #f) #t)))
+
+(def (attribute->schema attribute)
+  (when (assq 'nested_type attribute)
+    (error "nested_type requires its qualified converter"))
+  (cty->schema (jrequired attribute 'type)))
+
+(def (nested-block->schema declaration)
+  (let* ((mode (jrequired declaration 'nesting_mode))
+         (schema (block->schema (jrequired declaration 'block)))
+         (minimum (jref declaration 'min_items 0))
+         (maximum (jref declaration 'max_items #f)))
+    (cond
+      ((equal? mode "single") schema)
+      ((equal? mode "list")
+       (append (list (cons 'type "array") (cons 'items schema)
+                     (cons 'minItems minimum))
+               (if maximum (list (cons 'maxItems maximum)) '())))
+      ((equal? mode "map")
+       (list (cons 'type "object") (cons 'additionalProperties schema)))
+      (else (error "Unsupported selected nesting mode" mode)))))
+
+(def (block->schema block)
+  (let* ((attributes (jref block 'attributes '()))
+         (blocks (jref block 'block_types '()))
+         (inputs (filter (lambda (row) (input-attribute? (cdr row))) attributes)))
+    (list
+      (cons 'type "object")
+      (cons 'properties
+        (append
+          (map (lambda (row) (cons (car row) (attribute->schema (cdr row)))) inputs)
+          (map (lambda (row) (cons (car row) (nested-block->schema (cdr row)))) blocks)))
+      (cons 'required
+        (append
+          (map (lambda (row) (symbol->string (car row)))
+            (filter (lambda (row) (eq? (jref (cdr row) 'required #f) #t)) inputs))
+          (map (lambda (row) (symbol->string (car row)))
+            (filter (lambda (row) (> (jref (cdr row) 'min_items 0) 0)) blocks))))
+      (cons 'additionalProperties #f))))
+#+end_src
+
+The authoritative raw schema must first pass a versioned shape Contract; these
+functions do not establish input shape/flag consistency by themselves. Duplicate
+fields, unknown conflicting flags, invalid bounds, nested_type precedence and
+wrong cty descriptor shapes need preflight diagnostics before conversion.
+Only required/optional attributes become configurable properties; computed-only
+fields stay out of the input vocabulary. Optional+computed fields remain optional.
+Sensitive/computed/deprecation/schema-version metadata stays in the same retained
+raw member tree/index and compilation receipt, never discarded as an assurance
+claim. Presence of metadata does not implement redaction, defaults or evaluation.
+
+Map/list/object distinctions, nulls, optional cty object attributes, sets/uniqueness,
+fixed tuples, dynamic values, expressions and unknowns require explicit semantics.
+This subset rejects selected unsupported constructs; full AWS often needs more.
+No generated scope may advertise full configuration admission on this subset.
+
+* Compilation into the existing Contract subsystem
+
+Within the prepared Schema capability scope, compile is bound to the EXISTING
+yuanxu-json-schema->contract-artifact. as-contract is the NEW native adapter
+fully defined in module 38; it reuses normalized-node validation and returns a
+receipt-bearing YuanxuContract descriptor. It is not an installed facade method.
+The owning modules may use current private imports internally; consumers see only
+the prepared Module scope. A concrete orchestration function is:
+
+#+begin_src scheme
+(def (compile-schema Schema identity schema)
+  (let (artifact ((.get Schema compile) schema))
+    ;; The adapter rejects compilation diagnostics. A separate mandatory coverage
+    ;; gate must also establish no required constraint was silently omitted.
+    ((.get Schema as-contract) identity artifact)))
+
+(def (resource-contract Schema identity member)
+  (compile-schema Schema identity
+    (block->schema (jrequired member 'block))))
+
+(def (field-contract Schema identity attribute)
+  (unless (input-attribute? attribute)
+    (error "Computed-only field is not a configurable input" identity))
+  (compile-schema Schema identity (attribute->schema attribute)))
+#+end_src
+
+No new Scheme Schema evaluator is introduced. The exact current files are
+core/modules/json-schema/json-schema-normalize.ss, json-schema-emit-contracts.ss,
+json-schema-receipt.ss, json-schema-validate.ss and json-schema-valid.ss. Current
+names use yuanxu- prefixes and :yuanxu module identities. Namespace migration
+is implemented; the conversion coverage described here retains its own evidence
+and admission boundary.
+
+A generation receipt must account for EVERY encountered source semantic as mapped,
+retained annotation, explicit external obligation, or unsupported. The common gate
+rejects any mandatory unsupported/unverified category. Merely having no compiler
+warnings is insufficient: format/multipleOf and other uncovered cases remain
+known gaps in today's bridge. Full publication cannot proceed while those required
+semantics are ignored. The extraction command's success is not this coverage gate.
+
+* Reference
+
+[[https://opentofu.org/docs/cli/commands/providers/schema/][OpenTofu's versioned schema format]] defines the provider/block input structure.
+No actual provider member or conversion result was acquired in this design turn.
+
+* Collection conversion and residuals supersede the earlier branches
+
+[[file:11.42-provider-collections-and-nested-types.org][The real-fixture collection design]] supplies set/tuple/nested_type conversion,
+input versus normalized object views and root POO residual admission. Structural
+conversion support does not discharge custom set identity or provider validators.

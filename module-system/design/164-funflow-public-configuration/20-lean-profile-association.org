@@ -1,0 +1,164 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: LeanPoo Profile Association Model: Roots, Final Values and Mandatory RHS Requirements
+#+date: [2026-10-15]
+#+property: STATUS narrow-model-proved-native-controls-retained-no-module-adapter-no-loader
+
+[[file:21-scheme-dfs-admission-correspondence.org][Module 21]] extends this historical reference-model result with DFS, identity
+and real Core-admission correspondence. Its current target has 39 theorems and
+91 guards; the original 19-theorem receipt below remains unchanged.
+
+* Current proof owner
+
+The Profile association library now lives in =core/dev/proofs/lean= and is
+built there with =lake build=. It is no longer a library of the product's
+=packages/proofs/lean-poo= workspace. Its exact LeanPoo pin and Lean 4.34.0
+version are retained. The dependency and run description below records the
+original validation before the ownership migration; receipt hashes are historical.
+
+* Dependency and executed verification
+
+At the time of this receipt, the proof workspace was packages/proofs/lean-poo. Its unchanged
+v0.1.1 dependency resolves to d8adf138948c854e7564234bc046387b4a5ee63b,
+verified against both lake-manifest.json and the dependency checkout HEAD.
+Lean is leanprover/lean4:v4.34.0. No lake update, dependency upgrade or new proof
+project was needed. Pre-existing edits elsewhere in this workspace were retained.
+
+The new non-default library target is YuanxuProof.ModuleSystem.Schema.Association:
+
+| Source | Responsibility |
+|--------+----------------|
+| [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Semantics.lean][Semantics.lean]] | 19 general theorems over native-parent reference semantics, requirement gates and LeanPoo's ContextSlot |
+| [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Controls.lean][Controls.lean]] | 21 executable finite guards and five example proofs aligned with the native controls |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/receipt.json][Receipt]] | Exact source hashes, dependency identity and verification scope |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/build.log][Target build]] | lake build YuanxuProof.ModuleSystem.Schema.Association, exit 0 |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/20-lean-profile-association/axioms.log][All-theorem axiom audit]] | No sorryAx or new custom axioms; standard propext, Quot.sound and Classical.choice only where reported |
+
+The initial check found a missing compiled ContractConsequence dependency, which
+was built from the already locked source. Development elaboration/control failures
+are retained beside the final log; they are not passing receipts. The final
+source has no sorry, admit or custom axiom declarations. This is a targeted
+library/dependency build, not a clean rebuild or full repository CI result.
+
+* Parent-root association: soundness and completeness of the reference model
+
+Parents maps object identity tokens to direct-parent identity lists. Inherits is
+an inductive reflexive parent-path relation. ancestors enumerates a bounded
+reference tree; it is NOT the Scheme visited-state DFS from module 18.
+associations filters the supplied trusted Anchor index, retaining full entries
+including Contract, source and policy revision tokens rather than a single
+first match per root.
+
+| Theorem | Meaning |
+|---------+---------|
+| ancestors_sound / ancestors_complete | Every enumerated node has a parent path; every finite parent path has a sufficient enumeration fuel |
+| association_sound / association_complete | Found associations belong to the supplied index and are inherited; each indexed inherited root is discoverable with sufficient fuel |
+| derived_root_preserved | Adding a direct parent preserves that parent's inherited indexed roots, for each parent independently |
+| shared_root_keeps_both | Distinct export/Contract entries sharing an object root are both retained |
+| plus_keeps_left / plus_omits_right | Native .+ direct parents retain the left base but need not include the RHS object's identity |
+
+The graph relation assumes the native-to-model projection preserves exact object
+identity and direct-parent edges within a stable view. Trusted source/Contract
+association is input, not proven by reachability. Completeness is per finite
+path with sufficient fuel, not a claim that any arbitrary fixed fuel suffices.
+The finite guards include a diamond and multiple independent roots. They do not
+prove a termination bound or cycle handling for the Scheme walker.
+
+The source-audited .def and .+ construction laws justify WHICH correspondence
+premises are required; the 44 native assertions test concrete instances. Neither
+replaces a proof that the actual Scheme projection/DFS implements this reference.
+
+* Parent caches and final-value admission: actual LeanPoo reuse
+
+Model View includes receiver identity, generation, source revision, Contract
+revision and policy revision. The environment must update these identities when
+the effective configuration/graph/policy changes. effective maps that stable
+View to an ordered list of final Check identity tokens. It is a parameter, not
+a second implementation of POO's lexical getter.
+
+finalFamily prepares this result as an actual LeanPoo Requirements.Certified
+family. PipelineCache is an abbreviation for the existing ContextSlot; no new
+cache algorithm was introduced. The proofs reuse ContextSlot.read_value and
+ContextSlot.read_miss from the locked library.
+
+| Theorem | Meaning |
+|---------+---------|
+| cached_checks_are_final | Any cache read has exactly the effective result at the requested context |
+| parent_cache_misses_for_child | A slot retained at the parent context cannot be a hit at a different child context |
+| cached_value_passes_final_gate | A read from that certified family passes ordered final-identity validation |
+| stale_parent_value_refused | An old parent identity list fails validation whenever it differs from the child's final list, including equal-length changes |
+| consequence_keeps_factories | Existing ContractConsequence can retain the family only under a supplied logical implication |
+
+The finite guards warm the parent cache before reading the child, check a
+same-count changed Check, add a selected smoke identity and verify the parent
+result remains unchanged. ContextSlot is a bounded one-context slot: a different
+context replaces its retained data. This is NOT an assertion that Scheme's
+receiver-local caches have identical storage layout. The shared contract is
+current-context output and refusal of stale values; runtime storage/cost still
+needs its own implementation correspondence.
+
+The proof does not establish real Check commands, source authentication, a
+consumer protocol or Core's full evidence-bearing .admit. Those remain separate
+Contracts. ContractConsequence does not infer implications or permit reuse merely
+because two Contract names or source hashes match. ConstructionCache is not
+available at the current pin and was not imported or emulated.
+
+* RHS obligations: retain AND check, or refuse
+
+The native probe shows that .+ copies RHS direct slots without retaining that
+RHS object's identity. This model therefore distinguishes inherited roots from
+mandatory provider requirements. mandatory comes from the admitted integration
+boundary and must include all applicable RHS requirements; parent traversal alone
+cannot construct that list. Omitting an obligation from mandatory is outside the
+model's premise, not a successful proof of automatic discovery.
+
+requirementGate checks that every mandatory requirement is retained.
+compositionGate additionally checks each retained requirement's modeled result.
+The requirement IDs are stable references to obligations, not evidence by name;
+check must correspond to the real current Contract/evidence result in an adapter.
+
+| Theorem | Meaning |
+|---------+---------|
+| gate_accepts_iff | Retention gate success is equivalent to inclusion of all mandatory requirements |
+| missing_right_requirement_refused | Omitted mandatory RHS requirement returns an error |
+| right_requirement_preserved_or_refused | An applicable RHS requirement is retained or the retention gate refuses |
+| composition_accepts_iff | Composition gate success requires both complete retention and successful checks |
+| accepted_right_requirement_checked | Successful composition retains AND satisfies the mandatory RHS requirement |
+
+Controls cover missing RHS requirements, explicit retention, and a retained but
+failed RHS check. Native .+ itself is unchanged and does not run these gates.
+A future integration must implement or refine this boundary; it cannot claim
+safety merely by walking object-supers or dispatching to one method.
+plus_omits_right concerns direct parents; a right value might still be reachable
+through some other ancestor. There is no unconditional theorem that all RHS
+sources are absent from every possible graph.
+
+* Native controls remain an independent comparison
+
+[[file:19-native-parent-validation.org][Module 19's 44-assertion native validation]], full source, logs and source hash
+remain unchanged. They were not rerun or relabelled as formally proved in this
+task. The installed-package compilation incompatibility is still an unresolved
+historical gate; isolated dependency-pin execution was the passing native lane.
+
+| Native observation | Formal counterpart | Remaining correspondence |
+|--------------------+--------------------+--------------------------|
+| .def/multiple parents retain published roots | derived_root_preserved and association theorems | Project real object-supers/eq? identities faithfully; implement complete selected-root index |
+| Parent forced before child; final Check identities differ | ContextSlot reuse and finalValueGate laws | Relate receiver-local Scheme caches/lexical getters to stable View and effective |
+| Same-count fixed parent list rejected | stale_parent_value_refused and finite control | Real admission must compare current ordered Check objects |
+| RHS object's own association may disappear under .+ | plusParents and mandatory-requirement gates | Carry provider obligations independently or refuse unsupported construction |
+| Nested inline inherited slot reconstructs at child receiver | Identity projection is an explicit premise, not parent-slot eq? | Do not substitute the parent's cached nested object for the actual inherited base |
+
+* Reproduction and boundaries
+
+#+begin_src sh
+cd packages/proofs/lean-poo
+lake build YuanxuProof.ModuleSystem.Schema.Association
+lake env lean ../../../docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/20-lean-profile-association/axiom-audit.lean
+#+end_src
+
+The first command is sufficient for the theorem and finite-control target; the
+second audits all 19 theorem dependency sets. A production adapter must still
+establish identity/source projection, complete obligation collection, stable-view
+invalidation, Scheme DFS correspondence and actual Core/consumer admission.
+No module adapter, Loader, new runtime DSL or performance claim is delivered here.

@@ -1,0 +1,233 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow 本地原生发布：完整默认对象、作用域与路径细化
+#+date: [2026-10-15]
+#+property: STATUS local-native-publication-implemented-loader-not-connected
+
+* 实现前的比较与本次边界
+
+The later [[file:164-funflow-public-configuration-contract-design.org][public-configuration redesign]] specifies a separate target schema
+and selected-Check policy. This document remains the actual local implementation
+record: its fixed Check membership and current defaults are not silently changed
+by that design.
+
+先完成 [[file:164-module-interface-comparison.org][上游维护/下游两层接口比较]]，再按其本地发布决定实现。
+本次不经过 module-owner-export，不调用 Loader，不生成来源认证证据。
+采用已有有界 use-module 与路径槽，不新增配置 DSL。
+
+模块默认入口 interface.ss 已重导出本地值。精确的 native-scope owner 可供
+bootstrap 和聚焦测试使用；它不是另一个模块身份或另一套语义。
+
+* 实际模块作用域
+
+下面为实际实现。静态导入原型 owner 与工厂定义不等于惰性加载文件；惰性边界
+是原生 getter 的求值/对象构造。完整产品 interface 仍有既有静态依赖，不能据此
+声称已解决数千模块的源文件加载问题。
+
+#+begin_src scheme
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+;;; Local native publication. SourceRef is metadata, never authentication.
+(import (only-in :clan/poo/object .def .o)
+        (only-in :yuanxu/module-system/source/objects
+                 make-yuanxu-module-local-source yuanxu-module-source-ref?)
+        (only-in :agentic-ai-lab/modules/funflow/config-prototypes
+                 funflow-check funflow-pipeline)
+        (only-in :agentic-ai-lab/modules/funflow/profiles/gerbil-scheme
+                 make-gerbil-scheme-ci-profile))
+(export FunflowModule. Funflow make-funflow-scope)
+
+(.def FunflowModule.
+  source: #f
+
+  prototypes:
+  (.o check: funflow-check
+      pipeline: funflow-pipeline)
+
+  ;; Shared-slot capture is native POO: values come from the outer receiver.
+  ;; This view deliberately has no profiles slot and no publishing parent.
+  prototype-scope:
+  (.o (source) (prototypes))
+
+  profiles:
+  (.o gerbil-scheme:
+      (make-gerbil-scheme-ci-profile prototype-scope)))
+
+(def (make-funflow-scope source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
+    (error "Funflow local publication requires a SourceRef" source-handle))
+  (.o (:: @ FunflowModule.)
+    source: source-handle))
+
+(def Funflow
+  (make-funflow-scope
+    (make-yuanxu-module-local-source "modules/funflow")))
+#+end_src
+
+prototype-scope 的 =(source) (prototypes)= 是原生 shared-slot capture：在这个
+视图被请求时，捕获外层有效模块的来源句柄与原型视图值，避免内层同名槽遮蔽。
+它不继承完整 Module，不含 profiles。它与完整 Scope 是两个原生对象，但持有
+同一来源句柄和同一原型视图。它不是安全沙箱，允许扩展对象不等于允许伪造认证。
+
+* 完整上游 Profile 工厂
+
+工厂仅依赖 Core bounded scope 与 POO，不反向导入 native-scope。它是内部纯
+构造入口，用户不需要调用，也没有新增的过程值配置槽。Profile/Check/Pipeline
+仍是原生对象；来源身份由所属作用域保留，未给每个对象伪造独立的加载证据。
+
+#+begin_src scheme
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+;;; Native default Profile construction, with no import of the publishing scope.
+(import :yuanxu/profile-composition/selection-syntax
+        (only-in :clan/poo/object .o .get))
+(export make-gerbil-scheme-ci-profile)
+
+(def (make-gerbil-scheme-ci-profile prototype-scope)
+  (use-module prototype-scope as ff
+    (.o
+      build:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'build
+        profile-ref: 'ci/build
+        command-vector: '("gerbil" "build")
+        artifact-outputs: '(build-log)
+        cache-intents: '(gerbil-build-cache)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        durable-task-id: 'task/build
+        action-class: 'idempotent
+        artifact-retention: 'project-retained)
+
+      test:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'test
+        profile-ref: 'ci/check
+        command-vector: '("gerbil" "env" "./unit-tests.ss")
+        artifact-outputs: '(test-receipt)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        dependency-refs: '(build)
+        durable-task-id: 'task/test
+        action-class: 'idempotent)
+
+      package:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'package
+        profile-ref: 'ci/check
+        command-vector: '("gerbil" "env" "./unit-tests.ss")
+        artifact-outputs: '(dependency-graph-receipt)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        dependency-refs: '(test)
+        durable-task-id: 'task/package
+        action-class: 'compensatable
+        compensation-refs: '(cleanup/package-artifacts)
+        artifact-retention: 'release-retained)
+
+      pipeline:
+      (.o (:: @ (.get ff prototypes pipeline))
+        pipeline-name: 'default
+        checks: (list build test package)
+        metadata: '((scenario . funflow-cicd)
+                    (authoring-style . gerbil-poo-native))))))
+#+end_src
+
+原始 build/test/package 的全部 31 个显式属性和 Pipeline 配置保留。
+package 的默认命令原本就与 test 相同，未暗中改写。
+checks 用外层槽词法绑定，不捕获已缓存的父列表，也不需要用户提取和回填。
+
+* 可用的完整下游本地对象示例
+
+这个本地对象示例不依赖尚未发布的 CICDScenario 或完整 CompositionContract。
+将来领域 Scenario 可以提供同样的默认绑定；普通用户届时只需继承再细化。
+此例不改变现有 user-root source-role 准入策略。
+
+#+begin_src scheme
+(import :yuanxu/object-syntax/path-slots
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :clan/poo/object .get)
+        (only-in :agentic-ai-lab/modules/funflow/native-scope Funflow))
+
+(.def ProjectCI
+  funflow: (use-module Funflow as ff (.o (:: @ ff))))
+
+(.def (ReleaseCI @ ProjectCI)
+  funflow.profiles.gerbil-scheme.build: =>.+
+  {cache-intents: '(project-gerbil-cache)
+   artifact-outputs: '(release-build-log)}
+
+  funflow.profiles.gerbil-scheme.test: =>.+
+  {command-vector: '("gerbil" "env" "./project-tests.ss")
+   artifact-outputs: '(release-test-receipt)}
+
+  funflow.profiles.gerbil-scheme.package: =>.+
+  {command-vector: '("gerbil" "build" "release")
+   artifact-outputs: '(release-bundle)}
+
+  funflow.profiles.gerbil-scheme.pipeline: =>.+
+  {pipeline-name: 'release-ci})
+#+end_src
+
+作用域声明是一个卫生 let，source 值求值一次并保持对象身份，不执行源码发现。
+Funflow 与 funflow: 使用不同名字；不改变原生词法作用域或静默查找全局注册表。
+路径共享前缀合并为一次 funflow/profiles/gerbil-scheme 原生 =>.+，四个叶方法
+同时保留。完整原生展开与 [[file:164-funflow-cicd-user-authoring-design.org][主设计文档]]相同。
+
+* 按需顺序与自引用边界
+
+| 访问 | 本地求值 | 不隐含的工作 |
+|------+----------+--------------|
+| import native-scope | 静态原型、工厂定义、SourceRef 元数据及根对象 | 没有构造 Gerbil Profile，没有运行命令；也不声称文件没有被导入 |
+| bounded use-module | 检查 object?，绑定同一个原生 Scope | 不遍历 source/prototypes/profiles |
+| prototypes.check | 原型视图及既有 Check 原型 | 不访问 profiles，不调用 Profile 工厂 |
+| profiles | 惰性目录对象 | 不构造 gerbil-scheme Profile |
+| profiles.gerbil-scheme | prototype-only 视图与 Profile 对象 | 不构造 build/test/package/Pipeline，不枚举其他 Profiles |
+| gerbil-scheme.build | 这个 Check 与必需原型 | 其他 Check 不求值 |
+| pipeline.pipeline-name | Pipeline 与必需原型 | checks 尚未强制 |
+| pipeline.checks | 有效外层 Profile 的三个 Check | 不执行命令；普通属性仍按需求值 |
+| 现有 list adapter | 读取所需字段，纯投影到现有 check-map | 不等于来源准入、计划执行或运行 Session |
+
+上游工厂只接收 prototype-scope；从该视图请求 profiles 会立即按原生缺槽语义
+失败，不能沿该路径再次请求自身。失败后完整 Module 仍能正常发布 Profile。
+这是默认依赖图的结构性边界。用户在任意自定义 getter 中制造递归，仍需要后续
+通用诊断；本次没有实现 Loader 循环检测、并发加载或失败重试状态机。
+
+* 本地验证与剩余边界
+
+[[file:../../../t/funflow-native-publication-test.ss][八项实际发布测试]]使用真正的 Funflow 原型和工厂，覆盖原型/Profile 分离、未强制
+Check/Pipeline、同一来源句柄、prototype-only 自引用失败、完整默认值、父缓存
+后四项细化的最终值与 eq? 身份、warm/父/兄弟隔离，以及既有列表适配器实际读取
+修改后产物和补偿引用。Profile 也可以不依赖 Scenario 独立继承复用。
+
+[[file:../../profile-composition/module-prototype-syntax.ss][原型静态声明宏]]从混合 selection 的 authoring helper 中分离；原 owner 重导出相同
+绑定，Funflow bootstrap 直接依赖精确新 owner。没有复制宏或增加求值器。
+既有原型声明及 direct/downstream/error Pipeline 四项回归覆盖原消费者。
+
+源码测试使用固定 gerbil-poo 099b381588360a8a49fd772f666a1a00351366f5 与当前工作树，
+不是已发布包、native AOT 或远程 CI 结果。来源 SourceRef 是元数据：没有认证、
+revision/currentness 检查、领域 Contract 全面准入、模块目录索引或 Loader 接入。
+module-owner-export/Generic provider 的完整桥接仍为后续方案，不参与这条本地路径。
+
+** 本次验证记录
+
+| 独立本地源码 lane | 通过案例数 |
+|------------------+------------|
+| Funflow 本地原生发布 | 8 |
+| 既有 prototype/direct/downstream/error 回归 | 4 |
+| 公共 interface 与原生导出身份 | 3 |
+| Core bounded scope/path/Bundle 回归 | 24 |
+| Core CLOS 声明与方法包回归 | 56 |
+| 合计 | 95 |
+
+同进程合并 public interface 与其他产品源码套件的尝试触发既有
+YuanxuDebugMemoryAnomaly；失败日志保留于临时验证目录。公共套件独立进程的三项
+测试通过；其余四项产品回归也单独运行。不修改内存策略、不增大阈值、不将失败
+写成通过。这说明源码测试进程组成会影响该守卫，尚无规模性能/内存优势结论。
+
+新增及修改模块、公共 interface 和测试通过 gxc -S；这仅验证 Scheme/SSI 源编译，
+不是 native C/AOT 链接。文档中的 Scheme 块经过 reader 检查，未据此声称完整
+source-owner/Contract/Loader 方案可执行。

@@ -1,0 +1,153 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 10.06.43.14 Session, Query and Project Context Handoff
+:PROPERTIES:
+:ID: agentic-ai-lab-session-query-project-handoff
+:STATUS: joint-protocol-consumer-pass-runtime-correspondence-open
+:DATE: 2026-10-14
+:END:
+
+* Protocol, not a prescribed exploration route
+
+[[file:12-git-project-context-model.org][Git Project Context]] separates source, composition and consumption graphs.
+This chapter connects their previously open transitions. [[file:11-context-query-boundary.org][Query]] remains the
+unified interface, GQL its current language and ORG Elements the content
+window. The finite Query transition below models receipt freshness/binding,
+not a new language, Provider or completed GQL-to-Context adapter.
+
+Bindings are many-to-many: one Session may consume several Worktree Contexts,
+and several Sessions may share one Worktree Context. Selection is not ownership
+of the retained Context. Unbinding removes live consumption and stale Query
+selection; it does not erase Project knowledge accepted independently at the
+target, its origin or counterexamples. Actual permission/visibility still has
+its own subject and resource scope.
+
+Local proposals retain their source cut and interpretation. The target asks
+whether they apply at its current Project Context cut, rather than importing
+the source consumer's review/grant. In this Case two proposals give opposite
+answers to one fixed target question. Both can remain candidates, but target
+acceptance cannot silently contain both. Different compatible facts or parent
+Contexts are not intrinsically contradictory. C3/C4 declaration precedence
+does not settle evidence truth or replace this target Contract.
+
+* Bound subjects and decisions
+
+| Activity | Required binding | What it does not establish |
+|----------+------------------+----------------------------|
+| Bind / select | Session and Worktree/Context relation, current source cut | Protected access or authority |
+| Query | Current binding and selected Element/source cut; real adapter must also bind Query/Contract/program/coverage | Complete graph or an executable next action |
+| Propose | Source-qualified interpretation and its origin cut | Project applicability or approval |
+| Target review | Candidate origin, target cut and policy/permission epoch | Permission or source authentication merely from fields |
+| Governance decision | Current target operation and configured Human decision requirements | Transfer of a source grant |
+| Accept interpretation | Current target review, permission, support and conflict conditions | Delivery, storage mutation or automatic code merge |
+| Reopen | Relevant source/target/epoch changed | Historical observation becoming false or disappearing |
+
+Target review and target permission are independently modeled. The configured
+decision is an exogenous Human/Governance input, not an inference from
+eligibility. A live Host must authenticate its receipts and current subject;
+Quint Boolean inputs do not implement that authority.
+
+An exact repeated proposal is idempotent for this fixed interpretation/source
+subject: it must not clear an existing review or erase an accepted competing
+decision indirectly. A changed source, interpretation, relation, target or
+policy is a different subject or an explicit reopening event. This does not
+block Agent exploration; it prevents repeated retrieval/re-proposal from being
+mistaken for new evidence or revision.
+
+Source revision changes invalidate affected Query selections and target
+acceptance but preserve historical tuples. A target revision reopens target
+assessment without rewriting source observations. Revocation advances the
+permission epoch; renewed permission cannot revive the old review. Ending a
+producer Session does not by itself revoke an independently accepted target
+interpretation, provided its retained source/support and target permission
+remain applicable. Availability loss is a separate obligation.
+
+* Executable model and proof
+
+#+begin_src d2
+direction: right
+sessions: Session collection
+bindings: Current Worktree / Context bindings
+query: Unified Query / GQL
+org: ORG Elements / Contract cut
+candidate: Source-bound interpretations (multiple candidates)
+review: Current target review
+permission: Independent target permission / epoch
+accepted: Project interpretation accepted at target cut
+history: Retained origin / target / epoch records
+sessions -> bindings: many-to-many consumption
+bindings -> query: scoped selection
+query -> org: only Context content window
+org -> candidate: bound origin
+candidate -> review: target applicability / conflict assessment
+review -> accepted: necessary, not sufficient
+permission -> accepted: separate current condition
+accepted -> history: append provenance
+sessions -> bindings: unbind changes live consumption
+history -> review: later reassessment, not automatic authority
+#+end_src
+
+This is a dependency view, not a required action sequence. Retirement changes
+live bindings; it has no deletion edge to retained Project knowledge.
+
+[[file:../../../../packages/proofs/context-lifecycle/ContextHandoff.qnt][ContextHandoff.qnt]] uses two Sessions, two Worktrees, one changing source,
+one target revision and one revocation epoch. Historical entries retain the
+origin root, source revision, target revision and epoch, not merely an
+ever-accepted flag. The model explores Bind, Unbind, Query, Propose, target
+Review, Decide, Accept, Source/Target revision and Revoke in arbitrary orders.
+
+Five safe invariants check current Query/binding, current target subjects,
+permission, the Case's contradictory interpretation constraint and retained
+acceptance history. Five reachability controls cover shared/multiple workspaces,
+target acceptance, retention after unbinding and unresolved competing
+candidates. Three faulty transitions test source review being substituted for
+target review, review without permission and old-review replay after renewal.
+
+The nine focused controls passed with 162324 distinct safe states and full
+exploration under the existing limits. The first unnormalized model hit the
+checker deadline; the version with full historical tuples initially hit it too.
+Failures are retained, not reclassified as absence of counterexamples.
+
+Inactive Query/review stamp slots are canonicalized only when their membership
+is absent; active and replayable reviews retain their exact stamps. Historical
+entries are never canonicalized away. The idempotent proposal rule also fixes
+the earlier semantic error where a duplicate proposal reset target review.
+No deadline, heap, worker count or assertion was relaxed.
+
+[[file:../../../../packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Handoff.lean][Handoff.lean]] proves seven conditional laws and has six guards. It uses
+LeanPOO Focus for epoch composition; proves active-stamp check preservation,
+permission necessity, old-epoch refusal and producer retirement retaining
+target/history values. These prove the typed projection's declared properties,
+not an unrestricted cross-language bisimulation or an entire Host issuer.
+
+* Real Module correspondence and its limits
+
+[[file:../../../../packages/proofs/context-lifecycle/handoff-controls.ss][Scheme controls]] select real ORG Elements under an actual Orgize Contract,
+then call Module-owned collection composition, Session slices and admission
+request constructors. They exercise qualified origins, many-to-many consumption,
+rebinding, source revision and retention. The existing sealed Core/Assurance/
+Governance fixture supplies review/revocation controls; Proofs does not copy an
+admission predicate or fabricate a successful grant.
+
+The original controls qualified only supplied sets. Subsequent
+[[file:16-live-registry-generation.org][live registry / generation checks]] add Module-owned local issuance and
+replacement: historical sets cannot be reviewed/admitted after replacement.
+Durable/concurrent ownership remains open. Real GQL/result receipt adaptation,
+Project target promotion and source availability/disclosure enforcement are
+also separate implementation obligations, not closed by these fixtures.
+
+* Open-obligation ledger
+
+| Boundary | Current evidence | Remaining closure |
+|----------+------------------+-------------------|
+| Dynamic many-to-many selection | Finite protocol and local Module generation checks | Durable Host identity, concurrency and external retirement reconciliation |
+| Query/source freshness | Finite current-cut checks and real ORG projection controls | Unified Query/GQL result adapter and complete source/Contract/program binding |
+| Target acceptance | Finite review/permission/conflict protocol and conditional Lean laws | Project-specific current Host/profile and target Contract |
+| History / retirement | Exact finite origin tuples, typed retained history and immutable Module values | Durable journal, availability and Worktree retirement execution |
+| Open exploration | Both competing candidates retained; no mandatory Next route | Expanded domain Cases, additional relations and measured exploration behavior |
+| Execution | No delivery, storage or bindings invoked | Separate authorized runtime handoff |
+
+[[file:15-handoff-verification.org][10.06.43.15]] records the actual gate, failed attempts, source cuts and
+compiled package identity. Previous receipts remain evidence for their own
+inputs only. No old Memory implementation is changed or optimized.

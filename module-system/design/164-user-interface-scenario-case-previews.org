@@ -1,0 +1,476 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: User Interface Scenario Extension Previews Under CompositionContracts
+#+date: [2026-10-15]
+#+property: STATUS proposed-not-implemented
+
+* Start here: what upstream provides
+
+These are target user examples, not shipped interface receipts. Scenario objects
+and their automatic nested construction/admission adapters remain proposed.
+The source Modules and default stage payloads are grounded in the repository.
+No implementation or runtime behavior is changed by this document.
+
+| Upstream asset | What downstream users do with it |
+|----------------+----------------------------------|
+| maintained LangGraphScenario, CrewAIScenario, ToolCallingScenario | inherit one with .def and override desired configuration |
+| LangGraphModule, CrewAIModule, ToolCallingModule | explicitly use-module to bind the maintained default contribution |
+| maintained reusable Profiles | reuse or derive compatible native values; publish user-owned contributions through a Module |
+| domain composition/Profile Contracts | optionally initialize new typed values when maintained Scenarios are insufficient; constructor adaptation is proposed |
+
+The normal reading order is: choose a Scenario, derive a value, explicitly
+select/rebind Modules if needed, refine configuration, then choose a configured
+Profile for the later admitted execution boundary. You do not need to read
+Contract-resolution helpers or generated object code to author the examples.
+A Scenario already supplies stage, proof-declaration and handoff defaults.
+
+When the maintained Scenario's Module choices already fit, omit the explicit
+rebinding and write only the refinement. When introducing or changing a Module,
+keep use-module visible: it shows source ownership and default binding. Placement slots supply object paths; as names a bounded lexical scope and
+explicit instance alias in the proposed adapter.
+There is no scenario-profile assembly field or second composition call.
+
+* LangGraph Scenario
+
+Sources: [[file:../../../user-interface/scenarios/langgraph/scenario.ss][current Scenario data]] and
+[[file:../../../user-interface/profiles/langgraph.ss][current Module publication]].
+Existing source stage defaults: fuel 8, terminal-edge exit, marlin-control-plane handoff. Proposed complete state-graph Profile: no checkpoint selected, resume false, declaration-order routing.
+
+These complete Profile/policy exports are proposed, not existing exported names.
+The Scenario admits/selects graph.profiles.state-graph; the complete catalog
+is not implicitly selected. No internal component list or repeated default stage
+assembly is required in user config.
+
+#+begin_src scheme
+(.def (MyGraphScenario @ LangGraphScenario)
+  graph:
+  (use-module LangGraphModule as lg
+    (.+ lg
+        {profiles: =>.+
+         {state-graph: =>.+
+          {checkpoint-key: "review-session-42"
+           resume?: #t
+
+           routing-policy: =>.+
+           {selection: 'priority}}}})))
+#+end_src
+
+The alias lg binds once inside its expression body, including nested
+object expressions capturing it. .+ returns the derived Module stored in
+MyGraphScenario.graph. The business values and routing-policy refine the inherited Profile and
+its existing policy object. Unchanged fields, previous instance refinements and
+native ancestry remain inherited. No raw constructor or prototype lookup is
+needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
+remain configuration defaults, not executed runtime evidence.
+
+* CrewAI Scenario
+
+Sources: [[file:../../../user-interface/scenarios/crewai/scenario.ss][current Scenario data]] and
+[[file:../../../user-interface/profiles/crewai.ss][current Module publication]].
+Existing source stage defaults: fuel 6, final-output exit, marlin-control-plane handoff. Proposed complete crew-workflow Profile: inherited task graph, no extra goal, capacity 1, FIFO scheduling.
+
+These complete Profile/policy exports are proposed, not existing exported names.
+The Scenario admits/selects crew.profiles.crew-workflow; the complete catalog
+is not implicitly selected. No internal component list or repeated default stage
+assembly is required in user config.
+
+#+begin_src scheme
+(.def (MyCrewScenario @ CrewAIScenario)
+  crew:
+  (use-module CrewAIModule as cr
+    (.+ cr
+        {profiles: =>.+
+         {crew-workflow: =>.+
+          {goal: "Review the release candidate."
+           max-concurrency: 2
+
+           scheduling-policy: =>.+
+           {ordering: 'priority}}}})))
+#+end_src
+
+The alias cr binds once inside its expression body, including nested
+object expressions capturing it. .+ returns the derived Module stored in
+MyCrewScenario.crew. The business values and scheduling-policy refine the inherited Profile and
+its existing policy object. Unchanged fields, previous instance refinements and
+native ancestry remain inherited. No raw constructor or prototype lookup is
+needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
+remain configuration defaults, not executed runtime evidence.
+
+* Tool Calling Scenario
+
+Sources: [[file:../../../user-interface/scenarios/tool-calling-agent-loop/scenario.ss][current Scenario data]] and
+[[file:../../../user-interface/profiles/tool-calling.ss][current Module publication]].
+Existing source stage defaults: fuel 5, tool-result-accepted exit, python-runtime-tool-plane handoff. Proposed complete tool-loop Profile: empty allowlist, 30000 ms timeout and validator depth bound 64.
+
+These complete Profile/policy exports are proposed, not existing exported names.
+The Scenario admits/selects tool.profiles.tool-loop; the complete catalog
+is not implicitly selected. No internal component list or repeated default stage
+assembly is required in user config.
+
+#+begin_src scheme
+(.def (MyToolScenario @ ToolCallingScenario)
+  tool:
+  (use-module ToolCallingModule as tc
+    (.+ tc
+        {profiles: =>.+
+         {tool-loop: =>.+
+          {allowed-tools: '(read-file search)
+           timeout-ms: 5000
+
+           argument-validator: =>.+
+           {maximum-depth: 16}}}})))
+#+end_src
+
+The alias tc binds once inside its expression body, including nested
+object expressions capturing it. .+ returns the derived Module stored in
+MyToolScenario.tool. The business values and argument-validator refine the inherited Profile and
+its existing policy object. Unchanged fields, previous instance refinements and
+native ancestry remain inherited. No raw constructor or prototype lookup is
+needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
+remain configuration defaults, not executed runtime evidence.
+
+* Native graph/crew/tool composition into one Scenario
+
+The [[file:164-bounded-domain-module-scope-examples.org][complete domain scope design]] also includes GraphConfig, CrewConfig and
+ToolConfig, each with one bounded Module binding, composed with the proposed
+shared MultiAgentScenario. native proto in one ordered parent list. Its complete
+ProductionScenario example separately refines all three without rebinding or
+reconstructing strategies. Root Contract/source/selection and cross-Module
+handoff obligations, final receiver reads and qualified projection are explicit. The
+same design now spells out the upstream MultiAgentScenario. and
+MultiAgentCompositionContract, graph -> crew -> tool -> crew -> graph events,
+request/reply correlation, stop/timeout/cancellation rules, and a pure plan getter
+that reads the final derived receiver. These domain adapters remain proposed.
+
+Parent precedence is not execution order. Missing explicit graph/task/tool plan
+relationships fail admission rather than being guessed from parent ordering.
+Single-Module reads remain bounded; whole selected admission may demand all
+three. Prototype metadata linearization is distinguished from implementation
+loading. Combined Contract/proto/consumer wiring and latency guarantees remain
+proposed, built on existing native POO/Loader machinery. No implementation changed.
+
+* Effective selected domain configuration
+
+| Scenario | Selected contribution | Business and inherited policy refinement |
+|----------+-----------------------+----------------------------------------|
+| MyGraphScenario | graph.profiles.state-graph | review-session-42, resume true; existing routing-policy.selection -> priority |
+| MyCrewScenario | crew.profiles.crew-workflow | review goal, capacity 2; existing scheduling-policy.ordering -> priority |
+| MyToolScenario | tool.profiles.tool-loop | requested tool subset, 5000 ms; existing argument-validator.maximum-depth -> 16 |
+
+The [[file:164-bounded-domain-module-scope-examples.org][complete domain scope design]] explains upstream defaults, existing strategy
+refinement versus genuinely new objects, effective reads, Contract/consumer ownership and
+natural-lazy verification. Source stages/proof/handoff defaults stay inherited;
+new domain fields are proposals, not implemented runtime behavior. No Session
+starts during declaration, pure admission or plan projection.
+
+* Beyond the maintained Scenarios
+
+Users and vertical-domain owners may publish their own reusable Profiles,
+extend maintained Profile objects, initialize new ones under domain Contracts,
+or maintain their own Scenario and compatible Contract family. Those are
+advanced authoring choices, not prerequisites for using an existing Scenario.
+The [[file:164-profile-module-targeting-design.org][main design]] retains the complete three-intention user example, publication,
+Scenario selection and identity/evidence boundaries. The implementation notes
+below explain the construction/admission machinery behind both entry paths.
+
+* Built-in mechanisms stay upstream
+
+The three examples above are the accepted downstream reading order. A user who
+keeps upstream Module choices writes only the required refinement. Explicit
+use-module identifies sources and selected user-facing contributions; it does
+not require enumerating the components that implement the feature.
+
+The examples now use one bounded Module as alias expression per configured
+Module. Existing policy fields use =>.+; only genuinely new objects need its
+scoped prototype view.
+Maintained Scenarios hide internal assembly. Source-bound selection lists in
+internal lowering describe proposed owner defaults, not public component lists.
+The bounded body/native scope and alias/placement identity integration are not
+implemented yet.
+
+For Funflow tasks, normal configuration should inherit result-protocol,
+runtime-mode and internal binding/identity defaults from the maintained task.
+Users configure business commands and relevant workflow policy. Changing a core
+mechanism uses its explicit native POO extension boundary and renewed admission.
+See [[file:164-profile-module-targeting-design.org][the task configuration and owner-extension boundary]] for the target example
+and the distinction from today's raw funflow-check prototype.
+
+* Domain scope demand and consumer ownership
+
+The [[file:164-bounded-domain-module-scope-examples.org][bounded domain examples]] specify exact default/prototype paths, current
+versus proposed capabilities and required consumers. Binding cannot force the
+entire catalog; object construction may demand its precise prototype owner;
+selected Contract admission must check all necessary facts before execution.
+Natural lazy behavior and bounded cold/warm cost need separate implementation
+receipts. Native static imports retain their own loading semantics.
+
+* Canonical Funflow Scenario and bounded native Module scope
+
+The [[file:164-funflow-cicd-user-authoring-design.org][complete current CI/CD design]] shows the complete Scenario and full
+hygienic lowering: one bounded ff scope, inherited Gerbil/Rust values and new
+Check construction from ff.prototypes.check. Native .def is the Scenario
+foundation; no public Case/config collector/manual import recipe is included.
+Binding range, source Contract, effective projection, default natural laziness
+and first-demand cost qualification are explicit. New grammar/scope wiring is
+proposed, not current use-module behavior. Original complete payloads are only
+in [[file:164-funflow-cicd-legacy-source-reference.org][the historical migration reference]], not a competing user interface.
+
+* Internal implementation notes
+
+Everything below is for implementation/review, not a downstream configuration
+recipe. Helper names are proposed. Reader checks are not executable adapter,
+Contract-admission or runtime qualification. In particular, direct Contract
+parents and slot-aware use-module still need bounded owned declaration adapters.
+
+** Scope: one user-facing Scenario model
+
+These are source-grounded design outputs, not migrated or executed files.
+Scenario bases, default proto wiring, CompositionContracts and helpers below
+are proposed owner exports. Existing Module selections, stage defaults and
+legacy workflow payloads are retained. The [[file:164-profile-module-targeting-design.org][main design]] owns recursive construction,
+dynamic Contract resolution, slot-owned instances and fresh effective composition.
+No user-interface implementation is changed.
+
+Profiles can be reused across Scenarios. Users or vertical-domain companies
+maintain reusable Scenario objects already carrying composition/defaults and
+CompositionContracts. Consumers instantiate and extend them with native .def.
+They do not call a second composition wrapper or repeat assembly in a separate
+public Case. Current user-composition already
+returns an internal Scenario Case with plan/admission and Session behavior;
+that runtime representation is retained. Legacy custom Case files also provide
+workflow data, which is shown as Scenario-owned configuration below.
+
+Keep use-module explicit: it shows Module introduction, source binding and
+selected exports. Hide only redundant aliases, prototype headers and default
+assembly objects. Source imports show built-in versus user-owned Modules.
+Default stages, proof declarations and handoff come from the concrete Scenario
+Profile proto; users do not write a scenario-profile slot.
+
+Multi-export selections below require an identity-preserving configured collection,
+not car or flattened identity/name/contract fields. This adapter is unimplemented.
+Source proof booleans are declarations, not passing verification receipts.
+
+** Common Contract and domain-specific Scenario Contracts
+
+The [[file:164-profile-module-targeting-design.org][main design]] defines the proposed CompositionContract foundation. All
+three root Contracts below refine it; CompositionContracts (plural) remains a
+family of related Contracts/rules, not a substitute for the root base Contract.
+Scenario values inherit a domain Contract's proto, never the descriptor itself.
+
+#+begin_example
+CompositionContract
+  LangGraphCompositionContract -> LangGraphCompositionContracts.Project
+  CrewAICompositionContract -> CrewAICompositionContracts.Project
+  ToolCallingCompositionContract -> ToolCallingCompositionContracts.Project
+#+end_example
+
+#+begin_src scheme
+;; Proposed library-owned domain Contracts, not existing public exports.
+(define-type (LangGraphCompositionContract @ CompositionContract)
+  identity: 'langgraph-composition
+  proto:
+  (.o (:: composition-self (.get CompositionContract proto))
+    %composition-contracts: LangGraphCompositionContracts
+    Profiles: (%scenario-default-profiles LangGraphCompositionContracts))
+  responsibilities: =>.+ (.o Profiles: LangGraphProfilesContract))
+
+(define-type (CrewAICompositionContract @ CompositionContract)
+  identity: 'crewai-composition
+  proto:
+  (.o (:: composition-self (.get CompositionContract proto))
+    %composition-contracts: CrewAICompositionContracts
+    Profiles: (%scenario-default-profiles CrewAICompositionContracts))
+  responsibilities: =>.+ (.o Profiles: CrewAIProfilesContract))
+
+(define-type (ToolCallingCompositionContract @ CompositionContract)
+  identity: 'tool-calling-composition
+  proto:
+  (.o (:: composition-self (.get CompositionContract proto))
+    %composition-contracts: ToolCallingCompositionContracts
+    Profiles: (%scenario-default-profiles ToolCallingCompositionContracts))
+  responsibilities: =>.+ (.o Profiles: ToolCallingProfilesContract))
+
+;; Maintained configured Scenario values: they may add owner refinements here.
+(.def (LangGraphScenario @ (.get LangGraphCompositionContract proto)))
+(.def (CrewAIScenario @ (.get CrewAICompositionContract proto)))
+(.def (ToolCallingScenario @ (.get ToolCallingCompositionContract proto)))
+#+end_src
+
+Domain Profiles Contracts and dynamic rule sets are owner definitions. They
+must preserve the generic Profiles collection Contract and base obligations.
+LangGraph requires its seven graph contributions and bounded state-graph rules;
+CrewAI its fourteen crew/task/flow contributions and review/checkpoint rules;
+Tool Calling its eleven request/validation/permission/receipt contributions.
+The stage defaults below are provided by their dynamically resolved Profile
+Contracts, not fixed fields of CompositionContract. All name and rule policies
+remain Scenario/domain choices. Family association must bind Project to the
+matching root domain Contract, not another Contract selected by a user field.
+
+Users may author their own Profiles, inherit maintained Profile/Scenario values,
+or initialize new values under upstream domain Contracts. Those intentions may
+be combined. The following domain examples compare two parent-normalization
+branches, not an exhaustive list of user intentions or mandatory steps. Direct
+Contract parent recognition is proposed; the native expansion still extracts
+its shared proto. Existing Scenario parents remain the actual parent object.
+
+** Upstream default wiring
+
+#+begin_src scheme
+;; Proposed owner declarations using existing multiple-prototype syntax.
+(.def (LangGraphProfileDefaults. @
+       [LangGraphProductionProfile EffectiveProfileProjection.]))
+(.def (ToolCallingProfileDefaults. @
+       [ToolCallingAgentLoopProfile EffectiveProfileProjection.]))
+(.def (CrewAIProfileDefaults. @
+       [CrewAIProductionProfile EffectiveProfileProjection.]))
+#+end_src
+
+LangGraphScenario, CrewAIScenario, ToolCallingScenario, CICDScenario and
+AuthoringScenario are proposed reusable native parent objects, not descriptor
+wrappers with a second proto lookup. Owners admit each parent against its
+CompositionContracts family and supply default Profiles/module configurations.
+The examples assume production, pipeline or authoring respectively is already
+present; =>.+ therefore refines a real inherited value. These names are owner
+choices, not globally required names. No such new exports are implemented.
+
+Each Scenario's resolved concrete Contract uses the corresponding stable proto
+or admitted specialization. The Contract admits effective stages and Module
+selections, and enforces required proof/handoff constraints. Objectification
+inserts this ancestry without user imports of the default Profile objects.
+Parent precedence and source-preserving effective projection need qualification.
+
+** Current domain scope lowering
+
+The [[file:164-bounded-domain-module-scope-examples.org][bounded domain scope examples]] supersede the old three-domain helper
+lowerings. Shared native binding/hygiene semantics follow the complete Funflow
+scope specification; concrete domain publication/consumer adapters remain
+proposed. Old fuel-only and unscoped forms are migration history only.
+
+** Legacy workflow payloads are owner references, not user recipes
+
+The full source payload with repeated owner defaults is referenced rather than
+copied wholesale. The user-facing .def task layer and native slot bindings are
+retained in the linked complete CI/CD design; only redundant body assignments
+are candidates for convergence.
+Consult the existing owner fixtures only when investigating implementation or
+migration:
+
+- [[file:../../../user-interface/custom/my-module/cases/funflow-cicd.ss][CI/CD source fixture]] preserves build/test/package commands, dependency edges,
+  task identities, compensation and retention.
+- [[file:../../../user-interface/custom/my-module/cases/poo-introspection.ss][Authoring source fixture]] preserves introspection and readiness checks.
+
+These sources currently return Funflow config flag bundles; they are not the
+new default user interface. No fixture, export or implementation is changed.
+The proposed Scenario adapter must preserve their meaningful business behavior
+while upstream maintained task prototypes supply internal protocol/runtime
+configuration. See [[file:164-profile-module-targeting-design.org][the default task versus mechanism-extension boundary]] for a
+minimal target user example. Qualification must compare against the linked
+source payloads, rather than instruct users to copy their internal construction.
+
+** Ordinary native headers on both paths
+
+#+begin_src scheme
+;; Header-level expansion; body refinements are shown per domain above.
+(def FreshLangGraphScenario
+  (.o (:: @ (.get LangGraphCompositionContract proto))))
+(def MyLangGraphScenario
+  (.o (:: @ LangGraphScenario)))
+#+end_src
+
+These empty bodies isolate the native parent expression for comparison. The
+corresponding user headers are (FreshLangGraphScenario @
+LangGraphCompositionContract) and (MyLangGraphScenario @ LangGraphScenario).
+They do not replace the complete configured declarations above. The same header rule holds
+for CrewAI and Tool Calling. Contract validation is still explicit: domain
+admission must preserve the common CompositionContract guarantees. Neither
+path starts a runtime Session or automatically passes validation.
+
+** Own Profiles, upstream reuse and initialization are independent intentions
+
+The [[file:164-profile-module-targeting-design.org][main design's complete combined example]] publishes MyBuildProfile,
+MyBuildVariant inherited from MaintainedBuildProfile, and FreshBuildProfile
+initialized via BuildProfileContract through MyChecksModule. It shows both
+fresh-contract and maintained-Scenario roots, then selects production from
+ReviewedTeamScenario, including all three exports plus final CI refinements.
+It retains complete user/native forms and identity/admission/evidence boundaries. All three can contribute to a user's
+Scenario if its concrete responsibilities admit the values. Upstream provides
+Profiles and Scenarios as reusable objects as well as domain Contracts and
+composition families; no user must choose only one of these asset kinds.
+
+The LangGraph/CrewAI/Tool Calling examples keep explicit source use-module.
+Users may similarly publish their own compatible Module and select its Profiles;
+they are not restricted to our maintained sources. Publication is not automatic
+admission: destination identity, required roles and domain policies still apply.
+A reusable Profile is separate from its Scenario-local occurrence/evidence.
+Source values must not be mutated or carry a different Scenario's stale proof.
+
+** Domain admission retains the common foundation
+
+#+begin_src scheme
+;; Proposed owner Contracts; existing validate protocol.
+(validate CompositionContract MyGraphScenario)
+(validate LangGraphCompositionContract MyGraphScenario)
+(validate CompositionContract MyCrewScenario)
+(validate CrewAICompositionContract MyCrewScenario)
+(validate CompositionContract MyToolScenario)
+(validate ToolCallingCompositionContract MyToolScenario)
+#+end_src
+
+These paired checks state the conformance obligation. The final owner admission
+may retain combined evidence rather than evaluating the same constraints twice,
+but it cannot skip the common foundation. Closed selected composition still
+reads the effective derived Profile, not the domain's original default proto.
+All declarations/checks here are design examples, not executed admission receipts.
+
+** Configuration construction is not Session execution
+
+Native .def derives an object from a maintained Scenario. Responsibility-driven
+nested construction remains a proposed owned adapter and is not current native
+.def behavior. Contract admission then checks the actual effective object and
+its evidence. Selected Profile composition and plan/root projection are inert.
+Only an explicitly created fresh Session performs its owned lifecycle and
+runtime handoff. These phases are not a second public composition hierarchy:
+object creation is not validation, and neither validation nor plan projection
+starts an executing Session. Existing Case/Session implementations are retained.
+
+** Selected effective composition and custom Scenarios
+
+#+begin_src scheme
+(.get MyGraphScenario graph profiles state-graph routing-policy selection)
+(.get MyCrewScenario crew profiles crew-workflow scheduling-policy ordering)
+(.get MyToolScenario tool profiles tool-loop argument-validator maximum-depth)
+#+end_src
+
+The owner projects those admitted derived contributions, including user business
+values and natively refined inherited policy objects. Existing source stage fuel,
+exit/proof/handoff data remain inherited defaults (8/6/5 respectively), not
+changed values or successful execution evidence. Never append original source
+Profiles after edits or re-read the catalog to restore stale policies. Preserve
+all selected source identities and produce matching effective evidence.
+
+For the workflow Scenarios choose pipeline or authoring. The Scenario-owned
+helper must admit the configured funflow.pipeline and delegate to existing
+Funflow plan projection; a separate workflow-config attachment is superseded. It never treats config flags as a Core ProfileBundle without that
+owner projection. No Case execution gate is bypassed.
+
+Users can publish their own Scenario with reusable Profiles, an explicit native
+base and compatible CompositionContracts: dynamic-name policy, default proto
+values, responsibilities and combination rules. Maintained Scenarios are reused
+by native extension as above. Composing already closed runtime roots requires
+separate identity/authority admission; Profile composition does not imply that
+arbitrary lifecycle objects can be mixed. No second Case authoring hierarchy is
+needed. Internal Case/Session semantics remain intact.
+
+** Qualification
+
+Owner-source references, default-binding declarations, reader and link checks
+validate design form; linked fixtures remain migration reference inputs.
+Future executable checks must preserve multi-export identities; inherited graph,
+proof and handoff fields; effective stage changes after parent-cache evaluation;
+required constraints; all workflow commands/dependencies/retention; fresh evidence;
+and inert projection. Native .def derives configuration objects; existing
+user-composition is a Bundle-to-Case binding, not an additional object-construction
+entry. No new composition macro is proposed. No user-interface source, Case
+export, Scenario runtime
+root, execution plan or Session implementation is changed by this update.

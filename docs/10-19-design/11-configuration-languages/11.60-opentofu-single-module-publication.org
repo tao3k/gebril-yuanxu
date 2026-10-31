@@ -1,0 +1,229 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.60 Config Languages 59: One Maintained OpenTofu Module Publication
+#+property: DOCUMENT_ID 11.60
+#+property: STATUS implemented-local-qualification
+
+* One entry and distinct roles
+
+Core modules/opentofu is the maintained publisher. interface.ss contains one
+OpenTofu Module declaration; it no longer flat-reexports implementation units.
+objects.ss owns the native OpenTofuScope. prototype, config.ss exports Config,
+and the optional build.ss defines Build. The old exported package-contribution
+factory and the test-generated tools/opentofu shell are removed, with no aliases
+or compatibility facade. Native kernel tests import their precise algorithm or
+object owner; ordinary Module consumers use the admitted interface scope.
+
+#+begin_src scheme
+;; core/modules/opentofu/config.ss -- shipped default, no pinned local path
+(import :clan/poo/object)
+(export Config OpenTofuProviderConfig)
+(.def Config
+  source: #f
+  artifact: (getenv "YUANXU_OPENTOFU_ARTIFACT" #f))
+(.def OpenTofuProviderConfig provider-artifact: #f)
+#+end_src
+
+Config.source is a native Nix Source supplied by upstream package/configuration
+composition. It is not a directory string, per-Provider environment registry or
+another Provider selection list. The shipped default is deliberately unset.
+Config.artifact remains the existing optional package-produced collection input.
+A team configuring its packaged module may supply, for example:
+
+#+begin_src scheme
+;; Source value in the team's upstream config, not Infrastructure/build.ss
+(.o (:: @ NixFlakeSource.)
+  reference: "path:/srv/infrastructure/provider-packages"
+  attribute: "lib.providerArtifacts")
+#+end_src
+
+That is an example team-owned locked checkout, not a Core default. The native
+constructor comes from the Nix module's objects owner. Flake Sources retain
+native lock/source observations and never update the lock implicitly. Expression
+Sources retain their expression observations and can refine their source-inputs
+upstream to include catalog/collector inputs. No extra Nix discovery process is
+introduced to guess those semantics.
+
+* Scope and publication
+
+OpenTofuScope. inherits OpenTofuConfiguration.; config is Config and modules
+remains lazy over config.artifact. Existing types.configuration is preserved;
+types.config publishes OpenTofuConfigContract. prototypes publishes the Provider
+and Configuration prototypes, schema publishes conversion functions, and the
+scope owns normalize, configuration-from-types and provider-from-directory.
+Neither constructing the scope nor inspecting its shape reads Provider indexes.
+
+#+begin_src scheme
+;; core/modules/opentofu/interface.ss -- complete declaration
+(.def OpenTofu
+  identity: 'opentofu
+  core:
+  (.o requires: (.o Nix: (.o module-id: 'nix contract: NixScopeContract)
+                    JsonSchema: (.o module-id: 'json-schema contract: JsonSchemaScopeContract))
+      scope-contract: OpenTofuScopeContract
+      exports: OpenTofuScope.
+      configuration-build: Build)
+  features: (.o))
+#+end_src
+
+OpenTofuScopeContract validates the native scope shape without activating modules
+or Build. OpenTofuConfigContract admits an optional artifact path and optional
+native Nix Source, using the existing Nix Contracts. Missing source is permitted
+for scope inspection and direct use of injected artifacts; an actual consumer
+build rejects with =build-required: OpenTofu Config.source must supply a Nix Source=.
+Malformed Sources reject before Nix handoff. Generated configuration Contracts
+still own Provider fields; neither scope/config Contract replaces them.
+
+* Native Build receiver and selected dependency association
+
+Build is a native .def object with module: OpenTofuScope. and the existing
+external-package .prepare method. That method reads module.config, not a baked
+catalog parameter or an independently imported default scope. The outer native
+module slot retains receiver semantics for explicit upstream derivation.
+The role wrapper supplies the actual selected types/objects/config bindings;
+Build does not import its own objects through a second canonical identity.
+
+Preparation takes the consumer root/publication supplied by the existing direct
+core.requires edge. It captures the final Config once, projects Provider demand,
+and combines consumer source observations with the upstream Nix Source's
+source-inputs. Flake arguments receive selection JSON; expression arguments
+receive the generated selection file path. Both use the same native .prepare
+handoff and currentness/admission boundary.
+
+Realization derives a new scope from module with the realized artifact in its
+config. The same captured consumer candidate is passed to that scope's generated
+Configuration Contract .admit. The selected build writer checks this evidence
+before returning success. It does not link or mutate the ordinary runtime scope.
+
+#+begin_src scheme
+;; root init.ss
+(yuanxu! mode: explicit source: "./modules"
+  (json-schema @ "./core/modules/json-schema")
+  (nix @ "./core/modules/nix")
+  (opentofu @ "./core/modules/opentofu")
+  :app (infrastructure))
+
+;; Infrastructure config.ss, first revision
+(def Config
+  (.o resource: (.o aws_security_group: (.o web: (.o name: "web")))))
+
+;; Same file, next revision; no other declarations change
+(def Config
+  (.o resource:
+      (.o aws_security_group: (.o web: (.o name: "web"))
+          null_resource: (.o smoke: (.o triggers: (.o release: "smoke"))))))
+
+;; Infrastructure interface.ss; types.ss imports and exports the two Contracts
+(.def Infrastructure
+  identity: 'app/infrastructure
+  core:
+  (.o requires:
+      (.o Tofu: (.o module-id: 'opentofu contract: OpenTofuScopeContract))
+      scope-contract: InfrastructureScopeContract
+      exports: (.o config: Config))
+  features: (.o))
+#+end_src
+
+The two Config definitions are alternative file revisions. Infrastructure has no
+build.ss, Source setup, demand list or manual admission stage. These examples
+exercise structural configuration admission, not credentials/backend/Provider RPC
+plan or cloud deployment.
+
+* Migration and native authoring admission
+
+Static Core compilation roots no longer compile declarative interface.ss as a
+flat functional facade. The selected graph supplies its generated compiler frame.
+Native tests previously importing that facade have migrated directly to the
+bounded implementation owner. Stale generated facade/build-factory artifacts
+were removed from the local build cache; no source checkout was removed.
+
+The authoring gate now respects native .call: its literal method name lowers to
+(.get receiver method), while its receiver and argument expressions remain real
+references. Calling a different object's .prepare from a .prepare method is not
+an initializer self-reference. Positive native execution and receiver/argument
+negative controls cover this rule; no helper hides the valid call from admission.
+
+The Build evaluator now wraps the exact private-source closure already observed
+by publication reading, alongside the declared roles. Helpers are not promoted
+to roles or implicitly imported into Build. Each wrapper has a fresh identity,
+so equal basenames cannot overwrite one another. No directory scan or arbitrary
+private import is introduced; config-only evaluation keeps its explicit admitted
+role boundary. Publication source observations continue to guard helper changes.
+The positive control changes the maintained aws-hash.ss dependency after graph
+creation and requires the existing currentness boundary to reject it.
+
+Build-role preparation checks the publication closure before and after native
+wrapping. Local prepared inputs validate their own bytes/package identities;
+they do not recursively revalidate the entire selected graph for every entry.
+The graph currentness operation validates its selection, then all local guards.
+This removes duplicate traversals within the synchronous boundary, without a
+persistent validity cache or any validity receipt surviving an external effect.
+Independent currentness calls and final publication checks remain mandatory.
+Prepared helper identity is retained only while exact source/header bytes,
+ancestor package observations (including absent closer gerbil.pkg files), and
+native package-cache contents still match. Unchanged bodies are not parsed again
+just to derive the same identity. This is metadata reuse under checked premises,
+not cached permission to use changed code.
+
+* Validation and remaining boundary
+
+The current integration control directly binds the maintained JSON Schema, Nix
+and OpenTofu directories through init source declarations. Upstream native POO
+publication derivation supplies the Source; no Core module directory is copied.
+The stricter authorization and source-tree boundary is documented in
+[[file:11.61-explicit-module-authorization-and-core-sources.org][60 Explicit Module Authorization and Core Sources]].
+It checks exact publisher/Build bytes, ordinary scope inspection before Build,
+no early Source forcing/Nix process, and absence of Infrastructure/build.ss.
+There is no generated alternative publisher/factory in the test.
+
+AWS-only then newly added Null retain real locked package provenance, indexed
+Contracts, final native .admit, source/indirect Nix currentness, generated guards,
+parent Contract/cache isolation and awscc exclusion. The unconfigured-Source gate
+also checks standalone-builder laziness and rejection before Nix execution.
+Results below distinguish the final source snapshot from earlier failed controls.
+
+Product Loader integration, runtime artifact injection, aggregate cross-consumer
+build optimization, Provider RPC plan/apply and deployment remain outside scope.
+
+* Historical publication qualification before strict source selection
+
+The fixed source snapshot passed three serial locked-Flake rounds, 78 named
+assertions per round. Each used the default Gerbil runtime and the existing
+heap fence, Case duration budget and process timeout. Source hashes were equal
+before every round and after the final round. The expression-Source route also
+completed its full positive/negative control. No Loader was connected.
+
+| Selected configuration | Build median | Nix evaluations / realizations | Type reads / compilations |
+|------------------------+--------------+--------------------------------+---------------------------|
+| AWS only               | 6.415 s      | 3 / 1                          | 1 / 1                     |
+| AWS plus Null          | 7.839 s      | 3 / 1                          | 2 / 2                     |
+
+These are fresh Scheme scopes with an existing Nix store, not download-cold
+measurements or whole-scenario latency. Both hot-slot controls performed five
+cached accesses with zero Nix processes, type reads or compilations. The first
+post-build admission access is also cached: final admission already happened
+inside Build before success was returned. Independent currentness still invoked
+one Nix evaluation (medians 2.021 s and 2.005 s) to verify the external derivation;
+it performed no type reads or compilations. A cached Contract is not a currentness
+receipt.
+
+The related Core gates cover authoring, Config/Build roles, publication, source
+admission, selected graphs, phase isolation and build-entry capture. Eleven
+OpenTofu kernel/consumer suites passed 514 named assertions against existing
+real AWS, awscc and Null packages. Their imports now target the exact Schema
+compiler, validation and diagnostic owners rather than a stale flat interface.
+No compatibility facade was added for either old entry.
+
+Earlier failures remain distinct: a concurrent init.ss edit correctly invalidated
+one run; the first real-source closure exposed missing private-helper wrapping;
+unchanged-body reparsing exceeded the existing Case duration budget; an old
+compiled JSON Schema diagnostic owner failed a consumer regression. The final
+controls use the corrected closure, direct owners and rebuilt native libraries.
+The source/header/package-cache negative controls still reject changed headers,
+changed packages and a newly introduced closer gerbil.pkg. Restoring the exact
+inputs admits the same identity again.
+
+The structured product-workspace receipt is
+[[file:../../../t/fixtures/opentofu/core-publication-control.json][core-publication-control.json]].
+It retains checked source hashes, gate results, process/type counts, timing
+ranges and the earlier failure boundaries. Raw logs remain local artifacts.

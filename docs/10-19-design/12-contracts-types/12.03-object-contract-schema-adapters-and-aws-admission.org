@@ -1,0 +1,482 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 12.03 Object Contracts, Schema Adapters and AWS Admission
+#+property: DOCUMENT_ID 12.03
+#+language: en
+#+property: STATUS proposed-public-api-with-isolated-scheme-controls
+
+* Historical listing scope
+
+The local ObjectContract. definition below is a superseded discussion prototype,
+not an instruction to redeclare the public gerbil-poo binding. Current code imports
+:clan/poo/object-contract; its ObjectContract. is a value Type, not the older Core
+evidence-producing object admission descriptor. Historical API-review statements
+below describe that earlier revision. Start with
+[[file:12.20-aws-alignment-and-dynamic-typing.org][current AWS alignment]] for implemented ownership and timing boundaries.
+
+* Revision and reading contract
+
+This extends [[file:12.02-contract-ownership-and-aws-collaboration.org][the ownership audit]]. The newly inspected gerbil-poo PR 13 head is
+=73daebfe038911bc2df3c8d200aaf53511aa0ce6=. Its changes since =54798ba= concern
+coordinator recovery; =declarative-metadata.ss= and =contract-family.ss= retain
+the APIs used here. The installed package remains a separate version.
+
+Update: [[file:12.06-public-object-contract-implementation.org][the public-library implementation record]] describes the local implementation
+on gerbil-poo head =ebe17df=. The first two blocks below retain the discussion
+design; they no longer generate the test implementation. The qualification
+imports =:clan/poo/object-contract= instead. In particular, the public Type adapter
+also delegates =.validate= and validates diagnostic callback results at object
+composition boundaries. The public source is authoritative for its exact API.
+
+The JsonSchema block now mirrors the local library implementation; see
+[[file:12.07-json-schema-value-contract-implementation.org][the JsonSchema implementation record]]. The generic historical blocks and AWS/Core
+consumer blocks remain discussion source, not installed module APIs. Selected blocks
+have now been evaluated in private qualification modules; see the
+[[file:12.05-isolated-scheme-validation.org][bounded validation record]]. Existing POO syntax is used throughout. No macro, configuration DSL,
+runtime Loader or dependency change is introduced. Imports are intentionally
+not fabricated: gerbil-poo owns generic definitions; the JsonSchema module owns
+Schema definitions; the AWS module receives selected provider schemas; Core
+owns its admission adapter. Module scopes supply these bindings internally.
+
+* Decision: one Type protocol, diagnostic adaptation, separate admission
+
+An object Contract remains a gerbil-poo Type. The proposed =diagnose= operation
+returns failure diagnostics for a value; an empty list means successful checking.
+It neither returns deployment authority nor knows Core publication identities.
+Core turns this result into context-bound evidence through its existing admission
+protocol. This avoids moving Core-branded receipts into gerbil-poo.
+
+The proposed names =diagnose=, =TypeContract.=, =ObjectContract.= and
+=ProjectionContract.= require upstream API review. They are an additive generic
+diagnostic extension to Type, not replacements for the PR's INVOCATION
+=Contract.=. A value contract and a checked invocation are different operations.
+An existing Type can participate without being rewritten as a Contract.
+
+** Proposed gerbil-poo definitions: Type adaptation
+
+#+begin_src scheme
+(.defgeneric (diagnose constraint candidate path) slot: .diagnose)
+
+(define-type (TypeContract. @ Type. expected-type)
+  .element?: (cut element? expected-type <>)
+  .diagnose:
+  (lambda (value location)
+    (if (element? expected-type value)
+      '()
+      (list (.o kind: 'type-rejected
+                path: location expected: expected-type)))))
+
+(def (as-value-contract descriptor-value)
+  (validate Type descriptor-value)
+  (if (.slot? descriptor-value '.diagnose)
+    descriptor-value
+    (.cc TypeContract. 'expected-type descriptor-value)))
+
+(def (prepare-responsibilities declared-fields)
+  (foldl
+    (lambda (field-name prepared-fields)
+      (.cc prepared-fields field-name
+           (as-value-contract (.ref declared-fields field-name))))
+    (.o)
+    (.all-slots declared-fields)))
+#+end_src
+
+=foldl= is the ordinary Gerbil list fold; no new evaluator is involved. A library
+must validate descriptor construction before publication. The presence of
+=.diagnose= alone is not a semantic proof: its shape, procedure arity and laws
+need conformance tests. Unexpected callback exceptions propagate with their cause;
+they are not converted indiscriminately into a user field rejection. The
+boolean/diagnostic agreement law applies to well-formed descriptors and
+successful evaluation, not to arbitrary broken predicates.
+
+** Proposed gerbil-poo definitions: responsibilities and object identity
+
+The small failure constructor below is private generic library code. It records
+neither raw candidate secrets nor claimed source provenance.
+
+#+begin_src scheme
+(def (object-issue kind-value location)
+  (.o kind: kind-value path: location))
+
+(def (object-contract-issues descriptor-value value location)
+  (cond
+    ((not (object? value))
+     (list (object-issue 'expected-object location)))
+    ((let (prototype (.get descriptor-value required-prototype))
+       (and prototype
+            (not (memq prototype (compute-precedence-list! value)))))
+     (list (object-issue 'prototype-mismatch location)))
+    (else
+     (let* ((fields (.get descriptor-value prepared-responsibilities))
+           (required-names (.all-slots fields))
+           (extra-policy (.get descriptor-value extra-fields))
+           (constraints (.get descriptor-value constraints))
+           (extra-errors
+             (if (eq? extra-policy 'reject)
+               (filter-map
+                 (lambda (name)
+                   (and (not (memq name required-names))
+                        (object-issue 'unknown-field (append location (list name)))))
+                 (.all-slots value))
+               '()))
+           (field-errors
+             (append-map
+               (lambda (name)
+                 (let (field-path (append location (list name)))
+                   (if (.slot? value name)
+                     (diagnose (.ref fields name) (.ref value name) field-path)
+                     (list (object-issue 'missing-field field-path)))))
+               required-names))
+           (structural-errors (append extra-errors field-errors)))
+      (if (pair? structural-errors)
+        structural-errors
+        (let (constraint-errors
+               (append-map (lambda (constraint)
+                             (diagnose constraint value location))
+                           constraints))
+          (if (pair? constraint-errors)
+            constraint-errors
+            ((.get descriptor-value obligations) value location))))))))
+
+(define-type (ObjectContract. @ Type.
+                            identity responsibilities required-prototype
+                            extra-fields constraints obligations
+                            prepared-responsibilities .diagnose)
+  responsibilities: (.o)
+  required-prototype: #f
+  extra-fields: 'reject
+  constraints: '()
+  obligations: (lambda (_value _path) '())
+  prepared-responsibilities: (prepare-responsibilities responsibilities)
+  .element?: (lambda (value) (null? (.diagnose value '())))
+  .diagnose:
+  (lambda (value location)
+    (unless (or (eq? extra-fields 'reject)
+                (and (eq? extra-fields 'delegate) (pair? constraints)))
+      (error "Invalid object extra-field policy" identity))
+    (object-contract-issues @ value location)))
+#+end_src
+
+All entries in responsibilities are required in this narrow design. Optional
+provider properties stay in the Schema constraint rather than being turned into
+mandatory responsibilities. This is not yet a general optional/default API.
+=extra-fields: 'delegate= delegates the full remaining field policy to explicit
+constraints; it does not mean silently accepting arbitrary configuration.
+The AWS example below uses a closed provider input schema for that delegation.
+
+The object slot inventory is checked before evaluating unknown values; known
+required values are then demanded for this selected candidate. This does not
+enumerate a module catalog. These are data contracts: if a behavior-bearing
+object includes implementation slots, its owner must supply a declared data
+projection or a different structural contract, not silently ignore every dotted
+or unfamiliar name. Fields are not dropped merely because they look like metadata.
+
+The prepared map is a lazy slot of the Contract receiver. Deriving the Contract
+and changing responsibilities must yield a new prepared map; inheriting the
+parent's precomputed field map would be a correctness bug. This reuse law
+requires a focused receiver/cache control before implementation acceptance.
+
+An ordinary field Type remains acceptable in the map. Prototype identity is
+optional and independent: set required-prototype only for a consumer that relies
+on actual inherited behavior/MOP invariants. There is no automatic ancestry rule
+just because a descriptor also provides a default object for initialization.
+
+* JsonSchema module: use the existing compiler and node validator
+
+The existing validator already supports POO candidates as well as JSON-oriented
+representations. Do not require an unnecessary JSON round trip for admission.
+Actual resource rendering is a separate wire projection. The adapter below
+preserves the original diagnostic object and embeds it under the caller's path.
+
+#+begin_src scheme
+;; Boolean membership shares the existing node evaluator; diagnosis retains
+;; the original structured diagnostic and its precise nested instance path.
+(define-type (SchemaContract. @ Type. identity node)
+  .element?: (cut yuanxu-json-schema-node-valid? node <>)
+  .diagnose:
+  (lambda (value location)
+    (map (lambda (diagnostic-value)
+           (let (instance-path
+                  (yuanxu-contract-object-ref
+                    (yuanxu-json-schema-validation-diagnostic-metadata diagnostic-value)
+                    'path location))
+             (.o kind: 'schema-rejected path: instance-path diagnostic: diagnostic-value)))
+         (yuanxu-json-schema-node-validate node value location))))
+
+(def (schema-value-contract identity-value schema-value)
+  (using (identity-value :~ symbol?)
+    (let (normalization (yuanxu-json-schema-normalize schema-value))
+      ;; Warnings/unsupported constraints may not silently weaken validation.
+      (unless (null? (yuanxu-json-schema-normalization-diagnostics normalization))
+        (error "Schema contains invalid or unsupported constraints" identity-value
+               (yuanxu-json-schema-normalization-diagnostics normalization)))
+      (.cc SchemaContract.
+           'identity identity-value
+           'node (yuanxu-json-schema-normalization-schema normalization)))))
+
+;; Project the CURRENT value, never a captured parent. The original object is
+;; returned by ordinary Type validation; projection is not normalization.
+(define-type (ProjectionContract. @ Type. constraint project prepared-constraint .diagnose)
+  prepared-constraint: (as-value-contract constraint)
+  .element?: (lambda (value) (null? (.diagnose value '())))
+  .diagnose:
+  (lambda (value location)
+    (unless (procedure? project) (error "Contract projection must be a procedure"))
+    (diagnose prepared-constraint (project value) location)))
+#+end_src
+
+Both SchemaContract and ProjectionContract are now owned by the JsonSchema
+library. Neither imports Core admission or receipts. ProjectionContract validates a projected
+view without replacing the admitted original candidate. There is no second
+schema parser or handwritten interpretation of provider properties here.
+External references and unsupported keywords must be resolved/supported or
+refused by the existing normalizer, not erased by this adapter. The private
+qualification imports these definitions instead of extracting another copy.
+
+* AWS module: concrete NetworkProfileContract and WebProfileContract
+
+Provider schema conversion/publication supplies vpc-input-schema and
+instance-input-schema, pinned to one selected provider/schema generation.
+They describe configurable input fields: computed-only attributes are not
+required user inputs. Input-schema conversion and its completeness need their
+own qualification; this design does not claim the raw provider schema is already
+JSON Schema. Closed input schemas must reject unknown fields while retaining
+their optionality and supported nested constraints.
+
+The factory takes these two real schema inputs, rather than defining imaginary
+global ProviderVpcContract bindings. It adds only Profile-specific reference
+semantics and a concrete contribution policy for regions.
+
+#+begin_src scheme
+(define-type (RegionType @ String)
+  .element?:
+  (lambda (value)
+    (and (string? value)
+         (if (member value '("us-east-1" "us-west-2")) #t #f))))
+
+(define-type (NetworkReferenceType @ Symbol)
+  .element?: (lambda (value) (symbol? value)))
+
+;; Remove ONLY the library-owned reference; retain all unknown fields so the
+;; provider input schema can report misspellings. No slot values are copied early.
+(def (web-provider-view web-value)
+  (foldl
+    (lambda (name result-value)
+      (if (eq? name 'network-ref)
+        result-value
+        (.cc result-value name (.ref web-value name))))
+    (.o)
+    (.all-slots web-value)))
+
+(def (aws-local-links effective-profile location)
+  (let* ((web-value (.get effective-profile web))
+         (reference-value (.get web-value network-ref)))
+    (if (and (eq? reference-value 'network)
+             (.slot? effective-profile reference-value))
+      '()
+      (list (.o kind: 'unresolved-network-reference
+                path: (append location '(web network-ref)))))))
+
+(def (make-aws-profile-contracts vpc-input-schema instance-input-schema)
+  (let* ((network-contract
+           (schema-value-contract 'aws/network-profile vpc-input-schema))
+         (instance-contract
+           (schema-value-contract 'aws/instance-input instance-input-schema))
+         (web-contract
+           (.cc ObjectContract.
+                'identity 'aws/web-profile
+                'responsibilities (.o network-ref: NetworkReferenceType)
+                'extra-fields 'delegate
+                'constraints
+                (list (.cc ProjectionContract.
+                           'constraint instance-contract
+                           'project web-provider-view))))
+         (profile-contract
+           (.cc ObjectContract.
+                'identity 'aws/profile
+                'responsibilities
+                (.o region: RegionType
+                    network: network-contract
+                    web: web-contract)
+                'obligations aws-local-links)))
+    (.o NetworkProfileContract: network-contract
+        WebProfileContract: web-contract
+        AWSProfileContract: profile-contract)))
+#+end_src
+
+The two-region list is this contribution's policy, not the complete AWS region
+catalog or a deployability proof. This example has one named network; arbitrary
+network inventories need a separate map/reference contract. Region/account
+coherence across multiple provider instances is outside this one-provider
+example and must be added when that Scenario requires it.
+
+No prototype is required for these data contracts. The Network Schema validates
+CIDR/tags according to its supported constraints. Web validates network-ref as
+a Symbol, then its full provider-facing view, including required AMI and instance
+fields. Only after both children pass does the root relation resolve the target.
+An unknown instnace_type survives web-provider-view and reaches the closed
+provider schema. Neither the projection nor the responsibilities map hides it.
+
+The projection is deliberate and strict for selected provider inputs: validating
+a selected resource can demand its complete configurable input. Do not project
+or validate resources outside the selected dependency closure. Mutating objects
+or strings during admission is excluded; published descriptors and effective
+input snapshots must be immutable or managed through explicit revisions.
+
+* Contributions and users: same Profile, no repeated Contract declarations
+
+#+begin_src scheme
+(.def TeamAWSProfile
+  region: "us-east-1"
+  network:
+  (.o cidr_block: "10.1.0.0/16"
+      tags: (.o Name: "team-network" Owner: "platform"))
+  web:
+  (.o ami: "ami-0f1cf34dcb4057a5f"
+      instance_type: "t3.small"
+      network-ref: 'network
+      tags: (.o Name: "team-web" Owner: "platform")))
+
+(.def (ProjectAWS @ TeamAWSProfile)
+  web: =>.+ (.o instance_type: "t3.medium"))
+
+(.def (ProductionAWS @ ProjectAWS)
+  web: =>.+ (.o tags: =>.+ (.o Environment: "production")))
+#+end_src
+
+AMI is an illustrative identifier inherited from the existing AWS design case,
+not a verified live image for this region. Schema admission cannot establish
+live image availability or permissions. This version supplies the AMI input
+omitted from the earlier minimal snippet; no complete provider-input admission
+was justified by that earlier snippet alone.
+
+The contribution's publication interface associates its exported Profile with
+the factory's AWSProfileContract once. The selected module graph supplies that
+association to the following Core adapter. Automatic association preservation
+for every derivation path is still a separate MOP/publication integration gate;
+users must not hand-author origin records to compensate for it.
+
+The published Contract association is not an ordinary user-overridable config
+slot. A user may derive a Contract for their own library, but cannot discharge
+an upstream mandatory requirement by replacing it with a weaker descriptor.
+The one-contribution example below uses one root Contract. Multiple mandatory
+publication requirements must all be retained and checked by selection; choosing
+only the last parent's descriptor would be unsound. The coordinator must not
+resolve authority from a candidate-supplied .type or Contract-looking slot.
+
+* Core: adapt diagnosis to existing evidence, retain exact inputs
+
+The following is proposed Core adapter code using CURRENT evidence constructors
+and =yuanxu-contract-admit=. It does not require a new evidence hierarchy.
+The snapshot is produced by Core selection/publication, never treated as an
+authenticated user assertion merely because it has the right slots.
+
+#+begin_src scheme
+(def (admit-effective-configuration descriptor-value candidate-value snapshot-value)
+  (using ((candidate-value :~ object?) (snapshot-value :~ object?))
+    (unless (and (eq? candidate-value (.get snapshot-value effective-root))
+                 (eq? descriptor-value (.get snapshot-value profile-contract)))
+      (error "Admission inputs disagree with selected snapshot"))
+    (let* ((adapter
+             (.cc YuanxuContract.
+                  'identity (.get descriptor-value identity)
+                  '.classify
+                  (lambda (value context-value)
+                    (unless (and (eq? value candidate-value)
+                                 (eq? context-value snapshot-value))
+                      (error "Admission receiver/context changed"))
+                    (let (failures (diagnose descriptor-value value '()))
+                      (yuanxu-classification-evidence
+                        (.get descriptor-value identity) value
+                        (null? failures) failures context-value)))))
+           (evidence
+             (yuanxu-contract-admit adapter candidate-value snapshot-value)))
+      (.cc evidence
+           'value-contract descriptor-value
+           'selected-graph (.get snapshot-value selected-graph)
+           'source-generation (.get snapshot-value source-generation)
+           'schema-generation (.get snapshot-value schema-generation)))))
+
+(def (configuration-evidence-current? evidence-value current-snapshot)
+  (and (yuanxu-validation-evidence-accepted? evidence-value)
+       (eq? (.get evidence-value candidate)
+            (.get current-snapshot effective-root))
+       (eq? (.get evidence-value value-contract)
+            (.get current-snapshot profile-contract))
+       (eq? (.get evidence-value context) current-snapshot)
+       (eq? (.get evidence-value selected-graph)
+            (.get current-snapshot selected-graph))
+       (equal? (.get evidence-value source-generation)
+               (.get current-snapshot source-generation))
+       (equal? (.get evidence-value schema-generation)
+               (.get current-snapshot schema-generation))))
+#+end_src
+
+The snapshot fields above are a proposed binding contract, not existing
+universally enforced Core fields. They require a complete, canonical source and
+Schema generation manifest and a real Core-owned current snapshot. A caller
+comparing a receipt with its own old snapshot establishes nothing about current
+state. A parent and child cannot share this receipt merely because field values
+look similar. This conservative adapter rejects reuse across distinct snapshots;
+finer dependency-based reuse needs its own complete observation model.
+
+The aggregate diagnosis covers all required children through the fixed root
+responsibilities and whole provider-input constraints. It does not create
+independent child evidence objects or prove open-ended discovery completeness.
+Dynamic inventories require qualified responsibility discovery before this
+can become their admission adapter. Receipt constructors remain public values;
+these checks do not make forged receipts authentic. Consumers must accept
+receipts from the actual admission path, not arbitrary similarly shaped objects.
+
+* Reuse of the upstream PR, without confusing checks with admission
+
+Once built, AWSProfileContract is an ordinary Type. Existing PR code can lift it
+without defining a second predicate/type registry:
+
+#+begin_src scheme
+;; metadata is the upstream declarative-metadata scope, not a new DSL.
+(def (aws-profile-predicate published-contracts)
+  (metadata.typed "AWS profile"
+                  (.get published-contracts AWSProfileContract)))
+#+end_src
+
+The PR's invocation Contract can use that Predicate at a real function boundary.
+Do not run this full check again after complete Core admission just to repeat it.
+Do not assume passing procedure? installs a Function wrapper. Reuse the existing
+checked invocation and phase-preserving refusal when exposing callable module
+services. ContractFamily can prepare selected services and reuse invariant
+checks under its exact source/input/executor guards; it cannot reuse a parent
+configuration's admission result. The joint publisher is a candidate for atomic
+publication of multiple admitted configurations, not a necessary extra layer
+for every simple Profile. Its complete endpoint list and pure callback premises
+must be satisfied before adopting it in Core.
+
+* Required outcomes and ownership
+
+| Case | Required result | Owner |
+|------+-----------------+-------|
+| Replace instance_type | t3.medium; other inherited web fields retained | Existing POO slots |
+| Add production tag | Original Name/Owner retained | Existing POO refinement |
+| Misspell instnace_type | Provider-schema diagnostic at web path | JsonSchema adapter + closed provider input schema |
+| network-ref is a number | Type failure before root obligation | Generic Type adaptation |
+| network-ref names absent network | Root relationship diagnostic | AWS obligation |
+| Structurally valid independent Profile | Accept without default prototype ancestry | Proposed ObjectContract |
+| Behavior consumer explicitly requires ancestry | Reject unrelated implementation | Proposed required-prototype policy |
+| Parent preview was cached | Diagnose/render child receiver; parent receipt not current | POO receiver semantics + proposed Core snapshot binding |
+| Unselected provider/Profile | No Schema/service preparation for that branch | Selection integration, not catalog traversal |
+
+Already present: Gerbil using, POO Type/slots, upstream PR Predicate/invocation
+Contract/ContractFamily, Core evidence protocol and JSON Schema compilation/node
+validation. Proposed upstream work: generic diagnostic adaptation, structural
+ObjectContract and pure projection adapter. Proposed JsonSchema work: the
+diagnostic Type adapter with no mandatory Core receipt dependency. Proposed AWS
+work: qualified provider-input schema selection and the concrete factory above.
+Proposed Core work: association preservation, trusted selection snapshot binding,
+currentness consumption and selected-service integration.
+
+The Type/object, Schema/AWS factory and Core adapter blocks were extracted into
+private test modules and exercised by native Scheme controls. They remain
+unpublished discussion APIs. The tests do not close live-provider conversion,
+automatic association/discovery, production snapshot currentness, Loader or
+formal-correspondence gates. See the [[file:12.05-isolated-scheme-validation.org][validation record]] and
+[[file:12.04-reflection-research-and-design-decisions.org][reflection questions and acceptance criteria]] before implementing these proposals.

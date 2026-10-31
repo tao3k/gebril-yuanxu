@@ -1,0 +1,348 @@
+#+title: 32.24 Revision ABA, Dynamic Scope and Snapshot-to-use Boundaries
+#+language: en
+
+* Decision
+
+[[file:32.23-mop-state-extraction.org][32.23]] compared selected MOP state at two endpoints. This follow-up tests the
+native lifetime between those endpoints and subsequent use. It changes tests,
+formal models and documentation only; production Scheme and Loader stay unchanged.
+No new purity flag, scope-generation counter or caller-supplied authority is used.
+
+The native results distinguish three cases:
+
+1. Supported object/protocol ABA is observable: restoring a value or protocol
+   does not restore revision. Descendants of shared prototypes invalidate once
+   per edit, not once per graph path.
+2. Dynamic observer ABA can restore exactly the old visible binding without
+   changing the selected object graph. The current snapshot cannot detect that
+   history. Independent source admission still rejects actual JSON writes.
+3. A successful comparison does not fence the interval to use. Rechecking/replay
+   can reject an old snapshot or certificate, but cannot undo an earlier use.
+
+These are different guarantees. None establishes an atomic filesystem snapshot,
+a concurrent object transaction, general closure purity or execution authority.
+
+* Fixed implementation and source entries
+
+The inspected producer remains gerbil-poo
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b=. The runtime is Gerbil =1cfb032=
+on Gambit =ea114fc=. LeanPoo remains pinned to
+=6e6a706e14fa6f8199e4f36711440355b42ef335=.
+
+| Entry | Actual behavior | Qualification boundary |
+|-------+-----------------+------------------------|
+| [[https://github.com/tao3k/gerbil-poo/blob/fdeadfa40ca5cee5fe20308985aef1577f2eb49b/object-state.ss][invalidate-state!]] | Walks weak dependent edges using identity seen-set; checks entire affected closure before any revision increment/cache clear | Caller serializes mutation/evaluation; no lock or concurrent transaction is implemented here |
+| [[https://github.com/tao3k/gerbil-poo/blob/fdeadfa40ca5cee5fe20308985aef1577f2eb49b/object.ss][before-object-edit! / check-object-edit]] | Rejects sealed writes and writes affecting active construction/slot-computation receivers; supported setters then commit | Arbitrary file writes and dynamic parameter rebinding are not protected by these receiver checks |
+| =clear-object-cache!= | Clears derived caches without incrementing revision itself | Covered separately by 32.23; do not equate this raw operation with supported invalidation |
+| =object-protocol-set!= | Registers protocol dependency; old edges conservatively remain after removal | Can invalidate more than the effective current protocol requires; no minimality claim |
+| =object-read-current?= | Checks one record's receiver/revision/cache identity | Does not certify the entire transitive read-dependency graph |
+| =replay-slot-reads!= | Checks each reachable read record and repeats currentness at the end | Requires full selected graph; does not undo earlier effects or freeze future use |
+| =parameterize= | Gerbil =core/more-sugar.ss= expands into =call-with-parameters= | No observer epoch is added by this macro |
+| =call-with-parameters= | Installed =runtime/control.ss= delegates to Gambit =##parameterize1= | Tested ordinary and exceptional restoration, not a global history observer |
+| [[file:../../../module-system/source/admission.ss][current-module-source-observer]] | An ordinary parameter made with =make-parameter #f= | Its visible value is separate from object revision |
+
+The supported setter path uses the fixed native =check-object-edit=. The exported
+lower-level =invalidate-state!= can accept arbitrary callbacks; this chapter does
+not classify all such callers as read-only or transactional.
+
+The relevant dynamic binding macros and installed runtime source were inspected.
+No per-observer monotonic generation is supplied by the audited interface. This
+is not a proof that every Gambit implementation detail lacks historical state;
+private unqualified VM internals are not substituted for a supported certificate.
+
+* Native test owner and isolation
+
+[[file:../../../t/mop-snapshot-lifetime-test.ss][mop-snapshot-lifetime-test.ss]] uses the existing
+[[file:../../../t/qualification/mop-state/snapshot.ss][snapshot helper]] and resource-owning Services/Directory fixtures. It runs in
+an unchanged heap-fenced =just test-file= SDK subprocess. Object mutations affect
+fresh local objects; file effects affect fixture-owned temporary trees. Existing
+reader/link/publication is consumed unchanged, with no Loader adaptation.
+
+The helper remains a qualification consumer, not a new production object engine.
+It neither extends producer exports nor installs any observer generation/purity
+label. The injected gaps are deterministic sequential steps, so a refusal does
+not depend on winning a timing race or widening a timeout.
+
+* Seven actual native controls
+
+** Supported value ABA through a shared diamond
+
+=Shared → Left/Right → Root= is a real multiple-inheritance diamond. All four
+revisions are sampled through =object-revision=, then the shared value is changed
+and restored using the supported slot setter:
+
+#+begin_src scheme
+(.putslot! Shared 'port ($constant-slot-spec 5433))
+(.putslot! Shared 'port ($constant-slot-spec 5432))
+(check-equal? (map object-revision objects)
+              (map (cut + <> 2) before))
+(check-equal? (.get Root port) 5432)
+(refuses "MOP snapshot changed" (cut state-current! snapshot))
+#+end_src
+
+All four owners advance twice; the shared route does not advance Root four
+times. Old native read replay also raises =stale slot dependency=. An unused
+slot deliberately raises if forced; it is never forced by this selected path.
+
+** Read-dependency edges are not all invalidation edges
+
+An independent =Database.port= is read by =Application.route= without making
+Database a prototype of Application:
+
+#+begin_src scheme
+(.def Database port: 5432)
+(.def Application route: (.get Database port))
+#+end_src
+
+After warming and recording Application.route, a supported Database.port edit
+leaves Application's revision unchanged. Its root read record still passes the
+per-record currentness predicate; a plain cached read outside admission returns
+5432. However, the captured graph includes the real Database read dependency:
+full native replay rejects it, and the full snapshot guard rejects the change.
+
+This is why neither receiver revision nor prototype ancestry alone replaces
+read-dependency replay. It is not a claim that plain POO reads automatically
+perform source-bound Contract admission. No production caching behavior is
+changed by this control.
+
+** Protocol ABA and conservative legacy edges
+
+Installing a real protocol object and removing it again restores =#f= but
+increments the receiver revision twice. The old snapshot is rejected. A later
+edit to the removed protocol still invalidates the receiver: the native weak
+dependency edge remains conservative. This is safe over-invalidation, not proof
+that every retained dependency remains semantically necessary. No edge-pruning
+optimization is proposed here.
+
+** Active dependent computation checks before commit
+
+A Child slot attempts to modify its Shared ancestor. The test reads the actual
+=active-slot-computations= parameter inside the slot and confirms Child is
+present. Native =check-object-edit= rejects =object mutation during computation=.
+Both owners' revisions and the original value remain unchanged. The parameter
+is restored after the exception.
+
+The entire closure preflight matters: the inactive Shared owner cannot increment
+first and only then discover that its Child is active. This is sequential
+preflight behavior, not proof of lock-based exclusion against another thread.
+
+** Comparison-to-use gap
+
+A snapshot passes, then a supported mutation occurs before use of a captured
+scalar. The deliberately unsafe test body consumes that old scalar into a local
+counter. A later guard and native replay reject the stale state, but the counter
+still records the old use. No real infrastructure operation is executed.
+
+Moving a second comparison closer to use narrows the interval but does not make
+it atomic. A final guard certifies its observed point; it cannot prevent an edit
+immediately afterwards. Publication/plan refusal is not external-effect rollback.
+
+** Real observer ABA with Gitea/PostgreSQL
+
+The real publication retains both independent policies, allowing 5433 in this
+fixture. Parent plan 5432 is cached; a derived Release is admitted with final
+PostgreSQL and default-following Gitea port 5433. The test then captures actual
+plan read records.
+
+Inside =parameterize=, an actual source observer writes a newline to the selected
+PostgreSQL JSON when =module-source-read= invokes it. While the binding differs,
+the snapshot is rejected. On return, the exact original observer value is
+restored and the MOP snapshot compares equal, despite the file effect.
+
+#+begin_src scheme
+(check-equal? (state-current! snapshot) #t)
+(refuses "configuration source changed"
+  (cut .call Contract .admit final Context))
+#+end_src
+
+Next, a selected settings slot is also changed, making both the read state and
+JSON source stale. The unchanged public =.admit= still reports the earlier
+=configuration source changed= diagnostic, rather than a later record error.
+The parent cached port stays 5432. That old cached value does not grant the
+parent continued source authority: the shared baseline file has changed.
+
+** Exceptional dynamic-scope restoration
+
+A second real observer writes a fixture file and raises a unique original
+exception. The caller receives the same exception object, the previous observer
+binding is restored, and the old MOP snapshot compares equal. The file retains
+its changed bytes. Dynamic unwinding restores the binding, not the filesystem.
+
+* Lean laws and correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/SnapshotLifetime.lean][Admission.SnapshotLifetime]] reuses SnapshotEntry/ReadOnlyEntry rather than
+replacing their guard, source or first-diagnostic models.
+
+| Theorem | Result |
+|---------+--------|
+| =selected_owner_once= / =diamond_not_multiple= | A selected identity increments once regardless of duplicate paths |
+| =outside_closure_unchanged= | Invalidation need not advance receivers outside the actual mutation closure |
+| =receiver_revision_not_dependency_certificate= | One owner can keep its revision while a demanded other owner advances |
+| =supported_aba_leaves_revision= / =value_aba_rejected= | Two supported edits leave a +2 revision even when value identity is restored; old cut refuses |
+| =active_closure_veto= | An affected active owner vetoes the modeled commit before revision changes |
+| =scope_aba_passes_endpoints= | Restoring observer/selected MOP state can pass the cut guard while source generation differs |
+| =initial_check_does_not_fence= | An initial passing guard does not imply that a later supported edit is absent |
+| =late_rejection_not_rollback= | A later refusal does not erase an earlier delivery |
+| =ordered_diagnostics_retained= | Closed same-order checks keep the exact first source/token diagnostic under the existing sound-byte premise |
+
+The model's affected owner IDs and active IDs project actual native edges and
+runtime frames, not user declarations of purity. The =advance= law is membership
+based, reflecting the native seen-set. The model assumes a complete finite
+mutation closure and serial supported operations. It does not extract native
+weak-table enumeration, prove parallel atomicity, or prove minimal invalidation.
+
+Likewise, State/cut use a small concrete signature to expose lifetime properties;
+they are not a second configuration API. Actual native representation-to-Cut and
+full footprint correspondence remain explicit premises from 32.23. Previous
+source coverage, child obligations and plan identity laws remain required.
+
+* QNT controls: certification is not execution fencing
+
+[[file:../../../dev/proofs/quint/SnapshotLifetime.qnt][SnapshotLifetime]] separates entry, mutation, pre-use check, another possible
+gap, use and final certification. Scenarios include supported value ABA,
+external dependency changes, observer ABA, active-child veto and combined
+source/record failure. Two independent requirements and final receiver ownership
+remain separate checks.
+
+The positive invariant protects final certification: sources are current, the
+selected old plan is still applicable, both requirements hold, each affected
+owner increments once, and active-closure veto cannot partially commit. It does
+NOT assert that an adversarial caller cannot consume an ordinary captured value
+before certification.
+
+| Wrapper | Expected result / interpretation |
+|---------+----------------------------------|
+| =valueOnly= | Counterexample: restoring value does not restore the revision-bound plan |
+| =receiverOnly= | Counterexample: unchanged receiver revision misses the observed external dependency |
+| =crossEffect= | Counterexample: old bytes across observer effects accept stale sources |
+| =skipClosure= | Counterexample: committing the first owner before checking the active child partially mutates on rejection |
+| =duplicate= | Counterexample: counting graph paths instead of identities increments one owner twice |
+| =parent= | Counterexample: accepting a parent's owner identity for the child plan |
+| =dropRequirement= | Counterexample: satisfying only one party loses the second obligation |
+| =prefix= | Counterexample: reporting stale plan first hides an earlier source error |
+| =history= | Limitation witness on the correct algorithm: equal endpoints cannot certify no prior restored-scope effect |
+| =fenced= | Limitation witness on the correct algorithm: a mutation after pre-use checking permits stale use before final refusal |
+| =acceptance= | Witness that the correct certification can accept a current configuration |
+
+The =priorEffect= field is a semantic trace observation populated by the modeled
+scope-effect transition, not a native epoch or a caller purity flag. The source
+write is folded into that transition; intermediate VM binding operations are
+not extracted. The =mutate= action abstracts one serialized native call/batch;
+its QNT atomicity is not attributed to the native multi-step implementation.
+The pre-use comparison also requires both requirements, current source and correct
+owner at that point; the after-check witness therefore does not rely on skipping
+those preconditions. The after-check gap is an explicit adversarial interleaving, not a native thread
+stress test or evidence of scheduler-specific behavior.
+
+* Architectural consequence and open work
+
+A selected graph/revision guard is useful for rejecting stale applicability.
+It is not a retrospective no-effect certificate, a lock, or a substitute for
+independent exact source checks. Root return checks cannot be carried across
+an arbitrary callback merely because its observer binding is restored.
+
+The next production decision must establish an enforced stable execution
+boundary, or retain the original fresh path. Merely adding entry/post-use
+comparisons cannot authorize an intervening effect. Ordinary source checks also
+cannot freeze external writers. No new epoch, global history registry, lock or
+source watcher has been implemented or claimed proved by this qualification.
+
+A failed reuse guard remains an internal qualification failure. Any future
+fallback must retain the original diagnostic schedule instead of exposing a
+new MOP error ahead of an earlier configuration-source error. Existing child
+Contract obligations, independently collected requirements, parent/child
+identity checks and source-return authority are not removed.
+
+* Ownership reflection
+
+Why not use just the receiver revision? The native external-demand control shows
+that the mutation graph and read-dependency graph have different edges. The
+complete selected replay is still needed, even with monotonic object revisions.
+
+Why not make a restored observer binding the certificate? Native ordinary and
+exceptional restoration can leave a changed file. Current interface values are
+not an event history; adding a generation would be a new implementation/protocol,
+not something already proved by inspecting the current value.
+
+Who owns the stronger boundary? The MOP owns receiver-local computation and
+supported invalidation; root admission owns all selected child/domain/source
+obligations; an effect runtime must own applicable authority at its effect/commit
+boundary. Neither configuration preview nor a passing local guard substitutes
+for the runtime's external resource/version preconditions. No such runtime
+integration is performed here. Users should not repair this separation with
+manual purity labels, source catalogs or global revision flags.
+
+* Qualification
+
+Completed source-bound results follow below. Raw outputs stay in local artifacts,
+never Git. Native value/currentness behavior, source audit and model proofs are
+reported separately; no reduction of the earlier 356 native reads is claimed.
+
+
+** Recorded gates (2026-10-18)
+
+- Default-runtime lifetime suite: seven cases passed, including the independent
+  read-dependency revision control; =native-04-current.log= has =MODULE-OK=,
+  =HARNESS-OK= and final =OK= with no error/overflow markers.
+- Existing extraction and real service-publication controls passed earlier in
+  this qualification (seven and eleven cases). A later extraction rerun failed
+  importing =AdmissionPublication.= from the compiled fixture interface. That
+  failure is retained. A subsequent default-runtime extraction rerun passed
+  all seven cases (=extraction-regression-03-current.log=); it does not erase
+  the failed attempt.
+- Lean: 164 build jobs completed; the shape audit passed and 5081 declarations
+  use only standard Lean axioms. No proof limit was raised.
+- Quint 0.33.0 / Apalache 0.62.1 / TLC: 89 expected outcomes over 90 typechecked
+  QNT sources, with a stable final source cut. The new positive model exhausts
+  224 distinct states; the following negative results are intentional witnesses.
+
+| Model suffix | Predicate | Generated / distinct | Meaning |
+|--------------+-----------+----------------------+---------|
+| valueOnly | CurrentPlan | 204 / 204 | Restored values hide revision ABA |
+| receiverOnly | CurrentPlan | 224 / 224 | Root revision misses an external dependency |
+| crossEffect | SourcesCurrent | 208 / 208 | Restored observer does not restore source bytes |
+| skipClosure | ActiveBlocked | 65 / 65 | Partial commit before active-child veto is unsafe |
+| duplicate | OncePerOwner | 73 / 73 | Diamond paths must not duplicate revision increments |
+| parent | ReceiverIdentity | 200 / 200 | Parent plan cannot certify the child |
+| dropRequirement | TwoRequirements | 199 / 199 | Independent second-party requirement is mandatory |
+| prefix | OrderedDiagnostic | 217 / 217 | Reordering changes the first diagnostic |
+| history | EndpointMeansNoEffect | 77 / 77 | Correct endpoint guard has no history guarantee |
+| fenced | NoStaleUse | 184 / 184 | Correct pre-use check does not fence subsequent use |
+| acceptance | RejectAll | 200 / 200 | Correct checker accepts a valid configuration |
+
+The first full Quint attempt obtained all expected model results but failed its
+final source-cut check. No passing receipt was issued for that attempt. The
+exact initial cut was not saved by that older runner; comparison with the older
+32.23 receipt cannot identify the exact concurrent edit interval. The runner now
+retains an unqualified =.inputs.json= before checking and an exact =.drift.json=
+if the final comparison fails. The second full attempt passed the unchanged
+source-cut assertion. Earlier Lean development failures are also retained.
+
+Raw logs and receipts live only under
+=/private/tmp/core-mop-lifetime-20261018/=; they are not source artifacts. The
+passing receipt is =quint-final-receipt.ss= and its input cut is
+=quint-final-receipt.inputs.json=. The actual mutation/source-observer controls
+are executable Scheme tests, not proof of concurrent atomicity. Complete native
+projection, serialized supported calls and selected-closure coverage remain the
+correspondence premises. No production Scheme, Loader, source epoch or runtime
+fencing implementation was changed by this work.
+
+
+A later input audit detected another concurrent edit to
+=module-system/source/reader.ss= after the lifetime-test input manifest was
+captured. The six critical producer/admission/helper identities in
+=source-before.json= remained unchanged. The successful Quint receipt describes
+its own stable run cut, not the later moving workspace. Native controls and
+formal results must not be relabeled as an exact-current-head integration pass.
+No concurrent reader change was reverted or absorbed into this qualification.
+
+The final real service-publication rerun also passed eleven cases
+(=services-regression-02-current.log=). Together with the seven lifetime and
+seven extraction cases this supplies 25 passing native controls on their
+recorded cuts, with the concurrent-reader caveat above. No failed attempt is
+removed, and no single-current-cut full-suite claim is made.
+
+* Follow-up
+
+[[file:32.25-serial-computation-and-conditional-use.org][32.25]] tests actual cold frames and callback/file effects, separating serial
+MOP protection from an external conditional-commit premise.

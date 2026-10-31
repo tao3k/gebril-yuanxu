@@ -1,0 +1,210 @@
+#+title: Reader Source Closure and Ambient Effect Support
+#+property: DOCUMENT_ID 12.27.43
+#+language: en
+#+property: STATUS capacity-open
+
+* Question and result boundary
+
+The previous native continuation reduces principal role-file guard work to
+=4N^2 + 4N=. This investigation asks whether reader entry and return can use
+each declaration's import closure instead of the growing observed prefix.
+They cannot do so for arbitrary native declarations under the current guard
+contract. Import reachability and the effects of executing native Scheme are
+different relations. This topic does not claim another read reduction.
+
+* Actual ownership and call chain
+
+The same selected Graph owns publication discovery. Its native reader keeps:
+
+| Existing owner | Meaning | Why it is not an effect certificate |
+|----------------+---------+-------------------------------------|
+| =kernel-contexts= / =kernel-inputs= | Actual imported private contexts and their original input objects | No observation of arbitrary file IO or ambient bindings |
+| =input-values= / =dependencies= | Unique inputs actually demanded by one publication, also used for Build projection | Known after native import; does not restrict initializer effects |
+| =tool-observations= | Exact canonical compiler support | Macros may execute contributor code beyond these tools |
+| =guards= | All observations already relied on by this reader | Conservative support at open source boundaries |
+
+The paired linker executes a closed directory prefix, then reader entry calls
+=current!=. Preparation and native expansion/evaluation follow outside the
+pure observation window. Reader return calls =current!= again. Public
+publication admission can still execute getters and Context obligations.
+The existing private dependency continuation defers only its own closed
+symbol/hash work; it does not certify native role execution as pure.
+
+No new source reader, retained approval, import tree, cache, runner or public
+configuration syntax is introduced here. Building remains the owner of its
+existing compiler projection; a publication reader is its declaration input,
+not an alternative build system.
+
+* Native counterexample
+
+The focused =t/module-reader-effect-support-test.ss= reuses the existing
+publication fixture. It creates two real Modules with independent roles. The
+second imports none of the first Module's roles, yet can perform this native
+initialization effect:
+
+#+begin_src scheme
+(call-with-output-file (list path: first-config truncate: #t)
+  (lambda (port) (display replacement port)))
+#+end_src
+
+Two schedules distinguish the boundaries:
+
+1. Change the first observed config before reading the second declaration.
+   Entry must refuse before the second initializer creates its marker.
+2. Let the second initializer change that first config itself. Its marker
+   proves execution occurred. Return must refuse, rather than returning a
+   successfully checked publication from the modified reader epoch.
+
+Both reader sessions remain refused after the exception. Fixture release
+removes generated sources. This is deliberate negative IO injection, not a
+normal module author's API and not a sandbox guarantee. Checking only the
+second Module's imports would miss the changed first config in both schedules.
+
+* Quint and Lean have different responsibilities
+
+=dev/proofs/quint/ReaderEffectSupport.qnt= explores entry, initialization, return
+and termination with actual-import identities separated from ambient prior
+publication and Schema/policy support. Its five catalog outcomes include
+passing safety plus expected counterexamples for import-only entry, import-only
+return, missing cleanup and rejecting every valid execution. The confined
+branch is a design premise, NOT a capability currently issued by the reader.
+
+Lean =universally_sound_guard_iff_coverage= proves that coverage is necessary
+and sufficient when a guard must imply currentness for every possible source
+revision. =bounded_operation_support= proves a linear work bound only when
+the actual per-operation support widths are uniformly bounded. Neither theorem
+infers confinement from filenames, =.o=, a native method name, warm slots,
+successful prior runs or a discovered import graph.
+
+The existing exact =4N^2 + 4N= recurrence remains the current implementation's
+role-file cost. It is not a universal lower bound for all module systems:
+different effect authority or freshness semantics can change the problem.
+Compiler observations, directories, package metadata, source bytes and final
+Graph checks remain additional work outside that role-file recurrence.
+
+* Root optimization requirement
+
+The missing premise is an enforceable operation-support boundary. A future
+closed operation must demonstrate that every input influencing its result or
+effects belongs to its recorded support, including transitive macros, policy,
+Contract and Schema inputs. An open callback must widen support before it
+executes. Native arbitrary IO cannot be made closed by an author-supplied flag.
+
+The current source observer records selected configuration assets; it does
+not intercept all native IO, foreign calls or ambient state. Slot-read tokens
+preserve POO dependencies but likewise do not prove confinement of those
+effects. An independently bounded source epoch or enforced execution boundary
+would require additional design and native qualification. Neither is silently
+implemented as a result cache in this iteration.
+
+Therefore the safe next optimization is NOT replacing =guards= with
+=dependencies[interface]=. First establish that missing support producer at
+the actual execution boundary; retain the complete fallback for open code.
+Final Graph publication still needs complete selected support, and failures
+must preserve the previously accepted publication. These are distinct from
+the closure used by a single Build projection.
+
+** Concrete staging seam, not another guard coefficient
+
+=source/preparation.ss= already obtains the one declaration's binding from
+inert source. However, its =publication-forms= adds imports of every role to
+=reader-forms=. =reader.ss= then imports that wrapper and evaluates the binding
+before selection can continue. =ModulePublicationContract= demands actual
+Contract descriptors, not unresolved names. This is the concrete coupling
+between Graph discovery and open role initialization.
+
+The candidate redesign must reuse the existing declaration lowering and the
+same Graph: project only declaration information that is actually inert, and
+materialize the existing publication when its semantic admission is demanded.
+It must not recognize arbitrary expressions as constant by textual spelling,
+replace actual Contracts with identifier strings, or call an unadmitted view
+an accepted publication. Dynamic dependency getters, contributor macros and
+Feature factories stay on the open guarded route. An aggregate operation that
+really demands every open declaration still has the conservative cost.
+
+This staging seam is identified, not implemented. A thousand-entry inert
+catalog would be a different qualification from the current gate, which
+deliberately expands and evaluates all four role bodies for every entry. A
+future improvement must report both instead of substituting the easier gate.
+
+* Qualification
+
+The real thousand-declaration gate remains
+=just test-file t/module-declaration-1000-test.ss true=. Its existing generated
+init and =init.modules.module-0.tests= object run the worker with =.run=.
+Observation is on; each declaration has real types, objects, config and
+interface roles. Business scopes and unselected Features remain cold.
+The existing worker checks Graph identity, source-change refusal and release.
+
+The run uses the unchanged heap, idle-progress and total execution limits.
+No compiled cache is added and none is cleared. Success requires natural exit,
+module/harness/final success and no failure/overflow markers. An incomplete
+or timed-out thousand-declaration run does not establish final Graph freshness,
+source rejection or capacity, even when earlier declarations completed.
+
+** Current receipts
+
+The focused Quint family completes all five expected outcomes with stable
+bound sources. Lean builds the owning =SourceClosureWork= target (40 jobs).
+An earlier Quint run correctly refused a source change while the Lean proof
+was being repaired; it is not the current receipt. The initial proof used a
+tactic unavailable in this dependency set; the corrected proof uses ordinary
+case analysis, without changing the statement.
+
+The native =module-reader-effect-support-test= passes both injection schedules
+with 30 checks, normal exit zero, module/harness/final success and no error or
+overflow markers. Its observed totals are 879 physical reads across the two
+fixtures, not a scale optimization comparison. Both entry and return refuse
+the ambient source change, and subsequent use of each refused reader fails.
+
+The thousand-declaration attempt FAILS. It completes 837 publications and
+starts the 838th. The last observation is inside =declaration-after= at
+571,359 ms of Graph work with 2,900,474 physical source reads. This is an
+interrupted lower bound, NOT a Graph-ready measurement or a matched speedup.
+There is no final held-Graph memory sample and the worker never reaches its
+final source-change assertion. The aggregate reports Ops TERM and harness
+failure, then the outer command returns 137 under its unchanged hard-stop
+policy. No selected scope or unselected Feature is reported as forced before
+that interruption, but the complete native worker gate did not pass.
+
+After exit, process inspection finds no owned worker descendant and the
+generated declaration-directory inventory is empty. That supports cleanup of
+this attempt; it does not convert exit 137 into a successful cleanup gate or
+promise cleanup after arbitrary SIGKILL. The existing delivered-TERM native
+fixture test remains the separate executable cleanup qualification.
+
+The scale run uses the preceding reader implementation; the only subsequent
+production-file change is the explanatory comment beside =current!=. No
+functional guard reduction is made in this iteration. The remaining recurrence
+and thousand-declaration capacity gate are explicitly open.
+
+The observed =t/module-testing-isolation-test.ss= also passes normally through
+the existing init-owned =.select '(json-schema funflow aws)= and =.run=. Its
+seven module and two harness success markers include the real AWS Schema
+upgrade, actual Contract/Context reference rejection, retained prior accepted
+value, source guard and workspace cleanup assertions. It does not substitute
+an unobserved run or another Graph for the selected test object.
+
+The focused =t/execution-cancellation-test.ss= passes normally as a separate
+gate: delivered TERM interrupts the owned Ops effect, releases both nested
+fixtures in order, removes the directory and permits a subsequent fixture.
+Neither the native effect-support test, AWS aggregate nor TERM gate contains
+failure or overflow markers. These correctness passes do not qualify the
+failed thousand-declaration capacity attempt.
+
+Focused commands, from the Core root in the locked source-only qualification
+workspace, remain the existing entrypoints:
+
+#+begin_src text
+just test-file t/module-reader-effect-support-test.ss true
+just test-file t/module-testing-isolation-test.ss
+just test-file t/execution-cancellation-test.ss true
+python3 dev/proofs/quint/check.py --case-prefix ReaderEffectSupport --typecheck-scope selected
+cd dev/proofs/lean
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
+#+end_src
+
+The Python command is the existing formal-verification orchestrator, not a new
+native test implementation. All module execution and fixtures remain Scheme,
+std/test, init test projection and Ops. Raw logs and model receipts are local
+artifacts; they are not added to source control.

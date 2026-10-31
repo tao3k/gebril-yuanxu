@@ -1,0 +1,244 @@
+#+title: 32.31 Selected Metadata Routes and the Missing Issuer Witness
+#+language: en
+#+startup: overview
+
+* Scope and question
+
+[[file:32.30-checker-identity-and-ownership.org][32.30]] established that a fixed native checker can dispatch a changed
+=HashTable.ref= method. It also showed that blanket read-table membership
+rejects genuine transient cache misses. This follow-up investigates these as
+two separate problems. It introduces qualification-only functions and models,
+not a production Scheme change, new public API, Loader adaptation or patch file.
+
+The question is narrower than arbitrary Scheme effect inference: can the
+selected native lookup route reject the demonstrated dispatch substitutions
+without executing them, and without making transient misses register themselves?
+The result must not be promoted to a complete read-only admission certificate.
+
+* Actual native call chain
+
+The pinned producer remains gerbil-poo
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b=; LeanPoo remains
+=6e6a706e14fa6f8199e4f36711440355b42ef335=. The Core checkout is
+=80e2e74022c9c4053445475402856c5f369aec48= plus concurrent worktree changes.
+Tests select this workspace's =.gerbil= with the default Gerbil SDK, not the
+different global =~/.gerbil/pkg/clan/poo= checkout. No dependencies are rewritten.
+
+The audited SDK is =1cfb032.patch618d76f9eb72=. Its native hash implementation
+dispatches in two steps:
+
+#+begin_src scheme
+;; gerbil/runtime/hash.ss
+(defhash-method (hash-get h key)
+  (h.ref key #f))
+
+;; gerbil/runtime/table.ss
+(def (raw-table-ref tab key default)
+  (let ((table (&raw-table-table tab))
+        (seed (&raw-table-seed tab))
+        (hash (&raw-table-hash tab))
+        (test (&raw-table-test tab)))
+    (__table-ref table seed hash test key default)))
+#+end_src
+
+Consequently, checking only =HashTable.ref= leaves backend hashing and equality
+as further callable inputs. Ordinary checker execution also accesses TWO
+containers: the receiver's read table and its instance cache. Protecting the
+first does not protect the second. =object-record-read= creates the former with
+=make-hash-table=; object instantiation creates the latter with
+=make-hash-table-symbolic=.
+
+* Qualification function, not a second MOP
+
+[[file:../../../t/qualification/mop-state/metadata-route.ss][metadata-route.ss]] captures reference identities from those two trusted native
+factories. It checks the exact wrapper class, =ref= procedure, backend class,
+backend hash/equality procedures and absence of a backend lock before invoking
+the native checker. Inspection uses raw runtime fields; it does not call a
+POO getter or execute the target table's lookup method to authenticate itself.
+An unexpected backend class is rejected before unchecked backend field access.
+
+#+begin_src scheme
+(def (guarded-current? read)
+  (require-read-route! read)
+  (object-read-current? read))
+#+end_src
+
+This is deliberately a direct call with no extension callback parameter between
+inspection and invocation. =require-read-route!= first verifies the exact
+record class and native checker identity, then the selected receiver metadata
+routes. It admits only the bounded key shapes actually emitted by the audited
+producer: symbols and =preparation/names/bootstrap/cache-miss/presence= keys.
+That is a closed internal metadata vocabulary, not a user configuration field
+table or a new configuration DSL. A future producer key needs a fresh audit.
+The compatibility cost is explicit: a custom but genuinely read-only HashTable
+implementation is also refused by this narrow policy. The test does not infer
+its effects or forbid it globally in the open MOP. Qualifying another kernel
+route would need its own implementation correspondence, not a user purity tag.
+
+Bootstrap anchor comparison does not look up either table. A cleared cache is
+not reconstructed: the native checker can return stale using its existing
+revision/instance checks. No contract obligations, protocol hooks or unselected
+getters are executed by the route inspector. The selected key check performs
+bounded structural inspection, not an unbounded traversal of a user key graph.
+
+This qualifier does NOT reimplement =replay-slot-reads!= or wire the new function
+into =SourceAdmissionContract.=. Production replay continues to have the 32.30
+boundaries. There is no claim that the full production return tail has acquired
+the direct function's closed interval.
+
+* Native matched controls
+
+[[file:../../../t/mop-metadata-route-test.ss][mop-metadata-route-test.ss]] uses the existing heap-fenced testing macro and
+seven cases. All mutated containers and objects belong to the test process.
+
+| Control | Observed result |
+|---------+-----------------|
+| Normal cold/hot token | Guarded native currentness succeeds; getter executes once; unselected error slot stays lazy |
+| Replaced read-table =ref= | =changed metadata ref=; replacement called zero times |
+| Replaced backend hash or equality | =changed metadata hash/test=; replacements called zero times |
+| Wrong backend class | =foreign metadata backend= before unsafe field access |
+| Replaced instance-cache =ref= | Rejected independently of the read table; zero calls |
+| Modification after an earlier entry check | Unguarded native call executes the replacement; a fresh direct guard rejects it |
+| Callback changes, executes and restores =ref= | Endpoint route checks both pass, but the victim has already changed |
+| Genuine transient miss and forged miss | Both pass route/currentness; issuance remains unresolved |
+
+Several controls share a case; the table is not a count of independent cases.
+The replacement errors are new route-policy errors before invocation, not claims
+to reproduce whatever error executing the prohibited code would have caused.
+
+The restored-pointer control is important:
+
+#+begin_src scheme
+(runtime.slot-set! table 'ref
+  (lambda (self key default)
+    (.putslot! Victim 'port ($constant-slot-spec 5440))
+    (runtime.slot-set! table 'ref original)
+    (original self key default)))
+(check-equal? (object-read-current? read) #t)
+(check-equal? (require-read-route! read) #t)
+(check-equal? (.get Victim port) 5440)
+#+end_src
+
+This witness deliberately uses an UNGUARDED call after opening a callback gap.
+It does not show that the new direct guard invoked the replacement. It shows
+why post-checking or restoring a pointer cannot certify the history of a segment
+that allowed arbitrary callbacks. No additional last-minute sweep repairs that.
+
+* Transient token issuance is still a different obligation
+
+The route qualifier accepts a genuine =.ref/cached= miss without imposing
+read-table membership. It also accepts the corresponding forged miss. Their
+receiver, revision, instance, key and absence projections agree; neither the
+route fingerprint nor that projection contains a trusted issuer witness.
+
+#+begin_src scheme
+(def forged
+  (make-slot-read Root '(cache-miss missing) (object-revision Root)
+    (object-%instance Root) #f '() object-read-current?))
+(check-equal? (guarded-current? genuine-miss) #t)
+(check-equal? (guarded-current? forged) #t)
+#+end_src
+
+Lean's =equal_miss_projection_gets_same_decision= and
+=no_projection_only_issuer= make this restricted indistinguishability explicit.
+They concern the measured projection, not every possible address-sensitive
+program, hidden runtime state or future producer-owned issuance mechanism.
+Pointers distinguish objects, but a pointer only becomes an issuance witness
+when a trusted creation path has retained the association. No such association
+is invented by the test or requested from the user.
+
+* Formal correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/MetadataRoute.lean][MetadataRoute.lean]] binds the QNT source digest and reuses the existing
+LeanPoo-backed admission models. Its laws cover the full route comparison,
+the nested-hash and instance-cache gaps, the conditional closed direct call,
+entry-only staleness, equal endpoints with changed history, transient-projection
+indistinguishability, both requirements/child ownership, and source-first order.
+The pure direct-call state law is not an extracted Scheme effect proof.
+
+[[file:../../../dev/proofs/quint/MetadataRoute.qnt][MetadataRoute.qnt]] contains a callback-free direct path and explicit mutants
+that admit callbacks between the check and use. Nine scoped outcomes comprise
+one positive safety check and counterexamples for outer-ref-only checks,
+read-table-only checks, entry-only reuse, endpoint-only validation, issuance,
+dropping the second requirement, substituting the parent plan, and an acceptance
+witness. An unsafe backend hash/test may also make lookup fail: the model keeps
+that failure instead of claiming every invoked callback yields accepted evidence.
+
+The positive model does not exclude a demonstrated metadata-dispatch case by
+declaring it pure. The changed pointer routes are rejected using their actual
+identity projection. HOWEVER, its operation alphabet excludes concurrent writes,
+arbitrary callbacks inside the qualified direct call, FFI and mutable runtime
+bindings. Those remain explicit correspondence premises. The =issuance=
+counterexample uses the correct route guard, showing its separate limitation.
+
+* Real Gitea/PostgreSQL control
+
+The unchanged [[file:../../../t/mop-checker-origin-test.ss][32.30 consumer suite]] is rerun serially. Its actual maintained
+Scenario retains =postgresql-port= and =gitea-port= contributions and delegates
+to the real domain analyzer. A parent plan cached at =5432= remains the same
+object after the child moves PostgreSQL to =5433=. The child's PostgreSQL and
+Gitea plan endpoints follow =5433= in cold and warm admissions. Both child
+responsibility evidence entries remain present. An explicit mismatched client
+port and the substituted parent plan are rejected. Source change retains
+priority over the simultaneous stale-plan failure.
+
+This is a regression control for unchanged production admission, not evidence
+that the new guard is integrated there. No service source is moved to Core
+modules and no new Fixture family is introduced.
+
+* Reflection and next decision
+
+1. A signature/checker identity is not a proof of transitive effects. Audit its
+   actual runtime dispatch chain, including container methods and hash/equality.
+2. One early guard cannot be reused across callbacks. The direct qualifier owns
+   only its own serial interval; the entire replay/return segment still needs
+   its callback boundaries closed before a whole-admission claim is possible.
+3. Route safety and issuance must remain separate. Stronger route checking must
+   not populate caches or register genuine misses merely to satisfy a gate.
+4. The private factory baseline, SDK intrinsic implementation, supported key
+   domain and native container representation are trusted premises. Arbitrary
+   mutation of internal key/value vectors, the baseline, class metadata, process
+   bindings or FFI is not contained by these functions. There is no hostile-code
+   sandbox or filesystem snapshot claim.
+5. Do not seal user Profiles globally. Future protection belongs to verification
+   metadata and producer-owned issuance associations with receiver-local demand
+   lifetimes, not a full-module scan or user-managed record inventory.
+6. Keep the user-facing benefit concrete: a user still assigns a port or
+   refines a maintained Profile. Users must not configure hash fingerprints,
+   register transient reads or supply issuer assertions. The eventual protocol
+   belongs to the framework; making every domain module repeat these guards
+   would merely redistribute the maintenance cost.
+
+No production optimization is justified yet. The qualifier compares only the
+metadata needed by the selected checker; its costs and full-graph integration
+remain unmeasured. Keep external-source snapshots/conditional publication and
+the source-observer boundary from 32.29 as separate obligations.
+
+* Qualification results
+
+Final gates:
+
+- Native route suite: seven cases through =MODULE-OK=, =HARNESS-OK= and final
+  =OK=, with no error/heap/stack marker.
+- Unchanged consumer suite: ten cases with the same required success markers,
+  run serially after the route suite. These include the real service controls.
+- The final native cut binds 49 source/library identities before and after both
+  suites, with no change. This is not a rebuild certificate for the complete
+  dirty worktree; source and compiled-library identities are recorded separately.
+- Lean: 171 jobs complete; ten new laws are required by the aggregate audit.
+  The Core closure audits 5,629 declarations with only standard Lean axioms and
+  passes the model-shape audit.
+- Quint: all 155 sources typecheck; the scoped =MetadataRoute= receipt accepts
+  nine expected outcomes and passes its final source-cut check. This does not
+  verify unrelated model families or discharge the Scheme correspondence premises.
+
+Raw logs, source/library identities, formal receipts and initial fixture/compiler
+failures stay in =/private/tmp/core-metadata-route-20261018/=. The failed native
+attempt placed a backend substitution before the equality subcase, so the earlier
+backend error correctly took precedence; the fixture ordering was repaired,
+not the diagnostic assertion weakened. Lean's first attempt used a reserved field
+identifier, corrected before qualification. No timeout was expanded.
+
+The existing pinned local backend is used and stopped after the scoped run.
+No production MOP, SourceAdmissionContract, module publishing or Loader source
+is changed by this qualification.

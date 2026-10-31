@@ -1,0 +1,254 @@
+;;; -*- Gerbil -*-
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+(import (only-in :clan/poo/type Record)
+        (only-in :clan/poo/object .o .ref .cc .put! .get)
+        (only-in :clan/poo/mop element? make-instance)
+        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
+                 slot-read-key slot-read-value slot-read-receiver)
+        (only-in :std/test test-suite check-equal? check-exception)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/module-system/source/interface
+        :yuanxu/module-system/loader/load-path
+        :yuanxu/module-system/source/collection
+        :yuanxu/module-system/source/objects
+        :yuanxu/module-system/source/projection
+        :yuanxu/module-system/loader/objects
+        :yuanxu/module-system/authoring/admission
+        (only-in :yuanxu/module-system/authoring/roles ModuleAuthoringExecutor.
+                 yuanxu-default-module-authoring-profile)
+        (only-in :yuanxu/poo-clos/objects
+                 poo-clos-generic-protocol poo-clos-generic-function
+                 poo-clos-compose-method-bundle poo-clos-add-method poo-clos-remove-method)
+        (only-in :yuanxu/poo-clos/dispatch poo-clos-call)
+        :yuanxu/module-system/authoring/import-policy
+        :yuanxu/module-system/authoring/projection)
+(export module-authoring-test)
+(def RepositoryPolicy
+  (.o (:: @ SourceInspectionPolicy.)
+      aggregate-imports: '(:example/api)
+      package-prefix: ":example/"
+      source-roots: '("modules/")
+      forbidden-projections: '(parallel-build)))
+(def module-authoring-test
+  (test-suite "Core source admission without product imports or activation"
+    (yuanxu-test-case "Interface construction owns one fresh authoring admission"
+      (def (admit-count action)
+        (defvalues (_value reads) (%call-with-recorded-slot-reads action unique-roots?: #t))
+        (def roots (make-hash-table-eq))
+        (for-each
+          (lambda (read)
+            (when (and (eq? (slot-read-key read) 'contract-identity)
+                       (eq? (slot-read-value read) 'module-authoring-profile))
+              (hash-put! roots (slot-read-receiver read) #t))) reads)
+        (hash-length roots))
+      (check-equal? (admit-count (lambda () (yuanxu-module-interface "fresh" (Record) '()))) 1)
+      (def profile (yuanxu-default-module-authoring-profile))
+      ;; An explicitly supplied, already checked value still receives a NEW
+      ;; admission. Removing duplicate default stages never caches acceptance.
+      (check-equal? (admit-count
+        (lambda () (yuanxu-module-interface "explicit" (Record) '() authoring: profile))) 1))
+    (yuanxu-test-case "authoring receipt identities are stable and do not grant currentness"
+      (def interface (yuanxu-module-interface "example" (Record) '()))
+      (def result
+        (yuanxu-module-authoring-admit-datum interface 'objects '(.o add-profile: #t)))
+      (def diagnostic (car (yuanxu-module-authoring-admission-diagnostics result)))
+      (check-equal? (.ref result 'kind) 'yuanxu.module-authoring.admission)
+      (check-equal? (.ref diagnostic 'kind) 'yuanxu.module-authoring.diagnostic)
+      (check-equal? (element? YuanxuModuleAuthoringAdmission result) #t)
+      (check-equal? (element? YuanxuModuleAuthoringDiagnostic diagnostic) #t)
+      ;; A matching kind does not waive the remaining receipt checks.
+      (check-equal? (element? YuanxuModuleAuthoringAdmission (.cc result 'accepted? #t)) #f)
+      (check-equal? (element? YuanxuModuleAuthoringDiagnostic
+                      (.cc diagnostic 'runtime-executed? #t)) #f))
+    (yuanxu-test-case "declarative authoring bundle retains its owner and both dispatch axes"
+      ;; Methods have already been composed by the production declaration.
+      ;; Do not replay its owned descriptors into a second generic registry.
+      (def generic ModuleAuthoringAnalysisGeneric)
+      (check-equal? (eq? (.ref generic 'protocol) ModuleAuthoringAnalysisProtocol) #t)
+      (check-equal? (length (.ref generic 'methods)) 2)
+      (def interface (yuanxu-module-interface "example" (Record) '()))
+      (def executor (.o (:: @ ModuleAuthoringExecutor.)))
+      (def ordinary-role
+        (.o (:: @ (yuanxu-module-authoring-role interface 'objects))))
+      (def config-role
+        (.o (:: @ (yuanxu-module-authoring-role interface 'config))))
+      (check-equal? (poo-clos-call generic executor ordinary-role interface '(stage build)) '())
+      (check-equal? (pair? (poo-clos-call generic executor config-role interface '(stage build))) #t)
+      ;; Different protocol objects sharing a label never authorize composition.
+      (check-exception
+        (poo-clos-compose-method-bundle
+          (poo-clos-generic-function 'wrong-owner 4
+            protocol: (poo-clos-generic-protocol 'module-system/authoring-analysis))
+          ModuleAuthoringCoreMethods)
+        (lambda (failure)
+          (eq? (.ref failure 'code) 'method-bundle-protocol-mismatch))))
+    (yuanxu-test-case "inert datum batches preserve native port diagnostics and order"
+      (def interface (yuanxu-module-interface "example" (Record) '()))
+      (def text "(.o pipeline: (.get ff prototypes pipeline))\n(.o pipeline: (.ref ff pipeline))\n(.o add-profile: #t)\n")
+      (def from-port
+        (call-with-input-string text
+          (cut yuanxu-module-authoring-admit-port interface 'objects <>)))
+      (def from-datums
+        (yuanxu-module-authoring-admit-datums interface 'objects
+          (call-with-input-string text read-all)))
+      (def (codes result)
+        (map (cut .ref <> 'code)
+             (yuanxu-module-authoring-admission-diagnostics result)))
+      (check-equal? (yuanxu-module-authoring-admission-accepted? from-port) #f)
+      (check-equal? (yuanxu-module-authoring-admission-accepted? from-datums) #f)
+      (check-equal? (codes from-datums) (codes from-port))
+      ;; Per-datum obligations belong to the typed analysis result. The final
+      ;; receipt cannot hide a refusal on the second datum.
+      (def predicate (.ref YuanxuModuleAuthoringDiagnostics '.element?))
+      (def validations 0)
+      (dynamic-wind
+        (lambda ()
+          (.put! YuanxuModuleAuthoringDiagnostics '.element?
+            (lambda (value)
+              (set! validations (1+ validations))
+              (and (not (= validations 2)) (predicate value)))))
+        (lambda ()
+          (check-exception
+            (yuanxu-module-authoring-admit-datums interface 'objects
+              '((def First 1) (def Second 2))) error?)
+          (check-equal? validations 2))
+        (lambda () (.put! YuanxuModuleAuthoringDiagnostics '.element? predicate)))
+      ;; Receipt shape validation still runs, once at actual aggregate creation.
+      (def receipt-predicate (.ref YuanxuModuleAuthoringAdmission '.element?))
+      (def receipts 0)
+      (dynamic-wind
+        (lambda ()
+          (.put! YuanxuModuleAuthoringAdmission '.element?
+            (lambda (value) (set! receipts (1+ receipts)) (receipt-predicate value))))
+        (lambda ()
+          (yuanxu-module-authoring-admit-datums interface 'objects '((def First 1) (def Second 2)))
+          (check-equal? receipts 1))
+        (lambda () (.put! YuanxuModuleAuthoringAdmission '.element? receipt-predicate)))
+      ;; A contributor cannot return the old receipt shape (or an arbitrary
+      ;; value) where the analysis protocol requires typed diagnostics.
+      (def malformed
+        (.cc (car (.ref ModuleAuthoringCoreMethods 'methods))
+          'identity 'test/authoring-malformed
+          'qualifier 'around
+          'body (lambda (_frame . _arguments) (list #f))))
+      (dynamic-wind
+        (cut poo-clos-add-method ModuleAuthoringAnalysisGeneric malformed)
+        (lambda ()
+          (check-exception
+            (yuanxu-module-authoring-admit-datums interface 'objects '((def First 1))) error?))
+        (cut poo-clos-remove-method ModuleAuthoringAnalysisGeneric malformed))
+      ;; A contributed qualifier must run for every datum. The batch path must
+      ;; retain full invocation after native Generic metadata changes, rather
+      ;; than treat the original declarations as an acceptance cache.
+      (def calls 0)
+      (def before
+        (.cc (car (.ref ModuleAuthoringCoreMethods 'methods))
+          'identity 'test/authoring-before
+          'qualifier 'before
+          'body (lambda (_frame . _arguments) (set! calls (1+ calls)) #t)))
+      (dynamic-wind
+        (cut poo-clos-add-method ModuleAuthoringAnalysisGeneric before)
+        (lambda ()
+          (def augmented
+            (yuanxu-module-authoring-admit-datums interface 'objects
+              (call-with-input-string text read-all)))
+          (check-equal? calls 3)
+          (check-equal? (codes augmented) (codes from-port)))
+        (cut poo-clos-remove-method ModuleAuthoringAnalysisGeneric before)))
+    (yuanxu-test-case "single admission retains the actually dispatched role"
+      (def interface (yuanxu-module-interface "role-rebinding" (Record) '()))
+      (def profile (.get interface authoring))
+      (def original (.get profile objects))
+      (def replacement (.cc original identity: 'rebound-role))
+      (def before
+        (.cc (car (.ref ModuleAuthoringCoreMethods 'methods))
+          'identity 'test/rebind-role 'qualifier 'before
+          'body (lambda (_frame . _arguments) (.put! profile 'objects replacement))))
+      (dynamic-wind
+        (cut poo-clos-add-method ModuleAuthoringAnalysisGeneric before)
+        (lambda ()
+          (def result (yuanxu-module-authoring-admit-datum interface 'objects '(def Value 1)))
+          (check-equal? (.get result role) (.get original identity))
+          (check-equal? (eq? (.get profile objects) replacement) #t))
+        (cut poo-clos-remove-method ModuleAuthoringAnalysisGeneric before)))
+    (yuanxu-test-case "native Interface and final role admission"
+      (let (interface (yuanxu-module-interface "example" (Record) '()))
+        (check-equal? (yuanxu-module-interface? interface) #t)
+        (check-equal?
+         (yuanxu-module-authoring-admission-accepted?
+          (yuanxu-module-authoring-admit-datum
+           interface 'objects '(.o pipeline: (.get ff prototypes pipeline)))) #t)
+        (check-equal?
+         (yuanxu-module-authoring-admission-accepted?
+          (yuanxu-module-authoring-admit-datum
+           interface 'objects '(.o pipeline: (.ref ff pipeline)))) #f)
+        (check-equal?
+         (yuanxu-module-authoring-admission-accepted?
+          (yuanxu-module-authoring-admit-datum
+           interface 'objects '(.o add-profile: #t))) #f)
+        (check-exception
+         (yuanxu-module-authoring-admit-datum interface 'missing '(error "never executed"))
+         error?)))
+    (yuanxu-test-case "repository policies are explicit and do not leak"
+      (check-equal?
+       (yuanxu-module-owner-import-datum-observations
+        'test '(import :example/api)) '())
+      (let (observations
+            (yuanxu-authoring-owner-import-datum-observations
+             'test '(import (only-in :example/api run)) RepositoryPolicy))
+        (check-equal? (length observations) 1)
+        (check-equal? (.ref (car observations) 'owner) ':example/api)
+        (check-equal? (.ref (car observations) 'runtime-executed?) #f))
+      (check-equal?
+       (length (yuanxu-build-bootstrap-datum-observations
+                'test '(import :example/objects) RepositoryPolicy)) 1)
+      (check-equal?
+       (length (yuanxu-build-bootstrap-datum-observations
+                'test '(import "modules/objects.ss") RepositoryPolicy)) 1)
+      (check-equal?
+       (length (yuanxu-build-bootstrap-datum-observations
+                'test '(parallel-build) RepositoryPolicy)) 1)
+      (let (rows (yuanxu-authoring-build-bootstrap-datum-observations
+                   'test '(parallel-build) RepositoryPolicy))
+        (check-equal? (length rows) 1)
+        (check-equal? (.ref (car rows) 'form) 'parallel-build)
+        (check-equal? (.ref (car rows) 'owner) 'parallel-build)
+        (check-equal? (.ref (car rows) 'runtime-executed?) #f))
+      (check-equal?
+       (yuanxu-build-bootstrap-datum-observations 'test '(parallel-build)) '())
+      (check-equal?
+       (yuanxu-build-bootstrap-datum-observations 'test ''(parallel-build) RepositoryPolicy) '()))
+    (yuanxu-test-case "collection source policy survives contributor-root lookup"
+      (let* ((style (.o (:: @ yuanxu-default-module-style-policy)
+                       source-policy: RepositoryPolicy))
+             (root (make-yuanxu-contribution-root-module-source
+                    'contributions "t/fixtures/source-admission" style-policy: style)))
+        (check-exception
+         (yuanxu-module-source-collection-locate root '(custom . example))
+         (lambda (exception)
+           (and (error? exception)
+                (string-contains
+                 (call-with-output-string (lambda (port) (display-exception exception port)))
+                 "YUANXU-MODULE-E008"))))))
+    (yuanxu-test-case "source graph and deferred projection never activate a backend"
+      (let* ((calls 0)
+             (source (make-yuanxu-module-local-source "example/interface.ss"))
+             (backend (make-instance ModuleLoaderBackend name: 'example source-kind: 'local
+                        load: (lambda (_source) (set! calls (+ calls 1)) (.o name: 'example))))
+             (plans (yuanxu-module-source-refs->lazy-load-plans
+                     (list backend) (list source) '((owner . example))))
+             (graph (yuanxu-module-auto-imports-resolve (list source) '())))
+        (check-equal? calls 0)
+        (check-equal? (.get (car plans) forced?) #f)
+        (check-equal? (yuanxu-module-auto-imports-result-source-refs graph)
+                      (list source))
+        (check-equal? calls 0)))
+    (yuanxu-test-case "collection construction remains inert and repository neutral"
+      (let (collection
+            (make-yuanxu-module-source-collection
+             'unavailable 'example "/not-opened-by-construction" "modules"))
+        (check-equal? (yuanxu-module-source-collection-identity collection) 'unavailable)
+        (check-equal? (yuanxu-module-source-collection-owner collection) 'example)
+        (check-equal? (yuanxu-module-source-collection-modules-root collection)
+                      "/not-opened-by-construction/modules")))))

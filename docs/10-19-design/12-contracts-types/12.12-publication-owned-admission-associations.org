@@ -1,0 +1,303 @@
+#+title: 12.12 Publication-owned admission associations
+#+property: DOCUMENT_ID 12.12
+
+* Scope and evidence boundary
+
+This is a Contract-system design, not module adaptation or runtime Loader implementation. It extends the local implementation record in [[file:12.11-platform-context-and-publication-currentness.org][10]]. Build-spec production is a separate feature documented under [[file:../13-module-loading/13.01-index.org][Module loading and building]]. No new DSL, receipt system or user-managed Context is proposed.
+
+The requirement is stronger than removing an argument named
+SelectedSchemaArtifacts: the platform must obtain a COMPLETE association from
+admitted publications, without replacing one handwritten list with another.
+
+* What the current implementation actually provides
+
+| Source owner | Existing capability | Missing association |
+|--------------+---------------------+---------------------|
+| module-system/source/declaration.ss | Hygienic dependency aliases; core.exports lowered to generated core.link | No admission routing declaration validation |
+| module-system/source/publication.ss | Module identity, requires, scope Contract and link shape | No exported Profile -> admission Contract -> Schema binding |
+| module-system/source/selection.ss | One selected Module Core / Feature Graph and retained negative decisions | No demanded admission-requirement projection |
+| module-system/source/build.ss | Selected roles/private dependencies -> build entries and input observations | Does not prove Schema dependency completeness |
+| modules/json-schema/contracts.ss | SchemaContract., ProjectionContract., structured diagnosis | Does not own publication provenance |
+| modules/json-schema/json-schema-receipt.ss | Normalized artifact, diagnostics and source-ref | Artifact is not an owner/generation capability |
+| admission/publication.ss | Automatic Context from supplied Graph/artifacts; public binding and publication recheck | Caller still supplies artifacts and admission Contract |
+
+SchemaArtifactContract currently checks the artifact struct predicate, not this
+association. Artifact.schema is a FORMAT identifier; it is not a Schema digest.
+The actual normalized IR and observed source bytes must be checked. Current
+file-based publication guards do this for supplied artifacts, but cannot prove
+that the supplier omitted none.
+
+* One publication association, ordinary downstream objects
+
+An owner associates each published configurable root with an admission binding
+once. Profiles remain separate contributions from functional Modules. The
+following is a proposed extension of existing interface.ss lowering; admissions
+is ordinary POO data, not new syntax. WebProfile, WebScopeContract and the
+factory below are private owner definitions in the existing source roles.
+
+#+begin_src scheme
+;; contributions/web/interface.ss -- proposed publication field
+(.def WebContribution
+  identity: 'contrib/web
+  core:
+  (.o requires: (.o)
+      scope-contract: WebScopeContract
+      admissions:
+      (.o web:
+          (.o export-path: '(profiles web)
+              binding-path: '(admission web)
+              schemas: (.o server: "schemas/server.json")))
+      exports:
+      (.o profiles: (.o web: WebProfile)
+          admission:
+          (.o web: (lambda (source-context)
+                     (web-admission-binding source-context)))))
+  features: (.o))
+#+end_src
+
+The association declares two bounded scope paths and named Schema sources once.
+The binding
+factory owns the Contract AND its Schema dependency; the platform does not
+maintain parallel contract/artifact lists. The selected publication's SourceRef,
+owner, generation and preparation guards supply authority. A copied symbol or
+candidate-owned origin field cannot authenticate it.
+
+Current lowering already retains unrecognized direct core slots, so preservation
+alone is not a new semantic guarantee. The proposed admission validates unique
+keys and path components without linking scopes, and retains its source location.
+Existing core.link generation continues to own dependency aliases. No author
+writes link, compiler imports or source wrappers. Following a binding-path is an
+explicit demand on the selected owner's scope; enumeration of admissions alone
+must not evaluate its export values or binding factories.
+
+* A concrete local Schema binding
+
+This owner function shows the existing Schema/Contract operations involved. The
+source-context capability is NEW: read returns observed bytes for a declared
+Schema key; source-ref returns its absolute
+identity; admit-current rechecks those observations and the owning generation.
+It resolves paths relative to the owner's admitted directory, and rejects unknown
+keys, path escape, conflicting observations and an unselected owner.
+It is derived from existing source preparation/admission, not a new filesystem
+reader or authority supplied by the downstream user.
+
+#+begin_src scheme
+(def (web-admission-binding source-context)
+  (def text ((.get source-context read) 'server))
+  (def path ((.get source-context source-ref) 'server))
+  (def schema (call-with-input-string text yuanxu-json-schema-read-port))
+  (def artifact
+    (yuanxu-json-schema->contract-artifact
+      schema (list (cons 'source-ref path))))
+  (unless (and (yuanxu-json-schema-contract-artifact-valid? artifact)
+               (null? (yuanxu-json-schema-contract-artifact-diagnostics artifact)))
+    (error "Unsupported or invalid Web Schema" path))
+  (def node
+    (yuanxu-json-schema-normalization-schema
+      (yuanxu-json-schema-contract-artifact-normalization artifact)))
+  (def fields (.cc SchemaContract. identity: 'web/fields node: node))
+  (def descriptor
+    (.cc YuanxuContract.
+      identity: 'web/profile
+      .classify:
+      (lambda (candidate context)
+        (let (issues (diagnose fields candidate))
+          (yuanxu-classification-evidence
+            'web/profile candidate (null? issues) issues context)))))
+  ((.get source-context admit-current))
+  (.o contract: descriptor
+      artifacts: (.o server: artifact)
+      admit-current: (.get source-context admit-current)))
+#+end_src
+
+The one local artifact is produced beside the Contract from the SAME normalized
+node. It is not an application-wide list assembled by the platform. The function
+is evaluated once per demanded binding/source generation; the factory must not
+be rerun separately to retrieve its Contract and artifacts. No global cache is
+implied by these function definitions.
+
+This example checks fields, not prototype identity. A domain that requires an
+object protocol adds its maintained responsibilities and relational obligations
+to the same returned descriptor. It must retain this field obligation, rather
+than silently substituting a weaker same-name Contract. A public Type is not
+itself a Core admission descriptor: the explicit .classify adapter above is
+required at this boundary. JsonSchema still owns Schema interpretation;
+gerbil-poo owns Type diagnosis; Core owns publication policy.
+
+* Graph projection and completeness are distinct checks
+
+The local resolution step below is proposed Scheme design, not installed code.
+The selected Graph supplies the admitted owner's scope, declaration and bounded
+source-context. It must cache the returned row per association/generation so
+Contract and artifact consumers share the exact factory result.
+
+#+begin_src scheme
+(def (scope-value scope path)
+  (foldl (lambda (key value)
+           (unless (and (object? value) (.slot? value key))
+             (error "Unresolved admission publication path" path key))
+           (.ref value key))
+         scope path))
+
+(def (resolve-admission-binding scope declaration source-context)
+  (def root (scope-value scope (.get declaration export-path)))
+  (def factory (scope-value scope (.get declaration binding-path)))
+  (unless (and (object? root) (procedure? factory))
+    (error "Invalid admission export or binding factory" declaration))
+  (def binding (factory source-context))
+  (def declared (.get declaration schemas))
+  (def artifacts (.get binding artifacts))
+  (def expected (.all-slots declared))
+  (def actual (.all-slots artifacts))
+  (unless (and (= (length expected) (length actual))
+               (andmap (lambda (key) (memq key actual)) expected))
+    (error "Missing or unexpected Schema artifact" expected actual))
+  (for-each
+    (lambda (key)
+      (def artifact (.ref artifacts key))
+      (def path ((.get source-context source-ref) key))
+      (def text ((.get source-context read) key))
+      (unless
+        (and (yuanxu-json-schema-contract-artifact? artifact)
+             (yuanxu-json-schema-contract-artifact-valid? artifact)
+             (null? (yuanxu-json-schema-contract-artifact-diagnostics artifact))
+             (equal? path (yuanxu-json-schema-contract-artifact-source-ref artifact))
+             (equal?
+               (yuanxu-json-schema-normalization->alist
+                 (yuanxu-json-schema-normalize
+                   (call-with-input-string text yuanxu-json-schema-read-port)))
+               (yuanxu-json-schema-normalization->alist
+                 (yuanxu-json-schema-contract-artifact-normalization artifact))))
+        (error "Schema artifact/source mismatch" key path)))
+    expected)
+  ((.get source-context admit-current))
+  ((.get binding admit-current))
+  (.o root: root binding: binding))
+#+end_src
+
+This step checks the declared local artifact set and source correspondence. It
+does not authenticate an arbitrary factory or discover derivations. The enclosing
+publication boundary must additionally validate the binding/Contract shape and
+owner capabilities. The root above is the published root, not the final derived
+candidate: the latter must be supplied by the derivation projection below.
+
+The proposed Graph service has two internal operations, not public macros:
+
+1. =admission-requirements-for(final-object)= traverses admitted export-root
+   associations, retained derivations and declared nested responsibilities for
+   the demanded final object. It yields owner-qualified requirements in the
+   EXISTING selected dependency order. Each requirement retains the final child
+   object, target path, actual descriptor reference and source-generation guard.
+2. =admission-for(final-object)= resolves those requirements, admits the complete
+   closure, constructs Context and delegates to AdmissionPublication. A Schema
+   list is an internal projection of that resolved closure, never a caller input.
+
+These are pending capabilities. In particular, current native .def inheritance
+does not by itself implement a trusted Core export-association index. The future
+index records the actual exported root at publication resolution and follows
+verified construction/derivation observations. Multiple parents retain ALL
+requirements. .+ right-side requirements must survive, or that construction is
+rejected for publication. Unresolved derivations fail closed; names or arbitrary
+POO slot scanning are not substitutes for this missing mechanism.
+
+Each resolved requirement consumes exactly one factory result. A native internal
+projection can then collect its artifacts without an independent Schema picker:
+
+#+begin_src scheme
+;; Proposed internal projection, after requirement resolution/completeness checks.
+;; Each row contains the exact cached binding and its final target object.
+(def (required-schema-artifacts rows)
+  (foldr append '()
+    (map (lambda (row)
+           (let (binding (.get row binding))
+             ((.get binding admit-current))
+             (let (artifacts (.get binding artifacts))
+               (map (lambda (key) (.ref artifacts key))
+                    (.all-slots artifacts)))))
+         rows)))
+#+end_src
+
+This collection function is deliberately not called a completeness proof. Before
+it runs, resolution must enforce the following invariants:
+
+| Boundary | Required refusal |
+|----------+------------------|
+| Export association | Missing root, unresolved export/binding path, wrong owner or generation |
+| Derivation closure | Missing parent/right operand requirement; ambiguous untracked copy |
+| Contract binding | Same symbolic identity with different descriptor references treated as distinct requirements; neither may overwrite the other |
+| Schema coverage | Missing/extra artifact relative to the binding's declared dependency closure; unsupported constraints; mismatched normalized node/source |
+| Nested admission | Every demanded responsibility/selected child has accepted evidence bound to its FINAL object, descriptor and Context |
+| Feature selection | Required owner/Feature disabled, or contribution absent from selected Graph |
+| Publication | Any recorded Graph/source/Schema guard changes before release |
+
+An explicitly Schema-free binding declares an empty dependency closure; absent
+metadata is not equivalent to that declaration. For the local case, schemas and
+artifacts must have exactly the same keys; source-context records the corresponding
+observations, and every artifact must match its declared source and normalization.
+Checking only list length or artifact.valid? is insufficient. A binding must expose the Schema
+requirements used to compile its Contract, including supported referenced sources.
+The local example has one source and no external reference closure. Multi-file
+or provider-indexed schemas need their source owner's complete dependency
+capability; the local-file implementation cannot claim that coverage today.
+Arbitrary Scheme closures may hide I/O: inspecting a lambda cannot establish
+completeness. Tracked compilation or an admitted owner-maintained dependency
+manifest is still necessary, with negative tests for intentionally omitted input.
+The arbitrary .classify closure above remains trusted owner code: source equality
+cannot prove that it enforces every advertised constraint. A generated standard
+adapter or domain tests must establish that link; publication shape validation
+does not prove semantic equivalence of arbitrary Scheme procedures.
+
+* Ordinary configuration and the cached-parent boundary
+
+#+begin_src scheme
+;; Published WebProfile is obtained through the selected contribution scope.
+(.def (ReleaseWeb @ WebProfile)
+  port: 443)
+
+;; Proposed platform capability: no user Context, Contract or Schema list.
+(def publisher ((.get selected-view admission-for) ReleaseWeb))
+(.call publish publisher PreviousWeb ReleaseWeb)
+#+end_src
+
+The port assignment replaces the desired value; it is not an extension example.
+An inherited resource projection must retain the final receiver. Even if the
+parent's resource was cached, resolution admits ReleaseWeb and its final port,
+not WebProfile or the parent's cached resource. Nested evidence binds those exact
+references through the existing public bind-evidence mechanism. Schema changes
+invalidate the binding generation and Context; source changes during admission
+reject publication and preserve PreviousWeb. Failure does not roll back external
+effects or provide a cross-process atomic transaction.
+
+The previous isolated tests validate supplied-artifact currentness and final-child
+behavior. They do NOT validate this proposed discovery, derivation or completeness
+adapter. Unselected contributions are not linked; unselected child fields are not
+forced unless a declared obligation requires them. Schema factories run only for
+the demanded admission closure. Static build selection may still include code
+needed to implement that route without evaluating its configuration.
+
+* Implementation order and acceptance controls
+
+1. Preserve and validate owner admission routing in existing publication lowering;
+   add bounded source-context capability over existing preparation guards.
+2. Establish export/derivation association retention and demanded responsibility
+   closure. Reject missing and conflicting associations before gathering artifacts.
+3. Resolve each binding once; reuse current admission producer, bind-evidence and
+   publication recheck. Test omitted Schema, same-name Contracts, stale source,
+   parent cache/final child and genuinely undemanded branches.
+
+These are separate acceptance gates; one does not establish another. This turn
+adds design documentation only, performs no implementation tests and does not
+connect a runtime Loader or push changes.
+
+* Reflection
+
+The benefit is one maintained association over admitted module metadata: contributors
+declare their configurable roots once, users configure ordinary objects, and
+admission/publication consumers must agree on source versions.
+This does not eliminate domain Contracts or their dependency declarations.
+
+The cost is real: derivation provenance, complete input observation and bounded
+publication metadata still need executable qualification. Thousands of Modules
+remain practical only if discovery reads bounded metadata and demand does not
+become all-scope linking. No startup, scaling or completeness claim follows from
+the existence of native lazy slots alone.

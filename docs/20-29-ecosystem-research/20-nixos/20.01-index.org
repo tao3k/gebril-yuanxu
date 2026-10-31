@@ -1,0 +1,85 @@
+#+title: 20.01 NixOS: Independent Module-System Research
+#+language: en
+#+property: DOCUMENT_ID 20.01
+#+date: [2026-10-17]
+#+property: STATUS pinned-source-real-integration-and-issue-review-no-local-execution
+
+* Research purpose
+
+Understand how the NixOS module library supports thousands of maintained modules,
+small ordinary configurations, independent contributions and deferred values.
+Nix the language, lib.modules, NixOS service integration and the package/runtime
+systems have different responsibilities. This dossier does not reduce them to
+one language feature or claim that POO replaces them automatically.
+
+* Evidence baseline
+
+The nixos-24.11 branch was resolved through GitHub to commit
+=50ab793786d9de88ee30ec4e4c24fb4236fc2674=. Mechanism and case studies use that
+immutable historical revision. This is not a review of the newest release.
+GitHub issue metadata was refreshed on 2026-10-17; affected versions and local
+reproduction status remain separate for each record.
+
+Ten pinned upstream files were read: lib/modules.nix, lib/types.nix,
+lib/options.nix, module-list.nix, PostgreSQL and Gitea service modules,
+PostgreSQL VM test configuration, lib/tests/modules.sh, its conditional-presence
+fixture and the module-system manual chapter. Maintained Gitea-to-PostgreSQL
+integration is the real case. Analyst-written consumer variations are labeled.
+No Nix evaluation, VM test, deployment or benchmark was run.
+
+* Independent articles and reading order
+
+| Article | Owned question and result |
+|---------+---------------------------|
+| [[file:20.02-official-service-module.org][20.02 Official PostgreSQL module]] | Maintainer defaults, migrations, declarations and system contributions |
+| [[file:20.04-discovery-and-dependency-injection.org][20.04 Discovery and injection]] | Catalogue versus selection; imports and argument phases; distinct dependency edges |
+| [[file:20.05-contributions-types-and-merge.org][20.05 Typed contributions and merging]] | Priority versus ordering, scalar conflicts, lists, requirements and deliberate replacement |
+| [[file:20.06-laziness-admission-and-cache.org][20.06 Demand and reuse]] | Presence versus forced value, admission coverage, derived-instance reuse and invalidation |
+| [[file:20.07-issues-and-evidence.org][20.07 Issues and Engineering Limitations]] | NX-01–05: dates, version gaps, refreshed state, engineering costs and refusal controls |
+| [[file:20.08-real-service-composition-and-design-decisions.org][20.08 Real service composition]] | Gitea/PostgreSQL source and tests, ordinary user edits, Guestbook transfer and actual Core gaps |
+| [[file:20.03-module-system-design-reflection.org][20.03 Architectural reflection]] | Bounded conclusions and design falsifiers; read again after the detailed studies |
+
+* Key conclusions and their costs
+
+- A maintained declaration universe enables excellent integration and discovery;
+  selective source loading must replace ambient availability with sound published
+  requirements and a current metadata index.
+- Dependency injection is phase-sensitive. Lexical bindings can improve locality,
+  but cannot make source selection depend safely on its own evaluated result.
+- Option types participate in merge and discovery. Native POO slot precedence
+  cannot silently replace independent-contribution or requirement semantics.
+- Laziness is not absence, complete validation or reuse across derived instances.
+  Discovery, admitted preview and execution need different forcing boundaries.
+- The real user-interface advantage comes from maintained consumer integration.
+  Our framework still owes resource/lifecycle consumers, migration and diagnostics.
+
+* Issues and Engineering Limitations
+
+[[file:20.07-issues-and-evidence.org][The register]] is the single current issue owner for this dossier. Earlier
+source-study notes retain their original observation scope; current metadata and
+interpretation are in that register. Reports do not establish universal current
+bugs, and upstream tests inspected in source are not local passes.
+
+* Conclusion and Onwards
+
+The design target is a more inspectable, selectively loaded and extensible module
+framework, with small value inputs and deliberate native extension. Evidence
+still required includes pinned issue reproductions, selected-graph cold/warm
+measurements and real consumer qualification. See the concrete acceptance controls
+in 20.08; this dossier now contains research and decisions, not only a map.
+
+Related subjects retain independent ownership: [[file:../21-devenv/21.01-index.org][devenv]], [[file:../22-flox/22.01-index.org][Flox]] and
+[[file:../25-nickel/25.01-index.org][Nickel/Omnibus]]. Our framework proposals are maintained separately under
+[[file:../../10-19-design/10-configuration/10.01-index.org][configuration design]].
+
+
+* Immutability and assurance comparison
+
+[[file:20.09-immutability-and-assurance-boundaries.org][20.09]] separates Store immutability from final-instance correctness using the
+same Gitea/PostgreSQL case. It links current Core controls without claiming
+that NixOS lacks types, assertions or maintained lifecycle consumers.
+
+* Fixed-source port comparison
+
+[[file:20.10-gitea-port-source-comparison.org][20.10]] owns the refreshed pinned source, TCP branch, merge-priority versus
+requirements distinction and source-supported improvement targets.

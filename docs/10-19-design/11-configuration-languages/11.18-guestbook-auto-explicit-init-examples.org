@@ -1,0 +1,222 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.18 Config Languages 17: Complete Guestbook Auto and Explicit Init Examples
+#+property: DOCUMENT_ID 11.18
+#+date: [2026-10-16]
+#+filetags: :config-language:guestbook:init:modules:design:
+#+property: STATUS target-init-policy-not-implemented-no-loader
+
+* Gerbil syntax, not an Emacs Lisp boolean adapter
+
+Doom uses (package! name :disable t). Gerbil/Scheme uses boolean #t and its
+keyword style is disable: #t. An unbound t is an identifier, not Scheme true.
+There is no reason to add a second truth spelling to our declaration parser.
+The attribute values use Gerbil syntax; the additional yuanxu! attribute
+semantics below still require the reviewed extension described in [[file:11.17-init-selection-core-features-and-build.org][module 16]].
+
+* One maintained package, two init policies
+
+The reference organization has modules/core/json-schema/interface.ss,
+modules/infrastructure/kubernetes/interface.ss and an optional
+modules/sandbox/nono-sandbox/interface.ss. A separate contributions/guestbook/interface.ss
+publishes the Guestbook scope, its default-bearing Profiles and Scenario.
+The module/Contract/scope design code is in [[file:11.16-directory-contract-and-native-tree.org][module 15]]; the complete bounded
+Server input schema and link checks are in [[file:11.14-guestbook-module-contract-admission.org][module 13]]. These are proposed sources
+and integration, not claims that Kubernetes/Guestbook modules already exist.
+
+JSON Schema compilation is baseline module functionality, not +json-schema;
+Guestbook requires that module through Module System.
+Kubernetes is a selected provider required by this Guestbook resource consumer.
+No Helm role is assumed: it must come from an actual admitted module Contract.
+The -smoke example below refers to the explicitly proposed optional post-deployment
+verification descriptor in module 18, not to an existing KCL Guestbook feature.
+Those role/dependency facts belong to the Feature System, not user categories.
+
+Auto-discovery user-interface/init.ss (complete selection file):
+
+#+begin_src scheme
+(yuanxu! mode: auto root: "./modules"
+  :infrastructure
+  (kubernetes)
+  :sandbox
+  (nono-sandbox disable: #t)
+  :custom
+  (guestbook @ "./contributions/guestbook" -smoke))
+#+end_src
+
+Explicit user-interface/init.ss (alternative complete selection file):
+
+#+begin_src scheme
+(yuanxu! mode: explicit root: "./modules"
+  :infrastructure
+  (kubernetes)
+  :sandbox
+  (nono-sandbox disable: #t)
+  :custom
+  (guestbook @ "./contributions/guestbook" -smoke))
+#+end_src
+
+These deliberately have the same local exceptions and Guestbook selection. What
+changes is the rest of the catalog: auto makes discovered optional publications
+eligible when requested; explicit restricts optional eligibility to declarations
+and the declared dependency policy. Neither evaluates every discovered module.
+Core does not need a repeated user row. The disabled sandbox row remains a
+negative override even if an upstream policy later enables it.
+
+Package preparation supplies the ordinary framework prelude/bindings for init and
+config source roles. These snippets do not claim bare files load without that
+framework or that the new attributes work in the current macro. No user repeats
+schema file imports or package build registration.
+
+Both modes use the same complete user-interface/config.ss body:
+
+#+begin_src scheme
+(def Development
+  (use-module Guestbook as gb
+    (.o (:: @ (.get gb baseline))
+      frontend: =>.+
+      (.o image: "gcr.io/google-samples/gb-frontend:v5"
+          labels: =>.+ (.o team: "checkout")))))
+#+end_src
+
+This body uses existing native object/refinement syntax. It replaces a known image
+and team string; frontend and labels retain their other inherited fields. The
+scope is supplied by the proposed selected-publication integration. Its source
+identity must come from the admitted guestbook declaration, not a global mutable
+symbol registry. A direct frontend.image/frontend.labels.team surface remains
+pending path assignment and would lower to this same single frontend refinement.
+
+The declaration path custom/guestbook is a selected-source identity, not a demand
+to relocate independent Profiles under a feature module. Guestbook's scope exposes
+its baseline and native admission; Profile roles remain separate domain objects.
+
+* Retain the negative decisions as real values
+
+The init lowerer should retain these two decisions rather than deleting rows:
+
+#+begin_src scheme
+(.o path: '(custom guestbook)
+    disabled?: #f
+    features: (.o smoke: #f))
+
+(.o path: '(sandbox nono-sandbox)
+    disabled?: #t
+    features: (.o))
+#+end_src
+
+smoke=false is different from no override. disabled?=true blocks module activation;
+it cannot be lost when discovery or dependency expansion runs. Provenance/source
+locations accompany these decisions in the real IR, as specified by the selection
+Contract; the objects here show the complete decision payload, not that receipt.
+Do not treat the literal -smoke as an independent feature alongside +smoke.
+
+* Selected graph and concrete build outcome
+
+The following is the proposed declared capability closure for this case. It is a
+bounded graph specification, not invented evidence of existing Kubernetes sources.
+Internal Scheme file paths are published by the corresponding admitted init.
+
+| Requested export/capability | Required predecessors | Phase |
+|-----------------------------+-----------------------+-------|
+| Guestbook baseline | Selected frontend/leader/follower Profile definitions and defaults | Configuration |
+| Guestbook admission | Core Contract protocol; Core JSON Schema compiler/validator; Server schema asset; Scenario link obligations | Admission |
+| Guestbook resource preview | Guestbook admission; Kubernetes Deployment/Service consumer; selected output schema assets | Projection |
+| Proposed Guestbook smoke verification | Guestbook preview and a verification adapter | Optional, excluded by -smoke |
+| nono-sandbox | Sandbox implementation/provider | Disabled, not in this closure |
+
+Build roots are the requested Guestbook configuration/admission/preview exports,
+not every catalog entry and not a second manually maintained module list. Their
+admitted dependency closure contributes implementation units, schema-generated
+assets, for-syntax dependencies and FFI/toolchain edges to the existing PackageSpec
+build coordinator. Omit verification-only units when -smoke removes their last demand;
+retain any shared units still required by manifest projection. Source/build work
+can be necessary without runtime configuration/initialization being forced.
+
+init is the maintained selection authority; admitted module publications own their
+exports/dependencies. build.ss remains bootstrap/toolchain coordination and stops
+repeating individual selectable-module registrations after the proposed graph
+adapter is implemented. No such registrations are removed in this design task.
+A runtime dynamically requested dependency must be declared/qualified or refused;
+exports alone cannot magically infer arbitrary Scheme behavior.
+
+* Expected failures explain which intent cannot be satisfied
+
+These are alternative negative controls, not additions to the successful init:
+
+#+begin_src scheme
+(yuanxu! mode: auto root: "./modules"
+  :core
+  (json-schema disable: #t)
+  :custom
+  (guestbook @ "./contributions/guestbook" -smoke))
+#+end_src
+
+#+begin_example
+refused: required module core/json-schema is explicitly disabled
+requested by: user-interface/init.ss, json-schema disable: #t
+required path: Guestbook admission -> Server schema Contract -> Core JSON Schema
+resolution: satisfy the required module dependency or stop requesting this admission
+no implicit re-enable, no admitted preview
+#+end_example
+
+Second negative control:
+
+#+begin_src scheme
+(yuanxu! mode: explicit root: "./modules"
+  :infrastructure
+  (kubernetes disable: #t)
+  :custom
+  (guestbook @ "./contributions/guestbook" -smoke))
+#+end_src
+
+#+begin_example
+refused: required optional module infrastructure/kubernetes is explicitly disabled
+required path: Guestbook resource preview -> Deployment/Service consumer
+resolution: enable Kubernetes or stop requesting this resource preview
+configuration availability alone does not imply a deployable plan
+#+end_example
+
+If a selected export explicitly requires the smoke verification extension, -smoke must likewise cause a
+feature-dependency refusal with the export/feature/source chain. It must not
+silently switch backends or delete a required resource. Misspelled disabled feature
+names also fail discovery/Contract validation rather than being silently ignored.
+
+* Expected demand trace and final values
+
+#+begin_example
+1. resolve root and explicit Guestbook source metadata
+2. retain disable/feature-negative decisions; admit selected eligibility
+3. obtain Guestbook scope and baseline; do not compile all schemas
+4. construct Development; inherit final frontend/Redis objects
+5. demand admission: compile/reuse selected Server schema Contract; admit final roles
+6. demand preview: require selected Kubernetes consumer/output schemas and final link checks
+7. produce an effective plan only if all selected obligations pass
+cold: nono-sandbox bodies; smoke verification bodies; unrelated optional modules/Profiles
+#+end_example
+
+With the maintained V2 baseline from [[file:../../../../docs/10-19-design/10.08-config-languages/11-guestbook-source-comparison.org][module 11]], the expected partial result is
+frontend image v5, replicas=2 and Deployment labels app/owner/costCenter/team.
+Frontend Service remains 80/TCP; Redis Leader/Follower remain 6379/TCP. User labels
+are not automatically copied to Pod or Service metadata. The complete renderer
+and warm-parent final-object checks remain pending. This is a design expectation,
+not generated resources or a deployment claim.
+
+* Conclusion: reduce two catalogs to one qualified intent graph
+
+Existing assets: init declaration macros, native negative-flag queries, source
+selection, object<-fun/lazy scopes, Core JSON Schema Contracts and responsibility
+admission. Pending: expanded init attributes/categories, signed-feature override
+normalization, qualified directory/interface publication, retained-disable dependency
+resolution, automatic scope binding and selected graph -> build integration.
+
+The useful result is not copying Doom spelling. It is predictable auto/explicit
+selection with durable negative intent, one source of build roots and no eager
+initialization of unused catalog entries. Validate that on Guestbook plus hard
+negative dependency controls before making startup/scalability claims. No module,
+build adapter or Loader implementation is added by this document.
+
+[[file:11.19-feature-system-guestbook-selection.org][The module/feature ownership revision]] is authoritative: Module System owns
+selected Core/module closure; Feature System owns selected optional extensions.
+Retained disable decisions must be respected at both boundaries.
+Init does not introduce another core?/default-features activation system.

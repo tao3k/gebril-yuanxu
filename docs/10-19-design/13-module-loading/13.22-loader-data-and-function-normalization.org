@@ -1,0 +1,172 @@
+#+title: 13.22 Loader Data and Function Normalization
+#+language: en
+
+* Question and source cut
+
+Can the remaining Loader families become ordinary POO declarations without
+changing when callbacks execute or assuming that Contract normalization preserves
+procedure identity? This question belongs to the Loader boundary, not to a new
+Core cache or dispatcher.
+
+The inspected and exercised gerbil-poo source is PR 13 at
+=85a76738093622aff7e2a3482ad00d035ff38c1e=. The declared Core pin is unchanged.
+The fixed source was compiled with the installed Gerbil; the Gerbil was not edited.
+
+The concrete source chain is:
+
+- [[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/mop.ss][Function. and Class.]]: Function validation delegates to =wrap-function=;
+  Class validation delegates to =validate-class=.
+- [[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/function-signature.ss][wrap-function]]: validation allocates a procedure. Invocation selects a signature,
+  checks arguments, invokes the target once and checks returned values.
+- [[https://github.com/tao3k/gerbil-poo/blob/85a76738093622aff7e2a3482ad00d035ff38c1e/class-validation.ss][validate-class]]: shape admission precedes receiver-bound field normalization
+  and final membership. This is not merely a Boolean field inspection.
+
+* Observed distinction
+
+=t/module-loader-backend-test.ss= now exercises the production native Backend
+Type; the initial local candidate Record has been removed. For raw callback =f=:
+
+| Operation | Observed identity | Target body calls |
+|-----------+-------------------+-------------------|
+| Construct the checked Backend Record | Wrapper f1 differs from f | 0 |
+| Read the checked field twice | Same f1 | 0 |
+| Validate that Record again | Wrapper f2 differs from f1 | 0 |
+| Invoke f2 with a valid SourceRef | Original Module result | 1 |
+| Invoke f2 with a rejected argument | Native TypeError | Still 1 |
+
+The result is expected checked-Function behavior, not evidence of an incorrect
+upstream implementation. It disproves using repeated normalization as an
+identity-preserving inspection. Upstream explicitly lists wrapper deduplication
+across Contracts/continuations as pending. A future Backend cutover must specify
+which identities are stable within one receiver/revision and which may change
+between distinct normalized candidates. It must also preserve source ownership
+when publishing the checked callback. An unconditional identity requirement
+across all admissions would be an unjustified premise too.
+
+* Implemented data cutover
+
+=module-system/loader/types.ss= owns two native Records:
+
+#+begin_src scheme
+(define-type LoaderMetadata
+  (List (Pair Symbol (Or Bool Symbol String UInt))))
+
+(define-type ModuleLoadReceipt
+  (Record source: [Object]
+          module: [(OrFalse Object) default: #f]
+          backend-name: [(OrFalse Symbol) default: #f]
+          loaded?: [Bool default: #f]
+          code: [Symbol]
+          messages: [(List String) default: '()]
+          metadata: [LoaderMetadata default: '()]))
+
+(define-type LazyLoadPlan
+  (Record source: [Object]
+          backends: [(List Object)]
+          forced?: [Bool default: #f]
+          receipt: [ModuleLoadReceipt]
+          metadata: [LoaderMetadata default: '()]))
+#+end_src
+
+The backend values remain opaque POO objects in this data boundary. This is
+deliberately not a recursive Function-normalization boundary: Backend behavior
+still belongs to its existing explicit load protocol. The Type does not certify
+that arbitrary supplied slot computations or callbacks are pure.
+
+The native fields replace eighteen generated prototype, positional constructor,
+marker and accessor exports. Callers use native slot reads; higher-order readers
+use =(cut .get <> code)= rather than another named accessor family. Defaults
+belong to the Record declaration, not repeated false/empty constructor arguments.
+Domain functions still determine loaded, missing and deferred receipt states;
+field validation alone does not authenticate a source or prove state coherence.
+
+Known fields must not use the universal =Any= Type merely to avoid deciding their
+domain. Backend/Catalog identifiers use =Symbol= and an absent receipt backend
+uses =(OrFalse Symbol)=. Loader annotations retain their existing association-list
+wire shape, but require Symbol keys and Bool/Symbol/String/UInt scalar values.
+Annotation keys remain extensible; procedures, arbitrary POO objects and malformed
+rows are not accepted as annotation values. This is a bounded annotation contract,
+not a universal metadata format or per-key semantic validation. A richer domain
+must declare its own structured metadata Type instead of silently widening this
+one. The reviewed upstream =Json= descriptor uses =.element?: true=, so substituting
+that name for =Any= would not establish JSON-data validation either.
+
+* Force is an explicit operation
+
+The maintained force function loads a receipt first, then validates an inherited
+update of the plan:
+
+#+begin_src scheme
+(def (yuanxu-force-lazy-load-plan lazy-plan)
+  (let (receipt
+        (yuanxu-module-load-source-receipt
+         (.get lazy-plan backends)
+         (.get lazy-plan source)))
+    (validate LazyLoadPlan (.cc lazy-plan forced?: #t receipt: receipt))))
+#+end_src
+
+The implementation retains extension fields instead of reconstructing five known
+fields through a positional factory. The original deferred plan and its cached
+receipt remain unchanged. Every explicit force still attempts loading, including
+forcing an already forced plan; =forced?= records an attempt, not successful
+loading or permission to skip execution. External callback effects are not
+rolled back if receipt validation subsequently refuses a result.
+
+The former =yuanxu-force-lazy-load-source-receipt= function was a direct alias
+for =yuanxu-module-load-source-receipt= with no checks or phase semantics. It is
+removed too. Plan force calls the canonical load operation; no second effect
+entrypoint is kept merely to give the same action another verb.
+
+The regression checks that construction makes zero backend calls, one force
+makes one call, and a second force makes two total calls. It also checks a
+derived tenant field, cached-parent isolation, raw callback identity through the
+plan's backend list, native rejection of non-string messages and unselected
+static entries whose slots raise if forced.
+
+* Admission, publication and remaining work
+
+Native Type validation owns data shape/defaults. The existing module publication
+and SourceAdmission protocols still own source association, obligations and
+currentness checks before return. Explicit loading owns callback invocation.
+These responsibilities are not interchangeable; no admitted result is cached.
+
+The subsequent production Backend cutover and actual source-publication controls
+are documented in [[file:13.23-backend-types-and-source-publication.org][13.23]]. They reuse native Function and publication mechanisms,
+without wrapper memoization, a Core signature registry or a purity flag. Neither
+stage proves arbitrary callback purity or capacity under the 2 GiB 10k-module gate.
+
+* Reflection and cost boundary
+
+The gain is fewer concepts for maintainers: one native field/default vocabulary
+replaces eighteen generated bindings, and force retains ordinary inherited
+fields. It is not a measured reduction in retained memory. Native Record
+normalization performs real shape and field work that a marker predicate never
+performed. A checked receipt inside a checked plan may be validated again;
+that cost must be measured before claiming throughput improvement. In this
+data schema it contains no Function field to rewrap, and the backend list is
+intentionally opaque at this boundary. Do not turn an observed data identity
+result into a universal normalization-idempotence theorem.
+
+The public user configuration remains value-first. Internal receipt state is not
+another configuration layer users must assemble. The Module/source admission
+protocol, rather than these records or their names, owns authority and complete
+obligations. Further work must preserve that separation even when a shorter
+declaration would hide a callback or normalize it at the wrong phase.
+
+* Executable qualification
+
+All eight focused default Just suites passed: Core Loader backend, module
+authoring, Contract/Function composition, the product's native-value,
+module-system, user-interface and lazy-loader suites, and real Gitea/PostgreSQL
+publication (eleven controls). Each completed with =MODULE-OK=, =HARNESS-OK= and
+final =OK=, without harness-error or heap/stack-overflow markers.
+
+After deleting the direct force-receipt alias and updating the remaining Type
+annotations, native Make recompiled the affected library consumers. Core Loader
+and authoring controls and the product lazy-loader gate were rerun successfully.
+The latter retained the existing 100/1000-module projection controls with zero
+selected build targets. No timeout or heap budget was widened; the known 10k
+capacity failure was not rerun. This is focused local qualification, not full CI
+or a dependency-pin upgrade. Raw logs stay outside source control.
+
+See [[file:13.21-gerbil-poo-mechanism-cutover.org][the mechanism cutover ledger]] for the wider scope.

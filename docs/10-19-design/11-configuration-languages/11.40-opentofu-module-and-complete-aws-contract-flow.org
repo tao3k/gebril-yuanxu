@@ -1,0 +1,485 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.40 Config Languages 39: OpenTofu Capability, Generated AWS Contracts and Complete Consumer Case
+#+property: DOCUMENT_ID 11.40
+#+property: STATUS design-only-no-loader-no-schema-acquisition-no-deployment
+
+* Put provider conversion in an upstream capability
+
+The target owner is modules/opentofu. It owns locked provider schema extraction,
+format conversion, Terraform/OpenTofu configuration builtins/backend schema support,
+Schema compilation orchestration and generated Contract publication. modules/aws
+owns domain-friendly Profiles, network/machine projections and relationships.
+The consuming deployment Module owns actual account, backend, key and machine data.
+The existing Core JSON Schema module remains the generic compiler/validator.
+No per-AWS schema converter, public raw-schema loader or second config DSL is added.
+
+[[https://opentofu.org/docs/cli/commands/providers/schema/][OpenTofu documents tofu providers schema -json]] and a versioned provider/block
+format. [[https://opentofu.org/faq/][Its FAQ]] explains the fork following HashiCorp's BUSL change. This design
+chooses OpenTofu as capability owner; Terraform-format terminology in the reference
+is not a demand to run Terraform. Engine/format compatibility must still be version-
+qualified. Engine licensing does not establish a license policy for every plugin.
+
+The tf-ncl conversion architecture remains the comparison in module 38. Exact
+PR 83 content is still unverified. No provider snapshot/lock/build artifact was
+created, no provider plugin ran and no Schema file is invented as current evidence.
+
+* Module organization and publication
+
+#+begin_example
+modules/opentofu/
+  types.ss       source/version/coverage/output Contracts
+  config.ss      selected provider and toolchain settings, no cloud credentials
+  objects.ss     native generated-scope/build-request objects
+  func.ss        format adapter and pure compilation orchestration
+  interface.ss   public generated provider/type scopes and operations
+modules/aws/
+  types.ss       generated field aliases and supplementary domain Contracts
+  objects.ss     domain prototypes and optional reusable Profile objects
+  config.ss      generic operation defaults
+  func.ss        shared field projections and final resource elaboration
+  interface.ss   one dependency/publication boundary
+contributions/aws-project/
+  types.ss       canonical AWS Contract aliases
+  config.ss      complete user deployment inputs
+  objects.ss     reusable user Profiles and Scenario compositions
+  interface.ss   one AWS dependency and selected configuration
+#+end_example
+
+These are target responsibilities, not new runtime Modules. The actual current
+JSON Schema facade remains the inspected Core source. Publication/role injection,
+generated scopes and selected artifact resolution are still pending.
+
+The proposed OpenTofu interface fragment is:
+
+#+begin_src scheme
+(.def OpenTofu
+  identity: 'opentofu
+  core:
+  (.o requires:
+      (.o Schema: (.o module-id: 'core/json-schema))
+      exports:
+      (.o config: Config
+          types: (.o Configuration: ConfigurationContract)
+          providers: GeneratedProviders))
+  features: (.o))
+#+end_src
+
+ConfigurationContract and GeneratedProviders are generation-qualified outputs of
+that selected schema build, NOT names the user defines by hand. The producer must
+publish the same typed artifact into both views, bind it hygienically and reject
+missing/stale/incomplete generation. This interface is not executable merely
+because the generated identifiers have names. Source origin, version/digests,
+format coverage and builtin coverage remain attached internally.
+
+A generated provider scope has types.resources and fields.resources views, both
+projected from the SAME normalized schema. Field-level descriptors are not copies
+of handwritten predicates. AWS interface declares its dependencies once:
+
+#+begin_src scheme
+;; Within AWS core.requires
+(.o Tofu: (.o module-id: 'opentofu)
+    Net: (.o module-id: 'core/types/network))
+
+;; Within AWS core.exports
+(.o types: (.o Network: NetworkContract Instance: InstanceContract
+               Key: ExternalKeyContract Credentials: CredentialsContract
+               State: StateContract Scenario: ApplicationContract)
+    project:
+    (cut aws-final-candidate <> ProjectionDefaults executable-path
+         (.get Tofu types Configuration)))
+#+end_src
+
+core/types/network is a proposed public capability identity, not an existing path
+or a claim that core/types.ss already exports these descriptors. Standard typed
+scope admission must be derived/checked by the shared publication model; omission
+of a custom scope-contract is not permission to skip checking. The existing SSH,
+prototype and optional examples slots remain the previously described publication.
+
+* One mapping owns provider validation, projection and diagnostic attribution
+
+The following is concrete native Scheme design for the small AWS slice. Internal
+object<-alist constructs a native object; this is not an alist configuration API.
+Identity is the ordinary one-argument function. All paths remain ordinary values,
+not a new path assignment DSL. Field table keys are provider field names; inputs
+are user configuration paths relative to the selected instance/network occurrence.
+
+#+begin_src scheme
+(def (read-path object path)
+  (if (null? path) object
+    (read-path (.ref object (car path)) (cdr path))))
+
+(def (cidr-parts->text prefix length)
+  (string-append prefix "/" (number->string length)))
+
+(def NetworkFields
+  (.o cidr_block:
+      (.o inputs: '((cidr-block prefix) (cidr-block length))
+          compute: cidr-parts->text
+          contract: (.get Provider fields resources aws_vpc cidr_block))))
+
+(def InstanceFields
+  (.o ami:
+      (.o inputs: '((ami)) compute: identity
+          contract: (.get Provider fields resources aws_instance ami))
+      instance_type:
+      (.o inputs: '((type)) compute: identity
+          contract: (.get Provider fields resources aws_instance instance_type))
+      associate_public_ip_address:
+      (.o inputs: '((public-ip?)) compute: identity
+          contract:
+          (.get Provider fields resources aws_instance associate_public_ip_address))))
+
+(def (project-fields fields object)
+  (object<-alist
+    (map
+      (lambda (name)
+        (let (field (.ref fields name))
+          (cons name
+            (apply (.get field compute)
+              (map (cut read-path object <>) (.get field inputs))))))
+      (.all-slots fields))))
+
+(def (mapped-field-obligations fields object context)
+  (yuanxu-append-map
+    (lambda (name)
+      (let* ((field (.ref fields name))
+             (value (apply (.get field compute)
+                      (map (cut read-path object <>) (.get field inputs))))
+             (receipt ((.get field contract .admit) value context)))
+        (if (yuanxu-validation-evidence-accepted? receipt) '()
+          (list (.o kind: 'provider-field-rejected
+                    provider-path: (list name)
+                    input-paths: (.get field inputs)
+                    evidence: receipt)))))
+    (.all-slots fields)))
+
+(def (config-error-locations diagnostic occurrence-path)
+  (map (cut append occurrence-path <>) (.get diagnostic input-paths)))
+#+end_src
+
+NetworkFields is many-to-one: cidr_block errors retain both prefix and length as
+contributors. A parser/field Contract may narrow the error to one input earlier.
+InstanceFields is one-to-one: instance_type errors identify type. Prefixing the
+relative input path with (instances build) yields the user's effective config
+path. Resolving that path to exact source spans uses Core's pending hygienic
+assignment/provenance machinery, not a second hand-maintained source table.
+
+The compiler phase must register the projection definitions before it resolves
+Contract aliases. NetworkFields/InstanceFields reference only the GENERATED
+provider scope, never the AWS domain Contracts; domain types depend on these
+projection bindings. Bodies that invoke field admission are deferred functions.
+Physical role filenames do not justify an eager cyclic import. An alternative
+phase split may store the inert mapping facts in types.ss and keep the algorithms
+in func.ss; source preparation must enforce the chosen acyclic order.
+
+* AWS types.ss: generated constraints plus native semantic additions
+
+The Net types view below contains CONTRACT descriptors, bridged from the native
+Types using the concrete module 38 adapter. Do not pass bare Type descriptors to
+responsibilities and silently assume the current Contract protocol accepts them.
+
+#+begin_src scheme
+(def Provider (.get Tofu providers aws))
+(def AWSImageIdContract (.get InstanceFields ami contract))
+(def AWSInstanceTypeContract (.get InstanceFields instance_type contract))
+(def AWSPublicIPContract (.get InstanceFields associate_public_ip_address contract))
+(def AWSRegionContract (.get Provider fields configuration region))
+(def AWSLabelContract AWSString)
+(def NetworkReferenceContract
+  (yuanxu-predicate-contract 'aws/network-reference aws-name? aws-no-obligations))
+(def KeyReferenceContract
+  (yuanxu-predicate-contract 'aws/key-reference aws-name? aws-no-obligations))
+(def IPv4Contract (.get Net types IPv4Text))
+(def PrefixLengthContract (.get Net types IPv4PrefixLength))
+(def NetworkBaseContract (.get Net types IPv4NetworkBlock))
+(def CIDRTextContract (.get Net types AddressPrefixText))
+
+(def (list-contract identity member-contract)
+  (yuanxu-predicate-contract
+    identity list?
+    (lambda (values context)
+      (let loop ((values values) (index 0))
+        (if (null? values) '()
+          (let (receipt ((.get member-contract .admit) (car values) context))
+            (append
+              (if (yuanxu-validation-evidence-accepted? receipt) '()
+                (list (.o kind: 'invalid-element index: index evidence: receipt)))
+              (loop (cdr values) (+ index 1)))))))))
+(def SSHCidrsContract (list-contract 'aws/ssh-cidrs CIDRTextContract))
+
+(define-type (CidrBlockContract @ YuanxuObjectContract.)
+  identity: 'aws/cidr-block
+  proto: (.o)
+  responsibilities: (.o prefix: IPv4Contract length: PrefixLengthContract)
+  .obligations:
+  (lambda (candidate context)
+    (append
+      (aws-closed-fields @ candidate context)
+      (let (receipt ((.get NetworkBaseContract .admit) candidate context))
+        (if (yuanxu-validation-evidence-accepted? receipt) '()
+          (list (.o kind: 'noncanonical-network-base evidence: receipt)))))))
+
+(define-type (NetworkContract @ YuanxuObjectContract.)
+  identity: 'aws/network
+  proto: (.o)
+  responsibilities:
+  (.o region: AWSRegionContract cidr-block: CidrBlockContract tag-prefix: AWSLabelContract)
+  .obligations:
+  (lambda (candidate context)
+    (append (aws-closed-fields @ candidate context)
+            (mapped-field-obligations NetworkFields candidate context))))
+
+(define-type (InstanceContract @ YuanxuObjectContract.)
+  identity: 'aws/instance
+  proto: (.o)
+  responsibilities:
+  (.o ami: AWSImageIdContract type: AWSInstanceTypeContract
+      network-ref: NetworkReferenceContract key-ref: KeyReferenceContract
+      ssh-cidrs: SSHCidrsContract public-ip?: AWSPublicIPContract)
+  .obligations: (cut aws-closed-fields @ <> <>))
+#+end_src
+
+AWSRegionContract must alias the generated provider-configuration region field;
+if that source only says string, do not claim a region membership check. Local
+AWSLabelContract checks the application label vocabulary. NetworkReferenceContract
+and KeyReferenceContract check the chosen logical-name representation; only final
+ApplicationContract establishes referenced occurrence existence. These local
+Contracts retain the existing AWSString/AWSName checks until stronger explicitly
+sourced semantics are defined; they are not new hidden provider guarantees.
+
+Instance fields apply generated contracts directly, so their failures travel through
+native responsibility receipts. Network's structured prefix/length first passes
+its native semantic checks, then its computed cidr_block passes the generated
+provider field Contract. Provider resource requiredness applies to full wire
+resources, not raw high-level Profile inputs. No type required by the provider
+is fabricated as an application input just because its provider name is known.
+
+The complete ApplicationContract and child/reference admission remain the actual
+code expanded in module 35. Apply it to the final Scenario, not to incomplete
+reusable Profiles. Automatic inherited-policy association and Contract-directed
+.def are still adaptations, not native guarantees.
+
+* Complete user configuration remains unchanged
+
+The following is the full current consumer config.ss, including every input
+responsibility covered by the Omnibus reference. It is copied for review rather
+than presented as an already deployed environment. Placeholder role/key, reference
+AMI and documentation access range must be replaced/verified. State bootstrap,
+credentials and provider/runtime validation are separate prerequisites.
+
+#+begin_src scheme
+;;; Complete INPUT COVERAGE for the inspected Omnibus main.ncl.
+;;; Reference AMI/account/key/state values must be replaced/verified before real use.
+;;; This is data, not executable deployment authority.
+(def Config
+  (.o region: "eu-central-1"
+      credentials:
+      (.o assume-role: (.o role-arn: "placeholder_iam_role"
+                           session-name: "tf-ncl"))
+      state: (.o bucket: "tf-ncl-aws-example"
+                 key: "aws-demo.tfstate"
+                 region: "eu-central-1")
+      keys:
+      (.o ssh_key: (.o private-key-path: "./<placeholder-private-key>"))
+      networks:
+      (.o test: (.o cidr-block: (.o prefix: "10.1.0.0" length: 16)
+                   tag-prefix: "Tf-Ncl"))
+      instances:
+      (.o test: (.o ami: "ami-0f1cf34dcb4057a5f"
+                   type: "t2.micro"
+                   network-ref: 'test key-ref: 'ssh_key
+                   ssh-cidrs: '("192.0.2.0/24")
+                   public-ip?: #t))
+      outputs: (.o instance_ip: 'test)))
+
+;;; Additional deployment inputs for the build-host Scenario; no Scheme build script.
+(def BuildConfig
+  (.o network: (.o cidr-block: (.o prefix: "10.2.0.0" length: 16)
+                  tag-prefix: "Build")
+      machine: (.o type: "t3.small" network-ref: 'build)))
+;;; 192.0.2.0/24 is documentation data; replace with the user's actual access range.
+;;; Unlike the Omnibus broad SSH default, access intent is explicit in user data.
+#+end_src
+
+Consumer types.ss reuses canonical descriptors:
+
+#+begin_src scheme
+(def NetworkContract (.get AWS types Network))
+(def InstanceContract (.get AWS types Instance))
+(def ConfigContract (.get AWS types Scenario))
+#+end_src
+
+Consumer objects.ss applies their prototypes to data and composes Scenarios:
+
+#+begin_src scheme
+;;; Native construction of user-owned Profiles from their configuration values.
+;;; These explicit proto expansions do NOT establish automatic Contract association.
+(.def (TestNetworkProfile @
+       (.+ (.get NetworkContract proto) (.get Config networks test))))
+(.def (TestMachineProfile @
+       (.+ (.get InstanceContract proto) (.get Config instances test))))
+(.def (BuildNetworkProfile @ (.+ TestNetworkProfile (.get BuildConfig network))))
+(.def (BuildMachineProfile @ (.+ TestMachineProfile (.get BuildConfig machine))))
+
+;;; Apply the Scenario Contract prototype to the complete user configuration.
+;;; Bind context on occurrences; named reusable Profiles remain independent.
+(.def (Development scenario (.+ (.get ConfigContract proto) Config))
+  networks: =>.+
+  (.o test: (.o (:: @ TestNetworkProfile) region: (.get scenario region)))
+  instances: =>.+ (.o test: TestMachineProfile))
+
+(.def (Build scenario Development)
+  networks: =>.+
+  (.o build: (.o (:: @ BuildNetworkProfile) region: (.get scenario region)))
+  instances: =>.+ (.o build: BuildMachineProfile)
+  outputs: =>.+ (.o build_ip: 'build))
+
+;;; An OPTIONAL later specialization, after the complete inputs above are supplied.
+;;; Target path assignment is still pending; the equivalent native form is below.
+(.def (Production @ Build)
+  instances: =>.+ (.o build: =>.+ (.o type: "t3.medium")))
+#+end_src
+
+Consumer interface.ss publishes the independent Profiles and selected Scenario:
+
+#+begin_src scheme
+;;; One typed Module dependency; no per-file imports, Loader calls or registry.
+;;; The canonical AWSInterfaceContract comes from selected publication metadata.
+;;; Its source/type binding and the injected AWS scope remain pending in Core.
+;;; Standard config/types.Config/project scope admission is Core-owned defaulting
+;;; (pending); absence of a custom scope-contract must not mean no scope check.
+(.def Deployment
+  identity: 'deployment
+  core:
+  (.o requires:
+      (.o AWS: (.o module-id: 'aws contract: AWSInterfaceContract))
+      exports:
+      (.o types: (.o Config: ConfigContract)
+          config: Production
+          profiles: (.o test-network: TestNetworkProfile
+                        test-machine: TestMachineProfile
+                        build-network: BuildNetworkProfile
+                        build-machine: BuildMachineProfile)
+          scenarios: (.o development: Development build: Build
+                         production: Production)
+          project: (.get AWS project)))
+  features: (.o))
+;;; Common preview code applies project to THIS scope's final config; the user
+;;; does not manually extract config, collect policies, or register methods.
+#+end_src
+
+This is the CURRENT NATIVE CONSTRUCTION expansion. Desired .def parents naming
+Contracts require the module 36 parent-normalization/mandatory-association work.
+No implicit .admit occurs just because an object was named. The explicit final
+operation checks its canonical Contract before resource generation.
+
+* Final resource checks and error paths
+
+Existing full AWS resource projection in func.ss reads final networks/instances/
+keys/state/credentials. Replace its inline mapped fields with project-fields from
+the SAME mapping declarations; retain domain-generated subnet/key/security-group
+references and all other complete resource fields. InstanceFields is a subset,
+not the entire resource. Generated full-resource and Configuration Contracts apply
+only AFTER the complete resource/config tree has been constructed. The OpenTofu
+Configuration descriptor must include supported language/backend structure; a
+provider schema alone does not define it.
+
+The private Project boundary is designed as:
+
+#+begin_src scheme
+(def (admit-or-reject contract candidate context)
+  (let (receipt ((.get contract .admit) candidate context))
+    (unless (yuanxu-validation-evidence-accepted? receipt)
+      (error "Configuration rejected" (.get receipt diagnostics)))
+    candidate))
+
+(def (aws-final-candidate final options executable-path output-contract)
+  ;; aws-project already admits options and this final Scenario before projection.
+  (let* ((candidate
+          (aws-project ProjectionContract ApplicationContract
+                       final options executable-path))
+         (wire (.get candidate terraform)))
+    (admit-or-reject output-contract wire #f)
+    candidate))
+#+end_src
+
+AWS's project slot closes over the generated OpenTofu Configuration Contract and
+its internal selected artifact resolver. Neither is supplied in user config.
+aws-project returns the existing projected-unadmitted candidate and does not run
+processes. A successful schema check does not change it into an admitted-preview:
+all inherited mandatory policy, coverage, source and effect gates still apply.
+The existing candidate slot terraform names the wire representation, not the
+chosen runtime executable; renaming that representation is a separate migration.
+
+Expected diagnostic projection, not observed runtime output:
+
+#+begin_example
+config:   networks.test.cidr-block.prefix
+reason:   invalid-ipv4
+input:    "10.999.0.0"
+
+config:   networks.test.cidr-block.length
+reason:   invalid-prefix-length
+input:    40
+
+config:   instances.build.type
+provider: resource.aws_instance.build.instance_type
+reason:   generated-provider-field-rejected
+
+config:   instances.build.network-ref
+reason:   missing-network
+reference: absent
+
+config:   instances.build.tyep
+reason:   unknown-field
+#+end_example
+
+The current generic predicate bridge does not already generate the first two
+specialized codes. Structured CidrBlockContract responsibilities retain which
+field rejected; a diagnostic adapter must expose Type identity and source location
+with the stated codes. Provider paths must prefix mapped relative fields with the
+actual generated resource identity. Do not claim precise source spans before the
+Core provenance adapter exists.
+
+A cached parent plan cannot be reused as a child's final candidate. Re-admit and
+reproject Production's effective values; cache schema/parser artifacts only with
+matching source/input/version identities. Unselected providers/Profiles/commands
+remain undemanded; any acquisitions/builds are explicit operations.
+
+* Reflection, guarantees and pending work
+
+The improvement is architectural: one upstream OpenTofu capability absorbs format
+conversion and provider evolution; one generic Schema compiler emits reusable
+contracts; AWS adds meaningful projections/relations; user data remains ordinary
+and complete. The cost is explicit coverage, expression/unknown/computed/sensitive
+semantics, backend handling, version-qualified generation and trustworthy source
+mapping. Neither a provider JSON document nor a hand-written Type library alone
+provides all of that.
+
+Only this English design was added. No runtime Module, provider generation, Loader,
+OpenTofu invocation or new tests were implemented. All new publication paths,
+Net descriptors, source projection and artifact resolution are target interfaces.
+Existing foundations are the inspected Core Schema/Contract APIs and Gerbil native
+Type/address facilities. Next acceptance needs a pinned provider snapshot and
+matched full-wire/schema/plan checks; the schema workflow must not be declared
+complete while format/coverage and provenance gates remain open.
+
+* Concrete generated values and selection pipeline
+
+[[file:11.41-opentofu-generation-and-lazy-publication.org][The modular OpenTofu generation design]] expands lock selection, extraction,
+conversion, GeneratedProviders, ConfigurationContract and native lazy publication.
+Its bounded converter is design-only and cannot yet qualify full AWS output.
+
+* Collection and nested-attribute extension
+
+[[file:11.42-provider-collections-and-nested-types.org][The real-fixture conversion extension]] supersedes the earlier structural
+rejection branches for set, tuple and nested_type. Provider identity/default
+requirements remain explicit native obligations; no full AWS acceptance is claimed.
+
+* Current design correction
+
+The [[file:11.69-aws-case-index.org][current AWS source layout]] supersedes this study's Deployment wrapper and
+hand-maintained Resource field vocabulary. Keep this chapter as research history;
+use ordinary Provider-shaped configuration and generated Contracts for the
+current design. Module Loader injection is not implemented by this study.

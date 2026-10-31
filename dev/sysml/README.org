@@ -1,0 +1,124 @@
+#+title: Development System Architecture and Verification Allocation
+
+* System entry
+
+[[file:00-development-assurance.sysml][00 Development Assurance]] defines the
+responsibilities of architectural modeling, temporal analysis, proof, runtime
+correspondence and measurement. It is a textual SysML v2 design, not a new
+build graph. The existing native selected graph and Just entrypoints execute work.
+SysML parsing/semantic validation is not yet qualified in this repository.
+
+* Classification
+
+| Area | System responsibility | Current workstream |
+|------+-----------------------+--------------------|
+| 00 | Cross-cutting assurance ownership and traceability | [[file:00-development-assurance.sysml][Development system]] |
+| 10 | Evaluation, receiver identity, dependencies and caching | [[file:10-evaluation/10.01-efficient-caching.org][10.01 Efficient Caching]] |
+| 20 | Module selection, package/build phases and demand boundaries | [[file:20-module-loading/20.01-demanded-module-lifecycle.org][20.01 Demand-Driven Module Loading]] |
+| 30 | Contracts, provenance, admission and publication | Reserved classification; current proofs remain dev/proofs |
+| 40 | Explicit execution, effects and resource lifecycle | Reserved classification; current implementation remains ops/testing |
+
+Only populated areas get directories. A concern spanning areas has one primary
+owner and cross references; it is not copied into several models. Existing QNT
+and Lean paths remain stable. This index allocates their responsibilities and
+does not relocate or duplicate them.
+
+* One formal owner per question
+
+| Question | Primary owner | Reuse instead of duplication |
+|----------+---------------+------------------------------|
+| Which immutable structures may share storage without changing lookup, identities or ordered edges? | Lean / LeanPoo | =PayloadSharing.lean=; no matching QNT copy |
+| Can callbacks, invalidation, recovery or event ordering admit a stale value? | QNT | Existing =IssuedRootForwarding=, =ReadRetention= and =IncrementalRoles= transitions |
+| Does the actual MOP preserve the modeled relation? | Scheme consumer regression | Existing Just/Harness controls |
+| What is retained or allocated? | Bounded runtime measurement | GC accounts plus classified identity-union census |
+
+SysML allocates these claims and assumptions; it does not prove them. A
+workstream may have only a Lean owner or only a QNT owner. Shared premises
+are linked, not reimplemented. The duplicate =PayloadSharing= QNT family
+and its runner/digest bindings have been removed; historical receipts remain
+historical, not current qualification requirements.
+
+This allocation is not a ban on cross-tool refinement. If Lean must establish
+an unbounded property of a transition abstraction, name that additional theorem
+and its correspondence explicitly; copying the same finite assertion into two
+tools is not that refinement.
+
+The evaluation workstream includes [[file:10-evaluation/10.02-runtime-accounting.org][10.02 Installed Runtime Accounting]],
+which separates native VM accounts from physical allocation and records the
+matched source-window lookup control under the same SysML ownership model.
+[[file:10-evaluation/10.03-replay-structure-ownership.org][10.03 Replay Structure Ownership]]
+separates native cached values from traversal-local work and fresh authentication.
+[[file:10-evaluation/10.04-declared-revision-replay.org][10.04 Declared Revision Replay]]
+qualifies that boundary against the declared dependency and its issuer projection.
+[[file:10-evaluation/10.05-issued-traversal-projection.org][10.05 Issued Traversal Projection]]
+implements the producer-owned structure and qualifies reuse without caching admission.
+[[file:10-evaluation/10.06-issued-record-storage.org][10.06 Issued Record Storage]] separates duplicated issuer closure storage
+from original read identities, dependency edges and mandatory fresh checks.
+
+[[file:20-module-loading/20.02-metadata-projection-correspondence.org][20.02 Metadata Projection Correspondence]]
+qualifies the closed source boundary with LeanPoo, QNT and actual role wrappers
+before production Loader changes.
+
+* Required trace for each workstream
+
+| Question | Required artifact | What it cannot establish alone |
+|----------+-------------------+--------------------------------|
+| What is the system boundary? | SysML structure, actions and requirements | Executable correctness |
+| What sequence must fail? | Existing QNT owner and matched negative trace | Unbounded correctness or filesystem trust |
+| What property is preserved? | Lean statement, premises and Scheme projection | Native behavior without correspondence |
+| Does current code implement it? | Source entry + focused Just regression | Untested executions |
+| Is it more efficient? | Same workload, cold/hot action and time counts | Stable speedup from a single run |
+
+Every row has an evidence status: design, modeled, machine-checked or runtime
+observed. Status is per property, not a blanket badge for an entire workstream.
+Model files do not carry trusted currentness results into runtime.
+
+- [[file:20-module-loading/20.03-retention-and-incremental-roles.org][20.03 Retention and Incremental Roles]] — retained owners, distinct dependency relations, native cache limits and bounded scheduling.
+
+- [[file:20-module-loading/20.04-generic-payload-and-binding-retention.org][20.04 Generic Payload and Private Binding Retention]] — canonical binding projection and call-owned payload limits.
+- [[file:20-module-loading/20.05-receiver-instance-and-callback-retention.org][20.05 Receiver Instance and Callback Retention]] — native anchor ownership, cache-only census and bounded qualification status.
+- [[file:20-module-loading/20.06-indirect-environments-and-specification-trees.org][20.06 Indirect Environments and Specification Trees]] — identity-union accounting, indirect captures and sharing exclusions.
+- [[file:20-module-loading/20.07-fixture-preparation-and-native-make.org][20.07 Fixture Preparation and Native Make]] — cold-generation work, native target reuse, currentness and host-contaminated timing.
+
+[[file:20-module-loading/20.08-owner-shell-retention.org][20.08 Owner Shell Retention]] deepens receiver/Gerbil frontiers without charging shared nodes twice.
+[[file:20-module-loading/20.09-fixture-compiler-budget.org][20.09 Fixture Native Compiler Budget]] separates source authentication, native compile work and wall/CPU residuals.
+
+[[file:20-module-loading/20.10-issuer-parent-snapshot.org][20.10 Receiver Captures and Issuer Parent Snapshots]] distinguishes shared Gerbil graphs,
+observable thunk identities and removable issuer-private wrapper allocations.
+
+[[file:20-module-loading/20.11-thunk-demand-and-capture-retention.org][20.11 Receiver Thunk Demand]] separates cached values, shared function identities
+and already-observable construction hooks before considering further laziness.
+
+[[file:20-module-loading/20.12-thunk-construction-observation-boundary.org][20.12 Thunk Construction Observation Boundary]] assigns construction order/identity
+to QNT, observation projection laws to Lean, and actual MOP behavior to Scheme.
+
+[[file:20-module-loading/20.13-poof-semantics-and-materialization-correspondence.org][20.13 POOF Semantics and Demand Materialization Correspondence]] maps the paper,
+locked LeanPoo declarations and current native entries before any interception
+choice. Lean owns representation/identity laws; existing QNT owns observable
+construction schedules, with no duplicate prototype or fixed-point model.
+
+[[file:20-module-loading/20.14-partial-method-table-refinement.org][20.14 Partial Method Table Refinement]] reuses the locked CompiledPlan theorem
+for partial/full open-method correspondence and proves stable installed handles.
+Actual first reflection and lexical parent/child behavior use the existing native
+consumer suite; no parallel QNT semantics or runtime interceptor is introduced.
+
+[[file:20-module-loading/20.29-published-issuer-and-core-alignment.org][20.29 Published Issuer Protections and Core Alignment]] records the exact
+published dependency, consumer/proof gates and timestamp-driven rebuild failure.
+
+[[file:20-module-loading/20.30-fixed-runtime-and-route-correspondence.org][20.30 Fixed Runtime and Route Correspondence]] removes a stale hash-only
+qualification wrapper and binds current proofs to the package-selected producer.
+
+[[file:20-module-loading/20.33-package-inputs-and-build-cost.org][20.33 Package Inputs and Build Cost]] separates native Make/import overhead
+from declaration capacity, and moves repeated language extraction out of target
+mapping while preserving independent source authentication.
+
+[[file:20-module-loading/20.34-pbt-and-runtime-upgrade.org][20.34 PBT and Runtime Upgrade]] binds the complete producer upgrade to
+real generated service admissions, standard Harness failure propagation and
+the original source, parent-cache and capacity gates.
+
+[[file:20-module-loading/20.32-test-publication-native-compile.org][20.32 Native Test Compilation]] connects the init-owned Test publication to
+the existing guarded std/make owner before Harness execution, preserving
+cross-process signed-product reuse and refusal of stale inputs.
+
+[[file:20-module-loading/20.31-typed-analysis-production-boundary.org][20.31 Typed Role Analysis]] moves per-datum diagnostic computation out of
+discarded admission receipts while retaining ordinary open Generic invocation.

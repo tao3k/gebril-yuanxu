@@ -1,0 +1,173 @@
+#+title: 12.27.34 Owned Call Read Projection
+#+property: DOCUMENT_ID 12.27.34
+#+language: en
+
+* Scope: a real authoring call, not every CLOS object
+
+The production boundary is
+=yuanxu-module-authoring-admit-datum -> poo-clos-call -> checked carrier
+constructors -> invoke -> the two maintained authoring method bodies=.
+Executor/SourceRole multi-dispatch, method combination and every value check
+still run. A contributor's body or protocol hook retains the full trace.
+
+[[file:../../../../../module-system/authoring/admission.ss][Authoring admission]] retains the exact procedure identities emitted by its
+existing two .defmethod declarations. Their executable bodies call private
+named domain functions with domain arguments only: neither passes its lexical
+frame or next-method closure to them. This is a source-audited property of those
+wrappers, not a user flag, name comparison or second method registry.
+
+[[file:../../../../../object-family/read-projection.ss][The Core call region]] owns only values enrolled by the actual maintained constructors.
+Class labels, ancestry and receipt kinds do not enroll an existing object.
+The constructors still call the existing Type predicates. Direct slots must
+remain constant native specs, and the receiver must not change during its
+validation. An observer edit or source/MOP wrapping opens the whole region.
+
+[[file:../../../../../poo-clos/types.ss][The policy guard]] checks the original carrier predicates/prototypes, absence of
+inherited MOP hooks and native owner revisions. Revisions detect mutation and
+restoration, not just final field equality. They remain part of the lifetime
+witness, so changing a shared prototype after its instances are collected still
+invalidates the old Graph. The guard is not a successful-admission cache.
+The baseline belongs to the original private declarations. Editing those public
+owners, even restoring their old values later, does not certify the modified
+policy for future compaction: ordinary CLOS remains available with full trace.
+This uses existing native revisions, not another version namespace or registry.
+
+* Project ownership, preserve original validity
+
+The existing public native recording frame bounds the call. All actual reads
+and before-read checks still reach their existing observers. The action runs
+once, including multiple return values. No native observer is disabled.
+
+Before weakening ownership, public replay checks that the original call trace
+is current. A failed call or failed check keeps its complete trace and raises
+the original exception. No acceptance result or method selection is reused.
+
+The identity-based traversal crosses locally owned reads and stops at the first
+external token on each path. That ORIGINAL external token is retained strongly,
+with its complete original dependency graph. Native replay already traverses
+that graph; Core does not duplicate every transitive prefix as another root.
+An external token that retains a local carrier is deliberately not rewritten.
+
+For owned reads, a call-local weak-value witness retains neither the receiver
+nor its original read records. Separate entries represent the receiver and each
+original token. They carry no computed result or currentness approval:
+
+| At later public replay | Required behavior |
+|------------------------+-------------------|
+| Receiver has been collected | Still check all promoted external roots and shared policy |
+| Receiver remains alive | Replay its ORIGINAL tokens with the native public checker |
+| Receiver alive, original token missing | Refuse; invalidation may have removed its read table |
+| Shared predicate/prototype policy changed | Refuse even if all local carriers were collected |
+
+The region's strong ownership index, traversal set and original root list die
+at return. The delivered native read bundle closes only over the external
+frontier, weak witnesses and bounded shared policy guard. This does not clear a
+Graph cache, SDK state, bindings or read tables. The Graph remains reachable.
+
+This uses the public native token constructor/delivery/replay mechanism. It does
+not recreate the private native currentness predicate. Weak witnesses are
+lifetime evidence attached to the existing Graph read dependency, not another
+memoization/authority system. No result is recovered from them.
+
+* Conservative open paths
+
+Unknown method procedures, native descriptor MOP hooks,
+compute-applicable/effective hooks, non-standard
+combinations, terminal protocol calls, altered carrier policy, edited carriers
+and exceptions keep the complete original dependency list. A nested unknown
+call opens the entire enclosing region. Ordinary unscoped CLOS calls retain
+their existing recording behavior.
+
+Observers can retain a carrier even when a maintained method does not. Such a
+receiver remains weakly alive and must pass original replay. The native test
+also deliberately mis-enrolls an escaping fixture body, invalidates its frame,
+collects memory and verifies refusal: missing weak evidence is never approval.
+That negative fixture is not a producer permission or production certificate.
+
+* Quint / Lean / native correspondence
+
+[[file:../../../../../dev/proofs/quint/OwnedReads.qnt][OwnedReads]] checks finish/mutation/collection/publication schedules. It covers
+external Contract promotion, shared prototype policy, collected local receivers,
+live receivers whose old token disappeared and strong fallback for unknown code.
+Its omission controls must fail; its acceptance control must reach publication.
+The finite owned region includes sharing and a cycle; the Contract is reachable
+only below an owned node. "Escaped" includes retention by an external native
+token's unmodified dependency graph, not only a returned method frame.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean][Lean]] proves arbitrary-identity soundness under an explicit coverage premise:
+each required identity is covered by a retained external token, or a live
+carrier's original replay. It also proves that collection cannot waive external
+requirements and that a missing live token refuses admission. Quint explores
+finite lifetime schedules; Lean does not repeat that search or claim byte bounds.
+
+The frontier theorem reuses the existing TestAdmission worklist proof with
+dependencies cut ONLY at external nodes. For every external identity demanded
+by the full graph, a discovered external frontier token still reaches it through
+original native dependencies. Shared nodes and cycles do not require a second
+traversal algorithm or a new source graph. The remaining implementation premise
+is that the Scheme identity DFS implements that completed finite cut traversal.
+
+Remaining premises are explicit: native weak-value tables do not collect a
+strongly reachable receiver; native replay validates its original tokens; the
+frontier traversal covers the original trace; the two audited wrappers preserve
+their source-level non-escape property. Native tests check those interfaces and
+real mutations, not a formal proof of Gerbil's GC or arbitrary Scheme effects.
+The sequential native mutation protocol remains the supported boundary.
+
+The isolated getter fixture places its external read below an owned token and
+collects the owned receiver before changing the policy. The old root must still
+refuse. Actual CLOS tests cover policy, Type predicate, Generic generation,
+prototype policy, escaped-frame invalidation and full fallback for an effective
+method hook. These isolated fixtures supplement the real init-owned module gate.
+
+* Reproducible focused gates
+
+#+begin_src text
+just test-file t/poo-clos-dispatch-test.ss true
+just test-file t/module-authoring-test.ss true
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/module-testing-isolation-test.ss
+python3 dev/proofs/quint/check.py --case-prefix OwnedReads --typecheck-scope selected --receipt .data/qualification/owned-reads.scm
+cd dev/proofs/lean
+lake build YuanxuProof.ModuleSystem.Graph.OwnedReads
+#+end_src
+
+The matched retention control treats the maintained body list as unknown in an
+isolated source copy, keeping the full trace through the SAME region mechanism.
+The candidate restores the original exact body list. Neither control changes
+the fixture, init tests selection, Graph identity, heap fence, observation or
+progress-aware timeout. No runtime cache is cleared or introduced.
+
+* Collected live-Graph result
+
+Both matched sixteen-Module runs passed naturally with MODULE-OK, HARNESS-OK,
+final OK and no error/overflow marker. They retain the same selected Graph and
+refuse a real init-source change before fixture cleanup. The locked public
+library remains gerbil-poo =fdeadfa40ca5cee5fe20308985aef1577f2eb49b=.
+
+| Same-source control | Collected live bytes | Observed effective / frame | Related read records |
+|---------------------+----------------------+----------------------------+----------------------|
+| Treat maintained bodies as unknown; full trace | 568950984 | 288 / 288 | 7488 |
+| Original maintained bodies; owned frontier | 538188928 | 0 / 0 | 0 |
+
+The observed reduction is 30762056 bytes (about 30.8 MB, 5.41% of the control's
+live process sample). This is one matched local retention comparison, not an
+exclusive CLOS byte attribution, wall-clock benchmark or thousand-Module pass.
+Reader/SDK bindings, code, shared metadata and semantic payloads remain owners.
+No cache was invalidated to obtain the sample; GC uses existing Observability.
+
+The original init-owned AWS/JsonSchema/Funflow aggregate also passed naturally:
+seven MODULE-OK, two HARNESS-OK and two final OK markers, no error/overflow marker,
+Schema updates, old-evidence refusal, accepted-value preservation and cleanup.
+The CLOS focused suite passed the promotion, shared-policy and open-hook negative
+controls. Quint has seven expected outcomes including its failing controls;
+the targeted Lean OwnedReads build passes. These are isolated source-only gates,
+not qualification of every concurrent worktree edit or a full Core build.
+
+The earlier thousand-Module refusal is retained. This improvement removes one
+real ownership path; it does not close the remaining reader capacity boundary.
+
+The subsequent [[file:23-evidence-read-ownership.org][evidence lifetime investigation]] extends the SAME region to include
+Interface authoring-Profile validation. Its shared implementation now belongs
+to object-family, because temporary receipt construction precedes CLOS dispatch.
+The results above are historical CLOS-only samples, not the later comparison.

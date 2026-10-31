@@ -1,0 +1,229 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.52 Config Languages 51: One OpenTofu Artifact Collection
+#+property: DOCUMENT_ID 11.52
+#+property: STATUS implemented-local-native-no-loader
+
+* Follow-up: build-time selection
+
+Chapter [[file:11.53-selected-opentofu-build-inputs.org][52]] adds final-configuration demand projection and filters the catalog before
+Nix realizes a collection. The three-family collection below is an explicit
+qualification control, not the default production selection.
+
+* Correction: one variable denotes the collection
+
+Renaming per-Provider environment variables did not fix their granularity.
+=YUANXU_OPENTOFU_ARTIFACT= now names ONE package collection directory, not an
+individual Provider schema output. Its meaning does not change with Provider
+count. No AWS/awscc/Null-specific environment variables or registrations remain
+in the current module or multi-Provider test entrypoints.
+
+Package selection belongs to the package graph. The module object layer projects
+the collection to =modules.<local-name>= using native =object<-fun=. Each slot
+creates a leaf only when requested; each leaf reads its manifest, kind indexes
+and individual inputs only as demanded by the final configuration.
+
+This directly migrates the default =OpenTofu= from a single-Provider scope to
+the configuration root. Advanced single-Provider =OpenTofuModule.= and explicit
+artifact reading still exist, but their paths are object configuration values,
+not separate global environment inputs. There is no legacy-variable fallback.
+
+* Actual Nix publication
+
+=modules/opentofu/nix/provider-artifacts.nix= is generic over the selected set:
+
+#+begin_src nix
+{ lib, linkFarm, schemas, selection }:
+# Validation is in the source file; only selected keys reach linkFarm.
+let selected = lib.genAttrs selection.providers (name: schemas.${name});
+in linkFarm "opentofu-artifacts" (lib.mapAttrsToList (name: path: {
+  inherit name path;
+}) selected)
+#+end_src
+
+The matched three-family control uses the existing locked archive choices:
+
+#+begin_src nix
+{ pkgs }:
+pkgs.callPackage ../../../core/modules/opentofu/nix/provider-artifacts.nix {
+  schemas = import ./family-schemas.nix { inherit pkgs; };
+  selection.providers = [ "aws" "awscc" "null" ];
+}
+#+end_src
+
+The actual output is
+=/nix/store/281n2p22prmw8c94w8pm2885v5kqc2nd-opentofu-artifacts=, with three
+package-manager-owned links:
+
+#+begin_example
+aws   -> /nix/store/g79zf5kxy8778bsiq3iagvhl4qww7pbc-terraform-provider-aws-5.100.0-schema
+awscc -> /nix/store/5yag978db1m9w853817z8z10d43gz4mm-terraform-provider-awscc-1.77.0-schema
+null  -> /nix/store/pn9vvfwwajj67n54p1d9vi92jgxl1dga-terraform-provider-null-3.2.4-schema
+#+end_example
+
+Each target retains the v2 manifest, hashed kind indexes and selected input files
+from chapter 50. The collector does not duplicate type indexes, metadata or
+Contract declarations. Directory names are explicit local Provider bindings,
+not an attempt to guess ownership by probing all Provider exports.
+
+In devenv the injection is one declaration:
+
+#+begin_src nix
+opentofuArtifact = pkgs.callPackage ./core/modules/opentofu/nix/provider-artifacts.nix {
+  schemas.aws = awsSchema;
+  selection.providers = [ "aws" ];
+};
+# In the resulting devenv attribute set:
+env.YUANXU_OPENTOFU_ARTIFACT = "${opentofuArtifact}";
+#+end_src
+
+The repository's default development selection currently contains AWS only.
+The three-family control selects all three in =family-artifacts.nix=. A
+production caller supplies a subset of its maintained package catalog, instead
+of copying test archive pins into runtime config. Adding a Provider changes the
+selected package set, not the number of environment variables or Scheme .defs.
+
+Nix realizes the outputs explicitly referenced by this collection. Runtime
+laziness does NOT make Nix skip those build dependencies. The selection must
+therefore come from the intended build graph rather than the entire global
+Provider registry. Chapter 52 implements the local final-configuration demand projection and Nix
+selection boundary. Product Loader delegation remains outside this change;
+no Loader is connected.
+
+* Native object layer
+
+#+begin_src scheme
+(.def OpenTofuConfig
+  artifact: (getenv "YUANXU_OPENTOFU_ARTIFACT" #f))
+
+(.def OpenTofuProviderConfig
+  provider-artifact: #f)
+
+(def (artifact-modules directory)
+  (unless (and (string? directory) (file-exists? directory))
+    (error "build-required: OpenTofu artifact collection has not been injected"))
+  (let (names (directory-files directory))
+    (unless (every (cut pregexp-match "^[A-Za-z0-9_]+$" <>) names)
+      (error "invalid-opentofu-artifact-collection-name" directory))
+    (object<-fun
+      (lambda (name)
+        (.cc OpenTofuModule. 'config
+          (.cc OpenTofuProviderConfig 'provider-artifact
+            (string-append directory "/" (symbol->string name)))))
+      keys: (map string->symbol names))))
+
+(.def (OpenTofu @ OpenTofuConfiguration.)
+  config: OpenTofuConfig
+  modules: (artifact-modules (.get config artifact)))
+#+end_src
+
+The function is internal object construction; users do not write the lambda.
+There is one generic operation, not one declaration per Provider. It enumerates
+only immediate collection names. It does not open child manifests or traverse
+their type catalogs. This is an immutable package-data projection, not dynamic
+Scheme import, filesystem module discovery or Provider acquisition.
+
+Provider leaves retain the existing =OpenTofuModule.= behavior: their inherited
+=provider= slot reads the selected v2 package, and their native Contract cache
+is keyed by =(kind . name)=. The configuration Contract continues to discover
+types from each FINAL candidate and call the original child =.admit= methods.
+
+* Complete ordinary configuration
+
+#+begin_src scheme
+(def Configuration
+  (.o
+    provider: (.o aws: (list (.o region: "us-east-1"))
+                  awscc: (list (.o region: "us-east-1"))
+                  null: (list (.o)))
+    resource:
+    (.o aws_security_group:
+        (.o web: (.o name: "web" ingress:
+                  (list (.o from_port: 443 to_port: 443 protocol: "tcp"
+                            cidr_blocks: '("10.0.0.0/16")))))
+        awscc_ec2_security_group:
+        (.o web: (.o group_description: "web" security_group_ingress:
+                  (list (.o ip_protocol: "tcp" from_port: 443 to_port: 443
+                            cidr_ip: "10.0.0.0/16"))))
+        null_resource: (.o smoke: (.o triggers: (.o release: "smoke"))))
+    data:
+    (.o aws_region: (.o current: (.o name: "us-east-1"))
+        awscc_ec2_security_group: (.o existing: (.o id: "sg-1234"))
+        null_data_source: (.o release: (.o inputs: (.o name: "smoke"))))))
+
+(def result
+  (use-module OpenTofu as tf
+    (.call (.get tf types configuration) .admit Configuration #f)))
+#+end_src
+
+No per-Provider .def, manual module map, SelectedTypes or environment reads enter
+this configuration. An advanced user may derive the root once to change its
+=config.artifact= reference. Contract/source caches remain receiver-local.
+
+* Final values, provenance and laziness
+
+#+begin_src scheme
+;; The first admission already cached the root Contract.
+(.def (WithGroup @ Configuration)
+  resource: =>.+ (.o aws_iam_group: (.o release: (.o name: "release"))))
+
+(use-module OpenTofu as tf
+  (.call (.get tf types configuration) .admit WithGroup #f))
+#+end_src
+
+The final candidate causes exactly the IAM Group input to be read/compiled if
+it was not already cached. It does not rebuild a SelectedTypes list or read
+unselected S3 inputs. awscc's identically named resource/data still use different
+kind indexes/files/caches. The three Provider configuration Contracts remain
+distinct. Version, export/input digests and native SourceRefs are retained;
+the SourceRef directory is the selected collection leaf.
+
+The existing full paths remain, including
+=resource.aws_security_group.web.ingress.0.from_port=,
+=resource.awscc_ec2_security_group.web.security_group_ingress.0.from_port= and
+=provider.null.0.region=. Source-aware error transport is unchanged.
+
+The new collection gate checks that bounded aliasing and obtaining the root
+Contract do not demand even the collection's modules slot. Reading names leaves
+all three leaf values unforced. AWS-only admission leaves awscc/Null leaf objects
+unforced, not merely their Contracts uncompiled.
+
+A separate isolated demand fixture combines one REAL AWS link and 99 directories
+with invalid manifests. All 100 names are visible; AWS admission succeeds with
+the other 99 values unforced. A child retargeted to that fixture gets its own
+registry while the parent's cached Contract is unchanged. This is a negative
+demand fixture, not evidence of 100 real Provider correctness or throughput.
+
+Root name enumeration is O(number of selected package names); it is not free.
+Selected kind indexes still have metadata parse cost. No constant-startup or
+universal speedup claim follows. Actual per-type read-set controls and the tiny
+Null overhead caveat in chapter 50 continue to apply.
+
+* Reproduction and current test API
+
+#+begin_src sh
+nix-build --no-out-link -E 'let pkgs = import <nixpkgs> {}; in import ./t/fixtures/opentofu/family-artifacts.nix { inherit pkgs; }'
+just test-opentofu-artifact-collection COLLECTION_OUTPUT
+just test-opentofu-indexed-inputs COLLECTION_OUTPUT
+just test-opentofu-configuration-discovery COLLECTION_OUTPUT
+just test-opentofu-provider-families COLLECTION_OUTPUT
+just test-opentofu-configuration-families COLLECTION_OUTPUT
+#+end_src
+
+All these current gates accept the SAME one collection path. Per-Provider test
+environment variables are removed. The low-level single-artifact fixture and
+two-version controls use explicitly TEST-scoped inputs, not production per-family
+environment variables; their transport does not grow with supported Provider count.
+
+The executable owner is =t/opentofu-artifact-collection-test.ss=. Ordinary values,
+native inheritance, kind separation, source identities and diagnostics are
+revalidated through the migrated real-package gates. Provider alias semantics,
+unexported Provider validations and Loader integration remain separate work.
+
+On 2026-10-17 the real collection built successfully. Ten serial default-runtime
+gates passed with exit 0, MODULE-OK, HARNESS-OK and final OK, with no error or
+overflow markers: 21 new collection assertions plus 437 migrated/regression
+assertions, 458 total. The structured receipt is
+=t/fixtures/opentofu/artifact-collection-control.json=. Historical individual
+artifact receipts are preserved; the new receipt records the one-input API,
+actual Nix link targets and the qualified 99-placeholder demand control.

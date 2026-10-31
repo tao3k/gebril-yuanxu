@@ -1,0 +1,169 @@
+#+title: 12.27.16 Remaining Root and Request Guards
+#+property: DOCUMENT_ID 12.27.16
+#+language: en
+#+property: STATUS retained-evidence
+
+* Remaining before-guard reads: root, requests and open callbacks
+
+This module retains the 19873-read baseline and the rejected broad-window
+merge. The later [[file:05-context-assembly.org][Context assembly change]] reduces it to 19539 reads.
+
+The 19873-read receipt can be partitioned by the innermost enclosing
+publication/package stage. Guard spans are made exclusive before aggregation;
+request spans below are a different, inclusive view of the same execution.
+They must not be added to this table.
+
+| Enclosing stage | Before-guard brackets | Physical reads |
+|-----------------+-----------------------+----------------|
+| Publication package-before | 28 | 4676 |
+| Publication package-after | 20 | 3340 |
+| No enclosing package/admission stage | 19 | 2839 |
+| Invocation meaning-current | 10 | 1670 |
+| Bind contributions | 10 | 1336 |
+| SelectedPackages publication-current | 8 | 1336 |
+| Publication entry-current | 8 | 1336 |
+| Publication post-package-current | 7 | 1169 |
+| Root contract-admit | 7 | 1169 |
+| SelectedPackages inputs-current | 2 | 334 |
+| SelectedPackages guard-script | 2 | 334 |
+| SelectedPackages entry-current | 2 | 334 |
+| Selected-record lookup | 16 | 0 |
+| Total | 139 | 19873 |
+
+The 19 unbracketed callers are explicitly not assigned to a root admission
+or declared effect-free. The root contract-admit stage is seven complete
+167-file traversals; the earlier child-edge optimization did not eliminate
+this post-domain-validation Context check. Value Contracts, classifications
+and obligations can execute replaceable code. Root checks cannot borrow an
+entry approval across those calls. The two invocation meanings arise from
+the public bound evidence invocation and its enclosing publication invocation.
+Their intervening output/meaning methods are extensible too; adjacency alone
+does not authorize sharing source observations across them.
+
+Request observation identifies 203 actual guard invocations. The 64 zero-read
+invocations already reuse the current pure window; 132 read eight request
+inputs; seven read 176 inputs, including the nested public configuration guard.
+The package-before/after labels contain several source boundaries of a Nix
+publication, not one supposedly pure operation. SelectedPackages checks its
+source inputs before and after external package guards; the Nix publication
+also checks around delayed realization and derivation validation. This audit
+does not remove a guard merely because the current Nix command is read-only.
+GC protection, realization, package identity and source changes remain effects
+or external observations, and post-validator checks remain required.
+
+** A closed branch that can be simplified
+
+One duplicate is conditional on the absence of a callback: publication used
+to perform post-package-current even when package-current was false. Its entry
+check had already completed, and there was no package callback to separate the
+two checks. Publication now keeps that post-check inside the existing branch:
+
+#+begin_src scheme
+(publication-stage 'entry-current (.get context-value admit-current))
+(when package-current
+  (publication-stage 'package-before package-current)
+  (publication-stage 'post-package-current (.get context-value admit-current)))
+;; The existing root producer, evidence binding and publication meaning follow.
+#+end_src
+
+There is no new phase cache or inferred-purity flag. Even a callback currently
+equal to void retains its post-check. A new focused Core test observes the
+existing stage events, checks both branches and mutates the Schema from a
+domain obligation. The mutation is still refused by publication's final
+meaning and the previous value is retained. The new branch assertion fails
+against the previous producer because post-package-current is present, then
+passes with this change. All publication controls finish with MODULE-OK,
+HARNESS-OK, final OK and no failure markers.
+
+This branch simplification must not be represented as a saving in the AWS
+package path: that path has a real package-current callback. It preserves its
+post-package check. It also does not replace the unresolved callback audit
+with a claim that all remaining before-guards are necessary. In particular,
+larger fusion across request preparation, Nix checks or public invocation
+methods needs an explicit effect boundary, not a callback-result cache or an
+assumption that a cached POO slot cannot run code.
+
+** Observed rerun
+
+The same init-owned, observation-enabled aggregate completes naturally with
+seven MODULE-OK, two HARNESS-OK, two final OK markers and no failure markers.
+It retains the existing progress-aware timeout and fixture cleanup. Its AWS
+read counts are unchanged: 48199 physical reads, 19873 build-admit-before
+reads, 122129 file requests, 522 read windows and 261 guard bodies. This is
+expected: every successful AWS publication in this path has a package callback.
+The closed-branch change is qualified by its focused positive/negative tests;
+it is not an AWS physical-work reduction.
+
+Nix union time is 12016878 microseconds and aggregate worker time is 47641 ms,
+versus 74333828 microseconds and 110790 ms in the previous receipt. Since the
+physical work is unchanged and these are not matched timing controls, the
+shorter run is not evidence of a guard optimization. Schema upgrade, stale
+Schema/Contract/Context evidence refusal, failed-publication value preservation
+and cleanup still pass in the same Case. The source-only versus concurrent
+compiled-artifact integration qualification boundary above remains unchanged.
+
+The focused =admission-checked-publication-test.ss= also completes all seven
+cases with MODULE-OK, HARNESS-OK and final OK. The shared value-checking,
+normalized child evidence and publication controls remain in the existing
+test suite; they are not duplicated in the AWS module fixture.
+
+** Concrete call chains and the warm-callback control
+
+The next audit follows the existing Building objects; it introduces neither a
+Source Builder nor an additional Graph interface. These are execution paths,
+not a list of equivalent checks that can be deleted:
+
+#+begin_src text
+AdmissionPublication.publish / package-before or package-after
+  SelectedPackages result.admit-current
+    sources-current! -> inputs-current! -> build Graph.admit-current
+      current! / build-admit-before -> selected guard + prepared source guards
+      external-packages getter -> each request.admit-current
+      current! / build-admit-after
+    each realized package.admit-current
+      Nix publication: input guard -> possible realization -> derivation query
+      input guard after the external operation
+    sources-current! again
+
+OpenTofu prepared request.admit-current
+  configuration-input.admit-current
+    selected Context -> prepared config and related-role guards
+  admit-build-inputs observed
+#+end_src
+
+The OpenTofu request already shares configuration-role and observed-input reads
+inside its own synchronous window. The Graph's compiler guard also shares its
+selected and prepared-source traversals within its own window. Both use the
+existing source-read mechanism. Extending either window through an arbitrary
+request getter, native import, package callback or domain validator would be a
+different operation. Warm package state only removes a realization demand; it
+does not prove that a replaceable callback has become source-only.
+
+The native control in =t/ops-selected-packages-test.ss= now covers that exact
+warm-state distinction. It publishes a package, runs its currentness check,
+then enables a callback that checks the inputs and changes a real configuration
+file before returning. The enclosing package guard must refuse before returning
+the result. The temporary directory belongs to the existing fixture. This is
+an explicit callback fault injection, not an AWS/Nix implementation substitute.
+
+An isolated mutation that puts the entire package =current!= body in one read
+window fails this control: the modified configuration is accepted and the call
+returns void instead of refusing. Restoring the original separate windows
+passes. The assertion matches the specific source-staleness error, not a broad
+=error?= predicate: the latter also accepts the harness's own missing-exception
+TestError and gave a false green in the initial mutation control. Neither the
+mutation nor its diagnostic-only imports are retained in production code.
+
+The unchanged init-owned aggregate was rerun with observation enabled through
+the existing tests object's =.run=. It finishes naturally with seven MODULE-OK,
+two HARNESS-OK, two final OK markers and no error/overflow markers. The AWS Case
+still reports 48199 physical reads, 19873 before-guard reads, 122129 read
+requests, 522 windows and 261 guard bodies. Schema update, stale evidence,
+previous-value preservation and cleanup remain covered in that same Case.
+No physical-work reduction is claimed for this audit. No production guard was
+removed and no new continuation interface or cache was retained. The 19873-read
+hotspot remains open; call-chain inspection and a passing safety control do
+not constitute an optimization. The source-only qualification limitation in
+the read map still applies to concurrent compiled-artifact changes.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

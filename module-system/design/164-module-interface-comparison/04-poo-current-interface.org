@@ -1,0 +1,222 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Agentic AI Lab Today: Two Layers, Real Code and Exposed Costs
+#+date: [2026-10-15]
+#+property: STATUS research-and-design-not-loader-implementation
+
+* Actual upstream publication
+
+The following is extracted verbatim from [[file:../../../../modules/funflow/native-scope.ss][modules/funflow/native-scope.ss]].
+
+#+begin_src scheme
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+;;; Local native publication. SourceRef is metadata, never authentication.
+(import (only-in :clan/poo/object .def .o)
+        (only-in :yuanxu/module-system/source/objects
+                 make-yuanxu-module-local-source yuanxu-module-source-ref?)
+        (only-in :agentic-ai-lab/modules/funflow/config-prototypes
+                 funflow-check funflow-pipeline)
+        (only-in :agentic-ai-lab/modules/funflow/profiles/gerbil-scheme
+                 make-gerbil-scheme-ci-profile))
+(export FunflowModule. Funflow make-funflow-scope)
+
+(.def FunflowModule.
+  source: #f
+
+  prototypes:
+  (.o check: funflow-check
+      pipeline: funflow-pipeline)
+
+  ;; Shared-slot capture is native POO: values come from the outer receiver.
+  ;; This view deliberately has no profiles slot and no publishing parent.
+  prototype-scope:
+  (.o (source) (prototypes))
+
+  profiles:
+  (.o gerbil-scheme:
+      (make-gerbil-scheme-ci-profile prototype-scope)))
+
+(def (make-funflow-scope source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
+    (error "Funflow local publication requires a SourceRef" source-handle))
+  (.o (:: @ FunflowModule.)
+    source: source-handle))
+
+(def Funflow
+  (make-funflow-scope
+    (make-yuanxu-module-local-source "modules/funflow")))
+#+end_src
+
+There are three important costs behind this short module. SourceRef is local
+metadata, not authenticated provenance. Importing the factory definition is
+static source dependency work, even though constructing its Profile is lazy.
+The prototype-only view prevents its consumer from requesting profiles through
+that view, but is not a general recursion guard or security boundary.
+
+The shared-slot source/prototypes capture uses existing POO syntax. It avoids
+an inner field accidentally referring to itself. This is elegant when understood,
+but its lexical rules need examples and diagnostics; a shorter expression can
+hide a harder concept.
+
+* Actual complete upstream default Profile
+
+Extracted from [[file:../../../../modules/funflow/profiles/gerbil-scheme.ss][profiles/gerbil-scheme.ss]]. These are current defaults, not a
+hypothetical future library:
+
+#+begin_src scheme
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+;;; Native default Profile construction, with no import of the publishing scope.
+(import :yuanxu/profile-composition/selection-syntax
+        (only-in :clan/poo/object .o .get))
+(export make-gerbil-scheme-ci-profile)
+
+(def (make-gerbil-scheme-ci-profile prototype-scope)
+  (use-module prototype-scope as ff
+    (.o
+      build:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'build
+        profile-ref: 'ci/build
+        command-vector: '("gerbil" "build")
+        artifact-outputs: '(build-log)
+        cache-intents: '(gerbil-build-cache)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        durable-task-id: 'task/build
+        action-class: 'idempotent
+        artifact-retention: 'project-retained)
+
+      test:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'test
+        profile-ref: 'ci/check
+        command-vector: '("gerbil" "env" "./unit-tests.ss")
+        artifact-outputs: '(test-receipt)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        dependency-refs: '(build)
+        durable-task-id: 'task/test
+        action-class: 'idempotent)
+
+      package:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'package
+        profile-ref: 'ci/check
+        command-vector: '("gerbil" "env" "./unit-tests.ss")
+        artifact-outputs: '(dependency-graph-receipt)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        dependency-refs: '(test)
+        durable-task-id: 'task/package
+        action-class: 'compensatable
+        compensation-refs: '(cleanup/package-artifacts)
+        artifact-retention: 'release-retained)
+
+      pipeline:
+      (.o (:: @ (.get ff prototypes pipeline))
+        pipeline-name: 'default
+        checks: (list build test package)
+        metadata: '((scenario . funflow-cicd)
+                    (authoring-style . gerbil-poo-native))))))
+#+end_src
+
+The user is not asked to repeat the Check parent, runtime mode, result protocol
+or durable metadata. Yet upstream must maintain the complete object. The package
+command remains the historical test command; a user refinement supplies a real
+release command rather than the migration silently changing that default.
+
+The lexical checks expression is an actual receiver relationship. It does not
+need a user collector, child-checks variable or post-override repair. The source
+scope alias is lexically bounded; the body can capture it in delayed slots.
+
+* Layer one: business configuration over an existing published default
+
+#+begin_src scheme
+(import :yuanxu/object-syntax/path-slots
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :agentic-ai-lab/modules/funflow/native-scope Funflow))
+
+(.def ProjectCI
+  funflow: (use-module Funflow as ff (.o (:: @ ff))))
+
+(.def (ReleaseCI @ ProjectCI)
+  funflow.profiles.gerbil-scheme.build: =>.+
+  {artifact-outputs: '(release-build-log)}
+  funflow.profiles.gerbil-scheme.test: =>.+
+  {command-vector: '("gerbil" "env" "./project-tests.ss")}
+  funflow.profiles.gerbil-scheme.package: =>.+
+  {command-vector: '("gerbil" "build" "release")}
+  funflow.profiles.gerbil-scheme.pipeline: =>.+
+  {pipeline-name: 'release-ci})
+#+end_src
+
+The first declaration binds the module once. The second inherits that binding.
+The four shared path prefixes are combined at expansion time. Primitive POO
+still treats literal dotted names literally outside the authoring binding.
+
+Compared with the NixOS downstream example, this surface has more object-model
+vocabulary: .def, a prototype parent and =>.+. We cannot call that cost zero.
+The benefit is an explicit connection to the same objects used for extension;
+the remaining task is good defaults, attribute discovery and useful errors.
+
+* Layer two: native extension, without rebuilding existing defaults
+
+For a shared artifact transformation, use a named pure function and the existing
+native inherited-value operator. This is illustrative configuration, not a new
+public helper API:
+
+#+begin_src scheme
+(def (with-release-manifest inherited-artifacts)
+  (append inherited-artifacts '(release-manifest)))
+
+(.def (ManifestCI @ ProjectCI)
+  funflow.profiles.gerbil-scheme.build: =>.+
+  {artifact-outputs: => with-release-manifest})
+#+end_src
+
+For a genuinely new Check, derive from the prototype in the currently bound
+scope. This example creates the object; it does not pretend the current fixed
+Pipeline automatically schedules it:
+
+#+begin_src scheme
+(.def SmokeProject
+  funflow:
+  (use-module Funflow as ff
+    (.+ ff
+      {profiles.gerbil-scheme: =>.+
+       {smoke:
+        (.o (:: @ (.get ff prototypes check))
+          check-name: 'smoke
+          command-vector: '("gerbil" "env" "./smoke-tests.ss"))}})))
+#+end_src
+
+This is a concrete current limitation. The maintained Pipeline names build,
+test and package. Adding smoke alone does not extend that relation. A future
+selected-order/named-check design must specify membership, ordering and domain
+admission. It must not claim automatic composition by merely enumerating every
+field or asking users to rebuild a hidden list.
+
+* Reflection: what the current interface has not solved
+
+1. use-module has two meanings: identifier tails select a Bundle; one compound
+   body binds a native scope. as means instance identity in one branch and a
+   lexical alias in the other. This is compatibility, not a finished UX decision.
+2. Funflow versus funflow: avoids native slot capture by a naming convention.
+   It does not create an independently authenticated source namespace.
+3. Open POO extension allows arbitrary new slots. A typo can look like a valid
+   extension until a checked consumer rejects it, or can remain unused.
+4. Public business fields and core mechanism fields are not yet described by
+   a single discoverable public-attribute view with complete admission wiring.
+5. Local source identity and object equality do not explain which contribution
+   set the effective value, or why a conflicting source was selected.
+6. Scheme permits arbitrary computation and effects. Named pure functions are
+   a style discipline; this configuration route does not prove purity/termination.
+
+Keep the native model, but repair these configuration-facing boundaries before
+presenting the system as simpler than every alternative. Proposed improvements
+and acceptance conditions are in [[file:05-reflection-and-improvement-plan.org][the next module]].

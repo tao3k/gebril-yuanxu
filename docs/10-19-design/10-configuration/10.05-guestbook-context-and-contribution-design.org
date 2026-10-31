@@ -1,0 +1,394 @@
+#+title: 10.05 Guestbook: Contextual Module Interfaces and Effective Configuration
+#+language: en
+#+property: DOCUMENT_ID 10.05
+#+date: [2026-10-17]
+#+property: STATUS design-only-source-observed-primitives-no-new-runtime-validation
+
+* Purpose and evidence boundary
+
+Apply the [[file:10.04-module-system-design-questions.org][five module-system improvements]] to one workload: Guestbook's frontend,
+Redis Leader and Redis Follower. Design a better framework and configuration window,
+not a translation of Nix arguments into Scheme spelling. No new Loader, macro,
+renderer, cache or service behavior is implemented by this chapter.
+
+The [[file:../11-configuration-languages/11.24-guestbook-effective-services.org][source-derived Guestbook study]] owns the actual KCL corpus and the existing
+Scheme resource design. It records the frontend's DNS environment and separate
+container/Service ports. The explicit connection model below is our proposed
+integration contract, not something already proved by the upstream application.
+Do not claim that changing an environment variable configures the opaque image's
+Redis client without checking that consumer.
+
+Read [[file:10.06-human-agent-module-authoring.org][Human-Agent module authoring]] for the AI-era purpose and additional review
+requirements. Short human input is one goal; discoverable, extensible and auditable
+Agent authoring is another. Neither is achieved by a language choice alone.
+
+* 1. A unified window need not be a universal args record
+
+Compare three designs before fixing the public surface:
+
+| Candidate | Benefit | Cost and boundary |
+|-----------+---------+-------------------|
+| Full namespace tree passed as args | Convenient browsing and root composition | Ambient dependencies, layout coupling and accidental enumeration/forcing |
+| Contextual Module instantiation with lexical dependency bindings | Ordinary Scheme names, controlled interfaces, stable owner identity | Requires hygienic role-wide lowering and correct per-instance evaluation |
+| User-written functions taking every dependency | Explicit and easily unit-tested pure algorithms | Repeated wiring and factories if imposed on every configuration author |
+
+Preferred candidate for further validation: internally retain one selected-system
+authority, but instantiate each Module with admitted dependencies and expose ordinary
+lexical bindings to its role files. Use native POO scopes and with-slots for public
+values. Keep explicit function parameters for pure domain algorithms. Do not impose
+user-written module factories, a dynamic global parameter or a new access DSL.
+
+The system may retain a namespace view for discovery and root composition. Routine
+domain code should not repeatedly navigate _module-system.args.modules to obtain
+one declared dependency. Access through a renamed mount must resolve to the same
+source/owner; a separately configured instance still has its own effective identity.
+
+** Existing foothold and actual gap
+
+[[file:../../../module-system/source/declaration.ss][source/declaration.ss]], lower-core, generates a core.link procedure whose
+dependency aliases are ordinary let bindings around core.exports. The existing
+[[file:../../../module-system/source/link.ss][linker]] resolves declared requirements and admits dependency scopes before
+calling it. This is source-observed behavior, not a test result from this change.
+
+It does not inject those bindings into already evaluated objects/config/types
+roles. A lexical binding in exports cannot retroactively parameterize imported
+values. Extending contextual compilation across the role graph is still pending.
+The current linker also traverses all declared core.requires; it does not provide
+the fine-grained deferred dependency forcing proposed here.
+
+** Stage visibility for the same Guestbook
+
+Root init selects a Guestbook Module and a Development Scenario through their
+directory windows, with installed dependencies resolved by package/source policy.
+Multi-window lowering and package-backed injection remain proposed; this chapter
+does not introduce another init grammar. Scenario directories follow the admitted
+source-role organization; ordinary nested Profile values need no separate shell.
+
+The existing directory-window proposal can express the selected roots as follows.
+Here both modules are admitted directory publications in the project's modules
+window; their implementations may reuse installed Gerbil libraries. This is not
+a new syntax for selecting an installed package or an implemented multi-window API.
+
+#+begin_src scheme
+;; project/init.ss -- target syntax from the directory-window design
+(yuanxu!
+  :load-modules "./modules" mode: explicit rename: modules
+  (kubernetes)
+  (guestbook)
+  :load-modules "./scenarios" mode: explicit rename: scenarios
+  (development))
+#+end_src
+
+The Module publication carries the real dependency boundary, independently of
+which mount exposes it. Key interface.ss declarations use the existing descriptor
+shape; the domain scope Contracts and defaults are proposed maintained definitions,
+not newly implemented values:
+
+#+begin_src scheme
+;; modules/guestbook/interface.ss
+(.def Guestbook
+  identity: 'guestbook
+  core:
+  (.o requires: (.o)
+      scope-contract: GuestbookScopeContract
+      exports: (.o GuestbookDefaults: GuestbookDefaults))
+  features: (.o))
+
+;; scenarios/development/interface.ss
+(.def Development
+  identity: 'development
+  core:
+  (.o requires:
+      (.o guestbook:
+          (.o module-id: 'guestbook contract: GuestbookScopeContract)
+          kubernetes:
+          (.o module-id: 'kubernetes contract: KubernetesScopeContract))
+      scope-contract: GuestbookScenarioScopeContract
+      exports: (.o configuration: Configuration))
+  features: (.o))
+#+end_src
+
+The Scenario's Configuration is its role-owned effective object, corresponding
+to the Development object example below. It is evaluated in the proposed lexical
+role context. Current exports-only binding cannot supply its already-imported
+definition. This minimal publication has no optional Features. A -smoke decision
+would require an upstream publication that actually declares smoke; with the
+publication shown here it must report an unknown Feature, not silently ignore it.
+Disable/missing eligibility is checked against these required owners; renaming
+the namespace does not provide a bypass. The graph here has development -> guestbook
+and development -> kubernetes edges. Guestbook publishes pure domain recipes;
+the Scenario selects the resource consumer. These are interface-admission edges,
+not a resource execution schedule. The later construction chapter expands the
+entry/types/functions publication in addition to the defaults excerpt shown here.
+
+| Stage | Visible information | Allowed work | Still unavailable or unforced |
+|-------+---------------------+--------------+-------------------------------|
+| Package resolution | Installed package revisions and source policy | Resolve declared package dependencies explicitly | Service activation and cloud operations |
+| Discovery/selection | Directory metadata, identities, disable and signed feature decisions | Determine eligible owners and namespace mounts | All Profile values and all Schema Contracts |
+| Interface linking | Selected required interfaces and their Contracts | Admit scopes and bind lexical aliases for this instance | Build/run authority; arbitrary undeclared owners |
+| Configuration demand | Maintained Profiles plus user edits | Compute demanded final values and relationships | Unrelated scenarios and unused provider types |
+| Admission/preview | Effective Profile objects, selected Contracts, renderer identity | Check covered fields/links and project candidate resources | Deployment, readiness and live cluster success |
+| Build | Selected explicit build contributions and source identity | Execute permitted build operations | Authorization to deploy the resulting resources |
+| Runtime | Identified admitted plan and explicit runtime permission | Apply/start/check according to runtime policy | Implicit permission for another changed plan |
+
+The stages are responsibility boundaries, not a claim that each must be one global
+eager pass. Admission may legitimately force fields required by a selected Contract.
+A demand cannot resolve a selection decision by recursively evaluating the same
+graph. Report the owner/phase chain rather than exposing a raw recursion exception.
+
+* 2. Different edges, one application
+
+| Guestbook relationship | Edge meaning | Failure/forcing boundary |
+|------------------------+--------------+--------------------------|
+| Development requires Guestbook and Kubernetes interfaces | Module/interface requirement | Disabled or absent required owner rejects linking |
+| Development derives Guestbook defaults | Configuration inheritance | Retain applicable Contracts and evaluate the effective child |
+| Service targetPort uses final container port | Value dependency | Force only fields needed for correspondence checking/projection |
+| Follower/client requires a Leader endpoint | Domain connection requirement | Check identity, declared protocol and final port; not live readiness |
+| Resource build needs a renderer artifact | Build dependency | Select/build the demanded artifact in the build phase |
+| Application waits for Redis responsiveness | Runtime readiness relationship | Explicit probe/timeout/failure policy; not prototype order |
+
+Module inheritance order is never service execution order. Requiring an interface
+does not mean waiting for all effects owned by that Module. Passing a public scope
+does not grant access to every source in the root directory tree.
+
+Do not infer all these edges from free identifiers. Direct lexical references can
+support bounded dependency discovery, but arbitrary procedures/macros may hide
+dynamic demands. Distinguish declared link requirements from deferred value demands;
+reject unsupported dynamic selection explicitly rather than scanning everything.
+Selection cycles, actual value-demand cycles and runtime feedback loops need their
+own policies. Rejecting all file cycles is not a substitute for those policies.
+
+* 3. Ordinary assignments and deliberate extension
+
+** Two authoring layers: ordinary data and domain objects
+
+[[file:10.07-guestbook-data-input-and-object-construction.org][The input-to-object design]] expands the JSON/Scheme paths, defaults, field
+policy, function and placeholder binding, and final admission. JSON Schema is
+optional: ordinary data can be objectified and checked by native Scheme Contracts.
+Native string->json is available; generic deployment-input integration is pending.
+
+Ordinary configuration must support JSON-like name/value authoring, not require
+every user to understand prototype extension. JSON files and ordinary Scheme
+values are alternative input representations. The second layer constructs domain
+objects with maintained defaults, named functions and applicable Contracts. Native
+inheritance/refinement is an optional capability of that same object layer, not
+a mandatory third wrapper or a separate configuration engine.
+
+Example user-owned deployment.json, using the same Server/Service shapes:
+
+#+begin_src json
+{
+  "frontend": {
+    "image": "gcr.io/google-samples/gb-frontend:v5",
+    "labels": { "env": "dev" },
+    "services": [
+      { "ports": [
+        { "port": 8080, "targetPort": 80, "protocol": "TCP" }
+      ] }
+    ]
+  }
+}
+#+end_src
+
+This record is a partial input accepted by the proposed Guestbook input Contract,
+not a full Kubernetes resource. The platform must separately admit the completed
+effective objects. Our maintained input policy preserves inherited label entries,
+replaces the services list and supplies absent defaults. These policies must be
+declared; they cannot be inferred from JSON syntax or assumed to be a universal
+deep merge. Omitted, null, disabled and deleted are distinct intentions. A JSON
+field alone cannot express every original-value transformation.
+
+The same ordinary values can be authored in config.ss as a POO data value. Creating
+such a record with .o does not imply inheritance. The compiled domain consumer
+may construct a fresh object using a Contract's prototype/defaults or instantiate
+a maintained Profile. Neither requires the user to write =>.+ for replacement.
+
+Native read-json is available through Gerbil's :std/encoding/json; Core already
+uses it in [[file:../../../modules/json-schema/json-schema-source.ss][the JSON Schema source reader]]. That reader is not a general deployment
+configuration loader. JSON-input publication, module-relative source tracking,
+missing/null policy, partial-input completion and provenance into final objects
+remain adapters to design/validate. Do not silently claim config.json is already
+a discovered source role or add a handwritten factory to every user module.
+
+If placeholders are useful, their names, Types, binding sources and missing-value
+errors must be declared. Ordinary JSON strings are not expressions or executable
+Scheme. Avoid whole-file textual substitution, implicit environment reads or
+evaluating strings. JSON cannot contain functions; functions stay in Scheme slots
+or maintained libraries, with explicit Contracts and dependencies. A function-valued
+slot must be declared as such and does not authorize process execution.
+
+Agent discovery should report both input and completed-object fields, defaults,
+per-field contribution policy and original-value extension intent from one
+maintained interface. It must not manufacture a second JSON-only field schema.
+The UI should explain that the labels record is open unless a key policy closes
+it, while services is replaced as a list in this particular input interface.
+
+** Lexically bound Scenario source
+
+Target Scenario objects.ss, with guestbook supplied by its admitted dependency:
+
+#+begin_src scheme
+(with-slots (GuestbookDefaults) guestbook
+  (.def (Development @ GuestbookDefaults)
+    frontend.image: "gcr.io/google-samples/gb-frontend:v5"
+    frontend.labels.env: "dev"
+    frontend.services:
+    (list (.o ports:
+           (list (.o port: 8080 targetPort: 80 protocol: "TCP"))))))
+#+end_src
+
+The three edits choose an image, one label and precisely one published Service.
+They do not request inherited-value computation. Direct dotted assignment remains
+a target lowering, not an implementation claim. The services list is replacement;
+each .o in it constructs a new data object, not an extension with an unstated parent.
+
+Corresponding native object body, in the same lexical dependency scope:
+
+#+begin_src scheme
+(.def (Development @ GuestbookDefaults)
+  frontend: =>.+
+  (.o image: "gcr.io/google-samples/gb-frontend:v5"
+      labels: =>.+ (.o env: "dev")
+      services:
+      (list (.o ports:
+             (list (.o port: 8080 targetPort: 80 protocol: "TCP"))))))
+#+end_src
+
+One inherited frontend is refined once. The labels refinement starts from that
+frontend's inherited labels. Same-prefix path edits must produce this one body,
+not several sibling frontend definitions that overwrite each other. Other frontend
+fields and maintained labels remain inherited. Replacing frontend.labels entirely
+would intentionally stop retaining those label defaults.
+
+For a distinct real requirement, retaining upstream sizing while adding one replica:
+
+#+begin_src scheme
+(.def (TeamDevelopment @ Development)
+  frontend: =>.+
+  (.o (replicas => + 1)))
+#+end_src
+
+Here the inherited replicas value matters; direct assignment would freeze a value
+instead. This distinction is driven by user intent, not by author sophistication.
+
+** Internal lexical lowering, not a user-maintained factory
+
+An illustrative native binding fragment explains the contextual boundary:
+
+#+begin_src scheme
+(lambda (dependencies)
+  (let ((guestbook (.ref dependencies 'guestbook)))
+    (with-slots (GuestbookDefaults) guestbook
+      (.def (Development @ GuestbookDefaults)
+        frontend: =>.+
+        (.o image: "gcr.io/google-samples/gb-frontend:v5"
+            labels: =>.+ (.o env: "dev")))
+      (.o configuration: Development))))
+#+end_src
+
+This fragment illustrates ordinary Scheme/POO binding, not complete generated
+compiler output. The wrapper must lower the whole admitted role graph, retain
+source syntax/hygiene and avoid duplicate evaluation. Public names in a binding
+list are explicit projections; it must not capture arbitrary free user identifiers.
+Compile-time imports are resolved as Gerbil imports, not instance-valued slots.
+Context-free library procedures remain shareable; values capturing effective
+dependencies must be instantiated in the right context. No new macro is proposed.
+
+** Composition rules still require decisions
+
+- A deliberate child assignment replaces its inherited value; it is not a conflict.
+- A path assignment preserves intermediate objects and untouched fields.
+- A functional refinement observes the value at that point in the declared
+  composition sequence. Noncommutative transforms must retain their order.
+- Independent contributions assigning different ports must follow an explicit
+  domain policy or be rejected with both sources. Native parent precedence alone
+  is not proof that the disagreement was intentional or safe.
+- Field shape Contracts cannot infer list identity, deletion or merge policy.
+  Reuse Schema/Contract data for discovery, adding only genuinely missing semantic
+  metadata; do not maintain a duplicate field table.
+
+** Effective preview and local relationship checks
+
+Illustrative expected preview, not output produced by the current renderer:
+
+#+begin_example
+Development [projected-unadmitted]
+  frontend.image                 gcr.io/google-samples/gb-frontend:v5  user
+  frontend.labels.env            dev                                  user
+  frontend.labels.app            guestbook                            inherited
+  frontend.containerPort         80                                   inherited
+  frontend.Service.port          8080                                 user
+  frontend.Service.targetPort    80                                   user
+  redis-leader endpoint          redis-leader:6379                     inherited
+  redis-follower endpoint        redis-follower:6379                   inherited
+  Deployment/Service selectors   must correspond to final workload labels
+#+end_example
+
+This projects selected effective objects; it is not configuration admission.
+After covered field, selector and connection checks accept those same objects,
+the candidate may become admitted-preview. Neither state is deployment approval.
+The Leader/Follower values above retain the baseline; an explicit connection
+adapter still needs validation against the actual images.
+
+A changed Service targetPort of 1100 with a remaining container port of 80 must
+fail correspondence, naming the Service path, the incompatible target and the
+original assignment location. A misspelled declared field should be diagnosed
+through the generated Contract/Schema mapping. An intentionally open labels map
+cannot reject evn merely because env was intended: policy must declare allowed
+label keys, otherwise only an explicitly heuristic warning is justified.
+
+Diagnostics should name user fields and sources. Internal cache keys and admission
+records are optional inspection details, never required configuration syntax.
+
+* 4. Cache invalidation and effective-instance isolation
+
+| Change/control | Required observation | Current evidence boundary |
+|----------------+----------------------+---------------------------|
+| Parent resources already forced; child image/env changed | Child resources use child values; parent unchanged | Native receiver controls exist in earlier work; this full consumer is unvalidated |
+| Frontend Service changes | Recheck that Service's target/selector and relevant resources | Dependency-granular consumer invalidation pending |
+| Leader endpoint changes | Recheck declared clients/connections, not every unrelated Profile | Proposed connection model and consumer demand tracking |
+| Schema or renderer revision changes | Requalify affected admission/projection even if config bytes match | Contract/source revision binding must be established end to end |
+| Required module disabled after a previous cache hit | Refuse the new selected context; do not reuse old eligibility | Existing selection/currentness mechanisms; complete window integration pending |
+| Unselected scenario or unused type exists | No role evaluation, type compilation or process for that branch | Must be measured; no thousand-module claim here |
+
+The existing linker has generation-local caches and currentness checks. That is
+not proof of field-granular incremental invalidation. A safe fresh generation is
+the fallback when dependency qualification is incomplete; a more precise reuse
+scheme is an optimization requiring evidence, not permission to use stale data.
+
+* 5. Measure laziness across phases
+
+Record discovery reads, role loads, scope instances, Contract compilations,
+projection executions and external process starts separately, with cold/warm and
+changed-dependency controls. Preview must not invoke a runtime operation. Cached
+Build access must retain its phase guard; existing declaration code checks that
+guard outside the cached value. Arbitrary top-level Scheme effects remain an
+authoring/admission problem, not something made inert automatically by wrapping.
+
+* Issues and Engineering Limitations
+
+| Original reference | Qualified finding | Guestbook design consequence |
+|--------------------+-------------------+------------------------------|
+| [[https://github.com/NixOS/nixpkgs/issues/379855][NixOS 379855]] | ISSUE-REPORTED; NOT-REPRODUCED; argument-dependent module structure recurses | Separate selection availability from effective values |
+| [[https://github.com/cachix/devenv/issues/1374][devenv 1374]] | HISTORICAL-CLOSED-REPORT; NOT-REPRODUCED; connection defaults affected clients | Export/check final endpoint relationships, not only scalar types |
+| [[https://flox.dev/docs/man/manifest.toml][Flox manifest]] | DOCUMENTED-SEMANTICS; section-specific merging and removal limitation | Distinguish replacement, transformation and retained disable decisions |
+| [[https://sanderknape.com/2024/11/terraform-data-source-read-during-apply-messages-fix/][Sander Knape, 2024-11-09]] | PRACTITIONER-ARTICLE; broad dependencies amplify uncertainty | Avoid converting interface references into whole-module operation barriers |
+| [[https://github.com/hashicorp/terraform/issues/31815][Terraform 31815]] | CLOSED-ENHANCEMENT; deep merge has differing intended semantics | Keep named transformations and explicit domain composition policy |
+
+Version/state details remain in [[file:../../20-29-ecosystem-research/20-nixos/20.02-official-service-module.org][NixOS]], [[file:../../20-29-ecosystem-research/21-devenv/21.02-composition-and-postgres.org][devenv]], [[file:../../20-29-ecosystem-research/22-flox/22.01-index.org][Flox]] and [[file:../../20-29-ecosystem-research/23-terraform/23.07-practitioner-experience-and-restrictions.org][practitioner research]].
+These references are retained evidence, not newly reproduced failures or a refreshed
+upstream status audit by this chapter.
+
+* Reflection and conclusion
+
+The prospective improvement is one framework that supports simple assignments,
+maintained domain abstractions and inspectable advanced extension for humans and
+Agents. Lexical interfaces can reduce ambient coupling; POO can retain defaults
+and relationships; functions can express transformations. None of them alone
+supplies correct dependency granularity, migration, lifecycle or cache invalidation.
+
+Validate a module moved between mounts, two differently configured instances,
+parent-forced/child-edited resources, a disabled dependency after caching, and
+an unselected effectful branch. Also test diagnostics with human and Agent users.
+The preferred context design remains a candidate until those controls pass.
+

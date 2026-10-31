@@ -1,0 +1,86 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.41 Config Languages 40: OpenTofu Generation, Concrete Contracts and Lazy Publication
+#+property: DOCUMENT_ID 11.41
+#+property: STATUS design-only-no-loader-no-provider-run
+
+* What is now defined
+
+GeneratedProviders and ConfigurationContract are no longer opaque names:
+
+- GeneratedProviders is native object<-fun over selected locked providers, with
+  nested lazy resource/data/field scopes compiled through Core's existing Schema
+  subsystem and the native adapter defined in module 38.
+- ConfigurationContract is compiled from a concrete generated configuration schema:
+  locked requirements, selected provider configs, demanded resources/data, outputs
+  and an explicitly versioned language/backend subset.
+
+Read the modular design in dependency order:
+
+1. [[file:11.65-selection-lock-and-build.org][Selection, lock and selected build graph]] defines provider request derivation,
+   readonly acquisition commands, phase/input identities and invalidation.
+2. [[file:11.66-conversion-and-schema-compilation.org][Conversion and Core compilation]] defines native cty/block conversion and
+   exact compiler/adapter delegation; unsupported semantics fail explicitly.
+3. [[file:11.67-generated-scopes-and-configuration-contract.org][Generated scopes, configuration schema and publication]] defines both generated
+   values, concrete interface.ss, locked wire sealing and AWS consumption.
+
+The [[file:11.40-opentofu-module-and-complete-aws-contract-flow.org][complete AWS flow]] and [[file:11.37-aws-complete-consumer-case-and-capability-boundary.org][complete consumer config/objects/interface]] remain the
+user-facing Case. Users describe cloud/account/backend/network/machine inputs;
+they do not author lock-derived tables, schemas, caches or compiler manifests.
+
+* Fixed role ownership and missing producer adapters
+
+| File | Design responsibility |
+|------+-----------------------|
+| types.ss | selection/lock/schema-format/coverage/scope Contracts |
+| config.ss | selected provider sources and lock source |
+| objects.ss | immutable requests and native generated scope objects |
+| func.ss | pure converter/compiler/config-schema/wire functions |
+| interface.ss | one prepared publication of config/providers/types/operations |
+
+A parsed lock decoder, canonical source/package qualification, graph scheduler,
+artifact admission, conversion coverage, source diagnostics and role injection
+are NEW adaptations. They are not secretly implemented by helper names. Selection
+input and immutable prepared request/snapshot/demand objects have explicit roles;
+none is a hand-built user registry. Core owns generic build/scope generation and
+the product Loader remains a delegating facade.
+
+The concrete converter is a bounded DESIGN subset, not a complete AWS converter.
+Selected set/nested_type/tuple/dynamic/expression or other unqualified semantics
+must fail publication until supported. Absence of compiler warnings is not proof
+of complete Schema coverage. Current Core format/multipleOf gaps and missing
+source/projection association remain explicitly open. Full AWS output admission
+cannot be claimed from the bounded code shown here.
+
+* Acceptance requirements and reflection
+
+Keep negative controls for missing/mismatched locks, disabled required providers,
+checksum mismatch, unsupported format/version/keyword, computed-only input,
+ambiguous resource ownership, unprepared member demand, conflicting wire provider
+pins and stale graph artifacts. Positive controls must use real pinned extraction
+and compare complete output/plan behavior; they do not follow from balanced code.
+
+Native laziness is useful but not free: provider CLI extraction returns bulk
+metadata, and first-demand Contract compilation costs CPU. Measure working-set
+behavior and explicit prewarming; do not advertise zero startup/first-access cost.
+A single facade can coordinate preparation and preview while retaining explicit
+build/execution boundaries. Plan/apply are not implicit outcomes of .admit.
+
+Only English documentation/design code was added. No runtime files, Loader,
+provider extraction or deployment execution was implemented. The precise tf-ncl
+PR 83 diff remains unverified as recorded in module 38.
+
+* Full configuration constructor and native execution boundary
+
+Chapter 03 now includes the complete configuration-schema constructor and its
+helpers, conflict-checking seal-wire, and the final AWS/Configuration .admit flow.
+The missing-artifact result is returned before contract access. No Go exporter is
+required: provider schema export remains OpenTofu CLI functionality, invoked by
+the explicit Scheme worker design. The entire converter is still a bounded,
+unexecuted design and cannot claim full AWS semantic coverage.
+
+* Collection and nested-attribute extension
+
+[[file:11.42-provider-collections-and-nested-types.org][The real-fixture conversion extension]] supersedes the earlier structural
+rejection branches for set, tuple and nested_type. Provider identity/default
+requirements remain explicit native obligations; no full AWS acceptance is claimed.

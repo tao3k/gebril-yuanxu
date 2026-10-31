@@ -1,0 +1,439 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.42 Config Languages 41: Provider Collections, Nested Attributes and Semantic Residuals
+#+property: DOCUMENT_ID 11.42
+#+property: STATUS design-with-bounded-implementation-no-loader
+
+* Implementation update
+
+The executable ownership boundary and current evidence are recorded in
+[[file:11.43-opentofu-json-schema-implementation.org][42 OpenTofu Conversion and Shared JSON Schema Admission]]. Generic tuple,
+nested-path diagnostics and uniqueness are maintained by JSON Schema; OpenTofu
+only converts source format and handles provider residuals. The broad code below
+remains design material beyond that bounded implementation. In particular,
+trusted provider identity receipt consumption is not implemented, and even
+literal string normalization does not establish provider equivalence.
+
+* Real source controls and limits
+
+Two official hashicorp/terraform-json fixtures were downloaded and inspected as
+JSON data during the initial design review. The selected blocks have since been
+exercised by the bounded Scheme tests described in chapter 42. Their bytes and the
+latest per-path source commits were recorded:
+
+| Fixture | Per-path commit | SHA256 | What was actually observed |
+|---------+-----------------+--------+----------------------------|
+| testdata/basic/schemas.json | 176c29554e7823cce59f3b8151348e8088fbdc01 | adda4401ec56476512c482f8116f8aeafad25c10f7a99a87f1d0cf5a92df36ec | provider alias aws: 485 cty set occurrences; 0 tuple; 0 nested_type |
+| testdata/nested_attributes/schemas.json | d1018bf93fd9c097133b0159ab8b3c0517a846c9 | a49236279f96c6d2bffaa6960b75a08567471857d28463038b080b7c8c19a0e4 | AWS CloudControl awscc provider assume_role: nested_type single |
+
+[[https://github.com/hashicorp/terraform-json/blob/176c29554e7823cce59f3b8151348e8088fbdc01/testdata/basic/schemas.json][AWS exported fixture]] and [[https://github.com/hashicorp/terraform-json/blob/d1018bf93fd9c097133b0159ab8b3c0517a846c9/testdata/nested_attributes/schemas.json][awscc nested-attribute fixture]] are distinct sources. The
+AWS fixture format_version is 0.1 and awscc is 0.2, not current format-1 acquired artifacts. Neither
+fixture identifies a currently locked provider binary/version in our graph. They
+are real historical source controls, not proof of compatibility with a current
+AWS release or the chapter-40 format-1 ingestion gate. Tuple needs a labeled
+protocol-level synthetic control; no AWS tuple occurrence is claimed.
+
+The raw AWS fixture contains aws_security_group.ingress as an optional+computed
+set of objects, including a nested security_groups set of strings. This is an
+ATTRIBUTE type, not an invented block_types.ingress entry. The separate pinned
+AWS provider v5.100.0 source also defines the rule set with a custom hash function:
+[[https://github.com/hashicorp/terraform-provider-aws/blob/v5.100.0/internal/service/ec2/vpc_security_group.go][Security Group Schema source]]. Its protocol normalization and sorting of nested
+CIDR collections are additional semantics absent from a basic set type marker.
+Those source bytes have SHA256 0c5d01828242e27e59e9cdd8667f156ef0d3ea47fd3c65b40578b08242d3170f.
+This source review is NOT a binary Schema extraction or provider plan result.
+
+* Reuse existing JSON Schema; do not invent set semantics
+
+Core already parses tuple-style items and preserves each item's index. Generate
+items plus equal minItems/maxItems; an empty tuple uses items false and length 0.
+There is no need for prefixItems support or reliance on additionalItems here.
+Properties, required fields, additionalProperties, anyOf/null and list bounds
+reuse the existing compiler. uniqueItems is only retained metadata today, not an
+executed constraint. More importantly, JSON equality is not provider set identity.
+
+Duplicate input list elements can be coalesced by set conversion; automatically
+rejecting duplicates is a stricter user policy, not equivalent provider semantics.
+Set min/max cardinality must be checked after normalization, not against raw input
+array length. Custom SDK hashes cannot be reconstructed from exported JSON alone.
+
+A cty object also lacks nested per-field presence/default metadata. Do not force
+the ordinary user to write every normalized field merely because the object type
+lists them. The converter has explicit input/normalized views. Missing object
+members in input view retain an unresolved normalization requirement. nested_type,
+in contrast, preserves each nested required/optional/computed flag. Never flatten
+it into an object and discard those flags. nested_type takes precedence when the
+source format permits both representations; the source preflight must retain and
+diagnose conflicts according to the versioned format policy.
+
+* Complete collection conversion DESIGN
+
+This replaces the previous set/tuple/nested_type rejection branches in chapter
+40. jref/jrequired/input-attribute? remain its concrete helpers. No public DSL,
+foreign exporter or runtime implementation is introduced. Returned alists are
+private JSON Schema wire data, not ordinary user configuration.
+
+#+begin_src scheme
+(def (nullable-schema schema)
+  (list (cons 'anyOf (list '((type . "null")) schema))))
+
+(def (bounded-array-schema item declaration)
+  (let ((minimum (jref declaration 'min_items 0))
+        (maximum (jref declaration 'max_items 0)))
+    (append (list (cons 'type "array") (cons 'items item))
+            (if (> minimum 0) (list (cons 'minItems minimum)) '())
+            (if (> maximum 0) (list (cons 'maxItems maximum)) '()))))
+
+(def (collection->schema mode item declaration phase)
+  (cond
+    ((equal? mode "single") item)
+    ((equal? mode "list") (bounded-array-schema item declaration))
+    ((equal? mode "set")
+     ;; Raw input multiplicity is NOT normalized set cardinality.
+     ;; Do not emit uniqueItems as a substitute for provider identity.
+     (if (eq? phase 'normalized)
+       (bounded-array-schema item declaration)
+       (list (cons 'type "array") (cons 'items item))))
+    ((equal? mode "map")
+     (list (cons 'type "object") (cons 'additionalProperties item)))
+    (else (error "Unsupported nesting mode" mode))))
+
+(def (cty->schema type (phase 'input))
+  (cond
+    ((and (string? type) (member type '("string" "number" "bool")))
+     (list (cons 'type (if (equal? type "bool") "boolean" type))))
+    ((and (list? type) (= (length type) 2))
+     (let ((kind (car type)) (body (cadr type)))
+       (cond
+         ((member kind '("list" "set" "map"))
+          (collection->schema kind (cty->schema body phase) '() phase))
+         ((equal? kind "tuple")
+          (let ((items (map (cut cty->schema <> phase) body))
+                (size (length body)))
+            (list (cons 'type "array")
+                  (cons 'items (if (zero? size) #f items))
+                  (cons 'minItems size) (cons 'maxItems size))))
+         ((equal? kind "object")
+          (list (cons 'type "object")
+                (cons 'properties
+                  (map (lambda (row)
+                         (cons (car row)
+                           (nullable-schema (cty->schema (cdr row) phase)))) body))
+                (cons 'required
+                  (if (eq? phase 'normalized)
+                    (map (lambda (row) (symbol->string (car row))) body) '()))
+                (cons 'additionalProperties #f)))
+         (else (error "Unsupported cty constructor" kind)))))
+    (else (error "Unsupported selected cty descriptor" type))))
+
+(def (attribute->schema attribute (phase 'input))
+  (let (schema
+        (if (assq 'nested_type attribute)
+          (let (nested (jrequired attribute 'nested_type))
+            (collection->schema
+              (jrequired nested 'nesting_mode)
+              (attributes->schema (jrequired nested 'attributes) phase)
+              nested phase))
+          (cty->schema (jrequired attribute 'type) phase)))
+    (if (eq? (jref attribute 'optional #f) #t)
+      (nullable-schema schema) schema)))
+
+(def (attributes->schema attributes phase)
+  (let (inputs (filter (lambda (row) (input-attribute? (cdr row))) attributes))
+    (list
+      (cons 'type "object")
+      (cons 'properties
+        (map (lambda (row) (cons (car row) (attribute->schema (cdr row) phase))) inputs))
+      (cons 'required
+        (map (lambda (row) (symbol->string (car row)))
+          (filter (lambda (row) (eq? (jref (cdr row) 'required #f) #t)) inputs)))
+      (cons 'additionalProperties #f))))
+
+(def (nested-block->schema declaration (phase 'input))
+  (collection->schema
+    (jrequired declaration 'nesting_mode)
+    (block->schema (jrequired declaration 'block) phase)
+    declaration phase))
+
+(def (block->schema block (phase 'input))
+  (let* ((attributes (attributes->schema (jref block 'attributes '()) phase))
+         (blocks (jref block 'block_types '())))
+    (list
+      (cons 'type "object")
+      (cons 'properties
+        (append (jrequired attributes 'properties)
+          (map (lambda (row) (cons (car row) (nested-block->schema (cdr row) phase)))
+               blocks)))
+      (cons 'required
+        (append (jrequired attributes 'required)
+          (map (lambda (row) (symbol->string (car row)))
+            (filter (lambda (row) (> (jref (cdr row) 'min_items 0) 0)) blocks))))
+      (cons 'additionalProperties #f))))
+#+end_src
+
+Raw declarations first need the existing design's format/shape/flag/bounds
+preflight. Optional values allow null; required values remain nonnullable.
+Computed-only fields are excluded from the configurable property vocabulary.
+For cty object members there is no per-member required flag in this representation;
+the normalized view requires all keys while input view defers absent defaults.
+No value is silently filled/normalized during .admit. The original source tree
+retains computed/sensitive/provider-only rules and source paths.
+
+Map min/max metadata is not applied by the code above: the admitted protocol subset
+must reject such unqualified selected bounds rather than silently drop them.
+Single/group default semantics, dynamic values, optional cty object extensions,
+unknown values, write-only fields and arbitrary expressions remain unqualified.
+Group mode is still explicitly unsupported. Native policy is not inferred from a
+label or an unsupported keyword's presence. The input view is a conservative
+literal-JSON validation route, not full OpenTofu coercion equivalence.
+
+* Concrete native POO residual checks
+
+After Schema shape acceptance, this pure walker checks only semantic residuals.
+It is not a second JSON Schema evaluator. Arrays use the AWS projector's canonical
+list representation; objects are native POO values. Other JSON representations
+must be explicitly normalized at the wire boundary before using this walker.
+
+#+begin_src scheme
+(def (normalization-obligations kind value path context minimum maximum)
+  ;; context is a trusted immutable engine-result context, never user config.
+  (let* ((proofs (if context (.get context normalization-receipts) '()))
+         (proof
+          (find (lambda (item)
+                  (and (eq? kind (.get item kind))
+                       (equal? path (.get item path))
+                       (eq? value (.get item candidate))
+                       (equal? (.get context generation) (.get item generation))))
+                proofs)))
+    (cond
+      ((not proof)
+       (list (.o kind: 'requires-provider-normalization path: path)))
+      ((not (.get proof accepted?))
+       (list (.o kind: 'provider-normalization-rejected path: path)))
+      ((and (eq? kind 'set)
+            (or (< (.get proof normalized-count) minimum)
+                (and maximum (> (.get proof normalized-count) maximum))))
+       (list (.o kind: 'invalid-normalized-cardinality path: path)))
+      (else '()))))
+
+(def (array-obligations child values path context)
+  (yuanxu-append-map
+    (lambda (entry) (child (car entry) (append path (list (cdr entry))) context))
+    (map cons values (iota (length values)))))
+
+(def (collection-obligations mode child declaration value path context)
+  (cond
+    ((equal? mode "single") (child value path context))
+    ((equal? mode "map")
+     (yuanxu-append-map
+       (lambda (name) (child (.ref value name) (append path (list name)) context))
+       (.all-slots value)))
+    ((member mode '("list" "set"))
+     (append
+       (if (equal? mode "set")
+         (let ((minimum (jref declaration 'min_items 0))
+               (maximum (jref declaration 'max_items 0)))
+           (normalization-obligations 'set value path context minimum
+             (if (> maximum 0) maximum #f))) '())
+       (array-obligations child value path context)))
+    (else (error "Unsupported collection obligations" mode))))
+
+(def (cty-obligations type value path context)
+  (if (string? type) '()
+    (let ((kind (car type)) (body (cadr type)))
+      (cond
+        ((member kind '("list" "set" "map"))
+         (collection-obligations kind
+           (lambda (item at ctx) (cty-obligations body item at ctx))
+           '() value path context))
+        ((equal? kind "tuple")
+         (yuanxu-append-map
+           (lambda (entry)
+             (let (index (cdr entry))
+               (cty-obligations (car entry) (list-ref value index)
+                                (append path (list index)) context)))
+           (map cons body (iota (length body)))))
+        ((equal? kind "object")
+         (append
+           (if (every (lambda (row) (.slot? value (car row))) body) '()
+             (normalization-obligations 'object value path context 0 #f))
+           (yuanxu-append-map
+             (lambda (row)
+               (if (and (.slot? value (car row))
+                        (not (yuanxu-json-schema-null? (.ref value (car row)))))
+                 (cty-obligations (cdr row) (.ref value (car row))
+                                  (append path (list (car row))) context) '())) body)))
+        (else (error "Unsupported semantic descriptor" type))))))
+
+(def (attribute-obligations attribute value path context)
+  (if (yuanxu-json-schema-null? value) '()
+    (if (assq 'nested_type attribute)
+      (let (nested (jrequired attribute 'nested_type))
+        (collection-obligations (jrequired nested 'nesting_mode)
+          (lambda (item at ctx)
+            (attributes-obligations (jrequired nested 'attributes) item at ctx))
+          nested value path context))
+      (cty-obligations (jrequired attribute 'type) value path context))))
+
+(def (attributes-obligations attributes value path context)
+  (yuanxu-append-map
+    (lambda (row)
+      (let (name (car row))
+        (if (and (input-attribute? (cdr row)) (.slot? value name))
+          (attribute-obligations (cdr row) (.ref value name)
+                                 (append path (list name)) context) '())))
+    attributes))
+
+(def (block-obligations block value path context)
+  (append
+    (attributes-obligations (jref block 'attributes '()) value path context)
+    (yuanxu-append-map
+      (lambda (row)
+        (let ((name (car row)) (declaration (cdr row)))
+          (if (.slot? value name)
+            (collection-obligations (jrequired declaration 'nesting_mode)
+              (lambda (item at ctx)
+                (block-obligations (jrequired declaration 'block) item at ctx))
+              declaration (.ref value name) (append path (list name)) context) '())))
+      (jref block 'block_types '()))))
+#+end_src
+
+For a qualified literal string-set policy, an upstream native producer can compute
+cty equality/cardinality without an engine round trip:
+
+#+begin_src scheme
+(def (cty-string-set-receipt values path generation)
+  (unless (and (list? values)
+               (every (lambda (value)
+                        (and (string? value)
+                             (not (pregexp-match "[$%][{]" value)))) values))
+    (error "Literal string-set policy does not apply"))
+  (let loop ((remaining values) (seen '()))
+    (if (null? remaining)
+      (.o kind: 'set path: path candidate: values generation: generation
+          accepted?: #t normalized-count: (length seen))
+      (loop (cdr remaining)
+            (if (member (car remaining) seen)
+              seen (cons (car remaining) seen))))))
+#+end_src
+
+The marker guard conservatively refuses interpolation/directive-bearing strings,
+including escaped forms; it is not a full OpenTofu expression parser.
+This private producer only establishes literal cty string-set equality/count under
+its qualified policy. It is NOT valid for arbitrary provider hashes, coercion,
+unknown/computed values or provider validators. Policy applicability must be
+associated upstream with the source-qualified field/type, not supplied by user
+config. The reference list algorithm is quadratic; any optimized indexed version
+must preserve equality and source identities under tests. No speed claim is made.
+
+normalization-receipts is NOT a user-maintained completed list. It is an immutable
+result view supplied by a qualified native normalizer or future engine adapter. Core must first admit
+that context against the exact provider/schema/engine generation and frozen final
+wire snapshot. Matching path, eq? candidate identity and generation below do not
+by themselves authenticate a user-forged record. accepted? and normalized-count
+come from the qualified normalizer/result, not guesses about custom hashes.
+
+Without an applicable qualified normalizer, the explicit collection Contract's
+obligations remain unresolved. A raw exported Schema cannot close them.
+This is not a prerequisite of ordinary configuration =.admit=; chapter 44
+corrects that former coupling. The collection Contract must not claim known
+provider identity for an unresolved requirement. Diagnostic reason
+requires-provider-normalization is not an assertion that the value is malformed. An explicit plan adapter may
+satisfy requirements if it can establish the exact normalized subtree and identity;
+unknown/computed values must remain unresolved. This design does not execute it.
+Paths in the walker identify raw final-input positions. A normalized set may be
+reordered/coalesced; never correlate engine output by simply reusing array index.
+The producer must preserve raw-to-normalized lineage or leave an ambiguous match
+unresolved. Missing/defaulted cty object members also need an actual normalization
+result, not a claim that optional nested_type flags were somehow preserved there.
+The reference linear receipt lookup needs a bounded/indexed implementation and
+cost tests before thousands of collection obligations; no performance claim.
+
+* Carry residuals through ConfigurationContract, not just field shape
+
+The former configuration-schema builds the STRUCTURAL view. The final Contract
+must compose it with checks generated from the SAME retained source trees:
+
+#+begin_src scheme
+(def (wire-obligations Requests Snapshots wire context)
+  (append
+    (yuanxu-append-map
+      (lambda (category)
+        (if (not (.slot? wire category)) '()
+          (let* ((instances-by-type (.ref wire category))
+                 (raw-category (if (eq? category 'resource)
+                                 'resource_schemas 'data_source_schemas)))
+            (yuanxu-append-map
+              (lambda (name)
+                (let* ((owner (member-owner Requests Snapshots raw-category name))
+                       (member (jrequired (jref (.ref Snapshots owner) raw-category '()) name))
+                       (instances (.ref instances-by-type name)))
+                  (yuanxu-append-map
+                    (lambda (label)
+                      (block-obligations (jrequired member 'block) (.ref instances label)
+                        (list category name label) context))
+                    (.all-slots instances))))
+              (.all-slots instances-by-type)))))
+      '(resource data))
+    (if (not (.slot? wire 'provider)) '()
+      (yuanxu-append-map
+        (lambda (alias)
+          (let ((values (.ref (.get wire provider) alias))
+                (block (jrequired (jrequired (.ref Snapshots alias) 'provider) 'block)))
+            (array-obligations
+              (lambda (item at ctx) (block-obligations block item at ctx))
+              values (list 'provider alias) context)))
+        (.all-slots (.get wire provider))))))
+
+(def (configuration-collection-contract Schema Requests Snapshots Demands)
+  (let (shape
+        (compile-schema Schema 'opentofu/configuration-shape
+          (configuration-schema Requests Snapshots Demands)))
+    (.cc
+      (yuanxu-predicate-contract
+        'opentofu/collection-check (lambda (candidate) #t)
+        (lambda (candidate context)
+          (let (receipt ((.get shape .admit) candidate context))
+            (if (not (yuanxu-validation-evidence-accepted? receipt))
+              (list receipt)
+              (wire-obligations Requests Snapshots candidate context)))))
+      'proto (.o)
+      'shape-contract shape)))
+
+(.def Generation
+  CollectionContract:
+  (configuration-collection-contract Schema Requests Snapshots Demands))
+#+end_src
+
+Shape failure short-circuits the semantic walker. No invalid nested field is
+read before structural admission. The final output Contract uses absolute provider
+resource/data/configuration paths, so nested sets are not lost when the root
+schema is assembled. Individual generated field descriptors remain structural;
+they do not advertise that custom provider semantics were independently proved.
+Native context-path/provenance adapters still need implementation for projecting
+these paths back through AWS mappings to the user's config source.
+
+Ordinary configuration =.admit= uses the exported shape Contract, not the
+supplemental collection Contract above. Chapter 44 records the implemented
+separation and actual plugin controls. An explicit normalization/Provider-plan
+consumer must not claim resolved identity without checking the SAME final wire
+snapshot. Provider artifact absence still belongs to build-required before
+Contract access, as in chapter 40. Missing semantic knowledge is a different
+phase from invalid exported configuration. No Loader/plan adapter is implemented.
+
+* Source controls and next acceptance cases
+
+Observed controls: actual AWS set-of-object plus nested set, and separate awscc
+nested_type single with optional child attributes. The full AWS fixture scan found
+no tuple, so tuple fixtures must remain synthetic. Neither fixture is fed around
+the current major-format check or called a live schema extraction.
+
+Required next controls (not executed): fixed tuple arity/order/empty tuple;
+nested list/set/map/single attribute flags and computed-only rejection; same raw
+set elements that normalize to one element; two different rule objects sharing
+provider identity; bounds after normalization; inner set requirements inside tuples
+and maps; absent nested object defaults; source-path retention after final-child
+changes; missing/stale/forged normalization evidence; unselected member laziness.
+
+Existing Core foundations cover the structural branch, not the full new semantic
+walker/adapter. All Scheme above is design source. No production code, Loader,
+OpenTofu extraction, provider plan or Scheme test was implemented/executed here.

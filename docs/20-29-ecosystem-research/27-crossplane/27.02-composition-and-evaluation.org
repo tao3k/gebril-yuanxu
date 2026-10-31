@@ -1,0 +1,36 @@
+#+title: 27.02 Crossplane: Composition and Evaluation
+#+language: en
+#+property: DOCUMENT_ID 27.02
+#+date: [2026-10-17]
+#+property: STATUS primary-source-notes-case-reproduction-pending
+
+* Crossplane: desired state, observed state and readiness
+
+Primary sources:
+- [[https://docs.crossplane.io/latest/composition/compositions/][Crossplane Compositions]] (live documentation retrieved 2026-10-17).
+- [[https://github.com/crossplane/crossplane/issues/2072][Crossplane issue 2072]], historical ordered-creation request, closed as not planned.
+- [[https://github.com/crossplane/crossplane/issues/4616][Crossplane issue 4616]], historical readiness discussion, closed.
+- [[https://github.com/crossplane/crossplane/issues/6139][Crossplane issue 6139]], function-revision association proposal, open when retrieved.
+
+Crossplane function requests distinguish observed state, accumulated desired
+state, input and pipeline context. Functions contribute desired changes; the
+controller applies them. This is a different operational model from executing
+a one-shot Script, even when both are described declaratively.
+
+Our inference: a Scenario plan must bind relevant projector/Contract/package
+versions as well as final input. A native object cache cannot replace provider
+observation, controller conflict handling or eventual readiness. If reconciliation
+is added later, it needs its own protocol and bounded retry/convergence controls.
+
+
+
+
+* Issues and Engineering Limitations
+
+The [[file:27.03-issues-and-observations.org][qualified issue register]] owns original references and observation states.
+Marks: ISSUE-REPORTED; NOT-REPRODUCED. This source reading supplies design inputs,
+not confirmation that historical reports remain current defects.
+
+See [[file:27.03-issues-and-observations.org][issue observations]] and
+[[file:27.04-case-reflection-and-onwards.org][case reflection and outstanding work]].
+

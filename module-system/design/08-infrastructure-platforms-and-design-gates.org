@@ -1,0 +1,168 @@
+#+title: Configuration Architecture Across Infrastructure Platforms
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS research-first-no-directory-window-implementation
+
+* Scope and evidence
+
+Design the configuration system before resuming the multi-window implementation.
+The previous unaccepted experiment has been withdrawn from source; its failure
+logs and patch are local artifacts, not acceptance evidence. Existing concurrent
+Core work is preserved. [[file:06-directory-windows-and-context-args.org][Directory windows and shared args]] remains a proposal.
+
+The user supplied [[https://futurepicker.com/terraform-alternatives-opentofu-pulumi-spacelift-env0-crossplane-2026/][this Terraform alternatives article]] as a research lead.
+The web reader and initial browser navigation failed; a later browser observation
+successfully exposed the article body on 2026-10-17 (page dated 2026-07-20).
+Its useful framing distinguishes engine migration, programming-language choice,
+governance platforms and Kubernetes reconciliation. It also raises cognitive load,
+lock-in moving between layers, and mixed-tool adoption. The narrative dialogue is
+not measured user-study evidence. Broad compatibility, pricing and maturity claims
+are not adopted without independent verification. OpenTofu's state functionality
+must not be confused with a hosted governance service. The platform analyses use
+the primary sources linked in the following modules:
+
+- [[file:../../docs/20-29-ecosystem-research/README.org][Independent platform dossiers and research protocol]]: Terraform, OpenTofu,
+  Pulumi, Spacelift, env0, Crossplane, NixOS, devenv, Flox and Nickel have separate owners.
+- [[file:../../docs/30-39-research-foundations/31-papers/31.01-backpack.org][Backpack reading record]].
+- [[file:../../docs/30-39-research-foundations/31-papers/31.02-build-systems-a-la-carte.org][Build Systems a la Carte reading record]].
+
+This document owns only cross-platform synthesis and proposed design gates.
+Platform configuration examples, source/issue records and independent reflection
+belong to the respective dossier. They are not completed by this summary.
+
+The [[file:../../docs/10-19-design/10-configuration/10.04-module-system-design-questions.org][module-system architecture study]] adds actual service/environment mechanisms
+to the comparison. The research target is a Module System, not Scheme syntax
+alone. NixOS options and ecosystem lifecycle integration are substantive existing
+capabilities; they must not be reduced to types or dismissed as weak inheritance.
+
+The comparison is intentionally not a leaderboard. HCL is a language/toolkit;
+Terraform/OpenTofu provide particular evaluation and provider semantics; Pulumi
+combines language SDKs with an engine; Spacelift/env0 govern runs; Crossplane is
+a reconciliation platform. A limitation at one layer is not a limitation of all
+languages or every platform that uses it.
+
+* Shared scenario and comparison method
+
+Use the existing [[file:../../docs/10-19-design/11-configuration-languages/11.34-aws-main-source-parity-and-profile-families.org][source-derived Omnibus AWS case]] and
+[[file:../../docs/10-19-design/11-configuration-languages/11.24-guestbook-effective-services.org][Guestbook effective-service case]] as workloads, not invented feature checklists.
+The source-derived AWS baseline includes region, AMI selection, network CIDR,
+instance configuration, credentials, state backend, SSH access and outputs.
+Changing an instance type is one edit to that complete configuration, not a
+claim that one field suffices to deploy infrastructure.
+
+Investigate a network -> database -> API application evolving through:
+1. Fill required deployment information and select maintained Profiles.
+2. Change instance size and one label using ordinary assignment.
+3. Retain a maintained list but add one item using a named function.
+4. Connect resources using values unknown until provider planning or apply.
+5. Disable a required network; distinguish module denial from resource deletion.
+6. Upgrade a Profile/renderer while retaining a previously approved plan.
+7. Observe failure, partial completion or drift after a run.
+
+For each platform distinguish documented behavior, issue-reported pain, our
+inference, and an unverified Scheme proposal. Compare equivalent complete inputs
+and final resource meanings, rather than a scalar Scheme slot against an entire
+record in another language. Count author-maintained definitions, not only lines.
+
+* Five graphs, different meanings
+
+| Graph | Node/edge meaning | Why it cannot be inferred from another graph |
+|-------+-------------------+--------------------------------------------|
+| Package graph | installed library/artifact identities and versions | A directory alias is not a version or package lock |
+| Module graph | selected owner requires an admitted interface | Importing a database helper does not provision a database |
+| Configuration graph | effective field depends on another effective field | Prototype order is not resource creation order |
+| Resource plan graph | provider/resource operation depends on another result | A valid object does not establish remote readiness |
+| Workflow/control graph | run approval, handoff, retry or reconciliation dependency | A successful process is not a converged service |
+
+Cycles need graph-specific treatment. Reject a module-link cycle before publishing
+a partial scope. Do not reject a supported controller feedback loop merely because
+it is cyclic over time. An arbitrary recursively defined Scheme value can still
+diverge; module cycle detection does not prove program termination.
+
+* Proposed Scheme boundary, before syntax is frozen
+
+A Module is conceptually a contextual function returning a Contract-admitted POO
+scope. Its role files separate config, types, object definitions, pure functions
+and publication. The wrapper generates that function and lexical projections;
+the user should not maintain constructor bridges or reload init from a role.
+
+The context has three distinct responsibilities:
+- Topology: selected directories and dependency interfaces are established before
+  evaluating effective configuration, preventing a graph/config discovery loop.
+- Values: modules/services/scenarios are lazy, read-only namespace views over the
+  current admitted context, not freely mutable global dictionaries.
+- Authority: package presence, Contract success and field access do not authorize
+  a process, cloud action, secret disclosure or controller activation.
+
+The exact public shape of _module-system.args is still under review. It must not
+become an unbounded implicit service locator. Resolve explicit requirements first;
+derive only references whose meaning can be established by admitted syntax.
+Computed dependencies need a specified declaration or rejection rule. A text walk
+cannot stand in for hygienic macro expansion or full Scheme static analysis.
+
+The proposed :load-modules and rename surface is not yet frozen. Require evidence
+that rename affects only a route, that package/instance identities survive, and
+that all role files see the correct context without duplicate evaluation.
+
+* Reflection: prospective benefits and actual liabilities
+
+| Potential benefit | Liability introduced by the same choice | Required answer |
+|-------------------+-----------------------------------------+-----------------|
+| Scheme functions remove repetitive overlay syntax | Arbitrary functions can perform effects or diverge | Which boundary permits effects, and how is it enforced? |
+| POO preserves defaults and inherited behavior | Hidden inherited state can obscure a user's effective value | Can discovery show value, parent and original declaration? |
+| Contracts can check assembled objects | Provider unknowns cannot be validated as ordinary concrete values | Which checks are deferred, and who completes them? |
+| Uniform role directories help maintainers/Agents | Four files can burden tiny configuration contributions | Is this a published owner or just a value in an existing owner? |
+| Shared args eliminates manual imports/bridges | It can hide dependencies and increase forcing | Is the view bounded and explainable without scanning everything? |
+| Native caches reuse final projections | Captured parent contexts can return stale child plans | What observations and effective receiver identity qualify reuse? |
+| Common Module mechanisms support many domains | A universal engine can become a lowest-common-denominator DSL | Which semantics remain with OpenTofu, Kubernetes or other adapters? |
+| One language for maintainers and Agents | Rich Scheme/POO may burden data-only operators | Can ordinary users configure and diagnose without knowing MOP or macros? |
+| Unified organization and adapter interface | Lock-in can move into our args/Scenario protocol | Can users export effective config, dependency graph and provider plan and leave? |
+
+The intended advantage is continuity from ordinary data through reusable objects
+to advanced extension. It is not a claim that POO already supplies state locking,
+provider planning, reconciliation, authorization, secret tracking or source blame.
+
+* Onwards: gates before implementation resumes
+
+1. Specify the context protocol independently of :load-modules syntax: topology,
+   owner/instance identity, argument projections and permitted observations.
+2. Define closed-reference extraction after hygienic expansion. Include quotations,
+   aliasing, nested binding, imported macros and genuinely computed references.
+   Reject unsupported cases explicitly; do not silently omit requirements.
+3. Specify concrete/unknown/secret value boundaries and generated-Contract versus
+   provider-plan validation. Ordinary users must not manage internal receipts.
+4. Specify how Contract requirements survive derivation and multi-party composition;
+   define conflict precedence, explanations and the final-value admission boundary.
+5. Define separate preview states: projected, locally admitted, provider-planned,
+   approved and executed. Bind approval to the exact plan and source/provider inputs.
+6. Specify effect, state, cancellation and readiness ownership before adding
+   Services. Keep one-shot Ops separate from reconciliation or long-lived Services.
+7. Review with matched AWS/Guestbook cases and explicit failure examples. Only then
+   implement a bounded context slice and run native plus formal controls.
+
+Include a usability study/control rather than assuming general-purpose-language
+familiarity is universal: compare time to find a field, number of definitions
+edited for a two-value change, time to diagnose a disabled dependency, and required
+knowledge for a maintainer versus an operator/Agent. Include an exit test: render
+portable target configuration and explain dependencies without requiring our
+runtime merely to inspect them. No such study has been run in this workstream.
+
+* Issues and Engineering Limitations
+
+The [[file:../../docs/10-19-design/10-configuration/10.04-module-system-design-questions.org][module-system comparison]] links the qualified TF, NX, DV and FX records.
+Their original references, version scope and observed states remain in independent
+dossiers. The proposals here are DESIGN-INFERENCE, not fixes or runtime evidence.
+
+* Conclusions and questions for review
+
+We are designing an extensible configuration core and adapters, not immediately
+replacing every infrastructure platform. Reuse the provider/state engine where
+it already supplies necessary semantics. Use Scheme/POO where data transformation,
+contracted composition and independent extension materially reduce maintenance.
+
+Would direct data plus an existing engine already solve a proposed case? If so,
+do not add a prototype or macro. What user problem requires the additional object
+layer? What capability would be lost if args were explicit function parameters?
+Can the wrapper remove repeated syntax without obscuring dependency identity?
+Which negative control would falsify our claimed advantage? These are design
+questions to answer before treating the architecture as stronger.

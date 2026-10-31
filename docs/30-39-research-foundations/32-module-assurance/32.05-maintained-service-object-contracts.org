@@ -1,0 +1,242 @@
+#+title: 32.05 Maintained Service Contracts: One Canonical Configuration
+#+language: en
+#+property: DOCUMENT_ID 32.05
+#+property: STATUS implemented-focused-qualification
+#+date: [2026-10-18]
+
+* Ownership and implemented change
+
+The following is the original focused implementation receipt. The subsequent
+shared source-admission extraction and its new qualification are recorded in
+[[file:32.06-source-aware-admission-convergence.org][32.06]]. Its source manifest is separate; the historical 32.05 hashes and
+failure records are not rewritten.
+
+The maintained [[file:../../../scenarios/gitea-postgresql/postgresql/types.ss][PostgreSQL Types]] and [[file:../../../scenarios/gitea-postgresql/gitea/types.ss][Gitea Types]] now use native ObjectContract
+descriptors for configuration and plan fields. The actual Scenario continues to
+inject the dependency's published Config Contract and Port Type; it does not
+reconstruct a private PostgreSQL schema. No Loader or Core admission-kernel
+change is part of this implementation. Existing concurrent object/interface
+changes are retained.
+
+PostgreSQL owns the range and its public value descriptor:
+
+#+begin_src scheme
+(def Port (IntegerRange min: 1 max: 65535))
+(def PostgreSQLValueContract
+  (.cc ObjectContract. identity: 'postgresql/config-value
+    responsibilities:
+    (.o settings: (.cc ObjectContract. responsibilities: (.o port: Port))
+        allowed-ports: (List Port))))
+#+end_src
+
+Its Config admission Contract uses this descriptor as value-contract. Gitea's
+value descriptor is parameterized by the dependency's Port for the application;
+the independently usable Gitea Config Contract supplies the same finite range.
+Both services validate their allowed-ports fields as well as their connection
+ports. Unknown configuration fields are rejected by native field closure.
+
+Scope-presence probes remain metadata-only. They intentionally inspect declared
+export names without validating/demanding config, document, policy or callable
+payloads during scope inspection. This change does not replace these lazy probes
+with eager whole-scope ObjectContract normalization.
+
+* One normalization owner, explicit alias obligation
+
+ApplicationValueContract. derives its configuration descriptor from the injected
+database value-contract and GiteaValueContract. The plan has its own output field
+Types, but its configuration field is an Object reference, not a second config
+normalization request. The relevant maintained code is:
+
+#+begin_src scheme
+config-type:
+(.cc ObjectContract. responsibilities:
+  (.o postgresql: database-type gitea: client-type))
+plan-type:
+(.cc ObjectContract. responsibilities:
+  (.o configuration: Object
+      postgresql: (.cc ObjectContract. responsibilities: (.o port: port-type))
+      gitea: (.cc ObjectContract. responsibilities: (.o database-port: port-type))))
+responsibilities: (.o config: config-type plan: plan-type)
+#+end_src
+
+After the inherited public .admit normalizes the candidate, application-issues
+checks equality of the client/server ports, exact identity between plan.configuration
+and final config, and both scalar plan projections. No plan is repaired after a
+failed identity check. Native lexical slots in the existing Application. compute
+the plan against the final receiver; user code does not extract/reinsert it.
+
+"Once" means one canonical configuration normalization path, not one field
+observation in the entire protocol. Native ObjectContract still performs its own
+structural and final validation. Source diagnosis and relational obligations are
+checks, not additional configuration normalization calls. Contextual admission
+still runs for both services through Core's existing responsibilities protocol.
+ConfigurationAdmission. derives each service's published admission Contract with
+value-contract set to #f, retaining inherited classifiers and domain obligations
+while admitting the exact child already checked by the root value Contract.
+No service domain obligation is silently replaced by its field schema.
+
+The publication control checks exact child-evidence/candidate identity. A separate
+control derives a PostgreSQL obligation that rejects 5433 after shape validation;
+the root .admit must refuse and retain that service Contract's ancestry and
+diagnostic. This direct, context-free derivation control isolates domain delegation;
+it does not claim selected-publication coverage for an unregistered descriptor.
+Production coverage is exercised separately with the real bound publication Context.
+Child refusal receipts retain their native responsibility/Contract lineage rather
+than being treated as flat field issues by the source diagnostic adapter.
+
+Nested contextual obligations share Core's existing source-read window only
+inside the inherited admission call. After that window closes, the adapter
+rechecks JSON inputs, original Scheme port sources and the bound Context's
+admit-current hook before returning evidence. This avoids repeating filesystem
+reads for each child while preserving an independent final currentness check.
+A deliberate negative child obligation writes a changed JSON source during
+admission; the final fresh check must refuse with configuration JSON changed.
+That mutation is test fault injection, not a permitted pure domain obligation.
+No package/provider effect is executed inside this cache scope.
+
+* Rejection and provenance without weakening Type validation
+
+The maintained .admit method composes with its inherited native admission method.
+Before normalization, it checks JSON source currentness, then runs ordered native
+diagnostic-then stages with their original Scheme source guards:
+
+1. application/config envelope;
+2. PostgreSQL fields;
+3. Gitea effective fields;
+4. plan output fields.
+
+A null PostgreSQL settings subtree therefore refuses before any derived Gitea
+port is demanded. Source guarding the Gitea path is itself deferred until the
+PostgreSQL stage succeeds: the source walker can force a default while traversing
+its receiver. Moving only Type checks into stages is insufficient. A malformed
+candidate returns a rejected native validation
+receipt; the Type validator is not changed to silently return invalid data.
+Accepted candidates go through the inherited .admit exactly once.
+
+The original candidate is retained only within this call to locate diagnostics.
+Classification and publication still refer to the normalized final candidate.
+There is no global candidate parameter, side registry, copied provenance table
+or reassignment of parent source metadata. config-field-origin remains the owner
+of JSON baseline and native Scheme derivation information.
+
+Unknown-field diagnostics inspect names without demanding the unknown field's
+value. Their source locator uses an unobserved marker rather than evaluating an
+arbitrary erroneous/effectful expression merely to print a diagnostic. Source
+and baseline location remain available; no fictitious actual value is reported.
+
+The null-settings path is now the actual invalid subtree,
+=(config postgresql settings)=, rather than an invented port below it. Its JSON
+origin remains =(settings)= with presence =null=. This is an intentional diagnostic
+precision change, not relaxation of the null rejection.
+
+* Independent requirements remain conjunctive
+
+The Scenario interface's two contribution declarations and Core .for-export
+collection/coverage/source guards remain unchanged. Each effective requirement
+row is checked with a native ObjectContract containing allowed-ports and the two
+source fields; the domain obligation still requires the final database port to
+belong to EVERY contributor's allowed set. Shape validation does not establish
+origin authenticity: the existing selected publication protocol does that work.
+
+With database=[5433] and client=[5440], admission still returns
+unsatisfied-joint-port-requirements with both retained sources. No scalar override
+priority removes an independent requirement. Repository defaults still allow
+only 5432; the successful 5433 test Profile explicitly allows both ports in both
+policies. These policies belong to maintained Profiles, not a user-written
+internal contributor manifest.
+
+* Qualification owners and retained boundaries
+
+The real role files are used by
+[[file:../../../t/gitea-postgresql-publication-test.ss][publication controls]],
+[[file:../../../t/gitea-json-configuration-test.ss][JSON controls]] and
+[[file:../../../t/gitea-postgresql-relocation-test.ss][relocation/source controls]]. Their Fixtures copy maintained roles only where
+destructive source/relocation checks require isolation; RepositoryServicesFixture
+also publishes the actual repository defaults. This supersedes the constructor-only
+fixture boundary in [[file:32.03-service-type-declaration-convergence.org][32.03]] for the maintained service integration, without
+retroactively changing its earlier receipt.
+
+Publication controls additionally assert a new normalized child receiver, its
+exact plan/config alias, an unchanged cached parent, and refusal of a captured
+raw-child configuration despite matching scalar plan ports. The typo control
+places a raising expression in the unknown field and verifies rejection without
+evaluating it. Relocation controls retain exact Scheme source line/column,
+JSON baseline, inherited origins, .cc/.+ behavior and source-currentness refusal.
+
+No dependency pin or installed runtime is changed. Qualification uses the host
+Gerbil and current Core sources with a temporary native output directory, avoiding
+the repository's stale compiled object layout. The original heap/watchdog bounds
+remain mandatory. Import, compilation and source-interpreted memory failures are
+retained under /private/tmp/poo-plan-identity-native; they are not counted as passes.
+
+An existing compiled-prelude defect was exposed while rebuilding the closure:
+generated role interfaces load macro code at phase one, where load-module was
+not available from the compiled custom prelude. The narrow correction in
+[[file:../../../module-system/source/module-prelude.ss][module-prelude.ss]] explicitly exports =(phi: 1 load-module)=. The real
+json-schema-ir interface and its consumers subsequently compiled successfully.
+This is a native phase-export fix, not a Loader integration or alternate runtime.
+
+The source-interpreted repeated-Scenario run exceeded the retained-memory guard;
+collect-before-sample did not remove that failure and its attempted test Profile
+was withdrawn. Native compilation then enabled the full publication suite under
+the unchanged 1 GiB/120-second fences. No claim is made that source-mode memory
+behavior was repaired. The shared Fixtures and relocation test source remain
+byte-identical to the prior source manifest; no additional Fixture API was added.
+After contextual delegation was added, an intermediate relocation run printed
+all four case results but reached process exit 124 at the unchanged 120-second
+boundary. It is retained as a FAILED run, not accepted because it printed OK.
+The source-read-window refinement above addresses duplicated child source reads;
+its final qualification must include natural process exit zero.
+
+** Final focused receipt, 2026-10-18
+
+| Native gate | Cases | Result |
+|-------------+-------+--------|
+| gitea-postgresql-publication-test.ss | 11 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| gitea-json-configuration-test.ss | 4 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| gitea-postgresql-relocation-test.ss | 4 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| module-role-projection-test.ss | 2 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+
+All final gates use =just test-file= with the original 1 GiB heap and 120-second
+worker fence, without error/overflow markers. Final receipts are local files
+=production-publication-window.log=, =production-json-window.log=,
+=production-relocation-window.log= and =production-role-prelude-final.log= under
+=/private/tmp/poo-plan-identity-native/=. These are 21 focused controls, not a full
+suite, performance benchmark, deployment or cross-platform execution result.
+
+The native host library path is =/Users/guangtao/.gerbil/lib=; current Core
+dependencies were compiled to =/private/tmp/poo-plan-identity-native/lib= with
+the current source-tree fallback under its =sources/= directory. No frozen Core
+copy or compatibility runtime is used. [[file:32.05-source-manifest.sha256][The bounded per-file source manifest]]
+records the maintained service, Scenario, admission/source owners and controls.
+It is not a complete binary/dependency attestation or exact-head CI result.
+
+* Capability reflection: configuration framework, not host-language ranking
+
+Pulumi is an infrastructure framework hosted in general-purpose languages such
+as TypeScript and Python. Its SDK and engine must be compared to our module,
+admission and execution boundaries, not to Scheme syntax alone. Scheme is also
+a general-purpose host: our intended configuration interface is a maintained
+typed value layer with optional native functional/prototype extension.
+
+The stronger capability we aim to deliver is a coherent combination of ordinary
+data entry, inspectable Contracts, open typed behavior and source-bound modular
+publication. A concrete enforced capability in this case is refusing a useful-looking
+final value when a selected obligation is missing, its source changed, or its
+plan belongs to another candidate. ObjectContract now makes field constraints
+compositional without removing these independent requirements.
+
+This does NOT prove NixOS/Pulumi cannot implement equivalent application policy.
+Their existing module/Output/engine facilities must remain credited in
+[[file:32.04-equal-scope-complex-service-comparison.org][32.04]]. Unknown values, secrets, external drift, concurrent filesystem changes
+and deployment success remain distinct concerns. The present code actually grows
+because closed field validation and normalization-aware source diagnostics become
+explicit. Removed semantic duplication is not evidence of lower total line count
+or maintenance cost.
+
+Before claiming a stronger scalable framework, measure independent module/service
+addition, contribution preservation under composition, Contract reuse, diagnostic
+quality, edit blast radius and cold/hot demand cost at increasing scales. Report
+framework code separately from per-module and ordinary user code. The existing
+two-service controls demonstrate specific enforcement, not thousand-service scale
+or an across-platform superiority result.

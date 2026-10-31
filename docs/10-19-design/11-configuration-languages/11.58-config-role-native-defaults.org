@@ -1,0 +1,102 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.58 Config Languages 57: Native Config Role Defaults
+#+property: DOCUMENT_ID 11.58
+#+property: STATUS implemented-local-native-no-product-loader
+
+* Author intent and ownership
+
+A config.ss author supplies ordinary POO values. This does not grant build
+authority or require a build.ss in Infrastructure. Reusable upstream Modules own
+construction capabilities; root selection orchestrates them. The co-located
+OpenTofu Build contribution in chapter 56 is an integration fixture, not a
+required downstream layout. The later [[file:11.59-upstream-configuration-builds.org][dependency-selected configuration-build protocol]] supplies cross-owner final
+Config association. Product Loader integration and deployment remain outside
+both changes.
+
+#+begin_src scheme
+;; config.ss: AWS-only
+(def Config
+  (.o resource: (.o aws_security_group: (.o web: (.o name: "web")))))
+
+;; Replace that file with this revision to add Null demand:
+(def Config
+  (.o resource:
+      (.o aws_security_group: (.o web: (.o name: "web"))
+          null_resource: (.o smoke: (.o triggers: (.o release: "smoke"))))))
+#+end_src
+
+These are alternative file revisions, not duplicate bindings in one file.
+Neither revision imports POO or exports Config manually. Domain dependency
+imports remain explicit when needed; no arbitrary module alias is fabricated.
+
+* Native lowering
+
+Source preparation emits a native compiler frame, without parsing user def
+forms or evaluating configuration during expansion:
+
+#+begin_src scheme
+prelude: :yuanxu/module-system/source/config-prelude
+;; Original package/namespace headers are preserved here by preparation.
+(import (only-in :yuanxu/module-system/source/declaration
+                 include-module-body export-role-config))
+(include-module-body "/original/module/config.ss")
+(export-role-config Config)
+#+end_src
+
+The prelude re-exports Gerbil core (excluding its conflicting object? and
+make-object) and clan/poo/object. Native prelude imports are weak: an explicit
+path-slot .o import retains its own binding. A custom author prelude is preserved;
+an absent or explicit standard Gerbil prelude acquires this role default.
+
+The internal export macro asks the native expander whether Config resolves after
+the body has expanded. Only that conventional binding is exported automatically;
+private helpers and prototypes remain private. Files with another explicitly
+exported binding remain valid. This is a native role frame, not a configuration
+DSL or another evaluator. Original body syntax locations survive inclusion.
+
+Interpreter publication retains admitted original source paths and redirects
+roles through the reader. Compiler publication imports adjacent prepared role
+files. Standalone publication materialization writes those role frames too.
+Both routes use the same config prelude/export projection; ordinary compiler
+input must not accidentally import the bare original config.ss instead.
+
+* Phase, source and receiver boundaries
+
+Preparing or reading config does not execute build.ss. Build phase checks run
+before cached Build slot access, so a prior build cannot enable ordinary runtime
+access. Selected Module source observations retain original config bytes, package
+identity and negative optional-role observations. A changed source invalidates a
+held prepared result; a fresh source session obtains a new receiver value while
+the old receiver cache remains unchanged.
+
+The real locked-Flake integration uses headerless Config for AWS-only and then
+AWS+Null. Selected resources determine Provider demand. Final domain admission
+still occurs before build success. No implicit flake.lock update, provider RPC
+plan/apply, full Core rebuild or product Loader behavior is claimed.
+
+* Executable qualification
+
+The focused config-role gate checks native refinement, private-name confinement,
+explicit native headers, explicit path-slot overrides, original source location,
+non-Config explicit exports, source invalidation and receiver isolation. The
+Build-role gate also expands an ordinary standalone publication through Gerbil,
+without executing its deferred build role. Source-stable real artifact rounds
+and the structured receipt will delimit the final evidence below.
+
+** Executed result
+
+Ten focused default-runtime suites passed, including 11 named Config assertions
+and 15 named Build phase assertions. Each focused run satisfied MODULE-OK,
+HARNESS-OK and final OK with no harness/case/check or heap/stack overflow marker.
+Three serial source-stable real locked-Flake rounds passed 70 assertions each.
+AWS-only reads/compiles one selected type; AWS+Null reads/compiles two. Cached
+access adds no type reads/compiles or Nix starts; independent currentness remains
+an explicit operation. These are fresh Scheme scopes over an existing Nix store,
+not download-cold or end-to-end deployment performance results.
+
+The structured source-bound receipt is
+[[file:../../../t/fixtures/opentofu/config-role-control.json][config-role-control.json]] in the enclosing repository (use the checkout root's
+t/fixtures/opentofu path). The initial sandbox attempt could not access the Nix
+daemon; the authorized rerun passed. Earlier strong-import and compiler-bypass
+failures remain described in that receipt rather than being reported as passes.

@@ -1,0 +1,42 @@
+#+title: 31.01 Backpack: interface identity is not instance identity
+#+language: en
+#+property: DOCUMENT_ID 31.01
+#+property: STATUS paper-reading-notes-not-a-correspondence-proof
+#+property: AGENT_AUTHORING_COVERAGE not-discussed-in-current-reading-notes-not-a-full-paper-audit
+
+* Backpack: interface identity is not instance identity
+
+Primary source: [[https://plv.mpi-sws.org/backpack/][Backpack: Retrofitting Haskell with Interfaces]], POPL 2014.
+
+Backpack studies separately typecheckable packages and elaborates its module
+abstraction into the host language's modules and interfaces. The useful design
+inspiration is independent interface checking and later linking, not copying its
+type theory into POO or pretending that dynamic Contract admission proves the
+same theorem as Haskell typechecking.
+
+Our response: retain package/compiler identity independently of rename, and
+separate a publication from its effective contextual instance. Dependency
+Contracts belong to the boundary. The same source under two effective argument
+contexts must not accidentally share context-capturing closures.
+
+Conclusion: replacing source paths with args is insufficient. Control both
+rename-preserves-origin and changed-arguments-create-a-distinct-instance. Open
+question: which pure context-free helpers can safely share native package caches?
+
+
+* Further reading and qualification
+
+The initial reading supports the design motivation above. A full account of the
+paper's formal model, assumptions and correspondence to Core is not yet written.
+Keep such work in this paper's own modules; do not treat a citation as a proof.
+See [[file:../30-method/30.01-evidence-protocol.org][the research protocol]].
+
+* Issues and Engineering Limitations
+
+Reference: the original paper linked above. Marks: PAPER-INSPIRATION;
+DESIGN-INFERENCE; CORRESPONDENCE-NOT-PROVED. No GitHub defect is asserted.
+The unresolved engineering question is how separately checked interfaces map to
+dynamic, contextual POO instances and their Contract requirements. A shared source
+identity cannot justify reusing a closure that captured another instance's args.
+This is a limitation of our current correspondence, not a defect in Backpack.
+

@@ -1,0 +1,286 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: Scheme Model Validation Execution Record
+#+date: 2026-10-03
+#+status: Historical execution evidence; integration and teaching benefit remain unqualified
+
+* Scope and evidence ownership
+
+The =model_study.direct_understanding= CLI exercised actual Scheme tasks owned
+by =t/model-study/direct-understanding/=. Python orchestrated, recorded and
+independently checked results. See [[file:model-scheme-understanding-validation.org][the validation protocol]].
+Raw logs belong outside documentation. Historical logs removed from the source
+worktree can be recovered at PR #34 commit
+=79f1ec6f205afaf53580a916d858e051264ec38f=. Retained hashes alone cannot
+revalidate those bytes or qualify the current revision. Relocated structured
+receipts are under [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003][Core test evidence]].
+This English rendering preserves historical results; it does not report a new run.
+
+| Task family | Initial task | Transfer task |
+|-------------+--------------+---------------|
+| join | Relational projection joining two edges | New cyclic and branching input |
+| closure | Recursive reachability | New cycles, including positive-length self reachability |
+| negation | Stratified exclusion | New topology and blocked facts |
+| capture | Lexical capture and invocation count | New identifiers and post-construction mutation |
+| diagnostic | Unbound head variable location | Undefined body relation location |
+| withdrawal | Retained snapshot and source replacement | Two snapshots after another source replacement |
+
+This study measured result prediction and feedback transfer, not arbitrary
+program generation, complete POO composition, all business tasks or online
+weight training. Only three actual ASCENT modules were initially supplied;
+their full transitive implementation closure was not supplied. Inputs were
+source, facts and ordinary =check-equal?= tasks with missing expectations.
+There was no added semantic tutorial, RULES, worked answer or native answer
+before the first prediction. Provider text messages still carried context.
+
+* Native computation and observation
+
+All twelve tasks actually executed Scheme =relational-program= admission,
+solving and session updates. Independent finite algorithms or existing
+qualification contracts checked their results. Successful receipts required
+MODULE-OK, HARNESS-OK and final OK, with a five-second real-output silence gate,
+an independent heap fence and a process timeout.
+
+Model output was read as inert data: a single prediction datum or the quoted
+expected datum of a standard =check-equal? result= expression. Model text was
+never evaluated. Byte, character and depth bounds preceded reading; reader
+failures were retained. After each candidate, the guard recomputed the current
+task, checked source/truth identity and produced the first difference path in
+Scheme. Feedback bound the program, candidate, computation log and revision.
+Local controls covered recomputation, counterexamples and reader failures.
+
+* Frozen 24-call batch
+
+The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/plan.json][frozen plan]] has SHA256
+=910359b8a90c29ea77485f4dcff80fa7cc63ac0af1f8870b501848701ef27506=.
+
+| Condition | Calls | Input |
+|-----------+-------+-------|
+| initial-none | 6 | Source and initial task; Reasoning none |
+| initial-high | 6 | Same source and initial task; Reasoning high |
+| transfer-fresh | 6 | Source and new task; Reasoning high |
+| transfer-feedback | 6 | Initial task, actual candidate, current feedback and new task; Reasoning high |
+
+Order alternated across task families. There was no seed repair, same-task
+retry or automatic failure retry. Feedback also included historical context;
+its effect was not isolated from that history. Six families per condition do
+not establish population reliability or an independent teaching effect.
+
+The authorized batch allowed 24 new calls, zero retries, 4096 output tokens
+including Reasoning and 98304 encoded input bytes per request. At the checked
+2026-10-03 peak prices of USD 0.30/M input and USD 1.20/M output tokens, the
+conservative byte-bound estimate was USD 0.8257536 within the USD 1 cap.
+No cache or off-peak discount was assumed. See the
+[[https://api-docs.deepseek.com/quick_start/pricing/][provider pricing]] and [[https://api-docs.deepseek.com/api/create-response/][Responses API]].
+The earlier 48-call authorization was exhausted and was not reused. This batch
+executed 24 distinct response IDs with no model retry.
+
+Requests and attempts were recorded before invocation; stream events,
+responses, usage, Reasoning, native observations, durations and outcomes were
+recorded separately. Missing terminal state stopped execution; unavailable
+billing remained unknown. A frozen plan could claim only one paid batch.
+
+* Results and qualification boundaries
+
+Initial Python orchestration/boundary controls passed 32 checks. Positive and
+negative preflights remained separate. Synthetic stream and missing-terminal
+fixtures were engineering controls, not model scores. Full input, private
+assessment keys and logs also remained in the ignored MRR archive
+=.data/research-evidence/direct-scheme-understanding-20261003/=.
+
+The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/live/report.json][strict report]] records 21 completed responses and three
+incomplete responses at the shared 4096-token output/Reasoning cap. Reported
+Reasoning totaled 36101 tokens, with zero for the six none calls.
+
+| Condition | Completed | Strict accepted and correct | Extractable after review | Native-correct after review |
+|-----------+-----------+-----------------------------+-------------------------+-----------------------------|
+| initial-none | 5/6 | 0/6 | 3/6 | 0/6 |
+| initial-high | 5/6 | 0/6 | 5/6 | 5/6 |
+| transfer-fresh | 5/6 | 0/6 | 5/6 | 5/6 |
+| transfer-feedback | 6/6 | 0/6 | 6/6 | 5/6 |
+
+The original interface accepted no response. Markdown/explanation, empty output
+and missing placeholders caused rejection. The old reader incorrectly labeled
+two EOF results readable, but neither was correct or accepted. The corrected
+reader rejected EOF; the frozen scorer and results were retained separately.
+
+The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/transport-replay/report.json][supplementary replay]] extracted only a unique explicit prediction,
+merged duplicate identical data and rejected conflicting answers. It neither
+consulted private truth to choose a candidate nor evaluated or repaired model
+code. This post-output analysis was not the frozen strict test or a fresh live
+acceptance batch. The high initial score of 5/6 (83.33%) describes only this
+small batch. Both transfer conditions scored 5/6: fresh got diagnostic right
+while feedback chose invalid-body instead of invalid-dependencies; feedback
+completed withdrawal while fresh did not. Net accuracy difference was zero.
+Neither an independent teaching gain nor absence of possible gain was proved.
+
+| Gate | Historical result |
+|------+-------------------|
+| Twelve native tasks and independent truth | Passed |
+| Recomputed differences and reader diagnostics | Passed |
+| Initial Python orchestration controls | 32 passed |
+| Program generation and full POO composition | Not covered |
+| Production teaching and business effect | Open |
+| Earlier afb58435 cross-platform CI | 25 success, five conditional skips; not a current-head result |
+| MRR Rust integration | Deferred |
+
+* Cost and stalls
+
+Input totaled 276240 tokens; output totaled 48125, including 36101 Reasoning.
+The peak-price upper estimate without discounts was USD 0.140622; actual billing
+was unavailable. The USD 1 cap was not exceeded.
+
+| Condition | Provider median seconds | Provider plus guard median seconds | Peak-price upper estimate USD |
+|-----------+-------------------------+------------------------------------+-------------------------------|
+| initial-none | 6.615 | 11.094 | 0.0332562 |
+| initial-high | 8.840 | 13.073 | 0.0371250 |
+| transfer-fresh | 10.869 | 17.958 | 0.0377265 |
+| transfer-feedback | 4.071 | 7.769 | 0.0325143 |
+
+The first three timing samples contain six calls each; feedback contains five,
+excluding a recovered response without original timing. History length, cache,
+output size and completion state differed; these observations do not establish
+general acceleration. Earlier warm native-worker/AOT slowdown controls stand.
+
+After response 15 was saved, native recomputation violated the five-second
+silence gate. Cause remained unknown; the limit was not widened. The same task
+passed separately under the same gate. Local replay of saved responses and an
+explicit continuation completed the nine previously unattempted calls without
+a repeated provider request. Scripts, declarations, source hashes and both
+execution logs were retained. Recovery did not turn the original run into an
+uninterrupted pass.
+
+* Transport diagnosis and production engineering
+
+The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/acceptance-root-cause.json][24-response audit]] binds requests, IDs, output SHA256 and original and
+supplementary observations. It made no model calls or score changes.
+
+| Exclusive classification | Count | Interpretation |
+|--------------------------+-------+----------------|
+| Correct prediction rejected by original transport | 15 | Native-correct; integration failed |
+| Provider token cap exhausted | 3 | Incomplete, not a completed semantic error |
+| Missing placeholder | 2 | No completed prediction |
+| Unique prediction with semantic error | 2 | Capture nesting and diagnostic branch errors |
+| Completed without one extractable prediction | 2 | No admissible candidate; not proof all reasoning was wrong |
+
+Separately, 22 whole responses violated datum transport and two raw responses
+were empty. These overlapping dimensions must not be added to the table.
+Tasks exposed =(check-equal? result '?)= without a single-datum output protocol;
+the evaluator nevertheless imposed that protocol on whole responses. Twelve
+native truth preflights had not tested actual output transport. This was an
+integration design defect, not evidence that all 24 semantic predictions were
+wrong. None join/closure sometimes became code review rather than prediction.
+
+The three supplied entry modules omitted evaluate/planning implementations.
+Exact diagnostic paths depended on planning's =on-plan-error=. Response 16
+recognized an unbound head variable but proposed conflicting locations;
+response 21 described withdrawal correctly yet included executable
+list/canonical forms. Neither received additional credit by human judgment.
+Resource exhaustion, transport acceptance, semantic correctness and teaching
+benefit must be recorded independently.
+
+Synchronous/asynchronous answer retelling was removed; historical replay became
+pure candidate checking. =temporal.observe= used the existing Scheme owner to
+compute live state/row differences bound to an exact request digest.
+=predict_temporal_answer= and its asynchronous counterpart sent detached tasks
+to IO, then delivered native artifact-bound observations through
+=observation_sink=. No automatic model retry or effect authority was added.
+
+The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/production-qualification.json][production engineering receipt]] bound AOT, source, wheel and check logs:
+332 Runtime tests passed with no failure/skip; 37 tooling tests passed.
+Controls covered source drift, candidate formats, state/row counterexamples,
+synchronous/asynchronous delivery and callback isolation. The installed-wheel
+test used packaged AOT/CFFI without a Gerbil executable or native-library env
+override, then exercised a real control session, graph admission and Python IO.
+Its predictor was offline; Homebrew dependencies remained. This was neither a
+model score nor clean-host portability proof.
+
+PY-TEST-R003 rejected an oversized test, which was split around a shared native
+session. Two pytest capture runs hid real progress and violated the silence
+gate; =-s= exposed real stderr and passed the unchanged gate. Failures and raw
+archive hashes remain. A later producer included inert unique-candidate
+extraction and transport-source hashes; the completed frozen batch was not
+rescored as a new protocol acceptance.
+
+* Naming and subsequent frozen plan
+
+Version remained 1. Semantic ABI files, namespaces, C symbols and environment
+variables had no version suffix; separate =abiVersion: 1= or =version: 1=
+fields carried version identity. Project VERSION was unchanged.
+The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/naming-qualification/qualification.json][naming qualification]] rebuilt AOT/CFFI: 332 Runtime tests passed with no
+skip; 37 tooling tests passed and four native integrations skipped because
+ASCENT_TEST_ROOT was unset. The wheel omitted the old library name and exercised
+native observation/control/graph/IO without Gerbil; its predictor was offline.
+
+The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/next-plan/plan-before-naming-correction.json][withdrawn plan snapshot]] has SHA256
+=40c55c12cc1c02f77d47a4b02f01ef6d87224aeea86163431f35297dc3a3e54b=.
+Its naming did not match the implementation; it authorized no execution and
+made zero calls. The exhausted 24-call authorization was not reused.
+
+The next input expanded to the compiler-exported ASCENT runtime dependency
+closure, including =core/types=. Framework omissions remained explicit
+assumptions. Source, compiled objects, tasks, scorer, loader and producer were
+hashed. Transport compared inert data after quote/check wrappers, rejected
+conflicts, merged identical forms and preferred explicit assertions over bare
+fences. It did not execute list/canonical code or consult an oracle. A missing
+=?= was not a prediction.
+
+New five-second stalls occurred during import and after computation printed
+OK; root cause was not fully isolated. The worker used EOF stdin and a main
+entry for frozen trusted tasks, retaining Gerbil's real @expand output. No
+per-dependency dynamic eval, synthetic heartbeat or enlarged silence gate was
+used. Seven CI failures at 06051806 identified stale semantic filenames in
+build.ss; its correction required fresh exact-head CI.
+
+Twelve task thunks ran in independent lexical scopes inside one native worker.
+Scheme owned prediction-core.ss comparison; Python did not implement logical
+inference. Native preflight passed 12/12 with independent truth, the five-second
+watchdog, MODULE-OK, HARNESS-OK worker-ready/worker-closed and final OK.
+EOF/let errors and HashTable/WAList mismatches remained archived as engineering
+failures. JSONReadOptions explicitly used object-as-hash, matching the semantic
+ABI. Tooling/harness controls passed 42 tests. New transport replay recovered
+16 correct predictions from the old 24 (including withdrawal none); original
+strict 0/24 and first supplementary scores remained unchanged.
+
+A local SDK fixture exercised 30 simulated interactions through input/output,
+current native observation, history, isolated batch claims and logs. Actual
+provider calls and charges were zero; no live-plan claim was created. Simulated
+cost/accuracy was not reported as live performance.
+
+A new transfer-history condition carried the same initial task/answer history
+as transfer-feedback, with only feedback receiving current computation.
+Six families retained none/high and fresh/history/feedback controls; transfer
+ordering covered all six permutations. The primary teaching contrast was
+feedback minus history; fresh measured the combined context effect.
+
+The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/current-plan/plan.json][subsequent frozen Version 1 plan]] has SHA256
+=cb1715f709ba428cc7dee3d6850eb8f569a6a673baa797a9d8850895360d2f4f=,
+implementation =93239d600f9a24e2c8122e08116f927b5e39989d=:
+17 project modules, twelve tasks, 30 calls (six none/24 high), zero retries,
+8192 maximum output/Reasoning tokens and 393216 encoded input bytes.
+The peak-price conservative upper estimate was USD 3.833856 under a proposed
+new USD 4 cap. Header/description metadata changed after preflight; source,
+task, producer, scorer and worker bytes did not. The
+[[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/current-plan/qualification.json][engineering qualification]] and full replay/fixture output were archived.
+This plan had zero provider calls and required new explicit source-egress and
+paid-call authorization; old authorization was not reused.
+
+* 2026-10-04 current ABI live Library acceptance
+
+Retired Temporal adapters, prompted study/replay code and copied legacy source
+archives were removed from the active tree. Acceptance used a new wheel and
+=SemanticRuntime= semantic ABI version 1 rebuilt against ASCENT 0176c061.
+See [[file:../../../t/qualification/semantic-abi/README.org][the versioned engineering and live-provider receipts]].
+
+The isolated installed wheel passed 34 focused Runtime/producer checks without
+a Gerbil executable. Two new frozen non-thinking DeepSeek pilots completed
+48 responses without timeout or API retry. The JSON-source pilot scored 3/24;
+direct Scheme-call input on new tasks scored 1/24. The ABI emitted 47 fresh
+observations and rejected one malformed/non-inert JSON output. Maximum first
+content latency was 1.279 seconds, below the unchanged five-second gate.
+Model prediction accuracy was 4/48: the model gate remained FAILED.
+
+These receipts qualify bounded Darwin Library integration and fail-closed
+observation, not max-effort reasoning, general Scheme comprehension, real-time
+feedback transfer, business outcomes or the whole control ABI. Source labels
+remain caller declarations without authority.

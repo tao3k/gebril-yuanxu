@@ -1,0 +1,97 @@
+#+title: 20.05 NixOS Configuration Merge Is a Contribution Protocol
+#+language: en
+#+property: DOCUMENT_ID 20.05
+#+date: [2026-10-17]
+#+property: STATUS pinned-source-and-derived-controls-not-executed
+
+* Sources and question
+
+Use the pinned revision defined in [[file:20.04-discovery-and-dependency-injection.org][the discovery study]]. Primary owners:
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/modules.nix#L1003][mergeDefinitions]],
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/types.nix][option types]] and
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/options.nix][option declarations and merge helpers]].
+Can independent maintainers contribute safely without users understanding every
+internal definition? Distinguish that problem from overriding a single prototype.
+
+* Source mechanism and an important correction
+
+Definitions retain files. The merge path discharges conditional/merge properties,
+filters by override priority, orders surviving definitions, then checks/merges
+using the option type. Ordinary definitions have priority 100, mkDefault 1000,
+option defaults 1500 and mkForce 50; lower numbers win. Ordering has a separate
+scale: mkBefore 500, ordinary 1000, mkAfter 1500. A boolean/int type merges equal
+values; listOf concatenates contributions; attrsOf merges per key.
+
+Therefore NixOS has a substantial library-level type and composition system.
+Calling options "only predicates" or describing merge as last assignment wins
+would erase the mechanism we need to learn from.
+
+* Derived configuration controls with explicit predicted results
+
+These are analyst-written modules using the observed public interface, not copied
+deployment configurations or locally evaluated results. Both files contribute
+to the same declared fields:
+
+#+begin_src nix
+# organization.nix
+{ lib, ... }: {
+  services.postgresql.settings.port = lib.mkDefault 5432;
+  services.postgresql.ensureDatabases = [ "catalog" ];
+}
+
+# application.nix
+{ ... }: {
+  services.postgresql.settings.port = 5433;
+  services.postgresql.ensureDatabases = [ "orders" ];
+}
+#+end_src
+
+The ordinary port definition defeats mkDefault. Both database requests survive
+list merging; ordering is not a set or deduplication guarantee. If two ordinary
+modules instead set incompatible ports, scalar merging rejects the conflict.
+Reversing imports is not a valid general conflict-resolution policy. A mkForce
+definition can suppress weaker definitions; it cannot make the chosen value
+valid for a declared port type.
+
+Contrast a native child overriding a parent's port: that is deliberate inheritance
+with one effective slot value. Two independent security teams contributing
+requirements are a different problem. C4 gives lookup precedence; it does not
+prove those requirements are compatible or authorize dropping the losing one.
+
+* Transfer decisions for our system
+
+| User intent | Proposed ownership | Why and cost |
+|-------------+--------------------+--------------|
+| Replace a desired ordinary value | Direct field assignment | Small interface; inherited dependency must be recomputed |
+| Preserve and transform an old value | Native inherited-value function/refinement | Explicit dependence; function order and purity become review concerns |
+| Combine independent contributions | Maintained domain merge policy | No universal deep merge; conflicts need both source locations |
+| Accumulate requirements | Native Contracts plus admission protocol | Winning a value must not silently discard a separate requirement |
+| Add an unknown extension field | Explicit open Contract region | Closed business fields catch typos; open labels/maps remain useful |
+
+Do not copy numeric priorities into every user field. First decide whether a
+particular domain permits priority selection, equality, append or rejection.
+Expose the effective value, contributors, policy and conflict at field discovery.
+If ordinary users must inspect a priority lattice to set a port, we have failed
+the basic configuration interface.
+
+* Issues and Engineering Limitations
+
+These merge rules are documented/source-observed tradeoffs, not bug claims.
+[[file:20.07-issues-and-evidence.org][The issue register]] distinguishes performance and phase reports from merge
+semantics. A future Scheme contribution system must also answer whether discarded
+values are checked, which requirements survive, and whether two transformation
+orders produce different outputs. Current native slot precedence is not evidence
+that these independent-contributor obligations have been implemented.
+
+* Reflection and conclusion
+
+NixOS's benefit is independent contribution with typed interpretation. Its cost
+is that the meaning of assignment depends on the declared option and attached
+properties. Our goal is fewer concepts for ordinary inputs and richer internal
+extension, while retaining explicit contribution policies and useful conflicts.
+The risk is rebuilding an options language inside a macro without its tooling.
+
+Next decisive control: combine two independently maintained Profiles assigning
+different ports, then distinguish an intentional child replacement from an
+unauthorized requirement loss. A shorter Scheme expression is not that control.
+

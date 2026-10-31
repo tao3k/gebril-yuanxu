@@ -1,0 +1,222 @@
+#+title: 32.37 Metadata Allocation, Shared Authority And Store Boundaries
+#+language: en
+#+startup: overview
+
+* Question and concrete result
+
+[[file:32.36-metadata-ownership-and-write-boundary.org][32.36]] established a conditional gateway, not an unavoidable write boundary.
+This follow-up adds NO gateway. It follows actual native allocation and sharing,
+then runs exported generated setters and SDK reflection on those allocations.
+
+The new counterexample is stronger than merely restoring a receiver field:
+temporary replacement of a SHARED specification function can leave a cold
+descendant cached at 5440 after restoring the original function, while parent
+and hot descendant stay at 5432 and the parent revision remains unchanged.
+Native replay accepts the restored endpoint. Both generated and reflective
+setters reproduce it in the default runtime. This is a small native replay
+counterexample, NOT a demonstrated attack against the whole services admission
+and deployment chain.
+
+* Native allocation inventory
+
+| Allocation / source owner | Lifetime and sharing | Consequence for ownership |
+|---------------------------+----------------------+---------------------------|
+| =object.ss :init!= | New object-state for each receiver; native parent/protocol dependency edges | Constructor already knows receiver and parents; caller labels are unnecessary |
+| =prototype-map.ss prototype-map/prototype-map-list= | Fresh list/entry pairs, but the SAME slot-spec payload objects | Copying the list does not grant an independently owned payload |
+| =object.ss= slot-spec structures | =.def= ordinary slots use =$self-slot-spec= function carriers | Generated/reflective function replacement bypasses receiver revision |
+| =compute-slot-funs!= | New receiver table; inherited specification functions become receiver computations | Existing prepared receivers and future cold receivers can diverge after a raw carrier edit |
+| =prepare-object!= / =object-read-table= | New receiver-local instance/read tables, allocated on demand | Do not confuse these with shared structural metadata |
+| Native read issuer | Each genuine persistent or transient read is tied to its receiver and private issuance association | Temporary misses require no forced read-cache insertion |
+| =slot-layout.ss make-slot-layout= | Canonical shared shape; separate receiver-local cell vectors | Equal shape identity does not imply equal layout or cached-value ownership |
+| =make-slot-cache= | Access-site binding includes owner, revision, layout and index | A shared shape must never be used as receiver identity |
+
+Source inspection covers the current installed producer, including its dirty
+=object.ss=; the recorded source cut is more precise than its base Git SHA.
+No installed dependency or SDK source is edited by this experiment.
+
+* Executed shared-payload counterexample
+
+[[file:../../../t/mop-metadata-allocation-test.ss][mop-metadata-allocation-test.ss]] creates native objects, with no replacement
+dispatcher or ownership assertions:
+
+#+begin_src scheme
+(.def Parent port: 5432 unused: (error "unselected branch forced"))
+(.def (Hot @ Parent))
+(.def (Cold @ Parent))
+(def parent-cache (.get Parent port))
+(def roots (record (cut .get Hot port)))
+(def entry-a (assq 'port (object-slots Parent)))
+(def entry-b (assq 'port (object-slots Parent)))
+(def spec (cdr entry-a))
+(def original ($self-slot-spec-fun spec))
+
+(check-equal? (eq? entry-a entry-b) #f)
+(check-equal? (eq? spec (cdr entry-b)) #t)
+#+end_src
+
+Within actual =replay-slot-reads!=, the generated-setter case replaces the
+function, evaluates Cold once, then restores the exact original function:
+
+#+begin_src scheme
+(dynamic-wind
+  (lambda () ($self-slot-spec-fun-set! spec (lambda (_self) 5440)))
+  (lambda () (set! observed (.get Cold port)))
+  (lambda () ($self-slot-spec-fun-set! spec original)))
+#+end_src
+
+The reflective control uses =(runtime.slot-set! spec 'fun replacement)= instead.
+Both produce actual trace rows:
+
+#+begin_example
+                 parent hot  cold restored-spec revision-unchanged fresh-entry shared-payload
+generated        5432   5432 5440 5432          true               true        true
+reflective       5432   5432 5440 5432          true               true        true
+#+end_example
+
+Cold is deliberately evaluated to expose the counterexample. It is not the
+unselected-laziness control; the separate =unused= error slot remains untouched.
+Returning to the original function does not invalidate the newly prepared
+function table or cached Cold value. Endpoint comparison alone misses that
+history. This is not remedied by appending another final endpoint check.
+
+* Export hiding and storage opacity are insufficient
+
+[[file:../../../t/qualification/mop-state/reflection-surface.ss][reflection-surface.ss]] is only a narrow qualification module, not a second MOP.
+It reexports ordinary native object operations without raw object setters or
+getters. The test checks the REAL expanded module exports with
+=module-context-export=, rather than searching source text. Nevertheless,
+=runtime.slot-ref Root '%reads= obtains the writable table from an ordinary
+public receiver. Replacing and restoring its =ref= method still executes the
+replacement. Hiding the generated getter did not remove the underlying alias.
+
+The same module defines a =final: #t transparent: #f= private structure and
+exports its constructor/read accessor only. SDK reflection still changes its
+value. Finality restricts subclassing; opacity affects the declaration/printing
+surface. Neither establishes immutable storage or a capability sandbox.
+
+The SDK reference source has multiple lowerings: ordinary/final generated
+mutators use structure-store primitives; reflective setters and unchecked
+mutators use field/slot stores; the constructor inliner can emit unchecked
+stores directly. Those are families of compiler/runtime write capability,
+not independent application setters to patch. The reference source under
+=.data/gerbil= is a learning input; it is not substituted for the installed SDK.
+
+* What belongs in the native MOP refactor
+
+The allocation owner belongs in gerbil-poo, not a Core admission wrapper:
+
+1. Capture receiver and metadata identities at their actual allocation/share
+   sites. Preserve all relevant owners when a carrier is shared. Never overwrite
+   ownership with the latest descendant or let a caller attest an owner.
+2. Distinguish receiver-local caches from shared specifications/shapes. Prefer
+   structurally immutable internal specifications; reflected descriptions must
+   not expose writable authoritative carriers. Merely copying outer pairs is
+   insufficient. If metadata is moved into private storage, a writable public
+   receiver field must not remain the authoritative locator for that storage.
+3. Route supported mutation through one owned-store policy BEFORE modification
+   or invalidation. Generated mutator factories, reflective runtime stores and
+   compiler inlining must obey that policy, or their writable capabilities must
+   be outside the ordinary extension surface. A Scheme wrapper around one
+   procedure does not establish this condition.
+4. Keep internal cache publication behind kernel-owned phase capabilities.
+   A cold computation's legitimate cache write is not permission for arbitrary
+   observer mutation. Ownership inspection cannot invoke overridable callbacks
+   to authorize itself; it needs the fixed native identity/route boundary.
+
+There are two distinct implementation choices to qualify, not an implemented
+universal solution: eliminate authoritative writable aliases through private
+representation, or mediate native owned stores through SDK/compiler support.
+The first must measure added metadata lookups on the existing fast paths. The
+second must cover optimized/inlined stores, not just reflective calls.
+Unrestricted raw primitives and FFI still need an explicit trust boundary.
+
+No global strong reverse-owner registry is proposed. It would retain abandoned
+receivers through long-lived shared shapes/specifications. Reuse weak ownership
+edges or per-admission authenticated read provenance; record the exact carrier
+used when preparing/evaluating a slot. Do not scan every module, every field or
+force every descendant to reconstruct ownership at return time. Complete native
+carrier capture and its memory/cost behavior remain unimplemented obligations.
+The Lean ledger below is a mathematical registration history, not such a runtime
+registry or a demand for users to maintain one.
+
+* Lean, Quint and native correspondence
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/MetadataAllocation.lean][MetadataAllocation.lean]] models allocation as adding a cell/receiver association.
+=allocation_registers_receiver= and =allocation_keeps_existing= prove that adding
+a shared user does not erase prior owners. This registration is a design law;
+the production issuer does not yet certify all specification aliases.
+
+The concrete cache transition is replace, force Cold, restore. Theorems establish
+unchanged parent/hot caches and revision, retained Cold=5440 with spec=5432,
+and the resulting incoherence. [[file:../../../dev/proofs/lean/MetadataAllocationCheck.lean][MetadataAllocationCheck.lean]] independently evaluates
+that transition and checks both actual Scheme JSON rows, including fresh entry
+and shared payload observations. A tampered cold value must fail decoding.
+This is finite native correspondence, not verified compiler store interception.
+
+[[file:../../../dev/proofs/quint/MetadataAllocation.qnt][MetadataAllocation.qnt]] has eight scoped checks: conditional supported-protocol
+safety, raw restoration incoherence, reflection despite hidden exports,
+last-owner-only registration, missing second requirement, parent-plan reuse,
+eager unselected access, and an acceptance witness. The ownership ledger mutant
+tests a proposed design; it must not be reported as a defect in the existing
+native invalidator, whose ancestor preflight passes the runtime control.
+
+* Existing guarantees and qualification
+
+The native =.putslot!= control refuses ancestor replacement during replay before
+any cache change; after replay, supported replacement invalidates parent/child
+caches and both recompute to 5433. Shared canonical shape and independent
+receiver instance/layout identities are checked separately.
+
+The real Gitea/PostgreSQL consumer regression remains required: both contribution
+keys, child obligations, cached parent plan isolation, default following,
+explicit client conflict, stale-plan refusal and changed-source refusal. It does
+not deliberately mutate a shared carrier; do not claim that it closes the new
+raw-mutation counterexample. Existing replay ownership additionally checks
+nested/exception recovery, temporary misses and an unselected error branch.
+
+All runtime tests use the default SDK with process-local qualification fixtures;
+no compatibility runtime, producer patch or extra user-facing syntax is added.
+Local logs and observed JSON stay under
+=/private/tmp/core-metadata-allocation-20261018/=. Exact results are appended after
+gates complete; scoped model checks are not an aggregate all-source pass.
+
+** Completed local gates
+
+- The six new native allocation/export cases, seven existing replay-ownership
+  cases, and two actual services consumers all pass: 15 Scheme cases with
+  MODULE-OK, HARNESS-OK and final OK, natural exit 0, and no error/overflow markers.
+- The independent Lean decoder accepts both actual native observations. Changing
+  the observed cold value from 5440 to 5432 is rejected with
+  =native allocation/model mismatch: generated= and exit 1.
+- Full Lean build passes 177 jobs and the standard-axiom/shape audit over 5992
+  declarations. Five new allocation/cache theorems are required by the aggregate.
+  The locked and actual LeanPoo dependency remains =6e6a706e14fa6f8199e4f36711440355b42ef335=.
+- Native Quint typechecking covers the eight selected entries and their imports.
+  All eight expected model outcomes pass. The positive model explores 72
+  distinct states with no states left on the queue. The seven negative/witness
+  controls are not reported as positive safety proofs.
+- The final scoped receipt and its bound inputs were rechecked without source
+  drift. The native source/fixture cut is recorded separately in the local
+  artifact directory. No remote CI, SDK repair or production ownership barrier
+  is inferred from these results.
+
+** Retained setup failures
+
+The current test recipe initially invoked =gerbil -e= to query the Ops budget;
+the CLI exited 70 before the test harness. The interpreter route
+=gerbil env gxi= returned the existing declared budget. Only that invocation
+was corrected, preserving the heap fence, timeout policy and marker checks.
+The first actual suite also caught two fixture assumptions: its expander lookup
+needed the real source-file path, and native =.def= emitted a self-slot function
+carrier, not a constant-value carrier. Those failures remain in the local logs;
+the corrected test uses the actual =$self-slot-spec= and original function
+identity. No production expectation was weakened to produce a pass.
+
+* Reflection
+
+The progress is an executable representation-level counterexample and a narrower
+refactor target, not another bypassable API. Library encapsulation, receiver
+invalidation, compiler stores and arbitrary unsafe effects are different
+boundaries. Ordinary configuration remains direct assignment; native POO
+inheritance remains the extension path. These internal guarantees must improve
+without asking users for owner lists, purity marks or cache-repair steps.

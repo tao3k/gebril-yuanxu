@@ -1,0 +1,246 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.06 AI Agentic Context Authority and Disclosure
+:PROPERTIES:
+:ID: agentic-ai-lab-agentic-context-authority-and-disclosure
+:STATUS: design-open-not-implemented-not-model-checked
+:OWNER: 10.06.43.01
+:END:
+
+* Status and ownership
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] remains the main design. This chapter refines its open authority
+and disclosure boundary; it is not a new Context owner. [[file:05-context-consumer-evidence-admission-receipt.org][The 90-control receipt]]
+qualifies only the existing local consumer-admission slice. None of the new
+obligations below is discharged by borrowing that receipt. No Scheme, Quint,
+Lean, storage, bindings or old Memory implementation is changed here.
+
+The concern is not another permission-current Boolean. It is whether an
+issued authority covers this principal, consumer incarnation, operation,
+resource cut and disclosure scope at use. A valid release grant can remain
+valid while being irrelevant to a Context-read request.
+
+ORG Elements, Contract and Query describe source structure and selected scope.
+They do not authenticate a Session, authorize provider I/O or mint capabilities.
+Context owns formation, value assessment, consolidation, revisions and their
+relations. Authority is a consumption boundary, not the definition of Context
+or a reason to retire Context when a Session ends.
+
+* Existing owner seams and gaps
+
+| Owner | Observed implementation | Open design obligation |
+|-------+-------------------------+------------------------|
+| [[file:../../../../modules/ai-agentic-context/admission.ss][Context admission]] | Review binds Context cut, declared Session ID, scope, Governance revision and domain payload | Consumer generation and authenticated principal binding |
+| [[file:../../../../modules/session/objects-core.ss][Session objects]] | Report-only ID, lineage, placement and metadata | These objects are not identity credentials or an authority registry |
+| [[file:../../../../modules/governance/types.ss][Governance]] | Typed Profile and threat assessment; readiness is not authority | Complete policy identity and accountable Human decision evidence |
+| [[file:../../../../packages/lambda-aitia/modules/assurance/context-consumer.ss][AITIA consumer]] | Explicit destination/cut mapping plus current verification seal and effect grant | Liveness does not establish Context operation/resource coverage |
+| [[file:../../../../packages/lambda-aitia/modules/assurance/host.ss][Assurance Host]] | Private issuance, current snapshot/preflight and request fingerprint | Context-specific request subject and permission before any protected reader call |
+| [[file:../../../../packages/lambda-aitia/modules/assurance/effect-host.ss][Effect Host]] | Private grant issuance, epochs, expiry, reservation and delivery boundary | Its existing release path is not a general Context-disclosure API |
+
+The existing Cedar request projection uses the decision authority as principal,
+the supplied action, and the claim subject as resource. The Context adapter
+currently checks grant-current but does not establish that these fields cover
+its target Session and ORG Element selection. The design therefore must not
+rename that existing check to authenticated Context permission.
+
+* Independent permission subjects
+
+Operation names below are design concepts, not exported APIs or a fixed global
+enumeration. Domains extend POO operation values and policy Profiles; a finite
+Quint projection can select a bounded vocabulary without closing the user model.
+
+| Operation | Protected decision | Insufficient substitute |
+|-----------+--------------------+-------------------------|
+| Inspect metadata | Reveal catalog, topology, classification or existence information | A Query that returns no content body |
+| Consume evidence | Use a particular support artifact for a consumer obligation and scope | Evidence was admitted for another consumer |
+| Read Context | Materialize and disclose a selected Context view | Context is relevant, long-term or already indexed |
+| Disclose a derived view | Release a summary, query answer or transformed selection | The source was readable by the producer Agent |
+| Execute a domain effect | Perform the named effect under its Host | Context-read permission or a successful review |
+
+These subjects can be composed by policy but are not interchangeable. Metadata
+and summaries can disclose protected facts too. A shared evidence object is
+not a capability; a readable object is not necessarily reusable support; a
+reusable support artifact is not permission to execute an action.
+
+An accepted Query must bind its selection and permitted output scope. It must
+not widen a permitted Element subset to the enclosing document, directory or
+ancestor Context. Contract validity cannot override a disclosure restriction.
+
+* Consumer identity, collection membership and delegation
+
+Context identity remains document-qualified ORG Element identity plus its
+current source/Contract cut. Consumer binding is a separate proposed POO value:
+
+- Authority issuer and authenticated principal reference.
+- Orchestrator identity and authority generation.
+- Session ID and consumer incarnation/generation.
+- Collection membership revision or explicit delegated member set.
+- Delegation parent, allowed operations/resources, validity and revocation epoch.
+
+These are semantic roles, not a public positional record or JSON schema. The
+Session report can reference the binding but cannot assert its authenticity.
+The Host must bind the reference to its own issued or authenticated authority.
+
+Recreating Session A with the same display ID must not revive A's review or
+grant. The consumer generation differs even if the Context source is unchanged.
+Adding B to an orchestrator collection must not extend an A-only permit. Removing
+A withdraws A's consumption authority, not the Context or its historical evidence.
+
+A collection-scoped permit must name the membership revision it covers or carry
+an explicit delegation rule that the Host checks for each member. Delegation
+must not widen the parent's operation/resource/output scope or survive parent
+revocation. Evidence can remain shared while admission decisions remain local.
+
+* Review and authority correspondence
+
+The proposed request subject binds consumer identity/generation, operation,
+logical resource, document/Element selection, source and Contract revision,
+environment/value-assessment dependencies, output scope, policy identity/revision
+and accountable decision reference where required. A declared path is not an
+authority identity; the provider resolves logical resources only under its Host.
+
+The review must bind both that subject and the authority under which it was
+reviewed. Issuer, capability identity, epoch and validity are read from the
+issuing boundary, not editable presentation slots. Substituting a different
+capability must reopen the authority-dependent review obligation. Independent
+mathematical evidence can remain reusable if its dependency frame is unaffected.
+
+Policy completeness is explicit: changing relevant behavior without advancing
+its semantic revision violates the Profile contract. This does not require
+semantic equivalence checking of arbitrary Scheme procedures. Coverage of that
+revision must be evidenced by declared policy dependencies and owner review.
+
+Git commit/blob identities can identify source cuts where applicable. They do
+not prove authorship, current permission or policy freshness. Worktree/untracked
+observations need a bound content cut; Git index staging is a GitOps state, not
+an SDLC release stage. Developing is a mode; Staging, Release and Backport are
+domain workflow concepts, not alternative consumer identity generations.
+
+* Provider boundaries and disclosure constraints
+
+Permission checks must precede protected metadata reads, directory scanning,
+source-reader calls and byte materialization. A verifier must not fetch protected
+bytes merely to decide whether a later authorization request is eligible.
+Only already authorized metadata or non-disclosing declarations can support a
+pre-I/O request; lack of such metadata is an open obligation, not permission
+for a hidden fallback read.
+
+After an authorized read, the actual source must match the bound revision and
+selection and satisfy the owning ORG Contract. A source/Contract/environment
+change prevents disclosure under the stale reviewed subject and reopens affected
+obligations. Access permission alone does not validate returned content.
+
+Authority, consumer generation, policy and source observation must be fresh at
+the final disclosure boundary as well. Revocation or expiry during validation
+cannot be hidden by a check performed before I/O. A transformed output must
+carry its source dependencies and permitted output scope; redaction is a checked
+transformation, not an Agent's assurance that the summary is harmless.
+
+This design specifies constraints between events, not a prescribed Agent route.
+Agents may propose multiple hypotheses, queries and transformations. Untrusted
+proposals do not cross the Host boundary until their current subjects are admitted.
+No distributed delivery, storage executor or remote orchestration protocol is
+introduced by this chapter.
+
+* Human and AI Governance
+
+Automatic continuation is permissible only within current delegated scope and
+reviewed assumptions. A Human decision is required when the selected Governance
+Profile requires an accountable decision, or when resolving a scope/risk conflict
+requires authority that the Agent does not have. This is a policy consequence,
+not a hard-coded universal approval step or a predetermined exploration route.
+
+A Human decision binds the proposed alternatives, accepted scope, policy/cut
+and accountable authority. A free-text owner label or old approval message does
+not carry the decision across a new consumer generation or widened disclosure.
+An Agent can explain a denial, refine a proposal or request an authorized decision;
+it cannot turn unavailable permission into an inference fact that grants access.
+
+| Situation | Design disposition | Evidence retained |
+|-----------+--------------------+------------------|
+| Same reviewed subject and current delegated scope | Automatic continuation can remain a candidate | Exact review and permission dependencies |
+| New consumer, operation, output scope or unresolved risk | An explicit decision obligation; Human involvement is policy-dependent | Alternatives and missing authority |
+| Current policy denies the request | Refuse the protected boundary | Scoped denial, not universal invalidity of the underlying Context |
+| An accepted dependency loses authority or freshness | Reopen only affected acceptance obligations | Prior receipt, invalidation cause and counterexamples |
+
+* Open versus reopened obligations
+
+Initially missing support/review/permission is an open obligation. Reopening
+requires a prior accepted interpretation and a dependency change or revocation
+that invalidates it. The present Module's obligation-reopened flag is only a
+current revalidation indicator; it does not yet distinguish these histories.
+
+The proposed observation binds prior acceptance identity, current subject,
+changed dependency and cause, plus retained historical evidence. Same-source
+reuse may avoid rechecking an unaffected theorem but cannot skip a changed
+consumer authority or output scope. A new grant does not erase old denial or
+revocation history, and expiry does not imply that the Context has no value.
+
+* Ownership topology
+
+This D2 view describes ownership and dependency relations, not an executable
+pipeline or evidence that the proposed authority binding exists.
+
+#+begin_src d2
+direction: right
+source: ORG {
+  elements: Elements and Query selection
+  contract: Structural Contract
+}
+context: AI Agentic Context {
+  lifecycle: Value and lifecycle
+  subject: Consumer request subject
+  evidence: Evidence and review dependencies
+}
+governance: Governance {
+  policy: Policy and risk assessment
+  decision: Human or delegated decision
+}
+host: Host {
+  identity: Principal and consumer generation
+  authority: Issued scoped authority
+  boundary: I/O and disclosure boundary
+}
+consumers: Session collection
+source.elements -> context.subject: resource selection
+source.contract -> context.evidence: structural obligation
+context.lifecycle -> context.evidence: value dependencies
+consumers -> context.subject: consumption proposals
+host.identity -> context.subject: authenticated binding
+context.subject -> governance.policy: evaluated subject
+governance.decision -> host.authority: accountable scope
+host.authority -> context.evidence: review authority dependency
+context.evidence -> host.boundary: checked support, not a grant
+host.authority -> host.boundary: use-time permission
+host.boundary -> consumers: permitted disclosure
+#+end_src
+
+* Verification obligations, not completed results
+
+| Obligation | Positive control | Negative control | Owner |
+|------------+------------------+------------------+-------|
+| AC-01 consumer incarnation | Fresh binding/review for recreated A | Same A label replays prior generation | Scheme authority boundary; finite Quint projection |
+| AC-02 operation and resource coverage | Exact permitted Element selection and operation | Release grant used for read; child subset widened to document | POO subject/Host; Scheme controls |
+| AC-03 membership/delegation | Explicit B coverage under current membership | Adding B silently extends A-only permit; parent revoked | Host checks; Quint revocation interleavings |
+| AC-04 pre-I/O gate | Permitted read calls reader once | Denied/unknown permission performs metadata scan or verifier fallback read | Instrumented Scheme Host/reader controls |
+| AC-05 final disclosure freshness | Unchanged source and authority permit output | Revoke/expire/change source during validation | Serialized Quint transitions and Scheme replay |
+| AC-06 derived disclosure | Checked transformation stays within output scope | Summary/query answer leaks excluded Element information | Contract/projection obligations and domain evidence |
+| AC-07 obligation history | Accepted scope invalidated; unaffected proof reused | Initially open mislabeled historical reopening; new grant erases denial | Module observations; LeanPOO dependency-frame laws |
+| AC-08 policy/Human binding | Current accountable scoped decision where required | Owner label, stale approval or unversioned policy edit treated as authority | Governance decision boundary and Scheme controls |
+
+Quint covers the bounded temporal interleavings and explicit unsafe variants.
+LeanPOO covers composition, dependency completeness and conditional non-widening
+laws, not authentication by itself. ASCENT derives candidates/conflicts/affected
+obligations from admitted observations, with no grant-producing inference.
+Scheme Modules own the executable POO semantics and Host crossings; Proofs
+consumes them. ORG keeps traceable claims and unclosed obligations. These new
+models, laws and controls are not implemented or run in this design-only change.
+
+* Design artifact validation
+
+The embedded D2 block compiled and rendered successfully with the installed
+D2 compiler. Relative links, source-block balance and portable references passed.
+At the design-only cut, all 34 inputs recorded by 10.06.43.05 retained their hashes.
+The subsequent [[file:07-leanpoo-functional-design.org][LeanPOO dependency update]] uses a separate input cut.
+These checks validate the design artifact and unchanged implementation boundary,
+not AC-01 through AC-08. No new runtime or formal qualification is claimed.

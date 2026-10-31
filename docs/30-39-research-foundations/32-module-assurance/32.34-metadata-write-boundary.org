@@ -1,0 +1,224 @@
+#+title: 32.34 Metadata Writes, Invalidation Ownership and Restoration
+#+language: en
+#+startup: overview
+
+* Question and scope
+
+The narrower supported-write follow-up is [[file:32.35-replay-receiver-ownership.org][32.35]]. It evaluates receiver-owned
+replay frames while retaining this document's raw-runtime counterexample.
+
+Can the current MOP reject a callback which changes a selected metadata lookup
+route and restores it before returning, without adding more endpoint checks?
+This follows [[file:32.33-issuer-projection-correspondence.org][32.33]]. Only isolation tests and formal models change here. There
+is no production MOP, SourceAdmissionContract or Loader change.
+
+The answer for the audited runtime is *not through the existing receiver
+revision*. Supported POO edits and raw Gerbil metadata writes have different
+owners. An authentic read record is not a certificate of callback history.
+
+* Actual write and invalidation entries
+
+The runtime under test is Gerbil =1cfb032.patch618d76f9eb72=. The actual producer
+is the installed =gerbil-poo= source, not a copied dispatcher or overridden
+runtime. The accompanying [[file:32.34-producer-source.sha256][source manifest]] binds the inspected sources.
+The producer checkout remains =fdeadfa40ca5cee5fe20308985aef1577f2eb49b= plus
+the pre-existing local issuer changes; all five entries in 32.33's producer
+manifest were rechecked unchanged. LeanPoo remains locked to
+=6e6a706e14fa6f8199e4f36711440355b42ef335=, with Lean 4.34.0.
+
+| Entry | Actual effect | Receiver invalidation? |
+|-------+---------------+------------------------|
+| POO =.put!/.putslot!/.putdefault!= and supported prototype edits | =before-object-edit!= checks sealing; =invalidate-state!= checks the affected closure before advancing its revisions and clearing caches | Yes |
+| =check-object-edit= in an active computation | Refuses an edit to an active affected receiver before mutation | Yes, refusal before clearing or writing |
+| =runtime.slot-set!= | Resolves the runtime slot offset, then writes the field | No POO revision or mutation-history hook |
+| =unchecked-slot-set!/unchecked-field-set!= and =class-slot-set!= | Direct structure-field writes | No POO invalidation |
+| =&raw-table-hash/test/seed/lock-set!= | Direct backend structure-field writes | No POO invalidation |
+| Wrapper =ref/object= changes | Change method dispatch or replace the backend | No POO invalidation |
+
+The SDK's =runtime/mop.ss= implementation is concrete:
+
+#+begin_src scheme
+(def (slot-set! obj (slot : :symbol) val (E : :procedure := __slot-error))
+  (__slot-e obj slot (lambda (off) (unchecked-field-set! obj off val)) E))
+(def (unchecked-field-set! obj off val)
+  (##unchecked-structure-set! obj val off #f #f))
+#+end_src
+
+The POO =read-route.ss= gate authenticates wrapper/backend classes, =ref=,
+backend hash/test functions and absence of a lock. It does not record writes.
+It does not test seed history or require the original backend instance identity.
+The issuer registry authenticates read records; it does not mediate these SDK
+setters. Registering a read therefore cannot supply the missing write boundary.
+The inspection function's copied vector is also not a read-only capability:
+its receiver/instance entries are still actual object references. Copying the
+vector spine must not be described as confining mutation of the referenced
+metadata. =object-instance= and the low-level =object-%reads/%instance= accessors
+are additional alias paths that a future ownership boundary must account for.
+
+* Isolation experiment and retained negative result
+
+Executable owner: [[file:../../../t/mop-route-mutation-test.ss][mop-route-mutation-test.ss]]. It uses =yuanxu-test-case=,
+the real native observer/replay entry and actual SDK setters. Its small
+=change-and-restore= helper only owns temporary mutation cleanup. It does not
+authenticate, issue records, intercept writes or mark a callback pure.
+
+** Supported edit: rejected before the write
+
+An =audit= slot is evaluated on Root. Its replay observer attempts =.put!= on
+that active receiver. =check-object-edit= rejects it with =object mutation
+during computation=. The old port, receiver revision and read currentness stay
+unchanged. This is an actual pre-write native guard, not a final comparison.
+
+** Raw route edits: accepted after restoration
+
+The same active-computation setting, now with the receiver sealed, replays a
+real port read. The observer edits and restores each of the following on BOTH
+the read table and instance table:
+
+- wrapper =ref=;
+- wrapper =object= backend;
+- backend hash function;
+- backend equality function;
+- backend seed.
+
+There are ten actual field writes to distinct selected route locations, each
+followed by restoration. The temporary =ref= is actually invoked once per table:
+
+#+begin_src scheme
+(dynamic-wind
+  (lambda () (runtime.slot-set! table 'ref
+    (lambda (self key default)
+      (set! calls (+ calls 1)) (original self key default))))
+  (lambda () (hash-ref table 'port #f))
+  (lambda () (runtime.slot-set! table 'ref original)))
+#+end_src
+
+Replay succeeds, =calls= is 2 and the receiver revision is unchanged. Both route
+endpoints and native currentness match. Sealing the POO receiver does not seal
+the SDK structures reachable through its low-level MOP accessors. This test
+proves the bypass exists; it does not claim every raw write has a useful effect.
+Lock, class-layout, method-table, FFI and concurrent mutations are not exercised
+by this ten-location matrix. Their write APIs are not closed by this experiment.
+
+An unrestored foreign =ref= is separately rejected with =changed metadata ref=
+before that method executes. A separate parent/child control caches the parent
+port at 5432, derives a child at 5433, and checks both records remain distinct
+and current. An unselected error-producing slot is never evaluated.
+
+* Lean correspondence and the necessary missing condition
+
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/RouteMutation.lean][RouteMutation.lean]] binds the Quint digest and proves:
+
+- =equal_projection_same_decision=: any gate over identical endpoint
+  observations gives the same answer. No endpoint-only policy can infer the
+  unrecorded intermediate mutation from that projection.
+- =active_edit_refused_before_write=: the modeled active-receiver branch
+  rejects before changing revision, corresponding to the positive native case.
+- =tracked_write_rejected= and =restoring_route_cannot_restore_generation=:
+  if every relevant write strictly advances a non-resettable generation,
+  restoration cannot recover the entry generation.
+- =untracked_write_defeats_generation=: one unmediated setter defeats even
+  that generation comparison.
+- =raw_restore_keeps_observation/generation= and
+  =raw_restore_retains_history= derive unchanged endpoints and two writes plus
+  one callback invocation by executing write/invoke/restore transitions.
+- =accepted_keeps_both= preserves both requirements. Parent isolation and
+  laziness are checked by the native/consumer regressions and finite Quint
+  transitions, not claimed as Lean proofs of evaluator noninterference.
+
+The generation lemmas are explicitly CONDITIONAL design results. The current
+SDK setters do not implement their premise. These transition laws are not proofs
+of the whole MOP evaluator or domain Contract.
+The existing issuer model still derives Birth from the private registry and
+closure environment; this experiment does not change its mint or authority.
+
+* Quint matched controls
+
+[[file:../../../dev/proofs/quint/RouteMutation.qnt][RouteMutation.qnt]] models edit, invocation and restoration as separate
+transitions. Its receiver revision remains unchanged, matching the raw native
+experiment. The normal positive model assumes a generation owned by a future
+write boundary. =endpoint= removes history checking; =untracked= leaves the
+generation unchanged despite writes. Both must produce a
+=NoRouteWritesAtReturn= counterexample:
+
+#+begin_example
+child bound; parent port 5432; child port 5433; requirements a=b=true
+edit:     route=1; events=1
+invoke:   calls=1
+restore:  route=0; receiverRevision=0
+finish:   accepted=true under endpoint or untracked policy
+#+end_example
+
+This is the model's unsafe schedule, not a source-authenticated Scheme trace.
+The separate Scheme test supplies the actual runtime witness. Matched controls
+also remove the second requirement, select the parent's plan, force an unused
+branch, and refute reject-all to establish non-vacuous acceptance. A transient
+miss remains absent from the receiver cache in the positive model.
+
+* What a production repair must own
+
+1. A receiver revision alone is insufficient. Either all selected metadata
+   route writes must pass a native write barrier, or writable aliases to that
+   metadata must cease to be available across the protected callback boundary.
+   Wrapping one public setter leaves generated and raw setters as bypasses.
+   In particular, hooking =runtime.slot-set!= or even =unchecked-field-set!=
+   alone misses =&raw-table-*-set!=, which directly invokes
+   =##unchecked-structure-set!=. There is no audited common POO write entry for
+   these SDK operations today.
+2. A write barrier may deny writes before their effects, or record a monotonic
+   mutation generation and refuse the admission afterward. These are different
+   guarantees: late refusal does not roll back an executed effect.
+3. Ownership must include wrapper route fields, backend hash/test/seed/lock,
+   backend replacement and any class/method dispatch state actually used. The
+   read and instance tables need separate coverage. There is no manual purity
+   annotation or caller-maintained history counter in the user interface.
+4. A shared route authority may invalidate several dependent receivers. A child
+   edit must not reuse a parent's cached plan, but a genuinely shared authority
+   change must not be hidden merely to preserve parent cache hits. Coverage must
+   follow actual selected dependencies and replay, not scan unused branches.
+5. Source currentness must still be rechecked before root admission returns.
+   Nested obligations, both contributor requirements and diagnostic order remain required.
+   A metadata generation cannot establish external-file atomicity or provider
+   safety. No optimization is justified by this result alone.
+
+This is a trusted extension-runtime design boundary, not a promise that POO
+sandboxes arbitrary Scheme with unrestricted runtime/FFI access. Public field
+configuration stays simple; ordinary users do not maintain route generations.
+Before selecting a production repair, decide which low-level mutation
+capabilities an extension is allowed to retain. An epoch on only the ordinary
+object setters would miss exactly the reproduced paths.
+
+* Reproduction and evidence boundary
+
+From the product checkout, use its declared Gerbil package environment and the
+heap-fenced Core =just test-file= entry for =t/mop-route-mutation-test.ss= and
+=t/issued-read-admission-test.ss=. Do not start another Scheme test concurrently.
+From Core, use:
+
+#+begin_src sh
+python3 dev/proofs/quint/check.py --case-prefix RouteMutation --receipt /private/tmp/route-mutation.ss
+cd dev/proofs/lean
+timeout 120s lake build
+#+end_src
+
+| Gate | Observed result |
+|------+-----------------|
+| Default-runtime isolation | 4 cases; all harness markers and natural exit 0; ten restored metadata locations and two actual foreign ref invocations |
+| Actual SourceAdmissionContract/services consumer | 2 cases; all harness markers and natural exit 0; two contributors, child obligations, cached parent/final child separation, explicit mismatch, stale plan and source-change rejection retained |
+| Full Lean library | 174 build jobs; 5924 declarations audited; standard Lean axioms only; ten new RouteMutation theorems |
+| Quint source coverage | All 183 maintained model sources typecheck |
+| Scoped Quint verification | Seven expected outcomes; positive model explores 96 distinct states with zero left on queue; five unsafe mutants and one non-vacuous acceptance witness produce the required counterexamples |
+| Final source binding | 281 source rows bound by the final scoped receipt; no source-cut drift during that run |
+
+The first backend attempt failed to bind a local socket under the sandbox. Its
+failure log remains retained; it is not a model rejection or an accepted proof.
+A separately owned local backend completed all seven cases. After strengthening
+the Lean history projection into explicit write/invoke/restore transitions, the
+whole scoped qualification was rerun and emitted a fresh current-source receipt.
+The existing 45-second case limit, five-second real-output deadline, 1GB TLC
+heap and assertion requirements were unchanged. Both owned backends were checked
+absent after the runs. The reproduction artifacts are local to
+=/private/tmp/core-route-mutation-20261018/=; raw logs stay outside Git.
+
+No result here certifies arbitrary concurrent runtime mutation, compiler/GC
+correctness, complete alias confinement or an implemented metadata write barrier.

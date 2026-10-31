@@ -1,0 +1,38 @@
+#+title: POO slot-read consumer qualification
+#+language: en
+
+* Ownership
+
+MOP implementation belongs to gerbil-poo object.ss and slot-observation.ss.
+Core consumes call-with-slot-read-observer and replay-slot-reads! through its
+SourceAdmissionContract. There is no Core dependency patch, injected object
+engine, qualification-* runtime API or separate test admission wrapper.
+
+The producer is published commit ece6f609357ea918038090559ac051a8d9f3e52f in
+/private/tmp/poo-slot-read-mop-20261018, on the existing
+feat/positive-closure-costs branch, following upstream 51a276a. Earlier
+qualification used 6e80132 on base 3c1f533; keep those receipts distinct
+from qualification of the integrated revision.
+The commit was fast-forward pushed to the existing remote branch on 2026-10-18,
+preserving upstream 51a276a. Core and the product now pin this same published
+revision after the integrated consumer gates pass. The existing shared installed
+package is not silently modified or used as a substitute.
+
+#+begin_src sh
+GERBIL_POO_SOURCE=/path/to/gerbil-poo-candidate \
+  CORE_REPLAY_ROOT=/private/tmp/core-slot-read-example \
+  just test-slot-read-replay
+#+end_src
+
+The recipe copies the complete checkout for private compilation and records its
+HEAD and actual source contents. Compiler checkpoints bind dependency source
+contents and conservatively rebuild following consumers after changes. There is
+no modification of the producer copy by the test recipe. Body-only dependency
+updates may retain consumers only after the existing interface comparison.
+Heap fences and the 120-second watchdog remain in force; failed launches remain
+local artifacts. Resuming a successful module checkpoint does not erase a prior
+timeout. No raw logs are committed.
+
+See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.12-mop-read-records-and-source-admission.org][32.12]] for the 48-case integrated consumer receipt, source identity and limits.
+The old injection experiment remains historical evidence, not a supported
+implementation path. No Loader or shared installed package is changed.

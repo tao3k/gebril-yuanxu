@@ -1,0 +1,239 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 12.11 Platform Context, Configuration Evolution and Publication Currentness
+#+property: DOCUMENT_ID 12.11
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS local-core-coordinator-no-module-adapter-or-loader
+
+* Purpose: keep the checked configuration and the published configuration together
+
+A user changes a service port from 80 to 443. While an Agent is checking that
+configuration, another contributor updates the shared module or Schema. The
+candidate may still have valid POO fields, and its earlier receipt may still say
+accepted. Neither fact proves that publishing against the current source is
+safe. The platform must bind the effective object to its selected admission
+Contract and observed inputs, then check those inputs again at publication.
+
+Users continue to assign ordinary values or derive an existing Profile when
+appropriate. They do not author Context, generation counters, file digests or
+currentness callbacks. This change adds platform coordination rather than a
+new configuration language, evidence store or user-facing patch vocabulary.
+
+* Audit: reuse the existing authorities
+
+| Existing owner | Reused capability | Important limit |
+|----------------+-------------------+-----------------|
+| =module-system/source/selection.ss= | Selected Graph generation and =admit-current= | A generation label alone is not freshness |
+| =module-system/source/build.ss= | Selected build Graph, unique =source-inputs=, preparation guards | Inputs include compiler/package/init sources; cached slots need explicit guard calls |
+| =module-system/source/admission.ss= | =module-source-admit-current!= compares positive and negative file observations | It is a file observation check, not a transaction lock |
+| =modules/json-schema/json-schema-receipt.ss= | Selected artifact, source reference, normalized IR and diagnostics | The artifact's =schema= field is a format identifier, NOT original schema data or a digest |
+| =modules/opentofu/source.ss= | Existing manifest/index/entry digest verification and parse of the verified bytes | Indexed provider artifacts do not yet expose the local Schema-file contract consumed by this coordinator |
+| gerbil-poo =declarative-metadata= | =bind-evidence=, interpreted relations, =publish= and refusal preserving old state | Binding does not authenticate arbitrary public POO fields |
+
+=SourceRef= equality compares kind/value and is not itself a source-version
+check. The coordinator therefore uses the admitted Graph guards and actual
+source observations rather than comparing paths, names or user-supplied labels.
+
+* Implemented Core coordinator
+
+[[file:../../../admission/publication.ss][AdmissionPublication.]] is maintained in Core. The platform supplies its selected
+build Graph, selected local file-backed Schema artifacts and complete admission
+Contract. Context is then generated lazily by the object; publication takes only
+the previous object and candidate. Neither the Contract nor Context is supplied
+by ordinary configuration at the publication call.
+
+#+begin_src scheme
+;; Platform code. These values already belong to controlled selection/preparation.
+(def Publication
+  (.cc AdmissionPublication.
+    graph: SelectedBuildGraph
+    schemas: SelectedSchemaArtifacts
+    contract: SelectedAdmissionContract))
+
+;; Platform preview/publication boundary, after the user defined Release.
+(defvalues (evidence next refusal)
+  (.call Publication .publish Previous Release))
+#+end_src
+
+The automatically constructed Context contains the exact selected Graph,
+generation, selected source observations, selected Schema observations and
+=admit-current=. Its check:
+
+1. Runs the existing build Graph guard.
+2. Checks selected Graph identity/generation.
+3. Reuses =module-source-admit-current!= for source and Schema observations.
+4. Runs the build Graph guard again after those observations.
+
+No new version registry or global module-directory scan was added. Existing
+guards may themselves have broader invalidation scopes; this change does not
+make those scopes more precise.
+
+* Schema binding uses actual normalized input, not a format label
+
+For each selected Schema artifact, the coordinator requires a valid artifact
+with no ignored diagnostic, and an absolute local file source reference. It
+reads that file once, parses the captured text through the existing JsonSchema
+decoder, and compares the existing normalizer's public IR projection with the
+artifact normalization. It then retains the captured text for subsequent file
+currentness checks. A different valid Schema is not accepted merely because its
+path or artifact format name matches.
+
+The decoder gained =yuanxu-json-schema-read-port=; the existing file reader
+delegates to it. Thus parsing captured text and reading files use one decoder,
+not two JSON policies or a second Schema evaluator. The initial implementation
+incorrectly treated artifact.schema as content; focused controls exposed that
+mistake, and it was replaced by normalized-IR comparison.
+
+Semantic equivalence at initial capture can accept a reformatted file. After
+capture, any text change conservatively invalidates that observation, including
+whitespace. This is a deliberate safe baseline, not minimal semantic invalidation.
+
+* Admission and publication sequence
+
+The coordinator uses existing metadata input/output/formula checks and public
+=bind-evidence=. Its controlled executor checks Context immediately before
+calling Core =.admit=. After the existing accepted-evidence output check, the
+invocation's =context-current= relation checks Context again. Exact candidate,
+Contract and Context binding is also checked by the public library.
+
+An edit during admission is therefore refused in the logic phase before the
+candidate is returned as the next published value. An edit detected before
+admission is a source-phase refusal. Both return false result, the exact previous
+object and a metadata failure through existing =metadata.publish=.
+
+Initial Context construction is preparation: invalid or already mismatched
+artifacts can raise before invocation begins. No candidate was published, but
+that setup error is not claimed to be a three-value metadata refusal. Input and
+Context contents remain immutable premises. External effects are not rolled back.
+
+* Native controls and their boundaries
+
+[[file:../../../t/admission-publication-test.ss][The native Scheme suite]] has eight cases:
+
+- Platform-generated Context; parent resource already cached; child resource
+  and admitted candidate read port 443 while the old parent remains port 80.
+- Source and Schema edits after Context demand refuse before admission.
+- Source and Schema edits inside admission refuse at the publication relation.
+- Selected Graph replacement during admission refuses publication.
+- An old accepted receipt returned by a deliberately bad native override is
+  refused under the new platform binding.
+- Rebuilding the platform snapshot after an upstream source update permits
+  fresh admission without any user-maintained Context.
+- A stricter upstream Schema invalidates the old platform view; a fresh view
+  rejects port 443 while still accepting the old valid port 80.
+- A valid but different Schema file cannot be associated with an old artifact
+  during initial Context capture.
+
+The suite uses the actual selected-Graph resolver, build-Graph algorithm, source
+observation checker, JsonSchema artifact/normalizer, Core =.admit= and public
+binding/publication. Local files are real native temporary inputs. Publication
+preparation and the Graph generation capability are bounded fixture providers;
+the Graph-replacement injector is not an implemented concurrent selector.
+Effectful obligations only inject faults in tests and are not normal authoring
+practice. This is not a real AWS deployment or Kubernetes renderer qualification.
+
+Native Scheme controls use the existing heap-fenced =just test-file= entrypoint.
+All eight cases passed, as did the seven existing JsonSchema value-contract
+cases. Final suites reported MODULE-OK, HARNESS-OK and final OK without error
+case/check/harness or heap/stack overflow markers. No full local build or remote
+CI was run. Raw output remains in temporary artifacts.
+
+* Practical gains and why this belongs in this project
+
+** Ordinary users: simple edits retain a safe platform boundary
+
+Changing a port or image should not require knowing how revisions or receipts
+work. The same final candidate used for resource projection is admitted and
+returned on success. A stale attempt leaves the previous usable value available.
+This prevents a long-lived Agent/editor session from accidentally treating an
+earlier green preview as approval for a changed library or Schema.
+
+** Library maintainers: one policy point across reusable Profiles
+
+An organization can update a shared service Profile or tighten its Schema
+without asking every consumer to update version fields or write invalidation
+code. The platform observes selected inputs and refuses stale publication.
+The complete selected Contract is retained by reference, so a same-name Contract
+replacement cannot silently inherit approval. Object inheritance remains useful
+for genuine reuse; simple leaf changes remain assignments.
+
+** Scheme/POO integration: retain executable configuration meaning
+
+The same native objects support defaults, functional transformations, resource
+projection and admission. Public generic/slot protocols remain available for
+advanced domain extensions. The checked receiver need not be flattened to JSON
+and reconstructed merely to establish which configuration was admitted. JSON
+or YAML can remain final wire projections. This reduces translation boundaries
+for this Scheme-based Agent platform; it is not a claim that other runtimes
+cannot implement equivalent lifecycle controls.
+
+* Comparison and reflection
+
+** Repository-owned ecosystem UX controls
+
+The earlier [[file:../11-configuration-languages/11.20-module-structure-contract-and-authoring-ux.org][module-authoring comparison]] records pinned HiveBus host values and
+separate export-extension policy, and Omnibus's AWS input/type/resource owners.
+These are historical source controls, not newly refreshed upstream snapshots.
+Their lesson is concrete: a user changing an IP or instance setting should not
+repeat loading, type or export machinery. Context belongs behind that same
+boundary. Contributors supply reusable Profiles and schemas; the platform owns
+selected-input policy. Ordinary configuration must not become version bookkeeping.
+
+** What is already solved elsewhere?
+
+[[https://www.kcl-lang.io/docs/0.12/user_docs/guides/validation][KCL]] already checks structures and user constraints and generates/validates
+configuration. [[https://nickel-lang.org/user-manual/contracts/][Nickel]] already combines contracts with lazy evaluation; its
+[[https://nickel-lang.org/user-manual/merging/][merge system]] carries contracts, defaults and priorities. [[https://nixos.org/manual/nixos/stable/][NixOS modules]] already
+have option types, merging and assertions. Field checking or simple composition
+is not a differentiator established by this work.
+
+** What specific problem does this integration address?
+
+Its target is a long-lived native Scheme configuration process: several Agents
+or maintainers edit shared inputs while a cached receiver, preview and admission
+result remain in memory. One platform-owned selected-input boundary ties that
+receiver to the actual Contract and rechecks currentness before value publication.
+Comparing only final JSON fields would not establish those relationships. Other
+systems can implement this lifecycle too; this is a demonstrated integration
+benefit in this repository, not a language-expressiveness superiority theorem.
+
+** Where are we still weaker or more expensive?
+
+[[https://nix.dev/manual/nix/2.35/store/][Nix's immutable store]] is a stronger reproducible-input foundation than our
+mutable-file observations. Checks here cannot prevent a file changing after the
+last observation, detect an ABA edit restored before observation, or provide a
+cross-process compare-and-swap publication. A future immutable artifact or
+publication-lease integration must close that boundary; do not claim it is done.
+
+Each currentness check reads selected source/Schema observations; existing Graph
+guards can repeat some work. Cost grows with selected bytes and dependencies,
+not merely with edited fields. No thousand-module startup or incremental-speed
+claim has been measured. Content-addressed immutable inputs and verified
+dependency-scoped revisions are future optimization options, not reasons to
+weaken checks or trust file timestamps.
+
+The native language also does not supply KCL/NixOS-style field discovery,
+actionable stale-input diagnostics or a polished effective-value diff by itself.
+Current refusal causes retain file paths, but the UI still needs to present
+which contribution changed and how to refresh. Better UX requires that product
+work; adding more POO syntax to ordinary user configuration would not solve it.
+
+* Remaining integration scope
+
+The [[file:12.12-publication-owned-admission-associations.org][publication-owned association design]] specifies the next boundary: owner-declared
+export/Contract/Schema associations projected from the selected Graph, rather
+than a platform-maintained artifact list. These are Contract-system design
+targets, not additional results of the validation reported above. Init-to-build
+integration belongs to the separate [[file:../13-module-loading/13.01-index.org][Module loading and building]] design track.
+
+The coordinator consumes an already selected Graph/artifact/Contract association.
+Automatically obtaining that association from real module publication is still
+module adaptation and was not implemented. This version supports local
+file-backed JsonSchema artifacts; inline, remote and indexed provider inputs
+need their owning source capability, not fake path labels. Unselected artifacts
+are not enumerated by this API, but completeness of the selected artifact list
+remains a controlled-platform premise until that adaptation is qualified.
+
+No runtime Loader, external deployment, automatic in-memory mutation tracking,
+concurrent publication transaction, dependency update or push is included.

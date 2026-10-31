@@ -1,0 +1,47 @@
+[
+  {
+    "attempt": 1,
+    "exit": 70,
+    "probe": "attempt-01-probe.ss",
+    "probe_sha256": "6ceeecd75445520f6dff0b336161a2064bfd497bff8029b339cd73e734f96dc3",
+    "log": "attempt-01.log",
+    "note": "draft EOF syntax failure",
+    "probe_snapshot_note": "Reconstructed from the exact edits after execution; original tool-captured logs are unchanged."
+  },
+  {
+    "attempt": 2,
+    "exit": 70,
+    "probe": "attempt-02-probe.ss",
+    "probe_sha256": "90758d45cd36a25c237130960b60091f574415efe48f7128422c1f491caebc20",
+    "log": "attempt-02.log",
+    "note": "package descriptor absent; relative ./support import resolved incorrectly",
+    "probe_snapshot_note": "Reconstructed from the exact edits after execution; original tool-captured logs are unchanged."
+  },
+  {
+    "attempt": 3,
+    "exit": 70,
+    "probe": "attempt-03-probe.ss",
+    "probe_sha256": "90758d45cd36a25c237130960b60091f574415efe48f7128422c1f491caebc20",
+    "log": "attempt-03.log",
+    "note": "old std/srfi path not present in this interpreter",
+    "probe_snapshot_note": "Reconstructed from the exact edits after execution; original tool-captured logs are unchanged."
+  },
+  {
+    "attempt": 4,
+    "exit": 70,
+    "probe": "attempt-04-probe.ss",
+    "probe_sha256": "6f38417f265a4cd1b38f5dabb72bc6c876889b5e759a03c4f4ba4d8a5e439beb",
+    "log": "attempt-04.log",
+    "note": "malformed let* binding list",
+    "probe_snapshot_note": "Reconstructed from the exact edits after execution; original tool-captured logs are unchanged."
+  },
+  {
+    "attempt": 5,
+    "exit": 0,
+    "probe": "attempt-05-probe.ss",
+    "probe_sha256": "1b31d46b5659fd67128e0d13ef7d072d4b198937c503cfd3427ea4d96a15b300",
+    "log": "attempt-05.log",
+    "note": "initial successful combination; later copy-label assertion strengthened to exact equality",
+    "probe_snapshot_note": "Reconstructed from the exact edits after execution; original tool-captured logs are unchanged."
+  }
+]

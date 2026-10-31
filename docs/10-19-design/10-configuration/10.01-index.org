@@ -1,0 +1,45 @@
+#+title: 10.01 Configuration Module System: Design Reading Map
+#+language: en
+#+property: DOCUMENT_ID 10.01
+
+* Review sequence
+
+1. [[file:10.02-review-controls.org][Review controls]] and [[file:10.03-outcome-states.org][admission/plan/execution boundaries]].
+2. [[file:10.04-module-system-design-questions.org][Module-system design questions]], grounded in independent platform records.
+3. [[file:10.05-guestbook-context-and-contribution-design.org][Guestbook dependencies, contributions and lexical context candidates]].
+4. [[file:10.06-human-agent-module-authoring.org][Human-Agent authoring and review requirements]].
+5. [[file:10.07-guestbook-data-input-and-object-construction.org][Ordinary JSON/Scheme inputs and domain construction]].
+6. [[file:10.08-guestbook-construction-protocol.org][Concrete native Scheme construction proposal]].
+7. [[file:10.09-guestbook-construction-reflection.org][Evidence-to-decision comparison and unresolved controls]].
+8. [[file:10.10-gitea-postgresql-native-module-design.org][Gitea/PostgreSQL: dependency declarations, final-instance defaults, contribution conflicts and parent caches]].
+
+9. [[file:10.11-contribution-publication-isolation.org][Bounded native collection/publication controls and production boundary]].
+
+10. [[file:10.12-deep-selected-publication-controls.org][Deep export controls on frozen and current Core source, with real selected records]].
+
+11. [[file:10.13-selected-contribution-publication.org][Implemented Core collection, native admission and checked publication]].
+
+12. [[file:10.14-gitea-postgresql-publication.org][Maintained Gitea/PostgreSQL Contracts, source-bound contributions and final connection plans]].
+
+13. [[file:10.15-json-service-construction.org][JSON data construction, source-bound admission and Scenario-owned service integration]].
+
+14. [[file:10.16-selected-json-package-relocation.org][Observed JSON assets, selected-Graph packaging and relocated Scenario controls]].
+
+15. [[file:10.17-scheme-field-origins.org][Slot-attached Scheme override locations, JSON baselines and relocated field diagnostics]].
+
+16. [[file:10.18-native-copy-source-boundaries.org][Native copy/MOP audit, opaque source barriers and cached Scenario currentness]].
+
+17. [[file:10.19-service-publication-fixtures.org][Native Fixture preparation, relocation reuse and failure cleanup for Core qualifications]].
+
+18. [[file:10.20-module-system-assurance.org][Module-system assurance: JSON baselines, final-value admission, immutable artifacts and guarded plan publication]].
+
+The constructor proposals and source studies are distinguished from the focused
+Core implementation receipts in 10.13. None establishes product Loader qualification. Platform-specific analysis belongs in its own dossier:
+[[file:../../20-29-ecosystem-research/20-nixos/20.01-index.org][NixOS]], [[file:../../20-29-ecosystem-research/21-devenv/21.01-index.org][devenv]], [[file:../../20-29-ecosystem-research/22-flox/22.01-index.org][Flox]] and the other
+[[file:../../20-29-ecosystem-research/README.org][independent research units]]. The comparison must not become their source owner.
+
+
+* Contract vocabulary
+
+Use [[file:../12-contracts-types/12.20-aws-alignment-and-dynamic-typing.org][AWS alignment and dynamic typing]] to distinguish public value Types from
+Core contextual admission and historical construction proposals.

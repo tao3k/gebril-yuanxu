@@ -1,0 +1,127 @@
+#+title: 12.27.15 Publication-owned Responsibility Analysis
+#+property: DOCUMENT_ID 12.27.15
+#+language: en
+#+property: STATUS retained-evidence
+
+* Publication-owned analysis and request callback attribution
+
+The next audit identifies a missing integration, rather than a missing cache.
+The AWS root now uses a public value Contract and an ordinary YuanxuContract.
+The existing one-shot responsibility analysis was entered by the source
+Contract wrapper, but publication did not enter it for this ordinary root.
+Consequently registered children repeated the complete Context source check.
+
+Publication now uses the existing producer boundary:
+
+#+begin_src scheme
+(call-with-contract-analysis-root descriptor value context-value
+  (cut yuanxu-contract-admit descriptor value context-value))
+#+end_src
+
+The token matches the exact Contract, candidate and Context. The producer
+consumes it before value checking, classification or open obligations. Only
+explicit responsibility edges receive the corresponding child token. This
+does not memoize evidence, source bytes, validation results or callback results.
+The existing contribution Context checks actual registered Contract identity
+and its observed revisions. A registered child with the original platform
+handler needs no second whole-Graph traversal in that handler; root checks
+still surround real platform callbacks. Inherited or replaced Context handlers
+retain full checks. A nested independent admission or an override's second
+inherited producer invocation has no token and retains its full check too.
+
+The focused publication test uses the real source Graph, Context base,
+producer, evidence binding and publisher, with explicit test policy callbacks.
+It verifies one analytic child, a full root and an independent admission;
+calling the child's inherited producer twice makes the second call full.
+Rejecting the child prevents publication and preserves the previous object.
+Running the new assertion against the prior publication producer fails with
+zero analytic children instead of one. The repaired producer passes. The
+existing contract-analysis mutation and independent-admission controls pass
+as well. These policy probes are Core tests, not module-author requirements.
+
+** What the request callback actually does
+
+The build Graph observes each existing external request's getter and
+=admit-current= invocation in a =dynamic-wind= bracket named
+=(build-request position)=. Position refers to the existing request sequence;
+it does not create another request tree or read identity slots during
+admission. The observer closes the bracket on failure. It grants no authority
+and changes no read-window or validity boundary.
+
+The same observed AWS Case records this callback partition:
+
+| Reads inside one request bracket | Brackets | Total reads |
+|----------------------------------+----------+-------------|
+| 0 | 64 | 0 |
+| 8 | 132 | 1056 |
+| 176 | 7 | 1232 |
+| Total | 203 | 2288 |
+
+The seven 176-read brackets each include a 167-read public configuration
+guard, plus nine other reads. These nested reads are inclusive here, and are
+not added again to the exclusive Graph table below. No native-import, Nix or
+package stage occurs inside these measured request brackets. That observation
+does not make an extensible request getter or callback universally pure.
+Lazy request preparation still occurs before callbacks when external packages
+are first demanded; that boundary remains outside any fused pure window.
+
+The remaining before-guard hotspot is 139 brackets: 119 read the 167-file
+Graph closure and 20 perform no physical read because the existing window
+already covers their input. Four complete traversals were removed by restoring
+the responsibility producer boundary, not by dropping all request guards.
+The seven after-guards still read 1169 files in total. Configuration, package,
+root Context and publication-return checks remain independent across open
+callbacks. The remaining 19873 before-guard reads are an open optimization
+target, not a claim that every one is necessary.
+
+** Same-Case receipt and qualification boundary
+
+| Work | Previous pure-stage receipt | Publication-owned analysis |
+|------+-----------------------------+----------------------------|
+| Actual file reads | 48923 | 48199 |
+| Build-admit-before reads | 20541 | 19873 |
+| All Graph-current reads | 25565 | 24897 |
+| File requests | 125057 | 122129 |
+| Read windows | 526 | 522 |
+| Publication guard bodies run | 265 | 261 |
+
+The qualified reduction is 724 actual reads, including four complete
+167-file before-guard traversals. Request counts alone are not the result.
+All other Graph-current call-site totals are unchanged. The same init-owned
+=tests.qualification= selection of JsonSchema, Funflow and AWS runs through
+=.run=, with observation enabled and the existing progress-aware idle and
+total budgets. It exits naturally with seven MODULE-OK, two HARNESS-OK and
+two final OK markers, without error, heap or stack failure markers. Real
+Schema transition, Schema/Contract/Context stale-evidence refusals, preserving
+the old published value and fixture cleanup remain in this Case.
+
+The source-only qualification uses gerbil-poo revision
+=fdeadfa40ca5cee5fe20308985aef1577f2eb49b=. It excludes a concurrent,
+independent compiled-build-artifact issuance change in publication; that
+change is preserved in the working checkout. This receipt does not qualify
+that separate integration or a compiled-artifact path. The earlier attempt
+to include its publication imports without its new artifact module failed
+module resolution and is not counted as a pass.
+
+Nix union time in this receipt is 74333828 microseconds, versus 12643939 in
+the prior receipt; worker time is 110790 ms. Source-guard CPU is 4717910
+microseconds versus 6355266. These are not matched timing controls and do not
+establish an endpoint speedup. The meaningful evidence here is the reduced
+physical work and preserved rejection semantics, not a performance claim
+based on one successful run.
+
+Focused reproduction in the source-only qualification environment uses the
+existing heap-fenced entrypoints, serially:
+
+#+begin_src text
+just test-file t/admission-publication-test.ss
+just test-file t/contract-analysis-test.ss
+just test-file t/module-build-graph-test.ss
+just test-file t/module-testing-isolation-test.ss trace
+#+end_src
+
+The build-Graph control also passes after request-bracket instrumentation.
+No new cache, runtime Loader, runner, upstream edit, heap/timeout increase or
+full build is introduced by this change. Raw receipts remain local artifacts.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

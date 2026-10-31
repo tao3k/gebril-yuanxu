@@ -1,0 +1,97 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.16 Live Registry and Consumer Generation
+:PROPERTIES:
+:ID: agentic-ai-lab-context-live-registry-generation
+:STATUS: local-registry-verified-durable-host-open
+:END:
+
+[[file:17-registry-verification.org][10.06.43.17]] binds the final unchanged-input joint run: all 51 Quint
+Cases, six Context Lean roots, 23 ASCENT checks, the historical ORG regression
+and the fresh 69-control Scheme replay. Its 68 source identities and compiled
+package aggregate distinguish current registry checks from older receipts.
+
+* Subject and ownership
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns the lifecycle. Modules owns issuance, replacement,
+Query selection and admission; Proofs only consumes it. RFC 0015 is a Case.
+Content equality is not consumer-subject equality. Review binds registry ID,
+generation, Session, full ORG Element/Contract/environment cut, Governance,
+scope and canonical payload. Identical rebinding must not recreate a subject.
+
+=consumers.ss= is a process-local serialized issuer. Private state tracks exact
+issued POO objects and the current collection. Copies/extensions do not issue
+membership or Query authority. Scheme integer generations increase without
+wrapping; registry IDs are process-local, not persistent. Core owns review seals.
+
+* Replacement and retention
+
+=org-context-consumer-set= issues generation zero after validation.
+=org-context-consumer-replace!= validates before retiring the current set.
+Empty slices unbind; identical rebinding advances again. Invalid/stale
+replacement cannot update the registry. Replacement is collection-wide:
+unchanged Sessions also require fresh selection/review. Selective generations
+would require a separately validated protocol.
+
+=org-context-consumer-current?= checks issuance/currency. The stamp is data,
+not authority. =org-context-consumer-contexts= remains historical structural
+inspection, not live Query. =org-context-query= issues a current selection;
+=org-context-query-contexts= rejects stale/copied selections. This is not
+another language: unified Query/GQL and its complete result adapter remain
+a distinct boundary. Admission rechecks currency at construction, review and
+use, binding the issued stamp into the sealed subject. Refusal reopens consumer
+obligations; it does not grant effects. ASCENT consumes reevaluated observations.
+
+Project acceptance has independent source/review/permission premises. The
+Scheme Case uses a separate target registry and actual Core/Assurance/Governance
+checks. Producer replacement leaves it current. This is independent acceptance,
+not a persistent Project store. Target premise changes can still reopen its
+obligations; historical observations/counterexamples must not be erased.
+
+* Focused evidence and separation
+
+Quint passed seven Cases: safe exploration, fresh rebound consumption,
+retained Project acceptance, and injected old collection/Query/review replay
+and retirement-erasure faults. Safe exploration: 48 generated/20 distinct,
+zero queued. Reachability: 16/17 distinct. Four faults: 11/17/14/15 distinct,
+with required failure exits and actual counterexamples. This covers three
+finite generations, not private issuer authentication.
+
+LeanPOO v0.1.1 supplies Focus. Six new theorems/four guards cover arbitrary
+natural generations, monotonic replacement, ABA refusal, fresh rebound and
+Project retention. All six Context roots built: 77 jobs, 49 laws/50 guards,
+no sorry/new axiom. These are typed conditional laws, not runtime refinement.
+Real Scheme replay passed 69 checks: 20 new and 49 reused. Actual ORG Contract,
+Sessions, private Core seals and Assurance/Governance objects are exercised.
+ASCENT remains relational inference, not a membership/review/grant issuer.
+
+Initial local TLC failed opening its server in the sandbox. Authorized retry
+kept limits. Lean initially collided with a field name; naming the Focus
+explicitly fixed elaboration. Scheme initially hit the existing heap limit:
+same-named slot expressions recursively referred to their own slots. Distinct
+value parameters fixed recursion; no heap expansion. Failures are not passes.
+
+Boundary review also found that diagnostic stamp data must be detached from
+the private mutable list. The API now returns a copy. Real Scheme checks
+attempt to rewrite that returned generation, reject old Query issuance,
+withdraw stale ASCENT candidates and verify that invalid replacement leaves
+the current collection intact. The joint gate started before this repair is
+not a stable-source receipt; only a subsequent unchanged-input run qualifies.
+
+Focused checks, from repository root:
+#+begin_src sh
+python3 packages/proofs/context-lifecycle/check_quint.py --model ContextRegistry
+(cd packages/proofs/lean-poo && timeout 120s lake build AgenticAILabContextLifecycleProof)
+GERBIL_PATH="$CONTEXT_SCHEME_PACKAGE_PATH" \
+GERBIL_LOADPATH="$CONTEXT_SCHEME_PACKAGE_PATH/lib:$CONTEXT_ASCENT_GERBIL_PATH/lib" \
+GAMBOPT=max-heap=1G,debug=q \
+python3 scripts/temporal/run_with_progress.py --timeout 120 -- \
+python3 packages/proofs/context-lifecycle/run_handoff.py
+#+end_src
+
+Select existing installed packages, not a temporary SDK. Bounds remain TLC
+60s/12s silence, one worker/512 MiB; Lean 120s; Scheme 120s/5s silence/1 GiB.
+Storage, bindings, old Memory and delivery are unchanged. External Session
+retirement must call explicit replacement; automatic reconciliation, durable
+identity, concurrent ownership, issuer-history reclamation and complete
+Query/GQL adaptation remain open.

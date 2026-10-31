@@ -1,0 +1,88 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Organization at Ecosystem Scale: NixOS and Doom Emacs
+#+date: [2026-10-15]
+#+property: STATUS source-research-and-design-no-loader-implementation
+
+* Evidence and limits
+
+This extends the [[file:07-ecosystem-task-interfaces.org][actual ecosystem comparison]] from user syntax to ownership,
+catalog discovery and loading stages. Nixpkgs source links below were read from
+master on 2026-10-15, not a pinned release or measured performance run. Doom
+source was inspected under .data/doomemacs-core at local HEAD
+8e4fbbae048a9abe897bf1878cbd32732a6d41d7. No Nix evaluation, Doom startup,
+installation, package synchronization or POO Loader experiment was run.
+
+* NixOS: directory ownership, an explicit inventory and option interfaces
+
+[[https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/module-list.nix][nixos/modules/module-list.nix]] is an explicit sorted inventory spanning
+config, hardware, programs, services, system and other categories. This gives
+maintainers a discoverable organization; directory position is not a runtime
+service dependency. It is not the same thing as a flake's nixosModules exports.
+
+The concrete [[https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/networking/ssh/sshd.nix][OpenSSH service module]] owns options, descriptions, defaults and
+conditional implementation. It reads config.services.openssh and gates service
+configuration with lib.mkIf cfg.enable. Declaring a service interface and enabling
+its configuration are different stages. A concise configuration entry is backed
+by a substantial maintained implementation, not a requirement that each user
+reconstruct it.
+
+[[https://github.com/NixOS/nixpkgs/blob/master/lib/modules.nix][lib/modules.nix]] collects the imported module structure, filters modules and
+merges declarations/configuration. Lazy option values do not imply that every
+disabled module's source was never collected or imported. The module result also
+exposes graph information. Collection, option demand and service execution must
+not be described as one undifferentiated lazy event.
+
+Adopt the explicit interface inventory, domain ownership and option-level
+explanation. Do not copy a broad inventory into a Gerbil facade that statically
+imports every Profile factory, or assume that directory partitioning by itself
+produces selected-only evaluation. These source observations establish neither
+an asymptotic comparison nor a claim that NixOS's organization is universally poor.
+
+* Doom: selection, acquisition and configuration have separate owners
+
+The local [[file:../../../../.data/doomemacs-core/static/init.example.el][static/init.example.el]] groups modules under categories such as
+:completion, :ui, :editor and :lang, with flags on individual selections. Its
+comments direct users to a module index, module/flag documentation and source
+navigation. A short selection form is supported by a navigable ecosystem.
+
+[[file:../../../../.data/doomemacs-core/lisp/doom-modules.el][lisp/doom-modules.el]] uses group/name keys, selected-module state and load
+paths. doom-module-list distinguishes selected modules from an explicit broader
+directory search. doom-module-locate-path searches configured roots; ordering of
+roots has semantic consequences. The inspected doom! implementation includes
+noninteractive/bootstrap behavior, so do not infer startup behavior from the
+selection syntax alone.
+
+[[file:../../../../.data/doomemacs-core/lisp/doom-packages.el][lisp/doom-packages.el]] documents package! as a metadata declaration that does
+not itself install or load the package. doom-package-list normally reads the
+enabled module set, while an explicit broader mode can inspect all modules.
+The package collector has deliberate private-declaration precedence and repeated
+private-file reads; this is a framework policy, not a cost-free language feature.
+
+The local [[file:../../../../.data/doomemacs-core/docs/getting_started.org][getting-started guide]] separates init/config/packages/autoload/doctor
+roles and warns that use-package! without a deferring trigger can eagerly pull
+in dependencies. Autoload generation, package acquisition, configuration and
+first use are separate work. Broad discovery and synchronization still cost
+work even if later execution is deferred.
+
+Adopt category navigation, module documentation, explicit lifecycle roles and
+targeted diagnostics. Do not copy flags into a second Scheme configuration DSL,
+silently resolve independent publishers by search-path precedence, or install
+packages/method bundles while listing fields. A sync step or deferred trigger
+does not by itself remove first-use cost.
+
+* Decisions for the POO ecosystem
+
+| Concern | Useful precedent | POO decision |
+|---------+------------------+--------------|
+| Many maintained providers | NixOS domain directories and inventory | Explicit publication owners, categories as navigation and qualified identities |
+| Find a supported field | NixOS option descriptions; Doom index and contextual help | Project native Contract metadata and intent guidance without forcing task getters |
+| Selected versus available | Doom selected-list versus explicit all-module discovery | Separate bounded lookup from paged catalog enumeration |
+| Acquire versus activate | Doom package metadata versus load triggers | Separate source/build closure, prototype/Profile demand, method composition and runtime |
+| Private/community contributions | Doom roots and private precedence | Keep explicit source authority and conflicts; no accidental publisher winner |
+| Growth of combinations | Neither file count nor syntax solves it | Author sparse reusable Profiles/Scenarios; do not materialize their Cartesian product |
+
+The [[file:../164-funflow-public-configuration/12-ecosystem-organization-and-demand.org][organization and demand design]] defines proposed ownership, publication,
+invalidation and scale acceptance boundaries. It adds no new Loader, scheduler,
+catalog implementation or public selection syntax.

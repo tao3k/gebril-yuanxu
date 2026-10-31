@@ -1,0 +1,290 @@
+#+title: 12.15 Checked Objects, Contextual Admission and Publication
+#+property: DOCUMENT_ID 12.15
+#+language: en
+#+property: STATUS design-only-no-implementation-loader-tests-or-push
+
+* Source boundary and decision
+
+The [[file:12.17-checked-core-publication-implementation.org][implemented Core handoff]] now owns normalization in the existing
+producer through value-contract. The inherited .admit wrapper below is historical
+design and must not be installed in addition to that production behavior.
+
+The bounded handoff is now exercised in
+[[file:12.16-checked-publication-scheme-validation.org][the isolated Scheme validation]]. Its adapter remains test-only; the production
+integration and recursive Graph discussion below remain design. The original
+no-execution statements describe this document's source-review stage.
+
+This extends [[file:12.14-object-contract-alignment.org][the Object Contract alignment]] using gerbil-poo PR 13 at
+=26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=. The additional upstream changes
+introduce joint recursive Graph/approval snapshots and final =admit:= hooks.
+See the pinned [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/recursive-approvals.ss][recursive-approvals implementation]] and
+[[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/doc/recursive-validation.md][recursive validation documentation]]. Core still locks =099b381=.
+The Scheme below is proposed Core integration using existing public operations;
+it has not been installed or executed. Historical native controls remain separate.
+
+Preserve the existing .admit arity and evidence representation. Its candidate
+field must identify the actual checked result, which may differ from the input.
+Publication must install that exact result. No additional receipt, validator,
+approval-result cache, context registry or public macro is introduced.
+
+* One complete admission association
+
+The AWS value Contracts and defaults are defined in document 13. Domain libraries
+own their provider fields and logical network relationship. Core owns the policy
+over selected Graph/source/Schema versions. A platform-resolved admission
+descriptor retains BOTH actual object references. Symbolic identities are labels.
+
+#+begin_src scheme
+;; Proposed Core adapter. PlatformPolicy is the selected existing Core policy;
+;; it classifies contextual eligibility and supplies contextual obligations.
+;; Its complete definition depends on the selected publication, not AWS fields.
+(.def (AwsAdmission @ YuanxuContract.)
+  identity: 'aws/profile-admission
+  value-contract: AwsProfileContract
+  policy: PlatformPolicy
+  .classify:
+  (lambda (value context)
+    (yuanxu-type-classify policy value context))
+  .obligations:
+  (lambda (value context)
+    (yuanxu-contract-obligations policy value context))
+  (.admit =>
+    (lambda (previous)
+      (lambda (candidate context)
+        (previous (validate value-contract candidate) context)))))
+#+end_src
+
+This is ordinary inherited slot-function refinement. The inherited .admit uses
+the effective descriptor receiver, so the existing single Core evidence producer
+records AwsAdmission, not PlatformPolicy or the value Contract alone. Its
+classification and obligation callbacks see the checked candidate. Invalid
+structure raises the public validation error before contextual admission.
+The exact descriptor is retained; no domain code appends contract references to
+evidence. The adapter's effective-receiver behavior needs a focused executable
+control before implementation claims are made.
+
+Changing value-contract, policy, Schema associations or their semantics must
+create a new immutable descriptor and, where version policy changes, a new
+platform Context. In-place mutation is not made safe by eq?. Association
+resolution must verify that the Schema artifact used to build InstanceInput is
+the artifact retained for the selected publication/export. This automatic
+association and completeness check remains unimplemented; the names above do
+not stand in for an installed resolver or a caller-maintained artifact list.
+
+Do not use the inherited Core Type .validate as the checked-object API: its
+current implementation returns its original candidate after evidence admission.
+Use public POO validate for value normalization, and .admit for evidence. Here
+.admit owns the single validate call, and its evidence exposes that call's result.
+Recognition through element? is also not a replacement for normalization.
+
+* Parent cache and the final Scenario receiver
+
+Keep the same AWS defaults and scalar modification. This small Scenario exposes
+a resource-input preview, not an AWS deployment or a fabricated vpc_id field.
+
+#+begin_src scheme
+(.def (AwsScenario @ [] config)
+  config: AwsDefaults
+  resource:
+  (.o instance_type: (.get config web settings instance_type)
+      network: (.get config web network-ref)))
+
+(def ParentResource (.get AwsScenario resource))
+;; The parent preview has now been demanded and cached.
+(.def (Production @ AwsScenario)
+  config: =>.+
+  (.o web: =>.+
+      (.o settings: =>.+ (.o instance_type: "t3.medium"))))
+
+(def ResourceShape
+  (.cc ObjectContract.
+    responsibilities: (.o instance_type: String network: Symbol)))
+(def ScenarioShape
+  (.cc ObjectContract.
+    responsibilities: (.o config: AwsProfileContract resource: ResourceShape)))
+(def ScenarioValueContract
+  (refine ScenarioShape
+    (lambda (value path)
+      (if (and
+            (equal? (.get value resource instance_type)
+                    (.get value config web settings instance_type))
+            (eq? (.get value resource network)
+                 (.get value config web network-ref)))
+        '()
+        (list (.o kind: 'stale-resource-projection
+                  path: (append path '(resource))))))))
+
+(.def (ScenarioAdmission @ AwsAdmission)
+  value-contract: ScenarioValueContract)
+#+end_src
+
+The config identifier in resource is an outer lexical slot binding. The child
+receiver resolves it to Production.config; it is not a previously extracted
+AwsScenario.config. Nested validation normalizes config and validates the final
+resource relationship. Publication consumes the returned Scenario, not a fresh
+assembly of raw Production.config and ParentResource.
+
+Expected source-level result: ParentResource.instance_type stays "t3.small";
+the checked Production resource reads "t3.medium". This scalar is assigned,
+while containing objects are refined to preserve inherited fields. A cached
+parent projection is not a shared child cache. If resource is instead assigned
+the fixed ParentResource, stale-resource-projection must refuse. A malformed or
+missing network reference is rejected by AwsProfileContract before that final
+projection relation is accepted. This design must be tested with a changed
+Function field as well as data-only settings: validate can return a new root.
+
+* Publication: bind after normalization, inside the existing failure boundary
+
+Core already has AdmissionCall, evidence-view, Context.admit-current and
+metadata.publish in [[file:../../../admission/publication.ss][admission/publication.ss]]. Retain those mechanisms.
+The proposed replacement function below keeps admission within publish's source
+callback so a validation exception cannot accidentally return a next value.
+The nested invocation checks the exact normalized subject AFTER .admit returns.
+
+#+begin_src scheme
+(def (publish-checked previous candidate descriptor context-value)
+  (def current-call
+    (metadata.with-meaning AdmissionCall
+      (lambda (_key _request _evidence)
+        ((.get context-value admit-current))
+        #t)
+      #f))
+  (metadata.publish current-call previous
+    (lambda (raw)
+      ((.get context-value admit-current))
+      (def evidence
+        (yuanxu-contract-admit descriptor raw context-value))
+      (def checked (.get evidence candidate))
+      (def bound
+        (metadata.bind-evidence current-call checked descriptor context-value
+                                evidence-view))
+      (metadata.invoke bound
+        (lambda (_value) (values evidence checked))
+        checked))
+    candidate))
+
+;; The platform supplies the resolved descriptor and Context. The user does not.
+(defvalues (Evidence Next Refusal)
+  (publish-checked Previous Production ScenarioAdmission Context))
+#+end_src
+
+AdmissionCall's existing input/output predicates and context-current formula
+remain intact. Its final meaning rechecks currentness after the source callback.
+The inner bind-evidence additionally requires exact checked subject, effective
+descriptor and Context references. No second validate runs here and no checked
+Function is wrapped a second time. .admit refusal evidence fails the output
+predicate; raised validation/context failures inside the source callback retain
+the source failure boundary. On metadata refusal, publish returns #f, the exact
+Previous value and its refusal. It does not mutate a global current pointer.
+Unrelated preparation/programming exceptions can still propagate; callers must
+install Next only after a successful return. Arbitrary external callback effects
+are not rolled back.
+
+Existing AdmissionPublication. must eventually delegate to this sequence and
+resolve the complete descriptor/Context association automatically. It does not
+do so today. The nested invocation composes existing contracts; it creates no
+new metadata protocol and changes no Generic dispatch or standard library API.
+
+* Rejecting old evidence
+
+For an explicit replay check, the platform captures the currently expected
+checked subject, descriptor and Context; it never reads those expectations out
+of the old receipt. Rebind from the original AdmissionCall template, not from a
+previously bound invocation. There is no implicit permission to reuse approval.
+
+#+begin_src scheme
+(def (check-existing-evidence previous checked descriptor context-value evidence)
+  (def current-call
+    (metadata.with-meaning AdmissionCall
+      (lambda (_key _request _evidence)
+        ((.get context-value admit-current)) #t)
+      #f))
+  (metadata.publish
+    (metadata.bind-evidence current-call checked descriptor context-value
+                            evidence-view)
+    previous
+    (lambda (_value) (values evidence checked))
+    checked))
+
+;; A platform-resolved Contract revision, even with unchanged diagnostic names.
+(def NextValueContract (.cc ScenarioValueContract))
+(def NextAdmission
+  (.cc ScenarioAdmission value-contract: NextValueContract))
+;; Evidence was produced under ScenarioAdmission: descriptor binding refuses.
+(check-existing-evidence Previous Next NextAdmission Context Evidence)
+;; CurrentContext is freshly captured by the platform, not copied from Evidence.
+;; If it differs from Context, context binding also refuses old Evidence.
+(check-existing-evidence Previous Next ScenarioAdmission CurrentContext Evidence)
+#+end_src
+
+These calls illustrate successful-admission evidence replay under changed
+expectations. They are expected-refusal examples, not newly executed receipts.
+On ordinary success the resource-input preview of Next is
+=instance_type: "t3.medium", network: private=, while ParentResource retains
+="t3.small"=. The actual AWS renderer must still resolve real subnet/security
+group resources; this preview grants no deployment authority.
+
+| Change | Why old evidence refuses | Fresh path |
+|--------+--------------------------+------------|
+| Parent validated/cached; child changes instance_type | Evidence subject is the parent, not the checked final child | Admit the child; project only from its checked result |
+| Same diagnostic name, different value Contract | New immutable admission descriptor retains the new Contract reference; old admission-contract differs | Resolve a new descriptor, then admit again |
+| Context replaced, even if labels look equal | Exact context reference differs | Admit under the newly resolved platform Context |
+| Schema/source changes during admission | Context.admit-current fails after the callback | Keep Previous; rebuild association/Context from current inputs and retry |
+| Old Context reused after its watched inputs changed | Rechecking the original captured inputs fails | Do not relabel old evidence or edit its context |
+| Fixed parent resource inserted into child | Final projection relation fails before contextual acceptance | Preserve receiver-relative computation or supply a correct replacement |
+
+Eq? binding does not authenticate a freely fabricated POO object, detect hidden
+mutable interiors, or prove discovery complete. Controlled production, immutable
+metadata and complete watched dependencies remain premises. Immutable persistent
+objects are the default; supported mutable revision paths require upstream
+revision guards, including change-and-change-back (ABA) controls.
+
+* Reuse the new upstream joint boundary where recursive Graphs are involved
+
+Do not add a Core transaction engine. Upstream recursive-approvals.stage-with
+already captures ONE installed Graph/metadata snapshot and guards both installed
+and proposed approval metadata with existing lens checks. Its prepare callback
+receives the existing Graph and final-admission callback. That callback runs
+after local normalization but before predecessor retirement; it must return #t.
+Core's future adapter must associate selected canonical objects and their actual
+contracts with that final callback and reject on any refused admission. Automatic
+mapping of the module Graph to registered recursive nodes is not implemented.
+
+Two failure boundaries must stay distinct:
+
+- Local closure or joint final admission failure: old Graph/metadata pair remains
+  installed; failed-candidate capabilities refuse. Core policy belongs here if
+  it must veto Graph installation.
+- recursive-approvals.submit! installs the pair BEFORE its entry observer. A
+  later evidence/effect refusal preserves the new installed pair and old entry
+  context. It does not restore the previous Graph. observe! can retry against
+  the installed pair without reconstructing it.
+
+The ordinary publish-checked example above publishes one persistent value and
+does not call submit!. It must not be described as atomic Graph installation
+plus external deployment. Snapshot identity/revision guards supplement, rather
+than replace, Core's source and Schema policy. Sequential access, complete
+registered versions/dependencies, lawful host identity correspondence and
+terminating callbacks remain upstream premises; no concurrent CAS or effect
+rollback claim is made.
+
+* Remaining work and acceptance controls
+
+Existing: ObjectContract validation/refine, final receiver rebinding, public
+bind-evidence/invoke/publish, Core's actual descriptor recording and source/
+Schema rechecks. The latest upstream also supplies guarded joint snapshots and
+the pre-retirement final admission hook. None was rerun for this document.
+
+Proposed: the normalized .admit adapter, checked-result publication, automatic
+complete export/Schema/Contract association, and the recursive Graph adapter
+only when a real consumer requires it. JsonSchema's arbitrary ProjectionContract
+still has no checked write-back; this example uses ordinary responsibilities
+over the complete Scenario instead. No second Schema evaluator is needed.
+
+Before implementation acceptance, focused Scheme controls must cover: actual
+derived descriptor identity; exactly one value validation; checked versus raw
+root with Function normalization; parent preview already cached; stale fixed
+preview; missing logical network; same-name Contract replacement; Context change;
+source change inside admission; exact Previous on refusal; and joint refusal
+versus post-install observer refusal. Do not convert source review or upstream
+Lean correspondence into a fresh Core execution claim.

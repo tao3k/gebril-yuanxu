@@ -1,0 +1,558 @@
+#+title: 10.08 Guestbook Construction: Native Contract Metadata, Bindings and Publication
+#+language: en
+#+property: DOCUMENT_ID 10.08
+#+date: [2026-10-17]
+#+property: STATUS concrete-design-listings-not-imported-compiled-or-runtime-validated
+
+* Scope and source authority
+
+This expands [[file:10.07-guestbook-data-input-and-object-construction.org][the two input paths]] into an internal construction design. It is
+Org design source, not a new Core implementation. Read the companion
+[[file:10.09-guestbook-construction-reflection.org][research-to-design reflection]] before interpreting the code as a settled protocol.
+
+The kernel uses native .ref/.slot?/.+/object<-alist and public .admit. It introduces
+no user macro, expression interpreter or string substitution language. Private
+construction results use defstruct, not another public configuration model.
+
+CoreObjectAdmissionContract. below is a documentation-local name for the older
+Core prototype-aware admission base, currently exported as
+YuanxuObjectContract. It is not the public ObjectContract. value Type
+from :clan/poo/object-contract. The older descriptor carries proto and recursive
+Core admission responsibilities; the public Type carries value responsibilities
+and validate/diagnose. This proposal does not add an alias export, rename the
+implementation or qualify the construction kernel. Its source remains in
+[[file:../../../types.ss][Core Types]]. See [[file:../12-contracts-types/12.20-aws-alignment-and-dynamic-typing.org][AWS alignment and dynamic typing]] for the current
+implemented boundary. Do not validate the same selected value twice by stacking
+both protocols.
+
+Other names in the listings are native POO forms, Core's exported predicate/
+classification evidence helpers, or ordinary std/sugar/SRFI list utilities
+(cut, iota, every, filter-map). Package imports are implementation concerns.
+The generic kernel/factories belong to one shared Core construction library that
+depends only on existing Core Contracts and POO/standard functions. Domain
+types.ss consumes that library; domain func.ss consumes Types for pure business
+constructors; objects.ss consumes those to define defaults/entries. interface.ss
+assembles publication once. Do not put the shared kernel and Types-dependent
+domain helpers in one func.ss and create a types/func import cycle.
+No role loads its own assembled interface or the root init.
+
+* Internal kernel: presence, binding and construction
+
+The source reader normalizes native decoded JSON maps to POO data objects once.
+It preserves arrays, scalars, null, unknown keys and paths; it never validates by
+discarding fields. The objectification body can reuse native JSON representations:
+
+#+begin_src scheme
+;; Shared Core construction library; native PureAList?/walist->list bindings.
+(def (objectify value)
+  (cond
+   ((PureAList? value)
+    (object<-alist
+     (map (lambda (row)
+            (cons (if (symbol? (car row)) (car row)
+                      (string->symbol (car row)))
+                  (objectify (cdr row))))
+          (walist->list value))))
+   ((list? value) (map objectify value))
+   ((vector? value) (map objectify (vector->list value)))
+   (else value)))
+
+(def missing (gensym 'missing-input))
+(defstruct constructed (value used))
+
+(def (construction-error kind path detail)
+  (error "configuration construction refused"
+         (.o kind: kind path: path detail: detail)))
+
+(def (present-value value name)
+  (if (and (object? value) (.slot? value name))
+      (.ref value name) missing))
+
+(def (require-admission contract value context path)
+  (let (evidence (.call contract .admit value context))
+    (unless (and (yuanxu-validation-evidence-accepted? evidence)
+                 (eq? (.ref evidence 'candidate) value))
+      (construction-error 'contract-rejected path evidence))
+    evidence))
+
+(def (resolve-input contract value bindings context path)
+  ;; Only a declared field can interpret JSON null as a hole.
+  (if (and (eq? value #!void) (.slot? contract 'input-binding))
+      (let* ((name (.ref contract 'input-binding))
+             (resolved (present-value bindings name)))
+        (when (eq? resolved missing)
+          (construction-error 'missing-binding path name))
+        ;; Scalar holes in this design require a complete value of the field Type.
+        (require-admission contract resolved context path)
+        (make-constructed resolved (list name)))
+      (make-constructed value '())))
+
+(def (construct contract baseline input bindings context path)
+  (if (eq? input missing)
+      (make-constructed baseline '())
+      (let* ((resolved (resolve-input contract input bindings context path))
+             (result ((.ref contract 'input-combine)
+                      contract baseline (constructed-value resolved)
+                      bindings context path)))
+        (make-constructed
+         (constructed-value result)
+         (append (constructed-used resolved) (constructed-used result))))))
+
+(def (replace-value _contract _baseline input _bindings _context _path)
+  (make-constructed input '()))
+
+(def (merge-record contract baseline input bindings context path)
+  (unless (object? input)
+    (construction-error 'expected-object path input))
+  (let* ((fields (.ref contract 'responsibilities))
+         (names (.all-slots input))
+         (unknown (filter (lambda (name) (not (.slot? fields name))) names)))
+    (unless (null? unknown)
+      (construction-error 'unknown-fields path unknown))
+    (let* ((parent (if (eq? baseline missing) (.ref contract 'proto) baseline))
+           (rows
+            (map (lambda (name)
+                   (cons name
+                     (construct (.ref fields name) (present-value parent name)
+                                (.ref input name) bindings context
+                                (append path (list name)))))
+                 names)))
+      (make-constructed
+       (.+ parent
+           (object<-alist
+            (map (lambda (row) (cons (car row) (constructed-value (cdr row)))) rows)))
+       (apply append (map (lambda (row) (constructed-used (cdr row))) rows))))))
+
+(def (merge-open-map _contract baseline input _bindings _context path)
+  (unless (object? input)
+    (construction-error 'expected-map path input))
+  (make-constructed (.+ (if (eq? baseline missing) (.o) baseline) input) '()))
+
+(def (replace-sequence contract _baseline input bindings context path)
+  (unless (list? input)
+    (construction-error 'expected-sequence path input))
+  (let (items
+         (map (lambda (value index)
+                (construct (.ref contract 'item-contract) missing value
+                           bindings context (append path (list index))))
+              input (iota (length input))))
+    (make-constructed (map constructed-value items)
+                      (apply append (map constructed-used items)))))
+#+end_src
+
+Omitted input uses the actual baseline, including false or empty values. An absent
+required field without a baseline stays absent and final native responsibility
+admission rejects it. Null without input-binding is passed to its ordinary field
+Contract; it is not silently replaced by a default. Names are enumerated only in
+the selected supplied record; omitted children remain inherited and unforced by
+construction. Final Contracts may subsequently demand them.
+
+The primitive objectifier assumes native walist JSON objects and symbol/string
+keys, with the reader's list/vector arrays. Hash-object reader modes are not
+silently accepted by this listing. Repeated object keys must be diagnosed before
+any decoding/normalization that discards them; that reader qualification is pending.
+
+* Contract factories: one field map, native admission
+
+The construction policy is attached to the same Contract objects that own field
+admission, not a parallel options table. Object fields come from responsibilities.
+List item admission is an ordinary native Contract obligation; this is not a
+second validator or an arbitrary expression evaluator.
+
+#+begin_src scheme
+;; Shared Core construction library: factories depend only on Core Contracts.
+(def (no-obligations _value _context) '())
+
+(def (scalar-contract identity predicate)
+  (.cc (yuanxu-predicate-contract identity predicate no-obligations)
+       'input-combine replace-value))
+
+(def (record-contract identity prototype fields)
+  (.cc CoreObjectAdmissionContract. 'identity identity 'proto prototype
+       'responsibilities fields 'input-combine merge-record))
+
+(def (sequence-contract identity item-contract)
+  (.cc
+   (yuanxu-predicate-contract identity list?
+    (lambda (values context)
+      (filter-map
+       (lambda (value index)
+         (let (evidence (.call item-contract .admit value context))
+           (and (not (yuanxu-validation-evidence-accepted? evidence))
+                (.o kind: 'item-rejected index: index admission: evidence))))
+       values (iota (length values)))))
+   'item-contract item-contract 'input-combine replace-sequence))
+
+;; modules/guestbook/types.ss -- instances use the lower shared library.
+(def StringContract (scalar-contract 'guestbook/string string?))
+(def PortNumberContract
+  (scalar-contract 'guestbook/port
+    (lambda (value) (and (exact-integer? value) (<= 1 value 65535)))))
+(def ReplicaContract
+  (scalar-contract 'guestbook/replicas
+    (lambda (value) (and (exact-integer? value) (>= value 0)))))
+(def TCPContract
+  (scalar-contract 'guestbook/tcp (cut equal? <> "TCP")))
+(def LabelsContract
+  (.cc
+   (scalar-contract 'guestbook/labels
+     (lambda (value)
+       (and (object? value)
+            (every (lambda (name) (string? (.ref value name)))
+                   (.all-slots value)))))
+   'input-combine merge-open-map))
+(def EnvironmentContract
+  (.cc
+   (scalar-contract 'guestbook/environment
+     (lambda (value)
+       (and (object? value)
+            (every
+             (lambda (name)
+               (let (entry (.ref value name))
+                 (and (object? entry) (.slot? entry 'value)
+                      (equal? (.all-slots entry) '(value))
+                      (string? (.ref entry 'value)))))
+             (.all-slots value)))))
+   'input-combine merge-open-map))
+
+(def Port. (.o protocol: "TCP"))
+(def Service. (.o))
+(def ContainerPort. (.o))
+(def Container. (.o env: (.o)))
+(def Server. (.o replicas: 2 labels: (.o)))
+(def Scenario. (.o))
+
+;; Association is published here once, on the field Contract.
+(def FrontendImageContract (.cc StringContract 'input-binding 'frontend-image))
+(def FrontendPortContract (.cc PortNumberContract 'input-binding 'frontend-port))
+(def ServicePortContract
+  (record-contract 'guestbook/service-port Port.
+    (.o port: PortNumberContract targetPort: PortNumberContract protocol: TCPContract)))
+(def FrontendServicePortContract
+  (.cc ServicePortContract 'identity 'guestbook/frontend-service-port
+       'responsibilities
+       (.cc (.get ServicePortContract responsibilities) 'port FrontendPortContract)))
+(def ServiceContract
+  (record-contract 'guestbook/service Service.
+    (.o ports: (sequence-contract 'guestbook/service-ports ServicePortContract))))
+(def FrontendServiceContract
+  (.cc ServiceContract 'identity 'guestbook/frontend-service
+       'responsibilities
+       (.o ports:
+           (sequence-contract 'guestbook/frontend-service-ports FrontendServicePortContract))))
+(def ContainerPortContract
+  (record-contract 'guestbook/container-port ContainerPort.
+    (.o containerPort: PortNumberContract)))
+(def ContainerContract
+  (record-contract 'guestbook/container Container.
+    (.o ports: (sequence-contract 'guestbook/container-ports ContainerPortContract)
+        env: EnvironmentContract)))
+(def ServerContract
+  (record-contract 'guestbook/server Server.
+    (.o name: StringContract image: StringContract replicas: ReplicaContract
+        labels: LabelsContract mainContainer: ContainerContract
+        services: (sequence-contract 'guestbook/services ServiceContract))))
+(def FrontendContract
+  (.cc ServerContract 'identity 'guestbook/frontend
+       'responsibilities
+       (.+ (.get ServerContract responsibilities)
+           (.o image: FrontendImageContract
+               services:
+               (sequence-contract 'guestbook/frontend-services FrontendServiceContract)))))
+
+(def (server-link-errors server expected-listener)
+  ;; Guestbook's bounded consumer supports exactly one listener and Service port.
+  (let* ((listeners (.get server mainContainer ports))
+         (services (.get server services)))
+    (if (not (and (= (length listeners) 1) (= (length services) 1)
+                  (= (length (.get (car services) ports)) 1)))
+        (list (.o kind: 'unsupported-port-cardinality))
+        (let ((listener (.get (car listeners) containerPort))
+              (target (.get (car (.get (car services) ports)) targetPort)))
+          (append
+           (if (= listener target) '()
+               (list (.o kind: 'target-port-mismatch listener: listener target: target)))
+           (if (= listener expected-listener) '()
+               (list (.o kind: 'unqualified-image-listener-change
+                         expected: expected-listener actual: listener))))))))
+
+(def (frontend-dns-errors scenario)
+  (let (dns (present-value (.get scenario frontend mainContainer env) 'GET_HOSTS_FROM))
+    (if (and (object? dns) (equal? (.get dns value) "dns")) '()
+        (list (.o kind: 'guestbook-dns-mode-required role: 'frontend)))))
+
+(def ScenarioContract
+  (.cc
+   (record-contract 'guestbook/scenario Scenario.
+     (.o frontend: FrontendContract leader: ServerContract follower: ServerContract))
+   '.obligations
+   (lambda (scenario _context)
+     (append
+      (apply append
+        (map (lambda (role)
+               (map (lambda (failure) (.cc failure 'role role))
+                    (server-link-errors (.ref scenario role)
+                                        (if (eq? role 'frontend) 80 6379))))
+             '(frontend leader follower)))
+      (frontend-dns-errors scenario)))))
+#+end_src
+
+This is an explicit small Guestbook port model, not the complete Kubernetes API.
+targetPort is required here; named target ports, multiple containers/ports and
+environment valueFrom need their own maintained Contracts/consumers. The DNS-mode
+and fixed listener checks preserve the recipe's supported configuration; they do
+not verify the opaque image's live client behavior. A changed Redis listener is
+refused rather than claiming to reconfigure its image. Existing richer checks must not be weakened
+by substituting this narrow control for the complete Guestbook Contract.
+
+Only the derived FrontendContract carries placeholder associations. Redis retains
+ordinary String/Port Contracts. Contract derivation preserves other requirements;
+the constructor does not maintain a separate path registry. A placeholder in a
+Redis field therefore does not accidentally consume the frontend binding.
+
+* Defaults, template and binding publication
+
+The defaults below are ordinary maintained objects. No user writes these helpers.
+The template uses null only at two Contract-associated fields; other null values
+retain their ordinary meaning.
+
+#+begin_src scheme
+;; func.ss -- simple domain functions, not syntax.
+(def (image-for-tag tag)
+  (string-append "gcr.io/google-samples/gb-frontend:" tag))
+
+;; func.ss -- pure domain constructor; depends on the Types-owned prototypes.
+(def (server-default name image listener (environment (.o)))
+  (.+ Server.
+      (.o name: name image: image
+          labels: (.o app: "guestbook" owner: "platform-v2")
+          mainContainer:
+          (.+ Container.
+              (.o ports: (list (.+ ContainerPort. (.o containerPort: listener)))
+                  env: environment))
+          services:
+          (list (.+ Service.
+                    (.o ports:
+                        (list (.+ Port. (.o port: listener targetPort: listener)))))))))
+
+;; objects.ss -- values, with no reverse import from the function library.
+(def GuestbookDefaults
+  (.+ Scenario.
+      (.o frontend:
+          (server-default "frontend" (image-for-tag "v3") 80
+                          (.o GET_HOSTS_FROM: (.o value: "dns")))
+          leader: (server-default "redis-leader" "docker.io/redis:6.0.5" 6379)
+          follower:
+          (server-default "redis-follower"
+                          "gcr.io/google_samples/gb-redis-follower:v2" 6379))))
+
+(def GuestbookTemplate
+  (.o frontend:
+      (.o image: #!void
+          labels: (.o env: "dev")
+          services:
+          (list (.o ports:
+                    (list (.o port: #!void targetPort: 80 protocol: "TCP")))))))
+
+(def GuestbookEntry
+  (.o defaults: GuestbookDefaults
+      input: (.o)
+      bindings: (.o)
+      contract: ScenarioContract
+      construct: construct-entry
+      functions: (.o image-for-tag: image-for-tag)))
+
+(def GuestbookTemplateEntry
+  (.+ GuestbookEntry (.o input: GuestbookTemplate)))
+#+end_src
+
+The interface publishes GuestbookEntry once through its existing core.exports
+scope, with a scope Contract admitting these properties. No per-hole registry or
+user-side substitute call is needed. The generic construction hook below is an
+internal method/function contribution, associated with this configured entry.
+Its native construct slot publishes construct-entry once, so the orchestrator
+does not infer a factory name or require per-user registration. It receives the
+current configured entry and admitted context. The algorithm lives in the shared Core library;
+the entry/interface only binds the procedure.
+The final source-role association remains pending; this does not add Bindings as
+an automatically exported role or change existing Loader behavior.
+
+Concrete inert publication, using the current descriptor shape:
+
+#+begin_src scheme
+;; types.ss -- this scope check does not force a configured preview.
+(def GuestbookScopeContract
+  (yuanxu-predicate-contract 'guestbook/scope
+    (lambda (scope)
+      (and (object? scope)
+           (every (cut .slot? scope <>) '(entry types functions))))
+    no-obligations))
+
+;; interface.ss -- no algorithm, file scan or runtime activation here.
+(.def Guestbook
+  identity: 'guestbook
+  core:
+  (.o requires: (.o)
+      scope-contract: GuestbookScopeContract
+      exports:
+      (.o GuestbookDefaults: GuestbookDefaults
+          entry: GuestbookEntry
+          templates: (.o frontend: GuestbookTemplateEntry)
+          types: (.o configuration: ScenarioContract)
+          functions: (.o image-for-tag: image-for-tag)))
+  features: (.o))
+#+end_src
+
+This publishes domain recipes without requiring a renderer to initialize them.
+The configured Scenario must separately declare its selected Kubernetes consumer
+dependency. This revision keeps the renderer at Scenario composition; the lexical
+context chapter has been aligned to that split. It is not permission to invoke an undeclared
+renderer. The final Config-to-construction contribution hook is pending, and
+must use existing role/selection mechanisms rather than a user-written factory.
+
+GuestbookEntry is the ordinary-data route: input is the objectified record and
+bindings is empty. Its empty default input retains maintained defaults without
+inventing required placeholders. GuestbookTemplateEntry is a native derived
+publication for the optional template route, not the default for every user.
+For that route the user supplies only ordinary named values:
+
+#+begin_src scheme
+(.o frontend-image: (image-for-tag "v5") frontend-port: 8080)
+#+end_src
+
+A JSON binding input can contain the same names and scalar values. Scheme may
+compute those values in native lazy slots. The constructor forces a used binding
+and records its name; it never automatically invokes a procedure stored as data.
+Repeated references reuse the same binding object's native slot cache.
+
+Arbitrary recursion hidden inside a Scheme computation is not detected by this
+kernel. Named binding-to-binding graphs would require their own explicit dependency
+protocol; that extension is not implemented or silently promised here. Required
+module cycles remain the existing linker's responsibility.
+
+* Final native admission and effective-value publication
+
+#+begin_src scheme
+(def (construct-entry entry context)
+  (let* ((contract (.ref entry 'contract))
+         (bindings (.ref entry 'bindings))
+         (_checked
+          (unless (object? bindings)
+            (construction-error 'expected-bindings-object '() bindings)))
+         (result (construct contract (.ref entry 'defaults) (.ref entry 'input)
+                            bindings context '()))
+         (effective (constructed-value result))
+         (unused
+          (filter (lambda (name) (not (memq name (constructed-used result))))
+                  (.all-slots bindings))))
+    (unless (null? unused)
+      (construction-error 'unused-bindings '() unused))
+    (let (evidence (require-admission contract effective context '()))
+      (.o configuration: effective admission: evidence))))
+
+(def (publish-preview constructed expected context project)
+  ;; project is the maintained pure resource consumer, not a parent resource list.
+  (let ((effective (.ref constructed 'configuration))
+        (evidence (.ref constructed 'admission)))
+    (unless (and (eq? effective expected)
+                 (yuanxu-validation-evidence-accepted? evidence)
+                 (eq? (.ref evidence 'candidate) effective)
+                 (eq? (.ref evidence 'context) context))
+      (construction-error 'preview-input-mismatch '() evidence))
+    (.o configuration: effective
+        admission: evidence
+        resources: (project effective))))
+
+;; Shared Core constructor; no import of Guestbook objects from this library.
+(def (configure-entry prototype input-value binding-values context-value projector)
+  (.+ prototype
+      (.o input: input-value
+          bindings: binding-values
+          context: context-value
+          preview:
+          (let (built ((.ref @ 'construct) @ context))
+            (publish-preview built (.ref built 'configuration) context projector)))))
+#+end_src
+
+The selected Module owns these calls; users supply only configuration. A project
+that publishes admitted-preview must also run its resource-correspondence Contract
+before publication, using the [[file:../11-configuration-languages/11.24-guestbook-effective-services.org][existing resource/plan design]] rather than inventing
+another unverified renderer here. publish-preview alone produces a config-admitted
+candidate; it does not certify the projected resources, source currentness or
+runtime permission. A malicious supplied project procedure is outside the purity
+assumption and must not be accepted merely because it is callable.
+
+In configure-entry, @ and context are native receiver/lexical slot bindings.
+They are not eagerly extracted parent state. A derived entry must receive its
+qualified child input/bindings/context, and preview must be forced on that entry.
+The installed module supplies the constructor, Contract and consumer; ordinary
+Config cannot replace those trusted requirements by setting a similarly named
+JSON field. The final scope exposes configuration/preview, not a requirement that
+the user assemble this private entry or supply a source-authority closure.
+
+expected is the current construction's effective object, supplied by the Module's
+qualified orchestration, not read back from an arbitrary cached preview. context
+is the same admitted current context supplied to construct-entry. Neither is
+user-authored bookkeeping or independently authenticated by this local function.
+
+Parent-cache control: force the parent's resources, derive a new configured entry
+with changed input/bindings, call construct-entry in the qualified child context,
+and publish a fresh preview from that result. The consumer receives the child's
+effective object; it never reads the parent's cached resource list. Substituting
+parent admission with the child's configuration fails the identity check. Passing
+the entire parent pair with the current child's expected/context also fails.
+If a caller supplies the parent for every argument, only the enclosing currentness
+and expected-instance authority can identify that misuse; the local function
+cannot authenticate the caller's intent or a fabricated source context.
+
+No cross-instance/global cache is added. Cache validity must include the input,
+defaults, Contract/policy, used binding and consumer revisions; mutable or changed
+dependencies require a new qualified instance. A warm POO slot is not independent
+proof of currentness. Full consumer/cache qualification is pending.
+
+Selected JSON decoding/objectification reads the selected document, not individual
+fields lazily from its text. Construction forces supplied fields; omitted inherited
+children and unused binding values need not be forced at that stage. Final native
+responsibility admission does force the children the selected Contract requires.
+These are distinct costs. Large publication/type collections still require indexed
+source selection; this constructor is not an indexed JSON loader.
+
+The input path is for ordinary authored data, not arbitrary externally contracted
+Profile objects. Do not extract another publication's slots and thereby drop its
+additional requirements or provenance. Such Profiles use the native extension/
+association route; complete requirement retention remains an independent MOP and
+module-adaptation obligation. Finite acyclic structural Contract trees are the
+scope of this construction listing; recursive Types require a specified demand
+and resource-bound protocol before acceptance.
+
+* Required controls and known gaps
+
+Positive controls: equivalent JSON/Scheme records; omitted replicas inherits 2;
+labels preserve app/owner; services replacement; template resolves to the same
+image/port; ordinary input needs no JSON Schema; generated Contracts can participate
+where they expose or are explicitly associated with construction metadata.
+
+Negative controls: unknown input key before merge; missing required field with no
+default; false/null/empty distinct from absence; string port; undeclared null hole;
+unused/missing binding; invalid target port; wrong prototype; parent admission
+paired with child configuration; unselected template remains unread.
+
+CoreObjectAdmissionContract.'s existing recursive admission and scalar public .admit are reused.
+The generic constructor, metadata/publication, complete source diagnostics and
+instance-currentness integration are design-only. A Schema-derived opaque Contract
+does not automatically supply responsibilities or merge policy: its adapter must
+provide that correspondence without weakening its original validation. This is
+not a claimed complete construction mechanism for all provider/domain types.
+
+The current listing requires identity-preserving final admission. A normalizing
+Type that returns another candidate must be integrated explicitly before the
+final evidence/preview pair is formed; do not remove the identity check merely
+to accept it. A symbolic Contract name is not a sufficient cache identity when
+its construction/binding policy or requirements change.
+
+* Issues and Engineering Limitations
+
+The [[file:10.09-guestbook-construction-reflection.org][companion reflection]] owns issue/blog references, tradeoffs and matched controls.
+Marks: DESIGN-INFERENCE; NOT-REPRODUCED. No Scheme listing in this chapter was
+compiled or executed. No Loader or Module implementation changed.
+

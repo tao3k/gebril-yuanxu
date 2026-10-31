@@ -1,0 +1,157 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.07 LeanPOO Functional Composition for AI Agentic Context
+:PROPERTIES:
+:ID: agentic-ai-lab-agentic-context-leanpoo-functional-composition
+:STATUS: dependency-and-functional-consumer-local-pass-runtime-correspondence-open
+:OWNER: 10.06.43.01
+:DATE: 2026-10-14
+:END:
+
+* Dependency and evidence boundary
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] remains the design owner. LeanPOO supplies reusable composition
+mechanisms and conditional laws; it is not a replacement Context runtime or
+another authority issuer. [[file:06-context-authority-and-disclosure-design.org][10.06.43.06]] still specifies unimplemented identity,
+operation/resource and disclosure obligations.
+
+The parent [[file:../../../../packages/proofs/lean-poo/lakefile.lean][Lake declaration]] now selects [[https://github.com/tao3k/lean-poo/tree/v0.1.1][LeanPOO v0.1.1]]. Remote tag inspection
+resolved the annotated tag object =1fd6c2552076f07ecc4e9e42e5724d22a9e24d5a=
+to commit =d8adf138948c854e7564234bc046387b4a5ee63b=, also the observed remote
+HEAD. Lake generated the parent lockfile with that commit and inputRev v0.1.1.
+The AITIA proof package already uses that same release/commit; no downgrade or
+second dependency revision is introduced. Lean remains 4.34.0; the separate
+Cedar/Lean 4.31 graph is not migrated by this change.
+
+The old parent pin was =71609603d45bead8eec6375471991a4f76dbb430=.
+[[file:05-context-consumer-evidence-admission-receipt.org][10.06.43.05]] is a historical pre-update source/lockfile cut. Its hashes are
+retained, not rewritten to appear as a v0.1.1 qualification. The existing
+Scheme Module implementation, storage executors, bindings and old Memory are
+unchanged. Library/API availability, conditional Lean laws, Scheme consumer
+verification and production permission remain separate claims.
+
+* Reading the release through real use cases
+
+The following sources were inspected at the resolved release, not inferred
+from a marketing description or a generic functional-programming vocabulary.
+
+| Release owner/use case | Mechanism | Context/Session design correspondence | Does not establish |
+|-----------------------+-----------+---------------------------------------+--------------------|
+| [[https://github.com/tao3k/lean-poo/blob/v0.1.1/docs/use-case.md][Object use case]] | mix/extend/plus/clone, C4 Plan and shared lazy slots | Compose reusable Profile behavior while retaining old objects | A new authority registry or proof of arbitrary Scheme equivalence |
+| [[https://github.com/tao3k/lean-poo/blob/v0.1.1/Examples/FunctionalPipeline.lean][FunctionalPipeline]] | Provider composition; prepareWith; Factory map/bind | Select a dependency family once, then apply it to each current consumer cut | A prepared factory is not a frozen result or a preselected Agent route |
+| [[https://github.com/tao3k/lean-poo/blob/v0.1.1/Examples/PreparedViews.lean][PreparedViews]] | Required-key projection and retained readers | Share source machinery while narrowing a consumer's required inputs | Projection is not access control or safe content disclosure |
+| [[https://github.com/tao3k/lean-poo/blob/v0.1.1/Examples/FocusedAllocation.lean][FocusedAllocation]] | Focus, delayed local update, dependent witness and refusal retention | Update consumer-local interpretation without rewriting the common source frame | A focus does not automatically discover every semantic dependency |
+| [[https://github.com/tao3k/lean-poo/blob/v0.1.1/Examples/CertifiedContextCache.lean][CertifiedContextCache]] | Certified dependency data through explicit outer-to-base projection | Reuse genuinely common source dependencies, rebuild destination-specific output | Equal base data does not collapse Session generation, review or permission |
+| [[https://github.com/tao3k/lean-poo/blob/v0.1.1/Examples/ReceiptWorkflow.lean][ReceiptWorkflow]] | Current descriptor/input/output re-admission of a completed answer | Preserve original result/proof while checking the current consumer boundary | Re-admission is not changed-program recomputation, external freshness or authorization |
+| [[https://github.com/tao3k/lean-poo/blob/v0.1.1/LeanPoo/Functional/SolverTransport.lean][SolverTransport]] | Certified transformation pulls data-bearing solutions/solvers | Reuse checked witness data through an explicitly sound projection | Existence alone supplies no executable solver, optimality, resource bound or effect permission |
+
+Functional Provider capability keys describe available dependencies. They are
+not Governance/Host authorization capabilities. The new Agentic AI Lab proof therefore
+names these keys Dependency rather than using one overloaded permission term.
+Factory bind is a same-input composition law for explicitly supplied producers;
+it does not prescribe an Agent's hypotheses, exploration order or action choice.
+
+* Composition rules for the Scheme Modules design
+
+** Prepared machinery versus retained observations
+
+Share a prepared dependency family only when the selected provider functions
+and declared requirements are appropriate. Each application supplies its current
+Context/consumer cut. A saved outcome is a different object: it carries the
+input and implementation identity that produced it and needs current re-admission.
+Preparing functions once must not become an excuse to reuse an old subject.
+
+Missing an unrequested dependency can leave a narrower pure query usable.
+Missing a required consumer generation/policy dependency must refuse assembly
+of the full admission subject. A dependency's mere presence cannot certify that
+its reported generation, policy or source is authentic.
+
+** Shared base versus consumer-specific frame
+
+A certified base projection may factor out independently reusable source
+properties. It must not factor out a consumer authority dependency needed by
+the resulting admission. Two Sessions can share source/Contract data while
+retaining distinct generations, reviews, disclosure scopes and permissions.
+The output constructor still receives the full outer request on a cache hit.
+
+The complete cache/dependency key is a correctness premise of that fixed family.
+Do not assume the existing broad Context cut is a universal reuse key. A theorem
+with no consumer dependency can be transported across consumers; a scoped review
+or permission check cannot acquire that independence merely by being stored
+beside the theorem.
+
+** Focused changes and refusal
+
+Model source, consumer interpretation and authority-related observations as
+separate composable parts. A focused change can preserve the source/Contract
+frame while advancing the consumer generation. That frame law does not certify
+the old admission: the changed generation reopens its dependent obligation.
+
+A refused local update retains the previous whole value. For a sequence or
+batch, earlier accepted changes may remain as the reached prefix under the
+chosen contract; do not silently claim all-or-nothing rollback. Unaffected old
+values and counterexamples remain available. Scheme should consume these
+functional/POO laws through named helpers and object composition, not expose
+Lean's proof records or another raw dictionary DSL as the normal user interface.
+
+** Current result re-admission
+
+ReceiptWorkflow checks a completed original result against current descriptors
+without a recursive cache read or reevaluation budget. It retains its original
+program/method/argument identity and preserves the supplied recursive state.
+A different implementation requires a new answer indexed by that implementation.
+
+For ORG Context, source revision, actual Contract revision, consumer generation,
+policy and authority validity are additional consumer obligations. A restored
+descriptor can accept an old mathematical answer again without reviving a
+revoked Host grant. Current input/output acceptance and current authority must
+remain separate relations and checks.
+
+* Executable parent consumer projection
+
+[[file:../../../../packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/FunctionalComposition.lean][FunctionalComposition]] imports the actual v0.1.1 APIs. Its Cut is a small
+formal projection of source, Contract, consumer-generation and policy stamps,
+not the complete runtime subject or a new Scheme semantic owner.
+
+Five laws cover current-input application, generation-separated subjects,
+focused frame preservation, ordered update composition and refusal retention.
+Eight guards check two generations, missing required generation versus a narrow
+source-only preparation, policy override with the original provider retained,
+and a local generation update. These exercise library functions, not a hand-built
+alternative factory or focus implementation.
+
+The Temporal and Context proof roots built successfully under the existing 120s
+gate: 61 build jobs. The additional upstream Functional owners built in 92 jobs
+under the same bound; existing upstream linter warnings were retained, not disabled.
+The five inspected executable use cases were run with lake env lean, each with
+the existing 120s bound. FunctionalPipeline and PreparedViews guards passed;
+FocusedAllocation reported 960 direction controls plus invalid/factory controls;
+CertifiedContextCache distinguished equal-base hits from changed-base misses;
+ReceiptWorkflow reported zero-budget/empty-memo reuse, current input/output
+refusal, changed-request recomputation and retained batch-prefix controls.
+
+No new axioms or sorry are introduced in the parent proof. The printed
+generation-separation theorem uses no axioms; update composition uses propext.
+These laws assume trustworthy input stamps and complete dependencies. They do
+not discharge authentication, protected I/O or AC-01 through AC-08 in the
+authority/disclosure design.
+
+* Responsibilities and open correspondence
+
+Scheme Modules own executable POO declarations and consumer/Host boundaries.
+Quint explores bounded temporal changes and explicit unsafe variants. LeanPOO
+provides compositional conditional laws and checked witness transport. ASCENT
+derives candidates, conflicts and affected obligations from admitted observations;
+it does not manufacture grants. ORG retains claim/source/evidence identities.
+
+The new functional projection is proof consumption, not a runtime refactor.
+Implementing provider preparation, certified base projections, view retargeting
+or focused updates in Modules requires named Scheme semantics and correspondence
+controls before claiming parity. No library theorem alone validates that mapping.
+No CPU/token/maintenance savings are claimed from these local examples.
+
+[[file:08-leanpoo-v011-consumer-receipt.org][10.06.43.08 current dependency-consumer receipt]] records the post-update
+joint gate: 90 ORG/Session controls, 23 ASCENT controls, 21 Quint checks and
+26 Context Lean laws / 27 guards. All 35 declared local inputs, compiled Scheme
+pool and executable were stable during that run. This supersedes the old
+dependency cut, not the outstanding authority/disclosure or runtime design work.

@@ -6,63 +6,109 @@
 ;;; Pure option validation over Core Module POO values. Descriptor-specific
 ;;; schema discovery remains with the product adapter.
 
-(import (only-in :core/module-system/config poo-flow-module-kind=?)
-        :core/module-system/projection/option-objects)
+(import (only-in :yuanxu/module-system/config yuanxu-module-kind=? yuanxu-module-object-ref/default)
+        (only-in :clan/poo/object .o .ref .all-slots object? object<-alist)
+        (only-in :clan/poo/value-diagnostics diagnose-value)
+        (only-in :clan/poo/object-contract checked-issues)
+        :yuanxu/module-system/projection/option-objects)
 
-(export poo-flow-module-find-schema
-        poo-flow-module-missing-schema-receipt
-        poo-flow-module-option-schema-validation-receipt
-        poo-flow-module-options-validate)
+(export yuanxu-module-find-schema
+        yuanxu-module-missing-schema-receipt
+        yuanxu-module-option-schema-validation-receipt
+        yuanxu-module-options-validate
+        yuanxu-module-config-validation-receipts)
 
-(def (poo-flow-module-find-schema schemas option-id-value)
+(def (yuanxu-module-find-schema schemas option-id-value)
   (find (lambda (schema)
-          (poo-flow-module-kind=? (poo-flow-module-option-schema-id schema)
+          (yuanxu-module-kind=? (.ref schema 'id)
                                   option-id-value))
         schemas))
 
-(def (poo-flow-module-missing-schema-receipt config)
-  (make-poo-flow-module-option-validation-receipt
-   (poo-flow-module-option-config-id config)
-   (poo-flow-module-option-config-source-module config)
-   #f
-   'missing-schema
-   '("option schema is not declared")
-   '()))
+(def (yuanxu-module-missing-schema-receipt config)
+  (def option-id (.ref config 'id))
+  (def contributor (.ref config 'source-module))
+  (.o id: option-id
+      source-module: contributor
+        valid?: #f
+        code: 'missing-schema
+        messages: '("option schema is not declared")
+        metadata: '()))
 
-(def (poo-flow-module-option-schema-valid? schema config)
-  (if (eq? (poo-flow-module-option-schema-rule schema) 'constant)
-    (equal? (poo-flow-module-option-config-value config)
-            (poo-flow-module-option-schema-value schema))
-    #t))
-
-(def (poo-flow-module-option-schema-validation-receipt schema config)
-  (if (poo-flow-module-option-schema-valid? schema config)
-    (make-poo-flow-module-option-validation-receipt
-     (poo-flow-module-option-config-id config)
-     (poo-flow-module-option-config-source-module config)
-     #t
-     'ok
-     '()
-     (poo-flow-module-option-schema-metadata schema))
-    (make-poo-flow-module-option-validation-receipt
-     (poo-flow-module-option-config-id config)
-     (poo-flow-module-option-config-source-module config)
-     #f
-     'constant-mismatch
-     '("option value does not match constant schema")
-     (poo-flow-module-option-schema-metadata schema))))
+(def (yuanxu-module-option-schema-validation-receipt schema config)
+  (def issues
+    (checked-issues
+      (diagnose-value
+        (yuanxu-module-option-schema-contract schema)
+        (object<-alist
+          (list (cons (string->symbol (.ref config 'id))
+                      (.ref config 'value))))
+        '())))
+  ;; Preserve attribution/annotation observation at production, not first reporting.
+  (def option-id (.ref config 'id))
+  (def contributor (.ref config 'source-module))
+  (def annotations (yuanxu-module-option-schema-metadata schema))
+  ;; This is a diagnostic projection, not accepted Contract/publication evidence.
+  (.o id: option-id
+      source-module: contributor
+      valid?: (null? issues)
+      code: (if (null? issues) 'ok (.ref (car issues) 'kind))
+      messages: issues
+      metadata: annotations))
 
 ;; Preserve input order while traversing only once; schema-ref is supplied by
 ;; the owner of the concrete Module Interface or descriptor.
-(def (poo-flow-module-options-validate schema-ref configs)
+(def (yuanxu-module-options-validate schema-ref configs)
   (let loop ((remaining configs) (receipts-rev '()))
     (if (null? remaining)
       (reverse receipts-rev)
       (let* ((config (car remaining))
-             (schema (schema-ref (poo-flow-module-option-config-id config))))
+             (schema (schema-ref (.ref config 'id))))
         (loop (cdr remaining)
               (cons (if schema
-                      (poo-flow-module-option-schema-validation-receipt
+                      (yuanxu-module-option-schema-validation-receipt
                        schema config)
-                      (poo-flow-module-missing-schema-receipt config))
+                      (yuanxu-module-missing-schema-receipt config))
                     receipts-rev))))))
+
+;; Diagnose the actual Record once, preserving missing fields and whole-object
+;; membership. schema-ref is the owner's existing effective-Slot index, not a
+;; second field declaration. The tables below only group the returned issues.
+(def (yuanxu-module-config-validation-receipts declaration schema-ref config owner)
+  (def issues (checked-issues (diagnose-value declaration config '())))
+  (def names (if (object? config) (.all-slots config) '()))
+  (def seen (make-hash-table))
+  (def grouped (make-hash-table))
+  (def absent-rev '())
+  (def root-rev '())
+  (for-each (lambda (name) (hash-put! seen name #t)) names)
+  (for-each
+    (lambda (issue)
+      (def path (.ref issue 'path))
+      (if (and (pair? path) (symbol? (car path)))
+        (let (name (car path))
+          (unless (hash-get seen name)
+            (hash-put! seen name #t)
+            (set! absent-rev (cons name absent-rev)))
+          (hash-update! grouped name (cut cons issue <>) '()))
+        (set! root-rev (cons issue root-rev))))
+    issues)
+  (append
+    (map (lambda (name)
+           (def option-id (symbol->string name))
+           (def field (schema-ref option-id))
+           (def failures (reverse (hash-ref grouped name '())))
+           (if (and (not field) (null? failures))
+             (yuanxu-module-missing-schema-receipt
+               (.o id: option-id source-module: owner))
+             (let (annotations (yuanxu-module-object-ref/default field 'metadata '()))
+               (.o id: option-id source-module: owner
+                   valid?: (null? failures)
+                   code: (if (null? failures) 'ok (.ref (car failures) 'kind))
+                   messages: failures metadata: annotations))))
+         (append names (reverse absent-rev)))
+    (if (null? root-rev) '()
+      (let (failures (reverse root-rev))
+        ;; No invented field name for a whole-value refusal.
+        (list (.o id: #f source-module: owner valid?: #f
+                  code: (.ref (car failures) 'kind)
+                  messages: failures metadata: '()))))))

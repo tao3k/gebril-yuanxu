@@ -1,0 +1,177 @@
+#+title: 32.12 MOP read records and source-bound admission
+#+language: en
+#+property: DOCUMENT_ID 32.12
+#+property: STATUS integrated-consumer-qualified
+#+date: [2026-10-18]
+
+* Ownership and source authority
+
+This implements the source-level direction of [[file:32.11-slot-read-entry-audit.org][32.11]]. MOP recording, receiver/cache
+validation and replay belong to gerbil-poo. Core consumes its public protocol;
+Core does not ship a patch, an object-engine include, or a second evaluator.
+The producer checkout is /private/tmp/poo-slot-read-mop-20261018 on
+feat/positive-closure-costs at ece6f609357ea918038090559ac051a8d9f3e52f,
+following the concurrent upstream change 51a276a. The implementation was
+cherry-picked onto this existing branch without replacing that change; no new
+publication branch is required. The commit was fast-forward pushed to that
+existing remote branch on 2026-10-18. Earlier qualification used 6e80132 on
+base 3c1f533; the integrated receipt below is a separate run.
+This branch, unlike Core's former 26b4b58 pin, contains the actual
+.ref/inline and slot-layout implementation. The old local reference corpora
+are not used as runtime dependencies. No Loader implementation is changed.
+
+Producer owners are object.ss, slot-observation.ss and the MOP export in mop.ss.
+Core's production consumer is [[file:../../../admission/source.ss][admission/source.ss]]; its regression owner is
+[[file:../../../t/slot-read-replay-test.ss][t/slot-read-replay-test.ss]]. The old qualification-only admission adapter is
+removed. The remaining qualification directory compiles/tests a complete
+producer source checkout without modifying it.
+
+* One read protocol, multiple physical access routes
+
+| Route | Actual behavior |
+|-------+-----------------|
+| .ref cold | Capture preparation and getter dependencies; commit value and record only after successful computation |
+| .ref warm | Deliver the existing receiver-local record; do not rerun the getter |
+| .ref/cached hit | Deliver the same value record |
+| .ref/cached miss | Invoke the native default thunk; record cache absence without invoking the slot getter |
+| .ref/inline hit | Preserve receiver/revision/layout guard, then deliver the same record when tracking is active |
+| .ref/inline miss | Existing .ref computation, then native access-site binding |
+| Bootstrap anchors | Bind explicit anchor value/revision, including an already-warm inline anchor |
+| Presence/name queries | Record structure and preparation dependencies without evaluating unselected values |
+
+No observer registry retains every receiver globally. Each receiver owns its
+read table; native invalidation clears it with its instance/layout caches. Tokens
+retained by one admission attempt intentionally retain their receivers. Ordinary
+GC can collect unreferenced object/token cycles. This is not a measured memory
+bound or a concurrency proof.
+
+Cold slot preparation can read a protocol's configuration BEFORE the getter
+frame begins. A preparation record therefore belongs to the receiver, and value
+and structure records retain it. A warm value cannot discard those inputs.
+This is tested independently of the analogous first structural query case.
+
+A cache-only miss is not a missing declared field. Later population of the
+cache invalidates its negative observation even if no object revision changes.
+Each default-thunk invocation has its own dependency observation. False remains
+a valid cached value. Replay refuses stale dependencies; it does not silently
+recompute getters that may have effects.
+
+* Consumer wiring and actual field selection
+
+#+begin_src scheme
+;; gerbil-poo MOP exports, consumed by Core
+(call-with-slot-read-observer observe action before: check-source)
+(replay-slot-reads! roots check-source)
+#+end_src
+
+Before-read checks use the actual receiver/key to inspect existing source
+specifications. Observer callbacks run with observation suspended, avoiding
+recursive observation of their own metadata checks. Nested observers receive
+the same read events. Core collects roots, then traverses the shared graph once
+before returning; it does not replay every transitive prefix at every hit.
+Replay validates each node before its callback and validates the visited set
+again at the end, catching a later callback invalidating an earlier node.
+
+SourceAdmissionContract still owns source-input checks, ordered preflight,
+ONE inherited admission call, exact normalized candidate/child receipts,
+contribution checks and eager diagnostic decoration. Its MOP observer does not
+replace child obligations, field Types, domain relationships or plan identity.
+The existing source collector performs its fresh source checks after the MOP
+consumer returns. A previous accepted attempt is not a currentness cache.
+
+* Maintained Scenario, not a synthetic replacement Contract
+
+The Scenario remains under scenarios/gitea-postgresql. config.ss holds ordinary
+PostgreSQL defaults and a missing client port. objects.ss applies missing-only
+defaults to the supplied final scopes. Gitea's lexical native default follows
+the final database receiver. Explicit client values are checked rather than
+silently rewritten. The regression Fixture adds a counted database obligation;
+it no longer replaces production preflight or wraps .admit with a private hook.
+
+#+begin_src scheme
+(def cached (.get Parent plan)) ; force both parent ports before deriving
+(.def (Release @ Parent)
+  config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: 5433))))
+(def receipt (.call Contract .admit Release #f))
+(def final (.get receipt candidate))
+;; final.plan.postgresql.port = final.plan.gitea.database-port = 5433
+;; final.plan.configuration is final.config; cached remains at 5432.
+#+end_src
+
+The intermediate =>.+ operations retain maintained objects; port: 5433 is an
+ordinary replacement. The test is not evidence that a scalar replacement needs
+an inheritance operator. Assigning cached to Release.plan is deliberately
+rejected as stale-parent-plan; normalization must not repair away that control.
+
+* Leaf guard removal gate
+
+Production explicit port leaf arguments are removed only AFTER the consumer
+suite passes against the producer source closure. Domain preflight stages remain:
+check envelopes, database settings, client settings and then plan fields. This
+keeps null/malformed settings from forcing derived port computations too early.
+The Contract's actual field reads, not a second field inventory, supply the leaf
+observations. Unknown-field diagnosis must not force the unknown getter, even
+while attaching JSON baselines and source locations.
+
+* Qualification and limits
+
+This section records the fixed run08 input set. It is not a claim that a live,
+concurrently edited worktree still matches that set. The later performance
+audit and its separately identified inputs are in [[file:32.13-read-record-costs.org][32.13]].
+
+The integrated producer ece6f60 passes 11 slot-observation cases, 11 existing
+meta-prototype cases and 34 existing object cases (the upstream 51a276a change
+adds four object cases). Each focused gate exits normally with MODULE-OK,
+HARNESS-OK and OK, without harness failure or heap/stack overflow markers.
+The integrated producer also passes these Core consumer gates, after removal
+of the production explicit port leaf arguments:
+
+| Heap-fenced gate | Cases | Result |
+|------------------+-------+--------|
+| t/slot-read-replay-test.ss | 16 | pass |
+| t/source-admission-test.ss | 5 | pass |
+| t/source-observation-test.ss | 5 | pass |
+| scenarios/gitea-postgresql/tests/config-test.ss | 3 | pass |
+| t/gitea-postgresql-publication-test.ss | 11 | pass |
+| t/gitea-json-configuration-test.ss | 4 | pass |
+| t/gitea-postgresql-relocation-test.ss | 4 | pass |
+| Total | 48 | pass |
+
+Run08 compiles the integrated gerbil-poo checkout with content-checked incremental
+Core artifacts. It is not a clean rebuild or a full-product acceptance claim.
+Each gate exits naturally with status zero and MODULE-OK, HARNESS-OK and final
+OK; failure and heap/stack overflow markers are absent. The receipt covers
+actual production SourceAdmissionContract, the maintained Scenario Contracts,
+publication, JSON sources and relocation. Counted child obligations and negative
+effects remain test fixtures; they do not replace production .admit.
+
+The 101 selected Core source/test inputs matched their pre-test fingerprints in
+[[file:32.12-source-manifest.sha256][the source manifest]]. Concurrent changes to init-syntax and Nix files were
+outside this compiled/tested closure and were not overwritten. Three bounded
+compilation launches timed out after creating successful module checkpoints;
+the fourth completed. All timeout and raw test logs remain local under
+/private/tmp/core-slot-read-run08. The timeout was not increased. Concurrent
+host activity makes this unsuitable as a compilation performance measurement.
+
+Only after these gates passed, Core and product gerbil.pkg were both updated to
+the published ece6f609357ea918038090559ac051a8d9f3e52f revision. Shared installed
+packages, the Core submodule commit and Loader implementations were not changed.
+All gates use the normal Gerbil runtime and heap-fenced Just entrypoints; private
+compiled libraries avoid replacing another session's installed dependencies.
+No compatibility evaluator, injected getter implementation or fabricated
+admission evidence is used. Existing macro-writeenv-style and deprecated
+std/net/request warnings remain visible in the receipts; these passes do not
+qualify all I/O paths, all package consumers or remote CI.
+
+The old run06 syntax failure was a parse error in the concurrently edited
+module-system/source/directory.ss, not a demonstrated slot replay failure. This
+continuation does not edit that file. Compilation logs and unchanged watchdog
+failures remain local. A resumed successful compile is not a previously failed
+launch retroactively passing.
+
+Raw struct/cache mutation, mutation inside cached containers, arbitrary Scheme
+lexical captures, external effects and concurrent mutation remain explicit
+boundaries. Source publication and JSON input association still belong to Core;
+MOP reads alone do not authenticate code or manufacture source provenance for
+an unassociated default. Existing Lean models do not become proofs of these
+implementation hooks merely because the Scheme gates pass.

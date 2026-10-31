@@ -1,0 +1,76 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.21 Designated Source Verification — Exit Gate Open
+:PROPERTIES:
+:ID: agentic-ai-lab-context-source-binding-verification-20261015
+:STATUS: assertion-results-pass-process-exit-gate-open
+:DATE: 2026-10-15
+:END:
+
+This is a historical failed cut. [[file:22-source-binding-natural-exit-receipt.org][10.06.43.22]] records subsequent live stack
+diagnosis and a source-stable joint pass with natural termination. Its later
+success does not change this run's exit status or qualify its old inputs.
+
+* Results and evidence boundary
+
+[[file:20-designated-session-source-admission.org][The designated-source protocol]] is implemented in Modules; Proofs constructs
+Cases only. The resumed joint run passed all 71 Quint Cases with stable
+checker inputs and all eight Context Lean roots (79 jobs, 64 theorems /
+62 guards). A repaired phased ASCENT consumer passed 23 checks. The final
+joint attempt also passed the historical ORG executable's 90 regressions
+and printed all 123 new-library Scheme checks (28 new, 95 reused).
+
+However, the Scheme process did not finish within the existing progress gate
+after its final assertions. The watchdog returned status 70 and the joint
+driver returned status 1. Explicit normal Scheme =(exit 0)= after =main=
+did not close this gate in a subsequent focused retry. No final joint
+=CONTEXT-PROOF-PASS= or source/compiled-pool stable receipt was produced.
+The assertion output is not a successful process qualification or joint pass.
+The precise shutdown cause remains unconfirmed; it must not be described as
+a proven thread leak, GC regression or successful retirement integration.
+
+* Retained failures and repair scope
+
+The interrupted run had no completion receipt. Its resumed attempt passed
+Quint/Lean but cold monolithic ASCENT import hit the five-second watchdog.
+The first partial phased loader likewise hit that bound. The private
+=run_relations.py= now loads canonical existing dependencies in phases and
+prints only after a real import completes; its focused gate returned zero.
+This is actual completed work, not periodic progress padding.
+
+The subsequent final joint run reached 123 Scheme assertions but failed the
+process completion gate. The focused exit-repair retry repeated that failure.
+Normal =(exit 0)= remains after =main=; a thrown assertion prevents reaching
+it. No forced OS exit, watchdog suppression, extra heartbeat, timeout/heap
+expansion or removed assertion was used. The joint status remains open.
+
+* Consumer controls
+
+The real Scheme assertions exercise actual ORG Elements/Contract, Sessions,
+Core private seals and Assurance/Governance objects. The new 28 controls
+cover designated-source acceptance, missing/unbound/copied/fabricated or
+other-issued source refusal, request self-claims, displayed Profile overrides,
+normal POO extension, adapter rebinding refusal, copied Governance, direct
+verifier bypass, retirement followed by owner substitution, candidate
+withdrawal and fresh surviving-Session acceptance. Assertion counts are not
+independent proof obligations or remote authentication results.
+
+Project knowledge retention uses an independent approved target source and
+surviving target Session. It does not authorize a retired producer to consume
+that knowledge. Runtime transport, trusted-bootstrap authorization, source
+reincarnation, protected disclosure, durable/multi-process identities and
+full Query/GQL integration remain open.
+
+* Reproduction
+
+From repository root, select existing installed packages:
+#+begin_src sh
+CONTEXT_ASCENT_GERBIL_PATH="$ASCENT_PACKAGE_PATH" \
+CONTEXT_SCHEME_PACKAGE_PATH="$POO_SCHEME_PACKAGE_PATH" \
+python3 packages/proofs/context-lifecycle/verify.py
+#+end_src
+
+TLC remains 60s total / 12s silence, one worker / 512 MiB; Lean 120s;
+Scheme 120s total / 5s silence / 1 GiB. Storage executors, bindings, old
+Memory and delivery remain unchanged. No CI, deployed source authentication,
+performance gain or complete joint verification is claimed.

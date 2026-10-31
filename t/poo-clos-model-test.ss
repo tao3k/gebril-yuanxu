@@ -3,9 +3,9 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/object .o .ref)
-        :core/poo-clos/interface
+        :yuanxu/poo-clos/interface
         :std/test :std/error)
 (export poo-clos-model-test)
 
@@ -27,12 +27,12 @@
 
 (def poo-clos-model-test
   (test-suite "CLOS-governed pure model values"
-    (poo-flow-test-case "inherited effective slot predicates apply"
+    (yuanxu-test-case "inherited effective slot predicates apply"
       (check-equal? (poo-clos-model? Positive good) #t)
       (check-equal? (poo-clos-model? Base good) #t)
       (check-equal? (poo-clos-model? Positive (.o (:: @ good) value: -1)) #f)
       (check-equal? (poo-clos-model? Positive (.o (:: @ good) value: 1.5)) #f))
-    (poo-flow-test-case "copied class markers cannot impersonate ancestry"
+    (yuanxu-test-case "copied class markers cannot impersonate ancestry"
       (check-equal?
        (poo-clos-model-validation-failure
         Positive (.o (:: @ good) value: 'bad))
@@ -50,10 +50,10 @@
       (check-exception
        (poo-clos-check-model Positive (.o (:: @ good) value: 'bad))
        Error?))
-    (poo-flow-test-case "checking preserves the input value"
+    (yuanxu-test-case "checking preserves the input value"
       (check-eq? (poo-clos-check-model Positive good) good)
       (check-equal? (.ref good 'value) 2))
-    (poo-flow-test-case "class storage is not a pure model slot"
+    (yuanxu-test-case "class storage is not a pure model slot"
       (check-equal?
        (poo-clos-model? Shared
                         (.o (:: @ (poo-clos-model-prototype Shared)) value: 2))

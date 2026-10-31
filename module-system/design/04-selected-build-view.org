@@ -1,0 +1,167 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Pure Selected Module and Build Contribution Views
+#+date: [2026-10-16]
+#+property: STATUS design-code-not-implemented-or-executed
+
+* Boundaries
+
+These are proposed adapters over admitted data. Existing [[file:../graph/funs.ss][module-closure]] remains
+the traversal owner. A target core field layout must map to existing Module values
+once; it is not currently an exported descriptor schema. Consumer init lowering,
+source resolution and feature providers are not reimplemented here.
+
+catalog is an admitted keyed native Module view. root-ids and disabled-module-ids
+are normalized identities; the source-qualified decision records remain retained
+outside these lookup inputs. A production implementation must add full requester
+chains/currentness evidence to the bounded errors below.
+
+#+begin_src scheme
+(def (selected-module-closure catalog root-ids disabled-module-ids)
+  (def (lookup id)
+    (when (memq id disabled-module-ids)
+      (error "required module is explicitly disabled" id))
+    (unless (.slot? catalog id)
+      (error "required module source is missing" id))
+    (.ref catalog id))
+  (module-closure
+   (map lookup root-ids)
+   (lambda (module) (.get module identity))
+   (lambda (module)
+     (map lookup (.get module core requires)))))
+#+end_src
+
+This closure de-duplicates; it does not itself prove topological/cycle or complete
+compiler-dependency validity. Callback source lookup must not initialize unrelated
+modules. Exposing a namespace still requires source/selection admission.
+
+* Join admitted baseline and optional build contributions
+
+build-projections contains only admitted build contribution objects from the same
+selected extension graph. Other kinds must be routed to their owners; malformed
+unknown objects cannot be silently accepted as build roots. Contribution/source
+Contracts and the mapping to a particular build provider remain pending.
+
+#+begin_src scheme
+(def (selected-build-entries modules build-projections)
+  (let ((seen (make-hash-table)) (entries '()))
+    (def (add-entries values)
+      (for-each
+       (lambda (entry)
+         (unless (hash-key? seen entry)
+           (hash-put! seen entry #t)
+           (set! entries (cons entry entries))))
+       values))
+    (for-each
+     (lambda (module) (add-entries (.get module core build-entries)))
+     modules)
+    (for-each
+     (lambda (projection) (add-entries (.get projection roots)))
+     build-projections)
+    (reverse entries)))
+#+end_src
+
+The consumer supplies selected optional contributions through a protocol; Core
+must not import Agentic AI Lab's feature model/resolver or ASP build APIs. A build provider
+then closes phase imports, macro/for-syntax dependencies, FFI and generated assets.
+Native entry strings in this bounded example are not a qualified complete build
+manifest. Avoid repeating one manually maintained source list in several layers.
+
+* Lazy generic composition view
+
+The optional plan is supplied by an admitted provider capability. It is not a new
+Core Feature resolver. Its minimal target shape has accepted?, diagnostics and
+build-projections. This input protocol needs its own Contract in implementation.
+
+#+begin_src scheme
+(def (module-build-view catalog roots denied-modules optional-plan)
+  (.o
+   selected-modules: (selected-module-closure catalog roots denied-modules)
+   build-entries:
+   (begin
+     (unless (.get optional-plan accepted?)
+       (error "optional contribution plan refused" (.get optional-plan diagnostics)))
+     (selected-build-entries selected-modules
+                             (.get optional-plan build-projections)))))
+#+end_src
+
+The view does not read directories, parse consumer syntax, run a provider or compile
+sources. Its native slots defer work until demanded. Reject stale/mismatched
+optional plans and module graph generations before exposing results. Source/schema
+and executor-specific evidence remain additional required boundaries.
+
+* init-owned build graph and a thin build.ss
+
+The [[file:05-namespace-and-build-ownership.org][namespace/ownership rule]] places this shared adapter in Core. The target
+:yuanxu package prefix and yuanxu-build-spec name below are pending;
+Core currently declares package core. The existing product build-projection file
+is an observer, not an implementation of this adapter. Core consumes a shared init
+publication protocol; it must not import the product facade to obtain the graph.
+
+
+The root init is the single authority for source ownership, Module selection,
+retained disable decisions and Feature decisions. Its generated publication must
+also expose a lazy selected build graph for that same source/selection generation.
+Authors do not maintain a second module inventory in build.ss. The graph is data;
+init does not invoke defbuild-script or start compilation when imported.
+
+Target consumer spelling (the adapter is proposed, not implemented):
+
+#+begin_src scheme
+;; build.ss -- the only project-specific input is the init source.
+(import (only-in :std/build-script defbuild-script)
+        (only-in :yuanxu/modules/building/build-projection
+                 yuanxu-build-spec))
+
+(defbuild-script (yuanxu-build-spec "./init.ss"))
+#+end_src
+
+yuanxu-build-spec is a proposed functional adapter, not a new syntax form or
+second Loader. It requests the init-owned graph through the shared Core orchestration also used by the product
+yuanxu-load-modules facade, checks its admission/currentness and lowers
+it to the existing Gerbil build-spec value. Its spelling/module export is not
+currently available. Resolve the path against the build source, not an arbitrary
+process working directory. The directory/role wrapper prepares init publication;
+the user does not add manual exports or a graph factory to init.ss.
+
+Gerbil's existing defbuild-script accepts a build-spec expression and places it
+inside the generated main procedure. This permits demanding the graph at explicit
+build invocation rather than during macro expansion. No change to that native
+macro is implied. The adapter must not recursively build the modules needed to
+run itself: its minimal bootstrap provider/compiler closure is an independently
+available build tool dependency, not a selected application Module.
+
+The init publication retains one native object with generation/source identity,
+selection decisions, admitted module/feature contribution references and a deferred
+build projection. The namespace and build graph are two views over this same
+selection, not independently resolved graphs. Build projection may inspect selected
+publication metadata without constructing domain scopes, compiling Schemas or
+forcing Profile values. Only dependencies actually required for build-graph
+admission are demanded. A selected interface needed only for metadata must have a
+bounded preparation route; compiling and loading every selected implementation to
+learn its roots would recreate the bootstrap/loading problem.
+
+Build roots come from selected role wrappers and admitted optional contributions;
+compiler closure adds phase imports, native link requirements and generated assets.
+The earlier selected-build-entries example consumes normalized derived entries;
+core.build-entries is not an additional handwritten interface requirement. Disabled
+Module/Feature contributions remain excluded; a hard dependency on one is rejected
+with its requester chain before publishing a build spec. A shared compile-time
+library may still belong to the closure even if no runtime scope is requested.
+
+Changes to init decisions, source generations, role graphs, compiler/provider
+versions or external build inputs invalidate the corresponding graph/spec cache.
+Cache lookup must validate those inputs; SourceRef equality alone is insufficient.
+No measured startup or scalability claim follows from this design.
+
+Current root init exports only AgenticAILabModules. Product and Core build.ss still
+maintain explicit specifications. Automatic init graph publication, facade build
+projection and this adapter remain pending; this document changes neither file.
+
+* Conclusion
+
+The reusable Core contribution is a precise shared data/protocol boundary and
+pure composition, not an eager umbrella loader. Qualify disabled dependencies,
+shared entries, graph generation, complete phase closure and selected/unselected
+work. No adapter or Loader is implemented by this design code.

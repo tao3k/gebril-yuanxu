@@ -1,0 +1,170 @@
+#+title: 12.27.31 Reader Retained Roots And Role Value Checks
+#+property: DOCUMENT_ID 12.27.31
+#+language: en
+
+* Stable identities and existing Metadata
+
+Authoring admission and diagnostic kind names are now stable:
+=yuanxu.module-authoring.admission= and
+=yuanxu.module-authoring.diagnostic=. Construction, shape predicates and the
+bounded observation classifier use the same names. There is no version alias
+or forwarding path. Version suffixes do not belong in namespaces or type-kind
+names; revision policy belongs to the existing publication/source Metadata.
+This change introduces neither a metadata format nor a new revision counter.
+
+An authoring receipt describes inert-source admission. Its kind is not a
+currentness capability. Existing source observations, actual Contract references
+and publication Context binding remain authoritative. A matching stable kind
+cannot excuse inconsistent acceptance, executed source or stale publication
+evidence. The authoring negative controls exercise this distinction.
+
+* Retention owners, rather than just traversal work
+
+The publication reader keeps SDK contexts, input objects, preparations and
+source guards. Those are distinct from native slot-read records held by an
+enclosing lazy Graph computation. Counting contexts does not measure that
+second retention root. Neither counts nor heap samples establish bytes retained
+by an individual category.
+
+The private per-root transitive context-list index has been removed. Current
+input registrations are streamed through the existing native Context walk into
+the publication's own input projection. Repeated demands still check sources;
+they may walk topology again. The canonical compiler-tool dependency index is
+unchanged. No new cache is introduced and no CPU speedup is inferred.
+
+Publication parsing also returns only the declared binding identity from a
+short-lived helper. Persistent interpreted slot closures no longer share its
+lexical frame with the unused parsed interface tree. This is an ownership
+boundary, not a proved garbage-collection bound.
+
+At the retained 74-publication capacity refusal, streaming changed retained
+private closure/context entries from 222/222 to 0/0. It retained 222 source
+objects and 297 guards, and still refused at 74 publications under the original
+policy. Thus removing those lists did not resolve native declaration capacity.
+That failed result must not be replaced by a traversal-only scale pass.
+
+* Ordinary fields versus contextual Role admission
+
+The next measured root was Core's scalar validation receipts. Authoring Role
+fields are symbols, symbol lists and booleans; treating every field as a Core
+contextual child produced rich evidence objects for ordinary value checks.
+
+[[file:../../../../../module-system/types.ss][ModuleSourceRoleContract]] now delegates this value shape to the existing public
+=ObjectContract.=, =Symbol=, =List= and =Bool=. Its required prototype is the
+effective Role prototype. Unrelated objects are rejected before their fields
+are demanded. Additional domain policy fields remain allowed through the
+existing delegated-extra-fields policy, preserving the previous open envelope.
+
+#+begin_src scheme
+(define-type (ModuleSourceRoleContract @ YuanxuObjectContract.)
+  identity: 'module-source-role
+  proto: (semantic-empty-prototype)
+  value-contract:
+  (.cc ModuleSourceRoleValueContract 'required-prototype proto))
+#+end_src
+
+The private value descriptor contains the complete field map. Public library
+validation runs on every invocation; successful results are not cached. This
+removes scalar Contextual admissions by design, not their type checks. Consumers
+must use the Role's value Contract for field discovery rather than interpreting
+Core responsibilities as a second field schema.
+
+The parent authoring Profile still requests contextual evidence for its executor
+and all five Roles. Role ancestry, actual Contract reference, final candidate,
+Context, refined responsibilities and obligations remain Core admission concerns.
+A context-sensitive Role policy must still reject. No public generic callback
+or source-policy validation is skipped.
+
+[[file:../../../../../t/semantic-module-test.ss][Native controls]] cover malformed symbol lists, booleans and symbols; open policy
+extensions; wrong ancestry with a poisoned field; exact candidate identity;
+executor/five-Role child evidence with the same Context; and a rejecting derived
+Role obligation. The derived policy deliberately preserves the original proto:
+creating a different nominal Type is not the same operation as changing policy
+for an existing Role.
+
+* Real init-owned observation
+
+The existing generated real Modules, role bodies and init selection remain the
+workload. Execution uses =init.modules.module-0.tests= and its =.run= method.
+Business scopes and unused Features are poisoned, source mutation must reject,
+and the existing fixture removes its directory on failure. Observation remains
+inside ModuleTestingProfile.; there is no new runner or environment probe.
+
+The final 16-Module value/prototype-boundary run reduced contextual validation receipts
+from 2000 to 240, and classification receipts from 2000 to 240. Distinct direct
+read tokens in the completed selected-graph record changed from 76261 to 23482;
+dependency edges changed from 487750 to 389830. Physical source reads at Graph
+completion stayed 5495. These are object/work counts, not retained-byte ratios,
+general speed claims or a thousand-Module pass. The preceding shape-only
+iteration had 389510 edges; adding explicit required-prototype checking retains
+320 additional edge occurrences with the same distinct token count. That
+ancestry/laziness check is retained, rather than removed to lower a counter.
+
+The bounded census reads only already allocated/cached native instances. It
+prints closed scalar categories for actual cached Contract references and known
+Context presence. An absent cache entry remains unknown. It never invokes a
+getter or retains a descriptor, candidate, read token or receiver in telemetry.
+
+The final value/prototype boundary also passes the original init-owned
+JsonSchema/Funflow/AWS aggregation, with observation and progress-aware timeouts
+enabled. The real AWS Schema update, Contract/Context transition injections,
+stale-evidence rejection, accepted-value retention and fixture cleanup remain
+in the same Case. Worker and outer process terminate naturally with exit zero,
+seven MODULE-OK, two HARNESS-OK and two final OK markers, and no error/overflow
+marker. The transition injections remain negative controls, not production
+Schema changes made by the observer. This is a focused source-only cut, not
+qualification of unrelated concurrent checkout changes.
+
+The publication suite also passes after the value-boundary refactor. It retains
+native macro-binding reuse, independent full-DFS projection comparison, warm
+input identity, stale source refusal and deferred build projection controls.
+
+* Quint and Lean have different responsibilities
+
+[[file:../../../../../dev/proofs/quint/ReaderProjection.qnt][ReaderProjection]] checks finite demand/registration/effect interactions. Its
+controls expose retained scratch, stale projected input lists after registration,
+cutting an unregistered intermediate node, omitted sources, missing fresh guards
+and reject-everything behavior. These are seven expected outcomes, not a heap
+model. ContextWalk separately owns finite callback-order controls.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] proves that streaming current registrations yields the
+same ordered input sequence, including multiplicity before publication-level
+deduplication. It also states the premise for a safe private projection cut and
+shows later registrations cannot be omitted. Lean does not prove SDK wrapper
+transparency, public Contract implementation behavior or collector memory usage.
+Those remain native tests and explicit implementation premises.
+
+No theorem here licenses dropping contextual obligations, bypassing dispatch,
+clearing SDK bindings or hiding native read events. Scalar field checking is
+validated against the public library in Scheme, not asserted from the integer
+source-projection model.
+
+* Remaining capacity gate
+
+The final-prototype 1000-Module run completed 200 publications and 800 native
+role/interface bodies before the unchanged live-growth policy refused it. It
+retained 600 private contexts/source objects, 801 source guards and zero private
+transitive closure lists. The refusal sample had 1502324672 live bytes and
+1075184528 live-growth bytes. This moves the observed refusal from publication
+74 to publication 200; it is still a failed 1000-Module qualification, not a
+capacity pass or an independently controlled throughput comparison. The native
+harness rejected the child result and the fixture directory was removed.
+
+Physical reads also grew to 360435 at that failure boundary, versus a smaller
+workload at the previous refusal. Different completed-work counts must not be
+used to claim a regression or a source-read reduction. The 16-Module matched
+counts above are the appropriate work comparison.
+
+Thousands of real native declarations remain a separate gate. The observer
+census completes only when the enclosing native slot read returns; an unfinished
+Graph's direct-dependency collector is not accessible through this public API.
+Intermediate completed-read widths cannot be relabelled as its final width.
+The upstream collector is unchanged. The next implementation decision must
+preserve semantic policy dependencies and contextual evidence while avoiding
+unnecessary derived receipts; it cannot assume that a cached acceptance is valid.
+
+Run focused native gates serially through =just test-file=. Use the existing
+Quint checker with =--case-prefix ReaderProjection --typecheck-scope selected=.
+Keep failed capacity receipts as local artifacts, not committed logs. No heap
+or timeout increase, compiler cache, upstream patch or runtime Loader is part
+of this change.

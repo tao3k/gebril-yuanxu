@@ -5,12 +5,12 @@
 
 ;;; ANSI short method combinations and generic protocol customization.
 
-(import (only-in :core/observability/testing-case poo-flow-test-case)
+(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  test-suite test-case check-equal? check-exception check)
         (only-in :clan/poo/object .o .ref)
         (only-in :clan/poo/mop element?)
-        :core/poo-clos/interface)
+        :yuanxu/poo-clos/interface)
 
 (export poo-clos-method-combination-test)
 
@@ -196,24 +196,47 @@
 
 (def poo-clos-method-combination-test
   (test-suite "POO-native CLOS method combinations and protocol"
-    (poo-flow-test-case "short declaration lowers to a lexical POO descriptor"
+    (yuanxu-test-case "single-receiver qualifier policy follows effective inherited slots"
+      (def parent (poo-clos-short-method-combination 'collect list))
+      ;; Force the parent callback before deriving another policy identity.
+      (check (poo-clos-method-combination-admits-qualifier? parent 'collect) => #t)
+      (def child (.o (:: @ parent) identity: 'release))
+      (check (poo-clos-method-combination-admits-qualifier? child 'release) => #t)
+      (check (poo-clos-method-combination-admits-qualifier? child 'collect) => #f)
+      (check (poo-clos-method-combination-admits-qualifier? parent 'collect) => #t)
+      (check (element? ClosMethodCombination
+               (.o (:: @ parent) .admits-qualifier?: #f)) => #f)
+      ;; Native refinement owns this one-axis extension; registration must use
+      ;; it too, rather than reimplementing kind dispatch at the call site.
+      (def restricted
+        (.o (:: @ (poo-clos-standard-method-combination))
+          .admits-qualifier?: (lambda (qualifier) (eq? qualifier 'around))))
+      (def generic
+        (poo-clos-generic-function 'restricted 1 method-combination: restricted))
+      (check-exception
+       (poo-clos-add-method generic
+         (poo-clos-method 'primary (list any-specializer)
+           (lambda (_frame _argument) 'never)))
+       (failure-code? 'invalid-method-qualifier)))
+
+    (yuanxu-test-case "short declaration lowers to a lexical POO descriptor"
       (check (element? ClosMethodCombination declared-collect) => #t)
       (check-equal? (declared-values combination-dog) '(animal dog))
       (check-equal?
        (declared-values (poo-clos-make-instance CombinationSyntaxEntity))
        '(syntax-method)))
 
-    (poo-flow-test-case "long declaration binds groups and lexical call-method"
+    (yuanxu-test-case "long declaration binds groups and lexical call-method"
       (check (element? ClosMethodCombination declared-long) => #t)
       (check-equal? (declared-long-values combination-dog)
                     '(dog animal)))
 
-    (poo-flow-test-case "combination options configure short order without mutation"
+    (yuanxu-test-case "combination options configure short order without mutation"
       (check-equal? (declared-values combination-dog) '(animal dog))
       (check-equal? (declared-reordered-values combination-dog) '(dog animal))
       (check-equal? (.ref declared-collect 'order) 'most-specific-last))
 
-    (poo-flow-test-case "long configuration, argument bindings, and make-method compose"
+    (yuanxu-test-case "long configuration, argument bindings, and make-method compose"
       (check-equal?
        (configured-long-values combination-dog 'extra tag: 'tagged)
        '(around
@@ -244,7 +267,7 @@
          (poo-clos-call around-only 'object)
          (failure-code? 'required-method-group-empty))))
 
-    (poo-flow-test-case "numeric built-ins combine in admitted specificity order"
+    (yuanxu-test-case "numeric built-ins combine in admitted specificity order"
       (let* ((animal (poo-clos-prototype-specializer combination-animal-class))
              (dog (poo-clos-prototype-specializer combination-dog-class))
              (plus
@@ -268,7 +291,7 @@
         (check-equal? (poo-clos-call maximum combination-dog) 7)
         (check-equal? (poo-clos-call minimum combination-dog) 3)))
 
-    (poo-flow-test-case "list order and sequence built-ins preserve their operators"
+    (yuanxu-test-case "list order and sequence built-ins preserve their operators"
       (let* ((animal (poo-clos-prototype-specializer combination-animal-class))
              (dog (poo-clos-prototype-specializer combination-dog-class))
              (collect
@@ -299,7 +322,7 @@
         (check-equal? (poo-clos-call concatenated combination-dog)
                       '(dog animal))))
 
-    (poo-flow-test-case "and, or, and progn retain short-circuit evaluation"
+    (yuanxu-test-case "and, or, and progn retain short-circuit evaluation"
       (let ((trace '())
             (animal (poo-clos-prototype-specializer combination-animal-class))
             (dog (poo-clos-prototype-specializer combination-dog-class)))
@@ -337,7 +360,7 @@
           (check-equal? (poo-clos-call progn-generic combination-dog) 'last)
           (check-equal? trace '(dog animal)))))
 
-    (poo-flow-test-case "one-argument identity preserves multiple values"
+    (yuanxu-test-case "one-argument identity preserves multiple values"
       (let* ((identity-combination
               (poo-clos-short-method-combination
                'identity-max 'max identity-with-one-argument?: #t))
@@ -355,7 +378,7 @@
          (call-with-values (lambda () (poo-clos-call generic 'value)) list)
          '(3 4))))
 
-    (poo-flow-test-case "around methods cannot hide a missing primary"
+    (yuanxu-test-case "around methods cannot hide a missing primary"
       (let* ((standard-around
               (poo-clos-method
                'standard-around (list any-specializer)
@@ -380,7 +403,7 @@
         (check-exception (poo-clos-call short 'value)
                          (failure-code? 'no-primary-method))))
 
-    (poo-flow-test-case "generic protocol owns terminal and computation hooks"
+    (yuanxu-test-case "generic protocol owns terminal and computation hooks"
       (let* ((fallback-protocol
               (poo-clos-generic-protocol
                'fallback
@@ -430,7 +453,7 @@
                           generic combination-dog))
                => #t)))
 
-    (poo-flow-test-case "long combinations partition groups and drive explicit next chains"
+    (yuanxu-test-case "long combinations partition groups and drive explicit next chains"
       (let* ((around-group
               (poo-clos-method-group 'around '((around))))
              (primary-group
@@ -480,7 +503,7 @@
                 (poo-clos-effective-method-group effective-method 'primary))
            '(dog animal)))))
 
-    (poo-flow-test-case "long groups enforce required, claimed, and unambiguous methods"
+    (yuanxu-test-case "long groups enforce required, claimed, and unambiguous methods"
       (let* ((required-group
               (poo-clos-method-group
                'required '((needed)) required?: #t))
@@ -530,7 +553,7 @@
          (poo-clos-call generic 'argument)
          (failure-code? 'ambiguous-method-group-order))))
 
-    (poo-flow-test-case "invalid qualifiers and protocol results fail before invocation"
+    (yuanxu-test-case "invalid qualifiers and protocol results fail before invocation"
       (let* ((generic
               (poo-clos-generic-function 'bad-qualifier 1
                                          method-combination: '+))

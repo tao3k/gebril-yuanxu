@@ -1,0 +1,108 @@
+#+title: 20.29 Published Issuer Protections and Core Alignment
+#+language: en
+#+filetags: :modules:qualification:issuance:currentness:
+
+* Source boundary
+
+The three retained producer changes are now published as
+=dbbc436520d6fe4834d46cc046472783bcb1fa6c= on the existing
+=feat/positive-closure-costs= branch in gerbil-poo PR 13. Its parent is
+=89d9476a99139d0e6933725a3b1f6a9b42462b29=.
+Core's package dependency and the SelectionReplay and MetadataProjection Lean
+revision bindings now identify that exact commit. The narrow pin and binding update is published on the existing Core PR.
+
+The producer owns constructor-state inspection, dynamic observer/precheck
+identity queries and issued-read authentication. These queries inspect actual
+runtime state; they do not certify arbitrary callbacks as pure. Per-visit
+issuance, routing and currentness checks, including the post-observer check,
+remain independent. No admission result is memoized.
+
+The installed Gerbil compiler/runtime is unchanged. The io bridge targets its
+existing write-environment ABI. Other sessions' worktrees were not reset or
+staged, and no new public branch or PR was created.
+
+* Executable qualification
+
+| Boundary | Result |
+|----------+--------|
+| Published native default build | Passed within the existing 300-second limit |
+| Published issued-read suite | 21 cases, passed |
+| Published public PBT suite | 11 cases, passed |
+| Published PBT kernel suite | 39 cases, passed |
+| Core default build against the complete published runtime | Passed; 256 compile targets |
+| Same-source Core hot build | Passed; zero compile announcements |
+| Core source-admission/PBT consumer | 18 cases, passed |
+| Real Gitea/PostgreSQL publication | 11 cases, passed |
+| Independent source admission | 6 cases, passed |
+| Lean | 210 jobs; 7,842 declarations passed the axiom audit |
+| Source-bound SelectionReplay Quint gates | 11 cases, expected controls matched |
+
+The Scheme suites retain MODULE-OK, HARNESS-OK and final OK with no error or
+overflow markers. Expected Quint counterexamples are negative controls, not
+successful-system traces. These bounded models do not prove the entire Scheme
+implementation or establish a ten-thousand-module performance result.
+
+* Rebuild attribution and workflow correction
+
+Rebasing the isolated compiled source tree changed input timestamps even though
+the low-level producer files retained identical content. Official std/make
+therefore rebuilt 183 modules, executed 453 backend jobs and 28 static/link
+jobs. This native rebuild took 294.24 seconds. It was not module loading or
+same-source hot reuse. Unexplained wall/CPU residuals are not attributed to
+host load without measurement.
+
+Keep the qualified build source stable while measuring hot reuse. A remote
+head update must not silently turn the hot cohort into a new source cohort.
+Do not rewrite timestamps, bypass source fingerprints, introduce a cache
+protocol, or increase the watchdog to hide this rebuild. The earlier failed
+assertion-placement run is retained in local artifacts; the corrected guard
+assertion executes inside the mutation action and preserves the negative
+control. Raw logs stay outside version control.
+
+* Preserved semantic boundary
+
+The real Scenario still checks parent-cache isolation, both port requirements,
+source-change rejection and unselected-branch laziness. Lean owns projection
+and identity laws; Quint owns bounded transition/counterexample schedules;
+Scheme owns actual producer and consumer execution. Build reuse does not
+replace source admission or authenticate a previously admitted result.
+
+* Remote integration boundary
+
+The local qualification above used the shared working tree, including ongoing
+refactors. Publication layers only this dependency/binding update and the
+qualified public validation-method fix onto the concurrent remote history.
+Remote CI must validate that integrated source independently; local results
+are not a claim that the entire remote queue passed.
+
+* CI integration findings
+
+The first integrated CI passed all Lean/Quint shards and the Linux build. Its
+objects shard exposed one remaining representation assumption: source diagnosis
+applied assq to object-%declarations, now a native persistent prototype map.
+Use native point lookup with an absence sentinel so an explicit false
+specification remains an attribution barrier. Keep currentness and original
+source locations; do not skip diagnostics on the error path.
+
+The scale shard independently stopped at its existing closed-boundary negative
+control. owned-read-leaf! used null? on that same native declaration map,
+classifying an empty map as open; pair? also missed nonempty maps in derived
+receivers. Replace list representation tests with native prototype-map-length.
+The compact/tree regression checks empty and nonempty catalogs without forcing
+a declaration descriptor, retaining the open boundary for genuine declarations.
+This fixes representation classification, not the unresolved scale memory cost;
+full scale acceptance still requires the unchanged CI gate.
+
+The modules shard also exposed copied native names spines: the actual issued
+read and receiver/instance/revision must retain identity, while a names snapshot
+compares its finite symbolic sequence. Only the names key uses this rule;
+ordinary cached field values still require eq?. The existing dependency
+continuation regression requires the original observed records and refuses a
+changed cold leaf without invoking it.
+
+The macOS cold build failed its existing 60-second child limit at 64.07
+seconds including termination, after a separate 21.53-second spec projection.
+The runner exposed three compiler workers. This failure is retained; no timeout
+is increased. Remove copied unused imports from the JSON Schema emission
+facade and its implementation headers, and revalidate through the unchanged
+source-only bootstrap rather than shrinking its selected spec or roots.

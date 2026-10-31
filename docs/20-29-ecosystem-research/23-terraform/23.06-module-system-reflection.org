@@ -1,0 +1,113 @@
+#+title: 23.06 Terraform Module Research 05: Implications for Our Module System
+#+language: en
+#+property: DOCUMENT_ID 23.06
+#+date: [2026-10-17]
+#+property: STATUS architecture-inferences-not-implemented-by-this-study
+
+* The engineering problem
+
+The [[file:23.02-real-aws-module-source.org][real VPC module]] already lets a caller configure a maintained public interface
+without reproducing its internal resources. Our objective is similarly economical
+composition across independently maintained Modules, Profiles and Scenarios.
+Scheme is the implementation/extension language; its expressiveness alone does
+not specify that composition system.
+
+* Keep three kinds of composition distinct
+
+1. Package composition selects code and versions. A gerbil.pkg dependency makes
+   code available; it does not instantiate every exported service or authorize
+   its processes. Nix package outputs are another input, not a second module root.
+2. Configuration composition derives effective values from reusable Profiles and
+   resolves their Contracts and connections in a Scenario. Independent Profiles
+   should not inherit a specific Scenario just to become reusable.
+3. Operational composition orders builds, plans and effects. Prototype parent
+   order cannot stand in for this schedule. Shared defaults cannot grant runtime
+   authority, and a resource reference cannot prove readiness.
+
+Conflating these creates the repeated imports, wrappers and manual stage chaining
+the user has rejected. A uniform interface should hide bookkeeping while retaining
+these semantic boundaries internally.
+
+* Requirements for the module-system protocol
+
+| Concern | Proposed invariant | Failure that would refute the design |
+|---------+--------------------+--------------------------------------|
+| Publication | A selected interface exposes stable public values and Contracts | Every consumer imports implementation files |
+| Context | Each module instance receives a bounded view of declared dependencies | Rename changes source identity or bypasses disable |
+| Configuration | Ordinary values use assignment; original-value transformations are deliberate | Changing an IP requires constructing a replacement policy object |
+| Types | Authoring strictness and structural interface openness are explicit | Typos disappear or compatible producer fields are rejected globally |
+| Identity | Package, exported prototype, configured instance and resource identity differ | Mount alias silently renames stateful resources |
+| Demand | Selection, linking, forcing and execution are separately observable | Field discovery loads all providers or runs Ops |
+| Provenance | Derivation retains applicable requirements and definition sources | Right-hand composition silently drops a Contract |
+| Effects | Plan/admission do not imply execution approval or readiness | An admitted object can launch a process during import |
+
+These are requirements for review, not declarations that the current Loader meets
+them. See [[file:../../10-19-design/10-configuration/10.04-module-system-design-questions.org][the wider module-system comparison]] for NixOS/devenv/Flox inputs.
+
+* Uniform args must be a context, not a global service locator
+
+The proposed init directory windows provide a discoverable naming view. They
+should not force the entire namespace to discover a consumer's inputs. A module
+needs the selected identity, the interface it requires and a delayed way to obtain
+that interface; it does not need a second copy of every module's configuration.
+
+Two recursion questions require different answers:
+
+- A graph-selection dependency cannot depend on evaluating the graph it selects.
+  Selection inputs must exist before link-time publication.
+- A deferred computation or a service callback can refer to another value without
+  demanding it immediately. Treating every free reference as an eager link edge
+  rejects useful programs. Dynamic access requires an explicit policy and runtime
+  demand tracing or a deliberate restriction; macro hygiene cannot infer all calls.
+
+Therefore "reject all cycles" is insufficiently specific. Define selection/link
+cycles, actual value-demand cycles and execution/readiness cycles independently.
+Every rejection should show owners, source paths and edge kinds.
+
+* Cache and admission boundaries
+
+For the AWS case, changing instance_type should re-evaluate affected resource
+projection, not require re-reading an unrelated provider type. Changing provider
+Schema or the renderer can invalidate admission even with identical user values.
+A child Scenario must obtain its own effective values after a parent projection
+was forced. Source currentness cannot establish absence of remote AWS drift.
+
+Native POO receiver behavior and existing isolated tests are useful inputs, but
+they do not establish end-to-end consumer correctness. A production cache claim
+requires effective-object identity, relevant Contract/source revisions and
+observations about which demands were reused. Dependency deletion and a changed
+dependency set are negative controls, not just value changes.
+
+* What Scheme and POO can improve
+
+Named pure functions can express reusable data transformations; maintained
+prototypes can carry defaults and contracted extension points; native dispatch
+can handle independently growing provider/domain axes. Hygienic role wrapping
+can remove repeated binding code without exposing generated metadata to users.
+
+These mechanisms are valuable when they reduce independently maintained knowledge.
+They are harmful if every simple assignment requires a new parent object, generic
+method or public macro. Preserve a stable functional/value surface and expose POO
+refinement where the user actually needs the inherited value or behavior.
+
+* What remains outside that advantage
+
+Provider validation, unknown values, state migration, locking, partial apply,
+secrets and remote readiness still need explicit owners. General computation
+also permits nontermination and hidden effects. A Contract needs declared demand
+and effect boundaries; it cannot certify arbitrary Scheme evaluation by syntax.
+
+* Issues and Engineering Limitations
+
+References: [[file:23.05-issues-and-user-costs.org][TF-01 through TF-04]]. Marks: DESIGN-INFERENCE; NOT-REPRODUCED.
+The proposed args and cache invariants above are responses to those findings,
+not fixes accepted by Terraform or claims that Core already implements them.
+
+* Conclusion and Onwards
+
+The differentiator to test is a maintained, inspectable module protocol with
+cheap ordinary configuration and deliberate native extension. Next review the
+same publication, dependency and phase questions against NixOS's actual service
+modules, devenv's development services and Flox's environment composition.
+Freeze neither public syntax nor automatic dependency inference before that review.
+

@@ -1,0 +1,140 @@
+#+title: 12.27.41 One Checked Publication Subject
+#+property: DOCUMENT_ID 12.27.41
+#+language: en
+
+* Actual missing handoff
+
+The [[file:27-metadata-to-admission.org][metadata-to-admission audit]] established that a source-admitted declaration
+is not automatically a checked value. The next implementation audit found a
+separate correctness defect in the real consumer:
+
+- The unified public producer already calls =validate= on =value-contract=,
+  classifies the returned subject and admits its contextual children.
+- Its accepted evidence already carries that exact final =candidate= and the
+  actual Contract reference. No additional checked-value registry is needed.
+- The module linker nevertheless stored the RAW publication returned by the
+  reader. The source-owner comparison also read that raw publication.
+
+When a value Contract returns a different receiver, the Graph could therefore
+consume a different object from the one admitted. Correcting this handoff is
+necessary before reasoning about a pure continuation. It is not itself a
+source-guard fusion or a claim that validation callbacks are effect-free.
+
+* Implementation through existing objects
+
+[[file:../../../../../module-system/source/admission.ss][Admission]] now checks the owner of the evidence's actual candidate:
+
+#+begin_src scheme
+(let* ((evidence
+         (admit-module-value!
+           ModulePublicationContract publication context-value))
+       (checked (.ref evidence 'candidate))
+       (owner (assq 'module-id
+                    (yuanxu-module-source-ref-metadata source))))
+  (unless (and (eq? expected-id (.ref checked 'identity))
+               (or (not owner) (eq? expected-id (cdr owner))))
+    (error "publication source owner mismatch" expected-id source))
+  evidence)
+#+end_src
+
+[[file:../../../../../module-system/source/link.ss][The linker]] uses the same candidate in its existing record:
+
+#+begin_src scheme
+(let* ((evidence-value
+         (admit-module-publication!
+           source-value id publication-value context-value))
+       (checked-publication (.ref evidence-value 'candidate))
+       (record
+         (let ((source source-value)
+               (publication checked-publication)
+               (evidence evidence-value))
+           (.o source publication evidence))))
+  (current! 'publication-admitted)
+  (hash-put! publications id record)
+  record)
+#+end_src
+
+There is no second =validate= or =.admit=. Dependency selection, requirements,
+scope linking and the publication evidence now originate from one receiver.
+Default declarations with no value normalization preserve their old identity.
+This changes neither the declaration surface nor the existing module namespace.
+
+* Native regression controls
+
+[[file:../../../../../t/module-publication-test.ss][The existing source publication suite]] uses real temporary role sources,
+the existing init selection, the actual Contract and the actual Graph linker.
+It installs a test-only Type validator on the public publication Contract and
+restores the previous value with =dynamic-wind=.
+
+The positive control returns a derived publication whose =core.link= produces
+a distinct scope value. It asserts:
+
+#+begin_src scheme
+(def record (.call view .selected-record 'custom/example))
+(check-equal? calls 1)
+(check-equal? (eq? (.get record publication) checked) #t)
+(check-equal? (eq? (.get record publication-evidence candidate) checked) #t)
+(check-equal? (.get record scope greeting) "normalized")
+(check-equal? (eq? record (.call view .selected-record 'custom/example)) #t)
+(check-equal? calls 1)
+#+end_src
+
+The regression first failed against the unchanged implementation at the
+publication identity assertion. An earlier test setup omitted explicit init
+selection and correctly failed before admission; that setup failure is not
+the matched semantic regression. The corrected selected-source test reproduces
+the raw/checked mismatch before the implementation changes.
+
+Two independent negative controls require:
+
+1. A normalizer returning a publication with a different owner is refused by
+   the existing owner-mismatch diagnostic before Graph insertion.
+2. A normalizer rewriting the observed config source is refused by the full
+   return guard. A subsequent selected-record request still refuses and does
+   not call normalization a second time in the failed session.
+
+The Type validator, its counter and its replacement scope are negative/positive
+test injections. Module authors do not maintain them. No source change is
+authorized by a normalized candidate or an accepted evidence boolean.
+
+* Correspondence and cost boundary
+
+[[file:../../../../../dev/proofs/quint/SourcePrefix.qnt][SourcePrefix]] tracks the checked and projected reference separately. The new
+=rawSubject= mutant substitutes the original receiver while leaving source
+checks intact; =SameAdmittedSubject= must find a counterexample. This adds an
+eleventh expected outcome to the existing callback/invalidation/cleanup family.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork.checked_subject_guard_covers]] transports support only along
+the exact admitted reference identity. Complete support and fresh revisions
+remain premises; structural object equality, a passed shape check or a Contract
+name do not establish them. The model does not prove Scheme normalization,
+observer purity or arbitrary filesystem atomicity.
+
+This round repairs subject consistency without removing a full source guard.
+The =6N^2 + 2N= principal recurrence therefore remains open. A cached getter can
+still deliver observations, and normalization/Context callbacks are still open.
+The existing full =publication-admitted= guard continues to separate their
+execution from accepted record insertion. No new result cache, second Graph,
+compatibility forwarding layer or upstream modification is introduced.
+
+* Focused qualification
+
+All native gates used the existing source-only isolated environment, the locked
+gerbil-poo revision, existing heap/progress/total budgets and serial test
+execution. No SDK cache was cleared or added and no upstream file was edited.
+
+| Gate | Result and scope |
+|------+------------------|
+| =just test-file t/module-publication-test.ss true= | Passed with all module/harness/final markers; exact-subject, normalized owner and source-mutation controls passed |
+| =just test-file t/module-declaration-calibration-test.ss true= | Passed through the same init tests object; 4,351 Graph-ready physical reads, 52 full reader guards, 64 role parses and body expansions/evaluations |
+| =just test-file t/module-testing-isolation-test.ss= | Passed through the existing observed JsonSchema/Funflow/AWS selection: seven module markers, two harness markers and two final success markers |
+| =just test-file t/execution-cancellation-test.ss true= | Passed actual TERM interruption, owned Ops cancellation, nested release ordering and fixture removal |
+| =SourcePrefix= selected Quint qualification | Eleven expected outcomes, including the raw-subject counterexample |
+| Lean =ModuleSystem.Graph.SourceClosureWork= | Focused build passed with the updated Quint source digest and subject-support theorem |
+
+The real AWS gate retains Schema/Contract/Context transition rejection, stale
+evidence refusal and failure preserving the last accepted publication. These
+controls exercise existing publication and Ops, not an additional runner.
+The declaration measurement equals the preceding baseline: correctness of the
+handoff is established locally, while further read reduction and thousand-module
+capacity remain open. No wall-clock speedup is inferred from these runs.

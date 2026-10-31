@@ -1,0 +1,205 @@
+#+title: 13.19 Source-Qualified Init Exports
+#+language: en
+#+date: [2026-10-23]
+#+property: STATUS implemented-focused-qualification
+
+* Identity and one public entry
+
+The current native package names are =yuanxu= and =agentic-ai-lab=. The independently
+named =:tao3k/yuanxu/prelude= supplies language syntax; it does not rename either
+package. Repository URLs, installation directories and mount names are not
+package identities.
+
+=yuanxu!= obtains its enclosing native module Context through
+=core-context-top= and =expander-context-id=. For =yuanxu/init= it exports
+=yuanxu.init.exports=; for =agentic-ai-lab/init= it exports
+=agentic-ai-lab.init.exports=. The same declaration can appear in any Scheme module:
+=agentic-ai-lab/selection= exports =agentic-ai-lab.selection.exports=. The final native
+module separator becomes a dot; preceding namespace components remain intact.
+=init.ss= is a conventional entry file, not a required suffix. A REPL-only
+declaration without an enclosing module still has no source-qualified export
+identity. Explicit Profile forms retain their existing binding syntax.
+
+The existing export object, private namespace getter and selected graph remain
+the sole producers. The migration removes public =init.exports=,
+=init.Modules=, =init.Scenarios=, =init.modules= and the unqualified intent
+binding. There is no compatibility facade, new resolver or cache protocol.
+
+* Ordinary imports and native paths
+
+#+begin_src scheme
+(import :yuanxu/init :agentic-ai-lab/init)
+(.get yuanxu.init.exports Modules ops scope)
+(.get agentic-ai-lab.init.exports Core json-schema scope)
+#+end_src
+
+The filename does not grant module-loading authority. For example, the same
+directory declaration in =agentic-ai-lab/selection.ss= is valid:
+
+#+begin_src scheme
+;; selection.ss, inside the agentic-ai-lab package
+(import :yuanxu/module-system/selection/init-syntax)
+(yuanxu! :load-modules "./modules" mode: explicit rename: Services
+  (checks))
+
+;; A consumer imports the owning module, without prefix-in.
+(import :agentic-ai-lab/selection)
+(.get agentic-ai-lab.selection.exports Services checks scope)
+#+end_src
+
+These are separate source-file examples. Loading remains demand-driven; changing
+the declaration filename does not bypass selection, publication or currentness.
+
+The mount names above are owned by the corresponding init declarations.
+=rename:= changes a window slot, not the native package identity. A dotted
+binding is one Scheme identifier, not an implicit series of slot reads:
+
+#+begin_src scheme
+(.ref (.ref (.ref yuanxu.init.exports 'Modules) 'ops) 'scope)
+#+end_src
+
+No repeated =prefix-in= is necessary. Native =only-in= and =rename-in= remain
+available when a consumer intentionally restricts or renames an import.
+
+* Hygienic expansion and laziness
+
+The following is the expansion shape for the existing Core Modules window;
+private identifiers are fresh in the actual macro:
+
+#+begin_src scheme
+(defvalues (private-base private-modules)
+  (yuanxu-init-build init-source init-declaration))
+(def private-value
+  (.+ private-base (.o Modules: (.ref (private-modules) 'Modules))))
+(defsyntax yuanxu.init.exports
+  (identifier-rules ()
+    (id (identifier? #'id) private-value)))
+(export yuanxu.init.exports)
+#+end_src
+
+The identifier transformer is read-only and captures the private value rather
+than a caller's same-spelled local. It does not create another object on read.
+Obtaining the aggregate does not force a mount, business scope, test graph,
+compiler or process. Explicit slot demand and existing operation boundaries
+retain source currentness and effect ownership.
+
+* Build and test consumers
+
+Package build.ss files import their own qualified entry and pass its
+=std-make-spec= to =defbuild-script=. The guarded dispatch remains internal;
+=admit-current= is an explicit inspection boundary, not another build runner.
+No new Builder or signing boundary is introduced.
+
+The shared test launcher reads the selected init's native identity with
+=core-read-module/sexp= and computes the same export name. It imports that exact
+binding; it never assumes every launched package is Yuanxu. Generated-package
+test fixtures use native import/rename solely inside their test Contexts.
+
+* Validation and remaining boundaries
+
+The focused gates are =t/module-init-import-test.ss= (cross-package names,
+prelude independence, hygiene, removed exports and laziness),
+=t/module-windows-test.ss= (same selected graph across mounted build/test
+consumers), and =t/module-test-preparation-test.ss= (std/make compilation,
+issuance, Harness execution, hot reuse and source-change refusal).
+
+Results must name the actual runtime and completed markers. A passing source
+import does not establish complete product CI, AOT relocation, or completion of
+the separate Nix C API integration.
+
+** Runtime alignment receipt (2026-10-23)
+
+Validation uses the installed Gerbil compiler and gerbil-poo =80b590b=, matching
+the current Core dependency. A private copy of the previously qualified package
+runtime leaves the shared package checkout and other sessions' outputs intact.
+The current Core completed its ordinary source-registered =build.ss= after a
+native clean: 233 targets, 167.742 seconds, exit 0. No compiler source changed.
+
+Earlier failures are retained locally: the initial macro expansion exposed a
+pattern-variable shadowing bug; negative checks initially expected the wrong
+native exception classes; editing a source during one run correctly produced
+=stale prepared build source / source-bytes-changed=. Another preparation was
+refused by the unchanged idle budget. The first full build also rejected stale
+optimization metadata for =module-test-execution= (old arity 1, current arity 2).
+The private native clean/build corrected that mixed cohort, not the assertion
+or deadline. These failures are not relabeled as passing tests.
+
+** Completed focused receipt
+
+=t/module-init-import-test.ss= passed through =just test-file= with the aligned
+runtime: three fixture Cases, =MODULE-OK=, =HARNESS-OK=, final =OK=, and no error
+or overflow markers. The two same-basename entries belong to distinct generated
+native packages; one uses =:tao3k/yuanxu/prelude= and one uses =:gerbil/core=.
+Their exported objects remain distinct, caller bindings remain unchanged,
+removed exports and assignment are refused, and no missing module directory is
+accessed until an explicit mount demand. This is source-level native import
+qualification, not an AOT-only or complete product-CI claim.
+
+The filename restriction was subsequently removed and the same focused test
+rerun through =just test-file=. It passed with =MODULE-OK=, =HARNESS-OK= and
+final =OK=, without error or overflow markers. The fixture now also imports
+=selection.ss= beside =init.ss= in one package: both declarations produce
+distinct lazy export objects, while the two packages still import their
+same-basename init entries without prefixes. The aligned incremental Core
+build passed in 18.973 seconds. This receipt does not qualify the Nix C API
+integration.
+
+** Installed entry and source fallback
+
+The native Core specification now includes =init=, so an ordinary installation
+publishes =yuanxu/init.ssi= as well as its existing implementation modules.
+The product's public build roots already include =init.ss=. The incremental
+Core build after adding this entry completed 234 selected targets in 105.864
+seconds, exit 0, compiling three changed source roots. This is a build receipt,
+not a latency improvement claim.
+
+The shared test launcher does not register the entire Core source tree ahead
+of installed libraries. That temporary missing-install workaround caused native
+support discovery to classify already installed Core dependencies as local
+sources. The maintained build.ss remains the owner of source-only bootstrap;
+explicit source-only qualification still calls its existing registration helper.
+Tests use the coherent installed cohort and ordinary configured fallback order.
+
+Qualified names distinguish binding ownership; they do not authenticate a
+repository or replace publication admission, origin checks or currentness.
+The prelude must not import init implicitly: language bootstrap and a selected
+configuration epoch retain independent lifetimes.
+
+=t/module-windows-test.ss= also passed through the maintained launcher with
+=MODULE-OK=, =HARNESS-OK= and final =OK=. Mounted requirements, one build/test
+graph, missing/ambiguous identities, cold unselected roles and refusal after
+changing the owning init remain covered. A fixture initially serialized a raw
+gensym as its package name; native package-snapshot comparison correctly refused
+that unstable metadata. Interning the generated package name restored a
+repeatable native package identity; the metadata check was not bypassed.
+
+=t/module-test-preparation-test.ss= passed with =MODULE-OK=, =HARNESS-OK= and
+final =OK=. This exercises a generated package's own qualified init entry,
+root-relative native support compilation, existing artifact issuance, Harness
+execution, warm reuse, and source-change refusal. No test-side compiler
+association can be removed to bypass preparation. The test launcher selects
+the fixture package's binding from native metadata rather than hard-coding
+=yuanxu.init.exports=.
+
+** Product integration receipt
+
+The final root =just test-file t/build-projection-observability-test.ss= run
+passed under the product's existing 1 GiB / 120-second launcher. It imports
+=:yuanxu/init= and the product's own init without prefix-in, verifies distinct
+export objects and cold graph/window slots, and reports the actual native
+Context path: the aligned library's =yuanxu/init.ssi=. The final entry-import
+repeat also passed after removing forced source registration and using interned
+fixture package names.
+
+| Final gate | Result |
+|------------+--------|
+| Native Core build including init | 234 selected targets; exit 0 |
+| Core module-init-import-test | MODULE-OK, HARNESS-OK, OK |
+| Core module-windows-test | MODULE-OK, HARNESS-OK, OK |
+| Core module-test-preparation-test | MODULE-OK, HARNESS-OK, OK |
+| Product build-projection-observability-test | MODULE-OK, HARNESS-OK, OK |
+
+All four final test outputs were checked for ERROR CASE/CHECK/HARNESS,
+Heap overflow and Stack overflow; none occurred. Tests ran serially. No timeout,
+heap policy, source-admission check or compiler source was weakened. This does
+not claim the entire repository CI or Nix C API integration has completed.

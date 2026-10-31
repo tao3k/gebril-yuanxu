@@ -1,0 +1,416 @@
+#+title: Directory Windows and Shared Module Arguments
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS design-only-not-implemented
+
+* Purpose and decisions
+
+Design revision: [[file:../../docs/10-19-design/10-configuration/10.05-guestbook-context-and-contribution-design.org][the Guestbook context study]] compares a namespace-wide args
+object with dependency-scoped lexical instantiation. The latter is the preferred
+candidate for validation; _module-system.args is not a required public interface.
+The older examples below retain the naming-window intent, not a frozen adoption
+of Nix argument semantics. [[file:../../docs/10-19-design/10-configuration/10.06-human-agent-module-authoring.org][Human-Agent authoring]] is a primary design goal,
+alongside simple human configuration and maintained ecosystem extensibility.
+
+Implementation is deferred pending the broader
+[[file:08-infrastructure-platforms-and-design-gates.org][cross-platform design review]]. An unaccepted local implementation experiment
+was withdrawn on 2026-10-17; no multi-window/args support is claimed here. Its
+source/log artifacts were retained locally. Existing Core mechanisms and other
+sessions' changes remain separate from this proposal.
+
+One root init selects user-owned directory windows. Gerbil packages supply
+installed libraries, including Core Ops; users do not register a checkout path
+for Ops. Every independently loaded Scenario follows the same source-role
+Contract as a Module. Its domain responsibility differs, not its loading rules.
+
+The target separates package resolution, directory selection, dependency
+admission, contextual role evaluation and explicit runtime activation. Functions
+and native POO objects remain the expression surface. No configured-check
+factory, second Scenario loader or per-module root reload is required.
+
+All examples below are target source, not executable acceptance receipts.
+Only the bounded init declaration changes syntax. Namespace access, slot
+binding, inheritance and runtime invocation remain ordinary Scheme/POO.
+
+* Audited implementation boundary
+
+The audit concerns the current working tree, including concurrent uncommitted
+changes; it is not a claim about the committed Core revision alone.
+
+| Owner | Currently present | Gap addressed here |
+|-------+-------------------+--------------------|
+| [[file:../../gerbil.pkg][Core package]] and [[file:../../ops/gerbil.pkg][Ops package prelude]] | Native package/dependency and prelude metadata | Installed-package scope registration and built-in attachment |
+| [[file:../source/init.ss][module-init-intent]] | One mode/source pair, categories, literal external roots, disable and signed features | Multiple independently named directory windows |
+| [[file:../source/directory.ss][Directory source context]] | Directory snapshots, source ownership, lazy namespace branches | One shared context over several mounts |
+| [[file:../source/preparation.ss][Publication preparation]] | Native package identity, package/prelude currentness, generated role imports | Contextual evaluation of role bodies with admitted arguments |
+| [[file:../source/declaration.ss][Publication declaration]] | Generates core.link; injects core.requires aliases into core.exports | The same arguments in objects/config/types/func, without role-specific patches |
+| [[file:../source/link.ss][Scope linking]] | Source/publication/scope admission, active-cycle rejection, generation-local caches | Cross-window identity and dependency-linked contextual role frames |
+| [[file:../source/selection.ss][Selected graph]] | Explicit-required-owner rejection, retained disable/feature decisions, existing Feature resolver | Package-provided built-ins distinct from selectable user owners |
+| [[file:../../profile-composition/selection-syntax.ss][use-module]] | Bounded alias and named Profile selection | Reassess convenience after args injection; do not confuse selection with loading |
+
+The current bounded use-module accepts an identifier for its scope argument.
+An expression such as (use-module (.get modules ops) as ops ...) is not supported.
+The current Core init explicitly selects Ops from its local directory. Automatic
+package-backed built-in attachment is a target change, not existing behavior.
+Package dependency installation alone does not inject lexical identifiers.
+
+* Root windows, names and identity
+
+#+begin_src scheme
+;; project/init.ss -- proposed multi-window grammar
+(yuanxu!
+  :load-modules "./modules"
+  mode: explicit
+  rename: modules
+  (checks)
+
+  :load-modules "./scenarios"
+  mode: explicit
+  rename: scenarios
+  (release))
+#+end_src
+
+Each :load-modules starts a window; its options and rows end at the next window.
+Paths are literal strings relative to this init. rename is a literal identifier
+naming an argument slot, not a package rename. A duplicate mount, path traversal,
+ambiguous owner, leaf/branch collision or collision with a reserved built-in
+binding is rejected. No last-writer-wins namespace merge is implicit.
+
+The default mount name is the admitted directory basename; an unusable basename
+requires rename. A root spelling such as services may mount services directly.
+A services subtree under modules instead produces modules.services. They are
+not automatically duplicated. A future explicit alias must preserve the same
+owner, scope and source association rather than create an independent instance.
+
+Ops is a reserved package-provided scope at args.modules.ops in this example.
+The package-backed registry contributes this leaf alongside user module mounts;
+it does not scan or copy Core sources into the user directory. A missing or
+incompatible installed Core package fails package resolution. Explicit mode
+does not require users to list mandatory installed Core libraries again.
+Optional package modules still obey selection policy. Built-in attachment must
+be integrated with the existing registry, not a second hand-maintained catalog.
+The registry projection and package identity binding remain to be implemented.
+
+Rename changes the route, not the publication identity. Cache keys and diagnostic
+origins retain package/compiler identity, owner, source revision, context generation
+and effective arguments. A textual mount path alone is not a global module ID.
+
+* Uniform contextual roles: complete Ops example
+
+#+begin_example
+project/
+  gerbil.pkg                    # declares the installed Core dependency
+  init.ss
+  modules/checks/
+    types.ss
+    config.ss
+    objects.ss
+    interface.ss
+  scenarios/release/
+    types.ss
+    config.ss
+    objects.ss
+    func.ss                     # only because this example publishes preview/run
+    interface.ss
+#+end_example
+
+Core's own ops/{types,config,objects,func,interface}.ss remains its single
+implementation. The user package pins its actual Core dependency using ordinary
+Gerbil package metadata. No invented Core package URL or local vendor root is
+required by this design. Package fetching/building remains package management.
+
+The generated standard role environment provides native POO forms, the existing
+Core predicate-Contract helpers used below, and hygienic contextual bindings.
+This environment is a proposed extension of existing preludes, not an assertion
+that current object roles already receive these names.
+
+** User Module
+
+#+begin_src scheme
+;; modules/checks/config.ss -- user's values, not a copy of Ops defaults
+(def Config
+  (.o command: '("gerbil" "build")
+      timeout: 60))
+
+;; modules/checks/objects.ss -- no manual constructor/link bridge
+(def Check
+  (with-slots (Script) (.get modules ops prototypes)
+    (.o (:: @ Script)
+      command: (.get Config command)
+      timeout: (.get Config timeout))))
+
+;; modules/checks/types.ss -- reuse the actual Script Contract
+(def ChecksScopeContract
+  (yuanxu-predicate-contract
+    'checks/scope
+    (lambda (scope)
+      (and (object? scope) (.slot? scope 'Check)
+           (yuanxu-validation-evidence-accepted?
+             (.call (.get modules ops types ProcessScript)
+                    .admit (.get scope Check) #f))))
+    (lambda (_value _context) '())))
+
+;; modules/checks/interface.ss
+(.def Checks
+  identity: 'checks
+  core:
+  (.o requires: (.o)
+      scope-contract: ChecksScopeContract
+      exports: (.o Check: Check))
+  features: (.o))
+#+end_src
+
+Here the empty authored requires object means no additional explicit dependency
+declarations. The target wrapper derives the direct Ops requirement from the
+bound namespace references and combines it with explicit requirements into the
+existing native requires graph. Today an empty requires object does not do this.
+No one should execute this example under the existing wrapper and assume safety.
+
+The Check inherits timeout/environment/log/status behavior from the actual Ops
+Script. The user directly assigns command and timeout; there is no inherited
+value transformation and no reason to use =>.+ for these two assignments.
+
+** Scenario with the same directory Contract
+
+#+begin_src scheme
+;; scenarios/release/config.ss
+(def Config
+  (.o timeout: 90
+      arguments: '("--release")))
+
+;; scenarios/release/objects.ss
+(.def (Release @ (.get modules checks Check))
+  timeout: (.get Config timeout))
+
+;; scenarios/release/func.ss
+(def (preview-release)
+  (with-slots (preview) (.get modules ops)
+    (preview Release (.get Config arguments))))
+
+(def (run-release)
+  (with-slots (run) (.get modules ops)
+    (run Release (.get Config arguments))))
+
+;; scenarios/release/types.ss
+(def ReleaseScopeContract
+  (yuanxu-predicate-contract
+    'release/scope
+    (lambda (scope)
+      (and (object? scope)
+           (every (cut .slot? scope <>) '(Release preview run))
+           (procedure? (.get scope preview))
+           (procedure? (.get scope run))
+           (yuanxu-validation-evidence-accepted?
+             (.call (.get modules ops types ProcessScript)
+                    .admit (.get scope Release) #f))))
+    (lambda (_value _context) '())))
+
+;; scenarios/release/interface.ss
+(.def ReleaseScenario
+  identity: 'release
+  core:
+  (.o requires: (.o)
+      scope-contract: ReleaseScopeContract
+      exports:
+      (.o Release: Release
+          preview: preview-release
+          run: run-release))
+  features: (.o))
+#+end_src
+
+The function accepts the complete argument list. For this exact one-argument
+example, the equivalent direct native invocation is:
+
+#+begin_src scheme
+(.call Release .run "--release")
+#+end_src
+
+These are alternative execution forms, not two required executions. Preview produces
+inert argv/environment/options; it does not sample ambient process state or run.
+The final command is gerbil build --release, timeout is 90, and all untouched Ops
+defaults remain inherited. There is no root reload from any module role.
+
+** Application boundary
+
+#+begin_src scheme
+;; Target result shape, not the current Loader return API.
+(def System (yuanxu-load-modules "./init.ss"))
+(def ReleaseScope (.get System args scenarios release))
+
+;; Pure inspection; no build command starts.
+((.get ReleaseScope preview))
+
+;; Separate, explicit operational action.
+((.get ReleaseScope run))
+#+end_src
+
+Timeout, output logging and exit handling delegate to the existing Ops executor.
+Scope loading and Contract admission do not invoke a published run procedure.
+Currentness is checked at publication/effect boundaries by the retained system
+context; generic Ops .run does not independently authenticate that whole context.
+Runtime currentness enforcement by a generated application entry is pending.
+
+* What _module-system.args means
+
+_module-system is the contextual system object, not a mutable global parameter.
+Its args slot owns modules/scenarios/services and other declared mounts. A role
+receives convenient lexical projections of the same args; it need not inspect
+internal records. Each role of one linked owner shares the same context identity.
+Different effective contexts must not share captured role values accidentally.
+
+The wrapper is conceptually a compiler-generated function over args. It captures
+that function's argument once, projects role bindings, and evaluates the admitted
+role graph once per contextual instance. This is a description of native let,
+functions and POO slots, not a new runtime macro API. The existing core.exports
+link closure alone is insufficient because its role imports have already been
+evaluated outside that argument scope.
+
+Implementation must transform the role graph as a unit, keeping private helpers,
+native source locations, phase imports and dependency direction. It must not
+independently inject a dynamic global into each operation or splice unqualified
+symbols into arbitrary source datums. Contextual files are linked values;
+ordinary context-free library functions remain ordinary Gerbil imports.
+The source instance owns the injected bindings hygienically. Explicit conflicting
+declarations need a source-located rejection or an explicit ordinary lexical
+shadowing boundary, never an accidental capture. Macro RHS and role input
+expressions must not be evaluated twice during projection.
+
+* Dependency discovery, denial and cycles
+
+1. Register window metadata and installed-package references without importing
+   all leaf interfaces. Reuse current directory/source observations.
+2. Prepare only selected/demanded declarations. Resolve native package identity
+   before producing contextual role code.
+3. Collect closed namespace references by binding identity from admitted syntax,
+   including native .get, supported path lowering and with-slots projections.
+   Ignore quoted data; do not infer dependencies by searching for symbol text.
+4. Combine these requirements with authored core.requires and selected Feature
+   contributions. Reuse existing graph selection, dependency Contracts and cycle
+   rejection. Admit dependencies before evaluating dependent contextual roles.
+5. Publish the scope only after its final Contract accepts the effective object.
+
+Closed-reference extraction is a bounded compiler feature, not a solution to
+arbitrary Scheme dependency inference. Computed module names, namespace iteration
+and dependencies hidden inside unrestricted macros require an explicit bounded
+core.requires declaration or are rejected before publication. Do not silently
+scan every module or discover new build dependencies inside an executing Script.
+Treating references inside procedure bodies as eager requirements is the coarse
+candidate described here, not an accepted dependency-inference rule. The later
+Guestbook study requires separating declared link edges from deferred value
+demands; unrestricted higher-order calls cannot be inferred by this scan.
+Same-owner role references are role edges, not module self-dependencies.
+
+All mounts expose one namespace topology, but each consumer receives a guarded
+view: it may demand only eligible owners in its admitted dependency closure.
+This avoids a convenient args object becoming a bypass around selection policy.
+
+For the example the required owner edges are release -> checks -> package Ops,
+plus release -> package Ops. Library availability is not Script activation.
+
+#+begin_src scheme
+;; Replace the checks row in the modules window to exercise denial:
+(checks disable: #t)
+;; Or replace the release row to omit that Scenario:
+(release disable: #t)
+#+end_src
+
+With release selected, disabled checks fails as release -> modules.checks,
+retaining the denying init location. An omitted checks row in its explicit window
+also fails; auto eligibility in another window cannot override that policy.
+Disabling release does not execute or link its scope; a separately selected
+checks module is still eligible. A package-provided mandatory Core capability
+cannot be silently shadowed or disabled by a user-directory row.
+
+A retained -feature remains a negative decision in the existing Feature System;
+it is not erased by directory discovery. If a required selected contribution
+depends on that feature, reject with the requester chain. Unknown features keep
+the existing error rather than being treated as disabled modules.
+
+If checks refers back to scenarios.release, reject the cross-window owner cycle
+before publishing either partial scope. Preserve original publication identity
+in the active set so renaming a mount cannot hide a cycle. Distinguish role
+compilation cycles, module-link cycles and runtime service relationships; the
+latter do not become legal merely by changing module declaration order.
+
+* Laziness, currentness and failure boundaries
+
+- Registering a directory reads bounded metadata, not every descendant source.
+- Namespace enumeration must not link scopes, compile Contracts or execute Scripts.
+- Selected dependency metadata may be inspected to validate the graph; this is
+  distinct from evaluating role values or running external build contributions.
+- A demanded role instance may force declared dependencies needed for its final
+  scope admission. Fine-grained non-forcing admission cannot simply be assumed.
+- Unselected branches, disabled Scenarios and unused package scopes stay cold.
+- Build-role isolation remains unchanged: runtime linking cannot force build.ss.
+- Loading must never call published .run/run functions. Arbitrary effectful
+  top-level Scheme is not rendered inert by a macro: role admission must reject
+  unauthorized activation forms, with dynamic effects still a qualification gap.
+- Retain init/window decisions, package/prelude observations and demanded role
+  source inputs in currentness. Source or dependency changes require a fresh
+  contextual generation; a parent cached scope is not reusable proof for a child.
+- Reuse native lazy slots within a stable effective context. Do not allocate a
+  fresh args identity on every field access or perform whole-tree currentness
+  checks for each slot. No thousand-module speed claim is established here.
+
+* Reassessing use-module
+
+Shared arguments remove the need for use-module as a directory loader, package
+resolver, source marker repeated at every access, or compulsory field accessor.
+Ordinary configuration should use native slots and with-slots directly.
+
+The existing bounded branch is optional lexical convenience:
+
+#+begin_src scheme
+(with-slots (ops) modules
+  (use-module ops as execution
+    (with-slots (Script) (.get execution prototypes)
+      (.o (:: @ Script)
+        command: '("gerbil" "build")
+        timeout: 60))))
+#+end_src
+
+The shorter object example above deliberately omits this alias layer. Provenance
+must come from package/source publication and retained dependency edges, not from
+whether a user happened to spell use-module.
+
+The identifier-tail branch selects named Profiles and can assign instance
+identity. It is not equivalent to a lexical alias. Audit its actual consumers
+before retaining, narrowing or removing it; do not change it as part of this
+documentation-only design. Shared args does not itself compose selected Profiles,
+choose execution order or create a runtime Session.
+
+* Required controls before implementation claims
+
+Use the existing heap-fenced Core test entrypoints for later controls. No Scheme
+tests or builds were run for this documentation-only change.
+
+| Control | Required observation |
+|---------+----------------------|
+| Two windows and all role files | Same admitted args identity; no configured-check bridge |
+| Built-in Ops | Resolves installed package; no local Core path row; no user shadowing |
+| Rename | New route, same owner/source/Contract; duplicate mount rejected |
+| Syntax and hygiene | Identifier-only use-module still works; quoted/dynamic references handled explicitly |
+| Disabled or omitted checks | Selected release refused with exact requester and init origin |
+| Negative required Feature | Refusal through existing Feature graph, not a second resolver |
+| Cross-window cycle | No partial scope publication; rename cannot conceal cycle |
+| Inert registration/linking | Marker process and log absent until explicit run |
+| Preview versus run | Same prepared argv; preview pure; timeout/failure log preserved |
+| Cold unselected branch | No role read/compile/activation for the branch |
+| Cached parent, changed child config | Child command/timeout effective; parent scope unchanged |
+| Package/init/role source edit | Retained generation refused before publication/effect |
+| Shared import/build projection | Interpreter and compiler preserve the same scope/phase boundary |
+
+* Conclusion and open design questions
+
+The UX gain is one directory-window declaration and ordinary POO configuration
+inside uniformly organized owners. Package identity, provenance and dependency
+admission become platform responsibilities instead of user-written bridges.
+The cost is a contextual role-compilation boundary, plus bounded dependency
+analysis; neither is delivered merely by adding a macro or a global args record.
+
+Before implementation, answer: which references can be extracted without running
+macros; which macros are admitted to publish dependency information; when must
+scope admission force values; and how does one shared generation invalidate only
+the demanded closure? Those decisions determine whether the system scales safely
+and remains explainable. Keep explicit requirements as the escape hatch for
+genuinely computed dependency choices, not as repeated boilerplate for every slot.

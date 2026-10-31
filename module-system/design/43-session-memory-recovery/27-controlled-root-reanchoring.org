@@ -1,0 +1,123 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.27 Controlled Root Re-anchoring and Controller Recovery
+:PROPERTIES:
+:ID: agentic-ai-lab-context-controlled-root-reanchoring
+:STATUS: module-protocol-local-joint-pass-remote-durable-open
+:DATE: 2026-10-15
+:END:
+
+* Authority is not resurrected
+
+[[file:29-human-decision-source-and-admission.org][10.06.43.29]] refines the Human-decision boundary below with an exact
+authenticated source, decision validity/withdrawal and atomic one-shot acceptance.
+The business-policy callback is no longer its sole authenticity premise.
+
+A revoked installation root stays revoked. Recovery installs a successor under
+a different, independently attested root; it does not clear the old root epoch,
+reuse its ticket, or reset its controller's history. Project Context content
+and its ORG provenance survive; consumer authority does not survive by analogy.
+
+The initial root configuration may bind a separately issued recovery authority
+through =recovery:= DI. That binding is exact and must share the configured
+Governance Profile. No recovery authority can be attached after revocation;
+roots created without this binding fail closed. This is not retroactive
+recovery of arbitrary previously registered roots or an out-of-band migration.
+
+The host-selected recovery authority has its own Core verifier, clock and Human
+decision policy. Its trust does not come from the retired root, ASCENT inference,
+an ordinary effect grant or an agent-supplied =approved= flag. The new root must
+also pass its installation policy. Governance assessment readiness is necessary
+but is never authorization.
+
+* POO subjects and transition contract
+
+[[file:../../../../modules/ai-agentic-context/installation.ss][Modules installation]] owns the public POO values and private issuer state:
+
+| Value | Meaning and boundary |
+|-------+----------------------|
+| Recovery authority | Host-configured Human decision boundary, pinned before failure |
+| Recovery proposal | Exact retired installation, captured revoked epoch, successor root/epoch, attestation, configuration, payload and Human decision |
+| Recovery authorization | Actual Core receipt for that issued proposal and a bounded publication interval |
+| Successor installation | New one-shot activation ticket, increasing controller generation, predecessor and recovery-proposal links |
+
+The new configuration must retain the old controller's reserved name and the
+exact Governance binding, but reference the successor root. Root identities are
+never reused. The signed snapshot binds old/new root identities and epochs,
+prior controller generation, proposal sequence, controller name, Governance
+revision/owner/threats, Human actor/decision identity/operation and actual
+Assurance payload. Private issued referents prevent a copied proposal, ticket,
+root, configuration or receipt from borrowing that authorization.
+
+Authorization and commit require the old root to be revoked, successor root
+attestation to be current, the designated recovery authority to match and the
+prior installation to have no published successor. They also require current
+Assurance evidence/grant, successor installation approval and an explicit Human
+decision for the proposal. After callbacks, root/epoch/Governance predicates
+are checked again. Commit checks the receipt again and uses the existing local
+mutex to atomically consume the predecessor and Human decision and publish one
+successor. Competing receipts cannot produce a second successor.
+
+These version axes must not be collapsed:
+
+| Version | Owner and invalidation |
+|---------+------------------------|
+| Root epoch | Root revocation invalidates captured installation/recovery subjects |
+| Installation generation | Recovery advances the controller predecessor chain |
+| Source configuration epoch | Bootstrap/rotation belongs to one exact issued controller |
+| Registry generation | Session collection replacement belongs to its issued registry |
+
+A fresh controller starts its own bootstrap epoch, not the old controller's
+authority. Private controller/binding identity and installation lineage prevent
+equal numeric epochs or repeated presentation strings from making old receipts
+valid. Presentation strings alone are not globally unique durable authority.
+
+Human decisions declare =actor=, =identity= and =operation: recover-controller=.
+Those fields describe a request, not proof of a human. The configured Human
+policy must authenticate the decision and its exact recovery target. In the
+local Scheme Case, it accepts the exact configured decision object and exact
+configuration. The Module consumes actor/decision identity per recovery authority
+on publication; even a subsequently permitted target cannot reuse that old
+decision. Expired or denied attempts do not consume it. A later recovery cycle
+requires a fresh decision identity as well as a newly attested root.
+
+This protocol uses current Governance and Assurance objects, but does not add a
+browser approval UI, remote identity provider or deployed Human policy service.
+These remain trusted host integration obligations, not established capabilities.
+
+* Recovery reopens obligations
+
+Activating the successor is not a source bootstrap, evidence admission, review
+or effect grant. The successor must establish a fresh source binding through
+the existing governed bootstrap protocol. Its Profile needs a fresh review;
+the old controller's receipt and old review cannot satisfy that obligation.
+The old Profile remains refused after recovery. Its obligations reopen, while
+historical Project knowledge remains intact. Existing Context selection data
+does not acquire new authority merely because it remains queryable.
+
+Fresh bootstrap plus fresh review can close the consumer obligation. Neither
+the recovered installation nor that review authorizes effect delivery. If the
+successor root is revoked later, its authority fails again. A second controlled
+recovery advances generation and retains another predecessor; it does not
+resurrect either earlier root. Restart persistence is not implemented here.
+
+* Verification allocation
+
+Quint models finite revoke/prepare/authorize/recover/review interleavings and
+unsafe transitions, including a pre-revocation captured epoch and old review
+replay. Its bounded projection admits one recovery, not an unbounded durable
+registry. LeanPOO Focus proves conditional arbitrary-generation successor,
+consumed-decision refusal, review separation and retained-knowledge laws.
+It assumes truthful issuance/currentness projections rather than authenticating
+Scheme pointers. Scheme tests real Module issuance and two recovery cycles,
+using ORG Elements/Contract-derived Context and real Core/Assurance objects.
+Proofs supplies inputs and observes Modules; it does not implement another issuer.
+
+ASCENT keeps its relational role: candidate/support/review relations may be
+recomputed, but no rule issues root attestation, recovery permission or grants.
+The existing ASCENT gate remains a regression. No new recovery-specific
+relation language, storage executor, bindings, old Memory or distributed
+consensus implementation is introduced. Query/GQL disclosure and durable,
+cross-process recovery remain separate obligations.
+
+[[file:28-controlled-recovery-verification.org][10.06.43.28]] records actual verification and the source/compiled-input cut.

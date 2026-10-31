@@ -1,0 +1,56 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.03 Config Languages 02: Existing Native Slot Binding
+#+property: DOCUMENT_ID 11.03
+#+date: [2026-10-16]
+#+filetags: :config-language:research:design:
+#+property: STATUS source-inspection-no-new-runtime-or-loader
+
+* Existing mechanisms, not a new selection DSL
+
+Source inspected: .data/gerbil-poo/object.ss, definitions with-slots, def-slots,
+with-prefixed-slots and defsyntax-for-match .o; existing examples are in
+.data/gerbil-poo/t/object-test.ss. Core use-module's actual bounded expansion is
+in core/profile-composition/selection-syntax.ss. This is source/test inspection;
+no new runtime or macro qualification was run for this document.
+
+| Form | Binding/demand | Use here |
+|------+----------------+----------|
+| let with individual .get | Explicit eager selected getter lookups, lexical body | Correct but repeats each selected name |
+| def-slots | Evaluates receiver once, gets all listed slots now, defines values in enclosing lexical body | Compact declaration when selected functions should be checked immediately |
+| with-slots | Evaluates receiver once, lexical identifier references expand into slot reads | Preferred when delayed helper getter demand matters |
+| Native .o match pattern | Checks object/selected slot presence and extracts selected values | Use when shape matching is itself the requirement |
+| with-prefixed-slots | Native prefix-qualified identifier bindings | Optional for collisions; not a new dotted-namespace grammar |
+
+* Preferred configuration surface
+
+Use native with-slots for selective, receiver-aware lexical slot references.
+Do not retain individual let/.get declarations as another recommended authoring
+path. def-slots remains an existing eager alternative for genuinely intentional
+entry-time validation; no duplicate full configuration is needed to teach it.
+
+#+begin_src scheme
+(def ReleaseCI
+  (use-module CIHelpers as ff
+    (with-slots (append) (.get ff data)
+      (.o (:: @ CICDScenario)
+        gerbil.funflow.build: =>.+
+        (.o (artifact-outputs => append '(release-log)))))))
+#+end_src
+
+with-slots binds slot identifiers through native let-id-rule, not eager function
+values. Reading append later uses the captured object. The data namespace object
+is obtained on entry, but append's getter is demanded only when referenced. Native
+POO receiver-local caching then applies; this does not promise impure getter safety.
+Existing macro binding preserves identifiers rather than interning text names.
+No auto-enumeration, generated public alias, manual import expansion or new
+use-module clause is required. Missing declared slots may fail on demand rather
+than at entry; discovery and callable-export Contracts must make that distinction
+visible. Both native binding forms retain final field/graph admission and source boundaries.
+A slot identifier is a read reference, not a general mutation binding.
+
+The let approach in the comparison table records the rejected repetition, not
+a second recommended configuration surface. with-slots and def-slots are existing
+native alternatives, not a proposal to add a DSL or Loader. The direct
+data namespace/library publication still needs its separate implementation.

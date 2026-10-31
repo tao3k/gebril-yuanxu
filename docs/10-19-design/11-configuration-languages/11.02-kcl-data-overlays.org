@@ -1,0 +1,99 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.02 Config Languages 01: KCL Data Operations and Matched Object Shapes
+#+property: DOCUMENT_ID 11.02
+#+date: [2026-10-16]
+#+filetags: :config-language:comparison:data-overlays:
+#+property: STATUS official-source-checked-examples-not-executed
+
+* Evidence boundary
+
+Inspected the versioned KCL 0.12 [[https://www.kcl-lang.io/docs/0.12/user_docs/support/faq-kcl][official FAQ, especially list editing]],
+[[https://www.kcl-lang.io/docs/0.12/reference/lang/tour][language tour]] and [[https://www.kcl-lang.io/docs/0.12/reference/lang/spec/schema][Schema specification]]. Slices, list concatenation,
+conditional comprehensions and right-hand dict union support the adapted examples
+below. They are source-grounded constructions, not executed KCL results or a
+review of a maintained KCL CI package. No claim about latest-release parity is made.
+KCL also supports reusable lambdas and schema validation; general data functions
+are not an exclusive Scheme capability.
+
+* Full records, identical fields and element types
+
+Use outputs: a string sequence, with initial value ["build-log"]. The Scheme
+counterpart is a POO object with an outputs slot holding a string list. Do not
+compare an entire Attribute Set/schema instance to a bare Scheme slot declaration,
+or compare string arrays to Symbol lists. Distinct runtimes retain different
+native object types while the logical record structure is matched.
+
+#+begin_src python
+schema OutputConfig:
+    outputs: [str] = ["build-log"]
+
+_base = OutputConfig {}
+
+replaced = OutputConfig { outputs = ["release-build-log"] }
+appended = OutputConfig { outputs += ["release-log"] }
+prepended = OutputConfig { outputs = ["release-log"] + _base.outputs }
+
+_index = 0
+assert 0 <= _index and _index < len(_base.outputs)
+positioned = OutputConfig {
+    outputs = _base.outputs[:_index] + ["release-build-log"] + _base.outputs[_index+1:]
+}
+
+assert len([x for x in _base.outputs if x == "build-log"]) == 1
+identified = OutputConfig {
+    outputs = ["release-build-log" if x == "build-log" else x for x in _base.outputs]
+}
+#+end_src
+
+The explicit base avoids accidentally referring to the new field while computing
+its replacement. For appended, the initial list is the schema default; that
+example is intentionally bounded to this same baseline, not a claim that it
+inherits an arbitrary separately modified _base. The other transforms explicitly
+use _base. Index and unique-match checks are policies added to align our proposed
+helpers, not automatic guarantees of concatenation/comprehension. Without the
+unique-match guard, conditional replacement changes every match.
+
+* Structured identity update: preserve the record, replace age
+
+#+begin_src python
+_peopleBase = {people = [{name = "bert", age = 42}]}
+assert len([p for p in _peopleBase.people if p.name == "bert"]) == 1
+aged = {
+    people = [
+        (p | {age = 43}) if p.name == "bert" else p
+        for p in _peopleBase.people
+    ]
+}
+#+end_src
+
+This uses the tour's ordinary dict-union expression with a right-hand age field,
+not config-entry : merge. The expression preserves the matching record's other
+fields and outer list order. Output remains {people: [{name: "bert", age: 43}]}.
+The exact missing/duplicate policy is explicit. Source inspection supports this
+construction; runtime/schema propagation and diagnostics still need execution.
+See [[file:11.04-common-operations-comparison.org][the side-by-side comparison]] for dmerge updateOn and Scheme update-by.
+
+* Reflection and remaining work
+
+The [[file:11.05-kcl-kubernetes-multi-environment.org][real collaborative multi-environment codelab comparison]] now supplies a
+maintained Server schema/baseline/environment case, with matched Scheme defaults,
+user edits and an explicitly separate proposed Kubernetes resource projection.
+It is stronger task-level evidence than list-operator snippets, but still not
+executed deployment parity or an ecosystem benchmark.
+
+KCL's =, += and : make different operations visible; do not collapse them or
+confuse expression union with configuration conflict rules. Slicing and
+comprehension cover the formerly unverified position/identity cases. They can be
+encapsulated in ordinary KCL lambdas just as Scheme uses named functions, so do
+not compare an inline KCL implementation to a prebuilt Scheme helper and call the
+length difference an intrinsic advantage. Count library authoring separately from
+consumer configuration.
+
+Our proposed library's with-slots and native => unify functional transformation
+with POO object inheritance. This still needs callable discovery, field contracts,
+source/conflict diagnostics, purity/cost governance and final effective-value
+preview. These are open obligations, not established advantages. Actual ecosystem
+consumers and matched runtime/error tests remain future evidence. No Loader or
+production module changes are made here.

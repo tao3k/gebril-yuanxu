@@ -1,0 +1,104 @@
+#+title: 12.27.30 SDK Context Walk With Explicit Frames
+#+property: DOCUMENT_ID 12.27.30
+#+language: en
+
+* Implementation gap found after the closure model
+
+The iterative module-closure and the SDK Context walk are different algorithms.
+The former emits a node before traversing imports. The latter must visit
+dependencies before their parent; it also unwraps native module-import,
+module-export and import-set values. Passing the former's scale test does not
+qualify the latter's host continuation depth or callback order.
+
+The actual [[file:../../../../../module-system/building/source-closure.ss][for-each-build-module]] is now iterative. Each private frame holds remaining
+siblings and the context to visit afterwards. A context is marked by identity
+before descending, preserving sharing and cycle behavior. A cut still visits
+the cut context without entering its imports. A supplied seen table is shared
+across roots exactly as before. No topology cache or source-check result is
+introduced; frames are local to the invocation.
+
+The ordinary recursive context-of helper only unwraps a single native wrapper
+chain, using tail calls. Native import depth no longer requires a continuation
+per dependency. Imports, bindings, syntax, promises and the SDK registry are
+unchanged. This is a Core implementation change, not an upstream Gerbil patch.
+
+* Quint owns finite order and interaction controls
+
+[[file:../../../../../dev/proofs/quint/ContextWalk.qnt][ContextWalk]] models explicit frames over the shared diamond/cycle fixture,
+followed by another root and a repeated root. It checks the output prefix and
+complete postorder against an independent explicit expected sequence. Cuts and
+sharing are execution semantics, rather than arbitrary reorderings justified by
+having the same eventual node set.
+
+The eight scoped checks pass: positive safety, marking too late, preorder
+emission, ignored cuts, lost shared seen state, omitted after-visit, eager
+unrelated traversal, and an acceptance witness. Every broken variant must
+produce its named counterexample. The existing source-bound runner covers the
+production traversal and native test; no extra runner is added.
+
+Native wrapper transparency and actual SDK context identity are tested in
+Scheme, not assumed to have been established by the integer-node model.
+Topology is stable during a traversal. Neither the model nor this refactor
+promises equivalence under arbitrary mutation of SDK import-list pairs inside
+callbacks or accepts cyclic native import programs.
+
+* Lean responsibilities remain distinct
+
+SourceClosureWork proves cardinality-independent work accounting for the
+existing discovery algorithm. Its projection theorem does not describe this
+postorder callback stream. We do not reuse that theorem as an unproved general
+equivalence result for the new frame machine. Finite Quint controls and native
+oracle agreement provide the current order evidence; arbitrary-graph formal
+postorder equivalence is a remaining proof boundary.
+
+There is no new Lean model that repeats Quint's finite fixture exploration.
+If a general callback-order theorem becomes a gate, it must state a refinement
+to recursive postorder with stable topology, wrapper transparency and pure
+identity lookup as explicit premises.
+
+* Actual native controls
+
+[[file:../../../../../t/module-context-walk-test.ss][The Scheme test]] constructs real SDK Context values in test-owned memory.
+They deliberately share native names while retaining distinct identities.
+It creates no registered Modules and performs no library evaluation. A small
+independent copy of the original recursive algorithm provides the oracle for
+wrappers, shared roots, repeated roots, back edges and cuts. Ordered context
+identities must match exactly, not merely their count or sorted names.
+
+At 1000, 5000 and 10000 contexts, the production walk descends and visits each
+identity exactly once and emits the deep chain's exact reverse order. Aggregate
+observations are 16000 descents and 16000 visits. The unchanged heap-fenced
+native harness passes naturally with MODULE-OK, HARNESS-OK and final OK.
+This is SDK traversal qualification, not 10000 real Module declarations.
+
+The existing publication suite also passes. It includes the independent full
+SDK DFS versus pruned projection, macro reuse, deferred Build support and fresh
+source refusal. No source guard is removed. An operation can narrow its support
+only when discovery actually covers every required source; a smaller list is
+not evidence of completeness.
+
+No reduction in retained native read-token memory or end-to-end AWS latency is
+claimed from this stack change. Those remain distinct capacity/performance gates.
+
+The original init tests-object aggregation also passes against this change,
+including the real AWS Schema upgrade, stale evidence refusal, accepted-value
+retention and fixture cleanup. Worker and outer harness both finish naturally
+with exit zero, MODULE-OK, HARNESS-OK and final OK, with no error/overflow marker.
+Observation and progress-aware timeout stay enabled under the original policy.
+
+* Reproduction
+
+#+begin_src text
+python3 dev/proofs/quint/check.py --case-prefix ContextWalk --typecheck-scope selected --receipt .data/qualification/context-walk.scm
+just test-file t/module-context-walk-test.ss true
+just test-file t/module-publication-test.ss
+just test-file t/module-testing-isolation-test.ss
+#+end_src
+
+Run the native tests serially through the existing project entrypoint. The last
+command is the original init tests-object aggregation and must preserve Schema
+update refusal, accepted-value retention and cleanup before qualification can
+be considered complete.
+
+[[file:16-source-closure-algorithm.org][Algorithm and evidence responsibilities]]
+[[file:14-declaration-capacity.org][Native declaration capacity remains separate]]

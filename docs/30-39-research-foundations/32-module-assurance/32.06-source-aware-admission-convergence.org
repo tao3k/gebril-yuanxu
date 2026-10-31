@@ -1,0 +1,247 @@
+#+title: 32.06 Source-aware admission convergence
+#+language: en
+#+property: DOCUMENT_ID 32.06
+#+property: STATUS implemented-focused-qualification
+#+date: [2026-10-18]
+
+* Status and question
+
+This is the receipt for the initial extraction. The later
+[[file:32.08-collected-source-observations.org][collected-observation implementation]] removes source-paths; the declaration below
+documents the earlier 32.06 surface, not the current API. Its historical source
+manifest and test receipts remain unchanged.
+
+Implemented extraction, 2026-10-18. The shared lifecycle now lives in
+[[file:../../../admission/source.ss][admission/source.ss]], and generic field origin decoration in
+[[file:../../../configuration/diagnostics.ss][configuration/diagnostics.ss]]. Gitea consumes these through ordinary native
+inheritance. The pure Contract kernel, contribution collector, publication
+authority and Loader are unchanged. Earlier controls remain historical in
+[[file:32.05-maintained-service-object-contracts.org][32.05]]; this extraction has its own focused receipts below.
+
+The goal is a reusable source-aware admission boundary, not fewer lines at the
+expense of contextual child obligations, independent contributions or plan identity.
+
+* Ownership after extraction
+
+| Former Gitea responsibility | Current owner | What remains domain-specific |
+|------------------------------+----------------+------------------------------|
+| Ordered preflight execution | Core admission adapter | Order and safe demand paths for this configuration |
+| Root normalization and contextual children | Existing Core Contract protocol | Which child Contracts participate |
+| Source checks before/after admission | Core source-aware adapter | Relevant source inputs and demanded paths |
+| Bounded source-read sharing | Existing Core source API, called by adapter | No domain-owned cache |
+| Classification/evidence assembly on preflight refusal | Core adapter | Diagnostic facts from the failed constraint |
+| JSON/Scheme origin lookup | Core configuration source adapter | Which config subtree corresponds to each document |
+| Attaching origins without changing evidence subjects | Core diagnostic adapter | Expected field path for a relational failure |
+| Collecting and checking contribution coverage | Existing .for-export/.publish | Meaning of the contribution payload |
+| Port agreement, joint policies and plan identity | Gitea/Application Contract | Entire rule remains here |
+
+Do not put filesystem checks in the foundational types.ss. A reusable
+SourceAdmissionContract. belongs above YuanxuContract. in the Core admission
+layer, importing the existing source facilities. Do not copy .for-export's
+collector, coverage checks or publish-current into that adapter.
+
+* Maintainer surface at the 32.06 receipt
+
+The prototype and hooks are implemented with ordinary POO inheritance and slots.
+No new macro or configuration DSL is required. The shared adapter replaces
+application-admit; the diagnostic adapter replaces application-origin and
+locate-application-issue. This excerpt shows the maintained surface; the full
+prototype implementation is linked above.
+
+#+begin_src scheme
+;; Core prototype: the shared .admit implementation owns sequencing.
+;; source-inputs: existing source observations, not caller-supplied assertions.
+;; source-paths: only fields this admission actually demands.
+;; .preflight: raw candidate -> ordered diagnostics, before normalization.
+;; .locate-diagnostic: raw candidate, field issue -> source-decorated issue.
+;; It must leave contextual child refusal receipts intact.
+;; Application declaration after extracting application-admit.
+;; ApplicationValueContract. and ConfigurationAdmission. are existing types.
+(.def (ApplicationContract @ SourceAdmissionContract.
+       database-contract port-type documents)
+  identity: 'gitea/application
+  source-inputs:
+  (append (.get documents postgresql source-inputs)
+          (.get documents gitea source-inputs))
+  source-paths:
+  '((config postgresql settings port) (config gitea database port))
+  value-contract:
+  (.cc ApplicationValueContract.
+    database-type: (.get database-contract value-contract)
+    port-type: port-type)
+  responsibilities:
+  (.o config:
+      (.cc ConfigurationAdmission. database-contract: database-contract))
+  .preflight: (.get value-contract preflight)
+  .locate-diagnostic: (config-diagnostic-locator documents '(config))
+  .classify:
+  (lambda (candidate context)
+    (let (issues (application-issues candidate))
+      (yuanxu-classification-evidence
+        identity candidate (null? issues) issues context)))
+  requirement-type:
+  (.cc ObjectContract. responsibilities:
+    (.o allowed-ports: (List port-type) origin: Any source-origin: Any))
+  .contribution-obligations:
+  (lambda (candidate rows context)
+    (port-contributions requirement-type candidate rows context)))
+#+end_src
+
+This deliberately retains the existing named domain functions. The first
+extraction must not simultaneously replace every domain function with a new
+policy language. The path list is a demand declaration, not a duplicate field
+schema. A later derivation from preflight stages needs its own demand/ordering
+proof; discovering all source paths by traversing the whole candidate would
+violate laziness.
+
+* Exact common .admit sequencing
+
+1. Enter call-with-module-source-fresh-reads, which suspends any enclosing
+   observation cache for this admission and restores it afterwards. Check the
+   descriptor's source observations before demanding config.
+2. Run the existing ordered preflight. Guard each demanded Scheme path only
+   after the preceding shape check makes that traversal safe. A null PostgreSQL
+   settings object must fail before Gitea's dependent default is forced.
+3. On refusal, construct ordinary native evidence; do not invoke normalization,
+   child admissions or contribution policies on an invalid shape.
+4. On success, invoke inherited .admit exactly once in the existing bounded
+   source-read window. Its normalized candidate remains the evidence subject.
+   It owns classification, contextual children and local/context obligations.
+5. Close the inner window. Freshly check JSON observations, demanded Scheme sources
+   and any available context.admit-current before returning. A check served by
+   the just-closed read cache is insufficient here.
+6. Add source locations using the raw candidate's winning slot specifications.
+   Do not replace the normalized candidate, its child identities, descriptors,
+   context, responsibility lineage or acceptance decision. Do not repair plans.
+
+Publication still performs its own boundary checks: direct .admit and published
+admission are separate consumers. Shared code is not permission to eliminate
+checks across distinct stability windows or cache currentness indefinitely.
+
+* Source diagnostics: generic lookup, domain explanation
+
+config-field-origin and field-slot-origins/value implement JSON baseline and
+Scheme slot provenance. config-diagnostic-locator accepts a POO document map
+and a root config path, so Gitea no longer parses cadr/cddr of every field
+diagnostic. No second origin registry is needed.
+
+The generic adapter may decorate a flat diagnostic with an origin when it has
+a field path. It must not demand the value of an unknown-field diagnostic; use
+the existing unobserved route. An opaque runtime write has unknown attribution,
+not a borrowed parent location. Missing/unavailable source observations refuse
+source-bound admission; they do not become an invented source location.
+
+Gitea still identifies the other side of a relationship. Its connection
+diagnostic now carries expected-path: '(config postgresql settings port),
+allowing Core to locate both paths generically. Core does not branch on
+connection-mismatch or invent an expected path for it.
+
+Child evidence is not a flat diagnostic. Retain the actual receipt and its
+responsibility lineage. Recursive source enrichment, if added later, must be
+a presentation projection and must not forge replacement child evidence.
+
+* Complex control: checks that must survive
+
+Use the same Profile with both published policies allowing 5432 and 5433.
+Cache the parent's 5432 plan, then derive a child setting PostgreSQL to 5433.
+The missing Gitea port follows the final database; an explicit 5432 stays explicit.
+
+| Control | Required result |
+|---------+-----------------|
+| Child 5433, client absent | Admit; final client and both plan projections are 5433 |
+| Child 5433, explicit client 5432 | Refuse connection-mismatch; show client and server origins |
+| Two policies require [5433] and [5440] | Refuse joint requirements; retain both contribution origins |
+| Derived database .obligations rejects 5433 | Refuse exact final child; preserve its Contract ancestry |
+| Equal port values but plan.configuration is another object | Refuse stale-parent-plan |
+| Parent plan supplied to child | Refuse; never silently rebuild a rejected candidate |
+| JSON/Scheme source changes during admission | Refuse before success returns, outside shared read window |
+| Missing/replaced contribution row | Existing publication protocol refuses before publication |
+| Unknown field with a failing value computation | Diagnose unknown field without evaluating that value |
+
+The identity rule remains explicit domain code:
+#+begin_src scheme
+(and (eq? (.get candidate plan configuration) (.get candidate config))
+     (= (.get candidate plan postgresql port)
+        (.get candidate config postgresql settings port))
+     (= (.get candidate plan gitea database-port)
+        (.get candidate config gitea database port)))
+#+end_src
+
+Contextual children still derive their original Contracts with value-contract:
+#f after root normalization. This suppresses only duplicate normalization,
+not classifiers, .obligations or the exact-child identity check in Core.
+
+* Reflection and evidence boundary
+
+The current adapter mixes a reusable lifecycle with domain explanations. Extract
+the lifecycle first; make origin lookup reusable second. Do not invent a generic
+relationship engine merely to remove the last connection-specific conditional.
+Use slot methods for this one-receiver policy. Multiple dispatch is justified
+only when independent document/diagnostic families actually require it.
+
+The earlier 21 controls are historical qualification of the unextracted
+implementation. The extraction adds focused controls for exactly-one inherited
+admission invocation, preflight short-circuiting, child receipt identity and
+source mutation under an enclosing cache. Actual service controls also compare
+direct and published success through the identical descriptor and Context:
+normalization may create a different receiver on each invocation, so parity
+means the same accepted behavior and each receipt's correct internal alias,
+not pointer equality between independent admissions.
+
+The inherited method counter is a test-only lower prototype, not a production
+counter or replacement Contract producer. Deliberately mutating an input from
+an obligation is fault injection; normal domain obligations remain pure. The
+source helper restores the enclosing cache after the call; it does not promise
+that an unrelated caller's later cached reads become fresh. Its guarantee is
+that this admission's own entry and exit checks do not use those observations.
+
+The original field schemas, ordered null-safe preflight and contextual child
+Contracts remain in the domain module. Shape checks were not deleted to make
+the module shorter. The shared adapter still invokes inherited .admit once,
+which is the only root normalization owner. Opaque source attribution remains
+an explicit boundary. Filesystem checks are sequential observations, not an
+atomic filesystem snapshot or a sandbox against arbitrary Scheme code.
+
+No Loader integration, cross-platform runtime result, scale benchmark, atomic
+filesystem snapshot or deployment authorization is claimed.
+
+* Focused qualification, 2026-10-18
+
+| Gate | Cases | Result |
+|------+-------+--------|
+| t/source-admission-test.ss | 5 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| t/gitea-postgresql-publication-test.ss | 11 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| t/gitea-json-configuration-test.ss | 4 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| t/gitea-postgresql-relocation-test.ss | 4 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| t/module-source-admission-test.ss | 9 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+| t/module-role-projection-test.ss | 2 | MODULE-OK, HARNESS-OK, OK; exit 0 |
+
+All gates run serially through just test-file, retaining its 1 GiB managed heap,
+120-second fence and error-marker checks. This is 35 focused cases, not a full
+suite or CI result. The adapter tests count inherited method invocations rather
+than merely counting classifications. Service tests use the maintained module
+sources through the existing publication protocol, not a replacement producer.
+
+The runtime is Gerbil 1cfb032 on Gambit ea114fc. Qualification uses the native
+host dependencies under /Users/guangtao/.gerbil and newly compiled current Core
+modules in /private/tmp/poo-plan-identity-native/lib, with the current Core
+source-tree fallback. No compatibility runtime or frozen source snapshot is used.
+This does not attest a clean default build path or complete dependency closure.
+
+The dirty Core checkout has base HEAD
+7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e. The
+[[file:32.06-source-manifest.sha256][separate source manifest]] binds 17 relevant files; it does not rewrite the
+historical 32.05 manifest or include binaries. Existing Fixture and relocation
+controls were reused unchanged. Local final logs remain outside the repository
+under /private/tmp/poo-plan-identity-native/:
+
+- source-admission-final.log
+- source-publication-final.log
+- source-json-final.log
+- source-relocation-final.log
+- source-cache-regression-final.log
+- source-role-final.log
+
+Earlier source-admission-controls.log and source-publication-controls.log
+qualified the initial extraction before the enclosing-cache boundary was
+strengthened. They are retained but do not replace the final receipts above.

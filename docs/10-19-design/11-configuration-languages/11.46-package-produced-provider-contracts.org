@@ -1,0 +1,304 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.46 Config Languages 45: Package-produced Provider Contracts
+#+property: DOCUMENT_ID 11.46
+#+property: STATUS implemented-no-loader
+
+* Correct ownership
+
+Package management selects, locks, fetches and packages the engine and Provider.
+The schema export is a build output of those exact inputs. The Scheme module
+consumes that output, projects its cty/block declarations into standard JSON
+Schema and publishes native Contracts through the existing compiler. Runtime
+admission never downloads a plugin, authenticates a Go source tree, or invokes
+OpenTofu. The package producer is explicit; no Loader is connected.
+
+The reference is [[https://github.com/nickel-lang/tf-ncl/pull/83][tf-ncl PR 83]], inspected at
+=6f62152b359497e0a9435d30adb4c13efc35711c=. Its =withPlugins= and schema
+export derivations establish this responsibility boundary. We reuse that idea,
+not its Nickel wrapper API or an implicit runtime package registry.
+
+* Source roles and migration
+
+- =modules/opentofu/nix/provider-schema.nix= takes a selected Provider derivation
+  and an OpenTofu package from the caller's locked package set. =withPlugins=
+  supplies the local Provider mirror. The derivation runs backend-disabled
+  =init= and =providers schema -json=, then emits =schema.json= and =manifest.json=.
+- =types.ss= defines =ProviderArtifactContract= for that small output manifest.
+  AWS resource field Types remain generated from the real export; they are not
+  handwritten replicas of Provider source code.
+- =source.ss= reads the artifact: it checks manifest shape, hashes and decodes
+  the same schema bytes. It neither publishes a user scope nor executes a Provider.
+- =objects.ss= owns =OpenTofuModule.=, =OpenTofu= and native Contract catalogs.
+  It consumes the checked artifact and resolves the named Provider. Resource/data
+  catalogs use native =object<-fun=; accessing one slot compiles only that Contract.
+  The complete export is read when the module's provider is first demanded;
+  this is not resource-granular file loading.
+- =func.ss= owns pure structural conversion; =objects.ss= uses the existing
+  JSON Schema compiler and keeps supplemental collection checks separate.
+- =config.ss= owns lazy package-path injection from =YUANXU_OPENTOFU_ARTIFACT=.
+  This development adapter is internal to the module, not user resource config.
+- =interface.ss= exports the maintained =OpenTofu= module object and its native
+  kernels, not a fixed AWS release.
+
+The former fixed-release runtime =config.ss= was removed. The role now contains
+ordinary lazy module configuration rather than that historical trust root. Its exact =Aws5100Release= object now lives in the product
+fixture =t/fixtures/opentofu/aws-5.100.0/release.ss=. The associated source/binary
+qualification facade and request shapes moved to =qualification.ss= and
+=request-types.ss= in the same fixture. Existing negative controls still run;
+these exports are no longer part of the public Core runtime interface.
+No new package manager, download policy, SDK-source list or per-resource lock
+is introduced in Scheme. No AWS version or source-file pin was reintroduced in that role.
+
+* Producer and consumer
+
+The caller's lock chooses =pkgs=. This example leaves that choice explicit;
+=<nixpkgs>= alone is an environment-selected package set, not a new lockfile.
+
+#+begin_src nix
+let
+  pkgs = import <nixpkgs> {};
+in pkgs.callPackage ./core/modules/opentofu/nix/provider-schema.nix {
+  provider = pkgs.terraform-providers.hashicorp_aws;
+}
+#+end_src
+
+For the historical matched control, the product fixture's =package.nix= selects
+AWS 5.100.0 for aarch64-darwin using its official archive and fixed SHA-256.
+This is test-only package selection, not a default imposed on production users:
+
+#+begin_src nix
+let
+  pkgs = import <nixpkgs> {};
+  provider = import ./t/fixtures/opentofu/aws-5.100.0/package.nix { inherit pkgs; };
+in pkgs.callPackage ./core/modules/opentofu/nix/provider-schema.nix {
+  inherit provider;
+}
+#+end_src
+
+The package output manifest has only =format=, =provider=, =version= and
+=schema-sha256=. The hash detects mismatched bytes; it is NOT a signature or an
+independent proof of Provider authenticity. The caller trusts the selected
+package closure. In particular, the raw export does not contain the Provider's
+package version: Scheme cannot independently authenticate that version from the
+export alone. The Nix derivation binds it to the package that produced the export.
+The nixpkgs OpenTofu wrapper relocates Terraform registry plugins under
+=registry.opentofu.org=; the producer records the actual address used for export.
+The historical standalone export retains its original Terraform registry key.
+
+#+begin_src scheme
+(use-module OpenTofu as tf
+  (let ((Web (.o name: "web" ingress:
+                (list (.o from_port: 443 to_port: 443 protocol: "tcp"
+                          cidr_blocks: '("10.0.0.0/16"))))))
+    (.call (.get tf types resources aws_security_group) .admit Web #f)))
+;; Native accepted evidence. Resource authors do not call getenv, artifact
+;; factories or a provider .contract method.
+#+end_src
+
+Contract identity is a native symbol qualified by Provider address, package
+version, resource/data kind, name and schema digest. The published Contract also
+exposes Provider/version/schema-digest slots. These retain package association;
+they are not a new Evidence protocol. Requesting an unpublished resource or an
+unsupported selected field fails rather than silently weakening its Contract.
+Unselected Contracts are not compiled. Contract memoization is local to one
+artifact scope, not shared across package versions or schema generations.
+
+* Missing, changed and untrusted inputs
+
+The low-level artifact factory remains available to build/qualification code.
+Missing =manifest.json= or =schema.json= there returns an ordinary POO value containing
+=status: 'build-required=, =directory= and =missing=. It performs no rebuild.
+The consumer checks manifest shape, supported export format, matching Provider
+key and matching schema digest before returning a ready scope. It never rereads
+unverified schema bytes after hashing. Already-created scopes retain their
+snapshot; to consume a new package output, create a new scope. A mutable local
+folder is not implicitly watched or refreshed. Nix store immutability is the
+normal production boundary.
+
+Local caller-supplied manifests cannot prove plugin authenticity. This consumer
+does not accept a claimed version/hash as a substitute for package-manager trust.
+Ordinary users obtain Contracts from a selected package scope and supply only
+configuration to native =.admit=; they do not manage receipts or source locks.
+
+* Configuration admission remains narrower than Provider validation
+
+Generated Contracts enforce the exported input vocabulary, scalar/container
+Types and exported required/nested constraints. Missing =securityGroupRuleHash=
+is never grounds for rejecting an otherwise valid Security Group configuration.
+The exported Schema lacks some SDK validators and nested required flags. The
+matched 5.100.0 controls still distinguish number-type rejection from CIDR-host-bit
+and missing-port export gaps. Provider validate/plan owns the latter until a
+separately reviewed native refinement covers them. Planning additionally needs
+engine expressions, defaults, unknown values and state. None is authorized or
+executed by =.admit=.
+
+* Executable qualification
+
+=just test-file t/opentofu-provider-artifact-test.ss= exercises the real checked-in
+AWS 5.100.0 export through the generic public consumer. An explicit package
+output is tested with =just test-opentofu-provider-artifact <output-directory>=;
+the same test checks native Security Group admission, number errors and paths,
+spelling errors, CIDR export gaps, Contract memoization, source metadata, missing
+outputs, byte mismatches, wrong Provider keys and malformed manifests.
+
+The default runtime uses the project's existing pre-import heap fence. The
+historical source/binary controls now import only their test-local qualification
+facade. The schema, collection and JSON Schema regression gates retain their
+separate evidence limits. No raw build/test logs or Provider binaries belong in
+source control. A structured package receipt below records actual executed
+builds; an evaluated derivation alone is not a successful artifact build.
+
+** Executed package receipt (2026-10-17)
+
+The real matched build completed with AWS 5.100.0 and Nix-packaged OpenTofu
+1.11.5 on aarch64-darwin. The Provider archive was fetched and checked by Nix;
+no SDK Go source list was consulted by the Scheme consumer. The realized schema
+output is
+=/nix/store/2rlwphdsarjzllarlr64vw25y05fl3pv-terraform-provider-aws-5.100.0-schema=.
+Its manifest records =registry.opentofu.org/hashicorp/aws=, version =5.100.0=,
+and schema SHA-256
+=7e4fc064120609e23bc317629f1308d72891b7241993fbf68be523f03b6c633c=.
+The outer package set was the installed =26.05pre-git= snapshot; production
+callers must supply their own locked package set. The exact realized paths and
+selected results are in product
+=t/fixtures/opentofu/aws-5.100.0/package-control.json=.
+
+Eight distinct focused suites passed under the default native runtime (nine
+invocations because the artifact suite ran against both the checked-in actual
+export and the realized Nix output). Each returned exit 0, =MODULE-OK=,
+=HARNESS-OK= and final =OK= without case/check/harness or heap/stack errors:
+
+- =t/opentofu-provider-artifact-test.ss=: 19 assertions per artifact, including
+  an explicitly synthetic unselected-dynamic-resource control. Selecting its
+  supported sibling succeeds; selecting the unsupported resource rejects.
+- =t/opentofu-aws-source-test.ss=: 37 retained historical source controls.
+- =t/opentofu-set-evidence-test.ss=: 36 explicit collection controls.
+- =t/opentofu-schema-test.ss=: 57 structural conversion controls.
+- =t/opentofu-aws-binary-test.ss=: 3 controls, this time using the Nix-packaged
+  AWS binary, not a substitute executable.
+- The two existing JSON Schema Contract suites and native runtime import suite.
+
+The actual Nix-packaged engine/plugin independently ran all four maintained
+Security Group controls through backend-disabled local-mirror init and offline
+=validate -json=. Valid input passed; wrong port type, CIDR host bits and missing
+rule port were rejected. The native Contract intentionally records the last two
+export gaps rather than claiming those Provider checks. No credentials, cloud
+queries, refresh, plan or apply were involved.
+
+An optional AWS 6.37.0 source build was started, then cancelled to keep this
+qualification on the matched 5.100.0 package. It is not a second passing version.
+Earlier failed artifact controls exposed a nonsymbol Contract identity and an
+insufficient enum-only manifest marker in the shared supported subset. The
+implementation now uses a qualified symbol and a typed anchored string pattern;
+the malformed-manifest negative expectation was retained. No general enum-only
+Schema coverage is claimed by this receipt. This is local focused evidence,
+not complete-suite or remote-CI qualification.
+
+* Development package integration
+
+The product =devenv.nix= now adds the schema output and its =engine= package to
+=packages=, and sets =YUANXU_OPENTOFU_ARTIFACT= to that exact schema output.
+On aarch64-darwin the selected provider is the matched 5.100.0 test package;
+other hosts select their native nixpkgs AWS package. This is development-only
+selection, not a new production default or a change to Loader behavior.
+The artifact test already reads this environment variable, so inside devenv
+=just test-file t/opentofu-provider-artifact-test.ss= consumes the package output
+without a handwritten store path. Resource configuration still uses only native
+Contract =.admit=. A new schema/package generation gets a fresh native scope;
+package metadata is not repeated in user resource values.
+
+* Module-owned injection and existing bounded use-module
+
+The ordinary public export is =OpenTofu=. Package/environment injection belongs
+to the module's lazy configuration. An upstream integrator can instead derive
+=OpenTofuModule.= and supply a package path through its =config= slot; that
+operation is not repeated in user resource configurations.
+
+The implemented object shell is native POO:
+
+#+begin_src scheme
+(.def OpenTofuModule.
+  config: OpenTofuConfig
+  provider: (required-provider (.get config provider-artifact))
+  source: (.get provider source)
+  types: (.get provider types))
+
+(.def (OpenTofu @ OpenTofuModule.))
+#+end_src
+
+=required-provider= is private module orchestration, not a user helper. It
+rejects a missing/incomplete injection with build-required instead of starting
+package resolution. =interface.ss= exports the two maintained objects alongside
+the existing native kernels. The lower-level directory factory is retained for
+explicit build/qualification use, not the normal resource-author path.
+
+The package snapshot publishes resource and data catalogs using native
+=object<-fun= with keys taken from the actual exported Schema. No AWS-specific
+field table, special alias syntax or new macro was introduced. The bounded
+=use-module= macro is unchanged; it binds the same native module object once.
+Native lexical slots connect config -> provider -> types/source using the
+current receiver. The existing hygienic expansion is:
+
+#+begin_src scheme
+(use-module OpenTofu as tf BODY)
+;; Equivalent existing bounded expansion:
+(let ((tf (yuanxu-module-scope OpenTofu))) BODY)
+#+end_src
+
+Binding the alias forces neither config, package IO nor Contract compilation.
+First types/source demand reads the injected immutable package snapshot. Reading
+=types.resources= constructs its native catalog but does not compile all its
+Contracts. Resource slot access compiles/memoizes the selected Contract;
+=.admit= validates only the submitted final value and does not invoke OpenTofu.
+Unselected data/resource branches stay uncompiled. Importing the module without
+package injection is allowed; attempting to demand its types fails clearly.
+
+The module source uses the existing generated SourceRef with the artifact
+location as value and Provider/version/schema digest as native metadata. This
+is provenance association, not independent authentication: package management
+remains the trust owner. User-derived modules keep this association through
+native slots; overriding config rebuilds a child provider/catalog even after
+the parent's provider and Contract have been cached. No artifact watchers or
+cross-generation shared cache were added.
+
+CIDR validation remains exactly as in the earlier real-plugin controls: the
+exported string field admits host-bit CIDR strings structurally, while the
+Provider rejects them. Making the scope simpler does not change or hide that
+validation boundary. No Loader or Provider RPC adapter was connected.
+
+The executable owner is product =t/opentofu-module-scope-test.ss=. It checks the
+bounded user expression, alias scope, inert construction/binding, catalog
+laziness, unselected Contracts, source metadata, native admission/type rejection,
+CIDR gaps and child receiver isolation after parent caching. The existing
+bounded-scope macro suite and artifact/conversion controls remain separate gates.
+
+** Bounded module qualification (2026-10-17)
+
+The new module-scope suite passed 19 assertions against the checked-in actual
+export and 20 against the realized AWS 5.100.0 Nix schema output; the extra
+assertion exercises the exported default =OpenTofu= object using devenv's
+injected path. The parent catalog was forced before checking the child. A
+configured child obtains its own Contract and reads its own config once; an
+unconfigured child cannot reuse the parent's cached provider. Existing bounded
+scope syntax, artifact, historical source, structural conversion and explicit
+collection suites also passed serially through =just test-file= with exit 0,
+=MODULE-OK=, =HARNESS-OK= and final =OK= and no failure/overflow markers.
+No Nix producer change or Provider invocation was needed for this publication
+refactor. These are focused default-runtime controls, not a full-suite or
+remote-CI claim. The unchanged bounded macro does not authenticate a SourceRef;
+it only binds a native object. Package integrity and generated provenance remain
+their respective existing boundaries.
+
+* Superseding cross-version qualification
+
+[[file:11.47-provider-version-cache-isolation.org][Chapter 46]] adds actual Nix-produced AWS 5.99.0 and 5.100.0 outputs, tests
+upgrade and rollback after parent caching, and preserves both origins and native
+admission identities. This extends the earlier same-artifact receiver controls;
+it does not change their historical scope or imply multiple Provider families
+have been qualified.
+
+* Subsequent Provider configuration publication
+
+[[file:11.48-real-provider-family-publication.org][Chapter 47]] adds the real shared =types.provider= entry beside resource/data
+catalogs. It remains lazy and uses the same package-qualified native publisher.

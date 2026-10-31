@@ -1,0 +1,98 @@
+#+title: 12.27.26 Module Scale And Model Correspondence
+#+property: DOCUMENT_ID 12.27.26
+#+language: en
+
+* What must scale independently
+
+A claim that ten thousand Modules are supported needs more than a small AWS
+pass. Catalog discovery, demanded declarations, source checks, scope linking,
+test execution and native expansion have different costs and authorities.
+The focused [[file:../../../../../t/module-loading-scale-test.ss][Scheme scale test]] keeps those boundaries explicit.
+
+| Control | 1000 | 10000 | What is actually exercised |
+|---------+------+-------+----------------------------|
+| Real filesystem catalog | 1000 directories | 10000 directories | Four source roles per directory; native directory namespace and publication reader |
+| Selected body reads | 54 | 54 | One selected Module, test discovery and a later currentness check |
+| Unselected body reads | 0 | 0 | Unselected roles contain expansion failures; no role body may be read |
+| Selected declaration callback calls | 1000 | 10000 | Production Core/Feature selection resolver; one shared dependency |
+| Deep closure import-accessor calls | 1000 | 10000 | Production iterative module-closure; shared back edges |
+
+The catalog control uses auto discovery, enumerates the existing namespace,
+and asks the existing test projection for one owner. Neither its selected Graph,
+business scope nor discovered test body is forced. Growing the directory catalog
+invalidates the old test-source snapshot even when the selected body is unchanged.
+The test uses the existing fixture macro and heap-fenced test entrypoint.
+
+The complete selected-Graph control uses POO publication fixtures, not ten
+thousand native macro expansions. Its counts validate the actual resolver's
+one-read-per-declaration behavior, dependency-first order and scope laziness.
+The deep closure control validates the actual iterative DFS without relying on
+the host call stack. Neither test is a substitute for a ten-thousand-module
+native expansion or runtime execution benchmark.
+
+Catalog metadata enumeration is still proportional to catalog size and is
+reported separately from body reads. Equal selected-body counts do not establish
+constant total startup time. The full selected control passes under the existing
+2 GiB fence, but is not a claim that memory use is already satisfactory.
+
+* Reuse the existing model instead of another semantic graph
+
+[[file:../../../../../dev/proofs/quint/TestSourceAdmission.qnt][TestSourceAdmission]] already represents demand discovery, source revisions,
+explicit complete-Graph demand, fixture lifecycle and one Graph identity. It now
+includes a shared dependency and an expansion counter. UniqueDiscovery counts
+structural discovery visits, not mandatory fresh source checks after effects.
+
+Two additional matched controls fail the named invariants:
+
+- repeat reschedules and revisits a previously discovered shared dependency;
+  UniqueDiscovery must fail.
+- dropDeferred discards additional requirements when complete-Graph demand
+  follows narrow discovery; CompleteConfiguration must fail.
+
+The existing four controls retain eager sibling expansion, stale evidence,
+cleanup failure and substitution of a second Graph. Terminal states remain
+explicit. The pinned native Quint checker typechecks the seven scoped entries
+and their imports; the existing TLC backend checks the positive and six negative
+cases and emits the existing Scheme v1 receipt. No new runner is introduced.
+
+The [[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/TestAdmission.lean][Lean counterpart]] binds the updated Quint source digest. Its existing
+completed_discovery_exact and discover_preserves_unique_reads establish exact
+demand coverage and unique visits. The new discovery_visit_bound proves, for
+arbitrary Node types and fuel, that visited nodes cannot exceed an enclosing
+catalog when roots and dependency edges are covered by that catalog. This is
+not a proof that every edge operation is constant time.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] keeps current input registration distinct from cached
+native context topology. Later registrations must appear in the next projection;
+missing observations and changed source kinds/bytes remain refusals. The deferred
+Build regression exercises the corresponding native handoff.
+
+* What remains a premise or an open capacity gate
+
+The finite Quint model does not enumerate ten thousand states as ten thousand
+Modules. Lean's size-independent laws and Scheme's explicit scale controls cover
+different claims. Native import/phase discovery completeness, source-to-model
+correspondence, hash-table costs, allocation and external mutation are not proved
+by a finite-model pass.
+Completed canonical SDK context topology is assumed stable when its structural
+index is reused. The existing reader only releases completed wrapper code; it
+preserves imports and bindings. Arbitrary MOP mutation of those cached import
+edges is not certified by unchanged file bytes and is not covered by this gate.
+
+Further capacity work must include wide and deep native expansion, diamond
+dependencies, many enabled Features, selection conflicts, source invalidation,
+and bounded concurrent execution. Work counts and peak memory must be recorded
+alongside time. An already loaded module, an unchanged value or a cache hit never
+replaces a required current-source check or grants execution authority.
+
+The architecture target is proportional work in the selected dependency closure
+and its genuine effect boundaries, while keeping catalog discovery and native
+execution explicit. It is not zero work for required dependencies or permission
+to reuse successful admission across an effect.
+
+The subsequent [[file:14-declaration-capacity.org][real source-declaration gate]] separates native expansion
+from these catalog/resolver controls and retains the thousand/ten-thousand
+memory-policy failures. Those capacity gates have not passed.
+
+[[file:12-demanded-source-support.org][Implemented demanded support]]
+[[file:../../12.27-aws-schema-transition-costs.org][Read map]]

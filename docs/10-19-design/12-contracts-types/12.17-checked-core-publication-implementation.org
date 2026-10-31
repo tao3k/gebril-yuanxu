@@ -1,0 +1,182 @@
+#+title: 12.17 Checked Core Admission and Publication with Platform Context
+#+property: DOCUMENT_ID 12.17
+#+language: en
+#+property: STATUS implementation-with-focused-source-tests-no-loader-or-push
+
+* Implementation ownership
+
+The checked-subject handoff is now in [[file:../../../types.ss][Core types.ss]] and
+[[file:../../../admission/publication.ss][AdmissionPublication.]]. The test-only inherited .admit wrapper from
+[[file:12.16-checked-publication-scheme-validation.org][the preceding qualification]] is removed. The original result, descriptor
+and Context evidence representation is retained; public metadata.bind-evidence,
+invoke and publish own their existing relationships and refusal semantics.
+
+Core gerbil.pkg now pins gerbil-poo PR 13 at
+=26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=. The focused tests use that exact
+unmodified upstream source in an isolated namespace. No package installation,
+upstream change or dependency checkout mutation is required for this control.
+
+YuanxuContract. has one optional value-contract slot, default #f. When set to
+a public POO Type, the existing single evidence producer validates the raw
+candidate once BEFORE classification and contextual obligations. The effective
+descriptor retains the actual Type reference; the producer records that same
+descriptor and the checked candidate. There is no second receipt or validator.
+Descriptors without a value Contract retain their existing classification route.
+An overriding custom .admit is responsible for its own semantics; this is not
+authentication of arbitrary user-created evidence.
+
+#+begin_src scheme
+;; Maintainer-owned association. Users do not repeat these slots per Profile.
+(.cc YuanxuContract.
+  identity: 'aws/scenario-admission
+  value-contract: ScenarioValueContract
+  .classify: contextual-classifier)
+#+end_src
+
+contextual-classifier is the selected existing policy callback, not another
+Schema interpreter. Invalid value validation throws before it is called. The
+Type .validate method now returns evidence.candidate rather than the raw input.
+Membership first rejects structural nonmembers without raising a value-validation
+error; it does not cache approval. That recognition path may perform additional
+recognition work and is not the one-validate publication path.
+
+* Publication sequence and failure meaning
+
+#+begin_src scheme
+;; Inside the existing metadata.publish source callback:
+((.get context-value admit-current))
+(def evidence (yuanxu-contract-admit descriptor value context-value))
+(def checked (.get evidence candidate))
+(def bound
+  (metadata.bind-evidence current-call checked descriptor context-value evidence-view))
+(metadata.invoke bound (lambda (_checked) (values evidence checked)) checked)
+#+end_src
+
+The outer invocation keeps its accepted-Core-evidence predicate and final
+context-current check. Binding happens after normalization. The exact checked
+root is the next published value; neither binding nor publication normalizes it
+again. A Function field demonstrates this distinction even when all JSON fields
+look unchanged. Unchanged data does not require upstream ObjectContract to
+return the original lazy receiver by eq?.
+
+The nested binding is part of the source callback. Therefore an inner output or
+logic refusal is exposed by the standard wrapper as a source failure whose cause
+retains the original public metadata failure. Regression tests check BOTH phases;
+they do not suppress the old diagnostics or accept arbitrary failures. Refusal
+returns #f, the exact previous value and the failure. Preparation errors can still
+propagate, and external callback effects are not undone.
+
+* Real platform Context, bounded selected inputs
+
+[[file:../../../t/admission-checked-publication-test.ss][The new production-publication test]] calls actual select-module-graph and
+module-build-graph, creates a real file-backed Schema artifact, and obtains
+Context ONLY from AdmissionPublication. Its guard is the existing Graph/source/
+Schema observer, not the qualification's vector revision counter. Test mutations
+write actual source/Schema files both before and during admission.
+
+The selected publication declaration is deliberately a dependency-free fixture
+leaf. There is no runtime Loader or full module association resolver. The test
+constructs the Schema Type from the exact artifact's existing normalized node,
+then associates it with nested responsibilities. Passing that node to the raw
+Schema factory would normalize twice and is incorrect.
+
+The seven completion-checked cases cover:
+
+- single root validate, actual descriptor/Type/Context references and a real
+  wrapped Function field;
+- public Type validation returning the checked root, and invalid membership;
+- cached parent resource versus final child instance_type;
+- same-name Contract replacement, different platform Context and a faulty custom
+  producer replaying the old receipt through the actual publisher;
+- real source and Schema edits, stale Context replay refusal and fresh capture;
+- edits during admission retaining the exact previously published value;
+- stale fixed parent projections, missing logical network and a stricter Schema
+  refusing the old instance type while accepting an appropriately changed child.
+
+Several controls share a test case. These are not seven production deployments.
+
+* Focused execution results
+
+All six suites ran serially through the existing heap-fenced just test-file
+entrypoint with the unmodified standard library, pinned POO source and current
+Core source namespace. All final runs exited 0 with MODULE-OK, HARNESS-OK and
+final OK, without ERROR CASE/CHECK/HARNESS or heap/stack overflow. The new suite
+also checked completion of all seven case bodies. No full build was run.
+
+| Native suite | Cases | Result |
+|--------------+-------+--------|
+| admission-checked-publication-test | 7 | Production producer/publication/Context; wrapped root, final receiver and file-backed invalidation |
+| admission-publication-test | 8 | Existing Graph/source/Schema publication regressions, including nested refusal cause/phase |
+| admission-binding-test | 2 | Actual descriptor recording and responsibility evidence |
+| qualification/contract-adaptation/checked-publication-test | 8 | Earlier handoff controls now reuse the production producer without their old .admit adapter |
+| json-schema-value-contract-test | 8 | Public Type/diagnostic integration plus typed scalar enum regression |
+| json-schema-aws-value-contract-test | 4 | Real Nix-produced AWS 5.100.0 export, VPC/EC2 fields, spelling and parent-cache controls |
+
+Total: 37 test cases. Actual AWS input was the existing Nix-produced schema.json,
+SHA-256 =7e4fc064120609e23bc317629f1308d72891b7241993fbf68be523f03b6c633c=,
+with registry.opentofu.org/hashicorp/aws. The gate also permits a separately
+selected registry.terraform.io export but refuses ambiguous dual identities.
+Neither a Nix realization, provider process nor AWS deployment was started here.
+
+For reproducibility, arrange the chosen fixture's source namespace with core
+pointing at this checkout and clan/poo at the exact pinned upstream source; use
+an empty fixture state directory. Then, from Core:
+
+#+begin_src sh
+GERBIL_PATH="$fixture/state" GERBIL_LOADPATH="$fixture/source" \
+  just test-file t/admission-checked-publication-test.ss
+
+POO_JSON_SCHEMA_AWS_EXPORT="$aws_export" \
+GERBIL_PATH="$fixture/state" GERBIL_LOADPATH="$fixture/source" \
+  just test-file t/json-schema-aws-value-contract-test.ss
+#+end_src
+
+The AWS export is an explicit acquired input; ordinary user configuration does
+not maintain these test environment variables. Raw failed and successful logs
+remain local artifacts, not repository files. Production source identities:
+
+| File | SHA-256 at final gates |
+|------+-----------------------|
+| types.ss | 31aa189e2dad738efc60d9884bbfde03f4d8c100fa75959b59621d6e031ac04f |
+| admission/publication.ss | 5e998b4708f82b257cca9097b04d1a533df25b125a76146bca9620c8903b9475 |
+| modules/json-schema/json-schema-normalize-core.ss | a217362c15bb9e804774bdd7b14d70431b64b69a31b2c2122bd5cad18a81953c |
+
+Initial failures were retained: the integration fixture incorrectly sent an
+already-normalized node to the raw factory and reused same-named lexical locals
+as POO slots, causing CyclicSlot. Both fixture errors were corrected. Existing
+tests also assumed input identity for ObjectContract validation and omitted the
+resolver's required selected field; those assertions/fixtures now follow the
+actual upstream returned-receiver and current selection protocol. The scalar
+enum control found a library defect, fixed below rather than weakening its test.
+No earlier failed run is relabelled a pass.
+
+* A Schema defect discovered by the integration
+
+The original typed scalar enum control FAILED: type string plus enum was retained
+as metadata but the enum was not enforced. The failing control is preserved in
+[[file:../../../t/admission-checked-publication-test.ss][the stricter-Schema case]]. Normalization now intersects the existing base
+node with the existing enum node through existing all-of semantics. The pure
+value-contract suite checks accepted/rejected scalar values, wrong base type,
+path diagnostics and explicit refusal for empty/composite enumerations.
+
+This repair supports nonempty string/number/boolean enumerations. Composite and
+null enumerations refuse normalization pending JSON-semantic equality support.
+It is not a claim of full JSON Schema vocabulary coverage. Provider exports also
+omit some provider SDK validators; those remain separate OpenTofu/domain checks.
+The actual generated Schema is evidence, not a substitute for provider validation.
+
+* Remaining boundaries
+
+Platform code still supplies the selected Schema artifacts; complete automatic
+export/Schema/Contract association is NOT implemented. Native reference binding
+requires immutable descriptors/subjects and controlled producers. Filesystem
+rechecks are not a concurrent compare-and-swap or cryptographic authority. Source
+changes after the final check and before external effects need a separately
+governed handoff. In-place hidden mutation and ABA writes require the applicable
+upstream revision guards; matching bytes alone cannot prove no intervening write.
+
+No recursive Graph installation, module adaptation, runtime Loader, AWS apply,
+external-state transaction or Lean proof is introduced. See
+[[file:../11-configuration-languages/11.63-aws-two-layer-interface.org][the two-layer AWS UX analysis]] and
+[[file:../11-configuration-languages/11.64-configuration-and-iac-platform-boundaries.org][the ecosystem/platform reflection]] for why this mechanism should remain
+invisible to ordinary configuration users and what would justify its cost.

@@ -1,0 +1,133 @@
+#+title: 12.27.24 Graph Cost And Guard Ownership
+#+property: DOCUMENT_ID 12.27.24
+#+language: en
+#+property: STATUS design-with-bounded-runtime-evidence
+
+* Why another local deletion is insufficient
+
+At the boundary-normalization baseline, the source-only workload opened 167
+files in every nonempty build-admit-before traversal: 14028 reads over 84 passes.
+[[file:10-operation-boundaries.org][Operation-boundary composition]] reduced the number of traversals; it did NOT
+reduce the dependency closure each retained traversal checks.
+The subsequent [[file:12-demanded-source-support.org][demanded-support implementation]] distinguishes tool eligibility
+from actual native import support and preserves deferred evaluator dependencies.
+Its measured closure reduction and [[file:13-scale-and-model-correspondence.org][scale/model gates]] refine this analysis.
+
+Let C be a required source closure and E the effect boundaries which can change
+its validity. The useful cost model is reads per required boundary times the
+required closure size, not the number of guard function calls alone. Sharing
+queries inside a single pure window removes duplicate paths within that pass.
+Normalizing operation boundaries removes duplicate passes between effects.
+Neither permits retaining an old successful check across an effect.
+
+There are therefore two different architectural problems:
+
+1. Independent wrappers over-check the SAME requirement at the SAME boundary.
+   The implemented sequence law addresses this ownership problem for matched
+   operations of arbitrary chain length, not only a special first call.
+2. A consumer may check a LARGER source closure than its admitted demand needs.
+   This requires a coverage/association argument on the existing Graph. It is
+   not solved by another memo table, source epoch flag or receiver identity.
+
+The second problem is not demonstrated redundant for every baseline file. Core
+compiler/prelude, Type/Contract code and transitive source dependencies can be
+required even when their filenames do not resemble AWS. Removing them by
+business name would weaken the meaning of the published result.
+
+* One Graph, explicit owners
+
+| Owner | Fact it owns | What it must not infer |
+|-------+--------------+------------------------|
+| init selection and existing Graph | Selected identities, dependencies and composition order | A selected object is currently admitted forever |
+| Building/preparation | Compiler identity, admitted role sources, declared/observed dependencies | A build request is an arbitrary directory scan |
+| Package operation constructor | Exact entry/action/tail callable structure | The action is pure or its result is a certificate |
+| SelectedPackages composition | Placement of equivalent source checks around the ordered actions | An opaque return has a checked native tail |
+| AdmissionPublication | Actual Contract, Context, Schema associations and bound final value | Package/source validity replaces value or Context obligations |
+| Ops/test execution | Process lifecycle, progress, budgets and cleanup | Repeated logs establish semantic progress or freshness |
+
+Boundary ownership should remain compositional. A standalone operation is
+fully checked. A consumer combining operations can use a proven native prefix
+or tail; it must not guess from a warm slot or a true return. Unknown methods
+break a closed segment rather than disabling extensibility. The executor
+preserves the existing selected order and does not become a scheduler.
+
+The current implementation handles a sequential chain. A branch join would
+need coverage for every incoming branch and its effects; the one-call local
+bit must never be shared between DAG branches, threads or later .run calls.
+
+* Dependency projection gate, not a new cache
+
+A future narrower check must project from the SAME Graph's actual publication,
+prepared-source inputs, Contract/Schema associations and generation. Its proof
+obligation is coverage of every dependency of the requested result, including:
+
+- init/source policy, enabled requirements and composition decisions;
+- the actual exported Profile/Scenario and its transitive source dependencies;
+- Type, value Contract, Context obligations and compiler/prelude identities;
+- the selected provider package, Schema bytes and versions;
+- additional requirements discovered by a legitimate open extension.
+
+Coverage must account for dynamic declarations and negative dependencies such
+as a formerly absent role or package file. A narrower slice cannot merely omit
+failed lookups. Unknown callback dependencies require the current full closure
+until an existing declaration or observation protocol provides complete support.
+The slice would be an existing Graph projection, not another selection tree or
+a cross-effect accepted-result cache. Actual reader/tool support is now projected
+as described in topic 12. Finer per-operation slicing and arbitrary hidden IO
+coverage remain open; the implemented subset does not establish those claims.
+
+Before implementing it, measure actual source paths by their association and
+consumer. A smaller declared list alone is not proof: repeat source changes in
+every excluded dependency class and preserve failure before unauthorized work.
+
+Concrete scaling gates for that work are:
+
+| Controlled change | Required observation |
+|-------------------+----------------------|
+| Fixed selected closure; larger unselected catalog | No demands of unselected business scopes/tests or their role sources; directory/catalog discovery is reported separately |
+| More compatible native actions | One initial full check plus one fresh tail per action; already tested for 0/1/2/4/8 actions |
+| A transitive requirement changes | Dependent old evidence is refused before unsafe work; no omission by filename/category |
+| init or a global selection policy changes | Old Graph/Context association is refused even if a business value happens to be equal |
+| Unrelated module-body work is available | Invalidation must not be confused with permission to eagerly re-expand every module |
+
+The native chain improvement changes a repeated-boundary coefficient; it does
+not change growth in the required closure size C. Overall startup also includes
+directory discovery, native imports/macro expansion, first Graph construction,
+and Nix/Store work. These need separate measurements. A source-read reduction
+cannot stand in for a cold-start, allocation or total execution speedup.
+
+* Live source and issued code are different evidence boundaries
+
+The measured qualification intentionally runs mutable Core and POO sources.
+Its source checks cover the implementation which interprets configuration as
+well as configuration data. It is not a production compiled-artifact startup
+benchmark, and its remaining cost must not be hidden with an unqualified SDK
+or compiler cache.
+
+The existing [[file:../../../../30-39-research-foundations/32-module-assurance/32.40-compiler-artifacts-and-selected-closure.org][compiler-artifact and selected-runtime-closure research]] studies a
+different boundary: trusted compiler issuance and the artifact actually selected
+by the native loader. Such an association could distinguish stable code identity
+from mutable configuration inputs. A path in the Nix store, an old digest or
+the module being already loaded is insufficient by itself. Mutable Schema,
+source policy and Context versions still need current checks.
+
+That work has its own open gates and concurrent implementation. This change
+does not modify it, qualify it, or introduce a runtime Loader. It must not be
+used to claim that compiler-source rereads can already be dropped.
+
+* What this changes for module authors
+
+Authors keep ordinary POO values, Contracts and existing init test selection.
+They do not maintain guard flags, purity annotations, file lists or a second
+execution API. The platform owns boundary normalization and dependency coverage.
+This separation is the architectural improvement: optimize the interpretation
+of composed checked operations, while leaving user configuration independent
+of the number of internal wrappers or source guards.
+
+The boundary evidence closes normalization for the tested sequential path.
+Topic 12 qualifies the initial support projection. Finer dependency slicing,
+branch joins and issued-code integration remain
+explicitly open. Source/admission safety and actual work counts remain separate
+gates, not a single claim that all startup performance is solved.
+
+[[file:../../12.27-aws-schema-transition-costs.org][Read map and measured status]]

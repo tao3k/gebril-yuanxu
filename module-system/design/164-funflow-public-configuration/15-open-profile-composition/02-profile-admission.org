@@ -1,0 +1,210 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Open Profile Composition 02: Independent Profile Contracts and Actual Admission
+#+property: STATUS complete-design-source-no-runtime-or-loader-change
+
+See [[file:../16-profile-publication-and-contract-resolution.org][module 16]] for the pending publication/provenance resolver that supplies
+the internal profile-bindings association. Users do not repeat ExampleBindings.
+yuanxu-contract-admit is the existing admission protocol; the supplied Profile
+Contract, rather than that protocol name, defines this candidate boundary.
+
+[[file:../21-scheme-dfs-admission-correspondence.org][Module 21 public-API audit]] found that YuanxuResponsibilityContract. is a
+Core-private binding. The constructor below is design source, not an executable
+external-package API. The real probe uses public YuanxuObjectContract.
+with a declared proto; the domain builder boundary remains an adaptation task.
+
+* Independent contracts, dynamic occurrence contexts
+
+This depends on the complete [[file:01-feature-admission.org][configured-feature source]], not the superseded
+Module.profiles adapter. A Profile Contract describes its module bindings and
+other explicit configuration roles. A trusted planning owner selects its Contract
+and policy declaration. The configured Profile cannot authorize itself by adding
+a contract or accepted flag. Context derivation is performed here, rather than
+assuming Core magically changes context during responsibility traversal.
+
+The example Contracts declare funflow, but the constructor accepts any native
+responsibility object. A contribution may publish another Profile Contract and
+another binding name without editing the composition kernel. Additional feature
+families need their own admitted position Contract/projection, not an assertion
+that every DevOps service is a Funflow Pipeline.
+
+#+begin_src scheme
+(def (cicd-profile-classify identity-value candidate context)
+  (let ((accepted (object? candidate)))
+    (yuanxu-classification-evidence
+      identity-value candidate accepted
+      (if accepted '() '(expected-profile-object)) context)))
+
+(def (cicd-module-position-obligations module-name config-contract config-value context)
+  (with-catch
+    (lambda (caught)
+      (list (ff-issue 'module-position-evaluation-failed (list module-name) caught)))
+    (lambda ()
+      (let* ((profile-value (.get context effective-profile))
+             (policy (.ref (.get context module-policies) module-name))
+             (owner-value (.get policy owner))
+             (path-value (list (.get context profile-binding) module-name)))
+        (if (not (and (.slot? profile-value module-name)
+                      (eq? (.ref profile-value module-name) config-value)
+                      (eq? config-contract (.get policy contract))))
+          (list (ff-issue 'module-position-mismatch path-value module-name))
+          (let ((config-context
+                 (.o (:: @ context)
+                   module-slot: module-name
+                   owner: owner-value
+                   check-contract: (.get owner-value contracts check)
+                   capabilities: (.get policy capabilities)
+                   effective-config: config-value
+                   config-path: path-value)))
+            (ff-admit-problems config-contract config-value config-context
+                               path-value 'configured-feature-admission-failed)))))))
+
+(def (cicd-module-position-contract module-name config-contract)
+  (yuanxu-predicate-contract
+    'cicd/module-position object?
+    (cut cicd-module-position-obligations module-name config-contract <> <>)))
+
+(def (cicd-profile-obligations descriptor profile-value context)
+  (unknown-field-problems descriptor profile-value (.get context profile-path)))
+
+(def (make-cicd-profile-contract identity-value declared-responsibilities)
+  (.o (:: @ YuanxuResponsibilityContract.)
+    identity: identity-value
+    .classify: (cut cicd-profile-classify identity <> <>)
+    responsibilities: declared-responsibilities
+    .obligations: (cut cicd-profile-obligations @ <> <>)))
+
+(def GerbilCIProfileContract
+  (make-cicd-profile-contract 'profiles/gerbil-ci
+    (.o funflow:
+        (cicd-module-position-contract 'funflow ConfiguredFunflowContract))))
+
+(def RustCIProfileContract
+  (make-cicd-profile-contract 'profiles/rust-ci
+    (.o funflow:
+        (cicd-module-position-contract 'funflow ConfiguredFunflowContract))))
+#+end_src
+
+Each Profile is structurally admitted against its declared bindings. Its funflow
+responsibility actually invokes ConfiguredFunflowContract with a new occurrence
+context. That invokes guarded Pipeline admission, selected Check field Contracts,
+policy/payload obligations and the local dependency graph. object? here is only
+the position classifier; the obligation performs the deeper admission. A bare
+object passing object? is insufficient. Unknown Profile bindings require an
+explicitly refined upstream Profile Contract, rather than silently escaping it.
+
+The two language Contracts have separate published identities but reuse the same
+feature schema. Language names do not choose the Contract. The trusted binding
+declaration does. Distinct Contracts are not mandatory for every language when
+the actual requirements are identical; a maintained common Contract can be reused.
+
+* Declared capability policy is not execution evidence
+
+#+begin_src scheme
+(.def CICDDeclaredCapabilities.
+  runtime-modes: '(manifest-handoff)
+  result-protocols: '((read :lines))
+  action-classes: '(replayable idempotent compensatable terminal manual)
+  artifact-retentions: '(workflow-retained project-retained release-retained)
+  sandbox-references: '(ci/build ci/check)
+  inline-sandbox-profiles: '()
+  compensation-actions: '()
+  payload-contracts:
+  (.o input-bindings: EmptyListContract
+      config-sources: EmptyListContract
+      observability: FalseContract
+      observes: EmptyListContract
+      guards: EmptyListContract
+      report: FalseContract))
+
+(.def (GerbilCICDCapabilities. @ CICDDeclaredCapabilities.)
+  compensation-actions: '(cleanup/package-artifacts))
+
+(.def (RustCICDCapabilities. @ CICDDeclaredCapabilities.)
+  compensation-actions: '(cleanup/rust-package-artifacts))
+
+(.def ExampleBindings
+  gerbil:
+  (.o contract: GerbilCIProfileContract
+      plan-modules: '(funflow)
+      module-policies:
+      (.o funflow:
+          (.o contract: ConfiguredFunflowContract
+              owner: Funflow
+              capabilities: GerbilCICDCapabilities.)))
+  rust:
+  (.o contract: RustCIProfileContract
+      plan-modules: '(funflow)
+      module-policies:
+      (.o funflow:
+          (.o contract: ConfiguredFunflowContract
+              owner: Funflow
+              capabilities: RustCICDCapabilities.))))
+#+end_src
+
+These are explicit local policy declarations. They do not prove source trust,
+shell/cargo availability, artifact collection, cleanup implementation or runtime
+readiness. A production owner resolves the expected revision/source association
+through its admitted publication mechanism; that mechanism is not implemented
+here. ExampleBindings is an internal selected-owner association, not a required
+second user config file, a component inventory or a public lookup DSL.
+plan-modules declares which already admitted feature bindings participate in
+this Funflow plan projection; other services require their own compatible output
+protocol. No catalog-wide source scan or factory call is implied by this value.
+
+* Prepare actual selected Profile evidence, without fixed names
+
+#+begin_src scheme
+(def (cicd-checked-evidence contract-value candidate context evidence)
+  (unless (and (yuanxu-validation-evidence? evidence)
+               (yuanxu-validation-evidence-accepted? evidence)
+               (eq? (.get evidence contract-identity) (.get contract-value identity))
+               (equal? (.get evidence classification type-identity)
+                       (.get contract-value identity))
+               (eq? (.get evidence candidate) candidate)
+               (eq? (.get evidence context) context))
+    (error "current-profile-admission-failed" evidence))
+  evidence)
+
+(def (cicd-prepare-profiles scenario-value context-value)
+  (let ((names (.get scenario-value composition participants)))
+    (unless (nonempty-unique-symbols? names)
+      (error "invalid-participants" names))
+    (.o scenario: scenario-value
+        context: context-value
+        profiles:
+        (map
+          (lambda (binding-name)
+            (unless (and (.slot? scenario-value binding-name)
+                         (.slot? (.get context-value profile-bindings) binding-name))
+              (error "unresolved-profile-binding-name" binding-name))
+            (let* ((profile-value (.ref scenario-value binding-name))
+                   (association-value (.ref (.get context-value profile-bindings) binding-name))
+                   (contract-value (.get association-value contract))
+                   (child-context-value
+                    (.o scenario: scenario-value
+                        profile-binding: binding-name
+                        effective-profile: profile-value
+                        profile-path: (list binding-name)
+                        module-policies: (.get association-value module-policies)))
+                   (evidence
+                    (yuanxu-contract-admit contract-value profile-value child-context-value)))
+              (cicd-checked-evidence contract-value profile-value child-context-value evidence)
+              (.o binding: binding-name
+                  profile: profile-value
+                  association: association-value
+                  admission-context: child-context-value
+                  admission: evidence)))
+          names))))
+#+end_src
+
+The map is a native lazy slot: callers must demand preparation.profiles before
+claiming it has admitted anything. The next module explicitly does so, checks the
+occurrence again, and rejects on failure. Errors are caught by composition
+obligations, preserving refusal rather than fabricating an accepted empty list.
+The same selected association may be reused under any user-chosen binding when
+authorized; no iteration over '(gerbil rust), fixed language enum or fixed task
+count appears in this preparation. Context variables and constructor parameters
+must not shadow the native slot they initialize; the code uses distinct value
+names at construction boundaries.

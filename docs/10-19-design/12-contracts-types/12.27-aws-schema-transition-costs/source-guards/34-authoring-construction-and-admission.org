@@ -1,0 +1,266 @@
+#+title: 12.27.47 Authoring Construction And Interface Admission
+#+property: DOCUMENT_ID 12.27.47
+#+language: en
+#+property: STATUS constructor-support-qualified-capacity-open
+
+* Actual repeated support
+
+[[file:33-sdk-enrollment-and-declaration-budget.org][SDK enrollment]] removed duplicate registration but did not reduce retained
+Graph support or establish capacity. The next change follows the actual
+source-policy getter into =make-module-interface=.
+
+The default =authoring= computed slot called the public validated Profile
+constructor. Its first evaluation produced classification and responsibility
+receipts for the default Profile and its children. Those reads became native
+dependencies of the shared computed slot. Every later publication depending
+on that slot could replay the construction trace, even though its Interface
+constructor independently validates the Profile again.
+
+The old sixteen-module control reported =authoring= with 1918 direct dependency
+edges. This is not 1918 business requirements. It includes constructor work
+captured by the lazy getter. Removing bytes from source guards cannot remove
+that native dependency graph.
+
+* Separate construction from the real boundary
+
+The existing default fields now have one internal construction function:
+
+#+begin_src scheme
+;; authoring/roles.ss: fresh candidate; not a validation receipt.
+(def (make-default-module-authoring-profile)
+  (.o (:: @ ModuleAuthoringProfile.)
+      executor: (.mix ModuleAuthoringExecutor.)
+      types: TypesSourceRole.
+      objects: ObjectsSourceRole.
+      funs: FunsSourceRole.
+      config: ConfigSourceRole.
+      interface: InterfaceSourceRole.
+      build: BuildSourceRole.))
+
+;; The public constructor keeps immediate validation.
+(def (yuanxu-default-module-authoring-profile)
+  (validate ModuleAuthoringProfileContract
+    (make-default-module-authoring-profile)))
+
+;; source/admission.ss: one ordinary receiver-local computed default.
+(authoring (make-default-module-authoring-profile))
+#+end_src
+
+This internal constructor is not a new public configuration interface or an
+accepted-value cache. The existing public constructor still checks immediately.
+Derived policy receivers keep distinct Profile and executor identities; the
+change does not hoist one shared mutable Profile into a constant default.
+
+The existing =make-module-interface= remains the only default source-role
+entry boundary, before datum admission or native module expansion:
+
+#+begin_src scheme
+(let (admitted-authoring
+      (validate ModuleAuthoringProfileContract authoring-value))
+  (.o (:: @ (list prototype))
+      id: interface-id-value
+      schemas: schema-object
+      authoring: admitted-authoring
+      metadata: metadata-value))
+#+end_src
+
+It stores the public validator's actual returned receiver, not the raw
+candidate. Contextual role requirements remain in the same Contract and
+producer. No responsibility, normalization, obligation or source check is
+replaced by an old successful result. Custom policy/getter execution keeps
+its existing open-boundary behavior.
+
+The internal candidate is intentionally not pre-admitted merely because a
+getter returned it. This changes the internal default's validation boundary.
+It does not claim callback-for-callback equivalence with the previous duplicate
+validation sequence. Normalizers need not be idempotent; applying one twice is
+not an acceptable substitute for one check at the actual Interface boundary.
+
+* Native semantic controls
+
+=t/module-authoring-stage-test.ss= passes three cases:
+
+1. Fresh policy receivers retain separate defaults and executors. Native
+   inherited/bootstrap dependencies remain, while the default getter has no
+   transitive classification/validation receipt dependency. Invalid fields
+   are refused by the actual Interface constructor.
+2. A passive native observer sees no Profile =.validate= read at default
+   construction, one at Interface construction, and another when the public
+   validated factory is explicitly called. No validator is replaced to make
+   this assertion.
+3. A real completed selected Graph is current before a same-value native
+   revision change to =ModuleAuthoringProfileContract=. Both the Graph's
+   currentness check and its source-view check then refuse the old result with
+   the public native =stale slot dependency= diagnostic, rather than an
+   unrelated Type or filesystem failure.
+
+An intermediate probe incorrectly expected zero dependencies of any kind;
+native inherited/bootstrap reads are necessary. Another attempted positive
+normalization probe mutated the shared Type descriptor and changed its computed
+prototype identity before reaching the intended boundary. Both failures are
+retained as failed probes. The final controls inspect actual receipt kinds and
+observe the real validator without modifying its behavior. Contract mutation
+is a separate negative control, never a way to manufacture a positive result.
+
+* Quint and Lean own different claims
+
+[[file:../../../../../dev/proofs/quint/AuthoringStage.qnt][AuthoringStage]] models finite construction, Contract change, admission,
+checked-subject selection and publication schedules. Its controls omit
+admission, reuse an old Contract decision, use the raw subject, skip final
+freshness, and prove non-vacuous acceptance through an expected counterexample.
+Existing candidate/location models still own ambient effects, complete Graph
+commit, previous-value retention and termination.
+
+[[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] adds independent functional and cost laws:
+
+- =refused_profile_cannot_reach_inspection=;
+- =inspection_receives_actual_checked_profile=;
+- =normalization_is_not_implicitly_idempotent=;
+- =constructor_trace_replay_removed=.
+
+For =N= modules, =B= relevant boundaries, constructor trace width =K= and
+actual local support width =R=, replay accounting separates
+=N * B * (K + R)= into =N * B * R + N * B * K=. The change prevents that
+constructor trace from becoming a shared getter requirement; actual boundary
+validation and local support remain. This law assumes the real support
+partition and does not bound native predicate internals, source bytes, GC,
+macro execution or machine time.
+
+The functional laws assume the public producer supplies its checked value;
+they do not prove a Scheme compiler or reconstruct admission evidence. The
+native tests bind those laws to the existing Interface implementation. Stable
+source-bound qualification must include =authoring/roles.ss=, =source/admission.ss=,
+=source/interface.ss=, =module-system/config.ss= and the focused test.
+
+All six new Quint controls and the fifteen existing candidate/location controls
+pass on the final source cut; the focused Lean target builds (40 dependency
+jobs). One intermediate model run was refused by the source-cut guard while a
+Lean syntax fix was being completed. Another timed out after SanyParser during
+TLA compilation, under the unchanged five-second output watchdog. It is not a
+model counterexample or a proof result. The subsequent independent session,
+after the thousand-declaration run ended, completed all six controls. Neither
+timeout nor that later pass is discarded or substituted for native capacity.
+
+* Real-declaration work controls
+
+The sixteen-declaration diagnostic uses the existing fixture, init test object,
+observed =.run= and locked source dependencies. All 64 role/interface bodies
+expand and evaluate. Its native work comparison is:
+
+| Work | Before staging | After staging |
+|------+----------------+---------------|
+| Native read deliveries | 230724 | 230724 |
+| Delivered dependency edges | 342254 | 280910 |
+| Replay visits | 198904 | 137336 |
+| Retained Graph tokens | 5738 | 5442 |
+| Retained Graph dependency edges | 20005 | 17082 |
+| Physical reads at Graph ready | 6634 | 6634 |
+
+Fewer dependency edges and visits are the result, not fewer source checks or
+suppressed observer deliveries. Retained live-byte samples do not establish a
+heap improvement. The preliminary outer test used the working-copy fixture
+with the locked source-only SDK. The final snapshot-root run independently
+reproduces every count in the table, reaches ready Graph, validates all 64
+bodies and source-mutation refusal, cleans its fixture and exits zero with all
+required markers. No matched wall-time or CPU speedup is claimed here.
+
+The final calibration and AWS rechecks briefly overlapped because AWS was
+dispatched before calibration exit had been confirmed. That orchestration
+error does not change their semantic assertions, but their timing and memory
+samples are excluded from comparative performance claims. Subsequent native
+checks wait for the previous process to exit. An earlier candidate-control log
+also shared an output destination with a proof run; its native output is not
+credited. A separate-output candidate-control rerun passes all eight cases.
+
+* Reuse boundaries, not an admission cache
+
+The locked public library's =object-contract-flow= provides =checked-action=:
+each invocation validates its own candidate and passes the actual returned
+value to the consumer. The existing Interface's direct =validate=/=let= sequence
+already implements this single-consumer handoff without another wrapper.
+
+Public =bind-evidence= preserves invocation formulas and exact subject,
+descriptor and context associations. It does not provide automatic in-place
+freshness or reuse a prior successful approval; see the locked library's
+[[https://github.com/tao3k/gerbil-poo/blob/fdeadfa40ca5cee5fe20308985aef1577f2eb49b/doc/evidence-binding.md][evidence-binding contract]]. It cannot justify replacing per-Interface admission
+with a shared boolean or identity-only validity cache. Source, Schema,
+Context and mutable Contract policies remain owned by their existing guards.
+
+* Capacity and consumer gates
+
+The changed thousand-real-declaration gate is run from the fixed source-only
+snapshot with the existing 2-GiB heap and unchanged progress/total limits.
+A partial count, a timeout or a completed directory scan is not acceptance.
+Require ready Graph, complete actual body counts, currentness refusal after
+source mutation, fixture cleanup, natural exit zero and every harness marker.
+
+This run fails: 839 publications started, 838 completed. The last complete
+publication reports 538760 milliseconds Case elapsed and 234274 milliseconds
+Case CPU, with 317910 physical source reads. The outer fixed total deadline
+then sends TERM; its existing grace ends in exit 137. The output contains
+=Ops execution terminated= and =ERROR HARNESS=, despite also printing success
+markers. There is no ready Graph, complete retained-heap sample, or completed
+thousand-module source-mutation assertion. No heap/stack overflow marker was
+observed. The fixture directory is absent and no corresponding native child
+remains after termination.
+
+At the final complete 832-publication checkpoint:
+
+| Boundary | Wall seconds | CPU seconds |
+|----------+--------------+-------------|
+| Preparation | 278.477284 | 116.238921 |
+| Interface import/expansion | 113.419955 | 50.906799 |
+| Source guard, including replay | 98.593527 | 47.242276 |
+| Metadata replay | 64.625857 | 28.439083 |
+
+These spans overlap and must not be added. Replay has 3760634 unique native
+visits at this checkpoint. The stage change removed constructor support but
+did not remove per-module Contract/authoring dispatch or prove their total
+work bound. Preparation is the largest measured boundary still requiring
+decomposition into actual Profile checking and datum dispatch.
+
+The parent fixture-ready checkpoint has 9.273 seconds process CPU and 0.990
+seconds Case CPU; the child Graph-start checkpoint has 9.652 seconds process
+CPU and 0.816 seconds Case CPU. These separate pre-Case costs include imports
+and setup. They are not pure-import timings and must not be charged as an
+extra 60-second budget or excused by raising the deadline. The current count
+alone does not establish an end-to-end improvement against earlier controls.
+
+After that serial native run, retain source/Contract/policy mutation controls,
+real JsonSchema/Funflow/AWS publication, old-evidence refusal, previous-value
+preservation and OS-TERM cleanup. No upstream modification, cache addition,
+runtime Loader integration, full build, runner or push is part of this change.
+
+The final controls pass: three authoring-stage cases (including exact native
+staleness diagnostics), eight candidate-stage cases, two metadata cases, the
+six real JsonSchema/Funflow/AWS qualification files through the same init-owned
+test projection, and the real OS-TERM fixture-unwind case. The AWS worker
+reports 142023 milliseconds, retained only as a run receipt, not a speedup.
+It still exercises Schema replacement, old-evidence refusal, retained accepted
+publication, guarded selection and temporary-directory cleanup. The only
+capacity claim remains the explicit failed thousand-declaration result above.
+
+* Focused reproduction
+
+Use the locked source-only environment described in
+[[file:31-staged-candidate-publications.org][candidate publication qualification]]. Run the native commands serially and
+inspect their full module/harness outcomes, not exit status alone:
+
+#+begin_src text
+just test-file t/module-authoring-stage-test.ss true
+just test-file t/module-candidate-stage-test.ss true
+just test-file t/module-candidate-metadata-test.ss true
+just test-file t/module-declaration-calibration-test.ss true
+just test-file t/module-testing-isolation-test.ss true
+just test-file t/execution-cancellation-test.ss true
+python3 dev/proofs/quint/check.py --case-prefix AuthoringStage --typecheck-scope selected --receipt ../.data/qualification/authoring-stage.scm
+python3 dev/proofs/quint/check.py --case-prefix Candidate --typecheck-scope selected --receipt ../.data/qualification/candidate.scm
+cd dev/proofs/lean
+lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
+#+end_src
+
+These relative receipt destinations are ignored qualification artifacts outside
+Core, not inputs or evaluation caches. Do not commit generated qualification logs.
+The retained capacity command is =just test-file t/module-declaration-1000-test.ss true=;
+its failed outcome must not be relabeled as a pass or rerun unchanged as an
+optimization result.

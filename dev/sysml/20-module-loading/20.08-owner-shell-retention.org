@@ -1,0 +1,135 @@
+#+title: 20.08 Receiver and SDK Owner Shell Retention
+
+* Revision and design authority
+
+The latest observed gerbil-poo PR 13 head is
+=f1fea22aa6922a9c906ae10c50c40f43145a6dda= (2026-10-25).
+The consumer runtime remains pinned to =40c61fe6afc8313f297599da0e511f96e3a23dcf=.
+These are distinct qualification identities, not interchangeable receipts.
+The intervening diff leaves =object.ss=, =slot-observation.ss=,
+=prototype-map.ss= and =slot-layout.ss= unchanged. New table/set projections,
+grouped joins and direct deltas belong to collection maintenance. They do not
+license merging mutable receivers or arbitrary closure environments.
+The latest collection documentation explicitly distinguishes identity reuse
+from zero allocation and preserves callback traversal order. This investigation
+uses that same distinction rather than introducing a consumer cache protocol.
+
+* Accounting boundary
+
+The existing trace-only census now opens the raw shells of already observed
+receivers and SDK expander contexts. Installed Gerbil's =expander/core.ss=
+defines context inheritance, binding tables, imports, exports and code fields.
+The shell projection reads existing struct fields without calling getters,
+checkers, imports or slot preparation. Nested receivers and contexts remain
+explicit frontiers; weak tables and class descriptors are not strong edges.
+SDK contexts discovered during the SDK shell walk are not recursively opened.
+Thus this is a bounded one-hop owner projection, not the entire SDK heap.
+
+For specifications, thunk environments, receiver shells and SDK shells the
+report includes reachable identities, payload words, repeated edges and explicit
+frontiers. A single identity union across categories prevents double charging.
+Each category's =added= count is marginal in the printed order, NOT dominator
+or exclusive retained memory. No category sum is reported as physical bytes.
+VM post-GC live includes independent roots and cannot establish marginal cost.
+String backing storage, headers, code, foreign storage and weak ownership remain
+outside the word account. Equal-looking distinct closures are not pooled.
+
+* Assurance allocation and repair gate
+
+[[file:20.04-payload-ownership.sysml][Payload ownership]] remains the architecture owner.
+Lean =PayloadSharing.sharedNodeAccountedOnce= justifies identity deduplication
+in diagnostic accounting, not deletion of production dependency edges.
+=distinctEnvironmentRetained= prevents equality of printed payloads from
+collapsing distinct identities. Receiver/revision/instance anchors remain local.
+Existing QNT =IssuedRootForwarding=, =ReadRetention= and =IncrementalRoles=
+continue to own callback, source change, invalidation and parent/child traces;
+there is no duplicate payload state machine. Runtime graph classification is
+an executable correspondence observation, not a theorem about physical bytes.
+
+No production sharing repair is justified until the measured duplicate has an
+owner, immutable representation and preserved ordered lookup/callback behavior.
+The native canonical layout and persistent prototype map already share some
+structure; replacing them with an additional Core pool would duplicate policy.
+All source checks, original records and observer deliveries stay intact.
+
+* Bounded verification
+
+Use the existing serial =just test-file= census at 16 and 32 modules, followed
+by the existing real Gitea/PostgreSQL regression. The heap fence and timeouts are
+unchanged. Preserve negative results; do not rerun the known failing 10,000-module
+gate. Results for this new shell projection must be recorded separately from
+20.06's earlier frontier-only receipts.
+
+* Verification receipt discipline
+
+The first local run was deliberately terminated after static inspection found
+an unimported =append-map= in the new diagnostic. The corrected projection uses
+=(apply append (map shell-fields owners))=; the interrupted receipt is retained,
+not counted as a pass. No successful publication or healthy cache was erased.
+The current host has substantial unrelated load; wall-time comparisons from
+this window cannot establish a speedup. Counts and semantic outcomes are
+reported independently. Latest-PR source review does not qualify the newer
+collection implementation in the currently pinned consumer runtime.
+
+* Fixed source references
+
+- [[https://github.com/tao3k/gerbil-poo/blob/f1fea22aa6922a9c906ae10c50c40f43145a6dda/doc/table-mapping.md][Latest PR table mapping]]: callback order, ownership styles, and no-op identity
+  versus temporary allocation are separate guarantees.
+- [[https://github.com/tao3k/gerbil-poo/blob/f1fea22aa6922a9c906ae10c50c40f43145a6dda/object.ss][Latest PR object implementation]]: receiver-local slot-function construction.
+- [[file:../../proofs/lean/YuanxuProof/ModuleSystem/Loading/PayloadSharing.lean][Existing Lean identity and ownership model]]: structural sharing premises and
+  original-record/edge preservation; no theorem asserts a GC dominator size.
+
+The first corrected default test completed successfully but its output did not
+contain the new shell rows: it loaded the previously installed observer. It is
+therefore an old-path regression receipt, NOT qualification of the new census.
+A subsequent native build caught and rejected an extra closing parenthesis in
+the diagnostic; that failure is retained. The corrected native build must
+publish the changed observer before another census can qualify this source.
+These corrections do not justify clearing healthy caches or changing budgets.
+
+* Current result (2026-10-25)
+
+The corrected full native =just build= succeeded and compiled only the changed
+=test-observation= target. Its generated Scheme contains =slot-owner-shells=,
+so the changed observer is now present in the runtime used by the tests.
+
+The new-census default run then failed during native Fixture precompilation:
+the existing 120-second total execution budget expired after nine of fourteen
+support targets had reported compilation. It did not reach the new shell rows
+or complete the census Harness. This is NOT a passing 16/32 cold/hot receipt.
+The contemporaneous host load exceeded 200; that observation alone does not
+prove the entire timeout was scheduler delay. No larger timeout, new cache,
+forced healthy-cache clean, native dependency-edge removal or sharing repair
+was used to turn this failure into success. A hot second process is not run
+against a failed producer and cannot be reported as qualified zero compilation.
+The existing old-observer pass remains a separate regression receipt.
+
+The remaining work is to obtain successful bounded shell measurements and
+inspect exact repeated ownership payloads before selecting a production repair.
+No exclusive-memory number, physical-byte saving, latest-PR-wide runtime pass,
+or 10,000-module capacity result is claimed by this change.
+
+The real =just test-file t/gitea-postgresql-publication-test.ss= consumer then
+completed all 11 cases with MODULE-OK, HARNESS-OK and final OK and no error or
+overflow markers. This exercises the installed changed observer in ordinary
+(non-deep-trace) operation and preserves the domain/source/cache controls. It
+does not exercise the new owner-shell traversal and must not be presented as
+its coverage. The 562 frozen Scheme inputs remained unchanged. The pending
+census is not replaced by this consumer pass. No automatic Loader enrollment,
+production pooling or 10,000-module rerun was performed.
+
+* Follow-up attribution and conservative frontier correction
+
+See [[file:20.09-fixture-compiler-budget.org][20.09 Fixture Compiler Budget]] for the repaired native Make worker
+setting, actual successful compiler measurements and the separate diagnostic
+idle failure exposed afterward. The original precise-id GC-table test missed
+subtypes; its raw SDK totals are not complete strong-retention results. The
+corrected walker uses the installed native subtype predicate and treats all
+GC-table subclasses, including containers whose weak policy is not classified,
+as frontiers. The final identity union uses the existing smaller support;
+Lean proves the count and symmetry without allocating a second large union.
+
+The follow-up now has successful final-source 16/32 cold/hot and real service
+receipts; see 20.09 for exact counts and timings. This supersedes the pending
+status for the corrected series without relabeling any earlier failed run.
+The new counts remain covered reference graphs, not exclusive allocation.

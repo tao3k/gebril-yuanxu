@@ -1,0 +1,136 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.03 Context Module Consumer Receipt
+:PROPERTIES:
+:ID: agentic-ai-lab-context-module-consumer-20261014
+:STATUS: historical-local-semantic-slice-and-consumer-pass-storage-open
+:DATE: 2026-10-14
+:END:
+
+* Owner and result
+
+This receipt is the earlier single-document module input cut. The current
+Module adds qualified composition, Contract revisions and consumer-local
+review. The results and input identities below remain historical, not a
+verification of those additions.
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns the design. [[file:../../../../modules/ai-agentic-context/framework.org][Modules/ai-agentic-context]] owns the Scheme/POO
+semantic slice and the sole ASCENT relation declaration. Proofs imports it;
+its former event lens is removed and its former relation program is only a
+call to the module factory. Case-specific ORG Contracts remain test inputs,
+not an alternate Contract evaluator. RFC 0015 is only an SDLC consumer.
+
+The [[file:../../../../packages/proofs/context-lifecycle/README.org][joint verifier]] exited zero with source-stable=true and
+storage-bindings=not-executed. This is a local working-tree result, not a
+commit, producer CI result, fresh package-install gate or full Memory redesign.
+
+| Gate | Actual result | Scope |
+|------+---------------+-------|
+| Quint 0.33.0 / TLC | 15 checks passed; 30549 generated / 5257 distinct / zero queued states in safe check | Finite policy instance and unsafe mutations |
+| Lean 4.34.0 / LeanPOO | 14 build jobs passed; 13 laws and 13 executable guards | Conditional composition and dependency-based reopening |
+| ASCENT Scheme | 23 controls passed using the Modules factory | Current relations, source replacement and retraction |
+| Real ORG and Session consumer | 32 controls passed using Modules projection/binding | Orgize events, Elements, Contract, Query and existing Session/store objects |
+
+TLC retains 60s total / 12s silence, one worker and 512MiB heap. Lean retains
+120s total. Both Scheme gates retain 120s total / 5s output deadline and
+1GiB heap. No limit is widened, no hook bypassed, no Memory performance gate
+changed, and no storage/provider or binding executes.
+
+* Positive and negative controls
+
+The actual ORG source is [[file:../../../../packages/proofs/context-lifecycle/context-source.org][context-source.org]]. Orgize parses it; the module
+projects the selected Elements after applying the authored Contract. The
+consumer checks real node-property ID Query and parent-child topology.
+
+- Two existing POO Sessions bind one Context without creating Session-owned IDs.
+- Removing a consumer or binding an empty collection retains Context identity.
+- Duplicate Session IDs, non-Session objects and raw Contract/Query inputs refuse.
+- Retrieval alone supplies no use basis; actual-use facts and review are explicit premises.
+- Reviewed selection supports a current interpretation, not a grant.
+- Time drift reopens transient Context while retaining an applicable stable constraint.
+- Environment drift refuses applicability even for a stable constraint.
+- Source revision preserves stable ORG ID but changes the content cut; old admission,
+  review and use facts cannot qualify the revised source automatically.
+- Missing preservation refuses a failure-pattern candidate; revision/time retain
+  counterexample history.
+- Lost or reparented counterexample structure and duplicate ORG IDs refuse.
+
+The existing Memory-core store spec is constructed and inspected only. It is
+a legacy handoff value, not Context ownership, consolidation or storage success.
+The Session collection is a consumption relation, not an implemented Agentic
+orchestrator or evidence of message/provider dispatch.
+
+* Failures retained and corrected
+
+The initial dynamic ORG import hit the unchanged 5s output deadline. The same
+consumer was compiled with the standard Gerbil compiler and run under that
+same gate. No temporary SDK was introduced. Compilation used current managed
+Scheme libraries and required permission for generated ASCENT build outputs.
+
+A library load-path mix initially selected obsolete parser/compiler artifacts;
+the current consumption package was selected consistently and required POO
+modules recompiled. No parser source was changed.
+
+The first consumer rejected a Contract that tried custom properties directly
+on headline queries. The corrected Case queries node-property Elements under
+headline bindings, respecting Orgize field admission rather than changing it.
+
+A subsequent run exposed POO self-slot recursion from constructor variables
+with the same names as slots. Module constructors now capture *-value bindings.
+The Profile slot atomic check passed, then all 32 real consumer controls passed.
+
+* Input cut
+
+All declared source inputs, loaded package artifacts and the consumer executable
+were checked before/after the final successful run. SHA-256 identifies bytes;
+it is not an authentication certificate or a cross-language refinement proof.
+
+| Repository-relative input | SHA-256 |
+|---------------------------+---------|
+| packages/proofs/context-lifecycle/ContextLifecycle.qnt | 1acb82ae629e00291ce8d723ea186838b672570c2c38b130202eea2cb17d6e46 |
+| packages/proofs/context-lifecycle/relations.ss | e7d29adbbce6179d9b10349dd2fad20fda8b29804d8bda7ff3af16d26a80560d |
+| packages/proofs/context-lifecycle/check_quint.py | 0e052031212264579f0cc70029a2435903ed06b5ff4556c418291ac1d36e47d3 |
+| packages/proofs/context-lifecycle/verify.py | 8c6a1655d7a99f2887fa3c58eb592ae95f69275b9bd9893aaf6763b4189d6c52 |
+| packages/proofs/context-lifecycle/tlc-config.json | 080c5753f5321f32cd29cc140144a2d659b3dc6b7b1950c23a2ad59e981764b1 |
+| packages/proofs/lean-poo/lakefile.lean | 456ca8fe8477d3fac1970f626cedf0a74df5a3c7dda7b739fb673750afef44aa |
+| packages/proofs/lean-poo/lake-manifest.json | a1201108b02524eebc7a8bc053943b316cd4ff283ffbfe7b80a7c92eaec6d88a |
+| packages/proofs/lean-poo/lean-toolchain | 8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean | a06a1b7163f74a1d7bec466f453c13708658b90391ba8bc7e005b4337b8ba3a9 |
+| scripts/temporal/run_with_progress.py | 07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611 |
+| gerbil.pkg | b0d65d51ed0690021c9b3d96a72298a4b38a69309d51db51e9e1c00ff089c3e2 |
+| modules/context/consumers.ss | 72a8a65d7d8047f806161be770340a39eee2ade1afdf1b83d5feafb71138c66e |
+| modules/context/funs.ss | e07fcc7ffc8a243f59b2c22bb8f989cc20badeaa33d6d83eb95d136d32c63a03 |
+| modules/context/interface.ss | 71f3b0782a18a62daa3e7f5c70ac0f092d35c9e04d4d2c118caa6f704e633685 |
+| modules/context/objects.ss | 9cb27009f8073b2fa1a1fb58b32843a17029f9763e4f5751457eeb15663f85e5 |
+| modules/context/reasoning.ss | 5728f4f0489a322139c8e938f7f4fa793355e787a8393cc0468efd7947eed564 |
+| modules/context/source.ss | 56c0a64f92d2b113d43b708f484e247116d3181bfd843a0e055a3c8a44dd1ad3 |
+| packages/proofs/context-lifecycle/org-context.ss | 7d953f67588d65b921b4642491266498a88bc668cda2d2d6654e9b54c782094b |
+| packages/proofs/context-lifecycle/context-source.org | b11cfcb19cec1efcfa85b44b233ed4447ceb75c8cc4e83b2504354bbd49e18a1 |
+
+Compiled package inventory: =inputs=14619 sha256=155dcdac39ba7cab7cd5d3a8150005a68b447a060f3360c5136c17a3e9f8e81f=.
+Consumer executable SHA-256: =4b4cb0e550ce5aa978d76943aa5c26ce9bbe2235cc2044cacd6accd7640f71a7=.
+
+The selected producer source identities are parser
+=f90aadcf7be91a0d299b9ab0e83405f7d1dda322=, Orgize
+=d63f5e4b9e22fdfe59ed355f0cefc5d21c333fb5=, and ASCENT
+=f53a9a3954685111c751140090dfd95e3d081717=. LeanPOO stays pinned at
+=71609603d45bead8eec6375471991a4f76dbb430=. The root package declaration
+now explicitly pins the selected ASCENT dependency; existing unrelated package
+pin edits were preserved. Generated version metadata is not a tracked lockfile
+or used as proof of this source cut. No fresh root dependency installation is
+claimed; the explicitly selected installed libraries and executable were tested.
+
+* Open boundaries
+
+This closes the bounded module-semantic and real consumer Case, not the complete
+Memory-core redesign. Source admission, review, actual-use truth and challenge
+coverage remain caller/domain premises. ORG structure does not authenticate
+them. Cross-document composition, Contract-revision invalidation, richer temporal
+policy, runtime lifecycle integration, privacy/deletion, storage executors,
+bindings, orchestration and measured Context utility remain open.
+
+Quint and LeanPOO retain finite-transition versus conditional-law roles. No
+mechanical bisimulation or external Governance authorization is asserted.
+[[file:02-context-lifecycle-proof-receipt.org][The earlier receipt]] is a historical proof-only cut, not a substitute for this
+module-consumer evidence. Old Memory implementation and performance experiments
+are neither deleted nor optimized.

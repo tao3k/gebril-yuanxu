@@ -1,0 +1,83 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.08 Config Languages 07: Profile Families and Selected Service Graphs
+#+property: DOCUMENT_ID 11.08
+#+date: [2026-10-16]
+#+filetags: :config-language:scenarios:design:
+#+property: STATUS design-boundaries-no-service-graph-adapter-or-loader
+
+* Neither ownership nor a percentage selects the abstraction
+
+Both upstream and downstream authors construct simple configurations, derive
+maintained Profiles, transform inherited values and sometimes extend platform
+mechanisms. A large contribution repository naturally needs inheritance where it
+reduces duplication of a stable recipe or business policy. It must not impose
+that inheritance on every independent declaration. The user's 80%/90% illustration
+does not establish a measured distribution or a fixed architectural ratio.
+
+Three choices remain independent: ordinary field assignment; reuse/extension of
+an existing Profile; Scenario composition of configured occurrences and their
+relationships. They can coexist in one declaration. Setting a scalar on a derived
+Profile is still replacement, not an inherited-value transformation.
+
+* Thousands of Profiles are not thousands of instantiated services
+
+An available catalog, selected Profile definitions and configured service
+occurrences are different sets. A Scenario can use one Profile many times with
+different identities, or combine many Profiles without inheriting every catalog
+entry. Inheritance shares defaults/behavior; service edges express references and
+constraints. A prototype's parent order is not service startup or execution order.
+
+| Concern | Required design boundary |
+|---------+--------------------------|
+| Profile family reuse | Sparse native inheritance, selected field transformations; no copied environment matrices |
+| Occurrence identity | Scenario-qualified service key, distinct from Profile export name |
+| Inter-service reference | Resolve against the final selected Scenario, not a cached parent endpoint/string |
+| Field admission | Admit each final normalized Server/Port through its associated Contract |
+| Relationship admission | Missing targets, ambiguous identities, protocol/port compatibility, selector and namespace policy |
+| Cycles | Distinguish reference cycles, lazy value cycles and actual execution dependencies; reject unsupported cycles explicitly |
+| Plans and resources | Derive from the same effective occurrence graph, with unique qualified resource identities |
+| Preview | Summaries by default; selected details on demand; exact admission scope visible |
+
+The existing single-server reference takes app as a resource name seed. It cannot
+serve as occurrence identity when the same Profile is instantiated twice. A real
+fleet adapter must derive name/namespace mapping from occurrence identity and
+validate collisions. Do not flatten unrelated Profiles by unqualified app/build
+names. Multiple Service selectors must not accidentally select another occurrence.
+
+* Local demand and global admission are different costs
+
+Unselected catalog branches remain cold. If a Scenario intentionally selects a
+thousand services, complete graph admission must inspect the selected occurrence
+and edge metadata needed to establish its global properties. Laziness cannot
+prove unknown edges without reading them. Full plan preview may also demand all
+selected resource fields. Do not call a partial view globally admitted.
+
+Build the needed identity/edge indexes from the selected graph once rather than
+scanning the whole selected set for every service reference. This targets work
+proportional to the selected vertices and edges for discovery/reference resolution;
+it is not a measured complexity/performance result for all validation algorithms.
+Do not instantiate the Cartesian product of available Profiles and environments.
+
+Reusable checks require keys including effective occurrence, declaration/helper
+revision, dependent values, Contract revision and admission scope. A field change
+invalidates its local result and dependent projections/relations. Global uniqueness
+or topology changes may require wider invalidation. A parent cache is not current
+child evidence, nor is a cache hit proof of resource validity. Incremental indexes,
+dependency tracking and invalidation remain additional design/implementation work.
+
+* Evidence boundary
+
+[[file:11.09-contract-directed-service-scenarios.org][Module 08]] adds the concrete three-service declaration, descriptor requirements,
+native parent expansion, selected-reference kernel and final-value preview.
+It makes Contract association explicit instead of treating every simple Profile
+as untyped. Its service graph and Contract-parent adapter are still proposed.
+
+The KCL codelab demonstrates schema/defaults, base+environment co-configuration
+and output fixtures. It is not evidence for this thousand-service graph protocol.
+Likewise native POO inheritance, lexical receivers and Generic dispatch provide
+building blocks, not automatic endpoint resolution or graph admission. Module 05/06
+are unexecuted single-server references. Service occurrence Contracts, relationship
+descriptors, selected graph admission, incremental preview and scale tests remain
+unimplemented. No new DSL, runtime service model or Loader is added by this document.

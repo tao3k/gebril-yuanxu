@@ -1,0 +1,342 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.54 Config Languages 53: Selected Graph External Inputs and Nix Sources
+#+property: DOCUMENT_ID 11.54
+#+property: STATUS implemented-local-native-no-loader
+
+* Ownership after refactoring
+
+The selected Core build Graph now accepts =module/external-package=
+contributions in the same Core/Feature projections that already own compiler
+inputs. Only selected nodes prepare requests. A duplicate package identity is
+rejected, rather than silently merging two unrelated final configurations.
+A consuming application declares one final OpenTofu configuration; capability
+modules must not each install a default Provider selection.
+
+Nix has its own maintained module, not an OpenTofu-local command wrapper:
+
+#+begin_example
+modules/nix/
+  types.ss         native NixSourceContract
+  config.ss        tool names and the owned source-checker location
+  func.ss          argv process boundary and observed-byte wire projection
+  objects.ss       NixSource. and derivation-currentness guard
+  interface.ss     declarative Module publication of the admitted Nix scope
+  source-inputs.nix  native Nix check of serialized Core observations
+#+end_example
+
+Core owns selection, source observations, input materialization and currentness.
+Nix owns its Source, expression/arguments, dependency evaluation, derivation
+identity and realization. OpenTofu owns final Provider demand and generated
+Contract publication. No Nix code lives in the general Graph algorithm.
+The Nix interface is not imported by the ordinary OpenTofu runtime interface.
+It is a real declarative =identity: nix / core / features= publication, admitted
+through the existing directory/source system. Build-tool consumers import its
+precise native owners; they do not treat the declaration file as a runtime
+facade. The Nix Source result owns realization guards and generated guard forms;
+OpenTofu refines that result with its domain scope/configuration/admission.
+Core uses the candidate-only native =.prepare= phase internally; standalone
+=.build= retains an eager checked publication boundary.
+
+* Ordinary user configuration
+
+=modules/app/infrastructure/config.ss= contains native data:
+
+#+begin_src scheme
+(def Config
+  (.o provider: (.o aws: (list (.o region: "us-east-1" profile: "team")))
+      resource:
+      (.o aws_security_group:
+          (.o web: (.o name: "web")))))
+#+end_src
+
+The selected consumer Module's maintainer declares its external input once:
+
+#+begin_src scheme
+;; Inside its existing core.projections list; not another user config language.
+(yuanxu-opentofu-package-contribution catalog-path)
+#+end_src
+
+The default source/binding are =config.ss= and =Config=. Advanced source binding
+is explicit. The constructor returns a native contribution with a =.prepare=
+method; there is no package scheduler, new macro or replacement Module Loader.
+
+The following is the internal Core build/qualification handoff, not an ordinary
+user build.ss interface. See chapter 55's user-entrypoint boundary and remaining
+generic-driver gap:
+
+#+begin_src scheme
+(def view (yuanxu-load-modules init-path))
+(def built (yuanxu-write-build-entry view generation-output-directory))
+(def result (.get built packages opentofu admission))
+#+end_src
+
+It prepares observed configuration bindings, projects demand, writes immutable
+request/compiler inputs, realizes selected packages, and emits the guarded native
+=defbuild-script= entry. It returns package scopes and lazy final admission from
+the SAME prepared configuration. Callers no longer manually serialize a demand,
+invoke Nix, inject a path and reconstruct a scope between these steps. std/make
+still owns compilation; Nix owns external package scheduling/reuse. Writing an
+entry with external packages is an effectful build-tool operation. Pure Graph
+construction does not realize them or link Module runtime scopes.
+
+* Configuration evaluation and source closure
+
+=module-system/building/configuration-source.ss= reuses
+=yuanxu-prepare-module-build-source= and the existing source reader's private
+native-wrapper boundary. It does not import a previously cached config module by
+its old identity. Each evaluation has a fresh private wrapper identity; native
+POO and Gerbil own expansion/evaluation. Related admitted role files are wrapped
+in the same generation and imports are redirected to them. Non-admitted local
+source imports reject. Prebuilt library imports remain native.
+
+The resulting value, source observations and currentness closure travel together.
+Both positive source bytes and negative package observations are retained.
+The selected Graph deduplicates these using its existing snapshot mechanism.
+The demand JSON records the source path, SHA-256, binding and serialized observed
+inputs in addition to the automatically projected Provider names. Ordinary users
+never construct that metadata.
+
+The trust premise remains explicit: configuration and macros are trusted build
+code. This is not a sandbox or proof of purity. Dynamic reads, mutable globals,
+untracked include/macro IO and arbitrary prebuilt-library source changes are not
+claimed to be completely captured. Govern those through source/phase admission;
+do not call byte snapshots a whole-program dependency proof.
+
+* Native Nix Source and two guards
+
+The OpenTofu adapter constructs an ordinary native Source:
+
+#+begin_src scheme
+(.cc NixSource.
+  'expression builder-path
+  'arguments
+  (object<-alist
+    (list (cons 'catalog catalog-path)
+          (cons 'selection selection-file)
+          (cons 'collector collector-path))))
+#+end_src
+
+Argument names/types are admitted by =NixSourceContract=. Commands receive argv
+values; no shell interpolation or Provider-family switch is used. The internal
+=.prepare= method returns a native phase object with lazy =derivation= and
+=artifact= slots. Preparing the object does not start a process. Generating the
+build guard demands the derivation once; after Core writes its entry, the final
+publication check forces realization once and re-instantiates the derivation.
+Standalone =.build= prepares and immediately checks the same phase. The phase's
+raw =artifact= is a candidate, not admission; ordinary consumers receive only the
+Core result after its publication check.
+Transitive imports are evaluated by Nix itself, not a second Scheme Nix parser.
+An indirect edit that leaves the selected derivation unchanged can reuse the
+same package; this is semantic derivation currentness, not byte observation of
+every file in the global Nix catalog.
+
+The Nix expression also invokes =modules/nix/source-inputs.nix= BEFORE collecting
+Provider dependencies. It checks every serialized source observation against its
+actual bytes/absence. Thus replaying the old Nix Source directly after changing
+config.ss rejects too, rather than relying only on a caller's preflight. The
+source-checker file itself is part of the observed inputs.
+
+Generated build scripts carry:
+
+1. The existing =yuanxu-admit-build-inputs= check over selected sources,
+   native compiler files and exact demand-file bytes.
+2. =yuanxu-nix-admit-generation= over the Nix expression, argv bindings and
+   expected derivation. This catches transitive catalog changes even when the
+   directly observed catalog entry file has not changed.
+
+A changed configuration value can keep the same Provider collection derivation.
+That is intended package reuse, not reuse of old configuration admission. A new
+configuration generation still receives fresh final admission. Adding Null
+changes package demand; awscc remains excluded. Schema version/source/digests and
+original field paths continue to come from the immutable Provider artifacts.
+
+* Publication, failure and replay boundary
+
+Inputs are checked before execution, after realization and before returning the
+artifact. Source mutation during a Nix build rejects publication; it cannot undo
+store work already performed. Partial input files may remain after failure and
+must not be treated as a successful artifact. Use a fresh generation output
+rather than overwriting or repairing a foreign/incomplete directory silently.
+
+The generated script checks currentness when used, including for =spec=. That
+can invoke Nix evaluation, but not a package rebuild. Compiler scheduling remains
+native std/make. Cached scope values are immutable generation values; consumers
+must use the artifact's =admit-current= before publication/reuse. Returning a POO
+scope does not make direct unchecked slot access a live filesystem monitor.
+
+No new production Nixpkgs lock is established here. Local qualification uses the
+existing real locked AWS/awscc/Null fixture packages and local Nixpkgs. Package
+manager GC roots, remote source transport and cross-host source relocation remain
+package-tool concerns, not properties proven by this local test.
+
+* Executable evidence
+
+=t/opentofu-selected-graph-test.ss= builds a normal directory/init/role graph
+through the default publication reader. Runtime scope exports throw if linked;
+a disabled module contains invalid source. Neither is touched by building.
+The test:
+
+- Builds AWS-only from config.ss, then caches its native Contract/admission.
+- Changes final config to add Null, rejects the old Graph/artifact/generated
+  script and direct old Nix Source, then builds a fresh generation automatically.
+- Admits AWS and Null, excludes awscc and preserves the old scope's Contract
+  identity and AWS-only namespace.
+- Changes an indirectly imported Nix catalog file and rejects both the returned
+  artifact and generated script by derivation mismatch.
+- Alters selection.json and rejects exact-byte mismatch without overwriting it.
+
+Core Module/Feature selection, native build-entry and publication regression
+controls remain separate from the real Nix integration control. They run serially
+through heap-fenced Justfile entrypoints. Structured results are kept in
+=t/fixtures/opentofu/selected-graph-control.json=; raw logs stay outside Git.
+
+This closes the local selected-Graph/external-package handoff gap in chapter 52.
+It does not connect the product Loader, run Provider RPC/plan/apply, prove all
+configuration dependencies, or claim thousand-Provider performance.
+
+* Additional native source/publication controls
+
+=core/t/module-configuration-source-test.ss= checks a Config importing an
+admitted object role: after the role changes, the old observation rejects, a
+fresh private context reads the new value, and the old object cache remains
+isolated. A local source outside the admitted role set rejects. This is not
+a claim of arbitrary include/macro IO capture.
+
+=core/t/module-nix-publication-test.ss= selects the actual Nix directory and
+validates its native Source publication without instantiating a derivation.
+The ordinary Module interface is a declaration and the generated source
+wrapper remains authoritative; no duplicate global facade is maintained.
+
+* Build qualification boundary during the shared Core migration
+
+The legacy full =core/build.ss= still attempts to compile the concurrently
+migrated declarative JsonSchema interface as an ordinary library, producing
+=.def= unbound. This task preserves that migration. Current touched owners are
+compiled with the default Gerbil native std/make API, including the changed
+source preparation/reader closure; focused native gates are distinct from a
+full Core build. No compatibility runtime or facade is inserted to hide the
+interface migration.
+
+* Final local receipt
+
+Seven serial native gates pass on the recorded shared working tree:
+selected Graph integration (27 explicit assertions), Module publication,
+Module build Graph, Module/Feature selected Graph, configuration-source binding,
+actual Nix Module publication, and the real Provider upgrade/rollback control
+(84 explicit assertions). Every gate has MODULE-OK, HARNESS-OK and final OK,
+without harness errors, overflow markers or undefined-variable warnings.
+The 15 recorded source hashes remained unchanged throughout the final gates.
+
+A concurrent Core ABI transition first produced an undefined old generated
+procedure entry and a publication-test segmentation fault. That failed run is
+retained locally. Rebuilding the native owner/dependency closure, including the
+SDK-only bootstrap, removed the stale ABI; the final publication gate passes.
+A single excess closing parenthesis in the concurrent reader change was also
+repaired without reverting its shared-kernel logic. These repairs and focused
+passes do not turn the legacy full-build failure into a full Core pass.
+
+* Bounded phase reuse and performance control (2026-10-17)
+
+The optimization uses native POO receiver-local lazy slots, not a global
+currentness cache, a clock-based TTL or a second scheduler. A fresh Nix phase
+owns one initial derivation and one realization. Core's final check runs AFTER
+writing its generated build entry and AFTER realization. The OpenTofu adapter
+keeps its scope lazy, so deriving the result cannot prematurely force an extra
+realization/check before Core's final boundary. This removes the former eager
+=.build= check followed by the same Core publication check.
+
+Independent =admit-current= calls always re-read Core inputs and re-instantiate
+Nix. First lazy configuration admission also performs a fresh check, even if the
+build has already returned. Repeated reads of an already-cached admission are
+reads of an immutable result, not claims that the filesystem is still current.
+Call =admit-current= at a later publication/reuse boundary. Neither a cached
+artifact nor a cached Contract is a live filesystem monitor.
+
+Configuration role currentness also uses a bounded POO projection:
+
+#+begin_src scheme
+(def phase (make-parameter #f))
+(def (context!)
+  (if (phase) (.get (phase) checked) (context-current!)))
+;; Each prepared role receives context!, preserving its own byte, package and
+;; compiler-identity checks. Each independent current! allocates a NEW receiver.
+(def (current!)
+  (parameterize ((phase (.o checked: (context-current!))))
+    ((.get prepared admit-current))
+    (for-each (lambda (input) ((.get input admit-current))) related)))
+#+end_src
+
+This shares only the identical selected-context validator during a synchronous
+read-only validation of those admitted roles. It does not cache role bytes,
+package identity or failures across calls. It does not span configuration
+execution, a file write or an external realization. Context validators are
+trusted read-only guards; arbitrary effectful user callbacks are outside this
+reuse premise. The adapter no longer separately calls the same context validator
+before invoking the configuration closure, which already owns it.
+
+The native control requires exactly one context invocation per independent
+configuration-currentness check, and a second invocation on the next check.
+It still rejects a modified admitted object role and an unobserved local import.
+The phase control checks that merely preparing a Source starts no process,
+repeated derivation/artifact demands reuse the same receiver cache, a prepared
+candidate refuses realization after source invalidation, and mutation during
+standalone realization rejects publication.
+
+The real AWS-only -> AWS+Null integration control records actual process starts
+at the Nix argv boundary, type-input reads at the indexed artifact, and successful
+Contract compilation counts from the Provider's existing memo table. It enforces
+process-count budgets, rather than a noisy elapsed-time threshold. The tested
+configuration selects resource blocks; it does not explicitly configure Provider
+blocks, so those Provider configuration Contracts are not compiled.
+
+"Cold" means a fresh Scheme scope/Contract cache with already-available real
+Nix store artifacts. It is NOT a clean store, first Provider download or a
+remote cold-cache benchmark. "Hot" is five repeated slot/admission reads of that
+same receiver. An explicit currentness recheck remains a separate measured phase.
+A new Null generation must compile its own selected Contracts; the old AWS
+receiver and Contract identity remain unchanged.
+
+Historical single-run observations (incomplete scope boundary; superseded by
+chapter 54) are:
+
+| Phase | Before instantiate/realize | After instantiate/realize | Before seconds | After seconds |
+|-------+----------------------------+---------------------------+----------------+---------------|
+| Fresh AWS-only build | 3 / 1 | 2 / 1 | 4.943 | 2.099 |
+| Fresh AWS+Null build | 3 / 1 | 2 / 1 | 2.748 | 1.739 |
+| First AWS admission | 1 / 0 | 1 / 0 | 0.872 | 0.788 |
+| Independent AWS currentness | 1 / 0 | 1 / 0 | 0.804 | 0.819 |
+| Five hot slot reads, either scope | 0 / 0 | 0 / 0 | below timer precision | below timer precision |
+
+The hot timings are a few microseconds on this host and are too short for a
+meaningful standalone latency claim. Each cold admission reads/compiles exactly
+one selected resource type per Provider: AWS-only =1/1=, AWS+Null =2/2= total.
+Five hot accesses add =0/0=. Before first admission both scopes have zero compiled
+Contracts. Counts describe direct owned CLI starts, not every descendant process
+inside Nix. All five focused native gates pass; the integration gate contains 43
+explicit assertions. The general Core build is not requalified by these gates.
+
+The structured before/after observations and qualification source hashes are in
+=t/fixtures/opentofu/nix-phase-control.json=. Timings are observations from a
+single local A/B, not a statistically established speedup or thousand-Provider
+capacity claim. Unselected awscc remains excluded; an unselected AWS resource
+remains uncompiled. A selected Provider still exports/splits its full own Schema
+at package build time. Cross-generation Contract deduplication and per-resource
+Provider package splitting are not implemented by this change.
+
+The default heap-fenced controls retain stale source, late first-admission,
+transitive Nix dependency, generated entry and tampered-demand rejection. The
+Core publication guard rechecks input and entry bytes after all deferred external
+effects; an observer that corrupts the entry during realization must reject. No
+product Loader integration or new package scheduler is introduced.
+
+* Measurement scope correction and multi-round successor
+
+[[file:11.55-repeatable-nix-phases-and-flakes.org][Chapter 54]] expands the counter through published scope resolution. The earlier
+single-run boundary omitted an extra base-publication receiver's work outside
+its timer. Its historical receipt is retained with that limitation. The current
+adapter uses native inherited lexical =artifact / admit-current= bindings on the
+final receiver; the new multi-round budget includes scope resolution and type
+observations. Do not compare the old single-run wall times as a fully matched
+end-to-end baseline. Chapter 54 also documents the native FlakeSource and the
+separate expression/flake qualification boundaries.

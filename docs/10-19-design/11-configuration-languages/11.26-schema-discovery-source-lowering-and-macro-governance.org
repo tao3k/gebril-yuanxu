@@ -1,0 +1,388 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 11.26 Config Languages 25: Schema Discovery, Source-Preserving Lowering and Macro Governance
+#+property: DOCUMENT_ID 11.26
+#+date: [2026-10-16]
+#+filetags: :config-language:guestbook:macro:contracts:ux:design:
+#+property: STATUS proposed-design-not-executed-no-loader
+
+* One authority for fields; a governed macro for authoring
+
+Continue [[file:11.25-guestbook-field-discovery-and-diagnostics.org][the matched Guestbook user task]]. A short ordinary configuration is a
+first-class goal. Governed macros may hide structural nesting and preserve source
+syntax; users changing a port/label should not have to learn the generated native
+refinements. Checking macro/native correspondence is an internal acceptance gate,
+not an ordinary user's workflow or the principal UX metric.
+
+Reuse the existing [[file:../../../module-system/design/45-40-10-poo-constrained-gerbil-macro-governance.org][POO-constrained macro governance owner]] and
+[[file:../../../module-system/design/44-current-project-programming-style/05-macro-phase-and-lowering.org][current macro phase style]]. This chapter supplies a concrete application, not a
+second macro evaluator, duplicate macro registry or another field schema.
+
+The source audit uses actual files and existing names. All proposed Scheme code
+below uses target yuanxu- names, as established in module 22; those renamed
+exports are not yet available. Internal normalized IR records are reused as data;
+public discovery and diagnostic projections remain native POO objects.
+
+* End-to-end Guestbook walkthrough: one edit and one artifact revision
+
+The user's complete edit remains the same two changes from module 24:
+
+#+begin_src scheme
+(.def (Development @ GuestbookDefaults)
+  frontend.labels.env: "dev"
+  frontend.services:
+  (list (.o ports:
+         (list (.o port: 8080 targetPort: 80 protocol: "TCP")))))
+#+end_src
+
+The intended native value expansion has one frontend refinement and one occurrence
+of the Service-list initializer; source-map construction never evaluates it:
+
+#+begin_src scheme
+(def Development
+  (native-.o (:: @ GuestbookDefaults)
+    frontend: =>.+
+    (native-.o labels: =>.+ (native-.o env: "dev")
+               services:
+               (list (native-.o ports:
+                      (list (native-.o port: 8080 targetPort: 80 protocol: "TCP")))))))
+#+end_src
+
+The private origin row for frontend.labels.env uses that original slot/expression
+syntax. The row for frontend.services uses the original list expression, not the
+synthetic frontend refinement. The origin-form helper below specifies that capture.
+No duplicate public .def, manual origin declaration or user-maintained field table
+is required. Generated identifiers are fresh; printed names are explanatory only.
+
+The [[file:11.29-imported-schema-contracts-and-observed-expansion-origins.org][source-corrected design]] replaces the earlier synthetic SchemaV1/SchemaV2
+walkthrough as the primary route: import pinned original JSON, generate the native
+Contract and derive supported discovery from that same artifact. Native Guestbook
+input/relationship Contracts are distinct from standard resource output Contracts.
+Synthetic bound changes may test the bridge in isolation; users do not maintain
+those Schemas or repeat imported field definitions. A real upstream source update
+must replace Contract/help views together, with supported dialect/keyword coverage
+qualified rather than assumed.
+
+Use KCL's actual inspected Server/podMetadata/services fields for the matched
+experiment (module 24); its upstream dev file itself changes only image. The
+Scheme expansion/native checks are maintainer controls. Evaluate user experience
+by whether the short edit, discovery and correction work without understanding
+any of the generated nesting, source rows or cache internals.
+
+* Existing footholds and their precise limits
+
+| Existing owner | Available fact | Remaining work |
+|----------------+----------------+----------------|
+| [[file:../../../modules/json-schema/json-schema-receipt.ss][Schema artifact]] | normalization, object-contract, source-ref, diagnostics | Selected scope publication and discovery adapter |
+| [[file:../../../modules/json-schema/json-schema-ir.ss][Normalized IR]] | node kind/value/metadata; property name/schema/required?/doc; object properties/additional-properties | Bounded native field views; do not duplicate the IR |
+| [[file:../../../modules/json-schema/json-schema-validate.ss][Full-root validation]] | Structured metadata path and reason, including additional-property diagnostics | Prefix final Profile path, attach retained sources, render useful messages |
+| [[file:../../../object-syntax/path-slots.ss][Path-slot lowering]] | Syntax-aware splitting, shared-prefix trie, stx-source on reconstructed identifiers, duplicate/overlap errors | Direct assignment and retained publication-side write/source metadata |
+| Gerbil expander | stx-source, syntax objects, datum->syntax, binding-aware comparison | Preserve both original and generated spans in the bounded lowering |
+
+The artifact schema accessor is a receipt-format identifier, not the raw Schema
+AST. Use artifact-normalization followed by normalization-schema to reach its
+normalized node. Re-parsing a handwritten JSON field list would create a second
+authority. The full-root validator remains the decision owner; discovery does not
+implement another validator.
+
+* Concrete bounded discovery over the existing normalized node
+
+This internal adapter covers the object properties and homogeneous arrays used by
+Guestbook. Additional-property node handling covers its open string-valued labels.
+Unsupported unions, patterns and tuple combinations require an explicit additional
+view adapter, not an inferred flattening that changes validation semantics.
+
+#+begin_src scheme
+(def (schema-root artifact)
+  (yuanxu-json-schema-normalization-schema
+   (yuanxu-json-schema-contract-artifact-normalization artifact)))
+
+(def (schema-child node segment)
+  (let ((kind (yuanxu-json-schema-node-kind node))
+        (value (yuanxu-json-schema-node-value node)))
+    (cond
+     ((and (eq? kind 'object) (symbol? segment))
+      (let ((property
+             (find (lambda (property)
+                     (eq? segment (yuanxu-json-schema-property-name property)))
+                   (yuanxu-json-schema-object-properties value))))
+        (if property
+          (yuanxu-json-schema-property-schema property)
+          (let (additional (yuanxu-json-schema-object-additional-properties value))
+            (and (yuanxu-json-schema-node? additional) additional)))))
+     ((and (eq? kind 'array) (exact-integer? segment) (>= segment 0)
+           (yuanxu-json-schema-node? value))
+      value)
+     (else #f))))
+
+(def (schema-node-at node path)
+  (if (null? path) node
+    (let (child (schema-child node (car path)))
+      (and child (schema-node-at child (cdr path))))))
+
+(def (schema-fields artifact object-path)
+  (let (node (schema-node-at (schema-root artifact) object-path))
+    (unless (and node (eq? (yuanxu-json-schema-node-kind node) 'object))
+      (error "unsupported or unknown discovery object path" object-path))
+    (let* ((object (yuanxu-json-schema-node-value node))
+           (additional
+            (yuanxu-json-schema-object-additional-properties object)))
+      (.o path: object-path
+          schema-source: (yuanxu-json-schema-contract-artifact-source-ref artifact)
+          schema-metadata: (yuanxu-json-schema-node-metadata node)
+          additional-properties: additional
+          fields:
+          (map (lambda (property)
+                 (let ((name (yuanxu-json-schema-property-name property))
+                       (child (yuanxu-json-schema-property-schema property)))
+                   (.o path: (append object-path (list name))
+                       kind: (yuanxu-json-schema-node-kind child)
+                       required?: (yuanxu-json-schema-property-required? property)
+                       documentation: (yuanxu-json-schema-property-doc property)
+                       constraints: (yuanxu-json-schema-node-metadata child))))
+               (yuanxu-json-schema-object-properties object))))))
+#+end_src
+
+For the selected published artifact (no second field inventory):
+
+#+begin_src scheme
+(schema-fields (.get gb contracts artifact) '())
+(schema-fields (.get gb contracts artifact) '(services 0 ports 0))
+(schema-fields (.get gb contracts artifact) '(labels))
+#+end_src
+
+The first view includes labels, so lables can be compared with actual known field
+names. The last view carries the additional-properties string node: envr is an
+allowed custom label, not an unknown Schema field. Numeric indices identify item
+schemas; this traversal does not establish that a runtime index is present. Array
+cardinality and actual value validation remain the existing validator's job.
+Unconstrained additionalProperties=true must be presented as open/unspecified;
+schema-child deliberately cannot invent a typed child node for it.
+
+Effective values come from the requested final Profile, separately from Schema
+constraints/default annotations. Scenario relation help such as targetPort matching
+a listener belongs beside guestbook-links, not in a copied field table. Its named
+obligation remains executable authority; maintained explanation is documentation,
+not an alternate rules engine. Resolve only the selected Schema/path and relevant
+value dependencies; discovery must not render plans or realize sibling modules.
+
+* Preserve source syntax before prefix merging
+
+The bounded parser retains an original slot syntax object, original expression
+syntax, full relative path and declaration identity before inserting a trie leaf.
+Do not derive those from the generated nested forms or from a printed identifier.
+A proposed syntax-time helper constructs the private native origin row:
+
+#+begin_src scheme
+;; Internal syntax owner; native-.o is imported hygienically at this phase.
+;; declaration-id is data from admitted source preparation, not inferred authority.
+(begin-syntax
+  (def (origin-form declaration-id path slot-stx value-stx)
+    (with-syntax ((id-data (datum->syntax slot-stx declaration-id))
+                  (path-data (datum->syntax slot-stx path))
+                  (slot-location (datum->syntax slot-stx (stx-source slot-stx)))
+                  (value-location (datum->syntax value-stx (stx-source value-stx))))
+      #'(native-.o declaration: 'id-data
+                  path: 'path-data
+                  slot-location: 'slot-location
+                  expression-location: 'value-location))))
+#+end_src
+
+The generated row evaluates no user expression. Its path and locations are quoted
+metadata; syntax identifiers used for the configuration expansion remain original
+syntax objects. The lowerer emits one native object and a fresh private metadata
+binding in the compilation artifact. For example the target transformation is:
+
+#+begin_src scheme
+;; User writes:
+(.def (Development @ GuestbookDefaults)
+  frontend.labels.env: "dev")
+
+;; Generated configuration value, not another public config protocol:
+(def Development
+  (native-.o (:: @ GuestbookDefaults)
+    frontend: =>.+ (native-.o labels: =>.+ (native-.o env: "dev"))))
+#+end_src
+
+The companion write rows retain path=(frontend labels env) and the user's original
+span; no source/debug slots are added to Development, where they could violate
+additionalProperties=false or leak into Kubernetes JSON. Source publication keeps
+the native value and metadata associated using hygienic binding/source-generation
+identity, not a global symbol registry. This association is pending; stx-source on
+a generated identifier alone does not implement persistent runtime provenance.
+
+Same-prefix merging combines syntax without erasing the separate original rows.
+Record an ancestor replacement at its actual ancestor path; do not claim it is a
+leaf refinement. For services assigned a list, a diagnostic may have a precise
+runtime path down to targetPort but only a source span for the services expression.
+Report that enclosing expression honestly. Exact literal subexpression mapping may
+be added only for binding-recognized native .o/list constructors, without evaluating
+or expanding arbitrary user functions. For function-produced lists, retain the
+call-site and mark element-level origin unavailable. Each initializer occurs once in the native expansion; metadata construction must
+not evaluate it again. Native lazy demand and receiver-local memoization govern
+execution: a different derived receiver can legitimately evaluate its own slot.
+Do not promise one execution globally across all descendants or processes.
+
+* Join diagnostic paths with the effective source projection
+
+The retained source owner must first select writes associated with the effective
+native declaration/prototype path. These inputs are not every write ever seen in
+the file: native resolution, ancestor replacement and declared precedence matter.
+A full source-to-MOP association adapter remains pending. Do not implement a
+second inheritance algorithm by sorting source timestamps or searching names.
+
+The following bounded lookup operates on those already qualified effective rows.
+It returns ambiguity explicitly rather than selecting an arbitrary same-path row.
+
+#+begin_src scheme
+(def (path-prefix? prefix path)
+  (or (null? prefix)
+      (and (pair? path) (equal? (car prefix) (car path))
+           (path-prefix? (cdr prefix) (cdr path)))))
+
+(def (diagnostic-origin path effective-writes)
+  (let* ((matches (filter (lambda (row) (path-prefix? (.get row path) path))
+                          effective-writes))
+         (depth (foldl (lambda (row best) (max best (length (.get row path))))
+                       -1 matches))
+         (nearest (filter (lambda (row) (= (length (.get row path)) depth)) matches)))
+    (cond
+     ((null? nearest) (.o status: 'unavailable))
+     ((pair? (cdr nearest)) (.o status: 'ambiguous candidates: nearest))
+     (else (.o status: 'located
+               exact-path?: (equal? path (.get (car nearest) path))
+               declaration-origin: (car nearest))))))
+
+(def (schema-diagnostic-view artifact diagnostic role-path effective-writes)
+  (let* ((metadata
+          (yuanxu-json-schema-validation-diagnostic-metadata diagnostic))
+         (entry (assq 'path metadata)))
+    (if (not entry)
+      (.o reason: (yuanxu-json-schema-validation-diagnostic-reason diagnostic)
+          source-status: 'path-unavailable)
+      (let (path (append role-path (cdr entry)))
+        (.o path
+            reason: (yuanxu-json-schema-validation-diagnostic-reason diagnostic)
+            actual: (yuanxu-json-schema-validation-diagnostic-value diagnostic)
+            schema-source: (yuanxu-json-schema-contract-artifact-source-ref artifact)
+            origin: (diagnostic-origin path effective-writes))))))
+#+end_src
+
+The existing validator already produces metadata.path; reuse it rather than parse
+a slash-formatted slot string. role-path=(frontend) prefixes its Server-local path.
+Diagnostics without a retained path remain explicitly unlocated; do not fabricate
+one. Suggested field names come from schema-fields at the relevant object node,
+not a handwritten typo dictionary. A spelling-suggestion function may rank those
+candidates, but cannot change configuration or reject valid open label keys.
+
+Domain relationship diagnostics use the same native shape. In the mismatch branch
+of guestbook-endpoint-errors, the design becomes:
+
+#+begin_src scheme
+(.o kind: 'guestbook-endpoint-mismatch
+    path: (list role 'services 0 'ports 0 'targetPort)
+    actual: target
+    expected: listener
+    related-path: (list role 'mainContainer 'ports 0 'containerPort)
+    origin-path:
+    (if (.slot? exposed 'targetPort)
+      (list role 'services 0 'ports 0 'targetPort)
+      (list role 'services 0 'ports 0 'port))
+    fallback: (if (.slot? exposed 'targetPort) #f 'targetPort-defaults-to-port))
+#+end_src
+
+This row applies specifically to target != listener. Name mismatch, a forbidden
+Redis external port and reserved-label conflicts need their own paths, expected/
+actual values and diagnostic kind; do not reuse this target-specific row for the
+entire old combined predicate. This is a proposed refinement of module 23's coarse
+codes, not a claim that existing errors already contain these facts. The diagnostic
+renderer calls diagnostic-origin on origin-path and related-path separately. An
+ancestor services replacement can be located at its expression span even when the
+exact record field span is unavailable. A missing targetPort points to the actual
+port write and explains the fallback.
+
+User-facing expectations, not executed results:
+
+#+begin_example
+frontend.lables: unknown field; did you mean frontend.labels?
+  source: original local slot span; Schema: properties.labels
+frontend.labels.envr: allowed custom string key; no automatic typo rejection
+frontend.services[0].ports[0].targetPort: 8080 does not match listener 80
+  local source: services expression (exact element span unavailable)
+  related source: inherited FrontendProfile container-port declaration
+  keep Service port=8080 and set targetPort=80
+#+end_example
+
+* Govern macros as an owned, reviewable surface
+
+A small native macro surface may remove user boilerplate. It must still have an
+owner, a justified syntax/phase need, a normal-form expansion and diagnostic/budget
+controls. Do not equate macro quantity with expressiveness or quality. Strengthen
+the existing governance module before widening direct assignment or source wrappers.
+
+| Concern | Required rule for this path/source macro |
+|---------+------------------------------------------|
+| Admission | Bounded syntax/hygiene/source capture need; no new config evaluator |
+| Semantic authority | Assignment replaces the leaf; generated ancestors use native =>.+; POO owns precedence, receiver and lazy cache |
+| Phase | No filesystem scan, Module loading, Schema compilation or runtime registry mutation in expansion |
+| Hygiene | Preserve syntax identities and source spans; fresh private metadata bindings; no textual name substitution |
+| Demand | Initializer evaluated once; source metadata never forces original or sibling values |
+| Structure | Parse once; merge same-prefix syntax; detect duplicates/overlaps before source detail is lost |
+| Budget | Bound input depth/generated forms/metadata; traversal work proportional to total path segments and supported constructor syntax |
+| Publication | Private source association is not a public value slot or user-maintained field table |
+| Failure | Typed source-aware expansion errors; unsupported forms retained as opaque expressions or explicitly refused |
+| Review gate | Expansion/native controls plus user-task/diagnostic evaluation; no macro-generated public macro tower |
+
+No new runtime governance module is implemented here. The native governance and
+source-association APIs themselves require ownership, tests and admission before
+implementation. Macro support is not permission to run arbitrary compile-time
+code on behalf of an untrusted contribution.
+
+* Doom comparison: a specific lesson, not an unsupported blanket verdict
+
+Inspected local Doom checkout 8e4fbbae048a9abe897bf1878cbd32732a6d41d7:
+[[file:../../../../.data/doomemacs-core/lisp/doom-packages.el][package!]], [[file:../../../../.data/doomemacs-core/lisp/doom-modules.el][doom! / modulep!]] and
+[[file:../../../../.data/doomemacs-core/lisp/doom-lib.el][after!]]. package! explicitly documents that declaration does not load/install
+packages. doom! expands a noninteractive conditional module initialization route;
+after! expansion inspects disabled-package and compilation context. Those are
+specific phase/context coupling examples, not proof that every Doom macro is bad.
+
+Borrow concise task declarations and explicit enable/disable intent. Avoid hiding
+phase-dependent policy or global-context decisions in our macro expander: lower
+intent to native values and let the admitted selection/provider owner interpret it.
+No Doom startup, performance or safety result was measured in this comparison.
+
+* Reflection, questions and the next design gate
+
+A short user edit is a legitimate UX requirement; testing inheritance laws belongs
+behind the authoring surface. Macro-generated syntax may meet that requirement,
+but the matched KCL experiment must show whether users actually do less work.
+KCL already has published field models and a renderer. Our proposed additional
+value is coherent field/value/origin discovery across native extensions, not a
+claim that KCL lacks diagnostics or metaprogramming.
+
+| Question | Design answer | Required validation |
+|----------+---------------+---------------------|
+| Can short syntax and strong native semantics coexist? | Yes as a target: bounded lowering into native leaf assignment and ancestor refinement. | Same-prefix writes, upstream changes, one evaluation and literal dotted-slot escape cases |
+| Does discovery need another field registry? | No: normalized Schema plus final value and obligation-owned explanations. | Change Schema once; verify validation/help/suggestions all change together |
+| Can every exact field location be recovered? | No: arbitrary function results may have only a call site. | Literal versus computed Service list; no invented spans or wrong inherited origin |
+| What improves on the current UX? | Specific paths, local and related origins, fallback explanation; no provider bookkeeping. | Wrong targetPort, omitted targetPort, lables and valid envr, macro-expanded and inherited sources |
+| Is this better than KCL in practice? | Unproved; source inspections establish API differences, not task superiority. | Execute matched port/Pod-label configurations and retain actual diagnostics/output; compare successful edits and repair effort |
+| What must be ready before macro expansion widens? | Existing governance owner with bounded source/phase/normal-form gates. | Source association, hygiene, depth/form budgets and no discovery/loading during expansion |
+
+First qualify discovery from the real artifact and structured validator paths.
+Then add source-preserving direct assignment lowering and private publication
+association under the existing macro governance. Finally connect the diagnostic
+view and user preview to those native facts. Keep Loader and persistent-cache
+integration out of this phase. No implementation or Scheme execution occurred;
+source inspection, document checks and prior native controls remain distinct.
+
+The [[file:11.27-guestbook-macro-admission-and-minimal-controls.org][admission and minimal qualification plan]] now specifies the four control groups,
+manual native comparator, test-only demand counter and paired Schema revisions.
+These are proposed controls; no fixture or runtime gate was implemented here.
+
+The [[file:11.28-guestbook-concrete-qualification-fixtures.org][concrete fixture definitions]] now provide SchemaV1/V2, the native baseline,
+RangeProbe/failure variants and original-syntax origin-row construction. The source
+row is expected fixture data; observing actual macro-emitted source associations
+remains a separate pending gate, not a self-comparison accepted as evidence.

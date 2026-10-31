@@ -1,0 +1,526 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 10.06.43.01 AI Agentic Context Lifecycle
+:PROPERTIES:
+:ID: agentic-ai-lab-agent-context-lifecycle
+:STATUS: consumer-evidence-admission-verified-storage-open
+:DATE: 2026-10-14
+:AUTHORITY_DESIGN: open-not-implemented
+:END:
+
+* Ownership and status
+
+[[file:43-three-source-competition.org][10.06.43.43]] makes the A -> B / A -> C competition executable with two
+independent captured tickets, both publication orders and actual Module consumer
+replay. Its D2 Scenarios, Quint, LeanPOO and Scheme correspondence is recorded
+with exact evidence in [[file:44-three-source-competition-verification.org][44]].
+
+[[file:41-controlled-session-source-change.org][10.06.43.41]] connects D2 architecture/lifecycle/interaction Layers and inherited
+source-cut Scenarios to Quint interleavings and LeanPOO
+preservation laws for governed provider replacement, retirement and rebind.
+Per-provider epochs/cursors differ from local registry revision; no old source,
+snapshot, review or permit revives by matching a name. [[file:42-session-source-change-verification.org][42 records executable evidence]].
+
+[[file:39-external-session-source-admission.org][10.06.43.39]] separates externally authenticated Session observations from
+governed synchronization permission, source generation and freshness lease.
+Expiry/retirement reopens consumption obligations without erasing Project Context.
+[[file:40-external-session-source-verification.org][10.06.43.40]] records the exact verification cut and open transport/durability boundaries.
+
+[[file:31-controlled-human-source-change.org][10.06.43.31]] defines preconfigured independent source replacement, binding
+generations and publication-time decision cuts, including retired-source rebinding.
+[[file:32-human-source-change-verification.org][10.06.43.32]] records its executable evidence and remaining boundaries.
+[[file:33-human-source-recovery-interleavings.org][10.06.43.33]] refines concurrent replacement/retirement versus recovery
+publication and coherent evaluation; [[file:34-source-recovery-interleaving-verification.org][10.06.43.34]] records its verification cut.
+[[file:35-recovered-controller-session-handoff.org][10.06.43.35]] connects recovered-controller activation to explicit Session
+collection handoff; [[file:36-controller-session-handoff-verification.org][10.06.43.36]] records its consumer validation cut.
+[[file:37-session-rebinding-concurrency.org][10.06.43.37]] refines competing bindings, revocation and Session retirement
+orders; [[file:38-session-rebinding-concurrency-verification.org][10.06.43.38]] records the concurrency validation cut.
+
+[[file:29-human-decision-source-and-admission.org][10.06.43.29]] requires authenticated Human decision sources, permanent
+withdrawal/expiry checks and atomic decision admission during recovery publication.
+[[file:30-human-decision-verification.org][10.06.43.30]] separates serialized Assurance integration from Module thread tests.
+
+[[file:27-controlled-root-reanchoring.org][10.06.43.27]] adds a preconfigured independent recovery authority, explicit
+Human decision and successor-installation lineage without reviving revoked roots.
+[[file:28-controlled-recovery-verification.org][10.06.43.28]] distinguishes focused evidence from complete stable-input validation.
+
+[[file:23-governed-source-bootstrap-and-rotation.org][10.06.43.23]] requires governed bootstrap/replacement before configuring
+source-consuming Profiles. Rotation invalidates old bindings and reopens
+consumer obligations. Its historical receipt assumes trusted installation;
+the installation protocol below now refines that boundary, with host-selected
+anchor trust still an explicit premise.
+[[file:24-source-bootstrap-verification.org][10.06.43.24]] binds the historical source-bootstrap joint verification.
+[[file:25-controller-installation-trust.org][10.06.43.25]] separates the installation trust anchor from source bootstrap,
+with one-shot controller activation and terminal root revocation.
+[[file:26-controller-installation-verification.org][10.06.43.26]] records its verification boundary.
+
+[[file:20-designated-session-source-admission.org][10.06.43.20]] adds mandatory designated-source/Governance binding at local
+Module admission and the optional Assurance review operation. Unbound or
+newly issued replacement sources cannot silently restore retired consumption.
+Its historical trusted-bootstrap premise is refined by 10.06.43.23/25;
+remote source authentication remains a separate obligation.
+[[file:21-source-binding-verification.org][10.06.43.21]] preserves the historical failed process completion gate.
+[[file:22-source-binding-natural-exit-receipt.org][10.06.43.22]] qualifies the subsequent source-stable joint pass and natural
+exit, separating observed dynamic-module cleanup from an unproven deadlock.
+
+[[file:18-concurrent-registry-session-retirement.org][10.06.43.18]] extends the local issuer with atomic generation commits and
+versioned Session retirement ingress. It separates observed source retirement
+from undelivered external events and rechecks currency after callbacks.
+[[file:19-concurrent-registry-verification.org][10.06.43.19]] binds the source-stable joint verification and its open boundaries.
+
+[[file:16-live-registry-generation.org][10.06.43.16]] adds Module-owned process-local registry/generation checks.
+Unbind/rebind invalidates old collection, selection and review subjects while
+independently accepted Project knowledge retains its own premises. Durable
+registry/multi-process ownership and unified Query/GQL result adaptation are open.
+[[file:17-registry-verification.org][10.06.43.17]] records the final source-stable joint verification.
+
+This chapter refines [[file:../43-session-memory-recovery-rfc.org][Session Memory Durable Policy]] with the shared AI Agentic
+Context lifecycle. Agentic AI Lab owns the generic composition and policy design;
+ORG Elements and Contract are its source/structure core, with temporal
+interpretation and domain admission above them. Applications supply domain
+interpretation. This is not Aitia's SDLC model or an ABI memory-layout contract.
+[[file:../../../../modules/memory-core/interface.ss][Memory-core]] needs redesign around this Context model, not continuation of its
+current store/job semantics as the lifecycle owner. [[file:../../../../modules/session/agent.ss][Session agent topology]] is
+a consumer seam, not evidence that Context management or orchestration runs.
+
+The directory's historical Session/Memory name is an address, not an ownership
+rule. Context is not keyed by, contained exclusively in, or retired with one
+Session. It connects to a Session collection / AI Agentic orchestrator through
+explicit consumer relations. An orchestrator composes Agent/Session topology,
+query demand and authorized handoff; it does not become an alternative ORG
+parser or the identity authority for the Context graph.
+
+Memory names Context management across formation, use, reassessment,
+consolidation, retrieval and revision. Persistence, indexes and recovery are
+execution mechanisms. Evidence reuse and obligation reopening are one possible
+assurance consumer, not the definition of the generic lifecycle.
+
+Public values remain POO objects and functional compositions. Scheme owns
+selection/interpretation/policy semantics and their explicit handoff; Rust,
+Python and other runtime providers execute the declared transport/storage
+operations and retain resource safety. No parallel user DSL or hidden global
+memory model is introduced. This ownership refinement does not change current
+source implementations or claim their conformance.
+
+[[file:../../../../packages/lambda-aitia/docs/rfcs/0015-memory-ownership-and-consumer-boundary.org][Aitia RFC 0015]] is an SDLC consumer Case. Its earlier reuse/reopening proofs
+remain that bounded application's evidence, not proofs of this lifecycle.
+The parent-owned [[file:../../../../packages/proofs/context-lifecycle/README.org][Context lifecycle proof Case]] is separate from those earlier
+application proofs. Its verification status is recorded below. Runtime
+correspondence and use-value measurements remain open; moving documentation
+or checking the proof projection cannot close those gates.
+
+* Context formation and situated use
+
+[[file:14-session-query-project-handoff.org][10.06.43.14]] connects many-to-many Session selection, source-bound Query
+and independent Project target acceptance. [[file:15-handoff-verification.org][10.06.43.15]] keeps model, real Module
+consumer and joint gate evidence separate; the live registry and target Host
+correspondence are not inferred from finite protocol success.
+
+[[file:12-git-project-context-model.org][10.06.43.12]] specializes a Git Project with separate source, Context
+composition and consumer graphs. Worktree Context is a scoped Project
+derivation, not a Session-owned memory store or security sandbox. Git merge,
+review and Project-level promotion remain distinct events.
+
+[[file:11-context-query-boundary.org][10.06.43.11]] defines Query as the unified POO interface and GQL as its
+current language. ORG Elements is Context Query's sole content window;
+C3/C4 handles composition, not retrieval. Current Orgize selectors remain
+internal source-selection mechanisms. Their integration with the unified
+Query/result receipt contract is a design gap, not an already delivered API.
+
+The research foundation is now LeanPOO C3/C4 composition together with ORG
+Elements/Contract, rather than lifecycle bookkeeping alone.
+[[file:09-graph-context-research.org][10.06.43.09 Graph Context research]] separates composition order, revision
+history and prompt order, records falsifiable hypotheses and maps upstream
+proof contracts to the proposed Context model. [[file:10-graph-context-model-receipt.org][10.06.43.10]] records the new
+executable C3/C4 consumer and finite graph evolution checks separately. The
+ORG-to-prototype correspondence and cache experiments remain open; previous
+receipts below do not qualify the new graph model.
+
+A Context is a bounded, versioned composition of the information and relations
+needed to understand a question or act within its constraints. It may contain
+observations, source facts, hypotheses, assumptions, goals, environment state,
+decisions, attempts, outcomes, unresolved questions and alternatives. These
+retain different epistemic and authority roles. Capturing them together does
+not make every item true, accepted or executable.
+
+Short-term Context forms around an actual question, Contribution, attempt or
+interaction. Its proposed binding includes the subject/scope, selected source
+cut, relevant environment and policy revisions, producer, observation time or
+logical position, supporting/challenging relations and unresolved coverage.
+Observation time and the event's asserted time remain distinguishable. Missing
+or uncertain bindings stay explicit; they cannot be replaced by a fluent
+Summary or a later filename timestamp.
+
+This is shared Human/AI engineering Context, not simply an LLM token window.
+An Agent prompt is a bounded projection of selected Context, not the semantic
+owner or the complete retained graph. Not every captured Context item must be
+forced into an assurance Claim or receive a verification obligation; the
+domain question determines which acceptance/use requires that evidence.
+
+Formation is demand-led. Query selects an initial slice; an Agent can propose
+new relations, hypotheses and counterexamples and expand it within the budget.
+There is no mandatory whole-repository ingestion or prescribed next action.
+ORG Elements address the source; Contract checks structure/applicability;
+domain admission and Governance remain separate from those operations.
+
+Use records what was actually attempted and observed, including failures,
+uncertainty and censored/budget-exhausted attempts. Retrieved, displayed,
+understood, applied and successful are different observations. Repeated
+retrieval alone cannot demonstrate usefulness or justify consolidation.
+
+* Time, environment and value reassessment
+
+Context value is relative to a question and environment, not intrinsic to its
+storage age. Keep at least these assessments separate:
+
+| Dimension | Question | Does not imply |
+|-----------+----------+----------------|
+| Relevance | Does this help the current question or attempt? | Truth or permission |
+| Credibility | What source, observations and challenges support it? | Current applicability |
+| Applicability | Do the present scope, environment and assumptions fit? | Applicability in another environment |
+| Retention value | Is history or future reuse worth preserving? | Inclusion in every Agent prompt |
+| Assessment uncertainty | Which premises, coverage or contradictions remain unresolved? | A single confidence score that closes obligations |
+| Authority | Is this principal/action permitted at this current cut? | A reusable preference or durable grant |
+
+Elapsed time can reduce the usefulness of a work-state observation without
+making its historical record false. A toolchain, target, requirement or support
+change can invalidate applicability immediately, even for recent Context.
+A stable safety constraint need not decay just because it is old. A historical
+failure can gain relevance when the same mechanism reappears. Hence neither a
+universal exponential decay curve nor a single TTL is specified here.
+
+"Time entropy" is a design question about increasing uncertainty or lost
+association as Context separates from its original time/environment. This RFC
+does not equate it with a measured Shannon/thermodynamic entropy, propose an
+implemented estimator or claim an established decay law. A future policy must
+define the observable inputs, interpretation, uncertainty and evaluation Cases
+before using such a quantity. It must not collapse the dimensions above into
+one score that deletes history or authorizes effects.
+
+Reassessment is triggered by relevant changes and any explicit review/expiry
+policy, not by arbitrary recency sorting. Expired delegation or withdrawn
+permission blocks an effect through Governance/Host rules; it is not a soft
+relevance penalty. Changes reopen only the affected assurance obligations;
+unresolved dependencies remain a frontier. Losing current relevance does not
+by itself require rerunning every verifier or declaring a historical result
+incorrect. A forgotten or omitted dependency cannot justify scoped reuse.
+
+* Consolidation into long-term Context
+
+Long-term Context is a retained, reusable interpretation: for example a
+mechanism, constraint, design decision, procedure or failure pattern. It is not
+short-term text kept for longer, a read-count threshold, an embedding match or
+an unqualified compressed Summary. Consolidation creates a versioned
+abstraction with links to its originating Contexts, actual uses/outcomes,
+counterexamples, assumptions and limits. Originals remain attributable.
+
+Proposed conditions for accepting that abstraction are:
+
+1. A named reusable question, subject or mechanism explains its intended value.
+   The abstraction distinguishes what can generalize from incidental local
+   state, without erasing distinctions that matter to the claim.
+2. Source and outcome bindings are retained or their availability gaps stated.
+   Successful and failed uses, challenges and alternative explanations remain
+   accessible. Evidence kind must fit the claim being made.
+3. Scope, environment, assumptions and defeat/review conditions are explicit.
+   Supported application in one configuration is not universal applicability.
+4. The domain policy's assessment/review obligations are met. Significant risk,
+   policy changes and contested assumptions use the appropriate Human decision
+   boundary; simple retention must not imply Human approval or authentication.
+5. The retained representation preserves enough rationale and provenance for
+   future reassessment. Compression fidelity, retrieval/use value and cost are
+   evaluation obligations, not presumed benefits of summarization.
+
+Repeated, independently supported uses can strengthen the case, but a fixed
+number of uses is not a universal admission rule. A single reviewed safety
+constraint or well-attributed counterexample may deserve immediate durable
+retention. Conversely, a frequently repeated but unsupported hypothesis stays
+a hypothesis. A grant, reservation, temporary exception or current execution
+state cannot become durable authority through consolidation.
+
+Long-term Context remains revisable. A new counterexample can restrict scope,
+withdraw an interpretation or create alternative hypotheses while retaining
+prior observations. Retrieval for a new question rechecks current relevance
+and applicability; long-term retention does not put everything into the active
+Context or automatically discharge a new obligation.
+
+* Lifecycle relationships and design Cases
+
+These are related activities, not one required Agent route or one enum mixing
+duration, credibility and permission. Working Context may be retained without
+consolidation; consolidated Context can seed a new working slice; either may
+be challenged or become historical-only. Retirement from current use differs
+from authorized deletion, which must respect retention/privacy policy and
+the dependencies of retained evidence. No deletion is implemented or authorized
+by this review.
+
+| Activity | Preserved or produced relation | Boundary |
+|----------+--------------------------------+----------|
+| Form | Source/observation to situated question and Context revision | Captured is not accepted |
+| Use | Context to actual attempt, environment and observed outcome | Retrieval is not application or success |
+| Reassess | Changed premise to affected interpretation and obligations | Value loss, invalid evidence and revoked authority differ |
+| Consolidate | New scoped abstraction to originating Contexts and defeaters | Summary/age/read count cannot confer durability or truth |
+| Retrieve | Retained interpretation to a new question and current assessment | Retention is not current applicability |
+| Revise/withdraw | New assessment to old interpretation and retained history | Correction is not silent overwrite or automatic loss of all evidence |
+
+| Case | Positive design expectation | Counterexample/refusal |
+|------+-----------------------------+------------------------|
+| Short-term work state | Current failure state helps its active investigation | Old process state does not describe a restarted process |
+| Time/environment drift | Historical observation remains attributable with reduced current relevance | A recent result on a different target is not current support |
+| Stable constraint | Old but applicable constraint remains available | Recency alone cannot suppress a safety requirement |
+| Failure-pattern consolidation | Attributed failure yields a scoped counterexample with mechanism/conditions | A failed attempt does not prove every similar path impossible |
+| Successful-use consolidation | Checked uses support an abstraction within stated assumptions | Repeated retrieval or copied success prose cannot satisfy use evidence |
+| Compression | Retained abstraction links rationale, outcomes and defeats | Dropping a counterexample or source condition blocks acceptance |
+| New application | Relevance/applicability are reassessed for the new question | Stored long-term status is not a new verifier outcome or grant |
+| Permission expiry | Keep valid observations while blocking unauthorized effects | Authority cannot be refreshed by recall, consolidation or relevance |
+
+These Cases define the shared design expectations. The proof-only projections
+below exercise a bounded policy instance, not a delivered Context framework or
+measured Context-value benefit.
+
+
+* Composition and acceptance boundaries
+
+Context identity is anchored in ORG document/Element identity, with distinct
+source and Contract revisions. Memory manages temporal assessments, retention,
+revision and applicability over that graph. Session supplies consumer identity,
+visibility and lineage; a collection of Sessions can select overlapping Context
+slices without copying ownership. Removing a consumer or changing its Session
+does not change the source Element's identity or erase retained counterexamples.
+
+Existing Memory-core store/catalog/job objects are legacy execution seams only.
+They do not define Context, consolidation acceptance or a Session-owned Memory.
+The redesign must separate source graph, temporal interpretation, selected
+working slice and storage/handoff. Loop-engine may compose per-use-case policy;
+the Session collection/orchestrator composes consumption. Public declarations
+remain POO values, not a new projection DSL. Their runtime refinement remains
+open. Storage success, job completion and checkpoint recovery cannot alone
+attest Context usefulness, consolidation quality or permission.
+
+ORG owns Element/Contract/Query source semantics. ASCENT derives declared
+relations over admitted observations; Quint checks bounded lifecycle traces;
+LeanPOO proves conditional composition and acceptance properties. Applications
+such as Aitia bind domain evidence obligations and Governance decisions.
+The parent mechanisms must not import Aitia to become usable.
+
+The old session recovery and loop policy documents contain historical runtime
+ownership descriptions. For this redesign, semantic selection, relevance,
+consolidation assessment and policy composition belong to Scheme/POO; provider
+I/O, durable job execution and byte materialization remain explicit handoffs.
+This is a design correction, not evidence of a completed implementation move.
+
+* Executable proof projections and correspondence
+
+The module namespace is =modules/ai-agentic-context= (AI Agentic Context).
+This names the multi-Session / orchestrator domain rather than a generic
+Context utility or a single Agent's private memory. Existing =org-context-*=
+functions name the ORG input surface, not a separate lifecycle owner.
+
+Namespace-only verification (2026-10-14): the renamed module and both Scheme
+proof consumers compiled with the current package dependencies. The compiled
+ASCENT replay exited zero with =CONTEXT-ASCENT-PASS checks=23= under the
+unchanged 120s total / 5s output deadline and 1GiB heap. ORG relative links and
+portable references passed. No lifecycle predicates, Context schema tags or
+source-key encoding changed. The previously built executable is not accepted
+as evidence for the renamed ORG consumer; that full replay and cross-Session
+Assurance/Governance admission remain unqualified by this rename check.
+
+The proof Case belongs to this chapter. RFC 0015 supplies only Software/SDLC
+names and consumer obligations. There is no parent source dependency on Aitia.
+[[file:../../../../modules/ai-agentic-context/framework.org][Modules/ai-agentic-context]] now owns the Scheme POO Profile, Context-source projection,
+Session-collection binding and ASCENT program. Proofs supplies Case Contracts,
+inputs and assertions while importing that implementation; it does not retain
+a second Scheme lens or relation-program declaration. This bounded semantic
+slice is not a completed Memory redesign, storage integration or orchestrator.
+
+| Design relation | Quint projection | LeanPOO property/projection | ASCENT projection |
+|-----------------+------------------+-----------------------------+-------------------|
+| Situated formation | =Form= with admitted binding premise | =Context.formed= as admission premise | =source/admitted -> formed= |
+| Retrieval versus use | =reads= separate from =outcome/useSource/useEnv= | =retrievalNotApplication/retrievalNotConsolidation= | =retrieval= cannot derive =basis= |
+| Current value assessment | =Fit/Fresh/Assess= | =applicable= plus review premise | =fit/reviewed/inventoryKnown= |
+| Time-sensitive work state | =Time= invalidates transient assessment | aged transient refusal guard | transient =fit= requires current age zero |
+| Stable constraint | =Time= preserves stable assessment | =stableConstraintNotAgedOut/stableOutsideTimeFootprint= | stable =fit= ignores age, not environment |
+| Scoped consolidation | =Consolidate= with actual-use or stable basis | =consolidate/oldUseCannotSupplyBasis= | =eligible= requires current basis; =selected= joins separately |
+| Counterexample preservation | =counterexample/keptCounterexample= | =counterexampleCannotDisappear= | missing preserved relation refuses eligibility |
+| Revision and history | =Revise/retained/history= | =revisionKeepsHistory/revisionsCompose= | revision-keyed uses and retained counterexamples |
+| Reopened obligations | source/environment/challenge clears current acceptance | =impactedObligationReopens/newRelationNeedsChecking= | selected but ineligible interpretation becomes =reopened= |
+
+* Cross-document composition and consumer-local reassessment
+
+The Context key pairs declared document identity with local ORG Element ID.
+The module's length-delimited wire encoding does not use filenames or erase
+document qualification. Equal local IDs in two documents remain distinct.
+Composition shares exact cuts, but refuses conflicting source/Contract cuts
+of the same key. Selecting a revision is explicit; composition is not
+last-writer-wins reconciliation or loss of historical observations.
+
+Contract revision is derived from the actual Orgize declaration's bounded
+data structure, including query groups, bindings, expectations and diagnostic
+fields. It is separate from source revision. A Contract-only revision can
+therefore reopen acceptance without inventing a source edit. Equivalent
+declaration reorderings may conservatively reopen obligations; this is not
+semantic-equivalence checking or source-author authentication.
+
+A composition can be consumed by Session slices with overlapping members.
+The module checks cut membership and rejects unknown or duplicate Session
+views. Sharing an immutable source Context does not transfer another Session's
+actual-use fact, review, local conflict or accepted interpretation. ASCENT
+keys those observations by Session and qualified Context key, checks the
+current Contract revision, and reopens stale selected interpretations. An
+unaffected document/consumer may retain its current assessment.
+
+These slices are structural selections, not security capabilities. Source
+admission and Governance must still precede protected source access and
+effects. No isolation of processes, protected data disclosure or distributed
+orchestration is asserted by a successful getter or relation query.
+
+Proofs imports the Module's composition, revision and consumer semantics.
+The added finite =ContextComposition= model covers revision footprints and
+Session-local evidence, while LeanPOO's Contract-key patch laws assume complete
+dependency declarations. The tuple identity law does not prove the Scheme
+string encoding; concrete collision controls check that projection separately.
+
+This is a reviewed Case mapping, not a mechanically proved cross-language
+bisimulation. Quint explores finite transitions and deliberately unsafe
+mutations. LeanPOO proves conditional laws and uses =ProofObject=,
+=withObligation=, =Patch.then=, =pending= and the dependency frame rule. ASCENT
+evaluates the declared relation program through its existing Scheme package,
+including retraction after source replacement. Its premises do not authenticate
+an owner, verify a use outcome or prove causal attribution.
+
+The policy instance has one situated Context, two source/environment cuts,
+one elapsed-time event, at most two retrieval observations and one original
+actual-use result. This is not a universal utility metric or TTL. A stable
+constraint is already reviewed under the declared domain premises; an actual
+failure is an attributable observation with scope, not a universal impossibility
+claim. New source use evidence must be current, not inherited from old reads
+or old outcomes. Counterexample/history retention does not establish current
+applicability. Unknown challenge coverage blocks acceptance.
+
+The lifecycle relation program never generates a grant. That is a construction boundary,
+not proof of an external Governance/Host authorization implementation. Human
+review, deletion policy, provider I/O, compression fidelity and measured
+retrieval/use benefit are not executed by this proof Case.
+
+[[file:02-context-lifecycle-proof-receipt.org][10.06.43.02 historical verification receipt]] records the earlier parent-owned local
+proof Case: 15 Quint checks, 13 Lean laws / 13 executable guards and 23 ASCENT
+Scheme controls, with input identities checked before/after that execution.
+Its input cut predates the move of Scheme semantics into Modules and is not a
+current module-consumer result. Storage executors, bindings, old Rust Memory
+and existing validation limits remain untouched. No remote CI or runtime
+efficacy is claimed.
+
+[[file:03-context-module-consumer-receipt.org][10.06.43.03 historical module-consumer receipt]] records the earlier implementation-owned
+verification: 15 Quint checks, 13 Lean laws / 13 guards, 23 ASCENT controls and
+32 real ORG/Session controls. Source, compiled package and executable inputs
+were unchanged during the successful run. The Scheme semantic slice is now in
+Modules, not Proofs; the broader Memory-core redesign and storage/bindings remain
+open. No Session owns or retires the shared ORG Context.
+
+[[file:04-context-composition-contract-receipt.org][10.06.43.04 historical composition/Contract receipt]] records the expanded local
+gate: 21 Quint checks, 17 LeanPOO laws / 15 guards, 23 ASCENT controls and
+54 real ORG/Session controls. Inputs and the consumer executable remained
+identity-stable. This verifies the bounded composition and Contract-reopening
+slice, not source authentication, access enforcement or a complete orchestrator.
+
+* Cross-Session evidence admission and domain consumers
+
+[[file:../../../../modules/ai-agentic-context/admission.ss][The Module admission owner]] implements the pure protocol. A request binds a
+document-qualified Context cut, actual Session-slice membership, destination
+Session, scope, Governance Profile identity/revision and a matching Governance
+assessment to a domain evidence payload. The constructor rejects mismatched
+assessments and out-of-slice Context. A ready Governance assessment is a
+precondition, never an authority token.
+
+A configured consumer Profile supplies the current evidence check, permission
+check, review adapter and clock. Review seals use the existing Core verification
+boundary; copying a presentation object does not copy its private issuance.
+The snapshot binds the complete Context cut, destination, scope, Governance
+revision, assessed threats and domain-owned canonical evidence projection.
+No editable =verified= flag or displayed digest promotes an observation.
+Governance identity/revision is a completeness premise for domain policy
+changes; arbitrary ontology/policy behavior is not compared for semantic
+equivalence. A policy edit must advance that revision. The reopen flag and
+relation report a current revalidation obligation, not a persisted history
+transition or mutation of an Assurance obligation object.
+
+| Protocol result | Meaning | Does not mean |
+|-----------------+---------+---------------|
+| =eligible= | Current domain support plus structurally current, ready Governance assessment | Review, disclosure permission or effect authorization |
+| =reviewed= | Exact destination/cut/scope review seal is current | Another Session's review applies |
+| =permission-current= | The configured domain permission check is current | Context owns or mints an effect grant |
+| =admitted= | All three conditions hold for this explicit consumption request | Protected retrieval, reservation or delivery has occurred |
+| =obligation-reopened= | This request cannot currently be admitted | Its historical evidence must be erased |
+
+[[file:../../../../packages/lambda-aitia/modules/assurance/context-consumer.ss][AITIA's optional Module consumer adapter]] binds an existing Assurance verification
+Host and effect Host to an explicitly configured destination Session, Context
+cut and SDLC scope. It checks the real Host seal and grant at review/use,
+including private issuance, expiry and revocation. Its payload projection
+includes the canonical Assurance subject, seal identity and grant token digest,
+so substituting a new grant does not refresh an old review. AITIA imports the
+parent protocol; the parent never imports AITIA. RFC 0015 remains a consumer
+Case, not the lifecycle owner.
+
+This configured mapping is a domain premise: the local SDLC grant's liveness
+does not prove that its principal/action/resource authorizes protected Context
+disclosure. That authorization must be checked before provider I/O by the
+owning Host. This protocol evaluates already supplied objects and always
+returns =effect-authorized=false= and =runtime-executed=false=. It cannot
+reserve, deliver, issue or renew a grant. A caller-created Profile or a
+successful local policy callback is not evidence of a deployed Cedar policy.
+Configured domain checks may call their Host's source reader. That Host must
+authorize any such I/O; the Context result's =runtime-executed=false= refers
+only to Context-owned storage/effect execution, not the purity of arbitrary
+configured callbacks. The local Cases configure no source reader and execute
+no provider read or delivery.
+Profile owner labels are declared identities, not authenticated Human approval.
+The local Cases exercise ready/blocked Governance objects and issued reviews,
+not a live Human decision interface or principal authentication.
+Destination identity is the collection's declared Session ID. Global identity
+authentication and reuse of an ID by a recreated Session are not established
+here; an application must bind those authority generations at its Host boundary.
+
+Sharing evidence does not transfer a review or automatically configure another
+consumer. Review for Session A refuses Session B; B needs its own configured
+mapping and review. A source/Contract/environment or Governance revision
+changes the bound review subject. Review expiry or permission withdrawal
+reopens the consumer obligation while preserving historical evidence. A fresh
+grant requires fresh review; it never revives the revoked prior grant.
+
+ASCENT's =consumerEvidenceAdmitted= joins Module-projected =candidateEvidence=,
+=checkedConsumerReview= and =checkedConsumerPermission= by Session/key/source
+revision. The projection reevaluates the real checks, rather than accepting an
+editable success result. =consumerEvidenceReopened= identifies requested but
+unadmitted consumption. These are observations over a supplied cut, not sealed
+authority; external callers can still fabricate raw relational inputs. Recheck
+the Module/Host boundary at use; ASCENT has no grant-producing rule.
+
+Quint retains its existing finite lifecycle/composition checks; it does not
+model Host-private issuance. LeanPOO adds conditional review/permission/epoch
+laws, while Scheme exercises the actual Core seals, Assurance Hosts, Governance
+objects and real ORG cuts. Neither proof language replaces the Module checks.
+[[file:../../../../packages/proofs/context-lifecycle/admission-controls.ss][Proof controls]] only construct Cases and observe Module results, using the
+existing AITIA lifecycle fixture to drive configured local callbacks. They do
+not implement a second admission predicate or invoke delivery. Storage,
+bindings, old Memory and the current validation limits are unchanged.
+
+[[file:05-context-consumer-evidence-admission-receipt.org][10.06.43.05 historical consumer-admission receipt]] records the prior local gate:
+90 real ORG/Session/domain controls, 23 ASCENT controls, 21 LeanPOO laws / 19
+guards and 21 existing Quint checks. It binds all declared source inputs,
+the selected compiled package pool (including numbered macro objects) and the
+compiled consumer before/after execution. Construction failures and the cold
+load timeout remain recorded; no independent producer CI is qualified.
+
+[[file:06-context-authority-and-disclosure-design.org][10.06.43.06 authority and disclosure design]] refines the remaining principal,
+consumer-generation, operation/resource coverage and pre-I/O/final-disclosure
+obligations. It also distinguishes initially open obligations from historical
+reopening. This is design-only: the current 90-control receipt does not qualify
+these proposed subjects, models, Host crossings or disclosure controls.
+
+[[file:07-leanpoo-functional-design.org][10.06.43.07 LeanPOO functional design]] maps the v0.1.1 release's actual
+Provider/Factory, prepared-view, focus, Context pullback and receipt APIs to
+Context/Session responsibilities. [[file:08-leanpoo-v011-consumer-receipt.org][10.06.43.08]] qualifies the updated proof
+dependency and new five-law/eight-guard projection with the existing consumer
+gates. It does not move Scheme semantics into Lean or complete the runtime
+authority/disclosure protocol.

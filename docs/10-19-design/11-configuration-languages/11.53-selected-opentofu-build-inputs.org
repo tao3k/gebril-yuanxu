@@ -1,0 +1,270 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.53 Config Languages 52: Selected OpenTofu Build Inputs
+#+property: DOCUMENT_ID 11.53
+#+property: STATUS implemented-local-native-no-loader
+
+* Implemented follow-up
+
+Chapter [[file:11.54-selected-graph-nix-sources.org][53]] now connects the local external-package contribution to the selected
+Core build Graph and binds generated demand to observed configuration sources.
+Its dedicated modules/nix owns Nix Source/currentness. The adapter-gap statements
+below describe this chapter's earlier implementation boundary; they are
+superseded by the follow-up, not claims that Loader integration was added.
+
+* Problem and the tf-ncl comparison
+
+A lazy Scheme registry does not prune a Nix derivation. Passing the entire
+catalog to =linkFarm= makes every referenced Provider a build dependency,
+regardless of whether Scheme later reads its files. One collection environment
+variable fixes injection granularity; it does not fix build selection.
+
+Reviewed [[https://github.com/nickel-lang/tf-ncl/pull/83][tf-ncl PR 83]], head
+=6f62152b359497e0a9435d30adb4c13efc35711c= (open at inspection).
+In =nix/mkTfNcl.nix= its =providers= selection function feeds both
+=terraform.withPlugins= and =generateSchema=. In =nix/terraform_schema.nix=,
+=retrieveProviderSchema= creates a separate derivation for each chosen Provider.
+This is a useful separation of package catalog, selection and generation, not
+proof that every catalog or devshell in that PR is minimal. For example, the
+flake also defines a broad =schemas= attribute set; only its consumers determine
+which lazy values become build dependencies. The shared-selector principle is
+what we reuse, rather than copying its command wrapper or Nickel syntax.
+
+Our demand comes from the final POO configuration. It is not another
+user-maintained Provider list or SelectedTypes declaration. The same local-name
+ownership rule is used for build projection and configuration admission.
+
+* Native object boundary: final keys, no Provider access
+
+Implemented in =modules/opentofu/objects.ss=:
+
+#+begin_src scheme
+(.def Configuration
+  resource:
+  (.o aws_security_group:
+      (.o web: (.o name: "web"))))
+
+(def Demand (.call OpenTofu .build-inputs Configuration))
+(.get Demand providers) ; => '("aws")
+(.get (car (.get Demand demands)) path)
+; => '(resource aws_security_group)
+#+end_src
+
+=.build-inputs= is a named pure function in a native object slot. It traverses
+only the =provider/resource/data= section names and their immediate keys.
+Native =.all-slots= enumerates inherited final keys without demanding instance
+values. The section containers themselves are necessarily demanded. Provider
+configuration bodies, instance bodies, generated Contracts, modules and files
+remain untouched. The actual test uses throwing bodies to enforce this boundary.
+Hash-table and association-list wire inputs are also accepted at this boundary.
+
+- Provider configuration names select their local binding directly.
+- Resource/data names use the existing first-prefix ownership rule:
+  =aws_security_group -> aws=, =awscc_ec2_security_group -> awscc=.
+- Names are deduplicated and sorted. =demands= retains native objects with the
+  originating type paths. This is explanatory demand, not admission evidence.
+- Unknown sections, malformed containers and unresolvable names reject before
+  package realization. A structurally named but nonexistent AWS type still
+  selects AWS; the generated Contract rejects it at admission.
+- Aliases and per-instance Provider meta-argument resolution are not added here.
+  They need an explicit ownership design, not a scan of every Provider Schema.
+
+Only the final wire projection crosses to Nix:
+
+#+begin_src scheme
+;; In a build tool, outside user configuration. Gerbil write-json takes PORT first.
+(write-json port
+  (list->hash-table
+    (list (cons 'providers (list->vector (.get Demand providers))))))
+;; {"providers":["aws"]}
+#+end_src
+
+No Provider artifact is required to produce this demand. Conversely, names
+whose computation requires generated Provider Contracts cannot participate in
+this pre-build phase without an explicit earlier artifact dependency. This
+change does not install a fixed-point evaluator to hide that phase cycle.
+
+* Nix boundary: filter before realization
+
+The package catalog is a lazy attribute set of locked derivations. Implemented
+=modules/opentofu/nix/provider-artifacts.nix= now requires =selection=:
+
+#+begin_src nix
+{ lib, linkFarm, schemas, selection }:
+let
+  names = selection.providers;
+  selected = lib.genAttrs names (name:
+    schemas.${name} or
+      (throw "OpenTofu build-required: Provider '${name}' has no locked package"));
+in
+assert builtins.isList names && lib.all builtins.isString names;
+assert lib.length (lib.unique names) == lib.length names;
+assert lib.all (name: builtins.match "[A-Za-z0-9_]+" name != null) names;
+linkFarm "opentofu-artifacts" (lib.mapAttrsToList (name: path: {
+  inherit name path;
+}) selected)
+#+end_src
+
+The actual control passes the Scheme-generated file, not a second handwritten
+AWS selection:
+
+#+begin_src nix
+{ pkgs, selectionFile }:
+import ./family-artifacts.nix {
+  inherit pkgs;
+  selection = builtins.fromJSON (builtins.readFile selectionFile);
+}
+#+end_src
+
+=family-artifacts.nix= supplies the real AWS/awscc/Null catalog. Its three-family
+default is explicitly a qualification control. Production callers must provide
+their selected demand. The small devenv AWS tool fixture retains an explicit
+one-provider selection; it is a development tool selection, not proof of final
+application-config-driven generation.
+
+Each selected Schema derivation already uses a one-Provider plugin engine, so
+Schema extraction cannot pull the other catalog Providers through a combined
+engine. Selection does not alter the chosen package, version, manifest digest,
+kind index, per-type input or source identity. There is one injection:
+
+#+begin_example
+YUANXU_OPENTOFU_ARTIFACT=/nix/store/aw9dlhhxs5lkgpr3yrqp7h07mly21rxa-opentofu-artifacts
+  aws -> locked AWS 5.100.0 indexed Schema artifact
+#+end_example
+
+This reduces Provider-level build dependencies. An individual selected Provider
+still exports and indexes its whole Schema during its package build. Only
+runtime input parsing/Contract compilation is per selected type. We do not claim
+that building AWS generates only Security Group, or that the catalog has been
+qualified at 100 real Providers.
+
+* Relationship to the existing selected build graph
+
+There are two demand domains, not two schedulers:
+
+1. Existing Module/Feature selection owns Core requirements, disabled decisions,
+   source observations and compiler inputs.
+2. The selected OpenTofu consumer projects final configuration into external
+   package inputs through =.build-inputs=. Nix owns their dependency closure,
+   realization and reuse. This projection is a domain leaf input to the build,
+   not a replacement Module graph and not runtime execution authorization.
+
+The local round trip is implemented and tested: final POO value -> demand wire
+-> selected Nix collection -> native scope -> original Contract =.admit=.
+Automatic attachment of external package inputs to the general Module selected
+Graph/build entry remains an adapter gap. Existing compiler-input generation
+is not falsely presented as an external-package planner. No Loader, directory
+walker, import expander, scheduler or automatic package acquisition is connected.
+
+A future build adapter must derive compiler and package views from the same
+selected source revision and recheck that revision before publication, using
+the existing build-input currentness owner. This change does not yet add that
+source-revision receipt to the demand JSON. The local test consumes the exact
+file emitted from its configuration; this is not end-to-end stale-source proof.
+
+* Cached admission and configuration evolution
+
+After package injection, the ordinary downstream entry stays native:
+
+#+begin_src scheme
+(def result
+  (use-module OpenTofu as tf
+    (.call (.get tf types configuration) .admit Configuration #f)))
+
+(.def (Release @ Configuration)
+  resource: =>.+
+  (.o aws_iam_group: (.o release: (.o name: "release"))))
+;; Same build demand '("aws"). The already cached configuration Contract
+;; discovers the child's final aws_iam_group input and admits it exactly once.
+(def released
+  (use-module OpenTofu as tf
+    (.call (.get tf types configuration) .admit Release #f)))
+#+end_src
+
+The refinement extends the resource namespace; it does not pretend that assigning
+a new command or scalar needs inheritance. Parent evidence still has its single
+Security Group child. The child gets its own final admission result, source
+binding and additional IAM Group Contract. Unselected S3 input stays unread.
+
+Adding a Null resource changes demand to =("aws" "null")=: regenerate the
+selected collection before admission. Admitting against the old AWS-only
+collection rejects at =resource.null_resource= with
+=provider-binding-not-found=. It never downloads a plugin. Removing a Provider
+prunes it on the next package projection/build; it does not delete shared store
+paths. Changing only field values leaves package selection unchanged but still
+requires final Contract admission. Changing a locked package changes the Nix
+input and the leaf Contract source/version; the existing two-version parent/
+child cache control remains applicable.
+
+* Executable controls and bounded conclusions
+
+Owners:
+
+- =t/opentofu-build-selection-test.ss=: final demand before artifact injection,
+  poison instance bodies, inherited keys, parent/child isolation, actual AWS-only
+  admission, cached parent/new type, source/version and full error paths.
+- =t/fixtures/opentofu/build-selection-checks.nix=: unselected catalog entries
+  throw if evaluated; missing/duplicate/unsafe selections reject; empty works.
+- =t/fixtures/opentofu/check-build-selection.py=: query actual derivation
+  requisites, not stdout build counts or store cache hits. The all-family
+  derivation is a positive control for the excluded Provider identities.
+- =t/fixtures/opentofu/selected-build-control.json=: structured local receipt.
+
+Six serial default-runtime gates pass: 279 explicit assertions plus six native
+exception controls, each with =MODULE-OK=, =HARNESS-OK= and final =OK=, without
+harness or heap/stack errors. Five Nix evaluation controls pass independently.
+The two-version upgrade/rollback control retains 84 assertions.
+
+The real selected derivation is
+=/nix/store/r7gpynsqgl4kdvs7a0ym00bgxbb9b9x0-opentofu-artifacts.drv=.
+Its dependency closure excludes the awscc and Null Schema derivations and five
+unique dependency paths from each excluded Provider closure. The all-family
+control includes both Schema derivations. This establishes build-dependency
+exclusion on the tested packages, independently of their preexisting store
+outputs. It is not a cold-machine timing or a general performance result.
+
+Native admission rejects =resource.aws_security_group.web.ingress.0.from_port=
+when the port is a string, preserving the original generated Contract path.
+Source/version digests match the real locked package. Unexported Provider SDK
+CIDR/plan rules remain Provider validation responsibilities; this work does not
+expand Schema coverage or conflate configuration admission with plan/apply.
+
+The initial probe exposed a lexical-slot mistake: a local =demands= referenced
+inside =(.o demands: demands)= resolves to the native slot itself. Renaming the
+local accumulator repaired the code; the original failure remains in local
+artifacts. This illustrates why actual native execution is required in addition
+to a plausible expansion. No macro or compatibility runtime was introduced.
+
+* Executed reselection after a cached parent
+
+=t/opentofu-reselected-artifact-test.ss= now exercises the complete local
+AWS-only -> AWS+Null sequence. The first heap-fenced run admits the parent,
+rejects the new Null resource against its old collection, and writes the child
+configuration's demand JSON. The same selected Nix builder consumes that file.
+Its real result is
+=/nix/store/jfgkcznr78mhh6vwbij2l5ad79bywwxp-opentofu-artifacts=.
+A second run starts with the original AWS-only parent, caches its Contract,
+and injects the rebuilt collection into a native child:
+
+#+begin_src scheme
+(.def (Updated @ OpenTofu)
+  config: =>.+ (.o artifact: rebuilt))
+(def result
+  (use-module Updated as tf
+    (.call (.get tf types configuration) .admit Release #f)))
+#+end_src
+
+All 15 assertions in the complete run pass. The child admits both resources,
+reads the Null resource input once, leaves its data index unread, and has no
+awscc binding. The parent's Contract and Provider scope retain their object
+identities and its original admission still has one child. Null remains locked
+to 3.2.4. The bootstrap run has three assertions. These are additional native
+controls, not a new Loader or automatic build handoff.
+
+The architectural goal is to refactor away independently maintained Provider
+selection lists: final configuration owns demand, Nix owns realization, and
+native Contract admission owns validation of the final object. Their projections
+are mechanically connected in this local control. Eliminating the remaining
+manual phase handoff requires the external-package selected-graph adapter and
+source-currentness binding described above; strong language mechanisms alone
+do not establish that correspondence.

@@ -1,0 +1,168 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 11.38 Config Languages 37: Shared Value Types and Private Domain Contracts
+#+property: DOCUMENT_ID 11.38
+#+property: STATUS source-reviewed-design-only-no-loader
+
+* Problem: String and object shape are not domain types
+
+The AWS design's AWSString/AWSNamedMap are too coarse as the sole field vocabulary.
+A text value may represent an IP address, CIDR, region, resource identifier, path
+or ordinary label. A named map establishes neither entry types nor relationships.
+Strengthen types.ss rather than ask ordinary users to construct typed records or
+copy validation into config.ss. More declarations are justified by semantic
+boundaries, not by a target count of define-type/defstruct forms.
+
+* Source-reviewed reuse
+
+The checked-in Gerbil sources already define Address, IPAddress, IP4Address,
+IP6Address and InetAddress with defstruct and typed fields in
+.data/gerbil/src/std/net/address/types.ss. Their parser provides
+string->ip4-address and string->ip6-address, and their stringer owns formatting.
+These are source observations, not new execution/compatibility test results.
+They describe parsed runtime values. The public config can still contain a string.
+
+.data/gerbil-poo/type.ss uses native define-type for String, Bytes and parameterized
+BytesN., including .element?, conversion and marshaling slots. Core types.ss adds
+YuanxuPredicateType., Contract descriptors and evidence-bearing .admit. Reuse
+those layers rather than introducing another static type checker or record DSL.
+Gerbil typed fields/annotations do not establish dependent/static correctness of
+an arbitrary configuration; domain admission is still an explicit runtime step.
+
+* Ownership and representations
+
+| Layer | Examples | Owner / purpose |
+|-------+----------+-----------------|
+| Shared values | IPv4/IPv6 text, address family, prefix length, CIDR, port | Cohesive Core type-library capability, built on native Gerbil |
+| Module-private values | AWS region syntax, AMI identifier, role ARN, state key, logical references | AWS types.ss; expose only those useful to other modules |
+| Object Contracts | NetworkContract, InstanceContract, ApplicationContract | AWS types.ss: responsibilities plus relational obligations |
+| Runtime representation | Existing IP4Address/IP6Address; private parsed CIDR/cache keys if necessary | Parser/algorithm implementation, not public config objects |
+
+The shared library need not put everything in core/types.ss. That file currently
+owns the fundamental Type/Contract protocol. Cohesive network/path/etc libraries
+should publish native descriptors through the Module System and load only the
+selected dependency closure. AWS-specific naming/policy must not leak into Core.
+The precise new module path and public export names remain design decisions.
+
+Address text is not a parsed address object. CIDR text is not an address, and a
+host address/prefix pair is not necessarily a canonical network base. The current
+prefix/length config shape can remain; its Contract must check address syntax,
+family/prefix compatibility and the domain's host-bit policy. Parsing, validation,
+normalization and wire serialization are distinct operations. .admit preserves the
+candidate: it must not silently replace strings with structures or rewrite values.
+
+A port Type must state whether zero is allowed: a runtime bind endpoint and a
+service destination can have different requirements. A private/public address
+policy is a domain refinement, not a universal property of every valid VPC.
+
+* Native Type / Contract bridge
+
+A native Type descriptor and an evidence-bearing Contract are not interchangeable.
+responsibilities currently delegates to the Contract admission protocol, so a bare
+String-derived Type needs an explicit internal bridge. For example, this proposed
+library code uses existing syntax and protocol functions:
+
+#+begin_src scheme
+;; ipv4-text? is the proposed shared parser-backed predicate described below.
+(define-type (IPv4Text @ String)
+  .element?: ipv4-text?)
+
+(def (value-type-contract identity type)
+  (yuanxu-predicate-contract
+    identity
+    (cut element? type <>)
+    (lambda (candidate context) '())))
+
+(def IPv4TextContract
+  (value-type-contract 'network/ipv4-text IPv4Text))
+#+end_src
+
+The proposed ipv4-text? accepts strings only, delegates to string->ip4-address,
+returns false for the parser's documented bad-argument failures, and lets unrelated
+failures propagate. It performs no DNS/network lookup. Its full adapter and error
+classification must be qualified against the pinned Gerbil runtime before this
+becomes an implemented API; there is no claim it exists today. It is not a new
+regular expression copied independently into every cloud Module.
+
+Likewise a parsed-address descriptor can use IP4Address? directly. Do not create
+another public defstruct IPv4 just to rename the native structure. If a private
+parsed CIDR struct is needed, keep it behind a checked constructor and do not
+assume defstruct alone enforces prefix/family/network invariants. Immutable source
+snapshots or explicit mutation policy are required for cached parsed values.
+
+* Applying refined types to the same AWS case
+
+Target field ownership, without changing the user's data syntax:
+
+#+begin_example
+NetworkContract.region              -> AWSRegionContract
+NetworkContract.cidr-block.prefix   -> shared IPv4TextContract
+NetworkContract.cidr-block.length   -> shared IPv4PrefixLengthContract
+NetworkContract.cidr-block          -> structured CIDR Contract + network policy
+InstanceContract.ami                -> AWSImageIdContract
+InstanceContract.type               -> AWSInstanceTypeContract
+InstanceContract.network-ref        -> NetworkReferenceContract
+InstanceContract.key-ref            -> KeyReferenceContract
+InstanceContract.ssh-cidrs          -> collection of shared CIDR Contracts
+CredentialsContract.assume-role     -> role Contract with ARN semantics
+StateContract.bucket/key/region     -> AWS-specific refined Contracts
+ApplicationContract                -> final object relationships and consistency
+#+end_example
+
+These are required refinements, not implemented library exports. AWS's current
+String/CIDR checks remain coarse until the adapters and field Contracts are
+implemented and tested. Exact collection admission must retain element indices
+and contract identities, not just return a broad predicate failure.
+
+The distinction between network-ref and key-ref helps discovery and diagnosis;
+a symbol's spelling alone does not prove it points to the right occurrence.
+ApplicationContract must still resolve each reference against the final Scenario.
+Well-formed region/AMI/ARN/instance type text is not proof of provider availability,
+account authorization, image compatibility or existing backend state. Those
+require a separate qualified provider plan or explicit runtime check.
+
+* User experience and final-object checks
+
+#+begin_src scheme
+;; Ordinary user config remains data, not IP4Address/Type constructor calls.
+(.o region: "eu-central-1"
+    networks:
+    (.o test: (.o cidr-block: (.o prefix: "10.1.0.0" length: 16)
+                 tag-prefix: "Tf-Ncl")))
+#+end_src
+
+Expected diagnostics should distinguish malformed address, prefix range/family,
+noncanonical network base, missing referenced network and provider policy failure.
+Each has its own type/Contract identity, field path and user source origin; do not
+collapse all into AWSString rejected. The same descriptors supply discoverable
+field meaning and accepted examples, not a parallel hand-maintained field table.
+Existing JSON Schema-derived constraints should compose with these native value
+refinements and link obligations; they must not be weakened or copied into a
+second contradictory schema. Discoverable types must not force every module.
+
+After Production inherits Build, .admit must validate the final field values and
+relationships; parsed-value caches must be tied to those values and the type/parser
+revision. A parent parsed address or candidate receipt is not evidence for a child
+with changed input. Replacing a single value still requires complete deployment
+inputs, as established in the complete case, and successful config admission is
+not execution authority.
+
+* Conclusion and next verification
+
+The benefit is stronger reusable meaning with ordinary user data: richer discovery,
+specific diagnostics and one shared network implementation. Costs include parser
+adapter/version qualification, explicit representations, Type-to-Contract bridging,
+collection/reference semantics and cache identity. Formal properties of a model do
+not validate an untested string parser or cloud adapter.
+
+Next controls must cover valid/invalid IPv4/IPv6, family-specific prefix bounds,
+CIDR host bits, address membership, collection element paths, final-child changes,
+unselected type laziness and distinct provider failures. No functions, structs,
+Loader integration or runtime tests were implemented/executed in this design turn.
+
+* Provider-schema-first refinement
+
+[[file:11.39-provider-schema-first-aws-contracts.org][The provider-schema-first design]] is authoritative for generated field constraints,
+shared semantic additions, bridge coverage and the still-unverified tf-ncl PR 83.
+Do not interpret the earlier field-type list as a requirement to hand-rewrite
+provider schemas or as already implemented rich diagnostics.
