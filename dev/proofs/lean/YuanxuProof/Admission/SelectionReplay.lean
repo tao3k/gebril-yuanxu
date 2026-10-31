@@ -2,7 +2,7 @@
 import LeanPoo.Functional.CacheLookup
 import YuanxuProof.Admission.IssuerProjection
 namespace YuanxuProof.Admission.SelectionReplay
-def declaredPooRevision : String := "98fcce3abec760373cc7486a8b51d6bb97424658"
+def declaredPooRevision : String := "30733c3de7dbca4f0572b25a25b9099396da48a5"
 def quintSourceDigest : String := "sha256:83a2b605e11bdad9f8689c58a9a9bd37a2dadb67dec025e81d47b3ce6b915d13"
 
 -- The native owner retains a value, not the verdict of an external-source check.
@@ -92,7 +92,8 @@ theorem cached_false_is_a_value {Name Fault : Type} [DecidableEq Name]
 
 def topologySourceDigest : String := "sha256:711666f5afe6d73d34cc59caf536311b2eb9907fa675ef049dd0720e13993773"
 
--- Published producer: 98fcce3. This source digest is a correspondence
+-- Published producer: 30733c3; object.ss is byte-identical to 98fcce3.
+-- This source digest is a correspondence
 -- binding, not a refinement proof; native issuance and replay remain gates.
 def projectionObjectDigest : String := "sha256:9726f238a3c432c0f26e7a6fe85aa9455afee88ace130af2962610f9d14b868c"
 
