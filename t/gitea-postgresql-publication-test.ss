@@ -4,7 +4,7 @@
         (only-in :clan/poo/type Enum. Tuple)
         (only-in :clan/poo/mop Bool)
         (prefix-in :clan/poo/testing/type property.)
-        (only-in :clan/poo/testing/property/test check-property)
+        (only-in :clan/poo/support/testing require-property-passed)
         (only-in :clan/poo/testing/property make-policy)
         (only-in :std/list/list delete-duplicates/hash)
         (only-in :std/error Error? Error-message)
@@ -99,7 +99,7 @@
             (delete-duplicates/hash (append server-ports client-ports '(1 65535)))))
         (def (allowed? value)
           (and (memv value server-ports) (memv value client-ports) #t))
-        (check-property
+        (require-property-passed
           (property.check-property (Tuple Ports Bool)
             (lambda (arguments)
               (def selected-port (vector-ref arguments 0))
