@@ -23,7 +23,12 @@
         (error "source-only build spec failed" (.get result status)))
       (def spec (call-with-input-string (.get result output) read))
       (check-equal? (list? spec) #t)
-      (check-equal? (length (filter (lambda (entry) (equal? (cadr entry) "prelude")) spec)) 1)
+      (check-equal?
+        (length
+          (filter (lambda (entry)
+                    (equal? (if (string? entry) entry (cadr entry)) "prelude"))
+                  spec))
+        1)
       ;; Spec construction must not silently compile or install either namespace.
       (check-equal? (file-exists? (path-expand "yuanxu" lib)) #f)
       (check-equal? (file-exists? (path-expand "tao3k/yuanxu" lib)) #f))))

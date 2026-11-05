@@ -48,16 +48,16 @@
        (else (set! after (cons target after)))))
     entries targets)
   (def (ordinary targets)
-    (let (spec (reverse targets))
-      (if (null? spec) '() (list (.o prefix: #f spec)))))
-  (def prefix
+    (let (batch-targets (reverse targets))
+      (if (null? batch-targets) '() (list (.o prefix: #f spec: batch-targets)))))
+  (def language-prefix
     (path-strip-trailing-directory-separator
       (path-directory (symbol->string (.ref language 'compiler-identity)))))
-  (def spec (list language-target))
   (unless language-target
     (error "package language is absent from admitted Make targets"
            (.ref language 'compiler-identity)))
-  (append (ordinary before) (list (.o prefix spec)) (ordinary after)))
+  (let (language-spec (list language-target))
+    (append (ordinary before) (list (.o prefix: language-prefix spec: language-spec)) (ordinary after))))
 
 (def (collect-build-entries selected kept retained)
   (def seen (make-hash-table-eq))

@@ -75,8 +75,10 @@
                                    (hash-get __module-registry (path-normalize (vector-ref observed 2)))))))))))
     (if (and binding-current? (string? resolved)
              (or selected?
-                 (equal? (path-normalize resolved)
-                         (path-normalize (if observed (vector-ref observed 2) path)))))
+                 (and (equal? (path-normalize path)
+                              (path-normalize (if observed (vector-ref observed 2) path)))
+                      (equal? (path-normalize resolved)
+                              (path-normalize path)))))
       (begin (bind observed) input)
       (refuse 'expected-identity identity 'resolved-path resolved))))
 ;; Check the demanded Gerbil dependency subgraph, not every selected role on each

@@ -9,7 +9,8 @@
         (only-in :gerbil/expander current-expander-context make-top-context
                  current-expander-module-import eval-syntax eval-module expander-context-id module-context-path
                  core-library-package-path-prefix module-context-code module-context?
-                 current-expander-compile current-expander-eval expander-context-table syntax-e)
+                 current-expander-compile current-expander-eval expander-context-table syntax-e
+                 core-read-module/sexp core-resolve-module-path)
         (only-in :clan/poo/object .o .ref .slot?)
         :yuanxu/module-system/source/admission
         :yuanxu/module-system/source/preparation
@@ -137,6 +138,21 @@
                  source-inputs: observations admit-current: asset-current!))))
        (def (within? directory path)
          (string-prefix? (string-append (path-strip-trailing-directory-separator directory) "/") path))
+       (def (captured-source-context path)
+         ;; A declared package source may already have a native Context in
+         ;; the compiler closure. Preserve that Context's generative types;
+         ;; neither a guessed checkout root nor its namespace is authority.
+         (and kernel-root (within? kernel-root path)
+              (not (member path (.ref prepared 'role-sources)))
+              (not (equal? path (.ref prepared 'build-source)))
+              (begin
+                (when source-tree ((.ref source-tree 'locate-owner) path))
+                (let-values (((_prelude identity _namespace _body) (core-read-module/sexp path)))
+                  (let (context (hash-get (reader-session-tool-contexts session) identity))
+                    (and context
+                         (captured-tool-context? (reader-session-compiler-contexts session) context)
+                         (equal? path (module-build-source-path context kernel-root))
+                         context))))))
        (def (tool-context context reload?)
          (when reload? (error "compiler tool reload requires a fresh publication reader"))
          (let (expected (hash-get (reader-session-tool-contexts session) (expander-context-id context)))
@@ -309,6 +325,8 @@
              (error "publication bootstrap cannot import its own interface" interface-path))
             ((hash-get (reader-session-tool-paths session) path)
              => (lambda (context) (tool-context context reload?)))
+            ((captured-source-context path)
+             => (lambda (context) (tool-context context reload?)))
             ((within? root path)
              (when (> kernel-depth 0) (error "shared source cannot depend on Module implementation" path))
              ;; A nested declared window/Interface may introduce another
@@ -402,11 +420,16 @@
              (parameterize ((current-module-source-phase 'build-role-after)) (reader-current! session)) value)))
        (def deferred-roles (.ref prepared 'deferred-roles))
        (def (publication-import path (reload? #f))
+         ;; Native import arguments may carry syntax/source locations. Resolve
+         ;; file requests before importing: expansion can execute initializers.
+         (def requested (syntax-e path))
+         (def resolved
+           (and (string? requested) (path-normalize (core-resolve-module-path path))))
          (cond
-          ((and (string? path) (hash-key? artifacts (path-normalize path)))
+          ((and resolved (hash-key? artifacts resolved))
            (gerbil-import path reload?))
-          ((and (string? path) (string=? (path-extension path) ".ss"))
-           (source-context path reload?))
+          ((and resolved (string=? (path-extension resolved) ".ss"))
+           (source-context resolved reload?))
           (else
            ;; Compiled libraries must retain their canonical Gerbil
            ;; import closure. Redirect only the caller's source

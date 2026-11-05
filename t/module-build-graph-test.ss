@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :std/io/tempfile make-temporary-file-name)
+        (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :std/make make)
         (only-in :std/list/list find)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list core-read-module/sexp
@@ -28,10 +28,6 @@
 (def (write-file path text)
   (create-directory* (path-directory path))
   (call-with-output-file (list path: path truncate: #t) (lambda (port) (display text port))))
-(def (remove-tree path)
-  (if (eq? (module-source-type path) 'directory)
-    (begin (for-each (lambda (name) (remove-tree (path-expand name path))) (directory-files path))
-           (delete-directory path)) (delete-file path)))
 (def (with-source test)
   (let* ((root (make-temporary-file-name "selected-build-"))
          (prefix (symbol->string (gensym 'build-fixture-))))
@@ -62,7 +58,7 @@
        (write-file (path-expand "modules/unused/bomb/interface.ss" root) "(((unselected must never compile")
        (write-file (path-expand "modules/app/web/extra/off.ss" root) "(((disabled feature must never compile"))
      (lambda () (test root prefix))
-     (lambda () (remove-tree root)))))
+     (lambda () (clear-temporary-file! root)))))
 (def (build-contribution . root-values) (.o kind: 'module/build roots: root-values))
 (def (optional name paths (dependencies '()))
   (feature-descriptor

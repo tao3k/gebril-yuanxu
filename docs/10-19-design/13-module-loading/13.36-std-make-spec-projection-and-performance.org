@@ -320,6 +320,44 @@ contains the Function identity implementation and its upstream regression.
 Return to a release tag when a release contains this behavior, retaining the
 same strict identity and invalidation controls.
 
+** Fixed-commit regression boundaries
+
+The temporary POO revision above owns defensive copies of public =(names)=
+inspection results. Raw MOP-state qualification must compare the actual record
+payload through Gerbil reflection, rather than compare two public copies with
+=eq?=. Receiver, checker, revision, cached-reference and dependency identities
+remain independent rejection conditions. The snapshot and lifetime tests also
+retain their Gitea/PostgreSQL parent-cache and source-change controls.
+
+An already captured compiler Context may serve a demanded source only when
+the declared package root, Gerbil's parsed Module ID and its package source
+resolution all agree. Interface and role sources are excluded. The selected
+source tree still rejects disabled and unselected owners. This preserves
+generative JSON Schema type identity without deriving checkout roots or
+granting authority from namespace spelling.
+
+The import hook resolves source-bearing syntax with Gerbil's
+=core-resolve-module-path= before expansion. A matching compiled Module ID
+does not authorize a foreign source file: the original public source binding
+must identify that exact path, or the selected source-input association must
+own it. The unchanged compiler-context confinement regression requires refusal
+before an external initializer can create its marker. This corresponds to
+=owned_tool_alias_requires_original_binding= in =SourceClosureWork.lean= and
+the =ToolOrigin= model's =unownedAlias= and =skipAssociation= counterexamples.
+
+Make prefix groups partition the original admitted target list. Construct the
+language target list after partitioning: an internal =def= initializer is not
+a sequencing barrier after =set!=. The native clean regression checks the
+off-prefix language output, ordinary output, unrelated retained output, output
+lock and source-change rejection. No second clean manifest is introduced.
+
+Reproduce with the existing =just test-file= entry for
+=t/module-json-schema-publication-test.ss=, =t/mop-state-snapshot-test.ss=,
+=t/mop-snapshot-lifetime-test.ss= and =t/build-product-recovery-test.ss=.
+The compiler-context confinement test additionally requires its existing
+=CORE_QUALIFICATION_ROOT= qualification input. These focused gates do not
+replace the independent scale or full CI gates.
+
 ** Paired native entry control
 
 Use the JsonSchema-only bootstrap fixture and retain its ordinary library

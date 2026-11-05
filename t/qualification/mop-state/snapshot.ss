@@ -44,7 +44,10 @@
   (def instance (object-%instance receiver))
   (def table (object-%reads receiver))
   (make-read-view read (runtime.slot-ref read 'current?)
-    (list receiver (slot-read-revision read) (slot-read-instance read) (slot-read-value read)
+    ;; The public value inspector copies `(names)` lists defensively. This
+    ;; raw-state qualification compares the actual payload identity, not the
+    ;; fresh public inspection copy; replacing that payload must still refuse.
+    (list receiver (slot-read-revision read) (slot-read-instance read) (runtime.slot-ref read 'value)
       (and table (hash-ref table key absent))
       (if (and instance (symbol? key)) (hash-ref instance key absent) absent))
     (if (pair? key) (map values key) key) (map values (slot-read-dependencies read))))
