@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Qualification only: exercise the SDK dispatcher, not a replacement protocol.
+;;; Qualification only: exercise the Gerbil dispatcher, not a replacement protocol.
 (import :std/test
         :std/build-script
         (only-in :std/io/tempfile call-with-temporary-directory))

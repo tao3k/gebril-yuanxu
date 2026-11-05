@@ -26,6 +26,7 @@
 (export yuanxu-module-required-role-files yuanxu-module-allowed-entrypoint-roles
         yuanxu-module-style-policy-prototype yuanxu-default-module-style-policy
         module-source-type module-source-read module-source-name? module-source-admit-current!
+        module-compiler-interface-source
         call-with-module-source-read-cache call-with-module-source-fresh-reads
         call-with-module-source-callback
         call-with-collected-module-sources

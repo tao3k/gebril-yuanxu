@@ -1,6 +1,12 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
+        (only-in :clan/poo/type Enum. Tuple)
+        (only-in :clan/poo/mop Bool)
+        (prefix-in :clan/poo/testing/type property.)
+        (only-in :clan/poo/testing/property/test check-property)
+        (only-in :clan/poo/testing/property make-policy)
+        (only-in :std/list/list delete-duplicates/hash)
         (only-in :std/error Error? Error-message)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/observability/testing-case yuanxu-test-checkpoint)
@@ -83,6 +89,49 @@
         (check-equal? (.get (car (.get rejected diagnostics)) kind) 'stale-parent-plan)
         (check-equal? (.get rejected candidate plan postgresql port) 5433)
         (check-equal? (memq 'services/unused (.get selection selected-graph module-order)) #f)
+        ;; The real configuration supplies the finite policy domain. Native
+        ;; PBT derives its generator from Enum.; no separate sampler or runner.
+        ;; Boundary ports additionally exercise refusal by both contributions.
+        (def server-ports (.get parent config postgresql allowed-ports))
+        (def client-ports (.get parent config gitea allowed-ports))
+        (def Ports
+          (.o (:: @ Enum.) vals:
+            (delete-duplicates/hash (append server-ports client-ports '(1 65535)))))
+        (def (allowed? value)
+          (and (memv value server-ports) (memv value client-ports) #t))
+        (check-property
+          (property.check-property (Tuple Ports Bool)
+            (lambda (arguments)
+              (def selected-port (vector-ref arguments 0))
+              (def explicit? (vector-ref arguments 1))
+              (.def (Inherited @ parent)
+                config: =>.+ (.o postgresql: =>.+ (.o settings: =>.+ (.o port: selected-port))))
+              (def Candidate
+                (if explicit?
+                  (.o (:: @ Inherited)
+                    config: =>.+ (.o gitea: =>.+ (.o database: =>.+ (.o port: selected-port))))
+                  Inherited))
+              (def result
+                (.call (.get publication contract) .admit Candidate (.get publication context)))
+              (def expected (allowed? selected-port))
+              (and (eq? (.get result accepted?) expected)
+                   (= (.get cached postgresql port) 5432)
+                   (= (.get cached gitea database-port) 5432)
+                   (or (not expected)
+                       (let (effective (.get result candidate))
+                         (and (= (.get effective plan postgresql port) selected-port)
+                              (= (.get effective plan gitea database-port) selected-port)
+                              (eq? (.get effective config)
+                                   (.get effective plan configuration)))))))
+            name: 'published-port-policy seed: 42 cases: 16 shrink-budget: 32
+            policy: (make-policy
+                      labels: (lambda (arguments)
+                                (list (if (allowed? (vector-ref arguments 0)) 'admitted 'refused)
+                                      (if (vector-ref arguments 1) 'explicit 'follow)))
+                      required: '((admitted . 1) (refused . 1) (explicit . 1) (follow . 1)))
+            dependencies: (list parent cached (.get publication contract)))
+          diagnostics: (lambda (report)
+                         (property.report-diagnostics report bindings: '(port explicit?))))
         (set! completed (+ completed 1))))
     (yuanxu-test-fixture "both independently published requirements survive and conflict"
       (fixture (.cc ServicesFixture postgres-ports: '(5433) gitea-ports: '(5440)))

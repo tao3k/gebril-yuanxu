@@ -61,7 +61,7 @@
                               (set! entry-reads (+ entry-reads amount))))))
             (check-exception
               (yuanxu-configuration-source config 'Config void role-sources: (list config objects)) error?))
-          ;; Exactly the pre/post complete guards read the private entry; SDK
+          ;; Exactly the pre/post complete guards read the private entry; Gerbil
           ;; imports check their own dependency subgraphs, not this role again.
           (check-equal? entry-reads 2))))
     (yuanxu-test-case "canonical public source imports work; foreign same-identity source never runs"

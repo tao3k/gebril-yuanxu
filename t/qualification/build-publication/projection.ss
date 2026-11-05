@@ -22,7 +22,7 @@
     main))
 
 
-;; Inject byte changes without also changing SDK freshness metadata. Restoring
+;; Inject byte changes without also changing Gerbil freshness metadata. Restoring
 ;; bytes restores the original artifact; negative tests must still reject the
 ;; corrupt contents even when file times match the issued snapshot.
 (def (write-artifact-bytes path data)

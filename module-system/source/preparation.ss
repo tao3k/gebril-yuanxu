@@ -21,6 +21,8 @@
                  core-read-module/sexp core-library-package-plist __module-pkg-cache syntax->datum
                  core-resolve-library-module-path
                  module-context? module-context-path prelude-context? prelude-context-path)
+        (only-in :gerbil/expander/module __module-registry)
+        (only-in :yuanxu/module-system/building/source-closure for-each-build-module build-module-dependencies)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/admission)
 (export build-target-name yuanxu-prepare-module-publication yuanxu-write-module-publication
@@ -536,6 +538,57 @@
                                       (source-import compiler-import/independent))
   (def (run directory materialize?)
       (def gerbil-import (current-expander-module-import))
+      (def prior-catalog (hash-copy __module-registry))
+      (def staged-prefix
+        (string-append (path-strip-trailing-directory-separator
+                         (path-normalize directory)) "/"))
+      (def (restore-staged-imports!)
+        ;; Importing prepared roles installs both path and identity aliases in
+        ;; Gerbil's catalog. They must not outlive their temporary source tree.
+        ;; Preserve unrelated imports and restore the exact prior contexts,
+        ;; including nested compiler extents, without evaluating a module again.
+        (def seen (make-hash-table-eq))
+        (def consumers (make-hash-table-eq))
+        (def affected (make-hash-table-eq))
+        (def pending '())
+        (def (enroll! context)
+          (when (and (string? (module-context-path context))
+                     (string-prefix? staged-prefix (module-context-path context)))
+            (set! pending (cons context pending)))
+          (for-each
+            (lambda (dependency)
+              (when (module-context? dependency)
+                (hash-update! consumers dependency (cut cons context <>) '())))
+            (build-module-dependencies context)))
+        ;; A stable-path importer can still retain a staged child. Traverse the
+        ;; native graph once, then propagate invalidation to its consumers.
+        ;; The extent-local reverse index is discarded after cleanup: O(V+E),
+        ;; with no successful source check or alternate module catalog cached.
+        (hash-for-each
+          (lambda (key context)
+            (when (module-context? key)
+              (for-each-build-module key enroll! seen))
+            (when (module-context? context)
+              (for-each-build-module context enroll! seen))) __module-registry)
+        (let propagate ()
+          (when (pair? pending)
+            (let (context (car pending))
+              (set! pending (cdr pending))
+              (unless (hash-key? affected context)
+                (hash-put! affected context #t)
+                (for-each (lambda (consumer) (set! pending (cons consumer pending)))
+                  (hash-ref consumers context '()))))
+            (propagate)))
+        (def staged-keys '())
+        (hash-for-each
+          (lambda (key context)
+            (when (or (hash-key? affected context) (hash-key? affected key))
+              (set! staged-keys (cons key staged-keys)))) __module-registry)
+        (for-each
+          (lambda (key)
+            (if (hash-key? prior-catalog key)
+              (hash-put! __module-registry key (hash-ref prior-catalog key))
+              (hash-remove! __module-registry key))) staged-keys))
       (def inputs (make-hash-table))
       ;; Reuse the publication's admitted role inventory. Ordinary retained
       ;; libraries and private helpers retain their runtime source import path.
@@ -591,7 +644,10 @@
                   (module-source-measure-operation 'compiler-import-after
                     (lambda () ((.ref input 'admit-current))))
                   context))))))
-      (parameterize ((current-expander-module-import import-input)) (action)))
+      (dynamic-wind
+        void
+        (lambda () (parameterize ((current-expander-module-import import-input)) (action)))
+        (lambda () (when materialize? (restore-staged-imports!)))))
   (if (current-build-source-directory)
     ;; The stable role frames are already materialized by the selected view.
     ;; Reuse them for original-path imports too, instead of a second temp copy.

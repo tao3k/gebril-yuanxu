@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; SDK-only setup for a source-only Core qualification process.
+;;; Gerbil-only setup for a source-only Core qualification process.
 (import :std/test (only-in :std/source this-source-file)
         (only-in :std/misc/ports read-all-as-string))
 (export module-build-source-snapshot-test)

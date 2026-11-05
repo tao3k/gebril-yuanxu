@@ -36,7 +36,7 @@
       (test root prefix))))
 (def module-role-projection-test
   (test-suite "One role inventory for declaration and compiler"
-    (test-case "SDK spec syntax evaluates its value and options once"
+    (test-case "Gerbil spec syntax evaluates its value and options once"
       (let ()
         (def specifications 0)
         (def options 0)

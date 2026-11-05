@@ -31,7 +31,7 @@
                (directory-files (list path: libdir ignore-hidden: #f))) libdir)))
       (list directory libdir unit-name (cadr raw) record))
     raw))
-;; Keep fresh-worker arguments independent of the SDK's interpreter/exe launcher.
+;; Keep fresh-worker arguments independent of the Gerbil's interpreter/exe launcher.
 (def (main . raw-arguments)
   (call-with-execution-progress 60000 600000
     (lambda (_frame)

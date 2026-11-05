@@ -99,7 +99,7 @@
     (check-equal? (> calls 0) #t)
     (check-equal? (.get Root port) 5432)
     (set! completed (+ completed 1)))
-  (yuanxu-test-case "SDK reflective setter still invokes a replacement before restoring it"
+  (yuanxu-test-case "Gerbil reflective setter still invokes a replacement before restoring it"
     (.def Root port: 5432)
     (def roots (record (cut .get Root port)))
     (def table (object-%reads Root))

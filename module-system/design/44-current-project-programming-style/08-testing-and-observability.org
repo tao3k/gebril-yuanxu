@@ -56,6 +56,12 @@ every byte to that Case alone.
 
 * Test ownership
 
+=gxc= names the Gerbil compiler. =gerbil build= is the official build command;
+=std/make= schedules its dependencies and compiler jobs. =gerbil test= owns
+test discovery and execution through =std/test=. Macro expansion belongs to
+the Gerbil expander, while threads, GC and dynamic loading belong to the Gambit
+runtime. Use these concrete owner names in code, documentation and diagnostics.
+
 Core mechanism qualifications (reader/packager internals, MOP metadata copying,
 source-currentness controls and destructive temporary-tree relocation) belong
 in =core/t/=. A real Module or Scenario used as a fixture does not transfer
@@ -80,6 +86,29 @@ must not initialize unrequested production selection or activate its scopes.
 Reuse existing consumer Cases to qualify
 that wiring rather than introducing another compiler qualification suite.
 
+The existing =init.exports.tests.std-make-spec= can be consumed directly by a
+standard =defbuild-script= entry. =std/make= schedules the =gxc= compiler. TestingScript
+only admits an already issued support publication; missing approval requires
+=gerbil build=, and corrupt products/approvals are rejected rather than repaired
+at test execution time. Native CLI policy may use the existing guarded file
+source without associating another Builder: =gerbil test= owns Suite discovery,
+registration and assertions. Its compiled library path precedes source fallback.
+
+Compiler qualifications use versioned Gerbil packages prepared by the Just build
+phase. Only a compiler-qualification Fixture may invoke official =gerbil build=
+inside a Case to prove a real injected compiler failure. This test-only effect
+is not available to business code or TestingScript. Restore mutated source and
+product/record bytes even when the refusal check throws. Never install fake
+compiler/interpreter executables or private Harness dispatchers.
+
+Module qualification support consumes the existing
+=init.exports.tests.qualification.std-make-spec= through the same standard
+build entry. Prepare shared support once per complete queue or CI group, then
+run every file through its original resource and receipt gate. Installed
+libraries precede source fallback, so preparation and execution derive the
+same support closure. Empty support has no products or issuer. Reusing a signed
+publication still verifies its original source inputs and product digests.
+
 A cached support library does not cache a test verdict. Report support discovery
 and preparation, harness startup, and Case execution separately. A hot atomic
 Case should exercise its behavior with minimal setup; a source-relocation or
@@ -95,6 +124,15 @@ Harness entry and return boundaries. Qualify reuse through the real runtime
 entrypoints, product timestamps and independent assertions.
 
 * Observability
+
+Property tests use native =:clan/poo/testing/type= generators and
+=:clan/poo/testing/property/test= assertions inside the existing native Suites
+or Fixtures. A report is data until the standard assertion admits its passed
+status. Preserve seed, bounded trials/shrinking, coverage and original failures.
+Do not silently accept unsupported Types, clone away generator prototype
+identity, or start PBT while importing production modules. Ordinary test
+discovery executes declared properties; domain relationships still need named
+properties rather than being inferred from arbitrary object fields.
 
 Observability reports first-event latency, active phase, elapsed time, memory
 and final receipt without becoming execution authority.  A timeout must show

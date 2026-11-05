@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Core-owned runtime build completion; never intercept Gerbil loading.
-(import (only-in "./products.ss" artifact-files clean-build-artifacts! repair-build-products! require-build-products!
+(import (only-in :gerbil/compiler/base execute-pending-compile-jobs!)
+        (only-in "./products.ss" artifact-files clean-build-artifacts! repair-build-products! require-build-products!
                  current-build-output-directory)
         (runtime: :clan/poo/object)
         (only-in :std/string/path path-force-extension)
@@ -29,7 +30,7 @@
         accept-build-artifact-handoff! read-build-artifact-handoff
         build-artifact-publication-current admit-build-artifact-publication!
         build-artifact-handoff require-build-artifacts! test-build-publication test-build-projection
-        current-build-phase-times repair-build-products! require-build-products!)
+        current-build-phase-times repair-build-products! require-build-products! call-with-static-compiler-inputs)
 
 ;; Execution-local diagnostic totals, never approval or currentness results.
 ;; No callback runs inside a guard; disabled instrumentation allocates no table.
@@ -63,8 +64,12 @@
   (def approval-root (path-expand ".yuanxu-test-publications" (path-expand "lib" prefix)))
   (def approval-directory (path-expand key approval-root))
   (def approved (path-expand "issuance.ss" approval-directory))
-  (def approved-input #f)
-  (def approved-packet #f)
+  ;; Every leaf publication may contain megabytes of source observations.
+  ;; Retain only integrity references, never a second text/decoded packet per
+  ;; leaf. Restores decode one digest-bound snapshot for that operation.
+  (def approved-digest #f)
+  (def approved-record #f)
+  (def approved-record-digest #f)
   (def (regular-or-absent! path kind)
     (let (actual (module-source-type path))
       (when (and actual (not (eq? actual kind)))
@@ -73,33 +78,42 @@
     (regular-or-absent! approval-root 'directory)
     (regular-or-absent! approval-directory 'directory)
     (regular-or-absent! approved 'regular))
+  (def (read-approved-packet)
+    (def text (module-source-read approved))
+    (def digest (hex-encode (sha256 (string->utf8 text))))
+    (when (and approved-digest (not (equal? digest approved-digest)))
+      (error "test approval source changed" approved))
+    (def packet (call-with-input-string text
+      (lambda (port) (parameterize ((current-input-port port)) (read-build-artifact-handoff)))))
+    (unless approved-digest
+      (set! approved-digest digest)
+      (set! approved-record (string-copy (list-ref packet 5)))
+      (set! approved-record-digest (string-copy (list-ref packet 6))))
+    packet)
   (def (bind-approval!)
-    (unless approved-input
+    (unless approved-digest
       (storage-current!)
-      (let (input (cons approved (module-source-read approved)))
-        (def packet (call-with-input-string (cdr input)
-          (lambda (port) (parameterize ((current-input-port port)) (read-build-artifact-handoff)))))
-        (set! approved-input input)
-        (set! approved-packet packet))))
+      (read-approved-packet)))
   (.o (:: source)
     artifact: (string-copy directory)
     reference: (string-copy approved)
     .current:
     (lambda ()
       (storage-current!)
-      (when approved-input
-          (module-source-admit-current! (list approved-input) "test approval source changed")
-          (unless (equal? (digest-file (list-ref approved-packet 5)) (list-ref approved-packet 6))
+      (when approved-digest
+          (unless (equal? (digest-file approved) approved-digest)
+            (error "test approval source changed" approved))
+          (unless (equal? (digest-file approved-record) approved-record-digest)
             (error "test approved issuance record changed"))))
     .available?: (lambda () (storage-current!) (eq? (module-source-type approved) 'regular))
     .restore-build:
     (lambda (graph)
       (bind-approval!)
       (.call source .current)
-      ;; bind-approval! has decoded this exact retained input with the same
-      ;; public codec. Reuse its private syntax value, never its admission.
+      ;; Decode the exact digest-bound snapshot, not a mutable path read after
+      ;; admission or an indefinitely retained copy of every leaf's sources.
       (accept-build-artifact-handoff/read! projection directory
-        (lambda () approved-packet) (cut .call source .current) void)
+        read-approved-packet (cut .call source .current) void)
       (.call source .current))
     .retain-build:
     (lambda (graph)
@@ -178,6 +192,49 @@
 (def restoring (make-parameter '()))
 ;; Runtime make consumes an output DIRECTORY, not an asserted trust flag. Fresh
 ;; ownership makes missing outputs trigger the installed compiler naturally.
+(def (call-with-static-compiler-inputs projection action)
+  (def inputs (if (.slot? projection 'static-inputs) (.get projection static-inputs) '()))
+  (def (current!)
+    (for-each (lambda (input) ((.get input admit-current))) inputs))
+  (if (null? inputs) (action)
+    (call-with-temporary-directory "core-native-static-"
+      (lambda (directory)
+        (current!)
+        (def target (path-expand "static" directory))
+        (create-directory target)
+        (def staged
+          (map
+            (lambda (input)
+              (def name (.get input name))
+              (unless (and (string? name) (string-suffix? ".scm" name)
+                           (equal? name (path-strip-directory name)))
+                (error "native static compiler input requires a filename" name))
+              (def path (path-expand name target))
+              (when (file-exists? path)
+                (error "native static compiler inputs share an output" path))
+              (def text (.get input contents))
+              (call-with-output-file path (cut display text <>))
+              (cons path text)) inputs))
+        (def paths (load-path))
+        (dynamic-wind
+          (lambda () (add-load-path! directory))
+          (lambda ()
+            (try
+              (module-source-admit-current! staged "staged native compiler input changed")
+              (begin0 (action)
+                (module-source-admit-current! staged "staged native compiler input changed")
+                (current!))
+              (catch (cause)
+                ;; An early make refusal can leave compiler jobs queued. Drain
+                ;; the official executor before its input directory is removed.
+                (with-catch
+                  (lambda (cleanup)
+                    (unless (eq? cause cleanup)
+                      (error "compiler failure and job drain failure" cause cleanup)))
+                  execute-pending-compile-jobs!)
+                (raise cause))))
+          (lambda () (set-load-path! paths)))))))
+
 (def (digest-file path)
   (unless (eq? (module-source-type path) 'regular)
     (error "compiled artifact is missing, non-regular or a symlink" path))

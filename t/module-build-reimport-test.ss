@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; SDK-only entry: imports must happen inside the same-state regression control.
+;;; Gerbil-only entry: imports must happen inside the same-state regression control.
 (import :std/test
         (only-in :std/source this-source-file)
         (only-in :std/string/path path-force-extension)

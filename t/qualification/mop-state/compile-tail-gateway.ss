@@ -18,12 +18,15 @@
         (let ((input (path-expand name directory)) (local (string-append relative name)))
           (if (eq? (file-info-type (file-info input #f)) 'directory)
             (snapshot input (string-append local "/"))
-            (when (or (member (path-extension name) '(".ss" ".scm" ".json"))
+            ;; Native qualification declarations also bind literal text inputs;
+            ;; those bytes must survive relocation rather than fall back live.
+            (when (or (member (path-extension name) '(".ss" ".scm" ".json" ".txt"))
                       (string=? name "gerbil.pkg"))
               (let (output (path-expand local source-core))
                 (create-directory* (path-directory output))
-                (call-with-output-file output
-                  (lambda (port) (display (call-with-input-file input read-all-as-string) port)))))))))
+                ;; Preserve executable build entries as well as source bytes:
+                ;; the snapshot uses official gerbil build for preparation.
+                (copy-file input output)))))))
     (directory-files directory)))
 (snapshot core "")
 (def path (path-expand "source/yuanxu/module-system/source/admission.ss" root))

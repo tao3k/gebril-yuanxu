@@ -54,4 +54,18 @@ theorem layout_preserves_both_requirements
     (CoreApprovedRecovery.accepted_preserves_boundaries
     restored approval source files a b accepted).2.2.2.2⟩
 
+-- A package language is a resolved input, not a new approval or I/O callback
+-- in each target projection. The source guard must establish this equality.
+theorem resolved_language_preserves_targets {Language Identity Name : Type}
+    (name : Language → Identity → Name) (observed retained : Language)
+    (same : observed = retained) (identities : List Identity) :
+    identities.map (name observed) = identities.map (name retained) := by
+  rw [same]
+
+-- Source applicability remains independent of whether naming metadata is held.
+theorem resolved_language_does_not_approve_changed_source
+    (restored approval files a b : Bool) :
+    CoreApprovedRecovery.finish restored approval false files a b = false := by
+  exact CoreApprovedRecovery.changed_source_refused restored approval files a b
+
 end YuanxuProof.Admission.TestMakeLayout

@@ -101,7 +101,7 @@
       (def first (read!))
       (check-equal? (call-with-input-file marker read-line) "once")
       (check-equal? (and (member helper (map (cut .get <> path) (.call reader inputs source))) #t) #t)
-      ;; Actual SDK contexts are reused; dependency lookup must still occur in
+      ;; Actual Gerbil contexts are reused; dependency lookup must still occur in
       ;; this publication's fresh input collector, not a prior captured list.
       (def second (read!))
       (check-equal? (eq? first second) #f)

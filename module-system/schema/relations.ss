@@ -22,7 +22,9 @@
 (def (semantic-symbol-classify candidate context)
   (yuanxu-classification-evidence
    'semantic-symbol candidate (symbol? candidate)
-   (if (symbol? candidate) '() '(expected-symbol)) context))
+   (if (symbol? candidate) '()
+     (list (.o kind: 'yuanxu.type.classification-failure
+               code: 'expected-symbol))) context))
 
 (define-type (SemanticSymbol @ YuanxuContract.)
   identity: 'semantic-symbol

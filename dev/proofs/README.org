@@ -28,7 +28,7 @@ fallback, with producer source binding and retained A/B disturbances.
 
 | Package | Scope | Dependency boundary |
 |---------+-------+---------------------|
-| [[file:lean/README.org][lean]] | Module composition, source identity, slot demand, cache, publication, parent association and construction laws | Lean 4.34.0; LeanPoo PR 13 / =6e6a706= is an exact locked Git dependency |
+| [[file:lean/README.org][lean]] | Module composition, source identity, slot demand, cache, publication, parent association and construction laws | Lean 4.34.0; LeanPoo PR 13 / =5d4587a= is an exact locked Git dependency |
 | [[file:quint/README.org][quint]] | Graph operations, demand-only test-source admission and semantic Query boundaries | Quint 0.33.0; bounded positive cases and matched negative controls |
 
 Run =just proofs= in Core. =just proofs-quint= checks the finite models separately;

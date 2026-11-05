@@ -1,0 +1,145 @@
+#+title: 20.34 PBT Integration and Complete Runtime Upgrade
+#+language: en
+#+filetags: :modules:pbt:currentness:qualification:
+
+* Fixed producer and ownership
+
+The candidate Core dependency is gerbil-poo
+=e080849458e37cc33a4e63582540ffc25cda0ba6=, a descendant of the previously
+qualified =56b474b=. Its PR 13 platform checks passed. Qualification uses a
+fresh native package environment; the old environment and other sessions'
+checkouts remain untouched. Neither Gerbil nor Gambit source is modified.
+
+The change includes native vector occupancy, sparse layout growth/copy,
+evicted inline access rebinding and PBT generation/shrink/replay ownership.
+It does not remove the original issued-read registry or per-visit authentication.
+The slot-observation source digest is unchanged. The changed object source is
+=sha256:9726f238a3c432c0f26e7a6fe85aa9455afee88ace130af2962610f9d14b868c=.
+Core's existing Lean correspondence bindings identify that actual producer.
+
+SysML assigns representation/ownership laws to Lean and temporal source,
+callback, observer and parent/child controls to the existing Quint models.
+PBT exercises concrete generated inputs against production behavior; it is
+not a replacement for either proof and is not another cache protocol.
+
+* Automatic generation and explicit test execution
+
+Native Types own domain membership. =testing/type= derives supported bounded
+generators from their actual descriptors; =testing/property/test.check-property=
+turns every non-passing report into a standard =std/test= failure. No duplicate
+generator registry, property runner, environment opt-in or public test wrapper
+is added. Unsupported descriptors refuse rather than falling back to Any.
+
+Importing a module does not execute PBT. The existing native Suite/Fixture is
+the execution boundary. Its normal discovery through =init.exports.tests= and
+the standard Just/Harness queue executes the added property automatically.
+Domain relationships still require an explicit property: a Type alone cannot
+infer that two services must agree or that a captured parent plan is stale.
+
+* Real Gitea/PostgreSQL consumer
+
+The existing cached-parent Case now derives an Enum from both real configured
+=allowed-ports= lists, plus valid boundary ports 1 and 65535. Its input Type is
+=Tuple Ports Bool=: native PBT derives both the port and whether the client
+port is explicitly assigned or follows its default. This also exercises the
+producer's shared product-specification/typed-observation path. Sixteen trials
+at seed 42, with shrink budget 32, derive ordinary POO child configurations
+and call the real published Contract's =.admit=.
+
+Each trial compares admission against BOTH requirements. Accepted trials must
+read the selected port through the final database and client plans and must
+retain the plan/config identity relationship. The cached parent stays at 5432.
+The native coverage policy requires admitted, refused, explicit and follow
+labels to each occur at least once; an empty or one-sided run cannot pass.
+Named failure diagnostics expose port and explicit? without another source
+table. The original fixed
+controls for explicit mismatch, stale plans, child obligations, source changes
+and unselected branches remain in the same eleven-case Suite.
+
+The first integration failed at preparation: =.cc Enum.= carbon-copied its
+direct specifications but did not inherit the Enum prototype used by native
+generator classification. Native PBT returned an error and the ordinary
+Harness refused the file despite the child's zero exit. The fix uses
+=.o (:: @ Enum.)=, the actual derived Type relationship. It does not supply
+a fallback sampler or weaken Type recognition. The product property then
+exposed a second consumer mistake: treating the native vector Tuple as a list.
+It refused at trial 1 and retained the named input (port 1, explicit? true).
+The consumer now uses native vector access. Both failures are retained; the
+corrected composite property and all eleven real Cases passed with normal
+MODULE-OK, HARNESS-OK and final OK, under the unchanged budgets.
+
+* Native build environment failure retained
+
+The complete producer built from an empty package library within its original
+300-second/2-GiB envelope. Core's first empty-library build exposed a separate
+Darwin FFI link failure in =source/static-inputs=: PATH selected Nix linker
+tools and left free/realpath unresolved. The failure is retained. Selecting
+the platform tools through GCC's standard =COMPILER_PATH=/usr/bin= let native
+Make rebuild only the failed unit and complete successfully.
+
+The common Just compiler environment now selects those Darwin tools for the
+ordinary build, shared support preparation and native Harness entry. Linux
+keeps its ordinary environment. No application-specific environment variable,
+linker-symbol suppression, handwritten product repair or Gerbil patch is used.
+
+* Qualification and limits
+
+- Native producer empty build: passed, 113.80 seconds wall.
+- Native producer PBT kernel: 55 Cases passed through its standard Harness.
+- Complete Core build against the new runtime: passed after the actual linker
+  routing failure was corrected; original failure is not counted as a pass.
+- Real Gitea/PostgreSQL: eleven Cases, including the new covered property, passed.
+- Existing Lean correspondence owners: 111 jobs passed.
+- Source-bound SelectionReplay Quint: eleven positive/matched-negative controls
+  passed. Expected counterexamples remain refusals, not positive theorems.
+
+Read replay, deferred role reading, the full source build lifecycle and source
+package registration passed through the same default Just queue. The unchanged
+41-target source lifecycle measured 9.911 seconds spec, 25.487 cold compile,
+11.151 zero-compile hot command, 9.629 clean, 51.999 rebuild and 43.186 final
+clean. Every command remained under its original 60-second limit and the
+process Suite remained under 180 seconds. The large later variation is retained,
+not selected away as host noise or presented as stable acceleration.
+
+Full Core PR 19 is not yet green: its preceding submitted revision
+still failed Linux declaration scale and macOS's 60-second cold build. The
+new dependency is not permission to promote product pins or claim the 10,000
+module capacity budget. No timeout, heap, observer or admission obligation is
+relaxed, and no admission conclusion is cached.
+
+The existing 256-declaration retention Case also passed under the new runtime.
+Its Graph-ready span measured 42.665 seconds wall / 40.656 CPU. After the
+Graph-held collection, total process live data was 357,805,144 bytes (about
+341 MiB), not exclusive Graph memory. It retained the original 512 role
+expansions, 1,536 candidate checks, 79,812 source reads and source-change
+refusal. Allocation accounting was invalid and is not used. The previous
+Linux CI observation is a different platform and is not a causal speedup
+comparison; this is not a 10,000-module acceptance receipt.
+
+* Full-build CPU attribution remains a separate workstream
+
+The first ordinary full Core hot command compiled zero targets but measured
+34.70 seconds wall, 21.60 user and 3.99 system; it did not improve on the old
+20.85/20.29-second wall cohort. A low-cost diagnostic then included the exact
+build source and wrapped only its existing projection and main functions.
+No source observer or per-read statistics were enabled. The same workload had
+zero compilation and the following measurements:
+
+| Region | Wall s | User s | System s | GC wall s |
+|--------+--------+--------+----------+-----------|
+| Projection | 5.695 | 4.969 | 0.517 | 0.982 |
+| Entire main, including projection | 12.704 | 9.957 | 2.341 | 1.963 |
+| Whole diagnostic process | 20.39 | 16.18 | 2.99 | not sampled |
+
+Entry readiness was 5.648 seconds. Main minus projection leaves about 7.009
+seconds wall and 6.812 seconds CPU for native Make and surrounding independent
+currentness/signing. These subregions have not yet been separated without the
+heavier read instrumentation. GC is nested in the regions, not an additive
+explanation of the whole cost. A preceding coarse sample took 37.69 seconds
+wall; that variation remains a recorded limitation of wall comparisons.
+
+The diagnostic preserves return values and uses two native exec-stats frames,
+not a frame per source read. Its temporary script is removed and is not another
+entrypoint or Builder. A new producer revision alone is not evidence that the
+remaining production CPU work is fixed. Do not suppress macro/import callbacks,
+drop source rechecks or restore an old admission conclusion to reduce it.

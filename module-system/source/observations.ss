@@ -8,6 +8,7 @@
         (only-in :std/misc/ports read-all-as-string))
 (export observe-source
         module-source-type module-source-read module-source-name? module-source-admit-current!
+        module-compiler-interface-source
         call-with-module-source-read-cache call-with-module-source-fresh-reads
         call-with-module-source-callback
         call-with-collected-module-sources
@@ -351,6 +352,41 @@
         (when cache (hash-put! cache path text))
         text))))
 
+(def (compiler-interface-info path)
+  ;; The native importer owns .ssi paths. Bazel may project its Tree Artifact
+  ;; files as symlinks; this is separate from admitting a source role.
+  (unless (equal? (path-extension path) ".ssi")
+    (error "native compiler interface must name an .ssi file" path))
+  (observe-source 'stats)
+  (def info (file-info path #t))
+  (unless (eq? (file-info-type info) 'regular)
+    (error "native compiler interface must resolve to a regular file" path))
+  info)
+
+(def (compiler-interface-read path)
+  (observe-read-request path)
+  (compiler-interface-info path)
+  (read-regular-source path))
+
+(def (module-compiler-interface-source interface-path)
+  ;; Keep the import spelling in the original byte observations. The extent's
+  ;; guard additionally binds the followed file identity, so identical bytes at
+  ;; a different symlink target do not silently replace the admitted interface.
+  (def initial-info (compiler-interface-info interface-path))
+  (def initial-kind (module-source-type interface-path))
+  (def (same-file? info)
+    (and (equal? (file-info-device info) (file-info-device initial-info))
+         (equal? (file-info-inode info) (file-info-inode initial-info))))
+  (def observations
+    (list (cons interface-path (compiler-interface-read interface-path))))
+  (def (current!)
+    (unless (and (equal? initial-kind (module-source-type interface-path))
+                 (same-file? (compiler-interface-info interface-path)))
+      (error "native compiler interface changed target; use a fresh source epoch" interface-path))
+    (module-source-admit-current! observations "native compiler interface bytes changed"))
+  (current!)
+  (.o source-inputs: observations admit-current: current!))
+
 ;; Private per-admission observations; neither a field table nor a global log.
 (defstruct source-observation (input message) final: #t)
 (def (check-source-current! entry message)
@@ -369,12 +405,14 @@
     (begin
       (observe-source 'source-comparisons)
       (unless (if (cdr entry)
-                (and (eq? (module-source-type (car entry)) 'regular)
+                (if (equal? (path-extension (car entry)) ".ssi")
+                  (equal? (cdr entry) (compiler-interface-read (car entry)))
+                  (and (eq? (module-source-type (car entry)) 'regular)
                      (equal? (cdr entry)
                        (if observed? (module-source-read (car entry))
                          (begin
                            (observe-read-request (car entry))
-                           (read-regular-source (car entry))))))
+                           (read-regular-source (car entry)))))))
                 (not (module-source-type (car entry))))
         (error message (car entry)))
       ;; A failed check never enrolls a comparison result. Observation collection

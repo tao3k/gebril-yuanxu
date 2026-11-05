@@ -1,0 +1,116 @@
+#+title: 20.31 Typed Role Analysis at the Production Boundary
+#+language: en
+#+filetags: :modules:functional:contracts:retention:
+
+* Production data flow
+
+A role datum previously crossed the authoring Generic, constructed a checked
+POO admission receipt and immediately discarded that receipt after reading its
+diagnostics. The batch then constructed another receipt. The read graph was
+correct to retain the dependencies of every object that had actually existed;
+removing those issued edges afterwards would be incorrect.
+
+The production Generic now returns diagnostic values. The boundary validates
+EVERY returned list with native =List YuanxuModuleAuthoringDiagnostic=, then
+aggregates the values in source order. A batch/port demand constructs one
+checked POO admission receipt. An explicit single-datum admission still
+constructs one receipt and retains the role actually dispatched, including
+when a contributor rebinds the Profile during invocation.
+
+#+begin_src scheme
+(.defgeneric module-authoring-analyze (executor role interface datum)
+  (protocol ModuleAuthoringAnalysisProtocol))
+
+(.defmethod-bundle ModuleAuthoringCoreMethods
+  ModuleAuthoringAnalysisProtocol
+  (authoring-method ModuleSourceRole. yuanxu-module-authoring-diagnostics/common)
+  (authoring-method ConfigSourceRole. yuanxu-module-authoring-diagnostics/config))
+#+end_src
+
+The internal =authoring-method= defrules expands only to ordinary .defmethod.
+There is no strategy marker, direct-primary field, applicability shortcut,
+separate function executor or cached verdict. Every row retains ordinary
+Generic method combination, carrier Type validation, qualifiers and native
+read observation. The complete combined result is Type-checked after invocation.
+
+* Directed extension migration
+
+The old =ModuleAuthoringAdmissionProtocol/Generic= exports and the two
+admit/common/config wrappers are removed. Contributor methods target
+=ModuleAuthoringAnalysisProtocol/Generic= and return diagnostic lists; they
+combine prior diagnostics with ordinary =call-next-method=. Returning an old
+receipt or a malformed element is refused by the result Type.
+
+This is an explicit extension-contract change, not a claim of equivalence to
+arbitrary old receipt predicate side effects. Per-datum requirements belong
+to the analysis method/result Type. The admission receipt Type still runs at
+every actual receipt-construction boundary. No legacy aliases are retained.
+Core consumers and the real product contribution test use the same protocol.
+
+* Assurance allocation
+
+SysML assigns this to construction/data-flow ownership, not to a new cache.
+The existing PayloadSharing Lean owner adds =collectDiagnostics= and proves
+=typedAnalysisPreservesOrder=, =analysisRefusalStopsAggregation= and
+=successfulPrefixCannotHideRefusal=. Each Except is a projection of a fresh
+actual Type check; the theorem does not certify arbitrary contributor code.
+
+Existing temporal models remain responsible for source changes, callback gaps,
+ordered checks, parent isolation and omitted requirements. No second Quint
+model is added for the same structural fold. Native tests retain per-row open
+carrier-policy observations and check malformed contribution refusal, late
+registration, qualifier counts, one aggregate receipt validation and role
+rebinding. The real Gitea/PostgreSQL Scenario remains the domain consumer.
+
+* Performance and acceptance boundary
+
+This removes construction of discarded per-row receipts; it does NOT remove
+Generic effective-method/invocation frames or the before/after currentness
+boundaries. Count and measure the actual native reads/receivers rather than
+claiming that a shorter function body proves a lower heap or wall time.
+
+The separate unconditional four-package Just prerequisite remains a known
+preparation problem (20.30). It is not solved by changing role analysis.
+The original thousand/ten-thousand declaration Case, 2 GiB limit and deadlines
+remain unchanged. No capacity pass follows from this structural refactor alone.
+
+* Default Interface construction
+
+The first actual constructor probe found two profile admission receipts for a
+fresh Interface: the default argument called the checked public Profile factory,
+then make-module-interface checked it again. Reuse the existing internal
+make-default-module-authoring-profile for the Interface's private default value.
+make-module-interface still validates it before publishing the Interface.
+The public Profile constructor remains checked, and an explicitly supplied
+Profile still receives its own fresh Interface-boundary check. No prior
+acceptance is reused. The probe keeps its one-boundary expectation and the
+initial failing two-receipt result is retained as local evidence.
+
+* Executed fixed-source gates
+
+The default Core build passed; a later same-source build emitted zero compile
+targets. Native Just/Harness gates passed the ten authoring cases, four dispatch
+controls, sixteen actual module declarations and eleven Gitea/PostgreSQL cases.
+Every file retained MODULE-OK, HARNESS-OK and final OK. The open policy observer
+still saw =#(4 4 3 10)= deliveries for one row, =#(16 16 12 40)= for four rows and
+=#(32 32 24 80)= for eight rows (generic/effective/frame/method policy slots).
+These are deliveries, not allocations or predicate execution counts.
+
+The default source-only build process gate also passed with the Just-detected
+12 compiler workers, 41 native targets and the original 60-second child and
+180-second worker limits. Its measured command spans were spec 11.12 seconds,
+cold compile 28.85, hot compile 11.46, first clean 10.92, new-process rebuild
+24.02 and final clean 10.38. Output identities, hot prelude timestamps and changed
+source/package refusal remained asserted. This is a build gate, not module-load
+capacity, and is not a causal comparison to a different macOS CI runner.
+
+The PayloadSharing Lean target passed (101 jobs). There is no new duplicated
+Quint model. Full remote CI remains an independent gate.
+
+An earlier preparation run correctly refused compiler-tool source drift after
+an internal macro-parameter edit. The edit was restored to the built source,
+the failing log was retained and a new process reran the gate. The first
+constructor probe separately refused the duplicate Profile admission described
+above; its one-boundary assertion was retained and the production default fixed.
+Neither failure was converted to success by cleaning fingerprints, suppressing
+observers or increasing a deadline. Raw logs remain outside source control.

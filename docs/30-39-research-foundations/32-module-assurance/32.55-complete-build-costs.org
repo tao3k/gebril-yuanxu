@@ -230,7 +230,7 @@ Status correction: the build-entry experiments described in this section were
 withdrawn after the ownership review. They are historical measurements, not
 the current supported entry. The root =build.ss= is restored; there is no
 separate test Builder or =test-support= dispatcher. The replacement publication
-design is [[file:../../10-19-design/13-module-loading/13.17-init-exports-and-sdk-consumers.org][13.17 Init Exports and SDK Consumers]]. Automatic pre-import preparation
+design is [[file:../../10-19-design/13-module-loading/13.17-init-exports-and-gerbil-consumers.org][13.17 Init Exports and Gerbil Consumers]]. Automatic pre-import preparation
 through that proposed publication has not been implemented.
 
 The opt-in observation rerun used the same eleven Gitea/PostgreSQL Cases,

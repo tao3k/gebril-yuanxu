@@ -13,7 +13,7 @@
                  import-set? import-set-source)
         (only-in :std/source this-source-file)
         (only-in "./source-package.ss" module-build-source-path))
-(export yuanxu-bootstrap-spec for-each-build-module yuanxu-bootstrap-contexts
+(export yuanxu-bootstrap-spec for-each-build-module build-module-dependencies yuanxu-bootstrap-contexts
         yuanxu-library-identity? package-library-spec package-library-spec/source-context
         call-with-build-expansion-accounting
         call-with-build-stage)
@@ -112,20 +112,21 @@
                            (descend? (lambda (_context) #t)))
   (walk-build-modules root visit seen descend? identity))
 
-(def (walk-build-modules root visit seen descend? source-context)
-  ;; A caller walking several already imported roots may share this traversal's
-  ;; visited set. It never survives an independent closure request.
-  (def (context-of value)
+(def (build-module-context value)
     (cond
-     ((module-import? value) (context-of (module-import-source value)))
-     ((module-export? value) (context-of (module-export-context value)))
-     ((import-set? value) (context-of (import-set-source value)))
+     ((module-import? value) (build-module-context (module-import-source value)))
+     ((module-export? value) (build-module-context (module-export-context value)))
+     ((import-set? value) (build-module-context (import-set-source value)))
      (else value)))
-  (def (dependencies context)
+(def (build-module-dependencies context)
     (let* ((prelude (core-context-prelude context))
            (imports (module-context-import context)))
       (if (and (prelude-context? prelude) (expander-context-id prelude))
         (cons prelude imports) imports)))
+
+(def (walk-build-modules root visit seen descend? source-context)
+  ;; A caller walking several already imported roots may share this traversal's
+  ;; visited set. It never survives an independent closure request.
   ;; Hoist the live frame into tail-call arguments. Repeated aliases previously
   ;; allocated a new frame/spine even when their owner was already seen. Suspend
   ;; only when descending into a NEW context; no runtime metadata is mutated.
@@ -137,7 +138,7 @@
         (when after (visit after))
         (when (pair? frames)
           (walk (caar frames) (cdar frames) (cdr frames))))
-      (let* ((context (context-of (car pending)))
+      (let* ((context (build-module-context (car pending)))
              (value (if (module-context? context) (source-context context) context)))
         (cond
          ((and (prelude-context? value) (not (hash-key? seen value)))
@@ -147,7 +148,7 @@
           (begin
             (hash-put! seen value #t)
             (if (descend? value)
-              (walk (dependencies value) value (cons (cons (cdr pending) after) frames))
+              (walk (build-module-dependencies value) value (cons (cons (cdr pending) after) frames))
               (begin (visit value) (walk (cdr pending) after frames)))))
          (else (walk (cdr pending) after frames)))))))
 

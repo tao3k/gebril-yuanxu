@@ -36,9 +36,6 @@
 
 (import :yuanxu/graph/algorithms-list-support)
 
-(def (graph-adjacency-ref index id)
-  (or (hash-get index id) '()))
-
 (def (ids->adjacency-map ids index)
   (map (lambda (id)
          (cons id (graph-adjacency-ref index id)))
@@ -135,18 +132,6 @@
                                        (cdr ids)
                                        states)))))
 
-(def (edge-pairs->outgoing-index edge-pairs outgoing-index)
-  (if (null? edge-pairs)
-    outgoing-index
-    (let* ((edge-pair (car edge-pairs))
-           (source (car edge-pair))
-           (target (cadr edge-pair)))
-      (hash-ensure-modify! outgoing-index
-                           source
-                           (lambda () '())
-                           (lambda (targets) (cons target targets)))
-      (edge-pairs->outgoing-index (cdr edge-pairs) outgoing-index))))
-
 (def (yuanxu-graph-outgoing-index graph-value)
   (edge-pairs->outgoing-index
    (reverse (yuanxu-graph-edge-pairs graph-value))
@@ -186,23 +171,6 @@
                               (lambda (sources) (cons source sources)))))
      (reverse edge-pairs))
     (values outgoing-index incoming-index)))
-
-(def (walk-adjacency/indexed adjacency-index start-ids)
-  (let ((visited (make-hash-table))
-        (pending (make-Queue)))
-    (for-each (lambda (id) (enqueue! pending id)) start-ids)
-    (let loop ((result-rev '()))
-      (if (queue-empty? pending)
-        (reverse result-rev)
-        (let (id (dequeue! pending))
-          (if (hash-key? visited id)
-            (loop result-rev)
-            (begin
-              (hash-put! visited id #t)
-              (for-each
-               (lambda (neighbor) (enqueue! pending neighbor))
-               (graph-adjacency-ref adjacency-index id))
-              (loop (cons id result-rev)))))))))
 
 (def (strong-components-pop! root-id stack on-stack component)
   (let* ((members (vector-ref stack 0))

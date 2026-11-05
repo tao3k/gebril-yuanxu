@@ -53,7 +53,7 @@ For a returned resource, the existing =dynamic-wind= lifecycle calls =.release=
 after both normal completion and a body exception. A body plus release failure
 keeps both causes according to the existing shared implementation. Preparation
 is trusted test code, not a sandbox for arbitrary filesystem effects; cleanup
-owns this directory, not every SDK cache or compiler context in the process.
+owns this directory, not every Gerbil cache or compiler context in the process.
 
 * Service and relocation preparation
 

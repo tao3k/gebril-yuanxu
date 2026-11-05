@@ -3,12 +3,33 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Structured diagnostics shared by pure node checks and Core receipt consumers.
+(import (only-in :yuanxu/object-family/syntax defpoo-object-family))
 (import (only-in "./json-schema-validation-core.ss" yuanxu-json-schema-path->symbol))
 (export #t)
 
-(defstruct yuanxu-json-schema-validation-diagnostic
-  (severity reason message slot value contract metadata)
-  transparent: #t)
+;; Public validation values cross source-publication epochs. Native POO
+;; slots preserve their declared interface without a generative record type
+;; from one reader being mistaken for the record type of another reader.
+(defpoo-object-family
+  (prototype JsonSchemaValidationDiagnostic
+    json-schema-validation-diagnostic yuanxu-json-schema-validation-diagnostic?)
+  (constructor make-yuanxu-json-schema-validation-diagnostic
+    (severity-value severity)
+    (reason-value reason)
+    (message-value message)
+    (slot-value slot)
+    (value-value value)
+    (contract-value contract)
+    (metadata-value metadata))
+  (accessors
+    (yuanxu-json-schema-validation-diagnostic-severity severity)
+    (yuanxu-json-schema-validation-diagnostic-reason reason)
+    (yuanxu-json-schema-validation-diagnostic-message message)
+    (yuanxu-json-schema-validation-diagnostic-slot slot)
+    (yuanxu-json-schema-validation-diagnostic-value value)
+    (yuanxu-json-schema-validation-diagnostic-contract contract)
+    (yuanxu-json-schema-validation-diagnostic-metadata metadata))
+  (projections))
 
 (def (yuanxu-json-schema-validation-diagnostic->alist diagnostic)
   (list

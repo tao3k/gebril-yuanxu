@@ -6,7 +6,7 @@
 ;;; emitted module contracts, observability receipts or provider/Loader policy.
 (import (only-in :gerbil/core/contract using)
         (only-in :clan/poo/object .o .cc .ref)
-        (only-in :clan/poo/mop Type. define-type)
+        (only-in :clan/poo/mop Type. define-type raise-type-error)
         (only-in :clan/poo/object-contract diagnose as-value-contract)
         (only-in "./functional.ss" yuanxu-contract-object-ref)
         (only-in "./json-schema-normalize.ss" yuanxu-json-schema-normalize)
@@ -19,9 +19,18 @@
                  yuanxu-json-schema-validation-diagnostic-metadata))
 (export SchemaContract. ProjectionContract. schema-value-contract)
 
+;; Default Type validation only reports membership failure. These adapters
+;; also own precise diagnostics: validate once through the native diagnostic
+;; method and retain its ORIGINAL objects in the original TypeError.
+(def (validate-diagnosed descriptor value)
+  (def issues (diagnose descriptor value '()))
+  (unless (null? issues) (raise-type-error descriptor value issues))
+  value)
+
 ;; Boolean membership shares the existing node evaluator; diagnosis retains
 ;; the original structured diagnostic and its precise nested instance path.
 (define-type (SchemaContract. @ Type. identity node)
+  .validate: (cut validate-diagnosed @ <>)
   .element?: (cut yuanxu-json-schema-node-valid? node <>)
   .diagnose:
   (lambda (value location)
@@ -47,6 +56,7 @@
 ;; Project the CURRENT value, never a captured parent. The original object is
 ;; returned by ordinary Type validation; projection is not normalization.
 (define-type (ProjectionContract. @ Type. constraint project prepared-constraint .diagnose)
+  .validate: (cut validate-diagnosed @ <>)
   prepared-constraint: (as-value-contract constraint)
   .element?: (lambda (value) (null? (.diagnose value '())))
   .diagnose:

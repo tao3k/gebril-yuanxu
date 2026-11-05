@@ -111,6 +111,7 @@
     "observability/testing-case"
     "observability/testing-fixture"
     "observability/testing-script"
+    "observability/testing-source"
     "poo-clos/types"
     "poo-clos/objects"
     "poo-clos/method-bundle-syntax"
@@ -142,6 +143,8 @@
     "module-system/authoring/admission"
     "module-system/source/publication"
     "module-system/source/admission"
+    ;; Executable Test demands load this compiled native capability lazily.
+    "module-system/source/static-inputs"
     "configuration/slot-origin"
     "configuration/json"
     "configuration/diagnostics"

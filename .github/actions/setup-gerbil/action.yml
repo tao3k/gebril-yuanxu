@@ -24,6 +24,9 @@ runs:
         test -x "$gcc_bin"
         echo "GERBIL_GCC=$gcc_bin" >> "$GITHUB_ENV"
         openssl_prefix="$(brew --prefix openssl@3 2>/dev/null || brew --prefix openssl)"
+        # Native executable links must resolve the installed formula, even when
+        # the immutable SDK was configured against an older Homebrew Cellar.
+        echo "LIBRARY_PATH=$openssl_prefix/lib:$(brew --prefix sqlite)/lib:$(brew --prefix zlib)/lib${LIBRARY_PATH:+:$LIBRARY_PATH}" >> "$GITHUB_ENV"
         echo "PKG_CONFIG_PATH=$openssl_prefix/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
     - name: Install the supported Just CLI
       uses: taiki-e/install-action@a4d3f3f761dcd95cce1b72cb61cb6d1963438177 # v2

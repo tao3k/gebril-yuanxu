@@ -7,7 +7,18 @@ prelude: :gerbil/core
                  core-bound-module-prelude? syntax-local-e module-context?
                  module-source-path prelude-context-path core-read-module/sexp
                  core-library-package-plist core-library-package-path-prefix))
-(export register-module-build-source! register-yuanxu-build-source! module-build-source-path)
+(export package-prelude-identity register-module-build-source! register-yuanxu-build-source! module-build-source-path)
+
+(def (package-prelude-identity root)
+  ;; Gerbil owns package/header resolution. Only the root's actual prelude file
+  ;; may publish an identity outside its library prefix, matching gerbil.pkg.
+  (def file (path-expand "prelude.ss" root))
+  (def selected (memq 'prelude: (core-library-package-plist root #t)))
+  (and selected (pair? (cdr selected)) (file-exists? file)
+    (let-values (((base identity namespace body) (core-read-module/sexp file)))
+      (and (eq? (cadr selected)
+                (string->symbol (string-append ":" (symbol->string identity))))
+           identity))))
 
 (def (package-source-path root expected-package)
   (let* ((directory (path-normalize root))

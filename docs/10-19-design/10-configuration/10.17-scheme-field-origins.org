@@ -57,7 +57,7 @@ roles, moves the package and removes its original selected sources. It then
 loads the relocated init and caches the parent's plan. Its test-only fixture
 allows ports 5432 and 5433; the maintained production policy is not widened.
 The override file is created inside the relocated directory and read by the
-SDK's =read-syntax-from-file=, then expanded with the real authoring bindings:
+Gerbil's =read-syntax-from-file=, then expanded with the real authoring bindings:
 
 #+begin_src scheme
 (def (release parent)

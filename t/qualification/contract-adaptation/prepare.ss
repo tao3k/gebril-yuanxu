@@ -1,6 +1,6 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; SDK-only preparation: discussion code becomes private temporary test modules.
+;;; Gerbil-only preparation: discussion code becomes private temporary test modules.
 (import :gerbil/core)
 (export prepare-contract-fixture copy-contract-test-sources)
 
