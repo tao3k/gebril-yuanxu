@@ -1,6 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
+        (prefix-in (only-in :gerbil/runtime/mop slot-ref) runtime.)
         (only-in :clan/poo/object .o .get .all-slots .putslot! $thunk-slot-spec object?
                  object-%reads object-%all-slots object-read-issued?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer slot-read-value)
@@ -40,9 +41,15 @@
       (set-car! public-copy 'unrelated)
       (check-equal? (module-publication-dependency-projection candidate
                       (lambda (read) (hash-key? reads read))) '(custom/other))
+      ;; The public read accessor returns an owned copy too. Editing it cannot
+      ;; corrupt the issuer's snapshot or invalidate an otherwise current read.
+      (def exported (slot-read-value names-read))
+      (set-cdr! exported exported)
+      (check-equal? (module-publication-dependency-projection candidate
+                      (lambda (read) (hash-key? reads read))) '(custom/other))
       ;; A corrupt observed spine is not a directory and must terminate without
       ;; fetching a dependency. A NEW real producer query may issue a new token.
-      (def snapshot (slot-read-value names-read))
+      (def snapshot (runtime.slot-ref names-read 'value))
       (set-cdr! snapshot snapshot)
       (check-equal? (module-publication-dependency-projection candidate
                       (lambda (read) (hash-key? reads read))) #f)

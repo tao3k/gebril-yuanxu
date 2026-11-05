@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source capabilities supply generation-qualified declarations, never user syntax.
 (import (only-in :std/list/list delete-duplicates/hash)
+        (prefix-in (only-in :gerbil/runtime/mop slot-ref) runtime.)
         (runtime: :clan/poo/object)
         (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
         (only-in :clan/poo/slot-observation slot-read-revision slot-read-instance slot-read-value)
@@ -86,7 +87,9 @@
                 (= (slot-read-revision read) (object-revision receiver))
                 (eq? (slot-read-instance read) (object-%instance receiver))
                 (if (equal? key '(names))
-                  (same-slot-names? (slot-read-value read) value)
+                  ;; Inspect the native snapshot before any defensive list
+                  ;; copy: a malformed spine must return #f, not enter list-copy.
+                  (same-slot-names? (runtime.slot-ref read 'value) value)
                   (eq? (slot-read-value read) value))))))
   (def (cached receiver key)
     (and (object? receiver) (object-%instance receiver)

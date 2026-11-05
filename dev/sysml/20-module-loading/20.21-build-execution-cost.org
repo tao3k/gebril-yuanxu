@@ -860,6 +860,17 @@ the new token. Missing observations still refuse projection. Replacing the
 module-id with a cold thunk still refuses projection without evaluating it.
 No record is synthesized, repaired by Core, or removed from a runtime read frame.
 
+The pinned POO public =slot-read-value= accessor now returns a defensive copy
+for structural names. Mutating that copy cannot inject a malformed issuer
+snapshot. The control uses Gerbil's existing native =slot-ref= to corrupt the
+actual =value= field, while retaining the public-copy isolation control.
+The closed metadata probe likewise inspects that native field before checking
+its finite ordered symbol spine; it must refuse a cycle before calling any
+copying accessor. Existing MetadataRoute/ReadOnlyEntry Lean laws and the
+DependencyContinuation Quint family retain the no-callback and next-boundary
+obligations. Native regression establishes this specific representation mapping;
+the finite models do not prove arbitrary reflective mutation safe.
+
 ** Scoped final observations
 
 | Current aligned source | 16 Modules | 32 Modules |
