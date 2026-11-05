@@ -97,7 +97,7 @@ Gerbil POO uses advanced Scheme features for performance boundaries:
 - Prototype composition through =compose-proto= and =compose-proto*=.
 - Function-level wrappers through =Functor= and =ParametricFunctor=.
 
-For Agentic AI Lab, this means the public API can stay POO-native while the hot path
+For Agentic AI Lab, this means the public API can stay POO while the hot path
 is compiled into stable helpers at module or scenario setup time. The user
 should configure object families and strategy combinators; the runtime should
 not rediscover slot structure or validate raw alists inside the loop.
@@ -169,7 +169,7 @@ order.
 
 * Code Style Rules For The Follow-Up
 
-- Keep public surfaces POO-native and functional-combinator based.
+- Keep public surfaces POO and functional-combinator based.
 - Do not introduce raw alist DSLs or record DSLs as the normal interface.
 - Treat alist/hash/function conversion as boundary adapters.
 - Keep scenario support modules small; avoid one giant test support owner that
@@ -202,7 +202,7 @@ order.
 * Decision
 
 The next implementation should not start from generic list or alist loops. It
-should implement POO-native scenario families that compile object shape,
+should implement POO scenario families that compile object shape,
 prototype composition, slot projection, lens access, and receipt materialization
 into stable helpers, then benchmark the actual hot path.
 

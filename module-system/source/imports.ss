@@ -16,7 +16,7 @@
 ;; | SourceRefValue = Path | Symbol | PooModuleSourceRef | Value
 ;; | PooModuleSourceRefCandidate = Value
 
-(import (only-in :clan/poo/object .o .ref .slot? object?)
+(import (runtime: :clan/poo/object)
         (only-in :yuanxu/module-system/config yuanxu-module-kind=?)
         :yuanxu/module-system/source/objects)
 

@@ -3,7 +3,7 @@
 
 (import :yuanxu/object-syntax/path-slots
         (rename-in (only-in :yuanxu/object-syntax/path-slots .def) (.def define-path))
-        (prefix-in (only-in :clan/poo/object .o .def) native-)
+        (prefix-in (only-in :clan/poo/object .o .def) runtime-)
         (only-in :clan/poo/object .get .+ .slot?)
         (only-in :std/test test-suite test-case check-equal? check-exception)
         (only-in :gerbil/expander core-expand datum->syntax)
@@ -26,7 +26,7 @@
 (def (checks root) (.get root funflow profiles gerbil-scheme pipeline checks))
 
 (def path-slots-test
-  (test-suite "Native path-slot lowering"
+  (test-suite "Runtime path-slot lowering"
     (test-case "direct leaves merge prefixes and preserve inherited intermediates lazily"
       (def demands 0)
       (.def Parent
@@ -53,10 +53,10 @@
       (check-equal? ((.get Child .release) 'released) 'released)
       (check-equal? (.get parent-profile emit?) #f)
       (check-equal? (.get parent-profile timeout) 60)
-      (native-.def (Expanded @ Parent)
+      (runtime-.def (Expanded @ Parent)
         execution: =>.+
-        (native-.o profile: =>.+ (native-.o emit?: #t timeout: 30)
-                   environment: =>.+ (native-.o TMPDIR: "/tmp/tests")))
+        (runtime-.o profile: =>.+ (runtime-.o emit?: #t timeout: 30)
+                   environment: =>.+ (runtime-.o TMPDIR: "/tmp/tests")))
       (check-equal? (.get Child execution profile timeout) (.get Expanded execution profile timeout))
       ;; Object-valued assignment replaces the leaf; refinement retains it.
       (.def (Replaced @ Parent) execution.profile: (.o emit?: #t))
@@ -128,18 +128,18 @@
       (check-equal? (values-of (checks Frozen)) '(parent-build parent-test parent-package))
       (check-equal? unused-demands 0))
 
-    (test-case "path and handwritten native expansion agree"
+    (test-case "path and handwritten runtime expansion agree"
       (.def Parent a: (.o b: (.o left: (.o x: 0) right: (.o x: 0))))
       (.def (Short @ Parent) a.b.left: =>.+ {x: 1} a.b.right: =>.+ {x: 2})
-      (native-.def (Long @ Parent)
-        a: =>.+ (native-.o b: =>.+
-                  (native-.o left: =>.+ (native-.o x: 1)
-                             right: =>.+ (native-.o x: 2))))
+      (runtime-.def (Long @ Parent)
+        a: =>.+ (runtime-.o b: =>.+
+                  (runtime-.o left: =>.+ (runtime-.o x: 1)
+                             right: =>.+ (runtime-.o x: 2))))
       (check-equal? (list (.get Short a b left x) (.get Short a b right x))
                     (list (.get Long a b left x) (.get Long a b right x))))
 
     (test-case "relative brace paths, aliases and payload lexical hygiene"
-      (let ((payload 42) (native-.o 'shadowed) (.+ 'shadowed))
+      (let ((payload 42) (runtime-.o 'shadowed) (.+ 'shadowed))
         (.def Parent a: (.o b: (.o x: 0) c: (.o x: 0)))
         (.def (Child @ Parent)
           a: =>.+ {b: =>.+ {x: payload} c: =>.+ {x: (+ payload 1)}})
@@ -171,7 +171,7 @@
       (check-equal? (list (.get Child a x n) (.get Child b x n) (.get Child a y n))
                     '(1 2 3)))
 
-    (test-case "native default, tuple, shared slot and explicit header remain valid"
+    (test-case "runtime default, tuple, shared slot and explicit header remain valid"
       (let ((shared 9))
         (.def Parent (x ? 1) x: 2 shared (tuple 3))
         (check-equal? (.get Parent x) 2)
@@ -197,13 +197,13 @@
       (check-equal? (.get Child a right x) 2)
       (check-equal? (list left-demands right-demands) '(1 1)))
 
-    (test-case "object and brace match patterns delegate to native POO"
+    (test-case "object and brace match patterns delegate to POO"
       (def value (.o x: 5))
       (check-equal? (match value ((.o x: n) n) (_ #f)) 5)
       (check-equal? (match value ({x: n} n) (_ #f)) 5))
 
-    (test-case "literal dotted slots remain available through native binding"
-      (native-.def Literal a.b: 10)
+    (test-case "literal dotted slots remain available through runtime binding"
+      (runtime-.def Literal a.b: 10)
       (check-equal? (.get Literal a.b) 10)
       (check-equal? (.slot? Literal 'a) #f))
 
@@ -229,6 +229,6 @@
           ((.o a.b.c: =>.+ {} a.b: =>.+ {}) . "overlapping ancestor")
           ((.o a.b: 1 a.b: 2) . "duplicate path-slot")
           ((.o a.b: 1 a.b.c: 2) . "overlapping ancestor")
-          ((.o a.b: => identity) . "require native =>.+")
+          ((.o a.b: => identity) . "require runtime =>.+")
           ((.o a..b: =>.+ {}) . "empty path-slot segment")
           ((.o a.b: =>.+) . "missing value after path-slot operator"))))))

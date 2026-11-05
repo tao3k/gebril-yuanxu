@@ -24,7 +24,7 @@
     (string-append "(package: " (symbol->string (gensym 'source-admission-)) ")"))
   (def directory (path-expand "modules/example" root))
   (write-source (path-expand "types.ss" directory)
-    "(import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract) (only-in :clan/poo/object object?)) (def ScopeContract (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export ScopeContract)")
+    "(import (only-in :clan/poo/mop Type.) (only-in :clan/poo/object object?)) (def ScopeContract (.cc Type. identity: 'fixture .element?: object?)) (export ScopeContract)")
   (write-source (path-expand "private/helper.ss" directory)
     "(def greeting \"hello\") (export greeting)")
   (write-source (path-expand "objects.ss" directory)
@@ -67,7 +67,7 @@
       (write-source (path-expand "private/helper.ss" directory)
         "(def greeting \"changed\") (export greeting)")
       (check-exception ((.get tests admit-current)) error?))
-    (yuanxu-test-fixture "reused native topology still projects private inputs into each publication"
+    (yuanxu-test-fixture "reused runtime topology still projects private inputs into each publication"
       (root Workspace)
       (def directory (prepare-source root))
       (def helper (path-normalize (path-expand "private/helper.ss" directory)))

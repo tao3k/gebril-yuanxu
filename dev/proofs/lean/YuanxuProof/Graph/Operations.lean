@@ -2,8 +2,8 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 /-! Pure laws for the ordered Graph operation boundary. These laws do not prove
-Scheme refinement or resource bounds. The finite Quint program and native tests
-remain independent evidence. LeanPoo owns native POO composition separately. -/
+Scheme refinement or resource bounds. The finite Quint program and runtime tests
+remain independent evidence. LeanPoo owns POO composition separately. -/
 namespace YuanxuProof.Graph.Operations
 
 def quintSourceDigest : String := "sha256:4cef3a2a0e39d308b5af97b48767f68b058e04a4bb418bdb33890318bc431a2a"

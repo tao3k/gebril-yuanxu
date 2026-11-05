@@ -17,7 +17,7 @@ def checkHandoff (j : Json) : Except String Unit := do
       else parent
     let admitted := finish (accept parent child) (i != 3) true true true
     unless (← row[1]!.getBool?) == admitted do
-      throw "native Core handoff/Lean decision mismatch"
+      throw "runtime Core handoff/Lean decision mismatch"
 
 def main (args : List String) : IO UInt32 := do
   match args with

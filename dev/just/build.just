@@ -1,12 +1,21 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 build:
-    GERBIL_BUILD_VERBOSE=1 env -u SDKROOT gerbil build
+    GERBIL_BUILD_VERBOSE="${GERBIL_BUILD_VERBOSE:-1}" env -u SDKROOT gerbil build
+
+# Native source-only Core build in an explicit private output environment.
+# Keep the ordinary build.ss dispatcher and its existing 300-second budget.
+build-selected-package-runtime directory:
+    GERBIL_PATH="{{ directory }}" GERBIL_LOADPATH="{{ directory }}/lib" env -u SDKROOT timeout --signal=TERM --kill-after=5s 300s gxi {{ gerbil_test_runtime_options }} build.ss compile
 
 # Keep optimized compiler metadata and its implementation in the same cohort.
 # A non-optimized overwrite can otherwise leave stale .ssxi entry references.
 compile-build-projection:
     env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxc -O module-system/building/source-closure.ss
+
+# Compile a pinned native gxpkg candidate into a private tool environment.
+compile-package-tool directory module="gxpkg":
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gxc {{ gerbil_test_runtime_options }} -d "{{ directory }}/lib" "{{ directory }}/src/{{ module }}.ss"
 
 # Opt-in read-cost gates; retain the same pre-import heap fence and watchdog.
 compile-slot-read-costs directory file:
@@ -19,7 +28,7 @@ compile-slot-read-costs directory file:
     log="$(mktemp "$CORE_REPLAY_ROOT/cost-compile-XXXXXX.log")"
     GERBIL_LOADPATH="$CORE_REPLAY_ROOT/lib:$CORE_REPLAY_ROOT/source:$(pwd):$HOME/.gerbil/lib" env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gxi {{ gerbil_test_runtime_options }} t/qualification/slot-read-replay/compile.ss > "$log" 2>&1
 
-# Process-local compiler lowering; production SDK/source untouched.
+# Process-local compiler lowering; production Gerbil/source untouched.
 compile-mop-store-boundary directory:
     #!/usr/bin/env bash
     set -euo pipefail

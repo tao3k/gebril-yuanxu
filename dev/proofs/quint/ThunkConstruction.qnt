@@ -11,7 +11,7 @@ module ThunkConstructionModel {
     all {s' = {phase: 0, kind: kind, order: order, built: Set(), hooks: [],
       nextFirst: 0, nextSecond: 0, first: 0, second: 0}}
   }
-  // restricted is an observation projection, NOT a native purity flag. The
+  // restricted is an observation projection, NOT a runtime purity flag. The
   // existing exported metadata cannot establish it from "no protocol".
   action construct = {
     val delayed = s.kind == "restricted" or

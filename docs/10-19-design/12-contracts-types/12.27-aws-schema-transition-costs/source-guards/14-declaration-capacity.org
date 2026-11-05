@@ -8,7 +8,7 @@ The [[file:../../../../../t/qualification/module-scale/fixture.ss][existing fixt
 actual types.ss, objects.ss, config.ss and interface.ss sources. Each interface
 uses the production publication declaration; each nonroot Module requires the
 same root Module. A generated explicit init selects the entire catalog. These
-are generated valid native declarations, not thousands of maintained production
+are generated valid runtime declarations, not thousands of maintained production
 services, and they do not qualify wide enabled-Feature or runtime workloads.
 
 The controller imports that init and calls the existing Module tests object:
@@ -23,7 +23,7 @@ The controller imports that init and calls the existing Module tests object:
 #+end_src
 
 There is no additional runner. The unchanged worker is discovered as a Module
-test, imports its own init, and demands its selected Graph. Native declaration
+test, imports its own init, and demands its selected Graph. Runtime declaration
 expansion, compilation and evaluation happen through the production reader.
 The worker asserts 4N body expansions and evaluations, N publications and 3N
 interface phase snapshots. It checks the same Graph identity and a cold business
@@ -54,7 +54,7 @@ not qualification of every dirty file in the main checkout.
 
 | Source experiment | Demanded Modules | Completed publications | Outcome |
 |-------------------+------------------+------------------------+---------|
-| Original source-only reader | 16 | 16 | Native Graph, cold scope, stale-init refusal and cleanup passed |
+| Original source-only reader | 16 | 16 | Runtime Graph, cold scope, stale-init refusal and cleanup passed |
 | Original source-only reader | 1000 | 72 | Existing live-growth policy refused; Graph incomplete |
 | SDK cut plus weak-prelude experiment | 16 | 16 | Passed the functional calibration |
 | SDK cut plus weak-prelude experiment | 1000 | 73 | Existing live-growth policy refused; Graph incomplete |
@@ -63,7 +63,7 @@ not qualification of every dirty file in the main checkout.
 
 The 1000 baseline recorded 216 role imports, 288 expanded/evaluated bodies,
 291 publication guards and 55601 physical reads before refusal. The 10000
-experiment created the full source catalog and entered native expansion; it
+experiment created the full source catalog and entered runtime expansion; it
 did not expand ten thousand declarations successfully. Its Graph entry already
 held more namespace/selection state than the 1000 control. A harness can report
 exit zero after a Case failure: the outer .run and Just gate correctly refused
@@ -74,7 +74,7 @@ publication import/prelude semantics remain intact. A memory sample is a
 watchdog observation, not a forced-GC retained-size census: do not infer an
 exact retained byte cost per Module or blame one runtime owner from it.
 
-* A bounded optimization with an independent native oracle
+* A bounded optimization with an independent runtime oracle
 
 The private-context dependency index previously traversed canonical SDK import
 subtrees for every private role. Those contexts cannot have private-source
@@ -88,14 +88,14 @@ registration site explicitly rejects a canonical tool context. The index retains
 completed context topology, never a successful check or initializer result;
 input registrations are still projected afresh on consumption.
 
-The [[file:../../../../../t/module-publication-test.ss][native publication regression]] compares against an independent full SDK DFS
+The [[file:../../../../../t/module-publication-test.ss][runtime publication regression]] compares against an independent full SDK DFS
 and registers every evaluated private wrapper, a superset of role inputs.
 Its full traversal visits 551 contexts; the cut traversal visits 16. Projected
 private identities and their order are equal. Macro reuse, completed-body-only
 release, deferred Build support, transitive tool source enrollment and changed
 source refusal remain checked. No SDK state is cleared.
 
-In the final 16-Module control, 48 native role imports and 64 body expansions
+In the final 16-Module control, 48 runtime role imports and 64 body expansions
 produce 48 private-context index entries containing 48 context references.
 Observed direct table widths total 3776 bindings and 3648 import edges. These
 are table/edge counts, not unique transitive objects or retained byte sizes.
@@ -105,7 +105,7 @@ physical source reads; no other phase's saving is credited to those guards.
 
 Observability now records private binding widths, import-edge widths, visited
 kernel contexts and dependency-index reference counts as scalar values. It
-does not retain contexts or syntax in telemetry keys. These separate native
+does not retain contexts or syntax in telemetry keys. These separate runtime
 import/expansion work from retained index roots and physical guard reads.
 Reducing DFS visits is not a claim of end-to-end speedup or capacity closure.
 
@@ -123,10 +123,10 @@ registration. Existing later_registration_is_visible remains necessary: a
 topology index must not freeze an earlier input lookup. The focused Lean file
 checks without added axioms or sorry.
 
-Native completeness, immutable canonical SDK topology and independent tool
+Runtime completeness, immutable canonical SDK topology and independent tool
 source guarding remain explicit premises. The theorem does not prove Gambit
-allocation, native macro termination or that every closure below a cut is safe
-under arbitrary MOP mutation. The native full-walk oracle tests the exercised
+allocation, runtime macro termination or that every closure below a cut is safe
+under arbitrary MOP mutation. The runtime full-walk oracle tests the exercised
 context graph; it is not a universal SDK proof.
 
 * Architectural gaps exposed by this workload
@@ -139,7 +139,7 @@ context graph; it is not a universal SDK proof.
    neither its predecessor's acceptance nor unchanged values can skip rechecks.
 2. Releasing completed wrapper bodies does not release imports, binding tables,
    lazy runtime promises or publication objects. Canonical SDK cuts remove an
-   index duplication but do not establish a bounded native declaration arena.
+   index duplication but do not establish a bounded runtime declaration arena.
    Those owners need separate lifetime evidence before any release is safe.
 3. Catalog namespace/selection cost, fixture file generation, child cold import,
    first Graph expansion and post-effect source checks need separate envelopes.
@@ -150,10 +150,10 @@ context graph; it is not a universal SDK proof.
 
 The thousand/ten-thousand full-declaration capacity gate remains open. The
 implemented cut is one measured structural reduction, not a solution to the
-remaining whole-reader guard and native state-lifetime problems.
+remaining whole-reader guard and runtime state-lifetime problems.
 
-The next [[file:15-public-preparation-and-read-retention.org][public preparation and native read retention control]] reduces duplicate
-guard registration, adds native-name redirection refusal, and records the
+The next [[file:15-public-preparation-and-read-retention.org][public preparation and runtime read retention control]] reduces duplicate
+guard registration, adds runtime-name redirection refusal, and records the
 remaining 1000-Module failure. Earlier experiments above remain historical.
 
 [[file:13-scale-and-model-correspondence.org][Catalog and resolver controls]]

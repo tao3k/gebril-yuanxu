@@ -6,7 +6,7 @@
 ;;; Boundary: the reusable Sources Lock Feature.  Module-owned source.lock.ss
 ;;; files are generated values; this implementation never owns their content.
 
-(import (only-in :clan/poo/object .def .def! .o .ref object?)
+(import (runtime: :clan/poo/object)
         (only-in :std/crypto/digest sha256)
         (only-in :std/hash/misc hash-key? hash-put! hash-ref)
         (only-in :std/encoding/hex hex-encode)
@@ -32,7 +32,7 @@
 (def sources-lock-feature
   (feature-descriptor
    (feature-spec-compose
-    (feature-descriptor-base +sources-lock-feature-id+ 'agentic-ai-lab)
+    (feature-descriptor-base +sources-lock-feature-id+ 'yuanxu)
     (feature-schema-version 1)
     (feature-category 'source-integrity))))
 
@@ -81,7 +81,7 @@
              port)))))
 
 (def (source-lock-index entries)
-  ;; Gerbil's native hash table owns string value hashing for serialized
+  ;; Gerbil's runtime hash table owns string value hashing for serialized
   ;; identities; keep the std hash accessors and table implementation paired.
   (let (index (make-hash-table))
     (for-each

@@ -11,8 +11,8 @@ sealed, named like an inspector, or returns the checked C3 order.
 
 This chapter audits the real producer, adds an executable entry analysis and
 proofs, and retains the existing checks. It changes no production Scheme and
-connects no Loader. The earlier 356 native reads are not a new measurement.
-No optimization is authorized until native snapshot extraction and the complete
+connects no Loader. The earlier 356 runtime reads are not a new measurement.
+No optimization is authorized until runtime snapshot extraction and the complete
 selected replay correspondence are established.
 
 Proof owners are [[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReadOnlyEntry.lean][Admission.ReadOnlyEntry]] and
@@ -46,7 +46,7 @@ is preserved. No production runtime was installed or rerun here.
 | [[file:../../../module-system/source/admission.ss][observe-source]] | Invokes =current-module-source-observer= when non-false | The parameter accepts arbitrary Scheme; slot =without-observation= does not disable it |
 | =call-with-collected-module-sources= | Creates private collectors that copy and retain successful (path, expected-text, message) requests | Private bookkeeping is allowed; it is not permission for arbitrary query/callback bodies |
 
-The ordered native replay is: check record; check that record's source metadata;
+The ordered runtime replay is: check record; check that record's source metadata;
 visit its dependencies; repeat for siblings; finally check every seen record
 again. =without-observation= disables slot frames/observers/prechecks during
 replay. It does not disable the separate source observer. The final seen-table
@@ -55,12 +55,12 @@ the actual chosen schedule, not a replacement sorted order.
 
 =object-slots= returns the retained prototype-map snapshot as fresh entry/list
 pairs. [[https://github.com/tao3k/gerbil-poo/blob/fdeadfa40ca5cee5fe20308985aef1577f2eb49b/prototype-map.ss][prototype-map-list]] traverses the private ordered tree and copies
-pairs; it does not apply the stored slot specifications. Native primitive/tree
+pairs; it does not apply the stored slot specifications. Runtime primitive/tree
 correctness and filesystem behavior remain outside this Lean extraction.
 
 * Bootstrap validity does not imply readiness
 
-The native bootstrap currentness branch checks only the record revision and
+The runtime bootstrap currentness branch checks only the record revision and
 captured anchor identity. Unlike ordinary value records, it does not require the
 same instantiated receiver and read-table entry. =clear-object-cache!= clears
 precedence, instance and reads without itself advancing revision. Normal
@@ -89,7 +89,7 @@ inspected, not newly executed in this qualification.
 * Derive closure from state, not declarations
 
 The proof projects real procedure/object reference identities into natural
-numbers. No =pure?= field or user purity registry is introduced. A future native
+numbers. No =pure?= field or user purity registry is introduced. A future runtime
 owner must derive these references and caches internally, without forcing a
 configuration getter. The raw-state analyzer admits these sufficient routes:
 
@@ -127,15 +127,15 @@ ancestor closure has none. =self_protocol_not_default= excludes the bootstrap
 self-protocol from that shortcut. =seal_does_not_change_inspection= proves that
 changing only the sealed bit cannot change the answer.
 
-The native =slot-read-current?= accessor is private to the observation producer;
+The runtime =slot-read-current?= accessor is private to the observation producer;
 =make-slot-read= itself is exported and accepts an arbitrary checker. Existing
 Core cannot safely classify all records by their public key/shape alone. A
 future MOP-owned inspection boundary must retain checker identity, raw readiness
 and graph/cache snapshot coherence. Projection also requires well-formed
-native receivers and record payloads. For example, a cache-miss hash-table
-operation on a malformed absent instance raises a native error; it is not
+runtime receivers and record payloads. For example, a cache-miss hash-table
+operation on a malformed absent instance raises a runtime error; it is not
 silently mapped to the model's Boolean result. Unsupported shapes must retain
-the native failure or decline lowering. Procedure identity alone does not
+the runtime failure or decline lowering. Procedure identity alone does not
 certify arbitrary caller-constructed record payloads. No such production
 adapter is added here.
 
@@ -230,7 +230,7 @@ may still decline that route. Declining reuse is safe; it is not failed admissio
 * Qualification and remaining gates
 
 Qualification results are recorded below after the complete source-bound gates.
-Native snapshot/trace extraction, C4-to-Scheme exception correspondence, source
+Runtime snapshot/trace extraction, C4-to-Scheme exception correspondence, source
 collector coverage, selected dependency stability and primitive/FFI correctness
 remain explicit premises. Graph termination and closed-operation effect laws do
 not establish those premises by themselves. No public syntax, manually maintained
@@ -284,7 +284,7 @@ Raw artifacts remain outside Git at
 - =concurrent-source-change.json= and =qualification.json=: source-cut/change
   summary and joined output identities.
 
-No Scheme tests or timing/read-count measurements were rerun. The actual native
+No Scheme tests or timing/read-count measurements were rerun. The actual runtime
 producer audit is source evidence; the Lean/QNT results are model evidence. They
 are kept separate from future MOP-adapter implementation and runtime validation.
 

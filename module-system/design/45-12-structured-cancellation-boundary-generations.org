@@ -12,7 +12,7 @@ first-class continuation re-entry.
 
 It defines:
 
-- a POO-native cancellation scope per realization boundary;
+- a POO cancellation scope per realization boundary;
 - containment-based cancellation propagation;
 - demand-authority withdrawal from coalesced operations;
 - ordinary and restricted cleanup continuation generations;
@@ -43,7 +43,7 @@ Agentic AI Lab owns:
 coalesced demand and effect handoff.  [[file:45-11-resource-lease-continuation-dynamic-wind.org][Resource Lease, Continuation, And Dynamic-Wind]]
 owns physical resource release and dynamic access detachment.
 
-* POO-native cancellation scope
+* POO cancellation scope
 
 Every realized structural boundary has a POO cancellation-scope object whose
 semantic evidence includes:

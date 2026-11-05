@@ -1,13 +1,70 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import LeanPoo.Object.MultimethodSemantics
 import YuanxuProof.PooClos.MethodCombination
+import LeanPoo.Object.MethodCombination
 
 namespace YuanxuProof.PooClos.Dispatch
 open LeanPoo.Object
 
+/-- A known primary which never calls next has the same monadic effects and
+result without a lexical invocation carrier. This does NOT authorize eliding
+public construction hooks or observers; the runtime gate must exclude them. -/
+theorem closed_primary_is_function {Args Result : Type} {M : Type → Type}
+    [Monad M] [LawfulMonad M] (body : Args → M Result)
+    (rest : List (MethodCombination.SubMethod Args M Result))
+    (missing : Args → M Result) (args : Args) :
+    MethodCombination.effective
+      ({ primary := (fun _ args => body args) :: rest } : MethodCombination.Methods Args M Result)
+      missing args = body args := by
+  simp [MethodCombination.effective, MethodCombination.callChain, MethodCombination.runSides]
+
+/-- Per-invocation validation is outside method preparation: a prepared body
+cannot turn a rejected next datum into the previous successful result. -/
+def checkedFunction {Error Args Result : Type}
+    (check : Args → Except Error Args) (body : Args → Except Error Result)
+    (args : Args) : Except Error Result := (check args).bind body
+
+theorem rejected_datum_is_not_reused {Error Args Result : Type}
+    (check : Args → Except Error Args) (body : Args → Except Error Result)
+    (args : Args) (error : Error) (rejected : check args = .error error) :
+    checkedFunction check body args = .error error := by
+  simp [checkedFunction, rejected, Except.bind]
+
+/-- The scope is the actual runtime observer/precheck projection, not a purity
+label on a Profile. An unknown callback cannot qualify for the function path. -/
+def observationCompatible (actual allowed : List Nat) : Bool :=
+  actual.all (fun callback => allowed.contains callback)
+
+theorem unknown_observer_requires_generic (actual allowed : List Nat) (callback : Nat)
+    (present : callback ∈ actual) (unknown : callback ∉ allowed) :
+    observationCompatible actual allowed = false := by
+  apply Bool.eq_false_iff.mpr
+  intro compatible
+  have members := List.all_eq_true.mp compatible
+  exact unknown (List.contains_iff_mem.mp (members callback present))
+
+/-- The maintained source precheck has no boundary callback for a hook-free
+carrier. All actual domain reads still run the same precheck. -/
+def sourcePrecheck (protocol : Option Nat) (boundaries : List Nat) : List Nat :=
+  if protocol.isSome then boundaries else []
+
+theorem hook_free_carrier_has_no_source_callback (boundaries : List Nat) :
+    sourcePrecheck none boundaries = [] := rfl
+
+/-- Runtime observation suppression, not a remembered Core flag, determines
+which enclosing boundaries are active when entering another Reader. -/
+def enterSourceScope (runtimeActive : Bool) (outer : List Nat) (inner : Nat) : List Nat :=
+  inner :: (if runtimeActive then outer else [])
+
+theorem nested_source_order (outer : List Nat) (inner : Nat) :
+    enterSourceScope true outer inner = inner :: outer := rfl
+
+theorem disabled_outer_is_not_resurrected (outer : List Nat) (inner : Nat) :
+    enterSourceScope false outer inner = [inner] := rfl
+
 /-! `poo-clos/dispatch.ss`: the generic owns shape-indexed candidates, while
 value-sensitive applicability is recomputed at each invocation. This uses
-LeanPoo's real sparse index, cache, registration and call operations. Native
+LeanPoo's real sparse index, cache, registration and call operations. Runtime
 class/eql precedence projection remains the adapter input; no evaluator callback
 or digest/injectivity witness substitutes for method selection. -/
 

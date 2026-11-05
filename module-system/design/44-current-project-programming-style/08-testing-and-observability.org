@@ -6,14 +6,25 @@
 
 * Testing surface
 
-Tests use Gerbil's native =gerbil test= / =gxtest= lifecycle.  Agentic AI Lab extends
-the ASP Testing Policy through native POO slots; it does not create a second
+Tests use Gerbil's runtime =gerbil test= / =gxtest= lifecycle.  Agentic AI Lab extends
+the ASP Testing Policy through POO slots; it does not create a second
 test runner.  Per-test memory, performance, debug and trace Profiles are
 declarative values selected by the Testing Interface.
 
+Ordinary test execution must not construct a Script or Process object. Export
+standard =std/test= Suites/Cases and let the installed tool own discovery,
+module setup/cleanup, assertions and the Harness verdict. The atomic =gxi=
+adapter calls that same tool in its current VM; it must not select init,
+compile/sign support or start a nested Harness. Explicit tests of process APIs
+may exercise those APIs, but do not define the ordinary test execution path.
+Support compilation belongs to the independent build entry and its existing
+=std/make= specification and issuance boundary. Source currentness, contribution
+completeness and plan applicability remain actual module API obligations,
+verified by their domain Cases, not inferred from a generic launch receipt.
+
 ASP is optional development tooling. Its product pin and policy composition
 belong to =dev/gerbil.pkg= and =dev/testing-api.ss=. The product library build
-uses Core's native source closure and build projection; neither Core nor the
+uses Core's runtime source closure and build projection; neither Core nor the
 production testing facade imports the ASP policy interface. Development policy
 trigger/repair tests opt into that dependency explicitly.
 
@@ -25,13 +36,13 @@ test execution must retain its declared safety envelope.
 New Core unit cases use =yuanxu-test-case= from
 =:yuanxu/observability/testing-case=; product tests may use their own public
 testing facade without making Core depend on it.
-This hygienic declaration expands to native =std/test=; it adds the inherited
+This hygienic declaration expands to runtime =std/test=; it adds the inherited
 POO Case Profile without changing =gxtest= assertions or reporting.  A Case
-that needs a different budget uses =yuanxu-test-case/with= and a native POO
+that needs a different budget uses =yuanxu-test-case/with= and a POO
 object extending =yuanxu-testing-case-profile-prototype=.  Do not encode a
 second test runner or duplicate the Testing Interface's managed-heap default.
-The Case monitor may interrupt a non-returning native harness thread and report its span;
-its heap counters are process-wide, not a thread-local heap quota.  Native
+The Case monitor may interrupt a non-returning runtime harness thread and report its span;
+its heap counters are process-wide, not a thread-local heap quota.  Runtime
 =test-case= declarations that have not migrated still receive the worker-level
 managed-heap cap, but not Case-span observation.
 For a retained-allocation risk, a Case may opt into
@@ -53,7 +64,7 @@ ownership of that Core mechanism test into the Module's =tests/= directory.
 =modules/<name>/tests/= and =scenarios/<name>/tests/= exercise that owner's
 public configuration, Contracts and behavior. Use the existing declarative
 =yuanxu-test-case= or resource-owning =yuanxu-test-fixture= macros, which
-lower to the native std/test lifecycle. Testing macros are the declaration
+lower to the runtime std/test lifecycle. Testing macros are the declaration
 surface; a module's tests are not restricted to macro-expansion assertions.
 Core imports these macros from =:yuanxu/observability/testing-case= and
 =:yuanxu/observability/testing-fixture=, without depending on a product facade.
@@ -61,7 +72,7 @@ There is no parallel module test runner or repeated implementation test list.
 
 Shared Fixtures own preparation, cleanup and reusable fault injection. Atomic
 Cases own distinct public behavior; they must not each rebuild the same support
-library or repeat the native compiler's cold/hot/currentness tests. Native
+library or repeat the runtime compiler's cold/hot/currentness tests. Runtime
 =std/make= owns incremental support compilation in the test build phase,
 through the existing root build entry, separate from production targets.
 Testing owns execution and reporting, not a parallel Builder. A test build
@@ -77,10 +88,10 @@ not used to justify slow atomic tests. Investigate repeated source expansion or
 dependency discovery before adding more independent test processes.
 
 An existing support publication may bypass another Make invocation only after
-its original approval, complete compiler inputs and native output digests have
-been admitted. Missing approval requires the native compiler; invalid approval
+its original approval, complete compiler inputs and runtime output digests have
+been admitted. Missing approval requires the runtime compiler; invalid approval
 or changed products require rejection. Both paths retain source checks at the
-Harness entry and return boundaries. Qualify reuse through the real native
+Harness entry and return boundaries. Qualify reuse through the real runtime
 entrypoints, product timestamps and independent assertions.
 
 * Observability
@@ -94,7 +105,7 @@ diagnostic contract.
 Parallel batch heartbeats and per-batch debug-call dumps are off by default:
 they repeat across workers without identifying a Case.  A targeted debugging
 Profile may set =heartbeat-enabled?= or =trace-enabled?=; normal runs retain
-the native batch start, completion and failure phases.
+the runtime batch start, completion and failure phases.
 
 * Evidence order
 
@@ -105,7 +116,9 @@ the completion report names exactly which gate ran and which remains blocked.
 
 * Specialized qualifications
 
-Use =TestingScript.= for native harnesses and refine its ordinary receipt slots
+Use =TestingScript.= only when a qualification actually requires an independent
+external process. Ordinary Suites go directly to the installed test tool.
+Never add support compilation or another Harness to a Case. Refine receipt slots
 (=case-count=, =required-lines=, and, for an existing custom aggregator, an exact
 =harness= line).  Keep domain assertions in the suite or its named receipt
 function.  The inherited =.run= owns Ops execution and the source Fixture;
@@ -113,7 +126,7 @@ a specialized =.admit-result= cannot suppress its common failure gate.
 
 Non-Gerbil executable qualifications use Ops and the same Fixture ownership
 rules; they must retain their own result protocol.  A Rust summary, a build
-receipt and a native Gerbil =HARNESS-OK= are different kinds of evidence.
+receipt and a Gerbil =HARNESS-OK= are different kinds of evidence.
 Keep exact old deadlines, failure diagnostics and input-currentness controls
 when migrating a shell entrypoint.  Test the gate and its failure controls
 before treating its underlying domain qualification as passed.
@@ -122,14 +135,14 @@ before treating its underlying domain qualification as passed.
 
 The Module bootstrap fixture forwards the actual child transcript through
 =run-script= while retaining the same captured output for assertions. Its
-progress reader relays only native =std/make= compilation and scheduling rows,
+progress reader relays only runtime =std/make= compilation and scheduling rows,
 and existing worker progress records. A 60-second idle frame owns that relay;
 forwarding arbitrary text alone does not advance the Harness progress protocol.
 The 60-second child deadline and the outer test budgets remain unchanged.
 
 The nested Harness result must name the exact normalized absolute source file,
 in addition to its =HARNESS-OK= and final =OK=. A relative-path substring is not
-a valid substitute for the native module identity. Compiler progress is not a
+a valid substitute for the runtime module identity. Compiler progress is not a
 successful test result, and a completed compilation cannot waive Harness failure.
 
 ** Current-head CI recovery (2026-10-23)

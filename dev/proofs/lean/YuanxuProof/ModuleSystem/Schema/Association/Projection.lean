@@ -4,8 +4,8 @@ import YuanxuProof.ModuleSystem.Schema.Association.Traversal
 
 namespace YuanxuProof.ModuleSystem.Schema.Association.Projection
 
-/-- Abstract native-object domain, not an implementation of Gerbil objects.
-Injectivity and exact edge extraction must be established by a native projection. -/
+/-- Abstract poo-object domain, not an implementation of Gerbil objects.
+Injectivity and exact edge extraction must be established by a runtime projection. -/
 structure IdentityProjection (Object : Type) where
   encode : Object → Nat
   injective : Function.Injective encode
@@ -13,10 +13,10 @@ structure IdentityProjection (Object : Type) where
   graph : Parents
   edges : ∀ object, (directParents object).map encode = graph (encode object)
 
-inductive NativePath {Object : Type} (parents : Object → List Object) : Object → Object → Prop where
-  | self (object) : NativePath parents object object
+inductive ArtifactPath {Object : Type} (parents : Object → List Object) : Object → Object → Prop where
+  | self (object) : ArtifactPath parents object object
   | step {object parent root} : parent ∈ parents object →
-      NativePath parents parent root → NativePath parents object root
+      ArtifactPath parents parent root → ArtifactPath parents object root
 
 theorem identity_iff {Object : Type} (projection : IdentityProjection Object) (left right : Object) :
     projection.encode left = projection.encode right ↔ left = right :=
@@ -38,8 +38,8 @@ theorem list_identity_iff {Object : Type} (projection : IdentityProjection Objec
             simp [head, tails]
   · exact congrArg (List.map projection.encode)
 
-theorem native_path_projects {Object : Type} (projection : IdentityProjection Object)
-    {object root : Object} (path : NativePath projection.directParents object root) :
+theorem runtime_path_projects {Object : Type} (projection : IdentityProjection Object)
+    {object root : Object} (path : ArtifactPath projection.directParents object root) :
     Inherits projection.graph (projection.encode object) (projection.encode root) := by
   induction path with
   | self => exact .self _
@@ -51,8 +51,8 @@ theorem native_path_projects {Object : Type} (projection : IdentityProjection Ob
 theorem projected_path_lifts {Object : Type} (projection : IdentityProjection Object)
     {node root : Nat} (path : Inherits projection.graph node root) :
     ∀ object, projection.encode object = node →
-      ∃ nativeRoot, projection.encode nativeRoot = root ∧
-        NativePath projection.directParents object nativeRoot := by
+      ∃ runtimeRoot, projection.encode runtimeRoot = root ∧
+        ArtifactPath projection.directParents object runtimeRoot := by
   induction path with
   | self node => intro object same; exact ⟨object, same, .self object⟩
   | @step node parent root member path ih =>
@@ -60,30 +60,30 @@ theorem projected_path_lifts {Object : Type} (projection : IdentityProjection Ob
       have edge : parent ∈ (projection.directParents object).map projection.encode := by
         rw [projection.edges object, same]
         exact member
-      obtain ⟨nativeParent, present, encoded⟩ := List.mem_map.mp edge
-      obtain ⟨nativeRoot, final, nativePath⟩ := ih nativeParent encoded
-      exact ⟨nativeRoot, final, .step present nativePath⟩
+      obtain ⟨runtimeParent, present, encoded⟩ := List.mem_map.mp edge
+      obtain ⟨runtimeRoot, final, runtimePath⟩ := ih runtimeParent encoded
+      exact ⟨runtimeRoot, final, .step present runtimePath⟩
 
 theorem path_iff {Object : Type} (projection : IdentityProjection Object) (object root : Object) :
     Inherits projection.graph (projection.encode object) (projection.encode root) ↔
-      NativePath projection.directParents object root := by
+      ArtifactPath projection.directParents object root := by
   constructor
   · intro path
-    obtain ⟨nativeRoot, same, nativePath⟩ := projected_path_lifts projection path object rfl
+    obtain ⟨runtimeRoot, same, runtimePath⟩ := projected_path_lifts projection path object rfl
     have equal := projection.injective same
-    exact equal ▸ nativePath
-  · exact native_path_projects projection
+    exact equal ▸ runtimePath
+  · exact runtime_path_projects projection
 
-/-- Bridge theorem: successful modeled DFS membership is precisely a native
+/-- Bridge theorem: successful modeled DFS membership is precisely a runtime
 parent path, PROVIDED the identity and edge-projection premises hold. -/
-theorem dfs_native_path_iff {Object : Type} (projection : IdentityProjection Object)
+theorem dfs_runtime_path_iff {Object : Type} (projection : IdentityProjection Object)
     (fuel : Nat) (object root : Object) (done : List Nat)
     (success : Traversal.visit projection.graph fuel (projection.encode object) [] [] = .ok done) :
-    projection.encode root ∈ done ↔ NativePath projection.directParents object root := by
+    projection.encode root ∈ done ↔ ArtifactPath projection.directParents object root := by
   rw [Traversal.success_membership_iff projection.graph fuel (projection.encode object) done success]
   exact path_iff projection object root
 
-/-- Projection of a Core receipt. typed records the actual native evidence-type
+/-- Projection of a Core receipt. typed records the actual runtime evidence-type
 predicate. IDs are interned from actual descriptor/candidate/context values. -/
 structure Receipt where
   typed : Bool
@@ -158,7 +158,7 @@ theorem responsibility_success_checks_children (contract candidate context : Nat
   have classifiedAndChildren := (Bool.and_eq_true_iff.mp ok).1
   exact List.all_eq_true.mp (Bool.and_eq_true_iff.mp classifiedAndChildren).2
 
-#print axioms dfs_native_path_iff
+#print axioms dfs_runtime_path_iff
 #print axioms list_identity_iff
 #print axioms accepted_receipt_correlated
 #print axioms accepted_receipt_discharged

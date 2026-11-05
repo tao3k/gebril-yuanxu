@@ -44,7 +44,7 @@ This is a type-level absence, not merely an omitted theorem.
 
 * Decision
 
-Define two proof-level owner-native contracts:
+Define two proof-level owner-runtime contracts:
 
 1. a runtime-owner crash-deferral contract and receipt;
 2. a storage-owner pre-commit admission contract and receipt.
@@ -287,7 +287,7 @@ The public/runtime architecture remains unchanged in this RFC:
 - no JSON type is added to the core proof model;
 - no provider, Cedar, authority, or continuation evidence is promoted into a
   progress receipt;
-- the proof model remains native Lean structures, inductives, and
+- the proof model remains runtime Lean structures, inductives, and
   propositions.
 
 An implementation RFC must identify the actual runtime owner and storage
@@ -340,7 +340,7 @@ owner before these proof-level contracts become runtime artifacts.
   publication, and progress-receipt bindings.
 - The Python audit suite passed 76 tests in 14.06 seconds, and Ruff reported
   no findings.
-- Native Orgize found 17 source blocks: 16 Typst blocks and one Mermaid block.
+- Runtime Orgize found 17 source blocks: 16 Typst blocks and one Mermaid block.
   The parser-owned Typst bodies compiled together with Typst 0.14.2 to
   =/private/tmp/45-120-33-owner-deferral-admission-contract-closure.pdf=
   (28018 bytes).
@@ -364,7 +364,7 @@ owner before these proof-level contracts become runtime artifacts.
 - [X] Run Enterprise aggregate and full Lean builds.
 - [X] Run current-source AXLE roots without timeout inflation.
 - [X] Run the existing Python audit gates.
-- [X] Validate final Org with native Orgize, compile every Typst block, and
+- [X] Validate final Org with runtime Orgize, compile every Typst block, and
   check whitespace.
 
 * Next proof gap

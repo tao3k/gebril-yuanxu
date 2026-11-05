@@ -12,7 +12,7 @@ separately below; earlier passes do not qualify that changed integration.
 The original Ops endpoint now passes in fully source-loaded mode with locked
 POO =fdeadfa40= and the user-approved 2 GiB default. Both the initial revised-
 budget attempt and the subsequent integrated-observation attempt finish with
-natural exit zero, all native harness markers, Schema update, stale-evidence
+natural exit zero, all runtime harness markers, Schema update, stale-evidence
 refusal, fresh publication and failure cleanup. The worker remains limited to
 60 seconds and the outer Justfile qualification to 120 seconds. No compiled
 Core/POO cache, upstream edit, runtime Loader or additional SDK-state cleanup
@@ -34,7 +34,7 @@ counts exclude additional source traversal as the explanation for that boundary;
 they do not establish host contention or exclude interpreter overhead. Case
 observations now also use the SDK process CPU clock alongside wall time, without
 a new sampler or environment probe. Requalification of that CPU-observed final
-entry passes with natural exit zero and all native harness markers, retaining
+entry passes with natural exit zero and all runtime harness markers, retaining
 the same 2 GiB ceiling and original deadlines. This later pass does not erase
 the timeout or establish why its wall time varied. Its successful child output
 is retained by the existing Ops receipt, not copied into version control.
@@ -70,7 +70,7 @@ status for that locked environment.
 
 The configuration-source, selected-Graph, Nix phase-publication and actual Nix
 derivation controls passed through =just test-file= with MODULE-OK, HARNESS-OK,
-final OK and natural exit zero. The native derivation control also checks that
+final OK and natural exit zero. The runtime derivation control also checks that
 a readonly guard does not force an unused store/realization capability.
 
 The later full AWS attempt terminated with status 137 during source Graph
@@ -87,7 +87,7 @@ fixed-budget completion after resource contention subsides. Standalone Nix tests
 qualify the changed cache protocol; they do not replace that endpoint gate.
 
 A subsequent endpoint run reached the real warm-store path: readonly derivation
-evaluation, native store-validity checking and provider realization completed,
+evaluation, runtime store-validity checking and provider realization completed,
 without writable registration in that interval. It then refused with
 =compiler tool source changed; use a fresh reader= for =gerbil.pkg=, which was
 modified concurrently. This run exited nonzero with ERROR CASE/ERROR HARNESS;
@@ -109,7 +109,7 @@ Schema selection. The outer entry also reached its 120-second limit. This is
 still an incomplete endpoint qualification, not a dependency-update refusal or
 evidence that provider acquisition rebuilt a cached package.
 
-The real interval again used readonly evaluation and native store validity,
+The real interval again used readonly evaluation and runtime store validity,
 with no writable registration. First-Graph source reads were 8,717 under this
 revision; that source set differs from the earlier 26b4b58 control, so these
 numbers must not be combined into an additional optimization claim. The current

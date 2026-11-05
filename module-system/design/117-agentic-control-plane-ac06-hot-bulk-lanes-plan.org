@@ -47,7 +47,7 @@ per-item allocation.  Run strict C, UBSan, supported-host ASan, and leak gates.
 
 Add a Gerbil control-plane projection/wrapper that emits typed event/outcome
 facts without exposing Scheme heap pointers.  Differentially validate canonical
-packets against native headers and reject compact-identity collisions.
+packets against runtime headers and reject compact-identity collisions.
 
 * Step 6 — Performance qualification
 

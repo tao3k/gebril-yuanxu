@@ -3,36 +3,36 @@
 
 #+TITLE: Pinned ASCENT finite temporal lens: consumer qualification
 #+DATE: 2026-10-03
-#+STATUS: pinned native consumer; source-authority bridge remains open
+#+STATUS: pinned runtime consumer; source-authority bridge remains open
 
 * Implementation and dependency
 
-The authoritative native package manifest pins ASCENT
+The authoritative runtime package manifest pins ASCENT
 =891cfb9454f726784209d6becd7805b98fbf2b97=. The Bazel archive SHA256 is
 =af893aa9d245997997cabf6cb368671f60460f7045bcfff4b7fc3b8bfc80716f=;
 both platform lock projections match. Dependency-contract and error-mode
 Bazel lock validation passed through the captured workspace environment.
 
 ASCENT owns =temporal/lens.ss= and its finite source corpus, time projection,
-positive recursive program, independent models, native evidence and scale
+positive recursive program, independent models, runtime evidence and scale
 qualification. Agentic AI Lab consumes its POO lens/source/answer values directly.
 The module does not add a second Python or POO rule engine.
 
 * Consumer gate
 
-=just test-ascent-temporal= is a heap-fenced, bounded, verbose native consumer
+=just test-ascent-temporal= is a heap-fenced, bounded, verbose runtime consumer
 check. It requires an actual =CASE-OK= as well as =MODULE-OK=, =HARNESS-OK= and
 final =OK=. Local execution used five-second startup/idle watchdogs and passed.
 The ordinary repository test suite also discovers the same test module.
 
-The case asserts native POO object identity, complete selected reachability,
+The case asserts POO object identity, complete selected reachability,
 independently valid finite/founded evidence, lens verification, and a partial
-result without native evidence before a late row's knowledge position. A
+result without runtime evidence before a late row's knowledge position. A
 partial value cannot validate as the complete current answer. This is an
 interface consumer check; ASCENT's separate two 128-case matrices qualify
 finite graph and cut/knowledge/window semantics.
 
-The lightweight native test uses =std/test=, since it does not produce an
+The lightweight runtime test uses =std/test=, since it does not produce an
 Observability Case or invoke a runtime effect. An exploratory import through
 the generic Observability testing wrapper failed the five-second silent-start
 watchdog; it is not counted as a passing result. No watchdog was relaxed.
@@ -65,8 +65,8 @@ commit API and a clean explicit SHA fetch still returned that exact commit
 and tree =1ef7a58fefe7d31bba6c476a20e55d283a60e2a8=. This was a dependency
 retrieval gap, not evidence of a temporal semantic regression.
 
-Both native dependency-install workflows now call the manifest-owned
-=gerbil_dependency_pin.py prepare-native= before gxpkg. It prefetches full
+Both runtime dependency-install workflows now call the manifest-owned
+=gerbil_dependency_pin.py prepare-runtime= before gxpkg. It prefetches full
 commit SHA objects into the managed package root. A new/unborn package
 checkout receives only its declared SHA and the adjacent gxpkg =.tag= datum;
 existing checkouts, edits and tag metadata remain intact. Tag resolution
@@ -81,36 +81,36 @@ was used. Exact-head CI after this repair remains the final gate.
 
 * Complete coordinate binding pin
 
-The final pin adds native snapshot identity binding for the complete canonical
+The final pin adds runtime snapshot identity binding for the complete canonical
 lens, full source, root and supplied/hypothetical scope. Even equal-output
-cut/window changes or a POO projection extension cannot reuse the old native
+cut/window changes or a POO projection extension cannot reuse the old runtime
 receipt. Fork/compare reverify their actual base receipts. ASCENT's ninth
 case checks this directly; its build/policy and both finite matrices passed.
 Content binding is still distinct from POO/MRR source authority. The consumer
-and native/Bazel contract are rechecked at the final pinned implementation.
+and runtime/Bazel contract are rechecked at the final pinned implementation.
 
 * Explicit bounded-time exchange v1
 
-=modules/temporal-causality/ascent-exchange.ss= is an opt-in POO-native transport.
+=modules/temporal-causality/ascent-exchange.ss= is an opt-in POO transport.
 =agentic-ai-lab-ascent-event-binding= requires one text event identity, a distinct
-non-reserved native symbol, a valid-time observed instant/bounded observation
+non-reserved runtime symbol, a valid-time observed instant/bounded observation
 (or =#f= for unknown), and a separately supplied observed knowledge instant.
 =agentic-ai-lab-ascent-exchange= requires the owner graph/cut, one bijective binding
-per graph event, source/generation/native-clock names, both domain identities,
+per graph event, source/generation/runtime-clock names, both domain identities,
 and a finite window, knowledge cutoff, horizon and coverage declaration.
 
 The bridge recomputes the cut from the graph and its logical cutoff. It rejects
 cut relabeling, omitted/duplicate event bindings, unresolved parent mappings,
 unobserved instants and domain mismatches. It never converts logical cut time,
-acquisition time or a provenance label into a knowledge coordinate. The native
+acquisition time or a provenance label into a knowledge coordinate. The runtime
 clock name identifies the caller-declared pair of axes; no clock conversion is
 performed. Cut completeness is combined with the explicit coverage declaration.
 
 The projected source name hashes the complete original graph/cut and canonical
-bindings, including observation/provenance/receipt names. Thus equal native
+bindings, including observation/provenance/receipt names. Thus equal runtime
 rows cannot reuse a receipt after original metadata changes. This is content
 consistency, not source authentication. Because that name identifies a single
-exchange snapshot, the native =temporal-compare= API must not be used to compare
+exchange snapshot, the runtime =temporal-compare= API must not be used to compare
 two such snapshot names across generations; a stable owner admission binding
 is a separate gate. Solve/verify operate on the immutable projected values.
 
@@ -120,7 +120,7 @@ are not event duration intervals. Membership in a half-open window is
 outside, and =unknown= otherwise. Overlapping parent bounds retain an unknown
 order frontier, even when both events are definitely inside the window. Known
 reversed bounds reject the cut. Unknown bounds, late knowledge and open coverage
-cannot produce complete native evidence or definitive absence.
+cannot produce complete runtime evidence or definitive absence.
 
 * MRR admission boundary still required
 
@@ -133,7 +133,7 @@ admission receipt from a digest or a Boolean.
 A future admission adapter must bind a canonical admitted semantic generation,
 source fact identities, the full bijective event mapping, both declared axes,
 cut coverage, and the exchange schema. It must reject stale generation/fact
-bindings and partial/invalidated source contexts before promoting a native
+bindings and partial/invalidated source contexts before promoting a runtime
 candidate into MRR facts/lineage. External authentication and runtime effects
 remain with their owners. Until that adapter is implemented, this exchange is a
 locally verified finite snapshot candidate, not an admitted semantic transition.
@@ -144,7 +144,7 @@ The explicit module import adds a real ASCENT library dependency to POO's build
 closure. =BUILD.bazel= declares =gerbil_ascent_package= from the authoritative
 source archive, with ASP/Core dependencies and a source resolution receipt.
 Both =compile= and =dev_compile= depend on that package; it also participates
-in =dependency_packages=. A native gxpkg consumer passing in a populated local
+in =dependency_packages=. A runtime gxpkg consumer passing in a populated local
 prefix does not establish that the hermetic Bazel closure is complete. CI caught
 the missing declaration before the module could compile, and the explicit
 package edge repairs that boundary. Latest-head CI remains the acceptance gate.

@@ -8,7 +8,7 @@
 
 * 10.06.29 Gerbil POO Programming Guidelines
 
-This document owns native =gerbil-poo= operators and prototype semantics.  It
+This document owns runtime =gerbil-poo= operators and prototype semantics.  It
 does not own module roles, formal projection or test policy.  Use the modular
 [[file:44-current-project-programming-style.org][Current Project Programming Style]]
 router to select those rules instead of treating this reference catalogue as a
@@ -45,7 +45,7 @@ These guidelines are based on =.data/gerbil-poo=:
 
 This document is the programming contract for code written after studying =.data/gerbil-poo=. It is more specific than a style guide:
 
-1. Agentic AI Lab code must be POO-native at the abstraction boundary.
+1. Agentic AI Lab code must be POO at the abstraction boundary.
 2. User-facing extension APIs must compose prototypes, slots, and named functional helpers.
 3. Functional programming is the preferred Scheme control-plane style.
 4. Raw alists, record DSLs, direct merge scripts, and naked =(lambda (self super) ...)= compute hooks are not the primary interface.
@@ -79,13 +79,13 @@ Do not start from an alist and then retrofit POO on top. If a concept can be ext
 
 Before choosing an operator, keep the semantic owner singular:
 
-- an Object is the native POO carrier;
+- an Object is the POO carrier;
 - an Entity is that Object in an identity-bearing domain role;
 - an Element is an admitted member of one Contract/Scenario observation
   space;
 - a Relation references Element identities;
 - a Query is a bounded, read-only POO object over those identities;
-- GQL is the graph-read semantics projected from a POO-native AST, never a
+- GQL is the graph-read semantics projected from a POO AST, never a
   replacement object model.
 
 Do not mirror the same facts into separate Object, Entity and Element stores.
@@ -101,7 +101,7 @@ Query language: it is the host notation for the GQL-aligned POO AST.  Do not
 copy the GQL grammar, parser or ParseArtifact alist into Agentic AI Lab.
 
 If GQL returns a candidate set that still needs domain rules, apply a named,
-typed and bounded native refinement before result admission.  Do not extend
+typed and bounded runtime refinement before result admission.  Do not extend
 GQL merely to encode a vertical Schema predicate.  Add a versioned GQL
 extension or another Provider only after a real Case proves that candidate
 selection itself cannot be expressed by standard GQL.
@@ -138,12 +138,12 @@ selected Module uses generics, CLOS or MOP internally.
 
 Declaration slots MUST use domain nouns rather than reproduce an action DSL.
 Use =events=, =edges=, =trajectories=, =sources= or =capabilities= with the
-native slot algebra: ===>.+= for nested POO refinement, ===>= plus a named pure
+runtime slot algebra: ===>.+= for nested POO refinement, ===>= plus a named pure
 combiner for collection transformation, and =?= for inherited defaults.
-A parallel command-slot vocabulary duplicates those native forms and is
+A parallel command-slot vocabulary duplicates those runtime forms and is
 non-conforming.
 
-| Capability | Native surface | Meaning | Normal Agentic AI Lab owner |
+| Capability | Runtime surface | Meaning | Normal Agentic AI Lab owner |
 |------------+----------------+---------+-----------------------|
 | Prototype declaration | =.o=, =.def=, =object<-alist=, =object<-fun= | Define an open recursive specification | Module and Profile objects; named boundary adapters only for =object<-= forms |
 | C4 composition | =.mix=, supers in =.o=, =.extend=, =.+= | Compose traits and precedence at runtime | Module composition, Profile refinement, Scenario assembly |
@@ -239,8 +239,8 @@ register a second rule DSL.  The loader reads source as inert datums and uses
 the Profile to return an actionable repair diagnostic before loading.
 
 When CLOS crosses an executor, source role and Module Interface, specialize a
-native prototype with =poo-clos-prototype-specializer=.  Reserve
-=poo-clos-class-specializer= for a true CLOS class.  This keeps native POO C4
+runtime prototype with =poo-clos-prototype-specializer=.  Reserve
+=poo-clos-class-specializer= for a true CLOS class.  This keeps POO C4
 ancestry authoritative and avoids a duplicate marker-class hierarchy.
 
 The corresponding Session is a different object.  A Session is created for
@@ -269,7 +269,7 @@ binds exposes behavior through slots.  The macro preserves one ordinary value
 expression; it does not parse or lower a second Scenario language.
 
 The maintainer/vertical-author shape should therefore remain small and fully
-native:
+runtime:
 
 #+begin_src scheme
 (.def OntologyCase
@@ -294,10 +294,10 @@ The root =config.ss= only selects and composes the maintained value.  When a
 slot such as =stages= needs progressive disclosure, its Contract admits one
 POO StageSpace whose named slots may contain either direct inert values or
 nested POO values.  Direct values are the low-abstraction case; nested =.o=
-values deliberately opt into inheritance and native slot refinement.  They are
+values deliberately opt into inheritance and runtime slot refinement.  They are
 not two syntaxes and MUST NOT be routed through two evaluators.
 
-Use native type objects or a slot generic when one receiver family owns the
+Use runtime type objects or a slot generic when one receiver family owns the
 behavior.  Use Agentic AI Lab CLOS only when independently extensible axes cross.
 For example, =Scenario.prepare= is normally a method slot; projecting
 =Provider x Profile x ContractKind= is a legitimate CLOS generic.  There is no
@@ -305,7 +305,7 @@ universal requirement that every Module contain both mechanisms.
 
 The first production closure of this model is owned by
 =src/scenario/case.ss=.  =user-composition=
-now returns =agentic-ai-lab.scenario-case.v1= directly; the former inert
+now returns =yuanxu.funflow.scenario.v1= directly; the former inert
 =agentic-ai-lab.composition= identity and public compatibility accessors are removed.
 The Case owns lazy =execution-plan=, =admission=, and =presentation= slots plus
 =prepare=, =admit=, =project=, =present=, and =new-session= methods.
@@ -349,7 +349,7 @@ Use these rules:
 
 1. Compose mixins first; then read direct slots from the final object.
 2. Avoid nested child POO objects when validation or presentation loops will repeatedly inspect them.
-3. Keep runtime policy and profile values as native POO objects while they are still extension surfaces.
+3. Keep runtime policy and profile values as POO objects while they are still extension surfaces.
 4. Use Gerbil =defstruct= for generated runtime receipts that are fixed internal facts rather than extension points.
 5. Materialize receipt structs to bounded alists only once at ABI, manifest, JSON, test-summary, snapshot, or Marlin handoff boundaries.
 6. Keep hot presentation paths over direct slots, fixed struct accessors, cached primitive vectors, or boundary alists, not repeated child =.ref= walks.
@@ -376,9 +376,9 @@ Example:
    (cons 'diagnostic-count
          (length (loop-engine-capability-receipt-diagnostics receipt)))))
 #+end_src
-** 10.06.29.90 Native POO Scenario Lessons
+** 10.06.29.90 POO Scenario Lessons
 The Gerbil Scheme harness scenarios make the performance boundary more concrete:
-1. Public APIs stay native POO: prototypes, mixins, slot operators, and functional helpers remain the user-visible model.
+1. Public APIs stay POO: prototypes, mixins, slot operators, and functional helpers remain the user-visible model.
 2. Adapter construction such as =object<-alist= belongs at named boundaries. Do not rebuild adapter objects inside validation loops or merge loops.
 3. Repeated membership tests over slot lists should use a local hash index when the operation is part of registry, profile, or policy validation.
 4. Repeated =append=, =filter=, or duplicate scans in extension code are a warning sign. Prefer one pass to index extension values, one pass to preserve untouched base values, and one pass to materialize final values in order.
@@ -386,12 +386,12 @@ The Gerbil Scheme harness scenarios make the performance boundary more concrete:
 6. Object reads should be hoisted to the owner boundary. A loop should receive the scalar slot values it needs instead of repeatedly traversing child POO objects.
 7. POO composition such as =.mix=, =.extend=, clone overrides, or lens-style mutation should not appear inside tight loops unless the loop's purpose is explicitly to construct those objects.
 
-This is not a license to replace POO with raw data. The intended shape is POO-native at the extension boundary, functional and indexed in the hot implementation path, then POO receipts or projections at the next boundary.
+This is not a license to replace POO with raw data. The intended shape is POO at the extension boundary, functional and indexed in the hot implementation path, then POO receipts or projections at the next boundary.
 5. If a test hangs, inspect for slot self-reference and repeated nested object instantiation before changing the runtime.
 
 ** 10.06.29.90 Test Policy
 
-Every new POO-native surface needs tests at three levels:
+Every new POO surface needs tests at three levels:
 
 1. Prototype construction: the object can be built directly.
 2. Composition behavior: supers, defaults, ==>=, and ==>.+= resolve as expected.
@@ -517,7 +517,7 @@ The first executable guard for these rules is now in =modules/sandbox-core/profi
 4. =raw-compute-hook= marks =:compute=, =$computed-slot-spec=, or literal =lambda= in profile rows as non-primary user interface shapes.
 5. =runtime-executed-marker= catches user metadata that tries to mark Scheme profile authoring as runtime execution.
 
-The proof lives in =t/sandbox-core-profile-authoring-diagnostics-test.ss=. It keeps clean POO-native rows diagnostic-free and reports the advanced/non-native shapes above. The guard is report-only: it does not change merge behavior or execute runtime work.
+The proof lives in =t/sandbox-core-profile-authoring-diagnostics-test.ss=. It keeps clean POO rows diagnostic-free and reports the advanced/non-runtime shapes above. The guard is report-only: it does not change merge behavior or execute runtime work.
 
 ** 10.06.29.150 Anti-Pattern Matrix
 

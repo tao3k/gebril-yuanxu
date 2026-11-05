@@ -59,7 +59,7 @@
         (else (or (references? (car form) names) (references? (cdr form) names)))))
 (read-definitions (path-expand "lib/gerbil/runtime/mop~0.scm" sdk)
   (lambda (form) (and (pair? (caddr form)) (eq? (car (caddr form)) 'lambda))))
-;; Follow native constructor callers too: optimized .def can bypass dynamic
+;; Follow runtime constructor callers too: optimized .def can bypass dynamic
 ;; :init! dispatch, while .cc/.+ can reach it through ordinary runtime calls.
 (read-definitions
   (path-expand "lib/clan/poo/object~0.scm" (gerbil-path))
@@ -96,15 +96,15 @@
      result)
     (else (rewrite-list form))))
 (create-directory* output)
-;; Build the native SOURCE in an isolated namespace, including its own cache,
+;; Build the runtime SOURCE in an isolated namespace, including its own cache,
 ;; recursive edges and reload entry. No live SDK binding is replaced here.
-(def native-loader-source (path-expand "src/gerbil/runtime/loader.ss" sdk))
-(observe-input! native-loader-source)
+(def runtime-loader-source (path-expand "src/gerbil/runtime/loader.ss" sdk))
+(observe-input! runtime-loader-source)
 (def source-loader-path (path-expand "source-loader.ss" root))
 (def (emit-source-line text port) (display text port) (newline port))
 (def source-load-sites 0)
 (def source-cache-entries 0)
-(call-with-input-file native-loader-source
+(call-with-input-file runtime-loader-source
   (lambda (input)
     (call-with-output-file (list path: source-loader-path truncate: #t)
       (lambda (port)
@@ -128,12 +128,12 @@
               (else (emit-source-line line port)))
             (loop (read-line input))))))))
 (unless (and (= source-cache-entries 2) (= source-load-sites 1))
-  (error "native source loader shape changed" source-cache-entries source-load-sites))
+  (error "runtime source loader shape changed" source-cache-entries source-load-sites))
 (observe-input! source-loader-path)
 (compile-module source-loader-path
   [output-dir: output optimize: #t generate-ssxi: #t invoke-gsc: #t keep-scm: #t])
 (execute-pending-compile-jobs!)
-;; Isolated derivation of the ACTUAL native loader bodies. No public wrapper.
+;; Isolated derivation of the ACTUAL runtime loader bodies. No public wrapper.
 (def loader-source (path-expand "lib/gerbil/runtime/loader~0.scm" sdk))
 (observe-input! loader-source)
 (def loader-definitions '())
@@ -145,7 +145,7 @@
        (when (memq (cadr form) '(__load-module load-module))
          (set! loader-definitions (cons form loader-definitions)))))))
 (for-each collect-loader (read-forms loader-source))
-(unless (= (length loader-definitions) 2) (error "native loader definitions changed"))
+(unless (= (length loader-definitions) 2) (error "runtime loader definitions changed"))
 (def loader-cuts 0)
 (def (rewrite-loader form receiver)
   (cond
@@ -164,7 +164,7 @@
       (def name (cadr definition))
       (def function (caddr definition))
       (unless (and (eq? (car function) 'lambda) (= (length (cadr function)) 1))
-        (error "native loader signature changed" name))
+        (error "runtime loader signature changed" name))
       (def receiver (caadr function))
       (def body (map (cut rewrite-loader <> receiver) (cddr function)))
       (pretty-print `(define ,(rewrite-loader name receiver)
@@ -174,7 +174,7 @@
           ,@body)) port)) (reverse loader-definitions))
     (pretty-print '(set! __load-module authority-cut#__load-module) port)
     (pretty-print '(set! load-module authority-cut#load-module) port)))
-(unless (= loader-cuts 1) (error "native loader load site changed" loader-cuts))
+(unless (= loader-cuts 1) (error "runtime loader load site changed" loader-cuts))
 (call-with-output-file (list path: (path-expand "sdk-home" root) truncate: #t)
   (lambda (port) (display sdk port)))
 (call-with-output-file (list path: (path-expand "sdk-smp" root) truncate: #t)
@@ -187,9 +187,9 @@
       (def form (rewrite (hash-ref definitions name)))
       (when (eq? name initializer-id)
         (let* ((function (caddr form)) (formals (cadr function)))
-          ;; Verified native lowering: six keywords, dispatch vector, SELF.
+          ;; Verified runtime lowering: six keywords, dispatch vector, SELF.
           (unless (and (list? formals) (= (length formals) 8))
-            (error "native initializer lowering changed" formals))
+            (error "runtime initializer lowering changed" formals))
           (let (receiver (car (reverse formals)))
             (set! form `(define ,(cadr form)
               (lambda ,formals
@@ -202,7 +202,7 @@
 (compile-owned "t/qualification/mop-state/unlowered-store.ss")
 (def original-generator apply-generate-runtime)
 (set! apply-generate-runtime (lambda (stx) (rewrite (original-generator stx))))
-;; Materialize the newly introduced guard dependency in native loader code.
+;; Materialize the newly introduced guard dependency in runtime loader code.
 ;; This is an ordinary load-module edge, not an application invocation wrapper.
 (def original-loader apply-generate-loader)
 (set! apply-generate-loader
@@ -219,7 +219,7 @@
 (call-with-output-file (list path: (path-expand "forbidden-bindings.ss" root) truncate: #t)
   (lambda (port) (write selected port)))
 (for-each (lambda (name)
-  (unless (hash-get counts name) (error "missing native store family" name))) primitive-stores)
+  (unless (hash-get counts name) (error "missing runtime store family" name))) primitive-stores)
 (call-with-output-file (list path: (path-expand "lowering-counts.ss" root) truncate: #t)
   (lambda (port) (write (hash->list counts) port)))
 ;; The supervising trusted process retains this job result from its own OS

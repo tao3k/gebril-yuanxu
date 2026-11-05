@@ -14,7 +14,7 @@
     (runner-run (make-runner (make-local-eager-strategy) (make-request-only-adapter)) flow input)))
 
 (def funflow-function-types-test
-  (test-suite "Funflow native Function submission through runtime handoff"
+  (test-suite "Funflow runtime Function submission through runtime handoff"
     (yuanxu-test-case "submitted operation checks arguments before its body and output before the next step"
       (def entered 0)
       (def downstream 0)
@@ -39,7 +39,7 @@
       (check (element? (FlowOf Integer String) source) => #f)
       (def changed (.cc source signature: (Fun String <- Integer)))
       (check-exception (local-run changed 1) TypeError?))
-    (yuanxu-test-case "derived Category callbacks are native checked functions"
+    (yuanxu-test-case "derived Category callbacks are runtime checked functions"
       (def category (.cc default-flow-category 'arr (lambda (_name _signature _body) 7)))
       (check-exception (flow-category-arr category 'invalid (Fun Integer <- Integer) identity) TypeError?))
     (yuanxu-test-case "recovery validates the selected result without swallowing Type errors"
@@ -54,7 +54,7 @@
         (runner-run-value-or-recover runner bad 1 Integer
           (lambda (_failure) (set! entered (+ entered 1)) 7)) TypeError?)
       (check-equal? entered 0))
-    (yuanxu-test-case "a returned callback retains its native Function boundary"
+    (yuanxu-test-case "a returned callback retains its runtime Function boundary"
       (def entered 0)
       (def callback (Fun Integer <- Integer))
       (def factory
@@ -65,7 +65,7 @@
       (check-exception (operation "wrong") TypeError?)
       (check-equal? entered 0)
       (check-equal? (operation 4) 7))
-    (yuanxu-test-case "native Sum retains a returned checked callback"
+    (yuanxu-test-case "runtime Sum retains a returned checked callback"
       (def entered 0)
       (def source
         (flow-arr 'factory (Fun (Fun Integer <- Integer) <- Integer)
@@ -135,7 +135,7 @@
       (check-exception
         (runner-run (make-runner (make-local-eager-strategy) adapter) remote 1) TypeError?)
       (check-equal? entered 1))
-    (yuanxu-test-case "runtime decoder failure retains its original native Type error"
+    (yuanxu-test-case "runtime decoder failure retains its original Type error"
       (def command
         (make-process-runtime-command 'decode "/bin/echo" '("value")
           (lambda (_envelope _stdout) 7)))
@@ -144,7 +144,7 @@
           (list (cons 'schema +runtime-request-schema+) (cons 'request-id 'request))))
       (check-equal? (adapter-result-status result) 'failed)
       (check (TypeError? (runtime-alist-ref (adapter-result-error result) 'error #f)) => #t))
-    (yuanxu-test-case "all 25 native table style transfers retain admitted Function identity"
+    (yuanxu-test-case "all 25 runtime table style transfers retain admitted Function identity"
       (def callback (local-run (flow-arr 'identity (Fun (Fun Integer <- Integer) <- Integer)
                                (lambda (offset) (cut + offset <>))) 2))
       (def table (RationalDict (Fun Integer <- Integer)))

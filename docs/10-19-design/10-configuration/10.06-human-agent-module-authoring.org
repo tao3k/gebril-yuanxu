@@ -36,7 +36,7 @@ This is a review requirement, not a new mutable-object or runtime protocol.
 | Intent | Framework support | Human/Agent review surface |
 |--------+-------------------+----------------------------|
 | Change an image or Service port | Ordinary value/path assignment | Changed fields, final values and relevant diagnostics |
-| Retain defaults and transform one inherited value | Native POO plus named functions | Parent/source, transformation order and resulting value |
+| Retain defaults and transform one inherited value | POO plus named functions | Parent/source, transformation order and resulting value |
 | Add a reusable Profile | Existing module scopes and published Contracts | Authored values, requirements and representative consumers |
 | Add a new domain Module | Standard roles and stable dependency interfaces | Public scope, Contract coverage, effects and negative controls |
 | Extend core mechanism | Explicit contracted extension boundary | Semantic change, compatibility and execution implications |

@@ -16,20 +16,20 @@
                            (loop (cddr rest)))))
                 (expected (datum->syntax (stx-car declaration) 'core (stx-source key)))
                 (expanded (core-expand1 declaration))
-                (native (find (lambda (form)
+                (runtime (find (lambda (form)
                                 (syntax-case form ()
-                                  ((head _ ...) (eq? (stx-e #'head) 'native-.def/ctx))
+                                  ((head _ ...) (eq? (stx-e #'head) 'runtime-.def/ctx))
                                   (_ #f)))
                               (cdr (syntax->list expanded))))
-                (row (and native
+                (row (and runtime
                           (find (lambda (row) (eq? (stx-e (stx-car row)) 'core))
-                                (cdddr (syntax->list native))))))
+                                (cdddr (syntax->list runtime))))))
            (unless (and row (bound-identifier=? (stx-car row) expected)
                         (stx-source key) (equal? (stx-source row) (stx-source key))
                         (equal? (stx-source (stx-car row)) (stx-source key)))
              (raise-syntax-error #f "declaration lost original core binding or location" input))))
-       ;; Native .def stays at module level. Only value expressions acquire
-       ;; the original native Core receiver's lexical export aliases.
+       ;; Runtime .def stays at module level. Only value expressions acquire
+       ;; the original runtime Core receiver's lexical export aliases.
        (def (map-fields rows transform)
          (syntax-case rows ()
            (() #'())
@@ -66,7 +66,7 @@
                     ((roles:) value)
                     (else (wrap value #'self)))))))
               #'(head (:: self parents) . slots)))
-           (_ (raise-syntax-error #f "closed Core requires its native receiver binder" core))))
+           (_ (raise-syntax-error #f "closed Core requires its runtime receiver binder" core))))
        (def (rewrite form)
          (syntax-case form ()
            ((head name . slots)

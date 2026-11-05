@@ -1,4 +1,4 @@
-#+title: 12.27.45 Candidate Location Support And Native Replay Cost
+#+title: 12.27.45 Candidate Location Support And Runtime Replay Cost
 #+property: DOCUMENT_ID 12.27.45
 #+language: en
 #+property: STATUS location-qualified-capacity-open
@@ -11,16 +11,16 @@ coalescing, the same source-only dependency lock, =init.modules= test object and
 =.run=. The heap, idle watchdog and total budget remain unchanged. No upstream
 source, compiler cache or new result cache is involved.
 
-Physical file reads do not count directory listings, native object revisions,
+Physical file reads do not count directory listings, runtime object revisions,
 token DFS, macro expansion, compilation, initialization or garbage collection.
 A linear read count is therefore insufficient evidence of a linear loader.
 
 * Actual hidden prefix
 
-The paired native reader previously used the directory's full =current?= for
+The paired runtime reader previously used the directory's full =current?= for
 each candidate's eligibility. That predicate traversed every parser decision,
 every earlier SourceRef and every earlier directory observation. These are
-real native metadata/filesystem operations, even when no source file is read.
+real runtime metadata/filesystem operations, even when no source file is read.
 
 The Core change splits this operation's support inside its existing owners:
 
@@ -29,10 +29,10 @@ The Core change splits this operation's support inside its existing owners:
 | Decision index | Requested row and its selection object; original revision snapshots | All original intent/row/window revisions |
 | Directory snapshots | Observe actual child/interface kinds even on a snapshot hit; retain negative competing-window queries | Full listings and namespace/collision observations |
 | SourceRef index | Requested SourceRef and the actual path observations that produced it | All retained SourceRefs and observations |
-| Reader metadata guard | Recheck this location at native role/admission boundaries | Complete source epoch and actual producer metadata before visibility |
+| Reader metadata guard | Recheck this location at runtime role/admission boundaries | Complete source epoch and actual producer metadata before visibility |
 
 These are changed payloads in the existing indexes, not a second namespace,
-discovery tree or approval cache. A native revision change followed by restoring
+discovery tree or approval cache. A runtime revision change followed by restoring
 the same value remains stale. The candidate-location function is captured from
 the paired directory factory; custom contexts and readers keep full guards.
 Open callbacks still widen before entry and remain widened at return.
@@ -45,7 +45,7 @@ commit. This is tentative discovery, not permission to publish a conflicting
 namespace or to execute external effects on behalf of an unadmitted Graph.
 
 The shared pure source window also applies to directory observations through
-=module-source-observe=. The window ends before native initialization and open
+=module-source-observe=. The window ends before runtime initialization and open
 callbacks. No successful check is retained across an effect boundary. Full
 Graph publication still refuses an unrelated earlier source change that the
 current private candidate does not depend on.
@@ -56,24 +56,24 @@ The existing ModuleTestingProfile gains closed scalar intervals:
 
 | Counter | Exact scope and limitation |
 |---------+----------------------------|
-| =metadata-replay-visits= | Distinct token identities actually visited by EACH native replay; not root-list width |
-| =metadata-replay-*-microseconds= | Wall/CPU union of native replay intervals, including native tail rechecks |
+| =metadata-replay-visits= | Distinct token identities actually visited by EACH runtime replay; not root-list width |
+| =metadata-replay-*-microseconds= | Wall/CPU union of runtime replay intervals, including runtime tail rechecks |
 | =reader-compile-*-microseconds= | Existing SDK compile hook for actual owned bodies |
 | =reader-eval-*-microseconds= | Existing SDK evaluation hook for actual owned programs |
-| =import-*-microseconds= | Union of private native import intervals; can contain compilation, initialization and source validation |
+| =import-*-microseconds= | Union of private runtime import intervals; can contain compilation, initialization and source validation |
 | =source-guard-*-microseconds= | Existing guard intervals, including metadata replay |
 
 These are overlapping intervals, not additive independent phase durations.
 Import residual time is NOT a pure macro-expansion measurement: it also includes
-dependency resolution and native import bookkeeping. =reader-body-expanded=
+dependency resolution and runtime import bookkeeping. =reader-body-expanded=
 is a completed-expansion event, not an expansion-start clock. Cold pre-Case
 imports are separately visible in the existing process CPU checkpoint; parent
 and child process clocks must not be subtracted as if they shared an epoch.
-Counters retain no native token, syntax object, program or receiver. Disabled
-observation performs the ordinary native replay without counting visits.
+Counters retain no runtime token, syntax object, program or receiver. Disabled
+observation performs the ordinary runtime replay without counting visits.
 Every 64 completed publications, the observer emits scalar cumulative wall/CPU
 totals. A later TERM therefore does not erase the last complete phase sample.
-Unique-token visits are NOT dependency-edge attempts: duplicate native edges
+Unique-token visits are NOT dependency-edge attempts: duplicate runtime edges
 can still cost work. No linear wall/heap theorem is inferred from that counter.
 Fine-grained diagnostic spans use the observer's existing fixed vector family,
 not the Case's 64 domain-counter slots. An intermediate instrumentation draft
@@ -87,7 +87,7 @@ totals use the observer-owned scalars even after the Case counter scope ends.
 before and after location, final publication, previous-value preservation and
 termination. Controls omit cached path support or the final whole-Graph check;
 an acceptance control must reach publication. It is a finite transition model,
-not a native allocation or time bound.
+not a runtime allocation or time bound.
 
 Lean's =candidate_location_support_current= requires coverage by root, decision
 and path support, and current revisions at the actual boundary. It composes
@@ -98,7 +98,7 @@ confined, filesystem transactionality, or correspondence automatically.
 
 * Reproducible focused entrypoints
 
-Use the locked source-only qualification environment and existing native gates:
+Use the locked source-only qualification environment and existing runtime gates:
 
 #+begin_src text
 just test-file t/module-candidate-stage-test.ss true
@@ -117,7 +117,7 @@ From =dev/proofs/lean=:
 lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
 #+end_src
 
-Native tests run serially. Qualification requires natural exit zero, MODULE-OK,
+Runtime tests run serially. Qualification requires natural exit zero, MODULE-OK,
 HARNESS-OK and final OK, without harness/heap/stack errors. A timeout or partial
 publication count is not a ready Graph or a completed memory-capacity sample.
 
@@ -131,18 +131,18 @@ directory was absent after termination. Pre-Graph checkpoint CPU was 9,606 ms
 process-total versus 823 ms Case-local; that difference includes cold imports
 and pre-Case setup, not a pure importer measurement.
 
-The location candidate's seven focused native cases pass, as does the existing
+The location candidate's seven focused runtime cases pass, as does the existing
 observation test with the new closed timing categories. An early draft failed
 with a lexical slot/self-binding cycle; the factory procedure now has a distinct
 internal name from the POO slot. A mixed snapshot retry is not used as evidence.
-The extra native work control locates another real SourceRef, then compares
+The extra runtime work control locates another real SourceRef, then compares
 actual filesystem-stat work for the first location before/after. Candidate
 work stays unchanged and nonzero; complete-epoch work grows. This verifies the
 removed prefix traversal at the real directory owner. It is NOT a substitute
 for the thousand-module declaration qualification.
 
 The new thousand-module run also exited 124 at 600 seconds. It completed 741
-publications (2,964 native bodies), not a ready Graph. Its last complete Graph
+publications (2,964 runtime bodies), not a ready Graph. Its last complete Graph
 record was wall 556,815 ms / CPU 223,828 ms, with 281,147 physical reads. The
 owned fixture directory was absent after termination. The count is LOWER than
 the control's 784, so there is no end-to-end throughput improvement claim.
@@ -150,7 +150,7 @@ Different phase coverage and CPU/wall ratios do not establish a speedup.
 
 The last complete scalar sample at 704 publications was:
 
-| Native interval | Wall seconds | CPU seconds |
+| Runtime interval | Wall seconds | CPU seconds |
 |-----------------+--------------+-------------|
 | Private role imports | 51.576 | 21.097 |
 | Owned compilation | 0.728 | 0.255 |
@@ -176,13 +176,13 @@ optimization. Repeating this unchanged failed capacity route adds no evidence.
 Quint's 15 CandidatePublication/CandidateLocation cases and the focused Lean
 SourceClosureWork target pass against the updated source binding. This proves
 the stated finite schedules and conditional support laws, not capacity or an
-automatic effect-support analysis. Final native invalidation/cleanup and AWS
+automatic effect-support analysis. Final runtime invalidation/cleanup and AWS
 publication regressions are recorded separately below.
 
 * Remaining optimization boundary
 
 The reader still validates the demanded interpreter/SDK source closure at
-native effect boundaries and before canonical imports. Collapsing checks across
+runtime effect boundaries and before canonical imports. Collapsing checks across
 an arbitrary macro or initializer would reuse an approval across an effect.
 The current change does not do that. Separating a loaded context's identity
 from its mutable source provenance would require a new explicit correspondence
@@ -190,7 +190,7 @@ argument and source-change controls; it is not implied by a cache hit.
 
 Continue from measured preparation/interface/admission intervals. Avoid either
 dropping those guards based on a module name or assuming that unique replay
-visit counts measure the full cost of native dependency lists. No compiler
+visit counts measure the full cost of runtime dependency lists. No compiler
 cache, SDK clearing, higher heap or longer watchdog was used.
 
 The subsequent 16-real-module diagnostic control passes through the same init
@@ -205,7 +205,7 @@ pre-Case difference includes cold imports and setup. Observed call intervals:
 | Outer interface import, including role imports/expansion | 3.659 | 1.563 |
 | Unified publication admission | 0.042 | 0.025 |
 | Root identity projection | 0.002 | 0.002 |
-| Native metadata replay, overlapping the above and guard calls | 1.504 | 0.764 |
+| Runtime metadata replay, overlapping the above and guard calls | 1.504 | 0.764 |
 
 Private role imports account for 1.583 s wall / 0.698 s CPU within interface
 work. Owned compile/evaluation are much smaller. The next real call sites are
@@ -215,7 +215,7 @@ identify pure macro time, prove an optimization safe, or close the thousand-
 module budget. The final scalar-footer correction changes observation storage,
 not the candidate guard algorithm; the thousand-module failure remains binding.
 
-* Native regression closure
+* Runtime regression closure
 
 The focused candidate-stage/work controls, metadata-policy/Contract controls,
 public reader ambient-effect controls, fixed diagnostic-category test and real

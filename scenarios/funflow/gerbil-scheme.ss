@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Native default Profile construction, with no import of the publishing scope.
+;;; Runtime default Profile construction, with no import of the publishing scope.
 (import :yuanxu/profile-composition/selection-syntax
         (only-in :clan/poo/object .o .get))
 (export make-gerbil-scheme-ci-profile)
@@ -53,4 +53,4 @@
         pipeline-name: 'default
         checks: (list build test package)
         metadata: '((scenario . funflow-cicd)
-                    (authoring-style . gerbil-poo-native))))))
+                    (authoring-style . gerbil-poo))))))

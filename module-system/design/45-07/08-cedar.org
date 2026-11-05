@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Cedar authority and lifecycle proofs
+#+language: en
+
+[[file:../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+- [[file:cedar/01-cedar-capability-grant-closure.org][Cedar capability grant closure]]
+- [[file:cedar/02-cedar-input-content-identity-refinement.org][Cedar input content-identity refinement]]
+- [[file:cedar/03-content-identity-generation-transition.org][Content-identity generation transition]]
+- [[file:cedar/04-authority-issued-content-identity-transition.org][Authority-issued content-identity transition]]
+- [[file:cedar/05-published-predecessor-lineage.org][Published predecessor lineage]]
+- [[file:cedar/06-successor-checkpoint-publication-domain-binding.org][Successor/checkpoint publication-domain binding]]
+- [[file:cedar/07-publication-domain-semantic-identity-binding.org][Publication-domain semantic-identity binding]]
+- [[file:cedar/08-registry-trust-claim-authority-binding.org][Registry trust-claim authority binding]]
+- [[file:cedar/09-registry-content-transition-governance.org][Registry content-transition governance]]
+- [[file:cedar/10-successor-descriptor-admission-and-same-domain-rotation.org][Successor descriptor admission and same-domain rotation]]
+- [[file:cedar/11-registry-recovery-and-replica-content-evidence-propagation.org][Registry recovery and replica content-evidence propagation]]
+- [[file:cedar/12-n-way-content-aware-replica-summary.org][N-way content-aware replica summary]]
+- [[file:cedar/13-authority-issued-replica-summary-provenance.org][Authority-issued replica-summary provenance]]
+- [[file:cedar/14-recovered-only-descriptor-admission-witness.org][Recovered-only descriptor admission witness]]
+- [[file:cedar/15-authority-provenance-recovered-head-floor.org][Authority-provenance recovered-head floor]]
+- [[file:cedar/16-gap-separated-same-domain-rotation.org][Gap-separated same-domain rotation]]
+- [[file:cedar/17-recovery-authority-registry-claim-binding.org][Recovery-authority registry-claim binding]]
+- [[file:cedar/18-authority-issued-descriptor-retirement.org][Authority-issued descriptor retirement]]
+- [[file:cedar/19-full-cedar-lifecycle-registry-join.org][Full Cedar lifecycle registry join]]
+- [[file:cedar/20-cedar-lifecycle-join-closure.org][Cedar lifecycle join closure]]

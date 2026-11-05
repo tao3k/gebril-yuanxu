@@ -6,30 +6,30 @@
 * The closed interval on the actual AWS path
 
 The before-guard audit left 19205 physical reads open. A new experiment first
-tried handing the native resolver's final check directly to its immediately
+tried handing the runtime resolver's final check directly to its immediately
 following cold link. That candidate passed the scope tests but changed neither
 AWS physical reads nor its before subtotal. It was removed. A fixture-only or
 other-phase improvement is not the result reported below.
 
-The retained change is in SelectedPackages.current! and the native Nix
+The retained change is in SelectedPackages.current! and the runtime Nix
 publication it calls. Immediately before the FIRST package, sources-current!
 has already called inputs-current! and checked the generated guard entry. The
-native package's entry then calls the exact same inputs-current! procedure
+runtime package's entry then calls the exact same inputs-current! procedure
 again. The intervening operations are private list access and inspection of
-already prepared native metadata. They need not include a public callback.
+already prepared runtime metadata. They need not include a public callback.
 
 #+begin_src text
 Before:
   enclosing sources-current! -> inputs-current! -> Graph.admit-current
-  native entry              -> inputs-current! -> Graph.admit-current
+  runtime entry              -> inputs-current! -> Graph.admit-current
   package action, including possible Nix effects
-  native tail               -> inputs-current! -> Graph.admit-current
+  runtime tail               -> inputs-current! -> Graph.admit-current
   enclosing sources-current! -> inputs-current! -> Graph.admit-current
 
-After, only for an exactly matched native FIRST operation:
+After, only for an exactly matched runtime FIRST operation:
   enclosing sources-current! -> inputs-current! -> Graph.admit-current
   pure cache-only method/guard identity probe
-  native continuation: package action; unchanged native tail
+  runtime continuation: package action; unchanged runtime tail
   unchanged enclosing sources-current!
 #+end_src
 
@@ -63,7 +63,7 @@ cold realization path and two on its warm path.
 The internal resume probe declines unless ALL of these hold:
 
 - The receiver is already instantiated; checking readiness uses the existing
-  native object-%instance accessor and never initializes it.
+  runtime object-%instance accessor and never initializes it.
 - There is no custom object protocol and no active slot-read frame/observer.
   Such reads keep their ordinary MOP demand and callback semantics.
 - Both %source-operation and admit-current are already cached. A miss never
@@ -72,7 +72,7 @@ The internal resume probe declines unless ALL of these hold:
   by SelectedPackages, and its full procedure is eq? to the cached method.
 
 A replaced method, different guard, cold metadata or custom MOP therefore
-falls back to the original full .call. Invalidation clears native instance
+falls back to the original full .call. Invalidation clears runtime instance
 state; the probe does not preserve an old method through mutation. The probe
 inspects readiness and callable structure, not whether a previous check passed.
 The CALLER establishes freshness by immediately executing sources-current!.
@@ -81,9 +81,9 @@ precondition; the returned function is not an admission authority.
 
 The existing synchronous source guards and Observability adapter must remain
 effect-free/passive, as in the existing read-window model. Package bodies,
-domain validators and native imports are not assigned that premise. No observer
+domain validators and runtime imports are not assigned that premise. No observer
 event grants reuse, and no time-to-live or cross-invocation approval is stored.
-As with the existing synchronous read windows, this assumes sequential native
+As with the existing synchronous read windows, this assumes sequential runtime
 object mutation and stable source inputs within the pure interval; it does not
 provide an atomic filesystem snapshot against arbitrary concurrent writers.
 
@@ -127,17 +127,17 @@ the cached-parent/final-child checks, failed-publication previous-value retentio
 and fixture cleanup. The original init tests .run is still the execution owner.
 
 Targeted tests exercise the production phase object and SelectedPackages with
-inert external-command probes. They cover a warm native composition with three
+inert external-command probes. They cover a warm runtime composition with three
 fresh source passes instead of four; mutation during the query; replacement of
 the public method; cold metadata; mismatched guard identity; active MOP read
 observation; and a custom object protocol. Those probes are controls, not
 substitutes for the real AWS/Nix aggregate. The existing warm callback and
 validator-time provenance mutation controls remain in place.
-With two native packages, the focused test requires five source passes: the
+With two runtime packages, the focused test requires five source passes: the
 second package retains its full entry after the first package's effect.
 
 The matched old-call control restores only SelectedPackages' original loop,
-keeping the operation decomposition and the same test. It fails the native
+keeping the operation decomposition and the same test. It fails the runtime
 prefix assertion with result 4, expectation 3. This is the intended specific
 counterexample, not an accepted test pass or a broad error? assertion.
 

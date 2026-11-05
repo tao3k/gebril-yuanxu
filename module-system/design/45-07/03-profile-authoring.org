@@ -1,0 +1,191 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Profile authoring and expansion
+#+language: en
+
+[[file:../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Profile author declaration
+
+The normative Profile author macro is =defprofile=.  It declares one root POO
+expression followed by zero or more statically named case clauses:
+
+Detailed semantics are modular and remain outside this public-interface RFC:
+
+- [[file:../45-17-profile-expansion-reflection-and-identity.org][Profile expansion, phase reflection, and identity]]
+- [[file:../45-18-higher-order-profile-fixed-point-and-submodule-visibility.org][Higher-order Profile fixed point and submodule visibility]]
+- [[file:../45-19-capability-ambiguity-resolution-overlay-and-replay.org][Capability ambiguity, resolution overlay, and replay]]
+- [[file:../45-20-fixed-point-convergence-observation-budget.org][Fixed-point convergence and observation budget]]
+
+#+begin_src mermaid
+flowchart LR
+    U["45-07 public user composition"]
+    P["45-17 macro phase and identity"]
+    F["45-18 fixed point and submodules"]
+    R["45-19 ambiguity and recovery"]
+    C["45-20 convergence and budget"]
+
+    U -->|"expansion contract"| P
+    U -->|"composition semantics"| F
+    U -->|"continuable resolution"| R
+    U -->|"observability policy"| C
+#+end_src
+
+#+begin_src scheme
+(defprofile wendao-episteme
+  <root-poo-expression>
+
+  (+research
+    <poo-refinement-expression> ...)
+
+  (+observability
+    <poo-refinement-expression> ...))
+#+end_src
+
+The first body form is naturally the root prototype expression, and subsequent
+=+identifier= forms are case clauses.  The grammar MUST NOT add redundant
+=base= or =cases= wrappers.
+
+** POO case bodies
+
+The root and every case contribution are ordinary POO expressions.  Existing
+POO operators may be used directly:
+
+#+begin_src scheme
+(defprofile wendao-episteme
+  (.o
+    <root-slot-definition> ...)
+
+  (+research
+    (==> <research-prototype>
+         <slot-transform> ...))
+
+  (+observability
+    (==>.+= <observability-prototype>
+            <slot-transform> ...)))
+#+end_src
+
+=defprofile= does not redefine the POO operators shown above and does
+not introduce a row, record, patch, or configuration DSL around them.
+
+** Hygienic dual projection
+
+#+begin_export mermaid
+flowchart LR
+    A["defprofile declaration"] --> B["Hidden runtime root prototype"]
+    A --> C["Hidden runtime refinement prototypes"]
+    A --> D["Compile-time case descriptor"]
+    D --> E["Public lexical binding: wendao-episteme"]
+    B --> E
+    C --> D
+    E --> F["wendao-episteme with selected cases"]
+#+end_export
+
+The macro creates hygienic hidden runtime bindings for the root and refinement
+prototypes, plus a compile-time descriptor that maps case identifiers to
+ordered structural contributions.  Expansion preserves source provenance and
+does not evaluate POO expressions at compile time or copy runtime slot and
+fixed-point state.
+
+** Multiple structural contributions
+
+One case clause may contribute several already constructed POO refinements:
+
+#+begin_src scheme
+(+observability
+  observability-mix-refinement
+  telemetry-capability-refinement
+  recovery-policy-refinement)
+#+end_src
+
+Each contribution carries its own structural boundary.  The author does not
+declare string targets or write a public path-refinement DSL.
+
+Case declaration order provides deterministic descriptor output but does not
+define application precedence.  The order written at the use site determines
+the ordered refinement lineage.
+
+** One exported identifier
+
+A downstream module imports only the declared name, such as
+=wendao-episteme=.  Hidden prototype bindings, case tables, descriptors, and
+syntax support remain implementation details.  =defprofile= is a structural
+macro that declares a POO prototype and its static case projection; it does not
+create a Profile class or another object system.
+
+* Profile identifier expansion contract
+
+One exported Profile identifier has three context-sensitive uses while
+preserving one runtime prototype identity.
+
+#+begin_export mermaid
+flowchart TD
+    A["wendao-episteme occurrence"] --> B{"Syntax position"}
+    B -->|"bare expression"| C["Expand to hidden root prototype binding"]
+    B -->|"case application"| D{"Inside compose profiles?"}
+    D -->|yes| E["Contribute root and cases to enclosing flat plan"]
+    D -->|no| F["Perform one local gerbil-poo composition"]
+    B -->|"other application"| G["Expansion-time syntax error"]
+#+end_export
+
+** Bare identifier expression
+
+A bare Profile identifier expands to the hygienic hidden root
+=clan/poo= prototype binding and therefore remains a first-class Scheme value:
+
+#+begin_src scheme
+(define selected wendao-episteme)
+(list wendao-episteme production)
+#+end_src
+
+There is no public value or prototype accessor and no explicit unwrap step.
+
+** Standalone case expression
+
+A case application outside an enclosing =compose profiles= form performs one
+local =gerbil-poo= composition and returns the refined prototype:
+
+#+begin_src scheme
+(define research-system
+  (wendao-episteme +research))
+#+end_src
+
+** Case expression inside composition
+
+When the same case application is an operand of =compose profiles=, the outer
+expander reads its descriptor directly and contributes the root and selected
+case refinements to the enclosing flat plan.  It MUST NOT first construct an
+intermediate refined prototype and then compose that value again.
+
+Thus a standalone case expression has one local composition boundary, while
+an enclosed case expression joins the one enclosing boundary.  Neither path
+emits nested prototype-composition calls.
+
+** Invalid application and dynamic parameters
+
+A Profile identifier in operator position accepts only its declared static
+case identifiers.  Another argument shape, such as:
+
+#+begin_src scheme
+(wendao-episteme dataset)
+#+end_src
+
+is an expansion-time syntax error rather than a guessed function call.  A
+dynamic parameter is handled by an ordinary Scheme function that returns a POO
+prototype.
+
+** Lexical transformer export
+
+=defprofile= exports one lexical transformer.  In identifier position it
+projects the hidden runtime root; in application position it resolves static
+cases; and when inspected by =compose profiles= it provides the compile-time
+descriptor.
+
+Generated runtime references retain the defining module's lexical context.
+Downstream modules import only the declared Profile name and do not import root,
+case-table, descriptor, or syntax-support identifiers separately.  The exact
+Gerbil transformer mechanism remains =symbol-located= work; this contract fixes
+only its public observable behavior.
+

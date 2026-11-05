@@ -10,7 +10,7 @@ This records the original isolated adapter run. The
 controls through the actual producer and adds real platform Context tests.
 The original source hashes/results below remain historical receipts.
 
-The native Scheme suite is
+The Scheme suite is
 [[file:../../../t/qualification/contract-adaptation/checked-publication-test.ss][checked-publication-test.ss]]. It exercises the composition proposed in
 [[file:12.15-checked-object-admission-publication.org][the handoff design]], including inherited .admit receiver binding, an actual
 Function wrapper, nested Schema validation and the existing Core evidence
@@ -82,7 +82,7 @@ parts of upstream validation. No wrapper is added by the publication phase.
 
 * Final results
 
-The final run exited 0 with all eight cases completed. The exported native
+The final run exited 0 with all eight cases completed. The exported runtime
 test-cleanup! checks that all eight bodies reached completion, so import-only
 success cannot be mistaken for execution. Output included
 =CHECKED-PUBLICATION: 8 cases completed=, MODULE-OK, HARNESS-OK and final OK,

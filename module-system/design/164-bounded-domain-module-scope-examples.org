@@ -1,22 +1,22 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Bounded Native Module Scopes for LangGraph, CrewAI and Tool Calling
+#+title: Bounded Runtime Module Scopes for LangGraph, CrewAI and Tool Calling
 #+date: [2026-10-15]
 #+property: STATUS proposed-not-implemented
 
 * Declaration implementation update (2026-10-15)
 
 The compound-body use-module grammar is now implemented for an already bound
-native scope; see [[file:../../profile-composition/README.org][Core bounded scopes]]. The configured domain defaults,
+runtime scope; see [[file:../../profile-composition/README.org][Core bounded scopes]]. The configured domain defaults,
 owner publication, authenticated discovery and selected-result admission below
 remain product design. Use distinct lexical source/slot names; no implicit
-registry resolution is performed by this declaration. Native unary .+ is invalid;
+registry resolution is performed by this declaration. Runtime unary .+ is invalid;
 use =(.o (:: @ module-alias))= when only deriving a scope.
 
 * One scope protocol, three domain examples
 
-This is the canonical downstream domain configuration surface. Native .def/.o,
+This is the canonical downstream domain configuration surface. Runtime .def/.o,
 .+, =>.+, .get and lexical binding exist. The bounded use-module body, complete
 configured Profile/policy defaults and bounded scope protocol below are proposed. The current
 libraries publish semantic declarations, not these business/policy interfaces.
@@ -29,7 +29,7 @@ No code, export, source admission or runtime is changed.
 | ToolCallingModule as tc | profiles.tool-loop | argument-validator | depth bound 64; empty allowed-tools, 30000 ms timeout |
 
 These names/defaults are product proposals, not claims about external framework
-APIs. Owner publication must actually supply native objects, Contracts and
+APIs. Owner publication must actually supply runtime objects, Contracts and
 consumers. The source stage defaults listed per example are existing data only.
 Module aliases distinguish lexical scopes; graph/crew/tool are placement slots.
 Existing as only records instance identity and does not establish these lexical
@@ -66,7 +66,7 @@ The alias lg binds once inside its expression body, including nested
 object expressions capturing it. .+ returns the derived Module stored in
 MyGraphScenario.graph. The business values and routing-policy refine the inherited Profile and
 its existing policy object. Unchanged fields, previous instance refinements and
-native ancestry remain inherited. No raw constructor or prototype lookup is
+runtime ancestry remain inherited. No raw constructor or prototype lookup is
 needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
 remain configuration defaults, not executed runtime evidence.
 
@@ -99,7 +99,7 @@ The alias cr binds once inside its expression body, including nested
 object expressions capturing it. .+ returns the derived Module stored in
 MyCrewScenario.crew. The business values and scheduling-policy refine the inherited Profile and
 its existing policy object. Unchanged fields, previous instance refinements and
-native ancestry remain inherited. No raw constructor or prototype lookup is
+runtime ancestry remain inherited. No raw constructor or prototype lookup is
 needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
 remain configuration defaults, not executed runtime evidence.
 
@@ -132,17 +132,17 @@ The alias tc binds once inside its expression body, including nested
 object expressions capturing it. .+ returns the derived Module stored in
 MyToolScenario.tool. The business values and argument-validator refine the inherited Profile and
 its existing policy object. Unchanged fields, previous instance refinements and
-native ancestry remain inherited. No raw constructor or prototype lookup is
+runtime ancestry remain inherited. No raw constructor or prototype lookup is
 needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
 remain configuration defaults, not executed runtime evidence.
 
 * Upstream MultiAgentScenario. and its Composition Contract
 
 This is a complete proposed upstream declaration, not an existing export or a
-runnable integration. The user examples below inherit this native object. The
+runnable integration. The user examples below inherit this runtime object. The
 common CompositionContract supplies the common proto/obligations; its descriptor
-is never used as a native configuration parent. ControlGraph. below is an
-upstream-local import alias for the existing native graph prototype in
+is never used as a runtime configuration parent. ControlGraph. below is an
+upstream-local import alias for the existing runtime graph prototype in
 [[file:../../graph/types-core.ss][graph/types-core.ss]], avoiding confusion with the configured graph Module slot.
 This alias is not a new graph engine or a currently published export.
 
@@ -230,7 +230,7 @@ are design names requiring definitions/adapters. The combining helper is pure:
 it retains inherited common obligations and adds domain obligations. It must
 not replace the common admission rules with a weaker domain-only check.
 responsibilities: =>.+ likewise refines the inherited responsibility map.
-The native plan slot uses @, the effective derived receiver, not the literal
+The runtime plan slot uses @, the effective derived receiver, not the literal
 MultiAgentScenario. object. Its pure projector never recursively invokes root
 admission; admission may demand the projected plan and then validate it.
 
@@ -316,16 +316,16 @@ idempotency/action semantics, bounded attempts, fresh attempt identity and an
 explicit recovery edge/owner. Runtime terminal state and receipt acceptance must
 prevent duplicate or out-of-order replies from advancing the flow twice.
 
-* Native multi-inheritance: one Scenario, three independently bound Modules
+* Runtime multi-inheritance: one Scenario, three independently bound Modules
 
-The complete example below extracts the three Module configurations as native
+The complete example below extracts the three Module configurations as runtime
 contribution objects. Each owns only graph, crew or tool; they do not inherit
 three separate domain Scenario roots or closed runtime Case/Session objects.
 That avoids accidentally treating competing root stage/handoff metadata as a
 combined execution model. Existing per-domain examples remain useful standalone
 configurations; this section is the canonical combined variant.
 
-MultiAgentScenario. is a proposed upstream shared native proto supplied by a
+MultiAgentScenario. is a proposed upstream shared runtime proto supplied by a
 proposed MultiAgentCompositionContract specializing the common CompositionContract.
 The preceding upstream declaration specifies that proto and its admission duties;
 neither symbol is an existing export. It supplies explicit control/handoff facts
@@ -370,7 +370,7 @@ No new user Scenario/compose/import syntax is introduced.
            {maximum-depth: 16}}}})))
 
 ;; Proposed upstream shared proto, owned by MultiAgentCompositionContract.
-;; MultiAgentScenario. is a native object, not the Contract descriptor.
+;; MultiAgentScenario. is a runtime object, not the Contract descriptor.
 (.def (AgentScenario @
        [GraphConfig CrewConfig ToolConfig MultiAgentScenario.]))
 
@@ -397,7 +397,7 @@ No new user Scenario/compose/import syntax is introduced.
 #+end_src
 
 Each Module has one binding declaration. lg/cr/tc are bounded lexical aliases,
-not exported Scenario fields or cross-Module globals. Native parent slots can
+not exported Scenario fields or cross-Module globals. Runtime parent slots can
 be evaluated per effective receiver: parent-first demand followed by child
 refinement may resolve compatible source bindings through existing owner reuse
 rules, so "one declaration" is not a claim of one global evaluation forever.
@@ -405,7 +405,7 @@ rules, so "one declaration" is not a claim of one global evaluation forever.
 The complete Module defaults/Profile/policy publication and source-scope protocol
 remain proposed. GraphConfig/CrewConfig/ToolConfig define disjoint placement
 slots, so their root parent order cannot choose between the three modules.
-A future overlapping same-name slot would follow native precedence and require
+A future overlapping same-name slot would follow runtime precedence and require
 explicit source/conflict admission, not automatically combine every hidden value.
 Unchanged policy instance attributes and ancestry remain inherited by the final
 ProductionScenario; all its changes use ordinary =>.+.
@@ -422,16 +422,16 @@ ProductionScenario; all its changes use ordinary =>.+.
 | cross-Module plan and handoff | explicit permitted graph/task/tool relationships, control/data contracts and runtime boundary compatibility |
 | plan/evidence relationship | pure effective plan projection and admission of that same configuration; fresh execution evidence belongs to explicit Session |
 
-The shared proto is the stable native basis; the Contract descriptor is not a
+The shared proto is the stable runtime basis; the Contract descriptor is not a
 configuration parent. The upstream declaration above specifies responsibilities and the plan/adapter
 protocol; their concrete domain Contracts and adapters still need implementation. It must not add a second round of Module bindings
-for slots already supplied by the configuration contributors. Native ancestry is
+for slots already supplied by the configuration contributors. Runtime ancestry is
 necessary classification evidence, not proof that a whole composition is valid.
 
 ** Parent precedence never determines execution sequence
 
 [GraphConfig CrewConfig ToolConfig MultiAgentScenario.] is an ordered inheritance
-expression. It controls native slot method precedence, not graph -> crew -> tool
+expression. It controls runtime slot method precedence, not graph -> crew -> tool
 execution. Merely reversing disjoint configuration parents does not reverse the
 workflow. The upstream root above supplies explicit dependency, control/data and handoff
 relationships, all subject to domain admission. Graph routing, ready-task dispatch and
@@ -491,9 +491,9 @@ or mutate shared defaults. Checks and permissions are not weakened by inheritanc
 
 ** Demand and validation boundaries for the combined root
 
-1. Declare configuration contributors and native Scenario parents. Parent
+1. Declare configuration contributors and runtime Scenario parents. Parent
    expressions/proto owners may need resolution; no full Module initialization.
-2. Demand graph or one of its attributes. Native POO may linearize all parent
+2. Demand graph or one of its attributes. POO may linearize all parent
    metadata/slot methods as structural work, then evaluate required graph values.
    This does not authorize forcing crew/tool implementation or full plan slots.
 3. Refine/demand the child. Read its effective inherited slots, retaining policies
@@ -505,7 +505,7 @@ or mutate shared defaults. Checks and permissions are not weakened by inheritanc
    permissions and producing runtime evidence for the admitted plan.
 
 No defer flag is needed. Lazy scope/source references, precise owner granularity
-and native slot demand must avoid unrelated sources and monolithic first-access
+and runtime slot demand must avoid unrelated sources and monolithic first-access
 initialization. Measure parent resolution/linearization, one-Module first read,
 child-after-parent refinement, whole combined admission/plan and warm repeats
 separately with equal semantic outputs/evidence. Assert that a graph-only read
@@ -515,8 +515,8 @@ to be established; this document claims no measured speedup.
 
 ** Existing foundation versus proposed combined behavior
 
-Existing: native ordered multiple parents, slot precedence, .+/=>.+ and .get;
-Core Contract algebra and Loader/lazy-slot foundations. Source native semantics
+Existing: runtime ordered multiple parents, slot precedence, .+/=>.+ and .get;
+Core Contract algebra and Loader/lazy-slot foundations. Source runtime semantics
 have been inspected; reader checks are not execution evidence.
 Proposed: bounded scope grammar/objects; complete domain defaults/protos and
 consumers; MultiAgentCompositionContract and its actual MultiAgentScenario.
@@ -526,12 +526,12 @@ Current generic plan-shape admission does not establish those domain obligations
 
 | Existing source foundation | What this design still needs |
 |----------------------------+------------------------------|
-| graph/types-core.ss native graph, named node/edge declarations and list projection | admitted domain operation/event payloads and selected participant resolution |
+| graph/types-core.ss runtime graph, named node/edge declarations and list projection | admitted domain operation/event payloads and selected participant resolution |
 | graph/types-contracts.ss basic graph shape, currently opaque/Any node payload | concrete cross-Module request/reply/authority and control/event Contracts |
 | graph/runtime-executor.ss pure graph walk, explicitly no tool/model calls | explicit crew/tool invocation, correlation, deadline/cancellation and checked receipt adapters |
 | scenario/plan-projection.ss canonical plan projection | lowering of this domain graph/handoff model into that existing plan boundary |
 | Core proto-aware responsibility/obligation admission | MultiAgent domain obligations preserving the common Contract checks |
-| native POO lazy effective slots and existing Loader | bounded Module scope grammar/publications, precise lazy owners and cold/warm cost verification |
+| POO lazy effective slots and existing Loader | bounded Module scope grammar/publications, precise lazy owners and cold/warm cost verification |
 
 Reader acceptance of the examples proves delimiter/read syntax only. It does
 not prove macro expansion, domain admission, runtime dispatch or latency bounds.
@@ -540,7 +540,7 @@ not prove macro expansion, domain admission, runtime dispatch or latency bounds.
 
 All three complete examples modify policy objects already supplied upstream.
 Use =>.+ on the existing slot. It derives from that actual inherited instance,
-retaining previous specializations and native proto ancestry. Do not look up a
+retaining previous specializations and runtime proto ancestry. Do not look up a
 prototype and construct a replacement merely to change one field, and do not
 require a separately named PriorityRouting/PriorityScheduling/ShallowArguments.
 
@@ -560,9 +560,9 @@ remains proposed, but it is not an extra dependency of ordinary field refinement
 * Shared hygienic lowering and source admission
 
 The candidate (use-module Module as alias (expression ...)) lowers conceptually
-to a native lexical binding and scope-result check as detailed in
+to a runtime lexical binding and scope-result check as detailed in
 [[file:164-funflow-cicd-user-authoring-design.org][the complete bounded-scope design]]. It does not expose an alias to sibling
-Scenario slots, inject constructor names, or change native .def/.o scope rules.
+Scenario slots, inject constructor names, or change .def/.o scope rules.
 Body syntax and caller alias context are retained, internal bindings are hygienic,
 the body is evaluated once, and source resolution cannot capture the same-named
 POO placement slot. Expansion does no runtime lookup/IO/loading or registry work.
@@ -579,7 +579,7 @@ including actual inherited ancestry and effective fields/obligations. Genuinely
 new objects additionally use an admitted scope-published prototype; a constructor
 label is not proof of origin. The body result must preserve compatible Module/occurrence
 lineage. Context/source conflicts across ancestors or deliberate replacement
-are admitted explicitly rather than hidden by native slot precedence.
+are admitted explicitly rather than hidden by runtime slot precedence.
 
 Business constraints remain mandatory: checkpoint ownership/restore support;
 capacity/dependency/guardrail constraints; requested tools intersect actual
@@ -617,17 +617,17 @@ again. Example contribution keys are (graph state-graph), (crew crew-workflow)
 and (tool tool-loop); inherited policy origins stay associated with their local
 placements and resolved source bindings. Legacy output qualification must
 translate all relevant references and evidence together, preserving identity
-without mutating the native upstream objects. A successful selection receipt is
+without mutating the runtime upstream objects. A successful selection receipt is
 not a fresh policy/runtime proof. Unselected catalog entries stay unselected.
 
 * Natural lazy demand, not opt-in deferral
 
 1. Expand: validate the bounded shape and preserve syntax/source context; no
    implementation loading or Profile evaluation during expansion.
-2. Bind on demand: create a bounded native scope/request; no full-catalog force.
+2. Bind on demand: create a bounded runtime scope/request; no full-catalog force.
 3. Read business config: evaluate only required Profile slots/inherited values.
 4. Demand the refined inherited policy: evaluate its base and required fields
-   through native =>.+. Do not add prototype lookup/construction to this path.
+   through runtime =>.+. Do not add prototype lookup/construction to this path.
    A genuinely new object has a separate demand for its scope-published proto;
    neither operation loads unrelated prototypes or executes a job.
 5. Admit/project selected composition: force all mandatory selected source,
@@ -636,7 +636,7 @@ not a fresh policy/runtime proof. Unselected catalog entries stay unselected.
 6. Explicit run: load required execution owners, recheck mutable permissions and
    enforce the admitted policy through its actual consumer.
 
-Natural laziness has no required defer keyword. .+ or native parent construction
+Natural laziness has no required defer keyword. .+ or runtime parent construction
 can perform bounded work, and static imports still load their own closure.
 An import-all facade behind the scope is not compliant. Split precise interface,
 prototype, configuration and execution owners using existing Loader mechanisms;
@@ -650,10 +650,10 @@ or source-isolation guarantee is claimed before those checks.
 
 * Status and compatibility
 
-Existing foundations: native POO access/extension, Gerbil hygienic lexical
+Existing foundations: POO access/extension, Gerbil hygienic lexical
 binding, Core Contract algebra, deferred Loader plans and current source data.
-New work: bounded macro grammar/review; native scope and alias/source resolution;
-complete native Profile/policy defaults; domain field/collection/obligation
+New work: bounded macro grammar/review; runtime scope and alias/source resolution;
+complete runtime Profile/policy defaults; domain field/collection/obligation
 Contracts; selected effective projection; consumers enforcing the proposed
 checkpoint, scheduling and tool policies. Scoped proto publication is separate
 new work for genuine new-object authoring. Current as-selection returns a Bundle;

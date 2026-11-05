@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; One trusted compiler child, private in-memory issuance, actual native loader.
+;;; One trusted compiler child, private in-memory issuance, actual runtime loader.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :std/encoding/json write-json)
@@ -37,7 +37,7 @@
   (def facts (latest 'authorization))
   (def snapshot (or (latest 'snapshot-check) (vector "" "")))
   (def consumed (latest 'consumed))
-  (unless facts (error "missing actual native authorization observation" label))
+  (unless facts (error "missing actual runtime authorization observation" label))
   (set! observations (cons
     (vector label (vector-ref facts 0) (vector-ref facts 1)
       (vector-ref facts 2) (vector-ref facts 3)
@@ -49,7 +49,7 @@
   (lambda (resource)
     (def state (compile-authority (.get resource root)))
     (.cc resource issuer: state)))
-;; Native fixture acquisition owns rollback. Compilation is before case
+;; Runtime fixture acquisition owns rollback. Compilation is before case
 ;; execution; the existing whole-test heap/timeout fence remains authoritative.
 (create-directory* root)
 (def resource (.call AuthorityFixture .acquire))
@@ -64,10 +64,10 @@
   (check-equal? (Error-message result) expected-message)
   (check-equal? before after)
   (observe label #f (- after before))
-  (reset-native-errors! state))
+  (reset-runtime-errors! state))
 (def artifact-authority-test
- (test-suite "Native issuance and load consumption"
-  (yuanxu-test-case "sidecar forgery and actual native transfer seams"
+ (test-suite "Runtime issuance and load consumption"
+  (yuanxu-test-case "sidecar forgery and actual runtime transfer seams"
     (install-authority! state)
     ;; Mutate both record and artifact, retaining neither as an authority.
     (def record (path-expand "compiler-closure.ss" artifacts))
@@ -82,13 +82,13 @@
         (write-datum record (compiler-code-facts entry '())))
       (lambda () (attempt "record-and-binary" (cut load-module entry) "issued source or record changed"))
       (lambda () (write-bytes record original-record) (write-bytes binary original-binary)))
-    ;; Native resolver sees a different selected path even for identical bytes.
+    ;; Runtime resolver sees a different selected path even for identical bytes.
     (def higher (path "precompiled-stores" ".o2"))
     (dynamic-wind
       (lambda () (write-bytes higher (bytes (path "precompiled-stores" ".o1"))))
-      (lambda () (attempt "higher-object" (cut load-module entry) "issued native artifact changed"))
+      (lambda () (attempt "higher-object" (cut load-module entry) "issued runtime artifact changed"))
       (lambda () (delete-file higher)))
-    ;; After request authorization and native resolution, before the load site.
+    ;; After request authorization and runtime resolution, before the load site.
     (def root-binary (path "precompiled-stores" ".o1"))
     (def root-original (bytes root-binary))
     (dynamic-wind void
@@ -97,7 +97,7 @@
           (lambda (phase name selected)
             (when (and (eq? phase 'resolved) (string=? name entry))
               (write-bytes selected #u8(0))))))
-          (attempt "after-resolution" (cut load-module entry) "issued native artifact changed")))
+          (attempt "after-resolution" (cut load-module entry) "issued runtime artifact changed")))
       (lambda () (write-bytes root-binary root-original)))
     (def dependency (path "store-policy" "~0.o1"))
     (def dependency-original (bytes dependency))
@@ -107,7 +107,7 @@
           (lambda (phase name _selected)
             (when (and (eq? phase 'snapshot) (string=? name entry))
               (write-bytes dependency #u8(0))))))
-          (attempt "dependency-at-handoff" (cut load-module entry) "issued native artifact changed")))
+          (attempt "dependency-at-handoff" (cut load-module entry) "issued runtime artifact changed")))
       (lambda () (write-bytes dependency dependency-original)))
     ;; Even after copying verified bytes, a changed source refuses before load.
     (dynamic-wind void
@@ -116,9 +116,9 @@
           (lambda (phase name selected)
             (when (and (eq? phase 'snapshot) (string=? name entry))
               (write-bytes selected #u8(0))))))
-          (attempt "after-snapshot" (cut load-module entry) "issued native artifact changed")))
+          (attempt "after-snapshot" (cut load-module entry) "issued runtime artifact changed")))
       (lambda () (write-bytes root-binary root-original)))
-    ;; The authority-private copy is also checked before native consumption.
+    ;; The authority-private copy is also checked before runtime consumption.
     (def pool (authority-private-pool state))
     (def pool-file #f)
     (def pool-original #f)
@@ -134,14 +134,14 @@
               ;; writer; permissions alone are NOT a sandbox against it.
               (delete-file pool-file)
               (write-bytes pool-file #u8(0))))))
-          (attempt "private-copy-before-consumption" (cut load-module entry) "private native snapshot changed")))
+          (attempt "private-copy-before-consumption" (cut load-module entry) "private runtime snapshot changed")))
       (lambda ()
         (when pool-file (delete-file pool-file) (write-bytes pool-file pool-original))))
     ;; Unselected module remains outside the resolver/issuer traversal.
     (def unused (path "unselected" ".scm"))
     (write-datum unused '(error "unselected artifact executed"))
     ;; Valid load: after the FINAL source check, replace only public artifact
-    ;; bytes. The actual native load consumes the retained private valid copy.
+    ;; bytes. The actual runtime load consumes the retained private valid copy.
     ;; This is a negative control for latest-path currentness, not an atomicity
     ;; claim. It demonstrates byte-snapshot safety under private-pool authority.
     (dynamic-wind void
@@ -162,7 +162,7 @@
     (def Cold (.get subjects cold))
     (.get Parent port)
     (def roots '())
-    ;; Native observation helper imported below through its actual API.
+    ;; Runtime observation helper imported below through its actual API.
     (record-hot! Hot (lambda (read) (set! roots (cons read roots))))
     (def spec (cdr (assq 'port (object-slots Parent))))
     (def writer (precompiled-store 'generated))
@@ -178,7 +178,7 @@
     (check-equal? (string? (load-module entry)) #t)
     (check-equal? (length (.get (authority-status state) consumed)) loaded-count)
     (observe "cached-valid" #t 0)
-    ;; Native loaded-module caching must not bypass the issuer on a later hit.
+    ;; Runtime loaded-module caching must not bypass the issuer on a later hit.
     (dynamic-wind
       (lambda ()
         (write-bytes binary (bytes (path "unlowered-store" "~0.o1")))
@@ -205,4 +205,4 @@
     (lambda (port) (write-json port legacy-observation)))
   (.call AuthorityFixture .release resource)
   (check-equal? (length observations) 9)
-  (displayln "ARTIFACT-AUTHORITY: 9 native controls; late-public-change snapshot limit retained"))
+  (displayln "ARTIFACT-AUTHORITY: 9 runtime controls; late-public-change snapshot limit retained"))

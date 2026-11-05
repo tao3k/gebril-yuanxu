@@ -85,7 +85,7 @@ module ReturnWindowsModel {
             .with("tailReads", result.reads) }
   }
   action replay = {
-    // Native closed replay discovers a selected dependency without evaluating
+    // Runtime closed replay discovers a selected dependency without evaluating
     // getters. Open current? callbacks may write AFTER exitSourceCheck.
     nondet target = (if (PURE_REPLAY) Set(-1) else Set(-1, 0, 1)).oneOf()
     all { s.phase == 7,

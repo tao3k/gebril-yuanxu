@@ -30,8 +30,8 @@
             (ormap (cut visit <> next) (slot-read-dependencies read)))))))
   (ormap (cut visit <> '()) reads))
 (def evidence-witness-replay-test
-  (test-suite "Native live-witness replay boundaries"
-    (yuanxu-test-case "shared witness suffix is replayed once per closed native batch"
+  (test-suite "Runtime live-witness replay boundaries"
+    (yuanxu-test-case "shared witness suffix is replayed once per closed runtime batch"
       ;; A read-only counter is a cost probe, not a production validator.
       ;; The owned receivers stay strongly reachable in the returned value;
       ;; collecting them must not be what makes the probe cheaper.
@@ -60,7 +60,7 @@
         ;; Record cost before the negative: a refusal may stop at a different
         ;; hash iteration point, which is not a successful replay work count.
         (def successful visits)
-        ;; A returned live witness still rejects a native mutation.
+        ;; A returned live witness still rejects a runtime mutation.
         (.put! (car held) 'answer #f)
         (check-exception (replay-slot-reads! reads (lambda (_receiver _key) (void))) error?)
         successful)

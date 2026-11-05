@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import YuanxuProof.ModuleSystem.Schema.Association.Semantics
 
-/-! Finite controls aligned with the native probe. Numbers are identity tokens,
+/-! Finite controls aligned with the runtime probe. Numbers are identity tokens,
 not language names, task counts imposed on users, or source-authentication IDs. -/
 namespace YuanxuProof.ModuleSystem.Schema.Association.Controls
 open LeanPoo.Functional.Requirements

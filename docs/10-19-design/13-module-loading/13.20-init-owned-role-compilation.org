@@ -5,9 +5,9 @@
 Within one Gerbil package, directory organization must not require an additional
 =gerbil.pkg= merely to supply Module role bindings. The package root owns the
 package identity and ordinary language entry. =yuanxu!= owns the selection whose
-existing source preparer lowers role files into native compiler inputs.
+existing source preparer lowers role files into runtime compiler inputs.
 
-The implementation joins the existing native dispatch boundary to the prepared
+The implementation joins the existing runtime dispatch boundary to the prepared
 role inputs. Qualification must include a package using only its root metadata;
 a reader-only result is insufficient to remove directory metadata.
 
@@ -35,10 +35,10 @@ grant a dependency, or choose a second language entry. Ordinary independently
 packaged dependencies and the separate development package retain their real
 package metadata; this decision concerns role-directory workarounds.
 
-* One lowering, two native consumers
+* One lowering, two runtime consumers
 
 The preparer already produces =reader-forms= and =compiler-forms=. Both must use
-the same role inventory, actual native compiler identities and original syntax
+the same role inventory, actual runtime compiler identities and original syntax
 locations. Module discovery remains demand-driven. Neither expansion nor
 ordinary interface loading executes =build.ss= or starts an Ops process.
 
@@ -61,15 +61,15 @@ use the existing declaration binding. An explicitly selected custom prelude
 must not be silently replaced. Original slot and expression syntax locations
 survive the generated frame.
 
-The reader consumes the prepared forms. The native build must consume their
+The reader consumes the prepared forms. The runtime build must consume their
 corresponding materialization through the existing selected build projection.
-Returning a native target list while compiling the original bare files is not
-that correspondence. Installing directory metadata or modifying the SDK's
+Returning a runtime target list while compiling the original bare files is not
+that correspondence. Installing directory metadata or modifying the Gerbil's
 private module registry is not an acceptable substitute.
 
-* Native layout and reuse obligations
+* Runtime layout and reuse obligations
 
-Native Make owns dependency scheduling and native compilation. Its expected
+std/make owns dependency scheduling and runtime compilation. Its expected
 product paths depend on the source root, package prefix and target name. Those
 paths must match the compiler identities recorded by the source preparer,
 including the explicitly named =tao3k/yuanxu/prelude=. Do not manufacture a
@@ -86,39 +86,39 @@ remain the acceptance boundaries.
 
 1. Exercise a root package with no directory-level package files. The generated
    types, objects, functions, Config and interface must expand and compile with
-   the same native identities and effective values as reader publication.
+   the same runtime identities and effective values as reader publication.
 2. Verify explicit custom bindings, hygienic names and original source ranges;
    Config construction and include bodies must not evaluate twice.
 3. Verify selected dependencies, disabled dependencies, cycles and cold optional
    roles through the existing Module mechanism, without widening source roots.
-4. Run native cold and fresh-process hot builds. Record actual compilation and
+4. Run runtime cold and fresh-process hot builds. Record actual compilation and
    reject stale sources, forged products and unissued later object generations.
 5. Preserve production/test phase separation, loading-without-running, parent
    cache isolation and both Gitea/PostgreSQL contribution requirements.
 6. Remove the Core directory metadata only after the normal build and Harness
    paths satisfy these controls. Do not substitute a passing reader-only probe
-   for native build or complete CI qualification.
+   for runtime build or complete CI qualification.
 
 The remaining failures and focused receipts are recorded in
 [[file:13.18-guarded-test-precompilation.org][13.18]]. This chapter changes the architectural requirement; it does not
 relabel those failures as successes.
 
-* Native compiler integration
+* Runtime compiler integration
 
-The SDK spec adapter, the existing internal dispatch and explicit =.compile= share one internal role-lowering
+The Gerbil spec adapter, the existing internal dispatch and explicit =.compile= share one internal role-lowering
 callback on the prepared projection. Maintained package entries consume =std-make-spec=
-through the Core SDK macro adapter. Internally this retains ordinary SDK
+through the Core libraries macro adapter. Internally this retains ordinary Gerbil
 incrementality without granting publication approval.
 The removed public dispatch slot is not retained as a compatibility alias;
 explicit =.compile= also keeps its artifact issuance boundary. The source preparer materializes the already selected publication/role frames and
-binds the SDK's public =current-expander-module-import= only for that action.
+binds the Gerbil's public =current-expander-module-import= only for that action.
 Both the Make coordinator and compiler driver consult this parameter. Original
-native source targets, compiler identities and Make dependency timestamps are
+runtime source targets, compiler identities and Make dependency timestamps are
 unchanged. No compiler source, private registry, new Builder or persistent cache
 protocol is introduced.
 
 The role set comes from the prepared publication's =role-sources=. Ordinary
-retained libraries and private helpers keep their ordinary native import path.
+retained libraries and private helpers keep their ordinary runtime import path.
 Each redirected import checks its original input before and after expansion;
 the enclosing compilation retains complete source checks, plus artifact issuance
 when explicitly requested through =.compile=.
@@ -126,15 +126,15 @@ The temporary frames are cleaned on normal and exceptional exit. Original body
 syntax retains source locations and relative-import ownership.
 
 Default role frames use the existing context-aware Module prelude, including
-its native =.def/ctx= lowering for non-interface roles. The no-directory-metadata
-control exposed an unbound exported object because the native reader had already
+its runtime =.def/ctx= lowering for non-interface roles. The no-directory-metadata
+control exposed an unbound exported object because the runtime reader had already
 resolved the prelude to a path; comparing that value with a source symbol never
-selected the role prelude. Classification now uses actual native context identity
-or the SDK-resolved library path, without guessing from basenames. Explicit role imports retain authority over weak
+selected the role prelude. Classification now uses actual runtime context identity
+or the Gerbil-resolved library path, without guessing from basenames. Explicit role imports retain authority over weak
 prelude bindings. Unrecognized custom preludes are not replaced.
 
 The qualification also retained the strict refusal of old unissued =.o2= files.
-The validation prefix is cleaned through the installed SDK's ordinary =clean=
+The validation prefix is cleaned through the installed Gerbil's ordinary =clean=
 entry, not by accepting those files or widening issuance. A compiled-source
 pass alone does not count as successful publication.
 
@@ -143,13 +143,13 @@ pass alone does not count as successful publication.
 Role preludes expose the same Core compile-time phases as the package language.
 They bootstrap directly from Gerbil Core and POO, rather than importing the
 optional package-language module by library path before it has been installed.
-The prepared configuration reader places all native headers before generated
+The prepared configuration reader places all runtime headers before generated
 role imports, including deferred =build.ss= evaluation.
 
 The default =just test-file= controls exercise:
 
 - a root-only package using =:gerbil/core=, with ordinary role objects and
-  original =this-source-file= values, hidden role bindings, native Make cold/hot
+  original =this-source-file= values, hidden role bindings, runtime Make cold/hot
   compilation, and source mutation refusal;
 - the complete publication suite, including a macro initializer running once
   and demand-only evaluation of deferred Build;
@@ -167,15 +167,15 @@ artifacts; maintained source records the controls and bounded conclusions.
 
 On 2026-10-23 the installed Gerbil =1cfb032= and pinned POO =80b590b= compiled
 all 237 Core targets in a newly created prefix containing only the POO dependency
-and its SDK manifest. Before invocation that prefix contained no =lib/yuanxu=.
-The normal =just build= completed in approximately 158 seconds with two native
+and its Gerbil manifest. Before invocation that prefix contained no =lib/yuanxu=.
+The normal =just build= completed in approximately 158 seconds with two runtime
 workers, under the unchanged 600-second limit. This is a local cold-build
 receipt, not a CI result or an end-to-end performance comparison.
 
 The maintained default test entry =just test-file= is used serially. Successful
 receipts require =MODULE-OK=, =HARNESS-OK= and final =OK=, and reject failure
 markers even inside quoted child output. The role Make control compares numeric
-modification timestamps rather than identities of opaque SDK time objects.
+modification timestamps rather than identities of opaque Gerbil time objects.
 The optional source-only qualification has also been updated to mutate root
 package/prelude inputs; it no longer assumes a directory package file exists.
 
@@ -186,17 +186,17 @@ Parser, Ascent and Orgize actions completed: loading the compiled Reader tried
 to physically normalize its embedded compiler sandbox path, which Bazel had
 already removed. The failure occurred before publication admission.
 
-The Reader now derives its two lexical parent directories with SDK path
+The Reader now derives its two lexical parent directories with Gerbil path
 operations. It neither resolves a deleted path at module initialization nor
 retains unresolved =..= components. The latter are still refused by the existing
 owner-confinement gate; that negative result was retained during qualification.
 The existing bootstrap source projection checks actual file presence before
-projecting sources. Compiled SDK contexts retain their existing native runtime
+projecting sources. Compiled Gerbil expander contexts retain their existing runtime
 trust boundary. No current-directory fallback, substitute source root or relaxed
 source check is introduced. Selected Module/configuration inputs retain their
 own complete currentness checks independently of the compiler's build directory.
 
-* Declarative SDK consumer
+* Declarative Gerbil consumer
 
 The maintained build entry has no user dispatcher:
 
@@ -207,7 +207,7 @@ The maintained build entry has no user dispatcher:
 
 =defbuild-script= is imported from =module-system/building/script.ss=. It is a
 thin hygienic adapter over the installed =std/build-script= macro, not a copy
-of the SDK command parser or Make scheduler. The unmodified SDK macro has no
+of the Gerbil command parser or Make scheduler. The unmodified Gerbil macro has no
 around-command hook, so importing it directly would lose selected role guards.
 The adapter evaluates the spec and keyword values once, retains the caller's
 source location, and delegates spec/compile/clean/meta/options to that macro.
@@ -217,7 +217,7 @@ projection owner through a dynamically scoped observer. The consumer verifies
 that the returned list is the exact produced spec, then delegates to the existing
 checked dispatch. This association ends with the synchronous invocation. There
 is no registry, persistent cache, new Builder, approval cache or cloned issuer.
-Ordinary SDK-only specs retain ordinary dispatch. Compilation uses the existing
+Ordinary Gerbil-only specs retain ordinary dispatch. Compilation uses the existing
 role callback and before/after currentness; explicit =.compile= keeps issuance.
 The adapter itself is included in the existing compiler-tool source closure.
 
@@ -235,7 +235,7 @@ protocol. The adapter retains ordinary package compilation internally; the defau
 issued path and explicit =.compile= remain guarded.
 
 The earlier attempt to remove init consumption from the entry was withdrawn.
-It is not the accepted separation and its intermediate native-library-only run
+It is not the accepted separation and its intermediate runtime-library-only run
 is not a qualification of the corrected entry. The build-graph regression checks
 that init/build are absent from the library inventory while init-syntax and
 built-in Ops remain available as library APIs.
@@ -246,7 +246,7 @@ The installed Gerbil/Gambit and pinned POO =80b590b= are unchanged. The followin
 focused files passed via the default heap-fenced =just test-file= entry, serially:
 
 - =module-role-projection-test=: four cases, including single evaluation of the
-  spec/options and native Make role compilation without directory package files.
+  spec/options and runtime Make role compilation without directory package files.
 - =module-build-graph-test=: nineteen cases, including the library/init inventory
   boundary and refusal when a returned spec loses its producer identity. The
   pre-existing default issued-dispatch negative control remains in place.
@@ -273,23 +273,23 @@ fixed that mismatch without weakening the receipt assertion. Raw logs remain
 local artifacts, not repository content.
 
 Final-source cold qualification used a newly created prefix containing only the
-fixed POO dependency and its native package manifest, with no Yuanxu artifacts.
+fixed POO dependency and its runtime package manifest, with no Yuanxu artifacts.
 Default =just build= completed all 237 targets in 213.12 seconds under the
-unchanged 600-second bound, using two native workers. Both selected JsonSchema
-and Funflow interface products and the Core SDK adapter product were present;
+unchanged 600-second bound, using two runtime workers. Both selected JsonSchema
+and Funflow interface products and the Core libraries adapter product were present;
 =lib/yuanxu/init.ssi= and =init~0.o1= were absent. No directory-level
 =modules/gerbil.pkg= or =scenarios/gerbil.pkg= was restored. The earlier
-native-library-only attempt is not counted in this final qualification.
+runtime-library-only attempt is not counted in this final qualification.
 
 A fresh-process repeat using that same prefix succeeded in 21.03 seconds. It
-recompiled only =prelude= (one native compile job); the other targets reused
-native Make outputs. This is not a zero-compilation receipt. The separate
-=tao3k/yuanxu/prelude= output identity and its native Make target treatment were
+recompiled only =prelude= (one runtime compile job); the other targets reused
+runtime Make outputs. This is not a zero-compilation receipt. The separate
+=tao3k/yuanxu/prelude= output identity and its runtime Make target treatment were
 not yet aligned in that receipt; no cache shortcut or source check was disabled.
 
-* Native Make identity and product alignment
+* std/make identity and product alignment
 
-The installed SDK's =std/make= computes =gxc:= product names using its invocation
+The installed Gerbil's =std/make= computes =gxc:= product names using its invocation
 =prefix:= and source target, while the compiler writes products using the
 source's declared module identity. The root package prefix =yuanxu= and target
 =prelude= therefore checked =lib/yuanxu/prelude.ssi= and
@@ -298,29 +298,70 @@ source's declared module identity. The root package prefix =yuanxu= and target
 =lib/static/tao3k__yuanxu__prelude.scm=. The missing expected paths caused each
 new-process Make invocation to recompile the language target.
 
-The prepared projection now derives native Make specifications from the same
-admitted compiler identities. The independently bootstrapped prelude uses the
-SDK's =prefix: "tao3k/yuanxu"=; ordinary package targets retain the package's
-native prefix. Source-path confinement and the existing explicit prelude
-identity exception remain unchanged. The existing compile/clean lifecycle
+One compiler-identity index collects the selected Module entries and retained
+library targets in order. Overlap is accepted only when the path, options and
+compiler forms agree. The admitted flat list owns the native targets and their
+order. Only compile and clean can demand a partition of those targets. A build
+without a separate language prefix hands the flat list straight to Gerbil.
+The prelude uses Gerbil's =prefix: "tao3k/yuanxu"=. Its selected prerequisites,
+including =init-syntax=, run first under the ordinary package prefix. Gerbil
+orders dependencies within each invocation. The prefix groups preserve the
+same order across invocations, so a prerequisite built later cannot invalidate
+the prelude in the next process. Source-path confinement and the existing
+explicit prelude identity exception remain unchanged. The compile/clean lifecycle
 boundary invokes those specifications inside one guarded projection. Each
-invocation forwards the original arguments unchanged to the SDK macro. There
+invocation forwards the original arguments unchanged to the Gerbil macro. There
 is no additional command parser, scheduler, alias product or approval cache.
-=spec= and =meta= retain the original flat SDK result. =gerbil clean= remains
-the public SDK command, delegated through =gxpkg clean= and the package script.
+=spec= and =meta= retain the original flat Gerbil result without traversing the
+prefix groups. =gerbil clean= remains
+the public Gerbil command, delegated through =gxpkg clean= and the package script.
+
+Interface lookup stays with the existing directory decision index and lazy
+POO namespace. The build consumes the selected receiver's =build-graph= slot.
+The init owner uses POO slot-layout caches to read
+the prepared spec and its currentness function. Each independent invocation
+still executes that function. Namespace scale, first build graph demand and
+native compilation are separate measurements.
+
+The init owner resolves test discovery through the same Gerbil binding action
+used for other deferred projections. Only an explicit test-source request
+imports that module. Ordinary spec, compile and clean requests share the
+existing selected namespace and do not expand test discovery at entry.
+
+The reader separately accounts for Gerbil tool imports, traversal of their
+actual Context graph, and capture of their source observations. Ordinary
+compiler tools and retained library targets use the prelude resolved by
+Gerbil. They do not run the default-language classification used for Module
+roles. Header resolution and the byte, package and native Context guards
+remain at their original boundaries.
+
+With =GERBIL_BUILD_VERBOSE=2=, =BUILD-BOOTSTRAP-ROOT= reports each
+explicit root's import time, identity and native path. =BUILD-BOOTSTRAP-COVERAGE=
+reports whether the exact Context had already been reached from an earlier
+root. Flow supplies =object-family/role-syntax=, and the publication reader
+and configuration diagnostics supply =configuration/json=. These native import
+edges are present in source and compiled interfaces. Both Contexts enter the
+same catalog and source checks through those edges.
+
+An import-time Context census and Gerbil's compile/eval hooks distinguish
+module expansion from evaluation of a complete module body. A new Context
+does not itself imply runtime initialization. Keep the declared root order
+and macro-phase evaluation. Within a root, imports of the same Context can
+share a binding declaration when they select disjoint names, and a later
+import can omit names already bound to that exact Context.
 
 Before/after source checks still bracket the complete compiler action. The
 ordinary package build cannot mint publication approval; explicit issued
-compilation retains its existing authority. An explicit SDK prefix which
+compilation retains its existing authority. An explicit std/make prefix which
 conflicts with the projection's foreign identity is rejected rather than
 silently overridden.
 
 The first default build after the change succeeded in 21.11 seconds and rebuilt
 only changed build machinery. A fresh-process default =just build= then completed
-in 19.04 seconds with zero compile targets and zero native compile jobs. Both
+in 19.04 seconds with zero compile targets and zero runtime compile jobs. Both
 used the unchanged 600-second deadline and two workers. These are local
 incremental receipts, not a fresh-source or remote CI pass. The existing
-bootstrap lifecycle test additionally checks native prelude product identities,
+bootstrap lifecycle test additionally checks runtime prelude product identities,
 unchanged hot-product timestamps, no alias products, and no hot compile jobs
 before exercising clean and independent rebuild.
 
@@ -334,12 +375,12 @@ check or heap/stack failure markers.
 
 A separate final-source, dependency-only prefix completed the default full
 build in 225.54 seconds: 237 compile targets, including exactly one prelude,
-and 514 native compile jobs. The language products existed only at their real
+and 514 runtime compile jobs. The language products existed only at their real
 =tao3k/yuanxu/prelude= identity; neither a =yuanxu/prelude= alias nor a compiled
 =yuanxu/init= library product was created. This remains a local qualification
 under the original 600-second bound, not evidence that remote CI has passed.
 The next default build in a fresh process against that same prefix passed in
-18.52 seconds with zero compile targets and zero native compile jobs. No
+18.52 seconds with zero compile targets and zero runtime compile jobs. No
 source timestamp or output alias was manufactured to obtain that result.
 Final-source default =just test-file= regressions passed serially: role
 projection (97.23 seconds), build graph (26.26 seconds), module publication
@@ -360,26 +401,26 @@ change.
 
 * Exact-head CI follow-up: 4369565
 
-Both platform build/bootstrap jobs pass at this revision, including the native
+Both platform build/bootstrap jobs pass at this revision, including the runtime
 prelude target. The remaining shard failures are separate qualification failures;
 a green bootstrap is not a complete CI result.
 
 Test products and their approval directory must not be transported from the build
-job to a fresh checkout. Native Make compares source timestamps in that checkout;
+job to a fresh checkout. std/make compares source timestamps in that checkout;
 recompilation can legitimately produce a new object generation. The issuer must
 continue to reject that unissued generation. Platform packaging therefore excludes
 both =test-lib= and =lib/.yuanxu-test-publications=; the dependency/library cache
 also excludes approvals. This does not change same-checkout cross-process reuse.
 
 The source-tail gateway now runs its launcher, init and tests against its compiled
-snapshot, with optimized compiler outputs and SSXI matching the native Make
+snapshot, with optimized compiler outputs and SSXI matching the runtime Make
 cohort. The focused gateway passed all seven cases in 169.92 seconds. Earlier
 mixed-snapshot and mismatched-optimization failures are retained as local receipts.
 
 The source-loader tamper control replaces a loaded binary's pathname atomically
 instead of truncating its resident inode. This preserves the tamper assertion and
 avoids an ELF mapping fault before the guard can report the actual refusal.
-The independent compiled-binding control prepares its own native Core cohort
+The independent compiled-binding control prepares its own runtime Core cohort
 before compiling init/import consumers; prelude is not compiled a second time by
 its explicit consumer loop.
 
@@ -398,7 +439,7 @@ support still requires exact selected-Graph identity and the existing issuance
 boundary. The scale fixture asserts the parent's Graph remains cold before and
 after execution; it retains all worker counts and negative controls.
 
-The maintained default source policy owns one native cached, checked Interface
+The maintained default source policy owns one runtime cached, checked Interface
 value. Per-module identity/location is derived from it; its actual issued reads
 are authenticated again on every use. Modified or contributed policies retain
 the ordinary constructor. This caches a constructed value, never source admission.
@@ -410,7 +451,7 @@ to the original method set, protocol, combination, descriptor Types and receipt
 Types, including their ancestor revisions. Altered metadata takes ordinary
 per-datum invocation; mutation during the diagnostic operation is refused.
 The public direct Generic API and contributor qualifiers remain unchanged.
-Its private native POO slot retains issued metadata observations; every demand
+Its private POO slot retains issued metadata observations; every demand
 reauthenticates the original graph rather than caching a currentness answer.
 
 The extended existing batch test checks both a failing second receipt predicate
@@ -423,7 +464,7 @@ new extractor.
 
 Focused receipts: source admission 18.51 seconds; thousand-module worker 134.81
 seconds with 649,906,792 retained bytes; Gitea/PostgreSQL 48.52 seconds;
-source-loader authority 73.65 seconds. All passed the native Harness markers and
+source-loader authority 73.65 seconds. All passed the runtime Harness markers and
 failure-marker scan. The build lifecycle passed cold compilation (28.36 seconds),
 new-process hot zero compilation (11.22 seconds), clean (10.29 seconds), cold
 rebuild (28.22 seconds) and final clean (10.33 seconds), under the unchanged
@@ -518,12 +559,12 @@ replace them. Port zero for ephemeral binding is intentionally a distinct policy
 The original shared checkout has concurrent staged Contract changes; migration
 and qualification occur in the existing PR owner worktree without replacing
 those changes. Source-bound proof inputs move with the Contract implementation.
-The native =gerbil clean= command, followed by the default build and focused
+The runtime =gerbil clean= command, followed by the default build and focused
 Harness, qualifies the new paths without repairing generated files by hand.
 
 
 The slot-schema constructor and its metadata/fact projections use
-=yuanxu-object-contract*=, replacing the redundant =native= qualifier without
+=yuanxu-object-contract*=, replacing the redundant =runtime= qualifier without
 adding aliases. Prototype ancestry classification is named
 =yuanxu-prototype-classify=; it remains separate from structural field admission.
 Historical frozen experiments retain their own source snapshots and receipts.
@@ -533,8 +574,8 @@ Historical frozen experiments retain their own source snapshots and receipts.
 The exact-head CI exposed a missing bootstrap-library association after the Port
 move. The temporary source gateway correctly refused a maintained Scenario's
 import of =object-types/ports.ss=: the file was outside the Scenario package and
-absent from the Reader's SDK-observed Core context catalog. Shared scalar Types
-now join the existing =bootstrap-roots= catalog, so their exact native context,
+absent from the Reader's Gerbil-observed Core context catalog. Shared scalar Types
+now join the existing =bootstrap-roots= catalog, so their exact runtime context,
 source identity and transitive observations use the same admission path as Core
 Contracts. This does not admit arbitrary external Yuanxu paths or selected Module
 scopes. The existing JSON Scenario regression also checks catalog membership.
@@ -542,7 +583,7 @@ scopes. The existing JSON Scenario regression also checks catalog membership.
 At this source cut, the macOS cold lifecycle and ten-thousand-declaration capacity
 gates also failed. A successful local ownership migration is not an exact-head CI
 pass. Their original deadlines, memory policy and negative controls remain in
-force; each fix requires its own native receipt before qualification is claimed.
+force; each fix requires its own runtime receipt before qualification is claimed.
 
 The package entry continues to expose the declarative spec consumer:
 
@@ -552,15 +593,15 @@ The package entry continues to expose the declarative spec consumer:
   libdir: (current-build-output-directory))
 #+end_src
 
-The init-owned consumer now passes the exact prepared spec to its private SDK
+The init-owned consumer now passes the exact prepared spec to its private Gerbil
 execution function. It no longer calls =build-spec= again during that handoff.
 This is not reuse of an admission verdict: =.with-compiler-inputs= still checks
-currentness before role materialization/SDK execution and again after return;
+currentness before role materialization/Gerbil execution and again after return;
 redirected imports retain their before/after checks. Explicit =.compile= retains
 the issuance boundary. This change adds no public build entry or Builder;
 =std-make-spec= remains the package author's declarative entry.
 
-Native clean is actual Make work too. The existing per-process progress reader
+Runtime clean is actual Make work too. The existing per-process progress reader
 now accepts =... remove <product>= as well as compiler work lines. A clock-based
 regression checks that a fresh clean process advances an enclosing lifecycle
 frame while ordinary =clean completed= output does not. No heartbeat or larger
@@ -570,11 +611,11 @@ a passing cold compile or zero-compile hot invocation alone is not completion.
 
 The default lifecycle subsequently passed all 41 targets: spec 13.54 seconds,
 cold compilation 43.46, zero-compile hot invocation 12.38, clean 14.41, rebuild
-30.89, and final clean 10.66. Native output identity, unselected-output isolation,
+30.89, and final clean 10.66. Runtime output identity, unselected-output isolation,
 and source-registration refusal controls passed. This used a fresh CI-style
 cohort excluding test products and test approvals; interrupted/recompiled local
 cohorts had correctly refused unissued =.o2= or changed products and were not
-adopted. Native Make plus the existing owned-output cleaner was used for selected
+adopted. std/make plus the existing owned-output cleaner was used for selected
 cleanup, not approval-file editing. Concurrent host work varied substantially,
 so these receipts establish bounded completion, not a causal speedup ratio.
 
@@ -586,13 +627,13 @@ gate remain separate qualification requirements.
 
 *** Qualification of the ownership migration
 
-The native clean/build passed with 248 targets and 536 compile jobs. After the
+The runtime clean/build passed with 248 targets and 536 compile jobs. After the
 slot-schema API rename, the incremental build passed with 115 targets and 249
 jobs. A subsequent default new-process =just build= compiled ZERO targets,
 including prelude (21.05 seconds wall, 16.75 user, 3.87 system). These are local
 receipts, not a complete-CI performance claim.
 
-The updated native lifecycle passed spec (26.22 seconds), cold compile (49.61),
+The updated runtime lifecycle passed spec (26.22 seconds), cold compile (49.61),
 new-process zero-compile reuse (12.62), clean (17.64), rebuild (32.61), and clean
 (10.48), with 41 targets and the original child deadline. Its source-registration
 negative controls passed. Focused Core, slot Contract, JSON Schema publication,
@@ -602,7 +643,7 @@ Profile, and source bootstrap controls passed their Harness and failure-marker
 checks. Both independent port requirements and cached-parent isolation remain.
 
 The real multi-owner qualification control also passed with its exact workspace
-residue assertion retained. On Darwin, xcrun's native =xcrun_db= environment
+residue assertion retained. On Darwin, xcrun's runtime =xcrun_db= environment
 setting places its cache in a second acquisition of the SAME existing Workspace
 Fixture. Source-reader scratch still uses the original workspace. No cache file
 is filtered from the assertion, no shared host cache is deleted, and both owned
@@ -621,8 +662,8 @@ is made, and the memory budget/complete read dependencies remain unchanged.
 * Spec-only public build entry
 
 The init export contains =std-make-spec=, =admit-current= and the inert =tests=
-facade. It does not publish a second SDK command dispatcher. Package consumers
-keep the existing native build declaration:
+facade. It does not publish a second Gerbil command dispatcher. Package consumers
+keep the existing runtime build declaration:
 
 #+begin_src scheme
 (def modules-spec (.get yuanxu.init.exports std-make-spec))
@@ -632,26 +673,26 @@ keep the existing native build declaration:
 The internal consumer accepts only the exact specification produced during its
 current preparation. Copying the list loses its owner and is refused. Role
 lowering still checks currentness before compiler entry and after return;
-clean still invalidates issued artifacts before SDK cleanup. The adapter does
+clean still invalidates issued artifacts before std/make cleanup. The adapter does
 not cache an admission verdict or run test targets in the production phase.
-Explicit projection =.compile= remains the artifact-issuance boundary. A native
+Explicit projection =.compile= remains the artifact-issuance boundary. A runtime
 package callback that returns without producing compiler outputs cannot satisfy
 that boundary, while ordinary =defbuild-script= compilation grants no publication
 authority. These checks share the original projection, not a replacement Builder.
 
-The graph regression checks absence of the removed slot using POO's native
+The graph regression checks absence of the removed slot using POO's runtime
 =NoApplicableMethod?= exception, exact spec identity, copied-spec rejection,
-missing-output rejection at =.compile= and stale-source rejection before SDK
+missing-output rejection at =.compile= and stale-source rejection before Gerbil
 handoff. The source-only consumer qualification invokes its generated =main=
 for spec/compile/clean and no longer obtains an execution closure from init.
 
 ** Focused spec-only qualification
 
-The installed Gerbil and pinned =80b590b= producer passed the default native
+The installed Gerbil and pinned =80b590b= producer passed the default runtime
 build and its subsequent warm build with zero module/compiler jobs. The default
 =just test-file t/module-build-process-test.ss= completed its 41-target lifecycle:
 
-| Native command | Wall seconds | Result |
+| Runtime command | Wall seconds | Result |
 |----------------+--------------+--------|
 | spec | 17.49 | Selected specification |
 | first compile | 46.90 | Compiler products present |
@@ -665,7 +706,7 @@ These are local functional receipts under concurrent host load, not a matched
 performance comparison. The graph, init import and real Gitea/PostgreSQL
 publication regressions also passed with complete Harness markers and no failure
 markers. The first absent-slot assertion used Scheme's =error?= predicate and
-failed on the native =NoApplicableMethod= object; correcting the predicate
+failed on the runtime =NoApplicableMethod= object; correcting the predicate
 preserves the narrower missing-slot control. Its failed log is retained locally.
 No source-only opt-in result is inferred from these focused gates.
 

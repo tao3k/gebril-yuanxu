@@ -17,7 +17,7 @@ limit.
 =gerbil-bazel= is the sole owner of generic Gerbil Bazel capabilities:
 
 - host discovery and Darwin/Linux normalization;
-- toolchain and native ABI providers;
+- toolchain and runtime ABI providers;
 - normalized =gxi=, =gxc=, =gxpkg=, and =gxtest= executables;
 - =gerbil.pkg=-declared Gerbil package manifest views;
 - writable staged project actions driven by the consumer =build.ss=;
@@ -34,7 +34,7 @@ project-development implementation.
 #+begin_src mermaid
 flowchart TB
   MODULE["Downstream MODULE.bazel"] --> AUTO["gerbil.auto<br/>platform-adaptive provider"]
-  AUTO -->|"Darwin"| HOST["Native Homebrew capability"]
+  AUTO -->|"Darwin"| HOST["Runtime Homebrew capability"]
   AUTO -->|"Linux x86_64"| PREBUILT["Immutable prebuilt capability<br/>URL + SHA-256"]
   HOST --> TC["Shared GerbilToolchainInfo"]
   PREBUILT --> TC
@@ -66,7 +66,7 @@ flowchart TB
 Every host or prebuilt provider repository publishes:
 
 - =registered_toolchain= and =toolchain_impl=;
-- =native_scheme_env= and the four normalized Gerbil tools;
+- =runtime_scheme_env= and the four normalized Gerbil tools;
 - =dependency_libraries= and =dependency_library_root=;
 - =toolchain.receipt.json=;
 - =gerbil_project_compile=, =gerbil_project_dev=,
@@ -75,7 +75,7 @@ Every host or prebuilt provider repository publishes:
 
 The dependency installer enters =BUILD_WORKSPACE_DIRECTORY=, defaults
 =GERBIL_PATH= to the workspace-local =.gerbil= tree, invokes the standard
-=gxpkg deps --install= path through the normalized native environment, and
+=gxpkg deps --install= path through the normalized runtime environment, and
 does not duplicate package-manager verification with a second =gxpkg list=
 lifecycle.  The provider reads the consumer =gerbil.pkg= =depend:= block as
 the package manifest, strips revisions only to locate =.gerbil/lib= package
@@ -89,8 +89,8 @@ The Agentic AI Lab consumer no longer carries compatibility implementations for:
 - local Gerbil repository discovery;
 - a local Gerbil toolchain provider or toolchain type;
 - host-system normalization;
-- native ABI fingerprinting;
-- native tool and environment templates;
+- runtime ABI fingerprinting;
+- runtime tool and environment templates;
 - dependency-install templates;
 - bootstrap/finalize shell targets and their tests;
 - local Scheme project compile/test rules and shell runners.
@@ -120,7 +120,7 @@ projection from shared =GerbilProjectInfo=.
   toolchain registration and compiled a minimal Gerbil module through the
   selected =gxc -> gsc= chain;
 - generic and prefixed receipts are declared action outputs and are validated
-  by Gerbil's native JSON reader as exactly one JSON value.
+  by Gerbil's runtime JSON reader as exactly one JSON value.
 
 ** Agentic AI Lab consumer
 
@@ -128,7 +128,7 @@ projection from shared =GerbilProjectInfo=.
   =@dependency_gerbil//:install_dependencies=;
 - =bootstrap_gerbil= is removed as a repository name; dependency installation
   and project consumption are separate named capabilities;
-- both repositories use =gerbil.auto=: Darwin selects the native Homebrew
+- both repositories use =gerbil.auto=: Darwin selects the runtime Homebrew
   provider and Linux selects the immutable prebuilt provider;
 - the module extension is =os_dependent=True=, preventing a checked-in
   Darwin evaluation from being replayed as a host provider on Linux;
@@ -158,7 +158,7 @@ not provide the declared environment.
 =//scheme:python_runtime_test_environment= consumes =GerbilProjectInfo= from
 =//scheme:compile= and the registered Gerbil toolchain.  The launcher resolves
 the compiled project root, transitive project dependency roots, the toolchain
-library root, =gxi=, and =native_scheme_env= through runfiles.  It therefore
+library root, =gxi=, and =runtime_scheme_env= through runfiles.  It therefore
 uses the same Darwin and Linux capability selection as the canonical build.
 
 #+begin_src mermaid
@@ -168,9 +168,9 @@ flowchart LR
   BAZEL --> TOOLCHAIN["Registered Gerbil toolchain"]
   PROJECT --> LOADPATH["GERBIL_PATH and ordered GERBIL_LOADPATH"]
   TOOLCHAIN --> LOADPATH
-  TOOLCHAIN --> NATIVE["native_scheme_env and toolchain gxi"]
+  TOOLCHAIN --> RUNTIME["runtime_scheme_env and toolchain gxi"]
   LOADPATH --> PYTEST["uv pytest complete Python suite"]
-  NATIVE --> PYTEST
+  RUNTIME --> PYTEST
   PYTEST --> LOADER["Python Scheme loader direct gxi lane"]
   LOADER -. "installation fallback only" .-> GXPKG["gxpkg env gxi"]
 #+end_src

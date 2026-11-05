@@ -208,7 +208,7 @@ $
 This keeps implementation cost low: the Scheme layer composes and proves the policy, while Python implements the operational behavior. If a Python runtime can already execute a long graph, then a LangGraph-like, CrewAI-like, or Pi Agent core-like scenario should be mostly a composition and receipt-lowering problem, not a new Scheme runtime feature.
 * Runtime Contract Shape
 
-The Scheme layer should produce a POO-native and proof-friendly runtime handoff
+The Scheme layer should produce a POO and proof-friendly runtime handoff
 contract.  It should contain at least:
 
 - composition id;
@@ -250,11 +250,11 @@ runtime in the language that is built to run for a long time.
 * 2026-10-03 Python / Scheme semantic foundation qualification
 
 The [[file:python-scheme-runtime-foundation.org][implemented foundation and qualification receipt]] supersedes the
-control-lane-only graph guard for qualified native programs. Scheme owns finite
+control-lane-only graph guard for qualified runtime programs. Scheme owns finite
 temporal solving, final candidate consistency and POO graph topology admission
 through the semantic AOT byte ABI. Python remains the production Runtime owner
 of scheduler, IO, reducers and storage. A real control session and semantic
-context are required before native program actions run.
+context are required before runtime program actions run.
 
 The linked closure matrix bounds this supplement to implemented operations,
 owned-result lifetime, artifact/package transport and the 48-call real-model
@@ -265,7 +265,7 @@ MRR Rust integration follows the Python/Scheme and exact-head qualification.
 
 * No-Prompt / real-time teaching correction
 
-The 48-call study used preset rules and supplied native solved answers. It is
+The 48-call study used preset rules and supplied runtime solved answers. It is
 withdrawn as acceptance evidence for the user's no-Prompt architecture. The
 existing contradiction gate rejects output but does not teach the model. ABI
 receipts remain scoped engineering evidence; model integration and real-time
@@ -273,7 +273,7 @@ teaching closure remain open, and MRR Rust admission remains deferred.
 
 The primary model acceptance contract is
 [[file:model-scheme-understanding-validation.org][Scheme understanding, reasoning and real computation validation]].
-Native correctness and output rejection alone cannot close this model gate.
+Runtime correctness and output rejection alone cannot close this model gate.
 
 * 2026-10-03 Direct prediction and current computation observation
 
@@ -290,7 +290,7 @@ This is bounded engineering evidence on the current Darwin host; exact-head
 cross-platform CI is tracked separately.
 
 The new 24-call study completes with zero model retries. Its frozen strict
-transport accepts no answers. Supplementary native verification after inert
+transport accepts no answers. Supplementary runtime verification after inert
 extraction observes initial high Reasoning 5/6 and both transfer arms 5/6.
 There is no observed transfer accuracy gain, and this post hoc analysis cannot
 replace predeclared model acceptance. Program generation, full POO composition,
@@ -302,8 +302,8 @@ admission stays deferred. See [[file:model-scheme-validation-record.org][executi
 The semantic ABI remains Version 1; version is explicit metadata, not a file or
 module suffix. Direct validation now declares compiler-derived ASCENT runtime
 project sources and core/types, with framework-source assumptions listed.
-Inert transport separates candidate completion from native semantic comparison;
-model text is never evaluated. Trusted native task loading and real dependency
+Inert transport separates candidate completion from runtime semantic comparison;
+model text is never evaluated. Trusted runtime task loading and real dependency
 progress must meet the unchanged five-second watchdog.
 
 See [[file:model-scheme-validation-record.org][the model validation record]].

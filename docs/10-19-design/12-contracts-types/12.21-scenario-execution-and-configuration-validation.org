@@ -55,7 +55,7 @@ Schema applies to the explicit resource projection, not arbitrary Scheme slots.
 
 * Qualification scope
 
-The existing focused native test now copies both real Scenario sources and calls
+The existing focused runtime test now copies both real Scenario sources and calls
 the framework execution methods. It retains real AWS Schema revision and stale
 publication tests, adds the user-overridden Null message after parent demand,
 and checks AWS validation-only behavior with the real installed provider.
@@ -64,7 +64,7 @@ JSON, state and process logs remain temporary artifacts. No full build, cloud
 apply, runtime Loader or upstream Standard Library change is part of this work.
 
 The existing provider fixture is specific to aarch64-darwin. Qualification uses
-the repository-pinned packages and bounded native harness, not an ambient provider
+the repository-pinned packages and bounded runtime harness, not an ambient provider
 cache. AWS clears standard credentials/shared files and disables metadata lookup.
 Null literal template markers are escaped at the Terraform JSON boundary, and
 its structured output is read as JSON rather than parsed from human log lines.

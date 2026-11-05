@@ -12,9 +12,10 @@
   ;; Forward actual compiler output while retaining the captured result for
   ;; assertions. The outer Harness must observe child progress as it occurs.
   (def execution
-    (if (equal? action "compile")
+    (if (member action '("compile" "clean"))
       (.cc script 'environment
-        (.+ (.get script environment) (.o GERBIL_BUILD_VERBOSE: "1")))
+        (.+ (.get script environment)
+            (.o GERBIL_BUILD_VERBOSE: (if (equal? action "clean") "2" "1"))))
       script))
   (def result (run-script execution (list action) output-port: (current-error-port)))
   (displayln "BUILD-PROCESS-DONE " action " seconds=" (.get result seconds))
@@ -39,6 +40,34 @@
            (let-values (((_prelude identity _namespace _body) (core-read-module/sexp path)))
              (check-equal? identity expected)
              (cons name identity)))) names))
+(def (check-clean-output output root lib names)
+  (check-equal? (string-contains output "... compile ") #f)
+  (check-equal? (string-contains output "... execute compile job ") #f)
+  ;; Accounting must be active for absence to count as a work assertion.
+  (check-equal? (and (string-contains output "(BUILD-ACCOUNT (calls build-current)") #t) #t)
+  (check-equal?
+    (string-contains output "BUILD-BOOTSTRAP-ROOT :yuanxu/admission/publication") #f)
+  (for-each
+    (lambda (stage)
+      (check-equal? (string-contains output (string-append "(BUILD-ACCOUNT (calls " stage ")")) #f))
+    '("compiler-source-state" "compiler-input-enrollment" "compiler-role-inventory"))
+  (def removal-prefix "... remove ")
+  (def removed-interfaces
+    (filter-map
+      (lambda (line)
+        (and (string-prefix? removal-prefix line)
+             (string-suffix? ".ssi" line)
+             (path-normalize (substring line (string-length removal-prefix)
+                                       (string-length line)))))
+      (string-split output #\newline)))
+  (def expected-interfaces
+    (map (lambda (name)
+           (let-values (((path _identity) (compiled-path root lib name)))
+             (check-equal? (file-exists? path) #f)
+             (path-normalize path)))
+         names))
+  (check-equal? (list-sort string<? removed-interfaces)
+                (list-sort string<? expected-interfaces)))
 (def module-build-process-test
   (test-suite "Normal build script registers its own source package"
     (test-case "compile clean and new-process rebuild share one fixture and output identities"
@@ -51,11 +80,12 @@
       (when (.get Fixture cold) (check-equal? (file-exists? (path-expand "yuanxu" lib)) #f))
       (check-equal?
         (call-with-input-file (path-expand "core-spec.ss" root) read-all)
-        '((export core-spec core-public-roots)
-          (def core-public-roots '())
-          (def core-spec '("prelude" "utilities/algorithms" "object-types/contracts" "object-types/ports" "core-spec"))))
+        '((export core-spec)
+          (def core-spec '("prelude" "module-system/selection/init-syntax"
+                           "utilities/algorithms" "object-types/contracts"
+                           "object-types/ports" "core-spec"))))
       (def spec (call-with-input-string (build-command Build "spec") read))
-      (def names (map cadr spec))
+      (def names (map (lambda (target) (if (string? target) target (cadr target))) spec))
       ;; Module types now import the owned-read projection in addition to
       ;; JsonSchema receipt facts. Both libraries belong to the selected closure;
       ;; build-only tooling must not become an ordinary Module target.
@@ -63,7 +93,11 @@
       (check-equal? (length (filter (cut equal? <> "object-family/read-projection") names)) 1)
       (check-equal? (length (filter (cut equal? <> "object-types/facts") names)) 1)
       (check-equal? (member "module-system/building/artifacts" names) #f)
-      (build-command Build "compile")
+      (def cold-output (build-command Build "compile"))
+      (def bootstrap-targets
+        '("... compile module-system/selection/init-syntax" "... compile prelude"))
+      (check-equal? (filter (cut member <> bootstrap-targets) (string-split cold-output #\newline))
+                    bootstrap-targets)
       (def first-identities (output-identities root lib names))
       ;; The language's declared identity is not the root package prefix.
       ;; A fresh process must reuse its real products, without alias outputs.
@@ -85,20 +119,14 @@
       ;; unselected sentinel so cleanup isolation is checked independently.
       (def unselected (path-expand "yuanxu/object-family/unselected-output.scm" lib))
       (call-with-output-file unselected (cut display "; unselected output\n" <>))
-      (build-command Build "clean")
-      (for-each (lambda (name)
-                  (let-values (((path _identity) (compiled-path root lib name)))
-                    (check-equal? (file-exists? path) #f))) names)
+      (check-clean-output (build-command Build "clean") root lib names)
       (check-equal? (file-exists? (path-expand "yuanxu/object-family/syntax.scm" lib)) #f)
       (check-equal? (call-with-input-file unselected read-line) "; unselected output")
       ;; This must compile again, not merely print a new-process specification.
       ;; The same Script retains the exact source directory and GERBIL_PATH.
       (build-command Build "compile")
       (check-equal? (output-identities root lib names) first-identities)
-      (build-command Build "clean")
-      (for-each (lambda (name)
-                  (let-values (((path _identity) (compiled-path root lib name)))
-                    (check-equal? (file-exists? path) #f))) names)
+      (check-clean-output (build-command Build "clean") root lib names)
       (check-equal? (file-exists? (path-expand ".gerbil/module-build/build.ss" root)) #f)
       (check-equal? (file-exists? (path-expand "yuanxu/object-family/syntax.scm" lib)) #f)
       (check-equal? (call-with-input-file unselected read-line) "; unselected output")

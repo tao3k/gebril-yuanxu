@@ -6,7 +6,7 @@
 ;;; Boundary: lightweight module value catalog constructors for syntax paths.
 ;;; Invariant: catalog construction never evaluates modules or loads runtimes.
 
-(import (only-in :clan/poo/object .o)
+(import (runtime: :clan/poo/object)
         (only-in :yuanxu/module-system/config yuanxu-module-kind=?))
 
 (export yuanxu-module-catalog

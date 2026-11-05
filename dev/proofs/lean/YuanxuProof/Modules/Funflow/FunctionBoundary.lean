@@ -7,7 +7,7 @@ namespace YuanxuProof.Modules.Funflow.FunctionBoundary
 open LeanPoo.Functional
 
 /-! A concrete scalar fragment of signatures.ss/task.ss/flow.ss/runner.ss.
-Native Function validation owns arguments/results. Factory composition retains
+Runtime Function validation owns arguments/results. Factory composition retains
 the original context while the checked result feeds the next submitted task.
 This interpretation does not prove arbitrary Scheme bodies, GC or OS effects. -/
 inductive Value where
@@ -97,7 +97,7 @@ theorem binder_installs_checked_selected_body (body : Body) (n : Nat) :
     submitBinder (fun _ => .ok ⟨.number, .number, body⟩) (.number n) =
       .ok (submit body) := rfl
 
-/-! A declared edge does not prove its body. Every call installs native
+/-! A declared edge does not prove its body. Every call installs runtime
 argument/result validation, including derived callbacks and runtime results. -/
 def accepts : Domain → Value → Bool
   | .number, .number _ => true
@@ -146,7 +146,7 @@ theorem mismatched_route_refuses (body : Checked) :
 theorem empty_route_is_checked_identity (n : Nat) :
     (admitRoute .number .number []).bind (fun run => run (.number n)) = .ok (.number n) := rfl
 
--- Recovery catches domain failures. Native Function faults remain faults.
+-- Recovery catches domain failures. Runtime Function faults remain faults.
 def recoverSource (operation : Checked) (handler : Fault → Except Fault Value) : Checked :=
   fun input => match operation input with
     | .error .source => FunctionValidation.wrap Except.ok (validateDomain .number .output) handler .source

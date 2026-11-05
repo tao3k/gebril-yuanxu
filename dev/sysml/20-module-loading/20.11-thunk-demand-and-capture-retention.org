@@ -27,7 +27,7 @@ values count as cached through key membership. Distinct warm/cold function sets
 are compared by identity: a function referenced by both categories is reported
 as shared-with-warm, never charged as a cold-only root. Capture fields count
 references from cold-only functions; they are NOT unique transitively retained
-objects or exclusive GC bytes. Native compute hooks may already have observed
+objects or exclusive GC bytes. Runtime compute hooks may already have observed
 cold-only functions, so even that category is not an elimination certificate.
 
 * Assurance ownership
@@ -47,8 +47,8 @@ would require an explicit temporal/source argument before a producer edit.
 
 * Publication integration
 
-The singleton snapshot repair is committed and pushed on the existing native
-branch as =29c58aa=. Core's package pin and both native-source proof bindings
+The singleton snapshot repair is committed and pushed on the existing runtime
+branch as =29c58aa=. Core's package pin and both runtime-source proof bindings
 select that exact SHA. The concurrent remote proof runner and build-entry
 changes are preserved by a normal merge. Historical 20.10 local candidate
 receipts remain historical rather than being rewritten as remote CI results.
@@ -65,7 +65,7 @@ The merged fixed-revision Core build passes after correction of an invalid
 internal-definition position in the trace adapter; the original failed build
 is retained locally. Lean builds all three targeted modules successfully
 (111 dependency jobs): PayloadSharing, MetadataProjection and SelectionReplay.
-The concurrent native Quint runner's documented discover entry passes three
+The concurrent runtime Quint runner's documented discover entry passes three
 tests. An earlier invocation via a different unittest module-import path failed
 to resolve its sibling module; it is retained, not relabeled a runner pass.
 
@@ -87,7 +87,7 @@ required MODULE-OK, HARNESS-OK and final OK markers without error/overflow:
 | Cold-only capture fields | 3296 | 6178 |
 | Original signed reads | 9231 | 18159 |
 | Ordered dependency occurrences | 22619 | 42923 |
-| Native singleton snapshot vectors | 0 | 0 |
+| Runtime singleton snapshot vectors | 0 | 0 |
 | Cold/hot role expansions | 32 / 0 | 64 / 0 |
 | Cold/hot source reads | 6960 / 106 | 13968 / 170 |
 
@@ -103,10 +103,10 @@ new production cache or admission verdict reuse.
 The 3341 functions at 32 modules are a concrete, receiver-local construction
 cost to investigate, not repeated SDK payload. They coexist with 8700 demanded
 entries and the complete read graph. This observation narrows the next source
-question to native effective-thunk construction; it does not license pooling
+question to runtime effective-thunk construction; it does not license pooling
 receiver state, removing reads or skipping hooks.
 
-Before changing construction, the native MOP's declared slot semantics and
+Before changing construction, the MOP's declared slot semantics and
 observable =compute-slot= identity/order must distinguish a supported demand
 projection from an arbitrary effectful hook. Existing ReadRetention models
 cannot supply that missing temporal premise. Keep these functions and all

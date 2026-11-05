@@ -22,7 +22,7 @@ source does not imply executing its output backend.
 | Nix receiver probe | local strict JSON evaluation, output retained below | bare language only; no nixpkgs or NixOS evaluation |
 | NixOS illustrative module | parse check only | no evaluated option/type/merge integration claim |
 | Jsonnet, Dhall, Nickel probes | source supplied and official-reference analysis | interpreters unavailable; proposed comparison outputs are not measured receipts |
-| POO interface reflection probe | local execution: inherited artifact transformation, new Check outside the fixed list, unused misspelled slot | direct native route; does not test an admitted domain boundary |
+| POO interface reflection probe | local execution: inherited artifact transformation, new Check outside the fixed list, unused misspelled slot | direct runtime route; does not test an admitted domain boundary |
 | POO receiver probe | local execution against pinned POO source and current Core | object semantics only; not a scale or performance measurement |
 | Full local Funflow | existing 95-case source receipts from preceding implementation | no new product code or test gate added by this documentation revision |
 
@@ -56,7 +56,7 @@ The separate [[file:probes/poo-interface.ss][POO interface reflection probe]] al
 transformation and two current limitations: a newly declared smoke Check does
 not enter the fixed three-Check Pipeline, and a misspelled commmand-vector slot
 can exist while the consumed command-vector remains unchanged. This probes the
-direct native route, not a source-role-admitted closed domain configuration.
+direct runtime route, not a source-role-admitted closed domain configuration.
 
 * Follow-up experiments that could change the design
 
@@ -73,7 +73,7 @@ direct native route, not a source-role-admitted closed domain configuration.
    Separate source import, index building, object/factory demand, admission and
    projection. Include cold/warm and failure controls with unchanged watchdogs.
 5. Inspect published attribute descriptions for both a scalar business field and
-   a native strategy object. A user must identify the supported extension without
+   a runtime strategy object. A user must identify the supported extension without
    opening every internal component or inventing a new Contract annotation.
 
 * Claims deliberately withheld

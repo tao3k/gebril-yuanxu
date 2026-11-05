@@ -1,7 +1,7 @@
 #+title: 12.27.49 EffectiveMethod Candidate Admission
 #+property: DOCUMENT_ID 12.27.49
 #+language: en
-#+property: STATUS staged-native-controls-qualified-capacity-pending
+#+property: STATUS staged-runtime-controls-qualified-capacity-pending
 
 * Actual owner and use case
 
@@ -137,10 +137,10 @@ Without real-chain qualification or a retained-memory improvement, the field
 macro and its temporary oracle case were removed. =types.ss= retains the
 original runtime =fields?=/=andmap= implementation. The independent Lean
 field-order law remains research evidence, not an implementation claim.
-Eliminating temporary lists by source inspection would not establish a native
+Eliminating temporary lists by source inspection would not establish a runtime
 heap reduction; expanded code has a footprint too.
 
-* Native boundary controls
+* Runtime boundary controls
 
 =t/module-authoring-dispatch-work-test.ss= has four retained focused cases:
 
@@ -158,7 +158,7 @@ heap reduction; expanded code has a footprint too.
    previously exposed receiver is reused or enrolled as a fresh construction.
 
 The continuation-based implementation passes all four retained cases with natural
-exit zero, all native harness markers and no error/overflow markers. An earlier
+exit zero, all runtime harness markers and no error/overflow markers. An earlier
 private staging probe exposed a caller-supplied candidate admission helper;
 it was replaced before final qualification to prevent borrowed-object
 enrollment. It is not the implemented API.
@@ -189,7 +189,7 @@ Lean's [[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/Sour
 
 The focused Lean build completes successfully (40 jobs), with an existing
 unnecessary-=simpa= lint warning. This checks the functional laws below the
-declared Scheme correspondence premises; it does not certify the native
+declared Scheme correspondence premises; it does not certify the runtime
 expander, heap lifetime or import performance.
 
 The last, experimental law quantifies over an arbitrary stateful field operation, including
@@ -207,8 +207,8 @@ consumer/cancellation/capacity results. The failed field experiment remains
 failed evidence; it was not a completed 600-second declaration gate.
 
 The check function represents the actual current boundary producer. Scheme's
-native object construction, source guard coverage and MOP remain correspondence
-premises controlled by native tests, not consequences of these functional
+runtime object construction, source guard coverage and MOP remain correspondence
+premises controlled by runtime tests, not consequences of these functional
 equalities. The cost law accounts only for the removed recursive-check
 component. It is not a theorem about GC, total interpreter time or capacity.
 
@@ -225,7 +225,7 @@ The completed staging-only paired sixteen-module control reports:
 
 | Observation | Before staging | After staging |
 |-------------+----------------+---------------|
-| Native read deliveries | 230724 | 193028 |
+| Runtime read deliveries | 230724 | 193028 |
 | Delivered direct dependency edges | 280910 | 243214 |
 | Retained support tokens | 5442 | 5442 |
 | Retained support edges | 17082 | 17082 |

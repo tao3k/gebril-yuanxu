@@ -19,7 +19,7 @@
             (check-equal? (yuanxu-user-module-selection-key (car rows)) '(example . library))
             (check-equal? (yuanxu-user-module-selection-flags (car rows)) '(-unused))))
         (check-equal? (yuanxu-modules-system-use-module-group 'library) 'custom)))
-    (yuanxu-test-case "native Profile composition remains provider independent"
+    (yuanxu-test-case "runtime Profile composition remains provider independent"
       (let* ((rows (yuanxu-modules! :custom (library -unused)))
              (profile (yuanxuUserProfile 'example rows (yuanxu-settings address: "localhost") '(address))))
         (check-equal? (yuanxu-user-profile-name profile) 'example)

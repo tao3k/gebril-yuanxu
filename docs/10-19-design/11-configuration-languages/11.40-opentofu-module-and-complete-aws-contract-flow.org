@@ -30,7 +30,7 @@ created, no provider plugin ran and no Schema file is invented as current eviden
 modules/opentofu/
   types.ss       source/version/coverage/output Contracts
   config.ss      selected provider and toolchain settings, no cloud credentials
-  objects.ss     native generated-scope/build-request objects
+  objects.ss     runtime generated-scope/build-request objects
   func.ss        format adapter and pure compilation orchestration
   interface.ss   public generated provider/type scopes and operations
 modules/aws/
@@ -98,8 +98,8 @@ prototype and optional examples slots remain the previously described publicatio
 
 * One mapping owns provider validation, projection and diagnostic attribution
 
-The following is concrete native Scheme design for the small AWS slice. Internal
-object<-alist constructs a native object; this is not an alist configuration API.
+The following is concrete Scheme design for the small AWS slice. Internal
+object<-alist constructs a runtime object; this is not an alist configuration API.
 Identity is the ordinary one-argument function. All paths remain ordinary values,
 not a new path assignment DSL. Field table keys are provider field names; inputs
 are user configuration paths relative to the selected instance/network occurrence.
@@ -173,9 +173,9 @@ Physical role filenames do not justify an eager cyclic import. An alternative
 phase split may store the inert mapping facts in types.ss and keep the algorithms
 in func.ss; source preparation must enforce the chosen acyclic order.
 
-* AWS types.ss: generated constraints plus native semantic additions
+* AWS types.ss: generated constraints plus runtime semantic additions
 
-The Net types view below contains CONTRACT descriptors, bridged from the native
+The Net types view below contains CONTRACT descriptors, bridged from the runtime
 Types using the concrete module 38 adapter. Do not pass bare Type descriptors to
 responsibilities and silently assume the current Contract protocol accepts them.
 
@@ -249,8 +249,8 @@ Contracts retain the existing AWSString/AWSName checks until stronger explicitly
 sourced semantics are defined; they are not new hidden provider guarantees.
 
 Instance fields apply generated contracts directly, so their failures travel through
-native responsibility receipts. Network's structured prefix/length first passes
-its native semantic checks, then its computed cidr_block passes the generated
+runtime responsibility receipts. Network's structured prefix/length first passes
+its runtime semantic checks, then its computed cidr_block passes the generated
 provider field Contract. Provider resource requiredness applies to full wire
 resources, not raw high-level Profile inputs. No type required by the provider
 is fabricated as an application input just because its provider name is known.
@@ -258,7 +258,7 @@ is fabricated as an application input just because its provider name is known.
 The complete ApplicationContract and child/reference admission remain the actual
 code expanded in module 35. Apply it to the final Scenario, not to incomplete
 reusable Profiles. Automatic inherited-policy association and Contract-directed
-.def are still adaptations, not native guarantees.
+.def are still adaptations, not runtime guarantees.
 
 * Complete user configuration remains unchanged
 
@@ -313,7 +313,7 @@ Consumer types.ss reuses canonical descriptors:
 Consumer objects.ss applies their prototypes to data and composes Scenarios:
 
 #+begin_src scheme
-;;; Native construction of user-owned Profiles from their configuration values.
+;;; Runtime construction of user-owned Profiles from their configuration values.
 ;;; These explicit proto expansions do NOT establish automatic Contract association.
 (.def (TestNetworkProfile @
        (.+ (.get NetworkContract proto) (.get Config networks test))))
@@ -336,7 +336,7 @@ Consumer objects.ss applies their prototypes to data and composes Scenarios:
   outputs: =>.+ (.o build_ip: 'build))
 
 ;;; An OPTIONAL later specialization, after the complete inputs above are supplied.
-;;; Target path assignment is still pending; the equivalent native form is below.
+;;; Target path assignment is still pending; the equivalent runtime form is below.
 (.def (Production @ Build)
   instances: =>.+ (.o build: =>.+ (.o type: "t3.medium")))
 #+end_src
@@ -369,7 +369,7 @@ Consumer interface.ss publishes the independent Profiles and selected Scenario:
 ;;; does not manually extract config, collect policies, or register methods.
 #+end_src
 
-This is the CURRENT NATIVE CONSTRUCTION expansion. Desired .def parents naming
+This is the CURRENT RUNTIME CONSTRUCTION expansion. Desired .def parents naming
 Contracts require the module 36 parent-normalization/mandatory-association work.
 No implicit .admit occurs just because an object was named. The explicit final
 operation checks its canonical Contract before resource generation.
@@ -460,7 +460,7 @@ provides all of that.
 Only this English design was added. No runtime Module, provider generation, Loader,
 OpenTofu invocation or new tests were implemented. All new publication paths,
 Net descriptors, source projection and artifact resolution are target interfaces.
-Existing foundations are the inspected Core Schema/Contract APIs and Gerbil native
+Existing foundations are the inspected Core Schema/Contract APIs and Gerbil runtime
 Type/address facilities. Next acceptance needs a pinned provider snapshot and
 matched full-wire/schema/plan checks; the schema workflow must not be declared
 complete while format/coverage and provenance gates remain open.
@@ -468,14 +468,14 @@ complete while format/coverage and provenance gates remain open.
 * Concrete generated values and selection pipeline
 
 [[file:11.41-opentofu-generation-and-lazy-publication.org][The modular OpenTofu generation design]] expands lock selection, extraction,
-conversion, GeneratedProviders, ConfigurationContract and native lazy publication.
+conversion, GeneratedProviders, ConfigurationContract and runtime lazy publication.
 Its bounded converter is design-only and cannot yet qualify full AWS output.
 
 * Collection and nested-attribute extension
 
 [[file:11.42-provider-collections-and-nested-types.org][The real-fixture conversion extension]] supersedes the earlier structural
 rejection branches for set, tuple and nested_type. Provider identity/default
-requirements remain explicit native obligations; no full AWS acceptance is claimed.
+requirements remain explicit runtime obligations; no full AWS acceptance is claimed.
 
 * Current design correction
 

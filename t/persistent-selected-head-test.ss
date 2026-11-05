@@ -39,7 +39,7 @@
           (run-script (.cc ProcessScript. 'command
             (list "just" "persistent-head-worker" path operation argument) 'timeout 30)
             stderr-redirection: #f))
-        ;; Both clients open their own native DB; all writer connections are closed.
+        ;; Both clients open their own runtime DB; all writer connections are closed.
         (def committed (worker "commit" token))
         (check-equal? (.get committed status) 0)
         (def recovered (worker "inspect" ""))

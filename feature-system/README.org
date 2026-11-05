@@ -3,7 +3,7 @@
 
 #+title: Feature System
 
-The public interface is [[file:interface.ss][interface.ss]]. It owns native POO descriptors, dependency and
+The public interface is [[file:interface.ss][interface.ss]]. It owns POO descriptors, dependency and
 conflict resolution, manifests, composition, capabilities, generic DomainCase
 closure and inert runtime/Bundle projections. It has no Agentic AI Lab dependency.
 

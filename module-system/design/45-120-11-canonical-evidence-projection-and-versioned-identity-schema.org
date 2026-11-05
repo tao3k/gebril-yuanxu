@@ -16,7 +16,7 @@ macro.
 
 * Scope
 
-This RFC defines how native POO values participate in persistent
+This RFC defines how POO values participate in persistent
 semantic evidence, cache identity, replay verification, and receipts.
 
 It covers:
@@ -31,7 +31,7 @@ It covers:
 
 * Central decision
 
-A native POO object is not serialized as a whole.
+A POO object is not serialized as a whole.
 
 An admitted Contract selects and explains the semantic
 responsibilities that contribute to canonical evidence.  Runtime
@@ -80,7 +80,7 @@ required evidence.
 
 #+begin_src mermaid
 flowchart TD
-  O["Native gerbil-poo value"] -->|"offers slots and prototype-derived responsibilities"| C["Evidence Contract"]
+  O["Runtime gerbil-poo value"] -->|"offers slots and prototype-derived responsibilities"| C["Evidence Contract"]
   C -->|"selects only declared semantic responsibilities"| P["Canonical evidence projection"]
   D["Dependency evidence identities"] -->|"replace recursive runtime references"| P
   S["Encoding and digest schema identities"] -->|"define canonical representation and identity rules"| P
@@ -236,7 +236,7 @@ equivalence implicitly.
 Ordinary Module composition does not expose serialization, digest,
 graph-canonicalization, or identity clauses.
 
-Advanced evidence projections and schema values are native POO objects
+Advanced evidence projections and schema values are POO objects
 governed by Contracts and ordinary functional transformations.
 
 No generic whole-object =serialize!= interface, raw alist encoding DSL,
@@ -281,7 +281,7 @@ printer-based identity helper, or public identity macro is admitted.
 - [[file:45-120-12-phase-aware-macro-expansion-evidence-source-mapping-and-receipt-schema.org][Phase-Aware Macro Expansion Evidence, Source Mapping, and Receipt Schema]]
 - [[file:45-120-10-authoritative-evidence-cache-telemetry-handle-registry-and-pure-replay.org][Authoritative Evidence, Disposable Cache, Telemetry, Handle Registry, and Pure Replay]]
 - [[file:45-120-07-semantic-cache-scc-evidence-generation-invalidation-and-fail-closed-convergence.org][Semantic Cache, SCC Evidence, Generation Invalidation, and Fail-Closed Convergence]]
-- [[file:45-120-01-poo-native-type-and-contract-prototype-foundation.org][POO-Native Type and Contract Prototype Foundation]]
+- [[file:45-120-01-poo-type-and-contract-prototype-foundation.org][POO-Runtime Type and Contract Prototype Foundation]]
 - [[file:44-current-project-programming-style.org][Current Project Programming Style]]
 - [[https://github.com/mighty-gerbils/gerbil-poo/tree/1c3225637525400341a09e958296962c10184ead][Pinned gerbil-poo source]]
 - [[https://github.com/metareflection/poof][Prototypes: Object Orientation, Functionally]]

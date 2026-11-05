@@ -31,7 +31,7 @@ Therefore:
 
 * Scope
 
-This RFC fixes the POO-native value algebra returned by one admitted debug
+This RFC fixes the POO value algebra returned by one admitted debug
 evaluation demand.  It defines:
 
 - terminal evaluation outcomes;
@@ -63,7 +63,7 @@ The input context is never mutated.  Every terminal path returns one
 =EvaluationOutcome= and one successor context that accounts for all work
 performed by that demand.
 
-=EvaluationOutcome= is a native POO object family.  It is not an alist, record
+=EvaluationOutcome= is a POO object family.  It is not an alist, record
 DSL, status string, exception tuple, or keyword-clause language.
 
 * Evaluation identity
@@ -91,7 +91,7 @@ deliveries of one logical execution.  They cannot create two terminal outcomes.
 
 It carries:
 
-- the POO-native result value or result reference;
+- the POO result value or result reference;
 - result provenance and observation boundary;
 - the authorizing =Continue= decision receipt;
 - the successor context identity;
@@ -412,7 +412,7 @@ Failure to close a receipt chain is not reported as a completed outcome.
 
 The ordinary user composition surface does not expose receipt construction.
 
-The public advanced extension surface uses native =gerbil-poo= objects and
+The public advanced extension surface uses runtime =gerbil-poo= objects and
 prototype operations for:
 
 - outcome specialization;
@@ -421,7 +421,7 @@ prototype operations for:
 - policy-constrained evaluator extension.
 
 No public macro is introduced by this RFC.  Any future hygienic macro must be a
-small RFC-reviewed projection that expands to these POO-native values and pure
+small RFC-reviewed projection that expands to these POO values and pure
 functions.
 
 * Invariants
@@ -439,13 +439,13 @@ functions.
 - [X] Failure, denial, suspension, and cancellation retain their incurred cost.
 - [X] Simulation cache entries never become admitted cache entries.
 - [X] Live continuations remain process-local and non-portable.
-- [X] The public algebra is POO-native and functional.
+- [X] The public algebra is POO and functional.
 
 * Implementation acceptance checklist
 
 - [ ] ASP emits parser-owned owners for the affected RFC and implementation
   frontier.
-- [ ] Native =gerbil-poo= prototypes represent every outcome and receipt family.
+- [ ] Runtime =gerbil-poo= prototypes represent every outcome and receipt family.
 - [ ] Evaluator APIs return outcome plus successor context without shared
   mutation.
 - [ ] Every terminal control path reaches the same reconciliation boundary.
@@ -638,7 +638,7 @@ implementation completion, not owner selection.
 - [[file:45-62-publication-observation-local-activation-and-completion.org][45-62 - Publication Observation, Local Activation, and Completion]]
 - [[file:45-87-live-continuation-capabilities-continuable-conditions-and-portable-suspension-boundary.org][45-87 - Live Continuation Capabilities, Continuable Conditions, and Portable Suspension Boundary]]
 - [[file:45-88-gerbil-gambit-continuation-and-condition-runtime-correspondence.org][45-88 - Gerbil/Gambit Continuation and Condition Runtime Correspondence]]
-- [[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89 - POO-Native Control Condition, Decision, and Capability Algebra]]
+- [[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89 - POO-Runtime Control Condition, Decision, and Capability Algebra]]
 - [[file:45-103-precedence-conflict-debugging-inspection-explanation-simulation-and-continuable-recovery.org][45-103 - Precedence Conflict Debugging, Inspection, Explanation, Simulation, and Continuable Recovery]]
 - [[file:45-104-minimal-functional-debugging-interface-and-poo-debug-demand-contract.org][45-104 - Minimal Functional Debugging Interface and POO Debug Demand Contract]]
 - [[file:45-105-poo-debug-query-and-counterfactual-proposal-composition-algebra.org][45-105 - POO Debug Query and Counterfactual Proposal Composition Algebra]]

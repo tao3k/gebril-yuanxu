@@ -11,11 +11,11 @@ watchdog. The retained thousand-declaration controls in
 741-publication candidate is a thousand-module acceptance result.
 
 The source-support theorem bounds filesystem work under explicit coverage
-premises. It does not bound native parsing, import expansion, dependency-token
+premises. It does not bound runtime parsing, import expansion, dependency-token
 edges, predicate-internal replay, initialization, or garbage collection. A
 linear source-read result therefore cannot establish the runtime budget.
 
-The native controls already contradict two overly broad explanations:
+The runtime controls already contradict two overly broad explanations:
 
 - Sixteen declarations made 113 SDK closure requests but only four distinct
   closure traversals. The existing identity-indexed DFS does not discover the
@@ -27,14 +27,14 @@ The native controls already contradict two overly broad explanations:
 * One concrete redundant algorithm, now removed
 
 The existing =dependency-index= stores the immutable source-input closure of
-each exact native SDK context. Its hit path nevertheless walked that complete
+each exact runtime SDK context. Its hit path nevertheless walked that complete
 list again to enroll the same expected bytes into =tool-observations=.
 
 The reader now performs that enrollment when constructing the existing index
 entry, before exposing it. It does not add an index or cache an approval:
 
 #+begin_src scheme
-;; Inside inputs-for: the existing miss branch, after native DFS.
+;; Inside inputs-for: the existing miss branch, after runtime DFS.
 (let (ordered (reverse inputs))
   (for-each record-tool-input! ordered)
   (hash-put! dependency-index context ordered)
@@ -61,7 +61,7 @@ For demand stream =D= and demanded closure width =k(r)=:
 
 With one repeated root, registration becomes =k(root)= rather than
 =length(D) * k(root)=. This is an asymptotic improvement to registration, not
-a claim that parsing, native expansion or complete declaration work is solved.
+a claim that parsing, runtime expansion or complete declaration work is solved.
 
 * Model responsibilities and executable correspondence
 
@@ -87,10 +87,10 @@ not automatically measured machine-time charges. The simple numerical
 counterexample shows why even linear 0.7-second declarations would exceed the
 600-second budget at 1000 modules. It is not a measured per-module estimate.
 
-The native correspondence requires unchanged exact SDK contexts, structurally
+The runtime correspondence requires unchanged exact SDK contexts, structurally
 fixed closure entries, monotonic expected-byte enrollment, and fresh demanded
 admission. The public SDK and private role identity checks remain unchanged.
-Quint/Lean do not prove native context immutability, arbitrary initializer
+Quint/Lean do not prove runtime context immutability, arbitrary initializer
 confinement, collector memory, or a machine-time bound.
 
 The final source-bound qualifications pass all four enrollment controls and
@@ -99,12 +99,12 @@ builds successfully (40 dependency jobs). An intermediate qualification was
 correctly refused when its bound Lean source changed while coverage lemmas
 were being completed; only the subsequent stable-source receipts qualify.
 
-* Native results and the limited benefit
+* Runtime results and the limited benefit
 
 The source-only snapshot retains the same dependency revision, heap and
 watchdog limits. Tests use the existing init test object and Ops =.run=.
 
-The new native control executes two real module declarations through the same
+The new runtime control executes two real module declarations through the same
 reader. The second declaration makes new closure requests but performs no new
 SDK enrollment. After changing the first module's source, the complete reader
 guard still rejects. All eight candidate-stage cases pass, including open
@@ -118,7 +118,7 @@ naturally with both module/harness markers and final =OK=:
 | SDK closure requests / traversals | 113 / 4 | 113 / 4 |
 | Expanded and evaluated bodies | 64 / 64 | 64 / 64 |
 | Physical reads at Graph ready | 6634 | 6634 |
-| Native read deliveries | 231793 | 230724 |
+| Runtime read deliveries | 231793 | 230724 |
 | Delivered direct dependency edges | 343323 | 342254 |
 | Retained Graph tokens / edges | 5738 / 20005 | 5738 / 20005 |
 | Graph interval, wall / CPU | 11.933 s / 5.206 s | 14.278 s / 5.056 s |
@@ -135,9 +135,9 @@ The next optimization must reduce the dominant operations, not rename them:
 1. Preparation: the candidate recorded 1.740 seconds CPU for sixteen inert
    preparations. Resolve how much is field/type/authoring checking versus
    source parsing before altering its semantic support.
-2. Interface: 1.520 seconds CPU includes private role imports and native
+2. Interface: 1.520 seconds CPU includes private role imports and runtime
    expansion. The owned compilation timer is not a macro-expansion timer.
-3. Metadata: 198904 unique native replay visits remain, with 0.874 seconds
+3. Metadata: 198904 unique runtime replay visits remain, with 0.874 seconds
    CPU. Unique visits do not count duplicate outgoing edges or work inside
    currentness predicates. The retained Graph alone has 20005 edges.
 4. Cold entry: the process had consumed 9.596 seconds CPU when the Case's
@@ -147,12 +147,12 @@ The next optimization must reduce the dominant operations, not rename them:
 A valid root optimization needs independent accounting for traversed edges
 and repeated predicate work, plus phase-complete support. An immutable SDK
 topology index cannot stand in for current source or Contract evidence. Nor
-can arbitrary native initializers be classified as pure from their imports.
+can arbitrary runtime initializers be classified as pure from their imports.
 Do not erase SDK state, raise limits or remove open guards to obtain capacity.
 
 * Reproducible focused gates
 
-Run native gates serially in the qualified source-only environment:
+Run runtime gates serially in the qualified source-only environment:
 
 #+begin_src text
 just test-file t/module-candidate-stage-test.ss true

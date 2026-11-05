@@ -5,10 +5,7 @@
 ;;; Boundary: binds feature contributions to policy and strategy algebra objects.
 ;;; Invariant: contribution composition preserves declared precedence and provenance.
 (import (only-in :std/list/list fold map filter-map)
-        (only-in :clan/poo/object
-                 .ref
-                 object<-alist
-                 object?)
+        (runtime: :clan/poo/object)
         :yuanxu/composition/roles
         :yuanxu/feature-system/domain-case-assembly
         :yuanxu/utilities/functional)

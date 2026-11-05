@@ -78,7 +78,7 @@ dependency, semantic owner, receipt authority, or parent completion gate.
   cross-repository “exact query” observation.  That observation recorded the
   symptoms =digestAlgorithm= and =--asp-provider-id= but no selector or argv,
   so it is not a replayable acceptance contract and cannot legally gate this
-  tranche.  Provider-native source-snapshot semantics are owned by RFC45-09.
+  tranche.  Provider-runtime source-snapshot semantics are owned by RFC45-09.
   RFC45-08 instead fails closed through one source-owned Starlark manifest and
   deterministic validator.  Current
   =asp healthcheck= reports =status=ok= for the BLAKE3 artifact identity above;

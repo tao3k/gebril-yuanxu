@@ -1,11 +1,11 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :clan/poo/mop TypeError?)
+(import (only-in :clan/poo/mop TypeError? validate)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get .ref .call .cc .o .+)
-        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts yuanxu-value-admit yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/modules/json-schema/json-schema-validate
                  yuanxu-json-schema-object-contract-validation?
                  yuanxu-json-schema-object-contract-validation-valid?
@@ -19,7 +19,7 @@
 ;; partial copy sharing canonical Core IDs. See module-source-spec-test and
 ;; module-reader-tool-context-test for those controls.
 (def module-json-schema-publication-test
-  (test-suite "Real JsonSchema publication and native private-source closure"
+  (test-suite "Real JsonSchema publication and runtime private-source closure"
     (yuanxu-test-case "real Core init publishes contracts and derives all imported sources once"
       (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
              (graph (.get view build-graph))
@@ -30,10 +30,9 @@
         (check-equal? (.get view selected-graph module-order)
                       '(json-schema funflow services/postgresql services/gitea applications/gitea-postgresql))
         (check-equal? (> (length (.get graph entries)) 15) #t)
-        (check-equal? (yuanxu-validation-evidence-accepted?
-                       (yuanxu-contract-admit contract (.o port: 80) #f)) #t)
-        (check-equal? (yuanxu-validation-evidence-accepted?
-                       (yuanxu-contract-admit contract (.o port: "bad") #f)) #f)
+        (def valid (.o port: 80))
+        (check-equal? (eq? (validate contract valid) valid) #t)
+        (check-exception (validate contract (.o port: "bad")) TypeError?)
         (check-exception (.call scope compile 4) TypeError?)
         (def artifact (.call scope compile
                         '((type . "object")
@@ -45,15 +44,15 @@
           (yuanxu-json-schema-validation-diagnostic?
             (car (yuanxu-json-schema-object-contract-validation-diagnostics validation))) #t)
         ;; A callable recognizer alone would let this result escape. Admission
-        ;; must install the native result wrapper in the actual returned Scope.
-        (def checked (.get (yuanxu-contract-admit (.get scope types scope)
-                            (.cc scope 'compile (lambda () 7)) #f) candidate))
+        ;; must install the runtime result wrapper in the actual returned Scope.
+        (def checked (validate (.get scope types scope)
+                              (.cc scope 'compile (lambda () 7))))
         (check-exception (.call checked compile) TypeError?)
-        ;; Value failures become native admission refusals; invocation of an
+        ;; Value failures become runtime admission refusals; invocation of an
         ;; admitted Function still raises TypeError at its actual call boundary.
         (for-each
           (lambda (candidate)
-            (def refused (yuanxu-contract-admit (.get scope types scope) candidate #f))
+            (def refused (yuanxu-value-admit (.get scope types scope) candidate #f))
             (check-equal? (yuanxu-validation-evidence-accepted? refused) #f)
             (check-equal? (pair? (.get refused diagnostics)) #t)
             (check-equal? (eq? (.get refused admission-contract) (.get scope types scope)) #t))

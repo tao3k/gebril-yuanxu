@@ -12,7 +12,7 @@ from current-source Scenario integration. The latter is NOT closed: the current
 reader rejects =unissued slot dependency=. Installed-library passing controls
 are retained historical evidence, not substituted for that failing current run.
 
-[[file:32.48-nix-profile-effect-boundary.org][32.48]] found that native Nix profile selection survives new clients but does
+[[file:32.48-nix-profile-effect-boundary.org][32.48]] found that runtime Nix profile selection survives new clients but does
 not reject a stale application's saved request. This step asks whether revision,
 fence and an ACTUAL effect can be committed together, without another preflight
 loop or a new signature system.
@@ -33,7 +33,7 @@ In particular, a database commit followed by =nix-env --set= would still be TWO
 effects. We deliberately do not implement or claim that sequence as atomic.
 Existing Core/Nix production calls retain their semantics and checks.
 
-* Reused production mechanism and native substrate
+* Reused production mechanism and runtime substrate
 
 - Real Gitea/PostgreSQL =ServicesFixture= materializes the maintained Scenario
   and uses the current Core reader/linker/publication. It does not simulate the
@@ -42,7 +42,7 @@ Existing Core/Nix production calls retain their semantics and checks.
   contribution binding and source checks. The test preserves its returned
   candidate and final plan/configuration identity.
 - =std/db/sqlite=, =std/db/db= and =std/db/interface= provide prepared SQL bindings,
-  queries, native transactions and connection cleanup. No SQL string interpolation
+  queries, runtime transactions and connection cleanup. No SQL string interpolation
   of user values and no shell command is used for the transaction.
 - Existing =ProcessScript.= / =run-script= launches the independent clients;
   =Justfile= applies the pre-import heap limit and finite timeout.
@@ -96,7 +96,7 @@ or reset its revision/fence. A duplicate initialization fails.
 
 * Single transactional boundary
 
-The adapter opens a native connection, starts =BEGIN IMMEDIATE=, executes this
+The adapter opens a runtime connection, starts =BEGIN IMMEDIATE=, executes this
 prepared statement, checks that exactly one row changed and commits:
 
 #+begin_src sql
@@ -121,7 +121,7 @@ alongside it if rollback also fails. Uncertain outcome after a lost process
 response is not given a retry/exactly-once claim.
 
 SQLite transaction isolation is a substrate premise. The tests do not prove its
-native implementation, filesystem flush behavior or power-loss recovery.
+runtime implementation, filesystem flush behavior or power-loss recovery.
 Opening connections is bounded by the existing test/runtime process fences;
 no retry loop, widened timeout or cross-effect currentness cache is introduced.
 
@@ -132,9 +132,9 @@ epoch rotation are not qualified production behavior. In this minimal adapter
 fence and revision both increment on commit; independent fencing handoff to a
 remote consumer is not implemented. Wrong-fence issuance is separately tested.
 
-* Native controls
+* Runtime controls
 
-The storage rows below are the independent native capability controls. Domain
+The storage rows below are the independent runtime capability controls. Domain
 rows describe passing installed-library runs 03/04 only; current-source run 06
 refuses during reader replay BEFORE reaching the domain checks. They must not
 be reported as current-source passing Gitea/PostgreSQL evidence.
@@ -194,7 +194,7 @@ transition relation:
 - =stale_revision_refused= / =stale_fence_refused=: mismatches yield no transition.
 - =restart_preserves_fence=: recovery of the persisted row does not invent a reset.
 
-Recovery equality is an explicit storage-model assumption, backed by the native
+Recovery equality is an explicit storage-model assumption, backed by the runtime
 process controls, not a proof of SQLite or the OS. =source_not_a_commit_operand=
 records only that recovery is identity in this model; it is not a theorem that
 external source files are unchanged. Existing real Scheme domain tests retain
@@ -261,8 +261,8 @@ the pre-import heap fence and 30-second timeout. Test execution remains serial.
 QNT runs use their named model/invariant and the bounds above; negative outcomes
 require an actual invariant violation, not an arbitrary process failure.
 
-Logs remain in local artifacts. The first native run failed on an extra closing
-parenthesis in the test; it was corrected, not relabeled as a pass. Native runs
+Logs remain in local artifacts. The first runtime run failed on an extra closing
+parenthesis in the test; it was corrected, not relabeled as a pass. Runtime runs
 02 and 03 exercised progressively broader controls. Final validation receipts
 are appended after rechecking the exact current sources.
 
@@ -281,7 +281,7 @@ explicitly compiled before the reader. No traversal behavior or timeout is
 changed to accommodate that mismatch.
 
 The rebuilt reader then exposed a mixed runtime/interface preparation artifact:
-native test run 05 warned that =agentic-ai-lab-prepare-module-publication__%= was
+runtime test run 05 warned that =agentic-ai-lab-prepare-module-publication__%= was
 undefined and exited 139. It has no success status. The current =preparation.ss=
 is now included in the same owned compiler closure before the reader. The
 shared installed library is not rewritten to hide this mismatch. Initial passing
@@ -291,13 +291,13 @@ After rebuild 05 succeeds, current-source integration run 06 fails with
 =unissued slot dependency= in =reader -> replay-slot-reads!=. Core still constructs
 synthetic bundle reads with raw =make-slot-read= in
 =reader.deliver-publication-reads= and =read-projection.deliver-projection=;
-the locked native replay correctly requires producer-issued reads. These are
+the locked runtime replay correctly requires producer-issued reads. These are
 identified candidate boundaries, not a proved attribution to one exact bundle.
-No native issuance assertion is bypassed, no raw record is relabeled as genuine,
+No runtime issuance assertion is bypassed, no raw record is relabeled as genuine,
 and no obligation/currentness check is removed to make this suite green.
 
-The next integration repair must retain the union of genuine native reads and
-the owned-value/parent currentness policy without fabricating native provenance.
+The next integration repair must retain the union of genuine runtime reads and
+the owned-value/parent currentness policy without fabricating runtime provenance.
 It needs its own MOP correspondence controls before claiming closure. The
 persistent-head transaction is not a workaround for that failure, and production
 Module publication remains outside the positive storage-only result.
@@ -312,7 +312,7 @@ Final scoped receipts (2026-10-21):
   recover the exact persisted row; stale, unknown, reused, wrong-selection,
   wrong-fence and ABA controls pass. Reinitialization refuses without resetting
   the existing head. No Scenario admission is credited to this storage suite.
-- =core-persistent-head-06=: failed real Scenario integration with native
+- =core-persistent-head-06=: failed real Scenario integration with runtime
   =unissued slot dependency=. The two domain cases remain failing integration
   controls; their earlier installed-library success is not current qualification.
 - =core-persistent-head-lean-02=: exit zero for the new Lean relation. Six

@@ -18,7 +18,7 @@ a maintained JsonSchema module scope; Guestbook contributors consume that scope;
 application users consume Guestbook. A user changing an image must not decode a
 schema file, reproduce imports or assemble a validation pipeline.
 
-Native module interfaces may internally import their implementation owners. That
+Runtime module interfaces may internally import their implementation owners. That
 is distinct from requiring every configuration to repeat those imports. The new
 module scopes below are designs; existing use-module binds a supplied POO scope
 but does not resolve an unbound module name from the filesystem.
@@ -47,7 +47,7 @@ Existing public collection projection, shown only for framework maintainers:
 
 Do not document (yuanxu-load-modules "./dir") as currently accepted or claim
 that it automatically installs lexical JsonSchema/Guestbook bindings. Connecting
-selected SourceRefs, admitted interfaces and exported native scopes is the
+selected SourceRefs, admitted interfaces and exported runtime scopes is the
 remaining integration boundary; this task does not implement that Loader work.
 
 At scale, do not call full collection projection for every selected service.
@@ -72,7 +72,7 @@ module's functional owner, not in downstream config files.
   (if (object? candidate)
     (yuanxu-json-schema-object-contract-validation-diagnostics
      (yuanxu-json-schema-contract-artifact-validate artifact candidate))
-    (list (.o kind: 'native-config-object-required))))
+    (list (.o kind: 'runtime-config-object-required))))
 
 (def (schema-artifact->contract artifact)
   (.cc YuanxuContract.
@@ -87,10 +87,10 @@ module's functional owner, not in downstream config files.
   accepted?: yuanxu-validation-evidence-accepted?)
 #+end_src
 
-The generated object Contract is already native: [[file:../../../module-system/schema/slot-contracts.ss][yuanxu-object-contract]] derives
-it from a native Record. Native validate owns required/optional fields and
+The generated object Contract is already runtime: [[file:../../../module-system/schema/slot-contracts.ss][yuanxu-object-contract]] derives
+it from a runtime Record. Runtime validate owns required/optional fields and
 returns the normalized object, including checked Function fields. It can
-participate in native responsibilities; it does not manufacture a Core .admit
+participate in runtime responsibilities; it does not manufacture a Core .admit
 receipt. The .cc adapter above explicitly composes that value-contract with
 Core's contextual admission and the existing full-root validator. A Record's
 field inventory alone does not enforce every root-level JSON Schema rule such
@@ -195,12 +195,12 @@ must remain associated with the published artifact.
         (.o artifact ServerContract ScenarioContract)))))
 #+end_src
 
-All three responsibility entries reference the same schema-backed native Contract.
+All three responsibility entries reference the same schema-backed Contract.
 The existing Core yuanxu-object-admit walks them and invokes each Contract's
 .admit on that final child. It records responsibility-evidence and only runs
 Scenario obligations after successful role classification and child admission.
 The Scenario inherits this public .admit; it does not need a separate handwritten
-child-validation loop. Missing required roles receive native missing-responsibility
+child-validation loop. Missing required roles receive runtime missing-responsibility
 failures. Exact published associations for arbitrary extensible Profile families
 remain separate future work; these three fixed roles have explicit requirements.
 
@@ -265,7 +265,7 @@ schema or all Profiles in a package. No Guestbook scope publication is implement
 by these snippets, and the module initialization/import graph still needs testing.
 
 The module interface can publish the independently prepared V2 Scenario under
-baseline and expose native admission without forcing its contracts at scope binding:
+baseline and expose runtime admission without forcing its contracts at scope binding:
 
 #+begin_src scheme
 (.def Guestbook
@@ -316,7 +316,7 @@ KCL distinction. The excerpt does not project env, original container name,
 resource requests/limits, defaults or Namespace objects; therefore it is not a
 complete parity renderer and must not be published as a runnable Guestbook plan.
 
-The missing full plan entry must gate publication on native Scenario admission,
+The missing full plan entry must gate publication on runtime Scenario admission,
 then complete projection, final selector/namespace/identity checks and existing
 schema validation of each output resource. Only a successful result can be an
 admitted-preview. Bind admission evidence to the final inputs and consumer/schema
@@ -332,7 +332,7 @@ Downstream target (direct path assignment still pending):
       frontend.image: "gcr.io/google-samples/gb-frontend:v5")))
 #+end_src
 
-The existing-native body instead refines frontend with =>.+ and an .o image
+The existing-runtime body instead refines frontend with =>.+ and an .o image
 payload, as shown in module 11. Module 12 retains the three evolution variants and
 expected resource previews. A future plan call goes through the Guestbook scope,
 not schema-path reads or raw implementation imports. Its signature/result must be
@@ -340,15 +340,15 @@ qualified before this design advertises an executable downstream plan API.
 
 * Conclusion and concrete remaining work
 
-Directly reusable: hygienic existing-scope binding, native slots/defaults and
-receiver behavior, JSON Schema artifact generation/full-root validation, native
+Directly reusable: hygienic existing-scope binding, runtime slots/defaults and
+receiver behavior, JSON Schema artifact generation/full-root validation, runtime
 Contract/.admit dispatch and responsibility evidence. New: JsonSchema and Guestbook
 scope publication, full-schema obligation adapter, selected schema/default views,
 Guestbook input and rendered-link checks, complete resource consumer and output
 schema qualification. Directory-to-scope Loader integration is outside this work.
 
 The module system is the right maintenance boundary: contributors publish a
-capability once and users configure selected native objects. Its value must be
+capability once and users configure selected runtime objects. Its value must be
 shown by less repeated loading/validation policy and controlled demand, not by
 exposing thousands of interfaces or claiming startup gains without measurements.
 The next tests should compare selected versus unselected schema demand, validate

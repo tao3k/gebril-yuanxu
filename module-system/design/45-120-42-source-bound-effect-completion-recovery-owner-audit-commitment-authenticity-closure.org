@@ -136,9 +136,9 @@ $
 #+end_src
 
 Every payload field is also equal to the corresponding canonical audit witness
-field.  Because 45-120-41 already binds that witness to the exact native owner
-receipt, the commitment transitively covers the native transition without
-duplicating native transition semantics.
+field.  Because 45-120-41 already binds that witness to the exact runtime owner
+receipt, the commitment transitively covers the runtime transition without
+duplicating runtime transition semantics.
 
 * Commitment chain
 
@@ -206,7 +206,7 @@ The recovery engine does not:
 
 Those owners must supply evidence for the exact commitment.  This RFC only
 proves that admitted recovery evidence cannot detach those decisions from the
-committed native transition.
+committed runtime transition.
 
 * Actual closure
 
@@ -262,7 +262,7 @@ No theorem repairs or defaults missing evidence.
 
 #+begin_src mermaid
 flowchart LR
-  NR["Native owner receipt"] -->|"exact IDs already bound by 45-120-41"| AW["Canonical audit witness"]
+  NR["Runtime owner receipt"] -->|"exact IDs already bound by 45-120-41"| AW["Canonical audit witness"]
   PC["Previous commitment"] -->|"include predecessor state"| PL["Complete commitment payload"]
   AW -->|"copy every audit field exactly"| PL
   PL -->|"C(payload); collision-resistant scheme"| CM["Content commitment"]

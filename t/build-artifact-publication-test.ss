@@ -32,7 +32,7 @@
     (def lib (path-expand "lib" root))
     (def run (probe-build root lib))
     (def binary (path-expand (string-append (symbol->string identity) "~0.o1") lib))
-    ;; A writable native cache without prior Core issuance cannot be adopted.
+    ;; A writable runtime cache without prior Core issuance cannot be adopted.
     (run "compile")
     (write-artifact-bytes binary #u8(0))
     ;; This is the production completion function used by projection .compile.
@@ -40,7 +40,7 @@
     ;; graph/publication/admission implementations are the installed/real ones.
     (call-with-build-artifact-issuance projection lib (cut run "compile"))
     (check-equal? (equal? (bytes binary) #u8(0)) #f)
-    (.cc services lib: lib projection: projection native-main: run
+    (.cc services lib: lib projection: projection runtime-main: run
       binary: binary
       record: (path-expand
         (find (cut string-prefix? ".yuanxu-build-issuance-" <>)
@@ -49,7 +49,7 @@
   (defvalues (receipt next failure) (publish parent candidate))
   (values receipt next failure))
 (def build-artifact-publication-test
- (test-suite "Core native-build issuance and cached publication"
+ (test-suite "Core runtime-build issuance and cached publication"
   (yuanxu-test-fixture "saved publication rejects joint record/artifact replacement"
     (fixture CompiledServicesFixture)
     (with-slots (selection publication binary record) fixture
@@ -116,7 +116,7 @@
           (def refused (with-catch values (cut admit-build-artifacts! (.get selection build-graph))))
           (check-equal? (Error-message refused) "Core compiled artifacts changed"))
         (cut write-artifact-bytes binary original-binary))
-      ;; Native resolution could select a new .o2; enumerate selected families
+      ;; Runtime resolution could select a new .o2; enumerate selected families
       ;; again instead of hashing only the original fixed list.
       (def higher (string-append (substring binary 0 (- (string-length binary) 1)) "2"))
       (dynamic-wind
@@ -134,7 +134,7 @@
           (lambda (port)
             (parameterize ((current-output-port port))
               (call-with-build-artifact-issuance (.get fixture projection) (.get fixture lib)
-                (cut (.get fixture native-main) "compile"))))))
+                (cut (.get fixture runtime-main) "compile"))))))
       (check-equal? (not (not (string-contains warm-output "... compile probe"))) #f)
       (check-equal? (bytes binary) original-binary)
       (def probe-source (path-expand "probe.ss" (.get fixture root)))
@@ -154,8 +154,8 @@
       ;; A failed attempt cannot fall back to the prior successful seal.
       (def failed (with-catch values
         (cut call-with-build-artifact-issuance (.get fixture projection) (.get fixture lib)
-          (lambda () (error "native build failed")))))
-      (check-equal? (Error-message failed) "native build failed")
+          (lambda () (error "runtime build failed")))))
+      (check-equal? (Error-message failed) "runtime build failed")
       (def blocked (with-catch values (cut admit-build-artifacts! (.get selection build-graph))))
       (check-equal? (Error-message blocked) "build-required: Core build did not complete")
       (set! completed (+ completed 1))))))

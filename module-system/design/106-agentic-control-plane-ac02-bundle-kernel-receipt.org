@@ -6,7 +6,7 @@
 
 * Result
 
-AC-02 adds a POO-native, pure functional lifecycle kernel over the AC-01
+AC-02 adds a POO, pure functional lifecycle kernel over the AC-01
 Canonical Organization Bundle.  It provides immutable candidate, validated,
 and advanced states plus deterministic open, validate, no-op, conflict, stale,
 rejection, and advance receipts.

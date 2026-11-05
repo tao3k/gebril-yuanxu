@@ -12,7 +12,7 @@ standard hash/set operations when they improve clarity or complexity.  Keep
 explicit recursion where accumulator order or hot-path allocation is clearer.
 
 Private positional traversal state may use a small =defstruct=.  Public
-extension state remains POO-native.  Alists are allowed only at a final wire,
+extension state remains POO.  Alists are allowed only at a final wire,
 receipt or diagnostic projection after the owning object is known.
 
 * Runtime boundary

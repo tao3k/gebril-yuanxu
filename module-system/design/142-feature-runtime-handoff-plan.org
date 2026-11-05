@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: RFC 142: Native Feature Runtime Handoff Planning
+#+title: RFC 142: Runtime Feature Runtime Handoff Planning
 #+status: implemented
 
 * Decision
@@ -18,7 +18,7 @@ requests participate in three explicit handoff families:
 - Lean/Evidence obligation handoff.
 
 The plan resolves those declarations against an accepted
-=FeatureAdapterProjectionBinding=.  It carries native Gerbil POO references to
+=FeatureAdapterProjectionBinding=.  It carries Gerbil POO references to
 the selected provider, adapter binding, and Domain Case projection binding.  It
 does not serialize JSON, allocate a C request, call CFFI, import Python, evaluate
 Cedar, invoke a projector, run Lean, or emit evidence.
@@ -40,7 +40,7 @@ qualification layer before them:
 4. a later runtime lowering boundary may translate the accepted plan into the
    existing loop-engine or C ABI representation.
 
-* Native POO handoff declarations
+* POO handoff declarations
 
 Every handoff declaration contains:
 
@@ -132,7 +132,7 @@ flowchart LR
     HM["module-owned FeatureRuntimeHandoffManifest"]
     HI["handoffs by handoff-id"]
     RV["contract and schema validation"]
-    RH["native resolved handoff objects"]
+    RH["runtime resolved handoff objects"]
     HP["FeatureRuntimeHandoffPlan"]
     LE["later loop-engine handoff"]
     CA["later Bundle v1 C ABI lowering"]
@@ -154,7 +154,7 @@ plan is built.
 
 * No-JSON and no-execution boundary
 
-The handoff plan is not a transport envelope.  Its hot-path values are native
+The handoff plan is not a transport envelope.  Its hot-path values are runtime
 Scheme/POO references:
 
 - provider module identity comes from the resolved adapter capability;
@@ -164,7 +164,7 @@ Scheme/POO references:
 
 Only the future runtime-c lowering owner may choose a C struct, pointer table,
 arena, tagged union, or other ABI representation.  JSON is not an intermediate
-requirement and must not be inserted into the native FFI path.
+requirement and must not be inserted into the runtime FFI path.
 
 #+begin_src mermaid
 sequenceDiagram
@@ -177,12 +177,12 @@ sequenceDiagram
     participant X as "later runtime provider"
 
     M-->>H: "declare Bundle, Cedar, Evidence handoffs"
-    B-->>P: "native bound POO objects"
+    B-->>P: "runtime bound POO objects"
     H-->>P: "ordered handoff declarations"
     P->>P: "index and validate ids/contracts/schemas"
-    P-->>R: "native resolved POO references"
+    P-->>R: "runtime resolved POO references"
     R-->>C: "explicit future input"
-    C-->>X: "future native ABI call"
+    C-->>X: "future runtime ABI call"
     Note over P,R: "no JSON, FFI, Python, Cedar, Lean, or projector execution"
 #+end_src
 
@@ -206,7 +206,7 @@ not authorize any downstream runtime action.
 The implementation proves:
 
 - Bundle v1, Cedar input, and Lean/Evidence declarations resolve through one
-  shared native algebra while retaining distinct POO kinds;
+  shared runtime algebra while retaining distinct POO kinds;
 - provider module, adapter binding, and projection binding object identities are
   preserved;
 - invalid and semantic duplicate manifest entries are rejected;
@@ -220,7 +220,7 @@ The implementation proves:
 * Next mainline stage
 
 Phase 3H should audit and connect the accepted handoff plan to the existing
-=bindings/runtime-c= Bundle v1 owner.  It should define native Scheme-to-C value
+=bindings/runtime-c= Bundle v1 owner.  It should define Scheme-to-C value
 lowering, ownership/lifetime, zero-copy opportunities, error receipts, and ABI
 conformance gates for Gerbil, =gerbil-mysql=, and Python CFFI.  It must not add a
 JSON compatibility path or a second runtime protocol.

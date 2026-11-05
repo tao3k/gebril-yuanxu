@@ -3,8 +3,8 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: focused native test for the extension operation algebra.
-;;; Invariant: this owner imports only the extension facade, so native gxtest
+;;; Boundary: focused runtime test for the extension operation algebra.
+;;; Invariant: this owner imports only the extension facade, so runtime gxtest
 ;;; cannot pass through a stale aggregate user-interface build.
 
 (import (only-in :clan/poo/object .o .cc)
@@ -15,7 +15,7 @@
                  test-suite)
         :yuanxu/graph/interface)
 
-(export module-extension-resolution-test graph-unification-test graph-native-operation-test)
+(export module-extension-resolution-test graph-unification-test graph-runtime-operation-test)
 
 ;; : (-> YuanxuGraph Symbol MaybeAny)
 (def (extension-slot-value node slot-name)
@@ -24,8 +24,8 @@
 
 ;; : TestSuite
 (def module-extension-resolution-test
-  (test-suite "native POO module extension resolution"
-    (yuanxu-test-case "dispatches ordered operations through native prototypes"
+  (test-suite "POO module extension resolution"
+    (yuanxu-test-case "dispatches ordered operations through runtime prototypes"
       (let* ((child
               (yuanxu-graph-rooted
                'workflow/build
@@ -152,8 +152,8 @@
                        (car (yuanxu-graph-root-children (yuanxu-graph-result-root second)))
                        'observed) #t)))))
 
-(def graph-native-operation-test
-  (test-suite "native Graph operation extension"
+(def graph-runtime-operation-test
+  (test-suite "runtime Graph operation extension"
     (yuanxu-test-case "custom POO operation keeps graph and node metadata"
       (let* ((base (yuanxu-graph-rooted 'root '() '()))
              (annotated

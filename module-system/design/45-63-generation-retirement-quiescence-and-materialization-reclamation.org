@@ -130,12 +130,12 @@ semantic generation or its evidence history.
 - [X] =consumerQuiescenceDischargesCompletionObligation=: the completion
   obligation is absent from the quiescent outstanding-obligation set.
 - [ ] Refine retention policy, fences, and materialization ownership through
-  native =gerbil-poo= prototypes.
+  runtime =gerbil-poo= prototypes.
 - [ ] Replay the synchronized Lean and Typst claims through external AXLE.
 
 * POO semantic ownership
 
-Retention policy is an ordinary higher-order POO object. Native prototype
+Retention policy is an ordinary higher-order POO object. Runtime prototype
 composition defines:
 
 - reference classification;
@@ -147,7 +147,7 @@ composition defines:
 - resource reclamation policy;
 - receipt disclosure policy.
 
-The public extension interface remains POO-native. Retirement and reclamation
+The public extension interface remains POO. Retirement and reclamation
 must not become enum tokens, an ad hoc garbage-collection DSL, or raw mutable
 callbacks.
 
@@ -410,7 +410,7 @@ The implementation must distinguish at least:
 11. Rematerialization must prove content identity.
 12. Destructive actions are resource-scoped and receipted.
 13. Partial and unknown reclamation outcomes remain visible.
-14. Public semantic extension remains POO-native.
+14. Public semantic extension remains POO.
 
 * Implementation checklist
 

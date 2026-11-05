@@ -105,7 +105,7 @@
   (check-equal? (call-with-input-file marker read-line) "keep"))
 
 (def service-publication-fixture-test
-  (test-suite "Native service Fixture ownership"
+  (test-suite "Runtime service Fixture ownership"
     (yuanxu-test-fixture "runtime source rebinding refuses absent roles and restores the caller"
       (control DirectoryFixture)
       (def original (current-service-source-root))

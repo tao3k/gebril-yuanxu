@@ -58,8 +58,8 @@ owner whose behavior they describe. Contribution roots follow the same source
 roles instead of acquiring a parallel user-module abstraction.
 
 This is a logical partition, not a mandated new directory migration. Current
-Funflow has config-prototypes.ss, profiles/gerbil-scheme.ss and native-scope.ss.
-native-scope.ss statically imports the prototype and Profile factory definitions;
+Funflow has config-prototypes.ss, profiles/gerbil-scheme.ss and runtime-scope.ss.
+runtime-scope.ss statically imports the prototype and Profile factory definitions;
 its lazy slots do not demonstrate source-level selective loading. A future
 catalog/source adapter must address this boundary without a facade that imports
 every contribution. Do not report this design as having removed current imports.
@@ -70,10 +70,10 @@ Publish independently reusable Profiles and only intentionally authored Scenario
 recipes. Compose selected objects when requested; do not create a separate
 Scenario for every language/provider/environment permutation. Avoid a giant
 flag matrix that becomes another public configuration language. Users can
-publish their refined native objects as their own reusable library, subject to
+publish their refined runtime objects as their own reusable library, subject to
 the same Contracts and publication policy.
 
-Catalog descriptors are ordinary native POO metadata projections of the owning
+Catalog descriptors are ordinary POO metadata projections of the owning
 publication. Proposed metadata includes qualified identity/revision, category,
 description, public owner locator, Contract/field-description locator, named
 Profile/Scenario exports, supported extension boundaries, and declared source-role
@@ -109,7 +109,7 @@ to reconstruct an index at interaction time.
 | Bind a known module scope | Source association and necessary supported owner resolution | Construct independent Profiles or Scenarios |
 | Obtain a Check prototype | Prototype owner and its source/build dependencies | Load a Profile merely to find its own prototype |
 | Select Gerbil Profile | Selected factory and its declared value dependencies | Construct Rust, unrelated Scenarios or all community contributions |
-| Assign/refine user values | Native object construction/lowering and demanded getters | Execute commands or mutate the shared upstream object |
+| Assign/refine user values | Runtime object construction/lowering and demanded getters | Execute commands or mutate the shared upstream object |
 | Admit selected Pipeline | Selected names, fields, applicable policies and graph closure | Audit every unselected Profile as a hidden side effect |
 | Preview consumer plan | Effective admitted inputs, pure projection and consumer schema | Publish automatically, obtain secrets or start a runtime Session |
 | Explicit method composition | Only selected compatible method bundles, with identity checks | Register every package's methods at declaration/discovery time |
@@ -129,7 +129,7 @@ self-reference but its Module-local Profile catalog is not the target ownership
 model. Module 13 supplies the corrected independent recipe wiring.
 Distinguish source/import cycles, recursive value demand and task-graph cycles;
 each needs a qualified diagnostic identifying the owner and phase. This is not
-a requirement to reject all native recursive object relationships.
+a requirement to reject all runtime recursive object relationships.
 
 Record a demand chain for active resolutions. Define behavior for repeated or
 concurrent demands on the same supported key before implementing it: shared
@@ -157,7 +157,7 @@ must not remain permanently poisoned by a cached old refusal.
    projected-unadmitted cannot publish; admitted-preview needs both configuration
    and consumer evidence for the stable input-view and still does not execute.
 
-The complete user construction and native lowering remain in module 11, and
+The complete user construction and runtime lowering remain in module 11, and
 [[file:10-discovery-conflicts-and-plan-preview.org][module 10]] owns the preview/diagnostic result. Organization must not create
 a new wrapper around that same configuration or make users assemble checks.
 
@@ -166,7 +166,7 @@ a new wrapper around that same configuration or make users assemble checks.
 Pin a selected publication family and its supported policy/Contract references
 for one preparation/admission/publication interval. Record inherited origins and
 local changes so upgrades can explain differences. An assignment remains a
-replacement; a native transformation may depend on an upstream default's shape.
+replacement; a runtime transformation may depend on an upstream default's shape.
 Compatibility checks and explicit migration remain necessary even when source
 duplication is reduced. Alias scope is not an upgrade or trust policy.
 
@@ -213,7 +213,7 @@ or universal O(K) end-to-end guarantee follows from these requirements.
 
 * Implementation boundary
 
-Native inheritance/assignment/refinement, bounded scopes and the current dotted
+Runtime inheritance/assignment/refinement, bounded scopes and the current dotted
 object-refinement adapter are reusable foundations. Direct dotted assignment,
 the commands runtime migration, metadata indexing/navigation, provenance-aware
 conflicts, selective source/Profile resolution, consumer-plan preview/publication

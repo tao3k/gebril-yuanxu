@@ -8,15 +8,15 @@
 The next change moves beyond attribution. It removes one redundant return-time
 guard and joins two adjacent pure preparation stages, using the EXISTING source
 read window. No new cache or retained approval is introduced. Source mutation
-across native import, initialization, Contract callbacks and Nix remains a
+across runtime import, initialization, Contract callbacks and Nix remains a
 fresh-check boundary.
 
-** Two changes, with native old-implementation controls
+** Two changes, with runtime old-implementation controls
 
 The owner is
 [[file:../../../../../module-system/building/configuration-source.ss][configuration-source.ss]].
 The configuration reader already checks prepared and related inputs after
-native evaluation, before returning its value. Its remaining work releases
+runtime evaluation, before returning its value. Its remaining work releases
 completed private interpreter expansion results and removes its own wrapper
 directory. It runs no author initializer or Nix operation at that point and
 does not modify admitted source files. The builder's additional full =current!=
@@ -29,12 +29,12 @@ pre-bootstrap check form one synchronous pure stage. They now share the
 preparation's existing read window. The code returns three ordinary Scheme
 values: prepared input, related inputs and the later currentness procedure.
 That window ENDS before calling =module-prepared-source-binding=: its
-bootstrap imports, private wrapper writes and native evaluation are outside.
+bootstrap imports, private wrapper writes and runtime evaluation are outside.
 Independent later public calls to the returned currentness procedure start
 fresh windows. Calls explicitly nested in a pure window share only that window.
 No table is captured as an approval for those calls.
 
-The native control in
+The runtime control in
 [[file:../../../../../t/module-configuration-source-test.ss][module-configuration-source-test.ss]]
 observes actual reads of a Context dependency, not lookup requests:
 
@@ -49,7 +49,7 @@ After the first change it passes. The second assertion fails on that intermediat
 implementation with result 4 / expected 3, then passes with pure-stage fusion.
 The expected failures remain separate local controls; assertions are not
 weakened. Mutating the Context input afterwards still makes the returned
-public currentness procedure reject. The existing native initializer that
+public currentness procedure reject. The existing runtime initializer that
 rewrites config.ss is still rejected by the reader's independent post-import
 guard, and independent public checks remain fresh.
 
@@ -66,7 +66,7 @@ the same read twice.
 |------------------------+------------------+----------|
 | Configuration preparation -> pre-bootstrap | Inert role/header/package reads and internal source projections | Share one existing pure window |
 | Pre-bootstrap -> reader pre-import | Bootstrap SDK imports can expand/initialize code | Keep separate |
-| Reader pre-import -> post-import | Wrapper creation, native expansion and author initialization | Keep separate |
+| Reader pre-import -> post-import | Wrapper creation, runtime expansion and author initialization | Keep separate |
 | Reader post-import -> builder return | Private expansion release and wrapper cleanup only | Remove redundant builder return guard |
 | Build external-before -> external-after | Module .prepare, configuration evaluation and business projection callbacks | Keep separate |
 | Build admit-before -> admit-after | Lazy external-request preparation and extensible request guards | No blanket fusion |

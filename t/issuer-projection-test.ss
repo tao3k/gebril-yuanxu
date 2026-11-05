@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Native association snapshots, independently checked by the Lean decoder.
+;;; Runtime association snapshots, independently checked by the Lean decoder.
 (import :std/test :clan/poo/object
         (only-in :clan/poo/mop make-slot-read slot-read-receiver slot-read-key
                  slot-read-revision slot-read-instance slot-read-value slot-read-dependencies
@@ -74,10 +74,10 @@
     (when path
       (call-with-output-file (list path: path truncate: #t)
         (lambda (port) (write-json port (list->vector (reverse rows)))))))
-  (displayln "ISSUER-PROJECTION: 4 cases; 12 native observations"))
+  (displayln "ISSUER-PROJECTION: 4 cases; 12 runtime observations"))
 (def issuer-projection-test
  (test-suite "Actual issuer association and endpoint boundaries"
-  (test-case "persistent and transient native issuance expose unsigned detached copies"
+  (test-case "persistent and transient runtime issuance expose unsigned detached copies"
     (.def Root port: 5432 unused: (error "unselected branch forced"))
     (def persistent (selected (recorded (cut .get Root port)) 'port))
     (def miss (selected (recorded (cut .ref/cached Root 'missing (lambda () #f)))
@@ -142,7 +142,7 @@
     (check-equal? effects 1)
     (observe-state "callback-restored" read effects)
     (set! completed (+ completed 1)))
-  (test-case "native receiver edits advance revision even when the value is restored"
+  (test-case "runtime receiver edits advance revision even when the value is restored"
     (.def Root port: 5432)
     (def read (selected (recorded (cut .get Root port)) 'port))
     (observe-state "revision-before" read 0)

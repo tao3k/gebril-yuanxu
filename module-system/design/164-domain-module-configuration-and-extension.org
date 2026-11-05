@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Domain Module Configuration, Native Extension and Consumer Ownership
+#+title: Domain Module Configuration, Runtime Extension and Consumer Ownership
 #+date: [2026-10-15]
 #+property: STATUS proposed-not-implemented
 
@@ -9,18 +9,17 @@
 
 This is a design proposal, not an implemented domain API. All business slots,
 policy prototypes and domain Contracts below are proposed names. Examples use
-existing native .def, .o and =>.+ forms, plus the proposed bounded
+existing .def, .o and =>.+ forms, plus the proposed bounded
 use-module scope adapter. No implementation, source export or runtime changed.
 
 | Existing source | Verified ability | Not established by that source |
 |-----------------+------------------+--------------------------------|
-| [[file:../../../user-interface/profiles/langgraph.ss][LangGraph publication]] | native semantic Profile values and Module export index | configured graph object's business slots or executable router override |
-| [[file:../../../user-interface/profiles/crewai.ss][CrewAI publication]] | native semantic Profile values and Module export index | configured crew business slots or executable scheduler/guardrail override |
-| [[file:../../../user-interface/profiles/tool-calling.ss][Tool Calling publication]] | native semantic Profile values and Module export index | configured tool business slots or executable validator override |
+| [[file:../../../user-interface/profiles/langgraph.ss][LangGraph publication]] | runtime semantic Profile values and Module export index | configured graph object's business slots or executable router override |
+| [[file:../../../user-interface/profiles/crewai.ss][CrewAI publication]] | runtime semantic Profile values and Module export index | configured crew business slots or executable scheduler/guardrail override |
+| [[file:../../../user-interface/profiles/tool-calling.ss][Tool Calling publication]] | runtime semantic Profile values and Module export index | configured tool business slots or executable validator override |
 | [[file:../../profile-composition/selection-syntax.ss][use-module]] and [[file:../../profile-composition/profile-bundle.ss][Bundle owner]] | explicit nonempty export selection, identity/provenance and stage composition | no-selection defaults, slot-context identity or automatic publication of derived values |
-| [[file:../../types.ss][Core Contracts]] | responsibility/obligation admission on native objects | concrete Contracts for the new domain config/policy objects |
-| [[file:../../../modules/workflow/scenario/profile-root.ss][Scenario root]] and [[file:../../../modules/workflow/scenario/plan-projection.ss][plan projection]] | transfer Bundle values, project stage steps/handoffs/edges into a plan | automatic execution of domain graph/loop/proof labels or the proposed config slots |
-| [[file:../../../modules/workflow/scenario/case.ss][Case admission]] | check whether execution-plan projection succeeds with an execution-plan value | complete domain policy admission or fresh proof of every inherited boolean |
+| [[file:../../types.ss][Core Contracts]] | responsibility/obligation admission on runtime objects | concrete Contracts for the new domain config/policy objects |
+| [[file:../../modules/funflow/scenario.ss][Funflow Scenario Type and private projection]] | validate the final Record descriptor and derive a receiver-local plan from the composed Profile values | complete domain policy admission, effect authorization or fresh source certification |
 | [[file:../../../modules/workflow/graph/runtime-executor.ss][graph executor]] | separate runtime graph/policy machinery | an automatic wire from these three UI libraries into that runtime |
 
 The existing libraries' contract and policy symbol slots are semantic claims.
@@ -34,9 +33,9 @@ end-to-end mapping from those Scenario labels to an executing domain runtime.
 The proposed configured graph, crew and tool values own business configuration
 and a small set of documented POO policy extension points. They do not expose an
 inventory of implementation components. Ordinary users inherit defaults; domain
-extension authors may inspect the policy Contract/proto and override it natively.
+extension authors may inspect the policy Contract/proto and override it runtimely.
 No new public method syntax, patch DSL, callback slot or component-list syntax
-is introduced. Ordinary values and native POO objects remain the slot values.
+is introduced. Ordinary values and POO objects remain the slot values.
 
 Every new slot must have a Contract and a named consumer. Merely preserving an
 unknown slot in a Bundle is not support. Unsupported fields/strategies must
@@ -189,15 +188,15 @@ current argument-validation Profile's name/contract/policy symbols.
 * Reuse existing bindings when no new scope is needed
 
 When upstream Scenario bindings already suffice and no new prototype lookup is
-needed, directly use native =>.+ on their selected Profile values. When a local
+needed, directly use runtime =>.+ on their selected Profile values. When a local
 scope/prototype is needed, the canonical bounded as form provides one binding.
 No raw global policy constructor or duplicate source binding is required.
 
-* Native graph/crew/tool composition into one Scenario
+* Runtime graph/crew/tool composition into one Scenario
 
 The [[file:164-bounded-domain-module-scope-examples.org][complete domain scope design]] also includes GraphConfig, CrewConfig and
 ToolConfig, each with one bounded Module binding, composed with the proposed
-shared MultiAgentScenario. native proto in one ordered parent list. Its complete
+shared MultiAgentScenario. runtime proto in one ordered parent list. Its complete
 ProductionScenario example separately refines all three without rebinding or
 reconstructing strategies. Root Contract/source/selection and cross-Module
 handoff obligations, final receiver reads and qualified projection are explicit. The
@@ -211,18 +210,18 @@ relationships fail admission rather than being guessed from parent ordering.
 Single-Module reads remain bounded; whole selected admission may demand all
 three. Prototype metadata linearization is distinguished from implementation
 loading. Combined Contract/proto/consumer wiring and latency guarantees remain
-proposed, built on existing native POO/Loader machinery. No implementation changed.
+proposed, built on existing POO/Loader machinery. No implementation changed.
 
-* Inline strategy slots preserve native ancestry and demand
+* Inline strategy slots preserve runtime ancestry and demand
 
 A one-off policy does not need its own top-level name. Use policy-slot: =>.+
 inside the configured Module. Its inherited value must already be an admitted
-native POO object from the stable shared upstream proto; false, an unbound slot,
+POO object from the stable shared upstream proto; false, an unbound slot,
 or a symbolic policy label is not enough. Upstream responsibilities validate
 this shape; the proposed contextual adapter does not silently turn symbols into
 behavior implementations. Do not synthesize a fresh unrelated policy object.
 
-For one strategy slot, the explicit native inherited-slot form is:
+For one strategy slot, the explicit runtime inherited-slot form is:
 
 #+begin_src scheme
 (routing-policy (inherited)
@@ -236,7 +235,7 @@ applies at Profiles, production and the configured Module, not just the policy.
 Do not replace this with construction from the bare policy proto: that would
 lose refinements already present on the inherited policy instance.
 
-Native nested =>.+ extends the inherited policy value, retaining its inherited
+Runtime nested =>.+ extends the inherited policy value, retaining its inherited
 slots and proto ancestry. It does not mutate the shared upstream policy and does
 not need a new inline-policy syntax or Contract annotation. Reusable policies
 can still be named deliberately, but naming is optional, not a prerequisite for
@@ -244,11 +243,11 @@ configuring one Scenario. No anonymous behavioral callback slot is introduced.
 
 Business slots and policy slots remain distinct responsibilities even when
 written in one brace. The concrete Module Contract admits the policy through its
-own policy Contract and cross-obligations. Native ancestry alone is not proof
+own policy Contract and cross-obligations. Runtime ancestry alone is not proof
 of valid strategy, capability, permission or execution evidence.
 
 On demand, resolving the configured Module may demand its inherited base. On
-demanding the policy refinement, native =>.+ obtains the inherited policy and
+demanding the policy refinement, runtime =>.+ obtains the inherited policy and
 derives the refined value. The syntax does not promise zero work when the parent
 is needed, nor does it justify forcing other policies, Profiles or sources.
 Admission forces required policy facts; selected composition and handoff read
@@ -259,20 +258,20 @@ to reuse stale composition/evidence. The refinement never starts a Session.
 
 Proposed upstream responsibilities are scoped to concrete configured objects:
 
-| Profile responsibility | Concrete Module Contract | Native policy responsibility |
+| Profile responsibility | Concrete Module Contract | Runtime policy responsibility |
 |------------------------+--------------------------+------------------------------|
 | graph | LangGraphConfiguredModuleContract | routing-policy -> LangGraphRoutingPolicyContract |
 | crew | CrewConfiguredModuleContract | scheduling-policy -> CrewSchedulingPolicyContract |
 | tool | ToolConfiguredModuleContract | argument-validator -> ToolArgumentValidatorContract |
 
 Each concrete Contract inherits the common configured Module identity/provenance
-rules and supplies a stable shared native proto with owned defaults. The
+rules and supplies a stable shared runtime proto with owned defaults. The
 Scenario family resolves its dynamic Profile names and responsibility map.
-A native instance inherits its proto, never its Contract descriptor. User
+A runtime instance inherits its proto, never its Contract descriptor. User
 configuration does not repeat the upstream responsibilities or current-profile
 annotation. Generic collection admission and objectification remain proposed.
 
-Native policy inheritance gives a real ancestry relation; it is not sufficient
+Runtime policy inheritance gives a real ancestry relation; it is not sufficient
 admission by itself. Value predicates, strategy support and semantic obligations
 must pass. Existing Core Contract machinery can express these checks, but the
 new predicates, domain obligations, policy protos and consumer wiring do not yet
@@ -287,8 +286,8 @@ direct Module policy paths and global constructor names.
 
 | Contract boundary | Proposed responsibility |
 |-------------------+-------------------------|
-| Scenario.graph / crew / tool | native configured Module scope Contract; source and occurrence compatibility |
-| Module.profiles | admitted native catalog/selected contribution view |
+| Scenario.graph / crew / tool | runtime configured Module scope Contract; source and occurrence compatibility |
+| Module.profiles | admitted runtime catalog/selected contribution view |
 | selected state-graph | checkpoint/resume fields and routing-policy -> LangGraphRoutingPolicyContract |
 | selected crew-workflow | goal/capacity fields and scheduling-policy -> CrewSchedulingPolicyContract |
 | selected tool-loop | requested tools/deadline fields and argument-validator -> ToolArgumentValidatorContract |
@@ -311,7 +310,7 @@ apply to new objects and inherited refinements.
 
 Pure adapters read those exact derived receivers and user business attributes.
 They preserve source/occurrence evidence and qualified reference relationships,
-rather than reattaching default Profile/policy objects. The refined policy retains native
+rather than reattaching default Profile/policy objects. The refined policy retains runtime
 ancestry from its actual inherited instance; a valid ancestry relation is not a
 runtime enforcement receipt. checkpoint restore, ready-task dispatch and tool
 validation/deadline adapters must actually consume these values. The old
@@ -320,8 +319,8 @@ semantic symbol Profiles do not implement those consumers.
 * Demand sequence for the current bounded examples
 
 Expansion preserves syntax and source context without runtime loading. Evaluating
-the selected Module slot creates its bounded alias scope and derived native value.
-Individual Profile/attribute/prototype access follows actual native demand;
+the selected Module slot creates its bounded alias scope and derived runtime value.
+Individual Profile/attribute/prototype access follows actual runtime demand;
 new-object parent lookup can load the precise prototype owner. Selected domain
 admission/plan projection forces its necessary facts and required dependencies,
 then an explicit Session is the only execution boundary. Unselected catalog
@@ -338,7 +337,7 @@ evidence. No cold/warm latency or runtime behavior is claimed by this update.
 
 | Capability | Status |
 |------------+--------|
-| .def, .o/brace, .+, =>.+, inherited-slot access and native ancestry | existing native POO foundation; expansions here are explanatory, not runtime receipts |
+| .def, .o/brace, .+, =>.+, inherited-slot access and runtime ancestry | existing POO foundation; expansions here are explanatory, not runtime receipts |
 | Core responsibility/obligation checks | existing; they may demand all required effective slots |
 | Source Loader deferred plans and demand-driven field support | existing; separate from static imports and domain execution |
 | Configured graph/crew/tool business slots and policy protos/Contracts | proposed domain API |
@@ -350,7 +349,7 @@ One-off standalone strategy declarations are superseded by the inline examples.
 Names are optional for genuinely reused policy values, not a mandatory extra
 object tier. No new declaration, override, chain or strategy macro is introduced.
 
-* Native user objects do not require repeated default declarations
+* Runtime user objects do not require repeated default declarations
 
 User .def inheritance remains public. When a maintained Profile already owns
 Check objects, users refine those inherited slots; they need not recreate each
@@ -363,12 +362,12 @@ See [[file:164-funflow-cicd-user-authoring-design.org][the complete inherited Fu
 The [[file:164-funflow-cicd-user-authoring-design.org][current complete CI/CD design]] contains only the target Scenario example
 and its complete hygienic use-module lowering. Funflow is bound once as ff;
 Gerbil/Rust defaults are refined and smoke takes its prototype from the same
-scope. Source Contracts, qualified effective-value projection, native laziness
+scope. Source Contracts, qualified effective-value projection, runtime laziness
 and cold/warm cost verification are explicit. Current as only records instance
-identity; the bounded body now binds an existing native scope; domain source publication and consumer wiring remain proposed.
+identity; the bounded body now binds an existing runtime scope; domain source publication and consumer wiring remain proposed.
 
-Native .def/.o are the declaration foundation; do not reintroduce the old Case
-binding/config collector or add define-scenarios solely to rename native .def.
+Runtime .def/.o are the declaration foundation; do not reintroduce the old Case
+binding/config collector or add define-scenarios solely to rename .def.
 Manual user imports/renames and repeated Check construction are not current
 recipes. Original payloads are retained only in the separate
 [[file:164-funflow-cicd-legacy-source-reference.org][historical migration reference]]. Module object/contract semantics stay stable
@@ -378,12 +377,12 @@ merely shift whole-system work to first access.
 * Compatibility and acceptance before implementation
 
 The current [[file:../../../modules/module-authoring/semantic-module.ss][UserConfigSourceRole.]] forbids .def/.o in ordinary user roots. The target
-native extension examples require an explicit governance decision: admit the
-bounded native declaration route in that role, or place extension definitions
+runtime extension examples require an explicit governance decision: admit the
+bounded runtime declaration route in that role, or place extension definitions
 in the existing maintained/vertical owner role and import them into a narrower
 root. This document does not silently relax admission or assert these examples
 already pass the current user-root checks. The final source-role decision must
-preserve the authorized native user extension route.
+preserve the authorized runtime user extension route.
 
 Before implementation, finalize domain defaults, exact policy support, depth
 counting, checkpoint isolation and adapter ownership. A real implementation

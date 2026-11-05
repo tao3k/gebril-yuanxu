@@ -250,7 +250,7 @@ changing absolute paths changed the action key for all four compile actions.
 Agentic AI Lab now accepts an optional, validated absolute
 =AGENTIC_AI_LAB_EXTERNAL_BAZEL_OUTPUT_BASE=.  The dedicated full external-module job
 binds it to a stable =runner.temp= path; the missing-root-override probe and the
-native analysis lanes retain their isolated random user roots.  This is a
+runtime analysis lanes retain their isolated random user roots.  This is a
 fixture-level cache mitigation, not the durable rule fix.  The upstream
 =gerbil-bazel= follow-up must make tool and wrapper locations
 execroot/runfiles-relative and remove nonsemantic host-capacity values from the

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 11.56 Config Languages 55: Configuration-selected Flake Builds
 #+property: DOCUMENT_ID 11.56
-#+property: STATUS implemented-local-native-no-loader
+#+property: STATUS implemented-local-runtime-no-loader
 
 * Implementation update
 
@@ -96,7 +96,7 @@ The Module-local build contribution derives Provider demand from this Module's
 final configuration. Its =build.ss= must not reopen the root =init.ss= or call
 =yuanxu-load-modules= to rediscover the application. Root selection passes
 admitted contributions to generic Core build orchestration. That orchestration
-owns generation allocation, currentness, native build invocation and final
+owns generation allocation, currentness, runtime build invocation and final
 admission. No AWS/Null-specific branch belongs in root discovery or orchestration.
 The Module interface declares its contribution once; users do not assemble the
 stages in either init or config.
@@ -116,7 +116,7 @@ chain must not be described as that completed authoring experience.
 
 The internal =Parent=/=Child= objects, explicit module-selection/build-entry
 calls and =.build/aws-null= directories remain qualification details. They are
-not user configuration or routing conventions. Native command semantics must
+not user configuration or routing conventions. Runtime command semantics must
 also remain intact: inspection/cleanup must not accidentally realize packages,
 and generated compiler inputs must retain their own source directory. This
 correction implements no new driver, role adapter or product Loader.
@@ -154,7 +154,7 @@ adds =resource.null_resource.smoke=; init and build declarations stay unchanged.
 
 The path names the maintainer's locked flake capability. It is not a Provider
 list and does not select AWS or Null. Constructing =Build= constructs an ordinary
-native contribution; it does not execute Nix, read the final config or reload
+runtime contribution; it does not execute Nix, read the final config or reload
 init. The existing contribution's =.prepare= receives the admitted owning Module
 root, currentness callback and publication from Core. Its default source/binding
 are =config.ss= and =Config= relative to that owner.
@@ -173,7 +173,7 @@ maintained =types.ss=, distinct from generated Provider configuration Contracts:
 
 #+begin_src scheme
 ;; modules/app/infrastructure/interface.ss -- TARGET Build role binding;
-;; the native core.projections field and contribution protocol already exist
+;; the runtime core.projections field and contribution protocol already exist
 (.def Infrastructure
   identity: 'app/infrastructure
   core:
@@ -188,7 +188,7 @@ Interface publishes the binding once. Automatic publication means source-role
 preparation supplies the bounded =Build= binding and Core consumes the declared
 projections of selected Modules. It does NOT mean scanning arbitrary object
 bindings for things that look executable, or maintaining another global build
-inventory. The phase wrapper owns native imports/exports; application authors
+inventory. The phase wrapper owns runtime imports/exports; application authors
 must not duplicate those in these declarations.
 
 The existing Core selected-build implementation already performs the essential
@@ -221,7 +221,7 @@ On the next explicit unified build request after a config change:
    the locked capability and realizes the selected Schema producers. OpenTofu
    constructs the corresponding lazy module scope/ConfigurationContract.
 4. Successful publication must demand the final =admission= slot; this performs
-   currentness checks and the public native =.admit= internally. Users do not
+   currentness checks and the public runtime =.admit= internally. Users do not
    extract scopes, choose type lists or assemble those stages.
 
 This is build-on-invocation, not an implemented filesystem watcher or automatic
@@ -230,7 +230,7 @@ it does not rewrite a cached parent Contract in place.
 
 Remaining adapter obligations are concrete:
 
-- Admit an optional Module-local =build.ss= role with its native build-tool
+- Admit an optional Module-local =build.ss= role with its runtime build-tool
   bindings, source locations and source observations. Build-role removal/addition
   must invalidate the owning generation; nonselected Modules stay unprepared.
 - Supply =Build= only to the admitted build-publication phase. Do not blindly
@@ -238,11 +238,11 @@ Remaining adapter obligations are concrete:
   current config-role evaluator's related-role policy also needs this distinction.
 - Resolve =Build= into =core.projections= through the same hygienic role wrapper;
   do not introduce a second role parser, registry or Module-to-root lookup.
-- Let root orchestration own output allocation, native build invocation and
+- Let root orchestration own output allocation, runtime build invocation and
   forcing lazy final admission before reporting success. The existing entry
   writer realizes external packages but returns a still-lazy admission slot.
 
-The three-round native receipt validates these internal mechanisms through
+The three-round runtime receipt validates these internal mechanisms through
 explicit test orchestration. It does not qualify automatic build-role publication
 or the remaining invocation adapter. This section changes design documentation
 only; it does not connect the product Loader.
@@ -259,7 +259,7 @@ uses the existing external-package contribution protocol:
 (yuanxu-opentofu-package-contribution ProviderArtifacts)
 #+end_src
 
-Ordinary config remains ordinary native objects:
+Ordinary config remains ordinary runtime objects:
 
 #+begin_src scheme
 (def Config
@@ -312,7 +312,7 @@ fixture throws if forced. This is stronger than a runtime-only lazy namespace
 check, though the fixture's awscc branch is a sentinel, not a built awscc plugin.
 
 Core passes the automatically projected demand as a string argument on a derived
-FlakeSource. Nix does not accept =--argstr= with flakes. The native Source uses
+FlakeSource. Nix does not accept =--argstr= with flakes. The runtime Source uses
 =--apply= with JSON data and Nix-string escaping:
 
 #+begin_example
@@ -325,31 +325,31 @@ nix --extra-experimental-features 'nix-command flakes' eval --raw \
 The ellipsis-free implementation is in =modules/nix/func.ss=; the example above
 shows the process boundary rather than reproducing a generated demand receipt.
 There is no shell interpolation, =--impure=, runtime lock command, or arbitrary
-CLI flag field. The real native control includes quotes, Unicode and literal
+CLI flag field. The real runtime control includes quotes, Unicode and literal
 =${...}= in configuration source paths. Empty arguments retain constant package
 output selection; non-string arguments remain rejected by the Source Contract.
 This supersedes chapter 54's earlier rejection of all nonempty flake arguments.
 
 * Currentness, frozen locks and receiver isolation
 
-The existing native Source preparation protocol owns receiver-local lazy
+The existing runtime Source preparation protocol owns receiver-local lazy
 =derivation= and =artifact=. Its currentness function is independent evidence,
 not a cache hit. OpenTofu derives the supplied FlakeSource with its final demand
 and Core source observations. Local flake root =flake.nix= and =flake.lock=
 bytes are included. Shared =module-source-admit-current!= checks observations
-before and after native evaluation; Core uses the same authority for generated
+before and after runtime evaluation; Core uses the same authority for generated
 entry inputs. Absent observations remain absent, rather than silently becoming
 new inputs.
 
 Configuration source observations include the admitted owner roles and package
-context. A changed config cannot be replayed with its old demand. A fresh native
+context. A changed config cannot be replayed with its old demand. A fresh runtime
 Nix evaluation compares the selected derivation to the expected derivation and
 catches relevant transitive Nix dependency changes. Generated entry guards carry
 the arguments and observations, so replay does not lose that binding.
 
 A newly requested flake input fails under =--no-update-lock-file=.
 Nix 2.34 allowed in-memory lock changes when =--no-write-lock-file= was
-also supplied. A direct native negative control exposed this; the implementation
+also supplied. A direct runtime negative control exposed this; the implementation
 now uses only the stronger no-update flag, which rejects changes before writing. The
 qualification checks that the lock bytes are unchanged. Lock creation belongs
 to explicit package preparation, never admission or currentness. Remote source
@@ -375,26 +375,26 @@ and explicitly creates a fixture lock. Official AWS 5.100.0 and Null 3.2.4
 packages produce real Provider Schemas. Package preparation is outside runtime
 phase measurements. A fresh Scheme process is cold for POO caches; the Nix store
 is already populated. This is not a download-cold or dedicated-host benchmark.
-Every round retains the default heap fence and 120-second native case timeout.
+Every round retains the default heap fence and 120-second runtime case timeout.
 
-The native controls cover final-config demand, selected collection producer inputs,
+The runtime controls cover final-config demand, selected collection producer inputs,
 read-only locks, source and indirect Nix changes, generated guards, delayed first
 admission, source changes during realization, complete diagnostic paths,
 selected type read/compile counts and parent cache isolation. Python only
 orchestrates serial gates and computes phase statistics.
 
 A subsequent serial round hit the existing duration watchdog in an extra
-recursive closure query on a heavily loaded host. The final native control
+recursive closure query on a heavily loaded host. The final runtime control
 checks direct collection-to-Schema-producer input edges instead of walking the
 entire Nix toolchain closure. Its assertion is intentionally that narrower
 claim; the failed round is retained and not counted as passing. A second round
 hit the same unchanged duration watchdog during independent currentness.
 Direct replay of the exact captured argv then took 0.689 seconds and a complete
-native graph probe passed. The subsequent three-round gate passed without
+runtime graph probe passed. The subsequent three-round gate passed without
 widening the duration/heap/process budgets. The contention attribution is
 observational, not a proved causal explanation or a speedup claim.
 
-An initial installed-package-set =path:= fixture exceeded the unchanged native
+An initial installed-package-set =path:= fixture exceeded the unchanged runtime
 timeout because repeated evaluation processed a large package tree. A local
 archive preparation attempt stalled and was stopped. Neither run qualifies as
 passing evidence, and no timeout was widened. Reusing the existing locked Git
@@ -413,10 +413,10 @@ proof of external process/filesystem atomicity is claimed.
 The final source-stable serial run passed three rounds, 68 assertions each
 (204 total), with =MODULE-OK=, =HARNESS-OK=, final =OK= and no harness/heap/stack
 failure marker. The expression selected-graph regression passed 60 assertions;
-the standalone frozen-flake regression passed 32. Focused native owner builds
+the standalone frozen-flake regression passed 32. Focused runtime owner builds
 also completed; the complete Core build was not rerun.
 
-| Phase | AWS-only median seconds | AWS + Null median seconds | Native CLI / type work, every round |
+| Phase | AWS-only median seconds | AWS + Null median seconds | Runtime CLI / type work, every round |
 |-------+-------------------------+---------------------------+------------------------------------|
 | Build including scope | 2.329 | 2.104 | 2 evaluations, 1 realization call; 0 type reads/compiles |
 | First admission | 0.918 | 1.124 | 1 evaluation; respectively 1 / 2 type reads and compiles |

@@ -28,7 +28,7 @@ continuable exceptions, and =dynamic-wind=.
 
 Agentic AI Lab owns:
 
-- the POO-native resource-provider capability contract;
+- the POO resource-provider capability contract;
 - lease identity, policy, and realization-boundary scope;
 - dynamic access-authority validation;
 - cancellation and release governance;

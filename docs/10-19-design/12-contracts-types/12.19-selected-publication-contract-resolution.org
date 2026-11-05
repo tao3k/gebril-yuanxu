@@ -1,7 +1,7 @@
 #+title: 12.19 Selected Publication Contract Resolution and AWS Source Organization
 #+property: DOCUMENT_ID 12.19
 #+language: en
-#+property: STATUS implemented-focused-native-validation-no-runtime-loader
+#+property: STATUS implemented-focused-runtime-validation-no-runtime-loader
 
 * Reuse, not a parallel admission system
 
@@ -115,7 +115,7 @@ factory calls. This is not a global cache or deployment authorization mechanism.
 
 * Qualification boundary
 
-[[file:../../../t/aws-scenario-contract-test.ss][Five native Contract controls]] passed for delegated fields, diagnostics,
+[[file:../../../t/aws-scenario-contract-test.ss][Five Contract controls]] passed for delegated fields, diagnostics,
 optional nominal identity, receiver-aware final projections and cold interface
 payloads and publication path declarations. Their tiny Schema is explicitly a fixture; the AWS Schema comes from
 the separate real Nix integration gate. The latter retains actual Null

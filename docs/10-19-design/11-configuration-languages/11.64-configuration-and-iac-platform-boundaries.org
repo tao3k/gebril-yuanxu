@@ -161,7 +161,7 @@ KCL plugins, Nickel libraries, Pulumi host code or existing platform policies.
 - Ordinary layer: zero explicit Context/evidence/Graph setup in user config;
   assignments use domain field names and generated contracts own representation.
 - Extension layer: original value/receiver and preserved obligations are visible
-  when needed. Named functions own algorithms; native slots own inheritance.
+  when needed. Named functions own algorithms; runtime slots own inheritance.
 - Publishing layer: one authoritative normalization, exact checked subject and
   actual contract association, independently fresh source checks and explicit
   failure state. These are platform concerns, not extra syntax per user field.

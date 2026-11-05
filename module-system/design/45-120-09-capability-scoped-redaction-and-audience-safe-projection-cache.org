@@ -61,7 +61,7 @@ to accumulate arbitrary secrets in an internal event.
 
 * Visibility capability
 
-A diagnostic visibility capability is a native POO value that bounds:
+A diagnostic visibility capability is a POO value that bounds:
 
 - the consumer identity or consumer class;
 - the source Module and responsibility scope;
@@ -81,7 +81,7 @@ or possession of a diagnostic identifier.
 
 * Presentation policy
 
-A presentation policy is a profile-composed native POO value.  Within
+A presentation policy is a profile-composed POO value.  Within
 the admitted visibility capability it may choose:
 
 - verbosity;
@@ -158,7 +158,7 @@ serializable diagnostic projection.
 Importing a Module makes evidence reachable to semantic closure.  It
 does not grant permission to disclose that evidence.
 
-Cross-Module visibility requires an explicit native POO delegation that
+Cross-Module visibility requires an explicit POO delegation that
 binds:
 
 - delegating visibility capability;

@@ -25,7 +25,7 @@ Contract as a Module. Its domain responsibility differs, not its loading rules.
 
 The target separates package resolution, directory selection, dependency
 admission, contextual role evaluation and explicit runtime activation. Functions
-and native POO objects remain the expression surface. No configured-check
+and POO objects remain the expression surface. No configured-check
 factory, second Scenario loader or per-module root reload is required.
 
 All examples below are target source, not executable acceptance receipts.
@@ -39,10 +39,10 @@ changes; it is not a claim about the committed Core revision alone.
 
 | Owner | Currently present | Gap addressed here |
 |-------+-------------------+--------------------|
-| [[file:../../gerbil.pkg][Core package]] and [[file:../../ops/gerbil.pkg][Ops package prelude]] | Native package/dependency and prelude metadata | Installed-package scope registration and built-in attachment |
+| [[file:../../gerbil.pkg][Core package]] and [[file:../../ops/gerbil.pkg][Ops package prelude]] | Runtime package/dependency and prelude metadata | Installed-package scope registration and built-in attachment |
 | [[file:../source/init.ss][module-init-intent]] | One mode/source pair, categories, literal external roots, disable and signed features | Multiple independently named directory windows |
 | [[file:../source/directory.ss][Directory source context]] | Directory snapshots, source ownership, lazy namespace branches | One shared context over several mounts |
-| [[file:../source/preparation.ss][Publication preparation]] | Native package identity, package/prelude currentness, generated role imports | Contextual evaluation of role bodies with admitted arguments |
+| [[file:../source/preparation.ss][Publication preparation]] | Runtime package identity, package/prelude currentness, generated role imports | Contextual evaluation of role bodies with admitted arguments |
 | [[file:../source/declaration.ss][Publication declaration]] | Generates core.link; injects core.requires aliases into core.exports | The same arguments in objects/config/types/func, without role-specific patches |
 | [[file:../source/link.ss][Scope linking]] | Source/publication/scope admission, active-cycle rejection, generation-local caches | Cross-window identity and dependency-linked contextual role frames |
 | [[file:../source/selection.ss][Selected graph]] | Explicit-required-owner rejection, retained disable/feature decisions, existing Feature resolver | Package-provided built-ins distinct from selectable user owners |
@@ -119,7 +119,7 @@ implementation. The user package pins its actual Core dependency using ordinary
 Gerbil package metadata. No invented Core package URL or local vendor root is
 required by this design. Package fetching/building remains package management.
 
-The generated standard role environment provides native POO forms, the existing
+The generated standard role environment provides POO forms, the existing
 Core predicate-Contract helpers used below, and hygienic contextual bindings.
 This environment is a proposed extension of existing preludes, not an assertion
 that current object roles already receive these names.
@@ -163,7 +163,7 @@ that current object roles already receive these names.
 Here the empty authored requires object means no additional explicit dependency
 declarations. The target wrapper derives the direct Ops requirement from the
 bound namespace references and combines it with explicit requirements into the
-existing native requires graph. Today an empty requires object does not do this.
+existing runtime requires graph. Today an empty requires object does not do this.
 No one should execute this example under the existing wrapper and assume safety.
 
 The Check inherits timeout/environment/log/status behavior from the actual Ops
@@ -219,7 +219,7 @@ value transformation and no reason to use =>.+ for these two assignments.
 #+end_src
 
 The function accepts the complete argument list. For this exact one-argument
-example, the equivalent direct native invocation is:
+example, the equivalent direct runtime invocation is:
 
 #+begin_src scheme
 (.call Release .run "--release")
@@ -260,13 +260,13 @@ Different effective contexts must not share captured role values accidentally.
 
 The wrapper is conceptually a compiler-generated function over args. It captures
 that function's argument once, projects role bindings, and evaluates the admitted
-role graph once per contextual instance. This is a description of native let,
+role graph once per contextual instance. This is a description of runtime let,
 functions and POO slots, not a new runtime macro API. The existing core.exports
 link closure alone is insufficient because its role imports have already been
 evaluated outside that argument scope.
 
 Implementation must transform the role graph as a unit, keeping private helpers,
-native source locations, phase imports and dependency direction. It must not
+runtime source locations, phase imports and dependency direction. It must not
 independently inject a dynamic global into each operation or splice unqualified
 symbols into arbitrary source datums. Contextual files are linked values;
 ordinary context-free library functions remain ordinary Gerbil imports.
@@ -279,10 +279,10 @@ expressions must not be evaluated twice during projection.
 
 1. Register window metadata and installed-package references without importing
    all leaf interfaces. Reuse current directory/source observations.
-2. Prepare only selected/demanded declarations. Resolve native package identity
+2. Prepare only selected/demanded declarations. Resolve runtime package identity
    before producing contextual role code.
 3. Collect closed namespace references by binding identity from admitted syntax,
-   including native .get, supported path lowering and with-slots projections.
+   including runtime .get, supported path lowering and with-slots projections.
    Ignore quoted data; do not infer dependencies by searching for symbol text.
 4. Combine these requirements with authored core.requires and selected Feature
    contributions. Reuse existing graph selection, dependency Contracts and cycle
@@ -348,7 +348,7 @@ latter do not become legal merely by changing module declaration order.
 - Retain init/window decisions, package/prelude observations and demanded role
   source inputs in currentness. Source or dependency changes require a fresh
   contextual generation; a parent cached scope is not reusable proof for a child.
-- Reuse native lazy slots within a stable effective context. Do not allocate a
+- Reuse runtime lazy slots within a stable effective context. Do not allocate a
   fresh args identity on every field access or perform whole-tree currentness
   checks for each slot. No thousand-module speed claim is established here.
 
@@ -356,7 +356,7 @@ latter do not become legal merely by changing module declaration order.
 
 Shared arguments remove the need for use-module as a directory loader, package
 resolver, source marker repeated at every access, or compulsory field accessor.
-Ordinary configuration should use native slots and with-slots directly.
+Ordinary configuration should use runtime slots and with-slots directly.
 
 The existing bounded branch is optional lexical convenience:
 

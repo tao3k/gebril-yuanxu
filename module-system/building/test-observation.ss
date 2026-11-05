@@ -1,8 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module-specific adapter of the existing Case policy, never a runner.
-(import :clan/poo/object
+(import (runtime: :clan/poo/object)
         (only-in :std/source this-source-file)
-        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
+        (only-in :yuanxu/module-system/source/deferred-declaration module-entry-action)
         (only-in :yuanxu/observability/testing-case
                  yuanxu-default-testing-case-profile
                  yuanxu-test-checkpoint yuanxu-test-observe)
@@ -37,8 +37,10 @@
   (def started (current-jiffy))
   (def started-cpu (yuanxu-debug-cpu-microseconds))
   ;; Diagnostic counts only: bounded owner/phase rows, never source bytes,
-  ;; SDK contexts or currentness results. This cannot authorize reuse.
-  (def read-rows (and trace? (make-hash-table)))
+  ;; Gerbil expander contexts or currentness results. This cannot authorize reuse.
+  ;; Attribute ordinary observed Cases without enabling the expensive retained
+  ;; object census. The existing 1024-row cap stores scalar labels only.
+  (def read-rows (make-hash-table))
   (def effect-reads (make-hash-table))
   (def graph-read-rows (make-hash-table))
   (def effect-checks (make-hash-table))
@@ -58,7 +60,7 @@
   (def (report-phase-work (force? #f))
     ;; Bounded checkpoints survive a later outer TERM without retaining a
     ;; token/context census or waiting for a successful Case's final receipt.
-    (when (and trace? (or force? (zero? (modulo publications 64))))
+    (when (or force? (and trace? (zero? (modulo publications 64))))
       (yuanxu-write-observation-line!
         "reader-phase-wall publications=%s import-us=%s compile-us=%s eval-us=%s replay-us=%s replay-visits=%s guard-us=%s"
         publications (span-total 'import-microseconds)
@@ -148,7 +150,7 @@
   ;; Keep timing scalar even when this observer runs inside domain admission.
   (def spans
     (map (lambda (keys) (vector keys 0 0 0 0 0))
-      '((native-source-import-start native-source-import-end
+      '((compiler-source-import-start compiler-source-import-end
           import-microseconds import-cpu-microseconds)
         (publication-start publication-end
           publication-microseconds publication-cpu-microseconds)
@@ -192,7 +194,7 @@
                  (vector-set! span 5 (+ cpu (vector-ref span 5)))
                  ;; Internal diagnostic spans must not consume the Case's
                  ;; unchanged 64 DOMAIN-category allowance.
-                 (when (memq (car keys) '(native-source-import-start publication-start
+                 (when (memq (car keys) '(compiler-source-import-start publication-start
                                          publication-guard-start package-process-start))
                    (yuanxu-test-observe (caddr keys) wall)
                    (yuanxu-test-observe (cadddr keys) cpu))))))))
@@ -209,8 +211,8 @@
         (quotient (- (yuanxu-debug-cpu-microseconds) started-cpu) 1000)
         physical-reads)))
   (def (observe key amount)
-    ;; Never retain SDK objects in compound discovery keys. Only their closed
-    ;; event category contributes a counter; actual objects stay with the SDK.
+    ;; Never retain Gerbil objects in compound discovery keys. Only their closed
+    ;; event category contributes a counter; actual objects stay with the Gerbil.
     (let (category (if (pair? key) (car key) key))
       (when (symbol? category)
         (cond
@@ -250,7 +252,7 @@
           (else (yuanxu-test-observe category amount))))
       (when (pair? key)
         ;; Scalar snapshots distinguish one cold Graph demand from subsequent
-        ;; native cache hits. Never probe a cold receiver merely to label it.
+        ;; runtime cache hits. Never probe a cold receiver merely to label it.
         (when (and (memq category '(admission-stage-start admission-stage-end))
                    (memq (cadr key) '(build-graph artifact-publication-current)))
           (stage category (cadr key) #t))
@@ -258,14 +260,14 @@
         ;; summing overlapping spans. Names are producer-owned scalar labels.
         (begin
           (case category
-            ((package-stage-start admission-stage-start link-stage-start package-process-start native-source-import-start)
+            ((package-stage-start admission-stage-start link-stage-start package-process-start compiler-source-import-start)
              (set! effects
                (cons (cons category
-                       (if (eq? category 'native-source-import-start)
+                       (if (eq? category 'compiler-source-import-start)
                          (read-owner (cadr key)) (cadr key))) effects)))
-            ((package-stage-end admission-stage-end link-stage-end package-process-end native-source-import-end)
+            ((package-stage-end admission-stage-end link-stage-end package-process-end compiler-source-import-end)
              (when (pair? effects) (set! effects (cdr effects))))))
-        (when (memq category '(native-source-import-start native-source-import-end
+        (when (memq category '(compiler-source-import-start compiler-source-import-end
                               publication-start publication-end
                               publication-guard-start publication-guard-end
                               metadata-replay-start metadata-replay-end
@@ -299,7 +301,7 @@
            (stage category (cadr key)))
           ((package-store-validity)
            (stage category (cadr key)))
-          ((native-source-import-start native-source-import-end)
+          ((compiler-source-import-start compiler-source-import-end)
            (stage category (source-label (cadr key))))
           ((reader-retention reader-binding-roots reader-read-roots reader-lifetime reader-declaration package-process-observation)
            ;; Producers own these closed scalar rows; reject unexpected payloads
@@ -323,14 +325,11 @@
         (execution-progress! progress-scope completed-work))))
   (values observe flush-reads))
 
-;; Retain only the native function binding. Tracing still executes afresh in
-;; each Case, with its own weak identities, observer scope and cleanup.
+;; Tracing is another explicit runtime entry, with fresh observation state
+;; per Case. The shared action retains neither its procedure nor results.
 (def retention-observer
-  (delay
-    (parameterize ((current-expander-context (make-top-context)))
-      (eval-syntax '(import :gerbil/core))
-      (eval-syntax '(import (only-in :yuanxu/module-system/building/test-retention observe-read-dependencies)))
-      (eval-syntax 'observe-read-dependencies))))
+  (module-entry-action 'yuanxu/module-system/building/test-observation "yuanxu/module-system/building/test-retention"
+    'yuanxu/module-system/building/test-retention#observe-read-dependencies))
 
 (def (observe-module-test run)
   (lambda (self description thunk)
@@ -347,7 +346,7 @@
           (dynamic-wind void
             (lambda ()
               (run self description
-                (if trace? (lambda () ((force retention-observer) thunk)) thunk)))
+                (if trace? (lambda () (retention-observer (list thunk))) thunk)))
             flush-reads)))
       (run self description thunk))))
 

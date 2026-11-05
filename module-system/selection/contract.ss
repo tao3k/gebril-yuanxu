@@ -7,7 +7,7 @@
 ;;; Invariant: macros may stay ergonomic, but every expansion must produce
 ;;; concrete module selections rather than category aliases or loose data.
 
-(import (only-in :clan/poo/object .o .ref)
+(import (runtime: :clan/poo/object)
         :yuanxu/module-system/selection/objects
         :yuanxu/utilities/final-projection-syntax)
 

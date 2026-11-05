@@ -148,7 +148,7 @@ the new allocation.
 * Explicit rebase proof
 
 Resuming a suspended demand under a successor budget generation requires an
-explicit POO-native rebase proof.  The proof binds:
+explicit POO rebase proof.  The proof binds:
 
 - the original suspension and predecessor identities;
 - the closed budget generation;
@@ -238,7 +238,7 @@ Gerbil supplies first-class continuations, =call/cc=, and continuable exception
 mechanisms.  Agentic AI Lab defines the semantic identities, conditions, receipts,
 and authority rules around their use.
 
-Native =gerbil-poo= demand-lazy evaluation remains the sole POO evaluation
+Runtime =gerbil-poo= demand-lazy evaluation remains the sole POO evaluation
 mechanism.  This design adds no continuation scheduler, promise layer,
 provider registry, mutable commit flag, or local fixed-point implementation.
 
@@ -256,7 +256,7 @@ replay.  It does not provide budget authority or choose a semantic successor.
 - [ ] Raise =observation-fork= for competing successors from one predecessor.
 - [ ] Revalidate budget generation and predecessor state on every invocation.
 - [ ] Reject direct use of a continuation after generation advancement.
-- [ ] Define a POO-native rebase proof with explicit successor authority.
+- [ ] Define a POO rebase proof with explicit successor authority.
 - [ ] Keep cancellation separate from observation consumption and allocation
       return.
 - [ ] Expose live recovery through continuable Gerbil conditions.

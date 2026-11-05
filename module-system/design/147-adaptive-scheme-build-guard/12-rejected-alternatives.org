@@ -37,7 +37,7 @@ Only the Gerbil expander is the dependency authority.
 
 Rejected.  A receipt can report what an upstream build did, but it cannot
 replace =std/make='s answer about whether generated Scheme, SSI, macro, and
-native units are current.  Mtime retouching and output enumeration must not be
+runtime units are current.  Mtime retouching and output enumeration must not be
 used to manufacture a warm result.
 
 ** Python-owned build policy

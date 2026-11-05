@@ -18,7 +18,7 @@ This is a focused runtime correspondence, not a new formal proof or pin update.
 * No universal Type for known domain fields
 
 The previous =Any= fields hid decisions that the Loader already knew. The
-implementation now declares these native Types in =loader/types.ss=:
+implementation now declares these Types in =loader/types.ss=:
 
 #+begin_src scheme
 (define-type LoaderMetadata
@@ -32,7 +32,7 @@ implementation now declares these native Types in =loader/types.ss=:
 #+end_src
 
 Catalog names are Symbol identifiers too; receipt backend names use
-=(OrFalse Symbol)=. Native messages retain =(List String)=. These fields no
+=(OrFalse Symbol)=. Runtime messages retain =(List String)=. These fields no
 longer admit arbitrary procedures, numbers as identifiers, string annotation
 keys, or opaque objects as annotation values. Existing annotation keys stay
 extensible over a declared scalar domain. This does not validate every key's
@@ -65,13 +65,13 @@ The production publication flow already supports this distinction:
    Backend and its callback are unchanged. A lazy plan retains that checked
    Backend opaquely; it does not recursively normalize its Function again.
 5. Explicit force invokes the retained checked callback. Original callback errors
-   propagate with their identity. Native Function checking still owns supplied
+   propagate with their identity. Runtime Function checking still owns supplied
    arguments and returned values; it does not infer callback purity.
 
 No wrapper memoization, source table or new evidence format was added. Seven
 Backend prototype/positional-constructor/marker/accessor exports were removed;
 the Loader owner no longer imports =defpoo-object-family=. Maintainers construct
-the native Record with =make-instance= and read its fields with =.get=.
+the runtime Record with =make-instance= and read its fields with =.get=.
 
 * Actual source controls
 
@@ -92,7 +92,7 @@ Context, a changed config role refuses both publication and export rebinding.
 The first fixture was rejected by the existing authoring Contract because local
 =calls= and =failure= bindings collided with identically named POO lexical slots.
 The fixture names were corrected. Its objects role also imports its types role
-explicitly for a re-exported native descriptor. Neither role admission nor source
+explicitly for a re-exported runtime descriptor. Neither role admission nor source
 currentness was relaxed to make the fixture load.
 
 * What is not guaranteed
@@ -111,17 +111,17 @@ The actual directory Loader's source guards remain a separate mechanism.
 
 * Cost and qualification boundary
 
-Known Type fields and native declarations improve the maintainers' interface;
+Known Type fields and runtime declarations improve the maintainers' interface;
 they do not prove lower retained memory. Function normalization allocates a
 wrapper per admitted candidate. Repeated admission remains independent work;
 successful conclusions are not cached. Plans retain opaque Backend values to
 avoid accidental repeated Function normalization through nested data checks.
-No SDK source, heap budget, timeout, issuer or cache protocol was changed.
+No Gerbil source, heap budget, timeout, issuer or cache protocol was changed.
 The 10k-module gate is not qualified by these source-control experiments.
 
 * Qualification receipt
 
-Ten focused default Just suites passed against the fixed native runtime: Core
+Ten focused default Just suites passed against the fixed runtime: Core
 Loader backend, Loader publication, Catalog, module authoring, Contract/Function
 composition; four product Module/value/user-interface/lazy-loader suites; and
 real Gitea/PostgreSQL publication (eleven controls). Every suite emitted

@@ -42,7 +42,7 @@ It does not own:
 
 * Central decision
 
-The Module =capabilities= slot contains one higher-order native POO contract
+The Module =capabilities= slot contains one higher-order POO contract
 with two required semantic responsibilities:
 
 - =requirements=;
@@ -88,7 +88,7 @@ flowchart LR
 
 * Capability contract
 
-The =capabilities= value is a native POO contract.
+The =capabilities= value is a POO contract.
 
 =requirements= declares semantic capability obligations.
 
@@ -453,7 +453,7 @@ The ordinary interface remains:
     application-production))
 #+end_src
 
-Advanced capability extension uses native POO objects, prototypes, and admitted
+Advanced capability extension uses POO objects, prototypes, and admitted
 generic operations.
 
 * Ownership
@@ -523,7 +523,7 @@ generic operations.
 ** Implementation admission
 
 - [ ] Admit every consumed upstream POO operation path in RFC 45-120.
-- [ ] Implement capability contracts as native POO values.
+- [ ] Implement capability contracts as POO values.
 - [ ] Implement closure as a =DispatchEvaluation= derived responsibility.
 - [ ] Integrate closure with recursive reachability and ProfileBundle evidence.
 

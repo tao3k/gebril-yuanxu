@@ -6,7 +6,7 @@
 ;;; Boundary: Module System Loader Backend objects and lazy receipts.
 ;;; Invariant: this owner returns data and never activates product modules.
 
-(import (only-in :clan/poo/object .ref .get .cc)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop make-instance validate)
         (only-in :std/list/list find)
         (only-in :yuanxu/module-system/source/types ModuleSourceBinding)

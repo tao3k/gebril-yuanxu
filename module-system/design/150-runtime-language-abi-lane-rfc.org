@@ -288,7 +288,7 @@ approve its own contract change.
 * Implementation plan
 
 1. Extend runtime-v0 ABI to minor 2 and emit the five capability bits.
-2. Add POO-native promotion request and runtime receipt constructors.
+2. Add POO promotion request and runtime receipt constructors.
 3. Add deterministic qualification-vector and C-header projections.
 4. Add Scheme owner tests for approval-only handoff, capability rejection,
    stale epoch rejection, receipt completeness, replay, and duplicate commit.
@@ -330,9 +330,9 @@ approve its own contract change.
   capabilities cover materialization, injection receipts, rollback,
   exactly-once execution, language qualification, source-query data, and
   Contract-admission receipts.
-- The Scheme control plane exposes POO-native request, receipt, capability,
+- The Scheme control plane exposes POO request, receipt, capability,
   four-epoch, causal replay, rollback, and exactly-once projections.
-- The Scheme control plane also exposes three distinct POO-native receipts:
+- The Scheme control plane also exposes three distinct POO receipts:
   source query, Runtime Language admission, and Contract artifact projection.
   JSON and AST data remain ingress representations until the admission receipt
   records POO Contract acceptance.  ABI vectors and C headers use the artifact
@@ -425,7 +425,7 @@ deduplication, exactly-once materialization, and receipt validity are Contract
 semantics.
 
 Neither Org nor a serialization format is a co-owner.  A change to an Org
-document, JSON object, AST record, ABI vector, C header, or language-native type
+document, JSON object, AST record, ABI vector, C header, or language-runtime type
 cannot change runtime meaning unless it is admitted by the identified and
 versioned POO Contract.
 
@@ -448,7 +448,7 @@ Org source
   -> AST query
   -> JSON | AST data
   -> Runtime Language adapter
-  -> language-native typed value
+  -> language-runtime typed value
   -> POO Contract admission
 #+end_example
 
@@ -483,7 +483,7 @@ carry both receipts; neither receipt alone authorizes materialization.
 A Contract artifact-projection receipt is independent of source-data ingress.
 It binds projection identity, POO Contract identity/version and source digest,
 projector identity/version, artifact kind and identity, and output digest.  It
-is the receipt used for ABI vectors, C headers, JSON schemas, language-native
+is the receipt used for ABI vectors, C headers, JSON schemas, language-runtime
 types, and Lean propositions; requiring an Org query receipt here would mix the
 two projection chains again.
 
@@ -531,11 +531,11 @@ Contract semantic identity.
 * 2026-10-03 Python / Scheme semantic foundation qualification
 
 The [[file:python-scheme-runtime-foundation.org][implemented foundation and qualification receipt]] supersedes the
-control-lane-only graph guard for qualified native programs. Scheme owns finite
+control-lane-only graph guard for qualified runtime programs. Scheme owns finite
 temporal solving, final candidate consistency and POO graph topology admission
 through the semantic AOT byte ABI. Python remains the production Runtime owner
 of scheduler, IO, reducers and storage. A real control session and semantic
-context are required before native program actions run.
+context are required before runtime program actions run.
 
 The linked closure matrix bounds this supplement to implemented operations,
 owned-result lifetime, artifact/package transport and the 48-call real-model
@@ -546,7 +546,7 @@ MRR Rust integration follows the Python/Scheme and exact-head qualification.
 
 * No-Prompt / real-time teaching correction
 
-The 48-call study used preset rules and supplied native solved answers. It is
+The 48-call study used preset rules and supplied runtime solved answers. It is
 withdrawn as acceptance evidence for the user's no-Prompt architecture. The
 existing contradiction gate rejects output but does not teach the model. ABI
 receipts remain scoped engineering evidence; model integration and real-time
@@ -554,7 +554,7 @@ teaching closure remain open, and MRR Rust admission remains deferred.
 
 The primary model acceptance contract is
 [[file:model-scheme-understanding-validation.org][Scheme understanding, reasoning and real computation validation]].
-Native correctness and output rejection alone cannot close this model gate.
+Runtime correctness and output rejection alone cannot close this model gate.
 
 * 2026-10-03 Direct prediction and current computation observation
 
@@ -571,7 +571,7 @@ This is bounded engineering evidence on the current Darwin host; exact-head
 cross-platform CI is tracked separately.
 
 The new 24-call study completes with zero model retries. Its frozen strict
-transport accepts no answers. Supplementary native verification after inert
+transport accepts no answers. Supplementary runtime verification after inert
 extraction observes initial high Reasoning 5/6 and both transfer arms 5/6.
 There is no observed transfer accuracy gain, and this post hoc analysis cannot
 replace predeclared model acceptance. Program generation, full POO composition,
@@ -583,8 +583,8 @@ admission stays deferred. See [[file:model-scheme-validation-record.org][executi
 The semantic ABI remains Version 1; version is explicit metadata, not a file or
 module suffix. Direct validation now declares compiler-derived ASCENT runtime
 project sources and core/types, with framework-source assumptions listed.
-Inert transport separates candidate completion from native semantic comparison;
-model text is never evaluated. Trusted native task loading and real dependency
+Inert transport separates candidate completion from runtime semantic comparison;
+model text is never evaluated. Trusted runtime task loading and real dependency
 progress must meet the unchanged five-second watchdog.
 
 See [[file:model-scheme-validation-record.org][the model validation record]].

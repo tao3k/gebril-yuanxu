@@ -97,7 +97,7 @@ identity, control trace, dynamic-extent trace, or capability-fence probe.
 - [X] The public boundary exposes no catcher token.
 - [X] The public boundary uses no raw record or alist protocol.
 - [X] The public boundary defines no runtime-mirroring macro DSL.
-- [X] The public boundary remains POO-native.
+- [X] The public boundary remains POO.
 - [X] Missing runtime versions block implementation admission.
 - [X] Missing import identities block implementation admission.
 - [X] Missing continuable traces block implementation admission.
@@ -140,14 +140,14 @@ This document owns only the correspondence between:
 It does not own:
 
 - Profile composition;
-- the native POO value domain;
+- the POO value domain;
 - portable suspension descriptor contents;
 - distributed demand transport;
 - cache identity;
 - package management; or
 - a new exception or continuation subsystem.
 
-The Agentic AI Lab public surface remains POO-native.  The primitives named here are
+The Agentic AI Lab public surface remains POO.  The primitives named here are
 runtime implementation mechanisms, not a user-facing macro language.
 
 * Central decision
@@ -214,8 +214,8 @@ capability.
 
 #+begin_src mermaid
 flowchart LR
-  D["Native POO demand"] -->|"enters an admitted local safe point"| H["with-exception-handler"]
-  H -->|"ordinary evaluation returns a native result"| R["Native POO result"]
+  D["POO demand"] -->|"enters an admitted local safe point"| H["with-exception-handler"]
+  H -->|"ordinary evaluation returns a runtime result"| R["POO result"]
   H -->|"raise communicates a continuable control condition"| C["Control handler"]
   C -->|"allow returns under the same fenced dynamic context"| H
   C -->|"suspend captures local authority and projects pure metadata"| P["Portable suspension descriptor"]
@@ -232,7 +232,7 @@ context.
 * Capability fence over raw continuations
 
 A raw continuation has broader operational power than Agentic AI Lab shall expose.
-The runtime layer must therefore place a POO-native capability fence around
+The runtime layer must therefore place a POO capability fence around
 every admitted live continuation.
 
 The fence binds at least:
@@ -285,7 +285,7 @@ sequenceDiagram
   H->>K: request local resumption
   K-->>H: allow once under matching fences
   H-->>W: return to the raise continuation
-  W-->>E: complete native evaluation
+  W-->>E: complete runtime evaluation
   H->>K: request the same resumption again
   K-->>H: deny because the capability is consumed
   H-->>E: abort to the terminal control boundary
@@ -305,14 +305,14 @@ An implementation must make one of the following choices explicit:
 - use an internal re-entry fence before signaling again.
 
 No handler may synthesize a Profile value merely to escape the control
-protocol.  Native recovery values remain subject to the native POO value-domain
+protocol.  Runtime recovery values remain subject to the POO value-domain
 admission described by the Profile RFCs.
 
-* POO-native public boundary
+* POO public boundary
 
 The exact POO object algebra for conditions, decisions, capabilities, and
 resumption admission is owned by
-[[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89]].
+[[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89]].
 This document owns only their projection onto Gerbil and Gambit runtime
 primitives.
 
@@ -425,7 +425,7 @@ Implementation may begin only when:
 - [ ] one-shot, thread, process, root, revision, generation, demand, and
   safe-point fences fail closed;
 - [ ] StackTrace evidence is proven separate from resumption authority;
-- [ ] the public surface contains only POO-native objects or constrained
+- [ ] the public surface contains only POO objects or constrained
   hygienic projections; and
 - [ ] the full correspondence preserves the conservative-extension obligations
   in

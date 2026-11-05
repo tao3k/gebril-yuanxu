@@ -1,9 +1,10 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (only-in :clan/poo/object .o .get .putslot! $thunk-slot-spec object?)
-        (only-in :clan/poo/slot-observation call-with-slot-read-observer)
-        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
+        (only-in :clan/poo/object .o .get .all-slots .putslot! $thunk-slot-spec object?
+                 object-%reads object-%all-slots object-read-issued?)
+        (only-in :clan/poo/slot-observation call-with-slot-read-observer slot-read-value)
+        (only-in :clan/poo/mop Type.)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/module-system/source/admission
                  module-source-read current-module-source-observer admit-module-value!)
@@ -13,11 +14,11 @@
         (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file))
 (export module-dependency-continuation-test)
 (def module-dependency-continuation-test
-  (test-suite "Native dependency continuation with the maintained publication producer"
+  (test-suite "Runtime dependency continuation with the maintained publication producer"
     (yuanxu-test-case "dependency projection requires actual tokens and never forces a cold leaf"
       (def reads (make-hash-table-eq))
       (def calls 0)
-      (def Scope (yuanxu-predicate-contract 'test/scope object? (lambda (_v _c) '())))
+      (def Scope (.cc Type. identity: 'test/scope .element?: object?))
       (def Requirement (.o module-id: (begin (set! calls (+ calls 1)) 'custom/other) contract: Scope))
       (def Publication
         (.o identity: 'custom/example features: (.o)
@@ -32,6 +33,28 @@
       (check-equal? (module-publication-dependency-projection candidate (lambda (_read) #f)) #f)
       (check-equal? (module-publication-dependency-projection candidate
                       (lambda (read) (hash-key? reads read))) '(custom/other))
+      (def requires (.get candidate core requires))
+      (def names-read (hash-ref (object-%reads requires) '(names)))
+      (check-equal? (eq? (slot-read-value names-read) (object-%all-slots requires)) #f)
+      (def public-copy (.all-slots requires))
+      (set-car! public-copy 'unrelated)
+      (check-equal? (module-publication-dependency-projection candidate
+                      (lambda (read) (hash-key? reads read))) '(custom/other))
+      ;; A corrupt observed spine is not a directory and must terminate without
+      ;; fetching a dependency. A NEW real producer query may issue a new token.
+      (def snapshot (slot-read-value names-read))
+      (set-cdr! snapshot snapshot)
+      (check-equal? (module-publication-dependency-projection candidate
+                      (lambda (read) (hash-key? reads read))) #f)
+      (call-with-slot-read-observer
+        (lambda (read) (hash-put! reads read #t))
+        (lambda () (admit-module-value! ModulePublicationContract candidate #f)))
+      (check-equal? (eq? names-read (hash-ref (object-%reads requires) '(names))) #f)
+      (check-equal? (object-read-issued? names-read) #f)
+      (check-equal? (object-read-issued? (hash-ref (object-%reads requires) '(names))) #t)
+      (check-equal? (module-publication-dependency-projection candidate
+                      (lambda (read) (hash-key? reads read))) '(custom/other))
+      (check-equal? calls 1)
       (.putslot! Requirement 'module-id
         ($thunk-slot-spec (lambda () (set! calls (+ calls 1)) 'custom/replaced)))
       (check-equal? (module-publication-dependency-projection candidate
@@ -88,13 +111,13 @@
                        (when previous (previous key amount)))))
                 (check-exception (.get view selected-graph) error?))
               (check-equal? (file-exists? marker) #f)
-              ;; Prove the native deferred route ran, rather than a fallback
+              ;; Prove the runtime deferred route ran, rather than a fallback
               ;; refusing early because this test modified the shared Contract.
               (check-equal? (hash-ref counts 'publication-admitted 0) 0)
               ;; The mutation affects this candidate's OWN config. The local
               ;; return guard now refuses before the old next-location/Feature
               ;; boundary. Keep the same real refusal and no-callback marker;
-              ;; require the exact earlier native stage, not any exception.
+              ;; require the exact earlier runtime stage, not any exception.
               (check-equal? (> (hash-ref counts 'candidate-admitted 0) 0) #t)
               (check-equal? (module-publication-contract-current?) #t))))
         '(declaration feature)))

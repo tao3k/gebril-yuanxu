@@ -34,7 +34,7 @@ not semantic candidate-closure evidence.
 Invoking a continuation produces an immutable resumption contribution.  It
 does not directly resume and commit the suspended Capability demand.
 
-Contributions are admitted into an immutable resumption generation.  Native
+Contributions are admitted into an immutable resumption generation.  Runtime
 =gerbil-poo= fixed-point evaluation closes the active contribution set for the
 generation.  Only the closed set can authorize evaluation of a semantic
 successor.
@@ -259,7 +259,7 @@ The runtime transports live continuation invocation across the explicit effect
 boundary and preserves the resulting POO evidence.  It does not decide
 candidate closure, selection, or fixed-point meaning.
 
-Native =gerbil-poo= supplies the POO evaluation semantics.  Agentic AI Lab defines
+Runtime =gerbil-poo= supplies the POO evaluation semantics.  Agentic AI Lab defines
 the contribution identities, generation closure, conditions, authority
 scopes, and receipts.
 

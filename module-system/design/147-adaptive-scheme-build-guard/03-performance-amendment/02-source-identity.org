@@ -4,7 +4,7 @@
 
 * Versioned build-source identity and comparable performance receipts
 
-Performance measurement uses the native Gerbil package lifecycle.  Agentic AI Lab no
+Performance measurement uses the Gerbil package lifecycle.  Agentic AI Lab no
 longer owns a Scheme runner that recursively starts Bazel servers, performs
 =clean/cquery/build/shutdown=, or simulates Bazel in shell.  Bazel remains an
 integration and hermeticity gate; it is not the cold/warm observer.
@@ -13,7 +13,7 @@ integration and hermeticity gate; it is not the cold/warm observer.
 flowchart LR
     R["Exact git revision + gerbil.pkg"] --> D["gxpkg deps --install"]
     D --> Clean["Cold: gxpkg clean"]
-    Clean --> Cold["Native gxpkg build -g"]
+    Clean --> Cold["Runtime gxpkg build -g"]
     Cold --> Warm["Warm: unchanged gxpkg build -g"]
     Cold --> O["Building Framework observability receipt"]
     Warm --> O
@@ -23,21 +23,21 @@ flowchart LR
     V -->|rejected| F["Regression or incomparable run"]
 #+end_src
 
-The native measurement coordinates are:
+The runtime measurement coordinates are:
 
 - exact baseline and candidate revisions;
 - tracked =gerbil.pkg= dependency revisions;
-- Gerbil native ABI and Building Framework revision;
+- Gerbil runtime ABI and Building Framework revision;
 - host/session identity and logical CPU count;
-- effective build-core count from the native observability receipt;
-- native cold/warm classification and Gerbil artifact state;
+- effective build-core count from the runtime observability receipt;
+- runtime cold/warm classification and Gerbil artifact state;
 - elapsed time, process RSS, and Building Framework stage summary.
 
 The pure comparison API in
 =src/build-api/project-compile-performance-budget.ss= remains independent of
 Bazel.  Its unit test receives immutable observations as values; it never
 launches a build.  A CI or operator collecting a controlled A/B invokes the
-native =gxpkg= lifecycle for each revision and then supplies the resulting
+runtime =gxpkg= lifecycle for each revision and then supplies the resulting
 typed evidence to the comparison API.  Bazel may compile and test this pure
 policy module without becoming the measurement source.
 
@@ -50,19 +50,19 @@ Removed interfaces have no compatibility route:
 - the reusable =scheme-compile-performance-audit.yml= workflow;
 - fake-Bazel and shell launcher fixtures.
 
-This keeps the responsibility split precise: native =gxpkg= and Building
+This keeps the responsibility split precise: runtime =gxpkg= and Building
 Framework expose Gerbil cold/warm facts, Bazel tests the declared integration,
 and Agentic AI Lab only decides whether two explicit observations satisfy its
 comparison policy.
 
-* 2026-09-01 native cold/warm observation
+* 2026-09-01 runtime cold/warm observation
 
 The dependency install was completed before sampling and is not included in
 the cold value.  Both samples used the same Darwin host, Apple
 =/usr/bin/clang=, no =SDKROOT= or =DEVELOPER_DIR= injection, twelve logical
 CPUs, and the adaptive twelve-worker policy.
 
-| Sample | Native transition | Wall time | Maximum resident set size | Outcome |
+| Sample | Runtime transition | Wall time | Maximum resident set size | Outcome |
 |--------+-------------------+-----------+---------------------------+---------|
 | cold | =gxpkg clean=, then =gxpkg build -g= | 218.74 s | 2,766,733,312 B | completed |
 | warm | unchanged =gxpkg build -g= | 19.98 s | 2,026,995,712 B | completed |

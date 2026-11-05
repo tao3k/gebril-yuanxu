@@ -10,17 +10,17 @@ is the reader's =declaration-after= guard followed by
 actual interval. It does not relabel a publication receiver as checked metadata
 and does not claim a further read reduction.
 
-The native reader returns the value of the interface binding. It does NOT
+The runtime reader returns the value of the interface binding. It does NOT
 return a =ModulePublicationContract= admission receipt. A successful source
 and authoring check establishes different facts from a successful value check.
-The current declaration macro preserves native lazy slots. Neither its literal
+The current declaration macro preserves runtime lazy slots. Neither its literal
 =.o= syntax nor the maintained name of the predicate certifies getter purity.
 
 * Actual call chain and support
 
 | Owner | Actual work | Effect boundary |
 |-------+-------------+-----------------|
-| [[file:../../../../../module-system/source/reader.ss][Reader]] | Evaluate the interface binding, check complete observed source support, return the receiver | Native expansion/initializers remain open |
+| [[file:../../../../../module-system/source/reader.ss][Reader]] | Evaluate the interface binding, check complete observed source support, return the receiver | Runtime expansion/initializers remain open |
 | [[file:../../../../../module-system/source/admission.ss][Publication admission]] | Call the public Contract producer, check accepted evidence and source owner identity | Contract execution precedes owner comparison |
 | [[file:../../../../../module-system/source/publication.ss][ModulePublicationContract]] | Read identity/core/features, requirements, contribution/admission declarations and Contract methods | Cold receiver and descriptor slots can execute contributor code |
 | [[file:../../../../../types.ss][Unified producer]] | Normalize the value if requested, classify, admit responsibilities, execute local and Context obligations, create evidence | Normalizers, classifiers, children and obligations are extensible |
@@ -32,12 +32,12 @@ This does not make the preceding producer closed. Public accepted evidence
 binds the actual Contract/candidate/Context; it does not independently certify
 source currentness at a later publication boundary.
 
-Native =.ref/cached= is not a purity oracle either: it still participates in
+Runtime =.ref/cached= is not a purity oracle either: it still participates in
 read demand and observer delivery. Cached values, active observation and
 unknown MOP/Context callbacks must not be conflated with a callback-free
 continuation. The existing read-window cache cannot span these effects.
 
-* Two executable native counterexamples
+* Two executable runtime counterexamples
 
 [[file:../../../../../t/module-publication-test.ss][The existing publication test suite]] now checks both sides independently.
 These are deliberate negative injections, not author configuration APIs.
@@ -86,7 +86,7 @@ outcomes remain required, including acceptance and termination controls.
 [[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean][SourceClosureWork]] retains the size-independent recurrence and support laws.
 Its revision-preservation premise is deliberately NOT discharged by a shape
 receipt. The Quint source digest is updated. No duplicate theorem or second
-effect system is introduced: the missing native fact is unchanged actual
+effect system is introduced: the missing runtime fact is unchanged actual
 support across the continuation, not another algebraic cost identity.
 
 * Focused measurement and next implementation requirement
@@ -96,21 +96,21 @@ It invokes the same =init.modules.module-0.tests= object and its =.run=, forces
 =init.tests.selected-graph= once, leaves business scope/unselected Feature cold,
 then changes init source and requires stale-Graph rejection and fixture cleanup.
 The Graph-ready result remains 4,351 physical file reads and 52 full reader
-guard runs, with 64 role parses and 64 native body expansions/evaluations.
+guard runs, with 64 role parses and 64 runtime body expansions/evaluations.
 This matches the preceding implementation. It is a retained baseline, NOT a
 new optimization or a thousand-module capacity result.
 
 The source-only isolated qualification used the locked gerbil-poo dependency
 without altering its source or adding compiled caches. The focused publication
 suite, real JsonSchema/Funflow/AWS selection through =init.tests .run=, and
-native execution-cancellation suite all exited normally with their module,
+runtime execution-cancellation suite all exited normally with their module,
 harness and final success markers. The AWS selection retained actual Schema,
 Contract and Context transition controls, stale-evidence rejection and accepted
 value preservation. The cancellation control retained owned-fixture release
 under TERM. None of these receipts establishes arbitrary SIGKILL cleanup.
 
 Reproduction uses the existing heap-fenced entrypoints in a locked source
-qualification environment; the four native tests run serially:
+qualification environment; the four runtime tests run serially:
 
 #+begin_src text
 just test-file t/module-publication-test.ss true
@@ -120,13 +120,13 @@ just test-file t/execution-cancellation-test.ss true
 #+end_src
 
 The first test attempt used a value override for a previously undeclared
-Context method. Native slot presence correctly did not treat that as a declared
+Context method. Runtime slot presence correctly did not treat that as a declared
 method; the callback-count assertion failed. The final fixture declares the
-method through native object inheritance and asserts presence before admission.
+method through runtime object inheritance and asserts presence before admission.
 This test correction is not a production change to slot or Contract semantics.
 
 Before the next source sweep can be removed, the real producer must supply
-the following native correspondence, without a contributor-supplied pure flag:
+the following runtime correspondence, without a contributor-supplied pure flag:
 
 1. The actual normalized subject and actual Contract reference are the ones
    consumed by the continuation, including any contextual child admissions.
@@ -137,7 +137,7 @@ the following native correspondence, without a contributor-supplied pure flag:
 3. Parent/prototype revisions, source support and Context support remain the
    same; mutations including edit-and-restore invalidate the handoff.
 4. The evidence/record continuation does not escape into a later operation or
-   authorize reuse across a native import, initializer or open callback.
+   authorize reuse across a runtime import, initializer or open callback.
 
 Moving .admit into the reader without establishing these facts merely moves
 the effect boundary. Adding the necessary guard back before an open callback

@@ -58,7 +58,7 @@ This RFC does not define:
 
 * Central decision
 
-The operator interface is a sequence of POO-native demands and results:
+The operator interface is a sequence of POO demands and results:
 
 #+begin_example
 Inspect
@@ -76,7 +76,7 @@ The ordinary application composition surface remains unchanged.
 
 * Operator demand algebra
 
-The advanced operator surface uses native POO objects for:
+The advanced operator surface uses POO objects for:
 
 - =HeadInspectionDemand=;
 - =CompositionDiffDemand=;
@@ -89,7 +89,7 @@ The advanced operator surface uses native POO objects for:
 These names identify semantic object families.  They do not introduce reader
 forms, macros, or a record DSL.
 
-Exact construction and extension syntax must use verified native
+Exact construction and extension syntax must use verified runtime
 =gerbil-poo= operations.
 
 * Capability separation
@@ -148,7 +148,7 @@ Inspection:
 - a candidate composition;
 - an explicitly observed head revision and generation.
 
-The POO-native diff may explain:
+The POO diff may explain:
 
 - module and profile revision changes;
 - application variant changes;
@@ -475,7 +475,7 @@ An adapter may:
 
 - render POO demand/result objects;
 - collect explicit operator input;
-- construct demands through approved native constructors;
+- construct demands through approved runtime constructors;
 - submit demands;
 - display typed conditions and receipts.
 
@@ -552,7 +552,7 @@ The system fails closed on:
 
 - [ ] ASP emits parser-owned implementation owners for operator demands and
   adapters.
-- [ ] Every operator demand and result is a native =gerbil-poo= object.
+- [ ] Every operator demand and result is a runtime =gerbil-poo= object.
 - [ ] Read, simulation, proposal, commit, and rollback capabilities are
   separately attenuated.
 - [ ] Diff exposes completeness and redaction evidence.

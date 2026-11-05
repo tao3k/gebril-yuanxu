@@ -27,7 +27,7 @@ generic suspension, memoization, lineage, and continuation-aware control.
 
 Agentic AI Lab owns:
 
-- the POO-native effect-intent semantic contract;
+- the POO effect-intent semantic contract;
 - capability and policy qualification before handoff;
 - the one-demand/one-attempt coalescing rule;
 - receipt validation before reinjection;
@@ -73,7 +73,7 @@ The diagram is a phase and handoff pipeline.  The authoritative effect evidence
 transitions inside =external effect execution= and =indeterminate barrier= are
 defined only by the 45-08 state machine.
 
-* POO-native effect intent
+* POO effect intent
 
 The effect intent belongs to the ordinary POO object world.  It is not:
 
@@ -85,7 +85,7 @@ The effect intent belongs to the ordinary POO object world.  It is not:
 
 The public constructor and slot vocabulary remain evidence-gated until the
 corresponding =gerbil-poo= surface is symbol-located and behavior-proven.  Any
-eventual helper MUST expand to ordinary POO-native and functional Scheme code.
+eventual helper MUST expand to ordinary POO and functional Scheme code.
 
 Intent refinements may add provider requirements, verification policy, or
 provenance through normal prototype composition.  Refinement MUST NOT start the

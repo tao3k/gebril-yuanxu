@@ -16,7 +16,7 @@ current prototype body without exact owner evidence.
 
 This RFC defines:
 
-- Module conformance through native prototype ancestry and behavior;
+- Module conformance through runtime prototype ancestry and behavior;
 - the minimal direct projections owned by every Module;
 - canonical empty POO values for optional direct relations;
 - values that must be derived through reachability rather than stored;
@@ -38,7 +38,7 @@ This RFC does not define:
 
 * Durable POO identity
 
-The prototype and every conforming Module remain native objects of:
+The prototype and every conforming Module remain runtime objects of:
 
 #+begin_example
 github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
@@ -58,7 +58,7 @@ Parser-owned evidence currently identifies:
 - interface identity, schemas, metadata, import kind, and option-policy
   selector families;
 - generic object slot checks and default projections;
-- native upstream object, projection, ancestry, and composition operations.
+- runtime upstream object, projection, ancestry, and composition operations.
 
 The exact body query for =yuanxu-module-interface-prototype= is blocked with:
 
@@ -76,14 +76,14 @@ Therefore:
 - the current prototype body remains unadmitted;
 - the current kind comparator is diagnostic only;
 - current slot-shape helpers do not prove Module conformance;
-- implementation must map this RFC to verified native POO operations.
+- implementation must map this RFC to verified POO operations.
 
 * Central decision
 
 A Module conforms through:
 
 #+begin_example
-native POO object
+POO object
   + admitted Module prototype ancestry
   + required behavioral projections
   + projection value validation
@@ -111,18 +111,18 @@ evaluation, or optional diagnostic metadata.
 
 * Behavioral prototype contract
 
-The Module prototype defines behavior and defaults through native POO ancestry.
+The Module prototype defines behavior and defaults through POO ancestry.
 It is not a record declaration.
 
 A conforming Module must:
 
-- be a native =gerbil-poo= object;
+- be a runtime =gerbil-poo= object;
 - inherit from or otherwise satisfy the admitted Module prototype relation;
 - expose stable identity through the approved identity projection;
-- expose exports as a native POO object;
-- expose direct imports as a native POO object;
-- expose capability requirements as a native POO object;
-- preserve native precedence and ancestry inspection;
+- expose exports as a POO object;
+- expose direct imports as a POO object;
+- expose capability requirements as a POO object;
+- preserve runtime precedence and ancestry inspection;
 - support domain validation without converting to another authoritative
   representation.
 
@@ -164,7 +164,7 @@ Each export relation preserves:
 - export identity;
 - Profile operand identity;
 - ProfileBundle and low-level Profile identity;
-- native prototype ancestry;
+- runtime prototype ancestry;
 - responsibility reachability.
 
 =production= is an ordinary module-scoped export identity whose value is a
@@ -174,7 +174,7 @@ ProfileBundle. It is not a required universal slot on every Module.
 
 Every Module projects a direct imports POO object.
 
-The Module prototype may provide a canonical empty native POO object. It may
+The Module prototype may provide a canonical empty POO object. It may
 not use a raw empty list, alist, or missing-slot default as semantic truth.
 
 Direct imports record only immediate semantic relationships. They do not store
@@ -184,7 +184,7 @@ the recursive active imports closure.
 
 Every Module projects a capability requirements POO object.
 
-The Module prototype may provide a canonical empty native POO object.
+The Module prototype may provide a canonical empty POO object.
 
 Capability requirements describe conditions; they do not issue grants.
 Prototype extension and composition preserve or attenuate authority and cannot
@@ -228,7 +228,7 @@ The Module provides roots. Reachability provides the closure.
 
 #+begin_src mermaid
 flowchart LR
-  Prototype["admitted Module prototype"] -->|"provides behavior and canonical empty values"| Module["native Module object"]
+  Prototype["admitted Module prototype"] -->|"provides behavior and canonical empty values"| Module["runtime Module object"]
   Module -->|"projects required stable value"| Identity["Module identity"]
   Module -->|"projects direct POO relation"| Exports["exports object"]
   Module -->|"projects direct POO relation"| Imports["direct imports object"]
@@ -252,7 +252,7 @@ or evidence serialization.
 
 Kind equality does not prove:
 
-- native object identity;
+- runtime object identity;
 - Module prototype ancestry;
 - exports validity;
 - direct imports validity;
@@ -278,7 +278,7 @@ Metadata cannot:
 - provide Module identity;
 - define exports or imports;
 - grant capability;
-- override native precedence;
+- override runtime precedence;
 - repair an invalid Module;
 - become a registry key that replaces object identity.
 
@@ -293,7 +293,7 @@ The Module prototype may supply canonical empty POO objects for:
 - direct imports;
 - capability requirements.
 
-These defaults exist through prototype ancestry and remain native POO values.
+These defaults exist through prototype ancestry and remain POO values.
 
 They avoid:
 
@@ -304,7 +304,7 @@ They avoid:
 - special cases in user composition.
 
 An extension replaces or composes a canonical empty value through verified
-native POO semantics. It does not patch a record field.
+POO semantics. It does not patch a record field.
 
 * Extension contract
 
@@ -317,7 +317,7 @@ a distinct Module with a distinct admitted identity.
 
 Export extension returns an exports POO object.
 
-Duplicate export identities resolve through an admitted native ancestry rule
+Duplicate export identities resolve through an admitted runtime ancestry rule
 with evidence or fail closed. Source order and alist overwrite are invalid.
 
 ** Direct imports
@@ -340,12 +340,12 @@ when they remain non-authoritative and identity-preserving.
 
 * Conformance function
 
-Module conformance is expressed as a pure function over native POO values.
+Module conformance is expressed as a pure function over POO values.
 
 Conceptually:
 
 #+begin_example
-native object
+runtime object
   -> ancestry qualification
   -> required projection validation
   -> value-kind validation
@@ -367,7 +367,7 @@ but they do not own its semantics.
 
 * Macro governance
 
-Functions and native POO objects are the default abstractions.
+Functions and POO objects are the default abstractions.
 
 The small public macro surface may:
 
@@ -375,7 +375,7 @@ The small public macro surface may:
 - retain source identity;
 - invoke the pure conformance function;
 - report phase-appropriate diagnostics;
-- expand to ordinary POO-native and functional code.
+- expand to ordinary POO and functional code.
 
 It may not:
 
@@ -392,7 +392,7 @@ It may not:
 sequenceDiagram
   participant Bind as "thin Module binding"
   participant Check as "pure conformance function"
-  participant Module as "native Module object"
+  participant Module as "runtime Module object"
   participant Select as "use-module"
   participant Derive as "reachability evaluator"
   participant Admit as "admission boundary"
@@ -413,18 +413,18 @@ the active closure.
 
 * Minimal projection laws
 
-** Native ancestry law
+** Runtime ancestry law
 
-Module conformance requires admitted native prototype ancestry or its exact
+Module conformance requires admitted runtime prototype ancestry or its exact
 approved behavioral equivalent.
 
 ** Explicit identity law
 
 Module identity has no implicit default.
 
-** Native projection law
+** Runtime projection law
 
-Exports, direct imports, and capability requirements are native POO values.
+Exports, direct imports, and capability requirements are POO values.
 
 ** Canonical empty law
 
@@ -464,7 +464,7 @@ A Module conformance receipt must identify:
 - durable =gerbil-poo= dependency identity;
 - Module object identity;
 - admitted Module prototype identity;
-- native precedence and ancestry identity;
+- runtime precedence and ancestry identity;
 - identity projection owner;
 - exports object identity;
 - direct imports object identity;
@@ -493,12 +493,12 @@ are different judgments.
 
 Direct conformance fails closed when:
 
-- the value is not a native POO object;
+- the value is not a POO object;
 - admitted prototype ancestry is absent;
 - Module identity is absent;
-- exports are absent or not a native POO object;
-- direct imports are absent or not a native POO object;
-- capability requirements are absent or not a native POO object;
+- exports are absent or not a POO object;
+- direct imports are absent or not a POO object;
+- capability requirements are absent or not a POO object;
 - a kind label is used as the only conformance proof;
 - a raw alist or schema is treated as the Module;
 - a canonical empty relation is represented by ambiguous absence;
@@ -530,7 +530,7 @@ The following alternatives are rejected:
 - storing a centralized responsibility closure;
 - storing effective capabilities as independent truth;
 - making a macro parse identity, exports, imports, or capabilities;
-- creating new wrapper APIs for native slot mechanics;
+- creating new wrapper APIs for runtime slot mechanics;
 - preserving current prototype behavior without exact owner evidence;
 - adding compatibility aliases for the new contract.
 
@@ -538,7 +538,7 @@ The following alternatives are rejected:
 
 ** Prototype and identity
 
-- [ ] Every Module is a native =gerbil-poo= object.
+- [ ] Every Module is a runtime =gerbil-poo= object.
 - [ ] Module conformance verifies admitted prototype ancestry.
 - [ ] Module identity is explicit.
 - [ ] Module identity has no default.
@@ -573,9 +573,9 @@ The following alternatives are rejected:
 
 ** Extension
 
-- [ ] Extension preserves native object representation.
+- [ ] Extension preserves runtime object representation.
 - [ ] Extension preserves Module identity by default.
-- [ ] Export conflicts use admitted native precedence or fail closed.
+- [ ] Export conflicts use admitted runtime precedence or fail closed.
 - [ ] Direct import extension does not materialize recursive closure.
 - [ ] Capability extension cannot widen authority.
 - [ ] Optional metadata remains non-authoritative.
@@ -590,11 +590,11 @@ The following alternatives are rejected:
 - [ ] The binding macro invokes functional conformance.
 - [ ] The binding macro does not parse projection clauses.
 - [ ] The binding macro does not synthesize closures.
-- [ ] Macro expansion yields ordinary POO-native and functional code.
+- [ ] Macro expansion yields ordinary POO and functional code.
 
 ** Evidence
 
-- [ ] Conformance receipts identify native prototype ancestry.
+- [ ] Conformance receipts identify runtime prototype ancestry.
 - [ ] Receipts identify all direct projection objects.
 - [ ] Receipts identify canonical empty objects.
 - [ ] Receipts distinguish kind labels from conformance.
@@ -609,7 +609,7 @@ Implementation work is not admitted until:
 
 - [ ] exact owner bytes are available for the current Module prototype;
 - [ ] the current prototype body is compared with this minimal contract;
-- [ ] exact native ancestry checks are mapped to pinned =gerbil-poo=;
+- [ ] exact runtime ancestry checks are mapped to pinned =gerbil-poo=;
 - [ ] identity projection semantics are verified;
 - [ ] exports object semantics are verified;
 - [ ] direct imports object semantics are verified;
@@ -640,7 +640,7 @@ This section is normative and supersedes earlier audit statements that
 implementation ownership was =MISSING=. Unchecked items below concern
 implementation completion, not owner selection.
 
-- [X] Upstream =gerbil-poo= owns the native object, prototype, slot, and
+- [X] Upstream =gerbil-poo= owns the runtime object, prototype, slot, and
   extension operators.
 - [X] =yuanxu= owns the generic Module-domain conformance contract,
   minimal projection, and derived closure semantics.
@@ -660,4 +660,4 @@ implementation completion, not owner selection.
 - [[file:45-93-module-profile-selection-bundle-and-imports-closure-algebra.org][45-93 - Module, Profile Selection, Bundle, and imports Closure Algebra]]
 - [[file:45-95-aggregate-profile-responsibility-projection-and-bounded-macro-boundary.org][45-95 - Aggregate Profile Responsibility Projection and Bounded Macro Boundary]]
 - [[file:45-97-poo-module-object-construction-export-projection-and-responsibility-attachment-algebra.org][45-97 - POO Module Object Construction, Export Projection, and Responsibility Attachment Algebra]]
-- [[file:45-98-gerbil-poo-native-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - gerbil-poo Native Boundary and Agentic AI Lab Adapter Minimization]]
+- [[file:45-98-gerbil-poo-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - gerbil-poo Runtime Boundary and Agentic AI Lab Adapter Minimization]]

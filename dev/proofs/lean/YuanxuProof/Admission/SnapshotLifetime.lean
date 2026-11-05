@@ -7,10 +7,10 @@ namespace YuanxuProof.Admission.SnapshotLifetime
 open SnapshotEntry ReadOnlyEntry ReplayBoundary
 
 def quintSourceDigest : String :=
-  "sha256:8424ead206858e9d0d7b9cb92938be40fb8e2e4217a72c27759103304b693be8"
+  "sha256:93c6c73a05065fe2a026a9a6af803b3851dae777d570581213eab7d58296f8f0"
 abbrev Revisions := Nat → Nat
 
--- Native seen-by-identity invalidation increments a selected owner once,
+-- Runtime seen-by-identity invalidation increments a selected owner once,
 -- irrespective of duplicate paths through the dependency diamond.
 def advance (affected : List Nat) (before : Revisions) : Revisions :=
   fun owner => if owner ∈ affected then before owner + 1 else before owner
@@ -79,7 +79,7 @@ theorem value_aba_rejected (s : State) (other : Nat) :
     simp [edit, Nat.add_assoc]
 
 -- This operation describes actual parameter restoration plus an independent
--- source write. It does not pretend that native parameters have an epoch.
+-- source write. It does not pretend that runtime parameters have an epoch.
 def restoredScopeEffect (s : State) : State := {s with source := s.source + 1}
 
 theorem scope_aba_passes_endpoints (s : State) :

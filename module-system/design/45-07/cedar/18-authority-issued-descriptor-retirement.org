@@ -1,0 +1,150 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Authority-issued descriptor retirement
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Authority-issued descriptor retirement
+
+** Retirement issuance requirement
+
+A claim-bound retirement record MUST NOT by itself authorize descriptor
+deletion.  Safe registry transitions require the exact retirement authority,
+the exact claim-bound descriptor evidence, and proof that this authority issued
+that descriptor/evidence pair.
+
+The executable registry acceptance authority remains responsible for signature
+and commitment validation.  The Lean contract owns the semantic result of that
+validation as an =issued= predicate and an issuance proof; it does not fabricate
+cryptographic evidence.
+
+** Claim-valid but unissued retirement counterexample
+
+=AuthorityValidatedDescriptorRetirementEvidence= binds predecessor
+registration, the canonical predecessor registry claim, and successor
+generation.  Those values are all publicly constructible proof inputs.
+=claimValidDescriptorRetirementPermitsUnissuedRetirement= constructs that exact
+claim-valid evidence together with a retirement authority whose =issued=
+predicate rejects every evidence value.
+
+Therefore =Nonempty AuthorityValidatedDescriptorRetirementEvidence= cannot
+distinguish an authorized enterprise revocation from locally assembled metadata.
+
+** Retirement issuance Typst model
+
+#+begin_export typst
+$
+  "ClaimBoundRetirement"(e, p, n, d) :=
+    e."descriptor" = d
+    and e."registry-claim" = "RegistryClaim"(p."trust-root")
+    and e."retirement-generation" = n."generation"
+
+  "AuthorityIssuedRetirement"(a, e, p, n, d) :=
+    "ClaimBoundRetirement"(e, p, n, d)
+    and a."registry-claim" = "RegistryClaim"(p."trust-root")
+    and "issued"(a, d, e)
+$
+#+end_export
+
+** Retirement issuance Mermaid closure
+
+#+begin_src mermaid
+flowchart LR
+  D["Predecessor registered descriptor"]
+  C["Claim-bound retirement evidence"]
+  A["Descriptor retirement authority<br/>canonical registry claim"]
+  I["Exact authority-issued proof"]
+  T["Content-governed transition"]
+  R["Recovery / replica interval disposition"]
+  X["Claim-valid but unissued retirement rejected"]
+
+  D -->|"bind descriptor + generation"| C
+  A -->|"decide exact pair"| I
+  C -->|"same evidence"| I
+  I -->|"status: authority-issued"| T
+  T -->|"propagate issued wrapper"| R
+  C -.->|"missing issued proof"| X
+#+end_src
+
+** Retirement issuance decision
+
+- Preserve =AuthorityValidatedDescriptorRetirementEvidence= as the weak
+  claim-bound evidence and counterexample owner.
+- Add =DescriptorRetirementAuthority= with a canonical predecessor registry
+  claim, an =issued descriptor evidence= predicate, and a theorem binding any
+  issued evidence to the authority claim.
+- Add =AuthorityIssuedDescriptorRetirementEvidence= as the exact weak evidence,
+  retirement authority, and issuance proof.
+- Change =ContentGovernedRegistryTrustRootTransition= to accept only
+  preservation or an inhabited authority-issued retirement wrapper.
+- Change registry interval disposition, recovery, and replica propagation to
+  carry the issued wrapper.  They may no longer downgrade it to claim-only
+  evidence.
+- Keep real signature and commitment material at the executable acceptance
+  owner; Lean proves the required issuer/evidence relation.
+
+** Retirement issuance checklist
+
+- [X] Construct canonical claim-valid retirement evidence rejected by its
+  retirement authority.
+- [X] Bind the retirement authority to the canonical predecessor registry
+  claim.
+- [X] Require issuance for the exact descriptor/evidence pair.
+- [X] Prove issued evidence uses the exact authority claim.
+- [X] Prove issued retirement retains the exact successor generation.
+- [X] Require issued retirement in every content-governed adjacent transition.
+- [X] Propagate issued retirement through recovery intervals and replica joins.
+
+** Retirement issuance Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryLineageClosure= exited 0 for
+  8 jobs with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  9 jobs with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  for 10 jobs with no warning or error.
+- AXLE accepted all 17 lineage roots and 73 declarations: 36 source
+  declarations, 36 environment declarations, 0 proof-base
+  declarations/imports, no failed declaration, and no Lean diagnostic.  Lineage
+  closure digest:
+  =sha256:94a9cb34dd7d36e6cf8efa0e7f7f6c4c137b96f8586c8f59037512c018dc5a95=;
+  bundle digest:
+  =sha256:a591944310aab32bf6be78766a7344fb306c4918940a8a3c58e691a5f3d1fa79=;
+  canonical source digest:
+  =sha256:1402bd0c2e29fbce532671811706d9d3a71b03943781e95f68019b9ae108ae43=;
+  independent bundle digest:
+  =sha256:640d002a56d982a4cdf5e7f000fa4af818bbe7a57f374af72785710cd2473e99=.
+- AXLE accepted all 18 recovery roots and 94 declarations: 46 source
+  declarations, 46 environment declarations, 0 proof-base
+  declarations/imports, no failed declaration, and no Lean diagnostic.  Recovery
+  closure digest:
+  =sha256:9b88a157b43bfa5f9cb5a41e04538e0242b9e18e2dd5b2f7bcd1e52fb49f812f=;
+  bundle digest:
+  =sha256:08aacbe06d6ad0567f844f7e5b610ed2b25025a447cc646845ffea8d862bfb7e=;
+  canonical source digest:
+  =sha256:303c148f4872f074024f720f0d7c623ff6b5cd464c048d640ca491ce9649e30b=;
+  independent bundle digest:
+  =sha256:fd781c7e9db51225526fb1e6ec644fdb09b5b1db6198d26bc94e5f5b63ce7079=.
+- AXLE accepted all 39 replica roots and 145 declarations: 83 source
+  declarations, 83 environment declarations, 0 proof-base
+  declarations/imports, no failed declaration, and no Lean diagnostic.  Replica
+  closure digest:
+  =sha256:fbddf23304ed5377659bbaa1b8e6294a109394c4d4d72b7d6d862270b3d1f970=;
+  bundle digest:
+  =sha256:b2a72a5dc96db8cc9ae7e458ac66853db4db484bffbc767d0f9c7c628ded13cd=;
+  canonical source digest:
+  =sha256:ea0b87d999cd4f37d1e8478ed85cedcd41d587dfc1d2a3c6d06e91530c169bf6=;
+  independent bundle digest:
+  =sha256:12fe39b0c6581a2ba5518fedd5868cbfa832c8031ccf5ddee2a5db1819586195=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
+  build= exited 0 for 587 jobs.  Both reported only the existing
+  =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
+- =asp org lint= accepted this RFC with =[ok] orgize lint=.
+- =git diff --check= and =git diff --cached --check= both exited 0.
+

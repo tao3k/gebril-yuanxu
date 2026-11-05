@@ -45,16 +45,16 @@ Consumers may deliberately select the optional language in their own package:
 
 Ordinary library imports do not require this choice. Yuanxu itself defaults to
 its own prelude; the prelude and its small build bootstrap explicitly use
-=:gerbil/core=. The build binds the actual root prelude's native module context
+=:gerbil/core=. The build binds the actual root prelude's runtime module context
 before reading implementation sources, so source-only bootstrap does not need
 a previously installed Yuanxu language. Role-specific module/config preludes
-retain their phase duties. Compile-time POO construction declares its native
+retain their phase duties. Compile-time POO construction declares its runtime
 =for-syntax= dependency explicitly. [[file:t/prelude-test.ss][The focused prelude test]] checks phase bindings;
 [[file:t/package-bootstrap-test.ss][the cold bootstrap test]] checks the source-only build entry.
 
 * What Yuanxu owns
 
-Yuanxu is the =yuanxu= Gerbil package: reusable POO-native mechanisms shared by
+Yuanxu is the =yuanxu= Gerbil package: reusable POO mechanisms shared by
 Agentic AI Lab, gerbil-parser, and other consumers. The package root is the module
 root, so consumers import a precise owner such as =:yuanxu/module-system/config=.
 There is no eager umbrella module or compatibility alias.
@@ -69,18 +69,21 @@ a =gerbil.pkg= dependency.
 [[file:docs/README.org][Core documentation]] separates independent platform research from our design
 proposals. The existing engineering/style chapter keeps its current ownership.
 
+[[file:docs/10-19-design/13-module-loading/13.35-user-expressions.org][Module user expressions]]
+shows the declared window, Interface, native =.get= and leaf =self=/=super= semantics.
+
 * Responsibility map
 
 | Area | Shared mechanism |
 |------+------------------|
 | =object-family/=, =types.ss= | POO object families and Types |
-| =object-syntax/path-slots= | Bounded dotted-path declarations lowered to native POO refinements |
+| =object-syntax/path-slots= | Bounded dotted-path declarations lowered to POO refinements |
 | =graph/=, =composition/lineage.ss= | Unified graph topology, ordered POO operations and pure lineage analysis |
 | =contribution/= | Contribution values, capability admission, receipt issuance and revocation |
-| =module-system/= | Native Module values, schemas, inheritance, SourceRef, static Loader and Catalog |
+| =module-system/= | Runtime Module values, schemas, inheritance, SourceRef, static Loader and Catalog |
 | =profile-composition/= | Indexed Module Profile selection and pure ProfileBundle composition |
 | =observability/= | Observations, feedback, slot presentation, memory sampling, testing Case |
-| =poo-clos/= | CLOS-specific metaprotocols over native POO objects and MOP |
+| =poo-clos/= | CLOS-specific metaprotocols over POO objects and MOP |
 
 Within =module-system/=, =types.ss= and =objects.ss= own values and Contracts;
 =funs.ss= and =graph/funs.ss= own pure operations; =config.ss= owns generic
@@ -88,7 +91,7 @@ interface construction. The =schema/=, =source/=, =loader/=, and =catalog/=
 subdirectories separate their respective mechanisms. Consumers import these
 leaf owners directly.
 
-Semantic Module imports use native POO prototype composition. Gerbil POO's C4
+Semantic Module imports use POO prototype composition. Gerbil POO's C4
 orders and de-duplicates ancestors; the =contributions= slot rule places local
 values before inherited values. Core does not add a general-purpose merge
 evaluator. Explicit graph contributions execute once in declaration order.

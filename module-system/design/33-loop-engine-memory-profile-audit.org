@@ -25,7 +25,7 @@ become the canonical POO object for one loop case's memory behavior. The root
                          issue-triage-memory))
 #+end_src
 
-This keeps the user interface 100% POO-native. The user declares extensible
+This keeps the user interface 100% POO. The user declares extensible
 objects and composes them with ordinary Scheme values. There is no public alist
 DSL, record DSL, or compatibility row syntax.
 

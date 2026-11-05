@@ -114,7 +114,7 @@ flowchart LR
 - [X] =temporalProposalCarriesNoFenceAuthority=
 - [X] =temporalProposalCarriesNoReclamationAuthority=
 - [X] =deadlineEvaluationCarriesComparableDomains=
-- [ ] Project temporal policy and observations through native =gerbil-poo=.
+- [ ] Project temporal policy and observations through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.Modules.Funflow.Observation=.  It
@@ -133,7 +133,7 @@ The same semantic and observation inputs must produce the same pure result.
 
 * POO semantic ownership
 
-Temporal policy is represented by ordinary higher-order POO objects. Native
+Temporal policy is represented by ordinary higher-order POO objects. Runtime
 prototype composition defines:
 
 - freshness contracts;
@@ -145,7 +145,7 @@ prototype composition defines:
 - uncertainty admission;
 - clock-source trust.
 
-The public extension interface remains POO-native. Clock role, expiry behavior,
+The public extension interface remains POO. Clock role, expiry behavior,
 and uncertainty handling must not become an unstructured macro token DSL.
 
 Pure policy may produce temporal evidence or proposals. It has no authority to
@@ -423,7 +423,7 @@ The implementation must distinguish at least:
 11. Historical replay uses recorded observations, not current time.
 12. Continuable restarts do not rewrite temporal semantics in place.
 13. Cross-host skew assumptions remain explicit evidence.
-14. Public temporal policy extension remains POO-native.
+14. Public temporal policy extension remains POO.
 
 * Implementation checklist
 

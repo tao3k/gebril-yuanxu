@@ -9,7 +9,7 @@ resolution/admission bodies, see [[file:17-export-index-and-derived-resolution.o
 design source only; declaration-origin capture and Loader integration are not
 implemented. No per-Profile publication wrapper is reintroduced.
 
-[[file:18-mop-derived-profile-association.org][Module 18]] corrects the derivation mechanism after auditing native .def and
+[[file:18-mop-derived-profile-association.org][Module 18]] corrects the derivation mechanism after auditing .def and
 object-supers: standard inheritance needs no per-child origin records. The root
 export index and trusted revision/source association remain pending adapters.
 
@@ -95,9 +95,9 @@ Admission of the interface/source association is distinct from .admit on an
 actual selected Profile. Unselected recipe bodies must not be forced merely to
 inspect the interface index. A top-level def may evaluate when its Scheme module
 loads; separating metadata discovery from recipe-module evaluation still needs
-an adapter and measurement. Native slot laziness alone does not establish that.
+an adapter and measurement. Runtime slot laziness alone does not establish that.
 
-* Downstream declares only native objects
+* Downstream declares only runtime objects
 
 The user's own contribution can publish these ordinary derived objects:
 
@@ -113,13 +113,13 @@ The user's own contribution can publish these ordinary derived objects:
 (.def (ExtendedCIProfile @ GerbilCIProfile)
   funflow: =>.+
   (.o build: =>.+
-      (.o commands: => append '("release")
-          artifact-outputs: => append '(release-log))))
+      (.o (commands => append '("release"))
+          (artifact-outputs => append '(release-log)))))
 
 (export TeamCIProfile ExtendedCIProfile)
 #+end_src
 
-These use native nested refinement and ordinary leaf assignment, not the pending
+These use runtime nested refinement and ordinary leaf assignment, not the pending
 direct dotted-assignment adapter. The user does not write a second publication
 object, repeat module-policies, or attach an editable authority/accepted slot.
 The publication interface adapter records each derived export's own source and
@@ -141,7 +141,7 @@ The repository source audit gives a narrower foundation than automatic pairing:
 | src/authoring/module-interface.ss | schemas/schema-index, authoring policy and metadata over the Core Interface | A specified Profile export association field/protocol; do not reinterpret arbitrary schemas as Profile Contracts |
 | core/module-system/source/objects.ss | Inert SourceRef; equality compares kind and value | Revision-sensitive source validation; metadata does not participate in current equality |
 | core/module-system/loader/objects.ss | Source-to-descriptor entries, lazy plans and explicit force boundary | Profile-specific association propagation/resolution, not added here |
-| Bounded use-module scope | Native scoped access to module values/prototypes | General export provenance for arbitrary .def descendants |
+| Bounded use-module scope | Runtime scoped access to module values/prototypes | General export provenance for arbitrary .def descendants |
 
 SourceRef is metadata, not authentication. Reuse these owners rather than adding
 a parallel publication object family, but do not claim that their current
@@ -151,7 +151,7 @@ independent ownership correction remains a design migration.
 
 * Resolve selected occurrences without a second user policy file
 
-The ordinary Scenario surface remains native values and native refinement:
+The ordinary Scenario surface remains runtime values and runtime refinement:
 
 #+begin_src scheme
 (.def (ProjectCI @ CICDScenario.)
@@ -170,9 +170,9 @@ and planning owners, not implemented behavior of plain .def:
 1. Resolve each selected binding in the final Scenario. Use the declaration's
    preserved export provenance to identify its admitted publication and revision;
    never infer the Contract from application/tooling or a language name.
-2. Follow direct references and native inherited refinements to their publication
+2. Follow direct references and runtime inherited refinements to their publication
    origins while retaining the actual final receiver. An origin association is
-   maintained outside editable business slots. Native prototype ancestry alone
+   maintained outside editable business slots. Runtime prototype ancestry alone
    is not publication authentication and does not prove domain validity.
 3. Resolve the package interface's export association: expected Profile Contract,
    supported plan-module declarations and module requirements. Intersect requested capabilities with
@@ -193,7 +193,7 @@ and planning owners, not implemented behavior of plain .def:
 
 The pending association adapter preserves derivation under these explicit rules:
 
-| Native operation | Association rule |
+| Runtime operation | Association rule |
 |------------------+------------------|
 | Reference/alias of an exported Profile | Retain the resolved export/revision association; binding spelling does not choose a Contract |
 | .def inheritance and nested =>.+ | Record the parent association plus new declaration origin; admit the final child, not the parent default |
@@ -203,11 +203,11 @@ The pending association adapter preserves derivation under these explicit rules:
 | Re-export a derived value from a user package | Publish its own export/revision and derivation dependency in that package's interface index |
 
 The declaration/publication owner must preserve hygienic binding identity and
-native expansion origin through aliases/refinements. Object identity can index
+runtime expansion origin through aliases/refinements. Object identity can index
 an association within one view but cannot by itself represent two distinct
 published exports of a shared value. Neither string matching nor textual scans
 of .def names prove the relationship. Generated declarations must carry equivalent
-origin information. This tracking is pending integration; plain native .def
+origin information. This tracking is pending integration; plain .def
 continues to construct objects without silently implementing it.
 
 Multiple publication origins require all applicable requirements, with explicit
@@ -221,7 +221,7 @@ provenance cannot be recovered reliably from spelling or runtime shape. Such a
 factory must carry an owner-validated result association, or publish a new
 Profile export as above. The ordinary user must not repair this by repeating
 module-policies. The mechanism preserving associations through declarations,
-factories and refinements is a pending adapter, not an existing native POO feature.
+factories and refinements is a pending adapter, not an existing POO feature.
 
 ExampleBindings in module 15 is an internal fixture for the resulting association,
 not a public second configuration file. Source resolution supplies that input;
@@ -232,7 +232,7 @@ own requirements. Missing associations produce a binding/source diagnostic.
 
 * Effective receiver, evidence and invalidation
 
-Preserve the Pipeline's native relationship to its effective enclosing config:
+Preserve the Pipeline's runtime relationship to its effective enclosing config:
 
 #+begin_src scheme
 checks:
@@ -273,13 +273,13 @@ that expresses the requested change:
 |-------------+---------+-----------------------|
 | Use maintained defaults | Reference/inherit the maintained Scenario | Composition, prototypes, policies and derived outputs |
 | Replace a value such as an IP or commands | Ordinary slot assignment; deep assignment retains inherited intermediate objects | Contract and source association |
-| Append to or transform the inherited value | Native inherited-value transformation, e.g. => append | Original value and default behavior |
-| Refine an existing object | Native =>.+ only at the object being extended | Unchanged inherited slots |
+| Append to or transform the inherited value | Runtime inherited-value transformation, e.g. => append | Original value and default behavior |
+| Refine an existing object | Runtime =>.+ only at the object being extended | Unchanged inherited slots |
 | Create a genuinely new Check/object | Obtain its prototype from the bounded module scope | Source and construction defaults |
-| Change core behavior | Native slots/generics/method bundles under their extension Contracts | Unchanged protocols and explicit runtime boundaries |
+| Change core behavior | Runtime slots/generics/method bundles under their extension Contracts | Unchanged protocols and explicit runtime boundaries |
 
 Do not force ordinary value replacement to spell out object extension or internal
-policy plumbing. Human and Agent users share the same native semantics; neither
+policy plumbing. Human and Agent users share the same runtime semantics; neither
 should need to rediscover all module internals. Field discovery reports origin,
 Contract, documented defaults, writable/derived status and the relevant operation.
 The deeper POO layer remains available when intent requires it.
@@ -292,7 +292,7 @@ field discovery, reusable publications and measured demand costs.
 
 * Implementation and acceptance boundary
 
-Existing: Core's slot-generic admission protocol, native responsibility Contract
+Existing: Core's slot-generic admission protocol, runtime responsibility Contract
 machinery, inheritance/lexical receiver semantics and the historical domain-free
 parent-cache controls. Module 15's full domain guards/projection remain design
 source. New in this document: package-interface export/Contract association,

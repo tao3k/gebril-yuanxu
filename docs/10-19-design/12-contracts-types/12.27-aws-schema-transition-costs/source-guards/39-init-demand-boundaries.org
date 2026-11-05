@@ -1,6 +1,6 @@
 #+title: Init Import, Namespace Discovery and Publication Demand
 #+language: en
-#+property: STATUS native-demand-qualified-capacity-refused
+#+property: STATUS runtime-demand-qualified-capacity-refused
 
 * Problem and scope
 
@@ -21,17 +21,17 @@ demands over the existing selection.
 
 =module-system/building/interface.ss= previously statically imported the source
 linker, build projector and build artifact owner. Consequently a consumer that
-only imported the generated init bindings acquired those native dependency
+only imported the generated init bindings acquired those runtime dependency
 closures before requesting their values.
 
-The owner now obtains those exact native bindings on demand, using the same
+The owner now obtains those exact runtime bindings on demand, using the same
 =delay= / private =make-top-context= / =eval-syntax= pattern already used by
 =testing-executor=. The promises retain functions, not Graphs, source approvals,
 publication results or an additional module registry. Build and clean still
 invoke their existing implementations. The public init surface is unchanged.
 
 The hygienic init expansion ends in =(void)=. Its internal =defvalues= must not
-become the seven-valued result of the native source module's runtime promise.
+become the seven-valued result of the runtime source module's runtime promise.
 This matters for an interpreted module containing only import and =yuanxu!=.
 No user binding, runner or public syntax is added.
 
@@ -46,7 +46,7 @@ The same selection now owns a reader initialized by the first publication
 operation. Directory/init observation and namespace reflection do not create
 it. After creation, every existing reader guard continues to run.
 
-Demanding a namespace still imports the linker and its native dependency
+Demanding a namespace still imports the linker and its runtime dependency
 definitions, including the Reader definition. Deferring that constructor is
 not the same as eliminating every cold import from namespace access. Importing
 init itself excludes those owners from its static dependency closure.
@@ -54,7 +54,7 @@ init itself excludes those owners from its static dependency closure.
 The Context's =publication-inputs= and =publication-preparation= fields are
 forwarding procedures. Merely verifying that these fields are procedures must
 not construct the Reader. An initial implementation left these as computed
-reader references; the native namespace test detected that the shape Contract
+reader references; the runtime namespace test detected that the shape Contract
 itself forced construction. The test is retained and the procedures defer the
 actual call instead.
 
@@ -62,7 +62,7 @@ actual call instead.
 
 Before a reader exists, there are no reader-owned publication observations to
 validate. Directory/init currentness remains mandatory. The first reader
-construction is bracketed by that original Context guard because native SDK
+construction is bracketed by that original Context guard because runtime SDK
 bootstrap can initialize code. A changed location cannot acquire a publication
 through the delayed constructor. Once a reader exists, the original complete
 reader guard precedes the Context guard as before.
@@ -74,9 +74,9 @@ complete pre-publication Graph check remain the existing owners.
 
 * Scheme correspondence gates
 
-=t/module-init-import-test.ss= uses native imports and fixture cleanup:
+=t/module-init-import-test.ss= uses runtime imports and fixture cleanup:
 
-1. Traverse the actual imported init's native Context closure. Reader, linker,
+1. Traverse the actual imported init's runtime Context closure. Reader, linker,
    build projection, build artifacts and testing execution must be absent.
    This is an import-closure test, not a claim that those libraries cannot be
    loaded elsewhere in the host process.
@@ -102,13 +102,13 @@ complete effect support. Those responsibilities remain distinct from Lean's
 and work bounds.
 
 These models do not prove Gerbil's import timing, module runtime cardinality,
-native initialization effects or heap behavior. The new native gates establish
+runtime initialization effects or heap behavior. The new runtime gates establish
 the missing correspondence for init import and namespace demand. No model
 receipt is reclassified as a thousand-module performance result.
 
 * Measured qualification
 
-The two native init-demand cases pass with MODULE-OK, HARNESS-OK and final OK.
+The two runtime init-demand cases pass with MODULE-OK, HARNESS-OK and final OK.
 The actual init Context closure has 258 contexts and excludes the five eager
 owners asserted by the test. The namespace case performs five physical source
 reads, zero compiler-closure requests and zero role executions. Its immediately
@@ -133,13 +133,13 @@ The existing budget and heap limit are unchanged. More completed declarations
 than the previous 380 run do not establish a capacity improvement.
 
 At 384 publications, preparation spans charge 46463858 CPU microseconds;
-native body compile spans charge 130679 and eval spans 284990. Spans overlap:
+runtime body compile spans charge 130679 and eval spans 284990. Spans overlap:
 preparation includes other work and must not be added to replay/guard totals.
 The steady physical-read increment remains 375 per publication. These results
 locate the next investigation in authoring preparation and its metadata
 dependencies rather than establish compilation as the dominant cost.
 
-The eight candidate-stage native cases pass, including source/Contract policy
+The eight candidate-stage runtime cases pass, including source/Contract policy
 changes, the complete final boundary after foreign effects, and full guards
 around open Context calls. Lean's two focused correspondence targets build
 successfully (48 jobs). Quint typechecks the five selected ReaderEffectSupport
@@ -165,7 +165,7 @@ guards. The cost of our richer admission must be paid where the checked value
 is needed, not imposed merely because a contribution exists in the catalog.
 
 Complete publication demand still expands actual Scheme roles and retains
-their live native bindings. It still checks the interpreter's real source
+their live runtime bindings. It still checks the interpreter's real source
 support. The remaining work is to attribute that demanded path and prove which
 shared support can be checked once within a pure operation, without carrying
 approval across initialization or an open callback. Context release requires
@@ -179,7 +179,7 @@ not excuse excessive per-declaration work.
 * Focused reproduction
 
 Use the repository-locked source environment without installed Core binaries;
-run the native entries serially through the heap-fenced Just recipe:
+run the runtime entries serially through the heap-fenced Just recipe:
 
 #+begin_src sh
 just test-file t/module-init-import-test.ss true

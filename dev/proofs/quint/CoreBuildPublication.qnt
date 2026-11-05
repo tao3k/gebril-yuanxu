@@ -3,7 +3,7 @@ module CoreBuildPublicationModel {
   const BUG: str
   var s: {phase: int, edge: str, attack: str, expected: int, artifact: int,
     record: int, before: bool, after: bool, accepted: bool, a: bool, b: bool,
-    parent: int, child: int, unused: int, nativeReturned: bool}
+    parent: int, child: int, unused: int, runtimeReturned: bool}
   action init = {
     nondet edge = Set("saved", "direct", "for-export").oneOf()
     nondet attack = Set("none", "both", "artifact", "callback", "failed-build", "preexisting").oneOf()
@@ -11,7 +11,7 @@ module CoreBuildPublicationModel {
     nondet b = Set(false, true).oneOf()
     all {s' = {phase: 0, edge: edge, attack: attack, expected: 1,
       artifact: if (attack == "preexisting") 2 else 1, record: if (attack == "preexisting") 2 else 1, before: false, after: false, accepted: false,
-      a: a, b: b, parent: 5432, child: 5433, unused: 0, nativeReturned: true}}
+      a: a, b: b, parent: 5432, child: 5433, unused: 0, runtimeReturned: true}}
   }
   action issue = all {s.phase == 0,
     s' = s.with("phase", 1)
@@ -44,7 +44,7 @@ module CoreBuildPublicationModel {
   val BothRequirements = not(s.accepted) or (s.a and s.b)
   val ParentCache = s.parent == 5432
   val LazyBranch = s.unused == 0
-  // An ordinary native cache return is NOT Core publication authority.
+  // An ordinary runtime cache return is NOT Core publication authority.
   val RejectAll = not(s.accepted)
   val safety = Issued and Compiled and BothRequirements and ParentCache and LazyBranch
 }

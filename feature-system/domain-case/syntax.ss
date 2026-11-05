@@ -6,7 +6,7 @@
 ;;; Boundary: internal hygienic authoring forms for CaseComponent/DomainCase.
 ;;; Invariant: expansion produces ordinary POO objects and functional closure.
 
-(import (only-in :clan/poo/object .ref)
+(import (runtime: :clan/poo/object)
         "interface.ss")
 
 (export defpoo-case-component

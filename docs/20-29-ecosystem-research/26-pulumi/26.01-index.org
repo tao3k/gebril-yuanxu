@@ -54,7 +54,7 @@ opaque wrapper? Can diagnostics name both the user's field and the transformatio
 that changed its meaning? These are required design experiments, not solved facts.
 
 Conclusion: choosing Scheme over a DSL does not eliminate effect and dependency
-semantics. The prospective gain is a coherent native object/function vocabulary;
+semantics. The prospective gain is a coherent runtime object/function vocabulary;
 the missing part is a specified adapter for external values and partial plans.
 
 

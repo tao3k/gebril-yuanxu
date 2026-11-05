@@ -428,7 +428,7 @@ An aggregate case Profile is admitted only when:
   explicitly removed with an architectural decision;
 - graph identity is preserved;
 - loop budget and exit identity are preserved;
-- every proof obligation has a POO-native evidence owner;
+- every proof obligation has a POO evidence owner;
 - handoff identity or explicit absence is preserved;
 - capability requirements are explicit;
 - no additional framework subgraph becomes reachable accidentally; and
@@ -474,7 +474,7 @@ The current files combine:
 They also repeat every low-level Profile identity.
 
 The target files select already-published aggregate Profiles.  The owning
-Modules remain POO-native and may be reused by tests, downstream packages, and
+Modules remain POO and may be reused by tests, downstream packages, and
 other compositions.
 
 No compatibility case is required.

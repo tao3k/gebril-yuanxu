@@ -16,8 +16,8 @@ receipt is needed to quantify that separate startup remainder.
 | Setup through first source-context | 1475 |
 | First Graph | 5832 |
 | Schema-transition Graph | 3874 |
-| Four native evaluation misses | 4793 |
-| Sixteen native attribute-cache-hit queries | 4424 |
+| Four runtime evaluation misses | 4793 |
+| Sixteen runtime attribute-cache-hit queries | 4424 |
 | Two cached-output realizations | 782 |
 | Other admission/publication/checkpoint/source work | 8587 |
 | Total AWS Case | 29767 |
@@ -32,12 +32,12 @@ work and the remaining interval. Millisecond event rounding applies:
 
 | Graph work | First Graph ms | Transition Graph ms |
 |------------+----------------+---------------------|
-| Native source import union | 1578 | 0 |
+| Runtime source import union | 1578 | 0 |
 | Source guards outside imports | 665 | 759 |
 | Publication outside imports/guards | 1287 | 1383 |
 | Other selection/preparation/finalization | 2302 | 1732 |
 
-The slowest inclusive native import spans are OpenTofu objects (1186 ms),
+The slowest inclusive runtime import spans are OpenTofu objects (1186 ms),
 OpenTofu execution (1007 ms) and Funflow objects (787 ms). They are nested and
 must NOT be summed. The transition Graph's 3874 ms is fresh declaration and
 source work, not another 3874 ms of cold importing. This attribution does not
@@ -77,7 +77,7 @@ positive =gerbil.pkg= entry with a source at the package root. Previously the
 different complete ancestor lists caused repeated parsing of that same package
 and repeated checks against the same SDK package metadata.
 
-The focused native control prepares two such sources, then invokes both guards
+The focused runtime control prepares two such sources, then invokes both guards
 in one pure window. The package has one read request, rather than merely one
 physical read with two parsing/check requests. A later independent invocation
 requests it again. Adding a closer =gerbil.pkg= still rejects the earlier
@@ -87,7 +87,7 @@ Macro expansion, initialization, policy validation and Nix calls retain their
 original boundaries. The aggregate Case remains the acceptance gate for this
 candidate's actual work-count effect.
 
-The old-implementation control runs the SAME new native assertion and reports
+The old-implementation control runs the SAME new runtime assertion and reports
 two package requests where the candidate reports one. Its expected failure is
 retained as the control, not relabelled a passing gate or hidden by changing
 the assertion. The ordinary independent call still requests the package again.
@@ -112,7 +112,7 @@ preservation and cleanup pass in the same Case. Its disjoint AWS receipt is:
 
 The Ops worker is 44384 ms, leaving 13996 ms outside AWS for cold
 startup/import/profile setup, sibling qualifications and harness completion.
-The first AWS checkpoint's pre-Case CPU is 9750 ms. Native imports within the
+The first AWS checkpoint's pre-Case CPU is 9750 ms. Runtime imports within the
 first Graph have 1644006 microseconds union duration; the second Graph adds no
 new import union. Parent preparation is 9146 ms, with 113 ms completion
 remainder: 9146 + 44384 + 113 = 53643 ms parent qualification time. These
@@ -137,7 +137,7 @@ or new persistent cache is used to conceal them.
 An intermediate aggregate failed before the Schema refresh because two added
 observation counters exhausted the existing bounded Case-category allowance.
 That run is not a publication receipt. The two aggregate counters were removed;
-the focused control uses its already captured native messages instead. The
+the focused control uses its already captured runtime messages instead. The
 observation bound, heap and progress budgets remain unchanged. Observability
 must not silently consume an unbounded set of categories as diagnostics grow.
 
@@ -145,15 +145,15 @@ must not silently consume an unbounded set of categories as diagnostics grow.
 
 The existing test adapter gives detailed observation a fresh four-process
 debug logging allowance per Case. The progress-aware route always requests
-=--log-format internal-json --verbose= for native activity, independently of
+=--log-format internal-json --verbose= for runtime activity, independently of
 observation emission; only the bounded diagnostic calls additionally receive
 =--debug=. Those verbosity flags grant no admission authority. Ops owns the
 existing process boundary; no independent runner or Scheme evaluation-result
 cache is introduced. Disabled observation does not allocate the debug
-allowance and does not disable inactivity checks. Native controls check scope restoration, renewed
+allowance and does not disable inactivity checks. Runtime controls check scope restoration, renewed
 allowances, exhaustion without extra processes, and zero domain MOP reads.
 
-Native diagnostics distinguish derivation queries, store queries, realization
+Runtime diagnostics distinguish derivation queries, store queries, realization
 and registration; they also retain Nix's own lock/goal messages in the local
 Ops log. Raw JSON/logs are not versioned. Their output has a cost, so these
 measurements are diagnostic receipts, not an uninstrumented benchmark.
@@ -162,7 +162,7 @@ The recorded historical time window was also queried for retained system
 events naming Nix executables or store paths. It provides no attributable Nix
 wait record. Unrelated SQLite messages from =syspolicyd= are not evidence of
 a Nix security-assessment delay. No system daemon, trust policy, timeout or
-heap allowance was changed. A reproduced slow call with these native activity
+heap allowance was changed. A reproduced slow call with these runtime activity
 records is still required to close the 24.195-second root cause.
 
 [[file:../../12.27-aws-schema-transition-costs.org][Read map, current status and evidence limits]]

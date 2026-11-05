@@ -11,7 +11,7 @@ classifies the source role, then follows exactly the owning style module below.
 The public-surface authority remains
 [[file:164-capability-gradient-and-default-expression-surface.org][RFC 164]].
 The detailed Object/Entity/Element/Relation/Query correspondence is
-[[file:165-native-semantic-element-relation-query-model.org][RFC 165]].
+[[file:165-runtime-semantic-element-relation-query-model.org][RFC 165]].
 
 ** Style modules
 
@@ -32,8 +32,8 @@ with stricter domain rules, but may not weaken unrelated base rules.
 
 ** Universal invariants
 
-1. The default public surface is value-first and POO-native.
-2. Native slot algebra owns default, functional refinement, nested refinement
+1. The default public surface is value-first and POO.
+2. Runtime slot algebra owns default, functional refinement, nested refinement
    and override; domain verbs such as =add-*= or =remove-*= do not duplicate it.
 3. Pure functions own algorithms.  Slot generics own one receiver axis.  CLOS
    owns only crossings whose axes grow independently.
@@ -65,7 +65,7 @@ an actionable diagnostic.  Semantic facts that cannot be proven safely from
 syntax remain test/proof obligations; the authoring gate must not pretend to
 prove them by keyword matching.
 
-The default repair vocabulary is native: =?=, ===>=, ===>.+=, ordinary slot
+The default repair vocabulary is runtime: =?=, ===>=, ===>.+=, ordinary slot
 override, named pure functions, maintained POO objects and explicit Provider
 projections.  A repair must not introduce a compatibility layer or a second
 evaluator.
@@ -73,8 +73,27 @@ evaluator.
 ** Completion checklist
 
 - [ ] The change follows the single owning style module.
-- [ ] Public values remain native POO objects or named pure functions.
+- [ ] Public values remain POO objects or named pure functions.
 - [ ] Imports point from lower roles to higher composition roles, never back.
 - [ ] Query and proof projections bind stable object and revision identities.
 - [ ] Focused executable evidence passes.
 - [ ] Affected public consumers pass without absorbing unrelated worktree edits.
+
+* Names state the owning mechanism
+
+Use =compiler-products= for compilation targets, =std-make-spec= for the
+standard Make specification, =ffi= for a foreign-function boundary, and
+=poo-contract= or =ObjectContract= for object admission. Omit an adjective
+when the surrounding module already identifies the mechanism. File names,
+module identities, exports, consumers, test discovery and documentation links
+migrate together; do not retain a second public alias.
+
+Imported dependency identifiers and language built-ins retain the spelling
+required by their owner. An ordinary import alias may give them a local name;
+renaming a dependency API locally does not change that dependency. Recorded
+evidence keeps its original payload bytes when its containing path is renamed.
+A renamed historical record is not a new qualification result.
+
+POO slot bindings are lexical: a helper that produces a slot value must not
+share that slot identifier. For example, =collect-program-targets= computes
+the =program-targets= slot without recursively reading the slot itself.

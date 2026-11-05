@@ -63,6 +63,6 @@
     (display "arena-bytes=")
     (display (u8vector-length arena-image))
     (newline)
-    (display "encoding=native-packed-little-endian\n")))
+    (display "encoding=runtime-packed-little-endian\n")))
 
 (write-fixture!)

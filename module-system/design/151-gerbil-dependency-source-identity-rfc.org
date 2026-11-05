@@ -32,7 +32,7 @@ qualification gate but does not change the Runtime Language ABI semantics.
   analysis reported zero packages loaded and zero targets configured.
 - The full runtime compile remains a separate performance defect: one observed
   critical path was =1154.91s=, versus an earlier approximately =535s= cold
-  path. A test-only run also exposed an orphaned =native_scheme_env= shell
+  path. A test-only run also exposed an orphaned =runtime_scheme_env= shell
   after =gxtest= disappeared. Neither defect is closed by this RFC slice.
 
 The current decision below supersedes the older path-qualified qualification

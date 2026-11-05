@@ -54,7 +54,7 @@ below and is not a filler config created to satisfy a filename requirement.
 * JsonSchema/func.ss: optional role, justified by two real adapters
 
 This example needs a small function owner for publication checks and full-root
-Contract adaptation. No wrapper is added around validation or native admission.
+Contract adaptation. No wrapper is added around validation or runtime admission.
 
 #+begin_src scheme
 (import "types.ss")
@@ -136,9 +136,9 @@ fallbacks are not copied into this config merely to populate the file.
   features: (.o))
 #+end_src
 
-The public config and types slots are ordinary native object fields, not extra
+The public config and types slots are ordinary runtime object fields, not extra
 Module registries. They are declared once in this interface; core does not repeat
-config or a second config-contract field. The native scope Contract admits the
+config or a second config-contract field. The runtime scope Contract admits the
 publication shape, and operation entrypoints admit the effective config through
 types.Config. The from-file function is defined in [[file:11.30-workflow-module-contract-and-simple-user-config.org][module 29]]; it is not a second
 implementation or a forwarding prototype. Build roots are inferred from the
@@ -217,7 +217,7 @@ experiment, while retaining the Redis listener constraints:
 These functions assume successful field/role admission against the single-port
 schema, as specified in module 13. They refuse unsupported recipe port/name/DNS
 changes; they do not prove image-level listener behavior or Kubernetes connectivity.
-A missing role is rejected by existing native responsibility admission first.
+A missing role is rejected by existing runtime responsibility admission first.
 
 * Guestbook/objects.ss: independent reusable Profiles, then a Scenario
 
@@ -379,7 +379,7 @@ existing shared Module/Contract protocols once qualified, not hidden by yet anot
 macro or stamped into every user config. Do not let the required shell justify
 fake factories, empty role files or a second descriptor catalog.
 
-Already implemented: bridge generation/validation, native POO slots/refinement,
+Already implemented: bridge generation/validation, POO slots/refinement,
 Contract/responsibility admission, bounded scope binding, module closure and
 Feature resolution/composition. Pending: shorter Contract export name, source-role
 migration, reusable bridge publication/default-policy adapter, interface factory

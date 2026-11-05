@@ -36,7 +36,7 @@ This RFC does not define:
 
 * Durable POO identity
 
-All typed-empty prototypes and instances remain native objects of:
+All typed-empty prototypes and instances remain runtime objects of:
 
 #+begin_example
 github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
@@ -112,7 +112,7 @@ and proven by exact upstream and project evidence.
 
 An empty exports value:
 
-- is a native POO object;
+- is a POO object;
 - inherits from the typed empty-exports prototype;
 - contains no export identity;
 - grants no capability;
@@ -123,7 +123,7 @@ An empty exports value:
 
 An empty direct imports value:
 
-- is a native POO object;
+- is a POO object;
 - inherits from the typed empty-imports prototype;
 - contributes no direct dependency edge;
 - is the recursion base for imports closure;
@@ -135,7 +135,7 @@ Empty and unknown are different states.
 
 An empty capability requirements value:
 
-- is a native POO object;
+- is a POO object;
 - inherits from the typed empty-capability-requirements prototype;
 - contributes no additional requirement;
 - grants no capability;
@@ -202,7 +202,7 @@ A shared typed-empty instance is an optimization, not the semantic default.
 It is admitted only when all of these are proven:
 
 - the instance is immutable after construction;
-- no native or adapter operation can mutate it;
+- no runtime or adapter operation can mutate it;
 - no Module-specific identity or cache state is stored on it;
 - extension always returns a distinct relation object;
 - object ancestry remains inspectable;
@@ -235,7 +235,7 @@ The output:
 - does not mutate sibling Module relations.
 
 The phrase copy-on-extension defines observable semantics. It does not require
-eager physical copying when a persistent native representation can prove the
+eager physical copying when a persistent runtime representation can prove the
 same behavior.
 
 * Module revision effect
@@ -267,7 +267,7 @@ It may be used only inside an isolated construction region with:
 - no escaped aliases;
 - no concurrent readers;
 - a declared mutation boundary;
-- final native ancestry validation;
+- final runtime ancestry validation;
 - publication only after construction completes;
 - a receipt naming every destructive operation.
 
@@ -384,7 +384,7 @@ A typed-empty construction receipt identifies:
 - construction operation;
 - whether the instance is fresh or shared;
 - immutability proof when shared;
-- native ancestry;
+- runtime ancestry;
 - source owner;
 - authority neutrality.
 
@@ -393,7 +393,7 @@ A copy-on-extension receipt additionally identifies:
 - input relation identity;
 - extension operand identity;
 - output relation identity;
-- native operation or adapter identity;
+- runtime operation or adapter identity;
 - destructive operations used internally;
 - uniqueness and no-alias evidence;
 - preserved prototype ancestry;
@@ -402,12 +402,12 @@ A copy-on-extension receipt additionally identifies:
 
 * Macro governance
 
-Functions and native POO objects remain the default abstractions.
+Functions and POO objects remain the default abstractions.
 
 A bounded internal macro may generate a repeated typed-empty prototype family
 only when it:
 
-- expands to ordinary native POO objects and pure functions;
+- expands to ordinary POO objects and pure functions;
 - preserves a distinct domain identity for each family;
 - contains no mutation or sharing policy;
 - does not create runtime registries;
@@ -543,7 +543,7 @@ The following alternatives are rejected:
 - [ ] Empty exports has a distinct domain prototype.
 - [ ] Empty direct imports has a distinct domain prototype.
 - [ ] Empty capability requirements has a distinct domain prototype.
-- [ ] Typed-empty values are native POO objects.
+- [ ] Typed-empty values are POO objects.
 - [ ] Empty and unknown remain distinct.
 - [ ] No typed-empty value grants authority.
 - [ ] No raw list or alist is semantic truth.
@@ -595,7 +595,7 @@ The following alternatives are rejected:
 
 - [ ] Functions and POO objects remain default abstractions.
 - [ ] Any family macro is internal and bounded.
-- [ ] Macro expansion produces ordinary POO-native functional code.
+- [ ] Macro expansion produces ordinary POO functional code.
 - [ ] Each generated empty family retains distinct identity.
 - [ ] Macros contain no mutation policy.
 - [ ] Macros contain no sharing policy.
@@ -621,7 +621,7 @@ Implementation work is not admitted until:
 - [ ] new-object versus in-place behavior is proven;
 - [ ] ancestry preservation is proven;
 - [ ] any freeze or immutability primitive is identified or marked absent;
-- [ ] typed-empty prototypes are mapped to native POO objects;
+- [ ] typed-empty prototypes are mapped to POO objects;
 - [ ] fresh-instance construction is specified;
 - [ ] shared-instance optimization has an immutability proof;
 - [ ] copy-on-extension conformance tests are specified;
@@ -641,7 +641,7 @@ introducing raw lists or missing-slot conventions.
 Sharing remains safe because prototypes are shared by default while relation
 instances remain isolated unless immutability is proven.
 
-Copy-on-extension preserves functional composition, cache correctness, native
+Copy-on-extension preserves functional composition, cache correctness, runtime
 prototype ancestry, and sibling non-interference even when an implementation
 uses isolated destructive construction internally.
 
@@ -654,5 +654,5 @@ uses isolated destructive construction internally.
 - [[file:45-83-profile-revisions-live-upgrade-and-module-reload-boundaries.org][45-83 - Profile Revisions, Live Upgrade, and Module Reload Boundaries]]
 - [[file:45-87-live-continuation-capabilities-continuable-conditions-and-portable-suspension-boundary.org][45-87 - Live Continuation Capabilities, Continuable Conditions, and Portable Suspension Boundary]]
 - [[file:45-97-poo-module-object-construction-export-projection-and-responsibility-attachment-algebra.org][45-97 - POO Module Object Construction, Export Projection, and Responsibility Attachment Algebra]]
-- [[file:45-98-gerbil-poo-native-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - gerbil-poo Native Boundary and Agentic AI Lab Adapter Minimization]]
+- [[file:45-98-gerbil-poo-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - gerbil-poo Runtime Boundary and Agentic AI Lab Adapter Minimization]]
 - [[file:45-99-module-domain-prototype-minimal-projection-and-derived-closure-contract.org][45-99 - Module Domain Prototype Minimal Projection and Derived Closure Contract]]

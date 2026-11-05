@@ -8,16 +8,16 @@
 * interface.ss publishes; init.ss selects
 
 The [[file:../../docs/10-19-design/11-configuration-languages/11.32-modular-configurations-core-principle.org][modular-configuration core principle]] constrains the published interface:
-configurations remain inspectable native values, algorithms remain callable
+configurations remain inspectable runtime values, algorithms remain callable
 slots, and selected admission reads final values. Module packaging alone does
-not satisfy these requirements. Native composition does not inherit Nix/Nickel
+not satisfy these requirements. Runtime composition does not inherit Nix/Nickel
 merge policies by analogy.
 
-interface.ss assembles the detailed native Module object, its baseline/Core
+interface.ss assembles the detailed runtime Module object, its baseline/Core
 requirements and public exports, Types/Contracts, defaults and declared extension
 surface. It references role owners; it does not reproduce their implementations.
 init.ss expresses source selection, optional feature intent and exclusions.
-A consumer may supply a bounded syntax frontend, but must lower to native intent
+A consumer may supply a bounded syntax frontend, but must lower to runtime intent
 values rather than define a second evaluator or module descriptor authority.
 
 A common loading facade may coordinate these operations. Coordination does not
@@ -79,7 +79,7 @@ PackageSpec, deployment authority or provider execution.
 * Conclusion
 
 One ordinary consumer facade is useful; one universal resolver replacing all
-owners is not. Reuse [[file:../graph/funs.ss][module closure]], native source/Contract values and
+owners is not. Reuse [[file:../graph/funs.ss][module closure]], runtime source/Contract values and
 existing extension-provider protocols. New integration must retain negative intent,
 selected demand, complete evidence and phase/source currentness. This document
 adds no source loader, Feature implementation or runtime behavior.

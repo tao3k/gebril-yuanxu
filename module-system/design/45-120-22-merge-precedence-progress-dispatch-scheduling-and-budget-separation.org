@@ -91,11 +91,11 @@ design.  This RFC neither reverses nor duplicates that convention.
 * Progress order
 
 Fixed-point progress is a domain semantic partial order supplied through a
-pure POO-native =ProgressContract=.
+pure POO =ProgressContract=.
 
 Numeric merge precedence MUST NOT be interpreted as distance to a fixed point.
 
-=ProgressContract= produces POO-native witness values:
+=ProgressContract= produces POO witness values:
 
 - =EquivalentProgress=;
 - =AdvancingProgress=;
@@ -129,7 +129,7 @@ No numeric merge precedence participates in this aggregation.
 
 * POO dispatch specificity
 
-Dispatch specificity follows prototype lineage and the native =gerbil-poo=
+Dispatch specificity follows prototype lineage and the runtime =gerbil-poo=
 dispatch model.
 
 It MUST NOT be converted into:
@@ -181,7 +181,7 @@ ModuleType
 * Conformance checklist
 
 - [X] Merge precedence governs contribution conflicts only.
-- [X] Progress is a semantic partial order with POO-native witnesses.
+- [X] Progress is a semantic partial order with POO witnesses.
 - [X] Dispatch follows prototype lineage.
 - [X] Scheduling remains operational.
 - [X] Budgets bound typed work without choosing semantic winners.
@@ -199,12 +199,12 @@ ModuleType
 - Assigning one universal priority number to unrelated semantic relations.
 - Using scheduler rank as semantic evidence.
 - Treating budget exhaustion as proof of semantic impossibility.
-- Replacing native =gerbil-poo= prototype dispatch.
+- Replacing runtime =gerbil-poo= prototype dispatch.
 - Defining an implementation schedule.
 
 * References
 
-- =45-120-01-poo-native-type-and-contract-prototype-foundation.org=
+- =45-120-01-poo-type-and-contract-prototype-foundation.org=
 - =45-120-05-profile-policy-authority-bounds-and-coordinator-execution.org=
 - =45-120-06-recursive-capability-delegation-and-budget-closure.org=
 - =45-120-07-semantic-cache-scc-evidence-generation-invalidation-and-fail-closed-convergence.org=

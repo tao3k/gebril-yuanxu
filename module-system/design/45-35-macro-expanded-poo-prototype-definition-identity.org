@@ -8,7 +8,7 @@
 
 * Decision
 
-Cross-process and cross-generation reuse MUST identify the expanded native POO
+Cross-process and cross-generation reuse MUST identify the expanded POO
 definition, not merely the source file that contains it.
 
 Prototype-definition identity is a structured, phase-aware and hygienic Merkle
@@ -41,7 +41,7 @@ Consequently, the meaning of a POO definition may depend on:
 - support code at higher phases;
 - compile-time inputs observed by procedural macros;
 - runtime bindings referenced by the expanded form;
-- native =gerbil-poo= operator semantics.
+- runtime =gerbil-poo= operator semantics.
 
 Two identical source fragments can therefore expand differently.  Two
 different source fragments can also expand to the same canonical POO
@@ -63,7 +63,7 @@ flowchart LR
 |----------------+---------|
 | Surface input identity | Identify module syntax and declared imports used as expansion input |
 | Expansion execution identity | Decide whether macro expansion must be executed again |
-| Expanded POO semantic identity | Identify the canonical native prototype and slot definitions produced by expansion |
+| Expanded POO semantic identity | Identify the canonical runtime prototype and slot definitions produced by expansion |
 | Compiled artifact identity | Decide whether a compiled artifact may be loaded in the current runtime and target |
 | Slot-result identity | Decide whether one observed slot result may be reused under current contributions and dependencies |
 
@@ -89,14 +89,14 @@ prove that the final expanded POO semantics changed.
 
 Expanded POO semantic identity commits to:
 
-- canonical expanded native POO forms;
+- canonical expanded POO forms;
 - the hygienic binding graph;
 - runtime binding identities;
-- prototype supers and native precedence;
+- prototype supers and runtime precedence;
 - individual slot-definition identities;
 - nested POO definition identities;
 - slot-contract attachments;
-- native =gerbil-poo= operation identities.
+- runtime =gerbil-poo= operation identities.
 
 If a transformer implementation changes but fresh expansion produces the same
 canonical result and resolved binding graph, the expansion execution identity
@@ -106,8 +106,8 @@ changes while the expanded POO semantic identity may remain stable.
 flowchart TD
   O["Original transformer closure"] -->|"expands the macro use"| A["Canonical POO definition A"]
   N["Refactored transformer closure"] -->|"forces a fresh expansion"| B["Canonical POO definition B"]
-  A -->|"same binding graph and native POO structure"| I["Stable semantic definition identity"]
-  B -->|"same binding graph and native POO structure"| I
+  A -->|"same binding graph and POO structure"| I["Stable semantic definition identity"]
+  B -->|"same binding graph and POO structure"| I
   O -->|"different transformer content invalidates expansion execution cache"| X["Distinct expansion execution identity"]
   N -->|"different transformer content invalidates expansion execution cache"| X
 #+end_src
@@ -156,7 +156,7 @@ flowchart TD
 
 The prototype commitment contains:
 
-- ordered supers and native precedence;
+- ordered supers and runtime precedence;
 - canonical slot-key structure;
 - one identity leaf per slot definition;
 - nested prototype-definition identities;
@@ -174,7 +174,7 @@ An individual slot-definition identity includes:
 - canonical expanded slot computation;
 - resolved runtime bindings referenced by the computation;
 - the relevant prototype lookup lineage;
-- the native POO operation identities used;
+- the POO operation identities used;
 - attached POO contract identities;
 - nested slot-definition identities actually embedded;
 - declared purity and cacheability boundary.
@@ -195,15 +195,15 @@ invalidation and reuse rules.
 
 * Reflection-dependent invalidation width
 
-Native POO reflection determines how much prototype structure a demand
+POO reflection determines how much prototype structure a demand
 observes.
 
-| Native observation | Required definition dependency |
+| Runtime observation | Required definition dependency |
 |--------------------+--------------------------------|
-| Demand of one known slot through =.ref=, =.@= or equivalent native access | That slot's lookup lineage and definition identity |
+| Demand of one known slot through =.ref=, =.@= or equivalent runtime access | That slot's lookup lineage and definition identity |
 | =.has?= or =.key?= for one key | Existence identity for that key |
 | =.all-slots= | Complete prototype-shape identity |
-| =.mix= or inherited lookup | Ordered supers and relevant native precedence |
+| =.mix= or inherited lookup | Ordered supers and relevant runtime precedence |
 | Nested object access | Every traversed nested identity and final slot definition |
 | Structural diagnostic projection | The explicitly projected structural identity, not semantic success |
 
@@ -221,10 +221,10 @@ prototype.  The observed operation defines the dependency width.
 | Expanded slot computation changes | That slot and its reverse demand closure |
 | Slot is added or removed | Prototype shape and relevant structural observers |
 | Slot existence changes | Corresponding =.has?= and =.key?= observers |
-| Supers or native precedence changes | Every affected lookup lineage |
+| Supers or runtime precedence changes | Every affected lookup lineage |
 | Referenced runtime binding changes | Slot definitions that resolve to that binding |
 | Nested prototype changes | Consumers of the changed nested identity path |
-| Relevant native =gerbil-poo= operation semantics change | Definitions using that operation |
+| Relevant runtime =gerbil-poo= operation semantics change | Definitions using that operation |
 | Compiler code generation or target ABI changes | Compiled artifact identity |
 
 The implementation MAY conservatively invalidate a wider closure when a
@@ -274,7 +274,7 @@ semantics.
 - A fresh expansion that canonicalizes identically may preserve expanded POO
   semantic identity.
 - Compiler, backend, target and ABI changes invalidate compiled artifacts.
-- Native =gerbil-poo= operation semantic changes invalidate definitions using
+- Runtime =gerbil-poo= operation semantic changes invalidate definitions using
   those operations.
 - Platform-dependent runtime behavior makes the affected result non-portable
   unless the platform identity is an explicit semantic input.
@@ -317,7 +317,7 @@ A prototype-definition receipt SHOULD commit to:
 - prototype shape and ordered supers;
 - individual slot-definition identities;
 - runtime binding closure;
-- native POO substrate identity;
+- POO substrate identity;
 - compiled artifact identities where produced;
 - diagnostic source-location projection;
 - predecessor receipt and invalidation relation.
@@ -343,7 +343,7 @@ Cross-process reuse MUST fail closed when:
 
 * Acceptance checklist
 
-- [X] Definition identity is based on expanded native POO semantics rather than
+- [X] Definition identity is based on expanded POO semantics rather than
   whole-source hashes.
 - [X] Expansion execution identity and expanded POO semantic identity are
   distinct.
@@ -357,7 +357,7 @@ Cross-process reuse MUST fail closed when:
 - [X] Procedural macros are classified as hermetic, captured or opaque for
   reuse.
 - [X] Toolchain, compiled artifact and POO semantic identities remain layered.
-- [X] Native =gerbil-poo= operation identity participates in affected
+- [X] Runtime =gerbil-poo= operation identity participates in affected
   definitions.
 - [X] =gerbil.pkg= remains package management rather than semantic evidence.
 - [ ] Validate the model with executable phase-import, transformer-refactor,
@@ -370,10 +370,10 @@ Cross-process reuse MUST fail closed when:
 - [[file:44-current-project-programming-style.org][Current Project Programming Style]]
 - [[file:45-06-gerbil-poo-api-alignment.org][gerbil-poo API Alignment]]
 - [[file:45-17-profile-expansion-reflection-and-identity.org][Profile Expansion, Reflection and Identity]]
-- [[file:45-25-native-poo-fixed-point-operand-composition.org][Native POO Fixed-Point Operand Composition]]
-- [[file:45-26-native-gerbil-poo-operation-surface.org][Native gerbil-poo Operation Surface]]
-- [[file:45-27-native-poo-operations-as-module-semantics.org][Native POO Operations as Module Semantics]]
-- [[file:45-28-poo-native-slot-contracts-and-algebraic-laws.org][POO-Native Slot Contracts and Algebraic Laws]]
+- [[file:45-25-poo-fixed-point-operand-composition.org][POO Fixed-Point Operand Composition]]
+- [[file:45-26-runtime-gerbil-poo-operation-surface.org][Runtime gerbil-poo Operation Surface]]
+- [[file:45-27-poo-operations-as-module-semantics.org][POO Operations as Module Semantics]]
+- [[file:45-28-poo-slot-contracts-and-algebraic-laws.org][POO-Runtime Slot Contracts and Algebraic Laws]]
 - [[file:45-31-incremental-poo-fixed-point-invalidation-and-reuse.org][Incremental POO Fixed-Point Invalidation and Reuse]]
 - [[file:45-34-pure-poo-cache-materialization-and-live-object-boundary.org][Pure POO Cache Materialization and Live Object Boundary]]
 

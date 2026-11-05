@@ -59,7 +59,7 @@ The same observed AWS Case records this callback partition:
 
 The seven 176-read brackets each include a 167-read public configuration
 guard, plus nine other reads. These nested reads are inclusive here, and are
-not added again to the exclusive Graph table below. No native-import, Nix or
+not added again to the exclusive Graph table below. No gerbil-import, Nix or
 package stage occurs inside these measured request brackets. That observation
 does not make an extensible request getter or callback universally pure.
 Lazy request preparation still occurs before callbacks when external packages

@@ -6,14 +6,8 @@
 ;;; Boundary: deterministic lazy-slot admission over upstream POO objects.
 ;;; Invariant: debug paths retain symbols only; receivers and values stay out.
 
-(import :gerbil/core
-        (only-in :clan/poo/object
-                 .o
-                 .ref
-                 .all-slots
-                 .putslot!
-                 object?
-                 $computed-slot-spec)
+(import (runtime: :gerbil/core) (only-in :gerbil/core make-object)
+        (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
         (only-in :clan/poo/support/debug traced-function)
         (only-in :clan/poo/debug DDT)
@@ -140,7 +134,7 @@
 ;; yuanxu-debug-poos
 ;;   : (-> YuanxuDebugSlotPolicy Symbol [PooObject] port: OutputPort emit?: Boolean [PooObject])
 ;;   | doc m%
-;;       Install the same slot policy over a batch of native POO values. The
+;;       Install the same slot policy over a batch of POO values. The
 ;;       shared policy is admitted once at the batch boundary; each returned
 ;;       receiver still owns independent :clan/poo lazy-slot caches.
 ;;     %
@@ -164,7 +158,7 @@
 ;;   | doc m%
 ;;       Create a POO proxy whose inherited slots are admitted before lazy
 ;;       resolution. Crossing the guard's depth budget raises a typed anomaly;
-;;       native POO cycle failures propagate unchanged when detected first.
+;;       POO cycle failures propagate unchanged when detected first.
 ;;       Successful values retain ordinary POO object-local caching.  Clan's
 ;;       tracer receives only a zero-argument resolver returning `resolved`.
 ;;

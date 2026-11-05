@@ -7,7 +7,7 @@
 * Actual package inputs
 
 The [[file:11.49-multi-provider-configuration-admission.org][whole-configuration control]] extends these publications to one selected
-ConfigurationContract and one native admission over provider/resource/data.
+ConfigurationContract and one runtime admission over provider/resource/data.
 
 This extends the two-version AWS control to three distinct Provider families.
 Each package was fetched with its fixed archive hash by Nix, wrapped with the
@@ -39,7 +39,7 @@ signature policy. The supported control platform is aarch64-darwin.
 * Common module mechanism; domain-specific ordinary values
 
 Build/test composition supplies artifact paths once. Each published scope is a
-normal instance of the same native module prototype:
+normal instance of the same runtime module prototype:
 
 #+begin_src scheme
 (.def (AWS @ OpenTofuModule.)
@@ -51,7 +51,7 @@ normal instance of the same native module prototype:
 #+end_src
 
 These declarations belong to upstream package integration. Resource authors
-use only the published scope and native admission:
+use only the published scope and runtime admission:
 
 #+begin_src scheme
 (use-module AWS as cloud
@@ -75,11 +75,11 @@ Ordinary values require no inheritance operators. No getenv, artifact-directory
 factory, manually retrieved prototype or user-authored proof enters these
 resource configurations. The existing hygienic =use-module= implementation is
 unchanged. The repeated =cloud= alias is local to each expression and binds that
-expression's original native module object.
+expression's original runtime module object.
 
 All three published resource Contracts retain Provider address, exact package
 version and raw Schema digest. Module source is the existing generated SourceRef
-for its own artifact directory, with matching native metadata. Each native
+for its own artifact directory, with matching runtime metadata. Each runtime
 admission result identifies the Contract that actually validated its candidate.
 A metadata record remains an association; the package manager owns trust in the
 selected package closure.
@@ -107,7 +107,7 @@ This is also a behavioral control: the AWS configuration Contract accepts
 field. Null's empty Provider configuration rejects =region=.
 
 A second unmodified same-name case exists within awscc: both resource and data
-exports contain =awscc_ec2_security_group=. They remain separate native slots:
+exports contain =awscc_ec2_security_group=. They remain separate runtime slots:
 
 #+begin_src scheme
 (use-module AWSCC as cloud
@@ -125,7 +125,7 @@ the existing generic publisher. Contract cache keys include kind and name;
 qualified identities include package Provider/version, kind, name and export
 digest. No Provider-name switch, shared global Contract registry, public macro
 or new configuration DSL was added. The private raw-export binding is named
-=provider-schema=, distinct from the new native =provider= slot, so POO lexical
+=provider-schema=, distinct from the new runtime =provider= slot, so POO lexical
 slot binding cannot capture it while constructing resource catalogs.
 
 * Demand boundaries and error paths
@@ -148,7 +148,7 @@ The executed checks establish:
 Port type rejection retains =(ingress 0 from_port)= for AWS and
 =(security_group_ingress 0 from_port)= for awscc. A numeric Null trigger is
 rejected at =(triggers release)=. The real awscc nested_type list is consumed
-by the same shared JSON Schema -> native Contract compiler; no private awscc
+by the same shared JSON Schema -> Contract compiler; no private awscc
 field validator duplicates that owner.
 
 This is compilation/publication laziness, not resource-granular schema IO:
@@ -199,7 +199,7 @@ configuration entry was added. Existing module scope, bounded-syntax, artifact,
 Schema and explicit-collection gates also passed serially. All seven processes
 returned exit 0 with =MODULE-OK=, =HARNESS-OK= and final =OK= and no
 case/check/harness errors or heap/stack overflow. Tests used the existing default
-native runtime, not an isolated or compatibility environment.
+runtime, not an isolated or compatibility environment.
 
 The structured receipt is product
 =t/fixtures/opentofu/family-publication-control.json=. It records each actual
@@ -211,7 +211,7 @@ remote-CI closure.
 * Reflection and remaining design work
 
 The reuse is concrete: three different libraries use one package producer,
-one Schema converter and one native publication/admission route, while keeping
+one Schema converter and one runtime publication/admission route, while keeping
 their actual vocabulary and package identity. Ordinary authoring remains plain
 values; no Provider-specific import/factory/source-proof chain is repeated.
 Provider configuration and resource/data Contracts have explicit separate roles.

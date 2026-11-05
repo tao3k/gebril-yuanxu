@@ -1,7 +1,7 @@
 #+title: Context Org Anchors and Serialized Session Claim Host
 #+date: [2026-10-10]
 #+language: en
-#+property: STATUS local-native-claim-qualified
+#+property: STATUS local-runtime-claim-qualified
 #+begin_comment
 SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 AI Agentic-context interprets Orgize's public =parse-org-rowan-events= tree.
 Its semantic facade reexports that API; no replacement line parser is introduced.
-=objects.ss= and =types.ss= own =AiAgenticContextOrgAnchor.= and its native Type.
+=objects.ss= and =types.ss= own =AiAgenticContextOrgAnchor.= and its Type.
 =funs-anchors.ss= closes through =funs.ss= and =interface.ss=; =funs-session.ss=
 constructs independent =SessionTask.= values. Session remains a composed Module;
 Memory remains a Context Feature. The explicit effectful =session-host.ss= is an
@@ -28,7 +28,7 @@ Bounds are 256 document IDs and 32 requested anchors; IDs are 1..256 characters.
 Every binding records the source digest, parser identity, selected projection,
 Scope, Session, Turn, container and exact value byte span. Replay reconstructs
 all fields from the original bytes. Context Task anchor references are fresh
-binding digests, with native bindings retained on the Task. Session preserves
+binding digests, with runtime bindings retained on the Task. Session preserves
 references without interpreting Org. This is source-byte replay, not physical
 WorkTree authentication or action permission.
 
@@ -37,7 +37,7 @@ WorkTree authentication or action permission.
 The Host's serialized owner enrolls copied source bytes and canonical Scope,
 restriction/profile, Task revision, requested IDs and a registered grant identity
 and generation. Its private bounded ledger holds the current source generation
-and Session schedule. Returned snapshots copy strings and closed native objects.
+and Session schedule. Returned snapshots copy strings and closed runtime objects.
 A caller cannot mutate the private ledger through a returned receipt.
 
 Claim publication checks exact current owner revision and source generation,
@@ -88,21 +88,21 @@ matched mutations produce actual counterexamples for owner/source mismatch,
 grant generation, revocation, clock expiry, obligation loss and foreign Scope.
 The finite model has two refreshes, one claim and no reconciliation, matching the
 bounded delivered Host surface. Its anchor availability abstracts unique selected
-ID presence; concrete native parser controls cover that boundary separately.
+ID presence; concrete runtime parser controls cover that boundary separately.
 A transient Apalache port conflict failed one run; the unchanged full group passed
 after the listener exited. No watchdog or deadline was widened.
 
-CI includes both native regression files, all Quint sources/cases and the extended
+CI includes both runtime regression files, all Quint sources/cases and the extended
 =AgenticAILabContextProof= target. Exact source hash/invariant metadata binding and six
 proof-gate tests passed locally. Metadata binding is not semantic refinement;
-automatic counterexample-to-native replay remains absent.
+automatic counterexample-to-runtime replay remains absent.
 
 * Remaining end-to-end qualification
 
 The Context Use v1 wire contract still has six fields. It does not carry the full
 Session/Turn/Attempt/provider-destination envelope. A versioned successor must
 resolve current authenticated source lineage and producer receipts, qualify its
-native ABI with MRR and MRR Data consumers, and implement provider disclosure,
+runtime ABI with MRR and MRR Data consumers, and implement provider disclosure,
 result admission and matching terminal/isolation receipts. Durable reconciliation,
 artifact readiness, cancellation and multi-worker throughput require their own
 runtime/backend evidence. This milestone closes local Org association and local

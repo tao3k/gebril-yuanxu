@@ -9,7 +9,7 @@
 
 The control-plane requirements remain current; the embedded stage/clause UI is
 historical.  RFC 164, RFC 29, RFC 44 and RFC 45-95 own current authoring:
-native noun slots, maintained Profile responsibilities and no stage DSL in
+runtime noun slots, maintained Profile responsibilities and no stage DSL in
 =config.ss=.
 
 * Purpose

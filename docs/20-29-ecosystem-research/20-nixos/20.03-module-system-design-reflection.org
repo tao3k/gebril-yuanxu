@@ -20,7 +20,7 @@ source-backed analysis, not runtime results.
 | Mechanism | Source-study observation | Consequence for our design |
 |-----------+--------------------------+----------------------------|
 | Catalogue | module-list.nix enumerates available implementations | Availability, selection, forcing and building need separate cost counters |
-| Definition collection | lib.modules collects contributions and locations | Native slot lookup alone cannot explain every contributor or discarded definition |
+| Definition collection | lib.modules collects contributions and locations | Runtime slot lookup alone cannot explain every contributor or discarded definition |
 | Option evaluation | Declarations supply types and merge semantics | Contract predicates alone are insufficient for merge policy, documentation and migrations |
 | Argument phases | specialArgs and merged _module.args have different visibility | Source selection must not require an effective value produced by the graph being selected |
 | Maintained consumer | PostgreSQL module derives settings and service contributions | Validate generated consumers, not only the user-facing field shape |

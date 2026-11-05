@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative composition protocol
-- Semantic core :: Native =gerbil-poo= objects, prototypes, and operations
+- Semantic core :: Runtime =gerbil-poo= objects, prototypes, and operations
 - Related modules :: =45-41-poo-profile-slot-contribution-priority.org= and =45-47-user-composition-root-binding-and-thin-macro-contract.org=
 
 This module separates the ordinary =compose= function, the first-class =profiles= POO composition strategy, and the Agentic AI Lab evaluator.
@@ -97,7 +97,7 @@ The clause admits numeric priority values and the named POO semantic endpoint
 values =profile-priority/default= and =profile-priority/force=.  These
 endpoints are ordinary values, not new public macros.  Numeric ordering,
 equal-priority composition, authority-first admission, and separation from
-native prototype precedence are owned by
+runtime prototype precedence are owned by
 [[file:45-101-typed-module-relation-contribution-composition-conflict-and-withdrawal-algebra.org][Typed
 Module Relation Contribution and Conflict Algebra]].  The admitted value
 family and Contract are owned by
@@ -110,7 +110,7 @@ expansion.  A non-literal POO value is validated by the profile contract when
 the pure profile object is admitted; the macro does not evaluate it or embed
 runtime policy.
 
-Advanced profile construction and refinement use the native =gerbil-poo=
+Advanced profile construction and refinement use the runtime =gerbil-poo=
 object/prototype interface directly.  Both surfaces write the same semantic
 priority slot and therefore produce the same normalized refinement identity
 defined by
@@ -123,7 +123,7 @@ flowchart LR
   Parser -->|"omitted clause projects numeric zero"| Default["Profile POO priority slot"]
   Parser -->|"explicit value projects one admitted semantic priority"| Explicit["Profile POO priority slot"]
   Parser -.->|"duplicate or invalid literal fails during expansion"| Diagnostic["Actionable syntax diagnostic"]
-  Advanced["Native POO profile refinement"] -->|"writes the same semantic slot"| Explicit
+  Advanced["POO profile refinement"] -->|"writes the same semantic slot"| Explicit
   Default -->|"enters authority-first priority algebra"| Algebra["POO control-priority merge"]
   Explicit -->|"enters authority-first priority algebra"| Algebra
   Algebra -->|"normalizes semantic value rather than syntax"| Key["Profile refinement identity"]
@@ -142,7 +142,7 @@ flowchart LR
 - [ ] Reject an invalid literal with an actionable contextual diagnostic.
 - [ ] Validate non-literal POO priority values through the profile contract
       without evaluating policy in the macro.
-- [ ] Prove the shallow macro and native POO refinement produce the same
+- [ ] Prove the shallow macro and POO refinement produce the same
       normalized profile identity.
 - [ ] Prove =priority= has no standalone public binding.
 
@@ -198,7 +198,7 @@ runtime handle
 mutable registry
 #+end_src
 
-The lazy definition graph must be represented through real =gerbil-poo= objects and native operations. This RFC does not introduce a raw record, alist, or parallel object DSL.
+The lazy definition graph must be represented through real =gerbil-poo= objects and runtime operations. This RFC does not introduce a raw record, alist, or parallel object DSL.
 
 * Structural validation and semantic evaluation
 
@@ -222,7 +222,7 @@ A structural check must not become an eager whole-system evaluation.
 
 * Strategy extension
 
-An advanced strategy is constructed through native POO prototype extension:
+An advanced strategy is constructed through POO prototype extension:
 
 #+begin_src scheme
 (def audited-profiles
@@ -293,7 +293,7 @@ It has the same observable semantic result as:
   production)
 #+end_src
 
-Normalization operates on the pure composition graph. It does not force business slots, depend on operand presentation order, or apply a directional native operation implicitly.
+Normalization operates on the pure composition graph. It does not force business slots, depend on operand presentation order, or apply a directional runtime operation implicitly.
 
 * Anchored roots and different strategies
 

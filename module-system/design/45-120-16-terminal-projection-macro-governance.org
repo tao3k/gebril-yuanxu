@@ -12,7 +12,7 @@ Accepted.
 
 * Context
 
-Agentic AI Lab uses native =gerbil-poo= objects, prototype refinement, slot
+Agentic AI Lab uses runtime =gerbil-poo= objects, prototype refinement, slot
 operators, and pure functions as its semantic foundation.  Some terminal
 receipts and presentation surfaces repeat a small fixed pattern: evaluate
 explicit local bindings once, construct ordered rows with fixed keys, and
@@ -36,7 +36,7 @@ Terminal projection macros are constrained internal declarations.  Their only
 responsibility is to lower a fixed, explicit external shape into an ordinary
 pure projection procedure.
 
-They do not add a public composition abstraction.  Native POO objects,
+They do not add a public composition abstraction.  POO objects,
 prototype refinement, slot operators, and pure functions remain the only
 semantic extension foundation.
 
@@ -44,7 +44,7 @@ semantic extension foundation.
 
 #+begin_src mermaid
 flowchart LR
-  Object["Native POO value"]
+  Object["POO value"]
   Function["Pure semantic function"]
   Declaration["Bounded hygienic projection declaration"]
   Procedure["Ordinary Gerbil projection procedure"]
@@ -65,7 +65,7 @@ flowchart LR
 A terminal projection macro is admissible only when all of the following are
 true:
 
-- [X] The projected semantics already exist in native POO values or pure
+- [X] The projected semantics already exist in POO values or pure
   functions.
 - [X] The expansion is bounded by the declaration size.
 - [X] The expansion produces an ordinary Gerbil procedure.
@@ -79,7 +79,7 @@ true:
 - [X] The declaration owns no runtime effect, resolver, fixed point, recovery
   action, capability grant, or policy decision.
 
-If any item is false, the abstraction MUST be expressed as a native POO object,
+If any item is false, the abstraction MUST be expressed as a POO object,
 prototype refinement, slot operator, or pure function instead.
 
 * Required boundaries
@@ -108,7 +108,7 @@ Terminal projection macros MUST NOT:
 * Relationship to public syntax
 
 The bounded public macros =use-composition= and =use-module= are governed
-separately as hygienic projections onto ordinary POO-native and functional
+separately as hygienic projections onto ordinary POO and functional
 semantics.
 
 Terminal receipt macros are internal implementation tools.  Their existence
@@ -118,7 +118,7 @@ enter =compose profiles= as first-class POO values.
 
 * Relationship to observability
 
-An authoritative POO-native =ObservationEvent= may be projected into a strict
+An authoritative POO =ObservationEvent= may be projected into a strict
 doctor, CLI, receipt, or serialization value through a conforming terminal
 projection procedure.
 
@@ -128,7 +128,7 @@ input to =compose profiles=.
 
 * Non-goals
 
-- Replacing native =gerbil-poo= objects or prototype composition.
+- Replacing runtime =gerbil-poo= objects or prototype composition.
 - Defining a dynamic alist, record, patch, or configuration DSL.
 - Moving semantic validation from Contracts into macros.
 - Encoding runtime coordination in macro expansion.

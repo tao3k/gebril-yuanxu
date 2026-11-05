@@ -19,24 +19,24 @@ wrappers, not a user flag, name comparison or second method registry.
 [[file:../../../../../object-family/read-projection.ss][The Core call region]] owns only values enrolled by the actual maintained constructors.
 Class labels, ancestry and receipt kinds do not enroll an existing object.
 The constructors still call the existing Type predicates. Direct slots must
-remain constant native specs, and the receiver must not change during its
+remain constant runtime specs, and the receiver must not change during its
 validation. An observer edit or source/MOP wrapping opens the whole region.
 
 [[file:../../../../../poo-clos/types.ss][The policy guard]] checks the original carrier predicates/prototypes, absence of
-inherited MOP hooks and native owner revisions. Revisions detect mutation and
+inherited MOP hooks and runtime owner revisions. Revisions detect mutation and
 restoration, not just final field equality. They remain part of the lifetime
 witness, so changing a shared prototype after its instances are collected still
 invalidates the old Graph. The guard is not a successful-admission cache.
 The baseline belongs to the original private declarations. Editing those public
 owners, even restoring their old values later, does not certify the modified
 policy for future compaction: ordinary CLOS remains available with full trace.
-This uses existing native revisions, not another version namespace or registry.
+This uses existing runtime revisions, not another version namespace or registry.
 
 * Project ownership, preserve original validity
 
-The existing public native recording frame bounds the call. All actual reads
+The existing public runtime recording frame bounds the call. All actual reads
 and before-read checks still reach their existing observers. The action runs
-once, including multiple return values. No native observer is disabled.
+once, including multiple return values. No runtime observer is disabled.
 
 Before weakening ownership, public replay checks that the original call trace
 is current. A failed call or failed check keeps its complete trace and raises
@@ -44,7 +44,7 @@ the original exception. No acceptance result or method selection is reused.
 
 The identity-based traversal crosses locally owned reads and stops at the first
 external token on each path. That ORIGINAL external token is retained strongly,
-with its complete original dependency graph. Native replay already traverses
+with its complete original dependency graph. Runtime replay already traverses
 that graph; Core does not duplicate every transitive prefix as another root.
 An external token that retains a local carrier is deliberately not rewritten.
 
@@ -55,23 +55,23 @@ original token. They carry no computed result or currentness approval:
 | At later public replay | Required behavior |
 |------------------------+-------------------|
 | Receiver has been collected | Still check all promoted external roots and shared policy |
-| Receiver remains alive | Replay its ORIGINAL tokens with the native public checker |
+| Receiver remains alive | Replay its ORIGINAL tokens with the runtime public checker |
 | Receiver alive, original token missing | Refuse; invalidation may have removed its read table |
 | Shared predicate/prototype policy changed | Refuse even if all local carriers were collected |
 
 The region's strong ownership index, traversal set and original root list die
-at return. The delivered native read bundle closes only over the external
+at return. The delivered runtime read bundle closes only over the external
 frontier, weak witnesses and bounded shared policy guard. This does not clear a
 Graph cache, SDK state, bindings or read tables. The Graph remains reachable.
 
-This uses the public native token constructor/delivery/replay mechanism. It does
-not recreate the private native currentness predicate. Weak witnesses are
+This uses the public runtime token constructor/delivery/replay mechanism. It does
+not recreate the private runtime currentness predicate. Weak witnesses are
 lifetime evidence attached to the existing Graph read dependency, not another
 memoization/authority system. No result is recovered from them.
 
 * Conservative open paths
 
-Unknown method procedures, native descriptor MOP hooks,
+Unknown method procedures, runtime descriptor MOP hooks,
 compute-applicable/effective hooks, non-standard
 combinations, terminal protocol calls, altered carrier policy, edited carriers
 and exceptions keep the complete original dependency list. A nested unknown
@@ -79,19 +79,19 @@ call opens the entire enclosing region. Ordinary unscoped CLOS calls retain
 their existing recording behavior.
 
 Observers can retain a carrier even when a maintained method does not. Such a
-receiver remains weakly alive and must pass original replay. The native test
+receiver remains weakly alive and must pass original replay. The runtime test
 also deliberately mis-enrolls an escaping fixture body, invalidates its frame,
 collects memory and verifies refusal: missing weak evidence is never approval.
 That negative fixture is not a producer permission or production certificate.
 
-* Quint / Lean / native correspondence
+* Quint / Lean / runtime correspondence
 
 [[file:../../../../../dev/proofs/quint/OwnedReads.qnt][OwnedReads]] checks finish/mutation/collection/publication schedules. It covers
 external Contract promotion, shared prototype policy, collected local receivers,
 live receivers whose old token disappeared and strong fallback for unknown code.
 Its omission controls must fail; its acceptance control must reach publication.
 The finite owned region includes sharing and a cycle; the Contract is reachable
-only below an owned node. "Escaped" includes retention by an external native
+only below an owned node. "Escaped" includes retention by an external runtime
 token's unmodified dependency graph, not only a returned method frame.
 
 [[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean][Lean]] proves arbitrary-identity soundness under an explicit coverage premise:
@@ -103,16 +103,16 @@ finite lifetime schedules; Lean does not repeat that search or claim byte bounds
 The frontier theorem reuses the existing TestAdmission worklist proof with
 dependencies cut ONLY at external nodes. For every external identity demanded
 by the full graph, a discovered external frontier token still reaches it through
-original native dependencies. Shared nodes and cycles do not require a second
+original runtime dependencies. Shared nodes and cycles do not require a second
 traversal algorithm or a new source graph. The remaining implementation premise
 is that the Scheme identity DFS implements that completed finite cut traversal.
 
-Remaining premises are explicit: native weak-value tables do not collect a
-strongly reachable receiver; native replay validates its original tokens; the
+Remaining premises are explicit: runtime weak-value tables do not collect a
+strongly reachable receiver; runtime replay validates its original tokens; the
 frontier traversal covers the original trace; the two audited wrappers preserve
-their source-level non-escape property. Native tests check those interfaces and
+their source-level non-escape property. Runtime tests check those interfaces and
 real mutations, not a formal proof of Gerbil's GC or arbitrary Scheme effects.
-The sequential native mutation protocol remains the supported boundary.
+The sequential runtime mutation protocol remains the supported boundary.
 
 The isolated getter fixture places its external read below an owned token and
 collects the owned receiver before changing the policy. The old root must still

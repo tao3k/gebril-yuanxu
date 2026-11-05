@@ -5,17 +5,8 @@
 
 ;;; Boundary: field, contribution, and transformer contracts for module objects.
 
-(import :gerbil/core
-        (only-in :clan/poo/object
-                 .cc
-                 .mix
-                 .o
-                 .ref
-                 .slot?
-                 object?
-                 make-object
-                 $constant-slot-spec
-                 $computed-slot-spec)
+(import (runtime: :gerbil/core)
+        (runtime: :clan/poo/object)
         (only-in :clan/poo/mop
                  .defgeneric Any Bool Object Type element? raise-type-error)
         (only-in :clan/poo/type List String Symbol)
@@ -115,8 +106,8 @@
          (yuanxu-module-alist? (cdr value)))
         (else #f)))
 
-;;; Module field types are native gerbil-poo Type descriptors.  The symbol in
-;;; `module-value-kind` is a report-only projection; native Type owns semantic
+;;; Module field types are gerbil-poo Type descriptors.  The symbol in
+;;; `module-value-kind` is a report-only projection; Type owns semantic
 ;;; dispatch and admission.
 (def (yuanxu-module-value-type base-type kind)
   (.cc base-type
@@ -216,7 +207,7 @@
    (yuanxu-module-field-contract-metadata field)))
 
 ;;; The contribution prototype owns derived extension behavior.  Concrete
-;;; contributions refine this native POO value with constant defaults; no
+;;; contributions refine this POO value with constant defaults; no
 ;;; positional record or compatibility representation participates in dispatch.
 (def yuanxu-module-field-contribution-prototype
   (.o (:: self)
@@ -314,7 +305,7 @@
        (yuanxu-module-field-contribution-value contribution))))
 
 ;;; Field merge names are interpreted once behind the prototype method.  The
-;;; contribution-to-extension path dispatches through native POO slots.
+;;; contribution-to-extension path dispatches through POO slots.
 ;; : (-> Symbol Symbol PooModuleFieldValue PooGraphOperation)
 (def (yuanxu-module-field-operation field-identity merge value)
   (cond
@@ -333,7 +324,7 @@
    (else
     (yuanxu-graph-slot-override field-identity value))))
 
-;;; Native generic dispatch lets refined contribution prototypes replace the
+;;; Runtime generic dispatch lets refined contribution prototypes replace the
 ;;; projection without extending this owner with another representation case.
 ;; : (-> PooModuleFieldContribution PooGraphOperation)
 (.defgeneric (yuanxu-module-field-contribution-operation contribution)

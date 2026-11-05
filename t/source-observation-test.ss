@@ -17,7 +17,7 @@
         (only-in "./qualification/service-publication/fixtures.ss" read-overrides))
 (export source-observation-test test-cleanup!)
 
-;; Actual SDK expansion of a temporary Scheme file attaches native slot origins.
+;; Actual SDK expansion of a temporary Scheme file attaches runtime slot origins.
 ;; No fabricated location rows or caller-maintained observation sets.
 (def (observed-config path text)
   (write-source path text)
@@ -40,11 +40,33 @@
       profile: yuanxu-default-testing-case-profile
       (fixture DirectoryFixture)
       ;; Exercise the closed path naturally, without disabling an observer.
-      ;; The native Case/resource watchdog remains enabled by this Profile.
+      ;; The runtime Case/resource watchdog remains enabled by this Profile.
       (check-equal? (current-module-source-observer) #f)
       (def batch-path (path-expand "batch.json" (.get fixture root)))
       (write-source batch-path "{}")
       (def batch (list (cons batch-path "{}")))
+      ;; Closed checks share the already verified file kind. An observer that
+      ;; removes itself during the first event still owns the original entry
+      ;; sequence; choosing the closed path afterwards would change its trace.
+      (defvalues (_closed closed-counts)
+        (call-with-module-source-operation-measurement
+          (lambda () (module-source-admit-current! batch))))
+      (check-equal? (hash-get closed-counts '(source stats)) 1)
+      (defvalues (_observed observed-counts)
+        (call-with-module-source-operation-measurement
+          (lambda ()
+            (parameterize ((current-module-source-observer
+                            (lambda (key _amount)
+                              (when (eq? key 'source-comparisons)
+                                (current-module-source-observer #f)))))
+              (module-source-admit-current! batch)))))
+      (check-equal? (hash-get observed-counts '(source stats)) 2)
+      ;; The admission owner retains its diagnostic for a non-regular input.
+      (check-exception
+        (module-source-admit-current!
+          (list (cons (.get fixture root) "{}")) "selected source changed")
+        (lambda (failure) (and (Error? failure)
+          (string=? (Error-message failure) "selected source changed"))))
       (def outer-current #f)
       (def inner-current #f)
       (defvalues (_result counts)
@@ -78,7 +100,7 @@
         (lambda (failure) (and (Error? failure)
           (string=? (Error-message failure) "first batch source changed"))))
       ;; Missing files remain ordinary absence. Malformed queries must retain
-      ;; their native error, including inside the pure source-read window.
+      ;; their runtime error, including inside the pure source-read window.
       (check-equal? (module-source-type (path-expand "missing.ss" (.get fixture root))) #f)
       (check-equal?
         (type-exception?

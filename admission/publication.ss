@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Platform-owned admission context over existing selected/build Graph guards.
-(import :clan/poo/object
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop define-type Type element?)
         (only-in :yuanxu/module-system/source/build unique-build-inputs)
         (only-in :yuanxu/module-system/building/artifacts admit-build-artifacts!
@@ -13,18 +13,18 @@
                  call-with-contract-analysis-root)
         (only-in :yuanxu/module-system/source/admission
           module-source-read module-source-admit-current! call-with-module-source-read-cache
-          current-module-source-observer)
+          current-module-source-observer module-source-object-policy)
         (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-port)
         (only-in :yuanxu/modules/json-schema/json-schema-normalize yuanxu-json-schema-normalize)
-        (only-in :yuanxu/modules/json-schema/json-schema-ir yuanxu-json-schema-normalization->alist)
-        (only-in :yuanxu/modules/json-schema/json-schema-ir yuanxu-json-schema-normalization-schema)
+        (only-in :yuanxu/modules/json-schema/json-schema-ir
+                 yuanxu-json-schema-normalization->alist yuanxu-json-schema-normalization-schema)
         (only-in :yuanxu/modules/json-schema/json-schema-receipt
           yuanxu-json-schema-contract-artifact?
           yuanxu-json-schema-contract-artifact-valid?
           yuanxu-json-schema-contract-artifact-source-ref
           yuanxu-json-schema-contract-artifact-diagnostics
           yuanxu-json-schema-contract-artifact-normalization))
-(export AdmissionPublication. module-admission-publication)
+(export AdmissionPublication. module-admission-publication selected-export-publication)
 
 (def (copy-inputs inputs)
   (map (lambda (input)
@@ -275,24 +275,33 @@
 (define-type (AdmissionPublication. @ [] graph schemas contract context invocation configuration-inputs package-current)
   .for-export:
   (lambda (selection owner name)
+    ;; One assembly consumes one selected Graph. Re-reading this cached slot
+    ;; replays its complete construction dependencies, not just a pointer lookup.
+    ;; Keep the runtime receiver/ancestor revisions instead: a callback must not
+    ;; replace-and-restore selection while its retained Graph is being consumed.
+    (def selection-current?
+      (module-source-object-policy (list selection) reject-protocols?: #f))
     ;; Reject a stale managed build before resolving an export scope, whose
-    ;; lazy fields may run author code. Native cache state grants no shortcut.
-    (publication-stage 'export-entry
-      (lambda ()
-        (def graph (publication-stage 'build-graph
+    ;; lazy fields may run author code. Runtime cache state grants no shortcut.
+    (def graph
+      (publication-stage 'export-entry
+       (lambda ()
+        (def value (publication-stage 'build-graph
                       (lambda () (.get selection build-graph))))
         (publication-stage 'artifact-publication-current
-          (lambda () (admit-build-artifact-publication! graph)))))
-    (let (record (publication-stage 'selected-record
+          (lambda () (admit-build-artifact-publication! value)))
+        value)))
+    (def bound
+     (let (record (publication-stage 'selected-record
                    (lambda () (.call selection .selected-record owner))))
       (publication-stage 'bind-contributions
         (lambda ()
           (let* ((base (publication-stage 'publication-base
                         (lambda ()
-                          (module-admission-publication (.get selection build-graph)
+                          (module-admission-publication graph
                             (.get record publication) (.get record scope) name))))
                  (package-guard
-                   (let ((build-current (build-artifact-publication-current (.get selection build-graph)))
+                   (let ((build-current (build-artifact-publication-current graph))
                          (packages-current (.get selection package-current)))
                      (if (and build-current packages-current)
                        (lambda () (build-current) (packages-current))
@@ -304,6 +313,9 @@
                 ;; guard plus the contribution checks; do not run it twice.
                 context: (admission-context graph schemas configuration-inputs #t)
                 package-current: package-guard)))))))
+    (unless (selection-current?)
+      (error "selected module scope changed during export assembly"))
+    bound)
   package-current: #f
   configuration-inputs: '()
   context: (admission-context graph schemas configuration-inputs)
@@ -316,3 +328,6 @@
     (metadata.bind-evidence invocation subject contract context evidence-view))
   .publish: (lambda (previous candidate)
               (publish-current @ previous candidate)))
+
+(def (selected-export-publication selection owner name)
+  (.call AdmissionPublication. .for-export selection owner name))

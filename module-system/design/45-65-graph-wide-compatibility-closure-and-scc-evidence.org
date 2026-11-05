@@ -140,14 +140,14 @@ of converting missing evidence into a false violation or an unsafe proof.
 - [X] =cutChangeCreatesNewClosureIdentity= and
   =policyChangeCreatesNewClosureIdentity=: a changed cut or policy creates a
   new proof identity.
-- [ ] Refine closure inputs, SCC evidence, and outcomes through native
+- [ ] Refine closure inputs, SCC evidence, and outcomes through runtime
   =gerbil-poo= prototypes.
 - [ ] Replay the synchronized Lean and Typst claims through external AXLE.
 
 * POO semantic ownership
 
 Compatibility closure is represented by ordinary higher-order POO objects.
-Native object and prototype semantics are owned by the canonical dependency:
+Runtime object and prototype semantics are owned by the canonical dependency:
 
 #+begin_example
 github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
@@ -161,7 +161,7 @@ fixed-point evaluator, a package compatibility registry, or a boolean
 compatibility DSL.
 
 The exact public Scheme operations remain subject to verification against the
-native =gerbil-poo= API.
+runtime =gerbil-poo= API.
 
 * Compatibility closure input
 
@@ -408,8 +408,8 @@ The implementation must distinguish at least:
 10. Cache keys include graph, SCC, contract, observation, and policy identity.
 11. Explanation evidence is produced by canonical evaluation.
 12. Only a graph-wide proof crosses compatibility admission boundaries.
-13. Native POO semantics remain owned by =gerbil-poo=.
-14. Public semantic extension remains POO-native.
+13. POO semantics remain owned by =gerbil-poo=.
+14. Public semantic extension remains POO.
 
 * Implementation checklist
 

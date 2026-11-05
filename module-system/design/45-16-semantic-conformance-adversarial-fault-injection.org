@@ -11,7 +11,7 @@ This module owns the evidence contract for moving Agentic AI Lab semantics from
 
 It defines:
 
-- POO-native conformance scenarios;
+- POO conformance scenarios;
 - semantic oracles owned by =yuanxu=;
 - adversarial fault windows;
 - causal and schedule-independent assertions;
@@ -60,7 +60,7 @@ their own Profile, Mix, provider, packaging, and distribution qualification.
 The parent may provide reusable semantic fixtures and receipt verifiers.
 Downstream projects consume them under their own test authority.
 
-* POO-native scenario model
+* POO scenario model
 
 A conformance scenario is a POO object assembled from ordinary POO prototypes
 and functional Scheme helpers.  It may contribute:
@@ -80,7 +80,7 @@ Exact scenario prototypes, helpers, and macros remain API-evidence-gated.
 
 #+begin_src mermaid
 flowchart LR
-  S["State: normative Org scenario"] -->|"lower to POO-native fixture"| F["State: Gerbil conformance fixture"]
+  S["State: normative Org scenario"] -->|"lower to POO fixture"| F["State: Gerbil conformance fixture"]
   F -->|"exercise yuanxu semantics"| R["State: runtime receipts and conditions"]
   R -->|"Agentic AI Lab-owned semantic oracle"| O["State: conformance result"]
   G["State: GSLPH dev harness"] -.->|"orchestrates build, fault injection, and reporting"| F
@@ -137,7 +137,7 @@ Scenarios verify:
 
 Scenarios verify:
 
-- POO-native receipt objects;
+- POO receipt objects;
 - canonical causal identity and external outcome identity separation;
 - typed predecessor edges;
 - immutable correction and contradiction;

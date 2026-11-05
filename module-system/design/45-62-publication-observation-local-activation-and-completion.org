@@ -43,7 +43,7 @@ generic rollout-success state.
 
 * POO semantic ownership
 
-Activation and completion policy are ordinary higher-order POO objects. Native
+Activation and completion policy are ordinary higher-order POO objects. Runtime
 prototype composition defines:
 
 - required consumer scope;
@@ -55,7 +55,7 @@ prototype composition defines:
 - stale-consumer isolation proposals;
 - continuation retention and migration policy.
 
-The public extension interface must remain POO-native. Enum-like macro tokens
+The public extension interface must remain POO. Enum-like macro tokens
 such as =#:all=, =#:quorum=, or =#:drain= must not become the semantic
 extension mechanism.
 
@@ -143,7 +143,7 @@ or rollout completion.
 - [X] =headTransitionReceiptBelongsToAtomicHeadSetProjection=: a coupled
   publication receipt belongs to the RFC 45-61 atomic head-set after
   projection.
-- [ ] Refine consumer observations and local activation receipts through native
+- [ ] Refine consumer observations and local activation receipts through runtime
   =gerbil-poo= prototypes.
 - [ ] Replay the synchronized Lean and Typst claims through external AXLE.
 
@@ -372,7 +372,7 @@ The implementation must distinguish at least:
 11. Completion references an exact consumer scope and receipt set.
 12. Timeout does not imply successful completion.
 13. Isolation remains a live authorized action.
-14. Public semantic extension remains POO-native.
+14. Public semantic extension remains POO.
 
 * Implementation checklist
 
@@ -387,7 +387,7 @@ The implementation must distinguish at least:
 - [ ] Bind continuations to semantic generation identities.
 - [ ] Define explicit continuation migration proposals and receipts.
 - [ ] Define activation receipt sets and freshness rules.
-- [ ] Define POO-native completion coverage policies.
+- [ ] Define POO completion coverage policies.
 - [ ] Define stale-consumer isolation proposals and capabilities.
 - [ ] Add tests for lost, duplicated, delayed, and reordered notifications.
 - [ ] Add tests for direct convergence across skippable head versions.

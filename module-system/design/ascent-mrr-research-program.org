@@ -8,14 +8,14 @@
 
 * Question and first decision
 
-Can the native POO fixed point carry the Ascent kernel inside POO
+Can the POO fixed point carry the Ascent kernel inside POO
 Flow while MRR retains the meaning and admission of facts?  The first work is
 an executable mapping of relation declarations, rule refinements, recursive
 dependencies, and demanded results onto =.o=, =.mix=, =self=, and =.ref=.
 The existing MRR/Ascent evaluator supplies an independent oracle for the same
 input snapshot.  Agentic AI Lab must not add a second generic fixed-point driver.
 
-This distinction needs an explicit test.  The native POO fixed point ties
+This distinction needs an explicit test.  The POO fixed point ties
 together *slot computations* across composed prototypes and evaluates demanded
 slots lazily.  Ascent computes the *least relation closure* under rules.  A
 directly self-referential slot is not automatically a semi-naive relation
@@ -41,7 +41,7 @@ The focused test completed with =MODULE-OK=, =HARNESS-OK=, and =OK=.
 
 | Facility | Verified implementation | Reuse and limit for ASCENT |
 |----------+-------------------------+----------------------------|
-| prototype precedence | =gerbil-poo/object.ss= calls Gerbil =:gerbil/runtime/c3= =c4-linearize=; Gerbil's C4 extends C3 with suffix/struct constraints | use native precedence for rule/profile refinements; do not write another ordering algorithm |
+| prototype precedence | =gerbil-poo/object.ss= calls Gerbil =:gerbil/runtime/c3= =c4-linearize=; Gerbil's C4 extends C3 with suffix/struct constraints | use runtime precedence for rule/profile refinements; do not write another ordering algorithm |
 | open recursion and demand | =.o=, =.mix=, =self=, =.ref= compose slot computations; =.ref= memoizes completed values | use for late-bound rule inputs and demand; test recursive relation behavior explicitly |
 | persistent relation storage candidates | =clan/poo/table.ss= supplies generic map/set, merge, union, difference, count, iterators; =trie.ss= supplies an integer-key persistent trie | use as the first storage substrate and benchmark it; tuple keys need a defined encoding |
 | name collision | =methods.table .join= merges map entries | this is *table union*, not the relational join in an Ascent rule body |
@@ -64,7 +64,7 @@ least-closure evaluator, or shortest-support operator.  The MRR test
 continues to verify those relation semantics independently.  POO has not yet
 produced an MRR-admissible candidate receipt.
 
-The next qualification adds a POO-native table expression over the standard
+The next qualification adds a POO table expression over the standard
 =UIntTrieSet= input API and Scheme vector, byte-vector, hash-table, and
 =list-sort= functions.  The POO snapshot retains the persistent source set;
 the bounded join builds a private adjacency vector.  At radix at most 512,
@@ -188,7 +188,7 @@ bounded byte-vector and projection-only timed thunk.  The fixture records
 microseconds, targets 950us, and has a 2000us noise ceiling;
 CI explicitly compiles this qualification module with =gxc -O= before the
 performance lane.  The earlier unoptimized hash-based module measured 4868us
-p95 on the same machine, so this result requires optimized native compilation.
+p95 on the same machine, so this result requires optimized runtime compilation.
 The preceding hash-based candidate measured 1290us p95 in Linux CI.  The
 byte-vector candidate measured 1099us p95 there with a redundant input-count
 traversal still inside its timed thunk.  With that traversal moved out, exact
@@ -203,7 +203,7 @@ persistent baseline locally.  The byte-vector candidate passed the same
 exact-output A/B check, with latest local baseline 16.303ms and candidate
 650us.  On Linux, exact head =6be3fca4= measured 25.877ms baseline and
 1.013ms candidate.  CI runs this scenario after the
-native performance lane.  Larger cardinalities and cross-platform CI
+runtime performance lane.  Larger cardinalities and cross-platform CI
 qualification remain open.
 
 A second PR #31-style scenario compares 1,280 repeated membership decisions
@@ -237,7 +237,7 @@ each run.  These counts are MRR results; the POO fixture now checks only
 snapshot storage and composition.
 
 The Scheme =ascent-hypothesis-program= scenario tests a distinct Agent path.
-A POO prediction demands membership from the native closure, and a failed
+A POO prediction demands membership from the runtime closure, and a failed
 prediction derives a bounded successor organization with an additional review
 Agent.  =agentic-ai-lab-ascent-hypothesis-specialize-source= creates a pure candidate
 for a changed source snapshot: its new demand rejects the predecessor demand.
@@ -281,16 +281,16 @@ owns the semantic questions and evaluator experiments.
 | Step | Owner | Output or invariant |
 |------+-------+---------------------|
 | source snapshot and typed rule bundle | source owner and MRR | exact source identities, generation, validated RulePackId |
-| strategy declaration | Agentic AI Lab | POO-native policy object and functional composition; budget, capability, cancellation, evidence requirement |
+| strategy declaration | Agentic AI Lab | POO policy object and functional composition; budget, capability, cancellation, evidence requirement |
 | request projection | Agentic AI Lab | inert, typed external evaluation request bound to the MRR bundle and organization epoch |
-| fixed-point evaluation | POO-native kernel experiment, checked against MRR/Ascent | bounded candidate receipt; no live publication or identity allocation |
+| fixed-point evaluation | POO kernel experiment, checked against MRR/Ascent | bounded candidate receipt; no live publication or identity allocation |
 | semantic admission | MRR lineage and transition owners | complete, generation-bound, identity-bound admitted result or typed rejection |
 | decision and handoff | Agentic AI Lab | policy decision over admitted evidence, followed by authorized runtime handoff |
 | external effect and feedback | admitted runtime and source owner | effect receipt; observations return as proposals |
 
 The Agentic AI Lab declaration must be an ordinary Gerbil POO object/prototype with
 named functional combinators.  It must not add an alist rule DSL or duplicate
-the MRR ReasoningBundle grammar.  The native experiment may evaluate candidate
+the MRR ReasoningBundle grammar.  The runtime experiment may evaluate candidate
 relations, but MRR remains the independent semantic oracle and admission
 owner.  Agentic AI Lab must not infer admission from a POO result or an Ascent
 completion flag.  A result from a
@@ -298,15 +298,15 @@ cancelled, partial, expired, or mismatched generation cannot authorize a
 handoff.  An admitted semantic result also cannot grant effect authority by
 itself: the Agentic AI Lab decision and runtime effect remain separate claims.
 
-* First vertical slice: native POO kernel mapping
+* First vertical slice: POO kernel mapping
 
 1. Resolve the exact POO library dependency and prove with executable tests
    that later POO refinements can supply relation inputs to earlier rule slots,
    and that demand and memoization have the expected behavior.
-2. Represent a small positive recursive program as native prototypes and
+2. Represent a small positive recursive program as runtime prototypes and
    functional relation operations.  Compare transitive closure, duplicate
    facts, multiple derivations, and a cycle with MRR/Ascent.  Record whether
-   native slot demand alone reaches the least relation closure; if it does not,
+   runtime slot demand alone reaches the least relation closure; if it does not,
    identify the minimum missing operation at the relation/backend seam.
 3. Bind an exact MRR RulePackId and source generation to each candidate result.
    Keep rule/fact semantics, lineage, and admission in MRR.  Test completion,
@@ -315,7 +315,7 @@ itself: the Agentic AI Lab decision and runtime effect remain separate claims.
 4. Compose the existing policy and runtime handoff path over admitted results.
    Only separate Agentic AI Lab authorization may reach an external effect.
 
-The first two steps measure whether the native POO fixed point is sufficient
+The first two steps measure whether the POO fixed point is sufficient
 for the selected relation fragment.  Later steps establish control and evidence
 behavior.  A transitive-closure match alone does not prove general Datalog,
 deletion maintenance, BYODS parity, or an Ascent replacement.
@@ -424,10 +424,10 @@ a claim that a particular backend is already superior.
 
 * Acceptance evidence for the first slice
 
-- POO-native declaration and functional composition are inspectable before IO.
+- POO declaration and functional composition are inspectable before IO.
 - Exact RulePackId, source generation, organization epoch, capability scope,
   bounds, and receipt schema survive request projection.
-- Native POO tests demonstrate late-bound rule inputs and demand behavior on
+- POO tests demonstrate late-bound rule inputs and demand behavior on
   the resolved library dependency; recursive closure matches independent MRR/Ascent
   fixtures, or the precise missing relation operation is documented.
 - A complete candidate receipt and one MRR-admitted result refer to the same

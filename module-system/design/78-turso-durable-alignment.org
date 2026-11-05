@@ -27,7 +27,7 @@ The relevant durable capabilities are:
 - It is built on the Turso Database engine, described by Turso as a rewrite of SQLite with MVCC concurrent writes and async IO.
 - =turso.sync= is the local-first sync path for Python when cloud synchronization is needed; reads and writes happen locally, then =push()= sends changes and =pull()= receives remote changes.
 - Embedded replicas provide local reads with writes delegated to the cloud primary, but Turso recommends Turso Sync for new sync designs.
-- Turso/libSQL vector search supports native vector similarity search without an extension. The documented index/query pair is =libsql_vector_idx(column)= and =vector_top_k(idx_name, q_vector, k)=.
+- Turso/libSQL vector search supports runtime vector similarity search without an extension. The documented index/query pair is =libsql_vector_idx(column)= and =vector_top_k(idx_name, q_vector, k)=.
 - Vector indexing uses DiskANN-style approximate nearest neighbor search, trading some accuracy for speed on large tables.
 - Turso positions this as useful for AI agents, on-device RAG, local vector search, and offline-ready workflows.
 

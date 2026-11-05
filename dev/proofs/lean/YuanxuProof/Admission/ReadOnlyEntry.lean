@@ -6,7 +6,7 @@ import LeanPoo.C4.ResolverSoundness
 
 /-! Raw-state entry analysis. Procedure references are identity projections, not
 user purity declarations. A closed result contains no callback instruction.
-Extraction from native state and a stable snapshot remain correspondence gates. -/
+Extraction from runtime state and a stable snapshot remain correspondence gates. -/
 namespace YuanxuProof.Admission.ReadOnlyEntry
 open ReplayBoundary SourceWindows
 open LeanPoo
@@ -39,7 +39,7 @@ structure Receiver where
 
 /-- Actual branch conditions of object-read-current?, on its receiver snapshot.
 The bootstrap branch does not inspect instance or read-table presence. -/
-def nativeCurrent (token : Token) (receiver : Receiver) : Bool :=
+def runtimeCurrent (token : Token) (receiver : Receiver) : Bool :=
   (token.revision == receiver.revision) &&
     match token.kind with
     | .bootstrap => receiver.selfProtocol && receiver.anchorValue == some token.valueRef
@@ -113,7 +113,7 @@ A foreign checker never acquires purity merely by returning true. -/
 def entries (kernelRef : Nat) (observerRef : Option Nat) (frame : Frame) : List Entry :=
   if frame.checkerRef != kernelRef then [.opaque (.checker frame.checkerRef)]
   else
-    let current := nativeCurrent frame.token frame.receiver
+    let current := runtimeCurrent frame.token frame.receiver
     [.closed (.token frame.token.key current)] ++
       if current then metadataEntries frame ++ sourceEntries observerRef frame.requests else []
 
@@ -141,7 +141,7 @@ theorem warm_state_closes (frame : Frame) (kernelRef : Nat) (order : List String
     (checker : frame.checkerRef = kernelRef)
     (prepared : frame.receiver.precedence = some order) :
     ∃ program, inspect kernelRef none frame = .ok program := by
-  cases current : nativeCurrent frame.token frame.receiver <;>
+  cases current : runtimeCurrent frame.token frame.receiver <;>
     simp [inspect, entries, checker, current, metadataEntries, prepared,
       lower, lower_source_entries, Except.map]
 
@@ -150,7 +150,7 @@ theorem cold_default_closes (frame : Frame) (kernelRef : Nat)
     (cold : frame.receiver.precedence = none)
     (noHooks : noProtocols frame.metadata = true) :
     ∃ program, inspect kernelRef none frame = .ok program := by
-  cases current : nativeCurrent frame.token frame.receiver <;>
+  cases current : runtimeCurrent frame.token frame.receiver <;>
     simp [inspect, entries, checker, current, metadataEntries, cold, noHooks,
       lower, lower_source_entries, Except.map]
 
@@ -317,13 +317,13 @@ private def warm : Receiver := ⟨0, some 10, some 7, some 23, true, true, some 
 def clear (receiver : Receiver) : Receiver :=
   {receiver with instanceRef := none, tableRecord := none, cachedValue := none, precedence := none}
 
-theorem bootstrap_still_current_after_clear : nativeCurrent boot (clear warm) = true := by decide
+theorem bootstrap_still_current_after_clear : runtimeCurrent boot (clear warm) = true := by decide
 
 theorem ordinary_record_rejects_clear :
-    nativeCurrent {boot with kind := .value} (clear warm) = false := by decide
+    runtimeCurrent {boot with kind := .value} (clear warm) = false := by decide
 
 theorem bootstrap_validity_not_readiness :
-    nativeCurrent boot (clear warm) = true ∧ (clear warm).precedence = none := by decide
+    runtimeCurrent boot (clear warm) = true ∧ (clear warm).precedence = none := by decide
 
 theorem seal_does_not_change_inspection (kernelRef : Nat) (observerRef : Option Nat)
     (frame : Frame) (flag : Bool) :
@@ -332,7 +332,7 @@ theorem seal_does_not_change_inspection (kernelRef : Nat) (observerRef : Option 
 
 theorem cold_dispatch_remains_open (frame : Frame) (kernelRef : Nat) (observerRef : Option Nat)
     (checker : frame.checkerRef = kernelRef)
-    (current : nativeCurrent frame.token frame.receiver = true)
+    (current : runtimeCurrent frame.token frame.receiver = true)
     (cold : frame.receiver.precedence = none)
     (hook : noProtocols frame.metadata = false) :
     inspect kernelRef observerRef frame = .error .coldDispatch := by

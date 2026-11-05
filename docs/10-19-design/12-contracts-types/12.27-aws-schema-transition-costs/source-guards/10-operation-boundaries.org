@@ -5,9 +5,9 @@
 
 * From one prefix exception to a composition rule
 
-[[file:09-package-entry-prefix.org][The preceding implementation]] removed the first native package's duplicate
+[[file:09-package-entry-prefix.org][The preceding implementation]] removed the first runtime package's duplicate
 entry check, but every enclosing caller still repeated the package's final
-check. It also treated a native predecessor as opaque when entering the next
+check. It also treated a runtime predecessor as opaque when entering the next
 package. The root problem is ownership of COMPOSED boundaries: each wrapper
 independently emits guard, action, guard, without interpreting its neighbors.
 
@@ -38,21 +38,21 @@ The existing cache-only probe checks readiness, no custom MOP protocol/read
 observer, the private constructed operation, exact guard identity, and exact
 cached full-method identity. When a preceding boundary is known and this probe
 matches, the paired resume procedure omits just its own entry g. Otherwise the
-ordinary full .call executes. Native full and resume procedures both END in g.
+ordinary full .call executes. Runtime full and resume procedures both END in g.
 
 After returning, the loop carries that fact only if the method matched BEFORE
 the call and the no-demand metadata probe still matches AFTER it. A custom
-callback installing native-looking metadata before returning cannot acquire
+callback installing runtime-looking metadata before returning cannot acquire
 this fact. Cold metadata, replacement, mutation or MOP observation conservatively
 ends the segment. The next operation then uses its full entry.
 
-At the end, a known native tail already covers inputs-current!. The caller
+At the end, a known runtime tail already covers inputs-current!. The caller
 still freshly checks entry-observation: the generated guard.ss is a separate
 obligation NOT covered by the package's guard. An opaque last callback retains
 the complete enclosing sources-current!. No source-read cache spans a callback,
 realization, query or validator.
 
-The executable owner is [[file:../../../../../ops/selected-packages.ss][SelectedPackages.current!]]. The native operation
+The executable owner is [[file:../../../../../ops/selected-packages.ss][SelectedPackages.current!]]. The runtime operation
 constructor and its conservative identity probe remain in
 [[file:../../../../../module-system/source/admission.ss][source admission]], without changes in this step. Ordinary standalone Nix
 publication calls still own their complete entry/action/tail behavior.
@@ -95,16 +95,16 @@ previous-value retention and fixture cleanup in the same Case.
 * Correspondence and negative controls
 
 [[file:../../../../../t/ops-selected-packages-test.ss][The atomic Scheme test]] uses the production Nix phase and package consumer;
-only external commands are inert probes. It checks 0/1/2/4/8 native operations
+only external commands are inert probes. It checks 0/1/2/4/8 runtime operations
 with 1/2/3/5/9 complete source passes, rather than a one-pair-only assertion.
-Its negative cases retain mutation during a native query and add:
+Its negative cases retain mutation during a runtime query and add:
 
-- An opaque callback writes after checking. The next native query must be
+- An opaque callback writes after checking. The next runtime query must be
   refused BEFORE it executes, not merely detected on its return.
-- The last opaque callback installs a valid native operation/method pair,
+- The last opaque callback installs a valid runtime operation/method pair,
   warms that metadata, and writes sources. The caller must still refuse it.
-- A native action changes guard.ss. The separate enclosing entry observation
-  must refuse, although native inputs-current! alone does not cover that file.
+- A runtime action changes guard.ss. The separate enclosing entry observation
+  must refuse, although runtime inputs-current! alone does not cover that file.
 
 [[file:../../../../../dev/proofs/lean/YuanxuProof/Admission/BoundaryComposition.lean][BoundaryComposition]] reuses SourceWindows.World and its fresh byte-check
 model. composition_equivalent proves the original and normalized classified

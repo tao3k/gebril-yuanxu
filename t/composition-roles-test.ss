@@ -10,8 +10,8 @@
 (export composition-roles-test)
 
 (def composition-roles-test
-  (test-suite "Shared native role composition"
-    (yuanxu-test-case "constant overlays retain native leftmost precedence"
+  (test-suite "Shared runtime role composition"
+    (yuanxu-test-case "constant overlays retain runtime leftmost precedence"
       (let* ((left (object<-alist '((value . left))))
              (right (object<-alist '((value . right) (other . retained))))
              (overlay (role-instance-overlay left right))

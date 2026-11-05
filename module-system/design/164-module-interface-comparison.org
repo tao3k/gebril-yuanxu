@@ -9,7 +9,7 @@
 
 Design a configuration experience that supports both upstream ownership of
 thousands of modules/Profiles and downstream progressive disclosure: ordinary
-business configuration first, native extension when required. Compare actual
+business configuration first, runtime extension when required. Compare actual
 authoring tasks, validation and effective-value semantics rather than ranking
 languages by syntax brevity or implementation power.
 
@@ -28,7 +28,7 @@ data-overlay and comparison work, including KCL, without relocating source evide
 | [[file:164-module-interface-comparison/01-omnibus-ncl-cases.org][01 Omnibus NCL cases]] | What has our existing configuration interface already solved? | verbatim sandbox, contracts, CI and matrix code; POO comparison and gaps |
 | [[file:164-module-interface-comparison/02-hivebus-nixos.org][02 HiveBus and NixOS]] | How do ordinary values, upstream ownership and module extensions meet? | verbatim host/POP consumers; an explicit NixOS option/consumer example |
 | [[file:164-module-interface-comparison/03-config-language-semantics.org][03 Language semantics]] | Which differences are language-level rather than framework conventions? | matched Nix/Nickel/Jsonnet/Dhall/POO effective-value probes |
-| [[file:164-module-interface-comparison/04-poo-current-interface.org][04 Current POO interface]] | What can users actually do today, and what remains exposed? | real Funflow Module/Profile source, ordinary refinements and native extension |
+| [[file:164-module-interface-comparison/04-poo-current-interface.org][04 Current POO interface]] | What can users actually do today, and what remains exposed? | real Funflow Module/Profile source, ordinary refinements and runtime extension |
 | [[file:164-module-interface-comparison/05-reflection-and-improvement-plan.org][05 Reflection and improvements]] | What should change before we claim better UX? | upstream scale, two user layers, ranked gaps and acceptance criteria |
 | [[file:164-module-interface-comparison/06-evidence-and-acceptance.org][06 Evidence and experiments]] | Which observations have run and which could falsify our decisions? | execution ledger, negative controls and next experiments |
 | [[file:164-module-interface-comparison/07-ecosystem-task-interfaces.org][07 Ecosystem task interfaces]] | How do maintained libraries turn task inputs into useful consumer outputs? | actual Omnibus AWS/Sandbox/CI, HiveBus value/POP layers, BAML tooling lessons and smoke design follow-through |

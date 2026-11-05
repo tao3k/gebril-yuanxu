@@ -15,7 +15,7 @@ is the currently selected Query Language. ORG Elements is the only content
 window for Context Query. C3/C4 orders inheritance, composition and override;
 it is neither a Query Language nor the Agent's retrieval route.
 
-This specializes [[file:../165-native-semantic-element-relation-query-model.org][RFC 165]] and [[file:../44-current-project-programming-style/04-semantic-query-and-relation.org][Style 04]], not a second Query system. The
+This specializes [[file:../165-runtime-semantic-element-relation-query-model.org][RFC 165]] and [[file:../44-current-project-programming-style/04-semantic-query-and-relation.org][Style 04]], not a second Query system. The
 existing graph-read Module publishes only =gql= in its =languages= slot.
 Scheme POO AST authoring and emitted GQL source express that one language.
 No raw string, JSON/alist query, private Context traversal DSL or public

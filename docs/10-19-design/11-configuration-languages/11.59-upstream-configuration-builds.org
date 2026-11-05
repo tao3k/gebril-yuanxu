@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 11.59 Config Languages 58: Upstream Construction over Final Consumer Config
 #+property: DOCUMENT_ID 11.59
-#+property: STATUS implemented-local-native-no-product-loader
+#+property: STATUS implemented-local-runtime-no-product-loader
 
 * Ownership and actual association
 
@@ -26,8 +26,8 @@ reject rather than implicitly ordering or merging configurations.
 * Maintained upstream publisher
 
 The single publisher now lives in Core modules/opentofu/interface.ss. Its
-build.ss defines Build over the native outer module slot; objects.ss owns
-OpenTofuScope., and Config.source supplies the upstream native Nix Source.
+build.ss defines Build over the runtime outer module slot; objects.ss owns
+OpenTofuScope., and Config.source supplies the upstream runtime Nix Source.
 There is no generated tools/opentofu shell or flat import/export facade.
 See [[file:11.60-opentofu-single-module-publication.org][the formal publication and migration]]. The legacy source-shell examples have
 been removed from this chapter rather than retained as a second current entry.
@@ -70,7 +70,7 @@ been removed from this chapter rather than retained as a second current entry.
 There is no build.ss or projections list in Infrastructure. The minimal objects
 role is present for the current admitted source-shell Contract; it is not another
 build factory. Config is exported by its role wrapper. Independent explicit
-imports in types/objects retain their ordinary native ownership.
+imports in types/objects retain their ordinary runtime ownership.
 
 The next config revision adds a resource, without changing init, interface,
 upstream build code, or any Provider list:
@@ -95,13 +95,13 @@ the same final-config association.
 2. The build graph prepares admitted source roles. For a dependency whose
    upstream Core publishes configuration-build, it invokes that external
    contribution with the consumer's root and prepared publication. Config
-   evaluation reuses the native role wrapper, includes related admitted roles,
+   evaluation reuses the runtime role wrapper, includes related admitted roles,
    and excludes build.ss / interface.ss from ordinary config evaluation.
 3. OpenTofu's .build-inputs sees the final Config value. It writes the existing
    source-bound demand, while Nix applies demand to locked capabilities. AWS-only
    includes AWS; adding Null includes AWS+Null. awscc is never realized merely
    because it exists in the capability set.
-4. Each realized request returns its own native scope and lazy generated
+4. Each realized request returns its own runtime scope and lazy generated
    configuration Contract. The existing writer forces its .admit result before
    returning successfully. Invalid final fields reject with full domain paths.
    Module scope-shape Contracts and this generated domain Contract are separate.
@@ -119,7 +119,7 @@ build artifact object. Normal runtime scope publication remains separate.
 
 The association index is linear in selected Core nodes and dependency edges;
 it does not enumerate every installed Module or compile every Provider type.
-The existing graph/prepared-publication and native Build slots own per-generation
+The existing graph/prepared-publication and runtime Build slots own per-generation
 reuse. An upstream Build value is shared, but prepared consumer inputs and
 configuration Contracts are not shared across distinct consumers. No global
 currentness cache is introduced. Independent currentness still rechecks external
@@ -161,7 +161,7 @@ scopes over an existing store, not download-cold or deployment performance claim
 The structured source-bound receipt is
 [[file:../../../t/fixtures/opentofu/upstream-configuration-build-control.json][upstream-configuration-build-control.json]] in the enclosing repository.
 
-The expanded regression exposed an existing tool-projection gap: native
+The expanded regression exposed an existing tool-projection gap: runtime
 precompiled .ssi contexts were omitted by an .ss-only path test. The reader now
 reuses bootstrap's trusted-Core source mapping, still admitting only exact
 SDK-observed compiler contexts. Its byte guards and identity checks remain in
@@ -170,7 +170,7 @@ actual tool roots separately; the generated spec must cover the entire graph.
 A separate source-only reader qualifier requires its staged environment; an
 unconfigured invocation failed setup and is not counted as a passing gate here.
 
-The final Config is the captured native object in this build source epoch:
+The final Config is the captured runtime object in this build source epoch:
 the same value supplies demand projection and final domain admission. It is not
 a claim that independently evaluating effectful configuration yields the same
 object, or that the product runtime's scope has been linked/injected. Configuration

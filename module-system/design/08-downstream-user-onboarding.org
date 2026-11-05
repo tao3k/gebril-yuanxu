@@ -20,7 +20,7 @@ Downstream packages should depend on =agentic-ai-lab= through =gerbil.pkg= and k
 The important behavior is not package-manager state. The important behavior is that downstream tests can resolve the =src= module tree and the harness package without creating repository-local package-manager state.
 
 ** 10.06.08.30 Focused Tests
-Use native =gxtest= for focused local tests:
+Use runtime =gxtest= for focused local tests:
 #+begin_src sh
 gxtest t/unit-tests.ss
 #+end_src
@@ -33,7 +33,7 @@ gxtest t/<downstream-test>.ss
 Do not require callers to import =:agentic-ai-lab/user-interface/*= from the project root during package tests. Root practice files stay at the top level for user experiments and examples; stable tests should import =:agentic-ai-lab/src/module-system=, =:agentic-ai-lab/src/core/api=, or the relevant concrete module facade.
 
 ** 10.06.08.40 gxtest And Policy Harness
-Focused single-file selection is a native =gxtest= responsibility. The project harness and package build remain responsible for policy scope and declared source-root coverage.
+Focused single-file selection is a runtime =gxtest= responsibility. The project harness and package build remain responsible for policy scope and declared source-root coverage.
 
 The normal verification ladder is:
 #+begin_src sh

@@ -3,11 +3,11 @@
 
 #+title: Pipeline Receiver and Lazy Cache Validation
 #+date: [2026-10-15]
-#+property: STATUS isolated-native-source-verified-not-module-integration
+#+property: STATUS isolated-runtime-source-verified-not-module-integration
 
 * Implemented path-slot adapter regression (2026-10-15)
 
-The historical native probes below remain unchanged. Core now also executes
+The historical runtime probes below remain unchanged. Core now also executes
 actual dotted-path authoring through
 [[file:../../object-syntax/path-slots.ss][object-syntax/path-slots.ss]] and
 [[file:../../t/path-slots-test.ss][path-slots-test.ss]]. Eleven cases pass using the same pinned POO source in an
@@ -25,17 +25,17 @@ one child with all four paths:
   funflow.profiles.gerbil-scheme.pipeline: =>.+ {pipeline-name: 'release})
 #+end_src
 
-The upstream Pipeline uses native lexical =checks: (list build test package)=.
+The upstream Pipeline uses runtime lexical =checks: (list build test package)=.
 The suite verifies final values AND eq? identities against the child's effective
 Check slots, Pipeline refinement, unchanged parent caches, sibling isolation,
 warm-cache identity and unforced unrelated payloads. A separate comparison uses
-handwritten native nested =>.+ expansion; a negative control assigns the saved
+handwritten runtime nested =>.+ expansion; a negative control assigns the saved
 parent list and verifies its expected staleness. No synchronization or checks
 list reconstruction is added to the public interface.
 
 Additional controls cover relative dotted paths in braces, interleaved prefixes,
 renamed macro bindings, shadowed implementation identifiers, payload lexical
-scope, native headers/defaults/shared slots, native object matching, primitive
+scope, runtime headers/defaults/shared slots, runtime object matching, primitive
 literal dotted slots, demand-time missing/non-object errors, duplicate paths,
 ancestor/descendant overlaps, empty segments and unsupported operators.
 
@@ -51,32 +51,32 @@ The runner imports :std/test/base and :yuanxu/t/path-slots-test, calls
 =test-suite!= and exits nonzero unless =test-result-ok?= holds. The adapter and
 test module also pass gxc -S source compilation. The existing 56 CLOS declaration,
 dispatch, combination and method-bundle cases pass separately. This is local
-source evidence, not native AOT, installed-package or remote CI qualification.
+source evidence, not runtime AOT, installed-package or remote CI qualification.
 No bounded module scope, owner publication, Loader bridge or cycle guard was
 implemented by this change. Those integration and latency requirements remain.
 
 * Bounded scope plus path integration (2026-10-15)
 
 [[file:../../t/module-scope-syntax-test.ss][Nine bounded-scope cases]] now also exercise upstream Profile construction from
-the same native scope's prototypes and downstream Scenario derivation from that
+the same runtime scope's prototypes and downstream Scenario derivation from that
 scope, followed by all four path refinements after the parent checks are cached.
-They verify native source handle identity, alias scope/hygiene, single source/body
+They verify runtime source handle identity, alias scope/hygiene, single source/body
 evaluation, unforced unrelated Profile slots, final Check values and warm caches.
 There is no Loader in this fixture. The source binding Funflow is distinct from
-the native funflow: slot; direct conflicts are diagnosed before slot expansion.
+the runtime funflow: slot; direct conflicts are diagnosed before slot expansion.
 The old unary (.+ ff) example is corrected to (.o (:: @ ff)).
 
 The local runner imports :std/test/base and the module-scope-syntax-test,
 path-slots-test and profile-composition-test suites. It rejects any non-OK test
 result. Those 24 cases pass (9 scope + 11 path + 4 existing Bundle); the 56 CLOS
-cases remain a separate regression gate. Binding preserves the original native
+cases remain a separate regression gate. Binding preserves the original runtime
 scope; it does not authenticate its source, load published owners or perform
 Module/Profile result admission. Those Loader/product boundaries remain pending.
 
 * Evidence scope and exact source
 
 Companion to [[file:164-funflow-cicd-user-authoring-design.org][the complete Funflow configuration design]], which embeds the minimal
-program, path-slot specification/native lowering and a runnable stale-list control.
+program, path-slot specification/runtime lowering and a runnable stale-list control.
 This appendix preserves the entire executed 32-assertion probe so the receipt
 does not depend on temporary files surviving. This historical probe is documentation; the separate Core adapter test above
 is now an implementation test target. Neither is Loader integration or
@@ -91,7 +91,7 @@ installed-package qualification.
 | support SHA-256 | 2781a40293d491985c887731a883d31f0aa606077bd10800c6af2d9e2c47919d |
 | interpreter | /opt/homebrew/bin/gxi; Gerbil 1cfb032 on Gambit ea114fc |
 | execution mode | direct isolated source loading; no edits to either pinned source |
-| native full probe | exit 0, PASS assertions=32 |
+| runtime full probe | exit 0, PASS assertions=32 |
 | minimal probe | exit 0, parent-before-child values and separate stable caches |
 | frozen continuation | exit 0, expected stale parent list detected |
 
@@ -125,21 +125,21 @@ def block(filename, name):
     pattern = r"^#\+name: " + re.escape(name) + r"\n#\+begin_src scheme\n(.*?)^#\+end_src"
     return re.search(pattern, text, re.M | re.S).group(1)
 main = "164-funflow-cicd-user-authoring-design.org"
-minimal = block(main, "native-pipeline-receiver-minimal")
-negative = block(main, "native-pipeline-receiver-frozen-control")
+minimal = block(main, "runtime-pipeline-receiver-minimal")
+negative = block(main, "runtime-pipeline-receiver-frozen-control")
 (out / "minimal.ss").write_text(minimal)
 (out / "minimal-with-negative.ss").write_text(minimal + "\n" + negative)
 (out / "probe.ss").write_text(block(
     "164-pipeline-receiver-cache-validation.org",
-    "native-pipeline-receiver-full-probe"))
+    "runtime-pipeline-receiver-full-probe"))
 lexical = block("164-pipeline-receiver-cache-validation.org",
-                "native-pipeline-lexical-full-probe")
+                "runtime-pipeline-lexical-full-probe")
 (out / "probe-implicit-lexical-slots.ss").write_text(lexical)
 (out / "probe-lexical-slots.ss").write_text(lexical.replace(
     "(.def (Profile @ [])", "(.def (Profile @ [] build test package)", 1))
 (out / "minimal-explicit-baseline.ss").write_text(block(
     "164-pipeline-receiver-cache-validation.org",
-    "native-pipeline-receiver-explicit-baseline"))
+    "runtime-pipeline-receiver-explicit-baseline"))
 #+end_src
 
 #+begin_src sh
@@ -154,15 +154,15 @@ GERBIL_LOADPATH=/tmp/agenticailab-pipeline-receiver-pin /opt/homebrew/bin/gxi /t
 
 parent-checks and child-checks hold observations for assertions; they do not
 assemble or repair a configured Pipeline. Maintained Agentic AI Lab and User Interface
-Modules share the same native object/scope semantics. The Pipeline's computed
+Modules share the same runtime object/scope semantics. The Pipeline's computed
 checks slot owns list construction from the effective Profile, and the selected
 plan adapter consumes it internally. Ordinary users only refine target paths.
-The isolated probe validates that native relationship; it does not establish
+The isolated probe validates that runtime relationship; it does not establish
 the unimplemented common Module scope, path syntax or Loader integration.
 
-* Complete executed native probe
+* Complete executed runtime probe
 
-#+name: native-pipeline-receiver-full-probe
+#+name: runtime-pipeline-receiver-full-probe
 #+begin_src scheme
 (import "/tmp/agenticailab-pipeline-receiver-pin/object")
 
@@ -207,7 +207,7 @@ the unimplemented common Module scope, path syntax or Loader integration.
               '(parent-build parent-test parent-package))
 (assert-equal 'parent-checks-count checks-builds 1)
 
-;; Native expansion of three shared-prefix path refinements.
+;; Runtime expansion of three shared-prefix path refinements.
 (.def (ChildScenario @ ParentScenario)
   funflow: =>.+
   (.o profiles: =>.+
@@ -306,16 +306,16 @@ negative-control=frozen-parent-list-is-stale
 pipeline-builds=4, checks-builds=4
 #+end_example
 
-The counters instrument native getter demand only. No latency benchmark, source
+The counters instrument runtime getter demand only. No latency benchmark, source
 Loader test, use-module macro execution, Contract admission, runtime command or
 execution-evidence claim is made. The two failures being distinguished are an
 installed-artifact import failure and an intentionally stale-list negative
 control; neither is silently reclassified as successful module integration.
 
-* Native lexical-slot convergence: additional executed controls
+* Runtime lexical-slot convergence: additional executed controls
 
 The canonical upstream Pipeline now uses checks: (list build test package).
-These identifiers retain the enclosing effective Profile receiver through native
+These identifiers retain the enclosing effective Profile receiver through runtime
 POO lexical slot bindings; no new module feature supplies this behavior.
 Both variants below ran on the same pinned sources/runtime and separately
 passed 32 assertions with the same output/counters as the original full probe:
@@ -326,7 +326,7 @@ when moving the body through an authoring macro.
 
 The complete automatic-binding probe is preserved here:
 
-#+name: native-pipeline-lexical-full-probe
+#+name: runtime-pipeline-lexical-full-probe
 #+begin_src scheme
 (import "/tmp/agenticailab-pipeline-receiver-pin/object")
 
@@ -369,7 +369,7 @@ The complete automatic-binding probe is preserved here:
               '(parent-build parent-test parent-package))
 (assert-equal 'parent-checks-count checks-builds 1)
 
-;; Native expansion of three shared-prefix path refinements.
+;; Runtime expansion of three shared-prefix path refinements.
 (.def (ChildScenario @ ParentScenario)
   funflow: =>.+
   (.o profiles: =>.+
@@ -458,7 +458,7 @@ The complete automatic-binding probe is preserved here:
 
 The original explicit-receiver minimal program remains preserved unchanged:
 
-#+name: native-pipeline-receiver-explicit-baseline
+#+name: runtime-pipeline-receiver-explicit-baseline
 #+begin_src scheme
 (import "/tmp/agenticailab-pipeline-receiver-pin/object")
 
@@ -480,7 +480,7 @@ The original explicit-receiver minimal program remains preserved unchanged:
   (.get ParentScenario funflow profiles gerbil-scheme pipeline))
 (def parent-checks (.get parent-pipeline checks))
 
-;; Native expansion of the three proposed dotted paths.
+;; Runtime expansion of the three proposed dotted paths.
 (.def (ChildScenario @ ParentScenario)
   funflow: =>.+
   (.o profiles: =>.+
@@ -511,6 +511,6 @@ The original explicit-receiver minimal program remains preserved unchanged:
 
 These controls preserve the fixed-parent-list negative result. The original
 full probe above is historical evidence and is not overwritten by the shorter
-lexical form. Native outer-slot capture, nested shadowing and receiver-local
+lexical form. Runtime outer-slot capture, nested shadowing and receiver-local
 cache are separate from module source admission and Generic owner dispatch;
 no new method bundle or module loader was executed by these probes.

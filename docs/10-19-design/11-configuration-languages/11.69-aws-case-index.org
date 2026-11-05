@@ -13,7 +13,7 @@ moving them is not a new deployment qualification.
 * Corrected boundary
 
 There is no mandatory Deployment/Deployments module between users and AWS.
-An ordinary consumer fills =Config= with native POO data, using the Provider's
+An ordinary consumer fills =Config= with POO data, using the Provider's
 =provider/resource/data= field vocabulary. New =.o= values are records, not
 implicitly refinements. A user need not inherit or assemble named Profiles to
 configure an existing VPC/subnet and an EC2 instance.
@@ -99,7 +99,7 @@ as implemented. The real selected-build/currentness control is separately
 The earlier layering made simple user values look like a framework instance.
 Replacing that with a common Provider field vocabulary reduces maintenance and
 makes source diagnosis point at the user's data. Generated Contracts provide
-field validation; native composition provides optional reuse. Neither benefit
+field validation; runtime composition provides optional reuse. Neither benefit
 requires a special Deployment object hierarchy.
 
 The remaining UX obligations are field discovery from those same Contracts,

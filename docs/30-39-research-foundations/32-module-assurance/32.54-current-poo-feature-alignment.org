@@ -22,7 +22,7 @@ qualification are separate acceptance conditions.
 
 | Upstream capability | Current consumer evidence | Decision |
 |---------------------+---------------------------+----------|
-| ObjectContract responsibilities, IntegerRange, List and refine | Gitea/PostgreSQL types.ss already use these native declarations | Retain; do not replace them with handwritten shape classifiers |
+| ObjectContract responsibilities, IntegerRange, List and refine | Gitea/PostgreSQL types.ss already use these runtime declarations | Retain; do not replace them with handwritten shape classifiers |
 | Shared types/syntax, types/relation and types/validation organization | Latest upstream moved the implementation; the scoped Scenario/admission search found no direct imports of the old private paths | Compile the dependency closure; do not invent replacement aliases |
 | Intrinsic numeric declarations and finite Function replacement with uninhabited supplied rows | Added upstream after the selected revision | Use where a real exported callable requires them; ports still need IntegerRange 1..65535 |
 | Explicit compact prototype-map storage | Latest upstream defaults to trees and preserves an explicitly selected policy | No automatic compact migration; require matched cold/clone/read measurements first |
@@ -38,7 +38,7 @@ must be built coherently, without mixing old compiled artifacts with new source.
 
 ** Functional Types are the ordinary path
 
-Types and Contracts are first-class values. Native constructors such as
+Types and Contracts are first-class values. Runtime constructors such as
 =IntegerRange= and =List= compose those values; an ordinary function may return
 an =ObjectContract.= specialization, and =refine= adds a named domain relation.
 This does not require a parameterized prototype family or type inference for
@@ -70,11 +70,11 @@ stand in for rebuilding and qualifying every production dependency.
 Field structure and normalization belong to upstream Type/ObjectContract.
 Cross-service port equality, both independently published port requirements,
 source currentness and final-plan subject identity remain real application or
-Core admission obligations. Their presence is not evidence that the native
+Core admission obligations. Their presence is not evidence that the runtime
 type system was ignored. Conversely, a second field table or repeated structural
 classifier needs a concrete justification before being retained.
 
-Keep ordinary configuration as values. Use native functional refinement when
+Keep ordinary configuration as values. Use runtime functional refinement when
 retaining an inherited value is the user's intent. Neither numeric inference
 nor a storage-policy API belongs in a user's port-setting example merely to
 demonstrate a new feature.
@@ -119,7 +119,7 @@ The rejected attempts are retained outside Git: a two-worker cold package build
 hit 300 seconds; an all-source consumer hit its existing idle bound; a later
 package incremental command returned zero while interrupted macro-phase outputs
 were incomplete. The consumer rejected the latter with a =multimethod~1= load
-error. Native package clean followed by the upstream bounded build repaired the
+error. Runtime package clean followed by the upstream bounded build repaired the
 artifact cohort. A package command's zero status alone is not publication or
 consumer qualification. No timeout or test assertion was relaxed.
 
@@ -132,7 +132,7 @@ or global performance improvement is claimed by this constructor refactoring.
 
 Fresh Core source expansion exposed a separate lexical-binding defect in the
 linker's selected-scope object: legacy =(:: result)= did not bind the bare
-=build-graph= and =selected-graph= references. The declaration now uses native
+=build-graph= and =selected-graph= references. The declaration now uses runtime
 =self: result= with the standard automatic slot bindings. Commit =39ed717=
 contains only that one-line source correction; concurrent =realized-scope=
 working-tree edits were excluded from its staged hunk and remain intact.
@@ -145,12 +145,12 @@ The earlier consumer results remain the explicitly described compiled-library
 lane, not a claim that this fresh build passed.
 
 Ascent's existing branch was normally merged with seven remote quality commits;
-its native ObjectContract value-membership controls passed after the merge.
+its runtime ObjectContract value-membership controls passed after the merge.
 The merge retains producer-owned constant shapes, mutable Contract fallback and
-the original native build/artifact entry. Only the Core dependency/API names and
+the original runtime build/artifact entry. Only the Core dependency/API names and
 redundant literal empty-obligation adapters were changed by this migration.
 
-Parser's local production projection passed without ASP and retained both native
+Parser's local production projection passed without ASP and retained both runtime
 FFI link declarations. Its module-local public factory/inheritance/type-refusal
 controls passed. The working checkout and the refreshed PR 13 remote have a large
 history divergence (76 versus 736 unique commits, approximately 1,500 changed
@@ -178,12 +178,12 @@ not evidence against or qualification of the focused Type behavior.
 [[file:32.55-complete-build-costs.org][32.55]] records a subsequent complete
 current-working-tree library build: 469.18 seconds, 233 unique source units and
 504 unique backend jobs, exit zero, under the unchanged 600-second limit with
-four native workers. A same-source two-worker control timed out; variable host
+four runtime workers. A same-source two-worker control timed out; variable host
 contention prevents treating that pair as a fixed speedup ratio. The local Just
 default is now CPU-bounded up to four; explicit caller/CI budgets remain intact.
 
 The real Gitea/PostgreSQL eleven-Case publication suite passed against that new
-library after bounded native precompilation of its unchanged shared test
+library after bounded runtime precompilation of its unchanged shared test
 Fixture. The original cold-test idle failure is retained, and the old framework
 overlay was not used for this consumer pass. Historical build/CI failures above
 remain historical failures; this local result is not an exact-head CI pass.

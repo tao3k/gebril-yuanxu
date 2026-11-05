@@ -98,7 +98,7 @@
         ;; May realize or evaluate Nix. Never share a source-read cache across it.
         (let loop ((remaining values) (inputs-checked? #t))
           (if (null? remaining)
-            ;; A matched native tail has just checked inputs-current!. The
+            ;; A matched runtime tail has just checked inputs-current!. The
             ;; generated guard entry is a separate obligation and stays fresh.
             (if inputs-checked?
               (module-source-admit-current! entry-observation)
@@ -106,7 +106,7 @@
             (let* ((value (car remaining))
                    (resume (module-source-operation-resume value inputs-current!)))
               (if (and inputs-checked? resume) (resume) (.call value admit-current))
-              ;; Carry only a constructive native tail, never an opaque return
+              ;; Carry only a constructive runtime tail, never an opaque return
               ;; value. Recheck metadata without demand after the action: an
               ;; installed protocol/observer or invalidation ends the segment.
               (loop (cdr remaining)

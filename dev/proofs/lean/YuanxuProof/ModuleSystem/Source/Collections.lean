@@ -61,4 +61,36 @@ theorem accepted_roles_are_present (directory : Directory) (checked : complete d
   some [⟨"module", requiredRoles⟩]
 #guard admitRoles [⟨"module", requiredRoles⟩, ⟨"broken", ["interface"]⟩] ["helper"] == none
 #guard admitRoles [⟨"helper", ["interface"]⟩] [] == none
+
+section NamespaceGroups
+variable {Key Row : Type} [DecidableEq Key]
+
+/-- The namespace index stores original metadata rows, never linked scopes. -/
+def pushGroup (owner : Row → Key) (groups : Key → List Row) (row : Row) : Key → List Row :=
+  fun key => if owner row = key then row :: groups key else groups key
+
+theorem group_fold (owner : Row → Key) (rows : List Row)
+    (groups : Key → List Row) (key : Key) :
+    (rows.foldl (pushGroup owner) groups) key =
+      (rows.filter (fun row => decide (owner row = key))).reverse ++ groups key := by
+  induction rows generalizing groups with
+  | nil => simp
+  | cons row tail ih =>
+    simp only [List.foldl_cons]
+    rw [ih]
+    by_cases sameOwner : owner row = key
+    · simp [pushGroup, sameOwner, List.append_assoc]
+    · simp [pushGroup, sameOwner]
+
+def namespaceGroup (owner : Row → Key) (rows : List Row) (key : Key) : List Row :=
+  ((rows.foldl (pushGroup owner) (fun _ => [])) key).reverse
+
+/-- Group lookup preserves the filter's exact row order and occurrences. -/
+theorem namespace_group_eq_filter (owner : Row → Key) (rows : List Row) (key : Key) :
+    namespaceGroup owner rows key = rows.filter (fun row => decide (owner row = key)) := by
+  unfold namespaceGroup
+  rw [group_fold]
+  simp
+
+end NamespaceGroups
 end YuanxuProof.ModuleSystem.Source.Collections

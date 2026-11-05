@@ -15,7 +15,7 @@ finalized and pending reservations are implemented.  ABI v1 remains unfrozen.
 
 The kernel-owned adapter vtable now validates and consumes a token before an
 effect.  The Python Turso evidence journal rejects replay and root forks, but it
-currently appends after native mediation returns.  That is a durable projection,
+currently appends after runtime mediation returns.  That is a durable projection,
 not the Strict atomic evidence boundary required by RFC 123.
 
 * Required owner flow
@@ -24,7 +24,7 @@ not the Strict atomic evidence boundary required by RFC 123.
 sequenceDiagram
     participant S as "Scheme POO Control Plane"
     participant K as "C Runtime Kernel"
-    participant A as "Native Adapter vtable"
+    participant A as "Runtime Adapter vtable"
     participant E as "Evidence Sink vtable"
     S->>K: "mediate(token, lease, adapter, evidence sink)"
     K->>K: "validate roots, lease, and nonce"
@@ -107,7 +107,7 @@ flowchart LR
 
 ** Current receipt
 
-- Python source-only harness: =185 passed / 8 native skips=; native dylib lane:
+- Python source-only harness: =185 passed / 8 runtime skips=; runtime dylib lane:
   =193 passed=.
 - Scheme AC-08: =8 cases / 23 checks=.
 - C strict, UBSan, and leak gates pass; macOS reports zero leaks.

@@ -12,6 +12,45 @@ universe u
 open LeanPoo.Functional.Requirements
 open LeanPoo.Proof
 
+/-- Scope admission composes runtime value checking with policy on that SAME
+checked value. This is ordered function composition, not an approval cache. -/
+def admitScopeValue {Input Checked Error : Type}
+    (validate : Input → Except Error Checked)
+    (policy : Checked → Except Error Unit) (input : Input) : Except Error Checked :=
+  match validate input with
+  | .error cause => .error cause
+  | .ok checked => match policy checked with
+    | .error cause => .error cause
+    | .ok _ => .ok checked
+
+theorem scopeAdmissionExactSubject {Input Checked Error : Type}
+    (validate : Input → Except Error Checked) (policy : Checked → Except Error Unit)
+    (input : Input) (output : Checked) :
+    admitScopeValue validate policy input = .ok output ↔
+      validate input = .ok output ∧ policy output = .ok () := by
+  cases value : validate input with
+  | error cause => simp [admitScopeValue, value]
+  | ok checked =>
+    by_cases same : checked = output
+    · subst output
+      cases decision : policy checked <;> simp [admitScopeValue, value, decision]
+    · cases decision : policy checked <;> simp [admitScopeValue, value, decision, same]
+
+theorem scopeValueRefusalStopsPolicy {Input Checked Error : Type}
+    (validate : Input → Except Error Checked) (policy : Checked → Except Error Unit)
+    (input : Input) (cause : Error) (refused : validate input = .error cause) :
+    admitScopeValue validate policy input = .error cause := by
+  simp [admitScopeValue, refused]
+
+theorem scopePolicyRetainsBothRequirements {Input Checked Error : Type}
+    (validate : Input → Except Error Checked) (policy : Checked → Except Error Unit)
+    (left right : Checked → Prop)
+    (requires : ∀ checked, policy checked = .ok () → left checked ∧ right checked)
+    (input : Input) (output : Checked)
+    (accepted : admitScopeValue validate policy input = .ok output) :
+    left output ∧ right output :=
+  requires output ((scopeAdmissionExactSubject validate policy input output).mp accepted).2
+
 /-- Accumulate actual typed obligations on the same state, using the dependency's
 proof object. A new obligation requires proof; it is never a set-membership flag. -/
 theorem extensionPreservesState (object : ProofObject Key Value)

@@ -196,7 +196,7 @@ community workflows without changing the LangGraph-specific case.
 
 The first P0-P2 pass added a general =src= intent surface:
 
-- =src/graph/scenario-gap-intent.ss= defines POO-native intent constructors for
+- =src/graph/scenario-gap-intent.ss= defines POO intent constructors for
   reducer, command/goto, fanout, barrier, checkpoint cadence,
   checkpoint-before, subgraph node, subagent node, stream, retry, timeout,
   error route, replay/fork, store scope, observability labels, and state version

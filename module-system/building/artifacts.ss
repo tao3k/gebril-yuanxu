@@ -1,6 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Core-owned native build completion; never intercept Gerbil loading.
-(import :clan/poo/object
+;;; Core-owned runtime build completion; never intercept Gerbil loading.
+(import (only-in "./products.ss" artifact-files clean-build-artifacts! repair-build-products! require-build-products!
+                 current-build-output-directory)
+        (runtime: :clan/poo/object)
         (only-in :std/string/path path-force-extension)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
@@ -12,7 +14,7 @@
         (only-in :yuanxu/ops/progress copy-process-output make-test-progress-reader)
         (prefix-in :clan/poo/component-publication publication.)
         (prefix-in :clan/poo/component-revision revision.)
-        (prefix-in :clan/poo/generalized-graph native-graph.)
+        (prefix-in :clan/poo/generalized-graph runtime-graph.)
         (prefix-in :clan/poo/dependency-analysis computation.)
         (only-in :clan/poo/support/option some)
         (only-in :clan/poo/mop lens-of-get-set .lens)
@@ -46,7 +48,7 @@
 (def (canonical-build-inputs inputs)
   (list-sort (lambda (left right) (string<? (car left) (car right))) inputs))
 (def (test-build-publication projection)
-  ;; The SDK accepts directory aliases in GERBIL_PATH. Derive both the key and
+  ;; The Gerbil accepts directory aliases in GERBIL_PATH. Derive both the key and
   ;; the signed output location from one canonical prefix; old alias-spelled
   ;; packets must not collide with a newly selected canonical projection.
   (def prefix (path-normalize (path-expand (gerbil-path))))
@@ -124,7 +126,7 @@
 ;; Approval guards retain the selected external Source, not this Graph. A saved
 ;; publication keeps its own receiver alive; guards must not capture that key.
 (def issued (make-hash-table-eq weak-keys: #t))
-;; Each existing issuer key owns an independent NATIVE publication head. Its
+;; Each existing issuer key owns an independent RUNTIME publication head. Its
 ;; single immutable completion cell uses upstream construction/cache/closure.
 ;; No Core revision counter, product token registry or installation lock exists.
 (def completion-constructor
@@ -147,7 +149,7 @@
   (or (hash-get issued graph)
       (let-values (((initial failure)
                     (publish-feedback-graph #f
-                      (native-graph.declaration '(completion) '()
+                      (runtime-graph.declaration '(completion) '()
                         (list (cons 'completion (some (computation.make-success 'build-required)))))
                       completion-constructor (lambda (_ __) #t))))
         (when failure (raise failure))
@@ -156,7 +158,7 @@
           owner))))
 (def (retain-issued-state! graph state (expected #f))
   (def owner (issuance-owner graph))
-  ;; A compiler callback is outside the native transaction. Bind its result to
+  ;; A compiler callback is outside the runtime transaction. Bind its result to
   ;; the head it started from before staging; submit! closes stage/install races.
   (when (and expected (not (eq? expected (publication.current owner))))
     (error "Core build was superseded during compilation"))
@@ -174,117 +176,12 @@
   (when failure (raise failure))
   head)
 (def restoring (make-parameter '()))
-;; Native make consumes an output DIRECTORY, not an asserted trust flag. Fresh
+;; Runtime make consumes an output DIRECTORY, not an asserted trust flag. Fresh
 ;; ownership makes missing outputs trigger the installed compiler naturally.
-(def current-build-output-directory (make-parameter #f))
 (def (digest-file path)
   (unless (eq? (module-source-type path) 'regular)
     (error "compiled artifact is missing, non-regular or a symlink" path))
   (hex-encode (sha256 (call-with-input-file path read-all-as-u8vector))))
-(def (numeric? text)
-  (and (not (string-empty? text)) (andmap char-numeric? (string->list text))))
-(def (static-product-path identity libdir)
-  (path-expand
-    (path-force-extension
-      (string-append "static/" (string-join (string-split (symbol->string identity) #\/) "__")) ".scm")
-    libdir))
-
-;; Ordinary SDK completion is distinct from artifact/publication issuance.
-;; std/make's static marker alone does not cover interrupted dynamic phases.
-(def (missing-build-products identities libdir)
-  (def markers (map (cut static-product-path <> libdir) identities))
-  (def files (artifact-files identities libdir #f))
-  (def (regular? path)
-    (let (type (module-source-type path))
-      (when (and type (not (eq? type 'regular)))
-        (error "build product is non-regular or a symlink" path))
-      (eq? type 'regular)))
-  (append
-    (filter (lambda (file) (not (regular? file)))
-      (foldr append '()
-        (map (lambda (id)
-               (let (base (path-expand (symbol->string id) libdir))
-                 (list (string-append base ".ssi") (string-append base ".o1")))) identities)))
-    (filter (lambda (file) (not (regular? file)))
-      (map (cut path-force-extension <> ".o1")
-        (filter (lambda (file)
-                  (and (string-suffix? ".scm" file) (not (member file markers)))) files)))))
-(def (repair-build-products! identities libdir)
-  ;; Invalidate only the affected unit's owned SDK marker. The installed SDK
-  ;; recompiles it; no compiler replacement, output copying or approval occurs.
-  (def missing (missing-build-products identities libdir))
-  (for-each
-    (lambda (id)
-      (def base (path-expand (symbol->string id) libdir))
-      (when (ormap (lambda (path)
-                     (or (equal? path (string-append base ".ssi"))
-                         (equal? path (string-append base ".o1"))
-                         (string-prefix? (string-append base "~") path))) missing)
-        (let (marker (static-product-path id libdir))
-          (when (file-exists? marker) (delete-file marker))))) identities))
-(def (require-build-products! identities libdir)
-  (let (missing (missing-build-products identities libdir))
-    (unless (null? missing)
-      (error "build-required: selected runtime products are incomplete" missing))))
-(def (output-stem file)
-  (let (suffix (find (cut string-suffix? <> file) '(".gxc-complete" ".ssxi.ss" ".ssi" ".scm" ".c")))
-    (if suffix (substring file 0 (- (string-length file) (string-length suffix)))
-      (let (dot (string-rindex file #\.))
-        (and dot (string-prefix? ".o" (substring file dot (string-length file)))
-             (numeric? (substring file (+ dot 2) (string-length file)))
-             (substring file 0 dot))))))
-(def (selected-stem? stem names)
-  (and stem
-    (or (hash-key? names stem)
-        (let (separator (string-rindex stem #\~))
-          (and separator (selected-stem? (substring stem 0 separator) names))))))
-(def (artifact-files identities libdir (complete? #t))
-  ;; Index selected names, then visit each selected directory ONCE per check.
-  ;; Native named runtime sections (name~Type~0) belong to that selected unit.
-  (def directories (make-hash-table))
-  (for-each (lambda (identity)
-    (def base (path-expand (symbol->string identity) libdir))
-    (def directory (path-directory base))
-    (when (and complete?
-               (not (and (file-exists? (string-append base ".ssi"))
-                         (file-exists? (string-append base ".o1")))))
-      (error "build-required: selected compiler output is missing" identity))
-    (unless (hash-key? directories directory)
-      (hash-put! directories directory (make-hash-table)))
-    (hash-put! (hash-ref directories directory) (path-strip-directory base) #t))
-    identities)
-  (def files '())
-  (hash-for-each (lambda (directory names)
-    (for-each (lambda (file)
-      (when (selected-stem? (output-stem file) names)
-        (set! files (cons (path-expand file directory) files))))
-      (if (file-exists? directory) (directory-files directory) '()))) directories)
-  ;; Installed std/make's gxc-outputs requires BOTH .ssi and a static .scm.
-  ;; A fresh publication must not depend on leftovers from an earlier raw build.
-  ;; Inspect exact selected paths only; do not traverse the static catalogue.
-  (def static-owners (make-hash-table))
-  (for-each
-    (lambda (identity)
-      (def path (static-product-path identity libdir))
-      (when (and (hash-key? static-owners path)
-                 (not (eq? (hash-ref static-owners path) identity)))
-        (error "selected compiler identities share a static output" identity))
-      (hash-put! static-owners path identity)
-      (let (type (module-source-type path))
-        (when (or complete? type)
-          (unless (eq? type 'regular)
-            (error "build-required: selected compiler static output is missing" identity))
-          (set! files (cons path files))))) identities)
-  (list-sort string<? files))
-(def (clean-build-artifacts! identities libdir)
-  ;; Native clean can leave hot-import .oN generations and obsolete named
-  ;; runtime sections. Explicit Core clean owns this exact selected family.
-  (for-each
-    (lambda (path)
-      (unless (eq? (module-source-type path) 'regular)
-        (error "selected compiler output is not a regular file" path))
-      (delete-file path))
-    (artifact-files identities libdir #f)))
 (def (observed-files identities libdir)
   (map (lambda (path) (cons path (digest-file path))) (artifact-files identities libdir)))
 (def (invalidate-build-artifacts! graph)
@@ -300,7 +197,7 @@
   (map (lambda (row)
     (def source (car row))
     (unless (string-prefix? prefix source) (error "compiler output escaped its build directory" source))
-    ;; Preserve ordinary compiler-output metadata during publication. SDK
+    ;; Preserve ordinary compiler-output metadata during publication. Gerbil
     ;; completion files are opaque outputs; only std/make interprets them.
     (def info (file-info source #f))
     (def data (call-with-input-file source read-all-as-u8vector))
@@ -342,7 +239,7 @@
 (def (admit-issued-build! graph state)
   (measure-build-phase 'currentness
    (lambda ()
-    ;; No issued build means ordinary source publication. Native loader cache
+    ;; No issued build means ordinary source publication. Runtime loader cache
     ;; state does not grant Core publication authority and is not inspected.
     (when state
       (unless (issued-build? state) (error "build-required: Core build did not complete"))
@@ -486,12 +383,12 @@
       ((.get projection admit-current))
       (def identities (.get projection compiler-identities))
       (def produced (observed-files identities output))
-      ;; This adapter owns ordinary native gxc .o1 outputs. A later generation
+      ;; This adapter owns ordinary runtime gxc .o1 outputs. A later generation
       ;; cannot be blessed just because it was already beside a fresh .o1.
       ;; Preserve it and require an explicit clean/rebuild; never delete another
       ;; job's output or infer producer identity from a writable record.
       (unless (andmap (lambda (row) (ordinary-object-generation? (car row))) produced)
-        (error "build-required: unissued native object generation; clean selected outputs"
+        (error "build-required: unissued runtime object generation; clean selected outputs"
           (map car (filter (lambda (row) (not (ordinary-object-generation? (car row)))) produced))))
       (def files (if reusable? produced (publish-products produced output libdir)))
       (def published (observed-files identities libdir))
@@ -528,7 +425,7 @@
   (if reusable? (complete libdir)
     (call-with-temporary-directory "core-build-output-" complete)))
 
-;; Attach the existing issuer to an observed, nonempty native test spec.
+;; Attach the existing issuer to an observed, nonempty runtime test spec.
 ;; Source discovery owns the values; this owner retains signing and execution.
 (def (test-build-projection source)
   (unless (pair? (.get source spec))

@@ -5,7 +5,7 @@ namespace YuanxuProof.Admission.CallPhases
 open SnapshotLifetime
 
 def quintSourceDigest : String :=
-  "sha256:c88bf5ae9c77d23020f5d9c88aabfa9c6377a0feef96ac363e1d9736390b1c9f"
+  "sha256:f49b64724a278b0124d4fd0d2e3505c6b7d3d2c64c15a976dcc80d8a8aca1b6d"
 
 structure Frame where
   receiver : Nat
@@ -14,7 +14,7 @@ structure Frame where
 
 def lookupFrames (cold : Bool) (receiver slot : Nat) (ambient : List Frame) : List Frame :=
   if cold then ⟨receiver, slot⟩ :: ambient else ambient
--- Actual native .get unwinds before .call applies its result.
+-- Actual runtime .get unwinds before .call applies its result.
 def bodyFrames (ambient : List Frame) : List Frame := ambient
 
 theorem cold_lookup_pushes (receiver slot : Nat) (ambient : List Frame) :
@@ -36,7 +36,7 @@ theorem nested_receiver_edit_vetoed (before : Revisions) (slot : Nat) :
     bodyEdit [0] [⟨0, slot⟩] before = none := by
   simp [bodyEdit, bodyFrames, commit]
 
--- The native nested body propagates the veto exception; it cannot certify.
+-- The runtime nested body propagates the veto exception; it cannot certify.
 def certifyEdit (result : Option Revisions) (checks : Bool) : Bool :=
   match result with | none => false | some _ => checks
 

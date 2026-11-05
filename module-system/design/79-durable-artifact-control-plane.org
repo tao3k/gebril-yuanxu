@@ -22,7 +22,7 @@ validated the policy receipt.
 * Current Implementation Receipt
 - Scheme now models artifact profiles, database/backend profiles, durable artifact declarations, policy validation receipts, manifest receipts, and Marlin handoff envelopes.
 - Manifest receipts are fixed runtime receipts with bounded alist projection at the handoff boundary.
-- The user-facing surface remains POO-native: users author artifact profiles, database profiles, and durable artifacts as POO objects/macros; runtime storage, indexing, publishing, and retention side effects remain outside Scheme.
+- The user-facing surface remains POO: users author artifact profiles, database profiles, and durable artifacts as POO objects/macros; runtime storage, indexing, publishing, and retention side effects remain outside Scheme.
 - Focused gates:
   - =gxpkg env gxtest t/scenarios/durable-artifact-policy-test.ss=
   - =gxpkg env gxtest t/user-interface-custom-durable-artifact-test.ss=
@@ -116,8 +116,8 @@ Turso belongs only in the database/backend profile layer. It can satisfy
 `local-first-sync` capabilities, but it must not define artifact policy
 semantics.
 
-** POO-Native Implementation Constraint
-The Scheme implementation must prefer Gerbil POO-native object construction and
+** POO-Runtime Implementation Constraint
+The Scheme implementation must prefer Gerbil POO object construction and
 projection for its normal path.
 
 - =.o= constructs profile, database, artifact, and receipt objects with stable
@@ -134,9 +134,9 @@ into POO objects immediately. Profile hooks receive and return POO objects, and
 local overrides are expressed as POO objects instead of raw alist patches.
 
 * User Composition Syntax
-* Native POO Extension Contract
+* POO Extension Contract
 The profile macro is only the ergonomic declaration layer. The real extension
-surface must expose native POO objects. Macro expansion must create or collect
+surface must expose POO objects. Macro expansion must create or collect
 POO objects, then hand those objects to =use-composition=. It must not trap the
 profile inside an opaque alist DSL or runtime-only patch language.
 
@@ -165,7 +165,7 @@ The macro-expanded value must be a POO object equivalent to:
       (publish '(human-approved proof-gated))))
 #+end_src
 
-Users can then extend that object through native POO composition:
+Users can then extend that object through POO composition:
 
 #+begin_src scheme
 (def research-report/internal
@@ -212,7 +212,7 @@ expression that returns a POO object. This keeps Gerbil/Scheme higher-order
 composition available at the user interface instead of sealing it behind macro
 syntax.
 
-The native extension surface has three layers:
+The runtime extension surface has three layers:
 
 - =:extends base-profile= is the normal Doom-style declarative path.
 - =:with extension-fn= composes reusable extension functions.
@@ -236,7 +236,7 @@ repeated =yuanxu-profile-ref= calls:
 #+end_src
 This form is only syntactic sugar for collecting existing POO objects from a
 POO module object. It is not the old =(modules ...)= API and it does not create a
-separate module DSL. The collected values are still native POO objects and can
+separate module DSL. The collected values are still POO objects and can
 be extended locally with the normal =(profile name :extends ...)= form.
 Stages use the same group shape when composing imported profiles:
 #+begin_src scheme
@@ -261,7 +261,7 @@ Single profile references remain available only for small local cases:
   (profile artifact research-report)
   (profile database turso))
 #+end_src
-Local native POO override is expressed by extending the imported object in the
+Local POO override is expressed by extending the imported object in the
 same =use-module= block:
 #+begin_src scheme
 (use-composition crewai-enterprise
@@ -275,7 +275,7 @@ same =use-module= block:
     (compose
       (profiles crew agent task audited-memory))))
 #+end_src
-Advanced native POO reuse keeps full Scheme power outside the macro boundary:
+Advanced POO reuse keeps full Scheme power outside the macro boundary:
 #+begin_src scheme
 (def enterprise-report
   (.o (:extends report/base)
@@ -297,9 +297,9 @@ inside each iteration and still look structurally valid until RSS exploded.
 The composition macro scenarios now have five explicit performance gates:
 - inline profile declaration
 - grouped =profiles= import and compose
-- local native POO override
+- local POO override
 - reusable hook override
-- direct native POO object reuse
+- direct POO object reuse
 
 Each gate must satisfy two contracts:
 - the benchmark receipt passes the time and memory fixture gate
@@ -331,7 +331,7 @@ This satisfies the four design constraints:
 
 - the user interface stays compact and declarative
 - =src= object families remain reusable
-- native POO extension is not sealed by macros
+- POO extension is not sealed by macros
 - downstream community profiles can contribute reusable objects directly
 
 Macro expansion strategy:

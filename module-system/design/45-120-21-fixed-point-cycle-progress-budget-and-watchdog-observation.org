@@ -36,7 +36,7 @@ Cycle detection, progress proof, deterministic structural budget, and runtime
 watchdog evidence are four separate responsibilities.
 
 - Cycle detection records the first dependency edge that closes a path.
-- A POO-native =ProgressContract= classifies semantic change.
+- A POO =ProgressContract= classifies semantic change.
 - Deterministic structural budgets define reproducible evaluation limits.
 - Runtime watchdogs report machine-dependent time, CPU, allocation, and
   retention evidence.
@@ -145,7 +145,7 @@ flowchart TD
   Edge["New dependency edge"]
   Cycle["CycleDetectedObservation"]
   SCC["Canonical SCC identity and causal path"]
-  Progress["POO-native ProgressContract"]
+  Progress["POO ProgressContract"]
   Advancing["FixedPointProgressObservation"]
   Converged["FixedPointConvergedObservation"]
   Stalled["FixedPointStalledObservation"]
@@ -418,7 +418,7 @@ available response.  The coordinator validates and executes an admitted
 
 - [X] A cycle is recorded at the first closing dependency edge.
 - [X] Cycle evidence is not automatically classified as failure.
-- [X] Progress classification comes from a pure POO-native Contract.
+- [X] Progress classification comes from a pure POO Contract.
 - [X] Convergence, stall, oscillation, budget exhaustion, continuation re-entry,
   and cache thrashing remain distinct observations.
 - [X] Structural budgets use deterministic semantic units.

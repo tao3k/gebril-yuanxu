@@ -73,7 +73,7 @@ theorem untracked_write_defeats_generation (s : RuntimeState) :
   · simp [generationGate, raw_restore_keeps_generation]
   · exact Nat.lt_succ_self s.calls
 
--- Same native pre-write guard as check-object-edit's active receiver branch.
+-- Same runtime pre-write guard as check-object-edit's active receiver branch.
 def supportedEdit (active : Bool) (revision : Nat) : Option Nat :=
   if active then none else some (revision + 1)
 

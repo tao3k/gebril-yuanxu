@@ -20,7 +20,7 @@
   responsibilities: (.o pipeline: PipelineSelectionContract)
   .obligations: empty-obligations)
 
-;; This descriptor retains native proto checking and final identity obligations.
+;; This descriptor retains runtime proto checking and final identity obligations.
 (.def (SelectedChecksContract @ YuanxuObjectContract.)
   identity: 'funflow/profile-selected
   proto: Root

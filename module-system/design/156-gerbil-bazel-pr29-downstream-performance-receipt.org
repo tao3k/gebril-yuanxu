@@ -13,14 +13,14 @@ Historical receipt; its measurements remain evidence, but its former audit
 entrypoints are not current interfaces.
 
 Performance policy is independent of Bazel.  Current cold/warm measurements
-come from the native =gxpkg= and Building Framework lifecycle; the pure POO
+come from the runtime =gxpkg= and Building Framework lifecycle; the pure POO
 Flow comparison consumes those immutable observations.  Bazel remains a
 hermetic integration gate.  Agentic AI Lab does not wrap, recursively launch, clean,
 or shut down Bazel in a performance-audit runner.
 
 #+begin_src mermaid
 flowchart LR
-  Native["Native gxpkg cold and warm builds"] --> Receipt["Building Framework observation"]
+  Runtime["Runtime gxpkg cold and warm builds"] --> Receipt["Building Framework observation"]
   Receipt --> Policy["Bazel-independent POO performance policy"]
   Bazel["Bazel integration tests"] -. "tests policy and build graph" .-> Policy
   Policy --> Decision{"Comparable and within budget?"}
@@ -100,7 +100,7 @@ The gerbil-bazel RFC 0008 audit rejected two speculative library changes:
 2. Twelve concurrent GCC object jobs completed in 11,466 ms with a peak RSS of
    4,614,832,128 bytes, so a smaller fixed macOS core cap is not justified.
 
-A native =gxc= probe over the same sixteen Gerbil modules crossed the
+A runtime =gxc= probe over the same sixteen Gerbil modules crossed the
 90-second guard without Bazel staging or =build.ss= orchestration.  The
 remaining owner is the gerbil-poo frontend workload: module dependency depth,
 macro expansion, and cross-module optimization.
@@ -142,7 +142,7 @@ package manager, or deriving a private POO-specific module graph.
 ** Production/test spec split
 
 A clean hermetic gerbil-poo archive was rebuilt after removing
-=t/table-testing= from the production =build.ss= spec.  The resulting native
+=t/table-testing= from the production =build.ss= spec.  The resulting runtime
 spec contained fifteen library modules and contained neither
 =t/table-testing= nor the ignored generated =version.ss=.
 
@@ -158,7 +158,7 @@ added to Git.
 
 ** Unoptimized development dependency
 
-The existing declarative =args= interface was used to form the native command
+The existing declarative =args= interface was used to form the runtime command
 =gxi build.ss compile --no-optimize=.  The real Bazel package action completed
 in 79,769 ms with a peak RSS of 3,793,813,504 bytes.  That is 18,339 ms
 (18.7 percent) faster than the optimized 98,108 ms package baseline and passes
@@ -226,9 +226,9 @@ boundaries:
 flowchart LR
   Manifest["POO/GSLPH declarative component manifest"]
   DAG["Component dependency DAG"]
-  A["Component action A: native std/make"]
-  B["Component action B: native std/make"]
-  C["Component action C: native std/make"]
+  A["Component action A: runtime std/make"]
+  B["Component action B: runtime std/make"]
+  C["Component action C: runtime std/make"]
   Guard["Scheme process-tree resource guard"]
   Artifacts["Atomic component artifacts and receipts"]
   Consumer["POO runtime/test consumers"]
@@ -281,7 +281,7 @@ from that manifest instead of maintaining an unrelated negative list:
 - =modules/nono-sandbox/_nono.ss=, compiled by the C FFI stage.
 
 The focused =cli-support-project-building-test.ss= gate passed with all checks.
-The native topology projection now agrees with the hermetic receipt at exactly
+The runtime topology projection now agrees with the hermetic receipt at exactly
 381 runtime specs.
 
 * Runtime topology feasibility projection
@@ -390,7 +390,7 @@ The cold-audit runner previously created a distinct Bazel output base for
 every sample.  Gerbil package action keys contain stabilized paths derived
 from that output base, so the supposedly shared dependency disk cache could
 not match the next sample.  The corrected runner owns one stable output base
-per comparison side, invokes Bazel-native =clean= before each sample, restores
+per comparison side, invokes Bazel-runtime =clean= before each sample, restores
 the three dependency packages from one shared dependency cache, and gives
 only the root compile action a sample-local disk cache.  It also persists the
 parsed receipt immediately as =SIDE-N/compile.receipt.json= before the next
@@ -399,7 +399,7 @@ clean, rather than retaining a symlink into mutable Bazel output state.
 #+begin_src mermaid
 flowchart LR
   Side["One stable output base per side"]
-  Clean["Bazel-native clean before each sample"]
+  Clean["Bazel-runtime clean before each sample"]
   Seed["dependency_packages with shared disk cache"]
   Hits["Three package cache hits in 3.714-6.101 s"]
   Cold["compile_receipt with sample-local root cache"]
@@ -516,7 +516,7 @@ A host-process audit found multiple Bazel JVMs left by earlier probe, baseline,
 and candidate output bases.  Their configured idle lifetime was 10,800
 seconds.  Even read-only =gxi= and filesystem probes then required 60-155
 seconds, demonstrating that a benchmark retry on that host state would be
-invalid.  The obsolete servers were shut down through Bazel's native
+invalid.  The obsolete servers were shut down through Bazel's runtime
 =shutdown= command; only an unready server from an interrupted focused test
 required a targeted =TERM= after the client could not connect.
 
@@ -529,7 +529,7 @@ The Scheme audit runner now owns two additional invariants:
 2. The audit explicitly owns one stable Bazel server per side for the whole
    alternating sample sequence.  A pre-armed lifecycle receipt declares a
    =dynamic-wind= cleanup boundary, and both success and failure unwind paths
-   issue Bazel's native =shutdown=.  No machine-independent idle timeout is
+   issue Bazel's runtime =shutdown=.  No machine-independent idle timeout is
    hard-coded, so the opposite side's multi-minute sample cannot evict a
    server that the current audit still owns.
 
@@ -537,7 +537,7 @@ The canonical physical output directory is recorded in
 =gerbil-bazel.compile-performance-audit.v1= as =outputDirectory=.  The focused
 fixture passes a symlink alias and requires the receipt to contain =pwd -P='s
 physical directory.  It also requires both side output bases to receive a
-native shutdown on the successful audit path and on a synthetic fatal sample
+runtime shutdown on the successful audit path and on a synthetic fatal sample
 path.
 
 #+begin_src mermaid
@@ -552,7 +552,7 @@ flowchart TD
   Receipt["Immutable sample and audit receipts"]
   Exit["Completed or interrupted audit"]
   Cleanup["Scheme dynamic-wind cleanup"]
-  Reclaim["Native Bazel shutdown for both side servers"]
+  Reclaim["Runtime Bazel shutdown for both side servers"]
 
   Input --> Canonical
   Canonical --> Physical
@@ -617,7 +617,7 @@ copying the terminal line from Bazel output into the sample directory.  The
 runner now captures merged Bazel stdout/stderr and persists three immutable
 failure artifacts before raising:
 
-- =SIDE-N/compile.receipt.json= contains the native Scheme supervisor receipt;
+- =SIDE-N/compile.receipt.json= contains the Scheme supervisor receipt;
 - =SIDE-N/failure.context.json= contains side, sample index, revision, host
   session, runner, raw process status, receipt path, and log path;
 - =SIDE-N/build.log= contains the complete Bazel output used to extract the
@@ -630,7 +630,7 @@ flowchart TD
   ProjectReceipt["Emit AGENTIC_AI_LAB_PROJECT_BUILD_RECEIPT"]
   Bazel["Bazel returns non-zero"]
   Capture["Audit runner captures stdout and stderr"]
-  Native["Immutable compile.receipt.json"]
+  Runtime["Immutable compile.receipt.json"]
   Context["Immutable failure.context.json"]
   Log["Immutable build.log"]
   Abort["Raise sample failure and block comparison"]
@@ -640,10 +640,10 @@ flowchart TD
   Parent --> ProjectReceipt
   ProjectReceipt --> Bazel
   Bazel --> Capture
-  Capture --> Native
+  Capture --> Runtime
   Capture --> Context
   Capture --> Log
-  Native --> Abort
+  Runtime --> Abort
   Context --> Abort
   Log --> Abort
   Abort -. "blocked" .-> Promote
@@ -652,7 +652,7 @@ flowchart TD
 The focused synthetic-failure gate
 =//scheme:compile_performance_audit_test= passed one of one targets in 8.8
 seconds.  It requires the three failure artifacts and verifies the preserved
-native fields =failure-exit-code= with value 10 and =outcome= with value
+runtime fields =failure-exit-code= with value 10 and =outcome= with value
 =failed-build=.
 
 The formal promotion gate remains blocked for two independent reasons:
@@ -667,7 +667,7 @@ must start from a host admission state without runnable saturation, preserve
 the new failure artifacts if any sample terminates, and produce all six cold
 observations before the relative median gate is evaluated.
 
-The native Scheme receipts distinguish compile time from Bazel wall time:
+The Scheme receipts distinguish compile time from Bazel wall time:
 
 | Side/sample | Scheme elapsed | Bazel wall | Bazel overhead | Peak RSS | Runnable snapshot |
 |-------------+----------------+------------+----------------+----------+-------------------|
@@ -725,7 +725,7 @@ Each sample directory now owns:
 - =failure.context.json= with =phase= equal to =host-admission= when the
   sample is rejected.
 
-A rejected sample never starts dependency seeding, native ABI discovery, or
+A rejected sample never starts dependency seeding, runtime ABI discovery, or
 the cold compile action.  The enclosing =dynamic-wind= still shuts down both
 owned Bazel servers.
 
@@ -733,7 +733,7 @@ owned Bazel servers.
 flowchart TD
   Sample["Next baseline or candidate sample"]
   Guard["Run declared gerbil-bazel Scheme guard with fresh ps state"]
-  NativeReceipt["Persist resource-guard.receipt.json"]
+  RuntimeReceipt["Persist resource-guard.receipt.json"]
   Ready{"Guard admission ready?"}
   Available{"Runnable observation available?"}
   Capacity{"Runnable count <= observed logical CPU count?"}
@@ -742,11 +742,11 @@ flowchart TD
   Blocked["Persist blocked host-admission.json"]
   Context["Persist failure.context.json with host-admission phase"]
   Unwind["Unwind audit"]
-  Shutdown["Native shutdown of both owned Bazel servers"]
+  Shutdown["Runtime shutdown of both owned Bazel servers"]
 
   Sample --> Guard
-  Guard --> NativeReceipt
-  NativeReceipt --> Ready
+  Guard --> RuntimeReceipt
+  RuntimeReceipt --> Ready
   Ready -- "yes" --> Available
   Ready -- "no" --> Blocked
   Available -- "yes" --> Capacity
@@ -994,13 +994,13 @@ flowchart LR
   Workers --> Compile
 #+end_src
 
-The focused native Scheme guard suite completed with =All tests OK=.  The
+The focused Scheme guard suite completed with =All tests OK=.  The
 declarative =//scheme:compile_performance_audit_test= passed one of one targets
 in 51.5 seconds, and the runtime-WASM producer target completed successfully in
 37.235 seconds.
 
 An intermediate local =//scheme:compile= completed in 528.264 seconds of Bazel
-elapsed time with a 510.24-second critical path.  Its native Scheme receipt
+elapsed time with a 510.24-second critical path.  Its Scheme receipt
 reported:
 
 #+begin_example
@@ -1023,7 +1023,7 @@ the machine-derived ceiling, live allocatable memory, baseline RSS, effective
 worker reservation, derived worker count, observed peak, and terminal outcome.
 
 The replacement focused compile completed under the machine-adaptive guard and
-published the following native =AGENTIC_AI_LAB_PROJECT_BUILD_RECEIPT=.  For this
+published the following runtime =AGENTIC_AI_LAB_PROJECT_BUILD_RECEIPT=.  For this
 32-GiB host, the versioned formula derives an 8-GiB ceiling; the observed peak
 remained below that ceiling and the action reached =completed=.
 
@@ -1121,7 +1121,7 @@ for live members of the supervised process tree on Linux.  A process that
 exits between the =ps= snapshot and the =/proc= read is ignored.  If a live
 process has an unreadable rollup, its RSS is used conservatively for that
 sample.  Other platforms retain process-tree RSS enforcement until they gain
-an equivalent native proportional or footprint metric.
+an equivalent runtime proportional or footprint metric.
 
 The 5 GiB safety ceiling is unchanged.  The receipt separates enforcement
 from diagnostics through =memory-metric=, =peak-memory-bytes=, and
@@ -1156,28 +1156,28 @@ below; preserving that machine-sized constant would reproduce the CI defect.
 * CI ownership correction for external validation
 
 The first PSS-enabled CI attempt exposed duplicate ownership rather than a
-second memory result.  The dedicated Linux external-module job and the native
+second memory result.  The dedicated Linux external-module job and the runtime
 Linux package job both executed the same =full= external consumer build before
-the native job could reach its receipt-producing project compile.  Two
+the runtime job could reach its receipt-producing project compile.  Two
 independent hosted runners received external shutdown signals during that
 duplicated root action, so neither produced a Scheme terminal receipt.  The
 logs contained no guard termination, compiler diagnostic, or memory-limit
 receipt and therefore do not qualify as a PSS failure.
 
 The dedicated external-module job remains the sole owner of the full consumer
-compile.  Native Linux now performs only Bazel analysis of the external
+compile.  Runtime Linux now performs only Bazel analysis of the external
 consumer before proceeding to dependency validation and the supervised
 =//scheme:compile= action.  This removes redundant work without weakening
-coverage and ensures that the native job reaches the evidence-producing phase
+coverage and ensures that the runtime job reaches the evidence-producing phase
 within its existing budgets.
 
 #+begin_src mermaid
 flowchart LR
   Change["PR source change"] --> External["Dedicated Linux external job"]
-  Change --> Native["Native Linux package job"]
+  Change --> Runtime["Runtime Linux package job"]
   External --> Full["Full external consumer compile"]
   Full --> ConsumerReceipt["External compatibility receipt"]
-  Native --> Analysis["External module analysis only"]
+  Runtime --> Analysis["External module analysis only"]
   Analysis --> Dependencies["Declared dependency packages"]
   Dependencies --> Supervised["Supervised //scheme:compile"]
   Supervised --> MemoryReceipt["Linux PSS and diagnostic RSS receipt"]
@@ -1216,8 +1216,8 @@ flowchart TD
   Effective --> Headroom["Retain adaptive headroom"]
   Adaptive --> Headroom
   Headroom --> Workers["Adaptive GERBIL_BUILD_CORES"]
-  Workers --> Native["Native build.ss and std/make"]
-  Native --> Probe{"smaps_rollup readable?"}
+  Workers --> Runtime["Runtime build.ss and std/make"]
+  Runtime --> Probe{"smaps_rollup readable?"}
   Probe -->|"yes"| PSS["Process-tree PSS"]
   Probe -->|"no"| RSS["Process-tree RSS fallback"]
   PSS --> Receipt["Resource guard receipt v1"]
@@ -1299,7 +1299,7 @@ dependency state, and ASP Build API profile ownership.
   =LDFLAGS=-Wl,-ld_classic=.
 - Bazel dependency owner: merged =gerbil-bazel= revision
   =7e1a55660502d0e2d67aa1e2fca66344ab2e7b9d=.
-- Native entry point: canonical =gxpkg build= invoking the package =build.ss=
+- Runtime entry point: canonical =gxpkg build= invoking the package =build.ss=
   and ASP Build API; no replacement shell scheduler was introduced.
 
 ** Timed receipts
@@ -1310,11 +1310,11 @@ censored observations, not successful baselines.
 | Run | Terminal state | Elapsed seconds | Elapsed minutes | Interpretation |
 |-
 | Fresh Bazel downstream build | stopped after the root action exposed the same trajectory | 730.660 s | 12.18 min | critical path had already reached 715.80 s; not a successful cold baseline |
-| Native GCC =gxpkg build -g= cold | build body completed; =/usr/bin/time -lp= later reported a sandboxed =sysctl kern.clockrate= wrapper error | 793.92 s | 13.23 min | exact native cold evidence |
-| Native GCC =gxpkg build -g= warm | completed | 71.35 s | 1.19 min | warm state can be fast, but later runs proved it is not stable |
+| Runtime GCC =gxpkg build -g= cold | build body completed; =/usr/bin/time -lp= later reported a sandboxed =sysctl kern.clockrate= wrapper error | 793.92 s | 13.23 min | exact runtime cold evidence |
+| Runtime GCC =gxpkg build -g= warm | completed | 71.35 s | 1.19 min | warm state can be fast, but later runs proved it is not stable |
 | Local exact-revision Clang cold comparison | stopped, incomplete | 770.39 s | 12.84 min | no compiler-switch benefit was demonstrated |
-| Native GCC without =-g= | stopped, incomplete | 465.71 s | 7.76 min | removing debug information alone did not correct the trajectory |
-| Native GCC with temporary =optimize: #f= cold | completed | 619.62 s | 10.33 min | 174.30 s, or 21.96 percent, faster than the completed GCC debug cold run; still unacceptable |
+| Runtime GCC without =-g= | stopped, incomplete | 465.71 s | 7.76 min | removing debug information alone did not correct the trajectory |
+| Runtime GCC with temporary =optimize: #f= cold | completed | 619.62 s | 10.33 min | 174.30 s, or 21.96 percent, faster than the completed GCC debug cold run; still unacceptable |
 | Same temporary profile, first warm | completed | 126.14 s | 2.10 min | recompiled a non-empty module subset |
 | Same temporary profile, second warm | completed | 101.25 s | 1.69 min | recompiled a different non-empty module subset |
 | Explicit shared =framework-build-cache-root/build-deps= experiment | completed, rejected | 178.85 s | 2.98 min | slower warm result and an invalid cross-project cache owner |
@@ -1350,10 +1350,10 @@ subsets.  Together with the roughly 494-second dependency chain, this narrows
 the remaining work to three owners:
 
 1. ASP Build API must expose a small declarative development/production profile
-   that lowers directly to native =std/make= settings.
+   that lowers directly to runtime =std/make= settings.
 2. The development profile must retain upstream per-project =srcdir/build-deps=
    semantics and prove stable no-op warm behavior before promotion.
-3. Package topology and generated native units must be reduced or invalidated
+3. Package topology and generated runtime units must be reduced or invalidated
    correctly; disabling GCC optimization globally is not an architectural fix.
 
 Agentic AI Lab remains a downstream consumer.  It must not duplicate the scheduler,
@@ -1365,7 +1365,7 @@ revision through =gerbil.pkg=.
 flowchart TD
     A[Agentic AI Lab build.ss] --> B[ASP Build API package profile]
     B --> C{Build intent}
-    C -->|development| D[Native std/make incremental profile]
+    C -->|development| D[Runtime std/make incremental profile]
     C -->|production or CI release| E[GCC optimized production profile]
     D --> F[Per-project srcdir/build-deps]
     D --> G[GERBIL_BUILD_CORES from available CPUs]
@@ -1425,7 +1425,7 @@ and materialized the Gerbil graph, =npm test= then entered
 =source-build= exceeded 15 minutes.  Increasing the old eight-minute
 materialization deadline cannot fix this duplicate ownership.
 
-The package is now the only build owner.  =npm test= owns generation, native
+The package is now the only build owner.  =npm test= owns generation, runtime
 WASM compilation, determinism, tests, and packing.  The workflow's earlier
 Gerbil step is reduced to Bazel graph queries; it neither compiles nor copies
 artifacts into the checkout.  Generation requests the primary and independent

@@ -116,7 +116,7 @@ It does not contain:
 
 * Immutable derivation
 
-Every variant is derived through native POO prototype extension.
+Every variant is derived through POO prototype extension.
 
 Derivation:
 
@@ -133,7 +133,7 @@ No derived profile mutates or overwrites the base.
 
 * Typed variant delta
 
-A variant delta is expressed through native POO relations such as:
+A variant delta is expressed through POO relations such as:
 
 - contribution;
 - requirement;
@@ -291,19 +291,19 @@ Dispatch:
 
 - is pure;
 - is total over the declared supported modes or returns typed conflict;
-- returns a native POO profile value;
+- returns a POO profile value;
 - retains family, mode, and derived-profile identities;
 - performs no environment or runtime observation;
 - grants no capability.
 
-Exact dispatch syntax must use verified native =gerbil-poo= operations.
+Exact dispatch syntax must use verified runtime =gerbil-poo= operations.
 
 * Selection flow
 
 #+begin_src mermaid
 flowchart LR
   D["Explicit DeploymentMode or selected entry point"] -->|"application-owned selection identity is fixed"| F["ApplicationProfileFamily"]
-  F -->|"native POO dispatch finds supported mode"| V["Derived application profile"]
+  F -->|"POO dispatch finds supported mode"| V["Derived application profile"]
   F -->|"mode is missing, ambiguous, or unsupported"| X["Typed mode-selection conflict"]
   V -->|"flat compose receives one immutable profile value"| C["compose with profiles strategy"]
   U["Module-owned domain profiles"] -->|"canonical owners and revisions remain distinct"| C
@@ -332,7 +332,7 @@ The edge labels describe semantic delta.  They are not source-order overrides.
 
 * Precedence and conflict
 
-Variant derivation reuses existing native POO precedence and typed relation
+Variant derivation reuses existing POO precedence and typed relation
 conflict semantics.
 
 It does not introduce:
@@ -411,7 +411,7 @@ Prior composition and runtime receipts remain immutable.
 
 * Explanation surface
 
-The POO-native explanation interface can answer:
+The POO explanation interface can answer:
 
 - which application profile variant was selected;
 - which entry point or =DeploymentMode= selected it;
@@ -447,10 +447,10 @@ not own profile semantics.
 
 Ordinary users use flat composition forms shown in this RFC.
 
-Profile authors use verified native =gerbil-poo= object and prototype
+Profile authors use verified runtime =gerbil-poo= object and prototype
 operations.
 
-Framework authors may extend typed family and dispatch protocols through native
+Framework authors may extend typed family and dispatch protocols through runtime
 POO prototypes.
 
 No public profile-family, environment-selection, switch, or mode macro is
@@ -474,7 +474,7 @@ The system fails closed on:
 
 * Invariants
 
-- [X] Application variants are immutable native POO profile values.
+- [X] Application variants are immutable POO profile values.
 - [X] Every variant has a new application-owned identity and revision.
 - [X] Base prototypes remain unchanged by derivation.
 - [X] Ordinary composition receives one selected profile value.
@@ -491,7 +491,7 @@ The system fails closed on:
 
 - [ ] ASP emits parser-owned implementation owners for profile family and
   dispatch.
-- [ ] Base and derived profiles are native =gerbil-poo= objects.
+- [ ] Base and derived profiles are runtime =gerbil-poo= objects.
 - [ ] Derivation preserves immutable base and explicit provenance.
 - [ ] =DeploymentMode= is an explicit immutable POO input.
 - [ ] Unsupported mode dispatch returns typed conflict.
@@ -520,7 +520,7 @@ implementation completion, not owner selection.
   family, typed contributions and withdrawals, and deployment-mode selection.
 - [X] =yuanxu= owns only the generic Profile and composition contracts
   used by that family.
-- [X] Upstream =gerbil-poo= owns the native prototype and extension operators.
+- [X] Upstream =gerbil-poo= owns the runtime prototype and extension operators.
 - [ ] The concrete application Profile family remains final-application
   implementation work.
 
@@ -532,7 +532,7 @@ implementation completion, not owner selection.
 - [[file:45-93-module-profile-selection-bundle-and-imports-closure-algebra.org][45-93 - Module Profile Selection, Bundle, and Imports Closure Algebra]]
 - [[file:45-100-canonical-typed-empty-poo-values-shared-prototype-copy-on-extension-and-cache-safety.org][45-100 - Canonical Typed Empty POO Values, Shared Prototype, Copy-on-Extension, and Cache Safety]]
 - [[file:45-101-typed-module-relation-contribution-composition-conflict-and-withdrawal-algebra.org][45-101 - Typed Module Relation Contribution, Composition, Conflict, and Withdrawal Algebra]]
-- [[file:45-102-native-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][45-102 - Native Prototype Precedence and Typed Relation Conflict Resolution Bridge]]
+- [[file:45-102-runtime-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][45-102 - Runtime Prototype Precedence and Typed Relation Conflict Resolution Bridge]]
 - [[file:45-110-recovery-observability-profile-projection-and-minimal-use-composition-surface.org][45-110 - Recovery and Observability Profile Projection with a Minimal Use-Composition Surface]]
 - [[file:45-111-profile-ownership-naming-export-identity-and-composition-repository-boundaries.org][45-111 - Profile Ownership, Naming, Export Identity, and Composition Repository Boundaries]]
 - [[file:45-115-application-environment-profile-purity-and-capability-scoped-deployment-runtime-input-boundary.org][45-115 - Application Environment Profile Purity and Capability-Scoped Deployment/Runtime Input Boundary]]

@@ -1,11 +1,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Native VM positive control before any Case watchdog has been terminated.
+;;; Runtime VM positive control before any Case watchdog has been terminated.
 (import :std/test :clan/poo/object
         (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot))
 (export raw-allocation-test)
 
 (def raw-allocation-test
-  (test-suite "Fresh native allocation counter"
+  (test-suite "Fresh runtime allocation counter"
     (test-case "nearby raw samples include the live allocated payload"
       (def before (yuanxu-debug-memory-snapshot 'before))
       (def payload (make-u8vector 65536 0))

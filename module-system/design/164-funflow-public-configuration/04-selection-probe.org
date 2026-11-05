@@ -12,10 +12,10 @@ source is pinned to 099b381588360a8a49fd772f666a1a00351366f5; its Core path poin
 to the current working tree. The result was:
 
 #+begin_example
-PASS: native lexical receiver / selected names design probe assertions=10
+PASS: runtime lexical receiver / selected names design probe assertions=10
 #+end_example
 
-It verifies the native receiver/selection pattern underlying the proposed
+It verifies the runtime receiver/selection pattern underlying the proposed
 resolver, including a newly added name after parent caching. selected-values is
 only a domain-free map/.ref stand-in. There is no closed schema, prototype
 classification, dependency closure, capability check or source authentication
@@ -81,7 +81,7 @@ claim that the proposed admission rule already rejects it.
 (assert! 'frozen-parent-negative
   (equal? (values-of (.get Frozen funflow profiles gerbil-scheme pipeline checks))
           '(parent-build parent-test parent-package)))
-(displayln "PASS: native lexical receiver / selected names design probe assertions=" assertions)
+(displayln "PASS: runtime lexical receiver / selected names design probe assertions=" assertions)
 #+end_src
 
 * Reproduction and remaining gate
@@ -92,7 +92,7 @@ POO source and current Core working tree, then run it with gxi. The isolated
 GERBIL_PATH/GERBIL_LOADPATH must not silently resolve another installed POO copy.
 No packages were installed or removed and no runtime repository file was changed.
 
-The ten assertions are a source-runtime result, not native AOT, product
+The ten assertions are a source-runtime result, not runtime AOT, product
 integration, remote CI or a performance result. Full selected-only domain
 admission and Loader integration remain separate gates. English text, local
 Org links and all Scheme blocks in this design were checked separately; Scheme

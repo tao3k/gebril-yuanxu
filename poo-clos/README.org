@@ -2,11 +2,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: POO-native CLOS implementation status
+#+title: POO CLOS implementation status
 
 * Status
 
-Core owns this POO-native CLOS metaprotocol extension.  The Common
+Core owns this POO CLOS metaprotocol extension.  The Common
 Lisp HyperSpec supplies semantic conformance vectors, but it does not own the
 runtime architecture.  Class precedence is the upstream Gerbil POO prototype
 C4, projected back to the exact CLOS class metaobjects.  Agentic AI Lab owns its
@@ -15,16 +15,16 @@ facade remains lazy and opt-in.
 
 The implementation provides:
 
-- POO-native generic-function, method, specializer, effective-method, invocation
+- POO generic-function, method, specializer, effective-method, invocation
   frame, and typed-failure values;
-- =class=, native =prototype=, =eql=, and universal specializers;
+- =class=, runtime =prototype=, =eql=, and universal specializers;
 - multiple-dispatch applicability and =argument-precedence-order=;
 - identity-preserving method addition, replacement, and removal;
 - the standard =around=, =before=, primary, and =after= method combination;
 - lexical next-method checks, including replacement-argument applicability.
-- POO-native class, direct-slot, effective-slot, instance-state, and slot-cell
+- POO class, direct-slot, effective-slot, instance-state, and slot-cell
   metaobjects;
-- native POO C4 class precedence with diamond, monotonicity, and upstream
+- POO C4 class precedence with diamond, monotonicity, and upstream
   inconsistency handling;
 - instance- and class-allocated slots, inherited option merging, initforms,
   initargs, default initargs, and shared initialization;
@@ -34,7 +34,7 @@ The implementation provides:
   allow-other-keys, supplied-p, and generic/method congruence;
 - expansion-time =.defclass=, =.defgeneric=, and =.defmethod= declaration IRs with
   binding-aware grammar markers and source-located rejection;
-- a POO-native parenthesized method head, lexical =call-next-method= and
+- a POO parenthesized method head, lexical =call-next-method= and
   =next-method-p=, and an explicit generic-binding generation owner.
 - POO method-combination and generic-protocol metaobjects, all nine ANSI simple
   built-ins, declarative short and long combination forms, qualifier groups,
@@ -60,11 +60,11 @@ POO invocation-frame API for low-level construction, while ordinary
 =next-method-p= bindings over the same runtime object.  There is no second
 evaluator.
 
-* Native prototype method declarations
+* Runtime prototype method declarations
 
-Core .defmethod accepts an explicit native prototype specializer alongside the
+Core .defmethod accepts an explicit runtime prototype specializer alongside the
 existing class and eql forms. It reuses the existing prototype applicability
-and native C4 precedence; it never constructs a shadow CLOS class.
+and runtime C4 precedence; it never constructs a shadow CLOS class.
 
 #+begin_src scheme
 (.def Resolver.)
@@ -75,7 +75,7 @@ and native C4 precedence; it never constructs a shadow CLOS class.
 (.defmethod (publication-kind
              (resolver (prototype Resolver.))
              (publication (prototype PrototypePublication.)))
-  'native-prototype)
+  'runtime-prototype)
 #+end_src
 
 =(value Class)= remains a CLOS class specializer. =(value (eql expression))=
@@ -83,7 +83,7 @@ retains eql matching. =(value (prototype expression))= lowers to the existing
 =poo-clos-prototype-specializer=; its target is evaluated when admitting the
 method, not on every call. Annotation markers use lexical binding identity,
 so a shadowed =prototype= identifier remains an ordinary class expression.
-Malformed prototype/eql annotations are syntax errors; an invalid native target
+Malformed prototype/eql annotations are syntax errors; an invalid runtime target
 fails before generic method registration/generation changes. Generic inline
 methods support the same annotation. Existing =call-next-method= and
 =next-method-p= bindings retain their normal behavior.
@@ -113,7 +113,7 @@ configured Generic.
 
 Direct .defmethod and privately defrules-generated declarations inside a bundle
 produce checked method objects. They do not register methods or advance a
-Generic generation. A bundle may even precede its Generic declaration; native
+Generic generation. A bundle may even precede its Generic declaration; runtime
 specializer targets must still exist when evaluated. Explicit composition uses
 existing protocol identity and lambda-list admission. Same-labelled but distinct
 protocol objects do not match. Failed bundle construction cannot leak an earlier
@@ -130,21 +130,21 @@ or runtime execution of arbitrary code is magically delayed.
 
 Local pinned-source qualification passed 56 cases across syntax (18), dispatch
 (12), combinations/protocol (13) and bundles (13). Declaration modules passed
-gxc -S source compilation. These receipts do not qualify native/AOT binaries,
+gxc -S source compilation. These receipts do not qualify runtime/AOT binaries,
 remote CI, product module loading or Funflow source/admission adapters.
 
 * MOP ownership boundary
 
 | Capability | Authoritative implementation | CLOS responsibility |
 |------------+------------------------------+---------------------|
-| Object identity, prototype inheritance, C4 precedence | =clan/poo/object= | Project the native precedence list to the same class metaobjects; never linearize again. |
+| Object identity, prototype inheritance, C4 precedence | =clan/poo/object= | Project the runtime precedence list to the same class metaobjects; never linearize again. |
 | Base Slot lookup, mutation, Type validation and single-dispatch =.defgeneric= | =clan/poo/object= and =clan/poo/mop= | Reuse these primitives for metaobjects and checks; do not clone their slot or single-dispatch engine. |
 | Multi-argument, =eql= and class specializers | Core CLOS | Rank applicable CLOS methods in an immutable generic generation. |
 | =around=/=before=/=after=, next-method and user-defined combinations | Core CLOS | Apply CLOS-specific ordering and invocation contracts absent from upstream MOP. |
 | Unbound/class-allocated slots, initargs, class redefinition and obsolete instances | Core CLOS | Keep the ANSI lifecycle state that base POO slots do not express. |
 
 =mop.ss= is only a checked read-only CLOS capability profile, not a second
-MOP dispatch engine.  Native prototype C4 remains the sole precedence owner.
+MOP dispatch engine.  Runtime prototype C4 remains the sole precedence owner.
 
 The opt-in =just benchmark-dispatch=, =just benchmark-slot=, and
 =just benchmark-redefinition= receipts isolate multi-method selection,
@@ -157,7 +157,7 @@ because its narrower applicability gain did not improve total wide dispatch.
 The closed authoring path is:
 
 #+begin_example
-ClosGenericProtocol -> ClosMethodBundle -> native define-type POO values
+ClosGenericProtocol -> ClosMethodBundle -> runtime define-type POO values
                     -> .defmethod-bundle -> existing generic admission/dispatch
 #+end_example
 
@@ -168,7 +168,7 @@ upstream =compute-precedence-list!= result back to its exact class metaobjects.
 =funcs.ss= retains only CLOS-owned indexing mechanics and reuses Gerbil std
 =invert-hash<-vector= for position indexes and =stable-sort= for method
 ordering.  The 40-sample Scenario under
-=t/scenarios/performance/poo-clos-native-c4/= checks native order and =eq?=
+=t/scenarios/performance/poo-clos-runtime-c4/= checks runtime order and =eq?=
 metaobject identity while recording construction and warm-query latency.
 
 * Scheme and POO adaptations
@@ -178,15 +178,15 @@ metaobject identity while recording construction and warm-query latency.
   instance object identity are both preserved.
 - CLOS =eql= specializers use Scheme =eqv?= without serialization or numeric
   canonicalization.
-- Keyword/initarg names accept native Gerbil keyword values and symbols.
-- Multiple values are carried by the native Scheme values protocol.
+- Keyword/initarg names accept Gerbil keyword values and symbols.
+- Multiple values are carried by the Scheme values protocol.
 
 The executable clause ledger is owned by =t/qualification/poo-clos/=.  Its
 exhaustive 41-entry CLHS 7.7 reference manifest maps every operator to an exact
 source-owned =std/test= suite.  The gate reads those Scheme sources through the
-native reader and verifies the exported suite binding, test-case cardinality,
+runtime reader and verifies the exported suite binding, test-case cardinality,
 and nonzero checks in every case.  Package AOT remains owned exclusively by the
-native =build.ss= graph; this semantic ledger does not create another compiler,
+runtime =build.ss= graph; this semantic ledger does not create another compiler,
 artifact scanner, or test runner and makes no artifact-provenance claim.
 
 * Single-owner boundary

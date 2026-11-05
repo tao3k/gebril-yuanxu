@@ -1,14 +1,16 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Call-local retention projection; native MOP still owns read validity.
-(import (only-in :clan/poo/object .all-slots object? object-%precedence-list object-protocol replay-slot-reads!
-                 object-revision object-supers object-%protocol object-%declarations)
+;;; Call-local retention projection; MOP still owns read validity.
+(import (runtime: :clan/poo/object)
+        (only-in :clan/poo/prototype-map prototype-map-length)
         (only-in :clan/poo/slot-observation
-                 %call-with-recorded-slot-reads %deliver-slot-read slot-read-value
+                 %call-with-recorded-slot-reads %record-slot-reads!
                  slot-read-receiver slot-read-dependencies
-                 call-with-slot-read-observer))
+                 call-with-slot-read-observer slot-read-observers-compatible?
+                 slot-read-precheck-active?))
 (export call-with-owned-read-projection current-owned-read-open-guard owned-read-value! owned-read-leaf! owned-read-copy! owned-read-derived! owned-read-open!
-        owned-read-method! owned-read-hook-owner!)
+        owned-read-method! owned-read-hook-owner! owned-read-function-scope?
+        owned-read-fields-present? call-with-owned-source-reads)
 
 ;; This region is a construction/ownership scope, never a result/currentness
 ;; cache. It is released when the call returns. Only Core constructors enroll
@@ -20,17 +22,17 @@
 (def current-owned-read-open-guard (make-parameter #f))
 (def (owned-read-value! receiver)
   (when (current-region)
-    ;; Keep the FIRST native generation, including mutate-and-restore edits.
+    ;; Keep the FIRST runtime generation, including mutate-and-restore edits.
     (unless (hash-key? (read-region-owned (current-region)) receiver)
       (hash-put! (read-region-owned (current-region)) receiver (object-revision receiver))))
   receiver)
 (def (owned-read-leaf! receiver)
   ;; Only audited bare Core factories use this path. No parent, declaration or
-  ;; protocol can hide a shared currentness requirement outside native reads.
+  ;; protocol can hide a shared currentness requirement outside runtime reads.
   (when (current-region)
     (unless (and (null? (object-supers receiver))
                  (not (object-%protocol receiver))
-                 (null? (object-%declarations receiver)))
+                 (zero? (prototype-map-length (object-%declarations receiver))))
       (owned-read-open!)))
   (owned-read-value! receiver))
 (def (owned-read-derived! receiver)
@@ -42,10 +44,12 @@
         (unless (hash-key? parents parent)
           (hash-put! parents parent (object-revision parent))
           (.all-slots parent)
-          (when (or (object-%protocol parent) (pair? (object-%declarations parent)))
+          (when (or (object-%protocol parent)
+                    (positive? (prototype-map-length (object-%declarations parent))))
             (owned-read-open!))
           (for-each visit (object-supers parent))))
-      (when (or (object-%protocol receiver) (pair? (object-%declarations receiver)))
+      (when (or (object-%protocol receiver)
+                (positive? (prototype-map-length (object-%declarations receiver))))
         (owned-read-open!))
       (for-each visit (object-supers receiver))))
   (owned-read-value! receiver))
@@ -75,16 +79,57 @@
     (owned-read-hook-owner! receiver)
     (unless (memq body (read-region-bodies (current-region))) (owned-read-open!))))
 (def (observe-owned-hook read)
-  ;; Inspect only an actually demanded receiver. Unknown native MOP execution
+  ;; Inspect only an actually demanded receiver. Unknown MOP execution
   ;; keeps the WHOLE trace; this neither suppresses nor stores observations.
   (owned-read-hook-owner! (slot-read-receiver read)))
 
-(def (deliver-original-reads reads)
-  ;; Preserve native issuer identity and first-delivery order. No reconstructed
-  ;; checker, synthetic owner or weak witness may enter the native graph.
-  (for-each
-    (lambda (read)
-      (%deliver-slot-read read (slot-read-value read))) reads))
+;; One maintained precheck, with a private dynamic stack of actual Reader
+;; boundaries. Nested callers cannot replace an enclosing Reader's boundary.
+;; This replaces per-Reader callback closures; it is not a purity registry.
+(def source-read-boundaries (make-parameter '()))
+(def (before-owned-source-read receiver _key)
+  (when (object? receiver)
+    ;; A public C3 query now copies its spine. This guard only needs runtime
+    ;; preparation; a warm canonical cache already follows the same no-hook
+    ;; branch. Invalidation restores the ordinary cold preparation/refusal.
+    (unless (object-%precedence-list receiver)
+      (compute-precedence-list! receiver))
+    (when (object-protocol receiver)
+      (for-each (lambda (boundary) (boundary)) (source-read-boundaries)))))
+(def (call-with-owned-source-reads boundary action)
+  ;; without-observation may deliberately disable an outer runtime scope.
+  ;; Reinstall only the new Reader there; do not resurrect disabled callbacks.
+  (def enclosing (if (slot-read-precheck-active? before-owned-source-read)
+                   (source-read-boundaries) '()))
+  (parameterize ((source-read-boundaries (cons boundary enclosing)))
+    (if (pair? enclosing) (action)
+      (call-with-slot-read-observer void action before: before-owned-source-read))))
+
+;; Actual runtime scope identities, never a Profile purity flag. The two
+;; maintained observers only inspect ownership or discard delivery. Unknown
+;; observers/prechecks keep ordinary dispatch. The maintained source precheck
+;; remains ACTIVE on every actual read; it has no callback for hook-free runtime
+;; carriers. A prior open callback does not
+;; certify OR prohibit a later call: the caller freshly authenticates its live
+;; declaration support. The region still retains and forwards its WHOLE trace.
+(def (owned-read-function-scope?)
+  (slot-read-observers-compatible? (list void observe-owned-hook)
+                                 (list before-owned-source-read)))
+
+;; One actual runtime inventory for a fresh factory receipt, not six separate
+;; presence records retaining that receipt/instance/specification environment.
+;; Public/contributed values, open callbacks and an already exposed inventory
+;; retain the ordinary query path. The inventory is NEVER an admission result.
+(def (owned-read-fields-present? receiver fields)
+  (let* ((region (current-region))
+         (revision (and region (hash-get (read-region-owned region) receiver))))
+    (if (and revision (not (read-region-open? region))
+             (owned-read-function-scope?)
+             (= revision (object-revision receiver))
+             (not (object-%all-slots receiver)))
+      (let (names (.all-slots receiver))
+        (and (andmap (cut memq <> names) fields) #t))
+      (andmap (cut .slot? receiver <>) fields))))
 
 (def (call-with-owned-read-projection bodies stable? action)
   (if (current-region)
@@ -102,14 +147,18 @@
                 (lambda ()
                   (call-with-slot-read-observer observe-owned-hook
                     (lambda ()
-                      ;; Native policy reads belong to this same recording frame.
+                      ;; Runtime policy reads belong to this same recording frame.
                       (stable?)
                       (begin0 (call-with-values action list) (stable?))))))))
           unique-roots?: #t))
       ;; All paths retain the complete original graph. In particular, a failed
       ;; action must not erase its dependencies from an enclosing computation.
-      (deliver-original-reads reads)
+      ;; The native child capture inherited observers and already delivered
+      ;; every actual read. Merge the original tokens into the parent frame;
+      ;; redelivery would run those callbacks a second time. The parent keeps
+      ;; its own occurrence policy and every token's signed dependency graph.
+      (%record-slot-reads! reads)
       ;; This is observation forwarding, not admission. With no weak projection
-      ;; to certify, the enclosing native consumer owns replay at its existing
+      ;; to certify, the enclosing runtime consumer owns replay at its existing
       ;; boundary; do not move a deferred refusal into the middle of an action.
       (if failed? (raise failure) (apply values results)))))

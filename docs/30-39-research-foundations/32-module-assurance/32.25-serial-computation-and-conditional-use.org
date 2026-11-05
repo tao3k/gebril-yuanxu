@@ -6,7 +6,7 @@
 [[file:32.24-revision-aba-and-use-boundaries.org][32.24]] established that endpoint checks do not fence later use. This follow-up
 asks whether existing MOP frames or dynamic parameter scopes supply that fence.
 Only qualification tests, formal models and documentation change. Production
-Scheme and Loader do not change. No caller-supplied purity flag, invented native
+Scheme and Loader do not change. No caller-supplied purity flag, invented runtime
 epoch, manually installed active frame, or new public DSL is used.
 
 The answer is deliberately narrower than a transaction:
@@ -37,12 +37,12 @@ changes preserved. LeanPoo remains =6e6a706e14fa6f8199e4f36711440355b42ef335=.
 | Core =admission/source.ss= | Actual-demand source checks, collected read graph, independent replay and return source checks | External resource commit or immutable filesystem snapshot |
 
 The source observer is a Gerbil parameter. Restoring its binding restores a
-value, not the effects performed while bound. Native frame checks are scoped to
+value, not the effects performed while bound. Runtime frame checks are scoped to
 supported setters and the actual same-thread frame stack. Manually shadowing
 those stacks, raw internal writes, parallel mutation and continuation-driven
 re-entry are not qualified by these tests.
 
-* Four executable native controls
+* Four executable runtime controls
 
 Owner: [[file:../../../t/mop-serial-use-test.ss][mop-serial-use-test.ss]]. It uses the existing test macro and
 DirectoryFixture; no additional fixture framework or production interceptor.
@@ -98,10 +98,10 @@ configuration code.
 ** Warm replay is not callback exclusion
 
 A recorded Root.port read is replayed with an observer that increments a local
-counter and changes Root.port. The native final sweep raises
+counter and changes Root.port. The runtime final sweep raises
 =stale slot dependency=. The counter is still one and the new port remains 5433.
 Suppressing read observation during replay does not suppress arbitrary effects
-in the observer. This control exercises actual native replay, not a replacement.
+in the observer. This control exercises actual runtime replay, not a replacement.
 
 ** Source writes remain possible inside a cold frame
 
@@ -117,7 +117,7 @@ A serialized sequence of already-closed kernel reads with no intervening
 callback/mutation can compare and consume the same in-memory state. That is a
 conditional reasoning boundary, not a blanket property of =.admit= or any
 procedure called inside =parameterize=. This work tests hostile operations to
-show exactly where native protection ends; it does not relabel arbitrary Scheme
+show exactly where runtime protection ends; it does not relabel arbitrary Scheme
 functions as closed or infer purity from their names.
 
 For Gitea/PostgreSQL, admission must still retain both independent port
@@ -141,7 +141,7 @@ No such external authority is implemented here.
 [[file:../../../dev/proofs/lean/YuanxuProof/Admission/SerialUse.lean][Admission/SerialUse]] imports the existing LeanPoo-backed admission models
 through SnapshotLifetime. Its actions are concrete: affected edit, independent
 demand edit, source edit and read. The =cold= argument projects a real captured
-native frame, never a user assertion of purity. Native identity-based closure
+runtime frame, never a user assertion of purity. Runtime identity-based closure
 membership and complete projection remain premises.
 
 - =serial_cold_trace_preserves_root=: every modeled action sequence preserves
@@ -155,12 +155,12 @@ membership and complete projection remain premises.
   two-step revision even if external values could be restored.
 - =local_success_not_commit=: an earlier local success does not imply success
   at a later version. The conditional relation is an external-provider premise,
-  not a proved native file API or a new Scheme implementation.
+  not a proved runtime file API or a new Scheme implementation.
 - =preserves_diagnostic_schedule=: reuses the earlier ordered-failure theorem;
   it does not reorder source failure behind a later stale-plan diagnostic.
 
 The trace theorem is about the concrete transition model under serialized
-supported calls. It neither extracts all Scheme procedures nor proves native
+supported calls. It neither extracts all Scheme procedures nor proves runtime
 thread synchronization. A rejected write can still have unrelated effects
 before attempting the write; whole-callback rollback is not inferred.
 
@@ -168,9 +168,9 @@ before attempting the write; whole-callback rollback is not inferred.
 
 [[file:../../../dev/proofs/quint/SerialUse.qnt][SerialUse]] models preparation, an intervening operation, use, ordered
 certification, a later external write, and conditional commit. Terminal states
-have an explicit self-step. Native active protection and external conditional
+have an explicit self-step. Runtime active protection and external conditional
 commit are separate transitions; the latter is an explicitly assumed atomic
-relation. Its monotonic source version is not a native MOP field.
+relation. Its monotonic source version is not a MOP field.
 
 | Variant | Required observation |
 |---------+----------------------|
@@ -189,12 +189,12 @@ relation. Its monotonic source version is not a native MOP field.
 The unchanged lifetime regression first caches the parent's plan at 5432, derives
 Release at 5433, and admits the child through the real published Contract with
 two contributions. Its final Gitea plan reads 5433 while the parent cached scalar
-remains 5432. Source-observer ABA then modifies the selected JSON, and native
+remains 5432. Source-observer ABA then modifies the selected JSON, and runtime
 =.admit= rejects =configuration source changed=. If both source and read record
 are stale, that earlier source diagnostic still wins. These are independent
 regression controls, not properties supplied by the new conditional-commit model.
 
-Ordinary users retain assignments and native refinement. They do not supply
+Ordinary users retain assignments and runtime refinement. They do not supply
 frame flags, version histories or source lists. Any future effect boundary must
 be owned by the runtime/provider; pushing those details into configuration would
 hide a missing system guarantee rather than repair it.
@@ -208,7 +208,7 @@ The existing raw-state extraction can identify selected records and actual
 frames, but it does not certify every user procedure's behavior. Reuse across
 such a callback remains unqualified. A future stronger production boundary must
 justify its own exclusion/conditional-use mechanism rather than accept a manual
-"pure" declaration. The native and formal controls here identify that remaining
+"pure" declaration. The runtime and formal controls here identify that remaining
 obligation; they do not implement the optimization.
 
 * Qualification
@@ -218,7 +218,7 @@ local artifacts, not Git. No performance reduction, runtime fencing, production
 Scheme migration or Loader integration is claimed.
 
 
-** Native and Lean results
+** Runtime and Lean results
 
 The unchanged Core =just test-file= entrypoint ran four serial-use controls,
 seven snapshot-lifetime controls and eleven real Gitea/PostgreSQL publication
@@ -237,7 +237,7 @@ No failure is reclassified as success.
 
 All raw artifacts remain under =/private/tmp/core-serial-use-20261018/=. The
 input manifest includes current Core source entries, the unchanged test snapshot
-helper and producer source files. Native behavior and source inspection do not
+helper and producer source files. Runtime behavior and source inspection do not
 prove installed-binary reproducibility or thread safety.
 
 
@@ -270,7 +270,7 @@ on that authority really providing atomic compare-and-apply; only the pure
 relation, not a real provider RPC or filesystem transaction, was verified.
 
 The input manifest's audited Core/producer source identities remained unchanged
-through the final native/formal audit. This is bounded qualification of the
+through the final runtime/formal audit. This is bounded qualification of the
 recorded source cut, not a claim that the entire concurrently edited workspace
 or all installed build artifacts are reproducibly qualified. Failed launch and
 proof-development logs remain alongside passing logs. =qualification.json=
@@ -278,5 +278,5 @@ records identities and output hashes outside source control.
 
 * Follow-up
 
-[[file:32.26-call-lookup-body-and-observation.org][32.26]] supplies the missing native =.call= phase controls, including ambient
+[[file:32.26-call-lookup-body-and-observation.org][32.26]] supplies the missing runtime =.call= phase controls, including ambient
 caller protection and the acquisition-only observation counterexample.

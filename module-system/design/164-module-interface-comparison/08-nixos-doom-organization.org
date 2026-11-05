@@ -77,7 +77,7 @@ does not by itself remove first-use cost.
 | Concern | Useful precedent | POO decision |
 |---------+------------------+--------------|
 | Many maintained providers | NixOS domain directories and inventory | Explicit publication owners, categories as navigation and qualified identities |
-| Find a supported field | NixOS option descriptions; Doom index and contextual help | Project native Contract metadata and intent guidance without forcing task getters |
+| Find a supported field | NixOS option descriptions; Doom index and contextual help | Project Contract metadata and intent guidance without forcing task getters |
 | Selected versus available | Doom selected-list versus explicit all-module discovery | Separate bounded lookup from paged catalog enumeration |
 | Acquire versus activate | Doom package metadata versus load triggers | Separate source/build closure, prototype/Profile demand, method composition and runtime |
 | Private/community contributions | Doom roots and private precedence | Keep explicit source authority and conflicts; no accidental publisher winner |

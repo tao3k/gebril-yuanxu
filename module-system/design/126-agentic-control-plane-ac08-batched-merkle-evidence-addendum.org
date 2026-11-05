@@ -121,7 +121,7 @@ stateDiagram-v2
 - Scheme: 3 cases / 10 checks, including all five inclusion proofs.
 - Python focused Merkle lane: 3 passed including harness policy.
 - Reorder, omission, and substituted-leaf fixtures fail closed.
-- Full Python source lane: 184 passed / 7 native skips after generated native
+- Full Python source lane: 184 passed / 7 runtime skips after generated runtime
   artifacts were intentionally cleaned.
 - =BATCHED_EVIDENCE= is advertised only after explicit negotiation; Strict
   remains the runtime default.
@@ -137,13 +137,13 @@ stateDiagram-v2
   transaction-owned tables.  Two leaves survive close/reopen, reordered flush
   fails atomically, exact flush advances the canonical execution root once,
   and post-flush reconciliation contains no staged leaves.
-- Python native lane: 193 passed against the freshly built runtime dylib.
+- Python runtime lane: 193 passed against the freshly built runtime dylib.
   Explicit =batched_evidence=True= negotiation, input-digest projection,
   durable Buffered staging, close/reopen reconciliation, and kernel-initiated
   flush all execute through CFFI.  The recovery fixture verifies that flush
   commits without adapter replay.
 - Python source-only lane after generated CFFI artifacts are cleaned:
-  185 passed / 8 native skips.
+  185 passed / 8 runtime skips.
 - Installed-wheel benchmark, macOS arm64, 20 iterations per point: Strict p50
   is 242750 ns at batch 1 and 1349042 ns at batch 1024.  Batched with eight
   evidence leaves per flush is 403903 ns/effect at batch 1 and 1518950

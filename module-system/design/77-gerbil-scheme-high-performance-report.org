@@ -54,7 +54,7 @@ Local =src= evidence shows these current Agentic AI Lab anchors:
   handling.
 - =src/cli-support/package-build.ss= and
   =src/cli-support/package-build-support/*.ss=: package build facade,
-  build specs, test specs, compile targets, stage cache, bounded native-output
+  build specs, test specs, compile targets, stage cache, bounded runtime-output
   probing, build observability budget status, live watchdog, debug tracking
   lines, and package compile entry points.
 
@@ -163,7 +163,7 @@ Use Gerbil's macro system to generate repeated object-family scaffolding:
   known during expansion.
 - Syntax parameters for controlled contextual behavior.
 
-Macro usage should be bounded. The output should be ordinary POO-native or
+Macro usage should be bounded. The output should be ordinary POO or
 functional code, not an opaque DSL.
 
 ** POO And MOP Features
@@ -187,7 +187,7 @@ Use functional combinators for strategy reuse:
 - Stable call surfaces.
 - Composition before execution, not interpretation during execution.
 
-This matches Agentic AI Lab's core direction: POO-native policy families plus
+This matches Agentic AI Lab's core direction: POO policy families plus
 functional strategy combinators.
 
 ** Runtime And ABI Features

@@ -12,7 +12,7 @@ They are migration research, not a recommended alternate user interface. Use
 [[file:164-bounded-domain-module-scope-examples.org][the complete bounded module scope examples]] for the current target design.
 None is a macro/runtime receipt or implemented domain API.
 
-** LangGraph: Contract initialization and native lowering
+** LangGraph: Contract initialization and runtime lowering
 
 *** Contract initialization: name the domain Contract directly
 
@@ -23,7 +23,7 @@ None is a macro/runtime receipt or implemented domain API.
    {graph: (use-module LangGraphModule)}})
 #+end_src
 
-Native configured-slot expansion for this fresh value:
+Runtime configured-slot expansion for this fresh value:
 
 #+begin_src scheme
 (.def (FreshLangGraphScenario @ (.get LangGraphCompositionContract proto))
@@ -38,14 +38,14 @@ Native configured-slot expansion for this fresh value:
                             '(session state router agent-node tool-node bounded-loop runtime-handoff)))))))))
 #+end_src
 
-The user names the domain Contract; the native expansion obtains its shared
-proto. This is proposed contextual parent recognition, not native descriptor
+The user names the domain Contract; the runtime expansion obtains its shared
+proto. This is proposed contextual parent recognition, not runtime descriptor
 inheritance. Generated Module values use
 slot-owned instance names and inherit their concrete responsibility proto plus
 the selected domain contributions. Helpers are proposed. Compare the maintained-object path below:
 it inherits an already configured Scenario value and preserves owner additions.
 
-*** Native objectification and refinement
+*** Runtime objectification and refinement
 
 #+begin_src scheme
 (.def (MyLangGraphScenario @ LangGraphScenario)
@@ -73,7 +73,7 @@ keeps it, including default stages and internal projection context. No
 scenario-profile slot or second composition call is emitted. Helpers remain
 proposed named pure functions, not an executed expansion receipt. %configured-module retains every selection.
 
-** CrewAI: Contract initialization and native lowering
+** CrewAI: Contract initialization and runtime lowering
 
 *** Contract initialization: name the domain Contract directly
 
@@ -84,7 +84,7 @@ proposed named pure functions, not an executed expansion receipt. %configured-mo
    {crew: (use-module CrewAIModule)}})
 #+end_src
 
-Native configured-slot expansion for this fresh value:
+Runtime configured-slot expansion for this fresh value:
 
 #+begin_src scheme
 (.def (FreshCrewScenario @ (.get CrewAICompositionContract proto))
@@ -99,14 +99,14 @@ Native configured-slot expansion for this fresh value:
                             '(agent task crew planning memory knowledge sequential-process flow-state flow-router flow-persist guardrail human-input observability runtime-handoff)))))))))
 #+end_src
 
-The user names the domain Contract; the native expansion obtains its shared
-proto. This is proposed contextual parent recognition, not native descriptor
+The user names the domain Contract; the runtime expansion obtains its shared
+proto. This is proposed contextual parent recognition, not runtime descriptor
 inheritance. Generated Module values use
 slot-owned instance names and inherit their concrete responsibility proto plus
 the selected domain contributions. Helpers are proposed. Compare the maintained-object path below:
 it inherits an already configured Scenario value and preserves owner additions.
 
-*** Native objectification and refinement
+*** Runtime objectification and refinement
 
 #+begin_src scheme
 (.def (MyCrewScenario @ CrewAIScenario)
@@ -134,7 +134,7 @@ keeps it, including default stages and internal projection context. No
 scenario-profile slot or second composition call is emitted. Helpers remain
 proposed named pure functions, not an executed expansion receipt. %configured-module retains every selection.
 
-** Tool Calling: Contract initialization and native lowering
+** Tool Calling: Contract initialization and runtime lowering
 
 *** Contract initialization: name the domain Contract directly
 
@@ -145,7 +145,7 @@ proposed named pure functions, not an executed expansion receipt. %configured-mo
    {tool: (use-module ToolCallingModule)}})
 #+end_src
 
-Native configured-slot expansion for this fresh value:
+Runtime configured-slot expansion for this fresh value:
 
 #+begin_src scheme
 (.def (FreshToolScenario @ (.get ToolCallingCompositionContract proto))
@@ -160,14 +160,14 @@ Native configured-slot expansion for this fresh value:
                             '(tool-request tool-schema tool-permission sandbox-scope argument-validation untrusted-observation tool-cooldown result-contract runtime-binding receipt-gate observability)))))))))
 #+end_src
 
-The user names the domain Contract; the native expansion obtains its shared
-proto. This is proposed contextual parent recognition, not native descriptor
+The user names the domain Contract; the runtime expansion obtains its shared
+proto. This is proposed contextual parent recognition, not runtime descriptor
 inheritance. Generated Module values use
 slot-owned instance names and inherit their concrete responsibility proto plus
 the selected domain contributions. Helpers are proposed. Compare the maintained-object path below:
 it inherits an already configured Scenario value and preserves owner additions.
 
-*** Native objectification and refinement
+*** Runtime objectification and refinement
 
 #+begin_src scheme
 (.def (MyToolScenario @ ToolCallingScenario)
@@ -197,7 +197,7 @@ proposed named pure functions, not an executed expansion receipt. %configured-mo
 
 
 
-** Complete user configuration with inline native policy refinement
+** Complete user configuration with inline runtime policy refinement
 
 This complete example inherits the maintained Scenario's existing default Module
 binding. No repeated use-module or one-off named policy object is necessary.
@@ -215,7 +215,7 @@ exports. The explicit default-binding variant is explained below.
      {selection: 'priority}}}})
 #+end_src
 
-** Corresponding explicit native POO refinement
+** Corresponding explicit POO refinement
 
 This is a structural desugaring, not a captured macro-expansion or execution
 receipt. It replaces brace object notation and the =>.+ abbreviation with
@@ -235,7 +235,7 @@ ordinary .o and (slot => .+ ...) forms, retaining the same inherited objects.
                 (.o selection: 'priority)))))))))
 #+end_src
 
-** Complete user configuration with inline native policy refinement
+** Complete user configuration with inline runtime policy refinement
 
 This complete example inherits the maintained Scenario's existing default Module
 binding. No repeated use-module or one-off named policy object is necessary.
@@ -253,7 +253,7 @@ exports. The explicit default-binding variant is explained below.
      {ordering: 'priority}}}})
 #+end_src
 
-** Corresponding explicit native POO refinement
+** Corresponding explicit POO refinement
 
 This is a structural desugaring, not a captured macro-expansion or execution
 receipt. It replaces brace object notation and the =>.+ abbreviation with
@@ -273,7 +273,7 @@ ordinary .o and (slot => .+ ...) forms, retaining the same inherited objects.
                 (.o ordering: 'priority)))))))))
 #+end_src
 
-** Complete user configuration with inline native policy refinement
+** Complete user configuration with inline runtime policy refinement
 
 This complete example inherits the maintained Scenario's existing default Module
 binding. No repeated use-module or one-off named policy object is necessary.
@@ -291,7 +291,7 @@ exports. The explicit default-binding variant is explained below.
      {maximum-depth: 16}}}})
 #+end_src
 
-** Corresponding explicit native POO refinement
+** Corresponding explicit POO refinement
 
 This is a structural desugaring, not a captured macro-expansion or execution
 receipt. It replaces brace object notation and the =>.+ abbreviation with
@@ -324,7 +324,7 @@ When introducing or rebinding a Module, retain the proposed explicit declaration
 
 The combined crew example can then inherit MyCrewBinding instead of CrewAIScenario.
 The analogous graph/tool bindings use their corresponding Modules. This changes
-neither the native inline policy refinement nor the responsibility chain.
+neither the runtime inline policy refinement nor the responsibility chain.
 No-selection use-module and local-slot identity remain proposed contextual
-adapters, so they are not disguised as an existing native loader expansion.
+adapters, so they are not disguised as an existing runtime loader expansion.
 

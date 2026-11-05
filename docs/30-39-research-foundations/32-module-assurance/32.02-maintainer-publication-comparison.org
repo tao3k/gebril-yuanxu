@@ -25,7 +25,7 @@ Ordinary users change a port; maintainers own the interfaces and relationship.
 
 Both upstream adapter functions are ANALYST-WRITTEN, NOT-EXECUTED and limited to
 known ordinary data. They expose the work a reusable application library could
-own. They are not replacements for native module origins or engine plans and
+own. They are not replacements for runtime module origins or engine plans and
 are not complete reproductions of Core's identity/source protocol.
 
 * Responsibility ledger
@@ -35,7 +35,7 @@ see [[file:32.04-equal-scope-complex-service-comparison.org][32.04 Equal-Scope S
 
 | Concern | NixOS existing mechanism / extra application concern | Pulumi existing mechanism / extra application concern | Core already centralized / still domain-owned |
 |---------+-----------------------------------------------------+------------------------------------------------------+-----------------------------------------------|
-| Legal port | types.port is 0..65535; use ints.between for 1..65535 if the application requires it | Config numeric parsing and optional bounds; integer/relationship policy belongs to the component | Originally a local predicate; 32.05 now uses native IntegerRange and shared ObjectContract fields |
+| Legal port | types.port is 0..65535; use ints.between for 1..65535 if the application requires it | Config numeric parsing and optional bounds; integer/relationship policy belongs to the component | Originally a local predicate; 32.05 now uses runtime IntegerRange and shared ObjectContract fields |
 | Default 5432 | Option default, distinct from port type | Component/default expression, distinct from numeric bounds | JSON/default configuration, distinct from Port Type |
 | Allowed ports and connection | Options/assertions can express domain policy and relationship | Components/policies can express domain policy and relationship | Port obligations and application-issues remain maintained domain code |
 | Expected contribution coverage | Imported definitions carry locations; an expected contributor/route manifest is an extra application contract | Components/engine resources have identities; expected application policy membership is an extra contract | Selected routes, row collection, deep identity observations and coverage are bound by .for-export |
@@ -170,7 +170,7 @@ checking, external unknown/secret propagation and safe execution remain gaps.
 The Nix/Pulumi analysis functions show that local envelope checks are expressible
 without our POO framework. Their expected-route/source inputs are intentionally
 not authenticated by those examples; making them production-quality would need
-an owning library. Conversely, the native NixOS/Pulumi frameworks already provide
+an owning library. Conversely, the runtime NixOS/Pulumi frameworks already provide
 substantial mechanisms our small adapters omit. Comparing their handwritten
 function lengths against one Core method call would hide both sides' framework
 cost and is not evidence of reduced total maintenance.

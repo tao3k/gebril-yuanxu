@@ -4,12 +4,12 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 
-;;; Boundary: native POO extension-operation prototypes and dispatch.
+;;; Boundary: POO extension-operation prototypes and dispatch.
 ;;; Each operation family owns application and batching behavior as slots;
 ;;; graph node helpers remain pure values in payload-operations.ss.
 
-(import :gerbil/core
-        (only-in :clan/poo/object .mix .o .ref)
+(import (runtime: :gerbil/core) (only-in :gerbil/core object? make-object)
+        (runtime: :clan/poo/object)
         (only-in :clan/poo/mop .defgeneric)
         :yuanxu/graph/contribution
         :yuanxu/graph/payload-operations)

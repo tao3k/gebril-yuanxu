@@ -10,3 +10,4 @@
   compile: (lambda ((source (.ref defaults 'schema))) (compile-schema source))
   contract: (lambda (identity (source (.ref defaults 'schema))) (schema-contract identity source))
   validate: validate-schema)
+

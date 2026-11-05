@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-"""Compare the retained native checker with the pinned CLI, including mutations."""
+"""Compare the retained runtime checker with the pinned CLI, including mutations."""
 from pathlib import Path
 import importlib.util
 import subprocess
@@ -30,7 +30,7 @@ class TypecheckTests(unittest.TestCase):
                     with self.assertRaisesRegex(RuntimeError, "worker was cancelled"):
                         runtime.request({"input": str(source)})
 
-    def test_native_cli_agreement(self):
+    def test_runtime_cli_agreement(self):
         cases = [
             ("module Sample { pure val answer: int = 1 }", True),
             ("module Sample { pure val answer: int = true }", False),

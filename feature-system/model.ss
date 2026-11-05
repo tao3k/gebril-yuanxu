@@ -5,10 +5,7 @@
 ;;; Boundary: owns the POO prototypes for features, profiles, selections, and receipts.
 ;;; Invariant: model objects remain inert values; resolution and runtime effects live elsewhere.
 (import (only-in :std/list/list map)
-        (only-in :clan/poo/object
-                 .ref
-                 .slot?
-                 object<-alist)
+        (runtime: :clan/poo/object)
         :yuanxu/composition/roles
         :yuanxu/utilities/functional)
 

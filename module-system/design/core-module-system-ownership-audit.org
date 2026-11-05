@@ -100,9 +100,9 @@ independent =core/= package. Its =plan.ss= imports Agentic AI Lab Flow, Task, an
 projection syntax; the Scenario projection therefore stays under
 =src/scenario/= rather than claiming Core package ownership.
 
-* Native configuration composition
+* Runtime configuration composition
 
-Ordinary inherited configuration is a native POO object relation, not a second
+Ordinary inherited configuration is a POO object relation, not a second
 Nix-style evaluator. Core =SemanticModule= now composes its =imports= object
 through the POO prototype chain. The =contributions= slot rule prepends local
 values to the inherited value; C4, not a hand-written graph merge, determines
@@ -110,7 +110,7 @@ ancestor precedence and de-duplicates diamonds. A leaf retains the identity of
 the imports object passed to its constructor. Core tests cover that identity
 and a diamond with one shared base.
 
-Sandbox Profile resolution now builds native POO prototypes from backend field
+Sandbox Profile resolution now builds POO prototypes from backend field
 defaults and applies validated rows with prototype extension. Explicit
 append/prepend/remove semantics reuse Core's pure slot-value policy; Sandbox no
 longer constructs field-contribution lists or invokes =mk-merge=. In the local
@@ -148,7 +148,7 @@ change; never remove an installed package to work around a tag conflict.
 
 - The migration must not introduce a second Module descriptor, schema,
   option-merge algorithm, loader registry, or compatibility alias.
-- Core: =just test= before =just build=; native owner tests must cover deep
+- Core: =just test= before =just build=; runtime owner tests must cover deep
   prototypes, wide option schemas, lazy 100/1,000-module catalog selection,
   missing/conflicting imports, and non-mutating diagnostics.
 - Agentic AI Lab: focused consumer tests, then heap-fenced =just test= before

@@ -6,12 +6,12 @@
 The repeated two-GiB failure near 2000 completed declarations is sufficient to
 reject the current design as a qualified 10000-module solution. Suspend full
 capacity reruns until a modeled architectural change has a measured bounded
-control. Do not raise the budget, delete native read edges, suppress observers,
+control. Do not raise the budget, delete runtime read edges, suppress observers,
 or replace the existing all-selected gate with a smaller-demand demonstration.
 
 This is an architectural design, not an implemented Loader, a heap proof or
 qualified SysML parsing. [[file:20.01-demanded-module-lifecycle.sysml][The SysML model]] allocates phases;
-[[file:../../proofs/quint/ModuleDemand.qnt][ModuleDemand.qnt]] checks finite scheduling counterexamples. Native runtime
+[[file:../../proofs/quint/ModuleDemand.qnt][ModuleDemand.qnt]] checks finite scheduling counterexamples. Runtime runtime
 correspondence remains a separate acceptance requirement.
 
 * Current source and the coupling to remove
@@ -20,9 +20,9 @@ correspondence remains a separate acceptance requirement.
 |--------------+------------------------+----------|
 | =source/link.ss:resolve-selection-graph= | Resolve selected dependency graph | Calls =publication-for= to obtain module values |
 | =source/link.ss:publication-for= | Source-bound declaration publication | Enters the guarded reader candidate |
-| =source/reader.ss:call-with-publication-reads= | Preserve authentic original read roots | Correctly retains every actual demanded read |
-| =source/reader.ss:reader-evaluation-observers= | Expand/compile/evaluate role wrappers | Types/objects/config implementation joins declaration work |
-| =source/declaration.ss:lower-core= | Hygienically lower native POO fields | Already separates generated =link= from =exports= |
+| =source/reader-support.ss:call-with-publication-reads= | Preserve authentic original read roots | Correctly retains every actual demanded read |
+| =source/reader-evaluation.ss:reader-evaluation-observers= | Expand/compile/evaluate role wrappers | Types/objects/config implementation joins declaration work |
+| =source/declaration.ss:lower-core= | Hygienically lower POO fields | Already separates generated =link= from =exports= |
 
 The graph collector is doing necessary work for the objects it receives.
 Shrinking its list cannot undo eagerly constructed Generic invocation frames,
@@ -51,9 +51,9 @@ selection; module Build contributions never reverse-load the root selection.
    This workload needs independent qualification and cannot be claimed cheap.
 
 The intended retained shape is catalogue descriptors O(C), selected metadata
-O(S+E_S), and native role/read support for D and E_D. This is a structural
+O(S+E_S), and runtime role/read support for D and E_D. This is a structural
 bound, not a byte bound. The two-GiB inequality must use measured catalogue,
-metadata, role, native-read, shared-runtime and transient compiler costs; it
+metadata, role, runtime-read, shared-runtime and transient compiler costs; it
 cannot be justified by choosing convenient per-module constants in the model.
 
 * Phase contract
@@ -62,8 +62,8 @@ cannot be justified by choosing convenient per-module constants in the model.
 |-------+---------------+----------------|
 | Discover | Canonical package/window/SourceRef and role-file locations | Macro execution or business scope |
 | Select | Explicit/disabled/feature decisions and requirement graph | Config normalization, domain acceptance or Build execution |
-| Declare | Source-associated native Module metadata | Full types/objects/config expansion on the closed path |
-| Publication preflight | Native scope/dependency Type descriptors | Config, Objects, Func, export-body execution or domain acceptance |
+| Declare | Source-associated runtime Module metadata | Full types/objects/config expansion on the closed path |
+| Publication preflight | Runtime scope/dependency Type descriptors | Config, Objects, Func, export-body execution or domain acceptance |
 | Demand scope | Existing POO lazy role slots and dependency scopes actually needed | Unselected modules or unrelated branches |
 | Admit | Final receiver Contracts, all contributors, original read support | A reusable successful approval |
 | Publish/build/run | Phase-specific admitted values and existing issuance/effect boundaries | A metadata-only declaration treated as deployable |
@@ -98,30 +98,30 @@ assert zero heavy-role work on the qualified metadata path, and separately
 exercise the complete role obligations on activation. Rejection phase and
 custom-hook behavior must be specified and qualified before changing tests.
 
-* Native mechanisms and the unsolved projection boundary
+* Runtime mechanisms and the unsolved projection boundary
 
-Keep =yuanxu!=, the existing source/role wrapper, native =.def/ctx= and =.o/ctx=,
+Keep =yuanxu!=, the existing source/role wrapper, runtime =.def/ctx= and =.o/ctx=,
 and receiver-owned POO lazy slots. Do not introduce another user manifest,
 loader DSL, Builder, publication name or manually maintained dependency table.
 Metadata must be a projection of the same source declaration and retain its
 source revision, package/window identity and disabled/feature decisions.
 
-Keep one existing native Module object, not a metadata registry plus another
+Keep one existing runtime Module object, not a metadata registry plus another
 full-module registry. Its existing scope/role/build slots remain lazy values;
 metadata selection is an internal Contract projection of that same object.
 The SysML parts are responsibility views, not new user classes or configuration
 layers. Shared prototype/type definitions belong to the package; per-module
 source/selection facts belong to the selected declaration; realized role values
-belong to the exact native receiver. Ordinary users keep the existing directory
-window and native configuration interface.
+belong to the exact runtime receiver. Ordinary users keep the existing directory
+window and runtime configuration interface.
 
-The existing lowering already recognizes explicit native dependency aliases
+The existing lowering already recognizes explicit runtime dependency aliases
 and builds a dependency-injected =link= closure. It does NOT yet prove that
 every requirement value is a closed literal or that a role's exported binding
 can be resolved without expanding that role. Scheme macros, calculated
 requirements, protocol hooks and arbitrary source observers are real boundaries.
 
-Therefore the fast path requires an automatically derived native ownership/
+Therefore the fast path requires an automatically derived runtime ownership/
 syntax/phase proof; a public =closed?= or purity flag is unacceptable. An
 unresolved case uses the existing full guarded path, preserving custom methods
 and diagnostic order. The QNT Boolean =closed= abstracts this missing proof;
@@ -133,7 +133,7 @@ selection itself. It does not hide that work until a later phase to manufacture
 a lazy-loading result. A disabled mandatory module refuses selection before
 fallback construction begins.
 
-A closed metadata projection can use the source-lowered native dependency
+A closed metadata projection can use the source-lowered runtime dependency
 slots while leaving =scope-contract= and =exports= unforced. It cannot replace
 either slot with a placeholder that merely claims to be a Contract. How the
 existing role wrapper hygienically binds deferred exports, including macro
@@ -152,14 +152,14 @@ export/macro resolution is a blocker, not permission to invent an identifier.
 | Directory names and role locations | =source/collection.ss:directory-names= and =role-entrypoints= | Reuse SourceRefs; do not call interface evaluation merely to enumerate a catalogue |
 | Dependency selection | =source/link.ss:resolve-selection-graph= and existing graph solver | Accept the same source-bound metadata without forcing implementation-role exports |
 | Hygienic export/dependency binding | =source/declaration.ss:lower-core= | Qualify deferred role-binding resolution; do not duplicate user declarations |
-| Lazy values and context isolation | Native =.def/ctx=, =.ref=, =.cc= and receiver caches | Preserve original receiver/source/feature/phase context |
-| Actual read support | Native =call-with-issued-reads= and issuer association | Reauthenticate complete support; never shorten dependency/event sequences |
+| Lazy values and context isolation | Runtime =.def/ctx=, =.ref=, =.cc= and receiver caches | Preserve original receiver/source/feature/phase context |
+| Actual read support | Runtime =call-with-issued-reads= and issuer association | Reauthenticate complete support; never shorten dependency/event sequences |
 | Publication and Build | Existing =.for-export=, =.publish= and =std-make-spec= | Require the owning phase's final obligations; no second Builder |
 
 * Cache and evidence ownership
 
-Native POO caches may retain inert metadata/role values under the exact
-receiver, native object revision, source revision, selected feature context and phase. Native issued
+POO caches may retain inert metadata/role values under the exact
+receiver, runtime object revision, source revision, selected feature context and phase. Runtime issued
 records and their original edge sequences remain attached to real demanded
 computation. Reuse never reconstructs tokens or caches an admission decision.
 The existing issuer projection, ContextSlot/parent-isolation results and fresh
@@ -185,7 +185,7 @@ Reuse LeanPoo ConstructionCache for immutable declaration structure and
 ContextSlot for exact-context values through the existing =ReadRetention=
 theorems. Those theorems do not prove that the new metadata extractor or any
 macro lowering is correct. That correspondence must be added once the exact
-native lowering is designed, before changing production scheduling.
+runtime lowering is designed, before changing production scheduling.
 
 ** Finite qualification
 
@@ -201,9 +201,9 @@ The fixed selected and demand sets assume that the existing dependency solver
 has supplied closed sets. Cycle detection and automatic discovery are NOT
 proved by that assumption. Feature closure and =-feature= semantics remain
 with the existing Feature resolver, rather than being reimplemented here.
-The opaque/closed classification is also a native
+The opaque/closed classification is also a runtime
 correspondence gap. The model preserves a supplied ordered original token
-sequence; it does not manufacture or authenticate native Scheme records.
+sequence; it does not manufacture or authenticate Scheme records.
 Those boundaries stay with the existing DFS and issuer proofs and runtime gates.
 SysML remains a textual design with unqualified parsing/semantic validation.
 
@@ -232,3 +232,31 @@ pins the latest audited LeanPoo PR, derives closed/opaque classification from
 source shapes, and qualifies a small actual declaration/role binding experiment.
 It supersedes the supplied-Boolean classification in the first finite model;
 production hygiene, general fallback and the original capacity gate remain open.
+
+* Compiler source-route ownership extent
+
+This is a build preparation boundary, not business Module activation. The
+existing compiler-input owner must install its original-path-to-prepared-input
+association before the selected source view can change native library routing.
+The association encloses view preparation, role-frame preparation, Make or
+clean, and view restoration. Nested owners restore the previous association;
+an exception restores native routing before releasing its association.
+
+The index retains input identities, not admission results. Every lookup still
+calls the prepared input's currentness procedure. Neither an equal namespace
+nor a generated pathname authenticates an unselected input. Ordinary Interface
+configuration and its selected source graph remain the authority for inputs.
+
+Lean's existing =Building.SourceView= laws own compiler identity, descriptor and
+output correspondence; they are unchanged by this scope placement. Quint's
+=CompilerInputExtent= in =CompilerEnrollment.qnt= checks only temporal ordering
+and restoration, including callback failure. =CompilerInputExtentBroken= models
+routing before ownership and must violate =RouteHasOwner=. Existing
+=CompilerEnrollment= retains per-demand freshness and complete enrollment.
+Do not duplicate these as another dependency graph or approval cache.
+
+The Scheme bridge is exercised in =t/module-build-role-test.ss= with real
+prepared inputs and a public dependency in a separate package. A private
+same-kernel source import does not exercise public alias replacement and cannot
+substitute for that control. The existing selected-source-view lifecycle suite
+owns real Make products and independent output-environment isolation.

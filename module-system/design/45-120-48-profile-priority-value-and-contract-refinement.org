@@ -12,14 +12,14 @@ below.
 
 * Objective
 
-Define one deterministic POO-native value domain for profile control priority.
+Define one deterministic POO value domain for profile control priority.
 The shallow =profile= syntax and advanced POO profile construction must project
 the same values, total order, canonical identity, and evidence.
 
 * Ownership
 
 This refinement specializes the Type and Contract foundation in
-[[file:45-120-01-poo-native-type-and-contract-prototype-foundation.org][POO-native
+[[file:45-120-01-poo-type-and-contract-prototype-foundation.org][POO
 Type and Contract Prototype Foundation]].
 
 =yuanxu= owns the =ProfilePriority= semantic Type, its Contract,
@@ -288,7 +288,7 @@ profile-refinement cache.
 - the immutable =Default=, =Numeric=, and =Force= POO prototype family;
 - the two named endpoint values;
 - binding the named pure functions to POO responsibilities and dispatch;
-- native POO construction and refinement of admitted priority values.
+- POO construction and refinement of admitted priority values.
 
 It does not duplicate normalization, comparison, receipt, or validation logic.
 
@@ -306,7 +306,7 @@ It does not duplicate normalization, comparison, receipt, or validation logic.
 =ProfilePriority= is the Type projection.
 =ProfilePriority/contract= is its Contract projection.
 =profile-priority/default= and =profile-priority/force= are the immutable
-endpoint POO values.  =profile-priority/numeric= is the native Numeric POO
+endpoint POO values.  =profile-priority/numeric= is the runtime Numeric POO
 prototype used by advanced construction.
 
 =profile-priority/admit= is the only named admission boundary.  It accepts a
@@ -324,7 +324,7 @@ remain private.  =profile-priority/normalize=,
 
 =profile-composition-use-syntax.ss= may depend on the small
 =profile-priority/interface.ss= projection at the appropriate expansion phase.
-It may only lower contextual syntax to ordinary imports, native POO values, and
+It may only lower contextual syntax to ordinary imports, POO values, and
 direct references to named functions.  The macro must not generate hidden
 functions, define priority semantics, import implementation internals, or
 create a reverse dependency into the profile-priority family.
@@ -356,7 +356,7 @@ construction receives a parallel helper API.
 
 * POO dispatch responsibilities
 
-The family exposes exactly three responsibility identities through native
+The family exposes exactly three responsibility identities through runtime
 =gerbil-poo= dispatch:
 
 - =admit= on the =ProfilePriority/contract= receiver;
@@ -374,17 +374,17 @@ private =profile-priority/receipt= function.  They do not duplicate one method
 body per variant.  Variant behavior remains data in the closed Type domain,
 not three independently drifting implementations.
 
-Advanced consumers invoke the responsibilities through native POO object
+Advanced consumers invoke the responsibilities through POO object
 dispatch.  The interface does not export ordinary =compare= or =receipt=
 helper functions, raw =kind= or =raw-value= representation accessors, or a
 second generic-method layer.  The standard POO identity slot remains the
 identity mechanism; this family adds no separate =identity= responsibility.
 
-Dispatch candidate selection follows native prototype precedence.  Numeric
+Dispatch candidate selection follows runtime prototype precedence.  Numeric
 profile priority is an input to control-policy merge only; it never orders
-methods, changes C4 precedence, or selects a dispatch provider.  Native
+methods, changes C4 precedence, or selects a dispatch provider.  Runtime
 precedence separation remains owned by
-[[file:45-102-native-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][Native
+[[file:45-102-runtime-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][Runtime
 Prototype Precedence and Typed Relation Conflict Resolution Bridge]].
 
 Each responsibility dispatch uses the existing dispatch explanation boundary:
@@ -397,8 +397,8 @@ telemetry registry, or debugging API.
 flowchart LR
   Public["profile-priority/admit"] -->|"thinly dispatches the admit responsibility"| Contract["ProfilePriority/contract"]
   Contract -->|"binds private profile-priority/normalize"| Admission["Canonical value or structured condition"]
-  Value["Admitted ProfilePriority value"] -->|"dispatches compare through native prototype precedence"| Compare["Private profile-priority/compare"]
-  Value -->|"dispatches receipt through native prototype precedence"| Receipt["Private profile-priority/receipt"]
+  Value["Admitted ProfilePriority value"] -->|"dispatches compare through runtime prototype precedence"| Compare["Private profile-priority/compare"]
+  Value -->|"dispatches receipt through runtime prototype precedence"| Receipt["Private profile-priority/receipt"]
   Compare -->|"returns deterministic Ordering without changing precedence"| Ordering["Control-priority ordering"]
   Receipt -->|"projects canonical profile-priority.v1 payload"| Identity["Canonical identity"]
   Contract -.->|"emits existing dispatch explanation and condition evidence"| Evidence["POO dispatch observability"]
@@ -413,12 +413,12 @@ The hygienic shallow syntax:
   profile-clause ...)
 #+end_src
 
-projects the literal to the same =ProfilePriority= POO value used by native
+projects the literal to the same =ProfilePriority= POO value used by runtime
 profile object/prototype construction.  Omission projects =Numeric(0)=.
 
 Macro expansion validates literal shape but does not run control policy.
 Non-literal values are admitted through the same =ProfilePriority= Contract.
-Advanced construction uses the native =gerbil-poo= object/prototype interface;
+Advanced construction uses the runtime =gerbil-poo= object/prototype interface;
 there is no second record representation, wrapper object, or priority DSL.
 
 * Evaluation and failure flow
@@ -426,12 +426,12 @@ there is no second record representation, wrapper object, or priority DSL.
 #+begin_src mermaid
 flowchart LR
   Literal["Contextual priority input"] -->|"generated code calls the sole admission boundary"| Admit["profile-priority/admit"]
-  Advanced["Native POO profile construction"] -->|"uses the same admission boundary"| Admit
+  Advanced["POO profile construction"] -->|"uses the same admission boundary"| Admit
   Admit -->|"thinly dispatches the Contract admit responsibility"| Contract["ProfilePriority/contract"]
   Contract -->|"binds pure validation and canonicalization"| Normalize["profile-priority/normalize"]
   Normalize -->|"success returns the canonical POO value directly"| Value["Canonical ProfilePriority"]
   Value -->|"dispatches receipt to project endpoint or reduced rational identity"| Canonical["profile-priority.v1 identity"]
-  Value -->|"dispatches compare without changing native precedence"| Merge["Authority-qualified priority merge"]
+  Value -->|"dispatches compare without changing runtime precedence"| Merge["Authority-qualified priority merge"]
   Canonical -->|"enters cache keys without syntax attribution"| Cache["Profile refinement key"]
   Normalize -.->|"failure returns the existing structured condition directly"| Condition["Structured condition"]
   Condition -->|"emits authoritative evidence at admission"| Event["ObservationEvent"]
@@ -457,7 +457,7 @@ project plan.  Later layers must not bypass an unadmitted earlier owner.
 flowchart LR
   Types["1. Type foundation"] -->|"admits Type, Contract, reasons, and condition refinement"| Func["2. Functional kernel"]
   Func -->|"admits normalize, compare, receipt, and their laws"| Objects["3. POO objects"]
-  Objects -->|"admits prototype family and native responsibilities"| Interface["4. Interface and recovery"]
+  Objects -->|"admits prototype family and runtime responsibilities"| Interface["4. Interface and recovery"]
   Interface -->|"admits the six-item surface and continuable boundary"| Syntax["5. Hygienic syntax"]
   Syntax -->|"admits phase-bounded contextual lowering"| Cache["6. Cache integration"]
   Cache -->|"produces focused core qualification evidence"| Complete["ProfilePriority refinement admitted"]
@@ -514,10 +514,10 @@ not the package identity.
     =.all-slots=, =.def!=, and =uninstantiate-object!=;
   - =mop.ss= :: =.defclass=, =.defgeneric=, and =validate=.
 - Contract conclusion :: no first-class =Contract= primitive was surfaced.
-  The project-owned =ProfilePriority/contract= therefore refines the native
+  The project-owned =ProfilePriority/contract= therefore refines the runtime
   Type and validation vocabulary rather than wrapping a nonexistent library
   object.
-- Foundation dependency correction :: the native selector receipt admits the
+- Foundation dependency correction :: the runtime selector receipt admits the
   upstream =gerbil-poo= vocabulary only.  It does not admit a leaf-owned
   replacement for the shared Type and Contract foundation.  RFC 45-120-01
   still records =src/module-system/types.ss= as missing and its implementation
@@ -536,7 +536,7 @@ flowchart LR
   Runtime["Concurrent ASP runtime worktree"] -->|"blocked: one E0308 plus 35 deny(dead_code) errors"| FreshAsp
   FreshAsp -->|"pending: publish matching activation digest"| Qualification["Final implementation qualification"]
   Pinned["Pinned current-source Gerbil parser"] -->|"proved: type.ss, object.ss, and mop.ss selectors"| Owners["Exact source-owner evidence"]
-  Owners -->|"satisfied: native Type, validation, prototype, slot, and MOP owners"| Foundation["Shared src/module-system/types.ss"]
+  Owners -->|"satisfied: Type, validation, prototype, slot, and MOP owners"| Foundation["Shared src/module-system/types.ss"]
   Foundation -->|"blocked: RFC 45-120-01 records owner missing and implementation unadmitted"| Slice1["Slice 1 source admission"]
   Contract["Project-owned Type refinement"] -->|"must first be realized by shared yuanxu foundation"| Foundation
   Slice1 -->|"only after shared foundation qualification"| Types["profile-priority/types.ss"]
@@ -547,7 +547,7 @@ flowchart LR
   this RFC's semantic ownership.
 - [X] Obtain concrete parser-owned source paths for the required =gerbil-poo=
   primitives.
-- [X] Qualify exact item selectors for native type and validation vocabulary,
+- [X] Qualify exact item selectors for runtime type and validation vocabulary,
   prototype construction, slot operations, and MOP dispatch.
 - [X] Confirm that =Contract= is a project-owned Type refinement rather than a
   required standalone =gerbil-poo= primitive.
@@ -578,10 +578,10 @@ flowchart LR
 ** Slice 3 - POO objects
 
 - [ ] Create =profile-priority/objects.ss=.
-- [ ] Define the =Default=, =Numeric=, and =Force= native POO prototype family.
+- [ ] Define the =Default=, =Numeric=, and =Force= POO prototype family.
 - [ ] Bind =admit=, =compare=, and =receipt= responsibilities without
       duplicating private function bodies.
-- [ ] Pass native dispatch and precedence-isolation gates before exposing an
+- [ ] Pass runtime dispatch and precedence-isolation gates before exposing an
       interface.
 
 ** Slice 4 - Interface and recovery
@@ -668,7 +668,7 @@ flowchart LR
       function implementations without copied method bodies.
 - [ ] Prove no raw representation accessor or separate =identity=
       responsibility is exported.
-- [ ] Prove numeric priority does not change provider selection, native
+- [ ] Prove numeric priority does not change provider selection, runtime
       prototype precedence, or C4 order.
 - [ ] Prove dispatch explanation uses the existing observability projection.
 
@@ -768,7 +768,7 @@ flowchart LR
       without copying function bodies per variant.
 - [ ] Keep raw representation accessors and a separate =identity=
       responsibility out of the interface.
-- [ ] Prove numeric priority cannot affect native dispatch or C4 precedence.
+- [ ] Prove numeric priority cannot affect runtime dispatch or C4 precedence.
 - [ ] Project dispatch evidence through the existing explanation and
       observation boundaries.
 - [ ] Keep endpoint values immutable and keep them out of the public macro
@@ -777,7 +777,7 @@ flowchart LR
 - [ ] Normalize rationals to reduced numerator and positive denominator.
 - [ ] Implement and test the total-order laws.
 - [ ] Make omission project =Numeric(0)=.
-- [ ] Make shallow syntax and native POO construction produce identical
+- [ ] Make shallow syntax and POO construction produce identical
       canonical identities.
 - [ ] Reject inexact, complex, noncanonical, and incomparable values with
       structured conditions.
@@ -801,7 +801,7 @@ flowchart LR
 - [ ] Prove no implementation file imports against the canonical dependency
       direction.
 - [ ] Prove the contextual macro imports only the admitted interface projection
-      and expands to ordinary POO-native code.
+      and expands to ordinary POO code.
 - [ ] Prove generated code routes literals and dynamic POO expressions through
       =profile-priority/admit=.
 - [ ] Prove macro expansion retains no runtime syntax object.
@@ -811,7 +811,7 @@ flowchart LR
 - A new globally exported =priority= macro.
 - A raw numeric slot without Type and Contract evidence.
 - Extensible arbitrary priority variants.
-- Reusing priority as C4 or native prototype precedence.
+- Reusing priority as C4 or runtime prototype precedence.
 - Encoding source order as a semantic tie breaker.
 
 * Design reference

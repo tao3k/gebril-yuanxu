@@ -78,7 +78,7 @@ implementation in an example:
 (.def (ExpandedScenario @ CoordinatedReleaseCI)
   extra: RustCIProfile
   composition: =>.+
-  (.o participants: => append '(extra)))
+  (.o (participants => append '(extra))))
 
 (.def (ExpandedBindings @ ExampleBindings)
   extra: (.get ExampleBindings rust))
@@ -124,7 +124,7 @@ The full call path is:
    configured-feature context and invokes ConfiguredFunflowContract.
 4. Configured-feature guards verify occurrence/source association and selection
    before Pipeline.checks demand. Check fields, capabilities, payloads, final
-   identities and local dependency graph are admitted through the native kernel.
+   identities and local dependency graph are admitted through the runtime kernel.
 5. Projection validates the current prepared Profile/evidence correspondence,
    resolves each declared compatible plan-module and reads its final selected
    Checks. It qualifies local dependency references, adds explicit handoffs and
@@ -160,7 +160,7 @@ selection adds another independent local chain; no cross-edge is inferred for it
 Unselected publications are not constructed to prepare these plans. An explicit
 catalog audit is a separate broader demand.
 
-Native context-local lazy slots may avoid repeating preparation within one view.
+Runtime context-local lazy slots may avoid repeating preparation within one view.
 ConstructionCache, ContextSlot and ContractConsequence require the unchanged-input,
 factory/context or implication premises from module 08. These source blocks do
 not prove that arbitrary Scheme getters are pure or that snapshots are immutable.
@@ -170,7 +170,7 @@ matching names or a source digest.
 
 * Status and future acceptance
 
-Existing foundations: native objects, responsibility Contracts, evidence-bearing
+Existing foundations: runtime objects, responsibility Contracts, evidence-bearing
 .admit, inheritance/refinement, bounded scopes and the historical domain-free
 receiver/cache probe. New design only: the complete migrated guard source,
 independent Profile admission/association, dynamic composition/projection and

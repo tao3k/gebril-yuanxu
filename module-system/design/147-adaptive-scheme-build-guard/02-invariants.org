@@ -4,14 +4,14 @@
 
 * Invariants
 
-1. =std/make= remains the only native executor.
+1. =std/make= remains the only runtime executor.
 2. At most one =std/make= coordinator session is active at a time.
 3. Windows are contiguous prefixes of the remaining topology-ordered specs.
 4. No spec is reordered, dropped, or duplicated.
 5. There is no fixed global spec or chunk cap.
 6. Window changes are derived from named POO observations.
 7. Safe growth is geometric and capacity-capped, so coordinator-session count
-   is logarithmic in the remaining spec count; native concurrency remains
+   is logarithmic in the remaining spec count; runtime concurrency remains
    bounded independently by the detected worker count.
 8. Any invalid observation, non-completed outcome, cap mismatch, or cap breach
    fails closed.

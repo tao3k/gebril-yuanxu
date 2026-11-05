@@ -4,21 +4,21 @@
 
 * 10.06.82 Contract Migration Performance Evidence
 This document preserves historical utilities record-contract measurements and
-records qualified native =gerbil-poo= Type/Contract measurements.  The legacy
+records qualified runtime =gerbil-poo= Type/Contract measurements.  The legacy
 utilities implementation has been removed; every current workload starts from
-native descriptors.
+runtime descriptors.
 
 These measurements may locate remaining migration cost, but a fast record or
-alist projection cannot establish semantic or performance closure for native
+alist projection cannot establish semantic or performance closure for runtime
 Type descriptors, generic dispatch, contract admission, or evidence reuse.
 
 ** 10.06.82.10 Benchmark Boundary
 Measure Scheme hot-path work:
-- =yuanxu-contract-check-slot!= against reusable native slot schemas;
-- native =YuanxuContract. -> alist= projection;
-- native =YuanxuContract. -> YuanxuTypeFactContract= projection;
-- native =YuanxuContract. -> YuanxuLeanFactContract= projection;
-- native session policy / tool-grant descriptor projection and slot admission;
+- =yuanxu-contract-check-slot!= against reusable runtime slot schemas;
+- runtime =YuanxuContract. -> alist= projection;
+- runtime =YuanxuContract. -> YuanxuTypeFactContract= projection;
+- runtime =YuanxuContract. -> YuanxuLeanFactContract= projection;
+- runtime session policy / tool-grant descriptor projection and slot admission;
 - cached projection reads used by doctor, observability, and runtime-handoff presentation.
 
 Do not measure these as type contract overhead:
@@ -31,7 +31,7 @@ Do not measure these as type contract overhead:
 
 #+begin_src mermaid
 flowchart LR
-  N["native POO Type/Contract"] --> C["element? slot gates"]
+  N["POO Type/Contract"] --> C["element? slot gates"]
   N --> D["bounded alist projection"]
   N --> E["type-fact projection"]
   N --> F["Lean fact contract projection"]
@@ -65,7 +65,7 @@ Micro benchmark:
 - project type facts and Lean fact contracts across 1,500 rounds.
 
 Scenario benchmark:
-- project real native session policy and tool-grant descriptors;
+- project real runtime session policy and tool-grant descriptors;
 - run real session policy and tool-grant =require-slots!= gates.
 
 Scale benchmark:
@@ -79,7 +79,7 @@ Hot-boundary benchmark:
 
 ** 10.06.82.40 Historical Regression Budgets
 These pre-convergence samples are retained for comparison.  Current gates keep
-the same conservative budgets while measuring native descriptors.
+the same conservative budgets while measuring runtime descriptors.
 
 | Metric | Current sample | Budget |
 | Slot gate, 10 slots x 2,000 rounds | 3.909 ms | 250 ms |
@@ -99,23 +99,23 @@ the same conservative budgets while measuring native descriptors.
 
 These are not final product SLOs. They are baseline regression gates. After CI and local samples stabilize, the budgets should be tightened around observed p50/p95 behavior.
 
-** 10.06.82.45 Native Convergence Receipt, 2026-09-04
+** 10.06.82.45 Runtime Convergence Receipt, 2026-09-04
 
 The dedicated =//scheme:type_contract_performance_test= passed in 7.0 seconds
-after native predicate Types gained their direct =element?= fast path.
+after runtime predicate Types gained their direct =element?= fast path.
 The measured Scheme workload excludes Bazel analysis and test-process startup.
 
 | Metric | Workload | Observed | Budget |
 |--------+----------+----------+--------|
-| Native session policy/tool-grant projection and admission | 1,000 rounds, best of 3 | 14.490 ms | 750 ms |
-| Native slot gate | 10 slots x 2,000 rounds, best of 3 | 4.156 ms | 250 ms |
-| Native Contract alist projection | 10 slots x 1,500 rounds, best of 3 | 8.835 ms | 350 ms |
-| Native type-fact projection | 10 slots x 1,500 rounds, best of 3 | 43.099 ms | 500 ms |
-| Native Lean-fact projection | 10 slots x 1,500 rounds, best of 3 | 40.594 ms | 500 ms |
-| Scaled native family | 10,000 objects x 2 slots, best of 3 | 5.104 ms | 600 ms |
+| Runtime session policy/tool-grant projection and admission | 1,000 rounds, best of 3 | 14.490 ms | 750 ms |
+| Runtime slot gate | 10 slots x 2,000 rounds, best of 3 | 4.156 ms | 250 ms |
+| Runtime Contract alist projection | 10 slots x 1,500 rounds, best of 3 | 8.835 ms | 350 ms |
+| Runtime type-fact projection | 10 slots x 1,500 rounds, best of 3 | 43.099 ms | 500 ms |
+| Runtime Lean-fact projection | 10 slots x 1,500 rounds, best of 3 | 40.594 ms | 500 ms |
+| Scaled runtime family | 10,000 objects x 2 slots, best of 3 | 5.104 ms | 600 ms |
 | Cached type-fact reads | 50 slots x 10,000 rounds, best of 3 | 1.419 ms | 200 ms |
 
-All current metrics measure native descriptor projection and Type-backed slot
+All current metrics measure runtime descriptor projection and Type-backed slot
 admission.  Closed predicate Types use direct =element?= and =validate= slots;
 explicit classification and Contract admission still produce evidence.
 
@@ -133,17 +133,17 @@ immediately repeated warm run completed in 0.840 seconds with all three actions
 served from cache and no project compilation.
 
 These cold totals measure package-level invalidation and test aggregation, not
-native Type dispatch.  The warm receipts establish deterministic cache reuse;
+Type dispatch.  The warm receipts establish deterministic cache reuse;
 the multi-minute cold critical paths remain a Building Framework granularity
 optimization target.
 
-After consolidating both former loop utilities scenarios into the native loop
+After consolidating both former loop utilities scenarios into the runtime loop
 gate, its final cold run completed in 300.747 seconds with a 299.70-second
 critical path; the test action itself passed in 14.4 seconds.  The immediate
 warm rerun completed in 0.196 seconds with one action-cache hit and no project
 compilation.
 
-** 10.06.82.47 Final Native Convergence Gate, 2026-09-04
+** 10.06.82.47 Final Runtime Convergence Gate, 2026-09-04
 
 The final gate covered observability, module objects, contract schema, JSON
 Schema, type-fact projection, performance, graph, sandbox resource, session,
@@ -155,7 +155,7 @@ there was no multi-minute Scheme or GCC compilation action.
 The immediately repeated identical invocation completed in 1.544 seconds with
 a 0.01-second critical path.  Bazel reported 12 action-cache hits, executed
 zero tests, and reused all 12 passing test results.  This is the stable warm
-receipt for the completed native convergence slice.  Package-level cold
+receipt for the completed runtime convergence slice.  Package-level cold
 rebuilds remain a separate Building Framework action-granularity concern.
 
 ** 10.06.82.48 Sandbox Profile Contract Receipt, 2026-09-04
@@ -165,24 +165,24 @@ The first owner-gate invocation after a Bazel daemon restart completed in
 materialized =gerbil_utils=, =gerbil_poo=, =asp_gerbil_scheme=, and the Agentic AI Lab
 package before the 44.4-second test action.  The immediately repeated identical
 owner gate completed in 1.206 seconds with one action-cache hit and zero tests
-executed.  This separates the package-level cold path from native profile
+executed.  This separates the package-level cold path from runtime profile
 Contract admission.
 
 The integration and unit aggregates passed in 234.032 seconds with their
 compile action cached.  A separate sandbox profile/resource/UI boundary run
 found a false-positive portability fixture: its complete recipe occupied the
 macro's profile-name position, so none of its intended rows were tested.  After
-correcting the declarative form, the native Contract and UI gates both passed
+correcting the declarative form, the Contract and UI gates both passed
 in 37.240 seconds.  The Contract remains strict; the test data was corrected
 instead of weakening profile-name or slot Types.
 
-The final five-target boundary run covered native profile and resource
+The final five-target boundary run covered runtime profile and resource
 Contracts, sandbox UI, integration, and unit tests.  All five passed in 157.883
 seconds with a 57.78-second critical path and no package compilation.  Its
 immediately repeated identical invocation completed in 1.351 seconds with five
 action-cache hits and zero tests executed.
 
-After routing derived-parent validation through the same native Contract, the
+After routing derived-parent validation through the same Contract, the
 final source-changing owner/integration run completed in 559.975 seconds with a
 518.95-second critical path.  Only the Agentic AI Lab package rebuilt; the three
 dependency packages remained cached.  The owner and integration tests passed
@@ -194,7 +194,7 @@ granularity: a single Scheme owner change invalidates the whole project compile
 action.  Before input isolation, every Scheme test also declared
 =docs/**/*.org= as an input, so receipt-only documentation edits invalidated
 test results even though they did not rebuild the package.  Both are build-graph
-concerns, not reasons to weaken native Contract admission.
+concerns, not reasons to weaken Contract admission.
 
 ** 10.06.82.49 Documentation Input Isolation, 2026-09-04
 
@@ -212,9 +212,9 @@ invocation completed in 1.298 seconds with the same two action-cache hits and
 zero tests executed.  Documentation is therefore absent from both the project
 compile key and the representative Scheme test keys.
 
-** 10.06.82.50 Native Test Source Isolation, 2026-09-04
+** 10.06.82.50 Runtime Test Source Isolation, 2026-09-04
 
-The 11 independent Native Type/Contract and focused performance targets now
+The 11 independent Runtime Type/Contract and focused performance targets now
 declare precise test inputs through the upstream =gerbil_project_test.srcs=
 interface.  Ordinary owner tests receive only the compiled Scheme project;
 the JSON Schema target additionally owns its three imported test modules and
@@ -232,7 +232,7 @@ source changed after the warm baseline.  The sandbox-profile target reran and
 passed, while the graph target remained cached.  The two-target invocation
 completed in 23.665 seconds with exactly one action-cache hit and one test
 execution.  A single owner-test edit therefore no longer invalidates unrelated
-Native owner gates.  After recording this receipt in Org, the same two targets
+Runtime owner gates.  After recording this receipt in Org, the same two targets
 completed in 0.933 seconds with two action-cache hits and zero tests executed.
 
 ** 10.06.82.51 ASP Policy Scan Concurrency Receipt, 2026-09-04
@@ -268,14 +268,14 @@ default worker count of 12 and reduced the same phase total by 25.6 percent
 relative to the old default.  Host load remained elevated, so these samples
 establish direction and interface correctness rather than a stable p50.
 
-The ASP regression captures native parser trace rows during one
+The ASP regression captures runtime parser trace rows during one
 =policy-source-report= and requires exactly one start event for each owner.  Its
 focused suite passed 98 checks under the existing 512 MiB managed-heap profile.
 Memory protection remains anomaly detection; it no longer pre-emptively hides
 available parser parallelism with a fixed worker ceiling.
 
-The separate Agentic AI Lab native =std/make= warm receipt completed in 61.263 seconds
-with zero native compiler jobs while host load average remained approximately
+The separate Agentic AI Lab runtime =std/make= warm receipt completed in 61.263 seconds
+with zero runtime compiler jobs while host load average remained approximately
 59--64.  That result concerns upstream dependency/frontend checking and is not
 attributed to the ASP parser phase.
 
@@ -287,7 +287,7 @@ same declared project environment as other tests:
 .devenv/devenv-profile-exec bazelisk test //scheme:type_contract_performance_test
 #+end_src
 
-Native source expansion remains a separate semantic gate and is not included in
+Runtime source expansion remains a separate semantic gate and is not included in
 the performance receipt.
 
 ** 10.06.82.60 Design Rule

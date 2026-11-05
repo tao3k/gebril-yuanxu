@@ -7,7 +7,7 @@
 (import (only-in :std/list/list fold)
         (only-in :std/crypto/digest sha256)
         (only-in :std/list/list fold-right)
-        (only-in :clan/poo/object .ref .slot? object? object<-alist)
+        (runtime: :clan/poo/object)
         :yuanxu/utilities/functional)
 
 (export (except-out #t define-poo-value))
@@ -49,14 +49,14 @@
   'yuanxu.feature-bundle-v1-edge.v1)
 (def +feature-bundle-v1-evidence-kind+
   'yuanxu.feature-bundle-v1-evidence.v1)
-(def +feature-bundle-v1-native-component-kind+
-  'yuanxu.feature-bundle-v1-native-component.v1)
-(def +feature-bundle-v1-native-symbol-kind+
-  'yuanxu.feature-bundle-v1-native-symbol.v1)
-(def +feature-bundle-v1-native-edge-kind+
-  'yuanxu.feature-bundle-v1-native-edge.v1)
-(def +feature-bundle-v1-native-evidence-kind+
-  'yuanxu.feature-bundle-v1-native-evidence.v1)
+(def +feature-bundle-v1-runtime-component-kind+
+  'yuanxu.feature-bundle-v1-runtime-component.v1)
+(def +feature-bundle-v1-runtime-symbol-kind+
+  'yuanxu.feature-bundle-v1-runtime-symbol.v1)
+(def +feature-bundle-v1-runtime-edge-kind+
+  'yuanxu.feature-bundle-v1-runtime-edge.v1)
+(def +feature-bundle-v1-runtime-evidence-kind+
+  'yuanxu.feature-bundle-v1-runtime-evidence.v1)
 (def +feature-bundle-v1-region-kind+
   'yuanxu.feature-bundle-v1-region.v1)
 (def +feature-bundle-v1-descriptor-kind+
@@ -114,28 +114,28 @@
   +feature-bundle-v1-evidence-kind+)
 
 (define-poo-value
-  (feature-bundle-v1-native-component
+  (feature-bundle-v1-runtime-component
    case-id component-id object-id type-id contract-id role-id capability-id
    policy-id strategy-id adapter-id projection-id composition-order flags
    reserved0 reserved1)
-  +feature-bundle-v1-native-component-kind+)
+  +feature-bundle-v1-runtime-component-kind+)
 
 (define-poo-value
-  (feature-bundle-v1-native-symbol
+  (feature-bundle-v1-runtime-symbol
    id byte-offset byte-length symbol-kind flags value-bytes)
-  +feature-bundle-v1-native-symbol-kind+)
+  +feature-bundle-v1-runtime-symbol-kind+)
 
 (define-poo-value
-  (feature-bundle-v1-native-edge
+  (feature-bundle-v1-runtime-edge
    case-id source-component-id target-component-id relation-id
    composition-order flags reserved0)
-  +feature-bundle-v1-native-edge-kind+)
+  +feature-bundle-v1-runtime-edge-kind+)
 
 (define-poo-value
-  (feature-bundle-v1-native-evidence
+  (feature-bundle-v1-runtime-evidence
    case-id obligation-id contract-id evidence-type-id proof-system-id
    composition-order flags reserved0)
-  +feature-bundle-v1-native-evidence-kind+)
+  +feature-bundle-v1-runtime-evidence-kind+)
 
 (define-poo-value
   (feature-bundle-v1-region name offset length stride alignment count)
@@ -184,20 +184,20 @@
   (poo-kind? value +feature-bundle-v1-evidence-kind+))
 
 ;; : (-> Object Boolean)
-(def (feature-bundle-v1-native-component? value)
-  (poo-kind? value +feature-bundle-v1-native-component-kind+))
+(def (feature-bundle-v1-runtime-component? value)
+  (poo-kind? value +feature-bundle-v1-runtime-component-kind+))
 
 ;; : (-> Object Boolean)
-(def (feature-bundle-v1-native-symbol? value)
-  (poo-kind? value +feature-bundle-v1-native-symbol-kind+))
+(def (feature-bundle-v1-runtime-symbol? value)
+  (poo-kind? value +feature-bundle-v1-runtime-symbol-kind+))
 
 ;; : (-> Object Boolean)
-(def (feature-bundle-v1-native-edge? value)
-  (poo-kind? value +feature-bundle-v1-native-edge-kind+))
+(def (feature-bundle-v1-runtime-edge? value)
+  (poo-kind? value +feature-bundle-v1-runtime-edge-kind+))
 
 ;; : (-> Object Boolean)
-(def (feature-bundle-v1-native-evidence? value)
-  (poo-kind? value +feature-bundle-v1-native-evidence-kind+))
+(def (feature-bundle-v1-runtime-evidence? value)
+  (poo-kind? value +feature-bundle-v1-runtime-evidence-kind+))
 
 ;; : (-> Object Boolean)
 (def (feature-bundle-v1-region? value)
@@ -335,9 +335,9 @@
        (.slot? value 'composition-order)
        (valid-composition-order? (.ref value 'composition-order))))
 
-;; : (-> PooFeatureBundleV1Component PooFeatureBundleV1NativeComponent)
+;; : (-> PooFeatureBundleV1Component PooFeatureBundleV1RuntimeComponent)
 (def (lower-component value)
-  (feature-bundle-v1-native-component
+  (feature-bundle-v1-runtime-component
    (feature-bundle-v1-lower-compact-id 'case (.ref value 'case-id))
    (feature-bundle-v1-lower-compact-id 'component (.ref value 'component-id))
    (feature-bundle-v1-lower-compact-id 'object (.ref value 'object-id))
@@ -356,10 +356,10 @@
    0
    0))
 
-;; : (-> PooFeatureBundleV1Symbol PooFeatureBundleV1NativeSymbol)
+;; : (-> PooFeatureBundleV1Symbol PooFeatureBundleV1RuntimeSymbol)
 (def (lower-symbol value)
   (let (value-bytes (string->utf8 (.ref value 'value)))
-    (feature-bundle-v1-native-symbol
+    (feature-bundle-v1-runtime-symbol
      (feature-bundle-v1-lower-compact-id
       (.ref value 'domain)
       (.ref value 'source))
@@ -369,9 +369,9 @@
      0
      value-bytes)))
 
-;; : (-> PooFeatureBundleV1NativeSymbol Integer PooFeatureBundleV1NativeSymbol)
+;; : (-> PooFeatureBundleV1RuntimeSymbol Integer PooFeatureBundleV1RuntimeSymbol)
 (def (symbol-with-offset value byte-offset)
-  (feature-bundle-v1-native-symbol
+  (feature-bundle-v1-runtime-symbol
    (.ref value 'id)
    byte-offset
    (.ref value 'byte-length)
@@ -379,7 +379,7 @@
    (.ref value 'flags)
    (.ref value 'value-bytes)))
 
-;; : (-> [PooFeatureBundleV1NativeSymbol] [PooFeatureBundleV1NativeSymbol])
+;; : (-> [PooFeatureBundleV1RuntimeSymbol] [PooFeatureBundleV1RuntimeSymbol])
 (def (assign-symbol-offsets values)
   (let (state
         (fold
@@ -392,9 +392,9 @@
          values))
     (reverse (cdr state))))
 
-;; : (-> PooFeatureBundleV1Edge PooFeatureBundleV1NativeEdge)
+;; : (-> PooFeatureBundleV1Edge PooFeatureBundleV1RuntimeEdge)
 (def (lower-edge value)
-  (feature-bundle-v1-native-edge
+  (feature-bundle-v1-runtime-edge
    (feature-bundle-v1-lower-compact-id 'case (.ref value 'case-id))
    (feature-bundle-v1-lower-compact-id
     'component (.ref value 'source-component-id))
@@ -405,9 +405,9 @@
    0
    0))
 
-;; : (-> PooFeatureBundleV1Evidence PooFeatureBundleV1NativeEvidence)
+;; : (-> PooFeatureBundleV1Evidence PooFeatureBundleV1RuntimeEvidence)
 (def (lower-evidence value)
-  (feature-bundle-v1-native-evidence
+  (feature-bundle-v1-runtime-evidence
    (feature-bundle-v1-lower-compact-id 'case (.ref value 'case-id))
    (feature-bundle-v1-lower-compact-id
     'obligation (.ref value 'obligation-id))

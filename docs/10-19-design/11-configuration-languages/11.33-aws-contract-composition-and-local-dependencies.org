@@ -9,15 +9,15 @@
 * Design question, not syntax translation
 
 Why use Scheme/POO if the result only transliterates a Nickel library? The purpose
-is one extensible native configuration model connected to the existing Module
+is one extensible runtime configuration model connected to the existing Module
 System, reusable Profiles and selected Scenario relationships. Ordinary user
-values must stay simple. Native inheritance/functions handle intentional reuse;
+values must stay simple. Runtime inheritance/functions handle intentional reuse;
 Core owns shared publication/admission/source policy. Copying external merge
 syntax or moving a private framework into every AWS case does not meet that goal.
 
 [[https://www.tweag.io/blog/2024-06-20-nickel-modules/][Tweag's module article]] motivates composing Contract contributions with config
 and making local dependencies explicit. It is a starting point, not our Module
-architecture or a claim that native POO already preserves every policy.
+architecture or a claim that POO already preserves every policy.
 The [[file:11.32-modular-configurations-core-principle.org][core principle]] remains applicable.
 
 * Current reviewable source: fixed Module roles
@@ -34,7 +34,7 @@ AWS dependency and public scope. No separate init.ss/main.ss lifecycle is requir
 those source files have been removed. types.Config for this consumer is the domain
 Scenario Contract, whereas the capability's own config is projection options.
 
-See the [[file:11.69-aws-case-index.org][source guide]] for the complete role/publication/native-versus-pending boundary.
+See the [[file:11.69-aws-case-index.org][source guide]] for the complete role/publication/runtime-versus-pending boundary.
 The [[file:11.68-audit.org][audit]] retains the reasons the original 19-file scheme was rejected. Named
 namespace publication is not a second ProfilePublication layer or Module ancestry.
 The =controls= (retired design source) remain separate from ordinary consumer declarations.
@@ -58,7 +58,7 @@ or live AWS resources.
 
 * Admission and shared ownership
 
-[[file:../../../scenarios/aws/types.ss][Native Contracts]] define field requirements and domain identities;
+[[file:../../../scenarios/aws/types.ss][Runtime Contracts]] define field requirements and domain identities;
 [[file:../../../scenarios/aws/func.ss][named functions]] perform selected-child admission, reference checks and resource
 projection. Unknown fields derive from responsibilities, without a second field
 list. Ordinary .admit handles this local domain check; no identical multi-dispatch
@@ -84,13 +84,13 @@ coverage is claimed here. Preview never authorizes runtime execution.
   without module/component inventories or publication wrappers? Verify selection
   and association before claiming that automatic contribution path works.
 - Can field discovery/errors come from the same Contract and actual source spans?
-  Native responsibility facts are available; full discovery/origin UX is pending.
+  Runtime responsibility facts are available; full discovery/origin UX is pending.
 - Does a warmed parent affect a child using final type/network/key values? Run the
   matched controls; no AWS execution result is inferred from prior Pipeline tests.
 - Does extension improve maintenance without weakening required policies? Verify
   Core's source-preservation and complete-admission controls, not a dummy Provider.
 
-The possible gain is coherent native reuse from simple values to domain extensions.
+The possible gain is coherent runtime reuse from simple values to domain extensions.
 The cost is a larger extension surface to govern, and work still needed for source
 association, diagnostics, backend coverage and demand behavior. Nickel's existing
 merge/Contract/editor experience is not surpassed merely by using Scheme syntax.

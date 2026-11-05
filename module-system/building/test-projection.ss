@@ -2,37 +2,20 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Test-source admission over the existing selection; Graph admission is lazy.
-(import (only-in :clan/poo/object .o .ref .slot?)
-        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
-                 current-expander-module-import core-import-module)
+(import (runtime: :clan/poo/object)
         (only-in :std/list/list delete-duplicates/hash)
-        (only-in :std/string/path path-absolute?)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
         (only-in :yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-name? module-source-admit-current!
                  call-with-module-source-read-cache))
-(export module-test-projection module-test-file-source module-test-directory-source module-test-execution)
+(export module-test-projection module-test-file-source)
 
-;; Native Gerbil import in a private context, demanded only by explicit .run.
-;; This is the existing Ops prototype factory, not a module/runtime Loader.
-(def testing-executor
-  (delay
-    ;; This explicit native factory boundary must not inherit the selected
-    ;; publication's importer while lazily loading its own compiler libraries.
-    ;; Selected suite sources still pass their original admission and harness.
-    (parameterize ((current-expander-context (make-top-context))
-                   (current-expander-module-import core-import-module))
-      (eval-syntax '(import :yuanxu/observability/testing-script))
-      (eval-syntax 'testing-script-for-source))))
-(def (module-test-execution source (build #f))
-  ((force testing-executor) source build))
-
-;; Explicit native qualification files use the same observation authority as
+;; Explicit runtime qualification files use the same observation authority as
 ;; module suites. Callers supply files, never a separately maintained guard.
 (def (module-test-file-source files (inputs '()))
   (unless (and (list? files) (pair? files) (andmap string? files)
                (list? inputs) (andmap string? inputs))
-    (error "explicit test source requires native file inputs" files))
+    (error "explicit test source requires runtime file inputs" files))
   (def paths (map path-expand files))
   (def observations
     (map (lambda (path) (cons path (module-source-read path)))
@@ -46,53 +29,6 @@
     (cond ((not kind) '())
           ((not (eq? kind 'directory)) (error "module tests must be a real directory" directory))
           (else (list-sort string<? (directory-files directory))))))
-
-;; A bounded package regression directory uses the same source authority as
-;; selected module tests. Excluded subtrees are pruned before any filesystem
-;; read; their files never enter the source or compiler closure.
-(def (module-test-directory-source directory (excluded '()))
-  (unless (and (string? directory) (list? excluded)
-               (andmap (lambda (path)
-                         (and (string? path) (not (path-absolute? path))
-                              (not (member ".." (string-split path #\/))))) excluded))
-    (error "test directory exclusions must be relative paths" directory excluded))
-  (def root (path-expand directory))
-  (def directories '())
-  (def paths '())
-  (def (excluded? path)
-    (ormap (lambda (entry)
-             (or (string=? path entry) (string-prefix? (string-append entry "/") path))) excluded))
-  (def (walk path relative)
-    (unless (excluded? relative)
-      (case (module-source-type path)
-        ((directory)
-         (let (names (test-directory-files path))
-           (set! directories (cons (cons path names) directories))
-           (for-each
-             (lambda (name)
-               (unless (member name '("." ".."))
-                 (walk (path-expand name path)
-                       (if (string-empty? relative) name (string-append relative "/" name))))) names)))
-        ((regular)
-         (when (string-suffix? "-test.ss" path) (set! paths (cons path paths))))
-        (else (error "test tree contains a missing or non-regular entry" path)))))
-  (unless (eq? (module-source-type root) 'directory)
-    (error "test directory must exist" root))
-  (walk root "")
-  (def files (list-sort string<? paths))
-  ;; Listing the official Harness inputs does not read every suite body. The
-  ;; first explicit admission binds leaf bytes; subsequent checks authenticate
-  ;; those same bytes, including the check after execution.
-  (def source (delay (module-test-file-source files)))
-  (.o spec: files
-      admit-current:
-      (lambda ()
-        (for-each
-          (lambda (entry)
-            (unless (and (eq? (module-source-type (car entry)) 'directory)
-                         (equal? (test-directory-files (car entry)) (cdr entry)))
-              (error "test directory changed; use a fresh test demand" (car entry)))) directories)
-        ((.ref (force source) 'admit-current)))))
 
 (def (module-test-projection selection (owners #f) (suite #f))
   (unless (memq suite '(#f integration qualification)) (error "unknown module test suite" suite))
@@ -112,7 +48,7 @@
     (error "test owners must be distinct eligible members of the selection" owners order))
   (def selected-owners (if owners owners order))
   ;; Reuse the selection's publication/source cache, including the reader's
-  ;; SDK-observed private and compiler dependencies. Do not resolve a second
+  ;; Gerbil-observed private and compiler dependencies. Do not resolve a second
   ;; Graph or link a business scope. A test owner still needs valid sources;
   ;; dependency/feature composition is admitted only on explicit Graph demand.
   (for-each (lambda (owner) ((.ref selection 'prepare-publication) owner)) selected-owners)

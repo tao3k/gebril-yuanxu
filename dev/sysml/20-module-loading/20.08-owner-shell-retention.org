@@ -1,4 +1,4 @@
-#+title: 20.08 Receiver and SDK Owner Shell Retention
+#+title: 20.08 Receiver and Expander Owner Shell Retention
 
 * Revision and design authority
 
@@ -17,15 +17,15 @@ uses that same distinction rather than introducing a consumer cache protocol.
 * Accounting boundary
 
 The existing trace-only census now opens the raw shells of already observed
-receivers and SDK expander contexts. Installed Gerbil's =expander/core.ss=
+receivers and Gerbil expander contexts. Installed Gerbil's =expander/core.ss=
 defines context inheritance, binding tables, imports, exports and code fields.
 The shell projection reads existing struct fields without calling getters,
 checkers, imports or slot preparation. Nested receivers and contexts remain
 explicit frontiers; weak tables and class descriptors are not strong edges.
-SDK contexts discovered during the SDK shell walk are not recursively opened.
-Thus this is a bounded one-hop owner projection, not the entire SDK heap.
+Gerbil contexts discovered during the expander shell walk are not recursively opened.
+Thus this is a bounded one-hop owner projection, not the entire compiler/runtime heap.
 
-For specifications, thunk environments, receiver shells and SDK shells the
+For specifications, thunk environments, receiver shells and expander shells the
 report includes reachable identities, payload words, repeated edges and explicit
 frontiers. A single identity union across categories prevents double charging.
 Each category's =added= count is marginal in the printed order, NOT dominator
@@ -48,7 +48,7 @@ an executable correspondence observation, not a theorem about physical bytes.
 
 No production sharing repair is justified until the measured duplicate has an
 owner, immutable representation and preserved ordered lookup/callback behavior.
-The native canonical layout and persistent prototype map already share some
+The runtime canonical layout and persistent prototype map already share some
 structure; replacing them with an additional Core pool would duplicate policy.
 All source checks, original records and observer deliveries stay intact.
 
@@ -82,24 +82,24 @@ collection implementation in the currently pinned consumer runtime.
 The first corrected default test completed successfully but its output did not
 contain the new shell rows: it loaded the previously installed observer. It is
 therefore an old-path regression receipt, NOT qualification of the new census.
-A subsequent native build caught and rejected an extra closing parenthesis in
-the diagnostic; that failure is retained. The corrected native build must
+A subsequent runtime build caught and rejected an extra closing parenthesis in
+the diagnostic; that failure is retained. The corrected runtime build must
 publish the changed observer before another census can qualify this source.
 These corrections do not justify clearing healthy caches or changing budgets.
 
 * Current result (2026-10-25)
 
-The corrected full native =just build= succeeded and compiled only the changed
+The corrected full runtime =just build= succeeded and compiled only the changed
 =test-observation= target. Its generated Scheme contains =slot-owner-shells=,
 so the changed observer is now present in the runtime used by the tests.
 
-The new-census default run then failed during native Fixture precompilation:
+The new-census default run then failed during runtime Fixture precompilation:
 the existing 120-second total execution budget expired after nine of fourteen
 support targets had reported compilation. It did not reach the new shell rows
 or complete the census Harness. This is NOT a passing 16/32 cold/hot receipt.
 The contemporaneous host load exceeded 200; that observation alone does not
 prove the entire timeout was scheduler delay. No larger timeout, new cache,
-forced healthy-cache clean, native dependency-edge removal or sharing repair
+forced healthy-cache clean, runtime dependency-edge removal or sharing repair
 was used to turn this failure into success. A hot second process is not run
 against a failed producer and cannot be reported as qualified zero compilation.
 The existing old-observer pass remains a separate regression receipt.
@@ -120,11 +120,11 @@ production pooling or 10,000-module rerun was performed.
 
 * Follow-up attribution and conservative frontier correction
 
-See [[file:20.09-fixture-compiler-budget.org][20.09 Fixture Compiler Budget]] for the repaired native Make worker
+See [[file:20.09-fixture-compiler-budget.org][20.09 Fixture Compiler Budget]] for the repaired runtime Make worker
 setting, actual successful compiler measurements and the separate diagnostic
 idle failure exposed afterward. The original precise-id GC-table test missed
-subtypes; its raw SDK totals are not complete strong-retention results. The
-corrected walker uses the installed native subtype predicate and treats all
+subtypes; its raw expander totals are not complete strong-retention results. The
+corrected walker uses the installed runtime subtype predicate and treats all
 GC-table subclasses, including containers whose weak policy is not classified,
 as frontiers. The final identity union uses the existing smaller support;
 Lean proves the count and symmetry without allocating a second large union.

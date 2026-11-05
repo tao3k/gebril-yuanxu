@@ -19,7 +19,7 @@
 
 (import (only-in :std/list/list map filter-map append-map)
         (only-in :std/list/list iota)
-        (only-in :clan/poo/object .ref .slot? object? object<-alist)
+        (runtime: :clan/poo/object)
         :yuanxu/utilities/functional
         :yuanxu/feature-system/domain-case/interface
         :yuanxu/feature-system/bundle-v1-lowering

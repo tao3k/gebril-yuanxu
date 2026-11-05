@@ -5,7 +5,7 @@
 
 ;;; Boundary: validate ordinary POO values against CLOS class slot metadata.
 ;;; These are pure model values, not mutable CLOS lifecycle instances.
-(import (only-in :clan/poo/object .ref .slot? object?)
+(import (runtime: :clan/poo/object)
         (only-in :std/list/list every)
         (only-in :yuanxu/poo-clos/types clos-instance?)
         (only-in :yuanxu/poo-clos/classes poo-clos-class-effective-slots))

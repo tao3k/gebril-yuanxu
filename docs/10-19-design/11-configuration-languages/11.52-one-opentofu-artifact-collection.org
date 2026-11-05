@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 11.52 Config Languages 51: One OpenTofu Artifact Collection
 #+property: DOCUMENT_ID 11.52
-#+property: STATUS implemented-local-native-no-loader
+#+property: STATUS implemented-local-runtime-no-loader
 
 * Follow-up: build-time selection
 
@@ -19,7 +19,7 @@ count. No AWS/awscc/Null-specific environment variables or registrations remain
 in the current module or multi-Provider test entrypoints.
 
 Package selection belongs to the package graph. The module object layer projects
-the collection to =modules.<local-name>= using native =object<-fun=. Each slot
+the collection to =modules.<local-name>= using runtime =object<-fun=. Each slot
 creates a leaf only when requested; each leaf reads its manifest, kind indexes
 and individual inputs only as demanded by the final configuration.
 
@@ -90,7 +90,7 @@ Provider registry. Chapter 52 implements the local final-configuration demand pr
 selection boundary. Product Loader delegation remains outside this change;
 no Loader is connected.
 
-* Native object layer
+* Runtime object layer
 
 #+begin_src scheme
 (.def OpenTofuConfig
@@ -124,7 +124,7 @@ their type catalogs. This is an immutable package-data projection, not dynamic
 Scheme import, filesystem module discovery or Provider acquisition.
 
 Provider leaves retain the existing =OpenTofuModule.= behavior: their inherited
-=provider= slot reads the selected v2 package, and their native Contract cache
+=provider= slot reads the selected v2 package, and their Contract cache
 is keyed by =(kind . name)=. The configuration Contract continues to discover
 types from each FINAL candidate and call the original child =.admit= methods.
 
@@ -175,7 +175,7 @@ The final candidate causes exactly the IAM Group input to be read/compiled if
 it was not already cached. It does not rebuild a SelectedTypes list or read
 unselected S3 inputs. awscc's identically named resource/data still use different
 kind indexes/files/caches. The three Provider configuration Contracts remain
-distinct. Version, export/input digests and native SourceRefs are retained;
+distinct. Version, export/input digests and runtime SourceRefs are retained;
 the SourceRef directory is the selected collection leaf.
 
 The existing full paths remain, including
@@ -216,7 +216,7 @@ two-version controls use explicitly TEST-scoped inputs, not production per-famil
 environment variables; their transport does not grow with supported Provider count.
 
 The executable owner is =t/opentofu-artifact-collection-test.ss=. Ordinary values,
-native inheritance, kind separation, source identities and diagnostics are
+runtime inheritance, kind separation, source identities and diagnostics are
 revalidated through the migrated real-package gates. Provider alias semantics,
 unexported Provider validations and Loader integration remain separate work.
 

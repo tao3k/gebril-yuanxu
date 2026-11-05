@@ -5,7 +5,7 @@ namespace YuanxuProof.Composition.Overlay
 open LeanPoo.Functional
 /-! `composition/roles.ss` constant-slot fast path. Each role's existing
 constant slots are projected as a provider. Dynamic/self/super slots continue
-through native .mix; this finite lookup law is not applied to them. -/
+through runtime .mix; this finite lookup law is not applied to them. -/
 def overlay (roles : List (Provider Context Key Value)) : Provider Context Key Value :=
   roles.foldr Provider.compose (fun _ => none)
 

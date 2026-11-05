@@ -87,8 +87,8 @@ theorem indexedReplace_preserves_reference_order
   rw [indexedReplace, activeValues_append, activeValues_retireBy]
   simp [referenceReplace, activeValues]
 
-/-- This is the pure projection of the native winner-index/tombstone loop.
-The native hash index provides lookup; no O(1) cost follows from this list model. -/
+/-- This is the pure projection of the runtime winner-index/tombstone loop.
+The runtime hash index provides lookup; no O(1) cost follows from this list model. -/
 def resolveCandidates [DecidableEq Key] (keyOf : Value → Key) (candidates : List Value) :=
   candidates.foldl (fun entries candidate => indexedReplace keyOf candidate entries) []
 

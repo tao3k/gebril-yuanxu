@@ -3,10 +3,10 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: native POO projection of reader-owned authoring observations.
+;;; Boundary: POO projection of reader-owned authoring observations.
 ;;; Invariant: source datums are discarded before a public receipt is returned.
 
-(import (only-in :clan/poo/object .o .ref)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
         (only-in :yuanxu/module-system/authoring/observation
                  yuanxu-scheme-inline-prototype-datum-observations

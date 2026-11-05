@@ -34,7 +34,7 @@ only on a globally successful merge. It also demonstrates source-located Contrac
 errors and editor integration. These are concrete UX expectations, not just type
 system terminology.
 
-Our response: native responsibilities/Contracts constrain published values;
+Our response: runtime responsibilities/Contracts constrain published values;
 the dependency graph records which owner supplies each referenced interface.
 An args tree must not turn local code into an unconstrained global participant.
 Schema-derived field discovery and diagnostics must reuse existing JSON Schema

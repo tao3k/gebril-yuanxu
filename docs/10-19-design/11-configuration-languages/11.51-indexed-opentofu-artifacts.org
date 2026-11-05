@@ -38,7 +38,7 @@ are removed, without aliases or fallback.
 #+end_src
 
 The =provider-artifact= slot belongs to a Provider LEAF and has no environment
-input. Its path is filled by the collection object's native projection. All
+input. Its path is filled by the collection object's runtime projection. All
 current multi-Provider tests accept one collection path, using the same default
 environment input as normal package integration. Low-level artifact/upgrade
 controls use explicitly TEST-scoped fixture transport only. See chapter 51 for
@@ -82,7 +82,7 @@ The actual AWS manifest is:
 Every kind index repeats the Provider address, version, original export digest
 and kind; =entries= maps type name to the SHA-256 of its individual input file.
 Runtime checks both the index digest and its source/kind binding before creating
-a native hash table. Type lookup uses that table, not an association-list scan.
+a runtime hash table. Type lookup uses that table, not an association-list scan.
 Only a demanded kind's metadata index is parsed and cached.
 
 The selected filename is derived from a closed kind and an ASCII type name;
@@ -101,17 +101,17 @@ mutable files: changing an artifact reference creates a new receiver-local scope
 The producer retains the full exported entry for each selected type, including
 its block and metadata. These are Provider-format Contract inputs, not falsely
 relabeled standard JSON Schema. Existing Scheme conversion still maps the
-selected block to JSON Schema and the shared native Contract compiler.
+selected block to JSON Schema and the shared Contract compiler.
 
 * Runtime objects and unchanged ordinary configuration
 
 Opening a package scope reads only its manifest. =source.ss= supplies internal
 =.contains?=, =.names= and =.read-entry= methods backed by demand-loaded indexes.
-=objects.ss= compiles and caches the original native Contract by =(kind . name)=.
+=objects.ss= compiles and caches the original Contract by =(kind . name)=.
 Catalog introspection can explicitly request names without reading every input.
 Configuration-driven discovery bypasses those catalogs entirely.
 
-Contracts retain =provider=, =version=, =schema-digest= and the original native
+Contracts retain =provider=, =version=, =schema-digest= and the original runtime
 =source=. They now also retain =input-digest=; their qualified identities append
 that digest to bind the actual selected input bytes. Source metadata includes
 the advertised kind-index digests. Same-name Provider configuration nodes and
@@ -134,7 +134,7 @@ Package integration binds the rebuilt outputs once:
 #+end_src
 
 The complete ordinary Configuration from chapter 49 is unchanged. Its final
-native entrypoint remains:
+runtime entrypoint remains:
 
 #+begin_src scheme
 (use-module Infrastructure as tf
@@ -143,7 +143,7 @@ native entrypoint remains:
 
 No SelectedTypes, input-file enumeration, explicit type retrieval or evidence
 maintenance is added to user configuration. Cached parent Contract and final
-child discovery continue to use the original native receiver semantics.
+child discovery continue to use the original runtime receiver semantics.
 
 The AWS 5.99.0 parent was also rebuilt with the same producer at
 =/nix/store/ksilrwxv6pm86c0g4pcc6w9vig33hplw-terraform-provider-aws-5.99.0-schema=.

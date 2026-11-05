@@ -19,7 +19,7 @@ def checkRecovery (j : Json) : Except String Unit := do
     let recordCurrent := i != 2 && i != 5
     let actual := recover selected candidate true true (i != 4) (i != 8) filesCurrent recordCurrent
     unless (← row[1]!.getBool?) == actual do
-      throw "native store recovery/Lean decision mismatch"
+      throw "runtime store recovery/Lean decision mismatch"
 
 def main (args : List String) : IO UInt32 := do
   match args with

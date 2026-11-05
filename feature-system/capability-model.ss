@@ -4,10 +4,7 @@
 
 ;;; Boundary: declarative feature capability values and kind predicates;
 ;;; catalog indexing and adapter resolution remain separate owners.
-(import (only-in :clan/poo/object
-                 .ref
-                 object<-alist
-                 object?)
+(import (runtime: :clan/poo/object)
         :yuanxu/composition/roles)
 
 (export +feature-adapter-capability-kind+

@@ -2,10 +2,9 @@
 import LeanPoo.Functional.CacheLookup
 import YuanxuProof.Admission.IssuerProjection
 namespace YuanxuProof.Admission.SelectionReplay
-def declaredPooRevision : String := "e281ad2e33784cfb9951c684b6be78bd2f4b7fca"
-def quintSourceDigest : String := "sha256:83a2b605e11bdad9f8689c58a9a9bd37a2dadb67dec025e81d47b3ce6b915d13"
+def quintSourceDigest : String := "sha256:7bb0c519be1ac029d5e5451f1c6c972b74e5d56170639fd1760545ef4cf88e3e"
 
--- The native owner retains a value, not the verdict of an external-source check.
+-- The runtime owner retains a value, not the verdict of an external-source check.
 theorem cached_graph_keeps_value {Name Value Fault : Type} [DecidableEq Name]
     (entries : Name → Option Value) (key : Name) (value : Value)
     (build : Unit → Except Fault Value) (hit : entries key = some value) :
@@ -17,9 +16,9 @@ def firstError : List (Option Nat) → Option Nat
   | none :: rest => firstError rest
   | some error :: _ => some error
 
-/-- One native private operation, with no callback between the two issuance
+/-- One runtime private operation, with no callback between the two issuance
 queries. The second predicate's failure spelling is irrelevant: on failure the
-first guard has already refused, and on success both see the same native state.
+first guard has already refused, and on success both see the same runtime state.
 This licenses no reuse across a visitor, another record, or final replay. -/
 theorem immediate_issuance_query_redundant (authentic : Bool)
     (unissued stale : Nat) (remaining : List (Option Nat)) :
@@ -28,7 +27,7 @@ theorem immediate_issuance_query_redundant (authentic : Bool)
       firstError ((if authentic then none else some unissued) :: remaining) := by
   cases authentic <;> rfl
 
--- Native preparation replay, native admission replay, then revision-only
+-- Runtime preparation replay, runtime admission replay, then revision-only
 -- policy inspection: no opaque callback or concurrent metadata writer.
 -- Stable preparation is a source-correspondence premise, not a purity flag.
 theorem stable_tail_redundant (prep admit policy : Option Nat) :
@@ -92,10 +91,16 @@ theorem cached_false_is_a_value {Name Fault : Type} [DecidableEq Name]
 
 def topologySourceDigest : String := "sha256:711666f5afe6d73d34cc59caf536311b2eb9907fa675ef049dd0720e13993773"
 
--- The 40c61fe -> 29c58aa object-source delta is the issuer-private singleton
--- codec only. PayloadSharing proves exact ordered parent restoration; native
--- issuance/reflection tests check the unchanged public snapshot protocol.
-def projectionObjectDigest : String := "sha256:0c28298e1047e17b9fc67c5489f4f3d48ce07a79f93adc8e00ef101893737ced"
+-- Runtime dependency ownership belongs to gerbil.pkg; LeanPoo belongs to Lake.
+-- Runtime issued-read, inheritance and declaration-index controls
+-- cover finite roots, owned parent spines and complete C3 Type registration.
+-- Warm metadata preparation uses LeanPoo lookupOr_present; a cleared cache
+-- uses lookupOr_missing and still invokes runtime preparation. The Scheme
+-- cache-branch/invalidation correspondence remains a runtime-test obligation.
+-- The release splits issuance/replay into the included observation owner.
+-- These bind model correspondence, not package resolution or a proved compiler.
+def projectionObjectDigest : String := "sha256:1c4fcd96e8e120cdbfc3036008170ea161e0a0380cc747b913e74ae63b91d7cc"
+def projectionObservationDigest : String := "sha256:a75b5bcbfed24fab11756a4f87ffa8b77fd394f04f8fc2da02a9f3d71dc4c800"
 
 -- A structural projection contains record identities, not receiver/key pairs.
 -- Fuel bounds the executable model; IdentityDFS owns termination/coverage.
@@ -182,7 +187,7 @@ structure ReplayProjection where
   order : List Nat
   deriving DecidableEq
 
--- A private native owner caches only this projection. Weak index eviction is
+-- A private runtime owner caches only this projection. Weak index eviction is
 -- represented by none; construction/refresh never returns an admission verdict.
 def obtainProjection (roots : List Nat) (cached : Option ReplayProjection)
     (build : List Nat → ReplayProjection) : ReplayProjection :=
@@ -227,7 +232,7 @@ theorem receiver_frame_preserved (before after : List Nat) (receiver : Nat → N
 theorem structural_hit_still_checks_tail :
     validationOrder [1] (fun _ => none) (fun _ => none) (fun _ => some 2) = some 2 := rfl
 
--- Constructing a native cache owner must not introduce an open CLOS init hook
+-- Constructing a runtime cache owner must not introduce an open CLOS init hook
 -- into authentication. Changed constructor metadata takes the original DFS.
 def invokesCacheConstructor (hit constructorIdentityMatches : Bool) : Bool :=
   !hit && constructorIdentityMatches

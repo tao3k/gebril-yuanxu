@@ -19,7 +19,7 @@ Neither entry carries a second normative body.
 | Directory discovery, init selection and negative decisions | Core Module System design |
 | A selected Module's mandatory baseline | Core Module System |
 | Optional extension descriptors, dependencies and projections | Core Feature System |
-| Contracts, native POO composition, scope and generic protocols | Corresponding Core mechanism and its design |
+| Contracts, POO composition, scope and generic protocols | Corresponding Core mechanism and its design |
 | Configuration-language UX and ecosystem comparison methodology | Core Config Languages design |
 | Actual Funflow, JsonSchema, Kubernetes and other provider wiring | Agentic AI Lab or contributing package |
 | Maintained application Profiles, Scenarios and deployment cases | Agentic AI Lab or contributing package |

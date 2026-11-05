@@ -1,0 +1,205 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Authority-issued content-identity transition
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Authority-issued content-identity transition
+
+** Transition-evidence authority requirement
+
+The generation-transition predicate establishes what a compatible advance or
+semantic rotation means.  A proof of those equations is not evidence that the
+real content-identity authority issued the transition, and an issuer identity
+alone does not prove that the claimed generation is the authority's current
+head.  Admission therefore MUST bind the transition artifact to all three
+owners:
+
+- the exact Cedar content-identity transition authority;
+- an authority-issued validation context;
+- the trusted current checkpoint and watermark.
+
+The checkpoint context must also commit the exact validated transition
+artifact.  Authority identity plus generation is not sufficient: two distinct
+semantic rotations can share both coordinates and otherwise reuse the same
+checkpoint.
+
+The existing checkpoint contract represents authority identities as =Nat=,
+while =CedarInputContentIdentityAuthority= uses =String=.  An implicit or
+collision-prone conversion would create another authority-confusion hole.
+Their bridge therefore requires an explicitly injective identity encoding.
+Likewise, =authorizationSnapshotIdentity= and transition artifact identity
+belong to different identity domains.  They MUST be related by an
+authority-validated snapshot projection, not collapsed into numerical
+equality.
+
+** Transition-evidence counterexamples
+
+The executable model exposes two independent failures:
+
+1. =selfReportedAcceptanceAllowsCounterfeitIssuer= constructs a transition
+   claim whose issuer is =999= while the actual authority is =17=; the legacy
+   structural predicate still accepts it because issuer identity is absent.
+2. =issuerOnlyAcceptanceAllowsNonCurrentHead= uses the correct issuer but
+   claims generation =4= while the authority has already reached generation
+   =5=; issuer equality alone still accepts the stale transition.
+3. =contextOnlyCheckpointAllowsSameGenerationSemanticFork= constructs two
+   valid rotations from semantic identity =31= to =41= and =42=.  Both use
+   authority =17= and generation =4=, so the same context-only checkpoint
+   admits both even though their semantic identities and artifact identities
+   differ.
+4. =registryProjectionAcceptsSeparatedIdentityDomains= and
+   =collapsedIdentityRejectsValidSeparatedProjection= exhibit a valid snapshot
+   =900= that resolves to artifact =701=.  Registry projection accepts the
+   relation, while the collapsed equality contract incorrectly rejects it.
+
+#+begin_export typst
+$
+  "IssuedTransitionClosed"(v, n, c, h) :=
+    v.authority = c.authority
+    and v."validate"(n.artifact) = n.binding
+    and n.binding.context = h."issued-checkpoint".context
+    and h."issued-checkpoint".context = h."current-head".context
+    and n.binding.context.generation = c.generation
+$
+
+$
+  "IdentityBridgeClosed"(e) :=
+    forall x, y: e(x) = e(y) => x = y
+$
+
+$
+  "ArtifactProjectionClosed"(v, n, h, p) :=
+    p."snapshot-key" = h.context.authorization-snapshot-id
+    and p."resolve"(p."snapshot-key") = v."artifact-id"(n.artifact)
+    and forall x, y in v."validated":
+      v."artifact-id"(x) = v."artifact-id"(y) => x = y
+$
+#+end_export
+
+#+begin_export mermaid
+flowchart LR
+    A["Transition artifact"] -->|"status: exact validator output"| N["Authority-bound transition node"]
+    V["Cedar transition authority"] -->|"status: String identity bound"| N
+    N -->|"issued validation context"| C["Checkpoint attestation"]
+    C -->|"status: authority issued"| H["Current checkpoint head"]
+    W["Trusted watermark"] -->|"authority code + minimum generation"| H
+    E["Injective String-to-Nat encoding"] -->|"status: no identity collision"| W
+    F["Counterfeit issuer"] -.->|"rejected: validator returns none"| X["Typed transition rejection"]
+    S["Correct issuer, stale head"] -.->|"rejected: not current checkpoint"| X
+    U["Unissued checkpoint"] -.->|"rejected: issuance absent"| X
+    M["Different transition, same authority + generation"] -.->|"rejected: artifact commitment differs"| X
+    N -->|"bounded artifact identity"| Q["One current checkpoint selects one validated artifact"]
+    H -->|"authorization snapshot key"| P["Authority-validated snapshot projection"]
+    P -->|"resolved artifact identity"| Q
+    Z["Snapshot id equals artifact id"] -.->|"rejected: identity-domain collapse"| X
+#+end_export
+
+** Transition-evidence decision
+
+The v1 closure reuses rather than duplicates the established owners:
+
+- =ReceiptAuthorityBindingClosure.AcceptanceAuthority= and
+  =AuthorityBoundNode= own exact artifact-to-binding validation;
+- =ReceiptContextCheckpointClosure.LiveCheckpointAttestationAuthority= owns
+  issued current-head attestations and watermark admission;
+- =CedarInputIdentityTransitionAcceptanceAuthority= adds the missing explicit
+  String authority identity, validates one global transition-evidence envelope
+  across old/current pairs, and binds both authorities to that identity;
+- =CedarInputAuthorityIdentityEncoding= requires an injective bridge into the
+  checkpoint owner's =Nat= identity domain;
+- =AuthorityValidatedSnapshotProjectionClosure= owns the generic deterministic
+  snapshot-key-to-payload projection; the transition instance uses payload
+  =Nat= for the validated artifact identity;
+- the transition binding carries either the real compatible-transition proof
+  or the real semantic-rotation proof and binds its context generation to the
+  current Cedar authority generation;
+- a separately authority-bound projection node resolves the context's
+  =authorizationSnapshotIdentity= to the nonzero transition artifact identity;
+  the transition validator proves bounded identity uniqueness only over
+  artifacts it actually validates.
+
+Thus a compatible equation, a matching issuer label, or a caller-selected
+checkpoint is insufficient independently.  The admitted node must be produced
+by the exact authority validator and meet the authority-issued current head.
+
+** Transition-evidence verification checklist
+
+- [X] Construct a self-reported transition accepted with a counterfeit issuer.
+- [X] Construct a correctly labelled transition accepted at a non-current head.
+- [X] Construct two distinct semantic rotations admitted by one context-only
+  authority/generation checkpoint.
+- [X] Construct a valid authorization-snapshot-to-artifact projection whose
+  distinct identities are rejected by direct numerical equality.
+- [X] Use one global evidence-envelope validator rather than a validator type
+  specialized per old/current transition pair.
+- [X] Bind the generic validator to the exact current and prior Cedar
+  content-identity authority.
+- [X] Require exact =AuthorityBoundNode= validation of the transition artifact.
+- [X] Bind the validated transition context to an authority-issued checkpoint
+  attestation and its current head.
+- [X] Bind the checkpoint identity and minimum generation through a trusted
+  watermark.
+- [X] Require an injective String-to-Nat authority identity encoding.
+- [X] Prove a rejected artifact cannot form an authority-bound transition node.
+- [X] Prove an unissued checkpoint cannot close the transition.
+- [X] Bind the current checkpoint authorization snapshot to the validated
+  transition artifact through an authority-validated projection node.
+- [X] Preserve authorization snapshot identity and artifact identity as
+  separate domains.
+- [X] Prove one current checkpoint selects one unique validated transition
+  artifact without assuming global hash injectivity.
+- [ ] Implement the runtime artifact validator, identity encoding, and
+  checkpoint-attestation producer at their executable owners; Lean proves the
+  required contract but does not manufacture those runtime witnesses.
+
+** Transition-evidence Lean and AXLE receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionIssuanceModel=
+  exited 0 for 3 jobs with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionIssuanceClosure=
+  exited 0 for 410 jobs with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionCommitmentModel=
+  exited 0 for 4 jobs with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.AuthorityValidatedSnapshotProjectionClosure= exited 0
+  for 3 jobs with no warning or error.
+- Commitment AXLE first rejected an extra unused issuance-model source with
+  =axle-source-set-mismatch=.  With the exact generation-transition and
+  commitment source set, all 7 roots passed: 38 declarations, 24 source
+  declarations, 24 environment declarations, 0 proof-base
+  declarations/imports, no failed declaration, and no Lean diagnostic.
+  Closure digest:
+  =sha256:9cfd1029f9006162e3cdecefecbf96f296954ab39c68bea8a31450375b9833a1=;
+  bundle digest:
+  =sha256:92ea69c03ca41ad99182ca9dc71779d49d279d332d5024a8b74daf9ac885c69f=;
+  canonical source digest:
+  =sha256:7e60574f63d19195d373ec24bc5befac649056eac72f71267e31e259ef1ba2f7=;
+  independent bundle digest:
+  =sha256:21a1ffc51f3f4567c4ecae6c703c0b293e8383f2966142e8858167fc4d814ad9=.
+- AXLE first rejected the issuance source alone with
+  =axle-source-set-mismatch= because its transitive generation-transition
+  source was absent.  With both exact source paths, the standard CLI verified
+  all 4 public roots: 28 declarations, 15 source declarations, 15 environment
+  declarations, 0 proof-base declarations/imports, no failed declaration, and
+  no Lean diagnostic.  Closure digest:
+  =sha256:e6f89399e141baf0b9f2aacc0f92b2ee238eeda8ef18df60e50de5805c1da79e=;
+  bundle digest:
+  =sha256:3f34a31bac9459249e78ab03e9662171a7ac4d40dd4842158ea40012d49797f2=;
+  canonical source digest:
+  =sha256:c3b9230053d1b50a98d0830af92a6a04556815d717def1f8a0b56bf2169fa3ff=;
+  independent bundle digest:
+  =sha256:6f3a2948d8d397afc0c29a157a5e7a8bc35668ad90bf7be8254dc73665791c72=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 511 jobs and =lake build=
+  exited 0 for 583 jobs.  Both emitted only the pre-existing
+  =AgentRedTeamProofRegressionClosure.lean:194 unnecessarySimpa= warning.
+- Focused RFC45-07 Orgize Org/Typst/Mermaid lint returned =[ok] orgize lint=
+  and exit 0.  =git diff --check= and =git diff --cached --check= both
+  returned exit 0 with no diagnostic after the final write-back.
+

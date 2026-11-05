@@ -12,22 +12,22 @@ historical; compiled/AOT and product Loader qualification remain separate.
 
 This supersedes the integration placement in [[file:10.14-gitea-postgresql-publication.org][10.14]]. Ordinary PostgreSQL
 values now live in [[file:../../../scenarios/gitea-postgresql/postgresql/postgresql.json][postgresql.json]]; [[file:../../../scenarios/gitea-postgresql/gitea/gitea.json][gitea.json]] supplies client values.
-The maintained interfaces bind native behavior, Types and Contracts. They do not
+The maintained interfaces bind runtime behavior, Types and Contracts. They do not
 resolve strings as executable Scheme or copy Module API declarations into JSON.
 The separate [[file:../../../scenarios/gitea-postgresql/interface.ss][Gitea/PostgreSQL Scenario]] owns dependency composition,
 contribution routes and the Application admission entry.
 
 No product Loader adapter, deployment or service process is added. The same
-Core selected-record, .for-export, native .admit and .publish path is used.
+Core selected-record, .for-export, runtime .admit and .publish path is used.
 
-* Ordinary data and native defaults
+* Ordinary data and runtime defaults
 
 #+begin_src json
 {"settings": {"port": 5432}, "allowed-ports": [5432]}
 #+end_src
 
-The JSON bridge in [[file:../../../configuration/json.ss][configuration/json.ss]] uses Gerbil's native JSON reader.
-JSON objects become native POO values with =object<-alist=; arrays become Scheme
+The JSON bridge in [[file:../../../configuration/json.ss][configuration/json.ss]] uses Gerbil's runtime JSON reader.
+JSON objects become POO values with =object<-alist=; arrays become Scheme
 lists. Empty objects, empty arrays, false and null retain distinct values.
 Null is canonicalized to =json-null= and is never treated as an absent slot.
 Exactly one JSON document with optional trailing whitespace is accepted.
@@ -43,7 +43,7 @@ Exactly one JSON document with optional trailing whitespace is accepted.
     (.get Document value)))
 #+end_src
 
-=config-defaults= uses native prototype parents for omitted fields, recursively
+=config-defaults= uses runtime prototype parents for omitted fields, recursively
 for object/object pairs. It does not reconstruct every default slot. A supplied
 scalar, array or null replaces that subtree; it is not deep-merged as an object.
 The merged value still has to pass the existing domain Contract. JSON is a data
@@ -54,12 +54,12 @@ entry, not an automatic Type generator and not a second module declaration DSL.
 | PostgreSQL settings.port missing | Inherit 5432 |
 | PostgreSQL settings.port null | Preserve null; port Contract rejects |
 | PostgreSQL settings null | Preserve null; reject database structure before demanding client default |
-| Gitea database.port missing | Native default follows effective database port |
+| Gitea database.port missing | Runtime default follows effective database port |
 | Gitea database.port 5440 | Preserve 5440; refuse mismatch with server 5432 |
 | Gitea database.port null | Preserve null; refuse invalid-port |
 | JSON false | Keep #f, independent of absence and null |
 
-The Gitea constructor applies its native default only to an object-valued
+The Gitea constructor applies its runtime default only to an object-valued
 client database. An explicit null/scalar database is retained for final rejection,
 rather than used as a prototype or silently replaced by an empty object.
 
@@ -156,7 +156,7 @@ An edit that adds only a newline is still a source revision and is refused.
 The descriptors/documents are trusted maintained capabilities, not a sandbox
 against malicious mutation of Core policy or arbitrary mutable Scheme data.
 
-The pure plan retains =configuration: config= and uses native lexical slots.
+The pure plan retains =configuration: config= and uses runtime lexical slots.
 After forcing the parent's ports at 5432, a derived server port 5433 yields both
 child plan ports 5433 while the parent remains 5432. A fixed parent plan still
 fails the effective Config identity check. Explicit client values never become
@@ -223,7 +223,7 @@ The default host runtime and pinned POO dependency documented in 10.13 were used
 with current Core source and the existing =just test-file= heap/timeout fence.
 Fresh passing files:
 
-- =t/gitea-json-configuration-test.ss=: four completed cases, including native
+- =t/gitea-json-configuration-test.ss=: four completed cases, including runtime
   bootstrap-context and generated source-spec discovery of the constructor;
 - =t/gitea-postgresql-publication-test.ss=: eight completed service cases after
   the Scenario migration;

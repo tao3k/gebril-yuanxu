@@ -146,7 +146,7 @@ not identical:
 ** Graph responsibility
 
 Graph responsibility points to a =FlowGraph= POO object or an equivalent
-POO-native graph value.
+POO graph value.
 
 The graph object owns stable node and edge identities, entry and exit
 responsibilities, and graph-local capability requirements. Heavy execution is
@@ -185,7 +185,7 @@ obligation proved or manufacture authority.
 ** Handoff responsibility
 
 A handoff responsibility points to a =HandoffContract= POO object or an
-equivalent POO-native value. It declares the destination boundary, required
+equivalent POO value. It declares the destination boundary, required
 capabilities, required evidence, and receipt shape.
 
 The object does not issue a capability and does not perform the handoff.
@@ -247,7 +247,7 @@ A bounded macro may:
 - generate a repeated family of ordinary POO objects;
 - attach source identity for precise diagnostics;
 - validate closed declaration shape at expansion time;
-- expand to ordinary POO-native and functional code.
+- expand to ordinary POO and functional code.
 
 The ordinary interface may therefore retain:
 
@@ -335,7 +335,7 @@ that responsibility and never grants its required capability.
 
 ** Macro semantic transparency
 
-Replacing an admitted bounded macro with its POO-native expansion preserves
+Replacing an admitted bounded macro with its POO expansion preserves
 selection, composition, closure, evidence, and admission results.
 
 ** Runtime non-ownership
@@ -443,7 +443,7 @@ The following alternatives are rejected:
 - [ ] =use-module= performs only hygienic Module selection.
 - [ ] =compose= remains a pure function.
 - [ ] =profiles= remains a first-class strategy.
-- [ ] Declaration macros expand to ordinary POO-native or functional code.
+- [ ] Declaration macros expand to ordinary POO or functional code.
 - [ ] Macro expansion retains source identity.
 - [ ] Macros do not own runtime effects.
 - [ ] Macros do not issue capabilities.
@@ -481,7 +481,7 @@ Implementation work is not admitted until:
 - [ ] the exact pinned =gerbil-poo= object and prototype primitives are cited;
 - [ ] the target =ProfileBundle= representation is mapped to those primitives;
 - [ ] the current =compose= and =use-composition= owners are verified;
-- [ ] macro expansion examples are shown as ordinary POO-native code;
+- [ ] macro expansion examples are shown as ordinary POO code;
 - [ ] responsibility completeness tests are specified;
 - [ ] selection-sensitive imports tests are specified;
 - [ ] capability attenuation tests are specified;
@@ -504,11 +504,11 @@ truth.
 
 * References
 
-- [[file:45-96-poo-native-module-authoring-and-thin-binding-macro-contract.org][45-96 - POO-Native Module Authoring and Thin Binding Macro Contract]]
+- [[file:45-96-poo-module-authoring-and-thin-binding-macro-contract.org][45-96 - POO-Runtime Module Authoring and Thin Binding Macro Contract]]
 
 - [[file:44-current-project-programming-style.org][44 - Current Project Programming Style]]
 - [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85 - POOF Proof Adoption and Agentic AI Lab Correspondence Obligations]]
-- [[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89 - POO-Native Control Condition, Decision, and Capability Algebra]]
+- [[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89 - POO-Runtime Control Condition, Decision, and Capability Algebra]]
 - [[file:45-90-poo-control-policy-composition-priority-conflict-and-veto-resolution.org][45-90 - POO Control Policy Composition, Priority, Conflict, and Veto Resolution]]
 - [[file:45-91-control-policy-profile-projection-and-user-composition-interface.org][45-91 - Control Policy Profile Projection and User Composition Interface]]
 - [[file:45-92-user-composition-current-gap-and-thin-macro-contract.org][45-92 - user-composition Current Gap and Thin Macro Contract]]

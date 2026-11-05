@@ -25,7 +25,7 @@ ownership review; this release does not claim their mediation or confinement.
 This is not a Loader change, a user-facing read-only flag, a callback purity
 annotation or a process-wide freeze. The public replay signature is unchanged.
 
-* Native implementation
+* Runtime implementation
 
 The candidate was first built from a copy of the CURRENT installed producer at
 =/private/tmp/core-replay-write-guard-20261018/source/clan/poo/=. The original
@@ -61,7 +61,7 @@ unselected slots. Before invoking any replay observer:
   (for-each require-current! traversal))
 #+end_src
 
-The guard remains active through the native final pass. Nested calls retain
+The guard remains active through the runtime final pass. Nested calls retain
 outer frames; parameter restoration on both success and exception is Gerbil's
 existing dynamic-scope operation. Ordinary writes outside replay retain their
 current behavior. No additional operation is inserted into ordinary .ref hot
@@ -83,12 +83,12 @@ It would be incorrect to clear one visited receiver before checking the next.
 This relies on the existing dependency edges being complete. It does not prove
 that an undiscovered raw alias belongs to that closure. Independent unselected
 receivers remain editable. Both ownership and dependency closure follow actual
-native object identity, not equal names or paths.
+runtime object identity, not equal names or paths.
 
 * Executable controls
 
 [[file:../../../t/mop-replay-write-guard-test.ss][mop-replay-write-guard-test.ss]] uses the existing Core test macro and actual
-native replay/mutation entries:
+runtime replay/mutation entries:
 
 - selected receiver edit/restoration refuses before the first write; no
   revision change, then a normal edit succeeds after unwinding;
@@ -113,7 +113,7 @@ The old receiver-ABA projection control now performs its supported edits before
 entering replay and still requires =stale slot dependency=. Its observation
 labels and independent Lean decoding remain unchanged. Callback edits are tested
 separately for the STRICTER pre-write rejection, not admitted by broadening the
-old =stale?= predicate. The native slot-observation regression checks the exact
+old =stale?= predicate. The runtime slot-observation regression checks the exact
 new diagnostic and verifies the original value and revision remain unchanged.
 
 * Lean and Quint
@@ -123,7 +123,7 @@ closure. =selected_write_refused= and =nested_frame_keeps_outer= establish
 pre-write refusal under complete membership. =rejected_edit_has_no_partial_clear=
 requires preflight before state update. =independent_edit_allowed= and
 =unaffected_parent_unchanged= avoid a global freeze. Exceptional-return laws
-state the required dynamic-scope/error identity result; native parameterize
+state the required dynamic-scope/error identity result; runtime parameterize
 correctness remains a runtime premise checked separately, not a proved compiler.
 The raw write transition still inherits the retained 32.34 side-effect history.
 
@@ -158,7 +158,7 @@ cache across callbacks. Complexity and allocation are source-level observations,
 not benchmarked latency claims; concurrent compiler activity makes timing claims
 inappropriate in this run.
 
-Promotion requires a coherent native producer build, the new isolated cases,
+Promotion requires a coherent runtime producer build, the new isolated cases,
 existing producer issuance/read suites, real Core consumers, and current Lean/
 Quint receipts. A crash, deadline or stale source cut is retained as a failure,
 never interpreted as a semantic pass. Qualification results are appended below
@@ -181,7 +181,7 @@ effects or closing every check-to-return interval of SourceAdmissionContract.
 
 ** Runtime and Lean results
 
-- The optimized native candidate compiled from the copied current sources;
+- The optimized runtime candidate compiled from the copied current sources;
   seven new isolation cases and the real two-case SourceAdmissionContract
   consumer passed before promotion. Its =object.ss= matched the promoted source
   byte-for-byte.
@@ -192,9 +192,9 @@ effects or closing every check-to-return interval of SourceAdmissionContract.
   exit 0 and no harness/error/overflow markers.
 - Those six files cover 38 cases: seven new ownership controls, two actual
   services consumers, four issuer/projection cases, four retained metadata
-  restoration controls, ten producer issuance cases, and eleven native
+  restoration controls, ten producer issuance cases, and eleven runtime
   read/cache/inline/bootstrap cases. The independent Lean decoder accepted all
-  twelve actual native observations from the final projection run.
+  twelve actual runtime observations from the final projection run.
 - The full Lean library passed 175 jobs, auditing 5939 declarations with only
   the standard Lean axioms. Eight new ownership theorems supplement the existing
   issuance/history laws. The locked and actual LeanPoo checkout both remain
@@ -229,12 +229,12 @@ mode: Quint typechecks the named cases AND their imports. It requires a case
 prefix and records its scope/entry names in the receipt. The default all-source
 gate and all its deadlines remain unchanged. A focused pass must not be called
 an aggregate all-source pass. No manually asserted purity, skipped import or
-cached successful checker result substitutes for native typechecking.
+cached successful checker result substitutes for runtime typechecking.
 
 ** Final scoped Quint result
 
 The explicit selected-source run passed all ten model checks. Quint typechecked
-the ten entries and their native transitive imports; the positive model explored
+the ten entries and their runtime transitive imports; the positive model explored
 288 distinct states with no states left on the queue. Seven unsafe variants,
 the normal-model raw-write counterexample and the acceptance witness produced
 their required counterexamples. The final Scheme v1 receipt records

@@ -40,7 +40,7 @@ module SnapshotLifetimeModel {
     s' = s.with("phase",3).with("preuse",not(s.veto) and sameCut(s) and s.source == 0 and
       s.requiredA and s.requiredB and s.owner == 2) }
   // An adversarial but supported edit AFTER the last comparison. This is a
-  // deterministic interleaving control, not a proof of native parallel safety.
+  // deterministic interleaving control, not a proof of runtime parallel safety.
   action gap = all { s.phase == 3,
     s' = if (s.mode == "afterGuard")
       s.with("phase",4).with("revision",1).with("childRevision",1).with("edits",1).with("value",2)

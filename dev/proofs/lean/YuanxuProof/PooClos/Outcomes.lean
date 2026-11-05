@@ -3,18 +3,18 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 
-/-! Erasure of projected outcome data only. No theorem here relates a native
-Gerbil evaluator to an extended evaluator or proves native termination. -/
+/-! Erasure of projected outcome data only. No theorem here relates a runtime
+Gerbil evaluator to an extended evaluator or proves runtime termination. -/
 namespace YuanxuProof.PooClos.Outcomes
 
-inductive NativeOutcome (Value Error : Type) where
+inductive RuntimeOutcome (Value Error : Type) where
   | value (result : Value)
   | failure (error : Error)
   | diverges
   deriving DecidableEq, Repr
 
 inductive ExtendedOutcome (Value Error Control : Type) where
-  | completed (native : NativeOutcome Value Error)
+  | completed (runtime : RuntimeOutcome Value Error)
   | suspended (control : Control)
   | denied (control : Control)
   | cancelled (control : Control)
@@ -23,8 +23,8 @@ inductive ExtendedOutcome (Value Error Control : Type) where
 def eraseControlAndEvidence
     {Value Error Control : Type} :
     ExtendedOutcome Value Error Control →
-      Option (NativeOutcome Value Error)
-  | .completed native => some native
+      Option (RuntimeOutcome Value Error)
+  | .completed runtime => some runtime
   | .suspended _ => none
   | .denied _ => none
   | .cancelled _ => none
@@ -38,12 +38,12 @@ structure ResumptionContext
   selfSuper : SelfSuper
   history : History
 
-theorem completedOutcomeErasesToNative
+theorem completedOutcomeErasesToRuntime
     {Value Error Control : Type}
-    (native : NativeOutcome Value Error) :
+    (runtime : RuntimeOutcome Value Error) :
     eraseControlAndEvidence
-      (ExtendedOutcome.completed (Control := Control) native) =
-      some native := by
+      (ExtendedOutcome.completed (Control := Control) runtime) =
+      some runtime := by
   rfl
 
 theorem suspendedOutcomeHasNoSemanticErasure

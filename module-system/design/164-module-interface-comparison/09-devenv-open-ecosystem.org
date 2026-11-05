@@ -50,7 +50,7 @@ fullstack = {
 The actual [[https://github.com/cachix/devenv/blob/main/src/modules/profiles.nix][profiles.nix]] uses lazy attribute/submodule structure, a deferred module
 option and an inheritance-name list. That is relevant to sparse recipe publication
 and delayed activation. It does not prove no source evaluation occurs, zero
-first-use cost or our proposed native cache transport. Its hostname/user activation
+first-use cost or our proposed runtime cache transport. Its hostname/user activation
 and merge semantics are not copied into Scenario execution or POO inheritance.
 
 * Design consequences and remaining gaps

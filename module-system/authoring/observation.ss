@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: reader-native source observations for lexical core-call shadows.
+;;; Boundary: reader-runtime source observations for lexical core-call shadows.
 ;;; Invariant: inspection reads datums only and never expands or evaluates code.
 
 (import
@@ -23,7 +23,7 @@
         yuanxu-scheme-inline-prototype-file-observations)
 
 ;;; Ordinary Scheme lexical bindings can shadow core procedures independently
-;;; of POO slot authoring.  This reader-native gate records only the dangerous
+;;; of POO slot authoring.  This reader-runtime gate records only the dangerous
 ;;; combination: a function formal named `values` whose body calls `values` as
 ;;; an operator.  It does not flag data parameters that are never invoked.
 ;; : (-> Unit YuanxuSchemeLexicalCallShadowObservationKind)

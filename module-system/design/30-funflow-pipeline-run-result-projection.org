@@ -11,7 +11,7 @@ This document closes the next Funflow alignment slice after dependency graph pro
 The previous graph work made =dependency-refs:= inspectable as control-plane topology data. This slice projects that topology into a user-visible pipeline run and result receipt without adding a scheduler, backend adapter, or command execution path in Scheme.
 ** 10.06.30.20 Boundary
 Scheme owns:
-- POO-native Funflow pipeline declarations;
+- POO Funflow pipeline declarations;
 - workflow-owned CI/CD check maps;
 - dependency graph diagnostics;
 - pipeline-run admission receipts;
@@ -27,7 +27,7 @@ Runtime owners still own:
 The current projection path is:
 #+begin_src text
 legacy row surface [removed]
-  -> POO-native funflow-check and funflow-pipeline declarations
+  -> POO funflow-check and funflow-pipeline declarations
   -> workflow CI/CD check map
   -> dependency graph
   -> pipeline run
@@ -51,7 +51,7 @@ The POO boundary stays object-first:
 
 This keeps extension local to the object family that understands the slot. A sandbox profile problem should not become a Funflow parser rule, and a topology problem should not become sandbox policy.
 ** 10.06.30.50 User-Facing Example
-The expected downstream surface is POO-native:
+The expected downstream surface is POO:
 #+begin_src scheme
 (use-module funflow
   :config

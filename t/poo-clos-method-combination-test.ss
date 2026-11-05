@@ -195,7 +195,7 @@
          generic methods))
 
 (def poo-clos-method-combination-test
-  (test-suite "POO-native CLOS method combinations and protocol"
+  (test-suite "POO CLOS method combinations and protocol"
     (yuanxu-test-case "single-receiver qualifier policy follows effective inherited slots"
       (def parent (poo-clos-short-method-combination 'collect list))
       ;; Force the parent callback before deriving another policy identity.
@@ -206,7 +206,7 @@
       (check (poo-clos-method-combination-admits-qualifier? parent 'collect) => #t)
       (check (element? ClosMethodCombination
                (.o (:: @ parent) .admits-qualifier?: #f)) => #f)
-      ;; Native refinement owns this one-axis extension; registration must use
+      ;; Runtime refinement owns this one-axis extension; registration must use
       ;; it too, rather than reimplementing kind dispatch at the call site.
       (def restricted
         (.o (:: @ (poo-clos-standard-method-combination))

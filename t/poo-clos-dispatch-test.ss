@@ -38,7 +38,7 @@
                    (lambda (_frame . _arguments) value)))
 
 (def poo-clos-dispatch-test
-  (test-suite "POO-native CLOS multi-dispatch conformance"
+  (test-suite "POO CLOS multi-dispatch conformance"
     (yuanxu-test-case "projection preserves multiple values and unwinds a failed region"
       (check-exception
         (call-with-owned-read-projection '() (lambda () #t)
@@ -49,20 +49,20 @@
             (call-with-owned-read-projection '() (lambda () #t)
               (lambda () (values 'first 'second)))) list)
         '(first second)))
-    (yuanxu-test-case "effective-method and native MOP hooks retain the complete call trace"
+    (yuanxu-test-case "effective-method and MOP hooks retain the complete call trace"
      (for-each
       (lambda (axis)
       (def exposed #f)
       (def body
         (lambda (frame _value)
-          (when (eq? axis 'native-mop) (set! exposed frame)) 'done))
+          (when (eq? axis 'runtime-mop) (set! exposed frame)) 'done))
       (def protocol
         (poo-clos-generic-protocol 'open-projection
           compute-effective-method:
           (and (eq? axis 'effective)
                (lambda (_generic _args _methods original)
                  (set! exposed original) original))))
-      (when (eq? axis 'native-mop) (object-protocol-set! protocol (.o)))
+      (when (eq? axis 'runtime-mop) (object-protocol-set! protocol (.o)))
       (def generic
         (poo-clos-add-method
           (poo-clos-generic-function 'hooked-projection 1 protocol: protocol)
@@ -83,7 +83,7 @@
                       support) #t)
       (.put! exposed 'negative-edit #t)
       (check-exception (replay-slot-reads! (list root) (lambda (_receiver _key) (void))) error?))
-      '(effective native-mop)))
+      '(effective runtime-mop)))
     (yuanxu-test-case "owned getter dependencies promote their external policy"
       ;; This isolated ownership fixture puts the only external read UNDER the
       ;; owned token, rather than relying on an independently observed root.
@@ -144,7 +144,7 @@
         '(policy contract generic open-frame known-frame)))
     (yuanxu-test-case "prototype policy changes invalidate collected-carrier evidence"
       ;; Mutate the shared declaration LAST: restoring a value intentionally
-      ;; does not restore its native revision or re-certify the old policy.
+      ;; does not restore its runtime revision or re-certify the old policy.
       (def body (lambda (_frame _value) 'done))
       (def generic
         (poo-clos-add-method (poo-clos-generic-function 'prototype-policy 1)
@@ -189,7 +189,7 @@
               (lambda (read) (hash-put! reads read #t))
               (lambda () (.ref result 'answer))) #t)
           (replay-slot-reads! (hash-keys reads) (lambda (_receiver _key) (void)))
-          ;; No source-byte change. Each is a real native object mutation,
+          ;; No source-byte change. Each is a real runtime object mutation,
           ;; after the lazy result has completed and its call stack returned.
           (case axis
             ((policy) (.put! policy 'allowed #f))
@@ -230,7 +230,7 @@
                        (failure-code? 'invalid-effective-method))
       (check-exception (make-invocation-frame effective args 42 'primary method)
                        (failure-code? 'invalid-invocation-frame)))
-    (yuanxu-test-case "native prototype and any specializers participate in multi-argument dispatch"
+    (yuanxu-test-case "runtime prototype and any specializers participate in multi-argument dispatch"
       (let* ((generic (poo-clos-generic-function 'meet 2))
              (generic
               (poo-clos-add-method
@@ -273,7 +273,7 @@
                         qualifier: (.ref method 'qualifier)
                         lambda-list: (.ref method 'lambda-list))))))))))
 
-    (yuanxu-test-case "native prototypes cannot masquerade as CLOS classes"
+    (yuanxu-test-case "runtime prototypes cannot masquerade as CLOS classes"
       (check-exception
        (poo-clos-class-specializer animal-class)
        (failure-code? 'invalid-specializer)))

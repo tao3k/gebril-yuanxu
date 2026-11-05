@@ -4,9 +4,9 @@ import YuanxuProof.Admission.CheckerOrigin
 namespace YuanxuProof.Admission.MetadataRoute
 
 def quintSourceDigest : String :=
-  "sha256:c5b82118d79dca759a40dd20eb089581d7b3f1f8ac8bf6057725d7f4410be0a3"
+  "sha256:ec97209e388a676c8ce2ad1dec5af17f26647af302c23f694cafe57ff9a57375"
 
--- Native identity 0 is extracted from the trusted, pinned factory baseline.
+-- Runtime identity 0 is extracted from the trusted, pinned factory baseline.
 structure Route where
   ref : Nat
   instanceRef : Nat
@@ -44,7 +44,7 @@ theorem equal_endpoints_do_not_erase_history :
     gate baseline = true ∧ gate baseline = true ∧
     (ReturnTail.lateExternal ReturnTail.origin).external = 1 := by decide
 
--- This is the metadata projection used by the native cache-miss checker.
+-- This is the metadata projection used by the runtime cache-miss checker.
 -- It intentionally contains no private issuer witness or issuance registry.
 structure MissProjection where
   receiver : Nat

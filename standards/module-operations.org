@@ -1,6 +1,6 @@
 #+title: Module Operations Standard
 #+language: en
-#+property: STATUS draft-narrow-native-validation
+#+property: STATUS draft-narrow-runtime-validation
 
 * Public meaning
 
@@ -9,7 +9,7 @@
 | Read init/module namespace | Access source-owned module paths | Link every business scope or import test execution |
 | Read module.scope | Demand its admitted business interface | Execute its tests |
 | Read module.tests | Demand the guarded test projection for its owner | Link the business scope |
-| Read tests.spec | Inspect native harness input files | Start a process |
+| Read tests.spec | Inspect runtime harness input files | Start a process |
 | Read tests.integration | Select tests/integration on the same Graph | Run external package qualification during atomic testing |
 | Read tests.qualification | Discover init-owned t/<owner> on the same selection | Read unrelated owners or link business scope |
 | Call tests .run | Execute those inputs through the existing testing Ops boundary | Accept stale input or infer success from exit zero alone |
@@ -25,7 +25,7 @@ its =*-test.ss= inputs. Real package resolution, provider version transitions an
 external toolchain qualification belong under =tests/integration/= and require
 an explicit =tests.integration .run=. Both projections use the same namespace,
 selected Graph, fixture macros, TestingScript and Ops boundary. There is no
-second runner or module catalogue. The integration projection is a lazy native
+second runner or module catalogue. The integration projection is a lazy runtime
 POO slot; default discovery never reads its files or creates its executor.
 Each projection keeps its own test-input observations. Editing integration
 inputs must refuse a captured integration projection without invalidating an
@@ -38,7 +38,7 @@ Core mechanism qualification belongs in =t/<qualified identity>/=
 relative to the file-backed init directory, and is selected through the same
 module's =tests.qualification= slot. It is not a module author's test manifest.
 Only an explicit request reads that owner's immediate directory. Helpers are
-guarded source inputs; only =*-test.ss= files are native harness inputs.
+guarded source inputs; only =*-test.ss= files are runtime harness inputs.
 Qualification shares the existing projection cache, =.select=, selected Graph,
 fixture macros and lazy Ops executor. Callers supply no file list or extra
 currentness callback. Atomic/integration discovery does not inspect this tree.
@@ -55,80 +55,49 @@ not discover all owners before applying its filter; only aggregate =.spec= or
 =.run= requests the complete selected owner set. Its narrow results are the
 same cached projections returned by each module's =tests.qualification=.
 Requested owner order determines harness input order, not Module inheritance
-precedence or a Funflow Job's execution order. Shared SDK/library imports are
+precedence or a Funflow Job's execution order. Shared Gerbil/library imports are
 valid dependencies and do not prove that an unselected suite or scope ran.
 
 * Namespace reflection and binding
 
-A root declaration with named directory windows exports =init.<mount>=,
-for example =init.Modules= and =init.Scenarios=. They share one private guarded
-accessor, directory namespace and selected Graph. A mount changes the namespace
-route, never the publication identity used by requirements. A single-directory
-declaration exports =init.modules= as described below; a named root does not
-also maintain a flat compatibility alias. See the
-[[file:../docs/10-19-design/13-module-loading/13.13-root-directory-windows.org][root-window implementation and conflict controls]].
+The source-qualified declaration exports one POO namespace value, for example
+=yuanxu.init.exports=. Named directory windows are ordinary slots (=Modules=,
+=Scenarios=); a single unnamed window uses =modules=. Mount names organize
+access paths without changing publication identities or selected requirements.
+There are no =init.Modules= / =init.modules= compatibility aliases.
 
 #+begin_src scheme
-(import (only-in "./init.ss" init.Modules init.Scenarios))
-(.all-slots init.Modules) ; metadata only
-(.call (.get init.Scenarios aws tests) .run)
+(import (only-in "./init.ss" yuanxu.init.exports))
+(.all-slots (.get yuanxu.init.exports Modules)) ; enumerate without Module demand
+(.get yuanxu.init.exports Modules json-schema) ; demand the configured POO object
+(def Tests (.call (.get yuanxu.init.exports tests) .select '(json-schema)))
+(.call Tests .run)
 #+end_src
 
-=init.modules= is a read-only computed identifier emitted by the existing
-=yuanxu!= declaration using Gerbil's =identifier-rules=. Importing that name
-does not acquire the namespace. Reading it calls a hygienically bound accessor
-which checks the source epoch and returns the actual selected namespace object.
-Repeated reads in a current epoch return that same object. Native =only-in=
-and =rename-in= retain the binding; no caller-maintained getter is required.
-There is no new public declaration form or replacement POO reflection API.
+Interface is Module System loading configuration. The consumer obtains the
+linked/admitted public object directly through =init.exports= and native =.get=.
+There is no metadata facade requiring an extra =scope= access and no added
+=.getModule= function. Tests remain on the independent root test facade; they
+are not injected into a business Module's slots.
 
-The identifier is read-only: rebinding it with =set!= is not part of this
-interface. This does not mean the returned POO object is sealed. Deliberate
-configuration extension still uses ordinary POO derivation; a read-only name
-must not be advertised as a deep immutability guarantee.
+Importing or reading the exports value does not acquire business scopes or
+execute tests. Namespace enumeration stays cold. Explicit Module leaf demand
+uses the existing guarded linker and POO value caching. Business values remain
+ordinary lazy POO slots. Reflection of a demanded Module enumerates its actual
+public scope, not reserved =identity/scope/tests= wrapper fields.
 
-Why syntax is used here: an ordinary =(def init.modules (module-namespace))=
-would acquire the namespace when the importing module initializes. A function
-or promise can delay that acquisition, but requires a call or =force= at the
-consumer. The existing generated identifier preserves direct object use while
-calling a private accessor only on a read. It is not a language-wide need for
-macros around configuration values.
-
-Both =.all-slots= and =.slot?= operate on the returned object, using gerbil-poo
-unchanged. Root/branch discovery may observe directory metadata but must not
-evaluate module leaves. Enumerating a leaf exposes =identity=, =scope= and
-=tests= without forcing their values or loading the testing execution library.
-Disabled/absent paths follow the existing namespace's key policy, not a second
-test catalogue. Unknown-slot membership returns false without doing a value read.
-
-The earlier =fallback-to= wrapper has been removed from this binding. That
-primitive handles missing-slot reads; it is not a transparent alias for
-membership/enumeration. Generic fallback reflection is not extended by this
-change. A captured ordinary namespace remains a source-epoch snapshot: its
-reflection is not live filesystem I/O. Read the exported binding again to check
-currentness; test execution still uses its associated pre/post source guards.
-
-The snapshot boundary is explicit:
+Captured objects belong to one source epoch. Their reflection is not live
+filesystem I/O, and cached values are not reusable source approvals. Existing
+selection, build, test and scope-admission boundaries retain independent source
+checks. Changed inputs require a fresh source context; post-check refusal does
+not roll back effects already performed by an explicit operation. See
+[[file:../docs/10-19-design/13-module-loading/13.32-interface-entry-and-compilation-authority.org][Interface configuration and POO demand]].
 
 #+begin_src scheme
-(def Modules init.modules) ; capture one ordinary object in this source epoch
-(.all-slots Modules)       ; inspect that snapshot, without a new source check
-(.all-slots init.modules)  ; re-enter the source guard before returning the object
-(def Tests (.get Modules json-schema tests))
-(.call Tests .run)         ; retains its own associated pre/post source checks
-#+end_src
-
-A changed init refuses further accessor reads in that epoch; it does not mutate
-all previously returned objects into a new configuration. A changed selected
-test input refuses execution of its previously captured test object. A new
-source context is required to qualify changed inputs. A post-check refuses
-acceptance rather than rolling back effects already performed by a process.
-
-#+begin_src scheme
-(.all-slots init.modules)
-(.slot? init.modules 'json-schema)
-(.all-slots (.get init.modules json-schema)) ; identity, scope, tests
-(.call (.get init.modules json-schema tests) .run)
+(def Modules (.get yuanxu.init.exports Modules))
+(.slot? Modules 'json-schema)
+(.all-slots (.get Modules json-schema)) ; actual configured public POO scope
+(.call (.call (.get yuanxu.init.exports tests) .select '(json-schema)) .run)
 #+end_src
 
 The focused conformance controls live in =t/module-testing-test.ss= (binding
@@ -141,7 +110,7 @@ after retaining a raw namespace snapshot.
 Compiled conformance is a separate gate: =t/module-testing-compiled-test.ss=
 compiles the actual init and two consumers, then removes consumer source files
 before fresh-process import. =only-in= and =rename-in= must preserve private
-accessor hygiene and namespace identity across serialized interfaces. Native
+accessor hygiene and namespace identity across serialized interfaces. Runtime
 artifacts and loaded runtime modules are checked, so source-only success is
 insufficient. A consumer attempting =set!= must be refused at compile time.
 The gate also keeps scope/execution probes cold during enumeration and rejects
@@ -160,16 +129,16 @@ record. No timeout or dependency-version change was needed.
 2. Empty suites are refused before process launch; they never mean implicit
    current-directory test discovery.
 3. The existing Ops implementation owns process invocation, timeout and receipt.
-   The existing test policy owns native harness completion admission.
+   The existing test policy owns runtime harness completion admission.
    Its default command uses the original =gerbil test= tool, with the same heap
    options. At each execution the policy snapshots the effective GERBIL_PATH
    and PATH, including Ops environment overrides. An existing package root gets
    its bin priority in that request; no env-dispatcher child is needed just to
-   prepend PATH. Missing package context still delegates discovery to the SDK.
+   prepend PATH. Missing package context still delegates discovery to the Gerbil.
    Explicitly different commands remain unchanged. This choice
    is not cached across executions and adds no runner or caller-side binding.
    The Justfile calls the original test VM directly; gxtest owns package setup.
-   The missing-context fallback repeats VM options for the SDK-spawned child.
+   The missing-context fallback repeats VM options for the Gerbil-spawned child.
    Batch watchdogs must signal their owned process group, not use foreground
    terminal mode. On Scheme cancellation Ops terminates its own child/group
    before std/run-process closes and waits; ESRCH is the only ignored signal
@@ -202,7 +171,7 @@ Qualification is a test purpose, not an extra directory hierarchy. Existing
 standalone mechanism fixtures are not automatically enrolled by this selector.
 
 These rules do not prescribe one universal =.run= signature or receipt for all
-domains. A Funflow Job and a native test Script retain their own Contracts.
+domains. A Funflow Job and a runtime test Script retain their own Contracts.
 
 ** Atomic Case observation
 
@@ -210,7 +179,7 @@ Case summaries and per-event trace are separate. =emit?= enables the existing
 watchdog receipts and bounded work totals; optional Boolean =trace-enabled?=
 defaults false and requests internal stage lines. =just test-file <path> true=
 selects summaries; =just test-file <path> trace= selects detailed trace through
-the original comma-separated native =-D= feature channel. Disabled observation
+the original comma-separated runtime =-D= feature channel. Disabled observation
 must not load the adapter, even when trace is requested. Captured features are
 read before entering a private import context. Automatic stage handling must
 perform zero POO slot reads inside domain observation; explicit checkpoints
@@ -231,7 +200,7 @@ as an integer operation. Final totals and observer restoration cover failures.
 Raw VM allocation data that moves backwards invalidates allocation evidence
 for the remainder of that Case; it must not become a clamped speedup claim.
 
-The approved default native test ceiling is 2 GiB before imports and in Ops
+The approved default runtime test ceiling is 2 GiB before imports and in Ops
 child options. The Case live-growth guard remains half its declared heap budget.
 These limits do not change the existing worker or qualification deadlines and
 do not confer deployment authority. Historical tests at other budgets remain
@@ -243,9 +212,9 @@ The shared rule is explicit effects with owned context and failure semantics.
 
 #+begin_src scheme
 (import :clan/poo/object
-        (only-in "./init.ss" init.modules init.tests))
-(.call (.get init.modules json-schema tests) .run)
-(.call init.tests .run)
+        (only-in "./init.ss" yuanxu.init.exports))
+(.call (.call (.get yuanxu.init.exports tests) .select '(json-schema)) .run)
+(.call (.call (.get yuanxu.init.exports tests) .select) .run)
 #+end_src
 
 No caller-defined =Atomic=, runner or manual file/guard association is needed.
@@ -258,13 +227,13 @@ Testing uses separate inactivity and total budgets. The current framework
 defaults are 60 seconds without progress and 600 seconds total, sourced from
 the shared Ops execution policy. TestingScript derives its limits from the
 associated Case Profile; the outer focused-test guard reads the same finite
-total. Native imports before a Case remain bounded by that outer total, not
+total. Runtime imports before a Case remain bounded by that outer total, not
 yet by a separate import-inactivity observer.
 
 Pure policy resolution has its own heap-fenced 60-second startup bound before
 the declared test total is available. No build or download runs in that step.
 
-An advancing native transfer counter, a new native build phase, or a completed
+An advancing runtime transfer counter, a new runtime build phase, or a completed
 tracked operation can renew inactivity. A started operation, an unchanged
 counter, repeated diagnostics, arbitrary build-log text, or synthetic heartbeat
 cannot. Progress relays are bounded monotonic execution metadata, never
@@ -285,13 +254,13 @@ for the protocol controls, real-provider results and remaining boundaries.
 
 * Research and evidence
 
-Capacity qualification must separate catalog enumeration, demanded native
+Capacity qualification must separate catalog enumeration, demanded runtime
 declarations, business scope links and execution. The
 [[file:../docs/10-19-design/12-contracts-types/12.27-aws-schema-transition-costs/source-guards/14-declaration-capacity.org][real declaration capacity gates]] retain the 1000/10000 memory-policy failures
-alongside the passing small native control. A fixture publication, finite
+alongside the passing small runtime control. A fixture publication, finite
 model, structural cache hit or sparse catalog pass cannot qualify a fully
 demanded source Graph. Test observers retain scalar widths and counts, not
-native import contexts or expanded syntax.
+runtime import contexts or expanded syntax.
 
 [[file:../docs/20-29-ecosystem-research/20-nixos/20.07-issues-and-evidence.org][NixOS issue research]] motivates separate source selection, effective-value
 demand, validation forcing and measured costs. Those reports are not local

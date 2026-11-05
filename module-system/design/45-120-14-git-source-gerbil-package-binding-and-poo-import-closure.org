@@ -40,7 +40,7 @@ Gerbil =import= and =export= make Scheme bindings visible.
 The POO Module =imports= responsibility defines semantic Module
 dependencies after ordinary bindings and POO values exist.
 
-=use-module= hygienically selects an already visible native Module
+=use-module= hygienically selects an already visible runtime Module
 binding.  It does not cross or collapse those ownership boundaries.
 
 * Four distinct planes
@@ -50,7 +50,7 @@ binding.  It does not cross or collapse those ownership boundaries.
 | Git source pin             | source-owning repository      | repository identity and revision evidence     | package identity, binding visibility, semantic import |
 | =gerbil.pkg=               | actual Gerbil package owner   | package acquisition and dependency availability | Module identity, active evidence closure, runtime     |
 | Gerbil binding visibility  | downstream source module      | hygienic import/export binding resolution     | POO semantic dependency closure                       |
-| POO Module =imports=       | native Module POO value       | recursive semantic dependency evidence        | source checkout, package installation, Scheme loading |
+| POO Module =imports=       | runtime Module POO value       | recursive semantic dependency evidence        | source checkout, package installation, Scheme loading |
 
 The planes may refer to one another through explicit evidence.  They
 remain different contracts and failure owners.
@@ -60,7 +60,7 @@ flowchart TD
   G["Git repository or submodule pin"] -->|"provides source owner and revision evidence only"| S["Source tree"]
   P["gerbil.pkg declaration for an actual package"] -->|"makes package modules available to the Gerbil environment"| B["Gerbil module system"]
   S -->|"is integrated explicitly by the downstream source owner"| B
-  B -->|"imports and exports ordinary Scheme bindings"| V["Native Module and profile POO bindings"]
+  B -->|"imports and exports ordinary Scheme bindings"| V["Runtime Module and profile POO bindings"]
   V -->|"is hygienically selected after binding resolution"| U["use-module"]
   U -->|"produces an ordinary Module/Profile value"| C["compose profiles"]
   V -->|"contains declared semantic dependency evidence"| I["POO Module imports closure"]
@@ -113,7 +113,7 @@ observability semantics.
 * Gerbil binding visibility
 
 The downstream source owner uses normal Gerbil module-system
-integration to make native POO values visible.
+integration to make POO values visible.
 
 The exported surface may include:
 
@@ -145,7 +145,7 @@ registry mutation, package-install side effect, or runtime lifecycle.
 #+begin_src mermaid
 flowchart LR
   S["Pinned wendao-episteme source"] -->|"is made available by the downstream build owner"| G["Gerbil source module"]
-  G -->|"exports native Module and profile bindings"| B["Downstream Gerbil binding context"]
+  G -->|"exports runtime Module and profile bindings"| B["Downstream Gerbil binding context"]
   B -->|"provides already visible bindings"| U["use-module wendao-episteme production"]
   U -->|"returns an ordinary selected POO value"| C["compose profiles"]
   C -->|"builds the final application-owned ProfileBundle"| A["Downstream composition"]
@@ -154,7 +154,7 @@ flowchart LR
 * POO Module imports boundary
 
 The Module =imports= slot contains semantic dependency evidence among
-native Module values.
+runtime Module values.
 
 It may participate in:
 
@@ -174,7 +174,7 @@ Module dependencies, not Gerbil source syntax.
 * use-module boundary
 
 =use-module= receives an already visible Module binding and admitted
-profile selector.  It produces one ordinary native POO value for
+profile selector.  It produces one ordinary POO value for
 composition.
 
 It does not:

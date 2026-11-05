@@ -95,7 +95,7 @@ result later, but Scheme should still emit receipts and manifests with
 ** 10.06.33.35 Graph Role In Loop Engineering
 
 Graph-loop semantics are an application of =yuanxu-graph-loop-analysis=.
-Loop engines, workflow profiles, and C4 projections supply POO-native graph
+Loop engines, workflow profiles, and C4 projections supply POO graph
 facts; they do not define a second private Tarjan/SCC/condensation algorithm.
 The reusable graph API owns those receipts so loop engineering can focus on
 policy, scheduling, evidence, and runtime handoff.
@@ -253,7 +253,7 @@ scheduling can be layered later or delegated to Marlin when execution state
 matters.
 
 ** 10.06.33.70 POO Edge Objects
-Edges should be POO-native where they carry policy.
+Edges should be POO where they carry policy.
 
 Example shape:
 
@@ -267,7 +267,7 @@ human-audit edge, governor edge, or sandbox-capability edge can inherit
 metadata and monotonic validation requirements through POO/C4. The graph
 algorithm sees the final composed edge facts.
 
-This keeps policy extension POO-native and avoids raw alist patch languages.
+This keeps policy extension POO and avoids raw alist patch languages.
 
 ** 10.06.33.80 Safety Rules
 Graph algorithms can support safety, but they are not themselves the safety
@@ -291,7 +291,7 @@ explainable.
 ** 10.06.33.90 Implementation Milestones
 Milestone 1: =src/graph/= shared pure graph utilities.
 
-- Add =src/graph/types.ss= with POO-native graph node, edge, graph, and
+- Add =src/graph/types.ss= with POO graph node, edge, graph, and
   analysis receipt objects.
 - Add =src/graph/algorithms.ss= with deterministic pure algorithms: adjacency
   maps, root/terminal detection, reachability, dependency cones, cycle paths,

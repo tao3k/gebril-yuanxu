@@ -6,7 +6,7 @@
         (only-in :clan/poo/object .def .o .get .slot? .put! .call .cc)
         (only-in :gerbil/expander core-expand datum->syntax)
         (rename-in (only-in :yuanxu/module-system/source/declaration .def) (.def publication-definition))
-        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-predicate-contract yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :clan/poo/object object?)
         (only-in :clan/poo/mop Type. Function TypeError?)
         (only-in :clan/poo/number Integer)
@@ -23,11 +23,11 @@
                 (call-with-output-string (lambda (port) (display-exception exception port))))
               (lambda () (thunk) "unexpected success")))
 (def ScopeContract
-  (yuanxu-predicate-contract 'test/publication-scope object? (lambda (_v _c) '())))
+  (.cc Type. identity: 'test/publication-scope .element?: object?))
 (def factory-calls 0)
 (def dependencies 'author-value)
 
-(def native-.ref 'author-shadow)
+(def runtime-.ref 'author-shadow)
 (publication-definition Published
   identity: 'custom/published
   core: (.o requires: (.o Provider: (.o module-id: 'core/provider contract: ScopeContract))
@@ -41,8 +41,8 @@
 (def provider-scope
   (.o run: (lambda (value) (set! dependency-callback-calls (+ dependency-callback-calls 1)) value)))
 (def CheckedDependency
-  (.cc YuanxuContract. identity: 'test/checked-dependency
-    value-contract: (Record run: (list (Function (list Integer) (list Integer))))))
+  (.cc (Record run: (list (Function (list Integer) (list Integer))))
+    identity: 'test/checked-dependency))
 (publication-definition ProviderPublication
   identity: 'custom/provider
   core: (.o requires: (.o) scope-contract: ScopeContract exports: provider-scope)
@@ -77,7 +77,7 @@
       (check-equal? dependency-callback-calls 1)
       (check-equal? (eq? (.get scope provider)
                         (.get record dependency-records Provider requirement-evidence candidate)) #t))
-    (yuanxu-test-case "publication is deferred; native helpers and dependency identifiers are hygienic"
+    (yuanxu-test-case "publication is deferred; runtime helpers and dependency identifiers are hygienic"
       (let* ((before factory-calls)
              (source (make-yuanxu-module-generated-source 'custom/published))
              (evidence (admit-module-publication! source 'custom/published Published (.o)))
@@ -92,7 +92,7 @@
           (check-equal? (eq? (.get scope provider) provider) #t))))
     (yuanxu-test-case "generated link wrappers consume only admitted dependency scopes"
       (let* ((before factory-calls)
-             (AnyScope (yuanxu-predicate-contract 'test/any (lambda (_v) #t) (lambda (_v _c) '())))
+             (AnyScope (.cc Type. identity: 'test/any .element?: (lambda (_v) #t)))
              (provider (.o identity: 'core/provider features: (.o)
                            core: (.o requires: (.o) scope-contract: AnyScope link: (lambda (_deps) 42))))
              (view (yuanxu-load-modules
@@ -105,7 +105,7 @@
                                               provider Published))))))
         (check-exception (.get view selected-records) error?)
         (check-equal? factory-calls before)))
-    (yuanxu-test-case "cached parent link retains native effective outer-slot binding in child"
+    (yuanxu-test-case "cached parent link retains runtime effective outer-slot binding in child"
       (let (parent-link (.get Published core link))
         (.def (Child @ Published) core: =>.+ (.o label: 'child))
         (let (bindings (.o Provider: (.o)))
@@ -128,7 +128,7 @@
         (cons '(.o requires: (.o) scope-contract: ScopeContract exports: (.o) link: values) "core.link is generated"))))
     (yuanxu-test-case "Graph consumes the exact normalized publication from its single producer"
       ;; A generated-source capability exercises Graph admission directly;
-      ;; the native file reader is outside this Case's boundary.
+      ;; the runtime file reader is outside this Case's boundary.
       (def publication
         (.o identity: 'custom/example features: (.o)
           core: (.o requires: (.o) scope-contract: ScopeContract
@@ -140,7 +140,7 @@
               locate: make-yuanxu-module-generated-source
               current?: (lambda (_generation) #t)
               read-publication: (lambda (_source) publication))))
-      (def original (.get ModulePublicationContract value-contract))
+      (def original (.get ModulePublicationContract .validate))
       (def checked #f)
       (def calls 0)
       (def ValueContract
@@ -158,7 +158,7 @@
       ;; Test-only installation on the actual public Contract. The
       ;; producer remains unchanged and must normalize exactly once.
       (dynamic-wind
-        (lambda () (.put! ModulePublicationContract 'value-contract ValueContract))
+        (lambda () (.put! ModulePublicationContract '.validate (.get ValueContract .validate)))
         (lambda ()
           (def record (.call view .selected-record 'custom/example))
           (check-equal? calls 1)
@@ -167,10 +167,10 @@
           (check-equal? (.get record scope greeting) "normalized")
           (check-equal? (eq? record (.call view .selected-record 'custom/example)) #t)
           (check-equal? calls 1))
-        (lambda () (.put! ModulePublicationContract 'value-contract original))))
+        (lambda () (.put! ModulePublicationContract '.validate original))))
     (yuanxu-test-case "normalized publication owner mismatch is refused before Graph insertion"
       ;; A generated-source capability exercises Graph admission directly;
-      ;; the native file reader is outside this Case's boundary.
+      ;; the runtime file reader is outside this Case's boundary.
       (def publication
         (.o identity: 'custom/example features: (.o)
           core: (.o requires: (.o) scope-contract: ScopeContract
@@ -182,20 +182,20 @@
               locate: make-yuanxu-module-generated-source
               current?: (lambda (_generation) #t)
               read-publication: (lambda (_source) publication))))
-      (def original (.get ModulePublicationContract value-contract))
+      (def original (.get ModulePublicationContract .validate))
       (def ValueContract
         (.o (:: @ Type.)
           .element?: object?
           .validate: (lambda (value) (.o (:: @ value) identity: 'custom/wrong-owner))))
       (dynamic-wind
-        (lambda () (.put! ModulePublicationContract 'value-contract ValueContract))
+        (lambda () (.put! ModulePublicationContract '.validate (.get ValueContract .validate)))
         (lambda ()
           (check-equal?
             (if (string-contains
                   (exception-message (lambda () (.get view selected-graph)))
                   "publication source owner mismatch") #t #f) #t))
-        (lambda () (.put! ModulePublicationContract 'value-contract original))))
-    ;; Keep last: restoring the Slot value does not undo its native revision.
+        (lambda () (.put! ModulePublicationContract '.validate original))))
+    ;; Keep last: restoring the Slot value does not undo its runtime revision.
     (yuanxu-test-case "the source constructor prototype is part of closed-prefix support"
       (check-equal? (yuanxu-module-source-ref-construction-current?) #t)
       (dynamic-wind

@@ -101,9 +101,9 @@ Python driver into a new project test.
 
 * Transfer to Guestbook without inventing new syntax
 
-The corresponding concrete native design for this SAME Gitea/PostgreSQL case is
-[[file:../../10-19-design/10-configuration/10.10-gitea-postgresql-native-module-design.org][10.10]]. It separates published interface bindings from configured instances,
-shows native lexical endpoint defaults and keeps independent contribution
+The corresponding concrete runtime design for this SAME Gitea/PostgreSQL case is
+[[file:../../10-19-design/10-configuration/10.10-gitea-postgresql-runtime-module-design.org][10.10]]. It separates published interface bindings from configured instances,
+shows runtime lexical endpoint defaults and keeps independent contribution
 requirements distinct from child assignment. It is design code, not a new run.
 
 The corresponding architectural case has frontend, Redis Leader and Follower
@@ -117,7 +117,7 @@ generation and admission. Reusable Profiles remain independent of one Scenario.
 | Bind the Redis interface | Root-selected instance and hygienic lexical dependency | Mount alias must not become provider identity; role-wide binding is not already complete |
 | Derive frontend connection | Pure domain projection from final selected exports | Lazy cycles still need a defined policy; arbitrary functions are not dependency analysis |
 | Change only a port | Ordinary assignment into maintained configuration | Intermediate object preservation/path lowering must be verified |
-| Extend maintained behavior | Native prototype/slot refinement when required | C4 precedence does not settle independent policy conflicts |
+| Extend maintained behavior | Runtime prototype/slot refinement when required | C4 precedence does not settle independent policy conflicts |
 | Admit a resource preview | Final objects plus field and connection Contracts | Resource correspondence/currentness are separate from field shape |
 | Start or reconcile services | Explicit runtime boundary | POO is not a process supervisor or cloud reconciler |
 
@@ -134,20 +134,20 @@ Current checkout inspected: Core HEAD =7595bed= plus concurrent local changes on
 2026-10-17. The following are source observations, not fresh test receipts:
 
 - [[file:../../../module-system/source/declaration.ss][declaration.ss]] lower-core generates a dependency binder around exports,
-  with a generated identifier and native references. This is evidence for bounded
+  with a generated identifier and runtime references. This is evidence for bounded
   lexical binding, not automatic injection throughout every role file.
 - [[file:../../../module-system/source/link.ss][link.ss]] checks eligibility/disabled decisions, active link cycles and
   generation currentness, then admits requirement and scope values. It traverses
   the declared requires before publishing a scope; unused exports do not imply
   unused declared dependencies are already demand-linked.
-- [[file:../../../types.ss][types.ss]] admits native responsibility children. This provides a Contract
+- [[file:../../../types.ss][types.ss]] admits runtime responsibility children. This provides a Contract
   mechanism; automatic selected-domain projection and complete resource checks
   remain separate integration work.
 - [[file:../../../object-syntax/path-slots.ss][path-slots.ss]] currently requires dotted paths to use =>.+. Ordinary
   deep path assignment in design examples is not claimed as implemented by this
   source inspection.
 
-Thus we should reuse the native kernel and strengthen orchestration rather than
+Thus we should reuse the runtime kernel and strengthen orchestration rather than
 announce that a universal args replacement or selective admission already exists.
 
 * Issues and Engineering Limitations

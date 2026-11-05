@@ -2,7 +2,10 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file)
+        (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file core-source-root)
+        (only-in :yuanxu/modules/funflow/control-plane/task TaskContract)
+        (only-in :yuanxu/modules/funflow/control-plane/flow FlowContract)
+        (only-in :yuanxu/modules/funflow/scenario Scenario)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
         (only-in :yuanxu/module-system/source/directory module-directory-context)
@@ -32,7 +35,41 @@
 
 (def module-candidate-stage-test
   (test-suite "Unpublished candidate operations and complete Graph boundaries"
-    (yuanxu-test-case "SDK enrollment follows first closure discovery, not repeated imports"
+    (yuanxu-test-case "Core functional definitions keep canonical identity and fresh source support"
+      (with-other-source
+        (lambda (root first _other)
+          (write-file (path-expand "init.ss" root)
+            "(yuanxu! source: \"./modules\" mode: explicit :custom (example))")
+          (write-file (path-expand "objects.ss" first)
+            (call-with-output-string
+              (lambda (port)
+                (for-each (lambda (form) (write form port) (newline port))
+                  '((import (only-in :clan/poo/object .o)
+                            (only-in :yuanxu/modules/funflow/control-plane/task TaskContract)
+                            (only-in :yuanxu/modules/funflow/control-plane/flow FlowContract)
+                            (only-in :yuanxu/modules/funflow/scenario Scenario))
+                    (def FixtureScope
+                      (.o task-contract: TaskContract flow-contract: FlowContract scenario-type: Scenario))
+                    (export FixtureScope)))))))
+        (lambda (_root _first _other view)
+          (def scope (.get view modules custom example))
+          (check-equal? (eq? (.get scope task-contract) TaskContract) #t)
+          (check-equal? (eq? (.get scope flow-contract) FlowContract) #t)
+          (check-equal? (eq? (.get scope scenario-type) Scenario) #t)
+          ;; Eligibility is not approval. The actual imported library remains
+          ;; in the reader's return-time source footprint, not in a copied Type.
+          (def reads 0)
+          (def task-source (path-normalize
+                            (path-expand "modules/funflow/control-plane/task.ss" core-source-root)))
+          (parameterize ((current-module-source-observer
+                          (lambda (key amount)
+                            (when (and (pair? key) (eq? (car key) 'file-read)
+                                       (equal? (caddr key) task-source))
+                              (set! reads (+ reads amount))))))
+            ((.get view admit-current)))
+          (check-equal? (> reads 0) #t)
+          (check-equal? (.ref/cached (.get view modules custom) 'other) #f))))
+    (yuanxu-test-case "Gerbil enrollment follows first closure discovery, not repeated imports"
       (with-other-source
         (lambda (_root _first _other) (void))
         (lambda (root first other view)
@@ -52,7 +89,7 @@
             (def first-enrolled enrolled)
             (def first-requested requested)
             (.call reader read-candidate (lambda () other) 'custom/other (.get view context))
-            ;; Both declarations really execute their roles. Repeated SDK
+            ;; Both declarations really execute their roles. Repeated Gerbil
             ;; demands retain fresh admission, without re-enrolling topology.
             (check-equal? (> first-enrolled 0) #t)
             (check-equal? (> requested first-requested) #t)
@@ -65,7 +102,7 @@
       (with-other-source
         (lambda (_root _first _other) (void))
         (lambda (root _first _other _view)
-          ;; Exercise the real directory owner without the reader/SDK's
+          ;; Exercise the real directory owner without the reader/Gerbil's
           ;; independent closure. This is a work control, not a capacity gate.
           (def context (module-directory-context (path-expand "modules" root) #f
                          publication-prepares-source?: #t))
@@ -102,12 +139,26 @@
           (def context (.get view context))
           (def generation (.get context generation))
           (check-equal? (.call context candidate-current? generation 'custom/other) #t)
-          ;; A native revision change, even to the same value, is stale. It is
+          ;; A runtime revision change, even to the same value, is stale. It is
           ;; unrelated to locating the OTHER unpublished candidate, but MUST
           ;; reject the full epoch and the changed SourceRef's own demand.
           (.put! first 'kind (.get first kind))
           (check-equal? (.call context candidate-current? generation 'custom/other) #t)
           (check-equal? (.call context candidate-current? generation 'custom/example) #f)
+          (check-equal? (.call context current? generation) #f))))
+    (yuanxu-test-case "full and candidate checks share revision support without sharing approval"
+      (with-other-source
+        (lambda (root _first _other)
+          (write-file (path-expand "init.ss" root)
+            "(yuanxu! source: \"./modules\" mode: explicit :custom (example) (other))"))
+        (lambda (_root _first _other view)
+          (def context (.get view context))
+          (def generation (.get context generation))
+          (def selection (.get (car (.get context intent decisions)) selection))
+          (check-equal? (.call context current? generation) #t)
+          (.put! selection 'enabled? (.get selection enabled?))
+          (check-equal? (.call context candidate-current? generation 'custom/example) #f)
+          (check-equal? (.call context candidate-current? generation 'custom/other) #t)
           (check-equal? (.call context current? generation) #f))))
     (yuanxu-test-case "cached snapshots still validate actual path kinds before full namespace commit"
       (with-other-source

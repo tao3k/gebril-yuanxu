@@ -10,7 +10,7 @@ graph. The intended saving is to avoid constructing implementation roles during
 metadata selection, while retaining every dependency and observer event when a
 role is actually demanded.
 
-Use the existing native Module, declaration, role layout, source preparation,
+Use the existing runtime Module, declaration, role layout, source preparation,
 POO slots, selected graph, and admission protocol. There is no second public
 Module model, Builder, publication protocol, author purity flag, or cache of
 successful admission decisions.
@@ -40,14 +40,14 @@ uses these dependency APIs directly:
   The runtime Contract and return-time currentness still execute independently.
 
 Neither these theorems nor the QNT model authenticate a synthesized Scheme read.
-The runtime control only accepts records issued by the actual native MOP.
+The runtime control only accepts records issued by the actual MOP.
 
 * Source classification, not asserted purity
 
 The isolated decoder reads actual syntax using Gerbil's =core-read-module/sexp=.
 Its closed path accepts one direct Module declaration, literal identity and
-requirement targets, direct native Core objects, no inherited metadata, no
-duplicate keyword fields, and an empty Feature set. A native explicit self
+requirement targets, direct runtime Core objects, no inherited metadata, no
+duplicate keyword fields, and an empty Feature set. A runtime explicit self
 binder with an empty parent expression is allowed. Export names come from actual
 role export declarations; conflicting names are refused.
 
@@ -71,11 +71,11 @@ checked by the source controls below, within this closed grammar.
 
 The fixture discovers role files with the existing role layout and uses the
 existing private source preparer and =module-prepared-source-binding=. Role
-values live in ordinary lazy native slots. An exported value tuple is created
+values live in ordinary lazy runtime slots. An exported value tuple is created
 only for a demanded role; it is not an issued-read bundle or copied provenance.
 
 The actual Core =.def= declaration still owns its generated =link= function.
-The isolated syntax helper inserts native =with-slots= bindings only into value
+The isolated syntax helper inserts runtime =with-slots= bindings only into value
 expressions. It keeps the Module declaration at module level and the =requires=
 objects literal, because the declaration macro checks those structures before
 expanding their payloads. =syntax/loc= is used for original value locations. The declaration control now
@@ -93,26 +93,26 @@ The initial experiment required an explicit outer self reference because the
 production declaration macro replaced the outer =core= row with an introduced
 identifier. The declaration fix retains the original row identifier and uses
 =syntax/loc row= for the replacement. The fixture now writes =(.get core link)=
-directly. Native =.def/ctx= still owns lexical slot binding and receiver-local
+directly. Runtime =.def/ctx= still owns lexical slot binding and receiver-local
 caching; no lookup alias or second binding protocol is added.
 
 * Small correspondence control
 
 [[file:../../../t/module-demand-projection-test.ss][The default Just test]] uses
 actual role sources under [[file:../../../t/qualification/module-demand/sources/interface.ss][the interface fixture]].
-It compares parsed dependency targets with actual native Module fields, runs the
+It compares parsed dependency targets with actual runtime Module fields, runs the
 existing =select-module-graph=, and counts actual =reader-body-expanded= events.
 Selection must add no role expansion and must leave role and scope slots cold.
 
 After explicit scope demand, a child refines =core.config.port= from 5432 to
-5433. The parent scope remains cached at 5432. The final native Contract checks
+5433. The parent scope remains cached at 5432. The final Contract checks
 that the child scope holds the exact effective Config and its current port,
 and that both independent port requirements allow it. A second requirement
 excluding 5433 must reject it. The unselected function role contains an error
 tripwire and must remain cold.
 
-Two hot observations must return the same nonempty original native issued
-records in the same order. Native replay must authenticate the complete reachable
+Two hot observations must return the same nonempty original runtime issued
+records in the same order. Runtime replay must authenticate the complete reachable
 graph twice in the same order, without substituting a fabricated bundle. No test reconstructs records or suppresses observers. A source edit
 after parent and child cache population must still fail final =.admit=.
 
@@ -131,7 +131,7 @@ observers, stale sources, disabled dependencies, a missing second requirement,
 parent-cache contamination, and missing opaque fallback. A progress control
 ensures publication is reachable when every obligation holds.
 
-This finite machine does not prove arbitrary native graph termination, parser
+This finite machine does not prove arbitrary runtime graph termination, parser
 correctness, role purity, heap bytes or ten-thousand-module capacity. Those
 claims require their existing graph, issuer, source and resource gates. SysML
 allocates phases and responsibilities; its parsing remains unqualified.
@@ -147,18 +147,18 @@ Before production integration:
 
 1. Qualify the declaration hygiene fix and the real publication preflight
    independently of the isolated metadata-selection path.
-2. Preserve one native Module and its selection/publication identities through
+2. Preserve one runtime Module and its selection/publication identities through
    a source-owned metadata projection; do not turn fixture descriptors into a
    competing registry or trust domain.
 3. Qualify dynamic dependencies, cross-role imports, Features, build/test roles,
    unsupported exports and opaque fallback against real consumers.
 4. Preserve real declaration admission: =ModulePublicationContract= must validate
-   actual native Type descriptors for both dependency and scope contracts.
+   actual Type descriptors for both dependency and scope contracts.
    This legitimately demands Types. Structural selection remains role-free;
    publication preflight must leave Config, Objects, Func and the export body
    cold. Do not weaken descriptor checks to pretend that preflight has zero cost.
 5. Attribute retained bytes on a bounded sample: descriptors, shared source data,
-   roles, native records, Generic frames and compiler roots are distinct owners.
+   roles, runtime records, Generic frames and compiler roots are distinct owners.
 6. Only then change the Loader and run the original two-GiB gate once. Keep the
    earlier failure near 2000 completed modules and the all-business-scope workload
    distinct from declaration-only acceptance.
@@ -169,7 +169,7 @@ The integrated work preserves PR 19's concurrent build-product recovery change
 =0abf245c9e03156049e4514dcfa2508939a7ae5f= and its canonical-prefix follow-up
 =09dc269=. The default build, both Scheme regressions and the source-bound QNT
 receipt were rerun after that integration. The Lean source/dependency closure
-was unchanged. No production Loader, native MOP or
+was unchanged. No production Loader, MOP or
 compiler source is changed by this work.
 
 | Gate | Observed result |
@@ -208,7 +208,7 @@ relabeled as successful capacity tests.
 The production change is limited to =module-system/source/declaration.ss=.
 The lowered core payload replaces the value of the original row, preserving its
 identifier and location; it is no longer paired with a macro-introduced =core=.
-The production Loader, native MOP and Gerbil compiler are unchanged.
+The production Loader, MOP and Gerbil compiler are unchanged.
 
 #+begin_src scheme
 (syntax-case row ()
@@ -223,7 +223,7 @@ is independently compared with the parsed declaration identity. It performs
 existing =module-source-admit-current!= checks around the call, because a
 SourceRef alone does not authenticate current bytes. The admitted candidate must
 retain the module identity. A mismatched source owner is refused. Subsequent
-scope admission still runs the native SourceAdmissionContract and both domain
+scope admission still runs the runtime SourceAdmissionContract and both domain
 requirements, independently of publication shape admission.
 
 The existing private include helper uses Gerbil =core-expand1= on the real production
@@ -232,7 +232,7 @@ The existing private include helper uses Gerbil =core-expand1= on the real produ
 source =core:= token position. It emits original syntax through the same include frame for ordinary expansion;
 adding another inspection macro frame changed export marks and caused retained
 negative runs. This inspection is a test, not Loader logic. A same-named outer
-=core= sentinel also verifies that the native slot binding wins over a free
+=core= sentinel also verifies that the runtime slot binding wins over a free
 outer value.
 
 Lean separates descriptor preflight from domain admission, retains both domain
@@ -275,7 +275,7 @@ all business roles remain cold. A source comment changed during another run was
 rejected with =compiler tool source changed; use a fresh reader=; final validation
 uses a frozen source set and freshly rebuilt tools.
 
-No production Loader, graph, observer, native issuer or admission implementation
+No production Loader, graph, observer, runtime issuer or admission implementation
 was changed. Real Scenario qualification is recorded separately below; the small
 closed-source fixture still does not prove general Loader fallback or capacity.
 

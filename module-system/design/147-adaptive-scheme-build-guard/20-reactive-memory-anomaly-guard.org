@@ -11,7 +11,7 @@ Agentic AI Lab owns no memory guard implementation.  The root package build uses
 top-level upstream =std/build-script#defbuild-script= entrypoint inside the
 enclosing gerbil-bazel resource guard.  Explicit downstream work such as POO
 CLOS qualification invokes
-=call-with-framework-native-build-memory-anomaly-guard= from the pinned public
+=call-with-framework-runtime-build-memory-anomaly-guard= from the pinned public
 ASP Gerbil Scheme Build API.  These paths must not copy
 its process-table reader, Gambit heap sampler, rolling-window classifier,
 worker policy, trace emitter, or termination behavior.
@@ -19,16 +19,16 @@ worker policy, trace emitter, or termination behavior.
 The upstream evidence has two distinct schemas:
 
 - =asp-gerbil-scheme.build-trace.v1= identifies phases as build-lease,
-  std-make admission, native compiler activity, or Scheme
+  std-make admission, runtime compiler activity, or Scheme
   expansion/dependency analysis, with elapsed time, RSS, CPU, and active
   compiler-job observations;
 - =asp-gerbil-scheme.memory-anomaly-guard.v1= records the terminal outcome,
   measurement source, peak process-tree memory, maximum window growth and
-  rate, compiler activity, observer coverage, and pre/post-native timing.
+  rate, compiler activity, observer coverage, and pre/post-runtime timing.
 
 These receipts can establish a hard-limit breach, a rapid-growth anomaly, a
-degraded observer, or whether native compiler activity was observed.  They do
-not currently prove object retention, assign a peak to a Scheme or native heap
+degraded observer, or whether runtime compiler activity was observed.  They do
+not currently prove object retention, assign a peak to a Scheme or runtime heap
 owner, or prove a generic "heap takeover" condition: that would require a
 phase-correlated structured sample series or another upstream-owned ownership
 signal.  Agentic AI Lab therefore must not invent a downstream verdict from the

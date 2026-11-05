@@ -77,7 +77,7 @@ Before those full-source passes move to a root-owned final certification:
 
 These are the production premises of =child_sources= and
 =batching_equivalent= in [[file:32.16-root-child-admission.org][32.16]]. They are not inferred merely because a call
-has a child descriptor name. Open native Generic/Context callbacks remain effect
+has a child descriptor name. Open runtime Generic/Context callbacks remain effect
 boundaries until their particular invocation is independently qualified as pure.
 
 * Boundaries that do not disappear
@@ -200,7 +200,7 @@ source-observation completeness.
 
 Lean/QNT models were not changed or rerun in this turn. Their conditions still
 apply: complete authoritative contributions and source observations, exact receiver
-and plan association, and a stable final source interval. The current native
+and plan association, and a stable final source interval. The current runtime
 controls substantiate this service chain; they do not prove arbitrary concurrent
 filesystem atomicity or generic callback purity.
 
@@ -223,7 +223,7 @@ Local artifacts are under =/private/tmp/core-current-admission-attribution/=:
 - =attribution-current-01.log=: an aborted unqualified attempt after the source
   audit identified dynamic role dependencies absent from the static Fixture
   closure. SourceAdmission and diagnostics were subsequently compiled explicitly.
-- =attribution-current-02.log= and =*-current.log=: earlier successful native
+- =attribution-current-02.log= and =*-current.log=: earlier successful runtime
   results whose final current-source reconciliation was refused when concurrent
   observability imports changed. They are not relabeled as the final receipt.
 

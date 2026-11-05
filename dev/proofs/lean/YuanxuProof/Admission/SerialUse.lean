@@ -7,8 +7,8 @@ open SnapshotLifetime
 def quintSourceDigest : String :=
   "sha256:02a496d44a17c2e391f14527f44ea1b7e15ab80ec3b30a6c5182827b58f51b44"
 
--- Concrete projection: frames are native cold frames; version is an external
--- authority's monotonic token, not an invented native observer generation.
+-- Concrete projection: frames are runtime cold frames; version is an external
+-- authority's monotonic token, not an invented runtime observer generation.
 structure State where
   root : Nat
   demand : Nat

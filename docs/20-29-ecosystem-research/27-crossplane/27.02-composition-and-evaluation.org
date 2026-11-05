@@ -18,7 +18,7 @@ controller applies them. This is a different operational model from executing
 a one-shot Script, even when both are described declaratively.
 
 Our inference: a Scenario plan must bind relevant projector/Contract/package
-versions as well as final input. A native object cache cannot replace provider
+versions as well as final input. A runtime object cache cannot replace provider
 observation, controller conflict handling or eventual readiness. If reconciliation
 is added later, it needs its own protocol and bounded retry/convergence controls.
 

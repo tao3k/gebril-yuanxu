@@ -23,7 +23,7 @@
   (core-expand (datum->syntax (quote-syntax use-module) datum)))
 
 (def module-scope-syntax-test
-  (test-suite "Bounded native module scope"
+  (test-suite "Bounded runtime module scope"
     (test-case "the alias is the original scope and source identity is retained"
       (def source-handle (make-yuanxu-module-package-source "example/funflow@revision"))
       (.def funflow source: source-handle prototypes: (.o) profiles: (.o))
@@ -84,7 +84,7 @@
       (def unrelated-demands 0)
       (.def Check. value: 'default)
       (.def Pipeline. checks: '())
-      ;; Fixture publications use native lazy slots. No Loader is involved.
+      ;; Fixture publications use runtime lazy slots. No Loader is involved.
       (.def Funflow
         source: source-handle
         prototypes:

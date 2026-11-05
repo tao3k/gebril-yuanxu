@@ -10,7 +10,7 @@ The implementation belongs to two owners, not two competing validators:
 
 - =modules/json-schema=: positional tuple predicates/validation, nested field
   diagnostics, JSON value equality for =uniqueItems=, and the reusable
-  =yuanxu-json-schema->contract= adapter to native =.classify= / =.admit=.
+  =yuanxu-json-schema->contract= adapter to runtime =.classify= / =.admit=.
 - =modules/opentofu=: cty/provider-format conversion and supplemental set
   semantics. It delegates shape checking to the JSON Schema owner.
 
@@ -43,10 +43,10 @@ The separately reviewed AWS v5.100.0 =securityGroupRuleHash= demonstrates why a
 provider object-set identity cannot be inferred from JSON Schema. It does not
 establish the version or hash implementation of the historical fixture.
 
-* Conversion and native Contract publication
+* Conversion and Contract publication
 
 After building Core, the maintained interface exposes these pure functions.
-The tests import the compiled public Core interfaces through the default native toolchain.
+The tests import the compiled public Core interfaces through the default runtime toolchain.
 
 #+begin_src scheme
 (import :yuanxu/modules/opentofu/interface
@@ -78,7 +78,7 @@ does not invent them. This is an input-configuration Contract, not a Contract
 claiming to describe fully normalized provider state.
 
 The shared adapter compiles once, rejects unsupported-generation diagnostics,
-and attaches native classification evidence containing recursive JSON Schema
+and attaches runtime classification evidence containing recursive JSON Schema
 paths. OpenTofu adds an explicit =collection-contract= and =.normalize= / =.prove=; it does not
 reimplement tuple, object, scalar or JSON uniqueness validation.
 
@@ -149,7 +149,7 @@ unselected resource name is rejected by the closed shape Contract. Adding an
 =ingress= object set is structurally admissible. Explicit collection checking
 can yield a supplemental diagnostic with the qualified path
 =(resource aws_security_group web ingress)=. Field type errors are rejected
-before the provider semantic walk. The candidate/context in the native receipt
+before the provider semantic walk. The candidate/context in the runtime receipt
 are the actual final values supplied to =.admit=, not a parent cached projection.
 
 This constructor currently covers the selected =provider/resource/data= subset.
@@ -166,7 +166,7 @@ Successful admission is neither a resource plan nor execution authorization.
   cases and write-only semantics fail conversion rather than weaken validation.
 - JSON uniqueness compares numeric values numerically, records without key-order
   dependence and nested arrays recursively. Empty object/array ambiguity in
-  legacy alist/list wire forms remains: use native POO objects or hashes for
+  legacy alist/list wire forms remains: use POO objects or hashes for
   objects and vectors for arrays at ambiguous boundaries. Values must be finite
   acyclic JSON-domain values. No large-set performance bound is claimed.
 - Standard JSON Schema shape coverage does not imply complete provider behavior.
@@ -175,13 +175,13 @@ Successful admission is neither a resource plan nor execution authorization.
 
 * Reproducible validation and evidence limits
 
-Use the default native toolchain:
+Use the default runtime toolchain:
 
 #+begin_src sh
 just test-file t/gerbil-runtime-import-test.ss
 just test-file t/opentofu-schema-test.ss
 just test-file t/json-schema-contract-bridge-test.ss
-just test-file t/json-schema-native-contract-test.ss
+just test-file t/json-schema-poo-contract-test.ss
 #+end_src
 
 =just test-opentofu= is only a convenience delegation to =just test-file=.
@@ -193,11 +193,11 @@ The default entry fences the actual test worker before imports and requires
 The initial isolated source control passed 54 assertions under an older host;
 that historical receipt did not repair the default environment. A same-name
 lazy-slot recursion was caught and fixed during those controls. Failed runs
-remain failed; they are not native acceptance.
+remain failed; they are not runtime acceptance.
 
 The default host =__eval-import= failure has now been repaired, as detailed in
-[[file:11.44-default-native-test-tool-repair.org][43 Default Native Test Tool Repair]]. The same installed Gerbil version is
-used. The test tool initializes the native expander, retains dynamic-evaluation
+[[file:11.44-default-runtime-test-tool-repair.org][43 Default Runtime Test Tool Repair]]. The same installed Gerbil version is
+used. The test tool initializes the runtime expander, retains dynamic-evaluation
 bindings, and uses GCC 16 coherently. POO remains pinned at
 =099b381588360a8a49fd772f666a1a00351366f5=; POO and Core AOT outputs were rebuilt
 from current sources. No material under =.data= is a runtime dependency.
@@ -208,13 +208,13 @@ Core interfaces. This supersedes the source-isolation workaround. It is not a
 full product-suite/remote-CI claim, provider export, deployment, or a Lean proof.
 
 The two existing JSON Schema regression suites and the independent runtime
-import control also passed through the same default entry after the native
+import control also passed through the same default entry after the runtime
 repair. See chapter 43 for the exact commands and host binary identity.
 
-* Provider collection evidence: explicit trust, local proof, native admission
+* Provider collection evidence: explicit trust, local proof, runtime admission
 
 The evidence kernel lives in =modules/opentofu/collections.ss=. It uses ordinary
-POO authority/receipt objects, the existing JSON Schema native Contract, and
+POO authority/receipt objects, the existing JSON Schema Contract, and
 =.defgeneric= / =.defmethod= over two independent axes: collection policy and
 evidence transport. Unsupported crossings fail closed. There is no new DSL,
 Loader, implicit provider execution, or serialized certificate trust.
@@ -258,7 +258,7 @@ the concrete field path, the field-value digest and expiration. SHA-256 covers
 canonical tagged snapshots with sorted object keys and ordered arrays. This is
 an internal snapshot format, not a standardized JSON canonicalization or a
 provider hash. Ambiguous legacy empty alist/list values retain their wire
-representation limitation; prefer native POO/hash objects and vectors where
+representation limitation; prefer POO/hash objects and vectors where
 needed. Fields use canonical symbol paths; array positions remain integers.
 
 Receipts are capabilities enrolled in a private, authority-local identity
@@ -273,7 +273,7 @@ The default clock uses host time. A short positive lifetime is capped at one
 hour; the injectable clock supports deterministic expiry tests. Admission is
 valid at the observed check time and does not create an indefinitely valid
 runtime authorization. This is not a distributed/monotonic-clock guarantee.
-The ledger uses native weak keys, following Core verification: it does not
+The ledger uses runtime weak keys, following Core verification: it does not
 retain discarded receipt objects merely because an authority remains live.
 Retained contexts still obey their validity interval.
 
@@ -323,20 +323,20 @@ Neither is silently performed by =.admit=.
 ** Default-runtime qualification receipt (2026-10-16)
 
 The compiled public Core interfaces were rebuilt with the default installed
-native Gerbil toolchain. The following gates ran serially through the existing
+Gerbil toolchain. The following gates ran serially through the existing
 pre-import heap-fenced entrypoint, without an isolated/compatibility runtime:
 
 #+begin_src sh
 just test-file t/opentofu-set-evidence-test.ss
 just test-file t/opentofu-schema-test.ss
 just test-file t/json-schema-contract-bridge-test.ss
-just test-file t/json-schema-native-contract-test.ss
+just test-file t/json-schema-poo-contract-test.ss
 just test-file t/gerbil-runtime-import-test.ss
 #+end_src
 
 All five gates returned exit 0 with =MODULE-OK=, =HARNESS-OK= and final =OK=,
 without failure/overflow markers. The new gate contains 36 assertions; the
-existing OpenTofu gate retains its 54 assertions. This is focused local native
+existing OpenTofu gate retains its 54 assertions. This is focused local runtime
 qualification, not a full-suite or remote-CI result.
 
 The new controls cover literal normalization and admission; missing/forged/
@@ -351,8 +351,8 @@ not qualifications of a downloaded AWS plugin.
 
 Initial failed controls exposed same-name lexical slot self-reference and
 incorrect use of carbon-copy as prototype instantiation. The implementation
-uses native =.cc= to attach computed constants without lexical capture, and
-native =.+= to preserve the receipt prototype needed by dispatch. Neither
+uses runtime =.cc= to attach computed constants without lexical capture, and
+runtime =.+= to preserve the receipt prototype needed by dispatch. Neither
 failure was reclassified as a pass; the gates above were rerun after repair.
 The existing alist-only accessor was also replaced by candidate-row projection
 at POO context boundaries. Build/test transcripts remain local artifacts.
@@ -362,4 +362,4 @@ at POO context boundaries. Build/test transcripts remain local artifacts.
 [[file:11.45-aws-provider-source-and-collection-admission.org][Chapter 44]] adds the real AWS 5.100.0 source/binary gates and correct SDK CRC32
 policy. The literal issuer above is now internal to synthetic tests and is not
 exported by the default module interface. Ordinary source-qualified callers use
-native =.admit= directly; retained binding contexts remain a plan-consumer concern.
+runtime =.admit= directly; retained binding contexts remain a plan-consumer concern.

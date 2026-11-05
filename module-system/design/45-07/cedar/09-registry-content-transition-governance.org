@@ -1,0 +1,132 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Registry content-transition governance
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Registry content-transition governance
+
+** Registry content-transition requirement
+
+A registry trust-root generation advance MUST NOT treat stable authority,
+stable registry semantics, and an increasing generation number as evidence that
+registry content was preserved.  For every descriptor registered by the
+predecessor root, the successor MUST either retain that exact descriptor or
+carry an acceptance-authority-validated retirement bound to the predecessor
+root claim and the exact successor generation.
+
+The registry is not append-only.  Explicit retirement is required for enterprise
+revocation and compromised-domain response; the forbidden operation is silent
+deletion or replacement without retirement evidence.
+
+** Silent registry-content mutation counterexample
+
+=validRegistryTrustRootTransition= previously constrained only registry
+authority identity, registry semantic identity, and increasing generation.
+=validRegistryTrustRootTransitionPermitsSilentDescriptorDeletion= constructs a
+valid generation advance whose predecessor and successor use the same registry
+authority and semantic identities, while a predecessor descriptor disappears
+and a descriptor with the same domain identity but different semantics takes
+its place.
+
+This is content rollback hidden behind identity monotonicity.  Neither checkpoint
+position monotonicity nor stable metadata proves a disposition for the removed
+descriptor.
+
+** Registry content-transition Typst model
+
+#+begin_export typst
+$
+  "Disposition"(d, p, n) :=
+    "registered"(n."registry", d)
+    or "AuthorityValidatedRetirement"(
+      d,
+      "RegistryClaim"(p."root"),
+      n."generation",
+    )
+
+  "ContentGovernedTransition"(p, n) :=
+    "ValidIdentityTransition"(p, n)
+    and forall d in p."registry": "Disposition"(d, p, n)
+$
+#+end_export
+
+** Registry content-transition Mermaid closure
+
+#+begin_src mermaid
+flowchart LR
+  P["Predecessor registered descriptor"]
+  T["Identity-stable generation advance"]
+  K["Exact descriptor preserved"]
+  R["Authority-validated retirement<br/>root claim + successor generation"]
+  G["Content-governed transition"]
+  X["Silent deletion rejected"]
+
+  P -->|"requires disposition"| G
+  T -->|"necessary; insufficient alone"| G
+  G -->|"status: retained"| K
+  G -->|"status: explicitly retired"| R
+  P -.->|"missing both branches"| X
+  X -->|"cannot close"| G
+#+end_src
+
+** Registry content-transition decision
+
+- Preserve =validRegistryTrustRootTransition= and the original lineage as the
+  weak identity/generation model and counterexample surface.
+- Add =AuthorityValidatedDescriptorRetirementEvidence=, binding the exact
+  predecessor registration, canonical registry trust claim, and successor
+  generation.
+- Add =ContentGovernedRegistryTrustRootTransition=: every predecessor
+  descriptor must be preserved or have an inhabited validated-retirement
+  witness.
+- Add =ContentGovernedPublicationDomainRegistryTrustRootLineage= so every
+  adjacent published position exposes this content-governed transition.  Safe
+  downstream composition consumes this wrapper rather than inferring content
+  safety from the old lineage.
+- Keep executable signature and commitment validation at the registry
+  acceptance authority.  Lean specifies the evidence contract; it does not
+  manufacture a retirement signature.
+
+** Registry content-transition checklist
+
+- [X] Distinguish generation/identity monotonicity from registry-content
+  preservation.
+- [X] Construct a valid transition that silently deletes or replaces a
+  predecessor descriptor.
+- [X] Preserve enterprise revocation through explicit retirement rather than
+  forcing append-only registries.
+- [X] Bind retirement to the predecessor root claim and successor generation.
+- [X] Require preservation-or-retirement for every predecessor descriptor.
+- [X] Lift the content-governed transition to every adjacent lineage position.
+- [X] Prove silent deletion yields a validated retirement witness or cannot
+  close.
+
+** Registry content-transition Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryLineageClosure= exited 0 for
+  8 jobs with no warning or error.
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI rejected the
+  single-source request with =axle-source-set-mismatch= and exit 2.  Its exact
+  three-source envelope accepted all 11 theorem roots and 56 declarations: 28
+  source declarations, 28 environment declarations, 0 proof-base
+  declarations/imports, no failed declaration, and no Lean diagnostic.  Closure
+  digest:
+  =sha256:0ba06547d084200af671da1beba9814b556485f75a6c70f55de87148a2010bab=;
+  bundle digest:
+  =sha256:db1c85f9513c8a0b690061d38b7163c99a0e2882aab5fa51ae6a8a8b1101769c=;
+  canonical source digest:
+  =sha256:8bf9f8feb0c503c06e91c306dca7f13b5a5775c2cb66d609dd0e702e6216eec8=;
+  independent bundle digest:
+  =sha256:3210b6e9fb3d105716aad3bd4fecabb816d0d5f8e0be38f6c61df89f3e4ab5da=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs, including the
+  registry lineage, replica-join, and recovery downstream; =lake build= exited
+  0 for 587 jobs.  Both reported only the existing
+  =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
+- =asp org lint= accepted this RFC with =[ok] orgize lint=.
+- =git diff --check= and =git diff --cached --check= both exited 0.
+

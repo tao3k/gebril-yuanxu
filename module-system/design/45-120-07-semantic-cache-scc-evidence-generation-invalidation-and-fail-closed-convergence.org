@@ -93,7 +93,7 @@ flowchart LR
   N["Semantic evaluation node"] -->|"derives an immutable identity from all result-affecting evidence"| K["Semantic cache key"]
   K -->|"matches exact dependency and evaluator identities"| H["Admitted cache hit"]
   K -->|"misses, conflicts, or lacks complete evidence"| E["Agentic AI Lab evaluator"]
-  E -->|"evaluates through native gerbil-poo composition"| R["Semantic result evidence"]
+  E -->|"evaluates through gerbil-poo composition"| R["Semantic result evidence"]
   R -->|"publishes an immutable cache entry without changing semantics"| C["Semantic cache"]
   C -->|"reuses only exact evidence-equivalent results"| H
   H -->|"returns the same evidence obtainable without the cache"| R
@@ -223,10 +223,10 @@ persistent recovery receipts.
 The ordinary Module composition interface remains unchanged.
 
 Advanced evaluators, cache policies, SCC projections, and recovery
-policies are native POO values composed through the existing ownership
+policies are POO values composed through the existing ownership
 boundaries.  A later RFC may admit a hygienic macro only when necessary
 syntax or phase semantics cannot be represented by ordinary functions
-and native =gerbil-poo= objects.
+and runtime =gerbil-poo= objects.
 
 No user-facing fixed-point DSL, cache clause language, cycle handler
 macro, or raw continuation hook is introduced.

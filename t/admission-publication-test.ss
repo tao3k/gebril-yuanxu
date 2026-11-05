@@ -2,6 +2,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :clan/poo/mop Object)
+        (only-in :clan/poo/slot-observation call-with-slot-read-observer
+                 slot-read-receiver slot-read-key)
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/error Error? Error-message)
         (prefix-in :clan/poo/declarative-metadata metadata.)
@@ -141,6 +143,34 @@
 
 (def admission-publication-test
   (test-suite "Platform admission context and publication currentness"
+    (yuanxu-test-case "one Graph read per export; selection replacement still refuses after restoration"
+      (with-inputs
+        (lambda (source schema)
+          (def original (assembly-selection source schema))
+          (def graph (.get original build-graph))
+          (def graph-reads 0)
+          (call-with-slot-read-observer
+            (lambda (read)
+              (when (and (eq? (slot-read-receiver read) original)
+                         (eq? (slot-read-key read) 'build-graph))
+                (set! graph-reads (+ graph-reads 1))))
+            (lambda ()
+              (.call AdmissionPublication. .for-export original 'app/web 'Scenario)))
+          (check-equal? graph-reads 1)
+          (def selection
+            (.o (:: self [original])
+              .selected-record:
+              (lambda (owner)
+                (def record (.call original .selected-record owner))
+                (.put! self 'build-graph (.cc graph))
+                (.put! self 'build-graph graph)
+                record)))
+          (check-exception
+            (.call AdmissionPublication. .for-export selection 'app/web 'Scenario)
+            (lambda (failure)
+              (and (Error? failure)
+                   (equal? (Error-message failure)
+                     "selected module scope changed during export assembly")))))))
     (yuanxu-test-case "selected assembly has one final Context check; standalone construction retains its own"
       (with-inputs
         (lambda (source schema)

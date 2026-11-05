@@ -6,7 +6,7 @@
 ;;; An immutable ordered Module Catalog of constructed POO Modules. Lookup
 ;;; observes SourceRef identity only; it never loads or activates a source.
 
-(import (only-in :clan/poo/object .cc .get)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
         (only-in :std/list/list find)
         "types.ss"

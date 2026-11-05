@@ -18,7 +18,7 @@ Can a deep contribution export be resolved from a real admitted selected record,
 with every intermediate receiver fenced, without demanding unrelated branches?
 The executable owner is [[file:../../../t/contribution-deep-publication-isolation-test.ss][the Core deep-publication isolation test]].
 It extends [[file:10.11-contribution-publication-isolation.org][10.11]] without changing that historical receipt or implementing
-the production contribution adapter proposed in [[file:10.10-gitea-postgresql-native-module-design.org][10.10]].
+the production contribution adapter proposed in [[file:10.10-gitea-postgresql-runtime-module-design.org][10.10]].
 
 The old fixture supplied publication records, SourceRefs, scopes and build
 preparation values. This control writes actual temporary module role files and
@@ -57,7 +57,7 @@ existing Core entrypoint is not evidence that a new product Loader was installed
 The role-file contents are fully defined as Scheme source templates in the test.
 No callback substitutes read-publication; no test creates a selected record or a
 scope/publication evidence object. The source reader evaluates normal interface
-publications and the native role imports. objects.ss imports its local type or
+publications and the runtime role imports. objects.ss imports its local type or
 configuration owner explicitly where required by the existing source-role rules.
 This does not establish a new automatic cross-role lexical binding mechanism.
 
@@ -121,7 +121,7 @@ checks the exact record/SourceRef/publication/generation/key/path association an
 re-walks the deep path to compare final payload identity. Missing and substituted
 rows are refused. Public .for-export resolves the application's actual Contract;
 the test derives that descriptor to attach the bounded joint policy obligation.
-It does not replace the native .admit producer or production .publish.
+It does not replace the runtime .admit producer or production .publish.
 
 Selected node/publication/core/contributions-container revisions are captured
 before route enumeration. This is necessary even when the later payload walk is
@@ -214,7 +214,7 @@ selected metadata once for this small control; it is not the generation-cached
 production route index proposed in 10.10. It covers selected Core declarations,
 not Feature contribution projection, dynamic method sources or arbitrary IO.
 Raw mutation of private lists/strings and untracked external state remain outside
-native MOP revision guarantees. SourceRefs are actual admitted local endpoints,
+MOP revision guarantees. SourceRefs are actual admitted local endpoints,
 not cryptographic authentication of remote contributors.
 
 The result closes two fixture gaps: selected record provenance no longer comes
@@ -229,13 +229,13 @@ linker, and measure selected-graph cost separately from domain payload demand.
 
 The five controls were rerun UNCHANGED against the current working Core source.
 No checkout-index copy, patched linker, substituted selected record or custom
-publication reader was used for this run. The native dependency artifacts remain
+publication reader was used for this run. The runtime dependency artifacts remain
 isolated; the Core source alias now points directly to the active checkout.
 
 ** Linker audit and exact applicability
 
 The earlier unbound result reference is no longer present in the demanded link
-path. The current implementation binds selection-value as the returned native
+path. The current implementation binds selection-value as the returned runtime
 object and passes that value to bind-exports. .selected-record still resolves the
 selected graph, verifies owner membership, obtains the generation-local link
 record and guards currentness before returning it. .for-export continues to use
@@ -259,7 +259,7 @@ external-package execution or the laziness of arbitrary admission export sets.
 | Current reader.ss Git blob | d0ed1db4bdb1cd7c817103fd386425b628fad4df |
 | Current admission/publication.ss Git blob | 630eda3eb753e52a020ce86b4b074417f48a1ba1 |
 | Unchanged test source SHA-256 | d56d376c2b365daa011fcce8e59fb24cfde7d860e803d374aaba8b1793cd75fe |
-| gerbil-poo dependency | 26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5, same pinned native dependency |
+| gerbil-poo dependency | 26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5, same pinned runtime dependency |
 
 Before/after hashes matched for all thirteen observed files:
 source/{link,reader,preparation,selection,publication,declaration,role-forms}.ss,
@@ -278,7 +278,7 @@ From the CURRENT Core directory, the isolated source tree maps:
   clan -> the pinned gerbil-poo source namespace used by 10.12
 #+end_example
 
-The reused temporary state/lib contains the compiled native dependency and no
+The reused temporary state/lib contains the compiled runtime dependency and no
 Core module artifacts. Do not put the old frozen source directory on this run's
 load path. From the active Core directory:
 
@@ -310,7 +310,7 @@ Real .selected-record and .for-export no longer depend on the frozen Core copy
 for this control. The contribution metadata query, complete-row collector,
 coverage/MOP observation fence and descriptor/Context attachment remain test-local.
 No production contribution adapter or product Loader backend was installed. This
-is source-evaluated current-checkout qualification with pinned native dependency
+is source-evaluated current-checkout qualification with pinned runtime dependency
 artifacts, not full Core AOT, CI, thousand-module or package-realization acceptance.
 The frozen run remains useful historical evidence and a source-difference control;
 it is no longer the only executed version of this deep-path validation.

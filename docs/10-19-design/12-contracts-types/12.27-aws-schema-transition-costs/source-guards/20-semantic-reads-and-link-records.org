@@ -6,7 +6,7 @@
 
 This page records the original full-trace control and its small lexical-record
 contraction. The subsequent [[file:21-owned-call-read-projection.org][owned authoring-call projection]] implements a
-narrower lifetime boundary using public native read witnesses. Unknown CLOS
+narrower lifetime boundary using public runtime read witnesses. Unknown CLOS
 execution-state callbacks still retain their full trace. The limitations below
 remain applicable to unrestricted token filtering and arbitrary Scheme effects.
 
@@ -19,9 +19,9 @@ A completed CLOS invocation frame is an operational carrier; its allocation
 class alone does not establish that its reads are disposable. A public method,
 MOP hook or validator can retain it or make its state semantically relevant.
 
-The current production implementation therefore keeps the complete native read
-trace. Core neither suppresses observer deliveries nor reconstructs native
-tokens. The public native token holds its receiver, instance, value, dependent
+The current production implementation therefore keeps the complete runtime read
+trace. Core neither suppresses observer deliveries nor reconstructs runtime
+tokens. The public runtime token holds its receiver, instance, value, dependent
 tokens and private currentness procedure. Replay checks the complete closure
 and checks visited tokens again after callbacks. Filtering receiver classes
 cannot substitute for that behavior.
@@ -47,7 +47,7 @@ insertion keep their original order. Only pure local variable capture changes.
 This contracts initializer environments, not the declared semantic payloads.
 The [[file:../../../../../dev/proofs/lean/YuanxuProof/PooClos/CarrierCapture.lean][existing carrier theorem]] proves payload membership is unchanged. Full
 publication and linked-record values still retain their required evidence.
-This does not remove the native trace's ownership of CLOS frames.
+This does not remove the runtime trace's ownership of CLOS frames.
 
 * Quint and Lean have different duties
 
@@ -67,12 +67,12 @@ in this model is an explicit assumption, not something Core currently issues.
   passes the projected check and fails the required check.
 - The full-trace fallback is sound under the existing trace-coverage premise.
 
-These are logical projection properties. They do not prove that native source
+These are logical projection properties. They do not prove that runtime source
 execution has supplied the complete requirements, that a callback cannot escape,
-or that replacement native read tokens are constructible through public APIs.
+or that replacement runtime read tokens are constructible through public APIs.
 Quint does not prove arbitrary-size heap bounds; Lean does not measure GC bytes.
 
-* Native gates and measured boundary
+* Runtime gates and measured boundary
 
 The 16-real-Module comparison uses the same fixture generation, same init-owned
 Module tests object and observation settings, same source-only dependency cut
@@ -93,9 +93,9 @@ local allocation observation, not a capacity or performance closure. Both keep
 thousand-Module refusal remains open; this result cannot justify rerunning or
 relabelling that gate as passed.
 
-The focused link test checks native constant slot specs as well as cold scope
+The focused link test checks runtime constant slot specs as well as cold scope
 factories, requirement Contracts, source refusal, disabled dependencies and
-cycles. CLOS native negative controls mutate policy, actual Type predicate,
+cycles. CLOS runtime negative controls mutate policy, actual Type predicate,
 Generic generation and an escaped frame after a lazy call has returned, then
 require public replay to refuse the old trace. These are deliberate negative
 mutations, not a cache. The frame is retained by a real public method body;
@@ -111,7 +111,7 @@ gates, not a full Core build or thousand-Module acceptance.
 
 Removing operational carriers needs producer-established ownership, non-escape
 and complete promotion of external dependencies, including open callbacks and
-transitive preparation reads. Public native replay does not expose a way to
+transitive preparation reads. Public runtime replay does not expose a way to
 rebuild a token's private currentness predicate without retaining that token.
 The present Core change does not invent a certificate, trust class names or
 silently treat source guards as a replacement for mutable object dependencies.
@@ -125,5 +125,5 @@ just test-file t/module-testing-isolation-test.ss
 python3 dev/proofs/quint/check.py --case-prefix SemanticReads --typecheck-scope selected --receipt .data/qualification/semantic-reads.scm
 #+end_src
 
-Run native gates serially. No upstream modification, new cache, heap/timeout
+Run runtime gates serially. No upstream modification, new cache, heap/timeout
 increase, full build or push is part of this qualification.

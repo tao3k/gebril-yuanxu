@@ -22,7 +22,7 @@ clan-discoverable =*-test.ss= owners instead of raising memory for an aggregate.
 (export profile-test)
 (def profile-test
   (test-suite "SDLC profile contract"
-    (test-case "native profile" ...)))
+    (test-case "runtime profile" ...)))
 #+end_src
 
 The =*-test.ss= basename and exported suite binding are identical, following

@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Native upstream controls, not a second build/publication implementation.
+;;; Runtime upstream controls, not a second build/publication implementation.
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/error Error-message)
@@ -22,7 +22,7 @@
   (unless (= completed 4) (error "incomplete upstream publication controls" completed))
   (displayln "UPSTREAM-PUBLICATION: 4 cases completed"))
 
-;; One selected native graph. These existing constructors supply the protocol;
+;; One selected runtime graph. These existing constructors supply the protocol;
 ;; no Core registry, Builder subclass or replacement scheduler is involved.
 (def (initial)
   (def source (graph.declaration '(port) (list (cons 'port (code.pure 5432)))))
@@ -39,7 +39,7 @@
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
 
 (def test-publication-upstream-test
-  (test-suite "PR native publication ownership and demanded test inputs"
+  (test-suite "PR runtime publication ownership and demanded test inputs"
     (yuanxu-test-case "one graph has independent production and test heads"
       (defvalues (selected construct) (initial))
       (def domain (publication.approval-domain))

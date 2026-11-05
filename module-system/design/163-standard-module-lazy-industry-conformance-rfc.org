@@ -397,7 +397,7 @@ standard content into its slots.  A Case composes Profiles, resolves the union
 of selected requirements, rejects conflicts and binds the resulting exact
 Standard bundle.
 
-The intended POO-native surface is conceptually:
+The intended POO surface is conceptually:
 
 #+begin_src scheme
 (.def (AustraliaHealthcareInteroperabilityProfile self HealthcareBaseProfile)
@@ -409,7 +409,7 @@ The intended POO-native surface is conceptually:
 #+end_src
 
 The concrete constructor and slot names remain an implementation milestone.
-They SHALL expand or dispatch to ordinary POO-native objects and pure
+They SHALL expand or dispatch to ordinary POO objects and pure
 functional composition.  This RFC does not approve a new public macro DSL.
 
 ** 10.06.163.90 Four-layer module shape
@@ -563,15 +563,15 @@ or terminology conformance.
 
 The external qualification path is executable, not documentary.  The root
 =check-healthcare-fhir-reference-validator= recipe enters through =gerbil
-test=, verifies the exact Validator JAR SHA-256, streams the Validator's native
+test=, verifies the exact Validator JAR SHA-256, streams the Validator's runtime
 progress, replays all four fixtures, and compares the complete decoded JSON
 Bundle with the retained evidence.  JSON object member ordering is deliberately
 not treated as semantic evidence.  The normal Lambda test path still performs
 no Java execution, package download or network access.
 
-Lambda publishes a POO-native FHIR capability manifest so qualification scope
+Lambda publishes a POO FHIR capability manifest so qualification scope
 cannot be widened by implication.  Named structural evaluation is
-=native-bounded=; the four-fixture AU Core Patient comparison is
+=runtime-bounded=; the four-fixture AU Core Patient comparison is
 =reference-qualified=; the pinned FHIRPath 2.0.0 grammar and AU Core expression
 corpus are =syntax-qualified=.  General FHIRPath evaluation, complete slicing,
 terminology and remote reference resolution remain =not-evaluated=.  A
@@ -712,7 +712,7 @@ Profile-specialized boundary.
 
 Core exposes =agentic-ai-lab-standard-compose-profiles= as a pure domain-neutral
 Case boundary.  It accepts ordered =AgenticAILabStandardConstraintProfile= values,
-deduplicates exact edition and dependency identities through native hash
+deduplicates exact edition and dependency identities through runtime hash
 tables, preserves Profile order, invokes the existing exact resolver once, and
 returns a =AgenticAILabStandardProfileCompositionReceipt=.  The receipt binds the
 Case identity, exact Profile revisions, selected base editions, constraints,
@@ -830,7 +830,7 @@ Bundle and again while wrapping the ResolutionReceipt.  A controlled ablation
 reduced p95 from =515.630007ms= to approximately =56.818008ms= when both
 redundant passes were removed.  The accepted implementation keeps the strict
 public constructors and instead proves each selected object is the identical
-value stored in the admitted catalog's native hash index before constructing
+value stored in the admitted catalog's runtime hash index before constructing
 the internal immutable result.  Its isolated 20-sample receipt reports p95
 =73.426962ms=, maximum =99.410057ms=, 10,000 resolver operations, zero loaded
 artifacts and zero measured benchmark-interval GC allocation.  A combined run
@@ -851,7 +851,7 @@ performance test emits =fixture-start=, =fixture-ready= and
 *** M1 -- Standard core
 
 - [X] Add the four-layer =modules/standards/= skeleton.
-- [X] Implement native types, POO objects and pure exact-selection closure.
+- [X] Implement runtime types, POO objects and pure exact-selection closure.
 - [X] Implement catalog, resolution and conflict receipts.
 - [X] Prove import is effect-free through focused tests.
 
@@ -896,7 +896,7 @@ performance test emits =fixture-start=, =fixture-ready= and
 - [X] Qualify the byte-to-admission path from the retained HL7v2 message through
   gerbil-parser, AI analysis, AU Core conformance and the Ontology Case receipt.
 - [X] Retain the official FHIRPath 2.0.0 ANTLR grammar in =gerbil-parser=,
-  publish a lossless native parser and bind its source and grammar digests to a
+  publish a lossless runtime parser and bind its source and grammar digests to a
   Lambda =syntax-qualified= capability.
 - [X] Prove that the three retained AU Core Patient expressions are byte-level
   projections of the locked StructureDefinition and keep general FHIRPath
@@ -951,7 +951,7 @@ without a source change and no stable receipt could bind the result.
 - [[file:04-agentic-ai-lab-module-system-design.org][Agentic AI Lab Module System Design]]
 - [[file:40-module-registry-scale-architecture.org][Module Registry Scale Architecture]]
 - [[file:44-current-project-programming-style.org][Current Project Programming Style]]
-- [[file:89-poo-native-lazy-evaluation-research.org][POO Native Lazy Evaluation Research]]
+- [[file:89-poo-lazy-evaluation-research.org][POO Runtime Lazy Evaluation Research]]
 - [[file:158-poo-lazy-slot-resolution-observability.org][POO Lazy Slot Resolution Observability]]
 - [[file:160-governance-core-vertical-domain-and-cedar-provider-boundary.org][Governance Core, Vertical Domain, and Cedar Provider Boundary]]
 - [[file:162-four-layer-module-responsibility-audit.org][Four-Layer Module Responsibility Audit]]

@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative capability and authorization protocol
-- Semantic core :: POO-native capability requirements and explicit pure/live separation
+- Semantic core :: POO capability requirements and explicit pure/live separation
 - Related modules :: =45-50-pure-slot-demand-identity-projections-and-cache-isolation.org= and =45-51-live-evaluation-context-narrowing-and-resource-conservation.org=
 
 This module separates capability artifacts from capability roles. It prevents live tokens, runtime execution authority, and disclosure authority from being confused with semantic admission or business-result identity.
@@ -109,7 +109,7 @@ flowchart LR
 - [X] Changing an admission receipt cannot split the business-result cache.
 - [X] Lean witness:
   =AgenticAILabProof.PooC4.CapabilityRoleIsolation=.
-- [ ] A later implementation-refinement proof must bind native =gerbil-poo=
+- [ ] A later implementation-refinement proof must bind runtime =gerbil-poo=
   capability objects, attenuation, validation, and affine token consumption to
   these artifact types.
 
@@ -357,7 +357,7 @@ flowchart LR
 
 * Capability role declaration
 
-Capability extension remains POO-native and need not use a closed enumeration. Every capability prototype nevertheless declares:
+Capability extension remains POO and need not use a closed enumeration. Every capability prototype nevertheless declares:
 
 - its normative authority role;
 - whether it changes semantic target identity;
@@ -369,7 +369,7 @@ Capability extension remains POO-native and need not use a closed enumeration. E
 
 A capability that cannot classify these properties fails closed. It is not defaulted into the runtime or semantic plane.
 
-Concrete objects and operations must be based on verified native =gerbil-poo= interfaces rather than a new capability DSL.
+Concrete objects and operations must be based on verified runtime =gerbil-poo= interfaces rather than a new capability DSL.
 
 * Cache isolation
 
@@ -404,7 +404,7 @@ It never serializes live authority material.
 
 * Implementation checklist
 
-- [ ] Define POO-native requirement, canonical scope, live proof, and receipt artifacts.
+- [ ] Define POO requirement, canonical scope, live proof, and receipt artifacts.
 - [ ] Define semantic admission, runtime execution, and disclosure authority roles.
 - [ ] Require every capability prototype to declare its role and identity effect.
 - [ ] Build admitted semantic views from canonical scopes rather than token identities.

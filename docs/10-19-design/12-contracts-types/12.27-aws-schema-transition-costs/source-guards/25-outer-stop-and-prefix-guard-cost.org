@@ -33,14 +33,14 @@ library must not replace that handler during the owned extent; this is not a
 general multiplexer for independently installed application signal handlers.
 The library does not expose retrieval of an earlier Scheme handler closure.
 
-The native =t/execution-cancellation-test.ss= delivers a real OS SIGTERM while
+The runtime =t/execution-cancellation-test.ss= delivers a real OS SIGTERM while
 an owner is blocked in ProcessScript .run. Nested fixtures release in reverse
 order, the temporary directory disappears, and a subsequent fixture executes
 normally. The existing =t/ops-process-script-test.ss= also passes its owned
 descendant cancellation, failure-output and timeout assertions.
 
 These gates qualify TERM delivery and ordinary Scheme unwinding. They do NOT
-promise cleanup after SIGKILL, a native thread unable to service interrupts,
+promise cleanup after SIGKILL, a runtime thread unable to service interrupts,
 or a release method taking longer than the existing external kill grace.
 Neither the 600-second budget nor the five-second hard-kill grace is raised.
 Acquisition still owns rollback until it returns a resource. A normal body
@@ -57,7 +57,7 @@ The relevant call chain is:
 
 1. selection resolver -> link =eligible!= -> context =current?=;
 2. publication reader -> =declaration-before= -> reader =current!=;
-3. native role imports, expansion and evaluation;
+3. runtime role imports, expansion and evaluation;
 4. reader =declaration-after= -> reader =current!=;
 5. publication Contract admission -> link =publication-admitted= -> context
    =current?= -> reader =current!=.
@@ -88,7 +88,7 @@ The normal model retains cleanup, freshness, one Graph identity and demand-only
 discovery. The added hardStop mutant leaves the fixture held after termination
 and must violate FailureCleanup. The focused family passes eight expected
 outcomes. This is finite state exploration, not a proof about OS scheduling or
-native heap capacity.
+runtime heap capacity.
 
 Lean's existing SourceClosureWork module proves:
 
@@ -100,7 +100,7 @@ Lean's existing SourceClosureWork module proves:
 
 The projection theorem quantifies over arbitrary identities. Its coverage
 premise must be established at the actual Scheme operation boundary; a
-publication name, native POO syntax or CLOS method label is insufficient.
+publication name, POO syntax or CLOS method label is insufficient.
 Source bytes are not permission to reuse macro/initializer results. Policies,
 Contracts and Schema associations remain part of semantic support.
 
@@ -109,13 +109,13 @@ Contract callbacks still receive full support checks. Narrowing to demanded
 support without establishing that premise would merely hide stale-source
 failures. The remaining work is operation-specific support completeness at
 these boundaries, with a complete selected-Graph check before publication.
-The existing Graph and its native source identities remain the owner; there
+The existing Graph and its runtime source identities remain the owner; there
 is no second namespace tree, result cache or approval cache.
 
 * Evidence limits
 
-Focused native TERM, Ops and sixteen-declaration gates passed with observation
-enabled, natural exit zero and complete native test success markers. The Lean
+Focused runtime TERM, Ops and sixteen-declaration gates passed with observation
+enabled, natural exit zero and complete runtime test success markers. The Lean
 TestAdmission and SourceClosureWork targets built successfully. These do not
 replace the thousand-module gate. No time or memory capacity improvement is
 claimed from the cleanup repair, and the preceding 684 timeout is retained.
@@ -129,7 +129,7 @@ branches and fixture cleanup remain intact. The first attempt was refused by
 the sandbox at the local Nix daemon socket; it is retained as an unsuccessful
 attempt. The unchanged test was rerun with daemon access, not weaker checks.
 
-All measurements use the existing locked source-only qualification and native
+All measurements use the existing locked source-only qualification and runtime
 Just test entrypoints. No upstream source, heap limit, execution budget,
 runtime loader, cache contents or Git remote was changed. Raw observations
 remain local artifacts rather than files in this documentation tree.

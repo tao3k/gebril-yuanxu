@@ -48,7 +48,7 @@
   (.ref (poo-clos-generic-binding-current deferred-render$poo-clos-generic)
         'generation))
 
-(defrules native-deferred-method ()
+(defrules runtime-deferred-method ()
   ((_ generic target body ...)
    (.defmethod (generic (object (prototype target))) body ...)))
 
@@ -60,21 +60,21 @@
                             BundlePrototype.))))
     (set! body-evaluations (+ body-evaluations 1))
     'base)
-  (native-deferred-method deferred-render BundleChildPrototype.
+  (runtime-deferred-method deferred-render BundleChildPrototype.
     (list 'child (call-next-method) (next-method-p))))
 
 (.defmethod-bundle empty-declared-methods declared-protocol)
 
 (.defmethod-bundle wrong-declared-methods
   (poo-clos-generic-protocol 'declared-bundle)
-  (native-deferred-method deferred-render BundleChildPrototype. 'wrong))
+  (runtime-deferred-method deferred-render BundleChildPrototype. 'wrong))
 
 (.defgeneric deferred-kinds (object) (protocol declared-protocol))
 (.defmethod (deferred-kinds object) 'fallback)
 (.defmethod-bundle kind-methods declared-protocol
   (.defmethod (deferred-kinds (object BundleClass)) 'class)
   (.defmethod (deferred-kinds (object (eql 'sentinel))) 'eql)
-  (native-deferred-method deferred-kinds BundlePrototype. 'prototype))
+  (runtime-deferred-method deferred-kinds BundlePrototype. 'prototype))
 
 (.defgeneric deferred-strict (object &optional extra)
   (protocol declared-protocol))
@@ -85,13 +85,13 @@
 (.defmethod (nested-registration object) 'before)
 (.defgeneric deferred-body (object) (protocol declared-protocol))
 (.defmethod-bundle body-methods declared-protocol
-  (native-deferred-method deferred-body BundlePrototype.
+  (runtime-deferred-method deferred-body BundlePrototype.
     (.defmethod (nested-registration object) 'after)
     'outer))
 
 ;; Deferred descriptors need not resolve a Generic binding during declaration.
 (.defmethod-bundle forward-methods declared-protocol
-  (native-deferred-method forward-render BundlePrototype. 'forward))
+  (runtime-deferred-method forward-render BundlePrototype. 'forward))
 (.defgeneric forward-render (object) (protocol declared-protocol))
 
 (def poo-clos-method-bundle-test
@@ -186,7 +186,7 @@
              'generation) 0)
       (poo-clos-compose-method-bundle forward-render$poo-clos-generic forward-methods)
       (check-equal? (forward-render (.o (:: @ BundleChildPrototype.))) 'forward))
-    (yuanxu-test-case "thin defrule produces a native checked bundle"
+    (yuanxu-test-case "thin defrule produces a runtime checked bundle"
       (check (element? ClosMethodBundle render-methods) => #t)
       (check (.ref render-methods 'protocol) => bundle-protocol)
       (check (.ref render-methods 'methods) => (list base-method)))

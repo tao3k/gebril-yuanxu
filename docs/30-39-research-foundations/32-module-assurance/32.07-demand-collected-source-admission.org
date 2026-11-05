@@ -6,7 +6,7 @@
 
 The narrow first step is now implemented in
 [[file:32.08-collected-source-observations.org][32.08]]. Collection is attached to the existing shared source-check authority,
-so JSON-only nested admissions are covered too. The native field-access/cache
+so JSON-only nested admissions are covered too. The runtime field-access/cache
 hooks below remain design work; the explicit preflight paths are retained.
 
 * Finding
@@ -24,10 +24,10 @@ defines legal fields; the running admission determines demanded fields.
 
 | Facility | Current implementation | Design consequence |
 |----------+------------------------+--------------------|
-| located-slot | Stores source location and original input observations on native specifications | Reuse this metadata, never regenerate source assertions from current bytes |
+| located-slot | Stores source location and original input observations on runtime specifications | Reuse this metadata, never regenerate source assertions from current bytes |
 | admit-origins! | Checks exact stored inputs | Suitable place to report checked origins to a private scoped collector |
 | source-diagnose-at | Traverses a chosen path with source guards before diagnose | Its current sources argument can seed a first narrow extraction |
-| Contract field validation | Uses native field access and validation | Observe those accesses, rather than separately enumerating fields |
+| Contract field validation | Uses runtime field access and validation | Observe those accesses, rather than separately enumerating fields |
 | Public Contract field-access observer | Not exposed by the inspected installed interfaces | Required before removing the explicit leaf guards from preflight |
 | Receiver cache dependency replay | Not established by the current source admission tests | Required for claims about arbitrary cached computed dependencies |
 | fresh source reads | Implemented in 32.06 | Final observation rechecks must use this boundary |
@@ -36,7 +36,7 @@ The checked-in .data/gerbil-poo corpus is a reference copy, not the runtime
 dependency. The installed object-contract-validation interface exports
 validation-fields, prepare-validation and validate-object; it does not expose
 a field-access observer. The installed object interface also does not expose
-a public read observer. This note does not treat a proposed hook as native
+a public read observer. This note does not treat a proposed hook as runtime
 functionality already available.
 
 * Narrow extraction versus full target
@@ -47,7 +47,7 @@ keeps today's Gitea coverage. It does not discover reads that never pass through
 those guards. Report that boundary explicitly instead of calling it complete
 automatic dependency discovery.
 
-The full target also removes the source-diagnose-at sources argument. Native
+The full target also removes the source-diagnose-at sources argument. Runtime
 Contract field access must notify the source adapter before demanding a field,
 including a cached field. Required/object/unknown-field structural checks must
 still precede value access. In particular, detecting an unknown field must not
@@ -83,11 +83,11 @@ field schema, an acceptance receipt or a global provenance registry.
    success and exception. Nested admission reports its dependencies to its own
    scope and all enclosing active admission scopes; child success alone cannot
    authorize a root after its source changes later.
-2. Before a Contract field read, query native provenance for that receiver and
+2. Before a Contract field read, query runtime provenance for that receiver and
    slot without forcing sibling values. Check and record the actual retained
    input observations. Never read the file anew and adopt those bytes as a new
    baseline: doing so would bless a stale object with a changed source.
-3. Let native diagnose/validate and contextual child admission continue. They
+3. Let runtime diagnose/validate and contextual child admission continue. They
    own normalization, child obligations and candidate identity exactly as in
    32.06. Record additional guarded reads from classification and contributions.
 4. De-duplicate identical observations without dropping conflicting revisions.
@@ -119,18 +119,18 @@ and Gitea configuration, and the domain plan check compares the plan's exact
 configuration identity and both port projections. These controls remain useful,
 but do not prove general cached dependency replay.
 
-For general computed relationships, a native cache entry needs its own guarded
+For general computed relationships, a runtime cache entry needs its own guarded
 dependency trace, collected when computed and replayed on a cache hit without
 re-evaluating dependency values. A trace must be bound to the effective receiver,
 slot specification and relevant revision; it cannot be borrowed from the parent
 when a child inherits the computation. Constant/default/override and cached-read
 routes need explicit coverage too. Existing untraced cache entries cannot be
 silently treated as complete. Any recomputation/rejection policy needs separate
-native semantics validation; do not invalidate caches or execute effects merely
+runtime semantics validation; do not invalidate caches or execute effects merely
 to populate a trace.
 
 The implementation must identify the canonical POO source/dependency revision
-before adding these hooks. Core's source adapter consumes native metadata; it
+before adding these hooks. Core's source adapter consumes runtime metadata; it
 must not become a second slot evaluator or monkey-patch .get/.ref bindings.
 
 * Gitea control matrix for the next implementation
@@ -161,7 +161,7 @@ whole-document operation; no field-level JSON streaming claim is made.
 The useful abstraction is a single source-aware admission boundary with demand
 collection, not a shorter manual list hidden behind another helper. A narrow
 Core collector can remove today's duplicate final list immediately once tested;
-removing all explicit guards requires native access coverage and cache analysis.
+removing all explicit guards requires runtime access coverage and cache analysis.
 Separate these claims rather than postponing the narrow gain or overstating it.
 
 This note changes documentation only. The 35 focused cases in 32.06 qualify

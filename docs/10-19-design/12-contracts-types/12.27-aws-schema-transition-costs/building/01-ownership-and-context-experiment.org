@@ -46,7 +46,7 @@ The experimental Core-internal =.with-current-sources= method invoked that same 
 starts fresh even inside another source window. Requests execute before the
 final window; the final Graph source check and Core's copied-input/generation
 check then share that window. If the already-cached request list is empty,
-there is no request getter/preparation/callback to cross, so the native check
+there is no request getter/preparation/callback to cross, so the runtime check
 and its continuation can share one window. This is ordinary Scheme function
 composition using the existing source-read mechanism, not a new cache or DSL.
 
@@ -66,7 +66,7 @@ Context currentness remains independent; it does not retain construction's
 approval. The candidate kept compiled-artifact checks outside its proposed continuation
 window. Those existing gates remain intact after removing the candidate.
 
-** Native controls and explicit rejection boundaries
+** Runtime controls and explicit rejection boundaries
 
 Temporary Core qualification fixtures checked all of the following:
 
@@ -76,12 +76,12 @@ Temporary Core qualification fixtures checked all of the following:
   changing the source from that getter is refused.
 - A replaced zero-argument Graph guard that changes a source is called with
   its original arity; the following source continuation rejects the change.
-- A real native build Graph request guard changes an admitted module file.
+- A real runtime build Graph request guard changes an admitted module file.
   The Graph's fresh post-callback guard rejects before the continuation runs.
 
 The new read-count assertion fails against the prior constructor with three
 reads instead of one. The corrected candidate and the request/derived
-handler controls passed through the existing heap-fenced native test entrypoints.
+handler controls passed through the existing heap-fenced runtime test entrypoints.
 The initial cold-getter test mistakenly used eager .cc arguments; it was
 corrected to a lazy .def override. An initial request fixture also used a
 nonconforming slash-containing package identity and accidentally narrowed

@@ -24,7 +24,7 @@ This RFC owns:
 - the required semantic slots of =DispatchEvaluation=;
 - its derived dispatch responsibilities;
 - policy-prototype composition;
-- immutability and lazy native-slot memoization boundaries;
+- immutability and lazy runtime-slot memoization boundaries;
 - inherited computation and C4 policy ordering;
 - cycle, budget, cache, observability, redaction, and effect projection;
 - the relation between =DispatchEvaluation= and Module-derived
@@ -41,14 +41,14 @@ It does not own:
 
 * Central decision
 
-=DispatchEvaluation= is one native higher-order POO value with three required
+=DispatchEvaluation= is one runtime higher-order POO value with three required
 semantic slots:
 
 - =receiver=;
 - =responsibility=;
 - =context=.
 
-All other dispatch behavior is derived through native POO slot computation,
+All other dispatch behavior is derived through POO slot computation,
 prototype extension, policy mixing, generic dispatch, C4 precedence, and
 inherited computation.
 
@@ -72,8 +72,8 @@ flowchart LR
   E["dispatch explanation"]
   I["EffectIntent projection"]
 
-  U -->|"provides native definition, extension, mix, slot, generic, and precedence mechanics"| B
-  B -->|"requires one native POO receiver"| R
+  U -->|"provides runtime definition, extension, mix, slot, generic, and precedence mechanics"| B
+  B -->|"requires one POO receiver"| R
   B -->|"requires one semantic responsibility identity"| Q
   B -->|"requires explicit authority, lineage, budgets, cache, and redaction"| C
   P -->|"extends behavior without widening context authority"| G
@@ -92,7 +92,7 @@ flowchart LR
 
 * Required slot: receiver
 
-=receiver= is one native upstream POO value.
+=receiver= is one runtime upstream POO value.
 
 It is not:
 
@@ -155,7 +155,7 @@ The internal semantic responsibilities are:
 | =outcome= | selected evaluation, context, and effect boundary | Return value, condition, suspended, denied, or cancelled result |
 | =explanation= | all preceding responsibilities | Project budgeted and redacted semantic evidence |
 
-These are native POO-derived responsibilities.  They are not seven independent
+These are POO-derived responsibilities.  They are not seven independent
 record APIs and are not ordinary user-facing slot syntax.
 
 * Base prototype
@@ -172,7 +172,7 @@ The base =DispatchEvaluation= prototype defines:
 It does not define domain providers, application contribution policy, runtime
 effects, or alternative precedence.
 
-The intended upstream authoring path uses native =.def= or =.o=.  Exact project
+The intended upstream authoring path uses runtime =.def= or =.o=.  Exact project
 adapter admission remains governed by RFC 45-120.
 
 * Policy-prototype algebra
@@ -191,7 +191,7 @@ The admitted policy roles are:
 
 A policy prototype:
 
-- is a native POO value;
+- is a POO value;
 - depends only on explicit semantic inputs;
 - preserves or narrows context authority;
 - may use inherited computation to refine a responsibility;
@@ -217,7 +217,7 @@ After finalization:
 This prevents Nickel-inspired contribution priority from becoming a second
 method-dispatch algorithm.
 
-* Native operation correspondence
+* Runtime operation correspondence
 
 The semantics-proven upstream families are:
 
@@ -261,7 +261,7 @@ instance.  Agentic AI Lab admits that behavior only when:
 - cycle and budget state are explicit;
 - cached outcomes preserve explanation and redaction boundaries.
 
-Native slot memoization is local to one =DispatchEvaluation= instance.
+Runtime slot memoization is local to one =DispatchEvaluation= instance.
 Cross-evaluation caching is a separate Agentic AI Lab semantic cache governed by the
 cache identity defined in RFC 45-122.
 
@@ -365,7 +365,7 @@ The Module remains the receiver or supplies the receiver.  The derived
 responsibility is not copied into required Module storage.
 
 Domain behavior owned by =wendao-episteme= may extend admitted responsibilities
-through native POO prototypes.  It cannot redefine the generic dispatch engine.
+through POO prototypes.  It cannot redefine the generic dispatch engine.
 
 * Public-interface boundary
 
@@ -380,7 +380,7 @@ The ordinary interface remains:
     application-production))
 #+end_src
 
-Advanced dispatch extension uses native POO objects, prototypes, and admitted
+Advanced dispatch extension uses POO objects, prototypes, and admitted
 generic operations.
 
 * Ownership
@@ -420,7 +420,7 @@ generic operations.
 - [X] Reject upstream mutation operations for ordinary active evaluation.
 - [X] Require new semantic identity when receiver, responsibility, context, or
   policy graph changes.
-- [X] Separate local native-slot memoization from cross-evaluation caching.
+- [X] Separate local runtime-slot memoization from cross-evaluation caching.
 - [ ] Prove lazy-slot memoization preserves outcome and explanation semantics.
 - [ ] Prove cache invalidation across prototype-generation changes.
 
@@ -436,8 +436,8 @@ generic operations.
 ** Implementation admission
 
 - [ ] Admit every consumed upstream operation path in RFC 45-120.
-- [ ] Implement the base prototype as a native POO value.
-- [ ] Implement each policy as a native POO prototype.
+- [ ] Implement the base prototype as a POO value.
+- [ ] Implement each policy as a POO prototype.
 - [ ] Map the first Module-derived responsibility.
 - [ ] Run focused GSLPH development checks without adding a product dependency.
 
@@ -480,7 +480,7 @@ It must remain an RFC semantic contract until its upstream adapter paths are
 - [[file:45-107-debug-evaluation-outcome-context-transition-and-exactly-once-reconciliation-contract.org][RFC 45-107: evaluation outcome]]
 - [[file:45-108-coordinator-resumption-admission-execution-lineage-continuation-fence-and-replay-retry-boundary.org][RFC 45-108: resumption and continuation fences]]
 - [[file:45-109-recovery-admission-effect-intent-runtime-handoff-and-continuation-claim-dag-correspondence.org][RFC 45-109: recovery intent and runtime handoff]]
-- [[file:45-119-poo-native-implementation-admission-topology-and-layer-convergence-contract.org][RFC 45-119: implementation admission topology]]
+- [[file:45-119-poo-implementation-admission-topology-and-layer-convergence-contract.org][RFC 45-119: implementation admission topology]]
 - [[file:45-120-module-domain-upstream-operation-correspondence-and-thin-adapter-admission-contract.org][RFC 45-120: upstream operation correspondence]]
 - [[file:45-121-minimal-higher-order-module-poo-value-and-responsibility-slot-algebra.org][RFC 45-121: minimal Module POO value]]
 - [[file:45-122-poo-dispatch-semantic-plane-candidate-resolution-inherited-continuation-and-observability-contract.org][RFC 45-122: dispatch semantic plane]]

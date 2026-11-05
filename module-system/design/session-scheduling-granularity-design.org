@@ -48,7 +48,7 @@ cancelled, isolated or re-admitted explicitly.
 
 * Task specification and acceptance
 
-A native =SessionTask= proposal declares:
+A runtime =SessionTask= proposal declares:
 
 - objective, anchor references and specification revision;
 - input ports and required admitted artifact/source revisions;
@@ -171,7 +171,7 @@ No performance claim is established by a smaller message or more agents alone.
 | Role | Refinement |
 |------+------------|
 | Session =types.ss= | Task/Attempt/Turn/port shape, routing and capacity invariants |
-| Session =objects.ss= | Native task specification, artifact reference and schedule prototypes |
+| Session =objects.ss= | Runtime task specification, artifact reference and schedule prototypes |
 | Session =funs.ss= / =funs-*.ss= | Partition admission, port readiness, routing, claim and retry algorithms |
 | Session =config.ss= | Reuse/partition/fairness Profiles and limits |
 | Session =interface.ss= | Closed public role exports |
@@ -182,7 +182,7 @@ Begin with textual Session IDs and admitted Org bindings from the prior plan.
 Then implement pure Task/Attempt/port readiness and typed routing before building
 runtime reuse or delta transport. Add finite Quint controls for wrong-attempt
 routing, retry double-counting, early port release, incomplete delta, cross-scope
-reuse and dropped interruption obligations; replay through native boundaries.
+reuse and dropped interruption obligations; replay through runtime boundaries.
 
 This is a proposed protocol refinement. Existing headline replay, Module closure
 and source-role regression receipts do not qualify these scheduling capabilities.
@@ -191,7 +191,7 @@ and source-role regression receipts do not qualify these scheduling capabilities
 
 [[file:context-delta-lean-quint-model-design.org][Context Delta Lean/Quint Model Design]] defines structural reference admission,
 coverage including new/deleted units and nonlocal Query dependencies, exact
-consumer/current-use fences, finite interleavings and native trace correspondence.
+consumer/current-use fences, finite interleavings and runtime trace correspondence.
 Full-target differential admission precedes dependency-based incremental work.
 Neither source-digest binding nor finite abstract traces alone prove semantic
 refinement or qualify production Delta consumption.

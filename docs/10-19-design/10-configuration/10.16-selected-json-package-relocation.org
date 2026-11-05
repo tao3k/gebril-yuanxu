@@ -19,7 +19,7 @@ existing Core runtime/compiler remains a dependency.
 
 =config-json-file= calls a reader-local observation capability with the actual
 parsed file path and its exact source bytes. The existing declaration reader
-binds that capability during native role evaluation. It admits only regular
+binds that capability during runtime role evaluation. It admits only regular
 files confined to that Module, including real directory checks on every path
 component. A symbolic-link traversal or escaping path refuses publication.
 Module code is trusted Scheme: this check is not a sandbox for arbitrary IO.
@@ -31,7 +31,7 @@ fake compiler identities or become Scheme compiler targets. Private build-role
 wrapping excludes data from the list of Scheme source wrappers.
 
 The selected build Graph separates =entries= and =assets= and includes both in
-=source-inputs=. Its native =.package= method consumes this same Graph. Users
+=source-inputs=. Its runtime =.package= method consumes this same Graph. Users
 maintain neither a second file inventory nor a parallel build manifest.
 
 Only actual =config-json-file= reads are observed. The mechanism does not scan a
@@ -63,7 +63,7 @@ Packaging is an explicit filesystem effect. Merely loading the Module, creating
 the Graph or asking for its compiler specification does not write a package.
 The relocation control belongs in Core =t/= because it qualifies packaging and
 source/linker behavior. It uses the existing =yuanxu-test-case= declaration
-over the native harness. Module =tests/= discovery is reserved for the selected
+over the runtime harness. Module =tests/= discovery is reserved for the selected
 module's own public behavior, not these Core implementation controls.
 
 * Package contents and relocation
@@ -71,14 +71,14 @@ module's own public behavior, not these Core implementation controls.
 The package consumer in [[file:../../../module-system/building/package.ss][building/package.ss]] copies only selected owner-confined
 source snapshots and observed assets. Shared Core tool sources remain external
 runtime dependencies. Each owner receives gerbil.pkg metadata preserving its
-native package prefix and interface prelude. Observed private nested package
+runtime package prefix and interface prelude. Observed private nested package
 metadata is retained. Compiler identities are not replaced with display aliases.
 
 The emitted roles are their admitted source bodies, rather than compiler frames
 containing absolute includes of the original workspace. The package writes an
 explicit init.ss with local relative source bindings, preserving declaration
 order, signed feature decisions and disabled owners. It does not copy a disabled
-owner's directory. Relocated loading prepares fresh native role frames, so
+owner's directory. Relocated loading prepares fresh runtime role frames, so
 =this-source-file= resolves inside the relocated package.
 
 The existing =yuanxu-write-module-publication= remains a compiler-input
@@ -155,7 +155,7 @@ assertion was updated to this earlier, specific failure; it was not broadened
 to accept arbitrary exceptions. Previous failed runs remain local artifacts.
 
 The dedicated second relocation case changes a captured JSON source, then checks
-that =.package= refuses and its requested final output does not exist. The native
+that =.package= refuses and its requested final output does not exist. The runtime
 missing/null/explicit distinctions and all domain admission controls remain
 separate regression gates, not effects of packaging.
 
@@ -170,7 +170,7 @@ just test-file t/module-publication-test.ss
 just test-file t/contribution-deep-publication-isolation-test.ss
 #+end_src
 
-Use the default host runtime/current source setup and pinned native dependency
+Use the default host runtime/current source setup and pinned runtime dependency
 recorded in 10.15. All Scheme runs are serial and retain the existing heap fence
 and 120-second per-file timeout. Raw logs remain local under
 =/private/tmp/json-assets-*= and =/private/tmp/assets-final-*=.
@@ -193,12 +193,12 @@ After supporting category-free names in the init serializer, the Scenario,
 JSON and service files were rerun successfully. Their fixture now also carries
 a disabled category-free package name as well as the disabled grouped module;
 both decisions survive relocation without copying either directory. This is not
-proof of arbitrary deep owner-name serialization: the current native init grammar
+proof of arbitrary deep owner-name serialization: the current runtime init grammar
 supports an optional category and one module name, and deeper identities refuse.
 
 The original Gitea/PostgreSQL roles and JSON are read from the repository; only
 destructive controls use isolated source copies. Failed development attempts
-remain local, including native receiver binding and the initial filesystem-alias
+remain local, including runtime receiver binding and the initial filesystem-alias
 prefix comparison. The final origin assertion compares the exact normalized
 relocated gitea.json path, rather than relaxing the check to a basename.
 

@@ -160,7 +160,7 @@ resolution can use C4 composition and existing sandbox-core validation to merge
 or reject the final profile shape.
 
 Slot operations should stay object-local. If a check needs object extension, the
-pipeline form should eventually use named functional or POO-native helpers that
+pipeline form should eventually use named functional or POO helpers that
 lower into object attributes:
 
 #+begin_src scheme
@@ -179,7 +179,7 @@ second command vocabulary or public row operators.
 The next code slice should be milestone-sized, not file-by-file:
 
 Superseded note: the row-style Funflow config branch described below has been
-removed. Current implementation uses native POO =.def= declarations with
+removed. Current implementation uses POO =.def= declarations with
 =funflow-check= and =funflow-pipeline= prototypes.
 
 1. Extend =modules/funflow/config.ss= with helpers that turn pipeline/check
@@ -203,7 +203,7 @@ removed. Current implementation uses native POO =.def= declarations with
 
 This bridge is complete when:
 
-Current acceptance note: public Funflow config is now native POO
+Current acceptance note: public Funflow config is now POO
 =(use-module funflow (.def ...))= with =funflow-check= and =funflow-pipeline=.
 Legacy =:config= pipeline rows are no longer accepted.
 
@@ -219,5 +219,5 @@ Legacy =:config= pipeline rows are no longer accepted.
   =modules/workflow/interface.ss= projections;
 - Scheme does not execute commands, activate sandboxes, or resolve runtime
   adapters;
-- focused tests pass through native =gxtest= and the package build remains
+- focused tests pass through runtime =gxtest= and the package build remains
   package-manager-owned.

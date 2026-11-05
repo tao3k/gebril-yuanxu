@@ -11,7 +11,7 @@ historical nine-case / three-route source cut from this experiment.
 [[file:32.37-metadata-allocation-and-shared-authority.org][32.37]] reproduced a restored shared specification leaving Cold cached at 5440.
 This experiment places a check below setter APIs: generated setters, SDK
 reflection and constructor-inlined stores share one pre-store policy in an
-isolated compilation. Callers use existing native replay, without an additional
+isolated compilation. Callers use existing runtime replay, without an additional
 protection wrapper or a caller-supplied ownership assertion.
 
 All three mediated routes refuse BEFORE their first store. Parent and Hot
@@ -29,19 +29,19 @@ concurrent working tree.
 * Allocation-derived ownership
 
 [[file:../../../t/qualification/mop-state/store-policy.ss][store-policy.ss]] records actual specification and receiver identities after
-successful native initialization. Both index levels use weak keys. It scans
+successful runtime initialization. Both index levels use weak keys. It scans
 =object-slots=, whose payloads are specifications. =object-defaults= contains
 ordinary values and must not be classified as specification storage.
 
 | Actual receiver | Sharing route |
 |-----------------+---------------|
-| Parent | Declared native specification |
-| Hot / Cold | Native inheritance and dependency edges |
+| Parent | Declared runtime specification |
+| Hot / Cold | Runtime inheritance and dependency edges |
 | Copy | =.cc= copies the carrier without a Parent ancestry edge |
 | Merged | =.+= retains the carrier in merged slot metadata |
 | Direct | =make-object slots:= receives the same carrier |
 
-Registration captures direct roots. Identity-based DFS over native weak
+Registration captures direct roots. Identity-based DFS over runtime weak
 =dependents= edges adds descendants, deduplicates shared paths and terminates
 cycles, without evaluating slots. The test checks all six actual identities,
 including replay selected on Copy itself. This is complete ownership for the
@@ -49,7 +49,7 @@ exercised constructor family, not all runtime metadata allocation.
 
 Rebinding dynamic =:init!= alone failed: optimized =.def= can call the lowered
 initializer directly. The isolated pass also registers after successful direct
-native initialization, checking the actual emitted signature. It does not add
+runtime initialization, checking the actual emitted signature. It does not add
 separate application wrappers to =.cc=, =.+= or individual setters.
 
 * One policy at primitive stores
@@ -70,7 +70,7 @@ inside the producer, without exposing this bridge. Actual policy:
         (specification-owners target)))))
 #+end_src
 
-The existing native =check-object-edit= owns refusal and diagnosis. Preflight
+The existing runtime =check-object-edit= owns refusal and diagnosis. Preflight
 does not invalidate caches or change revisions before refusal. It covers an
 unread specification belonging to a selected receiver as well as the recorded
 specification. Unknown carriers fail closed at their first mediated store.
@@ -96,7 +96,7 @@ checked-store lowering, preserving the actual primitive's operands:
 Generated lexical temporaries evaluate operands once, before the check and
 store. Operand side effects are not rolled back. Final emitted code contains
 42 checked, 1 direct and 60 unchecked guarded occurrences: syntactic counts,
-not dynamic performance measurements. Source APIs remain ordinary native calls:
+not dynamic performance measurements. Source APIs remain ordinary runtime calls:
 
 #+begin_src scheme
 ($self-slot-spec-fun-set! spec replacement)
@@ -144,7 +144,7 @@ body remains unlowered. Replacement/force/restore completes, leaving
 Parent/Hot at 5432 and Cold at 5440. Hiding exports or introducing a checked
 public wrapper would not close this execution path.
 
-The nine compiler cases also cover nested native frames, original exception
+The nine compiler cases also cover nested runtime frames, original exception
 identity after unwind, exactly-once operand evaluation, an unregistered carrier,
 an unread shared specification and an ordinary default value. The standard
 test driver IMPORTS the AOT test module: directly testing its source would

@@ -78,7 +78,7 @@ different but compatible orders:
 
 #+begin_src mermaid
 flowchart TB
-  U["upstream gerbil-poo"] -->|"provides native POO mechanics"| CO["yuanxu objects foundation"]
+  U["upstream gerbil-poo"] -->|"provides POO mechanics"| CO["yuanxu objects foundation"]
   CO -->|"constructs Type and Contract as POO prototypes"| CT["yuanxu types foundation"]
   CT -->|"specializes contracts for one Module"| MT["Module-local types.ss"]
   MT -->|"constrains named pure transformations"| MF["Module-local func.ss"]
@@ -141,12 +141,12 @@ The functional kernel and the POO object layer are complementary:
 |---------+-------|
 | Pure deterministic transformation | =func.ss= |
 | Semantic identity and prototype composition | =objects.ss= |
-| Polymorphic selection and inherited continuation | Native POO dispatch |
+| Polymorphic selection and inherited continuation | POO dispatch |
 | Input, output, and responsibility obligations | =types.ss= |
 | Small public composition surface | =interface.ss= |
 | Effects and runtime handles | Runtime adapter boundary |
 
-Conditional trees that select behavior by object kind are rejected when native
+Conditional trees that select behavior by object kind are rejected when runtime
 POO dispatch can express the variation.  Conversely, a deterministic
 transformation must not be inflated into a new prototype merely to avoid
 writing a small pure function.
@@ -180,7 +180,7 @@ flowchart TD
   D -->|"no: classify the responsibility"| K{"what kind of behavior is it?"}
   K -->|"generic reusable combinator"| S["shared functional.ss"]
   K -->|"Module-specific pure transformation"| F["Module-local func.ss"]
-  K -->|"polymorphic responsibility selection"| O["objects.ss and native POO dispatch"]
+  K -->|"polymorphic responsibility selection"| O["objects.ss and POO dispatch"]
   K -->|"effect or runtime resource action"| R["runtime adapter boundary"]
   F -->|"requires Contract and named consumer"| A["admitted concise function"]
 #+end_src
@@ -229,7 +229,7 @@ kernel.
 This RFC introduces no function-declaration macro.
 
 A future bounded internal macro may attach named =func.ss= functions to repeated
-POO responsibility families only when it expands to ordinary imports, native POO
+POO responsibility families only when it expands to ordinary imports, POO
 objects, and direct named function references.  It must not generate hidden
 functions, a registry, or a parallel dispatch language.
 
@@ -252,7 +252,7 @@ No =func= clause, function registry, or nested composition wrapper is added.
 
 - =src/utilities/functional.ss= owns generic project-wide pure combinators.
 - Each non-trivial semantic Module owns its Module-specific =func.ss=.
-- =types.ss= owns POO-native function and responsibility Contracts.
+- =types.ss= owns POO function and responsibility Contracts.
 - =objects.ss= owns prototype identities and responsibility binding.
 - =interface.ss= owns the deliberately small projection surface.
 - Runtime adapters own effects, handles, secrets, and external resources.
@@ -275,7 +275,7 @@ No =func= clause, function registry, or nested composition wrapper is added.
 
 ** Implementation admission
 
-- [ ] Admit the shared POO-native =types.ss= foundation first.
+- [ ] Admit the shared POO =types.ss= foundation first.
 - [ ] Select one non-trivial Module as the first functional-kernel exemplar.
 - [ ] Admit its local =types.ss=, =func.ss=, =objects.ss=, and =interface.ss=
   dependency direction.
@@ -351,16 +351,16 @@ flowchart TD
   collections.
 - [ ] Do not auto-export design vocabulary as functions,
   constructors, or macros.
-- [ ] Apply the native type specialization boundary in
-  [[file:45-120-01-poo-native-type-and-contract-prototype-foundation.org][45-120-01]].
+- [ ] Apply the runtime type specialization boundary in
+  [[file:45-120-01-poo-type-and-contract-prototype-foundation.org][45-120-01]].
 - [ ] Apply the observation and recovery boundary in
   [[file:45-120-03-module-debug-observability-recovery-and-telemetry-plane-governance.org][45-120-03]].
 
 * References
 
-- [[file:45-120-01-poo-native-type-and-contract-prototype-foundation.org][POO-native Type and Contract prototype foundation]]
+- [[file:45-120-01-poo-type-and-contract-prototype-foundation.org][POO Type and Contract prototype foundation]]
 - [[file:45-120-03-module-debug-observability-recovery-and-telemetry-plane-governance.org][Module debug, observability, recovery, and telemetry plane governance]]
-- [[file:45-120-module-domain-upstream-operation-correspondence-and-thin-adapter-admission-contract.org][Module-domain upstream operation correspondence and native foundation admission]]
+- [[file:45-120-module-domain-upstream-operation-correspondence-and-thin-adapter-admission-contract.org][Module-domain upstream operation correspondence and runtime foundation admission]]
 - [[file:45-121-minimal-higher-order-module-poo-value-and-responsibility-slot-algebra.org][Minimal higher-order Module POO value and responsibility-slot algebra]]
 - [[file:44-current-project-programming-style.org][Current project programming style]]
 - [[file:29-gerbil-poo-programming-guidelines.org][Gerbil POO programming guidelines]]

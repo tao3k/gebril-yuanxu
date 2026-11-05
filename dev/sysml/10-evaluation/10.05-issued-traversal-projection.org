@@ -18,17 +18,19 @@ refactors are preserved. A/B below uses THIS SAME parent for both images, not
 remote's independent Table/Type commits =64e2a93= and =0f81af0= before the
 projection commit =80b590b15c6d4bde7717f5fd85d5b98dbf230bd8=. It was pushed
 normally to the existing =feat/positive-closure-costs= branch / PR #13. Core's
-fixed dependency and =declaredPooRevision= now name that exact commit.
+fixed dependency and the then-maintained Lean revision annotation named that
+exact commit. Current dependency ownership has since moved exclusively to
+=gerbil.pkg= and Lake's native files; no parallel revision annotation is kept.
 The =object.ss= digest remains unchanged. Post-publication consumer qualification
 uses the installed Gerbil and an explicit rebuilt producer prefix plus the
 existing Core bootstrap layers; it is not a clean package installation or a
 full Core build. No compiler/runtime source is edited.
 
-The native entry owns:
+The runtime entry owns:
 
-- A private weak key/value index from the original root-list identity to a native
+- A private weak key/value index from the original root-list identity to a runtime
   cache receiver. Neither side is a global strong root for the read graph.
-- An ordinary native cached =projection= slot. Standard slot computation installs
+- An ordinary runtime cached =projection= slot. Standard slot computation installs
   only a successfully completed private projection; no second value evaluator is
   introduced.
 - A private projection containing its owner, copied ordered roots, original
@@ -43,13 +45,13 @@ cannot mint a projection or supply a purity/immutability flag.
 
 | Event | Structure behavior | Authentication behavior |
 |-------+--------------------+-------------------------|
-| Same live root-list identity and same ordered tokens | Native slot hit | Re-authenticate every saved token in DFS order |
+| Same live root-list identity and same ordered tokens | Runtime slot hit | Re-authenticate every saved token in DFS order |
 | Distinct root-list identity, even equal contents | Cold projection | Original complete DFS preflight |
 | Mutated root order/contents | Replace owner after successful new DFS | Original order/first refusal retained |
 | Weak owner collected | Cold projection | No old verdict is available |
 | Altered signed dependency sequence | Refuse at the original token | No callback before complete preflight |
 | Receiver revision/instance/value changed | Shape is not a validity claim | Original fresh currentness check refuses |
-| Transient miss later populated without revision change | Shape can stay the same | Native cache-absence check refuses |
+| Transient miss later populated without revision change | Shape can stay the same | Runtime cache-absence check refuses |
 | Child receiver/new issued records | Independent identity/key | Never borrows parent plan/cache validity |
 | Failure while building | No owner installed in index | Preserve original exception |
 
@@ -69,8 +71,8 @@ Callback/source changes cannot reuse a previous passing result.
 
 ** Cache construction must not open a callback boundary
 
-Ordinary native object construction dispatches CLOS initialization. Before a cold
-cache receiver is allocated, the implementation compares the actual native object
+Ordinary runtime object construction dispatches CLOS initialization. Before a cold
+cache receiver is allocated, the implementation compares the actual runtime object
 and object-state initializer procedures with their library-initialization values.
 If either changed, it uses the original non-cached DFS and does not invoke that
 new initializer. A valid existing hit needs no constructor call.
@@ -90,9 +92,9 @@ adds the following checked laws, with the existing LeanPoo dependency held fixed
   finite selected closure suffices for identical DFS preorder. Edges and getters
   outside that closure need not be inspected. =IdentityDFS= owns closure coverage
   and termination under its existing finite-graph premises.
-- =authenticated_edges_match_frozen=: dependency equality derives from native
+- =authenticated_edges_match_frozen=: dependency equality derives from runtime
   registry/original-closure projection, not a public Birth claim.
-- =projection_hit / changed_roots_rebuild / weak_eviction_rebuild=: separate native
+- =projection_hit / changed_roots_rebuild / weak_eviction_rebuild=: separate runtime
   value reuse from key change and weak collection.
 - =projection_lookup_refines / reuse_preserves_first_diagnostic=: an owned
   structural hit retains the original ordered checking result.
@@ -108,11 +110,11 @@ positive/expected-negative cases. A new constructor counterexample demonstrates
 why calling an unrecognized initializer is not a closed authentication step.
 
 The Lean order/diagnostic equalities are pure laws, not proofs of compiler
-correctness or native callback effects. Runtime correspondence is supplied by
-the actual native and service regressions below, under the stated premises.
+correctness or runtime callback effects. Runtime correspondence is supplied by
+the actual runtime and service regressions below, under the stated premises.
 SysML assigns ownership; it is not itself a qualified theorem prover.
 
-* Native regression and measurement protocol
+* Runtime regression and measurement protocol
 
 The existing gerbil-poo =issued-read= suite now contains 17 Cases. Four additions
 check actual preorder identity, root-order replacement, forged cached dependencies,
@@ -122,16 +124,16 @@ Reuse is checked between TWO captures inside a measured no-GC interval, so
 collection before the interval cannot falsely fail an allowed cold miss. Explicit
 GC occurs only in lifetime unit controls, never in timing windows.
 
-Native compilation uses the authoritative upstream spec/compiler options and
+Runtime compilation uses the authoritative upstream spec/compiler options and
 the installed toolchain, within the original 120 s compile bound. Tests retain
 their own original Just heap/watchdog policies. Core timing runs use default
-=just test-file=, its 2 GiB heap, 60 s idle and 600 s total bounds. Native and Core
+=just test-file=, its 2 GiB heap, 60 s idle and 600 s total bounds. Runtime and Core
 tests run serially; no local compilation or formal verification overlaps timing.
 
 The paired images share the =9ebd76f= source baseline. The candidate changes only
 the replay entry and its direct import; Core bootstrap layers are identical and
 expose no old =clan= fallback. Existing signed test preparation warms both prefixes
-before timing. Native dependency rebuild and Core bootstrap reuse are distinct
+before timing. Runtime dependency rebuild and Core bootstrap reuse are distinct
 from a complete clean Core build.
 
 Three A/B rounds are retained, each new process making 20 same-VM warm demands
@@ -142,7 +144,7 @@ certification is rerun in both images; no admitted result crosses processes.
 * Results, 2026-10-22
 
 Every trace round compiled zero support targets. Each warm demand visited exactly
-5647 records in six replays and read 128 files / 1106338 characters. Native graph
+5647 records in six replays and read 128 files / 1106338 characters. Runtime graph
 identity stayed cached and no role evaluation occurred in the warm demands.
 Medians below average the two middle observations of 20 samples.
 
@@ -170,7 +172,7 @@ as exclusive allocation costs. No VM-account value is called physical bytes.
 On a successful STRUCTURAL HIT, source inspection establishes that two DFS tables
 and two preorder list spines are not reconstructed. It does not establish an
 all-hit count for a real run: weak eviction may occur between samples, including
-during diagnostic output. Misses additionally allocate a root snapshot and native
+during diagnostic output. Misses additionally allocate a root snapshot and runtime
 cache owner. Fresh signature checking still traverses signed dependency sequences;
 total authentication is not O(1). No instrumentation counter or user-visible cache
 control was added to the production entry.
@@ -202,7 +204,7 @@ additional controls, not a claim of a clean full Core rebuild.
 
 * Final qualification and remaining boundary
 
-Native =issued-read= passes 17 Cases through its existing Just entrypoint,
+Runtime =issued-read= passes 17 Cases through its existing Just entrypoint,
 including the corrected no-GC reuse interval. Core candidate publication passes
 11, checker-origin passes 10, field-read/replay passes 16, and admission-cost
 passes three Cases. All have =MODULE-OK=, =HARNESS-OK= and final =OK=, without
@@ -212,7 +214,7 @@ isolation, explicit port mismatch, both requirements, nested obligations and
 unselected branches retain their existing refusal/laziness controls.
 
 Lean passes the selected 105-job closure. Quint passes 11 catalogued cases.
-The dev-only =--producer-source= option binds the real native source owners into
+The dev-only =--producer-source= option binds the real runtime source owners into
 the same receipt/currentness cut. =projectionObjectDigest= connects the Lean
 correspondence to the actual =object.ss= bytes; real source paths are retained
 relative to Core, not invented logical paths. Default proof catalog behavior is
@@ -221,7 +223,7 @@ about the Gerbil compiler or all kernel reflection/SMP behaviors.
 
 Local receipts and transcripts remain under
 =/private/tmp/yuanxu-replay-projection-20261022/=, including all six trace runs,
-both admission-cost runs, native/Core regressions, initial failed test compilation,
+both admission-cost runs, runtime/Core regressions, initial failed test compilation,
 Lean/QNT results, source/product digests and persisted-input comparison. No raw
 logs or patch file are added to either repository.
 

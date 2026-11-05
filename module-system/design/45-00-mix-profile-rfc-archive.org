@@ -730,7 +730,7 @@ Capability satisfaction is derived from the binding results named by
 | =bindingPolicy= | symbol | required | =required-binding-and-named-shape= |
 | =capabilityPolicy= | symbol | required | =all-witness-bindings-qualified= |
 
-Policy clause identities select ordinary POO-native pure policy methods. The
+Policy clause identities select ordinary POO pure policy methods. The
 canonical projection never contains procedure identity, raw lambda hooks,
 implementation source paths, or dynamically loaded rule names. An unknown
 clause identity makes the policy value invalid before qualification.
@@ -1108,7 +1108,7 @@ semantic role.
 
 *** Internal Observation constructor authority
 
-=ModuleImportObservation= remains a POO-native pure object, but its ordinary
+=ModuleImportObservation= remains a POO pure object, but its ordinary
 constructor is internal to the Agentic AI Lab probe boundary. Runtime callers provide
 a Requirement; they do not provide an arbitrary Observation or Decision.
 
@@ -1448,7 +1448,7 @@ Implementation checklist:
 - [X] Keep the gate absent from the public composition syntax.
 - [X] Key the internal cell only by canonical Requirement and Policy digests.
 - [X] Separate same-lineage recursive re-entry from acyclic concurrent waiting.
-- [X] Keep semantic values POO-native and isolate mutation in the runtime cell.
+- [X] Keep semantic values POO and isolate mutation in the runtime cell.
 - [X] Make terminal outcomes immutable and shared by all waiters.
 - [X] Require a new runtime context and cell address for retry.
 - [X] Prohibit child-specific G0 requalification.
@@ -1724,9 +1724,9 @@ Implementation checklist:
 G0 failure reporting has a bootstrap constraint: a failure to qualify
 =clan/poo= cannot require an already-qualified =clan/poo= capability in order to
 construct the failure object.  Therefore the initialization boundary uses a
-small Gerbil-native structured condition hierarchy.  This is an exception
+small Gerbil-runtime structured condition hierarchy.  This is an exception
 transport substrate, not a second public object model, configuration DSL, or
-alternative to POO-native composition.
+alternative to POO composition.
 
 The hierarchy is:
 
@@ -1870,7 +1870,7 @@ harness.  It does not define the hierarchy, install handlers, issue recovery
 tokens, validate continuations, or attest outcomes.
 
 #+begin_src text
-G0_CONDITION_SUBSTRATE=gerbil-native-bootstrap-safe
+G0_CONDITION_SUBSTRATE=gerbil-runtime-bootstrap-safe
 G0_ARBITRARY_CONTINUABLE_RETURN=forbidden
 G0_RECOVERY_SET=closed-and-condition-specific
 G0_TERMINAL_RECOVERY_TOKEN=one-shot
@@ -1984,7 +1984,7 @@ prevents exception text, secrets, stack data, or unstable printer output from
 silently becoming an event schema.
 
 G0 also needs observability before =clan/poo= is qualified.  The initialization
-supervisor therefore owns a minimal Gerbil-native bootstrap diagnostic buffer.
+supervisor therefore owns a minimal Gerbil-runtime bootstrap diagnostic buffer.
 It has only the fixed event schema above and does not depend on the qualified
 POO capability.
 
@@ -2068,7 +2068,7 @@ G0_EVENT_AUTHORITY=operational-diagnosis-only
 G0_DECISION_RECEIPT_AUTHORITY=canonical-semantic-decision
 G0_EVENT_TO_RECEIPT_PROMOTION=forbidden
 G0_CONDITION_TO_RECEIPT_PROMOTION=forbidden
-G0_BOOTSTRAP_DIAGNOSTICS=bounded-gerbil-native-buffer
+G0_BOOTSTRAP_DIAGNOSTICS=bounded-gerbil-runtime-buffer
 G0_OBSERVABILITY_SINK_AFFECTS_DECISION=false
 G0_EVENT_TOTAL_ORDER=context-local-only
 G0_GSLPH_EVENT_AUTHORITY=none
@@ -2522,7 +2522,7 @@ flowchart LR
 Raw prototype functions are an internal expansion target, not the ordinary user
 interface.  Users continue to write Profiles, =user-composition=,
 =use-composition=, and =compose=.  Declarative macros may generate the
-prototype functions because their expansion is ordinary POO-native and
+prototype functions because their expansion is ordinary POO and
 functional code.
 
 The pinned =object.ss= supplies a richer object layer with these relevant
@@ -2652,7 +2652,7 @@ Implementation checklist:
 - [X] Require no source modification or adapter contract in =gerbil-poo=.
 - [ ] Map the internal Mix module macro expansion to the pinned prototype
   functions.
-- [ ] Define the POO-native shape of the generated =imports= and =capabilities=
+- [ ] Define the POO shape of the generated =imports= and =capabilities=
   computations.
 - [ ] Test nested and concurrent capability cycles without patching
   =gerbil-poo=.
@@ -3283,7 +3283,7 @@ A Mix Profile may privately carry:
 - an attenuable =capability= contract;
 - one or more =clan/poo= prototype contributions.
 
-These slots are POO-native extension slots. They are not a raw record DSL and
+These slots are POO extension slots. They are not a raw record DSL and
 are not automatically added to public RootConfig projection.
 
 The existing Profile contract remains unchanged until a concrete approved case
@@ -3661,7 +3661,7 @@ The approved private source owner is:
 src/core/recoverable-control.ss
 #+end_example
 
-It defines two internal POO-native values:
+It defines two internal POO values:
 
 | Value | Carries |
 |-------+---------|
@@ -3675,7 +3675,7 @@ The control protocol is:
 
 1. a pure phase produces an existing =control-plane-failure=;
 2. the private owner projects it to a SafePointCondition;
-3. restart policy returns a POO-native RestartDecision;
+3. restart policy returns a POO RestartDecision;
 4. a pure retry invokes the live continuation with a new immutable input;
 5. every retry increments a deterministic attempt counter;
 6. repeated condition/input/decision identity or exhausted budget fails closed;

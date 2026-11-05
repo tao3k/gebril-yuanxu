@@ -11,7 +11,7 @@ def checkApproved (value : Json) : Except String Unit := do
     unless row.size == 2 do throw "approved recovery row shape mismatch"
     unless (← row[0]!.getStr?) == labels[i]! do throw "approved recovery order mismatch"
     let expected := finish (i != 5 && i != 6 && i != 7) (i != 2 && i != 3) (i != 4 && i != 5) (i != 1 && i != 6) true true
-    unless (← row[1]!.getBool?) == expected do throw "native approved recovery/Lean decision mismatch"
+    unless (← row[1]!.getBool?) == expected do throw "runtime approved recovery/Lean decision mismatch"
 def main (args : List String) : IO UInt32 := do
   match args with
   | [path] =>

@@ -20,7 +20,7 @@ projection.
 Textual precedence applies only to refinements in the same POO prototype
 lineage.  Unrelated identities providing the same singleton Capability produce
 a structured condition.  Multiple providers aggregate only when the Capability
-contract explicitly declares POO-native multiplicity semantics.  Implicit
+contract explicitly declares POO multiplicity semantics.  Implicit
 alist merging and list concatenation are forbidden.
 
 #+begin_src mermaid
@@ -31,7 +31,7 @@ flowchart LR
     M["explicit multi-provider contract"]
     O["ordered override"]
     E["structured ambiguity condition"]
-    A["POO-native aggregation"]
+    A["POO aggregation"]
 
     C -->|"lineage matches"| L
     C -->|"independent collision"| U
@@ -60,7 +60,7 @@ operates on already discovered Capability and provider contribution identities;
 it does not perform provider search.
 
 The Profile imports the structured ambiguity condition, its immutable candidate
-set, and boundary resolution authority.  It provides a POO-native resolution
+set, and boundary resolution authority.  It provides a POO resolution
 proof or contribution.  It is not an alist, string mapping, numeric priority,
 or raw candidate callback.
 
@@ -81,7 +81,7 @@ flowchart LR
     CS["immutable candidate set<br/>generation G0"]
     RP["condition-specific resolution Profile"]
     AU["boundary resolution authority"]
-    PR["POO-native resolution proof"]
+    PR["POO resolution proof"]
     G1["successor generation G1"]
     RV["rediscovered candidate set"]
     X["resolved Capability"]

@@ -30,10 +30,10 @@ program generation, complete POO composition, all business tasks or online
 weight training. Only three actual ASCENT modules were initially supplied;
 their full transitive implementation closure was not supplied. Inputs were
 source, facts and ordinary =check-equal?= tasks with missing expectations.
-There was no added semantic tutorial, RULES, worked answer or native answer
+There was no added semantic tutorial, RULES, worked answer or runtime answer
 before the first prediction. Provider text messages still carried context.
 
-* Native computation and observation
+* Runtime computation and observation
 
 All twelve tasks actually executed Scheme =relational-program= admission,
 solving and session updates. Independent finite algorithms or existing
@@ -76,7 +76,7 @@ The earlier 48-call authorization was exhausted and was not reused. This batch
 executed 24 distinct response IDs with no model retry.
 
 Requests and attempts were recorded before invocation; stream events,
-responses, usage, Reasoning, native observations, durations and outcomes were
+responses, usage, Reasoning, runtime observations, durations and outcomes were
 recorded separately. Missing terminal state stopped execution; unavailable
 billing remained unknown. A frozen plan could claim only one paid batch.
 
@@ -92,7 +92,7 @@ The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understa
 incomplete responses at the shared 4096-token output/Reasoning cap. Reported
 Reasoning totaled 36101 tokens, with zero for the six none calls.
 
-| Condition | Completed | Strict accepted and correct | Extractable after review | Native-correct after review |
+| Condition | Completed | Strict accepted and correct | Extractable after review | Runtime-correct after review |
 |-----------+-----------+-----------------------------+-------------------------+-----------------------------|
 | initial-none | 5/6 | 0/6 | 3/6 | 0/6 |
 | initial-high | 5/6 | 0/6 | 5/6 | 5/6 |
@@ -116,7 +116,7 @@ Neither an independent teaching gain nor absence of possible gain was proved.
 
 | Gate | Historical result |
 |------+-------------------|
-| Twelve native tasks and independent truth | Passed |
+| Twelve runtime tasks and independent truth | Passed |
 | Recomputed differences and reader diagnostics | Passed |
 | Initial Python orchestration controls | 32 passed |
 | Program generation and full POO composition | Not covered |
@@ -140,9 +140,9 @@ was unavailable. The USD 1 cap was not exceeded.
 The first three timing samples contain six calls each; feedback contains five,
 excluding a recovered response without original timing. History length, cache,
 output size and completion state differed; these observations do not establish
-general acceleration. Earlier warm native-worker/AOT slowdown controls stand.
+general acceleration. Earlier warm host-worker/AOT slowdown controls stand.
 
-After response 15 was saved, native recomputation violated the five-second
+After response 15 was saved, runtime recomputation violated the five-second
 silence gate. Cause remained unknown; the limit was not widened. The same task
 passed separately under the same gate. Local replay of saved responses and an
 explicit continuation completed the nine previously unattempted calls without
@@ -157,7 +157,7 @@ supplementary observations. It made no model calls or score changes.
 
 | Exclusive classification | Count | Interpretation |
 |--------------------------+-------+----------------|
-| Correct prediction rejected by original transport | 15 | Native-correct; integration failed |
+| Correct prediction rejected by original transport | 15 | Runtime-correct; integration failed |
 | Provider token cap exhausted | 3 | Incomplete, not a completed semantic error |
 | Missing placeholder | 2 | No completed prediction |
 | Unique prediction with semantic error | 2 | Capture nesting and diagnostic branch errors |
@@ -167,7 +167,7 @@ Separately, 22 whole responses violated datum transport and two raw responses
 were empty. These overlapping dimensions must not be added to the table.
 Tasks exposed =(check-equal? result '?)= without a single-datum output protocol;
 the evaluator nevertheless imposed that protocol on whole responses. Twelve
-native truth preflights had not tested actual output transport. This was an
+runtime truth preflights had not tested actual output transport. This was an
 integration design defect, not evidence that all 24 semantic predictions were
 wrong. None join/closure sometimes became code review rather than prediction.
 
@@ -183,19 +183,19 @@ Synchronous/asynchronous answer retelling was removed; historical replay became
 pure candidate checking. =temporal.observe= used the existing Scheme owner to
 compute live state/row differences bound to an exact request digest.
 =predict_temporal_answer= and its asynchronous counterpart sent detached tasks
-to IO, then delivered native artifact-bound observations through
+to IO, then delivered runtime artifact-bound observations through
 =observation_sink=. No automatic model retry or effect authority was added.
 
 The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/production-qualification.json][production engineering receipt]] bound AOT, source, wheel and check logs:
 332 Runtime tests passed with no failure/skip; 37 tooling tests passed.
 Controls covered source drift, candidate formats, state/row counterexamples,
 synchronous/asynchronous delivery and callback isolation. The installed-wheel
-test used packaged AOT/CFFI without a Gerbil executable or native-library env
+test used packaged AOT/CFFI without a Gerbil executable or runtime-library env
 override, then exercised a real control session, graph admission and Python IO.
 Its predictor was offline; Homebrew dependencies remained. This was neither a
 model score nor clean-host portability proof.
 
-PY-TEST-R003 rejected an oversized test, which was split around a shared native
+PY-TEST-R003 rejected an oversized test, which was split around a shared runtime
 session. Two pytest capture runs hid real progress and violated the silence
 gate; =-s= exposed real stderr and passed the unchanged gate. Failures and raw
 archive hashes remain. A later producer included inert unique-candidate
@@ -208,9 +208,9 @@ Version remained 1. Semantic ABI files, namespaces, C symbols and environment
 variables had no version suffix; separate =abiVersion: 1= or =version: 1=
 fields carried version identity. Project VERSION was unchanged.
 The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/naming-qualification/qualification.json][naming qualification]] rebuilt AOT/CFFI: 332 Runtime tests passed with no
-skip; 37 tooling tests passed and four native integrations skipped because
+skip; 37 tooling tests passed and four runtime integrations skipped because
 ASCENT_TEST_ROOT was unset. The wheel omitted the old library name and exercised
-native observation/control/graph/IO without Gerbil; its predictor was offline.
+runtime observation/control/graph/IO without Gerbil; its predictor was offline.
 
 The [[file:../../t/evidence/module-system/design/evidence/direct-scheme-understanding-20261003/next-plan/plan-before-naming-correction.json][withdrawn plan snapshot]] has SHA256
 =40c55c12cc1c02f77d47a4b02f01ef6d87224aeea86163431f35297dc3a3e54b=.
@@ -232,9 +232,9 @@ per-dependency dynamic eval, synthetic heartbeat or enlarged silence gate was
 used. Seven CI failures at 06051806 identified stale semantic filenames in
 build.ss; its correction required fresh exact-head CI.
 
-Twelve task thunks ran in independent lexical scopes inside one native worker.
+Twelve task thunks ran in independent lexical scopes inside one runtime worker.
 Scheme owned prediction-core.ss comparison; Python did not implement logical
-inference. Native preflight passed 12/12 with independent truth, the five-second
+inference. Runtime preflight passed 12/12 with independent truth, the five-second
 watchdog, MODULE-OK, HARNESS-OK worker-ready/worker-closed and final OK.
 EOF/let errors and HashTable/WAList mismatches remained archived as engineering
 failures. JSONReadOptions explicitly used object-as-hash, matching the semantic
@@ -243,7 +243,7 @@ ABI. Tooling/harness controls passed 42 tests. New transport replay recovered
 strict 0/24 and first supplementary scores remained unchanged.
 
 A local SDK fixture exercised 30 simulated interactions through input/output,
-current native observation, history, isolated batch claims and logs. Actual
+current runtime observation, history, isolated batch claims and logs. Actual
 provider calls and charges were zero; no live-plan claim was created. Simulated
 cost/accuracy was not reported as live performance.
 

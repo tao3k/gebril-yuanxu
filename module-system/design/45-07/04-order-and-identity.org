@@ -1,0 +1,216 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Boundary order and identity
+#+language: en
+
+[[file:../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Boundary-local ordering and contribution projection
+
+A user composition does not create one global lineage spanning the Profile
+root, every Mix root, and every nested Capability or Submodule.  Source
+operands and cases are projected into the ordered contribution sequence of
+each structural boundary.
+
+#+begin_export mermaid
+flowchart TD
+    A["State 1: lexical operand stream"]
+    A -->|"project ordinary Profile contributions"| B["State 2P: Profile-boundary plan"]
+    A -->|"detect Mix role and scoped identity"| C["State 2M: wendao Mix-boundary plan"]
+    A -->|"route case contribution to capability scope"| D["State 2C: observability capability plan"]
+    B -->|"append source item 1"| B1["base"]
+    B1 -->|"same boundary: precedes"| B2["wendao Profile projection"]
+    B2 -->|"same boundary: precedes"| B3["production"]
+    B3 -->|"normalize once"| BP["State 3P: ordered Profile lineage"]
+    C -->|"append root"| C1["wendao root"]
+    C1 -->|"case order: research first"| C2["+research Mix refinement"]
+    C2 -->|"case order: observability second"| C4["+observability Mix refinement"]
+    C4 -->|"normalize once"| CP["State 3M: ordered wendao Mix lineage"]
+    D -->|"append scoped refinement"| D1["+observability capability refinement"]
+    D1 -->|"normalize once"| DP["State 3C: ordered capability lineage"]
+#+end_export
+
+** Boundary-local order preservation
+
+For any two contributions that enter the same structural boundary, their
+relative order follows the source operand order and then the case and case-body
+order.  The expander MUST NOT sort, group by spelling, or treat contributions
+as an unordered set.
+
+If a later Profile operand contributes another refinement to an existing Mix
+or Capability root, that contribution follows earlier contributions in that
+same boundary.
+
+** No cross-boundary precedence
+
+Different boundaries do not override one another.  Source order may be
+retained as provenance for conditions and receipts, but it creates no
+cross-boundary slot precedence or =super= relationship.
+
+=super= resolves only within one lineage root.  Sibling Mix roots do not inherit
+from one another.  Capability, Mix, and Submodule relationships use
+containment or explicit POO references, while =imports= establishes dependency
+edges rather than inheritance.
+
+** Bounded compile-time contribution forest
+
+#+begin_export mermaid
+flowchart LR
+    A["State 1: lexical operands and cases"]
+    A -->|"resolve descriptors without runtime evaluation"| B["State 2: bounded contribution forest"]
+    B -->|"select Profile boundary identity"| C["State 3P: ordered Profile sequence"]
+    B -->|"select each Mix boundary identity"| D["State 3M: ordered Mix sequences"]
+    B -->|"select each Capability or Submodule identity"| E["State 3S: ordered nested sequences"]
+    C -->|"after symbol-located and behavior-proven: invoke once"| CP["State 4P: gerbil-poo Profile prototype"]
+    D -->|"for each Mix boundary: invoke once"| DP["State 4M: sibling gerbil-poo Mix prototypes"]
+    E -->|"for each nested boundary: invoke once"| EP["State 4S: sibling nested prototypes"]
+    CP -. "no cross-boundary precedence" .-> DP
+    DP -. "containment or explicit references only" .-> EP
+#+end_export
+
+The contribution forest maps structural boundary identities to ordered
+contribution syntax.  It is a bounded compile-time lowering plan, not a runtime
+configuration AST, object system, registry, or merge engine.
+
+Every boundary is lowered to one =gerbil-poo= composition operation whose exact
+public symbol and behavior must reach =behavior-proven=.  The Agentic AI Lab expander
+does not resolve slots or implement prototype linearization.
+
+If one case contributes several refinements to the same boundary, their case
+body order is preserved.  Contributions to different boundaries enter their
+respective local sequences without acquiring a false global evaluation order.
+
+** Lazy and concurrent realization
+
+Source order constrains prototype semantics only within one lineage.  Sibling
+boundaries without dependency edges may be demanded lazily or evaluated
+concurrently by the =gerbil-poo= lifecycle.  A single user composition MUST NOT
+force unrelated Submodules into source-order serial execution.
+
+* Use-composition identity separation
+
+=use-composition= MUST keep three identities distinct:
+
+1. the lexical Gerbil binding name;
+2. the runtime lineage-root identity owned by =gerbil-poo=;
+3. the provenance/content identity carried by qualification evidence.
+
+These identities answer different questions and MUST NOT be collapsed into one
+user-supplied string.
+
+#+begin_src mermaid
+flowchart LR
+  D["State: user-composition declaration"] -->|"Gerbil binding projection"| L["State: lexical binding name"]
+  D -->|"gerbil-poo prototype construction"| R["State: fresh runtime lineage root"]
+  D -->|"source + descriptor + dependency revision + lowering evidence"| P["State: provenance receipt"]
+  P -->|"canonical evidence projection"| C["State: content identity"]
+  L -->|"import rename changes spelling only"| L2["State: renamed lexical binding"]
+  R -->|"same object is imported or re-exported"| R2["State: preserved runtime lineage root"]
+  P -.->|"diagnostic attribution; no precedence or runtime identity authority"| L2
+  R -->|"derived composition constructs a new root"| DR["State: derived runtime lineage root"]
+  P -->|"records parent root, refinements, source, dependency revision, and lowering evidence"| DP["State: derived provenance receipt"]
+  DR -->|"qualified by"| DP
+#+end_src
+
+** Lexical binding identity
+
+In
+
+#+begin_src scheme
+(use-composition my-system
+  (use-module wendao-episteme as episteme
+    (profiles research observability)
+    (profile production))
+  (compose
+    (profiles episteme research observability production)))
+#+end_src
+
+=my-system= is a Gerbil binding name.  It participates in lexical scope,
+import, rename, and re-export.  It is useful for diagnostics, but it MUST NOT
+be a runtime lineage identity, memoization key, or cross-context cache key.
+
+The public form MUST NOT add a =#:identity= string parameter.  The hygienic
+macro already has the lexical binding identity, while =gerbil-poo= owns the
+runtime object identity.
+
+** Runtime lineage-root identity
+
+Each independently evaluated =use-composition= declaration constructs a
+fresh =gerbil-poo= lineage root.  Two declarations with identical source text
+therefore do not denote the same runtime root.
+
+Import rename and re-export preserve the imported POO object and its runtime
+lineage-root identity.  Changing the lexical spelling MUST NOT reconstruct the
+object or mint a replacement root.
+
+A derived composition constructs a new lineage root.  It MUST NOT overwrite,
+borrow, or impersonate a parent root merely because it contains the same
+refinements.
+
+** Provenance and content identity
+
+Qualification receipts describe how a composition was produced.  A derived
+composition receipt MUST link at least:
+
+- the parent lineage-root evidence;
+- the ordered refinements and boundary-local order;
+- the source/descriptor evidence;
+- the exact dependency revision evidence;
+- the macro-lowering evidence state.
+
+Provenance/content identity supports evidence comparison across contexts and
+processes.  A successful comparison may authorize evidence-linked reuse, but
+it MUST NOT claim that two independently constructed runtime roots are the
+same POO object.
+
+** Identity behavior under module operations
+
+| Operation | Lexical binding | Runtime lineage root | Provenance/content |
+|---+---+---+---|
+| local declaration | creates the declared name | creates a fresh root | creates declaration evidence |
+| import rename | changes local spelling | preserves the imported root | preserves and may extend import attribution |
+| re-export | exposes another binding path | preserves the exported root | preserves and may extend export attribution |
+| independent identical declaration | may reuse the same spelling in another scope | creates a distinct root | may have equal content evidence |
+| derived composition | creates the derived binding | creates a new derived root | links parents, refinements, dependencies, and lowering |
+
+* Provider-resolution reference
+
+Boundary-scoped provider capability resolution is specified by
+[[file:../45-10-provider-runtime-search-closure.org][Provider Runtime Search Closure]].  This module owns Profile, Mix, and capability
+composition; it does not define runtime search order or execute a provider.
+
+* Retired public spelling (non-normative)
+
+Earlier notes used a =user-composition= macro head and the unparenthesized
+=compose profiles= shorthand.  Neither form is a compatibility syntax,
+deprecation path, or alternate public parser entry.  The sole normative macro
+head is =use-composition=; its =use-module MODULE as ALIAS= clause is part of
+the canonical grammar rather than historical loader syntax.
+
+The canonical module clause remains:
+
+#+begin_src gerbil
+(use-module MODULE as ALIAS)
+#+end_src
+
+It appears directly inside the enclosing =compose profiles= declaration and
+is followed by ordinary Profile operands.
+
+#+begin_src gerbil
+(use-composition governance-workspace
+  (use-module wendao-episteme as episteme
+    (profiles episteme-profile)
+    (profile local-governance-profile))
+  (compose
+    (profiles episteme episteme-profile local-governance-profile)))
+#+end_src
+
+The Profile names are illustrative.  The public grammar is not extended with
+=identity=, =imports=, =capabilities=, =initial=, or =resolve= clauses.
+
+The existing parser owner remains
+=profile-composition-declaration-syntax.ss=.  This RFC owns the semantic expansion
+contract, not another parser.
+

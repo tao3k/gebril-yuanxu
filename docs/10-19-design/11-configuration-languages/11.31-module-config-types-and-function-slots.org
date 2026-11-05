@@ -7,7 +7,7 @@
 #+filetags: :config-language:modules:config:types:nix:design:
 #+property: STATUS converged-design-only-not-implemented-no-loader
 
-* One native interface, distinct source responsibilities
+* One runtime interface, distinct source responsibilities
 
 The [[file:11.32-modular-configurations-core-principle.org][modular-configuration core principle]] explains why this scope exposes
 inspectable config/types alongside callable functions, using Nickel's rationale
@@ -22,7 +22,7 @@ prototype or repeated core.config/config-contract authority is needed.
 | Source role | Owns | Does not repeat |
 |-------------+------+-----------------|
 | func.ss | Named file-to-Contract and validation functions | Module publication/default objects |
-| types.ss | Native Config/Scope/domain Contracts | A copied external Schema field inventory |
+| types.ss | Runtime Config/Scope/domain Contracts | A copied external Schema field inventory |
 | objects.ss | Reusable prototypes when multiple consumers need their behavior | One-use forwarding objects |
 | config.ss | Maintained default POO configuration | Another copy inside an operation |
 | interface.ss | Public config/types/function slot bindings and dependencies | Algorithm bodies or compiler import/export frames |
@@ -54,16 +54,16 @@ interface declaration, repeated there only as an explanatory view:
 #+end_src
 
 The implementation function accepts a Config Contract, effective config and file.
-The published slot binds the first two through native lexical slot references,
+The published slot binds the first two through runtime lexical slot references,
 so callers supply only the resolved file. This is an ordinary Scheme procedure
 value in a POO slot; no method-registration macro or public loader DSL is added.
-Constructing the slot does not read a file. Native demand determines when the
+Constructing the slot does not read a file. Runtime demand determines when the
 configured closure is obtained and when its explicit function call performs I/O.
 
 The inherited compile slot also reads types.Config/config, rather than hard-coding
 the original Contract/default. Derived scope behavior must use the derived receiver;
 a closure previously obtained from the parent is still the parent's closure.
-Native receiver controls provide a foothold, but this exact configured operation
+Runtime receiver controls provide a foothold, but this exact configured operation
 requires a future focused control. Source/coverage admission stays mandatory;
 a config flag cannot certify unsupported Schema semantics or grant file access.
 
@@ -84,7 +84,7 @@ No automatic spelling conversion from json-schema to jsonSchema is implied; an
 alias is an explicit local binding. Ordinary consumers can use their existing
 bounded use-module/with-slots bindings for the required names.
 
-A local extension is ordinary native POO:
+A local extension is ordinary POO:
 
 #+begin_src scheme
 (.def (InspectionSchema @ JsonSchema)
@@ -123,7 +123,7 @@ Demanding the generated Config Contract can read/convert the selected file; the
 module shape check in module 29 currently demands it explicitly. This is bounded
 selected work, not a zero-load claim.
 
-The downstream native configuration is small and contains no schema machinery:
+The downstream runtime configuration is small and contains no schema machinery:
 
 #+begin_src scheme
 (def ProjectCI
@@ -142,7 +142,7 @@ The published admit operation uses types.Config from its effective scope. Module
 metadata associates that operation/config/Contract for the configured preview or
 export boundary; automatic invocation remains pending. Users do not repeat those
 policies or pass an artifact, source metadata record or evidence object. Config
-assignment remains replacement; transformations of original values use native
+assignment remains replacement; transformations of original values use runtime
 functional refinement. A workflow object does not inherit a Contract descriptor.
 
 * What to learn from Nix config/options, and what differs
@@ -166,9 +166,9 @@ types participate in merging. Consequently options is not just a boolean type ch
 #+end_src
 
 Borrow coherent value/declaration views and source-aware tooling. POO config/types
-slots supply the access surface, with native Contracts, defaults and ordinary
+slots supply the access surface, with Contracts, defaults and ordinary
 functions underneath. This does not reproduce Nix option merging, fixed-point
-imports or precedence. Keep such policies explicit and use native POO semantics;
+imports or precedence. Keep such policies explicit and use POO semantics;
 never claim mkForce/mkDefault equivalence merely because a slot is overridden.
 
 * A shared namespace is not an eager global argument expansion
@@ -190,7 +190,7 @@ namespace as config; retain the Core dependency/cycle policy and bounded demand.
 
 * Reflection and next qualification
 
-Potential UX gain: maintain one small native scope with predictable config/types
+Potential UX gain: maintain one small runtime scope with predictable config/types
 paths and function slots; ordinary users read/change values while advanced users
 extend prototypes and Contracts. This unification still requires field discovery,
 correct defaults, source diagnostics, selected demand and conversion qualification;
@@ -202,10 +202,10 @@ parent closures remain unchanged; imported artifact/help share source generation
 namespace access never bypasses disable or loads unselected modules. Retain KCL
 Guestbook and real Workflow source controls; no runtime comparison was run here.
 
-Current native slot/functional/Contract primitives are reusable. Proposed here:
+Current runtime slot/functional/Contract primitives are reusable. Proposed here:
 from-file publication, config/types protocol integration, generated source-role
 wrappers and selected namespace/build linkage. Existing Core still uses :core and
 legacy function names; target :yuanxu and yuanxu- APIs remain pending.
-Macro governance permits only hygienic lowering/source capture over these native
+Macro governance permits only hygienic lowering/source capture over these runtime
 values, with no loading, Schema compilation or hidden global registry at expansion.
 This change edits documentation only and does not implement or connect a Loader.

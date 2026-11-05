@@ -11,9 +11,9 @@ provider semantics. Calling them “Evidence” without that qualification was
 misleading. =collections.ss= now names their actual responsibility: preventing
 reuse against a changed candidate, source or field. They remain internal
 explicit collection-check bindings, not user-authored configuration or portable certificates.
-The internal registry uses native weak keys, as in Core verification, so a
+The internal registry uses runtime weak keys, as in Core verification, so a
 long-lived source does not retain discarded bindings.
-Native Contract admission still returns the existing Core validation evidence;
+Runtime Contract admission still returns the existing Core validation evidence;
 there is no second general-purpose evidence protocol.
 
 The earlier literal-string policy is retained as an internal synthetic control,
@@ -30,7 +30,7 @@ facade now live in product =t/fixtures/opentofu/aws-5.100.0/=. They are not
 public runtime APIs or the package publication mechanism. The source controls
 and historical receipts below remain scoped to those explicit fixture imports.
 Normal product callers bind the public =OpenTofu= object with existing
-=use-module= and use native Contract =.admit=. Artifact directories remain inside
+=use-module= and use Contract =.admit=. Artifact directories remain inside
 the module; there are no user source-file lists or manual proofs.
 
 * Maintained source and actual acquisition
@@ -80,7 +80,7 @@ does not rerun GPG, download a plugin or prove the reproducibility of a Go build
 | =aws-hash.ss= | Pure source-corresponding CRC32, SDK string-set and literal rule-key algorithms |
 | =collections.ss= | Policy x binding-transport multi-dispatch and stale-context rejection |
 | =func.ss= | General cty conversion and shared collection traversal |
-| =objects.ss= | Native Contract publication and selected ConfigurationContract |
+| =objects.ss= | Runtime Contract publication and selected ConfigurationContract |
 | =interface.ss= | Imports and closed exports only |
 
 =ProviderSelectionContract= is generated through the existing JSON Schema
@@ -91,7 +91,7 @@ and binary obligations. =CollectionReceiptType= checks shape only; private
 registration, final-value comparison and source checks decide validity.
 
 The source adapter does not trust a user-replaced lock verifier. It compares the
-selected lock against the maintained root and verifies bytes using the native
+selected lock against the maintained root and verifies bytes using the runtime
 SourcesLock built from maintained entries. A self-consistent replacement lock
 cannot replace those pins. Schema decoding uses the SAME checked bytes. Public
 block access returns a fresh decoded projection rather than aliasing the
@@ -129,7 +129,7 @@ about signatures, SourceLock internals, candidate ledgers or =.prove=.
 (.call Membership .admit candidate #f)
 #+end_src
 
-The last operation performs native exported-shape admission and rechecks source
+The last operation performs runtime exported-shape admission and rechecks source
 integrity. It does not prepare collection bindings, normalize the candidate or
 invoke a Provider. Explicit collection consumers use
 =(.call (.get Membership collection-contract) .admit candidate context)=.
@@ -181,7 +181,7 @@ self-certify the whole object set.
 - Changed source bytes or a different lock: source/Schema diagnostics identify
   the artifact, such as =(source "schema.json")=.
 - A replaced lock's =.verify= returning =valid?: #t= cannot authenticate changed
-  bytes; the maintained native root owns verification.
+  bytes; the maintained runtime root owns verification.
 - Mutating an exported block cannot mutate the authenticated Schema.
 - Changed candidate with a retained binding: the explicit collection Contract rejects it with
   =provider-set-evidence-candidate-mismatch= at the concrete field path.
@@ -197,19 +197,19 @@ self-certify the whole object set.
 =AwsProviderBinaryContract= streams the actual executable through standard
 =Digest::sha256= / =digest-from-reader!=. It does not allocate the 649 MiB
 executable as a bytevector. Version mismatch and binary mismatch are separate
-native obligations. Running this explicit gate requires the real acquired
+runtime obligations. Running this explicit gate requires the real acquired
 binary; an offline fixture does not silently substitute for it.
 
 The product Just entrypoint is =just test-opentofu-aws-binary <binary>=. Ordinary
 fixture checks use =just test-file t/opentofu-aws-source-test.ss=. Both use the
-default native runtime and pre-import heap fence. No Loader is connected.
+default runtime and pre-import heap fence. No Loader is connected.
 
 Still separate: generic release acquisition/signature policy, other versions
 or platforms, an automated cryptographic execution attestation from binary to
 export, complete custom-rule admission, and deployment authorization. This
 implementation is one reviewed AWS release, not a general provider trust store.
 
-* Earlier native qualification before admission separation (2026-10-17)
+* Earlier runtime qualification before admission separation (2026-10-17)
 
 Core was rebuilt with the default installed Gerbil toolchain. The final focused
 run used these existing heap-fenced Just entrypoints serially:
@@ -219,7 +219,7 @@ just test-file t/opentofu-aws-source-test.ss
 just test-file t/opentofu-set-evidence-test.ss
 just test-file t/opentofu-schema-test.ss
 just test-file t/json-schema-contract-bridge-test.ss
-just test-file t/json-schema-native-contract-test.ss
+just test-file t/json-schema-poo-contract-test.ss
 just test-file t/gerbil-runtime-import-test.ss
 just test-opentofu-aws-binary /path/to/terraform-provider-aws_v5.100.0_x5
 #+end_src
@@ -228,7 +228,7 @@ All seven returned exit 0 with =MODULE-OK=, =HARNESS-OK= and final =OK= and no
 failure/overflow markers. Source admission has 27 assertions, the actual-binary
 gate has 3, retained-binding controls have 36 and the existing conversion gate
 has 54. The binding control explicitly performs GC while a context is retained.
-This is focused local native qualification, not full-suite or remote CI closure.
+This is focused local runtime qualification, not full-suite or remote CI closure.
 
 Negative controls include wrong provider version; malformed selection; changed
 Schema/SDK payload; replaced or self-consistently repinned lock; forged lock
@@ -253,7 +253,7 @@ The executable comparison is maintained in product
 =tofu validate -json=. No credentials, AWS calls, refresh or apply were used.
 The local plugin is the previously binary-verified darwin_arm64 executable.
 
-| Configuration | Native exported Contract | Actual Provider validation |
+| Configuration | Runtime exported Contract | Actual Provider validation |
 |---------------+--------------------------+----------------------------|
 | TCP 443, CIDR 10.0.0.0/16 | accepts | accepts |
 | from_port = "wrong" | rejects type at ingress/0/from_port | rejects number type |
@@ -268,13 +268,13 @@ Contract refinement can supplement exported constraints; Provider validation
 and plan remain distinct engine operations. No plan/RPC adapter is implemented.
 
 The pipeline is: Provider exported cty/block Schema -> thin standard JSON Schema
-projection -> existing Scheme Contract compiler -> native configuration =.admit=.
+projection -> existing Scheme Contract compiler -> runtime configuration =.admit=.
 The original export is valid JSON in a provider-defined Schema format. For
 example ={"type":["set","string"],"required":true}= is not a standard JSON
 Schema node. Standard JSON Schema input already supported by the shared module
 uses that module directly, without this projection.
 
-Ordinary configuration uses only the existing native entry:
+Ordinary configuration uses only the existing runtime entry:
 
 #+begin_src scheme
 (def SecurityGroup (.call AWS .contract 'aws_security_group))
@@ -312,4 +312,4 @@ provider once in an external working directory; for each checked-in
 reuse that installed provider and its lock, then run =tofu validate -json=.
 All four controls were actually executed. Only =valid.tf= returns exit 0; the
 other three return exit 1 with the diagnostics recorded in =controls.json=.
-This explicit comparison is not invoked by native Contract admission.
+This explicit comparison is not invoked by Contract admission.

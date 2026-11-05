@@ -21,9 +21,9 @@ Its Lean order laws and Quint negative controls qualify reuse premises, not a
 production traversal cache or a cached admission verdict.
 [[file:../sysml/10-evaluation/10.04-declared-revision-replay.org][10.04 Declared Revision Replay]]
 binds the issuer-payload correspondence to Core's declared gerbil-poo revision
-and records rebuilt-dependency native controls separately from model proofs.
+and records rebuilt-dependency runtime controls separately from model proofs.
 [[file:../sysml/10-evaluation/10.05-issued-traversal-projection.org][10.05 Issued Traversal Projection]]
-records selected-closure reuse, native weak-owner eviction and constructor-route
+records selected-closure reuse, runtime weak-owner eviction and constructor-route
 fallback, with producer source binding and retained A/B disturbances.
 
 | Package | Scope | Dependency boundary |
@@ -43,7 +43,7 @@ because a historical proof collection grouped them together.
 * Migration and evidence
 
 53 shared Lean 4.31 models, nine Profile association Lean 4.34 models and the
-NativeSemanticQuery TLA/CFG pair moved from the product proof tree. All 64
+RuntimeSemanticQuery TLA/CFG pair moved from the product proof tree. All 64
 source files retain the same proof statements and bodies. 24 files are byte-identical;
 40 files only change imports to the new Core module paths. Theorems, guards,
 premises and historical theorem namespace names are unchanged. The complete transitive local
@@ -54,7 +54,7 @@ batteries pins are unchanged. The association package retains the exact existing
 LeanPoo revision and toolchain; temporal and Context consumers retain their own
 independent lock. Generated .lake caches are not published source or new evidence.
 
-Native Scheme correspondence remains subject to each theorem's explicit premises.
+Runtime Scheme correspondence remains subject to each theorem's explicit premises.
 These models do not prove Loader integration, source authentication or deployment
 execution. No Loader or module adaptation is implemented by this migration.
 
@@ -66,7 +66,7 @@ execution. No Loader or module adaptation is implemented by this migration.
 | Standalone Core association package | Passed, 48 jobs |
 | Product governance and temporal consumers through the Core dependency | Passed, 25 jobs |
 | Complete product AgenticAILabProof aggregate through the Core dependency | Passed, 598 jobs |
-| Relocated NativeSemanticQuery TLC model | Model checking completed without error |
+| Relocated RuntimeSemanticQuery TLC model | Model checking completed without error |
 | Core-only source import closure | All 53 shared models resolve within Core |
 
 These are local migration checks, not remote CI or production acceptance.
@@ -82,32 +82,32 @@ update. Neither is performed by this local migration.
 
 * Current finite-model owner
 
-Test publication reuse is separate from Make target layout. The native cache
+Test publication reuse is separate from Make target layout. The runtime cache
 owner remains the receiver-indexed POO publication and closed graph result.
 =TestPublicationReuse.qnt= models private decode reuse with fresh admission;
 its matched variants retain stale-admission and foreign-packet counterexamples.
 =Admission/TestPublicationReuse.lean= binds that model's digest. See
 [[file:../sysml/10-evaluation/10.01-efficient-caching.org][the caching study]] for the actual call chain, measurements and extraction limits.
 
-=SelectionReplay= separately models the private reader's native replay tail.
+=SelectionReplay= separately models the private reader's runtime replay tail.
 Its Lean target reuses LeanPoo's =ConstructionCache.ensureLookup_hit= law:
 retaining a Graph does not retain a source approval. The ordered replay law
 removes only a stable repeated tail; observer effects retain the original tail.
 Matched finite controls reject dropping an observer tail or reordering checks.
-The serial, fixed native checker/metadata-route correspondence is a runtime
+The serial, fixed runtime checker/metadata-route correspondence is a runtime
 premise; the theorem is not a proof against raw reflection or concurrent writes.
 Its cost extension separates traversal/source work from collector and wait
 cost. =FewerMeansFaster= is a matched expected counterexample, not a runtime
 speed theorem; =matched_work_bound= states the necessary matched-cost premise.
 Raw VM allocation-counter deltas remain unqualified. See the caching study's
 twenty-demand attribution receipts rather than interpreting call counts as time.
-The installed-runtime audit in [[file:../sysml/10-evaluation/10.02-runtime-accounting.org][10.02]] uses native =##exec-stats= corrections
+The installed-runtime audit in [[file:../sysml/10-evaluation/10.02-runtime-accounting.org][10.02]] uses runtime =##exec-stats= corrections
 and signed wall/CPU residuals. The =falseMiss= negative control and cached-false
 Lean law cover the existing source-window lookup reduction; neither claims
 physical allocator correctness or a wall-time speedup.
 
 The historical TLA/CFG pair has been removed. The already-maintained Quint
-NativeSemanticQuery source moved from the product to =core/dev/proofs/quint/=
+RuntimeSemanticQuery source moved from the product to =core/dev/proofs/quint/=
 without changing its model. Product query checks consume this exact source.
 GraphOperations and five explicit mutants now live beside it.
 The verifier may generate transient backend TLA internally; maintained model
@@ -136,14 +136,14 @@ not change Scheme admission or Loader behavior.
 exposure. The new Lean owner derives a closed operation program from actual
 kernel procedure identities, cached metadata or absent selected protocols, and
 absent source observers. It is independent of arbitrary callback bodies only
-because none are invoked. Native snapshot extraction remains unimplemented;
+because none are invoked. Runtime snapshot extraction remains unimplemented;
 sealing a root is not a general read-only proof. No Scheme/Loader change or new
-native read-count result follows from the formal qualification.
+runtime read-count result follows from the formal qualification.
 
 * Observed MOP snapshot follow-up
 
 [[file:../../docs/30-39-research-foundations/32-module-assurance/32.23-mop-state-extraction.org][32.23]] joins default-runtime MOP extraction tests with SnapshotEntry's concrete
-cut guards. Native field reflection retrieves the checker without modifying
+cut guards. Runtime field reflection retrieves the checker without modifying
 producer exports. Exact endpoint equality preserves a deterministic projection;
 it does not establish source currentness, absence of ABA or atomicity. Existing
 source/domain/plan authorities remain independent. Production Scheme and Loader
@@ -178,7 +178,7 @@ The qualification does not install another production observer or wrapper.
 * Post-replay source-tail gap
 
 [[file:../../docs/30-39-research-foundations/32-module-assurance/32.28-post-replay-source-tail.org][32.28]] records actual stale accepted evidence under late observer effects.
-The formal/native gates retain these limitation witnesses without changing
+The formal/runtime gates retain these limitation witnesses without changing
 production SourceAdmissionContract or claiming return atomicity.
 
 

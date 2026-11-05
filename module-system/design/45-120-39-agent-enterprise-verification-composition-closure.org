@@ -126,6 +126,6 @@ Lean proves that a closed enterprise verification:
 
 * Next implementation gap
 
-The next runtime RFC may project the proof-level envelope into the POO-native
+The next runtime RFC may project the proof-level envelope into the POO
 =ObservationEvent= and =RecoveryDecision= constructors once the shared
 =types.ss= foundation and runtime owner admission are complete.

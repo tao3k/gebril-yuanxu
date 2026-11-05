@@ -12,7 +12,7 @@ Use data.append, data.prepend, data.replace-at and data.replace as namespace
 paths, not artifact-specific copies of generic collection operations. The data
 namespace describes ordinary value transformations, not a new object layer in
 the configured Profile and not a merge instruction language. Actual business
-conventions may have separate meaningful names. Native => supplies the inherited
+conventions may have separate meaningful names. Runtime => supplies the inherited
 value first, followed by explicit arguments; do not return a unary closure merely
 to adapt an operation that already accepts an old value and parameters.
 
@@ -23,13 +23,13 @@ coverage of documented requirements, not source-level or edge-case equivalence;
 implementation-file fetches were unavailable in this research pass. See the
 [[file:../../../docs/10-19-design/11-configuration-languages/11.01-index.org][Configuration Language research entry]] for KCL and the wider comparison.
 
-Native syntax was inspected in .data/gerbil-poo/object.ss (normalize-slot-specs,
+Runtime syntax was inspected in .data/gerbil-poo/object.ss (normalize-slot-specs,
 %normalize-named-slot-specs, object/slot-spec) and
 core/profile-composition/selection-syntax.ss plus scope-declaration.ss.
 These sources establish the following distinction:
 
 #+begin_src scheme
-;; Native normalized slot form: accepts extra arguments.
+;; Runtime normalized slot form: accepts extra arguments.
 (artifact-outputs => append '(release-log))
 ;; Its computed-slot body calls:
 (append (superfun) '(release-log))
@@ -115,7 +115,7 @@ operation. No type-directed recursive merge is inferred.
 The contribution publishes a data namespace alongside the feature scope. Its
 source is retained separately; source associations and callable discovery need
 qualification before this becomes a runtime API. Constructors below assume their
-arguments are already resolved local native objects, not Loader keys.
+arguments are already resolved local runtime objects, not Loader keys.
 
 #+begin_src scheme
 ;; Business policy, owned by the CI contribution, not the generic data library.
@@ -148,12 +148,12 @@ not task execution order.
 
 * Four complete configurations in one bounded lexical scope
 
-Use native with-slots as the preferred selective binding. It obtains the data
+Use runtime with-slots as the preferred selective binding. It obtains the data
 namespace once and introduces only the listed lexical slot names; no repeated
 individual let/.get declarations are needed. A project using one alternative
 lists just that function. The four resulting objects below are alternatives,
 returned as ordinary multiple values, not automatically composed or executed.
-See the design-level [[file:../../../docs/10-19-design/11-configuration-languages/11.03-native-slot-binding.org][native binding study]] and
+See the design-level [[file:../../../docs/10-19-design/11-configuration-languages/11.03-runtime-slot-binding.org][runtime binding study]] and
 [[file:../../../docs/10-19-design/11-configuration-languages/11.04-common-operations-comparison.org][matched dmerge/KCL/Scheme comparison]].
 
 #+begin_src scheme
@@ -186,16 +186,16 @@ still targets build-log and refuses missing/duplicate identity. Prefer stable
 identity when the requirement names an upstream-maintained output. Direct
 assignment remains simpler when the complete desired list is known.
 
-Native use-module lowers to a lexical let binding ff to
+Runtime use-module lowers to a lexical let binding ff to
 (yuanxu-module-scope CIHelpers). It evaluates the scope expression once;
-with-slots captures the data object once and selected names expand to native
+with-slots captures the data object once and selected names expand to runtime
 slot reads at their reference sites. Their getters are not forced merely because
 the names were declared. Macro-introduced helper identifiers retain definition-site
 binding and body syntax
 retains its lexical context. Inner names can shadow outer append without
 changing the library procedure's binding. Returned POO methods retain closures;
 neither ff nor the selected function identifiers become sibling/global bindings.
-This design uses existing native syntax and existing hygiene tests, not a newly
+This design uses existing runtime syntax and existing hygiene tests, not a newly
 executed qualification of these function exports.
 
 A genuinely project-specific convention stays an ordinary local function:
@@ -222,14 +222,14 @@ whether excluding package is permitted.
 
 | Documented need | POO/Scheme design response |
 |-----------------+----------------------------|
-| Scalar replacement | Ordinary native slot assignment; no function required |
+| Scalar replacement | Ordinary runtime slot assignment; no function required |
 | Append/prepend | data.append/data.prepend, demonstrated above |
 | Position update | data.replace-at for replacement, data.update-at for transformation |
 | Multiple positions | Explicit sequential calls, with the second receiving the first result |
-| Recursive array/object update | Native .+ / =>.+ inside an ordinary update function |
+| Recursive array/object update | Runtime .+ / =>.+ inside an ordinary update function |
 | Keyed updateOn | data.update-by plus a stable key function; refuse ambiguous identity |
 | decorate external data | A named adapter selects an operation separately from inert external data |
-| chainable/chainMerge | Explicit data.compose for functions, native .+ for object overlays |
+| chainable/chainMerge | Explicit data.compose for functions, runtime .+ for object overlays |
 | Collection spine | Transform helpers retain list structure; assignment may replace a whole list |
 | Typed-by-precedent | Final field Contract controls valid representation, not an implicit merge rule |
 
@@ -264,7 +264,7 @@ lower-level callbacks belong here, not in every user's configuration:
 (def (include-smoke names) (append names '(smoke)))
 (compose '(build test package) verification-checks include-smoke)
 
-;; Native overlay order is explicit, with the second based on the first result.
+;; Runtime overlay order is explicit, with the second based on the first result.
 (def (extend-build scenario)
   (.+ scenario (.o gerbil: =>.+
     (.o funflow: =>.+
@@ -285,7 +285,7 @@ External data is inert: unknown fields require input Contract diagnostics and
 only whitelisted fields may update the object. This example permits only age;
 it does not interpret executable operations from JSON. Multiple external updates
 need explicit sequencing and duplicate/conflict policy. Required right-hand .+
-Contract/source requirements must be retained or composition refused; native .+
+Contract/source requirements must be retained or composition refused; runtime .+
 alone does not implement that pending source-association boundary.
 
 * Final contracts, preview, order and demand
@@ -320,7 +320,7 @@ After final admission succeeds: admitted-preview
 These are expected design results, not executed previews; neither status starts
 execution. A cached parent Pipeline does not authorize reuse of its frozen Check
 list. The descendant Pipeline must resolve final selected objects from its own
-effective Profile and evidence must match those exact objects. Existing native
+effective Profile and evidence must match those exact objects. Existing runtime
 receiver/cache controls support this semantic boundary, not this new library's
 runtime qualification.
 
@@ -337,9 +337,9 @@ upstream changes or impure closure state.
 
 * Status
 
-Existing: native value-first => with extra arguments; parenthesized slot forms;
-native object refinement; bounded hygienic use-module and native with-slots;
-receiver-aware lazy semantics with separate historical native tests.
+Existing: runtime value-first => with extra arguments; parenthesized slot forms;
+runtime object refinement; bounded hygienic use-module and runtime with-slots;
+receiver-aware lazy semantics with separate historical runtime tests.
 
 Proposed: data namespace publication, these concrete library functions, callable
 export metadata/source association, artifact producer qualification and integrated

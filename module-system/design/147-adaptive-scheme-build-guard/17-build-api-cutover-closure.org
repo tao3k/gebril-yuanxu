@@ -2,11 +2,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-* 2026-09-12 native PackageSpec and guard convergence
+* 2026-09-12 runtime PackageSpec and guard convergence
 
 The current root =build.ss= no longer uses the retired ASP package profiles or
-profile projectors.  It declares one POO-native =PackageSpec= with an explicit
-=all-gerbil-modules= catalog and the Agentic AI Lab native-spec projector, then gives
+profile projectors.  It declares one POO =PackageSpec= with an explicit
+=all-gerbil-modules= catalog and the Agentic AI Lab std-make-spec projector, then gives
 the resulting heterogeneous Scheme/SSI/GSC/FFI spec to a top-level upstream
 =std/build-script#defbuild-script= form.  Top-level placement is required: the
 macro installs the package script's =spec=/=compile=/=clean= multicall main.
@@ -23,7 +23,7 @@ count nor implements a second scheduler, sampler, classifier, or receipt schema.
 The nested Cedar conformance build uses the same public PackageSpec and guard
 surface around its explicit build work.  Its specialized Cargo artifact
 staging remains downstream-owned, but the old =parallelize: #f= override is
-removed so native Gerbil scheduling keeps the caller or machine capacity.
+removed so Gerbil scheduling keeps the caller or machine capacity.
 
 The sections below are retained as the historical 2026-09-01 cutover record;
 their former profile names are not current APIs.
@@ -33,7 +33,7 @@ their former profile names are not current APIs.
 Agentic AI Lab now consumes the public ASP Gerbil Scheme package-spec macro and the
 gerbil-bazel project execution capability directly.  The root =build.ss=
 declares one POO package object with =asp-gerbil-scheme-package-spec!=, projects
-its native =std/make= value, and hands that value to the ASP
+its runtime =std/make= value, and hands that value to the ASP
 =defbuild-script= entrypoint.  Agentic AI Lab no longer owns a CLI build supervisor,
 an adaptive execution-window scheduler, or a project compile guard.
 
@@ -43,8 +43,8 @@ flowchart LR
   Cores["GERBIL_BUILD_CORES"] --> GB
   GB --> ASP["ASP Gerbil Scheme Build API"]
   ASP --> POO["POO package-spec object"]
-  POO --> Native["Native std/make spec"]
-  Native --> Compile["Agentic AI Lab project compile"]
+  POO --> Runtime["Runtime std/make spec"]
+  Runtime --> Compile["Agentic AI Lab project compile"]
   Compile --> Receipt["gerbil-bazel project receipt v1"]
 
   Legacy["Removed POO CLI scheduler and project guard"] -. no authority .-> Compile
@@ -69,12 +69,12 @@ seconds and are correctness receipts, not a replacement cold-build baseline.
 
 Agentic AI Lab imports only =:asp-gerbil-scheme/src/package-build-api= from its
 =gerbil.pkg= dependency.  It does not import ASP's CLI, provider server, HTTP
-runtime, testing framework, or product-native build plan.  The facade exposes
+runtime, testing framework, or product-runtime build plan.  The facade exposes
 the declarative package macro, builder profiles, source discovery, profile
-projection, and the native =std/make= bridge.
+projection, and the runtime =std/make= bridge.
 
 The package macro captures one module owner catalog.  Profile admission parses
-that declared catalog once, then the accepted native-spec is passed to the one
+that declared catalog once, then the accepted std-make-spec is passed to the one
 upstream =std/make= session.  This shares ownership without pretending that the
 policy parser AST can replace Gerbil's compiler AST.
 
@@ -84,7 +84,7 @@ flowchart LR
   API --> Package[POO package object]
   Package --> Catalog[one declared module catalog]
   Catalog --> Policy[one policy projection]
-  Catalog --> Spec[native std/make spec]
+  Catalog --> Spec[runtime std/make spec]
   Policy --> Admission[profile admission]
   Admission --> Make[one upstream std/make session]
   Spec --> Make
@@ -96,7 +96,7 @@ flowchart LR
 The downstream Package Spec has one source catalog boundary.  For a customary
 Gerbil repository that boundary is =roots: ["."]=; =t/= is a Builder Profile
 test convention, not a second runtime catalog.  Agentic AI Lab may retain an explicit
-=native-spec= while its specialized FFI ownership is being projected, but it
+=std-make-spec= while its specialized FFI ownership is being projected, but it
 must not reintroduce =runtime-roots=.  A Provider executable owns its static
 closure separately through =runtime-modules=.
 
@@ -105,9 +105,9 @@ flowchart LR
   ROOT["Package Spec\nroots"] --> CATALOG["One module catalog"]
   PROFILE["Build API Profile\nGit ignore + fixture exclusions"] --> CATALOG
   CATALOG --> POLICY["Policy admission\none scan"]
-  TESTS["Profile test-roots: t/"] --> NATIVE["Native build projection"]
-  CATALOG --> NATIVE
-  PROJECTOR["Agentic AI Lab named projector\nSSI + Nono FFI + UI ownership"] --> NATIVE
-  NATIVE --> RUNTIME["Production library units"]
+  TESTS["Profile test-roots: t/"] --> RUNTIME["Runtime build projection"]
+  CATALOG --> RUNTIME
+  PROJECTOR["Agentic AI Lab named projector\nSSI + Nono FFI + UI ownership"] --> RUNTIME
+  RUNTIME --> RUNTIME["Production library units"]
   PROVIDER["Provider runtime-modules"] --> CLOSURE["Static executable closure"]
 #+end_src

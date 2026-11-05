@@ -78,7 +78,7 @@ Examples include:
 - one slot-contract object;
 - one contribution, priority or force-authority identity;
 - one runtime dependency result;
-- one native =gerbil-poo= operation identity.
+- one runtime =gerbil-poo= operation identity.
 
 A whole module, source file or prototype root is used only when evidence cannot
 prove a narrower diff.
@@ -168,7 +168,7 @@ Every propagation edge commits to:
 
 * Reflection-aware explanation
 
-The reason for propagation reflects the native POO observation:
+The reason for propagation reflects the POO observation:
 
 | Observation | Explanation relation |
 |-------------+----------------------|

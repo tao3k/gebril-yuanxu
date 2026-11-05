@@ -111,7 +111,7 @@ renamerHiveExports = (super.pops.hive.setNixosConfigurationsRenamer "asd").setHo
 
 The same owner exposes ordinary configuration outputs and pops. That is an
 existing library-level example of progressive disclosure. Our ordinary CI
-refinement and native extension should meet this usability baseline. These
+refinement and runtime extension should meet this usability baseline. These
 consumers do not prove the external POP implementation's cache semantics,
 diagnostic quality or scalability. Do not substitute generic NixOS options
 claims for observations of HiveBus itself.
@@ -139,7 +139,7 @@ mechanisms stay available behind that understandable task surface.
 * Concrete design follow-through
 
 The [[file:../164-funflow-public-configuration/10-discovery-conflicts-and-plan-preview.org][smoke discovery/conflict/preview design]] specifies the missing interfaces
-as native object projections and acceptance cases. It does not add public DSL
+as runtime object projections and acceptance cases. It does not add public DSL
 forms, an inspection CLI, runtime execution or Loader behavior.
 
 | Ecosystem capability | Adopt | Remaining POO requirement |
@@ -148,4 +148,4 @@ forms, an inspection CLI, runtime execution or Loader behavior.
 | Sandbox defaults and emitter | One owner for policy defaults and output | Actual reference/capability admission, not a source-name shortcut |
 | CI matrix and schema boundary | Reusable transformations, hide internals, validate output | Matrix/name collision policy and checked plan publication |
 | HiveBus values and POP exports | Common values first, object extension when needed | Discoverable fields and source-aware conflict explanation |
-| BAML task/tool loop | Task discovery, diagnostics and preview before execution | A native inspection/preview result with explicit validation state |
+| BAML task/tool loop | Task discovery, diagnostics and preview before execution | A runtime inspection/preview result with explicit validation state |

@@ -35,7 +35,7 @@ This closure reuses two existing owner modules.
 - authenticity evidence.
 
 This RFC does not define another commitment algorithm or authorization model.
-It binds those owner-native objects to the receipt chain proved by 45-120-41.
+It binds those owner-runtime objects to the receipt chain proved by 45-120-41.
 
 * Lean-discovered adjacency gap
 
@@ -293,7 +293,7 @@ It must not introduce another policy engine, grant model, or commitment scheme.
 - [X] Focused Lean closure build: 143 jobs passed.
 - [X] Enterprise aggregate build: 429 jobs passed.
 - [X] Full Lean build: 501 jobs passed.
-- [X] Native Orgize block validation: ten Typst blocks and one Mermaid block.
+- [X] Runtime Orgize block validation: ten Typst blocks and one Mermaid block.
 - [X] Typst rendering: =/private/tmp/45-120-42-audit-commitment.pdf=, 18,971 bytes.
 - [X] Mermaid parser validation: one source block.
 - [ ] Mermaid renderer validation: no local Mermaid CLI is available.

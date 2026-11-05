@@ -163,7 +163,7 @@ Gerbil-Bazel owner regression:
 //gerbil:run_project_test                                       PASS
 //tests/smoke:dependency_source_resolution_receipt_test         PASS
 //tests/smoke:guarded_project_receipt_test                      PASS
-//tests/smoke:native_math_receipt_test                          PASS
+//tests/smoke:runtime_math_receipt_test                          PASS
 //tests/smoke:project_receipt_test                              PASS
 #+end_example
 

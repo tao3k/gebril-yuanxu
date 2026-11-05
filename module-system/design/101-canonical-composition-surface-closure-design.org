@@ -102,7 +102,7 @@ a wrapper-object hierarchy, or a second module runtime.
 
 Recognition is bounded to macro-expansion time.  An out-of-context
 =use-module= form fails during expansion with the canonical actionable
-diagnostic.  A successful expansion contains ordinary POO-native and
+diagnostic.  A successful expansion contains ordinary POO and
 functional code; runtime behavior does not depend on syntax objects.
 
 Advanced module construction and refinement continue to use the POO object and

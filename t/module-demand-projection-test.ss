@@ -20,7 +20,7 @@
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (for-each (lambda (form) (write form port) (newline port)) forms))))
 (def module-demand-projection-test
-  (test-suite "Actual metadata and role binding through native source wrappers"
+  (test-suite "Actual metadata and role binding through runtime source wrappers"
     (yuanxu-test-fixture "metadata selects without roles; access and child use final receivers"
       (fixture ProjectionFixture)
       (def count 0)
@@ -91,7 +91,7 @@
         (check-equal? (> count initial) #t)
         (.def (child @ parent) core.config.port: 5433)
         (check-equal? (.get (publication child) accepted?) #t)
-        (def contract (.get child core scope-contract))
+        (def contract (.get child core application-contract))
         (def admitted (.call contract .admit (.get child scope) (scope-context child)))
         (check-equal? (.get admitted accepted?) #t)
         (check-equal? (.get contract source-inputs) (.get fixture sources))

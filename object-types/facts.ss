@@ -195,8 +195,8 @@
 ;; yuanxu-object-contract->type-facts
 ;;   : (-> YuanxuContract [YuanxuTypeFactContract])
 ;;   | doc m%
-;;       Project every native slot schema in a Contract into stable type facts.
-;;       This is a one-way proof projection from native descriptors.
+;;       Project every runtime slot schema in a Contract into stable type facts.
+;;       This is a one-way proof projection from runtime descriptors.
 ;;       # Examples
 ;;       (yuanxu-object-contract->type-facts receipt-contract)
 ;;       # Result

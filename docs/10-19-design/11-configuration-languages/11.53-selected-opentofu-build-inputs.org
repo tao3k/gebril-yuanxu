@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 11.53 Config Languages 52: Selected OpenTofu Build Inputs
 #+property: DOCUMENT_ID 11.53
-#+property: STATUS implemented-local-native-no-loader
+#+property: STATUS implemented-local-runtime-no-loader
 
 * Implemented follow-up
 
@@ -34,7 +34,7 @@ Our demand comes from the final POO configuration. It is not another
 user-maintained Provider list or SelectedTypes declaration. The same local-name
 ownership rule is used for build projection and configuration admission.
 
-* Native object boundary: final keys, no Provider access
+* Runtime object boundary: final keys, no Provider access
 
 Implemented in =modules/opentofu/objects.ss=:
 
@@ -50,9 +50,9 @@ Implemented in =modules/opentofu/objects.ss=:
 ; => '(resource aws_security_group)
 #+end_src
 
-=.build-inputs= is a named pure function in a native object slot. It traverses
+=.build-inputs= is a named pure function in a runtime object slot. It traverses
 only the =provider/resource/data= section names and their immediate keys.
-Native =.all-slots= enumerates inherited final keys without demanding instance
+Runtime =.all-slots= enumerates inherited final keys without demanding instance
 values. The section containers themselves are necessarily demanded. Provider
 configuration bodies, instance bodies, generated Contracts, modules and files
 remain untouched. The actual test uses throwing bodies to enforce this boundary.
@@ -61,7 +61,7 @@ Hash-table and association-list wire inputs are also accepted at this boundary.
 - Provider configuration names select their local binding directly.
 - Resource/data names use the existing first-prefix ownership rule:
   =aws_security_group -> aws=, =awscc_ec2_security_group -> awscc=.
-- Names are deduplicated and sorted. =demands= retains native objects with the
+- Names are deduplicated and sorted. =demands= retains runtime objects with the
   originating type paths. This is explanatory demand, not admission evidence.
 - Unknown sections, malformed containers and unresolvable names reject before
   package realization. A structurally named but nonexistent AWS type still
@@ -150,7 +150,7 @@ There are two demand domains, not two schedulers:
    not a replacement Module graph and not runtime execution authorization.
 
 The local round trip is implemented and tested: final POO value -> demand wire
--> selected Nix collection -> native scope -> original Contract =.admit=.
+-> selected Nix collection -> runtime scope -> original Contract =.admit=.
 Automatic attachment of external package inputs to the general Module selected
 Graph/build entry remains an adapter gap. Existing compiler-input generation
 is not falsely presented as an external-package planner. No Loader, directory
@@ -164,7 +164,7 @@ file emitted from its configuration; this is not end-to-end stale-source proof.
 
 * Cached admission and configuration evolution
 
-After package injection, the ordinary downstream entry stays native:
+After package injection, the ordinary downstream entry stays runtime:
 
 #+begin_src scheme
 (def result
@@ -210,7 +210,7 @@ Owners:
   derivation is a positive control for the excluded Provider identities.
 - =t/fixtures/opentofu/selected-build-control.json=: structured local receipt.
 
-Six serial default-runtime gates pass: 279 explicit assertions plus six native
+Six serial default-runtime gates pass: 279 explicit assertions plus six runtime
 exception controls, each with =MODULE-OK=, =HARNESS-OK= and final =OK=, without
 harness or heap/stack errors. Five Nix evaluation controls pass independently.
 The two-version upgrade/rollback control retains 84 assertions.
@@ -223,16 +223,16 @@ control includes both Schema derivations. This establishes build-dependency
 exclusion on the tested packages, independently of their preexisting store
 outputs. It is not a cold-machine timing or a general performance result.
 
-Native admission rejects =resource.aws_security_group.web.ingress.0.from_port=
+Runtime admission rejects =resource.aws_security_group.web.ingress.0.from_port=
 when the port is a string, preserving the original generated Contract path.
 Source/version digests match the real locked package. Unexported Provider SDK
 CIDR/plan rules remain Provider validation responsibilities; this work does not
 expand Schema coverage or conflate configuration admission with plan/apply.
 
 The initial probe exposed a lexical-slot mistake: a local =demands= referenced
-inside =(.o demands: demands)= resolves to the native slot itself. Renaming the
+inside =(.o demands: demands)= resolves to the runtime slot itself. Renaming the
 local accumulator repaired the code; the original failure remains in local
-artifacts. This illustrates why actual native execution is required in addition
+artifacts. This illustrates why actual runtime execution is required in addition
 to a plausible expansion. No macro or compatibility runtime was introduced.
 
 * Executed reselection after a cached parent
@@ -244,7 +244,7 @@ configuration's demand JSON. The same selected Nix builder consumes that file.
 Its real result is
 =/nix/store/jfgkcznr78mhh6vwbij2l5ad79bywwxp-opentofu-artifacts=.
 A second run starts with the original AWS-only parent, caches its Contract,
-and injects the rebuilt collection into a native child:
+and injects the rebuilt collection into a runtime child:
 
 #+begin_src scheme
 (.def (Updated @ OpenTofu)
@@ -258,12 +258,12 @@ All 15 assertions in the complete run pass. The child admits both resources,
 reads the Null resource input once, leaves its data index unread, and has no
 awscc binding. The parent's Contract and Provider scope retain their object
 identities and its original admission still has one child. Null remains locked
-to 3.2.4. The bootstrap run has three assertions. These are additional native
+to 3.2.4. The bootstrap run has three assertions. These are additional runtime
 controls, not a new Loader or automatic build handoff.
 
 The architectural goal is to refactor away independently maintained Provider
 selection lists: final configuration owns demand, Nix owns realization, and
-native Contract admission owns validation of the final object. Their projections
+Contract admission owns validation of the final object. Their projections
 are mechanically connected in this local control. Eliminating the remaining
 manual phase handoff requires the external-package selected-graph adapter and
 source-currentness binding described above; strong language mechanisms alone

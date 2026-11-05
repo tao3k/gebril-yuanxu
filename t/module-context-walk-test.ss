@@ -1,11 +1,11 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (only-in :gerbil/expander make-module-context module-context? module-context-import
+        (only-in :gerbil/expander core-import-module make-module-context module-context? module-context-import
                  make-module-import module-import? module-import-source
                  make-module-export module-export? module-export-context
                  make-import-set import-set? import-set-source)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module yuanxu-bootstrap-contexts)
+        (only-in "../module-system/building/source-closure.ss" for-each-build-module yuanxu-bootstrap-contexts)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe))
 (export module-context-walk-test)
 
@@ -21,7 +21,7 @@
       (when (descend? value) (for-each walk (module-context-import value)))
       (visit value)))))
 (def (context-node)
-  ;; Same native names deliberately: graph identity is the context, not its id.
+  ;; Same runtime names deliberately: graph identity is the context, not its id.
   ;; No SDK registry, import, evaluator, syntax body or runtime promise is edited.
   (make-module-context 'walk/same-name #f "walk/same-name" "context-fixture.ss"))
 (def (wrapped context)
@@ -41,7 +41,12 @@
       (check-equal? visits (hash-length contexts))
       (check-equal? (>= visits (hash-length names)) #t)
       (hash-for-each
-        (lambda (_name context) (check-equal? (hash-key? contexts context) #t)) names))
+        (lambda (_name context) (check-equal? (hash-key? contexts context) #t)) names)
+      (for-each
+        (lambda (name identity)
+          (check-equal? (eq? (hash-get names identity) (core-import-module name)) #t))
+        '(:yuanxu/object-family/role-syntax :yuanxu/configuration/json)
+        '(yuanxu/object-family/role-syntax yuanxu/configuration/json)))
     (yuanxu-test-case "postorder, wrappers, identity sharing and cuts match the original walk"
       (def nodes (list->vector (map (lambda (_) (context-node)) (iota 6))))
       (def (node n) (vector-ref nodes n))
@@ -68,7 +73,7 @@
           (check-equal? (hash-length actual-seen) (hash-length expected-seen))
           (check-equal? (hash-key? actual-seen (node 5)) #f))
         (list #f (node 1) (node 3))))
-    (yuanxu-test-case "deep native context graphs use explicit frames and visit each identity once"
+    (yuanxu-test-case "deep runtime context graphs use explicit frames and visit each identity once"
       (for-each
         (lambda (size)
           (def nodes (list->vector (map (lambda (_) (context-node)) (iota size))))

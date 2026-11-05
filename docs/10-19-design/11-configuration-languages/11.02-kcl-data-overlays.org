@@ -23,7 +23,7 @@ Use outputs: a string sequence, with initial value ["build-log"]. The Scheme
 counterpart is a POO object with an outputs slot holding a string list. Do not
 compare an entire Attribute Set/schema instance to a bare Scheme slot declaration,
 or compare string arrays to Symbol lists. Distinct runtimes retain different
-native object types while the logical record structure is matched.
+runtime object types while the logical record structure is matched.
 
 #+begin_src python
 schema OutputConfig:
@@ -91,7 +91,7 @@ not compare an inline KCL implementation to a prebuilt Scheme helper and call th
 length difference an intrinsic advantage. Count library authoring separately from
 consumer configuration.
 
-Our proposed library's with-slots and native => unify functional transformation
+Our proposed library's with-slots and runtime => unify functional transformation
 with POO object inheritance. This still needs callable discovery, field contracts,
 source/conflict diagnostics, purity/cost governance and final effective-value
 preview. These are open obligations, not established advantages. Actual ecosystem

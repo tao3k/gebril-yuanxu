@@ -10,7 +10,7 @@
                  hash-put!
                  hash-ref
                  make-hash-table-eq)
-        (only-in :clan/poo/object .ref object<-alist)
+        (runtime: :clan/poo/object)
         :yuanxu/composition/roles
         :yuanxu/feature-system/model
         :yuanxu/feature-system/resolver

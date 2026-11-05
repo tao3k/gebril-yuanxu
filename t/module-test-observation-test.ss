@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Native controls for the module adapter of the existing fixture macro.
+;;; Runtime controls for the module adapter of the existing fixture macro.
 (import :std/test :clan/poo/object
         (only-in :std/list/list iota)
         (only-in :std/source this-source-file)
@@ -84,8 +84,8 @@
                 (for-each
                   (lambda (name)
                     (def path (path-expand name root))
-                    ((current-module-source-observer) (list 'native-source-import-start path) 1)
-                    ((current-module-source-observer) (list 'native-source-import-end path) 1))
+                    ((current-module-source-observer) (list 'compiler-source-import-start path) 1)
+                    ((current-module-source-observer) (list 'compiler-source-import-end path) 1))
                   '("modules/nix/func.ss" "modules/funflow/func.ss"))))))
         (check-equal? (and (string-contains labels "modules/nix/func.ss") #t) #t)
         (check-equal? (and (string-contains labels "modules/funflow/func.ss") #t) #t)
@@ -115,7 +115,7 @@
     (yuanxu-test-fixture "a new macro invocation has independent totals"
       profile: Observed (resource Resource)
       (check-equal? (yuanxu-test-observe 'compiler-demand 0) 0))
-    (yuanxu-test-fixture "read-width tracing preserves every native observer delivery"
+    (yuanxu-test-fixture "read-width tracing preserves every runtime observer delivery"
       profile: Observed (resource Resource)
       (def target (.o answer: 42 other: 43))
       (check-equal? (.get target answer) 42)
@@ -177,7 +177,7 @@
       (check-equal? (and (string-contains output
         "reader-clos-roots publications=0 effective=1 frames=1") #t) #t)
       (check-equal? (.ref/cached frame 'kind) #f))
-    (test-case "native read telemetry preserves the Case category budget"
+    (test-case "runtime read telemetry preserves the Case category budget"
       (def output
         (call-with-output-string
           (lambda (port)
@@ -261,16 +261,16 @@
           ((current-module-source-observer) '(admission-stage-start contract-admit) 1)
           ((current-module-source-observer) '(admission-stage-end contract-admit) 1)
           ((current-module-source-observer) '(package-store-validity hit) 1)
-          ((current-module-source-observer) '(native-source-import-start "outer.ss") 1)
-          ((current-module-source-observer) '(native-source-import-start "inner.ss") 1)
-          ((current-module-source-observer) '(native-source-import-end "inner.ss") 1)
+          ((current-module-source-observer) '(compiler-source-import-start "outer.ss") 1)
+          ((current-module-source-observer) '(compiler-source-import-start "inner.ss") 1)
+          ((current-module-source-observer) '(compiler-source-import-end "inner.ss") 1)
           ;; Only the completed outer span contributes time, not both edges.
           (check-equal? (yuanxu-test-observe 'import-microseconds 0) 0)
-          ((current-module-source-observer) '(native-source-import-end "outer.ss") 1)
+          ((current-module-source-observer) '(compiler-source-import-end "outer.ss") 1)
           ((current-module-source-observer) '(reader-declaration (bindings . 1) (imports . 0)) 1)))
       (check-equal? reads '())
       (check-equal? (>= (yuanxu-test-observe 'import-microseconds 0) 0) #t)
       (check-equal? (>= (yuanxu-test-observe 'import-cpu-microseconds 0) 0) #t))
-    (test-case "native Ops flags follow the shared default heap"
+    (test-case "runtime Ops flags follow the shared default heap"
       (check-equal? (.get yuanxu-default-testing-case-profile heap-limit-bytes)
                     2147483648))))

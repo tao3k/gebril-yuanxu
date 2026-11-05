@@ -298,7 +298,7 @@ Key declarations:
   =sha256:619b619da9fadb547a5af64377b1b9c21b85a57bf5c2a2d90051a00f8f63bb21=;
 - the existing Python audit suite completed with 76 passing tests in
   12.03 seconds and Ruff completed with no findings;
-- native orgize parsed 14 headings, 14 checklist items, 10 Typst source
+- runtime orgize parsed 14 headings, 14 checklist items, 10 Typst source
   blocks, and 1 Mermaid source block;
 - Typst compiled all ten mathematics blocks successfully;
 - final =asp org= and whitespace receipts remain the completion gates below.

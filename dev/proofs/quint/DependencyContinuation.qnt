@@ -16,7 +16,7 @@ module DependencyContinuationModel {
       openStartedDirty: false, accepted: false, held: true}
   }
   // Producer, getters and dependency projection have already returned.
-  // Only the paired native candidate can postpone the complete tail guard.
+  // Only the paired runtime candidate can postpone the complete tail guard.
   action completeProducer = all {
     s.phase == 0,
     val allowed = s.closed or BUG == "unseenToken" or current(s.dirty)
@@ -24,7 +24,7 @@ module DependencyContinuationModel {
       .with("held", allowed)
       .with("accepted", BUG == "earlyPublish" and allowed)
   }
-  // The native continuation walks private symbol lists and hashes. Substituting
+  // The runtime continuation walks private symbol lists and hashes. Substituting
   // an open getter here is invalid even if a later full guard would reject it.
   action dependencyWalk = {
     nondet changed = required.union(Set(-1)).oneOf()

@@ -12,7 +12,7 @@ driver.
 flowchart LR
     P["gerbil.pkg\npackage identity and exact revisions"]
     B["build.ss\nPOO package declaration"]
-    A["ASP PR #3 Build API\npackage-spec and native-spec"]
+    A["ASP PR #3 Build API\npackage-spec and std-make-spec"]
     S["Gerbil std/build-script + std/make\ncompile graph and scheduling"]
     G["gerbil-bazel\ntoolchain, sandbox, cache, resource guard"]
     E["Typed action receipts"]
@@ -26,9 +26,9 @@ flowchart LR
 - =gerbil.pkg= is the only Agentic AI Lab package/dependency declaration.  The ASP
   dependency is fixed to PR #3 revision
   =e8d00f54294ead9fead051ef1f618a53dd177640=.
-- The top-level =build.ss= is the only native package build declaration.  It
+- The top-level =build.ss= is the only runtime package build declaration.  It
   consumes =asp-gerbil-scheme-package-spec!=,
-  =asp-gerbil-scheme-package-native-spec=, =defbuild-script=, and
+  =asp-gerbil-scheme-package-std-make-spec=, =defbuild-script=, and
   =framework-build-bindir= from ASP PR #3.
 - Gerbil =std/build-script= and =std/make= retain compiler graph and scheduling
   authority.  Agentic AI Lab does not start another =gxi= or =gxc= to supervise a

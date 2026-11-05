@@ -73,7 +73,7 @@ Session -> Agent/Workflow -> Session
 
 This aligns with our functional + POO direction. A flow can be Arrow/Kleisli-
 like at the composition level while each session, policy, and profile remains a
-POO object with C4 inheritance and native extension.
+POO object with C4 inheritance and runtime extension.
 
 OpenRath's weak point is that it does not go far enough on policy. A child
 agent can be session-addressable, but the authorization surface needs to be
@@ -121,7 +121,7 @@ derived indexes.
 Agentic AI Lab should split this durable capability into three layers.
 
 1. User authoring layer:
-   Native POO objects declare session, memory, lineage, durable checkpoint,
+   POO objects declare session, memory, lineage, durable checkpoint,
    context, communication, sandbox, and resource policy. Users should write
    small =use-module= and =.def= forms, not ad hoc alists.
 
@@ -138,7 +138,7 @@ Agentic AI Lab should split this durable capability into three layers.
    execution success alone does not attest Context value. These are design
    responsibilities, not a claim of completed runtime migration.
 
-This keeps Gerbil doing what it is good at: high-level strategy, POO-native
+This keeps Gerbil doing what it is good at: high-level strategy, POO
 composition, contracts, and handoff shapes. It keeps Rust doing what it is good
 at: durable storage, concurrent runtime, IO, and recovery machinery.
 
@@ -197,7 +197,7 @@ The exact syntax is not decided, but the inheritance direction is important:
 - Runtime recovery is not a separate user object. It is derived from durable
   policy plus checkpoint facts.
 
-This is the POO-native advantage over a Nix-style option tree. A profile can
+This is the POO advantage over a Nix-style option tree. A profile can
 define =durable/default= once, then specialize session and memory policies with
 C4 inheritance, local overrides, and extension.
 

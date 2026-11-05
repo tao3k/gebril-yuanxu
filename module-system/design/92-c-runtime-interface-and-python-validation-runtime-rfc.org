@@ -29,7 +29,7 @@ The approved decisions are:
 7. Public types never expose =___SCMOBJ=, Scheme heap addresses, Gerbil object layout, or private runtime pointers.
 8. Every crossing declares buffer ownership and lifetime.
 9. Zero-copy may be claimed only when buffer stability, immutability, and lifetime are demonstrated.
-10. Canonical evidence packets and native fast views derive from one schema and are differentially validated.
+10. Canonical evidence packets and runtime fast views derive from one schema and are differentially validated.
 11. ABI v1 remains unfrozen until the Gerbil and =gerbil-mysql= research, C harness, Python runtime, memory, fault, and performance gates pass.
 
 * Purpose
@@ -45,7 +45,7 @@ flowchart LR
         C["Control Lane<br/>negotiate / open / close<br/>cancel / checkpoint / restore"]
         H["Hot Event Lane<br/>poll_batch / submit_batch"]
         B["Bulk Buffer Lane<br/>owned / borrowed<br/>caller buffer / shared arena"]
-        N["Schema-derived Normalization<br/>native view ↔ canonical packet"]
+        N["Schema-derived Normalization<br/>runtime view ↔ canonical packet"]
     end
     P["First-party Python Runtime<br/>Production-grade CFFI API mode"]
     D["Downstream Runtimes<br/>Rust / TypeScript / Others"]
@@ -159,9 +159,9 @@ A header contains fixed-width fields sufficient for event kind, flags, sequence,
 
 Headers use offsets and lengths rather than one allocated pointer per field. Every offset, length, stride, and capacity calculation MUST be overflow-safe and bounds-checked. Unknown tags/flags fail unless negotiated extensibility permits them.
 
-The native fast view is process-local. It MAY use a precisely defined host-native alignment profile but MUST NOT be persisted as canonical evidence, hashed as canonical bytes, transported without explicit encoding, or used after its lease expires.
+The runtime fast view is process-local. It MAY use a precisely defined host-runtime alignment profile but MUST NOT be persisted as canonical evidence, hashed as canonical bytes, transported without explicit encoding, or used after its lease expires.
 
-Canonical packets and native views derive from one schema. Differential tests MUST prove native-to-canonical and canonical-to-typed equivalence and that malformed native views cannot normalize into different valid events.
+Canonical packets and runtime views derive from one schema. Differential tests MUST prove runtime-to-canonical and canonical-to-typed equivalence and that malformed runtime views cannot normalize into different valid events.
 
 Static Bundle digest, policy digest, epoch, and identity tables SHOULD be cached behind validated session handles. Per-event traffic carries compact identities and changing data rather than reserializing the Bundle.
 
@@ -252,7 +252,7 @@ The production binding uses CFFI out-of-line API mode, which generates compiled 
 
 Compatible buffers SHOULD use the Python buffer protocol and =ffi.from_buffer= with explicit lease retention. An out-of-line =extern "Python"= callback MAY handle bounded exceptional integration but MUST NOT become the per-effect loop.
 
-A Python object retaining a C view MUST retain its handle, lease, or arena generation. GC MUST NOT release native resources while in use. Deterministic resources use explicit close; finalizers are defensive fallback only.
+A Python object retaining a C view MUST retain its handle, lease, or arena generation. GC MUST NOT release runtime resources while in use. Deterministic resources use explicit close; finalizers are defensive fallback only.
 
 Passing Python validates ABI completeness, trace equivalence, batching, ownership, recovery, production viability, and measured CFFI overhead. It does not override Bundle or ABI semantics.
 
@@ -280,7 +280,7 @@ Reference: [[https://gambitscheme.org/latest/manual/][Gambit Scheme Manual]].
 
 * =gerbil-mysql= Evidence and Owner-Index Blocker
 
-The reviewed =.data/gerbil-mysql= checkout confirms separation among low-level native binding ownership in =db/_mysql.scm=, binding/public API ownership in =db/mysql.ss=, and test ownership in =db/mysql-test.ss=.
+The reviewed =.data/gerbil-mysql= checkout confirms separation among low-level runtime binding ownership in =db/_mysql.scm=, binding/public API ownership in =db/mysql.ss=, and test ownership in =db/mysql-test.ss=.
 
 The parser owner index did not provide a valid parser-owned item selector for the relevant internal implementation during review. Therefore the review did not establish exact internal result ownership, row materialization, byte/text conversion, prepared-buffer reuse, or batch amortization.
 
@@ -300,7 +300,7 @@ Every case compares Gerbil in-process, a pure C harness, and the Python CFFI pro
 
 Each receipt identifies revision, build profile, ABI/schema, hardware/OS, capabilities, complete input datum, and machine-checkable result. A reduced datum MUST NOT be reported as full-path performance.
 
-Freeze evidence MUST show batching amortizes crossings, native/canonical views agree, large payloads avoid hidden per-field copying, Python is production-viable, ownership does not retain unbounded memory, and reviewed GC/allocation/copy/latency/throughput/RSS thresholds pass. Faster but semantically weaker paths are rejected.
+Freeze evidence MUST show batching amortizes crossings, runtime/canonical views agree, large payloads avoid hidden per-field copying, Python is production-viable, ownership does not retain unbounded memory, and reviewed GC/allocation/copy/latency/throughput/RSS thresholds pass. Faster but semantically weaker paths are rejected.
 
 * Conformance and Fault Matrix
 
@@ -312,7 +312,7 @@ Conformance tests MUST cover:
 - wrong, stale, double-released, and cross-instance handles;
 - batch-one equivalence, correlation, mixed outcomes, partial acceptance, duplicate submission, malformed bounds/alignment, and unknown tags;
 - owned release, borrowed expiry, caller capacity, arena reclamation, Python retention, allocator mismatch, leaks, and use-after-free;
-- native/canonical equivalence and C/Python normalized trace equivalence;
+- runtime/canonical equivalence and C/Python normalized trace equivalence;
 - Bundle/epoch and intent-digest preservation;
 - allow/deny transport, expiry, replay, payload substitution, receipts, and old-epoch rejection.
 
@@ -336,7 +336,7 @@ Every fault produces a typed machine-checkable result. Possible effect without d
 - *Per-effect calls rejected:* batching amortizes Gerbil, Gambit, C, and Python costs.
 - *Callback-driven hot path rejected:* pull avoids reentrancy, threading, exception, and lifetime hazards.
 - *Header array plus payload arena accepted:* it reduces allocation and pointer chasing.
-- *Canonical-only hot path rejected:* native views provide speed while schema-derived canonical packets provide evidence and interoperability.
+- *Canonical-only hot path rejected:* runtime views provide speed while schema-derived canonical packets provide evidence and interoperability.
 - *Implicit ownership rejected:* Gerbil evidence shows real owned, borrowed, shallow, array, and custom-release modes.
 - *Public =___SCMOBJ= rejected:* it would bind downstream runtimes to private GC and representation details.
 - *Unproven Scheme-heap zero-copy rejected:* stability, immutability, and reclamation must be demonstrated.
@@ -354,7 +354,7 @@ ABI v1 may freeze only when:
 4. All three lanes are implemented and documented.
 5. A pure C harness covers every lifecycle and effect state.
 6. Python implements all required behavior only through installed public artifacts and production CFFI API mode.
-7. Native/canonical differential validation passes.
+7. Runtime/canonical differential validation passes.
 8. All ownership modes pass lifetime, leak, allocator, bounds, overflow, use-after-free, and double-release tests.
 9. Retry, replay, partial acceptance, checkpoint, cancellation, crash, timeout, and indeterminate tests pass.
 10. The complete performance matrix has machine-checkable receipts and enforced reviewed thresholds.

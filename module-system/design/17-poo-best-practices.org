@@ -12,7 +12,7 @@ Detailed programming rules derived from =.data/gerbil-poo= live in
 This file is the module-system entrypoint; =29= is the deeper language-style
 contract.
 
-The goal is to keep =agentic-ai-lab= native to Gerbil POO while preserving a simple
+The goal is to keep =agentic-ai-lab= runtime to Gerbil POO while preserving a simple
 declarative user interface.
 
 ** 10.06.17.20 Reference Signals
@@ -24,7 +24,7 @@ The useful external patterns are:
 - grafonnix: constructors return POP objects, extension stays on objects, and
   final values project into plain data only at the boundary.
 
-The =agentic-ai-lab= interpretation is POO-native: user files extend prototype
+The =agentic-ai-lab= interpretation is POO: user files extend prototype
 objects directly rather than calling a chain API or writing row/alist DSLs.
 
 ** 10.06.17.30 Local Owner Rules
@@ -219,7 +219,7 @@ Do not:
   exists.
 
 ** 10.06.17.100 Landed Implementation Slice
-The POO-native profile interface slice is now implemented through:
+The POO profile interface slice is now implemented through:
 - =modules/sandbox-core/profile-interface.ss=
 - =modules/nono-sandbox/profile-interface.ss=
 - =modules/cubeSandbox/profile-interface.ss=
@@ -232,5 +232,5 @@ The important design rule remains fixed:
 public profile authoring is POO .def, not a row/alist DSL.
 #+end_src
 
-Future repair operators should become named POO-native helpers or functional
+Future repair operators should become named POO helpers or functional
 helpers rather than another private merge language.

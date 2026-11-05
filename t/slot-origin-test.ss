@@ -2,7 +2,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :yuanxu/object-syntax/path-slots
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :clan/poo/object .get .+ .cc .all-slots .put! object-slots with-slots)
+        (only-in :clan/poo/object .get .+ .cc .all-slots .put! object-slots with-slots
+                 object-%declarations)
+        (only-in :clan/poo/prototype-map prototype-map)
         (prefix-in (only-in :clan/poo/object make-object) poo-)
         (only-in :clan/poo/mop Slot)
         (only-in :yuanxu/configuration/slot-origin field-slot-origins/value admit-field-sources!)
@@ -12,8 +14,8 @@
         (only-in "./qualification/testing/directory.ss" DirectoryFixture))
 (export slot-origin-test)
 (def slot-origin-test
-  (test-suite "Native slot-attached Scheme provenance"
-    (yuanxu-test-case "assignment, native transform, inheritance and right-hand copy keep their own origins"
+  (test-suite "Runtime slot-attached Scheme provenance"
+    (yuanxu-test-case "assignment, runtime transform, inheritance and right-hand copy keep their own origins"
       (.def Base port: 5432)
       (.def (First @ Base) (port => + 1))
       (.def (Second @ First) port: 5440)
@@ -46,7 +48,7 @@
       (check-equal? (.get (car (field-slot-origins/value paired '(port))) operation) 'assign)
       ;; An uninstrumented explicit .cc write cannot borrow an inherited locator.
       (check-equal? (field-slot-origins/value (.cc Second port: 5600) '(port)) '()))
-    (yuanxu-test-case "shared prefixes, payload hygiene and undemanded fields remain native"
+    (yuanxu-test-case "shared prefixes, payload hygiene and undemanded fields remain runtime"
       (def left-count 0)
       (def unused-count 0)
       (.def Base service: (.o left: (.o port: 5432) right: (.o port: 5432)))
@@ -61,7 +63,7 @@
       (check-equal? (.get Child service left port) 5433)
       (check-equal? (list left-count unused-count) '(1 0))
       (check-equal? (.get (car (field-slot-origins/value Child '(service left port))) operation) 'assign))
-    (yuanxu-test-case "native cc retains untouched specifications and never borrows an overwritten field source"
+    (yuanxu-test-case "runtime cc retains untouched specifications and never borrows an overwritten field source"
       (.def Parent port: 5432 label: 'database)
       (def cached (.get Parent port))
       (def parent-origin (car (field-slot-origins/value Parent '(port))))
@@ -79,17 +81,17 @@
       (.def Container database: replacement)
       (check-equal? (field-slot-origins/value Container '(database port)) '())
       (check-equal? (.get Parent port) cached))
-    (yuanxu-test-case "native explicit instance assignments shadow declaration sources without becoming inherited caches"
+    (yuanxu-test-case "runtime explicit instance assignments shadow declaration sources without becoming inherited caches"
       (.def Parent port: 5432)
       (check-equal? (.get Parent port) 5432)
       (.put! Parent 'port 5440)
       (check-equal? (.get Parent port) 5440)
       (check-equal? (field-slot-origins/value Parent '(port)) '())
-      ;; Native .cc copies specifications, not the explicit instance assignment.
+      ;; Runtime .cc copies specifications, not the explicit instance assignment.
       (def copy (.cc Parent))
       (check-equal? (.get copy port) 5432)
       (check-equal? (length (field-slot-origins/value copy '(port))) 1))
-    (yuanxu-test-case "native declaration compilation cannot inherit a replaced field's source"
+    (yuanxu-test-case "runtime declaration compilation cannot inherit a replaced field's source"
       (.def Parent port: 5432)
       (check-equal? (.get Parent port) 5432)
       (def descriptor (.o (:: @ (.get Slot proto)) constant: 5440))
@@ -98,6 +100,27 @@
           declarations: (list (cons 'port descriptor))))
       (check-equal? (.get child port) 5440)
       (check-equal? (field-slot-origins/value child '(port)) '())
+      (check-equal? (.get Parent port) 5432))
+    (yuanxu-test-case "present false metadata blocks attribution without demanding its value"
+      (.def Parent port: 5432)
+      (def inherited (poo-make-object supers: (list Parent)))
+      (def method-barrier (poo-make-object supers: (list Parent)
+        slots: (list (cons 'port #f))))
+      ;; Current POO enrolls descriptor dependencies at construction and rejects
+      ;; false descriptors there. Preserve that stronger constructor boundary.
+      (check-exception
+        (poo-make-object supers: (list Parent)
+          declarations: (list (cons 'port #f))) error?)
+      (def declaration-barrier (poo-make-object supers: (list Parent)))
+      ;; Deliberately corrupt metadata through the MOP for this read-only
+      ;; attribution probe; this is not a constructible/admitted publication.
+      (set! (object-%declarations declaration-barrier)
+        (prototype-map (list (cons 'port #f))))
+      ;; Invalid metadata may be inspected for attribution but cannot supply
+      ;; an older source, and must not be forced or admitted by this query.
+      (check-equal? (length (field-slot-origins/value inherited '(port))) 1)
+      (check-equal? (field-slot-origins/value method-barrier '(port)) '())
+      (check-equal? (field-slot-origins/value declaration-barrier '(port)) '())
       (check-equal? (.get Parent port) 5432))
     (yuanxu-test-fixture "JSON baseline remains attached to the effective Scheme field diagnostic"
       (fixture DirectoryFixture)

@@ -53,18 +53,18 @@
       ;; Narrow only fixture selection and retained roots, never build.ss.
       (call-with-output-file (list path: (path-expand "init.ss" fixture-root) truncate: #t)
         (lambda (port)
-          (display "(import \"./module-system/selection/init-syntax.ss\")\n" port)
           (write '(yuanxu! mode: explicit source: "./modules" (json-schema)) port)))
       (call-with-output-file (list path: (path-expand "core-spec.ss" fixture-root) truncate: #t)
         (lambda (port)
-          (write '(export core-spec core-public-roots) port) (newline port)
-          (write '(def core-public-roots '()) port) (newline port)
-          (write '(def core-spec '("prelude" "utilities/algorithms" "object-types/contracts" "object-types/ports" "core-spec")) port)))
+          (write '(export core-spec) port) (newline port)
+          (write '(def core-spec '("prelude" "module-system/selection/init-syntax"
+                                  "utilities/algorithms" "object-types/contracts"
+                                  "object-types/ports" "core-spec")) port)))
       (.o root: fixture-root state: fixture-state cold: #t))))
 
 (def (link-fixture-dependencies source target)
   ;; Preserve installed dependency namespaces intact, instead of replacing
-  ;; every compiled input with a new leaf symlink. Neither metadata nor native
+  ;; every compiled input with a new leaf symlink. Neither metadata nor runtime
   ;; code is copied or rewritten. Partition only namespaces containing Core.
   (def (excluded? relative)
     (or (member relative '("core" "yuanxu" "tao3k/yuanxu"))

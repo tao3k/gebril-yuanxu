@@ -23,7 +23,7 @@ changed by these documents. Existing Core mechanism owners remain where they are
 | Design | Owner |
 |--------+-------|
 | Standard published Module source roles | [[file:01-source-roles.org][Source-role Contract and assembly boundary]] |
-| Directory snapshots and native lazy namespace | [[file:02-directory-sources.org][Directory Contract and projection design code]] |
+| Directory snapshots and runtime lazy namespace | [[file:02-directory-sources.org][Directory Contract and projection design code]] |
 | interface publication, init selection and Module/Feature boundary | [[file:03-publication-selection.org][Publication and selection protocol]] |
 | Core/product namespaces and generic build ownership | [[file:05-namespace-and-build-ownership.org][Current names, target package and migration boundary]] |
 | Selected module closure and build contribution projection | [[file:04-selected-build-view.org][Pure selected build view design code]] |
@@ -34,7 +34,7 @@ changed by these documents. Existing Core mechanism owners remain where they are
 | Guestbook application of the five improvements | [[file:../../docs/10-19-design/10-configuration/10.05-guestbook-context-and-contribution-design.org][Context candidates, dependencies, merge, preview and cache boundaries]] |
 | Human-Agent module authoring and review | [[file:../../docs/10-19-design/10-configuration/10.06-human-agent-module-authoring.org][AI-era framework purpose and evaluation questions]] |
 | JSON/Scheme input to domain objects | [[file:../../docs/10-19-design/10-configuration/10.07-guestbook-data-input-and-object-construction.org][Data-first Guestbook, Contract sources, functions and placeholders]] |
-| Internal construction and its research rationale | [[file:../../docs/10-19-design/10-configuration/10.08-guestbook-construction-protocol.org][Native design code]] and [[file:../../docs/10-19-design/10-configuration/10.09-guestbook-construction-reflection.org][ecosystem evidence, reflection and controls]] |
+| Internal construction and its research rationale | [[file:../../docs/10-19-design/10-configuration/10.08-guestbook-construction-protocol.org][Runtime design code]] and [[file:../../docs/10-19-design/10-configuration/10.09-guestbook-construction-reflection.org][ecosystem evidence, reflection and controls]] |
 
 Core remains independent of Agentic AI Lab, current product-specific adapters, ASP build
 policy and deployment providers. The shared JSON Schema bridge is implemented in
@@ -66,7 +66,7 @@ are maintained here; concrete application integration may remain downstream.
 
 * Existing and pending
 
-Existing: native POO object/slot semantics; [[file:../graph/funs.ss][module-closure]]; Module/source/schema
+Existing: POO object/slot semantics; [[file:../graph/funs.ss][module-closure]]; Module/source/schema
 values and static Loader mechanisms; bounded scope syntax in profile-composition.
 Pending: the stronger published-Module role shell, hierarchical directory source
 adapter, publication metadata admission, retained disable integration and selected

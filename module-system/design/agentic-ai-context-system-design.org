@@ -26,7 +26,7 @@ already migrated; the next protocols are specified in
 [[file:ai-agentic-context-session-memory-contracts.org][Module roles, Session and Memory contracts]].
 
 The delivered ownership baseline is Agentic AI Lab
-=22c4b24c3872daac782d3c836fb17369c0fe51c7=. Existing native Context Use checks
+=22c4b24c3872daac782d3c836fb17369c0fe51c7=. Existing runtime Context Use checks
 are a partial Library implementation, not qualification of this whole system.
 All newly authored design documents and examples use English.
 
@@ -56,7 +56,7 @@ One public =interface.ss= closes the Module boundary. Internal Gerbil files
 provide static code ownership. Session remains independently selectable. The core interface is implemented;
 new Session/Memory protocols remain proposed. Core sources follow the
 =types/objects/funs/config/interface= roles in Programming Style 01. Public values are
-native POO objects; named pure functions own selection, composition, replay,
+POO objects; named pure functions own selection, composition, replay,
 and projection. Private records hold Host runtime state. C/Python values are
 projections of the same Scheme contracts; MRR Rust remains a downstream adapter.
 
@@ -89,7 +89,7 @@ profile. Durable retention explicitly requires a declared Backend adapter.
 These requirements belong to the selected operation/profile; activating Memory
 alone cannot silently instantiate a Session, scheduler, or durable store.
 
-The proposed authoring selection is one Module with native Feature values:
+The proposed authoring selection is one Module with runtime Feature values:
 =ai-agentic-context= with its independent Session dependency and optional
 =ai-agentic-context/memory= descriptor.
 The final syntax must lower through the existing module/feature authoring
@@ -310,7 +310,7 @@ original transaction, never permission to execute another effect.
 | POO Query | Canonical Query/ElementSpace/Provider/result admission |
 | POO Authority/Temporal/Evidence | Grants, restrictions, proof/applicability and typed obligations within declared profiles |
 | MRR | Original fact/query/receipt identity, semantic admission, materialization and typed rejection |
-| MRR runtime | C transport, worker lifecycle and explicit native/Data consumer coordination |
+| MRR runtime | C transport, worker lifecycle and explicit runtime/Data consumer coordination |
 | MRR Data | Immutable storage, conditional transactions, CAS, history/outbox and recovery |
 
 Current code includes =modules/query/orgize-source.ss= (bounded source-headline
@@ -321,7 +321,7 @@ retirement and policy clock). The new Context core separates boundary Types,
 inert POO objects, pure functions, configuration and its public interface.
 
 The ownership migration removed standalone Memory registrations and moved its
-implementation under Context. The native Session descriptor is composed through
+implementation under Context. The runtime Session descriptor is composed through
 the existing Module closure. The next Session and Memory semantic changes follow
 [[file:ai-agentic-context-session-memory-contracts.org][the explicit role and protocol contracts]]. Existing Session imports of Memory
 helpers remain adapter-migration inventory; descriptor independence does not
@@ -375,7 +375,7 @@ capacity refusal preserves retired identities instead of evicting their fences.
 | SafeRecovery | Old handles, repeated outbox or historical ACK cannot restore permission or duplicate effect |
 
 Each disabled guard must yield its matched counterexample, replayed against
-native Library and original MRR/Data consumers with exact transition order and
+runtime Library and original MRR/Data consumers with exact transition order and
 source/scope/generation/clock/payload bindings. Finite checking, concrete trace
 acceptance, and refinement are distinct evidence.
 
@@ -387,12 +387,12 @@ direct migration slices, and focused executable gates.
 1. Review this system boundary and Content/Context/Session/Memory contracts,
    including Module/Feature manifests, Org examples, projection laws, partial
    outcomes and cross-turn scope.
-2. Implement native POO values and pure functions around the Orgize/POO Query
+2. Implement POO values and pure functions around the Orgize/POO Query
    route; qualify source/query/revision correspondence before reusing selections.
 3. Compose the independent Session Module and migrate Memory as an owned Feature of =ai-agentic-context=;
    qualify each Feature profile, core-only use, Session capture dependencies,
    lineage, evidence/revisit/retention independence, and typed recovery.
-4. Check the combined Quint profile, guard mutations, and concrete native traces.
+4. Check the combined Quint profile, guard mutations, and concrete runtime traces.
 5. Close disclosure and result/effect fences with original MRR/Data consumers;
    qualify checkpoint/restart and source/grant races before real Agent claims.
 
@@ -404,7 +404,7 @@ checking the new source cut. Repeat with a broken Org link, changed query rule,
 cross-Session handoff, policy retirement, lease expiry, and restart.
 
 Report design acceptance, implemented Library profile, bounded model checking,
-native correspondence, and exact-head consumer CI separately. The full system
+runtime correspondence, and exact-head consumer CI separately. The full system
 is not complete until its declared consumption and recovery boundaries qualify.
 
 * Session identity and subagent scheduling refinement
@@ -420,15 +420,15 @@ proposed implementation slices, not covered by existing headline replay tests.
 
 [[file:context-temporal-lifecycle-policy-system-design.org][The Agentic AI Lab joint policy system design]] defines orthogonal lifecycle states,
 explicit Temporal applicability and clock domains, admitted strategy composition,
-and the versioned FFI/Runtime/MRR/Data handoffs. It records the pure native window
+and the versioned FFI/Runtime/MRR/Data handoffs. It records the pure runtime window
 policy and separates its local qualification from the prospective joint protocol
 model and remaining provider/backend implementation.
 
 * ASCENT-backed Temporal is the primary integration owner
 
-Context composes the existing temporal-causality Module's native ASCENT lens,
+Context composes the existing temporal-causality Module's runtime ASCENT lens,
 original proof/Rule/Derivation correspondence, registered current applicability,
 support/dependency reverse plans and Impact refresh. [[file:context-temporal-lifecycle-policy-system-design.org][The joint policy design]] maps
 these actual source owners and makes their registered witnesses the next capsule
-inputs. Clock-window checks are a component of that design. Reuse the native
+inputs. Clock-window checks are a component of that design. Reuse the runtime
 proof/source/policy controls; do not create a second evaluator or Temporal registry.

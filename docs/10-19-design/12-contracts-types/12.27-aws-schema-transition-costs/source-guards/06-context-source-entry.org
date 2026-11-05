@@ -55,7 +55,7 @@ been assembled; no internal Context or admission evidence escapes beforehand.
 There is no new Graph interface or source cache. Independent later Context
 checks and standalone Context construction retain their full checks.
 
-* Native controls
+* Runtime controls
 
 The existing admission-publication suite uses the real selected/build Graph and
 public Schema/Projection Contracts. Its assembly fixture counts source opens
@@ -83,7 +83,7 @@ Schema getters remain cold. The aggregate above does not add that warm-up.
 The production mechanism is in
 [[file:../../../../../admission/publication.ss][publication.ss]]; controls remain in
 [[file:../../../../../t/admission-publication-test.ss][admission-publication-test.ss]].
-The native tests use the existing serial heap-fenced Just entrypoint. An
+The runtime tests use the existing serial heap-fenced Just entrypoint. An
 initial work assertion incorrectly included first source-projection setup:
 it observed seven opens against an estimated five and failed. The bounded
 assembly counter now excludes that setup explicitly, while the full workload

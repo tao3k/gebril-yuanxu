@@ -21,8 +21,8 @@ auditable decomposition, not a target public API or an optimal function count.
 They remain design code. This revision neither replaces their bodies nor claims
 that Lean proves the Scheme adapter. It adds no Loader or runtime integration.
 
-Keep one native POO model for upstream libraries and downstream configuration.
-Use named pure functions for selection and graph algorithms, native slots for
+Keep one POO model for upstream libraries and downstream configuration.
+Use named pure functions for selection and graph algorithms, runtime slots for
 receiver-dependent behavior, and private defrules only for repeated declarations.
 Generic dispatch belongs at independently varying consumer/protocol boundaries.
 No new options DSL, cache DSL or configuration wrapper is introduced.
@@ -103,8 +103,8 @@ Nor may a generic NixOS options example be described as HiveBus's own validator.
 | Authoring task | Existing ecosystem lesson | POO design response and remaining cost |
 |----------------+---------------------------+----------------------------------------|
 | Maintain many recipes | Omnibus owns matrix transforms; HiveBus centralizes source/input loading | Publish complete defaults, contracts and pure projections; static source imports and catalog scale still need measurement |
-| Change one business value | Omnibus CI and HiveBus host files expose intent rather than provider machinery | Refine native paths; provide discovery so users need not inspect internal source |
-| Extend behavior | HiveBus exposes POP extension before exports | Keep native prototype/strategy extension; define its admitted source role and conflicts |
+| Change one business value | Omnibus CI and HiveBus host files expose intent rather than provider machinery | Refine runtime paths; provide discovery so users need not inspect internal source |
+| Extend behavior | HiveBus exposes POP extension before exports | Keep runtime prototype/strategy extension; define its admitted source role and conflicts |
 | Produce a useful artifact | Omnibus checks serialized workflow shape; HiveBus publishes deployment configuration outputs | Admission must feed a checked consumer projection; object construction alone is insufficient |
 
 Scheme higher-order functions and private macros can factor upstream families
@@ -118,18 +118,18 @@ claims requiring consumer tests and matched measurements.
 | Reference group | Count | Permitted consolidation | Required semantic boundary |
 |-----------------+-------+-------------------------+----------------------------|
 | Diagnostics, reflection, evidence and unknown fields | 10 | Shared diagnostic construction and prepared declared-field membership index | Preserve evaluation/classification/admission failure distinctions and current evidence correlation |
-| Context and source occurrence | 3 | Shared native Context/capability structural Contracts | Effective Scenario/module/Profile and source association must match |
+| Context and source occurrence | 3 | Shared runtime Context/capability structural Contracts | Effective Scenario/module/Profile and source association must match |
 | Preflight and selection checks | 4 | Reuse one established preparation within admission | Missing, duplicate, reserved and non-Check selections fail before checks is forced |
-| Native Check recognition and selection | 2 | One named pure selector | Resolve the requested order on the effective receiver; retain object identities |
+| Runtime Check recognition and selection | 2 | One named pure selector | Resolve the requested order on the effective receiver; retain object identities |
 | Guarded admission and three adapters | 4 | Private defrules may generate the three thin wrappers | Preserve preflight-before-inherited-traversal and fail-closed evidence |
 | Capability, reference, metadata and payload helpers | 4 | Factor common traversal and field descriptors | Shape, supported policy, reference resolution and payload admission remain distinct |
 | Domain obligations | 3 | Consume established preparation/proofs without repeating work | Check, Pipeline and Profile requirements still apply |
 | Selected dependency graph | 1 | Reuse only under unchanged selected graph and policy premises | Missing dependencies, cycles and duplicate durable task IDs remain errors |
 
 The counts sum to 31. Adapter generation reduces source duplication, not
-necessarily runtime cost. Native .all-slots already caches slot/precedence data;
+necessarily runtime cost. Runtime .all-slots already caches slot/precedence data;
 a prepared membership index removes repeated membership scans, not a supposedly
-uncached complete native schema rebuild.
+uncached complete runtime schema rebuild.
 
 ** LeanPoo reuse conditions
 
@@ -157,8 +157,8 @@ The Lean typed computation model does not infer arbitrary Scheme dependencies.
 * Minimum CI/CD example: cache the parent, then add smoke
 
 The ordinary user surface below follows proposed direct dotted assignment in
-[[file:11-direct-path-assignment-and-refinement.org][module 11]], with native intermediate inheritance underneath. That adapter
-remains future work. Explicit enclosing-object =>.+ belongs in its native
+[[file:11-direct-path-assignment-and-refinement.org][module 11]], with runtime intermediate inheritance underneath. That adapter
+remains future work. Explicit enclosing-object =>.+ belongs in its runtime
 lowering or in an intentional inherited-object extension, not every value edit.
 
 The [[file:13-independent-profiles-and-scenario-composition.org][independent Profile/Scenario wiring]] is authoritative. Independent Profile owners supply
@@ -175,7 +175,7 @@ pipeline:
 #+end_src
 
 This is a contextual excerpt, not a separate executable form. effective-config
-is the native outer receiver binding; selected-checks is the Pipeline lexical
+is the runtime outer receiver binding; selected-checks is the Pipeline lexical
 slot binding. No manual Check collector belongs in the user configuration.
 
 #+begin_src scheme
@@ -217,7 +217,7 @@ selected graph; it requires fresh construction or a justified transport. Reusing
 unaffected component work is a separate optimization. Fixed checks: parent-checks
 is the negative control: it lacks smoke and retains the parent's build.
 
-Native receiver probes have executed historical controls. The complete domain
+Runtime receiver probes have executed historical controls. The complete domain
 adapter, four-member selected admission and Lean-to-Scheme reuse correspondence
 are not thereby validated. No new execution receipt is created by this example.
 
@@ -228,7 +228,7 @@ based on actual NixOS and Doom sources. The number of possible combinations must
 not cause eager creation of every possible Profile/Scenario instance.
 
 [[file:10-discovery-conflicts-and-plan-preview.org][Module 10]] develops discovery, conflict diagnosis and effective-plan preview
-into concrete native result requirements and a smoke acceptance journey. Its
+into concrete runtime result requirements and a smoke acceptance journey. Its
 [[file:../164-module-interface-comparison/07-ecosystem-task-interfaces.org][ecosystem evidence]] adds actual Omnibus AWS/Sandbox/CI and HiveBus examples
 and borrows BAML's task-tooling experience without copying its syntax.
 
@@ -247,8 +247,8 @@ implemented by naming a Contract or by the current unknown-field issue alone.
 
 ** 2. Merge conflicts and order
 
-Keep native replacement, functional list refinement and nested =>.+ distinct.
-Prototype precedence determines native lookup; it is not a complete policy for
+Keep runtime replacement, functional list refinement and nested =>.+ distinct.
+Prototype precedence determines runtime lookup; it is not a complete policy for
 independent publishers. Explicit downstream refinement of one inherited value
 is allowed. Ambiguous independent contributions to the same qualified business
 identity require a source-aware conflict or explicit owner resolution, not an
@@ -267,7 +267,7 @@ module 07 does not retain all contribution history or implement that policy.
 Check attributes are closed against effective responsibilities. Profile Check
 names are an open extension point, not a reason to allow arbitrary Check fields.
 Do not close a Profile to its pipeline responsibility alone, and do not accept
-every added slot merely because native objects are open. The owner must specify
+every added slot merely because runtime objects are open. The owner must specify
 which extension positions contain Check objects and which contain metadata or
 other declared roles. Selecting a new Check requires explicit membership.
 
@@ -292,7 +292,7 @@ is implemented here, and no current source-handle check proves these properties.
 
 ** 5. Effects, demand and first-access cost
 
-Scheme expressiveness permits effects, recursion and opaque dependencies. Native
+Scheme expressiveness permits effects, recursion and opaque dependencies. Runtime
 lazy getters alone prove neither purity nor cheap first access. Separate catalog
 discovery, source/compile work, scope construction, prototype demand, Profile
 construction, admission, projection and warm reads. Include memory and actual
@@ -331,7 +331,7 @@ build. A separate execution receipt is needed to claim CI ran successfully.
 * Delivery boundary
 
 This module records design decisions and acceptance cases. Complete default
-objects, native expansion and historical cache probes remain in their existing
+objects, runtime expansion and historical cache probes remain in their existing
 owners. Source consolidation, prepared indices, diagnostic discovery, conflict
 history, dynamic domain admission, plan publication and cross-revision reuse
 must not be reported as newly implemented by this document. Loader work remains

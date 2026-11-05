@@ -22,8 +22,8 @@ structure Observation where
   record : Record
   registered : Nat
   frozen : Option Frozen
-  nativeIssued : Bool
-  nativeCurrent : Bool
+  runtimeIssued : Bool
+  runtimeCurrent : Bool
   revision : Nat
   instanceId : Nat
   inCache : Bool
@@ -43,8 +43,8 @@ def decode (j : Json) : Except String Observation := do
     record := ⟨← fieldNat j "token", optionalHandle (← fieldNat j "presented"),
       ← decodePayload (← j.getObjVal? "payload"), ← natList (← j.getObjVal? "key-shape")⟩
     registered := registered, frozen := frozen
-    nativeIssued := ← fieldBool j "observed-issued"
-    nativeCurrent := ← fieldBool j "observed-current"
+    runtimeIssued := ← fieldBool j "observed-issued"
+    runtimeCurrent := ← fieldBool j "observed-current"
     revision := ← fieldNat j "revision", instanceId := ← fieldNat j "instance"
     inCache := ← fieldBool j "in-read-cache", valueCached := ← fieldBool j "value-cached"
     cachedValue := ← fieldNat j "cached-value", miss := ← fieldBool j "miss"
@@ -65,8 +65,8 @@ def projectedCurrent (o : Observation) : Bool :=
 
 def checkRow (o : Observation) : Except String Unit := do
   let actualProjection := authenticate (observedStore o) o.record
-  unless actualProjection == o.nativeIssued do
-    throw s!"native/projected issuance mismatch: {o.name}"
+  unless actualProjection == o.runtimeIssued do
+    throw s!"runtime/projected issuance mismatch: {o.name}"
   unless authenticateSingle (observedStore o) o.record == actualProjection do
     throw s!"single-closure/projected issuance mismatch: {o.name}"
   if let some frozen := o.frozen then
@@ -76,8 +76,8 @@ def checkRow (o : Observation) : Except String Unit := do
       throw s!"ordered dependency snapshot mismatch: {o.name}"
   unless IssuedRead.issued (project (observedStore o) o.record) == actualProjection do
     throw s!"legacy projection mismatch: {o.name}"
-  unless projectedCurrent o == o.nativeCurrent do
-    throw s!"native/projected currentness mismatch: {o.name}"
+  unless projectedCurrent o == o.runtimeCurrent do
+    throw s!"runtime/projected currentness mismatch: {o.name}"
 
 def expectedNames : List String := ["persistent", "miss", "unsigned-copy",
   "replaced", "restored", "closure-callback-restored", "borrowed", "payload-edited",
@@ -85,7 +85,7 @@ def expectedNames : List String := ["persistent", "miss", "unsigned-copy",
 
 def checkTrace (j : Json) : Except String (List Observation) := do
   let rows ← (← j.getArr?).toList.mapM decode
-  unless rows.map (·.name) == expectedNames do throw "incomplete or reordered native trace"
+  unless rows.map (·.name) == expectedNames do throw "incomplete or reordered runtime trace"
   for row in rows do
     checkRow row
     for earlier in rows.takeWhile (fun e => e.name != row.name) do
@@ -93,15 +93,15 @@ def checkTrace (j : Json) : Except String (List Observation) := do
         unless earlier.registered == row.registered && earlier.frozen == row.frozen do
           throw s!"original association changed: {row.name}"
   let some miss := rows[1]? | throw "missing miss observation"
-  unless miss.nativeIssued && miss.nativeCurrent && !miss.inCache && !miss.valueCached do
+  unless miss.runtimeIssued && miss.runtimeCurrent && !miss.inCache && !miss.valueCached do
     throw "transient miss did not remain unregistered/current"
   let some restored := rows[9]? | throw "missing restoration observation"
-  unless restored.nativeIssued && restored.nativeCurrent && restored.effects > 0 do
+  unless restored.runtimeIssued && restored.runtimeCurrent && restored.effects > 0 do
     throw "missing restore-after-effect counterexample"
   let some changed := rows[11]? | throw "missing revision observation"
-  unless changed.nativeIssued && !changed.nativeCurrent &&
+  unless changed.runtimeIssued && !changed.runtimeCurrent &&
       changed.revision > changed.record.payload.revision do
-    throw "native revision ABA was not refused"
+    throw "runtime revision ABA was not refused"
   return rows
 
 def main (args : List String) : IO UInt32 := do
@@ -111,6 +111,6 @@ def main (args : List String) : IO UInt32 := do
     match Json.parse text >>= checkTrace with
     | .error message => IO.eprintln message; return 1
     | .ok rows =>
-      IO.println s!"ISSUER-PROJECTION-CORRESPONDENCE-OK: {rows.length} actual native observations"
+      IO.println s!"ISSUER-PROJECTION-CORRESPONDENCE-OK: {rows.length} actual runtime observations"
       return 0
-  | _ => IO.eprintln "expected native trace JSON path"; return 2
+  | _ => IO.eprintln "expected runtime trace JSON path"; return 2

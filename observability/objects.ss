@@ -7,7 +7,7 @@
 ;;; Invariant: diagnostics and receipts are Scheme-side evidence products;
 ;;; runtime manifests and proof rows are projections, not semantic owners.
 
-(import (only-in :clan/poo/object .def .o .ref object?)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop .defgeneric validate)
         (only-in :yuanxu/object-types/contracts yuanxu-contract-admit)
         (only-in :yuanxu/object-family/syntax defpoo-object-family)
@@ -342,10 +342,10 @@
          (yuanxu-observability-receipt-next-action receipt))
    (cons 'artifacts (yuanxu-observability-receipt-artifacts receipt))))
 
-;;; Boundary: native framework behavior is resolved by upstream slots,
+;;; Boundary: runtime framework behavior is resolved by upstream slots,
 ;;; not the legacy metadata-family catalog or an event-kind switch.
 (.defgeneric (yuanxu-observation-explain observation) slot: .explain)
-;;; Boundary: summary dispatch shares the same native observation receiver contract.
+;;; Boundary: summary dispatch shares the same runtime observation receiver contract.
 (.defgeneric (yuanxu-observation-summary observation) slot: .summary)
 
 (def yuanxu-admission-observation-prototype

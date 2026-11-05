@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Explicit trace only; ordinary module tests do not initialize retention probes.
-(import :clan/poo/object
+(import (runtime: :clan/poo/object)
+        (only-in :clan/poo/prototype-map prototype-map-length)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-key slot-read-receiver slot-read-instance slot-read-value slot-read-dependencies)
         (only-in :yuanxu/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
@@ -17,7 +18,7 @@
         (only-in :yuanxu/module-system/source/admission current-module-source-observer))
 (export observe-read-dependencies)
 
-;; Trace the existing native dependency records without retaining tokens,
+;; Trace the existing runtime dependency records without retaining tokens,
 ;; receivers or values. Run inside the Case so refusal still emits the totals.
 (def (observe-read-dependencies thunk)
   (def deliveries 0)
@@ -28,12 +29,12 @@
   ;; does not construct a frame, demand a Type prototype or invoke a MOP hook.
   (def clos-values (make-hash-table-eq weak-keys: #t))
   (def clos-reads (make-hash-table-eq weak-keys: #t))
-  ;; Native Reader objects are weak diagnostic keys, never source/Graph roots.
+  ;; Runtime Reader objects are weak diagnostic keys, never source/Graph roots.
   ;; Keep only closed role labels as values; compiled code is not an input cache.
   (def reader-contexts (make-hash-table-eq weak-keys: #t))
   (def reader-forms (make-hash-table-eq weak-keys: #t))
   (def reader-programs (make-hash-table-eq weak-keys: #t))
-  (def native-compile (current-expander-compile))
+  (def gerbil-compile (current-expander-compile))
   (def (reader-role context)
     (and (module-context? context) (zero? (current-expander-phi))
          (let (path (module-context-path context))
@@ -53,7 +54,7 @@
     (when body?
       (hash-put! reader-contexts context role)
       (hash-put! reader-forms form role))
-    (let (program (native-compile form))
+    (let (program (gerbil-compile form))
       (when (and body? (pair? program)) (hash-put! reader-programs program role))
       program))
   (def (report-reader-roots)
@@ -95,7 +96,7 @@
      ((and frame (pair? order) (memq frame order)) 'poo-clos/invocation-frame)
      (else #f)))
   (def (cached-receiver-kind receiver)
-    ;; Diagnostic attribution only. Read an ALREADY allocated native instance;
+    ;; Diagnostic attribution only. Read an ALREADY allocated runtime instance;
     ;; never instantiate it, invoke a getter/MOP hook or grant admission.
     (def instance (and (object? receiver) (object-%instance receiver)))
     (def kind (and instance (hash-get instance 'kind)))
@@ -150,7 +151,7 @@
                      (generic (and fields (hash-get fields 'generic)))
                      (metadata (and (object? generic) (object-%instance generic))))
                 (when (and metadata
-                           (eq? (hash-get metadata 'identity) 'module-authoring-admit)
+                           (eq? (hash-get metadata 'identity) 'module-authoring-analyze)
                            (= (length args) 4))
                   (hash-put! authoring-interfaces (caddr args) #t)
                   (hash-put! authoring-datums (cadddr args) #t)))))
@@ -191,13 +192,13 @@
                          semantic-boolean module-source-role module-authoring-profile))
       identity 'other-contract))
   (def (report-dependency-support root)
-    ;; Trace-only, one completed selected Graph. Follow ORIGINAL native suffixes
+    ;; Trace-only, one completed selected Graph. Follow ORIGINAL runtime suffixes
     ;; without getters; identities never escape this temporary diagnostic walk.
     (def seen (make-hash-table-eq))
     (def receivers (make-hash-table-eq))
     (def rows (make-hash-table-eq))
     ;; Inspect only the registered issuer's compiled closure family. Never walk
-    ;; user payloads, execute a checker, or follow SDK/weak-registry internals.
+    ;; user payloads, execute a checker, or follow Gerbil weak-registry internals.
     (def births (make-hash-table-eq))
     (def birth-cells 0)
     (def singleton-snapshots (make-hash-table-eq))
@@ -231,7 +232,7 @@
                         (fields (1- index) (cons (##closure-ref head index) rest)))))
                   (walk tail))))))))
     ;; Exact retained reference routes, not an estimated transitive byte size.
-    ;; Inspect only native raw tables; never dispatch an unknown HashTable API.
+    ;; Inspect only runtime raw tables; never dispatch an unknown HashTable API.
     (def instances (make-hash-table-eq))
     (def tables (make-hash-table-eq))
     (def cells (make-hash-table-eq))
@@ -256,7 +257,7 @@
     (def cold-declaration-entries 0)
     (def cold-bare-entries 0)
     ;; Trace-only transitive raw payload accounting. Never force a slot, promise,
-    ;; interface method or checker. Receiver and SDK context identities are
+    ;; interface method or checker. Receiver and Gerbil expander context identities are
     ;; frontiers, not recursively expanded into the entire running process.
     (def sdk-contexts (make-hash-table-eq))
     ;; Raw shell projection never invokes a getter or prepares a receiver.
@@ -308,7 +309,7 @@
                (begin
                  (hash-put! visited value #t)
                  ;; Actual newly discovered identities, never timer ticks.
-                 ;; This trace-only walk leaves native deliveries untouched.
+                 ;; This trace-only walk leaves runtime deliveries untouched.
                  (when (zero? (modulo (hash-length visited) 1024))
                    (execution-progress! progress-scope (hash-length visited)))
                  (cond
@@ -354,7 +355,7 @@
     (def opaque-closure-captures 0)
     (def string-characters 0)
     (def vector-cells 0)
-    (def (native-table value)
+    (def (backing-table value)
       (let (raw (if (interface-instance? value) (interface-instance-object value) value))
         (and (raw-table? raw) raw)))
     (def (observe-pairs value)
@@ -368,7 +369,7 @@
         ((object? value)
          (hash-put! direct-objects value #t)
          (when callback? (hash-put! callback-objects value #t)))
-        ((native-table value) =>
+        ((backing-table value) =>
          (lambda (table)
            (unless (hash-key? tables table)
              (hash-put! tables table #t)
@@ -403,7 +404,7 @@
           (set! stale-instances (+ 1 stale-instances)))
         (unless (hash-key? instances instance)
           (hash-put! instances instance #t)
-          (let (raw (native-table instance))
+          (let (raw (backing-table instance))
             (if raw
               (begin
                 (observe-shallow instance #f)
@@ -421,13 +422,14 @@
       (observe-pairs (object-%precedence-list receiver))
       (observe-pairs (object-%all-slots receiver))
       (let* ((cached (object-%slot-funs receiver))
-             (table (and cached (native-table cached)))
-             (values-table (and table (native-table (object-%instance receiver))))
+             (table (and cached (backing-table cached)))
+             (values-table (and table (backing-table (object-%instance receiver))))
              (value-keys (and values-table (make-hash-table-eq)))
              (precedence (object-%precedence-list receiver))
              (has-protocol (and (pair? precedence) (ormap object-%protocol precedence)))
              (has-declarations (and (pair? precedence)
-               (ormap (lambda (parent) (pair? (object-%declarations parent))) precedence))))
+               (ormap (lambda (parent)
+                        (positive? (prototype-map-length (object-%declarations parent)))) precedence))))
         (when (and table (not (hash-key? metadata-tables table)))
           (hash-put! metadata-tables table #t)
           (set! metadata-entries (+ metadata-entries (&raw-table-count table)))
@@ -581,7 +583,7 @@
           (list (cons 'specifications specs) (cons 'thunks thunks)
             (cons 'receiver-shell receiver-payload)))
         ;; Count the final union by intersection; do not copy the million-node
-        ;; SDK support into a second table. Both tables enumerate unique ids.
+        ;; Gerbil support into a second table. Both tables enumerate unique ids.
         (let ((shared 0)
               (smaller (if (< (hash-length union) (hash-length sdk-payload))
                          union sdk-payload))
@@ -604,7 +606,7 @@
       (hash-for-each (lambda (target _)
         (when (hash-key? receivers target) (set! callback-targets (+ callback-targets 1)))) callback-objects)
       (yuanxu-write-observation-line!
-        "slot-retained-payload instances=%s noncurrent-instance-records=%s unknown-instances=%s native-tables=%s entries=%s backing-cells=%s list-cells=%s object-targets=%s known-receiver-targets=%s callbacks=%s callback-cells=%s callback-receiver-targets=%s opaque-closure-captures=%s strings=%s characters=%s vectors=%s vector-cells=%s"
+        "slot-retained-payload instances=%s noncurrent-instance-records=%s unknown-instances=%s backing-tables=%s entries=%s backing-cells=%s list-cells=%s object-targets=%s known-receiver-targets=%s callbacks=%s callback-cells=%s callback-receiver-targets=%s opaque-closure-captures=%s strings=%s characters=%s vectors=%s vector-cells=%s"
         (hash-length instances) stale-instances unknown-instances
         (hash-length tables) table-entries table-cells (hash-length cells)
         (hash-length direct-objects) known-targets (hash-length callbacks) callback-cells callback-targets
@@ -648,15 +650,15 @@
                       (set! context-unknown (+ context-unknown 1)))
                      ((not (hash-get instance 'context))
                       (set! context-free (+ context-free 1)))))))
-              (def native-key (slot-read-key dependency))
+              (def slot-key (slot-read-key dependency))
               (def label
                 (cond
-                 ((symbol? native-key) native-key)
-                 ((and (pair? native-key)
-                       (or (equal? native-key '(names))
-                           (and (memq (car native-key) '(presence bootstrap cache-miss))
-                                (pair? (cdr native-key)) (symbol? (cadr native-key))
-                                (null? (cddr native-key))))) native-key)
+                 ((symbol? slot-key) slot-key)
+                 ((and (pair? slot-key)
+                       (or (equal? slot-key '(names))
+                           (and (memq (car slot-key) '(presence bootstrap cache-miss))
+                                (pair? (cdr slot-key)) (symbol? (cadr slot-key))
+                                (null? (cddr slot-key))))) slot-key)
                  (else 'other)))
               (def key (if (or (hash-key? keys label) (< (hash-length keys) 128)) label 'other))
               (def row (or (hash-get keys key) (vector 0 0)))

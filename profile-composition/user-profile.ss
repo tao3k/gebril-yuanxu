@@ -6,7 +6,7 @@
 ;;; Boundary: user profile objects and default config projection.
 ;;; Invariant: profile objects are declarative and do not realize descriptors.
 
-(import (only-in :clan/poo/object .o .ref object?)
+(import (runtime: :clan/poo/object)
         :yuanxu/module-system/selection/objects)
 
 (export yuanxu-user-profile-kind
@@ -113,7 +113,7 @@
 ;; : (-> Symbol POOObject)
 (def (yuanxuDefaultUserSettings profile-name)
   (yuanxu-settings
-   surface: "agentic-ai-lab"
+   surface: "yuanxu"
    profile: (symbol->string profile-name)
    flow-mode: 'funflow
    loop-strategy: 'governed

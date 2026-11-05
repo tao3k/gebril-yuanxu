@@ -27,8 +27,8 @@ This amendment restores the semantic split:
 2. the process-tree RSS guard remains active and produces its own receipt;
 3. =adaptive-window= is an explicit policy requiring an explicit positive cap;
 4. a point-in-time runnable-process count is advisory evidence and cannot
-   silently reduce the configured native worker count;
-5. future adaptive concurrency work must tune native worker admission or use
+   silently reduce the configured runtime worker count;
+5. future adaptive concurrency work must tune runtime worker admission or use
    historical calibration receipts; it must not infer graph-rewrite authority
    from an observation value.
 

@@ -1,11 +1,11 @@
-#+title: 20.09 Fixture Native Compiler Budget Attribution
+#+title: 20.09 Fixture Runtime Compiler Budget Attribution
 #+language: en
 
 * Question and fixed source authority
 
 Why did the selected Fixture fail the existing 120-second preparation budget?
 Do not equate the whole interval with compiler CPU or attribute it solely to
-host load. The native std/make scheduler and the existing .compile issuance
+host load. The runtime std/make scheduler and the existing .compile issuance
 boundary remain the only build path. No new Builder, cache, timeout or approval
 protocol is introduced.
 
@@ -39,18 +39,18 @@ they must not be added to their parent spans. The old log has no successful
 Make receipt or descendant CPU total, so it does not justify assigning all
 remaining time to the compiler or to host scheduling.
 
-* Concrete scheduling defect and native repair
+* Concrete scheduling defect and runtime repair
 
 =prepare-testing-script= overrode =GERBIL_BUILD_CORES= with the literal =1=.
 This silently discarded the existing caller's explicit =2= worker budget.
 Installed std/make derives both its worker count and its compiler parallel flag
-from this native setting. With one worker it invokes the backend synchronously;
-with more than one, native Make drains pending compiler jobs before returning.
-The same native completion barrier, products and .compile checks remain in use.
+from this runtime setting. With one worker it invokes the backend synchronously;
+with more than one, runtime Make drains pending compiler jobs before returning.
+The same runtime completion barrier, products and .compile checks remain in use.
 
 Remove only the forced worker override. Preserve explicit Script environment
 settings and the inherited process environment. An unset setting retains the
-SDK's native default; no CPU-count inference or unbounded worker policy is
+SDK's runtime default; no CPU-count inference or unbounded worker policy is
 added here. The focused Scheme tests still run serially, and the caller's
 existing two-worker compiler allocation is not increased. The VM heap fence,
 60-second idle watchdog, 120-second preparation and 600-second outer limits
@@ -60,7 +60,7 @@ remain unchanged.
 
 The existing opt-in observation now emits compiler-entry elapsed time and the
 already-collected recovery/currentness totals before launching Make. The child
-reports its actual native worker setting. POSIX =/usr/bin/time -p= surrounds only
+reports its actual runtime worker setting. POSIX =/usr/bin/time -p= surrounds only
 that observed compiler command, reporting wall, user and system time including
 its descendants. Normal unobserved commands gain no timing wrapper.
 These lines do not count as work in the existing progress reader.
@@ -81,21 +81,21 @@ owns its compiler scheduler, and real Just/Harness runs own runtime evidence.
 
 * Acceptance
 
-First publish through the normal full native build. Then run the existing
+First publish through the normal full runtime build. Then run the existing
 16/32 census cold and in a fresh hot process and the real Gitea/PostgreSQL
 consumer. Require new shell rows, MODULE-OK, HARNESS-OK and final OK without
-error/overflow markers. Record target counts, native worker count, compiler
+error/overflow markers. Record target counts, runtime worker count, compiler
 wall/CPU and preparation currentness separately. Preserve failed attempts.
 Do not rerun the known failing 10,000-module gate or claim an exclusive-memory
 saving from a VM total or a reference-union count.
 
 * First repaired execution and newly exposed diagnostic work
 
-The repaired Fixture producer completed all fourteen native targets. Make
+The repaired Fixture producer completed all fourteen runtime targets. Make
 reported =cores=2=, process wall =12.394 s=, POSIX =real 12.24 / user 17.11 /
 sys 3.62=. Projection was =0.840 s=, compiler-entry preparation =0.146 s=,
 and the complete .compile span =13.881 s=. Recovery was =0.000243 s= and
-recorded currentness =1.282 s=. CPU exceeding wall is consistent with native
+recorded currentness =1.282 s=. CPU exceeding wall is consistent with runtime
 parallel descendants; it is not an exclusive attribution of the historical
 timeout. Host load dropped sharply, so this is not a matched speedup estimate.
 
@@ -113,7 +113,7 @@ identities, in the same 1024-node batches as the existing walker. No timer or
 synthetic heartbeat is used. Production read edges and deliveries are untouched.
 
 Source inspection also found that exact descriptor-id comparison failed to
-exclude GC-table subclasses. Use the installed native
+exclude GC-table subclasses. Use the installed runtime
 =##structure-instance-of?= predicate with =gerbil#__gc-table::t=, preserving the
 conservative frontier for all such containers until weak/strong policy is
 modeled. Previous raw SDK counts cannot be advertised as a complete strong
@@ -121,7 +121,7 @@ retention census. The corrected series must be labeled separately.
 
 * Final same-source bounded results
 
-The corrected native full build succeeded. The final census source was then
+The corrected runtime full build succeeded. The final census source was then
 frozen for both independent Just processes and the real service regression.
 All three completed with MODULE-OK, HARNESS-OK and final OK, without error or
 overflow markers. The new owner-shell rows were present in both census runs.
@@ -130,14 +130,14 @@ overflow markers. The new owner-shell rows were present in both census runs.
 |------------------+--------------+-------------------|
 | Selected support targets | 14 | 14 |
 | Actual compile announcements | 14 | 0 |
-| Actual native worker budget | 2 | 2 |
+| Actual runtime worker budget | 2 | 2 |
 | Support projection seconds | 2.602 | 0.852 |
 | Compiler-entry elapsed seconds | 0.407 | 1.304 |
 | Make receipt wall seconds | 14.837 | 4.568 |
 | POSIX real seconds | 14.61 | 4.40 |
 | POSIX user seconds | 17.69 | 4.04 |
 | POSIX sys seconds | 4.05 | 0.33 |
-| Native Make body seconds | 13.107 | 3.524 |
+| std/make body seconds | 13.107 | 3.524 |
 | Full .compile span seconds | 16.697 | 7.315 |
 | Recovery seconds | 0.000144 | 0.965 |
 | Recorded currentness seconds | 1.434 | 2.649 |
@@ -146,7 +146,7 @@ overflow markers. The new owner-shell rows were present in both census runs.
 
 Recovery/currentness spans are inclusive of their nested checks and must not
 be added blindly. Zero compilation does not imply zero Make work. The hot
-compiler process still imports native Make and traverses the dependency DAG;
+compiler process still imports runtime Make and traverses the dependency DAG;
 its 4.37 CPU seconds versus 4.40 real seconds leave little residual in this
 particular cohort. It does not exhibit the earlier large wall/CPU discrepancy.
 This does not retrospectively identify the exclusive cause of the old timeout.
@@ -191,7 +191,7 @@ an exclusive-memory estimator. No production-memory saving follows directly.
 The diagnostic no longer copies the SDK graph into another large identity
 table. Existing Lean checks cover partition cardinality, no-copy union count
 and symmetry under duplicate-free enumeration, including either smaller-side
-choice. Actual native identity-table correspondence and conservative frontier
+choice. Actual runtime identity-table correspondence and conservative frontier
 classification are runtime/source obligations, not secretly discharged by that
 abstract theorem. No temporal QNT model was duplicated.
 

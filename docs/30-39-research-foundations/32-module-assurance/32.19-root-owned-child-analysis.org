@@ -125,7 +125,7 @@ three additional avoided graph-current reads. The corrected gate asserts both
 phase differences separately, identical observed path coverage, and unchanged
 return certification. The failed gate/input remain retained.
 
-The five ownership controls passed through the default heap-fenced native test
+The five ownership controls passed through the default heap-fenced runtime test
 entry: exact child receipts and all obligations, independent admission from an
 obligation, one-shot inherited invocation, rejecting child policy, and a child
 source mutation rejected at root return. The first test-only build lacked the
@@ -194,4 +194,4 @@ rerun or claimed as a new end-to-end Scheme refinement proof.
 
 [[file:32.20-remaining-read-boundaries.org][32.20]] attributes the remaining 356 reads and proves the conditional pure
 suffix boundary with LeanPoo and Quint. It does not modify this Scheme
-implementation or claim a new native read count. Open callback guards remain.
+implementation or claim a new runtime read count. Open callback guards remain.

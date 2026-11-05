@@ -10,7 +10,7 @@ to repeat types/config/func/objects imports was the wrong solution. The manual
 import control in [[file:13.09-user-owned-build-script.org][08]] is superseded by this Core implementation.
 
 The consumer imports init exports at the build entry, never in the library
-inventory. The Core adapter preserves SDK macro syntax and encloses native compilation:
+inventory. The Core adapter preserves Gerbil macro syntax and encloses runtime compilation:
 
 #+begin_src scheme
 (import (only-in "./module-system/building/script.ss" defbuild-script)
@@ -21,7 +21,7 @@ inventory. The Core adapter preserves SDK macro syntax and encloses native compi
 (defbuild-script (modules-spec core-spec))
 #+end_src
 
-There is no consumer source alias, replacement main, SDK patch or additional
+There is no consumer source alias, replacement main, Gerbil patch or additional
 macro. The original JsonSchema interface.ss is byte-for-byte unchanged in the
 qualification. It contains its Module .def and no imports.
 
@@ -33,21 +33,21 @@ The actual package root owns =gerbil.pkg=. A =modules/= or =scenarios/=
 directory does not become another package merely to receive role bindings.
 
 The existing source preparer emits the declaration and ordinary role frames.
-Its admitted =role-sources= inventory serves reader publication and native Make.
-The internal compiler callback uses the SDK's public import parameter, retains
-native identities and original syntax, and cleans its temporary frames. An
-explicit custom prelude remains authoritative. Native Make still owns source
+Its admitted =role-sources= inventory serves reader publication and runtime Make.
+The internal compiler callback uses the Gerbil's public import parameter, retains
+runtime identities and original syntax, and cleans its temporary frames. An
+explicit custom prelude remains authoritative. std/make still owns source
 and product timestamps; plain package compilation grants no publication approval.
 
 Maintained build scripts consume =std-make-spec= through the Core
-=defbuild-script= adapter. It retains the prepared callback; importing the SDK
+=defbuild-script= adapter. It retains the prepared callback; importing the Gerbil
 macro directly and compiling bare role sources does not supply that boundary.
 Explicit =.compile= reuses the same callback inside its existing issuance guard.
 No per-directory metadata, compiler patch or new Builder is needed.
 
 * One inventory, two consumers
 
-The SDK-only role-forms module owns the existing allowed-role catalogue. The
+The Gerbil-only role-forms module owns the existing allowed-role catalogue. The
 admission module imports and re-exports that same binding. Both
 publication-forms and declaration expansion call module-publication-role-imports.
 The former supplies its admitted source snapshot; the latter checks only the
@@ -74,7 +74,7 @@ namespace string that grants authority. Existing owner confinement, regular-file
 checks, exact compiler-tool Context matching and kernel-depth checks remain.
 The integration does not introduce a blanket exemption for paths named core.
 
-The native reader's resolved source prelude is also captured in publication
+The runtime reader's resolved source prelude is also captured in publication
 source-inputs and checked by admit-current. Observing only gerbil.pkg would miss
 an edit to the prelude implementation at the same path. Role-catalogue and
 declaration source changes remain covered by the existing tool-input guards.
@@ -100,7 +100,7 @@ heap-fenced just test-file entrypoints with the existing 120-second timeout.
   outputs, identical cached spec-list identity, and absence of a prepared build
   directory or independent bootstrap.ss. The role helper is included through
   the observed dependency closure rather than a second target inventory.
-- Input drift is rejected for the real build.ss, retained manifest, native module
+- Input drift is rejected for the real build.ss, retained manifest, runtime module
   package metadata, resolved prelude source, role helper, tool source and module
   configuration and private helper sources. Changed init permanently refuses
   the selected session.
@@ -115,7 +115,7 @@ identity projection without a hard-coded Core prefix.
 The partial JsonSchema-copy controls were retired: a Module copy sharing Core
 IDs while omitting its kernel dependencies is not an isolated package. Private
 source drift and cycle rejection now run against the complete source-only
-snapshot, keeping the source-confinement checks unchanged. The bounded SDK
+snapshot, keeping the source-confinement checks unchanged. The bounded Gerbil
 compile/clean control replaces the retired materialized-tree compile controls;
 it is not evidence for unselected or generated contributions.
 
@@ -139,8 +139,8 @@ now isolated: lib-first registration selected a generated runtime loader .scm
 once clean removed the .ssi. That loader does not export the declaration macro.
 It was not evidence of lost macro hygiene or a broken compiler projection.
 
-[[file:13.11-same-state-source-reimport.org][10]] records the native resolver contrast and same-state rebuild regression.
-Core's explicit source qualification now registers its native package directory
+[[file:13.11-same-state-source-reimport.org][10]] records the runtime resolver contrast and same-state rebuild regression.
+Core's explicit source qualification now registers its runtime package directory
 before output loaders. The original failed state succeeds without clearing its
 artifacts. The consumer macro and main are unchanged. This corrects the former
 fresh-state-only evidence boundary without claiming that clean empties the
@@ -162,7 +162,7 @@ just test-file t/module-source-spec-test.ss
 #+end_src
 
 The selected Graph and spec are cached together inside the init closure.
-Every SDK command evaluates the spec expression again, which checks that source
+Every Gerbil command evaluates the spec expression again, which checks that source
 epoch before dispatch. The original macro has no after-command hook: an executor
 or publisher must explicitly call init.build-current! before accepting outputs.
 The test exercises this separate check after command completion and subsequent

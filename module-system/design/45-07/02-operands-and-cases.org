@@ -1,0 +1,215 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Composition operands and Profile cases
+#+language: en
+
+[[file:../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Composition closure
+
+The declared result remains profile-compatible and may participate in another
+composition:
+
+#+begin_src scheme
+(use-composition production-research
+  (use-module local-profiles as local
+    (profile my-system)
+    (profile hardened-production))
+  (compose
+    (profiles local my-system hardened-production)))
+#+end_src
+
+This operation extends a POO prototype lineage; it does not compose a serialized
+configuration result.  The expander validates the compile-time profile
+projection and lowers runtime behavior to the pinned =clan/poo= API.
+
+* Static declarations and first-class POO operands
+
+Profile is a contextual role, not a macro-created nominal type or runtime
+marker.  Any valid =clan/poo= prototype may act as an operand in a
+=compose profiles= context.  A compile-time descriptor provides earlier case
+validation when a declaration is lexically known, but it does not grant a
+runtime Profile identity.
+
+#+begin_export mermaid
+flowchart TD
+    A["compose profiles operand"] --> B{"Lexically known declaration?"}
+    B -->|yes| C["Read compile-time descriptor"]
+    C --> D["Validate cases and contribute a flat prototype plan"]
+    B -->|no| E["Evaluate expression once"]
+    E --> F{"Valid clan/poo prototype?"}
+    D --> G["One ordered clan/poo composition"]
+    F -->|yes| G
+    F -->|no| H["Structured operand condition"]
+#+end_export
+
+** Static profile operands
+
+A lexically known POO Profile is declared by identifier inside the canonical
+=use-module= clause.  Imported module slots use =(profiles NAME ...)=; existing
+lexical POO values use =(profile NAME)=.  The =compose= clause then refers to
+those declarations through the hygienic module alias plus profile identifiers.
+Raw case-selection calls and arbitrary expressions are not direct =compose=
+operands.
+
+#+begin_src scheme
+(use-module wendao-episteme as episteme
+  (profiles research observability)
+  (profile production))
+#+end_src
+
+Case flags belong to the declaration syntax.  They are not runtime keyword
+arguments.
+
+** Dynamic profile values
+
+A first-class Scheme expression may produce a profile-compatible POO object,
+but the expression is evaluated and bound before composition.  The canonical
+parser consumes the resulting identifier through =(profile NAME)=; it does not
+execute or embed the arbitrary expression as a =compose= operand.
+
+#+begin_src scheme
+(def selected-profile (select-profile environment))
+
+(use-composition selected-system
+  (use-module local-profiles as local
+    (profile selected-profile)
+    (profile production))
+  (compose
+    (profiles local selected-profile production)))
+#+end_src
+
+The dynamic expression is evaluated exactly once and is not executed by the
+expander.  Its only base operand check is that the result is a valid
+=clan/poo= prototype; this check does not force lazy slots.  The resulting
+prototype joins the same single ordered =clan/poo= composition.
+
+The macro MUST NOT guess a case owner for:
+
+#+begin_src scheme
+((select-profile environment) +research)
+#+end_src
+
+A dynamic selector that needs a case returns the already refined POO prototype
+as its ordinary value.
+
+** Descriptor boundary
+
+The compile-time descriptor may contain case grammar, source provenance,
+static contribution shape, and the identity of the corresponding runtime
+binding.  It MUST NOT contain a Profile type tag or copy slot values, imports,
+capability realizations, fixed-point state, or a realized runtime lineage.
+
+Static unknown profiles or cases fail during expansion at the declaration
+site.  A dynamic value that is not a valid =clan/poo= prototype raises a
+structured operand condition.  The condition may participate in the approved
+recovery model.
+
+** Contextual Profile role and optional Mix structure
+
+=profiles= selects the authoring and diagnostic context.  It does not add a
+=profile?= predicate, =profile-role-tag=, hidden class, or compatibility marker
+to the runtime object.
+
+#+begin_export mermaid
+flowchart LR
+    A["clan/poo prototype"] --> B["Contextually used as Profile"]
+    A --> C{"Exposes Mix structural capability?"}
+    C -->|yes| D["Also acts as higher-order Mix"]
+    C -->|no| E["Ordinary Profile prototype"]
+#+end_export
+
+An ordinary Profile does not require Mix slots.  Only an object that also
+assumes the higher-order Mix role is checked for the internal =identity=,
+=imports=, and =capabilities= structure and invariants.  Capability and
+Submodule roles are likewise checked only when those structural roles are
+actually used.
+
+The =profiles= marker may validate static case syntax, collect prototype
+contributions, preserve order, and produce profile-specific diagnostics.  It
+MUST NOT redefine prototype linearization, slot resolution, =super=,
+fixed-point behavior, or runtime object identity; those remain =gerbil-poo=
+semantics.
+
+* Profile case semantics
+
+A Profile case is a statically named POO refinement, not a function keyword,
+boolean feature flag, configuration option, or runtime registry entry.
+
+#+begin_src scheme
+(wendao-episteme +research +observability)
+#+end_src
+
+The declaration contributes the base prototype followed by the selected case
+refinement prototypes in source order.
+
+#+begin_export mermaid
+flowchart LR
+    A["wendao-episteme declaration"] --> B["+research case"]
+    A --> C["+observability case"]
+    B --> D["Ordered POO refinement contributions"]
+    C --> D
+    D --> E["Flat lineage plan"]
+#+end_export
+
+** Lexical case ownership
+
+A case identifier is owned by its Profile declaration descriptor.  The
+expander first resolves the head declaration and then interprets its following
+case identifiers.  The same spelling, such as =+observability=, may denote
+different refinements for different Profile declarations without a global
+feature registry or qualified string namespace.
+
+** Order and duplication
+
+Case order is semantically significant and MUST be preserved.  The expander
+does not sort, canonicalize, or treat cases as a set.  Slot interaction follows
+the resulting =gerbil-poo= lineage and =super= semantics.
+
+A case repeated in the same static application is an expansion-time error:
+
+#+begin_src scheme
+(wendao-episteme +research +research)
+#+end_src
+
+The expander MUST NOT silently deduplicate it, apply it twice, or choose the
+last occurrence.  A repeatable operation requires a separately declared
+semantic case rather than an implicit token count.
+
+** Contributions to multiple boundaries
+
+One case may contribute ordered refinements to several structural boundaries
+while preserving the identity scope of each boundary.
+
+#+begin_export mermaid
+flowchart TD
+    A["+observability case"] --> B["Current Mix refinement"]
+    A --> C["Nested observability Submodule refinement"]
+    A --> D["Capability refinement"]
+    A --> E["Policy refinement"]
+    B --> F["Mix boundary"]
+    C --> G["Submodule boundary"]
+    D --> H["Capability boundary"]
+    E --> I["Policy boundary"]
+#+end_export
+
+The descriptor records the case identifier, allowed occurrence count, ordered
+contribution description, target structural boundaries, source provenance, and
+static shape constraints.  It MUST NOT contain realized objects, forced
+imports, runtime lineage results, or fixed-point state.
+
+** Dynamic parameters remain Scheme values
+
+Ordinary cases are parameterless.  A requirement with dynamic parameters is
+expressed as a Scheme function that returns a POO prototype and is then used as
+a dynamic operand:
+
+#+begin_src scheme
+(research-profile-for dataset)
+#+end_src
+
+The case surface MUST NOT expand into an arbitrary nested configuration DSL
+with timeout, retry, dataset, or other runtime arguments.
+

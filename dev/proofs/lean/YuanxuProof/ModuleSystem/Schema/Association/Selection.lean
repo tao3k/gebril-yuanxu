@@ -3,7 +3,7 @@
 import YuanxuProof.ModuleSystem.Schema.Association.Projection
 
 /-! One selected responsibility family. Names are demand IDs in a sealed final
-receiver view, not global Contract IDs. Native extraction/projection fidelity
+receiver view, not global Contract IDs. Runtime extraction/projection fidelity
 and arbitrary transitive discovery are not proved here. -/
 namespace YuanxuProof.ModuleSystem.Schema.Association.Selection
 open Projection

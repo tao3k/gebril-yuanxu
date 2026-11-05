@@ -266,7 +266,7 @@ Key declarations:
 - aggregate Lean completed successfully with 202 jobs;
 - full Lean completed successfully with 278 jobs;
 - the module imports no JSON library and derives no JSON instances: the proof
-  model remains native Lean data and propositions, the existing FFI remains the
+  model remains runtime Lean data and propositions, the existing FFI remains the
   runtime boundary, and JSON is limited to AXLE/Python audit transport;
 - current-source AXLE independently verified:
   - =transitionSafetyDoesNotEntailRecoveryConvergence=: 28 preflight
@@ -291,10 +291,10 @@ Key declarations:
 - =asp org query= returned the complete metadata frontier: 13 headings,
   including this verification receipt and the implementation checklist, plus
   all 13 checklist items;
-- native orgize =elements-query= returned 541 structural elements, including
+- runtime orgize =elements-query= returned 541 structural elements, including
   9 Typst source blocks, 1 Mermaid source block, and 13 checklist items;
 - the earlier temporary Emacs extraction is not accepted as project evidence;
-  Typst compilation instead consumed the nine block values projected by native
+  Typst compilation instead consumed the nine block values projected by runtime
   orgize into an audit-only temporary JSON envelope and completed successfully;
 - =asp org search ... --view seeds= is a compact discovery surface rather than
   an exhaustive item enumeration; exhaustive RFC validation uses =query= or

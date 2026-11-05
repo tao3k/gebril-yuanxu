@@ -19,7 +19,7 @@ This RFC records an approved proof-ownership boundary.
 - [X] Prototype primitives are classified as direct correspondence.
 - [X] Slot specifications are classified as representation refinement.
 - [X] Object instantiation is classified as whole-implementation refinement.
-- [X] Native C4 is classified as dependency delegation.
+- [X] Runtime C4 is classified as dependency delegation.
 - [X] Correspondence closure is separate from package installation, Profile
   semantics, and generation admission.
 - [X] Cross-module conservative-extension criteria are delegated to
@@ -123,8 +123,8 @@ rejects a Profile value.
 - [X] Projection reads no global provider registry.
 - [X] Projection creates no second object model.
 - [X] Projection preserves declared operand order.
-- [X] Projection produces one native root.
-- [X] Projection preserves native structural failure.
+- [X] Projection produces one runtime root.
+- [X] Projection preserves runtime structural failure.
 - [X] A conformance witness is not a replacement proof.
 - [X] Conservative-extension ownership belongs to RFC 45-86.
 - [X] This RFC does not redefine conservative extension.
@@ -165,11 +165,11 @@ implementation of that semantic foundation.
 Agentic AI Lab MUST NOT:
 
 - derive a competing fixed-point calculus;
-- re-prove native prototype composition laws;
+- re-prove runtime prototype composition laws;
 - choose between local =.mix= and =.+= lifting formulas;
 - implement an object-to-prototype conversion independent of the upstream
   construction;
-- replace native C4 behavior; or
+- replace runtime C4 behavior; or
 - present local conformance examples as a new proof of POO.
 
 The work remaining in Agentic AI Lab is correspondence, projection, and conservative
@@ -240,7 +240,7 @@ by adding a local patch language or alternate evaluator.
 flowchart LR
     POOF["POOF theory and executable reference"] -->|"defines fixed point, mix, identity, composition, objects, and inheritance"| CONTRACT["adopted POO semantic contract"]
     CONTRACT -->|"is realized for Gerbil Scheme by the pinned revision"| GERBIL["gerbil-poo"]
-    GERBIL -->|"provides native objects, prototypes, slots, self, super, and precedence"| PROFILE["Agentic AI Lab Profile projection"]
+    GERBIL -->|"provides runtime objects, prototypes, slots, self, super, and precedence"| PROFILE["Agentic AI Lab Profile projection"]
     PROFILE -->|"exposes a thin composition surface"| USER["user-composition and compose profiles"]
     OBS["Agentic AI Lab observability and governance"] -->|"conservatively observes or constrains without changing POO meaning"| PROFILE
     GERBIL -->|"missing or contradictory mapping prevents only a verified correspondence claim"| INCOMPLETE["incomplete correspondence evidence"]
@@ -251,7 +251,7 @@ No arrow permits Agentic AI Lab to redefine an upstream POO operation.
 * POOF executable reference
 
 The upstream source intentionally combines documentation and executable code.
-The extracted reference code includes native constructions corresponding to:
+The extracted reference code includes runtime constructions corresponding to:
 
 | Upstream role | Reference construction |
 | Fixed-point instantiation | =fix= and =instantiate-prototype= |
@@ -349,7 +349,7 @@ construction.  It is not a new proof and not a Agentic AI Lab extension point.
 
 ** Object-level operations
 
-The native operations =.mix=, =.extend=, and =.+= belong to the
+The runtime operations =.mix=, =.extend=, and =.+= belong to the
 =gerbil-poo= object API:
 
 - =.mix= constructs an object from multiple supers;
@@ -390,7 +390,7 @@ flowchart LR
     MIX["POOF prototype mix"] -->|"is directly realized as"| IMIX["compose-proto"]
     ID["POOF identity prototype"] -->|"is directly realized as"| IID["identity-proto"]
     LIST["POOF prototype-list composition"] -->|"is directly realized as"| ILIST["compose-proto*"]
-    SLOT["POOF slot prototype functions"] -->|"are represented by explicit native variants"| SPEC["gerbil-poo slot specs"]
+    SLOT["POOF slot prototype functions"] -->|"are represented by explicit runtime variants"| SPEC["gerbil-poo slot specs"]
     OBJECT["POOF object-prototype construction"] -->|"is refined across precedence, slot compilation, and lazy projection"| GOBJECT["gerbil-poo object implementation"]
     C4["POOF multiple-inheritance precedence"] -->|"is delegated by the pinned implementation"| RUNTIME["Gerbil v0.19 c4-linearize"]
     RUNTIMEID["pinned Gerbil runtime identity"] -->|"supplies the admitted implementation"| RUNTIME
@@ -449,7 +449,7 @@ The following outcomes MUST remain distinct:
 One outcome MUST NOT be projected into either of the other two.
 
 In particular, a missing Gerbil runtime identity in the correspondence receipt does not prohibit an
-otherwise working native POO runtime.  An actually incompatible dependency is
+otherwise working POO runtime.  An actually incompatible dependency is
 exposed by its real package, load, compile, or test boundary.
 
 ** Racket test blocker
@@ -525,17 +525,17 @@ A normal Profile object and a higher-order Profile extension MUST enter the
 adopted upstream composition path without reordering or category batching.
 
 Agentic AI Lab may expose named, pure helpers, but those helpers MUST project to the
-pinned native operations.  They cannot define new POO algebra.
+pinned runtime operations.  They cannot define new POO algebra.
 
 ** Root correspondence
 
-The user composition MUST produce one native fixed-point root.  Module reload,
+The user composition MUST produce one runtime fixed-point root.  Module reload,
 Profile revision changes, observability, or governance decisions cannot
 silently instantiate a second root inside the same generation.
 
 ** Failure correspondence
 
-Native structural failures remain native structural failures.  Agentic AI Lab may
+Runtime structural failures remain runtime structural failures.  Agentic AI Lab may
 attach identity, path, generation, and evidence context, but MUST NOT turn an
 inheritance error into a successful Profile or a resumable semantic recursion.
 
@@ -564,8 +564,8 @@ Appropriate local witnesses include:
 - one ordinary Profile object composition;
 - one higher-order Profile extension;
 - one mixed ordered composition;
-- one native structural failure with attached Agentic AI Lab context; and
-- one observation or suspension that leaves the native result unchanged.
+- one runtime structural failure with attached Agentic AI Lab context; and
+- one observation or suspension that leaves the runtime result unchanged.
 
 These tests demonstrate that Agentic AI Lab is connected to the adopted semantics.
 They do not re-establish the general POO proof.
@@ -624,9 +624,9 @@ The following work is outside the approved architecture:
 - [ ] Verify the direct prototype correspondence at both pinned revisions.
 - [ ] Verify the slot representation-refinement mapping.
 - [ ] Verify the whole-object implementation-refinement path.
-- [ ] Verify native =self=/=super= correspondence through slot specs.
+- [ ] Verify runtime =self=/=super= correspondence through slot specs.
 - [ ] Record the Gerbil v0.19 runtime identity supplying =c4-linearize=.
-- [ ] Verify the delegated native precedence correspondence.
+- [ ] Verify the delegated runtime precedence correspondence.
 - [ ] Materialize the minimal receipt through the existing POO evidence
   machinery.
 - [ ] Add the minimal Profile projection witnesses.

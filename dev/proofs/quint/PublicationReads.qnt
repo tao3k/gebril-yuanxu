@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 module PublicationReadsModel {
   const BUG: str
-  // 0 and 3 can share a receiver/key but are distinct native read tokens.
+  // 0 and 3 can share a receiver/key but are distinct runtime read tokens.
   // Dependencies are unmodified, including a callback-only Contract token 4.
   pure val roots = List(0, 1, 0, 2, 1, 3)
   pure val dependencies = Map(0 -> Set(4), 1 -> Set(), 2 -> Set(4),

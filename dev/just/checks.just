@@ -1,22 +1,35 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 # Compiled/public sources must not reintroduce the removed Core namespace.
-check-package-namespace:
+check-package-namespace: check-package-independence
     #!/usr/bin/env bash
     set -euo pipefail
     status=0
-    git grep -nE 'AgenticAILab|agentic-ai-lab-core|agentic-ai-lab-|:co[r]e/|:agentic-ai-lab/|package: core' -- '*.ss' '*.scm' '*.py' '*.nix' '*.yml' '*.yaml' '*.toml' '*.lean' '*.qnt' '*.sh' gerbil.pkg || status=$?
+    rg -n 'AgenticAILab|agentic[-]ai[-]lab-core|agentic[-]ai[-]lab-|:co[r]e/|:agentic[-]ai[-]lab/|package: core' --glob '*.ss' --glob '*.scm' --glob '*.py' --glob '*.nix' --glob '*.yml' --glob '*.yaml' --glob '*.toml' --glob '*.lean' --glob '*.qnt' --glob '*.sh' --glob 'gerbil.pkg' . || status=$?
     case "$status" in
       0) echo 'removed Core namespace found' >&2; exit 1 ;;
       1) echo 'YUANXU-NAMESPACE-OK' ;;
       *) exit "$status" ;;
     esac
 
-# Native issuer observations are checked independently by the Lean projection.
+# Downstream products own their integration tests and source bindings.
+check-package-independence:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    status=0
+    # Include untracked source files; a new fixture must not bypass this gate.
+    rg -n 'agentic[-]ai[-]lab|lab[-]root|YUANXU_(LAB_SOURCE|SELECTED_RUNTIME|THOUSAND_SOURCE)' --glob '*.ss' --glob '*.scm' --glob '*.py' --glob '*.just' --glob '*.lean' --glob '*.qnt' --glob 'gerbil.pkg' . || status=$?
+    case "$status" in
+      0) echo 'downstream product coupling found in the independent package' >&2; exit 1 ;;
+      1) echo 'YUANXU-PACKAGE-INDEPENDENCE-OK' ;;
+      *) exit "$status" ;;
+    esac
+
+# Runtime issuer observations are checked independently by the Lean projection.
 check-issuer-projection trace:
     cd dev/proofs/lean && timeout 120s lake env lean --run IssuerProjectionCheck.lean "{{ trace }}"
 
-# Independent decoder consumes actual native alias/cache observations.
+# Independent decoder consumes actual runtime alias/cache observations.
 check-metadata-allocation trace:
     cd dev/proofs/lean && timeout 120s lake env lean --run MetadataAllocationCheck.lean "{{ trace }}"
 

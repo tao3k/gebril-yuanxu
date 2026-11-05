@@ -66,7 +66,7 @@ remain explicit test fixtures.
 
 * Actual AWS inputs and final receiver
 
-The opt-in native suite reuses the previously acquired AWS 5.100.0 export:
+The opt-in runtime suite reuses the previously acquired AWS 5.100.0 export:
 
 - Provider: =registry.terraform.io/hashicorp/aws=; format version =1.0=.
 - Full-export SHA-256:
@@ -110,7 +110,7 @@ domain-only fields into provider inputs. JsonSchema does not own AWS relations.
 
 * Focused evidence and limits
 
-Native =:std/test= runs serially through the existing heap-fenced 120-second
+Runtime =:std/test= runs serially through the existing heap-fenced 120-second
 =just test-file= entrypoint. The new value-contract suite has 7 cases and the
 real AWS suite has 4. They cover mixed responsibilities, exact nested paths,
 primitive constraints, boolean schemas, record arrays/unions, malformed inputs,

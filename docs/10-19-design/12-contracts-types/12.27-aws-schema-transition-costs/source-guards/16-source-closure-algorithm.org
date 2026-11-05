@@ -6,31 +6,31 @@
 
 The target is at least several thousand real Modules, with 1000, 5000 and
 10000 as qualification bands. It is not a ten-million-Module requirement.
-Directory entries, pure graph nodes and actual native declarations are separate
+Directory entries, pure graph nodes and actual runtime declarations are separate
 workloads. None can substitute for another's capacity result.
 
 | Owner | Question it answers | What it does not establish |
 |-------+---------------------+----------------------------|
-| Quint SourceClosureWork | Can ordering, sharing, demand or an effect boundary produce a bad execution? | An arbitrary-size complexity theorem or native capacity |
+| Quint SourceClosureWork | Can ordering, sharing, demand or an effect boundary produce a bad execution? | An arbitrary-size complexity theorem or runtime capacity |
 | Lean SourceClosureWork | What work accounting and identity properties hold for any finite input/fuel? | Real filesystem completeness, hash cost, macro memory or wall time |
-| Scheme module-closure-work-test | Does the production kernel match the oracle and counted-work laws at scale? | Native publication expansion, module loading or linking capacity |
-| Native declaration gates | Can real role files expand and remain within the unchanged budgets? | An asymptotic theorem from a single successful run |
+| Scheme module-closure-work-test | Does the production kernel match the oracle and counted-work laws at scale? | Runtime publication expansion, module loading or linking capacity |
+| Runtime declaration gates | Can real role files expand and remain within the unchanged budgets? | An asymptotic theorem from a single successful run |
 
 Quint's finite counters detect bad traces. Lean owns the general work argument;
 we do not duplicate that proof by making Quint enumerate thousands of Modules.
 The source digest binds the artifacts; it does not prove a semantic refinement
-between the languages. Native correspondence tests remain necessary.
+between the languages. Runtime correspondence tests remain necessary.
 
 * Quint: interactions and counterexamples
 
 [[file:../../../../../dev/proofs/quint/SourceClosureWork.qnt][SourceClosureWork]] uses a shared diamond, a topology cycle, multiple roots and
 an unrelated cold identity. This is a source-support topology, not permission
-to accept a cyclic native module import. The DFS worklist is checked against
+to accept a cyclic runtime module import. The DFS worklist is checked against
 an independent finite saturation oracle, rather than its own resulting list.
 
 The model distinguishes discovery, pure pre-effect checking, an opaque effect,
 pure post-effect checking and completion. A source version abstracts bytes and
-native name resolution. A changed selected dependency refuses acceptance;
+runtime name resolution. A changed selected dependency refuses acceptance;
 an unrelated change does not invalidate this operation's source support.
 
 The final focused source-bound qualification passes all nine expected outcomes
@@ -72,7 +72,7 @@ occurrence once. Duplicate queue entries still cost a lookup; they are not
 misreported as free. With expected constant-time identity hashing and fixed
 topology, the kernel has expected O(R + Vd + Ed) work, where R counts root
 occurrences and Vd/Ed belong to the demanded closure. Hash collision behavior,
-source byte sizes, native expansion, retained read records and garbage collection
+source byte sizes, runtime expansion, retained read records and garbage collection
 need separate measurements. These theorems do not prove their cost bounds or
 the fairness/termination of arbitrary external callbacks.
 
@@ -93,15 +93,15 @@ its exact ordered result must equal the expected identity sequence.
 
 These counts are derived from the declared fixture and asserted individually,
 not extrapolated timings. The observed aggregate is 16000 expansions, 47994
-edges and 48003 queue removals. The native harness passes with MODULE-OK,
+edges and 48003 queue removals. The runtime harness passes with MODULE-OK,
 HARNESS-OK, final OK and natural exit zero under the unchanged heap policy.
 
 * What this changes about the optimization strategy
 
 The pure iterative kernel already satisfies the counted-work law at these
 bands. Replacing it with another DFS or an additional cache is not justified.
-The open capacity failure is native declaration retention, not proof that this
-kernel repeatedly expands shared identities. Follow actual reader/native
+The open capacity failure is runtime declaration retention, not proof that this
+kernel repeatedly expands shared identities. Follow actual reader/runtime
 import roots and effective support closures; compare repeated work within the
 same effect-free epoch, never erase mandatory checks across opaque effects.
 
@@ -109,7 +109,7 @@ The real thousand-Module declaration gate previously refused under its memory
 policy. This work does not relabel it as passed, change gerbil-poo, add a cache,
 raise heap/time limits or establish a complete incremental invalidation index.
 Schema/source refusal and publication cleanup remain covered by the separate
-native AWS qualification. No runtime Loader or push is part of this change.
+runtime AWS qualification. No runtime Loader or push is part of this change.
 
 * Reproduction
 

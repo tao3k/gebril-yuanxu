@@ -1,23 +1,23 @@
-#+title: 10.19 Native POO Fixtures for Core Service Qualification
+#+title: 10.19 POO Fixtures for Core Service Qualification
 #+language: en
 #+property: DOCUMENT_ID 10.19
 
 * Ownership and intent
 
-The source/copy controls in [[file:10.18-native-copy-source-boundaries.org][10.18]] remain Core implementation tests. Their
+The source/copy controls in [[file:10.18-runtime-copy-source-boundaries.org][10.18]] remain Core implementation tests. Their
 repeated temporary-directory, service-publication and relocation setup now lives
 in [[file:../../../t/qualification/service-publication/fixtures.ss][t/qualification/service-publication/fixtures.ss]], a test-resource library with
 no TestSuite or runner. Test files no longer import another test file to acquire
 services, and the callback-shaped =with-services= helper is removed.
 
 This reuses =yuanxu-test-fixture= and =with-yuanxu-fixture= from the existing
-[[file:../../../observability/testing-fixture.ss][Fixture owner]]. Those macros keep the existing native std/test lifecycle and
+[[file:../../../observability/testing-fixture.ss][Fixture owner]]. Those macros keep the existing runtime std/test lifecycle and
 POO Case policy. No new fixture DSL, scheduler, product Loader or production
 module loading behavior is added.
 
 * A directory owns acquisition rollback
 
-The common native object has =prefix=, =.prepare=, =.remove-directory=, =.acquire= and =.release=.
+The common runtime object has =prefix=, =.prepare=, =.remove-directory=, =.acquire= and =.release=.
 Declaring it or reading its cached acquisition function creates no directory.
 Each explicit acquisition calls that function again and creates a fresh owned
 directory. It does not store a workspace as a cached lazy slot on the Fixture.
@@ -65,7 +65,7 @@ It preserves the malformed unread JSON and disabled-module controls. A
 separate =RepositoryServicesFixture= selects the actual repository roles and
 their unmodified default data for the production-default control.
 
-Relocation is a native inherited function transformation using standard
+Relocation is a runtime inherited function transformation using standard
 functional composition:
 
 #+begin_src scheme
@@ -78,7 +78,7 @@ functional composition:
 
 =relocate-services= packages the selected graph once, renames the artifact,
 removes the original isolated Module tree, then obtains a fresh selection and
-publication at the moved source. The returned native resource retains =root=
+publication at the moved source. The returned runtime resource retains =root=
 for cleanup, =source= for the relocated path, =selection= and =publication= for
 current work, and =original-selection= / =package-receipt= for frozen inspection.
 The old graph is not reused as current source authority after deletion.
@@ -131,7 +131,7 @@ case would add an unnecessary resource dependency.
 2. A real acquired service environment throws an intentional body exception.
    The same cause reaches the caller, its directory is absent, and a later
    acquisition from the same Fixture still admits its real Application.
-3. A native =.prepare= refinement throws after real service preparation and
+3. A runtime =.prepare= refinement throws after real service preparation and
    relocation. The original Module tree is already gone and the moved init
    exists at the injection point. Acquisition rolls the whole outer tree back,
    the same cause is preserved, and =.release= is correctly not called for an
@@ -159,7 +159,7 @@ by =yuanxu-test-fixture=; it is not a subprocess-crash cleanup claim.
 * Retained acceptance boundary
 
 No source-attribution, value or admission assertion is replaced with a cleanup
-check. The six native specification cases retain =.cc= opacity, right-hand =.+=
+check. The six runtime specification cases retain =.cc= opacity, right-hand =.+=
 identity and undemanded sibling counters. The four relocation cases retain
 precise Scheme locations, JSON baselines, delayed refinement, cached-parent
 identity, stale Scheme/JSON refusal, disabled-module exclusion and unread-asset
@@ -169,13 +169,13 @@ requirements, final plan admission and source/contribution replacement refusal.
 
 All resource-owning cases in these four files use =yuanxu-test-fixture=.
 Cleanup and preparation are consolidated without modifying the production MOP,
-the public native operators, the shared Fixture lifecycle or the product Loader.
+the public runtime operators, the shared Fixture lifecycle or the product Loader.
 The new lifecycle suite is registered in Core's existing Justfile test list.
 Logs remain local; source control contains these executable gates and summaries.
 
 ** Double-failure controls and cleanup ownership
 
-Both acquisition rollback and returned-resource release call the same native
+Both acquisition rollback and returned-resource release call the same runtime
 =.remove-directory= function slot. Its default is =clear-temporary-file!=;
 only the test-resource Fixture gains this injection point. The shared Fixture
 runner and production Loader remain unchanged. The rollback function preserves
@@ -190,7 +190,7 @@ both exception objects:
   (raise cause))
 #+end_src
 
-Two additional native =yuanxu-test-fixture= cases raise distinct Error objects
+Two additional runtime =yuanxu-test-fixture= cases raise distinct Error objects
 in preparation/body and in rollback/release. They assert the wrapper's exact
 message and exactly two =Error-irritants=, each =eq?= to its original exception.
 A preparation failure never calls =.release=; body failure reaches the existing
@@ -223,7 +223,7 @@ select one ordinary slot; no macro, patch language or new runner is introduced:
 #+end_src
 
 The Fixture derives acquisition and release directly from =DirectoryFixture=.
-Its preparation returns a native resource retaining the owned root and adding
+Its preparation returns a runtime resource retaining the owned root and adding
 an explicit verification function:
 
 #+begin_src scheme
@@ -241,7 +241,7 @@ an explicit verification function:
 =verify-directory-failure= owns the shared injection, exception-identity and
 sibling-directory checks. It acquires its sibling with the existing
 =with-yuanxu-fixture= macro. The broken Fixture transforms the inherited
-release function with native =(.release => observe-release)=, preserving the
+release function with runtime =(.release => observe-release)=, preserving the
 real cleanup path while counting zero releases for failed preparation and one
 for failed body execution. The common cleanup function records exactly one
 owned target before raising the secondary exception. The common assertions
@@ -339,7 +339,7 @@ function slot. No retry, source admission bypass or timeout extension is added.
 
 On 2026-10-17 the default host runtime passed five focused files serially through
 =just test-file=, with the unchanged 1 GiB heap fence, 120-second worker timeout
-and inherited native Case policy:
+and inherited runtime Case policy:
 
 | File under core/t | Cases |
 |-------------------+-------|
@@ -350,7 +350,7 @@ and inherited native Case policy:
 | =gitea-postgresql-publication-test.ss= | 8 |
 
 All 25 cases passed with =MODULE-OK=, =HARNESS-OK=, final =OK= and no
-error/overflow markers. The native POO dependency remains
+error/overflow markers. The POO dependency remains
 =26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=. This is a focused test-resource
 refactor receipt, not a full-suite or product Loader qualification.
 

@@ -3,11 +3,10 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: graph facts are POO-native control-plane values.
+;;; Boundary: graph facts are POO control-plane values.
 ;;; Invariant: graph objects describe topology; they never schedule or run it.
 
-(import (only-in :clan/poo/object
-                 .all-slots .cc .o .ref .slot? object? object<-alist)
+(import (runtime: :clan/poo/object)
         :yuanxu/utilities/final-projection-syntax)
 
 (export #t)
@@ -72,7 +71,7 @@
   (map (lambda (slot) (.ref declarations slot))
        (.all-slots declarations)))
 
-;; Noun-valued declaration slots carry named Graph values. Native slot algebra
+;; Noun-valued declaration slots carry named Graph values. Runtime slot algebra
 ;; owns replacement and refinement; `nodes` and `edges` are lazy projections
 ;; for the existing algorithm boundary.
 (def graph

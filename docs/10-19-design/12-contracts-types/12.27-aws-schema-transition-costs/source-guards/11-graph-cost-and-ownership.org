@@ -10,7 +10,7 @@ files in every nonempty build-admit-before traversal: 14028 reads over 84 passes
 [[file:10-operation-boundaries.org][Operation-boundary composition]] reduced the number of traversals; it did NOT
 reduce the dependency closure each retained traversal checks.
 The subsequent [[file:12-demanded-source-support.org][demanded-support implementation]] distinguishes tool eligibility
-from actual native import support and preserves deferred evaluator dependencies.
+from actual runtime import support and preserves deferred evaluator dependencies.
 Its measured closure reduction and [[file:13-scale-and-model-correspondence.org][scale/model gates]] refine this analysis.
 
 Let C be a required source closure and E the effect boundaries which can change
@@ -41,12 +41,12 @@ business name would weaken the meaning of the published result.
 | init selection and existing Graph | Selected identities, dependencies and composition order | A selected object is currently admitted forever |
 | Building/preparation | Compiler identity, admitted role sources, declared/observed dependencies | A build request is an arbitrary directory scan |
 | Package operation constructor | Exact entry/action/tail callable structure | The action is pure or its result is a certificate |
-| SelectedPackages composition | Placement of equivalent source checks around the ordered actions | An opaque return has a checked native tail |
+| SelectedPackages composition | Placement of equivalent source checks around the ordered actions | An opaque return has a checked runtime tail |
 | AdmissionPublication | Actual Contract, Context, Schema associations and bound final value | Package/source validity replaces value or Context obligations |
 | Ops/test execution | Process lifecycle, progress, budgets and cleanup | Repeated logs establish semantic progress or freshness |
 
 Boundary ownership should remain compositional. A standalone operation is
-fully checked. A consumer combining operations can use a proven native prefix
+fully checked. A consumer combining operations can use a proven runtime prefix
 or tail; it must not guess from a warm slot or a true return. Unknown methods
 break a closed segment rather than disabling extensibility. The executor
 preserves the existing selected order and does not become a scheduler.
@@ -85,14 +85,14 @@ Concrete scaling gates for that work are:
 | Controlled change | Required observation |
 |-------------------+----------------------|
 | Fixed selected closure; larger unselected catalog | No demands of unselected business scopes/tests or their role sources; directory/catalog discovery is reported separately |
-| More compatible native actions | One initial full check plus one fresh tail per action; already tested for 0/1/2/4/8 actions |
+| More compatible runtime actions | One initial full check plus one fresh tail per action; already tested for 0/1/2/4/8 actions |
 | A transitive requirement changes | Dependent old evidence is refused before unsafe work; no omission by filename/category |
 | init or a global selection policy changes | Old Graph/Context association is refused even if a business value happens to be equal |
 | Unrelated module-body work is available | Invalidation must not be confused with permission to eagerly re-expand every module |
 
-The native chain improvement changes a repeated-boundary coefficient; it does
+The runtime chain improvement changes a repeated-boundary coefficient; it does
 not change growth in the required closure size C. Overall startup also includes
-directory discovery, native imports/macro expansion, first Graph construction,
+directory discovery, runtime imports/macro expansion, first Graph construction,
 and Nix/Store work. These need separate measurements. A source-read reduction
 cannot stand in for a cold-start, allocation or total execution speedup.
 
@@ -106,7 +106,7 @@ or compiler cache.
 
 The existing [[file:../../../../30-39-research-foundations/32-module-assurance/32.40-compiler-artifacts-and-selected-closure.org][compiler-artifact and selected-runtime-closure research]] studies a
 different boundary: trusted compiler issuance and the artifact actually selected
-by the native loader. Such an association could distinguish stable code identity
+by the runtime loader. Such an association could distinguish stable code identity
 from mutable configuration inputs. A path in the Nix store, an old digest or
 the module being already loaded is insufficient by itself. Mutable Schema,
 source policy and Context versions still need current checks.

@@ -2,15 +2,64 @@
 ;;; Closed declaration projection; open source keeps the original reader.
 ;;; The resolver is captured once by an admitted private wrapper, never a user
 ;;; purity flag or an alternate cache. POO owns all delayed role values.
-(import :clan/poo/object
+(import (runtime: :clan/poo/object)
         (only-in :gerbil/expander datum->syntax eval-syntax resolve-identifier
-                 import-module current-expander-context expander-context-id)
+                 import-module current-expander-context expander-context-id
+                 module-context? module-context-path make-top-context
+                 current-expander-module-import core-import-module core-module->prelude-context
+                 module-context-export module-export-name)
         (only-in :gerbil/runtime/loader load-module)
+        (only-in :clan/poo/io module-action)
         (only-in :std/list/list delete-duplicates/hash append-map)
         (for-syntax :gerbil/expander (only-in :std/list/list append-map)))
 (export module-deferred-role-exports include-deferred-declaration module-role-values module-import-role-values
-        current-module-role-resolver)
+        current-module-role-resolver module-entry-action module-binding-action)
 (def current-module-role-resolver (make-parameter #f))
+
+;; Runtime source evaluation and compiled runtime loading have different
+;; initialization authorities. Inspect the actual creating owner, not a user
+;; flag, a visible global, file existence or a caught loader error.
+(def (module-entry-action owner module binding)
+  (def context (current-expander-context))
+  (if (and (module-context? context)
+           (eq? owner (expander-context-id context))
+           (string? (module-context-path context))
+           (equal? ".ss" (path-extension (module-context-path context))))
+    (source-entry-action module binding)
+    (module-action module binding)))
+(def (source-entry-action module binding)
+  ;; Only immutable identifiers enter the closure, not the creating context.
+  ;; Official expander/import state owns source initialization and its errors.
+  (def specifier (string->symbol (string-append ":" module)))
+  (lambda (arguments)
+    (parameterize ((current-expander-context (make-top-context))
+                   (current-expander-module-import core-import-module))
+      (eval-syntax `(import ,specifier)))
+    (apply (eval binding) arguments)))
+
+;; Platform value factories need a public binding, not eager initialization of
+;; every runtime dependency in a whole facade. Runtime import owns the defining
+;; context and its errors; resolve anew so reloads never retain an old procedure.
+;; This is not the runtime-entry/publication admission boundary above.
+(def (module-binding-action module binding)
+  (def specifier (string->symbol (string-append ":" module)))
+  (lambda (arguments)
+    ;; Gerbil owns the shared weak language frame. A factory needs one strong
+    ;; public binding, not a fresh copy of every gerbil/core alias. Resolve the
+    ;; runtime owner on each invocation; retain no function or approval here.
+    (let* ((language (core-import-module ':gerbil/core))
+           ;; A colliding name must retain the original strong-import rules,
+           ;; including runtime duplicate-binding errors. Actual export metadata,
+           ;; not a caller flag, determines this conservative fallback.
+           (collision? (ormap (lambda (entry) (eq? binding (module-export-name entry)))
+                              (module-context-export language))))
+      (parameterize ((current-expander-context
+                      (make-top-context (and (not collision?)
+                                          (core-module->prelude-context language))))
+                     (current-expander-module-import core-import-module))
+        (when collision? (eval-syntax '(import :gerbil/core)))
+        (eval-syntax `(import (only-in ,specifier ,binding)))
+        (apply (eval-syntax binding) arguments)))))
 (def (closed-rows body)
   (let loop ((rest body) (seen '()) (rows '()))
     (match rest
@@ -31,11 +80,10 @@
   (match expression
     (['quote (? symbol? name)] name)
     (else (error "calculated declaration identity" expression))))
-(def (role-exports role text)
+(def (role-exports role text observe-private-import)
   (def forms (call-with-input-string text read-all))
-  ;; The existing guarded reader owns relative private-source closures. Until
-  ;; that closure can be deferred intact, retain its original path rather than
-  ;; grant a newly resolved import authority to the role-value projection.
+  ;; The reader expands private import metadata through its existing confined
+  ;; source resolver before publishing the delayed runtime values.
   (def (source-path? spec)
     (cond ((string? spec) #t)
           ((pair? spec) (or (source-path? (car spec)) (source-path? (cdr spec))))
@@ -43,10 +91,10 @@
   (for-each (lambda (form)
     (match form
       (['import . specs]
-       (when (source-path? specs) (error "private source imports require guarded reader" role)))
+       (when (source-path? specs) (observe-private-import role)))
       ([(? symbol? head) . _]
        ;; Syntax exports and phase initializers are not runtime tuple fields.
-       ;; Keep their original native contexts and one-time expansion owner.
+       ;; Keep their original runtime contexts and one-time expansion owner.
        (unless (memq head '(export def defvalues defstruct defclass define-type
                            .def .defgeneric .defmethod))
          (error "open role declaration requires guarded reader" role head)))
@@ -62,7 +110,7 @@
   (delete-duplicates/hash
     (if (eq? role 'config) (cons 'Config names) names)))
 
-;; Internal projection after the native role body has expanded. The expander
+;; Internal projection after the runtime role body has expanded. The expander
 ;; owns optional Config binding, just as in export-role-config.
 (def (module-role-values names)
   (def fields
@@ -74,7 +122,7 @@
     (map (lambda (name)
            (cons name (eval-syntax (datum->syntax #f name))))
       fields)))
-;; Native import owns context identity and its one-time initializer. The POO
+;; Runtime import owns context identity and its one-time initializer. The POO
 ;; role slot owns demand; this function has no loaded-state or result registry.
 (def (module-import-role-values path names)
   ;; Import supplies lexical bindings; only the official runtime loader
@@ -84,9 +132,10 @@
   (load-module (symbol->string (expander-context-id context)))
   (parameterize ((current-expander-context context))
     (module-role-values names)))
-(def (module-deferred-role-exports interface-text role-texts)
+(def (module-deferred-role-exports interface-text role-texts
+                                  private-import: (observe-private-import void))
   ;; Only inspect the already guarded byte snapshots. No source initializer,
-  ;; macro expander, native Type predicate or role loader runs here.
+  ;; macro expander, Type predicate or role loader runs here.
   (with-catch
     (lambda (_open) #f)
     (lambda ()
@@ -102,7 +151,10 @@
            (lambda (entry)
              (closed-symbol (closed-field (closed-object (cdr entry)) 'module-id:)))
            (closed-object (closed-field baseline 'requires:)))
-         (def roles (map (lambda (row) (cons (car row) (role-exports (car row) (cdr row)))) role-texts))
+         (def roles (map (lambda (row)
+                           (cons (car row)
+                             (role-exports (car row) (cdr row) observe-private-import)))
+                        role-texts))
          (def names (append-map cdr roles))
          (unless (= (length names) (length (delete-duplicates/hash names)))
            (error "ambiguous closed role exports"))
@@ -133,11 +185,23 @@
        (def (wrap value receiver (shadowed '()))
          (def context (if (identifier? value) value
                          (if (stx-pair? value) (stx-car value) (stx-car (car forms)))))
+         ;; A bare exported alias has exactly the native with-slots meaning:
+         ;; evaluate this private receiver once and read that same slot. Do not
+         ;; install every other role's identifier transformer for this case.
+         ;; Compound syntax and unknown identifiers retain the original scope;
+         ;; their macros may depend on use-site bindings that a scan cannot see.
+         (def direct?
+           (and (identifier? value)
+                (not (memq (stx-e value) shadowed))
+                (ormap (lambda (name)
+                         (bound-identifier=? value (datum->syntax context (stx-e name)))) names)))
          (with-syntax ((receiver receiver) (private private) (value value)
                        ((alias ...) (map (lambda (name) (datum->syntax context (stx-e name)))
                          (filter (lambda (name) (not (memq (stx-e name) shadowed))) names))))
-           (syntax/loc #'value
-             (with-slots (alias ...) (.get receiver private) value))))
+           (if direct?
+             (syntax/loc #'value (.get (.get receiver private) value))
+             (syntax/loc #'value
+               (with-slots (alias ...) (.get receiver private) value)))))
        (def (wrap-requires value receiver (shadowed '()))
          (map-object value
            (lambda (_alias spec)
@@ -155,9 +219,12 @@
                                  (cons #'(role (loader 'role '(name ...)))
                                    (syntax->list #'((name (.ref (.ref self 'role) 'name)) ...)))))))
                           specifications)))
-           #'(.o (:: self []) row ...)))
+           ;; All generated formulas use hygienic loader or explicit self.
+           ;; Native computed slots still receive the current POO receiver;
+           ;; implicit lexical aliases add no binding used by this object.
+           #'(.o self: self bind-these: #f row ...)))
        (def (wrap-core core root-shadows)
-         ;; Keep fields as a native syntax list; append one private lazy slot.
+         ;; Keep fields as a runtime syntax list; append one private lazy slot.
          (def (build head options self fields)
            (def field-list (syntax->list fields))
            (def shadows

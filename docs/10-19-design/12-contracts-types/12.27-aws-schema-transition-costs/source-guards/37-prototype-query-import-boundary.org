@@ -32,7 +32,7 @@ import and no longer imports Class construction. The existing full
 support when that full interface is requested. The product C4 scenario's direct
 query import moves to =:yuanxu/poo-clos/objects=; there is no forwarding layer.
 
-This implements the distinction between a native POO projection and a heavier
+This implements the distinction between a POO projection and a heavier
 Class lifecycle style. It does not make Class data untyped or bypass multiple
 dispatch. A caller using Class construction still imports its actual owner.
 
@@ -47,7 +47,7 @@ to be rejected and the fixture to be released.
 
 The sixteen-module run completes those assertions and natural exit zero with
 all parent/child harness markers and no error/overflow marker. Baseline and
-candidate use the same locked source environment and original limits; native
+candidate use the same locked source environment and original limits; runtime
 tests are serial. The source lock is =gerbil-poo@fdeadfa40ca5cee5fe20308985aef1577f2eb49b=.
 
 | Observation | Original control | Staging only | Staging + query boundary |
@@ -93,7 +93,7 @@ run is retained and no bound or assertion was relaxed.
 
 * Consumer and capacity results
 
-The final CLOS dispatch suite passes 19 cases, including native prototypes,
+The final CLOS dispatch suite passes 19 cases, including runtime prototypes,
 Class/eql specificity, qualifier order, replacement arguments, next-method,
 multiple values, ownership projection and policy invalidation. The focused
 authoring suite passes four cases, including exact one/two-check boundaries,
@@ -108,7 +108,7 @@ preservation. Its selected declaration is a small dependency-free fixture and
 its Schema is an actual temporary JsonSchema input. This is a guard-regression
 control, not the real AWS provider integration described next.
 
-The final =module-candidate-metadata-test.ss= also passes both native cases:
+The final =module-candidate-metadata-test.ss= also passes both runtime cases:
 initializer scratch reads do not become enduring admission requirements, while
 actual authoring-policy and Contract edits reject an earlier candidate. No
 open-boundary trace is relabeled as a closed continuation to obtain this result.
@@ -162,7 +162,7 @@ interface boundaries. It must establish which context/binding references can
 escape to lazy formulas before releasing or projecting them. The failed
 field-row macro experiment is not used to explain this result. Neither the
 finite Quint carrier schedule nor the Lean single-check law proves SDK
-context non-escape, native GC behavior or thousand-module capacity. Open
+context non-escape, runtime GC behavior or thousand-module capacity. Open
 callbacks continue to retain complete guards; the remaining work cannot be
 justified by dropping their support or clearing SDK state.
 
@@ -181,7 +181,7 @@ just test-file t/module-declaration-1000-test.ss true
 #+end_src
 
 Use the repository-locked source environment and the real Nix daemon for AWS.
-Run native gates serially; do not substitute directory/publication fixtures for
+Run runtime gates serially; do not substitute directory/publication fixtures for
 the actual declaration gate. No full build, upstream edit, new cache, larger
 heap/deadline or push is part of this qualification. Raw logs remain local;
 expected error markers, interrupted runs and cleanup results must be retained

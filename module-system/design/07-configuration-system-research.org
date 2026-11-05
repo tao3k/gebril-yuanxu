@@ -15,7 +15,7 @@ Can ordinary configuration stay as small as assigning values while maintainers
 independently publish thousands of reusable, contract-bearing objects? The goal
 is to separate package identity, selected dependencies, effective configuration,
 Contract admission and explicit effects, while retaining Scheme functions and
-native POO refinement as extension mechanisms.
+POO refinement as extension mechanisms.
 
 The organization of research must support independent review. Read the
 [[file:../../docs/20-29-ecosystem-research/README.org][research library]] and its [[file:../../docs/30-39-research-foundations/30-method/30.01-evidence-protocol.org][evidence protocol]]. Each platform owns its own

@@ -3,10 +3,10 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: reusable POO-native slot schemas for module Type/Contract owners.
+;;; Boundary: reusable POO slot schemas for module Type/Contract owners.
 ;;; Invariant: schemas are ordinary POO values; alists exist only as receipts.
 
-(import (only-in :clan/poo/object .all-slots .cc .o .ref .slot?)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop Type Type. validate)
         (only-in :clan/poo/type Record))
 
@@ -30,7 +30,7 @@
         yuanxu-contract-check-slot!)
 
 ;; report-kind is receipt metadata only.  Runtime admission always dispatches
-;; through the native Type protocol and never through this symbolic label.
+;; through the Type protocol and never through this symbolic label.
 (def (yuanxu-contract-value-type identity predicate report-kind
                                    . maybe-predicate-key)
   (.cc Type.
@@ -66,7 +66,7 @@
 
 (def (yuanxu-contract-slot-predicate-key slot-contract)
   (let (type (yuanxu-contract-slot-type slot-contract))
-    (if (.slot? type 'predicate-key) (.ref type 'predicate-key) 'native-type)))
+    (if (.slot? type 'predicate-key) (.ref type 'predicate-key) 'poo-type)))
 
 (def (yuanxu-contract-slot-required? slot-contract)
   (.ref slot-contract 'required?))
@@ -75,7 +75,7 @@
   (.ref slot-contract 'metadata))
 
 ;; Record owns required/optional presence and recursive Type normalization.
-;; Extend its native membership protocol with the domain predicate. Its inherited
+;; Extend its runtime membership protocol with the domain predicate. Its inherited
 ;; Class validator rechecks that predicate on the final normalized receiver.
 (def (yuanxu-object-contract identity-value owner-value object-kind-value predicate-value
                              schemas metadata-value)
@@ -109,14 +109,14 @@
 (def (yuanxu-object-contract-slots contract)
   (let* ((schemas (.ref contract 'slot-schemas))
          (effective (.ref contract 'effective-slots))
-         (native-names (.all-slots effective))
+         (slot-names (.all-slots effective))
          (schema-names (map yuanxu-contract-slot-name schemas)))
-    ;; Receipts must describe the current native Slot types and optional policy.
-    ;; A native field addition also needs receipt metadata; refuse incomplete
+    ;; Receipts must describe the current runtime Slot types and optional policy.
+    ;; A runtime field addition also needs receipt metadata; refuse incomplete
     ;; projection rather than publishing stale type facts from an ancestor.
-    (unless (and (= (length schemas) (length native-names))
-                 (andmap (cut memq <> schema-names) native-names))
-      (error "native contract fields require complete receipt metadata"))
+    (unless (and (= (length schemas) (length slot-names))
+                 (andmap (cut memq <> schema-names) slot-names))
+      (error "runtime contract fields require complete receipt metadata"))
     (map (lambda (schema)
            (let (field (.ref effective (yuanxu-contract-slot-name schema)))
              (.cc schema 'value-type (.ref field 'type)

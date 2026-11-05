@@ -17,7 +17,7 @@ AgentTeams is a capability-validation sample.  The question is whether a
 community agent framework's core policy and flow mechanism can be expressed as a
 Composition, reproduced from our control plane, then projected into a runtime.
 For AgentTeams, that means checking whether its team/project/task mechanism can
-be expressed as POO-native policy families plus functional strategy
+be expressed as POO policy families plus functional strategy
 combinators, then executed by our Python runtime and other runtime bindings.
 
 The current evidence says yes.  AgentTeams has a strong operational shell, but
@@ -39,7 +39,7 @@ The correct extraction rule is:
 
 - ignore surface names first;
 - identify the invariant mechanism;
-- express the mechanism as POO-native policy families;
+- express the mechanism as POO policy families;
 - compose those families with functional strategy combinators;
 - project the resulting kernel into runtime adapters and validation fixtures.
 
@@ -194,7 +194,7 @@ Its contract is:
 - resource budget;
 - receipt protocol.
 
-This is the POO-native replacement for hardcoding "worker".  A worker is just
+This is the POO replacement for hardcoding "worker".  A worker is just
 one session transform profile over the flowing session value.
 
 *** Layer 2: Role Transform Profile
@@ -381,7 +381,7 @@ design, not to this AgentTeams research note.  This section only relies on that
 rule: FunFlow should own its kernel defaults internally, while plugins extend
 declared slots from outside the kernel.
 
-Plugin extension stays POO-native, but it is explicit and upward:
+Plugin extension stays POO, but it is explicit and upward:
 
 #+begin_src scheme
 (use-composition framework-audit
@@ -393,7 +393,7 @@ Plugin extension stays POO-native, but it is explicit and upward:
     (profile audit audit-leader-role)))
 #+end_src
 
-This surface is still POO-native because profiles, session transforms, and
+This surface is still POO because profiles, session transforms, and
 overrides lower into POO objects.  It is also functional because the resolver
 produces a normalized session value that runtime adapters execute.
 
@@ -618,7 +618,7 @@ The deployment conclusion is therefore:
 
 - do not copy the Kubernetes implementation as architecture;
 - extract the declarative deployment contract;
-- express it as POO-native resource profiles;
+- express it as POO resource profiles;
 - project it to any deployment backend the runtime needs.
 
 * Agent Team Kernel
@@ -627,7 +627,7 @@ AgentTeams is most interesting when read as an agent-organization kernel, not as
 a Kubernetes package or MCP demo.
 
 ASP evidence from ~docs/declarative-resource-management.md~ and
-~docs/k8s-native-agent-orch.md~ shows a clear organization model:
+~docs/k8s-runtime-agent-orch.md~ shows a clear organization model:
 
 - ~Manager~ is the top-level coordinator.  It owns worker/team/human management,
   project delegation, and global resource policy.
@@ -773,7 +773,7 @@ That gives us three things worth preserving:
 
 ** Where Their Loop Policy Is Still Weak
 
-The implementation is practical, but not policy-native enough:
+The implementation is practical, but not policy-runtime enough:
 
 - statuses and decisions are string domains;
 - history is textual instead of typed event history;
@@ -799,7 +799,7 @@ shape: a durable leader-driven loop with a DAG inside each iteration.
 
 ** Agentic AI Lab Loop Policy Shape
 
-A POO-native loop policy should look like a composition of strategies:
+A POO loop policy should look like a composition of strategies:
 
 #+begin_src scheme
 (loop-policy audit-loop
@@ -836,7 +836,7 @@ In Agentic AI Lab, the same semantics should be represented as reusable objects:
 - loop iteration strategy;
 - active-task repair strategy.
 
-Once these are POO-native, users can override or extend them without rewriting a
+Once these are POO, users can override or extend them without rewriting a
 runtime tool.
 
 ** Strategy Composition Is Shallow
@@ -885,7 +885,7 @@ Agentic AI Lab can put the contract one level higher:
 
 AgentTeams can be reproduced by Agentic AI Lab through:
 
-- a POO-native AgentTeams profile family;
+- a POO AgentTeams profile family;
 - functional DAG and loop strategy combinators;
 - a Python runtime adapter for MCP, Matrix, filesync, and execution;
 - durable policy backends for project/task state;
@@ -913,7 +913,7 @@ This option is useful only as a temporary capability spike.
 
 ** Option B: Scheme Composition Kernel, Python Runtime Adapter
 
-This route declares the AgentTeams semantics as POO-native profile families and
+This route declares the AgentTeams semantics as POO profile families and
 functional strategy combinators.  Python loads the normalized artifact and
 executes runtime operations through AnyIO, MCP, Matrix, and storage adapters.
 
@@ -963,7 +963,7 @@ onto Agentic AI Lab's intended abstractions.
 
 * Proposed Composition Surface
 
-The user-facing surface should stay POO-native first, but ordinary users should
+The user-facing surface should stay POO first, but ordinary users should
 not have to start from raw object internals.
 
 A compact AgentTeams-style composition should look like:
@@ -1013,7 +1013,7 @@ For an AgentTeams-style project:
         (verify-runtime -> report)))))
 #+end_src
 
-The advanced native POO override remains available:
+The advanced POO override remains available:
 
 #+begin_src scheme
 (def strict-task-result
@@ -1073,7 +1073,7 @@ Python should expose a stable runtime package, not a pile of example scripts.
 The runtime package should provide:
 
 - an AnyIO execution boundary;
-- a CFFI or C ABI bridge where Scheme artifacts need native calls;
+- a CFFI or C ABI bridge where Scheme artifacts need runtime calls;
 - a durable backend interface;
 - a filesystem durable backend for parity with AgentTeams;
 - optional Matrix/filesync adapters;
@@ -1114,7 +1114,7 @@ But the semantic center is smaller:
 - result validation;
 - repair diagnostics.
 
-Agentic AI Lab is built exactly for this second layer.  Once these become POO-native
+Agentic AI Lab is built exactly for this second layer.  Once these become POO
 policy families and functional strategy combinators, AgentTeams-style behavior
 is configuration plus runtime adapters.
 
@@ -1181,7 +1181,7 @@ Agentic AI Lab should absorb the useful shape:
 Then Agentic AI Lab should improve the layer where AgentTeams is weakest:
 
 - policy reuse;
-- native object extension;
+- runtime object extension;
 - functional composition;
 - typed normalized artifacts;
 - ABI-friendly runtime projection;

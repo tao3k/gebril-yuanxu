@@ -33,7 +33,7 @@ The proof package under =packages/proofs= owns the first scaffold:
 | Package path | Responsibility |
 |--------------+----------------|
 | =packages/proofs/lean= | Lean typed model, C FFI wrapper, proof theorems |
-| =packages/proofs/lean/native= | C header and C ABI smoke surface for proof facts |
+| =packages/proofs/lean/runtime= | C header and C ABI smoke surface for proof facts |
 | =packages/proofs/python= | =uv= based Lean artifact generator |
 
 The Python package is a generator and bridge, not a proof kernel. The Lean

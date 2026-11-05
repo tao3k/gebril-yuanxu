@@ -10,7 +10,7 @@ open SourceWindows LeanPoo.Functional.ConstructionCache
 
 -- Refreshed from the maintained QNT source before qualification.
 def quintSourceDigest : String :=
-  "sha256:4f096b2dc8d9604ca5a6b8d47dc097a2a02d2138e5d7c9150ccca2ffc8e86c3a"
+  "sha256:372b0455b8226bdbea14d27ecab242227c27d41b98fe4d84ab3b5451b48fdeb3"
 
 def combine (first second : Checked) : Checked :=
   ⟨first.accepted && second.accepted, second.cache, first.reads + second.reads⟩

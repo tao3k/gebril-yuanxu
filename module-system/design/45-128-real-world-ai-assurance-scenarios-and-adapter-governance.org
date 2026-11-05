@@ -57,7 +57,7 @@ different semantic ownership.
 - =wendao-episteme= consumes the =yuanxu= parent contract and owns only
   its domain-specific governance projection and downstream embedding
   qualification; it does not become a parent owner of =yuanxu=.
-- Agentic AI Lab owns POO-native module/profile composition, capability flow,
+- Agentic AI Lab owns POO module/profile composition, capability flow,
   agent/tool execution, runtime handoff, recovery, and operational receipts.
 - =CedarAdapter= owns the canonical authorization projection and the
   dual-engine arbitration boundary.
@@ -168,7 +168,7 @@ flowchart LR
     QA -->|"qualified"| AS
     QA -->|"missing, stale, or conflicting"| WE
     AS -->|"select by stable identity"| UC
-    UC -->|"POO-native composition"| PF
+    UC -->|"POO composition"| PF
     PF -->|"governed action projection"| CA
     CA -->|"allow with comparable evidence"| RT
     CA -->|"deny, disagree, or unavailable"| RT
@@ -406,7 +406,7 @@ data crossing a prohibited jurisdiction, and routing sensitive data to a model
 with incompatible retention terms.
 
 - Sensitive-data cloud routing and provider changes are elevated.
-- A declared native/local route must not silently fall back to a legacy or
+- A declared runtime/local route must not silently fall back to a legacy or
   remote process.
 - Receipt binds the authorization input to the actual provider, model, region,
   and executable identity used.

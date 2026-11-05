@@ -405,7 +405,7 @@ Module/prototype generation and describe them as migrated instances.
                        'effective-check-mismatch path-value name)))))))
 
 
-(def (native-check? value)
+(def (runtime-check? value)
   (ff-derives? value funflow-check))
 
 (def (funflow-selected-checks profile names)
@@ -418,7 +418,7 @@ Module/prototype generation and describe them as migrated instances.
       (unless (.slot? profile name)
         (error "Selected Check does not exist" name))
       (let ((check (.ref profile name)))
-        (unless (native-check? check)
+        (unless (runtime-check? check)
           (error "Selected slot is not a Funflow Check" name))
         check))
     names))
@@ -431,7 +431,7 @@ Module/prototype generation and describe them as migrated instances.
          (list (ff-issue 'reserved-check-position path-value name)))
         ((not (.slot? profile name))
          (list (ff-issue 'selected-check-missing path-value name)))
-        ((not (native-check? (.ref profile name)))
+        ((not (runtime-check? (.ref profile name)))
          (list (ff-issue 'selected-slot-not-check path-value name)))
         (else '())))
     names))
@@ -679,7 +679,7 @@ Module/prototype generation and describe them as migrated instances.
 
 * Correctness and demand boundaries
 
-The native kernel still performs declared responsibility admission. The guard
+The runtime kernel still performs declared responsibility admission. The guard
 prechecks selection before checks is forced. Check typos are rejected without
 forcing their unknown getters. Policy and payload obligations still apply per
 selected occurrence. Actual Check identities must match final config lookups.

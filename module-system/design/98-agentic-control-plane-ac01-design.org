@@ -15,7 +15,7 @@ Lean theorem expansion.
 
 AC-01 establishes one canonical semantic fact for a minimal organization: one
 parent Agent delegates exactly one restricted tool capability to one child
-Agent. The public surface is POO-native. Pure functions normalize that object
+Agent. The public surface is POO. Pure functions normalize that object
 into a versioned canonical S-expression, compute its identity, project a
 read-only normalized contract, and validate the frozen scenario fail-closed.
 

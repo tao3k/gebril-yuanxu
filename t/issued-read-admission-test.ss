@@ -21,7 +21,7 @@
   (check-equal? (Error? failure) #t)
   (check-equal? (Error-message failure) message))
 (def issued-read-admission-test
- (test-suite "Native read issuance and admission consumers"
+ (test-suite "Runtime read issuance and admission consumers"
   (yuanxu-test-case "actual SourceAdmissionContract refuses an injected checker without calling it"
     (def sample (probe '()))
     (def dependency (.get sample external))

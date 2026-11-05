@@ -33,7 +33,7 @@ modules/ai-agentic-context/
   funs-scope.ss             Scope admission, freezing and digest
   funs-features.ss          immutable Feature profile qualification
   funs-projection.ss        bounded Org projection and current-byte replay
-  config.ss                 native Module/Profile composition
+  config.ss                 runtime Module/Profile composition
   interface.ss              single public import/export closure
   use-host.ss               explicit trusted runtime boundary
   features/memory/
@@ -61,7 +61,7 @@ in the Session implementation slice, before claiming role qualification.
 Imports follow =types -> objects -> funs/contracts -> config/provider=.
 Specialized files inherit the responsibility of their role. =interface.ss=
 owns imports and exports only. Runtime state/effects stay behind the explicit
-Host/provider boundary. Public values use native POO prototypes and slot
+Host/provider boundary. Public values use POO prototypes and slot
 composition; private runtime records may use compact =defstruct= values.
 No new macro DSL, evaluator or dependency resolver is required.
 The Module Interface authoring Profile must represent stable role/import rules
@@ -220,12 +220,12 @@ The existing Context Use observation is insufficient to claim this full fence.
 
 * Implementation and Quint obligations
 
-First qualify source-role alignment against existing native projection and
+First qualify source-role alignment against existing runtime projection and
 Module activation tests. Then implement Session contracts and the Context input
 adapter; add Memory experience/recall, followed by revisit and durable recovery.
 Extend the consumption envelope and downstream ABI/pins with their consumers.
 
-| Invariant | Matched negative control | Required native replay |
+| Invariant | Matched negative control | Required runtime replay |
 |-----------+--------------------------+------------------------|
 | Exact input disclosure | Ignore actor/destination/profile/input binding | Cross-scope dispatch rejected |
 | Current result consumption | Ignore correction/retirement between dispatch and result | Historical result retained, current use rejected |
@@ -237,7 +237,7 @@ Extend the consumption envelope and downstream ABI/pins with their consumers.
 | Feature containment | Disable Memory to bypass Context guards | Core checks remain mandatory |
 
 New finite Quint profiles must state bounded domains, safety assertions and each
-matched control. Counterexample traces map to real native inputs and expected
+matched control. Counterexample traces map to real runtime inputs and expected
 rejections. Existing Session/WorkTree models and their passed controls are
 baseline evidence; they do not prove these new combined protocols or unbounded
 liveness. Provider/clock/storage assumptions remain named obligations.

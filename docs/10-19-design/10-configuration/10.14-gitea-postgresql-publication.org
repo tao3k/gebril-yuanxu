@@ -59,14 +59,14 @@ silently discarded. The joint diagnostic retains both lists and actual origins.
 #+end_src
 
 The assembled default client database port follows the effective PostgreSQL
-configuration through the native =(port ? ...)= default slot. An explicitly
+configuration through the runtime =(port ? ...)= default slot. An explicitly
 supplied client port remains authoritative, including in raw config.ss input;
 the constructor must not silently replace it to make a connection pass. A caller can override the client port explicitly; Application
 admission then requires agreement. The standalone Gitea Config Contract checks
 an integer client-port shape; the composed Application Contract additionally
 uses the injected PostgreSQL Port Type for the 1..65535 bound.
 
-* Native publication and deep routes
+* Runtime publication and deep routes
 
 PostgreSQL publishes its own policy through ordinary slots:
 
@@ -118,7 +118,7 @@ someone supplies coincidentally equal scalar fields.
       gitea: (.o database-port: (.get config gitea database port))))
 #+end_src
 
-The constructor creates native lexical relationships, without extracting and
+The constructor creates runtime lexical relationships, without extracting and
 reattaching a fixed parent plan:
 
 #+begin_src scheme
@@ -136,7 +136,7 @@ reattaching a fixed parent plan:
 The actual Application Contract checks, in order: required service fields;
 database configuration admission; client shape and injected Port Type; equality
 of server/client ports; plan configuration identity and both projected ports.
-Native contribution obligations then check every incoming allowed-port policy.
+Runtime contribution obligations then check every incoming allowed-port policy.
 The original Contract identity is retained by Core's Context policy hook.
 
 * User extension and publication
@@ -144,7 +144,7 @@ The original Contract identity is retained by Core's Context policy hook.
 The example below changes a port while retaining the rest of the maintained
 configuration and behavior. The corresponding policies must allow 5433.
 A direct path assignment is an alternative authoring surface; this control uses
-the already verified explicit native expansion to avoid conflating the two.
+the already verified explicit runtime expansion to avoid conflating the two.
 
 #+begin_src scheme
 (def publication
@@ -201,7 +201,7 @@ were repaired at the module boundary without relaxing admission policy.
 No service start, SQL provisioning, Gitea configuration rendering, network
 reachability, provider execution or distributed transaction is verified here.
 The plan is a pure connection projection. Unknown-field discovery, full service
-Schemas, rendering and deployment belong to subsequent domain work. Native
+Schemas, rendering and deployment belong to subsequent domain work. Runtime
 source currentness covers the selected source closure; arbitrary external IO
 inside a trusted Contract is not automatically discovered.
 
@@ -209,7 +209,7 @@ inside a trusted Contract is not automatically discovered.
 
 | Control | Expected outcome |
 |---------+------------------|
-| Repository directories, unchanged defaults | Native checked publication, both ports 5432 |
+| Repository directories, unchanged defaults | Runtime checked publication, both ports 5432 |
 | Allowed policies include 5432/5433, parent plan forced first | Child plan ports 5433; parent remains 5432 |
 | Attach the cached parent plan to the child | Refuse stale-parent-plan |
 | Independent allowed-port lists (5433) and (5440) | Preserve both origins; refuse joint requirements |
@@ -227,7 +227,7 @@ service execution or full-suite/AOT acceptance.
 
 ** Recorded result (2026-10-17)
 
-Default host runtime, current Core source alias, pinned native POO dependency
+Default host runtime, current Core source alias, pinned POO dependency
 =26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=; no dependency-source patch or
 compatibility shim. Serial heap-fenced commands completed with exit 0,
 =MODULE-OK=, =HARNESS-OK= and standalone =OK=, and no error/overflow markers:
@@ -240,7 +240,7 @@ just test-file t/module-publication-test.ss
 #+end_src
 
 The service file completed eight cases, the retained deep file ten, and checked
-publication seven. The service file was rerun after the native default-slot fix
+publication seven. The service file was rerun after the runtime default-slot fix
 and the config.ss explicit-client-port control; it again completed all eight.
 The unchanged linker Git blob throughout this work was
 =f2ccf2cd1a5715ed0dd81aad2ac44540f14f4eb6=.

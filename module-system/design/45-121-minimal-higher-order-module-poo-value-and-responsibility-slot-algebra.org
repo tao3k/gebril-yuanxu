@@ -12,7 +12,7 @@ This RFC is an accepted semantic contract.
 
 It defines the minimum higher-order Module POO value.  It does not implement the
 value, freeze public dispatch names, or add public syntax.  RFC 45-120 now admits
-the exact direct native operation substrate for a focused Module kernel; recursive
+the exact direct runtime operation substrate for a focused Module kernel; recursive
 imports, public dispatch values, and integration remain gated by the unchecked
 items below.
 
@@ -40,7 +40,7 @@ It does not own:
 
 * Central decision
 
-A Module is one higher-order native POO value with four required semantic
+A Module is one higher-order POO value with four required semantic
 slots:
 
 - =identity=;
@@ -52,7 +52,7 @@ The required slots contain first-class semantic values.  They are not raw
 lists, alists, hashes, strings, package declarations, runtime handles, or
 imperative callbacks.
 
-All remaining Module behavior is derived through native POO prototype
+All remaining Module behavior is derived through POO prototype
 extension, composition, slot projection, and dispatch.
 
 #+begin_src mermaid
@@ -68,7 +68,7 @@ flowchart LR
   F["conflicts and provenance"]
   Q["ResolvedCompositionReceipt"]
 
-  U -->|"authors, extends, mixes, and projects native POO values"| M
+  U -->|"authors, extends, mixes, and projects POO values"| M
   M -->|"requires stable semantic identity"| I
   M -->|"exposes recursive Module responsibilities without package ownership"| N
   M -->|"declares requirements and provisions without runtime handles"| C
@@ -181,7 +181,7 @@ pinned revision:
 |----------------+---------------------------+---------------|
 | Base POO value authoring | =.def= and =.o= | Author one Module POO value without a project object representation |
 | Prototype derivation | =.extend= | Derive one responsibility-preserving variant |
-| Higher-order composition | =.mix= and =.+= | Compose native prototypes without a project merge engine |
+| Higher-order composition | =.mix= and =.+= | Compose runtime prototypes without a project merge engine |
 | Slot projection | =.get= and =.@= | Project required and derived semantic responsibilities |
 | Generic prototype composition | =compose-proto= and =compose-proto*= | Evidence for higher-order prototype composition, not an alias for =compose profiles= |
 | Precedence and inherited computation | upstream object slot and precedence semantics | Preserve upstream behavior; do not reimplement it |
@@ -206,7 +206,7 @@ structured terminal or continuable outcomes.
 
 * Authoring and public interface
 
-Native =gerbil-poo= object and prototype operations are the advanced extension
+Runtime =gerbil-poo= object and prototype operations are the advanced extension
 interface.
 
 The ordinary interface remains a thin selection and composition surface:
@@ -248,7 +248,7 @@ dependencies, execute runtime effects, or interpret clauses.
 
 - [X] Admit the =.def= and =.o= authoring path required by the Module value.
 - [X] Admit =.extend= for responsibility-preserving derivation.
-- [X] Admit =.mix= where the Module semantic contract requires native prototype
+- [X] Admit =.mix= where the Module semantic contract requires runtime prototype
   composition; =.+= remains unadmitted.
 - [X] Admit =.get= and =.@= for typed semantic projection.
 - [X] Prove that no adapter reproduces upstream precedence, inherited
@@ -294,7 +294,7 @@ It must define:
 It must not introduce a new public dispatch DSL or hide runtime effects behind
 a dispatched slot.
 
-* Native object and type foundation
+* Runtime object and type foundation
 
 The four-slot Module value is the first domain object in this RFC chain, but it
 is not the project's primitive object foundation.  Its implementation depends
@@ -302,13 +302,13 @@ on the following already ordered layers:
 
 #+begin_src mermaid
 flowchart LR
-  O["project objects.ss"] -->|"constructs native project POO objects through upstream mechanics"| T["project types.ss"]
-  T -->|"assigns POO-native type and contract responsibilities"| M["Module: identity, imports, capabilities, profiles"]
+  O["project objects.ss"] -->|"constructs runtime project POO objects through upstream mechanics"| T["project types.ss"]
+  T -->|"assigns POO type and contract responsibilities"| M["Module: identity, imports, capabilities, profiles"]
   M -->|"supplies a complete semantic receiver"| D["DispatchEvaluation"]
 #+end_src
 
 =objects.ss= owns project object construction on top of upstream =gerbil-poo=.
-The intended =types.ss= owns POO-native Type and Contract prototypes.  A Module
+The intended =types.ss= owns POO Type and Contract prototypes.  A Module
 is then an ordinary typed POO value whose four required responsibilities are
 described and checked by that shared foundation.
 
@@ -336,7 +336,7 @@ not a completed implementation.
 
 - [X] Keep exactly four required Module responsibilities.
 - [X] Place Module above the project object and type/contract foundation.
-- [X] Require Type and Contract to remain POO-native semantic values.
+- [X] Require Type and Contract to remain POO semantic values.
 - [X] Keep downstream extension and dispatch evaluation outside construction.
 - [ ] Admit the shared Type and Contract prototype algebra.
 - [ ] Admit Module construction against that shared algebra.
@@ -350,6 +350,6 @@ not a completed implementation.
 - [[file:45-108-coordinator-resumption-admission-execution-lineage-continuation-fence-and-replay-retry-boundary.org][RFC 45-108: resumption and execution lineage]]
 - [[file:45-111-profile-ownership-naming-export-identity-and-composition-repository-boundaries.org][RFC 45-111: ownership and identity boundaries]]
 - [[file:45-116-application-profile-family-prototype-derivation-and-flat-environment-selection.org][RFC 45-116: application Profile family]]
-- [[file:45-119-poo-native-implementation-admission-topology-and-layer-convergence-contract.org][RFC 45-119: implementation admission topology]]
+- [[file:45-119-poo-implementation-admission-topology-and-layer-convergence-contract.org][RFC 45-119: implementation admission topology]]
 - [[file:45-120-module-domain-upstream-operation-correspondence-and-thin-adapter-admission-contract.org][RFC 45-120: upstream operation correspondence]]
 - [[file:44-current-project-programming-style.org][Current project programming style]]

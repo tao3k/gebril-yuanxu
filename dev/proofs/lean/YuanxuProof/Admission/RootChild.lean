@@ -6,13 +6,13 @@ import LeanPoo.Functional.DeclarativeMetadata
 /-! Ownership-scoped analysis routing is implemented by `object-types/contracts.ss` and
 `admission/source.ss`. Its one-shot edge is modeled below, separately from the
 finite port/contribution batching reference. An analysis mode is never a source
-certificate. Native callbacks and complete interception remain explicit bounds.
+certificate. Runtime callbacks and complete interception remain explicit bounds.
 The selected publication supplies requirements BEFORE prototype slot overriding. -/
 namespace YuanxuProof.Admission.RootChild
 namespace Routing
 open LeanPoo.Functional
 
-/-- These coordinates project native reference equality, not content equality. -/
+/-- These coordinates project runtime reference equality, not content equality. -/
 structure Request where
   contract : Nat
   candidate : Nat

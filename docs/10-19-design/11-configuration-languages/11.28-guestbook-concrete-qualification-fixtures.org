@@ -9,11 +9,11 @@
 
 * Source correction and scope of the synthetic controls
 
-The [[file:11.29-imported-schema-contracts-and-observed-expansion-origins.org][imported-Schema/native-Contract design and observed-expansion reader]] supersedes
+The [[file:11.29-imported-schema-contracts-and-observed-expansion-origins.org][imported-Schema/runtime-Contract design and observed-expansion reader]] supersedes
 SchemaV1/SchemaV2 as the main configuration walkthrough. The handcrafted Schemas
 below are isolated proposed bridge unit inputs only, not official resource field
 definitions, user configuration, or a production field registry. Real assets are
-loaded from their pinned original JSON files; public APIs expose native Contracts.
+loaded from their pinned original JSON files; public APIs expose Contracts.
 The observed-origin reader now has a concrete pending protocol in module 28;
 expected data below cannot substitute for actual macro output.
 
@@ -29,13 +29,13 @@ fixture file, not manually invented line numbers.
 Schema data below is an internal JSON-like boundary fixture, not a public alist
 configuration DSL. It follows [[file:11.14-guestbook-module-contract-admission.org][the bounded input Schema]]; discovery must project
 this artifact, never treat the fixture as a second production field table. The
-native value fixtures follow the inspected Guestbook names/images/ports in
+runtime value fixtures follow the inspected Guestbook names/images/ports in
 [[file:11.24-guestbook-effective-services.org][the KCL baseline study]], omitting scheduling/resource fields that are irrelevant
 to these four controls. This is not full KCL output or resource-consumer parity.
 
 Target Core procedure names below use yuanxu-. Existing implementations
 still use the old names in the actual [[file:../../../modules/json-schema/interface.ss][Core Schema interface]]. Imports and renaming
-must be qualified before running the future fixture. Native POO and syntax support
+must be qualified before running the future fixture. POO and syntax support
 come from the reviewed test compilation environment; users do not maintain them.
 
 * Concrete Schema revisions
@@ -117,9 +117,9 @@ optional annotations field. The container listener and targetPort bounds remain
 unchanged. annotations is a Schema-discovery control, not an assertion that the
 bounded resource mapper already renders it.
 
-* Concrete native Profile and value fixtures
+* Concrete runtime Profile and value fixtures
 
-The small constructor is private fixture code. It returns a native object and
+The small constructor is private fixture code. It returns a runtime object and
 captures its scalar arguments through ordinary slot punning; it loads nothing.
 
 #+begin_src scheme
@@ -287,7 +287,7 @@ service-calls                         ; expected 1
 service-calls                         ; expected 1
 #+end_src
 
-Probe uses pending direct assignment. The manual native comparator substitutes
+Probe uses pending direct assignment. The manual runtime comparator substitutes
 frontend: =>.+ (.o labels: =>.+ (.o env: "dev") services: (observed-services))
 inside an inherited declaration, with the counter reset in a separate run. This
 is a counted failure control for accidental duplicated payload evaluation; source
@@ -296,7 +296,7 @@ its own value, so this does not impose global once-only execution.
 
 * MG4: explicit Schema bridge, artifacts and observations
 
-The fixture scope below is a native private bridge to known implementation
+The fixture scope below is a runtime private bridge to known implementation
 functions, not a simulated Loader admission or an installed JsonSchema Module.
 Core names now use the implemented yuanxu- namespace. This private fixture
 remains a qualification bridge, not an alternative public module entrypoint.
@@ -358,13 +358,13 @@ annotations or an execution result for any listed expectation.
 | Item | Defined/source-backed here | Still required |
 |------+----------------------------+----------------|
 | SchemaV1/V2 | Complete JSON-like Schema and pure immutable revision helper | Actual compilation/validation controls under qualified dependencies |
-| RangeProbe and failures | Native inheritance from one concrete three-role baseline | Execute native controls; do not confuse them with direct-assignment coverage |
+| RangeProbe and failures | Runtime inheritance from one concrete three-role baseline | Execute runtime controls; do not confuse them with direct-assignment coverage |
 | origin-row | Concrete source capture from GuestbookUserSyntax | Actual emitted private rows, publication association and comparison |
 | Prefix/demand candidate | Concrete direct-assignment source and manual comparator | Pending authoring lowering and hygiene/evaluation controls |
 | Discovery synchronization | Same explicit artifacts and maximum projection | Pending schema-fields/diagnostic adapter and currentness qualification |
 | KCL comparison | Same port/Pod-label task retained in modules 24/26 | Matched runtime outputs/errors, no superiority claim from fixture definitions |
 
-Run Schema/native controls independently from pending macro/source controls when
+Run Schema/runtime controls independently from pending macro/source controls when
 implementation is authorized. Inability to obtain an actual emitted origin row
 must be reported pending/blocked for that gate, not replaced with expected data.
 Existing mechanisms, new fixture definitions and executed results are three

@@ -10,11 +10,11 @@
   (create-directory* (path-directory path))
   (call-with-output-file path (lambda (port) (display "keep" port))))
 (def module-build-artifact-clean-test
-  (test-suite "Selected native artifact cleanup"
-    (yuanxu-test-case "partial native clean removes only the selected output family"
+  (test-suite "Selected runtime artifact cleanup"
+    (yuanxu-test-case "partial runtime clean removes only the selected output family"
       (call-with-temporary-directory "selected-artifact-clean"
         (lambda (root)
-          ;; .o1 is already gone: native clean left later generations behind.
+          ;; .o1 is already gone: runtime clean left later generations behind.
           (def removed '("core/owned.o2" "core/owned.o23" "core/owned~Old~0.o7"
                          "core/owned.ssi" "core/owned.ssxi.ss" "core/owned.scm" "core/owned.c"
                          "static/core__owned.scm"))

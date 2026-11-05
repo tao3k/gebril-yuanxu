@@ -4,7 +4,7 @@ import YuanxuProof.ModuleSystem.Schema.Association.Projection
 
 /-! Proposed construction provenance, not an implemented Scheme MOP hook.
 The index is fixed for one authenticated publication/policy view. Tokens denote
-construction identities, not slot names. Completeness of native event capture
+construction identities, not slot names. Completeness of runtime event capture
 is an explicit integration premise, not a consequence of these theorems. -/
 namespace YuanxuProof.ModuleSystem.Schema.Association.Requirements
 open Projection

@@ -11,7 +11,7 @@
 
 (def module-source-test
   (test-suite "Core Module SourceRef identity"
-    (yuanxu-test-case "native source family and resolver identity"
+    (yuanxu-test-case "runtime source family and resolver identity"
       (let* ((left (make-yuanxu-module-source-ref
                     'local "module/interface.ss" '((origin . first))))
              (right (make-yuanxu-module-source-ref

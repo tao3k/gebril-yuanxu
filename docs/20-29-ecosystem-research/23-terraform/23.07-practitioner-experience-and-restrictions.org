@@ -29,7 +29,7 @@ does not mean the need disappeared or that a builtin universal merge was added.
 
 Our lesson: ordinary Scheme functions can avoid packaging every data transform as
 a provider. However, we still must specify list order, identity matching, deletion,
-type mismatch and conflicting requirements. Native composition is not a substitute
+type mismatch and conflicting requirements. Runtime composition is not a substitute
 for those semantics. Do not declare one universal deep merge to be the solution.
 
 ** TF-06: a module abstraction can broaden an operational dependency

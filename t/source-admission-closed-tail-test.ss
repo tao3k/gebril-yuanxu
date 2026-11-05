@@ -36,8 +36,8 @@
           (.call contract .admit candidate context)))))
   (.o outcome: result-value events: (unbox counts)))
 (def source-admission-closed-tail-test
- (test-suite "Closed instrumentation tail, with unchanged native admission"
-  (yuanxu-test-fixture "fixed counter accepts cold and warm native admission without retaining a write lock"
+ (test-suite "Closed instrumentation tail, with unchanged runtime admission"
+  (yuanxu-test-fixture "fixed counter accepts cold and warm runtime admission without retaining a write lock"
     (fixture DirectoryFixture)
     (def path (path-expand "input.json" (.get fixture root)))
     (write-source path "{}")

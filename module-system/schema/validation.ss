@@ -3,11 +3,11 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Native module-schema admission. Gerbil POO owns Type and C4 semantics;
+;;; Runtime module-schema admission. Gerbil POO owns Type and C4 semantics;
 ;;; this module checks only the field and catalog contracts built on them.
 
-(import :gerbil/core
-        (only-in :clan/poo/object .o .ref object? compute-precedence-list!)
+(import (runtime: :gerbil/core) (only-in :gerbil/core make-object)
+        (runtime: :clan/poo/object)
         (only-in :std/list/list foldl)
         :yuanxu/module-system/schema/interface)
 
@@ -63,7 +63,7 @@
     (append
      (if (yuanxu-module-value-type? type)
        '()
-       (list (module-schema-diagnostic 'invalid-native-type identity type)))
+       (list (module-schema-diagnostic 'invalid-poo-type identity type)))
      (if (memq merge +module-schema-merge-kinds+)
        '()
        (list (module-schema-diagnostic 'unsupported-merge identity merge)))
@@ -78,7 +78,7 @@
      (if (or (not default)
              (yuanxu-module-value-type-accepts? type default))
        '()
-       (list (module-schema-diagnostic 'default-not-in-native-type
+       (list (module-schema-diagnostic 'default-not-in-poo-type
                                        identity default))))))
 
 (def (yuanxu-module-field-contract-validation schema-object field-contract)
@@ -90,7 +90,7 @@
         field: (yuanxu-module-field-contract-identity field-contract)
         valueKind: (if (yuanxu-module-value-type? type)
                      (yuanxu-module-value-type-kind type)
-                     'invalid-native-type)
+                     'invalid-poo-type)
         merge: (yuanxu-module-field-contract-merge field-contract)
         valid: (null? field-diagnostics)
         diagnostics: field-diagnostics)))
@@ -211,7 +211,7 @@
         metadata: object-metadata
         fieldContractValidations: field-validations
         validationPhases:
-        (list (module-schema-validation-phase 'native-field-contracts
+        (list (module-schema-validation-phase 'runtime-field-contracts
                                               (null? field-diagnostics)
                                               (length field-diagnostics))
               (module-schema-validation-phase 'module-schema
@@ -220,7 +220,7 @@
         valid: (null? diagnostic-list)
         diagnostics: diagnostic-list
         checkedSignals:
-        '(native-poo-type native-c4-precedence field-merge-kind
+        '(poo-type runtime-c4-precedence field-merge-kind
           field-default-type field-metadata-shape object-metadata-shape
           resolved-field-identity))))
 
@@ -276,7 +276,7 @@
         validation-phases:
         (map (lambda (validation) (.ref validation 'validationPhases)) validations)
         valid: (and (null? invalid) (null? duplicate-object-ids))
-        checkedSignals: '(native-poo-catalog-validation)
+        checkedSignals: '(poo-catalog-validation)
         descriptor-realized?: #f
         runtime-executed: #f)))
 

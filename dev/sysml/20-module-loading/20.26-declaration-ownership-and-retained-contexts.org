@@ -1,0 +1,207 @@
+#+title: 20.26 Declaration Ownership and Retained Contexts
+#+language: en
+#+filetags: :modules:ownership:reflection:research:
+
+* Question and source authority
+
+The runtime scope migration removed obsolete value-admission adapters but reduced
+the 256-module live measurement by only about 1%. It did not close the principal
+retention problem. The next step must distinguish permanent dependency support,
+runtime interpreter contexts and temporary preparation actions.
+
+On 2026-10-29, gerbil-poo PR 13 was checked at
+=22e83da917744cf8f52c2e1c1879ef46183c107c=, thirteen commits after the preceding
+=a3f197f= cohort. Source references below are fixed, not moving branch links:
+
+- [[https://github.com/tao3k/gerbil-poo/commit/08595ef5cdbe7a8e89b0980e28336e417c6f5e82][Common-constructor declaration source registration]].
+- [[https://github.com/tao3k/gerbil-poo/commit/d825c05157db644b43e1d8fdf4a44803ee421bc8][Complete C3 Type preparation before definition effects]].
+- [[https://github.com/tao3k/gerbil-poo/commit/ef984c431e7256c26a35337f669a53800be4aff9][Owned parent snapshots and checked topology setters]].
+- [[https://github.com/tao3k/gerbil-poo/commit/a615f78d7545c684fc4c59ad02a288ca8005e1e4][Finite replay-root admission before projection construction]].
+
+The qualification checkout integrates the existing three-file protection delta
+cleanly: =io.ss=, =object.ss= and =slot-observation.ss=, 43 insertions and 15
+deletions. This remains a development cohort, not a published dependency pin.
+Its object digest is
+=54306fd1c5d6d689c16ec9b807726c33ea40d64a1047238c5af69ee46459d5cd=;
+its prototype-map digest is
+=454c64afa14b051bb85212da7f45c8a1ab594fbe0ae9f4b1687bcd630dca2bdb=.
+The installed Gerbil compiler/runtime source is unchanged.
+
+* What the runtime implementation now owns
+
+** Declaration source edges belong to construction
+
+=:init!= registers every direct declaration descriptor as an actual source.
+This also covers =.cc= and =.+=, which use the same constructor. Core must not
+introduce a parallel descriptor-source registry to repair these paths. Descriptor
+identity remains necessary even if two descriptors have equal fields.
+
+Before any =.slot.define= hook, =prepare-declaration-specifications= resolves
+and registers actual Type identities across the whole C3 family. Only then are
+the per-catalog scratch receivers populated in order. Its one-shot actions are
+cold preparation costs; they are not stored as reusable approval or pending
+actions on the receiver. Counting every observed preparation closure as a live
+retained closure would therefore be wrong.
+
+This establishes a concrete invalidation path, not callback purity. Resolution
+may have effects or fail; those errors precede definition effects. Runtime tests
+must cover later-C3 Type changes and failed preparation without a published
+partial method table.
+
+** Public parent inspection owns its spine
+
+=object-supers= returns an owned list while preserving parent object identities.
+The checked setter installs topology through the normal invalidation boundary;
+runtime internal construction/lookup uses the private canonical list. Core's
+existing parent traversal must not assume that repeated public inspection is
+allocation-free or that mutating an inspection result edits topology.
+
+This is not permission to replace all Core reads with raw metadata access.
+Any such change must preserve callback ordering, revision fences and original
+parent occurrences. The number of allocated inspection pairs is distinct from
+retained record/receiver ownership. No Core raw-parent fast path is added here.
+
+* A rejected retention hypothesis
+
+=reader-evaluation-observers= records the exact context/body after successful
+evaluation. =release-reader-expansions!= clears matching private context code,
+then calls =hash-clear! completed=. Therefore this table is not, by itself, a
+remaining owner of all successfully released expanded bodies. Removing the
+table or weakening its exact-program/evaluation check would fix no established
+leak and could authorize premature release.
+
+The remaining runtime context, imports, bindings, phase data and initializer
+promise are deliberately preserved. Deferred role resolution reuses those
+contexts and the same confined import/source registry. A source-body count or
+whole-VM byte delta does not establish that these structures can be deleted.
+The existing publication regression, including exported macros and preserved
+compiler-tool contexts, remains the concrete release boundary.
+
+* Assurance allocation and acceptance boundary
+
+SysML =DirectCaptureOwnership= and =ImportedEntryLifetime= continue to own the
+research questions. Lean reuses =snapshotReflectionRoundtrip=,
+=snapshotParentsExact=, =snapshotPreservesEveryOccurrence= and
+=privateCatalogFoldOrder=; do not create a second immutable-list model.
+These theorems do not prove Gambit GC liveness or mutable Scheme non-aliasing.
+
+Existing ReadRetention Quint cases own mutation/return boundaries, both
+requirements, lazy branches and receiver isolation. Runtime inheritance-hook,
+declaration-index and issued-read tests own the concrete setter, registration,
+definition-order and finite-root correspondence. A new producer digest must
+not be installed in the source-bound proof gate before runtime qualification.
+
+Build preparation and module loading are separate measurements. First qualify
+the new producer, then rebuild its Core consumers through the original entry,
+then repeat the existing bounded census and real Gitea/PostgreSQL controls.
+The old source-bound receipts remain tied to the old cohort until replaced by
+new evidence. No approval cache, second Loader, automatic dependency-pin update,
+timeout increase, or ten-thousand-module rerun follows from this source audit.
+
+* Build qualification record
+
+The original 300-second runtime =just build-core= gate timed out (exit 124):
+302.42 s wall, 299.49 s user and 67.54 s system. Its log contains 217 source
+compile announcements; announcements are not proof of completed artifacts.
+This clone gives unchanged sources fresh filesystem timestamps, unlike the
+preceding in-place cohort update, so this is not a comparable incremental
+benchmark or evidence of a module-loading regression.
+
+The same official Make entry then completed incremental recovery in 33.34 s
+wall / 36.76 s user / 4.93 s system, under the unchanged 300-second limit.
+No inputs were removed, timestamps rewritten or limits increased. This permits
+subsequent runtime qualification of the resulting cohort; it does not turn the
+failed cold build into a passing cold-build receipt. Runtime and Core consumer
+results must be recorded separately before changing proof-source bindings.
+
+The first runtime issued-read gate printed all twenty completed Cases and Harness
+success but exceeded its original 90-second process deadline: exit 124, 90.22 s
+wall / 5.10 s user / 1.02 s system. Those markers are not external acceptance.
+That log does not timestamp individual lines, so it cannot establish how much
+of the wait preceded the Harness versus followed its final output.
+
+A sequential repeat kept the exact Just/official test command, fixed 90-second
+limit and assertions, adding an external stdout timestamp filter only. It
+completed normally: Harness at 3.646 s, final OK at 5.646 s, command completion
+at 8.109 s; the inner command reported 7.11 s wall / 5.34 s user / 1.01 s system.
+This supplies a successful runtime functional receipt but neither repairs nor
+explains the first whole-process timeout. Do not label the latter a proven
+shutdown hang, host-load effect or sandbox-only problem. Upstream's fixed
+[[https://github.com/tao3k/gerbil-poo/blob/22e83da917744cf8f52c2e1c1879ef46183c107c/doc/performance/test-loading-summary.org][CLI loading study]]
+also distinguishes preparation, Harness and natural exit; its measurements are
+reference evidence, not results of this local run.
+
+Runtime inheritance-hook (21 Cases) and declaration-index (25 Cases) focused
+gates then completed normally in 10.28 s and 4.60 s respectively. Together with
+the successful issued-read repeat, these are 66 runtime Cases, not upstream full
+CI or Core consumer acceptance. Core is rebuilt before its tests because the
+public parent accessor changed semantics even though the parent objects retain
+their identities; old compiled accessor inlining cannot serve as that check.
+
+* CPU policy correction and timing scopes
+
+The validation command had explicitly supplied =GERBIL_BUILD_CORES=2=.
+Separately, the product Justfile defaulted to two workers and Core capped its
+automatic default at four. These are not host-derived defaults. Both Justfile
+environment modules now use =env_var_or_default("GERBIL_BUILD_CORES",
+num_cpus())=: this host evaluates to 12; explicit caller/CI budgets still win.
+Tests remain serial and their heap/time fences are unchanged. Validation
+commands no longer inject the two-worker override and Core builds use =just
+build= to obtain that policy.
+
+The Core rebuild started under the old two-worker override ended at its own
+300-second build-script fence, surfaced by =gerbil build= as process status
+31744 (child exit 124). The outer 600-second diagnostic limit did not relax
+that inner fence. This failure is retained. Subsequent twelve-worker incremental
+recovery is a different measurement, not proof of a faster twelve-worker cold
+build. The 3.646-second signed-read Harness timestamp excludes both runtime and
+Core library builds and must never be presented as their end-to-end duration.
+
+The twelve-worker =just build= incremental recovery completed successfully in
+29.79 s wall / 19.53 s user / 2.95 s system. It emitted no source compile
+announcements: this is hot runtime-Make/currentness work, not a twelve-worker
+cold compilation benchmark. No 300-second fence was changed. Official
+=std/make.gerbil-build-cores= was checked in the installed Gerbil source: its
+default path reads =GERBIL_BUILD_CORES=. The build entry does not install a
+second explicit worker count.
+
+After runtime qualification and the successful Core rebuild, the object-source
+bindings in SelectionReplay and PayloadSharing were advanced to the qualified
+object digest above. Their selected Lean build completed successfully (114
+jobs); no parallel model was added. The actual Gitea/PostgreSQL publication
+consumer then passed all eleven Cases through the default Just test entry with
+all Harness markers. This preserves the separate source/producer/runtime/model
+claims; the dependency release pin remains unchanged because the three local
+protection deltas are not published as that upstream commit.
+
+* Current bounded retention evidence
+
+The existing 16/32 census passed after rebuilding against this cohort; no new
+measurement runner or retention cache was introduced. These are Graph-cold/hot
+windows inside the same test process, not cold compilation timings:
+
+| Modules | Cold wall / CPU s | Hot wall / CPU s | Cold / hot physical reads |
+|---------+-------------------+------------------+---------------------------|
+| 16 | 4.149714 / 3.613867 | .074193 / .064302 | 5350 / 106 |
+| 32 | 5.780490 / 5.200896 | .124763 / .121260 | 10224 / 170 |
+
+Cold expansion remained exactly two bodies per module; hot expansion was zero.
+The 32-module VM live observation was 200,008,992 bytes. The earlier imported
+16-module namespace/Graph remained live, as witnessed by weak references and
+the original cached path. That is not permission to attribute the whole VM
+difference to 32 modules or clear original dependencies.
+
+The environment-inclusive root census covered 7,667,336 / 9,750,980 body bytes
+for the 16/32 slices, excluding headers and opaque frontiers. It observed
+394/410 expander contexts and 201,036/201,116 binding entries. Those binding
+totals are not per-module independent copies: identities shared across the
+covered roots are counted once. Therefore a proposal to delete every compiler
+context table to save a repeated 201,000 bindings is unsupported.
+
+SelectionReplay source-bound Quint qualification passed all eleven cases,
+including expected broken-model counterexamples, with the actual qualified
+producer source. The successful Scenario and census gates retain source-change
+refusal, parent/child isolation, both requirements and cold unselected branches.
+No ten-thousand-module claim follows from these small diagnostics. Dominant
+retained-body ownership remains open; no speculative context pruning or raw
+metadata fast path was installed to obtain smaller numbers.

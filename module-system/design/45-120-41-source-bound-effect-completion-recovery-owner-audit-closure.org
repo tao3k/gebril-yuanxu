@@ -18,7 +18,7 @@
 * Logic gaps found by Lean
 
 The owner-coverage closure proves that every non-committed step has exactly one
-owner-native transition witness.  It did not yet preserve the exact receipt
+owner-runtime transition witness.  It did not yet preserve the exact receipt
 identity of that witness across adjacent trace positions.
 
 Lean exposed four distinct gaps.
@@ -48,13 +48,13 @@ strengthening of the canonical architecture, not a compatibility rule.
 
 ** Prop-valued owner coverage did not expose receipt data
 
-=SourceBoundEffectCompletionRecoveryOwnerCoveredStep= proves that a native
+=SourceBoundEffectCompletionRecoveryOwnerCoveredStep= proves that a runtime
 transition exists.  Because it is proposition-valued, it is intentionally not
 an audit data object and does not expose the selected receipt value to a later
 trace position.
 
 The audit layer therefore needs a first-class witness value whose fields are
-bound back to the exact native transition receipt.
+bound back to the exact runtime transition receipt.
 
 ** Adjacent freshness did not imply global non-reuse
 
@@ -79,10 +79,10 @@ counterexample.  Global non-reuse is therefore an independent invariant.
 
 ** Owner receipt domains could not express cross-owner continuity
 
-A runtime-crash receipt ID and a storage receipt ID belong to different native
+A runtime-crash receipt ID and a storage receipt ID belong to different runtime
 domains.  Requiring equality between them would erase their ownership meaning.
 Cross-owner continuity must instead use a common audit predecessor chain while
-preserving each native receipt identity unchanged.
+preserving each runtime receipt identity unchanged.
 
 * Decision
 
@@ -131,13 +131,13 @@ $
 
 Receipt freshness is required twice:
 
-- by the native crash, scheduler, or storage transition contract;
+- by the runtime crash, scheduler, or storage transition contract;
 - by the first-class audit witness validity predicate.
 
 The theorem =ownerAuditBindingForcesReceiptFreshness= proves that a binding
-cannot manufacture audit freshness independently of its native receipt.
+cannot manufacture audit freshness independently of its runtime receipt.
 
-* Native owner binding
+* Runtime owner binding
 
 =SourceBoundEffectCompletionRecoveryOwnerAuditBinding= has exactly three
 constructors.
@@ -200,7 +200,7 @@ $
 $
 #+end_src
 
-When the owner is unchanged, the owner-native receipt chain must also be
+When the owner is unchanged, the owner-runtime receipt chain must also be
 continuous:
 
 #+begin_src typst
@@ -211,12 +211,12 @@ $
 $
 #+end_src
 
-When the owner changes, native receipt IDs are not equated.  The shared
+When the owner changes, runtime receipt IDs are not equated.  The shared
 =previousWitnessId= edge is the cross-owner continuity proof.
 
 * Global owner receipt non-reuse
 
-The closure rejects reuse of the same native owner receipt at any later
+The closure rejects reuse of the same runtime owner receipt at any later
 non-committed position:
 
 #+begin_src typst
@@ -229,7 +229,7 @@ $
 $
 #+end_src
 
-The key contains the owner because native receipt identities belong to
+The key contains the owner because runtime receipt identities belong to
 owner-specific domains.  The theorem =reusedOwnerReceiptRejectsOwnerAudit=
 enforces this invariant directly.
 
@@ -241,7 +241,7 @@ non-committed position:
 - current source generation;
 - stable provider acknowledgement;
 - a valid canonical audit witness;
-- a binding to one exact owner-native transition;
+- a binding to one exact owner-runtime transition;
 - adjacent audit continuity where the next position is also non-committed;
 - global non-reuse of =(owner, afterReceiptId)=.
 
@@ -266,7 +266,7 @@ changing the recovery progress or convergence semantics.
 * AXLE-driven proof modularity
 
 The first actual-closure AXLE preflight selected five roots from the heavy
-native binding module.  That closure expanded to:
+runtime binding module.  That closure expanded to:
 
 - 25 owner source files;
 - 398 declarations;
@@ -277,7 +277,7 @@ timeout would have hidden a module-boundary problem.
 
 The canonical identity, adjacency, and non-reuse algebra was therefore moved
 into
-=SourceBoundEffectCompletionRecoveryOwnerAuditCore=.  Native binding now
+=SourceBoundEffectCompletionRecoveryOwnerAuditCore=.  Runtime binding now
 depends on that core in one direction.
 
 The qualified core closure contains:
@@ -314,7 +314,7 @@ flowchart LR
   AB -->|"materialize first-class witness"| W0["Audit witness i"]
   W0 -->|"previousWitnessId = witnessId; ordinal + 1"| W1["Audit witness i + 1"]
   W0 -->|"same owner: after receipt = next before receipt"| W1
-  W0 -.->|"different owner: preserve native receipt domains"| W1
+  W0 -.->|"different owner: preserve runtime receipt domains"| W1
 
   W0 -->|"key = owner + afterReceiptId"| NR["Global non-reuse"]
   W1 -->|"reject any later repeated key"| NR
@@ -337,7 +337,7 @@ flowchart LR
 - [X] Prove accounting does not determine receipt freshness.
 - [X] Prove local freshness plus adjacency does not imply global non-reuse.
 - [X] Implement the actual first-class audit witness.
-- [X] Bind every witness field to the exact owner-native receipt.
+- [X] Bind every witness field to the exact owner-runtime receipt.
 - [X] Prove projection into atomic owner coverage.
 - [X] Reuse the existing convergence theorem without changing its semantics.
 - [X] Prove fail-closed rejection boundaries.
@@ -356,7 +356,7 @@ flowchart LR
   =packages/proofs/lean/AgenticAILabProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditClosure.lean=
 - Canonical lightweight audit algebra:
   =packages/proofs/lean/AgenticAILabProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerAuditCore.lean=
-- Strengthened native contracts:
+- Strengthened runtime contracts:
   =packages/proofs/lean/AgenticAILabProof/Enterprise/SourceBoundEffectCompletionRecoveryOwnerDeferralAdmissionContractClosure.lean=
 
 * Verification receipts
@@ -389,7 +389,7 @@ flowchart LR
 
 The canonical witness chain preserves identity and rejects reuse, but
 =witnessId= is still an uninterpreted non-empty string.  The next proof must
-determine whether witness identity is content-addressed by the complete native
+determine whether witness identity is content-addressed by the complete runtime
 binding and predecessor commitment, and whether enterprise authenticity and
 authorization evidence bind that commitment without moving policy semantics
 into the recovery engine.

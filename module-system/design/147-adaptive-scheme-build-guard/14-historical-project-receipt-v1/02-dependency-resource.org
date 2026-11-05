@@ -4,9 +4,9 @@
 
 * Adaptive dependency-install resource receipt (2026-07-22)
 
-Agentic AI Lab consumes the pinned gerbil-bazel =install_dependencies= capability. Native =gxpkg deps --install= remains the package-lifecycle owner; gerbil-bazel only projects the validated =GERBIL_BUILD_CORES= budget, applies the memory cap, runs the child beneath the Scheme resource guard, and records the JSON receipt.
+Agentic AI Lab consumes the pinned gerbil-bazel =install_dependencies= capability. Runtime =gxpkg deps --install= remains the package-lifecycle owner; gerbil-bazel only projects the validated =GERBIL_BUILD_CORES= budget, applies the memory cap, runs the child beneath the Scheme resource guard, and records the JSON receipt.
 
-This receipt was captured after changing the pinned revision, so native dependency work was observed. It is a revision-change install receipt, not a claim that a no-op warm install or a clean-machine cold install has the same duration.
+This receipt was captured after changing the pinned revision, so runtime dependency work was observed. It is a revision-change install receipt, not a claim that a no-op warm install or a clean-machine cold install has the same duration.
 
 | Evidence                         | Receipt                                                   |
 |----------------------------------+-----------------------------------------------------------|

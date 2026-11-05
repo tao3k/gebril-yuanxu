@@ -110,7 +110,7 @@ flowchart LR
 - [ ] =coordinatorCandidateCarriesIndependentLocalChecks=
 - [X] =coordinatorCandidateCarriesCurrentFence=
 - [X] =coordinatorCandidateCarriesNonrevokedFence=
-- [ ] Project delegation envelopes and receipts through native =gerbil-poo=.
+- [ ] Project delegation envelopes and receipts through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.Modules.Funflow.Delegation=.  It
@@ -146,11 +146,11 @@ They may compose:
 - SCC placement;
 - checkpoint policy.
 
-The public semantic extension interface remains POO-native. Scheduling must not
+The public semantic extension interface remains POO. Scheduling must not
 become an enum-like =#:remote=, =#:retry=, or =#:checkpoint= macro DSL.
 
 Funflow may provide functional execution composition. It must not become an
-alternative POO semantic system or hidden authority channel.
+alterPOO semantic system or hidden authority channel.
 
 * Demand envelope
 
@@ -477,7 +477,7 @@ The implementation must distinguish at least:
 12. Scheduling order and placement do not change pure results.
 13. Duplicate divergent results fail closed.
 14. Confidentiality placement overrides performance preference.
-15. Public semantic extension remains POO-native.
+15. Public semantic extension remains POO.
 
 * Implementation checklist
 

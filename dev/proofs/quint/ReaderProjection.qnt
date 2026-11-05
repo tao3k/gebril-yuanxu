@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 module ReaderProjectionModel {
   const BUG: str
-  // Stable native topology: root 0 -> unregistered 2 -> registered 3;
+  // Stable runtime topology: root 0 -> unregistered 2 -> registered 3;
   // another root 4 shares 3. ContextWalk owns traversal order, not this model.
   pure val nodes = Set(0, 2, 3, 4)
   pure def closure(request: int): Set[int] =
@@ -39,7 +39,7 @@ module ReaderProjectionModel {
       .with("request", s.request + 1)
       .with("accepted", BUG == "skipGuard" or s.projected.forall(n => s.versions.get(n) == 0))
       .with("scratch", if (BUG == "retain") s.scratch else Set())
-      // Registration changes between native demands. A topology snapshot must
+      // Registration changes between runtime demands. A topology snapshot must
       // never become a cached list of input objects from an earlier registry.
       .with("known", s.known.union(Set(2)))
   }

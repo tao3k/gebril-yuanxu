@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: exposes hygienic syntax for declaring POO-native features and profiles.
+;;; Boundary: exposes hygienic syntax for declaring POO features and profiles.
 ;;; Invariant: macros expand to ordinary model constructors without owning runtime behavior.
 (import :yuanxu/feature-system/model)
 
@@ -12,7 +12,7 @@
 ;; feature-clause->fragment
 ;;   : (-> Syntax Syntax)
 ;;   | doc m%
-;;       Lower one declarative feature clause to its POO-native fragment.
+;;       Lower one declarative feature clause to its POO fragment.
 ;;
 ;;       # Examples
 ;;

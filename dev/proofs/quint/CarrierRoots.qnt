@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 module CarrierRootsModel {
   const BUG: str
-  // Native reader/binding roots (9 -> 0), effective method (1), invocation
+  // Runtime reader/binding roots (9 -> 0), effective method (1), invocation
   // frame (2), arguments (3), shared method (4), private continuation payload
   // (5), read roots (6), and
   // constructor-wide initializer environments (7..8). Not a byte/GC model.
@@ -40,7 +40,7 @@ module CarrierRootsModel {
   action step = any { returnFromMethod, releaseGraph, terminal }
   val roots = Set(9).union(s.stack).union(s.reads).union(s.diagnostic)
   // The lifecycle gate starts at the completed-call boundary. Constructor
-  // validation itself is exercised by the native positive/negative controls.
+  // validation itself is exercised by the runtime positive/negative controls.
   val SamePayloads = s.phase == 0 or reachable(roots, true).intersect(payloads) ==
     reachable(roots, false).intersect(payloads)
   val NoInitializerEnvironments = reachable(roots, true).intersect(Set(7, 8)) == Set()

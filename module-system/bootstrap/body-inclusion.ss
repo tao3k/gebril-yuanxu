@@ -4,8 +4,8 @@
 (import (for-syntax :gerbil/expander))
 (export include-module-body)
 
-;;; Internal compiler projection for a relocated role root. This is the native
-;;; include expansion, with headers consumed by the native Module reader. It
+;;; Internal compiler projection for a relocated role root. This is the runtime
+;;; include expansion, with headers consumed by the runtime Module reader. It
 ;;; preserves source locations, relative imports and this-source-file semantics.
 (defsyntax (include-module-body stx)
   (syntax-case stx ()

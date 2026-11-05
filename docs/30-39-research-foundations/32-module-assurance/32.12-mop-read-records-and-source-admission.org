@@ -33,14 +33,14 @@ producer source checkout without modifying it.
 | .ref cold | Capture preparation and getter dependencies; commit value and record only after successful computation |
 | .ref warm | Deliver the existing receiver-local record; do not rerun the getter |
 | .ref/cached hit | Deliver the same value record |
-| .ref/cached miss | Invoke the native default thunk; record cache absence without invoking the slot getter |
+| .ref/cached miss | Invoke the runtime default thunk; record cache absence without invoking the slot getter |
 | .ref/inline hit | Preserve receiver/revision/layout guard, then deliver the same record when tracking is active |
-| .ref/inline miss | Existing .ref computation, then native access-site binding |
+| .ref/inline miss | Existing .ref computation, then runtime access-site binding |
 | Bootstrap anchors | Bind explicit anchor value/revision, including an already-warm inline anchor |
 | Presence/name queries | Record structure and preparation dependencies without evaluating unselected values |
 
 No observer registry retains every receiver globally. Each receiver owns its
-read table; native invalidation clears it with its instance/layout caches. Tokens
+read table; runtime invalidation clears it with its instance/layout caches. Tokens
 retained by one admission attempt intentionally retain their receivers. Ordinary
 GC can collect unreferenced object/token cycles. This is not a measured memory
 bound or a concurrency proof.
@@ -83,7 +83,7 @@ consumer returns. A previous accepted attempt is not a currentness cache.
 
 The Scenario remains under scenarios/gitea-postgresql. config.ss holds ordinary
 PostgreSQL defaults and a missing client port. objects.ss applies missing-only
-defaults to the supplied final scopes. Gitea's lexical native default follows
+defaults to the supplied final scopes. Gitea's lexical runtime default follows
 the final database receiver. Explicit client values are checked rather than
 silently rewritten. The regression Fixture adds a counted database obligation;
 it no longer replaces production preflight or wraps .admit with a private hook.

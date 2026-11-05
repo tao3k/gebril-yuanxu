@@ -3,18 +3,22 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .o .get .put! object? replay-slot-reads!)
+        (only-in :clan/poo/object .o .cc .get .put! object? replay-slot-reads!)
+        (only-in :clan/poo/mop Type. Bool)
+        (only-in :clan/poo/type Enum Tuple)
+        (only-in :clan/poo/testing/type check-property report-diagnostics)
+        (prefix-in :clan/property-testing/test pbt.)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-receiver slot-read-key)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
         :yuanxu/module-system/source/collection
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/admission
         :yuanxu/module-system/interface)
 (export module-source-admission-test)
 (def ScopeContract
-  (yuanxu-predicate-contract 'test/source-scope object? (lambda (_v _c) '())))
+  (.cc Type. identity: 'test/source-scope .element?: object?))
 (def (write-role root role text)
   (let (path (path-expand (string-append "modules/custom/example/" role ".ss") root))
     (create-directory* (path-directory path))
@@ -32,7 +36,9 @@
        (write-role root "objects" "(import \"types.ss\") (def Defaults 'default)")
        (write-role root "config" "(import \"objects.ss\") (def Config 'configured)")
        ;; Publish one object, without importing/re-exporting every private role.
-       (write-role root "interface" "(import \"config.ss\") (.def Published identity: 'custom/example) (export Published)"))
+       (write-role root "interface" "(import \"config.ss\") (.def Published identity: 'custom/example) (export Published)")
+       (call-with-output-file (path-expand "init.ss" root)
+         (cut display "(yuanxu! source: \"./modules\" mode: explicit :custom (example))\n" <>)))
      (lambda () (test root))
      (lambda () (remove-source root)))))
 (def (publication)
@@ -53,6 +59,64 @@
     (check-equal? reads 0)))
 (def module-source-admission-test
   (test-suite "One source-role admission for directory and collection"
+    (yuanxu-test-case "demanded collection directories distinguish empty from missing or malformed"
+      (with-module
+        (lambda (root)
+          (create-directory* (path-expand "empty/modules" root))
+          (create-directory* (path-expand "file" root))
+          (call-with-output-file (path-expand "file/modules" root) (cut display "not a directory" <>))
+          (def domain (Tuple (Enum missing empty file) Bool))
+          (def (valid-outcome? row)
+            (def state (vector-ref row 0))
+            (def excluded? (vector-ref row 1))
+            ;; Construction stays inert, even for an unavailable source.
+            (def collection (.cc (make-yuanxu-module-source-collection
+                                   'probe 'test (path-expand (symbol->string state) root) "modules")
+                                excluded-directories: (if excluded? '("unused") '())))
+            (def outcome (with-catch (lambda (_cause) 'refused)
+                          (lambda () (yuanxu-module-source-collection-interfaces collection))))
+            (if (eq? state 'empty) (null? outcome) (eq? outcome 'refused)))
+          (for-each (lambda (state)
+                      (check-equal? (valid-outcome? (vector state #f)) #t)
+                      (check-equal? (valid-outcome? (vector state #t)) #t))
+                    '(missing empty file))
+          (pbt.check-property
+            (check-property domain valid-outcome? seed: 3305 cases: 32 size: 4 shrink-budget: 32)
+            diagnostics: report-diagnostics))))
+    (yuanxu-test-case "only an absent contribution may fall through to another source collection"
+      (with-module
+        (lambda (root)
+          (def packages (path-expand "packages" root))
+          (create-directory* (path-expand "valid/modules" packages))
+          (rename-file (path-expand "modules/custom/example" root)
+                       (path-expand "valid/modules/example" packages))
+          (create-directory* (path-expand "missing" packages))
+          (create-directory* (path-expand "empty/modules" packages))
+          (create-directory* (path-expand "file" packages))
+          (call-with-output-file (path-expand "file/modules" packages) (cut display "not a directory" <>))
+          (def domain (Enum absent missing empty file valid))
+          (def contribution (make-yuanxu-contribution-root-module-source 'packages packages))
+          (def fallback-source (make-yuanxu-module-generated-source 'fallback))
+          (def (valid-outcome? state)
+            (def calls 0)
+            (def fallback (.o (:: @ yuanxu-module-source-collection-prototype)
+                              identity: 'fallback
+                              locate: (lambda (_collection _key _roles)
+                                        (set! calls (1+ calls)) (list fallback-source))))
+            (def path (make-yuanxu-module-load-path 'probe (list contribution fallback)))
+            (def outcome (with-catch (lambda (_cause) 'refused)
+                          (lambda () (yuanxu-module-load-path-locate path (cons 'custom state)))))
+            (case state
+              ((absent) (and (equal? outcome (list fallback-source)) (= calls 1)))
+              ((valid) (and (pair? outcome) (= (length outcome) 1) (= calls 0)
+                            (not (eq? (car outcome) fallback-source))))
+              (else (and (eq? outcome 'refused) (= calls 0)))))
+          (for-each (lambda (state) (check-equal? (valid-outcome? state) #t))
+                    '(absent missing empty file valid))
+          (check-exception (yuanxu-module-source-collection-locate contribution '(custom . ../valid)) error?)
+          (pbt.check-property
+            (check-property domain valid-outcome? seed: 3306 cases: 32 size: 4 shrink-budget: 32)
+            diagnostics: report-diagnostics))))
     (yuanxu-test-case "collected replay starts fresh and shares only its own pure reads"
       (with-module
         (lambda (root)

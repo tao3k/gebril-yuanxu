@@ -1,16 +1,16 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Existing declaration binding; bounded adjacent-role discovery uses SDK file metadata.
+;;; Existing declaration binding; bounded adjacent-role discovery uses Gerbil file metadata.
 (import (only-in "../bootstrap/body-inclusion.ss" include-module-body)
         (prefix-in (only-in :clan/poo/object
-                            .def/ctx .o/ctx .o .ref) native-)
+                            .def/ctx .o/ctx .o .ref) runtime-)
         (for-syntax :gerbil/expander
                     :yuanxu/module-system/source/role-forms))
 (export .def include-module-body export-role-config define-module-build-binding
         current-module-build-phase? current-module-build-resolver)
 (begin-syntax
-  ;; Project only the direct native fields of a publication frame. Payloads
+  ;; Project only the direct runtime fields of a publication frame. Payloads
   ;; remain syntax; .def/ctx and .o/ctx own object semantics and slot binding.
   (def (publication-fields origin fields)
     (let loop ((tail (syntax->list fields)) (rows '()) (seen '()))
@@ -26,7 +26,7 @@
                           (syntax-case field ()
                             ((name payload) (identifier? #'name)
                              (values #'name #'payload (cdr tail)))
-                            (_ (raise-syntax-error #f "publication frame expects direct native value slots" field))))))
+                            (_ (raise-syntax-error #f "publication frame expects direct runtime value slots" field))))))
             (when (memq (syntax-e name) seen)
               (raise-syntax-error #f "duplicate publication field" name))
             (with-syntax ((field-name name) (field-value payload))
@@ -40,13 +40,13 @@
       (unless row (raise-syntax-error #f "publication requires an explicit slot" origin name))
       (syntax-case row ()
         ((_ value) #'value)
-        (_ (raise-syntax-error #f "publication field must be a direct native value slot" row)))))
+        (_ (raise-syntax-error #f "publication field must be a direct runtime value slot" row)))))
   (def (object-parts value)
-    (syntax-case value (native-.o)
-      ((native-.o (:: options ...) body ...)
+    (syntax-case value (runtime-.o)
+      ((runtime-.o (:: options ...) body ...)
        (list #'(:: options ...) #'(body ...)))
-      ((native-.o body ...) (list #'() #'(body ...)))
-      (_ (raise-syntax-error #f "publication requires a literal native .o" value))))
+      ((runtime-.o body ...) (list #'() #'(body ...)))
+      (_ (raise-syntax-error #f "publication requires a literal .o" value))))
   (def (dependency-aliases value)
     (let* ((parts (object-parts value))
            (rows (publication-fields value (cadr parts))))
@@ -73,11 +73,11 @@
         (let (link-row
               (syntax/loc exports-row
                 (link (lambda (dependencies)
-                        (let ((alias (native-.ref dependencies 'alias)) ...)
+                        (let ((alias (runtime-.ref dependencies 'alias)) ...)
                           exports-value)))))
           (with-syntax ((context value) (options (car parts))
                         ((row ...) (map (lambda (row) (if (eq? row exports-row) link-row row)) rows)))
-            #'(native-.o/ctx context options row ...)))))))
+            #'(runtime-.o/ctx context options row ...)))))))
 
 (defsyntax (.def stx)
   (syntax-case stx ()
@@ -89,7 +89,7 @@
        (and role (not (eq? role 'interface))
             (memq role yuanxu-module-allowed-entrypoint-roles)))
      (with-syntax ((context stx))
-       #'(native-.def/ctx context binding body ...)))
+       #'(runtime-.def/ctx context binding body ...)))
     ((_ binding body ...)
      (let* ((rows (publication-fields stx #'(body ...)))
             (core-row (slot-row rows 'core))
@@ -97,7 +97,7 @@
             (name (syntax-case #'binding ()
                     ((name _ ...) (identifier? #'name) #'name)
                     (name (identifier? #'name) #'name)
-                    (_ (raise-syntax-error #f "expected a native .def binding" #'binding)))))
+                    (_ (raise-syntax-error #f "expected a .def binding" #'binding)))))
        (slot-value rows 'identity stx)
        (slot-value rows 'features stx)
        (with-syntax ((context stx) (name name)
@@ -143,9 +143,9 @@
            (begin
              role-import ...
              build-binding ...
-             (native-.def/ctx context binding row ...)
+             (runtime-.def/ctx context binding row ...)
              (export name))))))
-    (_ (raise-syntax-error #f "expected one native Module declaration" stx))))
+    (_ (raise-syntax-error #f "expected one runtime Module declaration" stx))))
 
 ;; Internal phase capability, not a runtime Loader or a global binding registry.
 (def current-module-build-phase? (make-parameter #f))
@@ -155,7 +155,7 @@
   ;; to ordinary config/runtime consumers.
   (unless (current-module-build-phase?)
     (error "Build is available only in the Module build-publication phase"))
-  (native-.ref state 'value))
+  (runtime-.ref state 'value))
 (defsyntax (define-module-build-binding stx)
   (syntax-case stx ()
     ((_ name)
@@ -165,7 +165,7 @@
        #'(begin
            (def resolver (current-module-build-resolver))
            (def state
-             (native-.o value:
+             (runtime-.o value:
                (if resolver (resolver)
                    (error "Module Build has no admitted build resolver"))))
            (defsyntax name
@@ -174,7 +174,7 @@
                (_ (module-build-binding-value state)))))))
     (_ (raise-syntax-error #f "expected an internal Build binding" stx))))
 
-;; The native expander decides whether Config is visible after body expansion.
+;; The runtime expander decides whether Config is visible after body expansion.
 ;; No second parser for Scheme definitions, and no export of private bindings.
 (defsyntax (export-role-config stx)
   (syntax-case stx ()

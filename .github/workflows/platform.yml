@@ -18,7 +18,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - uses: ./.github/actions/setup-gerbil
-      - name: Select native compiler capacity
+      - name: Select runtime compiler capacity
         shell: bash
         run: |
           # Dependency compilation is serial; use the actual runner allocation.
@@ -55,7 +55,7 @@ jobs:
       - name: Check complete disjoint test partition
         run: just check-test-groups
       - name: Preserve dependency and library tree
-        # Test products are local to the checkout whose native Make timestamps
+        # Test products are local to the checkout whose runtime Make timestamps
         # produced them. A shard's fresh checkout must issue its own test build;
         # do not restore either half of an earlier test product/approval pair.
         run: >-

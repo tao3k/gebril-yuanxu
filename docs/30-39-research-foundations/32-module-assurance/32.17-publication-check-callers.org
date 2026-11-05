@@ -78,7 +78,7 @@ the maintained application relation must reject a mismatch with PostgreSQL.
 | W1–W3 whole-publication file checks | Candidates for root-owned source certification | These calls remain internal analysis, all child obligations still execute, observations reach the root, and analysis grants no effect/publication authority |
 | W1–W3 descriptor/object provenance | Preserve the guarantee | Registration, exact final child identity and contribution/source observations must not be lost when the expensive source pass moves |
 | W4 before an open contribution callback | Retain the pre-callback validity boundary | Do not let a callback consume known-stale publication data merely because the root will reject later |
-| W5 after that callback | Retain fresh post-effect validation | The callback is an open native Generic/slot boundary; old bytes are not evidence after it |
+| W5 after that callback | Retain fresh post-effect validation | The callback is an open runtime Generic/slot boundary; old bytes are not evidence after it |
 | W6 Context callback | Retain invocation and graph/coverage/revision guarantees | The slot is replaceable; it cannot be assumed a pure inspector for all callers |
 | Final collector after W6 and replay | Retain an independent fresh source check | No bytes from W6 may hide a write performed by that very callback |
 | A genuinely standalone child admission | Retain its promised return-time checks | It cannot return the proposed internal analytic evidence as a source-bound receipt |
@@ -132,7 +132,7 @@ execution authority.
 
 The consumer resides ONLY at
 =/private/tmp/core-admission-call-attribution/attribution-test.ss=. No repository
-Scheme, Loader or dependency source was changed. It delegates native Context
+Scheme, Loader or dependency source was changed. It delegates runtime Context
 =.contract-obligations= and =admit-current= calls through =.cc= wrappers, labels
 their dynamic extent, and uses the existing =current-module-source-observer= to
 count actual =file-read= events. It does not replace admission, alter registered
@@ -145,7 +145,7 @@ asserts both contribution keys, parent isolation and exact child plan/config
 identity. The original unwrapped 718-read receipt remains the matched baseline.
 
 The default Gerbil/Gambit runtime and existing heap-fenced =just test-file= gate
-run the consumer against the already-qualified isolated native library at
+run the consumer against the already-qualified isolated runtime library at
 =/private/tmp/core-source-window-after/lib=. This is a diagnostic wrapper around
 real maintained Contracts and the real selected publication, not a reimplementation
 of their admission semantics.
@@ -186,7 +186,7 @@ Local artifacts, not committed raw logs:
 - =attribution-01.log=, =attribution-02.log=, =attribution-03.log=: retained failed
   private-consumer expansions (unbound list helper, unavailable helper import,
   then an internal definition inside =when=). The helper was removed and the
-  binding scoped with native =let=; no production behavior or assertion was
+  binding scoped with runtime =let=; no production behavior or assertion was
   weakened to obtain success.
 
 The wrapper and receipt are diagnostic artifacts only; no second test framework,

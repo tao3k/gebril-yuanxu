@@ -13,7 +13,8 @@
                  flow-first flow-second conditional-flow try-flow
                  return-flow cached-pure-flow)
         (only-in "store.ss" put-dir-flow get-dir-flow store-flow)
-        "func.ss" "config-prototypes.ss" "graph-projection.ss")
+        "func.ss" "config-prototypes.ss" "graph-projection.ss"
+        (only-in "scenario.ss" Scenario))
 (export Task. Job. FunflowModule.)
 (.def (Task. @ ProcessScript.) needs: '() after-start: #f)
 (.def (Job. job [])
@@ -25,6 +26,7 @@
   .run: (validate (Fun JobResultContract <- String)
           (lambda (workspace) (run-job job workspace))))
 (.def FunflowModule.
+  types: (.o (Scenario))
   runtime-vocabulary:
   (.o operation-kinds: +yuanxu-agent-operation-kinds+
       snapshot-statuses: +yuanxu-runtime-snapshot-statuses+)

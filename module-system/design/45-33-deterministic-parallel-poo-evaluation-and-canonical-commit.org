@@ -26,22 +26,22 @@ evidence.
 The commit is a logical evidence boundary.  It is not a second evaluator, a
 mutable global configuration store or a realization side effect.
 
-* Native POO boundary
+* POO boundary
 
 =gerbil-poo= remains the sole implementation of objects, prototypes, slot
-demand and open recursion.  Agentic AI Lab schedules native demand and observes its
+demand and open recursion.  Agentic AI Lab schedules runtime demand and observes its
 results.
 
 The scheduler MUST NOT:
 
-- replace native slot lookup or computation;
+- replace runtime slot lookup or computation;
 - turn worker completion order into prototype precedence;
 - introduce a public task-graph DSL;
 - expose cache, worker or queue configuration as ordinary composition syntax;
 - make raw futures, promises or thread handles into module values;
 - commit effects from the pure control plane.
 
-Public module semantics remain POO-native.  Operational scheduling policy may
+Public module semantics remain POO.  Operational scheduling policy may
 itself be represented by an authorized POO policy object, but it cannot change
 the meaning of composition.
 
@@ -60,7 +60,7 @@ flowchart LR
   Q -->|"independent demand may run concurrently"| B["Worker B candidate"]
   A -->|"submits value, edges, obligations and conditions without global mutation"| C["Canonical semantic commit"]
   B -->|"submits value, edges, obligations and conditions without global mutation"| C
-  C -->|"applies native precedence and slot-contract algebra"| V["Deterministic POO result"]
+  C -->|"applies runtime precedence and slot-contract algebra"| V["Deterministic POO result"]
   C -->|"new edge invalidates provisional topology"| T["Current-generation topology rediscovery"]
   T -->|"derives a corrected logical frontier"| Q
   V -->|"seals schedule-independent evidence"| R["Canonical semantic receipt"]
@@ -100,10 +100,10 @@ Depending on the contract, these may include:
 - deterministic convergence;
 - a canonical representation of equal results.
 
-If those laws are absent, Agentic AI Lab retains the native deterministic evaluation
+If those laws are absent, Agentic AI Lab retains the runtime deterministic evaluation
 route for the SCC.  Performance pressure does not authorize a semantic race.
 
-* Native precedence is not canonical sorting
+* Runtime precedence is not canonical sorting
 
 Canonicalization applies to unordered evidence, candidate sets and diagnostic
 projection.  It MUST NOT reorder a semantic operation whose contract is
@@ -111,7 +111,7 @@ ordered.
 
 In particular:
 
-- =.mix= and native prototype lookup retain their declared precedence;
+- =.mix= and runtime prototype lookup retain their declared precedence;
 - ordered same-lineage refinement retains its POO order;
 - authority attenuation retains its causal delegation order;
 - receipt predecessor chains retain causal order;
@@ -142,7 +142,7 @@ flowchart TD
   B["Candidate B completes later"] -->|"records an equal or competing contribution"| K
   H["Verified cache result arrives independently"] -->|"contributes the same semantic result identity"| K
   K -->|"slot contract sees every causally relevant candidate"| M["Deterministic merge or ambiguity"]
-  M -->|"success follows native POO algebra"| V["Canonical value"]
+  M -->|"success follows POO algebra"| V["Canonical value"]
   M -->|"conflict preserves the complete candidate evidence"| E["Canonical condition set"]
 #+end_src
 
@@ -166,7 +166,7 @@ The commit:
 2. combines newly observed edges into a canonical set;
 3. determines whether the current SCC topology remains valid;
 4. revokes provisional convergence invalidated by a topology change;
-5. applies the native ordered or unordered slot-contract algebra;
+5. applies the runtime ordered or unordered slot-contract algebra;
 6. constructs the canonical condition closure;
 7. seals the value and semantic receipt only after all obligations succeed.
 
@@ -235,7 +235,7 @@ The semantic receipt commits to:
 
 - generation and POO identities;
 - complete contribution closure;
-- native slot-contract result;
+- runtime slot-contract result;
 - dependency and sealed SCC identities;
 - canonical condition closure;
 - logical budgets;
@@ -321,7 +321,7 @@ Evaluation MUST fail or enter an authorized continuable condition when:
   parallel.
 - [X] An SCC is internally serial unless its POO slot contracts establish safe
   parallel laws.
-- [X] Native ordered prototype precedence is never replaced by canonical
+- [X] Runtime ordered prototype precedence is never replaced by canonical
   sorting.
 - [X] Singleton, priority, authority, ambiguity and convergence decisions
   reject race-first-wins behavior.
@@ -345,6 +345,6 @@ Evaluation MUST fail or enter an authorized continuable condition when:
 - [[file:45-14-deterministic-realization-replay.org][Deterministic Realization Replay]]
 - [[file:45-20-fixed-point-convergence-observation-budget.org][Fixed-Point Convergence Observation Budget]]
 - [[file:45-24-fixed-point-observability-and-recoverable-debugging.org][Fixed-Point Observability and Recoverable Debugging]]
-- [[file:45-28-poo-native-slot-contracts-and-algebraic-laws.org][POO-Native Slot Contracts and Algebraic Laws]]
+- [[file:45-28-poo-slot-contracts-and-algebraic-laws.org][POO-Runtime Slot Contracts and Algebraic Laws]]
 - [[file:45-31-incremental-poo-fixed-point-invalidation-and-reuse.org][Incremental POO Fixed-Point Invalidation and Reuse]]
 - [[file:45-32-current-generation-scc-identity-and-topology-change.org][Current-Generation SCC Identity and Topology Change]]

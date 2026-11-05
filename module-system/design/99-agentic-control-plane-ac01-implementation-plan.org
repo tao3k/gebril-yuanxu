@@ -34,7 +34,7 @@ Create focused owners under =src/semantic/= for:
 - duplicate and ambiguous identity rejection.
 
 Follow the POO object/prototype conventions established by
-=src/semantic/boundary-namespace.ss=. Keep public construction POO-native and
+=src/semantic/boundary-namespace.ss=. Keep public construction POO and
 keep ordinary data projections internal/read-only.
 
 Exit: the frozen parent/child/tool scenario can be authored only through named

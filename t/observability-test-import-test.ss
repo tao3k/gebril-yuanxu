@@ -4,8 +4,6 @@
         (only-in :std/source this-source-file)
         (only-in :gerbil/expander core-import-module expander-context-id)
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
-        (only-in :yuanxu/module-system/building/test-projection
-                 module-test-file-source module-test-execution)
         (only-in :yuanxu/observability/testing-fixture
                  yuanxu-test-fixture with-yuanxu-fixture)
         (only-in :yuanxu/observability/testing-case
@@ -54,22 +52,13 @@
         '(yuanxu/observability/debug yuanxu/observability/slot-debug
           yuanxu/module-system/building/test-observation
           clan/poo/debug))
-      ;; Memory policy/receipt Contracts use native Types after the refactor.
+      ;; Memory policy/receipt Contracts use Types after the refactor.
       ;; No additional Type family may enter beyond those required contracts.
       (for-each
         (lambda (id)
           (check-equal? (and (memq id identities) #t)
                         (and (memq id contract-identities) #t)))
         '(clan/poo/type clan/poo/number)))
-    (test-case "a fresh native worker qualifies the raw allocation counter"
-      ;; A prior watchdog's lifetime can invalidate this VM counter stream.
-      ;; Preserve the positive payload control in a fresh native test process;
-      ;; rollback validity is checked independently above, never clamped to pass.
-      (def source
-        (module-test-file-source
-          (list (path-expand "qualification/observability/raw-allocation-test.ss"
-                            (path-directory (this-source-file))))))
-      (check-equal? (.get (.call (module-test-execution source) .run) status) 0))
     (test-case "body failure preserves fixture cleanup"
       (def before released)
       (check-exception

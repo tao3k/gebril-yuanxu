@@ -110,7 +110,7 @@ flowchart LR
 - [X] =dependencyChangeCreatesNewCacheIdentity=
 - [X] =observationCutChangeCreatesNewCacheIdentity=
 - [X] =policyChangeCreatesNewCacheIdentity=
-- [ ] Project the verified contracts through the native =gerbil-poo= runtime.
+- [ ] Project the verified contracts through the runtime =gerbil-poo= runtime.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is
@@ -432,7 +432,7 @@ The implementation must distinguish at least:
 11. Waiter cancellation remains scoped.
 12. Evaluator continuation resumption preserves its semantic cut.
 13. Proof-relevant reuse emits a cache reuse receipt.
-14. Native POO semantics remain owned by =gerbil-poo=.
+14. POO semantics remain owned by =gerbil-poo=.
 
 * Implementation checklist
 

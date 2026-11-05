@@ -108,7 +108,7 @@ inferred from budget arithmetic.
 
 The actual closure defines
 =SourceBoundEffectCompletionRecoveryOwnerCoveredStep=.  Its three indexed
-constructors consume the already-proved owner-native transition closures.
+constructors consume the already-proved owner-runtime transition closures.
 
 ** Runtime crash owner
 
@@ -296,7 +296,7 @@ Actual closure:
   exact declarations.  Its 43,615-byte bundle digest is
   =sha256:961e752852e1fc0aae407f6d3fc22f57c5610fb8ceb2910132a8a411af5fe922=.
 - No AXLE timeout was increased and no whole-file fallback was used.
-- Native Orgize identified nine Typst blocks and one Mermaid block.
+- Runtime Orgize identified nine Typst blocks and one Mermaid block.
 - All nine parser-owned Typst bodies compiled to a 19,707-byte PDF.
 - The existing local =mermaid@11.16.0= parser accepted the current
   1,356-byte Mermaid graph under its installed =happy-dom= environment.
@@ -319,7 +319,7 @@ Actual closure:
 - [X] Reuse the existing progress evidence and convergence theorem.
 - [X] Build aggregate and full Lean targets.
 - [X] Run independent AXLE qualification.
-- [X] Validate Org structure and extract all blocks through native Orgize.
+- [X] Validate Org structure and extract all blocks through runtime Orgize.
 - [X] Compile all Typst blocks.
 - [X] Validate Mermaid with an admitted local validator.
 - [X] Run the Python proof audit.

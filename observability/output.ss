@@ -9,7 +9,7 @@
 
 (export yuanxu-write-observation-line!)
 
-;;; Materialize a complete receipt before it reaches the shared native port.
+;;; Materialize a complete receipt before it reaches the shared runtime port.
 (def (yuanxu-write-observation-line! template . values)
   (let* ((line (apply format template values))
          (record (string-append "\n" line "\n"))

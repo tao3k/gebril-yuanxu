@@ -9,9 +9,9 @@
 
 Accepted architecture.
 
-This RFC freezes how multiple POO-native control policies produce one
+This RFC freezes how multiple POO control policies produce one
 ControlDecision for the algebra defined in
-[[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89]].
+[[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89]].
 It does not authorize implementation until the deterministic resolution and
 authority tests in this document are complete.
 
@@ -106,7 +106,7 @@ question.
 - [X] A stricter constraint cannot expand the result set.
 - [X] An unauthorized candidate cannot change the decision.
 - [X] A valid hard stop can only restrict execution.
-- [X] Erasing policy control preserves the native outcome.
+- [X] Erasing policy control preserves the runtime outcome.
 - [X] The resolver operates on a finite candidate set.
 - [X] The resolver introduces no global fixed point.
 - [X] The resolver reads no provider registry.
@@ -159,7 +159,7 @@ This document owns:
 It does not own:
 
 - Profile merge precedence;
-- native ~gerbil-poo~ slot precedence;
+- runtime ~gerbil-poo~ slot precedence;
 - Profile composition order;
 - raw continuation behavior;
 - portable suspension reconstruction;
@@ -504,12 +504,12 @@ For admitted policies ~A~, ~B~, and ~C~ evaluated against one condition:
 - adding an unauthorized candidate cannot change the selected decision;
 - adding a valid hard stop can only preserve or restrict execution; and
 - erasing the policy layer from an allowed completed execution preserves the
-  native POO result or failure.
+  POO result or failure.
 
 These laws apply to the policy resolver, not to arbitrary object slot
 precedence.
 
-* POO-native dispatch
+* POO dispatch
 
 Policy and candidate behavior is selected through admitted POO prototypes and
 functional combinators.
@@ -656,7 +656,7 @@ boundaries.
 - [ ] Prove that resolution produces no Profile result.
 - [ ] Prove that evidence observation does not change selection.
 - [ ] Prove that a conflict terminates through the noncontinuable boundary.
-- [ ] Prove erasure to native POO semantics for allowed completed execution.
+- [ ] Prove erasure to POO semantics for allowed completed execution.
 
 * Admission criteria
 
@@ -685,4 +685,4 @@ Implementation may begin only when:
 - [[file:45-86-poo-conservative-extension-criterion-and-cross-module-obligations.org][45-86: POO conservative-extension criterion and cross-module obligations]]
 - [[file:45-87-live-continuation-capabilities-continuable-conditions-and-portable-suspension-boundary.org][45-87: live continuation capabilities and portable suspension boundary]]
 - [[file:45-88-gerbil-gambit-continuation-and-condition-runtime-correspondence.org][45-88: Gerbil and Gambit runtime correspondence]]
-- [[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89: POO-native control condition, decision, and capability algebra]]
+- [[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89: POO control condition, decision, and capability algebra]]

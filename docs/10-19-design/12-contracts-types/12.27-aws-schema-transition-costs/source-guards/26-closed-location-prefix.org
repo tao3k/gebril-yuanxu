@@ -9,7 +9,7 @@ source barriers per declaration. This change implements ONE closed operation
 on that real call chain. It does not infer purity from a Module name, a CLOS
 style or a source filename, and does not remove the complete Graph guard.
 
-The native directory path previously performed authoring admission during
+The runtime directory path previously performed authoring admission during
 location and repeated it during publication preparation. The paired path now
 assigns these responsibilities once:
 
@@ -17,29 +17,29 @@ assigns these responsibilities once:
   snapshots, namespace mounts and literal source bindings; it constructs a
   SourceRef and does not invoke style/Contract/CLOS authoring callbacks.
 - Publication preparation applies the actual style policy, role rules and
-  authoring Contract before native declaration expansion. That is an opaque
+  authoring Contract before runtime declaration expansion. That is an opaque
   boundary and runs OUTSIDE the shared source observation window.
 - A custom source Context or publication reader retains the independent,
   conservative path, including directory-side source admission.
 
 The internal directory flag =publication-prepares-source?= is set only by
-the native path that constructs BOTH the directory Context and the standard
+the runtime path that constructs BOTH the directory Context and the standard
 publication reader. It is not a contributor-facing opt-out of admission.
 The existing .def interface declaration and init test APIs are unchanged.
 The implementation owners are [[file:../../../../../module-system/source/directory.ss][directory source location]],
 [[file:../../../../../module-system/source/reader.ss][publication reading]], [[file:../../../../../module-system/source/link.ss][Graph linking]], and
-[[file:../../../../../module-system/source/admission.ss][native metadata support]].
+[[file:../../../../../module-system/source/admission.ss][runtime metadata support]].
 
 * Complete support of the closed prefix
 
-The paired prefix uses the SAME native directory Context and reader as the
+The paired prefix uses the SAME runtime directory Context and reader as the
 selected Graph. Its support is not a second module namespace or Graph:
 
 1. Original init bytes, negative source lookups, directory names/kinds and
    package metadata remain owned by the directory's existing observations.
 2. The parser's intent, windows, decision rows and nested selection objects,
-   including their transitive native ancestors, carry FIRST revision support.
-3. The native Context and its ancestors must still have their captured
+   including their transitive runtime ancestors, carry FIRST revision support.
+3. The runtime Context and its ancestors must still have their captured
    revisions and no MOP protocol. An overridden locator or currentness method
    selects the ordinary guarded path BEFORE invoking the contributed callback.
 4. SourceRef construction must still use the maintained object-family
@@ -60,7 +60,7 @@ metadata; the following opaque publication preparation depends on complete
 reader support. The two guards have different domains. Valid metadata never
 authorizes use of an earlier publication's source bytes.
 
-=module-source-object-policy= is a read-only native identity/revision closure.
+=module-source-object-policy= is a read-only runtime identity/revision closure.
 It deduplicates actual ancestors and releases the temporary capture index.
 Each invocation compares current revisions; it stores no successful check or
 source bytes. Mutation followed by restoration does not revive the old witness.
@@ -69,7 +69,7 @@ another cache or namespace tree. Revision-only source identity support can
 preserve an existing opaque protocol on the ordinary path; it does not certify
 that protocol as pure. This is not an arbitrary Scheme mutation sandbox: raw
 alteration of private list spines, mutable string payloads or SDK storage is
-outside the supported native object protocol.
+outside the supported runtime object protocol.
 
 * The exact observation window
 
@@ -85,7 +85,7 @@ The private paired reader continuation performs:
         (current!))
       source)))
 ;; Window ended. No approved bytes/result is carried into these operations:
-;; prepare publication -> native import/expand/eval -> declaration-after guard
+;; prepare publication -> runtime import/expand/eval -> declaration-after guard
 ;; -> actual public Contract admission -> publication-admitted guard.
 #+end_src
 
@@ -94,13 +94,13 @@ guard has the eligibility attribution; it no longer invokes a reader-wide
 guard. Reader start/end events report the remaining full reader checks rather
 than pretending a metadata projection performed one. Unknown Contexts,
 custom readers, changed Contexts and changed constructor policy do not enter
-that window. Native expansion, initializers and Contract callbacks never use
+that window. Runtime expansion, initializers and Contract callbacks never use
 its observations. No cache is added, cleared or reused across those effects.
 The consumed private prefix callback is also released before deferred Build
 resolvers can capture the publication frame. This releases a completed caller
 continuation, not an SDK context, import binding or evaluation cache.
 
-* Native controls and measured reads
+* Runtime controls and measured reads
 
 The same real declaration fixture is selected by init. Its Module tests .run
 still expands all role bodies and never forces the poisoned business scopes
@@ -113,7 +113,7 @@ revision, source-only loading, existing heap/growth budgets and observation.
 | Executed reader guard bodies | 68 | 52 | 1028 | 772 |
 | Reader guard start/end events | 68 | 52 | 1028 | 772 |
 | Role parsing passes | 128 | 64 | 2048 | 1024 |
-| Native role bodies expanded/evaluated | 64 | 64 | 1024 | 1024 |
+| Runtime role bodies expanded/evaluated | 64 | 64 | 1024 | 1024 |
 | Graph-held collected live bytes | 509068944 | 508698704 | 837288736 | 734272136 |
 
 Physical reads fell by 1197 (21.6%) and 142077 (24.6%), respectively. The 256
@@ -121,10 +121,10 @@ collected-byte difference is 103016600 bytes (12.3%). These are whole-process
 live measurements with the SAME Graph retained, not exclusive ownership sizes
 or matched wall-clock speed claims. Compiler/import/GC costs remain separate.
 
-The new native publication controls establish:
+The new runtime publication controls establish:
 
 - one actual authoring admission per paired declaration;
-- nested selection edits and native ancestor edits refuse old location support;
+- nested selection edits and runtime ancestor edits refuse old location support;
 - an already located SourceRef edit-and-restore refuses old directory evidence;
 - an edited locator that changes an earlier observed source is rejected by the
   ordinary reader entry guard BEFORE another declaration initializes;
@@ -147,7 +147,7 @@ termination. Seven matched controls must expose reuse across an open locator,
 mistaking metadata scope for full source scope, reuse after an effect, omitted
 support, repeated closed-prefix scanning, missing cleanup and genuine successful
 acceptance. Eight expected outcomes
-pass through the existing checker. The native source files, tests and Lean
+pass through the existing checker. The runtime source files, tests and Lean
 source are bound in its receipt.
 
 Lean's existing SourceClosureWork module proves:
@@ -166,9 +166,9 @@ Lean's existing SourceClosureWork module proves:
   the original one for any natural N.
 
 Quint explores finite mutation/interleaving controls. Lean quantifies over
-arbitrary supported identities and N. Neither proves the native effect audit,
+arbitrary supported identities and N. Neither proves the runtime effect audit,
 the operating system's scheduling, GC capacity or external-writer atomicity.
-The closed-prefix audit, native revision fidelity and the existing stable
+The closed-prefix audit, runtime revision fidelity and the existing stable
 pure-window observation contract are explicit correspondence premises.
 
 * Remaining boundary
@@ -179,7 +179,7 @@ A later optimization must establish their real support or a genuinely closed
 continuation; a cached field, module label or unchanged pathname alone cannot
 certify the callback that computed it.
 
-The sixteen/256 native successes are not a thousand-module capacity claim.
+The sixteen/256 runtime successes are not a thousand-module capacity claim.
 The prior 684 timeout remains retained. A separate thousand-declaration run
 used the unchanged total budget and heap fence and again exited 124. It
 completed 728 publications, not 1000. At publication 684 it recorded 2911943
@@ -197,12 +197,12 @@ Unlike the retained preceding timeout, TERM reached the fixture owner as
 =Ops execution terminated=. The generated thousand-module fixture root was
 absent after exit, without manual deletion; no owned child process remained.
 This qualifies that real outer-stop resource boundary, not universal cleanup
-of arbitrary native code after SIGKILL.
+of arbitrary runtime code after SIGKILL.
 
 The larger receipt was taken before adding the explicit SourceRef-constructor
 fallback check and naming the narrower metadata-only guard directly. Their
 default closed path has the same measured physical reads in the final sixteen
-check; native controls and that check are separate evidence. The
+check; runtime controls and that check are separate evidence. The
 larger run is not relabeled as an exact-final-source thousand-module pass.
 
 The final 256 projection check independently retained the same 434671 reads,
@@ -222,7 +222,7 @@ retains one Graph, cold unselected branches, actual Schema/Contract/Context
 change rejection, stale-evidence rejection, accepted-value preservation and
 fixture cleanup. The framework failure injection cases remain negative
 controls; no assertion or timeout was weakened.
-The final native TERM gate also passed with natural exit zero: nested fixture
+The final runtime TERM gate also passed with natural exit zero: nested fixture
 release, directory removal and subsequent fixture reuse remain intact. These
 focused gates use the existing Just heap-fenced entrypoints and Ops execution;
 there is no added runner, upstream edit, full build, cache clearing or push.

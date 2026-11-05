@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Scenario Configuration of Existing Funflow Profiles and Native Check Authoring
+#+title: Scenario Configuration of Existing Funflow Profiles and Runtime Check Authoring
 #+date: [2026-10-15]
 #+property: STATUS local-publication-and-declarations-implemented-loader-proposed
 
@@ -9,11 +9,11 @@
 
 The subsequent [[file:164-funflow-public-configuration-contract-design.org][public-configuration redesign]] is the current proposed authority
 for attribute disclosure, schema/default separation, typo rejection and dynamic
-Check selection. It retains this document's native object/receiver foundation
+Check selection. It retains this document's runtime object/receiver foundation
 but does not claim those domain adaptations are already implemented.
 
-After the [[file:164-module-interface-comparison.org][upstream/downstream comparison]], [[file:164-funflow-local-publication.org][local native publication]] is now
-implemented in modules/funflow/native-scope.ss and profiles/gerbil-scheme.ss.
+After the [[file:164-module-interface-comparison.org][upstream/downstream comparison]], [[file:164-funflow-local-publication.org][local runtime publication]] is now
+implemented in modules/funflow/runtime-scope.ss and profiles/gerbil-scheme.ss.
 FunflowModule., the default Funflow value and all Check/Pipeline defaults are
 real local exports. The actual factory takes a prototype-only view with the same
 source/prototypes, not the aggregate published Funflow scope; that breaks the
@@ -23,18 +23,18 @@ the local publication document. No new source authentication is implied.
 The owner-publication/Contract bridge sections below remain the broader future
 Loader design. Their FunflowOwners/module-owner-export/contracts getter is not
 the implemented local scope. The domain CICDScenario/Contract publication remains
-proposed; the local runnable example uses a plain native root instead of that
-unpublished domain parent. Native path and bounded scope declarations are live.
+proposed; the local runnable example uses a plain runtime root instead of that
+unpublished domain parent. Runtime path and bounded scope declarations are live.
 
-* Purpose before syntax: real origin, native scope, natural laziness
+* Purpose before syntax: real origin, runtime scope, natural laziness
 
-The stable design is an admitted native Module scope, not the spelling
+The stable design is an admitted runtime Module scope, not the spelling
 use-module. Its purpose is to resolve maintained/upstream/user contributions,
-make their actual origins distinguishable, expose native configured Profiles and
+make their actual origins distinguishable, expose runtime configured Profiles and
 prototypes, and connect to one Loader/admission path. Do not make upstream
 objects or user composition less expressive merely to preserve an existing
 macro's parsing shape. The bounded as form below is implemented over an existing
-native scope, not a second runtime object model or a requirement to abandon native
+runtime scope, not a second runtime object model or a requirement to abandon runtime
 functions/let/POO operations.
 
 Origin is a resolved source/owner/revision relationship. Maintained defaults and
@@ -52,7 +52,7 @@ bounded dependency demand must be designed in the owners, not just the syntax.
 * Shared object abstraction and ownership of Check composition
 
 Maintained local Agentic AI Lab Modules, third-party Modules and User Interface
-Modules use the same authoring abstraction: admitted native Module scopes,
+Modules use the same authoring abstraction: admitted runtime Module scopes,
 POO Profile/Check/Pipeline objects, prototype inheritance and effective slot
 refinement. Upstream owners create and publish defaults through that scope;
 downstream users inherit and refine them through target paths. There is no
@@ -62,7 +62,7 @@ Contracts, source ownership, capabilities or runtime authority.
 
 The Pipeline object owns the selected Check list. Its checks slot computes the
 ordered list from the effective Profile receiver, using that Profile's build,
-test and package slots. This relationship is part of the native object layer,
+test and package slots. This relationship is part of the runtime object layer,
 not a post-configuration repair or a user step that copies parent Check values.
 The list representation exists to serve current consumers; it is a projection
 of effective objects, not a second configuration source of truth.
@@ -71,21 +71,21 @@ of effective objects, not a second configuration source of truth.
 |-------+----------------+---------------------------|
 | upstream Module/Profile owner | publish admitted prototypes/default objects and the receiver-aware Pipeline relationship | use the common module scope when authoring reusable defaults |
 | downstream Scenario | bind a Module once if needed, inherit existing values and refine target paths | specify desired attributes of build/test/package/Pipeline |
-| Pipeline object | calculate checks from its effective enclosing Profile and retain native receiver-local cache behavior | no manual extraction, concatenation, reinsertion or cache refresh |
+| Pipeline object | calculate checks from its effective enclosing Profile and retain runtime receiver-local cache behavior | no manual extraction, concatenation, reinsertion or cache refresh |
 | internal selected-plan adapter | select the final Scenario's effective Pipeline, admit it and consume its checks projection | no separate config collector or user assembly procedure |
 | validation probe | hold parent/child Pipeline/list references and inspect values/identity/counters | test-only local variables, not a public configuration protocol |
 
-In particular, (def child-checks (.get child-pipeline checks)) in the native
+In particular, (def child-checks (.get child-pipeline checks)) in the runtime
 probe records an observation so assertions can compare cache identity. It is
 not a declaration that every user must write, not another Module API and not
-the mechanism that makes inheritance current. The Pipeline's native computed
+the mechanism that makes inheritance current. The Pipeline's runtime computed
 slot already supplies that mechanism. Reading/inspecting checks remains allowed;
 requiring a user to assemble it just to apply an ordinary path refinement does
 not satisfy this design.
 
 Do not add a second automatic checks getter or synchronization layer on top of
 this relationship. The new Module/scope/Loader adapters must preserve it as they
-connect publication, source admission and final-plan consumption. Native
+connect publication, source admission and final-plan consumption. Runtime
 receiver/cache semantics have isolated execution evidence below; the common
 Concrete Module publication and authenticated source integration still require implementation
 and their own admission/validation. The path-syntax adapter is now implemented
@@ -104,10 +104,10 @@ need not manipulate its implementation identity or test variables to configure i
 
 | Behavior | Upstream abstraction and owner | Downstream surface |
 |----------+--------------------------------+--------------------|
-| effective Profile -> Pipeline -> checks | native receiver-bound computed slots, with slot .defgeneric when one receiver family needs replaceable behavior | refine existing business slots by path; no list assembly |
+| effective Profile -> Pipeline -> checks | runtime receiver-bound computed slots, with slot .defgeneric when one receiver family needs replaceable behavior | refine existing business slots by path; no list assembly |
 | Check/Profile/Pipeline boundary shape | define-type, responsibilities and obligations against effective POO objects, integrated with existing admission | inherit valid defaults; diagnostics for invalid changes |
 | pure dependency checking and list/plan projection | named pure functions consuming admitted final objects | no manual adapter choreography |
-| authoring admission executor x source-role kind | existing CLOS generic/method bundles, not a symbol-based role switch | same native authoring abstraction for maintained and User Interface sources |
+| authoring admission executor x source-role kind | existing CLOS generic/method bundles, not a symbol-based role switch | same runtime authoring abstraction for maintained and User Interface sources |
 | source resolver/provider x publication-kind Contract | proposed upstream CLOS crossing where resolver kinds and prototype/Profile publication families are independently extensible | one module scope; no provider-name switch or owner import plumbing |
 | runtime/plan consumer x domain object kind | upstream CLOS crossing where consumers and domain kinds independently grow; lower to existing explicit handoff | configuration only; no direct provider execution |
 
@@ -116,7 +116,7 @@ specializers and method-bundle owner before implementation. The proposed
 source/publication crossing has resolver-provider families owned by the source
 adapter and publication-kind families owned by Module publications; its method
 bundles belong to their integration owner. Default unsupported crossings fail
-closed. Use poo-clos-prototype-specializer for native POO prototypes and
+closed. Use poo-clos-prototype-specializer for POO prototypes and
 poo-clos-class-specializer only for real ClosClass values. Method registration
 must use admitted bundles at the existing composition boundary, preserve canonical
 prototype identity, and must not create an eager global collection of every
@@ -124,7 +124,7 @@ Module's methods or evaluate all Profiles during expansion.
 
 Do not introduce multiple dispatch merely because a getter is nested or a list
 has three elements. Pipeline checks has one effective Profile receiver and needs
-no new CLOS layer to satisfy this example. Native slot computation already has
+no new CLOS layer to satisfy this example. Runtime slot computation already has
 the executed cache evidence; generic dispatch is for actual independently
 extensible boundary axes. Existing Loader backend callbacks need not all be
 replaced to comply with this design. module-owner-export is the internal adapter
@@ -132,14 +132,15 @@ boundary: it should use an admitted provider/publication crossing when that
 crossing exists, while source bookkeeping and pure projection retain their
 existing owners, not a central case on provider names or a second interpreter.
 
-The current [[file:../../../modules/module-authoring/module-source-admission.ss][source-admission owner]] already defines
-ModuleAuthoringAdmissionProtocol/Generic, specializes ModuleAuthoringExecutor.
+The current [[file:../authoring/admission.ss][source-analysis owner]] defines
+ModuleAuthoringAnalysisProtocol/Generic, specializes ModuleAuthoringExecutor.
 and ModuleSourceRole./ConfigSourceRole., and composes ModuleAuthoringCoreMethods
-with .defmethod-bundle. This is an existing structural reference, not proof that
+with .defmethod-bundle. Its typed diagnostic lists are checked per datum;
+public admission constructs the final POO result. This is an existing structural reference, not proof that
 Funflow's proposed source/publication or consumer crossings are implemented.
-[[file:../../poo-clos/interface.ss][Core's POO-native CLOS/MOP facade]] supplies the extension vocabulary; its
+[[file:../../poo-clos/interface.ss][Core's POO CLOS/MOP facade]] supplies the extension vocabulary; its
 existence is not a reason to add new Class/metaclass abstractions for a simple
-Profile. MOP-backed classification/admission and native effective slots carry
+Profile. MOP-backed classification/admission and runtime effective slots carry
 object semantics; no parallel record/list model is exposed to user modules.
 
 Upstream Maintained and User Interface module owners may publish reusable
@@ -148,11 +149,11 @@ mechanisms need to maintain the relevant slot generics or boundary method
 bundles. Ordinary downstream configuration remains the four path refinements
 shown below, with no child-checks variables, dispatch frames, MOP metadata or
 method-table management. These proposed integrations remain design-only; the
-native 32-assertion probe did not test a new CLOS method bundle or Loader adapter.
+runtime 32-assertion probe did not test a new CLOS method bundle or Loader adapter.
 
 * Decision: one Module binding, refine its existing Profiles
 
-Gerbil and Rust are published native configuration Profiles of the same Funflow
+Gerbil and Rust are published runtime configuration Profiles of the same Funflow
 Module. The user binds that Module once, then refines both inherited Profiles
 under funflow.profiles. A different Module, GitHub Actions, has its own binding.
 Do not make downstream users redeclare Gerbil/Rust Check objects, separate
@@ -160,7 +161,7 @@ per-language module-binding wrappers or default-and-computed source slots.
 Scenario is the user configuration root. No imports/compose slot, public Case,
 config wrapper or mandatory repeated task construction is introduced.
 
-The Scenario's .def layer remains public. Native multi-parent inheritance stays
+The Scenario's .def layer remains public. Runtime multi-parent inheritance stays
 available for intentionally reused independent configuration contributions, but
 is not a prerequisite for using multiple Profiles already provided by one Module.
 No user source-comment/role annotation is added; visible use-module binding and
@@ -169,16 +170,16 @@ real owner provenance supply the source relationship.
 * Upstream publication boundary, without manual user imports
 
 The maintained Module owns the Check prototype and is designed to publish complete
-Gerbil/Rust default objects with their contracts. It publishes them through the native module scope:
+Gerbil/Rust default objects with their contracts. It publishes them through the runtime module scope:
 profiles exposes configuration values; prototypes.check exposes the admitted
 parent object for deliberate new Check authoring. Ordinary users do not repeat
 raw Check construction to use existing defaults, nor import/rename a separate
 funflow-check identifier after binding the Module.
 
-Only module-system/bootstrap implementation needs native Gerbil import internally;
+Only module-system/bootstrap implementation needs Gerbil import internally;
 Profile authors use the same bounded module scope as Scenario authors. This language mechanism
 is not the user configuration model, and a bounded source-scope adapter must not
-load all exports or inject naked lexical symbols. The user sees native values
+load all exports or inject naked lexical symbols. The user sees runtime values
 from the actual admitted module binding. Detailed old constructor/import payloads
 are in [[file:164-funflow-cicd-legacy-source-reference.org][the separate historical/owner reference]], not this current user recipe.
 
@@ -194,7 +195,7 @@ user refinement below, not a silent correction to the historical default.
 
 ** Prototype defaults, owned by Funflow
 
-The actual native prototypes in [[file:../../../modules/funflow/config-prototypes.ss][config-prototypes.ss]] already supply these
+The actual runtime prototypes in [[file:../../../modules/funflow/config-prototypes.ss][config-prototypes.ss]] already supply these
 complete baseline slots. This table is the design's inherited foundation; it is
 not another user-facing component declaration list.
 
@@ -222,7 +223,7 @@ Upstream Profile authors and downstream Scenario authors use the same bounded
 Module scope. Neither author imports config-prototypes.ss or expects an
 unqualified funflow-check binding. The prototype lookup is explicitly
 (.get ff prototypes check), from the admitted funflow source, and the Pipeline
-prototype comes from the same scope. The low-level native prototype declarations
+prototype comes from the same scope. The low-level runtime prototype declarations
 remain in the existing Funflow bootstrap owner; that owner alone uses ordinary
 Gerbil imports to implement the module system's foundation.
 
@@ -236,10 +237,10 @@ check. The alias and source evidence are lexical dependencies, not proof that
 all returned objects have Module identity. This result-aware admission is part
 of the new adapter, not today's Bundle behavior.
 
-The compound-body grammar is now implemented for an already bound native
+The compound-body grammar is now implemented for an already bound runtime
 Funflow scope. Capability-aware source resolution and actual Funflow publication
 remain proposed. The complete object below replaces the earlier direct-constructor
-Profile recipe; it is not yet a complete Loader integration. Check/Pipeline native
+Profile recipe; it is not yet a complete Loader integration. Check/Pipeline runtime
 prototypes and attributes already exist. The primitive .o/.get/def language
 bindings are supplied by the authoring environment; this surface does not require
 handwritten imports of Funflow implementation identifiers.
@@ -292,14 +293,14 @@ handwritten imports of Funflow implementation identifiers.
         pipeline-name: 'default
         checks: (list build test package)
         metadata: '((scenario . funflow-cicd)
-                    (authoring-style . gerbil-poo-native))))))
+                    (authoring-style . gerbil-poo))))))
 #+end_src
 
-*** Core rule: preserve native outer-slot lexical binding
+*** Core rule: preserve runtime outer-slot lexical binding
 
-POO's native outer-slot lexical binding is a required authoring rule, not a new
+POO's runtime outer-slot lexical binding is a required authoring rule, not a new
 module-system feature. build/test/package above are slot identifiers introduced
-by the enclosing native .o. In the nested Pipeline body they continue to read
+by the enclosing .o. In the nested Pipeline body they continue to read
 the effective enclosing Profile. They are not copies of already-forced parent
 Check values, fields of the inner Pipeline, or unbound symbols to be injected
 by use-module. Therefore checks can directly be (list build test package).
@@ -308,13 +309,13 @@ Do not replace those slot identifiers with a fixed parent list, eager def-slots
 extraction, a global prototype reference, or an ad hoc lambda (self super) hook.
 No manual let-bound Profile and repeated .get chain is needed for this ordinary
 lexical relationship. Where a nested object deliberately declares a same-named
-slot, native lexical shadowing applies; an unrelated helper must not rewrite
+slot, runtime lexical shadowing applies; an unrelated helper must not rewrite
 identifier scope or capture a same-spelled binding. Moving this code into a
 helper/macro requires preserving syntax bindings or passing the effective
 receiver explicitly; mere textual substitution is not equivalent.
 
 The pinned object.ss uses %with-shared-slot-bindings and syntax parameters to
-retain receiver-aware lexical slot access, including nested objects. Its native
+retain receiver-aware lexical slot access, including nested objects. Its runtime
 test "nested object methods retain the outer lexical slot scope" covers outer
 capture and inner shadowing. The executed 32-assertion lexical-slot probe below
 also verifies parent-first caching, child refinement and sibling isolation for
@@ -327,7 +328,7 @@ all three selected effective Check slots. No parent mutation/backpatching occurs
 
 The module itself is now explicitly defined below. There is no undefined
 FunflowModule. parent supplying hidden behavior. The complete Gerbil scope has
-two focused owner declarations and native computed export slots. The module
+two focused owner declarations and runtime computed export slots. The module
 bootstrap publishes this structure without evaluating the Gerbil Profile.
 These paths are source-relative owner facts, not absolute imports or a new
 public module-role selector.
@@ -374,7 +375,7 @@ public module-role selector.
     source: admitted-source))
 #+end_src
 
-The existing config-prototypes.ss is the native Check/Pipeline owner; the new
+The existing config-prototypes.ss is the runtime Check/Pipeline owner; the new
 profiles/gerbil-scheme.ss would contain the complete scoped Profile definition
 above. role objects/config states existing ownership roles; it does not rename
 these focused files into mandatory objects.ss/config.ss shell entrypoints or
@@ -383,7 +384,7 @@ bridge compatible with the existing shell/authoring rules.
 
 The old FunflowCICDDefaults wrapper that directly referenced an already-bound
 GerbilSchemeCIProfile is superseded: publication is now the lazy
-profiles.gerbil-scheme getter on the fully defined FunflowModule. Native catalog
+profiles.gerbil-scheme getter on the fully defined FunflowModule. Runtime catalog
 extension can still refine profiles with =>.+; no second registry is introduced.
 The source descriptor binds funflow to this lightweight scope construction
 protocol and its inert owner metadata, not to a module that eagerly imports
@@ -395,17 +396,17 @@ funflow-scope must receive a validated source handle from the binding adapter.
 Admission rechecks that handle and the expected Module/source relationship;
 copying a same-shaped object or overriding owners to a different source cannot
 manufacture provenance. ff is local naming, not source authentication. The
-native source field and owners are configuration values; authority remains with
+runtime source field and owners are configuration values; authority remains with
 the actual admitted source owner and its publication policy.
 
 The source/owner export crossing and Contract factory are expanded as concrete
-native declarations in [[file:164-funflow-contract-and-dispatch-design.org][the Contract and Generic method-bundle design]]. Its publication
-prototypes are defined before FunflowOwners; its functions accept native values
+runtime declarations in [[file:164-funflow-contract-and-dispatch-design.org][the Contract and Generic method-bundle design]]. Its publication
+prototypes are defined before FunflowOwners; its functions accept runtime values
 rather than import the complete Profile during bootstrap. Prototype-specializer
 declarations, Generic protocol clauses and deferred method-bundle declarations
 are now implemented in Core's working tree. The actual source/Loader adapters
 still require implementation. Upstream authoring uses .defgeneric/.defmethod and a private defrules frame; low-level specializer
-lists/lambdas are retained only as expansion references, not the normal recipe. source/owners/prototypes/profiles in the nested views are native enclosing Module slot identifiers, just as build/test/package
+lists/lambdas are retained only as expansion references, not the normal recipe. source/owners/prototypes/profiles in the nested views are runtime enclosing Module slot identifiers, just as build/test/package
 are enclosing Profile slot identifiers in Pipeline.
 
 contracts.gerbil-scheme is demanded only for selected Profile admission, after
@@ -422,7 +423,7 @@ module-owner-export is a proposed internal function, not an existing Core API:
 #+begin_src scheme
 ;; Contract illustration only; no function implementation is supplied here.
 ;; (module-owner-export admitted-source owner export-name)
-;;   -> admitted native export value, or typed load/admission failure
+;;   -> admitted runtime export value, or typed load/admission failure
 #+end_src
 
 | Stage | Required behavior and existing boundary |
@@ -432,7 +433,7 @@ module-owner-export is a proposed internal function, not an existing Core API:
 | construct demand | use existing source-ref and make-lazy-load-plan data; retain a precise owner demand rather than replace it with the coarse import-all interface |
 | guard reentry | record canonical source/revision + owner/capability and current demand path before entering resolution/evaluation; reject a repeated active dependency with its path |
 | force when needed | delegate to existing force-lazy-load-plan / load-source-receipt backend ordering; absent backend or failed owner remains a typed failure |
-| obtain export | through a product-owned descriptor/activation bridge, obtain the named native value and validate export shape/ancestry/provenance; a Core load receipt alone does not evaluate a Gerbil file or retrieve its export |
+| obtain export | through a product-owned descriptor/activation bridge, obtain the named runtime value and validate export shape/ancestry/provenance; a Core load receipt alone does not evaluate a Gerbil file or retrieve its export |
 | complete | preserve actual load/source evidence, return the admitted value, and release active state on success/failure/cancellation according to owner lifecycle rules |
 
 The precise source-ref mapping and descriptor/activation bridge are new
@@ -451,7 +452,7 @@ Reuse, concurrent requests, failures and currentness must be integrated with
 existing owners and produce distinct loading/admission evidence as appropriate.
 
 The two prototype exports share one physical owner today. Demanding check can
-load the native declarations for both check and pipeline in that owner. It must
+load the runtime declarations for both check and pipeline in that owner. It must
 not load Gerbil/Rust Profiles or runtime implementations. Further splitting this
 owner is an optional measured optimization, not an existing per-export loading
 guarantee. Constructing prototypes/profiles view objects does not read their
@@ -467,9 +468,9 @@ this is not a promise of one global mutable Module singleton.
 | Upstream responsibility | Required design / admission |
 |-------------------------+-----------------------------|
 | Module scope | real admitted source/revision, compatible Funflow base and prototype exports; no source identity inferred from alias ff |
-| profiles.gerbil-scheme | native reusable Profile with named build/test/package and pipeline; applicable domain Contract associated by the publication owner |
-| build/test/package | native Check classification, required business fields and existing attribute admission; unchanged baseline slots inherited from funflow-check |
-| pipeline | native Pipeline classification; checks is the ordered list of the effective selected Check objects, metadata retains the original pair values |
+| profiles.gerbil-scheme | runtime reusable Profile with named build/test/package and pipeline; applicable domain Contract associated by the publication owner |
+| build/test/package | runtime Check classification, required business fields and existing attribute admission; unchanged baseline slots inherited from funflow-check |
+| pipeline | runtime Pipeline classification; checks is the ordered list of the effective selected Check objects, metadata retains the original pair values |
 | dependencies | build -> test -> package dependency closure, unique selected qualified identities, no missing or cyclic local references |
 | profile-ref | resolve ci/build and ci/check through admitted Scenario/Profile bindings; these are original binding references, not a claim of literal catalog paths |
 | compensation | cleanup/package-artifacts must resolve to an admitted supported compensation owner before runnable admission; naming it alone does not supply that implementation |
@@ -477,7 +478,7 @@ this is not a promise of one global mutable Module singleton.
 | Scenario selection | upstream CICDScenario selects this Profile and its pipeline; catalog availability alone is not execution selection |
 
 These are concrete responsibilities for the proposed Profile/publication and
-Scenario adapters. They are not already guaranteed by native ancestry or the
+Scenario adapters. They are not already guaranteed by runtime ancestry or the
 current generic composition Contract. This document does not invent a successful
 cleanup implementation, missing profile binding or runtime receipt to make the
 example pass. Unresolved required references reject runnable admission.
@@ -494,7 +495,7 @@ execution of the scoped syntax.
 | [[file:../loader/load-path.ss][Core load path]] | ordered collections, default locate asks for interface; duplicate collection identities rejected | no public prototype-versus-Profile role selector; do not expose topology selection to users |
 | [[file:../../../modules/module-authoring/module-source-collection.ss][Product source collection]] | public load-modules resolves interface; accepted shell roles are types/objects/funs/config/interface/syntax; source validation reads role data | role/authoring validation may inspect multiple files; no per-Profile evaluation split guaranteed, and no new profiles role should be invented |
 | [[file:../../../modules/user-interface/module-source-tree.ss][Product source tree]] | produces lazy plans over selected sources, strict receipt loading and auto-import extension nodes | entrypoint identity does not by itself split prototype, config and runtime import closure |
-| [[file:../../profile-composition/selection-syntax.ss][Current Core use-module]] | selects named exports into a Bundle; as specifies occurrence identity | no lexical ff body, no no-selection native scope, no prototypes/Profile getter protocol |
+| [[file:../../profile-composition/selection-syntax.ss][Current Core use-module]] | selects named exports into a Bundle; as specifies occurrence identity | no lexical ff body, no no-selection runtime scope, no prototypes/Profile getter protocol |
 | [[file:../../../modules/module-authoring/module-source-admission.ss][Product source admission]] | validates inert source datums against authoring roles without running/expanding them | cannot certify absence of dynamic owner-demand cycles or prove runtime source provenance by syntax alone |
 
 force-lazy-load-plan is functional: it leaves the deferred input intact. It does
@@ -518,9 +519,9 @@ The following are owner/capability dependencies, not a new public module tree:
 
 #+begin_example
 funflow source/interface metadata (no Profile evaluation)
-  -> lightweight native Module scope
+  -> lightweight runtime Module scope
        prototypes.check / prototypes.pipeline
-         -> existing focused native prototype owner
+         -> existing focused runtime prototype owner
        profiles.gerbil-scheme
          -> focused Gerbil Profile owner
               -> use-module funflow as ff
@@ -562,7 +563,7 @@ owner dependency rather than relying on delayed evaluation to conceal it.
 | Actual use order | Allowed demand | Must remain undemanded |
 |------------------+----------------+------------------------|
 | upstream requests funflow scope | admitted source metadata and bounded bootstrap scope | all Profile values and runtime consumers |
-| upstream demands prototype parents | required check/pipeline native owners and source/Contract facts | gerbil/rust Profile catalog evaluation |
+| upstream demands prototype parents | required check/pipeline runtime owners and source/Contract facts | gerbil/rust Profile catalog evaluation |
 | publish Profile reference | focused owner identity and required inert publication metadata | evaluating that Profile just to discover it |
 | downstream binds funflow as ff | same protocol; local occurrence and bounded configuration expression | eagerly materializing every inherited Profile |
 | downstream reads/refines Gerbil build | requested Profile, Check parents and required inheritance dependencies | Rust/other Profile owners, Pipeline checks and runtime invocation |
@@ -579,8 +580,8 @@ reads need separate measurements; POO laziness is not an automatic cost bound.
 ** Required new adaptation and acceptance controls
 
 Reuse existing load-path source ordering, source receipts, deferred plans,
-authoring admission, native slot inheritance and existing list adapters. Add the
-authenticated descriptor-to-native-scope bridge (the bounded scope grammar is implemented),
+authoring admission, runtime slot inheritance and existing list adapters. Add the
+authenticated descriptor-to-runtime-scope bridge (the bounded scope grammar is implemented),
 independent prototype/bootstrap owner mapping, lazy per-Profile publication,
 capability/owner demand-cycle diagnostics, and effective selected Profile/plan
 admission. Integrate lifecycle/currentness with existing owners; no duplicate
@@ -592,7 +593,7 @@ Profile loading; upstream Profile -> same-source prototype lookup; forbidden
 self-Profile and cross-Module cycles; no partially published Profile after
 failure; parent-first then child projection; source substitution/conflicts;
 unchanged default objects; and selected dependency/compensation failures. Count
-backend invocations and loaded owners independently from native getter calls.
+backend invocations and loaded owners independently from runtime getter calls.
 Measure source discovery/role validation, scope construction, first prototype,
 first Profile attribute, pipeline list, selected admission and warm repeats.
 Report cold costs and required work honestly; natural laziness must bound or
@@ -608,7 +609,7 @@ No runtime, cycle-test or latency claim follows from this document's reader chec
 | funflow/package | profiles.gerbil-scheme.package | check-name, profile-ref, command-vector, artifact-outputs, result-protocol, runtime-mode, dependency-refs, durable-task-id, action-class, compensation-refs, artifact-retention |
 | funflow/default | profiles.gerbil-scheme.pipeline | pipeline-name default; ordered checks build/test/package; both original metadata pairs |
 | header identifiers after funflow-check / funflow-pipeline | upstream constructor-local binding details | no business value removed; no requirement to repeat those lexical bindings in downstream config |
-| Case binding and config collector | Scenario root plus selected native Profile/Pipeline projection | no user wrapper; existing list consumer receives the final checks list through its adapter |
+| Case binding and config collector | Scenario root plus selected runtime Profile/Pipeline projection | no user wrapper; existing list consumer receives the final checks list through its adapter |
 
 ** Complete downstream Scenario: bind once, refine only the target paths
 
@@ -620,9 +621,9 @@ Scenario configurations, not two pipeline execution steps.
 
 The following uses the implemented =:yuanxu/object-syntax/path-slots= authoring
 bindings =.def=, =.o= and braces. Raw gerbil-poo remains unchanged and does not
-interpret dotted keywords as paths. The bounded use-module body is implemented over an existing native scope;
+interpret dotted keywords as paths. The bounded use-module body is implemented over an existing runtime scope;
 Scenario/Funflow publication still require Loader/domain adaptation. All ordinary downstream deep refinements use this
-concise surface; nested scaffolding is shown only as the native expansion.
+concise surface; nested scaffolding is shown only as the runtime expansion.
 
 #+begin_src scheme
 (.def (ProjectGerbilCI @ CICDScenario)
@@ -655,7 +656,7 @@ repeated and no Check proto lookup is needed downstream. If an upstream Scenario
 already supplies the desired configured Module, inherit it directly rather than
 replace it with a fresh use-module binding.
 
-** Path depth follows the actual modification; native lowering supplies ancestors
+** Path depth follows the actual modification; runtime lowering supplies ancestors
 
 If only a depth-four object changes, name that target path. Do not make the user
 write unchanged depth-one/two/three containers. If a depth-one object changes,
@@ -683,9 +684,9 @@ form for this particular change is the second. In an object body, each path is
 relative to that body's receiver; do not add global implicit scope lookup.
 
 The implemented syntax adaptation covers explicit authoring .def and its object bodies
-while preserving primitive native .def/.o behavior outside that authoring binding.
-It is one bounded lowering to native slots, not a new patch runtime. The complete
-native expansion of the main downstream example is:
+while preserving primitive .def/.o behavior outside that authoring binding.
+It is one bounded lowering to runtime slots, not a new patch runtime. The complete
+runtime expansion of the main downstream example is:
 
 #+begin_src scheme
 (.def (ProjectGerbilCI @ CICDScenario)
@@ -722,24 +723,24 @@ contract, identity and lazy-demand boundaries stay identical to the lowering.
 
 The pinned gerbil-poo normalizer converts a keyword to a single symbol using
 keyword->string/string->symbol; it does not split dots into slot traversal.
-Therefore raw native .def still treats a dotted keyword as one literal slot.
+Therefore raw .def still treats a dotted keyword as one literal slot.
 Core now provides an explicit authoring binding at
 [[file:../../object-syntax/path-slots.ss][object-syntax/path-slots.ss]], with its boundary and usage in the
 [[file:../../object-syntax/README.org][Core path-slot reference]]. Import this binding instead of primitive .def/.o/brace
 bindings for path authoring; do not import competing bindings under the same name.
-No global primitive or Loader behavior changes. Native expansion above remains
+No global primitive or Loader behavior changes. Runtime expansion above remains
 the semantic reference; .get's multi-slot access is an existing separate feature.
 
 The implementation is deliberately limited to existing-object =>.+ paths. No eager
 source lookup, Contract inference, new object construction or execution occurs
 at expansion time. Preserve lexical contexts/source spans for every generated
-slot/operator. Parse/group the paths once; shared prefixes lower to one native
-slot method (native duplicate slot methods are invalid). Reject duplicate leaf
+slot/operator. Parse/group the paths once; shared prefixes lower to one runtime
+slot method (runtime duplicate slot methods are invalid). Reject duplicate leaf
 paths and ancestor/descendant overlaps with diagnostics rather than inventing an
 order-dependent merge; keep literal dotted slot authoring separate from this
 candidate binding. Missing intermediate values or non-object parents are typed
 refinement/admission failures; the sugar must not manufacture empty parents or
-rebind a Module. Expression effects, if explicitly present, follow the native
+rebind a Module. Expression effects, if explicitly present, follow the runtime
 lowering's demand order; the syntax promises no independent evaluation ordering.
 Required controls include shared-prefix grouping, alias hygiene, diagnostics,
 parent-first then child projection, sibling preservation and equal owner demand.
@@ -782,7 +783,7 @@ refinements visible.
   (yuanxu-funflow-poo-pipeline->check-map effective-pipeline))
 #+end_src
 
-The last function already exists in [[file:../../../modules/funflow/config-adapter.ss][config-adapter.ss]] and consumes the native
+The last function already exists in [[file:../../../modules/funflow/config-adapter.ss][config-adapter.ss]] and consumes the runtime
 Pipeline's checks list and metadata. The new Scenario adapter must select the
 final receiver's pipeline before calling it. Existing conversion is not whole
 Scenario admission or runtime execution. Qualified occurrence/source maps must
@@ -798,7 +799,7 @@ still has both original pairs. No default list is flattened early and reused
 after the Profile changes. Admission validates these effective values, required
 references and compensation support before the selected plan is runnable.
 
-** Verified native receiver and lazy-cache behavior (2026-10-15)
+** Verified runtime receiver and lazy-cache behavior (2026-10-15)
 
 The parent-first receiver/cache property is now runtime-verified, not merely
 reader-accepted. The isolated probe used the exact gerbil.pkg pin
@@ -809,16 +810,16 @@ Funflow's actual Module publication, Loader activation or any build command.
 
 The [[file:164-pipeline-receiver-cache-validation.org][full source/version, reproduction instructions and 32-assertion probe]] preserve
 the complete validation, including Pipeline refinement, sibling isolation,
-identity/order and counter checks. Its native object/support sources were loaded
+identity/order and counter checks. Its runtime object/support sources were loaded
 directly from a temporary directory: the default installed compiled POO failed
 import because of compiler/options incompatibility. No package was repaired,
 installed, rebuilt or uninstalled. The result qualifies this isolated pinned
 source on the recorded interpreter, not the installed package/build environment.
 
-*** Proposed paths and the executed native expansion
+*** Proposed paths and the executed runtime expansion
 
 These path slots describe the three mutations tested below. They are syntax
-specification only; the native expansion is what was executed:
+specification only; the runtime expansion is what was executed:
 
 #+begin_src scheme
 ;; Historical probe specification: not executed in that original probe.
@@ -836,10 +837,10 @@ value is an intentionally small Check payload that isolates receiver semantics;
 this is not a full Funflow Check Contract or Loader test. The parent-pipeline/parent-checks and child-pipeline/child-checks variables below
 are test instrumentation only. They force demand and let assertions inspect
 cache identities; they are not a proposed user API or extra assembly layer.
-The complete minimal program, including shared-prefix native lowering and
+The complete minimal program, including shared-prefix runtime lowering and
 assertions, is:
 
-#+name: native-pipeline-receiver-minimal
+#+name: runtime-pipeline-receiver-minimal
 #+begin_src scheme
 (import "/tmp/agenticailab-pipeline-receiver-pin/object")
 
@@ -858,7 +859,7 @@ assertions, is:
   (.get ParentScenario funflow profiles gerbil-scheme pipeline))
 (def parent-checks (.get parent-pipeline checks))
 
-;; Native expansion of the three proposed dotted paths.
+;; Runtime expansion of the three proposed dotted paths.
 (.def (ChildScenario @ ParentScenario)
   funflow: =>.+
   (.o profiles: =>.+
@@ -902,7 +903,7 @@ The direct build slot changes, but Pipeline checks still contains the parent's
 objects. The negative control passes by detecting that stale result; it is not
 an acceptable configuration implementation.
 
-#+name: native-pipeline-receiver-frozen-control
+#+name: runtime-pipeline-receiver-frozen-control
 #+begin_src scheme
 ;; Continue after the minimal validation above, using its forced parent-checks.
 (.def (FrozenProfile @ Profile)
@@ -929,14 +930,14 @@ In the pinned object.ss, apply-slot-spec binds slot methods to the effective
 self; .ref consults and fills that object's own instance cache. Deriving a new
 Profile through nested =>.+ does not copy the parent's cached Pipeline into the
 child. The inherited Pipeline getter runs against the child Profile, creates a separate
-Pipeline, and its native outer-slot bindings preserve that effective receiver.
+Pipeline, and its runtime outer-slot bindings preserve that effective receiver.
 The earlier explicit-receiver variant records it in a let-bound profile; the
 canonical lexical variant directly refers to build/test/package.
 Each Pipeline's checks is then cached on that Pipeline object. The parent's
 cached Pipeline/list remains unchanged. This is functional derivation of new
 objects, not a claim that mutating a cached parent invalidates dependencies.
 
-| Verified by executed native probe | Concrete observation |
+| Verified by executed runtime probe | Concrete observation |
 |----------------------------------+----------------------|
 | parent-first forcing | parent Pipeline and list fully forced before child declaration |
 | demand separation | Pipeline construction count increases without evaluating checks; checks count increases only when the list is demanded |
@@ -955,14 +956,14 @@ are test instrumentation, not public compute hooks or performance measurements.
 
 | Still requires new adaptation / separate validation | Why this probe does not establish it |
 |----------------------------------------------------+--------------------------------------|
-| dotted-path hygiene/lowering | the historical 32-assertion probe tested only native expansion; the new eleven-case Core suite now tests actual grouping, diagnostics, aliases and parent-cached effective Check reads |
-| bounded use-module aliases/result admission | the native probe has no module scope or source lookup |
+| dotted-path hygiene/lowering | the historical 32-assertion probe tested only runtime expansion; the new eleven-case Core suite now tests actual grouping, diagnostics, aliases and parent-cached effective Check reads |
+| bounded use-module aliases/result admission | the runtime probe has no module scope or source lookup |
 | FunflowModule. / module-owner-export | no real owner publication, prototype lookup, source/version authentication or backend activation was exercised |
 | load-cycle handling | no Loader reentry, same-source/cross-owner cycle, concurrency or failed owner lifecycle was exercised |
 | real domain/Scenario admission and qualified projection | value is a minimal payload; required profile/compensation bindings and actual Check Contracts were not admitted |
 | natural-lazy performance guarantees | slot counters prove this probe's demand behavior, not startup/first-access latency, memory, owner load counts or installed/AOT behavior |
 
-Keep the exact native receiver pattern in the Module/Scenario adaptation and
+Keep the exact runtime receiver pattern in the Module/Scenario adaptation and
 validate it again through real source owners. No adapter may materialize a fixed
 parent list or memoize a plan solely by upstream prototype identity. Integration
 controls still need source/currentness identity, admission, cycles and qualified
@@ -970,21 +971,21 @@ references. There is no implementation change from recording these results.
 
 ** Demand, compatibility and validation obligations
 
-Declaration and native inheritance do not execute commands. Profile/catalog
+Declaration and runtime inheritance do not execute commands. Profile/catalog
 publication must not enumerate all module exports. Reading one Check attribute
-may demand its native/source owner; it must not force unrelated Profiles or the
+may demand its runtime/source owner; it must not force unrelated Profiles or the
 Pipeline list. Reading pipeline.checks intentionally demands the three selected
 Checks. Selected plan conversion/admission demands required bindings, policy,
 dependency and compensation checks; actual work and fresh evidence remain with
 an explicit Session/runtime handoff. Static owner imports retain their normal
 load closure, so precise owner packaging is necessary in addition to lazy slots.
 
-Existing: Check/Pipeline prototypes and default attributes; native objects,
+Existing: Check/Pipeline prototypes and default attributes; runtime objects,
 inheritance, slot computation and =>.+; Pipeline-to-list/check-map conversion.
 Proposed: complete published Gerbil Profile/default catalog, bounded use-module
 scope, Scenario selection/Contract association, final-receiver/qualified adapter
 and measured natural-lazy cost guarantees. Reader checks cannot establish those
-adapters or performance. Native parent-first/child projection and sibling/cache
+adapters or performance. Runtime parent-first/child projection and sibling/cache
 isolation now have the executed evidence above; repeat those controls through the
 actual Module/Scenario integration. Remaining controls include complete attribute
 parity, source/currentness and missing compensation/profile bindings, qualified
@@ -1027,7 +1028,7 @@ Contracts remain proposed; arbitrary names are not generic fixed Project slots.
 
 The no-selection use-module form, module alias bindings, default configured
 Module view, lazy catalog-to-Profile values and GitHub Actions properties are
-proposed, not current exports. Native .def/.+/brace/=>.+ supply the lowering target; the dotted paths
+proposed, not current exports. Runtime .def/.+/brace/=>.+ supply the lowering target; the dotted paths
 shown here use the implemented Core authoring binding; the module scope remains proposed.
 This is a complete minimal two-build/multi-Module configuration with one new
 smoke Check. It does not claim production test/package/release tasks are already
@@ -1043,15 +1044,15 @@ and directly refine those inherited values:
 #+end_src
 
 This is a derived Scenario, not an extra required assembly step. Its root and
-all intermediate objects retain the native default ancestry; upstream defaults
+all intermediate objects retain the runtime default ancestry; upstream defaults
 are not mutated. Shared Module data and local Scenario occurrences must remain
 distinct in owner evidence. Explicit rebinding is not a promise to preserve a
 previous Module instance's custom configuration: use inherited =>.+ when that
 configuration must be kept.
 
-* Scenario declaration projects to native objects, not the old collector
+* Scenario declaration projects to runtime objects, not the old collector
 
-The existing native .def already preserves syntax context through .def/ctx and
+The existing .def already preserves syntax context through .def/ctx and
 .o/ctx. Use it as the Scenario declaration foundation. The upstream Scenario
 Contract supplies/associates the applicable shared prototype, selected Profile
 rules and module responsibilities; the adapter validates that relationship.
@@ -1059,10 +1060,10 @@ It must not lower the user Scenario into a public Case definition or replay the
 old agentic-ai-lab-funflow-configs collector to discover its declarations.
 
 The bounded use-module body is a necessary lexical/hygienic projection onto an
-ordinary let and native POO expressions, not a new configuration interpreter.
+ordinary let and POO expressions, not a new configuration interpreter.
 Do not introduce define-scenarios merely to rename .def. If future Scenario
 syntax is required for a genuine phase/contract need, it must undergo the same
-bounded macro review and lower to the same native object model. Native .def's
+bounded macro review and lower to the same runtime object model. Runtime .def's
 existence does not by itself implement the proposed typed Scenario association.
 Existing internal runtime Case/Session values may remain later plan/runtime
 projections, never a required user construction alongside Scenario.
@@ -1072,7 +1073,7 @@ projections, never a required user construction alongside Scenario.
 Implemented in [[file:../../profile-composition/selection-syntax.ss][Core selection-syntax]], with shared syntax inspection in
 [[file:../../profile-composition/scope-declaration.ss][scope-declaration]] and the [[file:../../profile-composition/README.org][bounded-scope reference]]. One compound Scheme
 expression distinguishes this branch from identifier-only Profile selections.
-The source is an existing lexical native scope, not a registry symbol. An
+The source is an existing lexical runtime scope, not a registry symbol. An
 upstream library can expose that value as Funflow while the Scenario slot is
 funflow. The name distinction avoids POO's normal lexical slot shadowing.
 Standalone =use-module funflow as ff (expression ...)= remains valid when there
@@ -1096,19 +1097,19 @@ The helper checks object? and returns the exact object. Neither source nor
 prototype/Profile slots are read. Source and body are evaluated once, alias
 scope is bounded to the body/captured closures, and outer aliases survive.
 The original body syntax and helper bindings are preserved hygienically.
-Native .+ still requires two arguments; the former unary (.+ ff) examples were
-invalid and are corrected to native prototype derivation above.
+Runtime .+ still requires two arguments; the former unary (.+ ff) examples were
+invalid and are corrected to runtime prototype derivation above.
 
-The source slot on derived objects retains the original handle by native
+The source slot on derived objects retains the original handle by runtime
 inheritance, absent an explicit override. This is preservation, not source
 authentication. The macro does not manufacture evidence or claim result-specific
 Contract admission. A Profile result and a Module result remain ordinary
-native objects, with their actual boundary Contracts still to be integrated.
+runtime objects, with their actual boundary Contracts still to be integrated.
 
 The path-slot object authoring frame rejects direct same-name source/slot
 initializers with an actionable diagnostic. It does not hoist source references,
 perform implicit registry lookup or redefine Scheme scoping. Arbitrary opaque
-helpers and primitive POO bindings retain native scope rules.
+helpers and primitive POO bindings retain runtime scope rules.
 
 Legacy =(use-module Module [as instance] profile-name ...)= still selects named
 exports and returns a Bundle. A bare identifier is not guessed to be an
@@ -1120,21 +1121,21 @@ No manual Funflow imports are added to the user surface.
 
 | Scope member / context | Proposed meaning and demand |
 |------------------------+-----------------------------|
-| profiles | native default/configuration view; each published Profile can be demanded separately |
-| prototypes.check | actual native Check prototype published by this resolved source/owner |
+| profiles | runtime default/configuration view; each published Profile can be demanded separately |
+| prototypes.check | actual runtime Check prototype published by this resolved source/owner |
 | source evidence | admitted source/owner/revision/capabilities, independent of alias spelling |
 | occurrence and alias | local identity ff plus placement ProjectCI.funflow, not a global namespace |
 | contribution evidence | selected Profile and user refinement provenance, preserving base ownership |
 
 One ff supplies the .+ base and the parent read for smoke. No extra import/rename
-plumbing is required. Native static constructor imports belong to the low-level
+plumbing is required. Runtime static constructor imports belong to the low-level
 module/bootstrap implementation; normal upstream Profile and downstream
 Scenario authors both use this module-scope protocol.
 
-prototypes.check must resolve to the actual owner's admitted native prototype;
+prototypes.check must resolve to the actual owner's admitted runtime prototype;
 a lookalike object or writable origin label is insufficient. Admission checks
 new Check ancestry against that prototype and then fields/capabilities/context.
-Core native ancestry and responsibility mechanisms are foundations; this export
+Core runtime ancestry and responsibility mechanisms are foundations; this export
 projection and source-to-prototype evidence protocol are proposed. Different
 source revisions cannot silently share a same-spelled constructor.
 
@@ -1151,7 +1152,7 @@ never activates all its Profiles.
 
 An isolated current-Gerbil macro probe verified alias-local binding, closure
 capture and preservation of an internal resolver reference despite a caller's
-same-named variable. Pinned POO source/tests establish native slot scope and
+same-named variable. Pinned POO source/tests establish runtime slot scope and
 nested object capture. This evidence does not test the new use-module grammar,
 its integration with POO expansion, real Module lookup or runtime behavior.
 Those require separate implementation qualification, including same-named Module
@@ -1174,7 +1175,7 @@ actual dependencies and selected obligations define demand. User-owned overrides
 are supported under an explicit deterministic source policy that records the
 resolved origin and overridden base. No new source category syntax is mandated.
 
-* Existing native slot shapes; no default-slot workaround
+* Existing runtime slot shapes; no default-slot workaround
 
 #+begin_src scheme
 ;; Initial source binding.
@@ -1185,7 +1186,7 @@ resolved origin and overridden base. No new source category syntax is mandated.
 (.def (RefinementExample @ BindingExample)
   funflow: =>.+ {profiles: =>.+ {}})
 
-;; Bind and immediately extend with an ordinary native expression.
+;; Bind and immediately extend with an ordinary runtime expression.
 (.def BindAndExtendExample
   funflow: (.+ (use-module funflow)
                (.o profiles: =>.+ (.o))))
@@ -1194,7 +1195,7 @@ resolved origin and overridden base. No new source category syntax is mandated.
 The source expression cannot simply be followed by a stray =>.+ token. That
 operator accepts an overriding object, whose named slots may refine multiple
 Profiles. It is not a new arbitrary-arity Profile composition syntax.
-Native ? remains a valid lower-precedence default-value facility, but is not
+Runtime ? remains a valid lower-precedence default-value facility, but is not
 needed for this ordinary route and is not a lazy-loading guard. Repeated per-
 language ? bindings and mandatory Profile-to-Scenario inheritance are superseded.
 
@@ -1202,10 +1203,10 @@ language ? bindings and mandatory Profile-to-Scenario inheritance are superseded
 
 | Responsibility | Required proposed domain admission |
 |----------------+------------------------------------|
-| configured Funflow binding | authentic source, version/capability compatibility, native proto and local occurrence |
-| Module.profiles | native catalog/selected contribution view; admitted Profile values, not raw unvalidated patches |
+| configured Funflow binding | authentic source, version/capability compatibility, runtime proto and local occurrence |
+| Module.profiles | runtime catalog/selected contribution view; admitted Profile values, not raw unvalidated patches |
 | profiles.gerbil-scheme / profiles.rust | respective contribution Contract and publication provenance |
-| each Profile.build | native Check ancestry, valid business fields and permitted Profile/runtime binding |
+| each Profile.build | runtime Check ancestry, valid business fields and permitted Profile/runtime binding |
 | github-action | workflow/runner configuration plus compatible admitted plan consumer |
 | Scenario selection | participating contribution identities, qualified task uniqueness, dependency closure and supported handoff |
 
@@ -1220,7 +1221,7 @@ remove conflict handling when a user intentionally inherits multiple configured
 parents or replaces a Module. Retain and compare selected source requests and
 publication origins, not merely the highest-priority effective metadata slot.
 Reject incompatible source/revision/proto/capability combinations unless an
-explicit admitted replacement policy resolves them. Native precedence is not a
+explicit admitted replacement policy resolves them. Runtime precedence is not a
 source compatibility check. Source evidence belongs to the existing owner, not
 a user-authored string field. Do not add a second registry, loader or cache.
 
@@ -1249,17 +1250,17 @@ a user-authored string field. Do not add a second registry, loader or cache.
 Automatic projection reads the admitted Scenario's effective selected Profiles,
 not the upstream library again. Both local Check names can remain build:
 
-| Native path | Scoped identity | Illustrative legacy task name |
+| Runtime path | Scoped identity | Illustrative legacy task name |
 |-------------+-----------------+-------------------------------|
 | funflow.profiles.gerbil-scheme.build | (funflow gerbil-scheme build) | gerbil-scheme/build |
 | funflow.profiles.rust.build | (funflow rust build) | rust/build |
 | funflow.profiles.gerbil-scheme.smoke | (funflow gerbil-scheme smoke) | gerbil-scheme/smoke |
 
-The proposed adapter projects those effective native Check objects into a
+The proposed adapter projects those effective runtime Check objects into a
 legacy list-Pipeline, preserving publication and occurrence evidence. Qualifier
 encoding must be collision-free; arbitrary string concatenation is insufficient.
 Translate dependencies, durable references, compensation references and result/
-evidence lookup consistently, without mutating shared native defaults. Resolve
+evidence lookup consistently, without mutating shared runtime defaults. Resolve
 local dependencies within their selected Profile; ambiguous cross-Profile build
 references must fail. Compensation retains its own admitted owner semantics.
 
@@ -1275,16 +1276,16 @@ No workflow publishing or CI execution occurs during configuration.
 
 | Operation | Default demand | Work not implied |
 |-----------+----------------+------------------|
-| expand bounded binding syntax | parse once, preserve syntax/source context, emit native let/POO | source IO/loading, installs or runtime registration during expansion |
-| evaluate Scenario module-binding slot | bounded source metadata/request and lightweight native scope; evaluate the configuration expression once | whole implementation/catalog initialization |
-| access existing Profile attribute | that native value and necessary inherited dependencies | activate all published Profiles or project a whole plan |
+| expand bounded binding syntax | parse once, preserve syntax/source context, emit runtime let/POO | source IO/loading, installs or runtime registration during expansion |
+| evaluate Scenario module-binding slot | bounded source metadata/request and lightweight runtime scope; evaluate the configuration expression once | whole implementation/catalog initialization |
+| access existing Profile attribute | that runtime value and necessary inherited dependencies | activate all published Profiles or project a whole plan |
 | construct/admit smoke | required prototypes.check owner and selected task context/obligations | unrelated prototypes, other modules or build execution |
 | request selected Scenario plan | all participating qualified tasks and mandatory graph/source/runtime facts | unused catalog entries or unrelated scenarios |
 | explicit Session/handoff | needed admitted implementation/current permissions and receipts | unselected assets |
 
 The syntax has no opt-in defer requirement. Scope creation, interface metadata,
 prototype lookup, domain admission, pure plan projection and runtime execution
-are distinct demands. Use existing [[file:../loader/objects.ss][Loader deferred plans]] behind a valid native
+are distinct demands. Use existing [[file:../loader/objects.ss][Loader deferred plans]] behind a valid runtime
 scope object; a raw plan is not automatically a .+ base. POO operators can demand
 parents and construct bounded objects; no guarantee of zero computation is made.
 
@@ -1321,16 +1322,16 @@ user-visible deferred flag or optional loader bypass is needed for correctness.
 
 * Capability status and superseded schemes
 
-Existing: exported funflow-check, bootstrap-owned native imports and POO inheritance/
-slot operations, Core responsibility machinery, Loader foundations, native Check
+Existing: exported funflow-check, bootstrap-owned runtime imports and POO inheritance/
+slot operations, Core responsibility machinery, Loader foundations, runtime Check
 and list-Pipeline adapters, workflow projection functions.
 Implemented bounded scope declaration: one compound body binds an existing
-native object unchanged, without Loader/source resolution. Nine local cases
+runtime object unchanged, without Loader/source resolution. Nine local cases
 verify identity, alias hygiene, lazy demand and upstream/downstream usage.
 Implemented path declaration adapter: =:yuanxu/object-syntax/path-slots=, registered
 in Core build.ss; eleven regression cases pass against the pinned POO source. This
 is separate from the implemented CLOS declaration/protocol/bundle surface.
-Verified native subset: the pinned-source parent-first receiver/cache probe
+Verified runtime subset: the pinned-source parent-first receiver/cache probe
 passed 32 assertions, including further Pipeline refinement and the frozen-list
 negative control. This does not establish installed-package or module integration.
 Proposed: the explicitly defined FunflowModule. source/owner scope and
@@ -1348,7 +1349,7 @@ this complete shape. Core now supports the bounded body over an existing scope;
 its identifier-only branch still requires export names and returns a Bundle. No claim is made that the example runs against it unchanged.
 
 The current ordinary user-root role restricts .def/.o. Explicitly align admission
-with the authorized native Scenario extension route or use the admitted owner
+with the authorized runtime Scenario extension route or use the admitted owner
 surface; no source-role policy is changed here.
 
 Superseded as required downstream configuration: per-language Module ? bindings,
@@ -1359,7 +1360,7 @@ imports/compose entries, old config collector and extra user Case declarations.
 The existing as-selection form still records only instance identity; it does not
 provide the proposed lexical alias. The alias/body grammar and natural-lazy
 scope protocol require review/implementation; sources are not loaded at expansion.
-Native multi-inheritance and direct reusable Check definitions remain optional
+Runtime multi-inheritance and direct reusable Check definitions remain optional
 advanced tools; they are not removed from POO. Historical source has moved to the separate migration reference; it is not
 a target example. No code, export or runtime behavior changes in this update.
 
@@ -1369,5 +1370,5 @@ a target example. No code, export or runtime behavior changes in this update.
 The [[file:164-funflow-cicd-legacy-source-reference.org][historical source/constructor reference]] preserves the original full payload
 for migration comparison. This document intentionally does not reproduce its
 Case binding, collector or manual user imports. Original source exports and
-behavior are unchanged. The target user interface is solely the complete native
+behavior are unchanged. The target user interface is solely the complete runtime
 Scenario plus bounded module scope shown above.

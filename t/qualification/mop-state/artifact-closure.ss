@@ -6,7 +6,7 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/misc/ports read-all-as-u8vector))
-(export capture-closure compiler-code-facts closure-issues inspect-closure file-digest read-forms native-edges)
+(export capture-closure compiler-code-facts closure-issues inspect-closure file-digest read-forms runtime-edges)
 (def primitives '(##structure-set! ##direct-structure-set! ##unchecked-structure-set!))
 (def checker 'yuanxu/t/qualification/mop-state/store-policy#before-store!)
 (def callback-prefix "yuanxu/t/qualification/mop-state/precompiled-stores")
@@ -23,7 +23,7 @@
           (if (eof-object? form) (reverse result)
             (loop (cons form result))))))))
 (def (quoted? form) (and (pair? form) (memq (car form) '(quote quasiquote declare))))
-(def (native-edges forms)
+(def (runtime-edges forms)
   (def result '())
   (def (visit form)
     (when (and (pair? form) (not (quoted? form)))
@@ -39,7 +39,7 @@
   (def (visit form)
     (cond
       ((symbol? form)
-       (when (memq form forbidden) (set! issues (cons 'unlowered-native-reference issues))))
+       (when (memq form forbidden) (set! issues (cons 'unlowered-runtime-reference issues))))
       ((or (not (pair? form)) (quoted? form)) (void))
       (else
        ;; Exact shape emitted by the owned lowering; a nearby checker name is
@@ -71,7 +71,7 @@
   (def binary-digest (file-digest runtime-path))
   (def source-digest (file-digest emitted-path))
   (def metadata-facts (map (lambda (path) (cons path (file-digest path))) metadata-paths))
-  (def import-edges (native-edges code-forms))
+  (def import-edges (runtime-edges code-forms))
   (.o name: unit-name path: runtime-path digest: binary-digest
       emitted: emitted-path emitted-digest: source-digest
       metadata: metadata-facts edges: import-edges forms: code-forms))
@@ -95,24 +95,24 @@
           (map (lambda (entry) (cons (path-strip-directory (car entry)) (cdr entry)))
                (.get row metadata))
           (.get row edges))) units))
-(def (audit-units! observed-units native-bindings)
+(def (audit-units! observed-units runtime-bindings)
   (for-each
     (lambda (row)
       (when (audited-unit? (.get row name))
-        (let (issues (store-issues (.get row forms) native-bindings))
+        (let (issues (store-issues (.get row forms) runtime-bindings))
           (unless (null? issues) (error "unprocessed callback artifact" issues))))) observed-units))
 ;; Called by the trusted compiler immediately after its jobs complete, not by
 ;; a user declaration. Runtime admission cannot issue a fresh expected digest.
-(def (compiler-code-facts root-entry native-bindings)
+(def (compiler-code-facts root-entry runtime-bindings)
   (def units (walk-units root-entry))
-  (audit-units! units native-bindings)
+  (audit-units! units runtime-bindings)
   (code-facts units))
-(def (capture-closure root-entry compiler-inputs native-bindings compiler-facts)
+(def (capture-closure root-entry compiler-inputs runtime-bindings compiler-facts)
   (def observed-units (walk-units root-entry))
-  (audit-units! observed-units native-bindings)
+  (audit-units! observed-units runtime-bindings)
   (unless (equal? compiler-facts (code-facts observed-units))
     (error "unissued or changed compiler artifact" root-entry))
-  (.o entry: root-entry units: observed-units inputs: compiler-inputs forbidden: native-bindings))
+  (.o entry: root-entry units: observed-units inputs: compiler-inputs forbidden: runtime-bindings))
 (def (inspect-closure issued)
   (def issues '())
   (def prior-loaded? #f)

@@ -21,21 +21,21 @@ replace Gerbil's build protocol. No full package build is required by the gate.
 
 The publication reader previously treated the already imported declaration
 compiler as an ordinary private implementation source. Its generated wrapper
-then imported include-module-body from that same compiler: native expansion
+then imported include-module-body from that same compiler: runtime expansion
 correctly reported a cycle. Merely bypassing this wrapper in the reader was
 insufficient: a generated build source for declaration.ss would reproduce the
 same self-import during compilation.
 
 The correction has two parts:
 
-1. Walk the SDK's actual build-tool import Contexts. Reuse an exact Context only
+1. Walk the Gerbil's actual build-tool import Contexts. Reuse an exact Context only
    when its identity and normalized source path match the observed registry.
    Include its observed Core source closure in the selected build inputs.
-2. Prepare those compiler tools using native include of the original header-free
-   body, retaining source locations and the native compiler identity. Ordinary
+2. Prepare those compiler tools using runtime include of the original header-free
+   body, retaining source locations and the runtime compiler identity. Ordinary
    Module implementation sources retain their existing role-aware preparation.
 
-The internal SDK-only helper modules/building/bootstrap.ss now exposes Contexts
+The internal Gerbil-only helper modules/building/bootstrap.ss now exposes Contexts
 rather than an identity-only boolean table. This helper is not the independent
 root bootstrap.ss script. It remains part of the source dependency closure.
 There is no compatibility alias for the former identity-only helper.
@@ -43,7 +43,7 @@ There is no compatibility alias for the former identity-only helper.
 * Source authority remains narrow
 
 An arbitrary Core-looking identity, matching basename, or directory prefix is
-insufficient. Context identity is checked by object identity against the SDK
+insufficient. Context identity is checked by object identity against the Gerbil
 registry; source and positive/negative package observations are rechecked.
 Reload requires a fresh reader. A compiler tool cannot depend on the selected
 Module's implementation. A selected interface still cannot import itself and
@@ -81,7 +81,7 @@ The current snapshot selects 33 compiler entries and merges to 34 entries.
 These counts describe this observed source closure, not a fixed API or a claim
 that every Core dependency can be inferred without its publication.
 
-The native dispatcher uses its existing local source-anchor expansion:
+The runtime dispatcher uses its existing local source-anchor expansion:
 
 #+begin_src scheme
 (let ((this-source-file (lambda () (.get artifact build-entry))))
@@ -91,18 +91,18 @@ The native dispatcher uses its existing local source-anchor expansion:
 #+end_src
 
 The qualification wrapper checks artifact currentness before and after each
-native command. It exercises SDK spec, compile and clean, verifies all derived
+runtime command. It exercises Gerbil spec, compile and clean, verifies all derived
 .ssi identities in the explicit output root and their removal, and rejects
 changes to init, a real private JsonSchema source, a retained source, and the
-generated entry. A change after native spec dispatch is also rejected.
+generated entry. A change after runtime spec dispatch is also rejected.
 
 * Executable controls and evidence boundary
 
 - [[file:../../../t/module-reader-tool-context-test.ss][Tool Context controls]] exercise changed tool bytes, a foreign same-identity
   declaration with a side-effect sentinel, and a reversed Module role import.
-- Real JsonSchema qualification (retired control) exercises the Graph/native build path above.
+- Real JsonSchema qualification (retired control) exercises the Graph/runtime build path above.
 - [[file:../../../t/module-build-source-snapshot-test.ss][Source staging]] and [[file:../../../t/module-build-dependency-qualification-test.ss][public dependency preparation]] keep the cold-Core
-  premise explicit. [[file:../../../t/module-build-entry-capture-test.ss][Source capture]] is a smaller SDK control.
+  premise explicit. [[file:../../../t/module-build-entry-capture-test.ss][Source capture]] is a smaller Gerbil control.
 
 All gates use the existing serial, heap-fenced Justfile test-file recipe and its
 unchanged timeout. Raw transcripts and generated compiler artifacts stay outside
@@ -130,10 +130,10 @@ snapshot SHA-256 values agree for the corrected units:
 | Source-only staging | PASS, natural exit 0 |
 | Three tool-source confinement controls | PASS, natural exit 0 |
 | Existing selected-build Graph suite, eleven cases | PASS, natural exit 0 |
-| Real JsonSchema plus retained roots | PASS: native spec, 34 compiled .ssi identities, 34 cleaned .ssi identities, input and generated-entry refusal; natural exit 0 |
+| Real JsonSchema plus retained roots | PASS: runtime spec, 34 compiled .ssi identities, 34 cleaned .ssi identities, input and generated-entry refusal; natural exit 0 |
 
 The final real case reached its last assertion at 88.15 seconds after test-module
-loading under the unchanged timeout. It also proves that the native spec callback
+loading under the unchanged timeout. It also proves that the runtime spec callback
 actually completed before the post-dispatch drift refusal, rather than accepting
 an unrelated early exception. The Graph regression requires the original ten
 domain roots and unique declaration/types tool identities; it does not assert an
@@ -148,7 +148,7 @@ full package build, Contract-system change, raw-log commit or push was involved.
 
 * Compiler epoch and remaining integration
 
-Native std/make changes the process-global expander module registry while
+Runtime std/make changes the process-global expander module registry while
 compiling generated sources. Creating a new source reader after that operation
 in the same process can observe generated Contexts instead of the original
 source epoch. Such an epoch switch is not permission to accept temporary paths.
@@ -166,6 +166,6 @@ The fixture's combined Graph is not the intended build API. Its purpose is to
 exercise the existing writer against one source root while the thin adapter is
 pending. The integration design is ordinary list composition at defbuild-script:
 project the selected Graph, normalize retained entries to the same source/output
-interpretation, reject conflicts, then append/deduplicate native entries. No POO
+interpretation, reject conflicts, then append/deduplicate runtime entries. No POO
 Graph extension is required to combine build specifications. Source preparation
 and before/after currentness remain internal responsibilities.

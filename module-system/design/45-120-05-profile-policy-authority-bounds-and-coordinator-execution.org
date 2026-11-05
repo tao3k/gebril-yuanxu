@@ -73,7 +73,7 @@ composed Module closure.
 
 * RecoveryPolicy responsibility
 
-A recovery policy is a native POO value selected and composed through
+A recovery policy is a POO value selected and composed through
 =profiles=.  Its semantic responsibilities are:
 
 - inspect an immutable observation projection;
@@ -96,7 +96,7 @@ it cannot enlarge that set.
 
 * RecoveryCapability responsibility
 
-A recovery capability is a native POO value in =capabilities=.  Its
+A recovery capability is a POO value in =capabilities=.  Its
 semantic evidence may bound:
 
 - admitted recovery action kinds;
@@ -182,10 +182,10 @@ Ordinary users continue to compose profiles:
 #+end_src
 
 =resilient-production= is a profile value.  It may contain or select a
-native POO recovery policy, but it does not carry authority beyond the
+POO recovery policy, but it does not carry authority beyond the
 composed Module capability closure.
 
-Advanced users extend recovery policy through native =gerbil-poo=
+Advanced users extend recovery policy through runtime =gerbil-poo=
 objects, prototypes, slots, composition, and dispatch.  They place the
 resulting POO value into profile composition.  The ordinary interface
 does not gain an =if= form, recovery clause language, continuation

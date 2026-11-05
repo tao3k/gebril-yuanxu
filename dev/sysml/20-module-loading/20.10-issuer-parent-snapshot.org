@@ -38,13 +38,13 @@ argument spines in that measured set. Neither is a new sharing repair.
 Singleton-vector counting inspects the registered issuer closure, excludes the
 candidate value, requires a vector of length one containing the sole original
 dependency, and deduplicates the vector identity. Inspector-created snapshot
-copies are not counted as retained issuer storage. The bound native source
+copies are not counted as retained issuer storage. The bound runtime source
 confirms the captured vector is =parent-copy=; this is a source correspondence,
 not a compiler-independent introspection theorem.
 
 * Narrow producer repair
 
-The native =object-record-read= keeps a single non-vector parent identity
+The runtime =object-record-read= keeps a single non-vector parent identity
 directly. Empty and multiple-parent snapshots remain vectors. A vector-valued
 singleton also takes the dense fallback, making the private variants disjoint.
 The public list is unchanged. Inspection still allocates a fresh list; callers
@@ -62,14 +62,14 @@ No receiver state is shared because it happens to have equal values.
 sequence. =snapshotAcceptsExactlyOriginal= preserves the acceptance predicate;
 =snapshotPreservesEveryOccurrence= preserves every position, not merely a set.
 The finite model does not prove the compiler's capture layout or GC ownership.
-The vector-valued fallback is checked by source correspondence, with native
+The vector-valued fallback is checked by source correspondence, with runtime
 mutation/copy-isolation tests closing the executed non-vector read path.
 
 Existing ReadRetention QNT qualification passes seven matched cases, including
 negative controls for receiver-only deduplication, omitted transient reads,
 cached approval, dropping the second requirement and eager unselected demand.
 These are temporal controls, not proof that a compiled Scheme edit implements
-the model. Native issuance tests and real Scenario regressions remain required.
+the model. Runtime issuance tests and real Scenario regressions remain required.
 
 * Baseline receipts and limitations
 
@@ -93,8 +93,8 @@ source control holds this structured account and executable checks only.
 
 * Executed candidate receipt
 
-The native library build passes (72.823 seconds), as does its existing objects
-test/support build (44.703 seconds). The existing native test-file gates pass
+The runtime library build passes (72.823 seconds), as does its existing objects
+test/support build (44.703 seconds). The existing runtime test-file gates pass
 17 issuance, 22 observation and 6 MOP cases with all required harness markers
 and no failure/overflow markers. The issuance case now checks singleton-list
 inspection isolation and rejection of deleted, appended and replaced public
@@ -137,7 +137,7 @@ an attribution of every changed graph node to this edit. The directly verified
 result is removal of the counted private vectors with unchanged read/edge
 identities and controls. This remains a small repair, not scale-gate closure.
 
-563 Core Scheme inputs, the proof inputs and the three native edited/observed
+563 Core Scheme inputs, the proof inputs and the three runtime edited/observed
 files were frozen and rechecked unchanged across final validation. Candidate
 =object.ss= SHA256 is
 =0c28298e1047e17b9fc67c5489f4f3d48ce07a79f93adc8e00ef101893737ced=.
@@ -148,7 +148,7 @@ qualified executable SysML model.
 
 * Publication follow-up
 
-The native repair is now committed and pushed on the existing
+The runtime repair is now committed and pushed on the existing
 =feat/positive-closure-costs= branch as
 =29c58aa9c5be103ba843767e3d22ef8802b79342=, retaining intervening build-recovery
 commits. Core's package REV and its SelectionReplay/MetadataProjection bindings

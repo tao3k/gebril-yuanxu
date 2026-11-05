@@ -2,6 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
+        (only-in :clan/poo/mop validate)
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :yuanxu/ops/interface Ops)
@@ -14,7 +15,7 @@
 (def ops-module-publication-test
   (test-suite "Ops is a built-in Core library, independent of init selection"
     (yuanxu-test-case "importing and binding the built-in scope do not execute operations"
-      (check-equal? (.get (.call OpsScopeContract .admit Ops #f) accepted?) #t)
+      (check-eq? (validate OpsScopeContract Ops) Ops)
       ;; The built-in default has no command: an eager .run would fail.
       (check-equal? (.get Ops prototypes Script command) '())
       (call-with-temporary-directory "ops-built-in"

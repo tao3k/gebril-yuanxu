@@ -43,7 +43,7 @@
              (index
               (poo-clos-leftmost-index-by car (list first second))))
         (check (hash-get index 'payload) => first)))
-    (yuanxu-test-case "positions and natural permutations use bounded native indexes"
+    (yuanxu-test-case "positions and natural permutations use bounded runtime indexes"
       (let* ((a (cons 'a '())) (b (cons 'b '()))
              (positions (poo-clos-position-index/identity (list a b))))
         (check (hash-get positions a) => 0)

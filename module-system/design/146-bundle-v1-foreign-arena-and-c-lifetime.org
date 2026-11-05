@@ -11,13 +11,13 @@ Accepted and implemented.
 
 This RFC defines the Phase 3K boundary that writes an accepted Bundle v1
 lowering plan into a checked packed image and transfers that image into one
-C-owned, reference-counted native arena.
+C-owned, reference-counted runtime arena.
 
 * Decision
 
-Agentic AI Lab owns one runtime interface: the native C ABI. The Scheme control plane
+Agentic AI Lab owns one runtime interface: the runtime C ABI. The Scheme control plane
 produces a canonical Bundle v1 descriptor and arena image. The C binding copies
-that image once into aligned native storage, validates the owned copy, and then
+that image once into aligned runtime storage, validates the owned copy, and then
 exposes immutable zero-copy views and =O(log n)= component lookup.
 
 Python remains a production-grade runtime used to validate completeness of the
@@ -28,13 +28,13 @@ Agentic AI Lab.
 The hot path contains no JSON conversion:
 
 #+begin_example
-POO objects -> Bundle v1 lowering -> packed native bytes -> C-owned arena
+POO objects -> Bundle v1 lowering -> packed runtime bytes -> C-owned arena
             -> borrowed typed slices -> downstream runtime values
 #+end_example
 
 * Ownership boundary
 
-The Scheme writer returns a POO-native foreign-arena image with these owners:
+The Scheme writer returns a POO foreign-arena image with these owners:
 
 - the accepted Bundle v1 descriptor object;
 - a 256-byte packed descriptor u8vector;
@@ -85,7 +85,7 @@ The public operation is:
 (feature-bundle-v1-write-foreign-arena lowering-plan)
 #+end_src
 
-It accepts one POO-native accepted Bundle v1 lowering plan. It does not accept
+It accepts one POO accepted Bundle v1 lowering plan. It does not accept
 a raw alist DSL, JSON document, legacy graph ABI, or an unrelated collection of
 rows.
 
@@ -103,7 +103,7 @@ The writer checks:
 All integer fields in the packed image use canonical little-endian byte order.
 The writer uses functional traversal from =src/utilities/functional.ss= for
 byte ranges and row tables. A bounded declarative macro generates the repeated
-internal POO object family; the macro expands to ordinary POO-native objects.
+internal POO object family; the macro expands to ordinary POO objects.
 
 Any validation or write failure produces a rejected POO image with a POO
 diagnostic. The writer never returns a partially accepted image.
@@ -122,7 +122,7 @@ agentic_ai_lab_bundle_v1_arena_slice(...);
 agentic_ai_lab_bundle_v1_arena_find_component(...);
 #+end_src
 
-=arena_create= accepts a naturally aligned native descriptor.
+=arena_create= accepts a naturally aligned runtime descriptor.
 =arena_create_packed= is the CFFI entry point for byte buffers whose descriptor
 alignment is unknown. Packed creation is explicitly little-endian and rejects
 an unsupported host byte order instead of interpreting bytes ambiguously.
@@ -130,7 +130,7 @@ an unsupported host byte order instead of interpreting bytes ambiguously.
 The opaque handle owns:
 
 - an atomic 64-bit reference count;
-- one native descriptor copy;
+- one runtime descriptor copy;
 - the exact arena byte length;
 - one 64-byte-aligned arena allocation.
 
@@ -219,7 +219,7 @@ The cross-language contract is generated for every test run rather than stored
 as binary repository state.  A Bazel =sh_test= writes the Scheme descriptor and
 arena into =TEST_TMPDIR= through the canonical Scheme foreign-arena writer, then
 passes those ephemeral paths to the compiled C harness.  The receipt verifies a
-256-byte descriptor, a 576-byte arena, native packed little-endian encoding, and
+256-byte descriptor, a 576-byte arena, runtime packed little-endian encoding, and
 no hot-path JSON.  Git therefore owns only the producer, consumer, and structural
 assertions; it owns no derived ABI image.
 
@@ -228,7 +228,7 @@ isolated gate rather than leaving either generation or consumption manual.
 
 #+begin_example
 schema=agentic-ai-lab.bundle-v1.harness.1
-layout=typed-native-regions
+layout=typed-runtime-regions
 lookup=binary-search
 payload-zero-copy=true
 arena-lifetime=reference-counted
@@ -290,7 +290,7 @@ json-in-hot-path=false
 * Consequences
 
 Phase 3K closes the ownership gap between deterministic Scheme lowering and a
-high-performance runtime boundary. Downstream adapters receive typed native
+high-performance runtime boundary. Downstream adapters receive typed runtime
 memory with explicit lifetime, stable alignment, checked slices, and logarithmic
 component lookup. They do not need to reimplement Bundle semantics or retain
 Scheme memory.

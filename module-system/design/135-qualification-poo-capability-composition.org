@@ -312,7 +312,7 @@ timeout, or RSS growth.
 The guard belongs in Scheme.  Static expansion and dynamic closure expose
 bounded counters for component count, demanded case count, generated form
 count, closure depth, and materialized instance count.  A limit breach produces
-a POO-native rejection/guard receipt before further composition allocation.
+a POO rejection/guard receipt before further composition allocation.
 The =gxi= Scenario harness also declares and observes its memory profile so an
 expander or closure regression cannot be hidden by a Python wrapper, CLI-only
 limit, reduced concurrency, or an operating-system kill.
@@ -350,7 +350,7 @@ executable Scenario fixtures:
 * Phase 1 internal implementation
 
 =src/feature-system/domain-case/interface.ss= owns the first non-facade implementation.
-It provides POO-native slot, type, method/state contract, projection,
+It provides POO slot, type, method/state contract, projection,
 CaseComponent, DomainCase, cache, closure, instance, diagnostic, and projection
 receipts.  It does not change =defpoo-object-family= or export a new public
 authoring DSL.
@@ -370,7 +370,7 @@ flowchart LR
 The implementation imports ordinary folds, maps, lookup and filtering directly
 from =:std/list/list=. =utilities/functional.ss= retains only combinators with
 additional semantics, including strict-Boolean results, stable duplicate
-ordering and proper-list guards. Native =fold=, =fold-right=, =map=, =find=,
+ordering and proper-list guards. Runtime =fold=, =fold-right=, =map=, =find=,
 =filter-map=, =append-map= and =remove= replace the former prefixed aliases.
 The remaining explicit recursion owns the ordered state machines for slot
 precedence and method-contract refinement.
@@ -522,7 +522,7 @@ Focused tests cover:
 
 * Phase 3: Constant-Slot Instance Overlay
 
-The repository owns =role-instance-overlay= as a POO-native instance
+The repository owns =role-instance-overlay= as a POO instance
 composition primitive.  It accepts POO role objects and returns a Clan POO
 object; it does not expose an alist DSL, record DSL, patch language, or raw
 =self/super= hook as the ordinary interface.
@@ -532,7 +532,7 @@ the marker, local role, and shared prototype MUST be a =$constant-slot-spec=.
 The ordinary =poo-core-role-object= path satisfies this constraint, and the
 module-owned =control-plane-role= is lowered to the same constant-slot form.
 If a role contains a self/computed/super slot, DomainCase instantiation uses the
-native =role-compose/.mix= path.  That fallback is required because delegating a
+runtime =role-compose/.mix= path.  That fallback is required because delegating a
 computed slot to its source object would change the meaning of =self= and
 =super=.
 
@@ -547,7 +547,7 @@ flowchart LR
     FAST --> WRAP["object<-fun POO wrapper"]
     WRAP --> THUNK["One thunk per visible slot key"]
     THUNK --> LOOKUP["One owner-table decision then source .ref"]
-    SAFE -->|"no: self/computed/super"| MIX["Native role-compose/.mix fallback"]
+    SAFE -->|"no: self/computed/super"| MIX["Runtime role-compose/.mix fallback"]
     MIX --> C4["Per-instance C4 with exact POO semantics"]
 #+end_src
 
@@ -563,7 +563,7 @@ The DomainCase receipt separates =instance-overlay-count= from
 =instance-mix-count=.  Every instance exposes
 =domain-case/instance-composition-kind=.  Fast-lane instances additionally
 expose =domain-case/instance-overlay-kind= and a resolver depth of one; fallback
-instances expose false overlay metadata and retain the native mix counter.
+instances expose false overlay metadata and retain the runtime mix counter.
 
 A benchmark receipt is conforming only when it records =N=, =K=, the
 baseline/overlay mix counts, resolver depth, construction and lookup complexity

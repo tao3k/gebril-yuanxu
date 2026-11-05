@@ -13,13 +13,13 @@
   (and (Error? failure) (string=? (Error-message failure) "stale module publication policy")))
 
 (def module-candidate-metadata-test
-  (test-suite "Native candidate evidence is current before Graph visibility"
+  (test-suite "Runtime candidate evidence is current before Graph visibility"
     (yuanxu-test-case "initializer scratch queries are not enduring admission requirements"
       (with-other-source
         (lambda (root first _other)
           (write-file (path-expand "init.ss" root)
             "(yuanxu! mode: explicit :custom (example) (other))")
-          ;; Real native construction, not a fake evidence/currentness closure.
+          ;; Real runtime construction, not a fake evidence/currentness closure.
           ;; The old whole-interpreter replay incorrectly retained this query.
           (write-file (path-expand "config.ss" first)
             "(import (only-in :clan/poo/object .o .slot? .put!)) (def Scratch (.o)) (.slot? Scratch 'identity) (.put! Scratch 'identity 'temporary) (def Greeting \"hello\") (export Greeting)"))
@@ -31,12 +31,12 @@
           (check-equal? (eq? graph (.get view selected-graph)) #t))))
     (yuanxu-test-case "policy and actual Contract edits cannot publish an earlier candidate"
       ;; Policy first: the default Contract remains unchanged for the second
-      ;; schedule. Restoring a value does NOT restore its native revision.
+      ;; schedule. Restoring a value does NOT restore its runtime revision.
       (for-each
         (lambda (kind)
           (def target (if (eq? kind 'policy)
                         yuanxu-default-module-style-policy ModulePublicationContract))
-          (def slot (if (eq? kind 'policy) 'validate '.obligations))
+          (def slot (if (eq? kind 'policy) 'validate '.element?))
           (def previous (.ref target slot))
           (dynamic-wind
             void
@@ -50,16 +50,16 @@
                       "(import (only-in :clan/poo/object .ref .put!) (only-in :yuanxu/module-system/source/admission yuanxu-default-module-style-policy)) (.put! yuanxu-default-module-style-policy 'validate (.ref yuanxu-default-module-style-policy 'validate)) (def Greeting \"other\") (export Greeting)"
                       (string-append
                         "(import (only-in :clan/poo/object .put!) (only-in :yuanxu/module-system/source/publication ModulePublicationContract)) "
-                        "(.put! ModulePublicationContract '.obligations (lambda (_value _context) (call-with-output-file "
+                        "(.put! ModulePublicationContract '.element? (lambda (_value) (call-with-output-file "
                         (object->string (path-expand "must-not-call" root))
-                        " (lambda (p) (display \"called\" p))) '())) "
+                        " (lambda (p) (display \"called\" p))) #t)) "
                         "(def Greeting \"other\") (export Greeting)"))))
                 (lambda (root _first _other view)
                   ;; An auto directory has no selected roots. Force the two
                   ;; actual declarations through init before testing commit.
                   (check-exception (.get view selected-graph) stale-metadata?)
                   (check-equal? (.ref/cached view 'selected-graph) #f)
-                  ;; The replacement obligation is a negative injection. The
+                  ;; The replacement Type predicate is a negative injection. The
                   ;; complete epoch guard must refuse BEFORE invoking it.
                   (check-equal? (file-exists? (path-expand "must-not-call" root)) #f))))
             (lambda () (.put! target slot previous))))

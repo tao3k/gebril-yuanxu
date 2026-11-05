@@ -8,7 +8,7 @@ Why can a warm currentness demand slow down after fewer replays, and which
 temporary work can be reduced without retaining a passing verdict?
 
 This study refines [[file:10.01-efficient-caching.org][10.01 Efficient Caching]]. It uses the installed Gerbil,
-existing Just/Harness, native POO cache and existing pure source-read window.
+existing Just/Harness, POO cache and existing pure source-read window.
 There is no compiler/RTS change, alternate Builder or new cache protocol.
 Heap and execution budgets remain unchanged. All time spans are inclusive,
 including measurement overhead, and are not exclusive allocation ownership.
@@ -27,7 +27,7 @@ Primary repository: [[https://git.cons.io/mighty-gerbils/gambit.git][Gambit Gerb
 revision using =git show REV:lib/mem.c= and the other paths below; no platform
 installation or recompilation is needed to inspect these definitions.
 
-| Native source | Meaning |
+| Runtime source | Meaning |
 |---------------+---------|
 | =lib/_kernel.scm:3999--4044= | =##process-statistics=, including the allocation of its own result vector |
 | =lib/_repl.scm:5242--5287= | =##exec-stats= subtracts the end sample and interpreted-thunk call-frame accounting |
@@ -44,27 +44,27 @@ factor-of-two correction to physical bytes or blame an unverified RTS defect.
 
 =module-source-measure-operation= now delegates detailed spans to the installed
 =##exec-stats=. It does not maintain a second vector-index interpretation.
-Native named metrics are projected as CPU, GC CPU/wall, collections, minor/major
-faults and =vm-account=. The native sample/frame corrections are thereby retained.
+Runtime named metrics are projected as CPU, GC CPU/wall, collections, minor/major
+faults and =vm-account=. The runtime sample/frame corrections are thereby retained.
 The private adapter preserves multiple action values and rethrows the SAME
 exception after collecting its metrics. The scalar table remains private until
 the measurement action returns. Source/slot observers are not enabled.
 
 #+begin_src scheme
 (##exec-stats (lambda () (retained-pairs 1000)))
-;; Native report: result plus user/sys/real, GC times/count, faults,
+;; Runtime report: result plus user/sys/real, GC times/count, faults,
 ;; bytes-allocated (projected as vm-account, NOT physical bytes).
 #+end_src
 
 The installed-runtime control returns lists of lengths 0, 1000, 10000, 1000.
-Its initial reports were 384, 128384, 1280384, 128384 native accounting units,
+Its initial reports were 384, 128384, 1280384, 128384 runtime accounting units,
 without collection. Length checks establish the retained construction result;
 these numbers are not a measurement of pair payload size. The integration
 workload still produces negative corrected accounts across GC and very large
 positive accounts without GC. Therefore even a positive corrected account is
 UNQUALIFIED for physical allocation claims. Keep it signed and visible.
 
-Reliable work dimensions are measured separately: native replay visitor calls,
+Reliable work dimensions are measured separately: runtime replay visitor calls,
 physical source reads and =string-length= of the returned source text. Characters
 are not UTF-8 bytes, internal buffer capacity or retained heap size. The existing
 source-cost control no longer forces GC or asserts positivity of an invalid
@@ -96,24 +96,24 @@ the final evidence; this does not erase the disturbed run.
 
 * Temporary construction owners
 
-Native POO =call-with-issued-reads= (=object.ss:401--442=) creates two
+POO =call-with-issued-reads= (=object.ss:401--442=) creates two
 identity tables per replay, builds an ordered list and reverses it. On the
 successful fixed-visitor route, 5647 visitor calls across six replays correspond
 to 12 table construction sites and 11294 traversal-pair construction sites.
 These are source-level work counts, not measured allocator bytes. Repeated edges
 are checked against the seen table; their total is not inferred from visits.
-Native authentication, write-protection and final checks still run.
+Runtime authentication, write-protection and final checks still run.
 
 The source IO route is Core =module-source-read= -> installed
-=std/misc/ports.read-all-as-string= -> native =read-line port #f=. The final warm
+=std/misc/ports.read-all-as-string= -> runtime =read-line port #f=. The final warm
 demand reads 128 files / 1106338 characters, with 143 read requests, 159 actual
 file-kind queries and 91 source comparisons. The 512-character chunks, chunk
 lists and final string are concrete temporary construction candidates. Internal
 port buffers and string representation remain outside this logical count.
 
-The selected Graph is already a native POO cache hit: all twenty warm demands
+The selected Graph is already a POO cache hit: all twenty warm demands
 retain receiver identity and perform no role evaluation. Core must not add a
-second cached traversal that could miss changed dependency edges or skip native
+second cached traversal that could miss changed dependency edges or skip runtime
 issuance. Neither Graph reuse nor fewer list constructions licenses reuse of a
 successful source/currentness verdict across admissions or effects.
 
@@ -128,14 +128,14 @@ clean-install or latest-HEAD dependency qualification.
 * Bounded implementation change
 
 The existing private source window previously used =hash-key?= then =hash-ref=
-on every query hit. With no source observer, one native =hash-ref= with a private
+on every query hit. With no source observer, one runtime =hash-ref= with a private
 absence identity suffices. Cached =#f= is still a value. No query, collector key,
 source requirement or dependency edge is removed. With a source observer, retain
 the original presence / callback / value lookup sequence: an open callback may
 mutate arguments or exit. There is no new public switch or purity marker.
 
 The real warm demand has 176 hits / 240 misses. That query path now needs 416
-native lookups rather than 592, saving exactly 176 lookups. This does not count
+runtime lookups rather than 592, saving exactly 176 lookups. This does not count
 all other byte-cache or MOP-table operations. The independent-source control
 still makes 200 physical reads; the SAME work inside one existing pure window
 makes one. That 200-to-one reuse predates this change and is not a new speedup.
@@ -144,7 +144,7 @@ The next independent window executes its query again.
 Matched local control uses the original lookup branch without installing a
 source observer; source observers would also change replay-tail work. Only the
 owned branch condition was temporarily changed and restored. No control flag
-remains. Both versions use the same named native metrics and character counter.
+remains. Both versions use the same named runtime metrics and character counter.
 The control source differs by 34 characters from the final source, which is
 included in its fresh source snapshot rather than hidden from currentness.
 
@@ -156,18 +156,18 @@ included in its fresh source snapshot rather than hidden from currentness.
 | Warm currentness min / max, ms | 20.064 / 67.357 | 19.578 / 66.864 | 18.630 / 63.781 |
 | Warm replay calls / visits | 6 / 5647 | 6 / 5647 | 6 / 5647 |
 | Warm reads / pure windows | 128 / 1 | 128 / 1 | 128 / 1 |
-| Native Make compilations | 2 | 2 | 0 |
+| std/make compilations | 2 | 2 | 0 |
 | Total including twenty probes, s | 21.733 | 21.595 | 16.871 |
 
-The definite result is fewer redundant native lookups, not a stable wall-time
+The definite result is fewer redundant runtime lookups, not a stable wall-time
 or physical-allocation improvement. Ranges overlap, GC placement varies, and
-total times mix source-epoch compilation and recovery. The earlier native-metric
+total times mix source-epoch compilation and recovery. The earlier runtime-metric
 baseline without the character counter is also retained but is not the matched
 instrumentation control.
 
 * Assurance allocation
 
-=SelectionCostSample= and =SourceQueryLookup= in 10.01's SysML distinguish native
+=SelectionCostSample= and =SourceQueryLookup= in 10.01's SysML distinguish runtime
 Graph ownership, query work and accounting. They remain architecture models,
 not solver-qualified runtime predictions. Lean =SelectionReplay= reuses
 LeanPoo =ConstructionCache.ensureLookup_hit=, specializes it to a cached false,
@@ -176,11 +176,11 @@ and proves the hit-count saving, signed-account correction and residual identity
 The QNT =falseMiss= control rejects treating cached false as a miss; existing
 controls retain observer tails, diagnostic order, both requirements, parent
 identity and unselected branches. These proofs require the actual private cache
-and native lookup correspondence; they do not prove the RTS allocator or compiler.
+and runtime lookup correspondence; they do not prove the RTS allocator or compiler.
 
 Normal returns, multiple values and original exception identity are exercised.
 Nonlocal continuation escape/re-entry is not qualified as a complete accounting
-sample. File stability inside each pure window, native issuance and supported
+sample. File stability inside each pure window, runtime issuance and supported
 serial metadata routes remain explicit premises. External source changes still
 require the existing independent/final currentness checks.
 
@@ -189,7 +189,7 @@ require the existing independent/final currentness checks.
 The original heap-fenced =just test-file= entry passed these six files serially,
 with installed Gerbil and the stated dependency load paths:
 
-- =t/runtime-statistics-test.ss=: native accounting controls, multiple values,
+- =t/runtime-statistics-test.ss=: runtime accounting controls, multiple values,
   and original exception identity through the measurement adapter.
 - =t/module-source-cost-test.ss=: full content, independent/pure-window reads,
   cached false and a fresh independent window, without forced GC.
@@ -197,7 +197,7 @@ with installed Gerbil and the stated dependency load paths:
   retaining both requirements, final child plan and source-change refusal.
 - =t/slot-read-replay-test.ss=: sixteen issued-read, nested-obligation,
   parent/child and unselected/unknown-getter controls.
-- =t/module-publication-test.ss=: existing publication suite, including native
+- =t/module-publication-test.ss=: existing publication suite, including runtime
   paired-reader versus open-observer ordering and currentness controls.
 - =scenarios/gitea-postgresql/tests/config-test.ss=: ordinary public entry,
   without the additional trace-mode warm probes or accounting table.

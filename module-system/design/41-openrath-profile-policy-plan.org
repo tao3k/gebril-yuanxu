@@ -54,7 +54,7 @@ profile/spec intent -> capability check -> executor/backend dispatch -> structur
 #+end_src
 
 The part to avoid is making Python-style classes or attribute assignment the
-=agentic-ai-lab= user model. Our surface should remain POO-native and functional.
+=agentic-ai-lab= user model. Our surface should remain POO and functional.
 
 ** 10.06.41.30 Current =agentic-ai-lab= Baseline
 
@@ -69,7 +69,7 @@ The part to avoid is making Python-style classes or attribute assignment the
   collection.
 - =src/core/policy.ss= owns the current =execution-policy= shape: strategy,
   cache policy, failure policy, capabilities, and frontier.
-- =core/module-system/schema/validation.ss= owns native POO object/field contract
+- =core/module-system/schema/validation.ss= owns POO object/field contract
   validation and summary projection; it does not invoke the ASP Harness.
 
 The current gap is not a missing row operator. The gap is a first-class
@@ -154,7 +154,7 @@ cheap and diagnostic. Real execution still belongs outside =agentic-ai-lab=.
 
 Milestone 1: Profile Policy Data Model
 
-- Add a POO-native profile-policy object family.
+- Add a POO profile-policy object family.
 - Define capability, resource, safety, failure, and projection policy slots.
 - Keep existing row operators; do not add a second patch language.
 
@@ -185,7 +185,7 @@ Next implementation pressure:
 
 Current landing:
 
-- =modules/sandbox-core/profile-support/policy.ss= owns the POO-native
+- =modules/sandbox-core/profile-support/policy.ss= owns the POO
   backend capability objects, profile-policy objects, validation receipts, and
   projection receipts.
 - =modules/sandbox-core/profile-support/prototype.ss= adds
@@ -361,7 +361,7 @@ owners first, then wire focused scenario gates once the testing boundary is
 stable again.
 ** 10.06.41.100 Current Progress Audit And Next Plan
 Current status:
-- P1 has started in code. =profile-policy= now has POO-native diagnostic,
+- P1 has started in code. =profile-policy= now has POO diagnostic,
   validation, and projection objects as the public control-plane surface.
 - Profile resolution now passes the merged =resource-policy= into profile-policy
   validation, so validation observes the composed object result instead of only
@@ -380,7 +380,7 @@ Remaining gaps:
 - =agent-sandbox/config.ss= still has a mixed presentation boundary: profile
   collections are POO objects, while runtime intent and summaries still project
   to alists. That is acceptable for bridge receipts, but the profile-policy
-  branch should be named as POO-native.
+  branch should be named as POO.
 - Existing tests still contain old alist-oriented assertions around
   =policy-projections= and validation receipts. Testing is currently being
   refactored, so the next code slice should not widen test churn until that
@@ -397,7 +397,7 @@ P0: Restore Build Gate
 - Keep this invariant: do not repair build entry drift by deleting generated
   =.gerbil= state.
 
-P1A: Finish POO-Native Profile-Policy Surface
+P1A: Finish POO-Runtime Profile-Policy Surface
 - Done: corrected the profile-policy receipt helper boundary so validation and
   projection are read through explicit POO accessors owned by
   =profile-support/policy.ss=.
@@ -485,7 +485,7 @@ The likely owners are:
 - =modules/sandbox-core/profile-support/resolve.ss=: composed object
   resolution and projection-only handoff construction.
 - =modules/*/objects.ss=: backend capability objects for concrete modules.
-- =core/module-system/schema/validation.ss=: shared native structured diagnostics
+- =core/module-system/schema/validation.ss=: shared runtime structured diagnostics
   and catalog summary.
 - =user-interface/custom/*=: real user-facing profile examples and policy
   fixtures.

@@ -17,7 +17,7 @@
 
 (def module-option-objects-test
   (test-suite "Core Module option POO values"
-    (yuanxu-test-case "ordinary candidates are checked by their selected native Slot"
+    (yuanxu-test-case "ordinary candidates are checked by their selected runtime Slot"
       (def config (.o id: "enabled" value: #t source-module: 'module-a))
       (def schema
         (make-instance ModuleOptionSchema
@@ -48,7 +48,7 @@
                          id: "endpoint" source-module: 'network field: 42) TypeError?)
       (check-exception (make-instance ModuleOptionSchema
                          id: 'endpoint source-module: 'network field: field) TypeError?))
-    (yuanxu-test-case "nonconstant native Type failures retain field path and contributor"
+    (yuanxu-test-case "nonconstant Type failures retain field path and contributor"
       (def field (.ref (.ref (Record endpoint: [String default: "localhost"]) 'effective-slots) 'endpoint))
       (def schema (make-instance ModuleOptionSchema
                     id: "endpoint" source-module: 'network field: field))
@@ -94,7 +94,7 @@
       (check-equal? (.ref parent-receipt 'valid?) #t)
       (check-equal? (.ref parent 'value) #t)
       (check-equal? (.ref child 'value) #f))
-    (yuanxu-test-case "native diagnostic validation keeps issue identity and original exceptions"
+    (yuanxu-test-case "runtime diagnostic validation keeps issue identity and original exceptions"
       (def observed 0)
       (def annotation-reads 0)
       (def annotations '((owner . network)))
@@ -177,7 +177,7 @@
       (check-equal? (.ref (caddr refused) 'id) #f)
       (check-equal? (.ref (car (.ref (caddr refused) 'messages)) 'path) '())
       (check-equal? (map (cut .ref <> 'valid?) cached) '(#t #t)))
-    (yuanxu-test-case "grouping retains native diagnostic identity and requires no fabricated field for root errors"
+    (yuanxu-test-case "grouping retains runtime diagnostic identity and requires no fabricated field for root errors"
       (def leaf (.o kind: 'leaf-refused path: '(endpoint nested)
                    details: (error "diagnostic extension forced")))
       (def root (.o kind: 'whole-refused path: '()))

@@ -1,4 +1,4 @@
-#+title: Context Delta: Lean Laws, Quint Transitions and Native Correspondence
+#+title: Context Delta: Lean Laws, Quint Transitions and Runtime Correspondence
 #+date: [2026-10-10]
 #+language: en
 #+property: STATUS proposed-model-and-qualification-plan
@@ -17,7 +17,7 @@ source/Query contract and must not confer permission to consume it. This refines
 
 Lean proves pure value/operation laws and the declared dependency model.
 Quint explores finite interleavings of preparation, publication, invalidation,
-disclosure, result admission and recovery. Native replay qualifies their relation
+disclosure, result admission and recovery. Runtime replay qualifies their relation
 to Scheme contracts and concrete source bytes. Each has a separate evidence
 boundary; none alone proves the complete runtime or its performance.
 
@@ -68,7 +68,7 @@ publish(expectedHead, admittedTarget) -> intent for owner CAS
 consume(currentState, exactTarget, consumerBinding) -> fenced use intent
 #+end_src
 
-These are proposed named pure functions over POO-native boundary values.
+These are proposed named pure functions over POO boundary values.
 =project= is the independently specified full semantic reference. =apply= checks
 patch domain, versions, metadata and ordering. =admitDelta= reconstructs and
 qualifies content/source bindings. Runtime executes publication/consumption
@@ -84,7 +84,7 @@ by the sender cannot replace that independent equality check.
 * Lean data model and theorem obligations
 
 Use finite identity maps plus explicit order, exact binding records, structured
-patch operations and typed rejection. Public Scheme values remain native POO;
+patch operations and typed rejection. Public Scheme values remain POO;
 Lean values are proof projections of their admitted facts. Propose the following
 modules within the existing =packages/proofs/lean-poo/= Lake workspace:
 
@@ -128,7 +128,7 @@ patch valid against a different base.
 
 Hashes are commitments, not authentication or a Lean-proved SHA-256 injectivity
 claim. Use structural equality and explicit source/admission evidence in semantic
-proofs. Document cryptographic commitment assumptions and native serialization
+proofs. Document cryptographic commitment assumptions and runtime serialization
 correspondence separately. Do not introduce =sorry=, unrestricted axioms or
 unproved "coverage complete" predicates to obtain the main closure theorem.
 
@@ -212,12 +212,12 @@ trace bounds, checked invariants, search method and seed/exploration counts.
 Finite safety checks do not prove unbounded fairness, liveness, runtime timing or
 cryptographic security. Separate eventual-provider/clock/storage assumptions.
 
-* Lean/Quint/native correspondence
+* Lean/Quint/runtime correspondence
 
-Define an abstraction from admitted native projections/receipts to Lean values
+Define an abstraction from admitted runtime projections/receipts to Lean values
 and bounded Quint state. Each concrete publication, invalidation and consumption
 step must refine a declared action or an explicitly justified stuttering step.
-Map typed native refusals and source/cut identities; preserve exact input routing.
+Map typed runtime refusals and source/cut identities; preserve exact input routing.
 Do not hide a disclosure/effectful transition as stuttering.
 
 The existing =packages/proofs/quint/source_binding.py= checks retained source
@@ -227,7 +227,7 @@ prove value/guard preservation separately and audit its assumptions.
 
 Counterexample replay carries actual Org bytes at both cuts, parsed Element/Query
 values, patch operations, budgets, bindings and expected refusal. Replay actions
-through native APIs, compare reconstructed targets with independent full native
+through runtime APIs, compare reconstructed targets with independent full runtime
 projection, and retain cancellation/provider observations. Abstract cut/token
 fixtures without concrete source replay cannot qualify parser or Query behavior.
 Rust/Data consumers own transport/transaction replay once their ABI supports the
@@ -237,7 +237,7 @@ contract and cannot close it by unchanged ABI tests.
 * Source roles, delivery order and acceptance gates
 
 Context =types.ss= owns Delta/binding/coverage/rejection shapes; =objects.ss=
-owns inert native proposals and receipts; =funs.ss= and specialized =funs-delta*.ss=
+owns inert runtime proposals and receipts; =funs.ss= and specialized =funs-delta*.ss=
 own pure apply/reference admission functions. =config.ss= selects the supported
 profile, and =interface.ss= closes public exports. Host/runtime owns current
 use; Session owns Attempt/Turn/CAS; Data owns durable conditional publication.
@@ -247,7 +247,7 @@ use; Session owns Attempt/Turn/CAS; Data owns durable conditional publication.
 2. Implement finite Quint publication/disclosure profiles and reachable matched
    mutations; replay concrete wrong-base, competing publication and stale-use traces.
 3. Implement a restricted dependency profile and prove changed-domain coverage
-   including new/deleted units; compare incremental versus independent full native
+   including new/deleted units; compare incremental versus independent full runtime
    projection on matched source transformations and negative coverage controls.
 4. Add combined Session/claim/invalidation/recovery model and explicit
    correspondence. Qualify actual Host/Backend fences and each wire consumer.
@@ -255,12 +255,12 @@ use; Session owns Attempt/Turn/CAS; Data owns durable conditional publication.
    allocations and end-to-end latency separately against equal full projections.
 
 Completion requires compiled Lean theorems and axiom audit, pinned Quint gates,
-matched native controls and exact consumer receipts. This document designs those
+matched runtime controls and exact consumer receipts. This document designs those
 gates; it does not report them as executed or passed.
 
 * Reference implementation receipt
 
-The core now exports native =AiAgenticContextDelta.= and
+The core now exports runtime =AiAgenticContextDelta.= and
 =AiAgenticContextEdit.= proposals and a declarative Delta Type.
 =funs-delta.ss= owns =delta-between=, =delta-apply= and =delta-admit= public
 functions under the =agentic-ai-lab-ai-agentic-context-= prefix. Patch admission
@@ -277,7 +277,7 @@ qualification is a separate Host/consumer obligation.
 exact replacement, deletion, frame preservation across edit sequences, differential
 admission and rejection. All compile, with an audit of 19 total theorems including
 generated declarations using only standard Lean axioms. These are abstract
-value laws, not a proof of native serialization, Query coverage or runtime refinement.
+value laws, not a proof of runtime serialization, Query coverage or runtime refinement.
 The Lake workspace declares =AgenticAILabContextProof= and CI builds that target.
 Local qualification compiles the standalone core-only source through
 =just check-context-delta-lean= without claiming a fresh LeanPoo dependency build.
@@ -290,22 +290,22 @@ the existing five-second no-output watchdog during backend compilation; an
 unchanged full retry passed six cases. Limits were not widened. Source-digest/
 invariant-inventory binding to Lean is checked and remains metadata freshness.
 
-Nine native cases exercise real Org changes, structural insertion/deletion/
+Nine runtime cases exercise real Org changes, structural insertion/deletion/
 replacement/order, wrong base/old unit, duplicate edits, incomplete order, forged
 target, cross-scope/profile substitution and original-byte replay failure.
-The first native run exposed a POO lazy-slot parameter/name collision in receipt
+The first runtime run exposed a POO lazy-slot parameter/name collision in receipt
 construction; corrected binding names passed the same heap/memory/watchdog gates.
 Qualification test artifact compilation retains the previously recorded local
 O0 override; repository production compiler settings remain unchanged.
 Six proof-runner admission/freshness tests also passed.
 The corrected production Delta module was recompiled with default compiler
 settings, the normal PackageSpec build completed, and the eight existing core
-cases passed under the unchanged watchdog. Both native suites contain
+cases passed under the unchanged watchdog. Both runtime suites contain
 =MODULE-OK=, =HARNESS-OK= and final =OK= without failure/overflow markers.
 
 At this reference milestone, remaining gates were dependency-coverage soundness
 and incremental equivalence, combined Session/Attempt/recovery controls, automated concrete trace projection,
-Lean/native semantic correspondence and actual Host/Backend/wire consumption
+Lean/runtime semantic correspondence and actual Host/Backend/wire consumption
 fences. Quint publication/consumption controls currently qualify the abstract
 model; they do not assert those runtime fences are implemented. No incremental
 speedup or complete Delta consumer qualification is claimed.
@@ -336,7 +336,7 @@ projection equality, insertion, removal, nonmatching-to-matching transitions and
 global binding reconstruction. The audit now inventories 28 theorems including
 generated declarations. The theorem uses complete source maps and equality of
 actual local Query inputs, not full-target equality as a coverage assumption.
-It abstracts parser correctness, ordering/serialization and native compiler
+It abstracts parser correctness, ordering/serialization and runtime compiler
 correspondence; the generic theorem does not prove those implementations.
 
 =ContextCoverage.qnt= exhaustively checks two local keys, each absent,
@@ -349,15 +349,15 @@ states; wrong-generation routing, dropped recovery obligation and closed resume
 controls fail at 5, 5 and 10 states. These two models do not constitute a combined
 Context/grant/source/publication refinement or a liveness qualification.
 
-See [[file:session-attempt-implementation-receipt.org][the Session Attempt receipt]] for native ownership and recovery boundaries.
+See [[file:session-attempt-implementation-receipt.org][the Session Attempt receipt]] for runtime ownership and recovery boundaries.
 The current Delta suite includes matched real-byte incremental/full comparisons,
 append reuse with newly rebound global IDs, forged cache replacement and the
 source-replayed Context-to-Session input proposal. Local Lean compilation,
 source/invariant metadata freshness and the six existing proof-runner admission
-controls passed. Native and production qualification is recorded in that receipt.
+controls passed. Runtime and production qualification is recorded in that receipt.
 
 Remaining full-system gates are parser-backed Org property ID anchor admission,
-automated concrete trace projection, Lean/native correspondence, the combined
+automated concrete trace projection, Lean/runtime correspondence, the combined
 Session/Attempt/source/grant model, current-use Host publication/disclosure fences,
 versioned wire/consumer changes, durable recovery and downstream MRR Data
 qualification. Neither a Session transition intent nor a typed input reference
@@ -367,6 +367,6 @@ resolves producer authority or performs dispatch, CAS or durable publication.
 
 [[file:context-temporal-lifecycle-policy-system-design.org][The Agentic AI Lab joint policy system design]] defines orthogonal lifecycle states,
 explicit Temporal applicability and clock domains, admitted strategy composition,
-and the versioned FFI/Runtime/MRR/Data handoffs. It records the pure native window
+and the versioned FFI/Runtime/MRR/Data handoffs. It records the pure runtime window
 policy and separates its local qualification from the prospective joint protocol
 model and remaining provider/backend implementation.

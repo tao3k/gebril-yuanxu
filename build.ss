@@ -1,4 +1,4 @@
-#!/usr/bin/env -S timeout --signal=TERM --kill-after=5s 300s gxi
+#!/usr/bin/env gxi
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
@@ -11,20 +11,13 @@
   (register-yuanxu-build-source! (path-directory (this-source-file))))
 
 (import (only-in :clan/poo/object .get)
-        (only-in "./prelude.ss")
         (only-in "./module-system/building/script.ss" defbuild-script)
         (only-in "./init.ss" yuanxu.init.exports)
-        (only-in "./module-system/building/artifacts.ss" current-build-output-directory)
-        (only-in "./module-system/building/source-closure.ss" package-library-spec)
-        (only-in :std/source this-source-file)
-        (only-in "./core-spec.ss" core-spec core-public-roots))
+        (only-in "./module-system/building/products.ss" current-build-output-directory)
+        (only-in "./core-spec.ss" core-spec))
 
 ;; init.exports owns selected Module targets; core-spec owns library targets.
 ;; Only this entry consumes both. core-spec must never compile init itself.
-;; The adapter keeps role/currentness boundaries inside the SDK consumer.
+;; The adapter keeps role/currentness boundaries inside the Gerbil build consumer.
 (def modules-spec (.get yuanxu.init.exports std-make-spec))
-(def library-spec
-  (append core-spec
-    (package-library-spec (path-directory (this-source-file)) 'yuanxu core-public-roots
-      exclude: core-spec)))
-(defbuild-script (modules-spec library-spec) libdir: (current-build-output-directory))
+(defbuild-script (modules-spec core-spec) libdir: (current-build-output-directory))

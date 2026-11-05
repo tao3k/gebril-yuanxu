@@ -21,7 +21,8 @@ module RootCollectionModel {
       else has(s.roots, n)
     val retained = if (duplicate) s.roots else s.roots.append(if (BUG == "copy") n + 10 else n)
     val roots = if (BUG == "reverse") retained.foldl([], (acc, x) => [x].concat(acc)) else retained
-    val calls = if (BUG == "suppress" and duplicate) s.calls else
+    val calls = if (BUG == "redeliver") s.calls.concat(events([n, n])) else
+      if (BUG == "suppress" and duplicate) s.calls else
       if (BUG == "observerOrder") s.calls.append(n * 10 + 2).append(n * 10 + 1)
       else s.calls.append(n * 10 + 1).append(n * 10 + 2)
     all {s.pos < input.length(), s' = s.with("pos", s.pos + 1).with("roots", roots)

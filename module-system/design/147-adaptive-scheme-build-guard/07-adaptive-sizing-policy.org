@@ -28,7 +28,7 @@ hard-max-rss-bytes > baseline-rss-bytes + headroom-bytes
 
 Each observation wraps the upstream thunk with the current-process Scheme
 guard under =dynamic-wind=.  RSS is the complete process tree rooted at the
-current =gxi=, including native compiler descendants.
+current =gxi=, including runtime compiler descendants.
 
 After a completed receipt, the controller computes:
 
@@ -55,7 +55,7 @@ next-window-size =
 Small windows therefore recover by at least one worker-count quantum, while
 larger safe windows grow geometrically.  The measured capacity can shrink the
 next window immediately.  Geometric window growth changes only the ordered
-queue horizon visible to the single =std/make= coordinator; actual native
+queue horizon visible to the single =std/make= coordinator; actual runtime
 compiler concurrency remains bounded by =worker-count=.  The next decision
 deliberately uses the latest completed window's observed bytes per spec rather
 than a monotonic maximum.  This avoids treating one-time compiler residency

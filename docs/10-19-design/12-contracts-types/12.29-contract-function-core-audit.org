@@ -19,25 +19,25 @@ The implemented migration is described in
 Read the examples at this revision together:
 
 - =examples/object-contracts.ss=: required value shape, independent diagnostics,
-  native refinement, checked-action and Reader composition.
+  runtime refinement, checked-action and Reader composition.
 - =examples/function-publication.ss=: multiple results and higher-order Function
   wrapping before exact checked-subject publication.
 - =examples/signature-service.ss=: optional/keyword/default handling, typed
   declarations and output callbacks through the same Function descriptor.
-- =examples/row-services.ss=: native finite recursive/row descriptors and
+- =examples/row-services.ss=: runtime finite recursive/row descriptors and
   checked-action; no second row solver in the application.
 - =examples/polymorphic-services.ss=: prototype-type specialization, finite
   inference and typed declarations; only a unique complete inference result may
   build a service. This API is needed when a domain actually declares these
   parameters, not for arbitrary field validation.
-- =examples/service-metadata.ss= and =examples/shared-contracts.ss=: native
+- =examples/service-metadata.ss= and =examples/shared-contracts.ss=: runtime
   invocation contracts, current dependent meaning and closed preparation inputs.
 - =examples/contract-publication.ss=: bind-evidence after normalization; subject,
   descriptor and context are exact references. Prior effects are not rolled back.
 
 * Semantic owners
 
-| Concern | Native owner | Core responsibility |
+| Concern | Runtime owner | Core responsibility |
 |---------+--------------+---------------------|
 | Primitive/domain value membership | Type. / element? | Define the domain predicate once |
 | Required/optional fields | Record / effective Slot protocols | Declare fields and preserve receipt metadata |
@@ -51,16 +51,16 @@ Read the examples at this revision together:
 A Function recognizer can recognize a procedure without checking future calls.
 Returning the original procedure after element? therefore loses the declared
 argument/output contract. A symbolic diagnostic name is never a validator.
-Native invocation Contract is not a synonym for a value Type, and FUN is a
+Runtime invocation Contract is not a synonym for a value Type, and FUN is a
 composition protocol rather than a second workflow execution authority.
 
 * Repairs in this change
 
 =module-system/schema/slot-contracts.ss= previously owned a second field walker:
 required presence, custom read callbacks and element?-only field checks were
-assembled as Core contextual obligations. It now derives a native Record and extends its membership method with the
+assembled as Core contextual obligations. It now derives a runtime Record and extends its membership method with the
 domain predicate. Required/optional handling and recursive normalization belong
-to the inherited native Class validator. ObjectContract diagnostic constraints
+to the inherited runtime Class validator. ObjectContract diagnostic constraints
 do not normalize their values: putting a Record in constraints alone would
 repeat the original callable-wrapper bug.
 Primitive slot predicates directly specialize Type.; they no longer allocate
@@ -75,7 +75,7 @@ reader/candidate machinery has been removed from the emitter.
 =yuanxu-contract-check-slot!= now returns validate's actual result. A Function
 therefore returns its checked wrapper, including returned callbacks; no local
 argument decoder or wrapper is introduced. Receipt projection accepts ordinary
-native Types without requiring project-specific diagnostic slots. The native
+Types without requiring project-specific diagnostic slots. The runtime
 =slots= field retains its Class meaning; receipt declarations live in
 =slot-schemas=. Projection reads current effective Slot types and optional
 policy and refuses incomplete metadata after a field addition. A warmed
@@ -92,22 +92,22 @@ import boundary; importing Core types alone does not import typed FUN printers.
 There is no lazy binding, dynamic import or cached acceptance. This direct
 functional composition also works during standalone executable initialization.
 The existing negative import-closure assertion remains unchanged. Reader/FUN
-composition is exercised at its actual native publication boundary.
+composition is exercised at its actual runtime publication boundary.
 
-=admission/publication.ss= already uses the native invocation Contract,
+=admission/publication.ss= already uses the runtime invocation Contract,
 with-meaning, bind-evidence and publish. It is retained. Replacing this with a
 new wrapper or moving source-currentness into a generic value Type would lose
 its selected-Graph and package-boundary semantics.
 
 * Ops callable boundary
 
-Ordinary Ops configuration, environment and process-script values now use native
+Ordinary Ops configuration, environment and process-script values now use runtime
 Type/Record descriptors. The empty contextual receipt producers for these values
-are removed. The process descriptor extends the configuration's native fields;
+are removed. The process descriptor extends the configuration's runtime fields;
 only the domain relations (finite positive duration, idle/total budget relation,
 and nonempty command) remain local predicates.
 
-Progress is a native higher-order Function: a zero-argument factory returns a
+Progress is a runtime higher-order Function: a zero-argument factory returns a
 one-argument String callback. The callback's result is deliberately Any because
 output observation does not consume it. Preview validates once and passes the
 actual wrapped factory to execution. Preparing a command also consumes its
@@ -121,17 +121,17 @@ callback normalization and factory invocation through LeanPoo's
 installation of the actual checked callback, noncallable results and factory
 errors. Executable positive/negative guards use concrete constructors. This is a
 pure finite interpretation, not a proof of Scheme procedure execution or OS
-effects. Quint receipts also bind the native Ops Type owner, shared slot contract
+effects. Quint receipts also bind the runtime Ops Type owner, shared slot contract
 owner and the maintained composition regression.
 
 * Maintained product consumers
 
 All maintained product calls use the direct constructor signature, including
 session policies, sandbox resources/profiles and loop governance/audit contracts.
-Sandbox profile recipe checks use native membership/validation; the empty
+Sandbox profile recipe checks use runtime membership/validation; the empty
 contextual admission receipt and its public producer have been removed.
 
-Tool grants are native POO values. Their native Record checks every declared
+Tool grants are POO values. Their runtime Record checks every declared
 field; final session-policy projections explicitly encode grants in both the
 summary and nested policy-slots wire rows. The external wire field order and
 values are retained without accepting wire rows as semantic grant objects.
@@ -147,14 +147,14 @@ core-spec retain their own declared roots.
 
 The product package selects the POO prelude. Its modules/scenarios directories
 select Core's module prelude, matching their actual declarative role files.
-That prelude exports the native Gerbil bindings at macro phases one and two as
-well as runtime; standalone native compilation uses the same declaration path.
+That prelude exports the Gerbil bindings at macro phases one and two as
+well as runtime; standalone runtime compilation uses the same declaration path.
 No per-file generated import workaround is introduced.
 
-A product selection may refer to source Modules from Core. The native package
+A product selection may refer to source Modules from Core. The runtime package
 build specification now emits only targets owned by its actual package prefix.
 Foreign selected sources remain in the observed input set and retain their
-Graph currentness guards. Their own native package build owns compilation.
+Graph currentness guards. Their own runtime package build owns compilation.
 Merging retained roots still rejects conflicting compiler identities/options.
 The package projection refuses Graph output issuance and execution when selected
 outputs span package owners; a partial package build cannot publish that Graph.
@@ -162,7 +162,7 @@ The product's existing source-guarded SDK build receives no publication authorit
 
 The standard dependency build recipe regenerates installed manifests in dependency
 order. The Homebrew SDK environment includes its OpenSSL pkg-config directory,
-so native Ascent compilation resolves the same declared library as the C compiler.
+so runtime Ascent compilation resolves the same declared library as the C compiler.
 
 * Development runtime cohort
 
@@ -171,24 +171,24 @@ The old production cache contained a different ASP revision and old POO manifest
 Those sources and artifacts are preserved outside the active load path.
 
 =deps-dev= materializes only the development declaration and verifies the actual
-HEAD. Its native POO source, tag and manifest aliases explicitly share the root
+HEAD. Its POO source, tag and manifest aliases explicitly share the root
 package's authoritative POO revision, matching =dev/BUILD.bazel='s existing parent
 dependency selection. ASP's immutable source metadata is not rewritten. No
 transitive POO fetch or second POO runtime is installed in the development store.
 Existing conflicting paths fail before replacement; no package uninstall is used.
 
-=test-root= prepares the native test runtime with =build-testing=: gxpkg builds
+=test-root= prepares the runtime test runtime with =build-testing=: gxpkg builds
 ASP without dependency fetching, and the maintained =dev/build.ss= builds the
 project's testing interface. The test worker retains the existing heap and
-watchdog fences. The single native ASP entry is unit-tests.ss at the project
+watchdog fences. The single runtime ASP entry is unit-tests.ss at the project
 root, since ASP anchors discovery to its declaring script. Optional profiles are
-in dev/testing-profiles.ss; no second entrypoint discovers or executes tests. Native development preparation is outside that worker, not a
+in dev/testing-profiles.ss; no second entrypoint discovers or executes tests. Runtime development preparation is outside that worker, not a
 replacement test runner or a temporary activation script.
 
 The default root test recipes also prepare the existing hash-locked Nix
-qualification inputs and native publication workers. A small environment
+qualification inputs and runtime publication workers. A small environment
 transport reads those produced paths and execs the unchanged heap-fenced worker.
-The native publication roles share one SDK executable closure, while every role
+The runtime publication roles share one SDK executable closure, while every role
 invocation remains a fresh process with its original watchdog. The build retains
 its 240-second limit. A stale object lock from an interrupted build was diagnosed
 with a process/lock-holder check and removed; the timed-out runs are retained as
@@ -200,12 +200,12 @@ The legacy Funflow control-plane Task/Flow input-contract and output-contract
 slots are descriptive values: runner.ss invokes task-executor directly and does
 not turn symbolic labels into Function validation. They must not be described
 as enforcing a typed callable boundary. Migrating that subsystem requires actual
-native signatures across its maintained constructors and consumers; this field
+runtime signatures across its maintained constructors and consumers; this field
 contract repair does not silently reinterpret symbols as executable types.
 
 The schema support transformer's =yuanxu-module-transformer-type-compatible?=
 still treats an actual Any field as compatible with a more specific input Type.
-This is an operation-admission policy, not proof that Any is a subtype. Native
+This is an operation-admission policy, not proof that Any is a subtype. Runtime
 finite relation/inference results may justify supported structural replacements;
 opaque domain predicates need explicit evidence and cannot be inferred from
 =module-value-kind= labels. This path remains a separate migration finding.
@@ -219,7 +219,7 @@ semantics with signature inference.
 * Qualification
 
 =t/contract-function-composition-test.ss= exercises the maintained shared
-constructor and slot gate with native Function signatures: input/output refusals,
+constructor and slot gate with runtime Function signatures: input/output refusals,
 optional/inherited fields, host defaults and keywords, multiple values, returned
 callbacks, one normalization before contextual obligations, untouched raw values,
 FUN composition and refusal of a stale Context at exact evidence publication.
@@ -231,7 +231,7 @@ The declared Gerbil pin, Bazel archive digest/lock and Core replay model revisio
 are updated together. Existing dirty installed dependency sources are retained
 outside the active package path, not discarded. Logs remain local artifacts.
 
-The initial native dependency installation exposed a transitive pin
+The initial runtime dependency installation exposed a transitive pin
 boundary: Parser =f7db6237= requires published Core =10a0759=, whose immutable
 package metadata requests gerbil-poo =80b590b1=. That differs from this unmerged
 Core/POO integration. Its explicit tag refusal is retained; no package uninstall,

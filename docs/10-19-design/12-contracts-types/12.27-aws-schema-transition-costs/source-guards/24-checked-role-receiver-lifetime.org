@@ -1,4 +1,4 @@
-#+title: 12.27.37 Native Role Validation Receiver Lifetime
+#+title: 12.27.37 Runtime Role Validation Receiver Lifetime
 #+property: DOCUMENT_ID 12.27.37
 #+language: en
 
@@ -7,14 +7,14 @@
 The preceding [[file:23-evidence-read-ownership.org][evidence lifetime result]] removed temporary Core receipts but
 still refused the thousand-declaration gate after 578 publication returns.
 Zero observed completed programs or expanded bodies did not establish that
-SDK bindings or native dependency suffixes were small. Neither SDK registries
+SDK bindings or runtime dependency suffixes were small. Neither SDK registries
 nor binding tables may be cleared to force acceptance.
 
-The existing trace-enabled ModuleTestingProfile now walks the ORIGINAL native
+The existing trace-enabled ModuleTestingProfile now walks the ORIGINAL runtime
 dependency suffix once when observing a completed selected-Graph read. Its
 identity index is transient; only scalar totals and eight scalar edge-owner rows
 reach output. It invokes no getter, retains no receiver/syntax in telemetry,
-changes no native observer/precheck delivery, and is absent without tracing.
+changes no runtime observer/precheck delivery, and is absent without tracing.
 These counts explain holders; they do not measure exclusive object bytes.
 
 At sixteen real declarations, the original support contained 10443 token
@@ -27,20 +27,20 @@ path rather than another attempt to discard SDK contexts.
 
 The locked gerbil-poo ObjectContract protocol already provides all value
 semantics. Its validation does structural checking, calls prepared-validation,
-then diagnoses the FINAL checked object and runs obligations. The native
+then diagnoses the FINAL checked object and runs obligations. The runtime
 rebind-validation implementation creates a fresh checked receiver, forces its
 selected fields, and returns the original candidate when no field changes.
 If normalization changes a field, it returns the checked receiver instead.
 
 Previously, even an unreturned checked receiver could remain strongly owned by
-the Graph's native field-read records. Core receipt enrollment did not include
+the Graph's runtime field-read records. Core receipt enrollment did not include
 this upstream-created intermediate. Removing its field checks would lose real
 Contract semantics; recognizing it by an object kind would grant false authority.
 
 [[file:../../../../../module-system/types.ss][ModuleSourceRoleValueContract]] now specializes only the EXISTING public
-prepared-validation slot. It obtains native validation-fields, wraps each exact
-field validator to enroll the actual fresh receiver supplied by native
-rebind-validation, and invokes that same native rebind-validation:
+prepared-validation slot. It obtains runtime validation-fields, wraps each exact
+field validator to enroll the actual fresh receiver supplied by runtime
+rebind-validation, and invokes that same runtime rebind-validation:
 
 #+begin_src scheme
 (def (prepare-role-validation fields)
@@ -58,25 +58,25 @@ rebind-validation, and invokes that same native rebind-validation:
 #+end_src
 
 The checks list is private to that recipe. A borrowed object or contributor's
-label cannot supply constructor authority. No native validator, membership
+label cannot supply constructor authority. No runtime validator, membership
 check, result-identity decision, field wrapping, final diagnosis or obligation
-is duplicated or skipped. The inherited prepared-responsibilities is a native
+is duplicated or skipped. The inherited prepared-responsibilities is a runtime
 lexical slot: a child Contract must use its own effective responsibilities,
 even after the parent recipe has been cached. Outside an owned Core region,
 enrollment does nothing and the public validation behavior remains unchanged.
 Enrollment is an internal audited Core callback, not a public authorization
-API: its receiver provenance comes from that exact native producer invocation.
+API: its receiver provenance comes from that exact runtime producer invocation.
 
 * Borrowed ancestors remain policy support
 
-[[file:../../../../../object-family/read-projection.ss][The existing owned-read region]] now also records the FIRST native revision
+[[file:../../../../../object-family/read-projection.ss][The existing owned-read region]] now also records the FIRST runtime revision
 of each transitive ancestor of this factory-produced receiver. Parent identity
 is never inferred from a Contract name. The temporary instance can become weak;
 its borrowed ancestors remain strongly retained policy support. Their revisions
-are checked before weakening and again whenever the delivered native bundle
+are checked before weakening and again whenever the delivered runtime bundle
 is replayed. Mutation followed by restoration does not renew the old witness.
 
-A parent with native MOP/declaration hooks opens the whole region. A changed
+A parent with MOP/declaration hooks opens the whole region. A changed
 parent during the operation also retains the complete original trace. Returned
 normalized receivers remain weakly alive and must replay their ORIGINAL tokens;
 missing live tokens refuse. Actual Contract, policy and source dependencies
@@ -110,7 +110,7 @@ That is a whole-process comparison, not an exclusive byte size for each receiver
 The larger 256-declaration run passed with 837288736 Graph-held live bytes,
 versus the preceding implementation's 956248632: a reduction of 118959896
 bytes, about 12.44%. Its support contained 124443 token identities, 12894
-receivers and 461172 edges. All 1024 native role bodies still expanded and
+receivers and 461172 edges. All 1024 runtime role bodies still expanded and
 evaluated. The same Graph remained reachable, business scope stayed cold,
 actual init-source mutation refused and the fixture cleaned up.
 The earlier 256 sample did not include the new transient suffix census; the
@@ -129,19 +129,19 @@ No qualification child remained after that stop. The outer termination did
 leave its generated source fixture directory; it was explicitly removed after
 confirming the generated package identity. Automatic cleanup under an outer
 process kill remains OPEN. Ordinary Scheme/ Ops failure unwinding is a separate
-native gate and must not be presented as proof of hard-stop cleanup. Neither
+runtime gate and must not be presented as proof of hard-stop cleanup. Neither
 the total budget nor heap fence was increased to convert this result to a pass.
 
 Two narrower experiments were rejected and reverted: reducing the POO origin
 operand to its hygienic head/source produced 516002536 bytes, and enrolling only
 the temporary Module Interface with parent support produced 516272256 bytes.
 Neither improved the preceding 515947136-byte calibration. Neither change is
-part of the maintained implementation. Native origin syntax remains unchanged.
+part of the maintained implementation. Runtime origin syntax remains unchanged.
 
 * Quint and Lean have different responsibilities
 
 [[file:../../../../../dev/proofs/quint/OwnedReads.qnt][Quint OwnedReads]] reuses the existing bounded finish/mutation/GC/publication
-model. Its external parent-policy identity now covers native validation
+model. Its external parent-policy identity now covers runtime validation
 ancestors as well as CLOS carrier prototypes. The additional parentDuring
 control must find a counterexample if an operation weakens ownership after
 its parent changed during construction. The existing policy-omission control
@@ -152,11 +152,11 @@ implementations; no second Graph model is introduced.
 [[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean][Lean OwnedReads]] retains arbitrary-identity frontier/currentness proofs and
 adds parent-snapshot refusal and ancestor-policy preservation under explicit
 coverage. It does not repeat Quint's schedule exploration. Runtime premises
-remain native revision fidelity, complete traversal of actual supers, weak
+remain runtime revision fidelity, complete traversal of actual supers, weak
 reference liveness, original public replay and the audited producer callback
 identity. Neither tool proves Gambit's GC or heap capacity.
 
-* Focused native gates
+* Focused runtime gates
 
 #+begin_src text
 just test-file t/evidence-read-ownership-test.ss true
@@ -173,19 +173,19 @@ cd dev/proofs/lean
 lake build YuanxuProof.ModuleSystem.Graph.OwnedReads
 #+end_src
 
-Native controls cover unchanged result identity, one field-validation call,
+Runtime controls cover unchanged result identity, one field-validation call,
 collection of the actual intermediate, transitive parent mutation/restoration,
 parent edits during validation, MOP fallback, returned normalized receivers,
 and parent-cached versus child-effective Role field Contracts. The real
 init-owned aggregate independently checks Schema transition, stale evidence,
-accepted-value preservation and failure cleanup. Passing model/native semantic
+accepted-value preservation and failure cleanup. Passing model/runtime semantic
 controls must not promote a refused thousand-declaration capacity gate.
 The callback does not broaden Core's existing child-normalization permission
-or contextual admission rules; it only changes retention of the actual native
+or contextual admission rules; it only changes retention of the actual runtime
 intermediate. A normalized child still has to satisfy its parent's established
 value-Contract and responsibility identity rules.
 
-The final focused native runs passed with natural exit zero, MODULE-OK,
+The final focused runtime runs passed with natural exit zero, MODULE-OK,
 HARNESS-OK, final OK and no error/overflow marker: evidence-read ownership,
 module test observation, module authoring, CLOS dispatch, publication, Contract
 analysis, the 256-declaration fixture, and the init-owned JsonSchema/Funflow/AWS
@@ -195,7 +195,7 @@ accepted value and ordinary fixture cleanup. Its seven module, two harness
 and two final-OK markers are separate from the thousand-run timeout.
 
 Quint qualified ten expected outcomes against the final bound source and
-native controls, including the deliberately failing parentDuring variant.
+runtime controls, including the deliberately failing parentDuring variant.
 The targeted Lean OwnedReads build passed. The remaining gates are real
 thousand-declaration completion within the unchanged budgets, attribution of
 the remaining SDK/Graph live bytes, and automatic outer-kill fixture cleanup.

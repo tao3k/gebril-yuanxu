@@ -18,7 +18,7 @@
                     (andmap valid? (slot-read-dependencies read))))))
   (andmap valid? roots))
 (def issued-root-forwarding-test
-  (test-suite "Core forwards native issuance without synthetic bundles"
+  (test-suite "Core forwards runtime issuance without synthetic bundles"
     (yuanxu-test-case "real roots retain exact identities, parent revisions and lazy branches"
       (def policy (.o port: 5432 unused: (error "unused field forced")))
       (def saved '())
@@ -31,7 +31,7 @@
                   (%call-with-recorded-slot-reads (lambda () (.get policy port))))
                 (set! saved actual)
                 ;; Nested collector does not deliver to its parent automatically.
-                ;; Forward each ORIGINAL native token, never rebuild its checker.
+                ;; Forward each ORIGINAL runtime token, never rebuild its checker.
                 (for-each (lambda (r) (%deliver-slot-read r #f)) actual)
                 answer)))))
       (check-equal? value 5432)
@@ -60,7 +60,7 @@
       (.put! base 'other #t)
       (.put! base 'other #f)
       (check-exception (replay-slot-reads! reads (lambda (_r _k) (void))) Error?))
-    (yuanxu-test-case "failed actions retain original exception and native dependencies"
+    (yuanxu-test-case "failed actions retain original exception and runtime dependencies"
       (def policy (.o port: 5432))
       (def original (with-catch values (lambda () (error "original action failure"))))
       (defvalues (failure reads)
@@ -75,7 +75,7 @@
       (check-equal? (issued-closure? reads) #t)
       (.put! policy 'port 5440)
       (check-exception (replay-slot-reads! reads (lambda (_r _k) (void))) Error?))
-    (yuanxu-test-case "carrier policy uses original native revision reads"
+    (yuanxu-test-case "carrier policy uses original runtime revision reads"
       (def guard (clos-call-carrier-policy-guard))
       (defvalues (_value reads)
         (%call-with-recorded-slot-reads

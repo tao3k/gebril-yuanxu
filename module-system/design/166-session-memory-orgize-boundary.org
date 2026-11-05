@@ -46,7 +46,7 @@ acquire a second Session or Memory policy registry.
 | MRR Data | immutable artifacts and physical queries | content identity and retrieved bytes | storage integrity |
 | runtime | accepted intents and expected revisions | scheduled effects and CAS result | physical execution |
 
-* Org-native Memory source and selection
+* Org-runtime Memory source and selection
 
 At the pinned [[https://github.com/tao3k/orgize/pull/21][Orgize PR #21]] cut, Orgize's Scheme modules own Org parsing,
 Element facts, named queries, and headline state. The generated Rust/Rowan
@@ -164,7 +164,7 @@ the Scheme owner for proof-bound revisions and a read-only journal receipt.
 Neither path persists a restartable journal, publishes a current pointer,
 authenticates source or authorizes an action.
 
-The next public Scheme interface should expose POO-native values and pure
+The next public Scheme interface should expose POO values and pure
 constructors, with bounded =->alist= projection only at runtime/ABI edges:
 
 | Proposed value | Owner | Required binding | Refusal before handoff |

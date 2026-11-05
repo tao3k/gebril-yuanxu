@@ -27,7 +27,7 @@ case uses three independently reusable Profiles, then one selected Scenario. It
 is not three independent invocations of the single-server projector from module
 06: database state, connections and qualified identity require additional domains.
 
-* Requested declaration and current native expansion
+* Requested declaration and current runtime expansion
 
 The desired service authoring surface uses the existing .def shape with a domain
 Contract as the designated parent value:
@@ -46,9 +46,9 @@ Contract as the designated parent value:
 
 This parent-value interpretation is a proposed declaration adapter. In inspected
 Core e85fd45 (workspace root 7ab549d0), core/object-syntax/path-slots.ss delegates
-ordinary inheritance to native POO and does not implement Contract-to-proto
+ordinary inheritance to POO and does not implement Contract-to-proto
 resolution. Do not claim the above creates typed service instances today.
-The native parent portion is instead:
+The runtime parent portion is instead:
 
 #+begin_src scheme
 (.def (WebProfile @ (.get WebProfileContract proto))
@@ -60,13 +60,13 @@ exact Contract association for later public .admit, through contribution export
 and compatible derivatives. No per-Profile publication wrapper or repeated
 downstream policy declaration is required by this proposed design. A recognized
 domain Contract is resolved by typed identity/association, not merely because an
-arbitrary object has a proto slot. Ordinary Profile parents retain normal native
+arbitrary object has a proto slot. Ordinary Profile parents retain normal runtime
 inheritance; heterogeneous/ambiguous parents must retain all mandatory requirements
 or be refused. Raw Contract descriptor fields must never become instance fields.
 
 * What the maintained service Contracts provide
 
-These native defaults and constraints are internal contribution-library code.
+These runtime defaults and constraints are internal contribution-library code.
 Primitive StringContract, IntegerContract, no-obligations and closed-fields are
 the concrete definitions from module 05. The following is a distinct general
 service interface, not an unannounced weakening of that module's 80/443 Port type.
@@ -257,7 +257,7 @@ design diagnostics, not complete published evidence.
 
 The default App Scenario prototype should compute its selected graph/plan from
 its own services, namespace and connections lexical slots. These have the same
-native receiver rule as module 06's server, not cached parent values. Module 09
+runtime receiver rule as module 06's server, not cached parent values. Module 09
 now gives the concrete bounded configuration/edge admission functions; full
 resource generation and general graph policy remain pending. At graph
 admission, require exactly the connection roles demanded by each descriptor,
@@ -360,14 +360,14 @@ uniqueness and cycle checks. Parent caches are not current child evidence.
 
 Potential cache keys include effective occurrence identity, Profile/helper/Contract
 revision, dependent field/edge generations and admission scope. These are proposed
-requirements; native lazy slot caching does not implement an incremental graph
+requirements; runtime lazy slot caching does not implement an incremental graph
 engine or automatic cross-object dependency invalidation. Proof and workload
 qualification are still required, especially for multi-parent requirements,
 reference cycles and omitted evidence. No scale/performance results are claimed.
 
 * Status
 
-Existing: native object inheritance, defaults, receiver-aware lexical slots,
+Existing: runtime object inheritance, defaults, receiver-aware lexical slots,
 value-first =>, =>.+, bounded scopes, path-object refinements and public .admit.
 Proposed/unexecuted: all service-domain Contracts/defaults here, Contract-parent
 declaration resolution/association, role-aware selected graph admission, actual

@@ -7,7 +7,7 @@
 ;;; Invariant: generated code is ordinary role-backed POO object construction;
 ;;; public descriptor and registry APIs remain in their owner modules.
 
-(import (only-in :clan/poo/object object<-alist))
+(import (runtime: :clan/poo/object))
 
 (export poo-core-role-object)
 

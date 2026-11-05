@@ -6,7 +6,7 @@ namespace YuanxuProof.Ops.ProcessScript
 open LeanPoo.Functional
 
 /-! `ops/func.ss` pure command preparation/environment overlay and wait-status
-projection. A timeout string is the positive real's already validated native
+projection. A timeout string is the positive real's already validated runtime
 number->string observation; clocks, spawning and watchdog delivery are external. -/
 structure Script where
   command : List String
@@ -19,7 +19,7 @@ def prepareCommand (script : Script) (arguments : List String) : List String :=
   | none => argv
   | some seconds => ["timeout", "--verbose", "--signal=TERM", "--kill-after=5s", seconds ++ "s"] ++ argv
 
-/-- Native batch-mode argv projection; signal delivery remains external. -/
+/-- Runtime batch-mode argv projection; signal delivery remains external. -/
 theorem command_with_total_timeout (command arguments : List String) (seconds : String) :
     prepareCommand ⟨command, some seconds⟩ arguments =
       ["timeout", "--verbose", "--signal=TERM", "--kill-after=5s", seconds ++ "s"] ++
@@ -43,7 +43,7 @@ theorem environment_override (overrides inherited : Provider Unit String (fun _ 
     mergeEnvironment overrides inherited key = some (fun _ => value) :=
   Provider.compose_provided overrides inherited key _ provided
 
-/-! The progress fragment interprets the actual nested native Function boundary:
+/-! The progress fragment interprets the actual nested runtime Function boundary:
 a zero-argument factory returns a String callback whose result is Any. The two
 value constructors below suffice to distinguish a valid line from an invalid
 argument; this finite interpretation does not model spawning or Scheme effects. -/

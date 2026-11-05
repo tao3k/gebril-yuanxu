@@ -11,7 +11,7 @@
                (compiler-code-facts "yuanxu/t/qualification/mop-state/precompiled-stores"
                                     (datum "forbidden-bindings.ss")))
   (error "compiler closure changed before job completion"))
-;; These are the outputs of the immediately preceding native GSC job. The
+;; These are the outputs of the immediately preceding runtime GSC job. The
 ;; policy's dynamic LOAD is a compiler-owned resource edge, not a module edge.
 (def resources (map (lambda (name)
   (let (path (path-expand name root)) (cons path (file-digest path))))
@@ -22,5 +22,5 @@
     "lib/yuanxu/t/qualification/mop-state/source-loader~0.o1")))
 (call-with-output-file (list path: (path-expand "resource-inputs.ss" root) truncate: #t)
   (lambda (port) (write resources port)))
-(displayln "ARTIFACT-ISSUER: native import closure and compiler resource outputs bound")
+(displayln "ARTIFACT-ISSUER: runtime import closure and compiler resource outputs bound")
 (display "RESOURCE-ISSUANCE ") (write resources) (newline)

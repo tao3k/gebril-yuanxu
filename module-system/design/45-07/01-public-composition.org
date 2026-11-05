@@ -1,0 +1,154 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Public composition and lexical bindings
+#+language: en
+
+[[file:../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Approved public composition surface
+
+The canonical user surface is:
+
+#+begin_src scheme
+(use-composition my-system
+  (use-module wendao-episteme as episteme
+    (profiles research observability)
+    (profile production))
+  (compose
+    (profiles episteme research observability production)))
+#+end_src
+
+=use-composition= is the sole public macro head and names the final user
+composition.  /User Composition/ is the conceptual domain, not a second macro
+identifier.  =use-module MODULE as ALIAS= is the canonical module clause,
+=compose= is the composition declaration, and =profiles= is a hygienic syntax
+marker selecting the profile composition algebra.  No nested composition
+wrapper, =user-composition= compatibility alias, =initial= form, public =mix=
+tag, or explicit =base-profile= belongs to this surface.
+
+Every admitted operand is a hygienic identifier whose runtime value is a POO
+Profile object.  The parser does not accept an arbitrary Scheme expression as
+a direct =compose= operand.  A higher-order Mix may participate because it is
+profile-compatible, but it is first declared through =(profile MIX-NAME)=; its
+=identity=, =imports=, and =capabilities= slots remain internal POO slots and
+MUST NOT leak into ordinary author grammar.
+
+Imported profile cases are declared and selected through the canonical alias:
+
+#+begin_src scheme
+(use-module wendao-episteme as episteme
+  (profiles research observability))
+
+(compose
+  (profiles episteme research observability))
+#+end_src
+
+This does not call another composition operation.  The imported slots
+contribute their profile prototypes to the enclosing composition boundary, and
+the expander flattens those contributions with the remaining declared profiles
+into one ordered lineage.
+
+The public form requires at least one profile operand.  The internal law that
+a receiver with no refinements is observationally equivalent to the receiver
+does not justify a public empty composition or a visible base profile.
+
+** Gerbil expander responsibilities
+
+Gerbil metaprogramming is used as a staged compiler for the POO author surface,
+not merely as a hygienic textual rewrite:
+
+#+begin_export mermaid
+flowchart LR
+    A["Profile declaration"] --> B["Compile-time semantic projection"]
+    A --> C["Runtime POO prototype"]
+    B --> D["Lexical binding and case validation"]
+    D --> E["Flat ordered lineage plan"]
+    E --> F["One POO prototype composition"]
+    C --> F
+#+end_export
+
+- =defrules= handles direct constructor families and simple syntax-to-POO
+  lowering.
+- =defsyntax= with =syntax-case= performs shape validation, case selection,
+  source-aware errors, and alternate expansion paths.
+- =with-syntax= creates hygienic temporaries so each runtime operand is
+  evaluated at most once.
+- =begin-syntax= holds bounded, declaration-owned static facts.
+- =syntax-local-value= resolves profile and refinement declarations by lexical
+  binding rather than strings or a global symbol registry.
+- =for-syntax= makes phase dependencies explicit.
+- macro objects are reserved for declarations that genuinely require explicit
+  expander state.
+
+The compile-time projection owns syntax, lexical binding, static shape, source
+locations, and flat-lineage planning.  The runtime projection owns POO slots,
+prototype resolution, laziness, fixed points, and recoverable control.  Macro
+expansion MUST produce ordinary POO and functional code and MUST NOT
+execute the runtime model during expansion.
+
+* Use-composition result and binding contract
+
+The public contract requires =use-composition= to establish the named
+=clan/poo= prototype binding directly.  It does not bind a configuration AST,
+composition builder, realization handle, module-registry entry, or intermediate
+value that requires a later initialization step.
+
+The current implementation is still an expression macro and therefore forces
+authors to repeat the name as =(def my-system (use-composition my-system
+...))=.  That shape contradicts the direct-binding contract and is not accepted
+as the final public syntax.  The binding transition remains an explicit open
+implementation item below; no second =user-composition= wrapper may repair it.
+
+#+begin_src scheme
+(use-composition my-system
+  (use-module wendao-episteme as episteme
+    (profiles research)
+    (profile production))
+  (compose
+    (profiles episteme research production)))
+#+end_src
+
+#+begin_export mermaid
+flowchart LR
+    A["use-composition declaration"] -->|"intended: binds once"| B["Compile-time profile descriptor"]
+    X["current expression macro"] -.->|"counterexample: repeats binding name"| R["Redundant outer def"]
+    A --> C["Runtime clan/poo prototype binding"]
+    B --> D["Case validation and flat contribution plan"]
+    D --> C
+    C --> E["Normal Gerbil import and export"]
+    C --> F["POO extension and composition"]
+    C --> G["Lazy slot demand"]
+#+end_export
+
+** One name with two phase projections
+
+The declaration has a compile-time projection containing the profile role,
+case declarations, source locations, and flat-contribution plan, and a runtime
+projection containing the resulting =clan/poo= prototype.  Hygienic expansion
+keeps generated bindings private; the author manages only the declared name.
+
+The concrete Gerbil transformer technique remains subject to exact
+=symbol-located= evidence.  The public contract does not depend on a generated
+identifier or private expander representation.
+
+** Normal Gerbil module integration
+
+Downstream modules obtain the declared prototype through normal Gerbil lexical
+import and export.  They may read its POO slots, extend it through public
+=gerbil-poo= operations, use it as another profile-composition operand, place
+it in a higher-order Mix or Submodule, or demand a lazy slot.
+
+=user-composition= does not replace the Gerbil module system and does not
+introduce a package loader, registry, or initialization protocol.  There is no
+public:
+
+#+begin_src scheme
+(initial my-system)
+(realize-composition my-system)
+#+end_src
+
+The declaration establishes the prototype lineage.  Realization occurs through
+the =gerbil-poo= slot-demand lifecycle rather than a second authoring phase.
+

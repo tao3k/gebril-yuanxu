@@ -113,7 +113,7 @@ that all role files see the correct context without duplicate evaluation.
 | Contracts can check assembled objects | Provider unknowns cannot be validated as ordinary concrete values | Which checks are deferred, and who completes them? |
 | Uniform role directories help maintainers/Agents | Four files can burden tiny configuration contributions | Is this a published owner or just a value in an existing owner? |
 | Shared args eliminates manual imports/bridges | It can hide dependencies and increase forcing | Is the view bounded and explainable without scanning everything? |
-| Native caches reuse final projections | Captured parent contexts can return stale child plans | What observations and effective receiver identity qualify reuse? |
+| Runtime caches reuse final projections | Captured parent contexts can return stale child plans | What observations and effective receiver identity qualify reuse? |
 | Common Module mechanisms support many domains | A universal engine can become a lowest-common-denominator DSL | Which semantics remain with OpenTofu, Kubernetes or other adapters? |
 | One language for maintainers and Agents | Rich Scheme/POO may burden data-only operators | Can ordinary users configure and diagnose without knowing MOP or macros? |
 | Unified organization and adapter interface | Lock-in can move into our args/Scenario protocol | Can users export effective config, dependency graph and provider plan and leave? |
@@ -138,7 +138,7 @@ provider planning, reconciliation, authorization, secret tracking or source blam
 6. Specify effect, state, cancellation and readiness ownership before adding
    Services. Keep one-shot Ops separate from reconciliation or long-lived Services.
 7. Review with matched AWS/Guestbook cases and explicit failure examples. Only then
-   implement a bounded context slice and run native plus formal controls.
+   implement a bounded context slice and run runtime plus formal controls.
 
 Include a usability study/control rather than assuming general-purpose-language
 familiarity is universal: compare time to find a field, number of definitions

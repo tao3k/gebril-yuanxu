@@ -9,7 +9,7 @@
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :yuanxu/module-system/source/admission module-source-type)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules))
-(export write-file remove-tree with-publication-source domain-entry-count native-import-value exception-message PublicLibraryFixture core-source-root)
+(export write-file remove-tree with-publication-source domain-entry-count gerbil-import-value exception-message PublicLibraryFixture core-source-root)
 (def core-source-root (path-expand "../../.." (path-directory (this-source-file))))
 
 (def (write-file path text)
@@ -20,10 +20,10 @@
 
 (def publication-roles
   (.o
-    types: '((import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
+    types: '((import (only-in :clan/poo/mop Type.)
                      (only-in :clan/poo/object object?))
              (def FixtureContract
-               (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '())))
+               (.cc Type. identity: 'fixture .element?: object?))
              (export FixtureContract))
     objects: '((import (only-in :clan/poo/object .o))
                (def FixtureScope (.o retained: 'upstream))
@@ -42,7 +42,9 @@
      (lambda ()
        (write-file (path-expand "gerbil.pkg" root)
                    (string-append "(package: " (symbol->string package) ")"))
-       ;; The Fixture owns native source materialization and cleanup. Cases
+       (write-file (path-expand "init.ss" root)
+                   "(yuanxu! mode: explicit :custom (example))")
+       ;; The Fixture owns runtime source materialization and cleanup. Cases
        ;; refine role forms as ordinary POO values rather than escaped strings.
        (let (sources (.+ publication-roles roles))
          (for-each
@@ -66,8 +68,8 @@
     (length (filter (lambda (entry) (string-prefix? prefix (path-normalize (.get entry path))))
                     (.get graph entries)))))
 
-(def (native-import-value path name)
-  ;; Test-only native compiler/interpreter control, not a runtime Loader backend.
+(def (gerbil-import-value path name)
+  ;; Test-only runtime compiler/interpreter control, not a runtime Loader backend.
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax `(import ,path))
     (eval-syntax name)))

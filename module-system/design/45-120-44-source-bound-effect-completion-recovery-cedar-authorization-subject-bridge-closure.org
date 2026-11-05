@@ -355,14 +355,14 @@ structure.  The exact roundtrip validates that source root together with the
 typed Cedar proof-base; it does not invent a second declaration owner.
 
 The former external source-resolution gap is closed.  The actual bridge now
-shares RFC 45-120-43's native cached exporter and explicit Cedar typed
+shares RFC 45-120-43's runtime cached exporter and explicit Cedar typed
 proof-base boundary.  External owners without that boundary reject immediately
 with =external-proof-base-required=; they are never rebuilt by a slow AXLE
 merge fallback.
 
 #+begin_src text
 focused Lake lifecycle + subject bridge + exporter build: 2.45 seconds
-native cached exporter warm path: 3.80 seconds
+runtime cached exporter warm path: 3.80 seconds
 AXLE phase hard limit: 10 seconds
 #+end_src
 

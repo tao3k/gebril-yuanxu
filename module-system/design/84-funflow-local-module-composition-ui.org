@@ -109,7 +109,7 @@ belongs to this composition:
     :capabilities (runner cache artifact permissions proof-gate)))
 #+end_src
 
-The advanced POO-native level reuses an existing object directly:
+The advanced POO level reuses an existing object directly:
 
 #+begin_src scheme
 (def enterprise-ci
@@ -176,11 +176,11 @@ resolution correct while avoiding repeated =gxpkg= startup on the hot path.
 
 Gerbil AOT is a separate cold-start acceleration lane. Python exposes
 =precompile_load(...)= to compile the generated projection runner with Gerbil's
-native =gxc -exe -o= executable path. Ordinary =load(...)= will reuse an
+runtime =gxc -exe -o= executable path. Ordinary =load(...)= will reuse an
 existing fingerprint-matched AOT binary when present, but it does not compile
 one synchronously by default. This is deliberate: the executable compile is
 appropriate for CI, package installation, or an explicit warmup step, while a
-user's first request must not unexpectedly spend minutes in native compilation.
+user's first request must not unexpectedly spend minutes in runtime compilation.
 Callers that explicitly want compile-on-load may pass =compile_aot=True= or set
 =AGENTIC_AI_LAB_SCHEME_LOAD_AOT_COMPILE=1=.
 
@@ -273,7 +273,7 @@ consumer to install the Gerbil compiler. The stable boundary is:
 - Runtime loading must prefer a preprojected artifact before trying an AOT
   executable or a development Gerbil fallback.
 
-The artifact format stays Scheme-native. It is a Scheme datum, not JSON, with a
+The artifact format stays Scheme-runtime. It is a Scheme datum, not JSON, with a
 small manifest wrapper:
 
 #+begin_src scheme
@@ -350,7 +350,7 @@ of the Gerbil-enabled authoring/release lane.
 
 The intended deployment pattern is therefore: precompile during CI, install, or
 runtime warmup; publish the preprojected artifact for no-Gerbil consumers; use
-AOT binary reuse only as a native acceleration fallback; then let the
+AOT binary reuse only as a runtime acceleration fallback; then let the
 in-process cache own steady-state repeated calls.
 
 ** 10.06.84.50 Acceptance
@@ -371,4 +371,4 @@ The interface is acceptable when:
   requiring =gxi= or =gxc= on the runtime machine;
 - precompiled Gerbil AOT projection runners can be reused across Python
   processes without changing the public Scheme UI;
-- existing POO-native direct object reuse remains valid.
+- existing POO direct object reuse remains valid.

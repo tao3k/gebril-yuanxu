@@ -3,12 +3,11 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: native Module System types and authoring role contracts.
-(import (only-in :clan/poo/object .o .cc object?)
+;;; Boundary: runtime Module System types and authoring role contracts.
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop define-type Object Bool)
         (only-in :clan/poo/type Symbol List)
         (only-in :clan/poo/object-contract ObjectContract.)
-        (only-in :clan/poo/object-contract-validation validation-fields)
         (only-in :clan/poo/validation-rebinding rebind-validation)
         (only-in :yuanxu/object-family/read-projection owned-read-derived!)
         (only-in :yuanxu/object-types/contracts
@@ -30,7 +29,7 @@
    'semantic-object candidate (object? candidate)
    (if (object? candidate) '() '(expected-poo-object)) context))
 
-;;; Boundary: executor strategy is any native POO value. Concrete method
+;;; Boundary: executor strategy is any POO value. Concrete method
 ;;; bundles still specialize its prototype identity through CLOS.
 (define-type (SemanticObject @ YuanxuContract.)
   identity: 'semantic-object
@@ -43,20 +42,21 @@
 ;; The public library creates and supplies this exact fresh checked receiver.
 ;; Only add lifetime enrollment; its validators, result identity, normalization,
 ;; shape checks and final obligations remain the original public protocol.
-(def (prepare-role-validation fields)
-  (let (checks
+(def (prepare-role-validation validation-fields)
+  (lambda (candidate)
+    (let (checks
         (map (lambda (entry)
                (cons (car entry)
                  (lambda (original checked)
                    (owned-read-derived! checked)
                    ((cdr entry) original checked))))
-             (validation-fields fields)))
-    (lambda (candidate) (rebind-validation candidate checks))))
-(define-type (ModuleSourceRoleValueContract @ ObjectContract. prepared-responsibilities)
+             (validation-fields candidate)))
+      (rebind-validation candidate checks))))
+(define-type (ModuleSourceRoleValueContract @ ObjectContract. .validation-fields)
   identity: 'module-source-role-value
   extra-fields: 'delegate
   constraints: (list Object)
-  prepared-validation: (prepare-role-validation prepared-responsibilities)
+  prepared-validation: (prepare-role-validation .validation-fields)
   responsibilities:
   (.o identity: Symbol
       recommended-forms: RoleSymbols
@@ -94,7 +94,7 @@
       config: ModuleSourceRoleContract
       interface: ModuleSourceRoleContract))
 
-;;; Invariant: a semantic module is admitted only through every native
+;;; Invariant: a semantic module is admitted only through every runtime
 ;;; responsibility, including its role-indexed authoring Profile.
 (define-type (SemanticModuleContract @ YuanxuObjectContract.)
   identity: 'semantic-module

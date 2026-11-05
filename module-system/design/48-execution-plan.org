@@ -8,13 +8,13 @@ This is the executable advancement plan for =agentic-ai-lab=. It starts from the
 The plan is operational rather than aspirational. Each package has a purpose, ownership boundary, deliverables, validation surface, and exit criteria. We use it to decide what to start next, what must remain stable, and when a slice is complete enough to move forward.
 
 ** 10.06.48.10 Operating Principles
-1. Public authoring stays POO-native. Users and agents write =.def=, POO objects, prototype extension, slot operators, and functional constructors. Internal macros may generate code, but they must not become a second user language.
+1. Public authoring stays POO. Users and agents write =.def=, POO objects, prototype extension, slot operators, and functional constructors. Internal macros may generate code, but they must not become a second user language.
 2. Functional composition is the control-plane default. Flow, loop intent enrichment, sandbox agreement, policy selection, and receipt assembly should be value-in/value-out until an explicit runtime or Marlin handoff boundary.
-3. Alists are boundary payloads only. Runtime manifests, ABI receipts, snapshots, and report-only handoff payloads may be alists. User configuration and internal extension surfaces should remain POO-native or functional.
-4. Gerbil macros are an internal compiler for repeated POO-native and functional structures. Use declarative macros for fixed families, procedural macros for checked syntax families, and compile-time helpers only when they produce ordinary Scheme functions and POO objects.
-5. Testing follows the current testing framework. Focused single-file selection is handled by native =gxtest=. This plan names test files and scenario gates rather than prescribing obsolete wrapper commands.
+3. Alists are boundary payloads only. Runtime manifests, ABI receipts, snapshots, and report-only handoff payloads may be alists. User configuration and internal extension surfaces should remain POO or functional.
+4. Gerbil macros are an internal compiler for repeated POO and functional structures. Use declarative macros for fixed families, procedural macros for checked syntax families, and compile-time helpers only when they produce ordinary Scheme functions and POO objects.
+5. Testing follows the current testing framework. Focused single-file selection is handled by runtime =gxtest=. This plan names test files and scenario gates rather than prescribing obsolete wrapper commands.
 6. Scenarios are acceptance gates. Every structural refactor must be tied to at least one real =user-interface/*= scenario and one focused test file. User-facing scenarios must demonstrate actual sandbox, loop, funflow, session, or Marlin use cases.
-7. Scheme remains the strategy/control plane. This repository owns POO-native configuration, functional composition, validation, presentation, manifest/receipt projection, and report-only handoff. Heavy execution and scheduling belong in =marlin-agent-core= or another runtime owner.
+7. Scheme remains the strategy/control plane. This repository owns POO configuration, functional composition, validation, presentation, manifest/receipt projection, and report-only handoff. Heavy execution and scheduling belong in =marlin-agent-core= or another runtime owner.
 8. Marlin integration is consumer-owned. The Gerbil package under =marlin-agent-core/crates= should depend on =agentic-ai-lab= through =gerbil.pkg= and adapt the ABI there. =agentic-ai-lab= provides Scheme-side contracts, runtime manifest discovery, and receipt/request shapes; it does not become the direct Rust ABI implementation owner.
 
 ** 10.06.48.20 Start Conditions
@@ -40,22 +40,22 @@ Before starting a package:
 
 ** 10.06.48.40 Current Baseline
 - P0 exists as =10.06.49 Scenario Test Owner Matrix= and should be maintained as the acceptance spine.
-- P1 has an implementation slice: sandbox backend object-family coverage and shared POO-native resource fragments are the reference generated-family pattern.
+- P1 has an implementation slice: sandbox backend object-family coverage and shared POO resource fragments are the reference generated-family pattern.
 - P2 has an implementation slice: =modules/session/policy-syntax.ss= owns an internal policy-family macro, and current session policy constructors use it for foundational, model, prompt, tool-permission, hook-tool-permission, resource-sharing, and agent-execution policy families.
 - P3 has an expanded implementation slice: =src/utilities/runtime-receipt-syntax.ss= owns generated receipt projection for lineage, selector, resource-dispatch, memory, compression, capability =->alist=, and runtime handoff facts. Capability receipt construction remains an explicit hot path. Sandbox handoff agreement remains explicit validation logic for the P7 boundary.
 - P4 has a second user-facing slice: =user-interface/custom/my-module/cases/loop-engine.ss= now wires session selector and materialization receipts through the POO profile, loop intent, runtime manifest request, handoff facts, and presentation surface. Selector receipts remain report-only: =fallback-ref= can name the intended fallback, but =selected-candidate-ref= stays =#f= while =selection-state= is =pending=.
 - P4 validation evidence for this slice: =gxpkg clean=, =gxpkg build -R -O=, =gxtest t/user-interface-custom-loop-engine-test.ss=, =gxtest t/user-interface-custom-loop-engine-runtime-manifest-test.ss=, =gxtest t/session-selector-receipt-test.ss=, and =gxtest t/session-materialization-receipt-test.ss=.
-- P5 now has a user-facing presentation slice: Funflow CI/CD scenarios project POO-native pipeline objects into Funflow-owned functional DAG POO objects, and config/profile presentation surfaces expose =workflow-cicd-functional-dags= without runtime execution.
+- P5 now has a user-facing presentation slice: Funflow CI/CD scenarios project POO pipeline objects into Funflow-owned functional DAG POO objects, and config/profile presentation surfaces expose =workflow-cicd-functional-dags= without runtime execution.
 - P5 validation evidence for this slice: =gxpkg build -R -O=, =gxtest t/funflow-functional-dag-test.ss=, =gxtest t/user-interface-cicd-test.ss=, =gxtest t/user-interface-presentation-test.ss=, and =gxtest t/user-interface-config-presentation-test.ss=.
 - P5 loop consumption slice is landed: Funflow workflow agreement rows now carry functional DAG rows, loop-engine intent exposes them as report-only =workflow-functional-dags=, and presentation exposes =loop-engine-workflow-functional-dags= for downstream discovery.
 - P5 loop consumption validation evidence for this slice: =gxpkg build -R -O=, =gxtest t/user-interface-custom-loop-workflow-agreement-test.ss=, =gxtest t/user-interface-custom-loop-engine-test.ss=, =gxtest t/user-interface-custom-loop-engine-runtime-manifest-test.ss=, and =gxtest t/user-interface-presentation-test.ss=.
-- P5 arrow/Kleisli report slice is landed: Funflow DAG objects now expose POO-native =composition-steps= that separate =arrow-node= check steps from =kleisli-bind= dependency steps, and boundary projections carry =composition-step-count= without scheduling.
+- P5 arrow/Kleisli report slice is landed: Funflow DAG objects now expose POO =composition-steps= that separate =arrow-node= check steps from =kleisli-bind= dependency steps, and boundary projections carry =composition-step-count= without scheduling.
 - P5 arrow/Kleisli validation evidence for this slice: =gxtest t/funflow-functional-dag-test.ss=, =gxtest t/user-interface-cicd-test.ss=, and =gxtest t/user-interface-custom-loop-workflow-agreement-test.ss=.
 - Gate 2 has a first loop-profile memory selection slice: memory receipts now expose =policy-count=, =available-use-cases=, and =selected-policy-found?= so users and Marlin can inspect the selected report-only memory policy path without executing recall, commit, ranking, retention, or store mutation.
 - Gate 2 validation evidence for this slice: =gxtest t/user-interface-custom-loop-engine-test.ss=, =gxtest t/user-interface-custom-loop-engine-runtime-manifest-test.ss=, and =gxtest t/user-interface-custom-loop-engine-profile-test.ss=.
 - Gate 3 has a session policy macro migration slice: =agentic-ai-lab-session-policy-object= now materializes generated policy slots as normal POO slots, and =defpoo-session-policy-family= generates foundational, model, prompt, tool-permission, hook-tool-permission, resource-sharing, and agent-execution policy constructors. =agent-execution= uses the explicit =(scope-ref <expr>)= macro clause because its public constructor scope is =session-ref= rather than the second positional argument.
 - Gate 3 validation evidence for this slice: =GERBIL_BUILD_CORES=1 gxpkg env gxi build.ss compile --optimized --release=, =gxpkg build -R -O=, =gxtest t/session-policy-contract-test.ss=, =gxtest t/session-policy-validation-test.ss=, =gxtest t/session-agent-param-contract-test.ss=, =gxtest t/session-agent-tool-policy-test.ss=, =gxtest t/session-hook-tool-policy-test.ss=, =gxtest t/user-interface-config-presentation-test.ss=, and =gxtest t/user-interface-presentation-test.ss=.
-- Gate 4 has a first implementation slice: =src/loops/spec-evolution.ss= owns POO-native =external-feedback-receipt=, =spec-change-proposal=, and =spec-evolution-review-item= values, projects them into Human Audit review rows, and emits report-only runtime manifest rows for checked mutation eligibility. =user-interface/custom/my-module/cases/loop-engine.ss= now carries one profile-change Human Audit example as a report-only loop-engine profile slot. The Marlin ABI consumer remains owned by =marlin-agent-core= after it depends on =agentic-ai-lab= through =gerbil.pkg=.
+- Gate 4 has a first implementation slice: =src/loops/spec-evolution.ss= owns POO =external-feedback-receipt=, =spec-change-proposal=, and =spec-evolution-review-item= values, projects them into Human Audit review rows, and emits report-only runtime manifest rows for checked mutation eligibility. =user-interface/custom/my-module/cases/loop-engine.ss= now carries one profile-change Human Audit example as a report-only loop-engine profile slot. The Marlin ABI consumer remains owned by =marlin-agent-core= after it depends on =agentic-ai-lab= through =gerbil.pkg=.
 - Gate 4 validation evidence for this slice: =gxpkg build=, =gxpkg env gxi -e '(import :agentic-ai-lab/t/loop-spec-evolution-test)'=, =gxpkg env gxi -e '(import :agentic-ai-lab/t/user-interface-custom-loop-engine-test)'=, =gxpkg env gxi -e '(import :agentic-ai-lab/t/user-interface-custom-loop-engine-runtime-manifest-test)'=, and =gxpkg env gxi -e '(import :agentic-ai-lab/t/user-interface-custom-loop-engine-profile-test)'=.
 - Gate 4 downstream ABI consumer evidence: =marlin-agent-core/crates/marlin-gerbil-scheme/gerbil/gerbil.pkg= now pins =github.com/tao3k/agentic-ai-lab@1367aff9865bcabc6cddf04cd41e157b25c7979a=, Marlin's loop-engine policy contract map includes session-agent-graph and spec-evolution receipt families, =cargo test -p marlin-gerbil-scheme loop_governor_bridge= passes, and =gxpkg env gxi build.ss test t/marlin-user-interface-prefab-test.ss= passes.
 - P6 must wait. Public =use-module= syntax has the largest blast radius, so it should only be generated after the lower-level policy, receipt, loop, and funflow surfaces prove the pattern.
@@ -87,7 +87,7 @@ Tasks:
 - Audit =defpoo-sandbox-backend-object-family= expansion shape.
 - Add focused checks for generated module object identity, metadata, field contracts, inheritance, backend capability registry, and profile object fields.
 - Confirm =nono-sandbox=, =cubeSandbox=, and =docker-sandbox= use the same family shape.
-- Maintain POO-native shared resource fragments for filesystem, ports, CPU, memory, volume, snapshot, and runtime materialization.
+- Maintain POO shared resource fragments for filesystem, ports, CPU, memory, volume, snapshot, and runtime materialization.
 
 Deliverables:
 - Tests around backend object family generation.
@@ -107,7 +107,7 @@ gxtest t/nono-sandbox-c-binding-test.ss
 Exit criteria:
 - Backend object families are generated consistently.
 - No public macro language is introduced.
-- Existing sandbox user scenarios remain POO-native.
+- Existing sandbox user scenarios remain POO.
 
 ** 10.06.48.70 P2 Session Policy Family Generation
 Purpose: remove repeated constructor/accessor/projection structure from session policy code while preserving public function names and user scenarios.
@@ -136,7 +136,7 @@ Exit criteria:
 - Public policy constructors keep their names.
 - User-interface session policy scenario still reads as normal Scheme/POO code.
 - Projection payloads match the previous contract shape.
-- The macro expansion is ordinary POO-native or functional code, not a new public language.
+- The macro expansion is ordinary POO or functional code, not a new public language.
 
 ** 10.06.48.80 P3 Runtime Receipt Projection Generation
 Purpose: prevent receipt and manifest shape drift by generating projection families from named declarations.
@@ -168,7 +168,7 @@ Exit criteria:
 - Runtime handoff facts are generated as pure projection, while sandbox agreement logic is explicitly deferred to P7.
 
 ** 10.06.48.90 P4 Loop Intent Functional Pipeline
-Purpose: make =loops.ss= a functional, POO-native governance pipeline rather than a bag of projection helpers.
+Purpose: make =loops.ss= a functional, POO governance pipeline rather than a bag of projection helpers.
 
 Tasks:
 - Model loop intent enrichment as pure transformations: profile selection, policy attachment, memory strategy selection, sandbox agreement, and handoff request preparation.
@@ -192,7 +192,7 @@ gxtest t/session-multi-agent-graph-test.ss
 #+end_src
 
 Exit criteria:
-- A loop scenario can be read as normal POO-native Scheme configuration.
+- A loop scenario can be read as normal POO Scheme configuration.
 - Intent pipeline functions can be tested without scheduling or executing external tools.
 - Memory profile variants are visible in scenario output and receipt projection.
 
@@ -206,7 +206,7 @@ Tasks:
 - Connect Funflow CI/CD cases to sandbox and loop profiles without introducing raw alist authoring.
 - Keep runtime execution in this repo minimal and test-oriented: enough to validate lowering, dependency projection, and report-only receipts.
 Current implementation slice:
-- =modules/funflow/config.ss= now exposes Funflow functional DAG POO objects and edge POO objects. Users still author =funflow-check= and =funflow-pipeline= values; =yuanxu-funflow-check-map->functional-dag= and =yuanxu-funflow-poo-pipeline->functional-dag= return POO-native DAG values.
+- =modules/funflow/config.ss= now exposes Funflow functional DAG POO objects and edge POO objects. Users still author =funflow-check= and =funflow-pipeline= values; =yuanxu-funflow-check-map->functional-dag= and =yuanxu-funflow-poo-pipeline->functional-dag= return POO DAG values.
 - Boundary alists remain explicit projections through =yuanxu-funflow-functional-dag->alist= and =yuanxu-funflow-dag-edge->alist=.
 - The current DAG object records =composition-style: arrow-kleisli=, POO =composition-steps=, =composition-step-count=, node order, POO edge objects, entry nodes, terminal nodes, ready order, diagnostics, runtime owner, and =runtime-executed: #f=.
 
@@ -247,7 +247,7 @@ Tasks:
 - Generate repeated module-specific parse/build/contract branches from private declarations.
 - Preserve module-specific config functions as the runtime contract boundary.
 - Remove stale compatibility clauses for old raw DSL forms.
-- Do not hide advanced POO-native scenarios. If a profile extends another profile, show the POO relationship clearly rather than only offering a shorthand.
+- Do not hide advanced POO scenarios. If a profile extends another profile, show the POO relationship clearly rather than only offering a shorthand.
 
 Deliverables:
 - Internal branch generation helper in =init-syntax.ss= or a closely scoped syntax owner.
@@ -264,7 +264,7 @@ gxtest t/user-interface-cicd-test.ss
 #+end_src
 
 Exit criteria:
-- Public syntax remains stable and POO-native.
+- Public syntax remains stable and POO.
 - Removed legacy forms do not remain in docs, tests, or scenarios.
 - Generated syntax branches have focused tests and do not obscure module-specific contracts.
 
@@ -276,7 +276,7 @@ Tasks:
 - Confirm that the downstream Gerbil package depends on =agentic-ai-lab= through =gerbil.pkg= and owns ABI adaptation.
 - Put loop governor request discovery into runtime manifest/bridge output so Marlin does not guess entry points.
 - Keep =agentic-ai-lab= handoff receipt report-only: no scheduling, no persistent runtime state, no direct Rust ABI implementation.
-- Document the downstream package user path: =gerbil.pkg= dependency, =GERBIL_LOADPATH=, native =gxtest=, policy harness, and root =user-interface/*= conventions.
+- Document the downstream package user path: =gerbil.pkg= dependency, =GERBIL_LOADPATH=, runtime =gxtest=, policy harness, and root =user-interface/*= conventions.
 
 Deliverables:
 - Marlin boundary audit note or update to =11-marlin-runtime-handoff.org=.
@@ -305,7 +305,7 @@ Tasks:
 - Run focused =gxtest= owner gates before broad package build.
 - Run =gxpkg build -R -O= after code-bearing packages land.
 - Inspect test output text for failed checks, not only exit status.
-- Remove stale public routes once canonical POO-native forms are accepted.
+- Remove stale public routes once canonical POO forms are accepted.
 
 Deliverables:
 - Updated docs and user-interface scenarios.
@@ -334,7 +334,7 @@ Start with the smallest slices that preserve the current boundary:
 - P1 sandbox macro hardening can run in parallel with scenario documentation.
 - P2 session policy generation and P3 runtime projection generation should use the same generated-family testing discipline.
 - P4 loop intent pipeline should wait for receipt compatibility where it consumes P3 outputs.
-- P5 funflow kernel has started with a POO-native functional DAG object. The CI/CD presentation slice proves the DAG value can be discovered without hidden runtime state, the loop-engine agreement slice now consumes that DAG as report-only intent, and the arrow/Kleisli report slice exposes explicit composition steps. The next P5/P4 slice should use those steps for loop profile variants, not scheduling.
+- P5 funflow kernel has started with a POO functional DAG object. The CI/CD presentation slice proves the DAG value can be discovered without hidden runtime state, the loop-engine agreement slice now consumes that DAG as report-only intent, and the arrow/Kleisli report slice exposes explicit composition steps. The next P5/P4 slice should use those steps for loop profile variants, not scheduling.
 - P6 =use-module= should wait for P1-P5 because it touches public syntax.
 - P7 Marlin boundary can begin as an audit while P3-P5 implementation is active, but contract changes must wait for receipt and intent surfaces.
 ** 10.06.48.160 Current Start Plan
@@ -345,12 +345,12 @@ Purpose: make sure every later slice uses the current testing architecture.
 
 Actions:
 1. Remove or quarantine old public documentation that presents =agentic-ai-lab test <file>= or =gxpkg env agentic-ai-lab test <file>= as the focused single-file path.
-2. Keep native =gxtest <file>= as the focused owner-boundary gate.
+2. Keep runtime =gxtest <file>= as the focused owner-boundary gate.
 3. Keep =gxpkg clean= and =gxpkg build -R -O= as package-manager lifecycle gates.
 4. Treat performance tests as separate gates from focused functional tests, so compile-time or benchmark failures do not obscure the owner-boundary result.
 
 Exit criteria:
-- Current style docs, execution plan, and AGENTS agree that focused tests use native =gxtest=.
+- Current style docs, execution plan, and AGENTS agree that focused tests use runtime =gxtest=.
 - Any remaining historical mentions of old commands are clearly historical evidence, not current instructions.
 
 *** 10.06.48.160.20 Gate 1: Funflow Functional Kernel Completion
@@ -358,7 +358,7 @@ Purpose: make Funflow a real functional programming route in Scheme POO, not jus
 
 Actions:
 1. Add arrow/Kleisli combinators only where they make real flow composition clearer: context threading, error/result propagation, and dependency-aware CI/CD checks.
-2. Keep user authoring POO-native and functional: users write objects, prototypes, ordinary Scheme functions, and named combinators.
+2. Keep user authoring POO and functional: users write objects, prototypes, ordinary Scheme functions, and named combinators.
 3. Extend =user-interface/custom/my-module/cases/funflow-cicd.ss= with a real scenario that shows how to define a functional DAG flow and inspect the POO DAG object.
 4. Keep runtime execution report-only in this repo: produce DAG/run receipts and handoff-ready values, but do not schedule external work.
 
@@ -433,7 +433,7 @@ gxtest t/user-interface-presentation-test.ss
 
 Exit criteria:
 - Repeated constructors, projections, validators, or branch shapes are declared once.
-- Generated code expands to ordinary POO-native or functional Scheme.
+- Generated code expands to ordinary POO or functional Scheme.
 - User-facing files still show real scenarios rather than macro demos.
 
 *** 10.06.48.160.50 Gate 4: Marlin Consumer Boundary Audit
@@ -443,7 +443,7 @@ Actions:
 1. Audit =marlin-agent-core/crates= Gerbil consumers for =poo.loop-governor.marlin-abi.v1=, =poo.loop-governor.marlin-request.v1=, and =govern-loop=.
 2. Confirm the downstream Gerbil package depends on =agentic-ai-lab= through =gerbil.pkg= and owns ABI adaptation.
 3. Put loop governor request discovery into the runtime manifest/bridge surface.
-4. Document the downstream user path for =gerbil.pkg= dependency, =GERBIL_LOADPATH=, native =gxtest=, policy harness, and root =user-interface/*= conventions.
+4. Document the downstream user path for =gerbil.pkg= dependency, =GERBIL_LOADPATH=, runtime =gxtest=, policy harness, and root =user-interface/*= conventions.
 
 Exit criteria:
 - =agentic-ai-lab= owns Scheme-side contracts, validated request/receipt shapes, and report-only manifests.

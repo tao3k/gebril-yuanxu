@@ -18,12 +18,12 @@ is Contracts plus configuration data -> object definitions -> Scenario compositi
 | scenarios/profiles/network.ss | Network configuration data fragment |
 | scenarios/profiles/machines.ss | Images and machine configuration data fragment |
 | scenarios/profiles/access.ss | Access/state configuration data fragment |
-| objects.ss | Native object definitions that apply configured values to Contract prototypes |
+| objects.ss | Runtime object definitions that apply configured values to Contract prototypes |
 | scenarios/development.ss, build-host.ss | Scenario object definitions, organized as object-role fragments |
 | func.ss | Pure admission algorithms and resource projection; no configuration defaults |
 | interface.ss | One publication of the actual types/config/profiles/scenarios/operations |
 
-.o can construct a plain native data object in config.ss; it is not inherently an
+.o can construct a plain runtime data object in config.ss; it is not inherently an
 extension operation. .def in objects.ss owns a named extensible domain object.
 The classification follows responsibility, not a ban on every object literal in
 configuration. Grouped config fragments use def-bound ordinary values; they no
@@ -35,7 +35,7 @@ The desired declaration (.def (VPCProfile @ NetworkContract) ...) must mean
 creating a domain object from that Contract's proto and retaining its requirement.
 Current core/types.ss explicitly separates Contract descriptors from domain values;
 raw .def does not identify a Contract and silently substitute proto. Until shared
-parent resolution/association exists, native design code uses explicit proto:
+parent resolution/association exists, runtime design code uses explicit proto:
 
 #+begin_src scheme
 (def Network. (.get NetworkContract proto))
@@ -57,13 +57,13 @@ The data portion is independently readable:
       projection: (.o output-format: 'terraform-json)))
 #+end_src
 
-These explicit proto/.+ expressions are maintained internal native expansions,
+These explicit proto/.+ expressions are maintained internal runtime expansions,
 not additional syntax the consumer must write. Neither construction nor .+ alone
 proves automatic Contract provenance. The selected final Scenario is explicitly
 admitted below. Complete inherited policy/source preservation remains shared Core
 work, including .+ right-hand-side requirements.
 
-* Explicit native Contract definitions
+* Explicit Contract definitions
 
 The following are copied from the reviewable types.ss design source. AWSString,
 AWSName, AWSCidrBlock, AWSCidrs, AWSBoolean and AWSNamedMap are predicate Contracts
@@ -109,7 +109,7 @@ installed here. The implemented AWS source and vocabulary are documented in
 * Concrete admission algorithms, maintained inside the module
 
 Public .admit is the receipt-producing entry already present in core/types.ss.
-Its native responsibility admission checks required fields first; obligations run
+Its runtime responsibility admission checks required fields first; obligations run
 only after those field receipts accept. Closed fields are derived from the SAME
 responsibilities rather than a second vocabulary table. Selected map entries are
 then admitted against NetworkContract, InstanceContract and access Contracts.
@@ -117,7 +117,7 @@ Only after child fields accept are their network/key/output links dereferenced.
 
 #+begin_src scheme
 (def (aws-closed-fields descriptor candidate context)
-  ;; One authoritative input vocabulary: native responsibilities.
+  ;; One authoritative input vocabulary: runtime responsibilities.
   (let (allowed (.all-slots (.get descriptor responsibilities)))
     (map (lambda (name) (.o kind: 'unknown-field path: (list name)))
          (filter (lambda (name) (not (memq name allowed)))
@@ -179,7 +179,7 @@ retains the named occurrence; common diagnostics must combine that prefix with
 responsibility/leaf paths without losing the original receipt or source identity.
 Flattened source-aware user messages remain an adapter requirement, not verified
 output of the present source. Missing required field diagnostics already originate
-from the native responsibility mechanism. Unknown fields are this module's closed-
+from the runtime responsibility mechanism. Unknown fields are this module's closed-
 field obligation, not a built-in universal ban on open extension.
 
 * One user edit; final-value checks before resource projection
@@ -189,8 +189,8 @@ field obligation, not a built-in universal ban on open extension.
 (.def (Production @ (.get AWS scenarios build))
   instances.build.type: "t3.medium")
 
-;; Existing native expansion of the target path assignment
-(.def (NativeProduction @ (.get AWS scenarios build))
+;; Existing runtime expansion of the target path assignment
+(.def (RuntimeProduction @ (.get AWS scenarios build))
   instances: =>.+ (.o build: =>.+ (.o type: "t3.medium")))
 
 ;; Inside the maintained aws-project function, before generating resources:
@@ -241,7 +241,7 @@ Schema validation, provider execution or live AWS evidence. No AWS control ran.
 Scenario source files are object-role fragments; Profile data fragments are config
 role fragments. The pending source preparation must distinguish them without
 filesystem execution, circular types/objects imports or duplicated declarations.
-Native .def/.+/.admit foundations exist. Contract-directed parent resolution,
+Runtime .def/.+/.admit foundations exist. Contract-directed parent resolution,
 automatic policy/source association, target Core naming, direct path assignment,
 role-fragment linkage and flattened source diagnostics still need adaptation.
 No Loader implementation or runtime modification is included.
@@ -256,7 +256,7 @@ is private-key-path; executable selection belongs to the capability.
 * Shared and private value-type refinement
 
 [[file:11.38-shared-value-types-and-private-domain-contracts.org][The value-type library design]] records why current AWSString/map predicates are
-insufficient, which native Gerbil address structures/parsers can be reused, and
+insufficient, which Gerbil address structures/parsers can be reused, and
 which field/type/Contract refinements remain unimplemented.
 
 * Current design correction

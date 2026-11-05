@@ -13,8 +13,8 @@ The repeated read-file/compile/contract sequence in module 28 is owner code, not
 a user recipe. The public operation should be one ordinary function, from-file,
 published by the JsonSchema scope. This is no new macro/DSL or alternate schema
 engine. Its contract is: load an admitted resolved JSON file, construct a candidate
-native Contract using the existing bridge, refuse generation diagnostics under
-this strict policy, and retain full-root validation in native .admit.
+Contract using the existing bridge, refuse generation diagnostics under
+this strict policy, and retain full-root validation in runtime .admit.
 
 All new yuanxu- names and scope publications below are target APIs. Existing
 read/compile/validate implementations have legacy names in
@@ -46,7 +46,7 @@ expansion. No public user is asked to pass generation/evidence records.
 #+end_src
 
 compile-schema is the named implementation in [[file:11.21-jsonschema-guestbook-role-examples.org][module 20]]. It admits the passed
-config against its passed native Contract and checks generation validity/policy.
+config against its passed Contract and checks generation validity/policy.
 The interface binds those first two arguments from effective lexical types/config
 slots, leaving the public from-file signature as one resolved-file argument.
 There is no JsonSchemaFileScope. forwarding prototype. JsonSchemaScope. owns
@@ -69,7 +69,7 @@ reusable behavior; interface.ss declares module-specific public bindings once:
 
 This is one interface shown for comparison with module 20, not a second declaration
 to install. The scope Contract must cover config/types and the from-file callable.
-Consumer code can read the ordinary config/types slots through the same native
+Consumer code can read the ordinary config/types slots through the same runtime
 Module object. The default is defined once in configs.ss, and the Config Contract
 once in types.ss. config.ss is an existing role spelling in some owners; no source
 file rename is performed by these target examples.
@@ -138,14 +138,14 @@ runtime execution. A lighter scope-presence Contract would postpone conversion
 and require the first admission/help request to qualify it; that is a separate
 reviewed demand policy, not an accidental change hidden in this predicate.
 Shape acceptance is not proof of conversion correctness. The JsonSchema provider's
-qualified implementation/coverage and native candidate admission remain required.
+qualified implementation/coverage and runtime candidate admission remain required.
 config is an incomplete workflow template; it needs concrete jobs before admission.
 
-* Downstream: native values only
+* Downstream: runtime values only
 
 The product facade returns the admitted scope through the previously designed
 Modules namespace; the Loader connection itself remains excluded. A user can bind
-one Module and construct a native workflow object from its maintained prototype:
+one Module and construct a runtime workflow object from its maintained prototype:
 
 #+begin_src scheme
 (def ProjectCI
@@ -167,7 +167,7 @@ entry checks ProjectCI against its published types.Config at the configured
 preview/export boundary; that automatic boundary remains pending. It does not run
 the workflow or replace GitHub's own validation/runner behavior.
 
-For an existing workflow, plain native inheritance remains available:
+For an existing workflow, plain runtime inheritance remains available:
 
 #+begin_src scheme
 (.def (ReleaseCI @ ProjectCI)
@@ -175,7 +175,7 @@ For an existing workflow, plain native inheritance remains available:
 #+end_src
 
 No artificial POO refinement is required for a replacement name value. A true
-original-value transformation uses a named Scheme function/native => operation.
+original-value transformation uses a named Scheme function/runtime => operation.
 
 * Actual source rows: one maintained reader and comparator
 
@@ -185,12 +185,12 @@ maintainer inspection functions over actual core-expand1 output, not public user
 configuration. They fail if the real macro emits no sidecar. Do not add a fake
 sidecar around current output merely to satisfy the test reader.
 
-The sidecar is a private native object referencing the declared value binding and
+The sidecar is a private runtime object referencing the declared value binding and
 an inert quoted source payload. The reader checks the original declaration binding,
 the associated value binding, fresh private binding separation and payload shape,
-then converts those emitted rows into native views. The comparator checks each
+then converts those emitted rows into runtime views. The comparator checks each
 expected path has exactly one observed row with the original source spans.
-Prefix/native-value correctness and once-only demand are independent tests.
+Prefix/runtime-value correctness and once-only demand are independent tests.
 Parent-derived origin selection still requires the pending publication/MOP link;
 this source observation alone is not end-to-end provenance or authenticated evidence.
 
@@ -215,7 +215,7 @@ from-file scope publication, namespace migration, qualified raw-file coverage,
 automatic module/Contract association and real source-sidecar emission/publication.
 No implementation, tests, Loader integration, Schema fetch or workflow execution
 was performed. The desired UX improvement is fewer repeated owner steps and a
-small native user object; it is not a completed runtime result.
+small runtime user object; it is not a completed runtime result.
 
 The [[file:11.31-module-config-types-and-function-slots.org][config/types/function-slot convergence]] owns the shared access model and the Nix
 comparison. Functions implement behavior; interface.ss declares config/types and

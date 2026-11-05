@@ -277,7 +277,7 @@ provide explanation and replay evidence.
 
 ** Four-layer recovery authorization object boundary
 
-Recovery authorization is represented by four distinct POO-native objects.
+Recovery authorization is represented by four distinct POO objects.
 They MUST NOT be collapsed into a scalar evidence field, an alist protocol, or
 one object that combines observation with execution authority.
 
@@ -357,7 +357,7 @@ the first two views, while =retryAuthorityRequiresCapability= proves that every
 authorized view contains a =RetryCapability=. AXLE acceptance and
 Scheme/runtime correspondence remain independent gates.
 
-The ordinary Scheme implementation route is POO-native:
+The ordinary Scheme implementation route is POO:
 
 - hygienic =.def= or =.o= declarations for the internal object families;
 - =.mix= or =.extend= for policy/capability refinement;
@@ -674,7 +674,7 @@ flowchart TD
 
 Disposition is internal evidence, not a declared slot type, Profile case,
 configuration field, or user-authored portability tag.  The provider
-capability that produces it participates through the POO-native capability
+capability that produces it participates through the POO capability
 surface; it MUST NOT introduce a parallel record or alist DSL.
 
 =gerbil-poo= continues to own generic demand completion, suspension, lineage,
@@ -725,7 +725,7 @@ specified by
 [[file:45-14-deterministic-realization-replay.org][Deterministic Realization Replay]].  This module remains the owner of live
 recovery authority; replay only reconstructs qualified control evidence.
 
-POO-native receipt identity and canonical projection are specified by
+POO receipt identity and canonical projection are specified by
 [[file:45-15-receipt-object-canonical-evidence-projection.org][Receipt Object And Canonical Evidence Projection]].  This module owns the
 recovery transition semantics carried by those receipts.
 
@@ -752,7 +752,7 @@ Scheme or discovers =gerbil-poo= from nothing: the pinned dependency is already
 loadable for Agentic AI Lab to run, while G0 qualifies the exact module bindings and
 shapes required for public capability use.
 
-The control state remains POO-native:
+The control state remains POO:
 
 #+begin_src text
 POO control objects:
@@ -767,7 +767,7 @@ Opaque Gerbil runtime tokens hidden behind POO slots:
   RuntimeContinuationGuard
   RecoveryToken
 
-Gerbil-native transport:
+Gerbil-runtime transport:
   structured condition delivery
   atomic token transition primitives
 #+end_src
@@ -777,12 +777,12 @@ mutation, synchronization, and one-shot transitions are isolated behind their
 named runtime slots.  The opaque tokens are not a parallel configuration model
 and are never inspected by user code.
 
-Gerbil-native structured exceptions are used for transport because Scheme
+Gerbil-runtime structured exceptions are used for transport because Scheme
 condition delivery must remain available when the capability being qualified
 is rejected.  Their semantic and diagnostic payloads remain immutable POO
 values where available.
 
-The public result of successful initialization is the POO-native
+The public result of successful initialization is the POO
 =QualifiedDependencyCapability=.  Public Mix/Profile composition never receives
 the bootstrap context, registry, cell, or tokens.
 
@@ -791,7 +791,7 @@ flowchart LR
     Bootstrap["Internal POO runtime context"] --> Probe["G0 import probe"]
     Probe --> Decision["POO semantic Decision"]
     Decision -->|"pass"| Capability["QualifiedDependencyCapability<br/>public POO value"]
-    Decision -->|"reject/failure"| Condition["Gerbil-native condition transport<br/>immutable POO payload"]
+    Decision -->|"reject/failure"| Condition["Gerbil-runtime condition transport<br/>immutable POO payload"]
     Bootstrap --> Tokens["Opaque atomic runtime tokens"]
     Bootstrap -. "never public" .-> UI["user-composition"]
     Capability --> UI
@@ -951,7 +951,7 @@ AgenticAILabRuntimeCondition
 └── RuntimeControlCondition
 #+end_src
 
-Pre-capability conditions use a bootstrap-safe Gerbil-native structured
+Pre-capability conditions use a bootstrap-safe Gerbil-runtime structured
 exception substrate.  Semantic rejection carries a DecisionReceipt.  Probe
 failure, cycle, stale continuation, illegal transition, and resource failure do
 not manufacture one.
@@ -1045,10 +1045,10 @@ OLD_CELL_RESET=forbidden
 * Checklist
 
 - [X] Keep the gate private and eager.
-- [X] Keep context, registry, cell, and recovery set POO-native.
+- [X] Keep context, registry, cell, and recovery set POO.
 - [X] Isolate atomic one-shot state in opaque Gerbil runtime tokens.
-- [X] Use Gerbil-native conditions only as bootstrap-safe control transport.
-- [X] Publish only a POO-native capability to public composition.
+- [X] Use Gerbil-runtime conditions only as bootstrap-safe control transport.
+- [X] Publish only a POO capability to public composition.
 - [X] Scope state to a private runtime context.
 - [X] Keep runtime-context identity out of canonical semantics.
 - [X] Freeze the import environment per context.

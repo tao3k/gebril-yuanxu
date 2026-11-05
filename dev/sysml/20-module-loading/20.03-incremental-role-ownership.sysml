@@ -10,7 +10,7 @@ package YuanxuIncrementalRoles {
     }
     part def RetainedRole {
         ref part input : RoleInput;
-        doc /* Native POO owns receiver-local values; std/make owns artifacts.
+        doc /* POO owns receiver-local values; std/make owns artifacts.
                Neither retained data nor a warm artifact is a cached approval. */
     }
     part def IncrementalOwner {
@@ -23,9 +23,19 @@ package YuanxuIncrementalRoles {
     part def ReadEdgeProjection {
         doc /* Actual issued read->dependency records project consumer/provider
                receiver identities into depend-on-object!. Same-owner edges
-               need no registration. Native invalidation clears whole receiver
+               need no registration. Runtime invalidation clears whole receiver
                caches, so minimal individual-slot invalidation is not claimed.
                Serialized enrollment/mutation and complete support are premises. */
+    }
+    part def SourceRevisionBoundary {
+        ref part input : RoleInput;
+        doc /* A directory source revision ends the previous selection's
+               authority. A linked record includes evidence bound to that
+               context. Reuse of a POO payload requires complete source,
+               resolved dependency, and construction support. Admit against
+               the new context before publication, including after callbacks.
+               Lean checks support sufficiency; Quint checks transition order
+               and the stale result admitted by file-only reuse. */
     }
     part def BoundedWorker {
         ref part owner : IncrementalOwner;

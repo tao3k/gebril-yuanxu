@@ -90,7 +90,7 @@ No operation owns commit authority.
 A debugging operation accepts an immutable POO snapshot of one or more:
 
 - Module and relation revision;
-- native precedence snapshot;
+- runtime precedence snapshot;
 - candidate set;
 - typed relation conflict;
 - resolution object;
@@ -108,7 +108,7 @@ snapshot.
 
 * POO evidence result families
 
-The result families are native POO objects:
+The result families are POO objects:
 
 - inspection evidence;
 - explanation graph;
@@ -141,7 +141,7 @@ do not become the semantic result.
 Inspectable facts may include:
 
 - Module, relation, contribution, and revision identities;
-- native ancestry and candidate order;
+- runtime ancestry and candidate order;
 - selected and shadowed origins;
 - candidate-local and independent constraint classifications;
 - active capability requirements;
@@ -183,7 +183,7 @@ Every explanation edge identifies:
 #+begin_src mermaid
 flowchart LR
   Snapshot["resolution snapshot"] -->|"provides identity-complete facts"| Explain["pure explain operation"]
-  Explain -->|"traces native origin order"| Precedence["precedence causes"]
+  Explain -->|"traces runtime origin order"| Precedence["precedence causes"]
   Explain -->|"traces domain judgment"| Domain["admissibility causes"]
   Explain -->|"traces active scope"| Constraints["constraint causes"]
   Explain -->|"traces capability admission"| Authority["authority causes"]
@@ -476,7 +476,7 @@ No arrow publishes directly from debugging evidence.
 
 * Macro governance
 
-Functions and native POO objects are the default abstractions.
+Functions and POO objects are the default abstractions.
 
 The public semantic debugging surface is functional.
 
@@ -485,7 +485,7 @@ A bounded REPL or tooling macro may:
 - capture source location hygienically;
 - project a query into an ordinary function call;
 - preserve phase-appropriate diagnostics;
-- expand to POO-native evidence operations.
+- expand to POO evidence operations.
 
 It may not:
 
@@ -584,7 +584,7 @@ Debugging fails closed when:
 - protected evidence cannot be redacted honestly;
 - a query exceeds budget;
 - a simulation attempts runtime or publication effects;
-- a result representation is not a native POO object;
+- a result representation is not a POO object;
 - a proposal attempts to grant its own capability;
 - a portable descriptor is treated as callable;
 - a recovery proposal lacks continuation authority;
@@ -689,7 +689,7 @@ The following alternatives are rejected:
 
 - [ ] Functions and POO objects remain default abstractions.
 - [ ] Any tooling macro is thin and hygienic.
-- [ ] Macro expansion calls ordinary POO-native functions.
+- [ ] Macro expansion calls ordinary POO functions.
 - [ ] Macros own no query semantics.
 - [ ] Macros own no authority.
 - [ ] No public commit or resume macro is introduced.
@@ -747,6 +747,6 @@ descriptors, cleanup, capability, and revision boundaries remain explicit.
 - [[file:45-75-evidence-retention-checkpointing-redaction-and-erasure.org][45-75 - Evidence Retention, Checkpointing, Redaction, and Erasure]]
 - [[file:45-87-live-continuation-capabilities-continuable-conditions-and-portable-suspension-boundary.org][45-87 - Live Continuation Capabilities, Continuable Conditions, and Portable Suspension Boundary]]
 - [[file:45-88-gerbil-gambit-continuation-and-condition-runtime-correspondence.org][45-88 - Gerbil and Gambit Continuation and Condition Runtime Correspondence]]
-- [[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89 - POO-Native Control Condition, Decision, and Capability Algebra]]
+- [[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89 - POO-Runtime Control Condition, Decision, and Capability Algebra]]
 - [[file:45-90-poo-control-policy-composition-priority-conflict-and-veto-resolution.org][45-90 - POO Control Policy Composition, Priority, Conflict, and Veto Resolution]]
-- [[file:45-102-native-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][45-102 - Native Prototype Precedence and Typed Relation Conflict Resolution Bridge]]
+- [[file:45-102-runtime-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][45-102 - Runtime Prototype Precedence and Typed Relation Conflict Resolution Bridge]]

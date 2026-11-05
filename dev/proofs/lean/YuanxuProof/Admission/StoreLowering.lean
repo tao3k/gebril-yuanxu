@@ -38,7 +38,7 @@ theorem mediated_no_cold_poison (route : Route) (h : mediated route = true) :
 theorem unlowered_retains_counterexample :
     (attempt .unlowered true).cold = 5440 := rfl
 
--- The native correspondence decoder checks these independently built callees.
+-- The runtime correspondence decoder checks these independently built callees.
 -- This route classification does not itself certify arbitrary binary code.
 theorem precompiled_callees_refuse :
     (attempt .precompiledGenerated true).writes = 0 ∧
@@ -51,7 +51,7 @@ theorem precompiled_callees_preserve_cold :
     (attempt .precompiledInlined true).cold = 5432 := by decide
 
 -- This is an exact-operation projection; no desired purity/coverage Prop is
--- accepted as a field. Native compiler/callback domain closure remains a bridge.
+-- accepted as a field. Runtime compiler/callback domain closure remains a bridge.
 def declarations : List (Nat × Nat) :=
   MetadataAllocation.allocate
     (MetadataAllocation.allocate

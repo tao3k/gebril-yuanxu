@@ -25,6 +25,20 @@ theorem profileRefinementsKeepFinalSelf
   Generator.applyProto_ofProto child parent base
 
 -- Refinement order is observable; composition is not commutative.
+/-- The inherited formula observes the final receiver, not a previously
+materialized parent's receiver. Native thunks/cache/hygiene remain bridge facts. -/
+theorem ancestor_uses_final_receiver (receiver : Nat) :
+    composeAll [fun (_ : Nat) (prior : Nat) => prior + 2,
+      fun self _ => self + 1] receiver 0 = receiver + 3 := by
+  rfl
+
+-- A captured parent result (10 + 1) cannot stand in for inherited computation
+-- at receiver 20. Namespace ancestry does not supply either numeric value.
+#guard composeAll [fun (_ : Nat) (prior : Nat) => prior + 2,
+    fun self _ => self + 1] 20 0 == 23
+#guard (10 + 1 + 2 : Nat) !=
+  composeAll [fun (_ : Nat) (prior : Nat) => prior + 2, fun self _ => self + 1] 20 0
+
 #guard composeAll [fun (_ : Unit) (value : Nat) => value + 1,
     fun _ value => value * 2] () 3 == 7
 #guard composeAll [fun (_ : Unit) (value : Nat) => value * 2,

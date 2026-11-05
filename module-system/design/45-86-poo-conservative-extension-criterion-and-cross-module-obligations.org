@@ -10,13 +10,13 @@
 
 This RFC records an approved cross-module semantic criterion.
 
-- [X] Native POO semantics remain the baseline.
+- [X] POO semantics remain the baseline.
 - [X] Control and evidence are separate from the POO semantic plane.
 - [X] Correctness is defined by an erasure law.
-- [X] Allowed completion preserves native values and failures.
+- [X] Allowed completion preserves runtime values and failures.
 - [X] Budget restriction cannot fabricate a semantic result.
 - [X] Resumption continues the same root and demand.
-- [X] Cache and incremental execution remain equivalent to native
+- [X] Cache and incremental execution remain equivalent to runtime
   reevaluation.
 - [X] Observation is non-interfering.
 - [X] One generation retains one composition root.
@@ -30,18 +30,18 @@ implementation ownership of the referenced modules.
 
 * Formal conservative-extension surface
 
-The formal surface distinguishes a completed native outcome from an
+The formal surface distinguishes a completed runtime outcome from an
 operational state that has not produced semantic meaning.
 
 #+begin_src text
-#let NativeOutcome = (
+#let RuntimeOutcome = (
   value: value => ("Value", value),
-  failure: error => ("NativeFailure", error),
+  failure: error => ("RuntimeFailure", error),
   diverges: ("Diverges",),
 )
 
 #let ExtendedOutcome = (
-  completed: native => ("Completed", native),
+  completed: runtime => ("Completed", runtime),
   suspended: control => ("Suspended", control),
   denied: control => ("Denied", control),
   cancelled: control => ("Cancelled", control),
@@ -62,13 +62,13 @@ $ "erase"("Cancelled"(c)) = none $
 #+end_src
 
 Only =Completed= has a semantic erasure.  Suspension, denial, and cancellation
-are control outcomes, so none can be reclassified as a native value or native
+are control outcomes, so none can be reclassified as a runtime value or runtime
 failure.
 
 #+begin_src text
 #let conservative = (
-  native-result-preserved
-  and native-failure-preserved
+  runtime-result-preserved
+  and runtime-failure-preserved
   and budget-only-restricts
   and resumption-continuous
   and cache-equivalent
@@ -76,7 +76,7 @@ failure.
   and single-root-preserved
 )
 
-$ "cache-hit"(k) = "native-reevaluation"(k) $
+$ "cache-hit"(k) = "runtime-reevaluation"(k) $
 $ "resumed-root" = "suspended-root" $
 $ "resumed-demand" = "suspended-demand" $
 $ "additional-observer-demand" = false $
@@ -90,25 +90,25 @@ does not copy the specialized implementation suites.
 
 ** Lean proof obligations
 
-- [X] A completed extended outcome erases to its native outcome.
+- [X] A completed extended outcome erases to its runtime outcome.
 - [X] A suspended outcome has no semantic erasure.
 - [X] A denied outcome has no semantic erasure.
 - [X] A cancelled outcome has no semantic erasure.
-- [X] Every allowed completion preserves its native outcome.
+- [X] Every allowed completion preserves its runtime outcome.
 - [X] Control supplies no domain value.
 - [X] Evidence supplies no domain value.
 - [X] Evidence is not an implicit Profile input.
 - [X] A completed value is not substituted by control.
-- [X] A completed value equals the native value.
-- [X] A contextualized failure preserves native meaning.
-- [X] A native failure cannot become success.
+- [X] A completed value equals the runtime value.
+- [X] A contextualized failure preserves runtime meaning.
+- [X] A runtime failure cannot become success.
 - [X] Budget exhaustion publishes no partial value.
 - [X] Budget exhaustion publishes no guessed value.
 - [X] Budget exhaustion fabricates no replacement failure.
 - [X] Resumption preserves the immutable root.
 - [X] Resumption preserves the semantic demand.
 - [X] Resumption cannot retarget a newer root.
-- [X] A cache hit matches full native reevaluation.
+- [X] A cache hit matches full runtime reevaluation.
 - [X] Cache behavior defines no second fixed point.
 - [X] Observation forces no additional slot.
 - [X] Observation preserves final =self= and =super=.
@@ -154,11 +154,11 @@ Agentic AI Lab is a conservative operational extension of the adopted POOF and
 
 Agentic AI Lab may observe, restrict, suspend, resume, cache, incrementally
 reevaluate, govern, publish, or revert execution.  After control and evidence
-are erased, every allowed completed execution MUST expose the same native POO
-value or native failure.
+are erased, every allowed completed execution MUST expose the same POO
+value or runtime failure.
 
 An operational layer may decide whether and when a computation proceeds.  It
-MUST NOT decide what value native POO means.
+MUST NOT decide what value POO means.
 
 * Three planes
 
@@ -172,7 +172,7 @@ The semantic plane is owned by the adopted POO implementation:
 - inherited computation through =super=;
 - fixed-point instantiation;
 - object precedence; and
-- native values and failures.
+- runtime values and failures.
 
 ** Control plane
 
@@ -207,25 +207,25 @@ Evidence records what occurred.  It does not become a source of POO values.
 
 #+begin_src mermaid
 flowchart LR
-    POO["native POO semantic plane"] -->|"produces a value or native failure when allowed to complete"| OUTCOME["semantic outcome"]
+    POO["POO semantic plane"] -->|"produces a value or runtime failure when allowed to complete"| OUTCOME["semantic outcome"]
     CONTROL["control plane"] -->|"allows, suspends, denies, cancels, or resumes execution"| POO
     EVIDENCE["evidence plane"] -->|"records demands, decisions, and completed observations"| RECEIPT["operational receipts"]
     POO -->|"emits already-occurring demand and result events"| EVIDENCE
     CONTROL -->|"emits control decisions without supplying domain values"| EVIDENCE
-    OUTCOME -->|"erases control and evidence to the native result"| NATIVE["native POO observation"]
+    OUTCOME -->|"erases control and evidence to the runtime result"| RUNTIME["POO observation"]
     CONTROL -->|"cannot fabricate a completed outcome"| NORESULT["no semantic result yet"]
 #+end_src
 
 The control and evidence planes may change execution availability and
-operational traces.  They cannot redefine native POO meaning.
+operational traces.  They cannot redefine POO meaning.
 
 * Outcome model
 
-The native outcome domain is:
+The runtime outcome domain is:
 
 #+begin_example
 Value(value)
-NativeFailure(error)
+RuntimeFailure(error)
 Diverges
 #+end_example
 
@@ -238,7 +238,7 @@ Cancelled(reason, evidence)
 #+end_example
 
 =Suspended=, =Denied=, and =Cancelled= are not semantic values and are not
-replacement native failures.  They indicate that no completed semantic result
+replacement runtime failures.  They indicate that no completed semantic result
 is available from that execution.
 
 * Erasure law
@@ -249,10 +249,10 @@ completion:
 #+begin_example
 erase-control-and-evidence(Extended(P, D, policy))
   approximately-profile
-Native(P, D)
+Runtime(P, D)
 #+end_example
 
-=approximately-profile= compares admitted Profile projections and native
+=approximately-profile= compares admitted Profile projections and runtime
 failure meaning.  It does not require identical timing, event count, cache
 behavior, continuation identity, object address, or receipt encoding.
 
@@ -262,21 +262,21 @@ outcome.
 
 * Seven cross-module obligations
 
-** Native-result preservation
+** Runtime-result preservation
 
-When native POO returns =Value(v)= and the operational policy allows
+When POO returns =Value(v)= and the operational policy allows
 completion, the extended execution MUST return the same admitted Profile value
 =v= after evidence is erased.
 
 No observer, scheduler, cache, or governance decision may substitute another
 domain value.
 
-** Native-failure preservation
+** Runtime-failure preservation
 
-When native POO produces a native failure, Agentic AI Lab may attach root revision,
+When POO produces a runtime failure, Agentic AI Lab may attach root revision,
 operand identity, demand path, generation context, and causal evidence.
 
-The contextualized result MUST retain the native failure category and semantic
+The contextualized result MUST retain the runtime failure category and semantic
 meaning.  Observation or governance cannot turn the failure into a successful
 Profile value.
 
@@ -285,7 +285,7 @@ Profile value.
 Budgets restrict the set of executions allowed to continue:
 
 #+begin_example
-allowed executions are a subset of native executions
+allowed executions are a subset of runtime executions
 #+end_example
 
 Budget exhaustion may suspend, deny, or cancel work.  It MUST NOT publish a
@@ -308,18 +308,18 @@ Profile name.  A changed root requires a new demand.
 
 Continuable exceptions and first-class continuations are control mechanisms.
 They do not authorize arbitrary value injection.  A supplied recovery value is
-valid only when the native POO computation explicitly defines such a recovery
+valid only when the POO computation explicitly defines such a recovery
 protocol.
 
 ** Cache and incremental equivalence
 
-A cache hit and a full native reevaluation for the same admitted semantic key
-MUST expose equivalent Profile values or native failures.
+A cache hit and a full runtime reevaluation for the same admitted semantic key
+MUST expose equivalent Profile values or runtime failures.
 
 Cache hits and misses may produce different evidence and performance.  They
 cannot produce different domain meaning.
 
-Incremental reevaluation uses full native reevaluation as its semantic oracle.
+Incremental reevaluation uses full runtime reevaluation as its semantic oracle.
 It does not define a second fixed-point semantics.
 
 ** Observation non-interference
@@ -360,7 +360,7 @@ The following are prohibited:
 A continuation capability is bound to the demand and immutable root context
 that created it.
 
-The control layer may expose a POO-native suspension or resumption object, but
+The control layer may expose a POO suspension or resumption object, but
 that object is not a Profile and cannot participate in =compose profiles=.
 
 Live continuation capabilities, continuable conditions, one-shot resumption,
@@ -385,21 +385,21 @@ It requires only:
 Governance may control authority to execute, suspend, resume, retry, cancel, or
 publish.
 
-Governance does not own native POO result construction.  A decision receipt is
+Governance does not own POO result construction.  A decision receipt is
 not a slot override.
 
 * Cross-module flow
 
 #+begin_src mermaid
 flowchart TD
-    BASE["POOF and gerbil-poo semantic baseline"] -->|"defines the native value and failure oracle"| ERASE["cross-module erasure criterion"]
+    BASE["POOF and gerbil-poo semantic baseline"] -->|"defines the runtime value and failure oracle"| ERASE["cross-module erasure criterion"]
     OBS["observability owner"] -->|"must not introduce additional semantic demands"| ERASE
-    CACHE["incremental and cache owners"] -->|"must match full native reevaluation"| ERASE
+    CACHE["incremental and cache owners"] -->|"must match full runtime reevaluation"| ERASE
     SUSPEND["suspension and resumption owner"] -->|"must continue the same root and demand"| ERASE
     ROOT["revision and reload owner"] -->|"keeps one immutable root per generation"| ERASE
     GOVERN["governance owner"] -->|"may restrict execution but not fabricate values"| ERASE
     ERASE -->|"all applicable obligations hold"| CONFORM["conservative extension"]
-    ERASE -->|"one obligation changes native meaning"| VIOLATION["semantic conformance violation"]
+    ERASE -->|"one obligation changes runtime meaning"| VIOLATION["semantic conformance violation"]
 #+end_src
 
 This RFC owns the shared criterion.  Each specialized RFC owns its mechanism
@@ -442,29 +442,29 @@ The following designs violate the approved criterion:
 - an observer that forces additional slots;
 - a budget handler that publishes a partial value;
 - a resumption attached to a different root;
-- a cache hit that differs from native reevaluation;
+- a cache hit that differs from runtime reevaluation;
 - an incremental evaluator with a second fixed-point meaning;
 - a receipt injected as a hidden slot;
 - governance that substitutes a domain value;
 - re-instantiation for debugging;
-- converting a native structural failure into success; or
-- treating operational denial as a native POO failure.
+- converting a runtime structural failure into success; or
+- treating operational denial as a POO failure.
 
 * Implementation admission checklist
 
-- [ ] Establish one native value witness and its erased extended result.
-- [ ] Establish one native failure witness with contextual evidence.
+- [ ] Establish one runtime value witness and its erased extended result.
+- [ ] Establish one runtime failure witness with contextual evidence.
 - [ ] Verify observation does not add a =.ref= demand.
 - [ ] Verify budget exhaustion publishes no semantic value.
 - [ ] Verify suspension retains root, revision, generation, and demand identity.
 - [ ] Verify authorized resumption completes the same semantic demand.
 - [ ] Verify a stale continuation is rejected after root change.
-- [ ] Verify a cache hit equals full native reevaluation.
-- [ ] Verify a cached native failure retains its native meaning.
-- [ ] Verify incremental reevaluation equals full native reevaluation.
+- [ ] Verify a cache hit equals full runtime reevaluation.
+- [ ] Verify a cached runtime failure retains its runtime meaning.
+- [ ] Verify incremental reevaluation equals full runtime reevaluation.
 - [ ] Verify cache evidence is not a Profile slot.
 - [ ] Verify a governance denial fabricates no domain value.
-- [ ] Verify continuable recovery requires an explicit native recovery
+- [ ] Verify continuable recovery requires an explicit runtime recovery
   protocol.
 - [ ] Verify one generation instantiates only one composition root.
 - [ ] Verify module reload cannot retarget an existing continuation.

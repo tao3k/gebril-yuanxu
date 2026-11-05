@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-#+title: 11.39 Config Languages 38: Provider-Schema-First AWS Contracts and Native Refinements
+#+title: 11.39 Config Languages 38: Provider-Schema-First AWS Contracts and Runtime Refinements
 #+property: DOCUMENT_ID 11.39
 #+property: STATUS researched-design-only-no-loader-no-provider-execution
 
@@ -8,7 +8,7 @@
 
 Provider-owned fields must come from the selected provider's versioned schema,
 not a parallel hand-written collection of AWS strings/enums/required-field lists.
-This refines the module 37 proposal: shared native types supplement generated
+This refines the module 37 proposal: shared runtime types supplement generated
 constraints; they do not replace the existing JSON Schema subsystem.
 
 The checked [[https://github.com/nickel-lang/tf-ncl][tf-ncl README]] describes automatic Contract generation and a Nix-managed workflow.
@@ -38,7 +38,7 @@ selected provider lock + Terraform version + generator revision
   -> supported JSON Schema and retained coverage/mapping metadata
   -> existing Core normalization / emitted Contract artifacts
   -> generated AWS field/resource Contract scope
-  -> native value refinements + high-level Profile/Scenario Contracts
+  -> runtime value refinements + high-level Profile/Scenario Contracts
   -> final effective Scenario admission
   -> pure Terraform JSON candidate and output Contract admission
   -> separate Terraform validate/plan -> explicitly authorized apply
@@ -57,7 +57,7 @@ Current source interfaces live in core/modules/json-schema/interface.ss. Existin
 names, before the pending namespace migration, include:
 
 - yuanxu-json-schema->contract-artifact: compilation from JSON-like schema data.
-- yuanxu-json-schema-contract-artifact-object-contract: emitted native Contract.
+- yuanxu-json-schema-contract-artifact-object-contract: emitted Contract.
 - yuanxu-json-schema-contract-artifact-validate: recursive object-root diagnostics.
 - yuanxu-json-schema-node-valid? / node-validate: normalized-node value checks.
 - artifact diagnostics/type facts/Lean facts with runtime-executed false.
@@ -69,7 +69,7 @@ because its metadata is inspected. The bridge is explicitly not a full JSON
 Schema evaluator. Scalar roots currently become a synthetic value slot in emitted
 object Contracts, while artifact validation requires an object-like root.
 
-These observations motivate a native protocol adapter, not a replacement parser.
+These observations motivate a runtime protocol adapter, not a replacement parser.
 No-warning artifact generation is necessary but NOT sufficient for complete
 coverage: silently unsupported keywords need a mandatory coverage manifest/gate.
 That gate must be built before provider production admission is claimed. Unknown
@@ -77,12 +77,12 @@ format behavior and assertion/annotation policy must be explicit by dialect.
 
 * Reuse Gerbil address parsing only where semantic coverage requires it
 
-The public :std/net/address API exports string->address and native address
+The public :std/net/address API exports string->address and runtime address
 structures. Bare string->ip4-address exists in the parser source but is not
 exported from that API facade. Use its explicit ip4:/ip6: parsing form internally;
 config values remain bare text. No resolver/network lookup is used.
 
-The following is proposed SHARED LIBRARY code using existing native forms, not
+The following is proposed SHARED LIBRARY code using existing runtime forms, not
 installed exports. The only regular expression splits the address/prefix envelope;
 Gerbil owns address parsing. AddressPrefixText permits host bits; IPv4NetworkBlock
 checks a canonical network base separately. They must not be conflated.
@@ -147,11 +147,11 @@ checks a canonical network base separately. They must not be conflated.
   (value-type->contract 'network/ipv4-network-block IPv4NetworkBlock))
 #+end_src
 
-Source dependencies are native POO Type/String/element?, Core Contract protocol,
+Source dependencies are POO Type/String/element?, Core Contract protocol,
 :std/net/address, :std/error and pregexp. Exception handling catches only the
 ContractViolation category used by the inspected parser; unexpected failures
 propagate. Parser/version error behavior, IPv6 edge cases, numeric-prefix input
-limits and cost bounds still require qualification. Native address structures
+limits and cost bounds still require qualification. Runtime address structures
 are reused, not redefined. A new defstruct is unnecessary for this boundary.
 
 The simple Type bridge returns existing predicate evidence. Rich field-level CIDR
@@ -160,7 +160,7 @@ a network-base obligation, retaining the exact path and code. Do not present thi
 single predicate's generic rejection as already providing those detailed messages.
 Schema-derived count/field constraints must be reused rather than hand-copied.
 
-* Concrete native adapter for generated artifacts and conjunction
+* Concrete runtime adapter for generated artifacts and conjunction
 
 This private library design reuses the existing normalized-node validator, so it
 also handles scalar values without pretending the object-root API accepts them.
@@ -212,7 +212,7 @@ The existing emitted Contract path remains usable for its supported object forms
     'requirements contracts))
 #+end_src
 
-The schema adapter gives a proto only for native object-construction compatibility;
+The schema adapter gives a proto only for runtime object-construction compatibility;
 an empty proto does not supply required values or change a scalar into an object.
 The generated field descriptors need not expose proto to ordinary callers. The
 conjunction preserves every rejecting receipt and mandatory requirement rather
@@ -333,7 +333,7 @@ availability, permissions and plan-time invariants remain outside schema proof.
 * Reflection and acceptance boundary
 
 The gain over hand-maintained types is a single versioned external field source,
-reusable native semantic checks and POO composition for complex user Scenarios.
+reusable runtime semantic checks and POO composition for complex user Scenarios.
 The burden is an honest format converter, coverage accounting, expression/unknown-
 value semantics, computed/sensitive fields, default provenance and path mapping.
 Terraform expressions, null/unknown/computed values must not be mistaken for
@@ -357,7 +357,7 @@ identifies the reference wire format, not a requirement to run Terraform.
 * Concrete generated values and selection pipeline
 
 [[file:11.41-opentofu-generation-and-lazy-publication.org][The modular OpenTofu generation design]] expands lock selection, extraction,
-conversion, GeneratedProviders, ConfigurationContract and native lazy publication.
+conversion, GeneratedProviders, ConfigurationContract and runtime lazy publication.
 Its bounded converter is design-only and cannot yet qualify full AWS output.
 
 * Current design correction

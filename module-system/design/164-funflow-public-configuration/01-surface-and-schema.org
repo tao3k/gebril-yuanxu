@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Funflow Configuration 01: Public Attributes and Schema Ownership
-#+property: STATUS proposed-domain-contracts-existing-native-syntax
+#+property: STATUS proposed-domain-contracts-existing-runtime-syntax
 
 * One schema authority, separate default values
 
@@ -21,20 +21,20 @@ it does not enforce the closed public surface below. Core's
 recursively admits declared responsibilities, and runs obligations. It does not
 reject undeclared slots automatically. That requires an explicit domain rule.
 
-The upstream schema is a native Contract whose responsibilities map slot names
-to native Contract values. Human/agent documentation is ordinary metadata on
+The upstream schema is a Contract whose responsibilities map slot names
+to Contract values. Human/agent documentation is ordinary metadata on
 those field Contracts. This is analogous to the purpose of NixOS options, not
 an implementation of their definition merge machinery.
 
 The following categories are progressive disclosure, not an access-control
-system. Native POO remains extensible. Advanced attributes are documented and
+system. POO remains extensible. Advanced attributes are documented and
 validated too; hiding them from a short tutorial cannot make them immutable.
 
 * Check attributes: ordinary configuration
 
-Set complete ordinary values by assignment. Use native => to transform an
+Set complete ordinary values by assignment. Use runtime => to transform an
 inherited value and =>.+ to extend an inherited object. The proposed
-[[file:11-direct-path-assignment-and-refinement.org][direct dotted assignment]] retains intermediate inheritance through native
+[[file:11-direct-path-assignment-and-refinement.org][direct dotted assignment]] retains intermediate inheritance through runtime
 lowering; the current dotted adapter supports only object =>.+. These are
 different implementation states, not two different configuration value models.
 
@@ -79,9 +79,9 @@ these documentation examples do not already run against the old field layout.
 | durable-task-id | #f | upstream supplies a local durable name; projection checks uniqueness under qualified identity |
 | check-name | #f | identity; must equal the containing named Check slot; not an ordinary rename mechanism |
 | kind | 'yuanxu.funflow.check.prototype | structural compatibility marker; not source authentication or sufficient admission |
-| observability | #f | inherited advanced observability configuration; absent or supported native value |
+| observability | #f | inherited advanced observability configuration; absent or supported runtime value |
 | observes / guards | '() / '() | supported existing declarative references; no arbitrary callback injection |
-| report | #f | inherited report configuration; absent or supported native value |
+| report | #f | inherited report configuration; absent or supported runtime value |
 | runtime-executed | #f | projection invariant; configuration cannot assert execution by setting #t |
 
 The [[file:05-field-contracts-and-capabilities.org][concrete field declarations and recipe capabilities]] distinguish structural
@@ -91,9 +91,9 @@ admits only empty/false unsupported payloads and the explicitly supported result
 protocol. Broader consumer semantics require actual Contracts and qualification,
 not a stronger-sounding name for list?.
 
-The public slot vocabulary admits data and native POO values. Ordinary config
+The public slot vocabulary admits data and POO values. Ordinary config
 does not add function-valued control hooks. New behavior belongs in an upstream
-native prototype method or a named functional consumer, with the appropriate
+runtime prototype method or a named functional consumer, with the appropriate
 Contract and runtime support.
 
 * Pipeline and Profile attributes
@@ -105,7 +105,7 @@ Contract and runtime support.
 | Pipeline | checks | derived selected effective Check objects; not an independently configured list |
 | Pipeline | metadata | '(); application data only, reserved keys rejected |
 | Pipeline | kind / runtime-executed | existing Pipeline kind / #f; invariant fields |
-| Configured Funflow | pipeline | required native Pipeline |
+| Configured Funflow | pipeline | required runtime Pipeline |
 | Configured Funflow | other named slots | open namespace of Check objects, admitted by the Check Contract when selected |
 
 There is no new checks container. Existing paths remain
@@ -114,7 +114,7 @@ than a Pipeline selects. Availability and execution selection are different.
 Profile names are publication keys, not a hard-coded development/production
 enum. The new nominal FunflowProfile. is a reusable module family, not a Scenario.
 
-* Native Contract declarations
+* Runtime Contract declarations
 
 This is target upstream code, not an executable integration claim. Canonical
 bootstrap bindings and owner values are supplied by the maintained source role.
@@ -201,21 +201,21 @@ funflow-check-obligations rejects unknown effective Check slots, identity
 mismatch, unsupported policy crossings, false execution claims and reserved
 metadata collisions. The accepted field names come from the selected schema's
 responsibilities; there is no second manually maintained allowlist. Every
-ordinary Check/Pipeline field in these families is represented there. Native
+ordinary Check/Pipeline field in these families is represented there. Runtime
 framework bookkeeping is not a wildcard exception for extra candidate slots.
 
-The native .obligations getter uses cut to bind its effective Contract receiver
+The .obligations getter uses cut to bind its effective Contract receiver
 and returns the existing two-argument candidate/context procedure. Each named
 algorithm therefore takes (descriptor candidate context). It derives accepted
 names from that descriptor, rather than hard-coding the base schema and thereby
-rejecting legitimate fields of a stronger derived Contract. This is native slot
+rejecting legitimate fields of a stronger derived Contract. This is runtime slot
 binding plus an ordinary Scheme higher-order function, not a new compute hook.
 The domain context carries the effective Profile, qualified Check path and
 capability evidence. The admission owner supplies it; candidate metadata cannot
 choose its own descriptor or claim capability evidence.
 
 The .admit refinements add structural/context/name preflight before invoking
-the inherited admission procedure. This ordering is necessary: native
+the inherited admission procedure. This ordering is necessary: runtime
 responsibility admission reads checks before invoking Pipeline obligations.
 Invalid membership must be rejected before that getter can throw. The guard
 preserves the effective descriptor, inherited validation and caller context;
@@ -228,7 +228,7 @@ attribute inside a Check is not a new Check: unknown fields there are errors.
 Unselected additional names remain outside this selected-closure receipt;
 full-catalog role checking requires an explicit audit.
 
-funflow-pipeline-obligations checks that checks is exactly the native objects
+funflow-pipeline-obligations checks that checks is exactly the runtime objects
 resolved by selected-checks from the effective enclosing Profile, with the same
 identities, and validates dependency closure and acyclicity. A caller cannot
 bypass the rule by replacing the computed checks list. Structural equality alone
@@ -242,9 +242,9 @@ evidence remain five distinct claims.
 * Extension without erasing the schema
 
 A new Check using existing attributes needs no new schema. A genuinely new
-attribute requires an upstream extension prototype, a derived native Contract
+attribute requires an upstream extension prototype, a derived Contract
 whose responsibilities include it, and a consumer that gives it meaning.
-Publish that association through the same native module surface. Derived
+Publish that association through the same runtime module surface. Derived
 Contracts may strengthen base obligations; replacing .obligations must preserve
 them through a named pure composition function. It must not quietly disable
 base rejection rules. Documentation should flag weakening of the base contract

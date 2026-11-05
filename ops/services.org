@@ -11,7 +11,7 @@ different observations and must not share a success predicate.
 
 * Functional model before runtime
 
-Service declarations remain inert native POO values, with domain Contracts and
+Service declarations remain inert POO values, with domain Contracts and
 maintained defaults. Pure functions should validate declarations, resolve the
 selected dependency graph and project required lifecycle actions. They must
 not start processes, poll readiness, acquire ports or create state directories.
@@ -37,7 +37,7 @@ indefinitely, reusing a Script timeout as a readiness timeout or treating previe
 as a live service handle. A completed one-shot task may contribute setup or
 cleanup work, but the supervisor owns its ordering and cancellation.
 
-Reuse the native environment merging, command preparation and Contract primitives
+Reuse the runtime environment merging, command preparation and Contract primitives
 where their semantics match. Source/config generation belongs in every lifecycle
 projection and handle; cached plans must not turn an old handle into a current
 one. No automatic per-method source lease is claimed by current Ops.

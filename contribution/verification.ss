@@ -4,7 +4,7 @@
 
 ;;; Core verification boundary. The configured operation is host-trusted;
 ;;; submitted POO facts and their claimed verification flags are not.
-(import (only-in :clan/poo/object .o .ref .slot? object?)
+(import (runtime: :clan/poo/object)
         (only-in :std/hash/misc hash-remove!))
 (export yuanxu-verification-adapter yuanxu-verify yuanxu-verification-valid?
         yuanxu-revoke-verification! yuanxu-verification-admission

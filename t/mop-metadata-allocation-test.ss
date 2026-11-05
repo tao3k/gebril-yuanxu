@@ -61,7 +61,7 @@
                              (not (eq? entry-a entry-b))
                              (eq? spec (cdr entry-b))) observations)))
 (def mop-metadata-allocation-test
- (test-suite "Native metadata allocations, shared payloads and exported capabilities"
+ (test-suite "Runtime metadata allocations, shared payloads and exported capabilities"
   (yuanxu-test-case "a narrow module export does not conceal metadata from reflection"
     (def names
       (parameterize ((current-expander-context (make-top-context)))

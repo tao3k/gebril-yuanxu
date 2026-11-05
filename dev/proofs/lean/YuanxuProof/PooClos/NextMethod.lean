@@ -5,7 +5,7 @@ import YuanxuProof.PooClos.Dispatch
 namespace YuanxuProof.PooClos.NextMethod
 open LeanPoo.Functional
 
-/-! `dispatch.ss:poo-clos-call-next-method`. Each chain contains native method
+/-! `dispatch.ss:poo-clos-call-next-method`. Each chain contains runtime method
 REFERENCE identities, so equal-looking methods from new generations differ.
 Replacement arguments must preserve ALL qualifier chains and long-form groups. -/
 structure Effective where

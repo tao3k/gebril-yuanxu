@@ -130,7 +130,7 @@ evidence and are not relabeled as rerun by this experiment.
 After successful real preparation, the test edits the actual selected
 =postgresql/objects.ss= file without advancing the private deployment revision.
 The local commit returns the captured 5433 plan. A subsequent preparation through
-the real publisher refuses with native metadata failure phase =source=, whose
+the real publisher refuses with runtime metadata failure phase =source=, whose
 cause is =stale prepared Module publication=.
 
 Thus existing currentness correctly rejects a later admission, while the earlier
@@ -228,10 +228,10 @@ hidden in module loading or ordinary user configuration.
 * Qualification receipts
 
 Local logs are retained outside Git. Initial runs 01/02 exposed POO lexical slot
-shadowing in the fixture; run 03 exposed native metadata failure objects being
+shadowing in the fixture; run 03 exposed runtime metadata failure objects being
 incorrectly tested as =Error?=. Those failures were not counted as passes.
 The fixture now uses distinct lexical procedure names and checks the actual
-native failure type/phase.
+runtime failure type/phase.
 
 The final Scheme receipt is =core-conditional-commit-07=: natural exit zero,
 =MODULE-OK=, =HARNESS-OK=, final =OK= and no error/overflow markers. All four
@@ -251,7 +251,7 @@ The six =core-conditional-quint-*-02= runs match the table: normal safety exits
 zero; each negative/witness run exits one with an actual invariant violation.
 The expected negative exits are not production failures or proofs of stronger
 external atomicity. The Lean file records the model's source digest. There is
-no automatic native-trace decoder for this new serial-owner projection; its
+no automatic runtime-trace decoder for this new serial-owner projection; its
 Scheme assertions and Lean relation are separate, explicitly scoped evidence.
 
 No production Core admission check was removed. No Gerbil source, compiler,

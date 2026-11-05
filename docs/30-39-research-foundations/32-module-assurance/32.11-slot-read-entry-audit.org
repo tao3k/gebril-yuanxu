@@ -10,7 +10,7 @@ This is the historical pre-implementation audit. See [[file:32.12-mop-read-recor
 gerbil-poo implementation and consumer gates; the blockers below describe this
 audit stage, not a second maintained implementation.
 
-A read observer belongs to the native object/MOP boundary, not a generated field
+A read observer belongs to the runtime object/MOP boundary, not a generated field
 catalog or a wrapper around each domain getter. Core joins delivered receiver
 observations to its existing source checks. Contracts still own field selection,
 normalization and child obligations. A replay record is not admission evidence.
@@ -33,17 +33,17 @@ been withdrawn to /private/tmp/core-slot-replay-run06/withdrawn-injection/.
 The actual implementation belongs in a complete gerbil-poo source checkout;
 Core owns only the consumer adapter and regression tests.
 
-| Entry | Native route | Observation / remaining boundary |
+| Entry | Runtime route | Observation / remaining boundary |
 |-------+--------------+----------------------------------|
 | .ref / .get / .@ | .get expands to successive .ref calls | Cold dependencies and warm delivery share qualification-access |
 | Lexical slots, with-slots, def-slots, prefixed bindings | Syntax expands to .ref / .@ | Same receiver boundary; no macro-specific source table |
 | Object matching | .refs/slots calls .ref after presence checks | Structural checks and field values remain distinct |
 | .ref/cached | Originally reads the instance table directly | Hit delivers the existing value trace; miss records cache absence without computing a field |
-| .slot? / .has? | Name membership after native instantiation | Records structural revision; does not force the named field |
-| .all-slots / sorted names | Native cached name enumeration | Records structure, not every field value |
+| .slot? / .has? | Name membership after runtime instantiation | Records structural revision; does not force the named field |
+| .all-slots / sorted names | Runtime cached name enumeration | Records structure, not every field value |
 | .alist / sorted alist / .for-each! | Explicit traversal calls .ref per selected name | Caller explicitly requests traversal; admission does not add one |
 | force-object / hash<-object | force-object calls .ref for every name | Explicit eager operation, not a lazy admission primitive |
-| .call / Type generics / lenses | Native slot lookup through .get / .ref | Same value boundary; function bodies execute only on invocation |
+| .call / Type generics / lenses | Runtime slot lookup through .get / .ref | Same value boundary; function bodies execute only on invocation |
 | ObjectContract responsibilities | Name queries followed by .ref on declared fields | Reuses the existing prepared descriptors |
 | Rebinding and normalization | prepare-rebinding creates a receiver; force-rebinding reads through .ref | No parent computed-cache copying; child receipts refer to final values |
 | Missing-method / fallback-to | Delegate access goes through .ref | Delegate dependency retained in a cached caller |
@@ -77,7 +77,7 @@ not a performance claim or a reason to retain manual paths permanently.
 
 * Cached absence is a dependency
 
-.ref/cached's default is a thunk, following native hash-ref/default semantics.
+.ref/cached's default is a thunk, following runtime hash-ref/default semantics.
 The hook delegates to the original operation on a miss. It must not invoke the
 slot getter or replace the default-thunk convention with a literal-value API.
 A cached false value is distinct from a cache miss.

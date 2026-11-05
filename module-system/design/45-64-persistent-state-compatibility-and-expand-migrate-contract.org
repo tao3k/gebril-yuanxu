@@ -144,14 +144,14 @@ POO fixed point.
   quiescent live-pin set.
 - [X] =contractWritersProjectFromQuiescentObligations=: old writers project
   from the quiescent outstanding-obligation set.
-- [ ] Refine compatibility roles and migration contracts through native
+- [ ] Refine compatibility roles and migration contracts through runtime
   =gerbil-poo= prototypes.
 - [ ] Replay the synchronized Lean and Typst claims through external AXLE.
 
 * POO semantic ownership
 
 Compatibility and migration policy are ordinary higher-order POO objects.
-Native prototype composition defines:
+Runtime prototype composition defines:
 
 - reader contracts;
 - writer contracts;
@@ -163,7 +163,7 @@ Native prototype composition defines:
 - contract eligibility;
 - reversion compatibility.
 
-The public extension interface remains POO-native. Version comparisons,
+The public extension interface remains POO. Version comparisons,
 expand/migrate/contract tokens, and raw migration callbacks must not become an
 ad hoc macro DSL.
 
@@ -388,14 +388,14 @@ The implementation must distinguish at least:
 11. Reversion proves current resource compatibility.
 12. Contract remains a destructive authorized effect.
 13. Rollout, activation, migration, and contract completion remain distinct.
-14. Public semantic extension remains POO-native.
+14. Public semantic extension remains POO.
 
 * Implementation checklist
 
 - [ ] Define reader, writer, effect, and continuation contract identities.
 - [ ] Define directional compatibility proof schemas.
 - [ ] Define immutable authoritative resource observations.
-- [ ] Define POO-native expand proposals and receipts.
+- [ ] Define POO expand proposals and receipts.
 - [ ] Define pure migration plan and transformation identities.
 - [ ] Define partition-level progress and verification receipts.
 - [ ] Define dual-read authority and disagreement evidence.

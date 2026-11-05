@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Thin hygienic declaration surface for the POO-native CLOS kernel.
+;;; Thin hygienic declaration surface for the POO CLOS kernel.
 
 (import :std/stxparam
         (only-in "generic-syntax.ss" .defgeneric .defmethod
@@ -566,7 +566,7 @@
 ;;   : (-> Identifier (Identifier ...) (SlotDeclaration ...) ClassOption ...)
 ;;   | contract: parses once at expansion and lowers to POO class and slot constructors.
 ;;   | doc m%
-;;       `.defclass` binds one native POO-backed CLOS class descriptor.
+;;       `.defclass` binds one POO-backed CLOS class descriptor.
 ;;
 ;;       # Examples
 ;;

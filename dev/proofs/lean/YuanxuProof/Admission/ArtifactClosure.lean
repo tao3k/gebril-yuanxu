@@ -5,7 +5,7 @@ namespace YuanxuProof.Admission.ArtifactClosure
 
 def quintSourceDigest : String := "sha256:3fd6c0034fe2adbc0af7959aebae961389ccab96681936b71ecda58087ee9811"
 
--- Facts encode native-selected path, emitted/binary/metadata digests and
+-- Facts encode runtime-selected path, emitted/binary/metadata digests and
 -- ordered dependency edges. Equality is not a proof of hash authenticity.
 def admit (issued observed : String) (storesValid inputsCurrent loaded : Bool) : Bool :=
   issued == observed && storesValid && inputsCurrent && !loaded
@@ -35,6 +35,6 @@ theorem both_requirements_preserved (artifacts a b : Bool)
   exact ⟨h.1.2, h.2⟩
 
 -- StoreLowering supplies observed callee effects; this protocol never promotes
--- the raw negative route to a certified binary. Native AST/graph extraction,
+-- the raw negative route to a certified binary. Runtime AST/graph extraction,
 -- a trusted issuer, serial checking and stable bytes at load remain premises.
 end YuanxuProof.Admission.ArtifactClosure

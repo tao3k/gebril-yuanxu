@@ -120,7 +120,7 @@ a changed Profile, Source, Threat or Capability identifies every affected Case
 from current accepted declarations rather than a handwritten =IMPACTS= list.
 GQL Sources may express the corresponding relation and Impact questions, but
 GQL parser admission proves syntax and lossless source only.  Until an admitted
-GQL executor is integrated, native Scheme graph construction and Impact
+GQL executor is integrated, Scheme graph construction and Impact
 receipts remain the executable boundary.  Neither path grants Cedar authority.
 Past, present, future and counterfactual causal trajectories are specified
 separately in RFC 161; a structural receipt explicitly makes no temporal claim.
@@ -198,7 +198,7 @@ is smaller, testable and does not manufacture a second provider framework.
 - [X] Cedar projection binds the complete Case/Profile/assessment composition.
 - [X] A mismatched proof binding fails before runtime handoff.
 - [X] Lean proves core admission and Enterprise security-assurance closure.
-- [X] Native gerbil-parser accepts and losslessly roundtrips the Quint model.
+- [X] Runtime gerbil-parser accepts and losslessly roundtrips the Quint model.
 - [X] Official Quint exhausts the Governance state space with all invariants intact.
 - [X] Lambda production closure imports Governance only from Agentic AI Lab.
 - [X] Qualify Healthcare medication allow/default-deny/revocation through the real dual-engine Host.

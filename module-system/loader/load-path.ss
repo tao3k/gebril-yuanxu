@@ -6,7 +6,7 @@
 ;;; Source-neutral, ordered POO collection composition. Filesystem discovery,
 ;;; source admission, and module role policy belong to the consuming product.
 
-(import (only-in :clan/poo/object .o .ref .slot? object?)
+(import (runtime: :clan/poo/object)
         (only-in :std/list/list any every))
 
 (export yuanxu-module-source-collection-prototype

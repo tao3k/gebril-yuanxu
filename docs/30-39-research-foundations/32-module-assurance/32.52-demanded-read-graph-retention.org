@@ -8,7 +8,7 @@
 identities can be shared without weakening that boundary. It does not change
 production Scheme, the installed Gerbil compiler, or concurrent work.
 
-Native source: gerbil-poo =46d1b9322d5464c2224dc32a7334fae121a0cb72=,
+Runtime source: gerbil-poo =46d1b9322d5464c2224dc32a7334fae121a0cb72=,
 =object.ss:call-with-issued-reads= and =slot-observation.ss=. Core uses the
 existing 47-unit qualification closure, with its source manifest checked before
 the runs. LeanPoo stays at =6e6a706e14fa6f8199e4f36711440355b42ef335=.
@@ -21,12 +21,12 @@ No dependency refresh or platform installation is part of this study.
 | Issued record identity | Original registry token and immutable birth payload | Same record object once per traversal |
 | Dependency edges | Every demanded descendant, including preparation, bootstrap and miss records | Repeated visits to the same record; not deletion of a distinct edge target |
 | Receiver, key, revision, instance and value | Original receiver-local currentness | Receiver equality cannot merge records |
-| Transient miss | A genuine native-issued token, outside the persistent read cache | No forced cache insertion or eager slot evaluation |
+| Transient miss | A genuine runtime-issued token, outside the persistent read cache | No forced cache insertion or eager slot evaluation |
 | Selected receiver/ancestor frame | Derived from the authenticated reachable graph | Receiver identity once in the protection set |
 | Independent requirements | Both publication origins and their obligations | No deduplication by equal port/value |
 | Callback/return currentness | Fresh checks after the relevant callback/effect | Never a previously successful approval |
 
-Native replay ALREADY marks records by =eq?= before descending and separately
+Runtime replay ALREADY marks records by =eq?= before descending and separately
 deduplicates protected receivers. This is not a proposal for a new identity map.
 An unselected branch is absent from the demanded graph. A cycle of already
 demanded records terminates without forcing another branch.
@@ -34,10 +34,10 @@ demanded records terminates without forcing another branch.
 The public dependency list and birth closure's copied parent spine both retain
 references to the original children. Deduplicating traversal work does not
 remove those list cells or shorten object lifetimes. Mutating that signed list
-would fail native issuance authentication. Equal keys, values, source paths or
+would fail runtime issuance authentication. Equal keys, values, source paths or
 receiver objects are not evidence that two tokens are interchangeable.
 
-For U unique reachable records and E stored edge occurrences, the native walk
+For U unique reachable records and E stored edge occurrences, the runtime walk
 has expected hash-table work O(U+E), O(U) temporary visited/order/receiver state,
 and existing retained graph O(U+E). This excludes recursive stack depth, arbitrary
 checker work, record payload reachability, hash worst cases and GC costs. Birth
@@ -61,11 +61,11 @@ parent cache hit when the child context identity differs. ContractConsequence pr
 transport for strengthened claims; it is not authority to omit a contributor.
 These do not identify arbitrary Scheme values with Lean dependent values.
 
-Premises remain: token IDs faithfully represent native object identity; graph
-extraction is complete and stable during protected traversal; selected native
+Premises remain: token IDs faithfully represent runtime object identity; graph
+extraction is complete and stable during protected traversal; selected runtime
 writes obey the supported MOP guard. The proof does not establish arbitrary
 reflective/FFI isolation, a VM heap bound, or atomic external-source commits.
-Existing ordered-diagnostic/recursive-frame results retain the native order;
+Existing ordered-diagnostic/recursive-frame results retain the runtime order;
 no receiver sorting or cross-callback approval reuse is introduced here.
 
 * QNT controls
@@ -82,7 +82,7 @@ This finite model does not model Scheme diagnostic order or GC residency.
 
 [[file:../../../t/read-retention-cost-test.ss][read-retention-cost-test.ss]] uses the actual ServicesFixture reader/link,
 Scenario contracts and public =.admit=. The fixture supplies temporary owned
-source files and selection; it does not manufacture native read records.
+source files and selection; it does not manufacture runtime read records.
 Three fresh child receivers each run cold and then warm after the parent's
 5432 plan has been cached. Every admitted child must have both final ports 5433,
 its plan's Config must be the exact normalized Config, child receipts must
@@ -105,7 +105,7 @@ No new Fixture hierarchy is introduced.
 ** Recorded results
 
 The final instrumented run completed all three pairs with natural exit 0,
-=MODULE-OK=, =HARNESS-OK= and final =OK=. The additional native miss control
+=MODULE-OK=, =HARNESS-OK= and final =OK=. The additional runtime miss control
 retained two separately issued miss records, left both outside the read cache,
 and refused replay after installing that missing field. The Scenario itself
 observed zero misses; the separate control prevents treating that absence as
@@ -162,6 +162,6 @@ token equality alone. This study does not implement that optimization.
 
 Measuring token/edge counts answers graph size, not whether the graph pins dead
 receipts, values, owner prototypes or process memory after return. A future
-retention change needs native-issued lifetime/GC controls and an unchanged
+retention change needs runtime-issued lifetime/GC controls and an unchanged
 currentness/diagnostic suite. Replacing strong children with synthetic weak
 witnesses is not justified by the current results.

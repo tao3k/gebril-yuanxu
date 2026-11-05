@@ -5,7 +5,7 @@ import LeanPoo.Functional.ContractConsequence
 
 /-! Narrow reference semantics, not an implementation/proof of Scheme's DFS or
 source authentication. Node/Check IDs represent stable identities within one
-view; the native-to-model identity/parent projection is an explicit premise. -/
+view; the runtime-to-model identity/parent projection is an explicit premise. -/
 namespace YuanxuProof.ModuleSystem.Schema.Association
 open LeanPoo.Functional.Requirements
 
@@ -85,7 +85,7 @@ theorem shared_root_keeps_both (parents : Parents) (node : Nat) (index : List An
   exact ⟨association_complete parents node index left a path,
     association_complete parents node index right b (same ▸ path)⟩
 
-/-- Actual native .+ immediate parents: RHS parents followed by the LHS value.
+/-- Actual runtime .+ immediate parents: RHS parents followed by the LHS value.
 It does not add the RHS object's own identity. -/
 def plusParents (base : Nat) (rightParents : List Nat) : List Nat := rightParents ++ [base]
 
@@ -124,7 +124,7 @@ theorem missing_right_requirement_refused (mandatory retained : List Nat) (right
   · rfl
 
 /-- Every successful boundary either retained this requirement, or omission
-would force refusal. No claim that native .+ itself enforces the gate. -/
+would force refusal. No claim that runtime .+ itself enforces the gate. -/
 theorem right_requirement_preserved_or_refused (mandatory retained : List Nat) (right : Nat)
     (required : right ∈ mandatory) :
     right ∈ retained ∨ requirementGate mandatory retained = .error mandatory := by

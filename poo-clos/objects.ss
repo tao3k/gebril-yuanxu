@@ -5,7 +5,7 @@
 
 ;;; Checked construction and identity-preserving generic-function evolution.
 
-(import (only-in :clan/poo/object .o .ref .put! object-revision object-slots $constant-slot-spec?)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop element? .defgeneric)
         (only-in :std/hash/misc hash-ref/default)
         (only-in :std/list/list iota)
@@ -82,7 +82,7 @@
   (clos-carrier-policy-guard ClosEffectiveMethod. ClosInvocationFrame.))
 
 ;;; Name lookup is a binding projection, not a second generic-function owner.
-;;; Two native identity tables preserve O(1) lookup for both symbols and fresh
+;;; Two runtime identity tables preserve O(1) lookup for both symbols and fresh
 ;;; `(setf name)` designators without an equal?-scanned alist.
 (def poo-clos-generic-function-registry (make-hash-table-eq))
 (def poo-clos-setf-generic-function-registry (make-hash-table-eq))
@@ -130,7 +130,7 @@
        qualifier: qualifier-value method: method-value
        class: class-value slot: slot-value operation: operation-value)))
 
-;;; Failure recognition uses the native POO Type descriptor, not exception text.
+;;; Failure recognition uses the POO Type descriptor, not exception text.
 ;; : (-> SchemeValue Boolean)
 (def (poo-clos-failure? value)
   (element? ClosFailure value))
@@ -172,9 +172,9 @@
 (def (require-clos-method value)
   (checked ClosMethod value 'invalid-method))
 
-;; Read-only native class projections belong with descriptor values. Dispatch
+;; Read-only runtime class projections belong with descriptor values. Dispatch
 ;; must not import class construction/registration merely to query a CPL.
-;; Keep the same public Type checks and the class-owned native index.
+;; Keep the same public Type checks and the class-owned runtime index.
 (def (poo-clos-class-precedence-list class-value)
   (unless (element? ClosClass class-value) (clos-fail 'invalid-class))
   (.ref class-value 'class-precedence-list))
@@ -193,15 +193,15 @@
            'invalid-specializer))
 
 ;;; A CLOS class target remains the identity-preserved class metaobject across
-;;; generations. Native prototypes use poo-clos-prototype-specializer.
+;;; generations. Runtime prototypes use poo-clos-prototype-specializer.
 ;; : (-> ClosClass ClosSpecializer)
 (def (poo-clos-class-specializer target-value)
   (checked ClosSpecializer
            (.o (:: @ ClosSpecializer.) kind: 'class target: target-value)
            'invalid-specializer))
 
-;;; Native POO prototype dispatch is explicit instead of overloading class
-;;; terminology.  Applicability follows the prototype's native C4 ancestry;
+;;; POO prototype dispatch is explicit instead of overloading class
+;;; terminology.  Applicability follows the prototype's runtime C4 ancestry;
 ;;; no shadow hierarchy or marker CLOS class is introduced.
 ;; : (-> POOObject ClosSpecializer)
 (def (poo-clos-prototype-specializer prototype-value)
@@ -560,7 +560,7 @@
       (checked ClosGenericFunction candidate 'invalid-generic-function))))
 
 ;;; Scheme =eqv?= is the explicit kernel adaptation for CLOS =eql= values;
-;;; class and universal targets preserve native POO identity with =eq?=.
+;;; class and universal targets preserve POO identity with =eq?=.
 ;; : (-> ClosSpecializer ClosSpecializer Boolean)
 (def (same-specializer? left right)
   (and (eq? (.ref left 'kind) (.ref right 'kind))
@@ -688,7 +688,7 @@
   (def revision (object-revision value))
   (checked type value code)
   ;; No mutation or source/MOP wrapper may hide inside the certified carrier.
-  ;; Native observers still receive every actual read; any edit during that
+  ;; Runtime observers still receive every actual read; any edit during that
   ;; observation/validation keeps this call's complete dependency trace.
   (unless (and (= revision (object-revision value))
                (andmap (lambda (entry) ($constant-slot-spec? (cdr entry))) (object-slots value)))
@@ -716,12 +716,12 @@
       groups: groups executor: executor)))
 
 ;;; Frames bind one effective method, current argument set, continuation, qualifier, and
-;;; exact method descriptor into a native POO value.
+;;; exact method descriptor into a POO value.
 ;; : (-> ClosEffectiveMethod [SchemeValue] (Maybe Procedure)
 ;;        MethodQualifier ClosMethod ClosInvocationFrame)
 (def (make-invocation-frame effective-method arguments next qualifier method)
   (checked-call-carrier ClosInvocationFrame
-           ;; Keep native inheritance and extensibility; these are value slots,
+           ;; Keep runtime inheritance and extensibility; these are value slots,
            ;; not receiver-dependent formulas or deferred argument computations.
            (.o (:: @ ClosInvocationFrame.)
                effective-method arguments next qualifier method)

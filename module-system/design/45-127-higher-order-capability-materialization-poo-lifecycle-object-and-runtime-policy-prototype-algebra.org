@@ -47,7 +47,7 @@ slots:
 - =adapter=;
 - =runtime-context=.
 
-All lifecycle behavior is derived through native POO policy prototypes,
+All lifecycle behavior is derived through POO policy prototypes,
 structured effect intents, runtime receipts, immutable successor values, and
 conditional lifecycle-head transitions.
 
@@ -113,7 +113,7 @@ identity.
 
 * Required slot: adapter
 
-=adapter= is one admitted POO-native runtime adapter value.
+=adapter= is one admitted POO runtime adapter value.
 
 It provides runtime-boundary responsibilities for:
 
@@ -231,7 +231,7 @@ Runtime policy prototypes may refine:
 
 Each policy:
 
-- is a native POO value;
+- is a POO value;
 - depends on explicit intent, adapter, runtime-context, and event evidence;
 - may project an EffectIntent;
 - may narrow authority;
@@ -609,7 +609,7 @@ runtime adapter boundaries.
 ** Implementation admission
 
 - [ ] Admit every consumed upstream POO operation path in RFC 45-120.
-- [ ] Implement the lifecycle object as a native POO value.
+- [ ] Implement the lifecycle object as a POO value.
 - [ ] Implement runtime policy prototypes.
 - [ ] Implement event storage and conditional-head commit.
 - [ ] Implement one concrete runtime adapter.

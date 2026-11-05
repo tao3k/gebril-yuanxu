@@ -14,7 +14,7 @@ selection; they do not report what has been admitted.
 The upstream schema owns fixed responsibilities, a maintained Check family
 Contract, optional per-name stricter Check Contracts and protected role names.
 The admission owner reads the FINAL pipeline.selected-checks and builds a fresh
-native Contract projection. Public yuanxu-contract-admit then walks the
+Contract projection. Public yuanxu-contract-admit then walks the
 projected responsibilities. Actual child receipts, not user names, are the work
 result. No public selection/completion DSL or per-child publication wrapper is
 introduced.
@@ -54,10 +54,10 @@ selected-checks as a business choice. They never supply completed-checks or
 claim that a receipt exists. The future composition/admission boundary invokes
 the internal function below; .def alone does not run admission today.
 
-* Upstream schema and native Contract projection: design code
+* Upstream schema and Contract projection: design code
 
 All code in this section is a proposed internal adaptation, NOT installed module
-code or a new executed result. It uses public Core APIs and native .cc/.+/
+code or a new executed result. It uses public Core APIs and runtime .cc/.+/
 object<-alist. Canonical imports also provide ordinary list every, filter,
 foldr and delete-duplicates. The latter is a clarity baseline, not a qualified
 large-input deduplication algorithm.
@@ -89,7 +89,7 @@ capability Contract; object? alone is not sufficient domain validation.
   responsibilities: (.o pipeline: PipelineSelectionContract)
   .obligations: empty-obligations)
 
-;; This descriptor retains native proto checking and final identity obligations.
+;; This descriptor retains runtime proto checking and final identity obligations.
 (.def (SelectedChecksContract @ YuanxuObjectContract.)
   identity: 'funflow/profile-selected
   proto: Root
@@ -229,7 +229,7 @@ completion claim. Revalidate it against final selection under the same sealed
 view before reuse. Core checks each projected child through public .admit;
 there is no second hand-written child validator or private Core walker call.
 
-Native responsibilities may recurse for static child Contracts. A nested family
+Runtime responsibilities may recurse for static child Contracts. A nested family
 with its OWN dynamic selectors needs its own upstream projection rule at that
 admission boundary; this document does not infer arbitrary dependencies from
 function bodies. Current Core passes the same context to responsibility children;
@@ -246,7 +246,7 @@ plain .admit on an unprojected static descriptor does not gain this behavior.
   cached values extracted from its parent. The existing lexical-slot rule and
   final-obligations remain mandatory for Pipeline.checks identity/order.
 - Discovery reads schema slots and selected symbols. It does not scan or force
-  every Check value. Native .slot? may initialize object/slot metadata; this is
+  every Check value. Runtime .slot? may initialize object/slot metadata; this is
   not a claim of zero metadata cost or constant-time discovery.
 - Core reads every fixed role and every selected Check. Unselected optional
   business thunks remain untouched unless a declared Contract explicitly needs
@@ -289,11 +289,11 @@ final selector and compares real correlated receipt coverage.
 The proofs establish exact demand membership and refusal/final receipt laws.
 The modeled gate permits extra performed entries when they also pass; the
 Scheme coverage guard is stricter and rejects extra/duplicate responsibility
-entries. This strengthening is not a proved native implementation correspondence.
-They do NOT prove native projection fidelity, discovery of hidden/transitive
+entries. This strengthening is not a proved runtime implementation correspondence.
+They do NOT prove runtime projection fidelity, discovery of hidden/transitive
 dependencies, immutable generations, scheme interpreter equivalence or thunk
 non-evaluation. In particular, unselected_not_discovered is a membership theorem,
-not a runtime performance theorem. No new native execution is claimed. Module
+not a runtime performance theorem. No new runtime execution is claimed. Module
 25's 30-assertion receipt remains historical evidence for a hand-fed closure
 fixture and must not be relabeled as a test of this new automatic projection.
 

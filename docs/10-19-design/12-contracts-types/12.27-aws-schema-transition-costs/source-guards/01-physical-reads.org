@@ -51,7 +51,7 @@ closure, rather than 49595 new module discoveries or expansions.
 
 ** Effect boundaries are a different partition
 
-Each read is assigned to the innermost existing package, admission or native
+Each read is assigned to the innermost existing package, admission or runtime
 import bracket. Nested spans are not summed twice. Being outside these named
 brackets does NOT establish purity: declaration/policy callbacks and other
 operations can occur there.
@@ -60,7 +60,7 @@ operations can occur there.
 |-------------------+-------|
 | Admission stages | 21384 |
 | Selected-package stages | 8134 |
-| Native source import stages | 954 |
+| Runtime source import stages | 954 |
 | Outside these named brackets | 19123 |
 | Total | 49595 |
 
@@ -78,12 +78,12 @@ not counted by this Scheme producer.
 - Within an existing synchronous pure window, repeated paths already share
   bytes. Distinct collector enrollments remain distinct even when those bytes
   are shared. The package-entry candidate reduces parsing/query requests only.
-- Across macro expansion/native initialization, policy or Contract callbacks,
+- Across macro expansion/runtime initialization, policy or Contract callbacks,
   Nix/package operations and independent publication invocations, a shared
   Graph identity is insufficient authority to reuse earlier source acceptance.
   The source bytes or dependency registration may have changed.
 - Collected-source replay deliberately starts fresh even inside an outer read
-  window. The native control mutates a source after the outer read and requires
+  window. The runtime control mutates a source after the outer read and requires
   replay to reject it. Removing that reset would hide a real mutation.
 - =graph-current= is the dominant next audit surface. Its repeated calls must
   be related to the operation between them before coalescing: a private lookup
@@ -107,7 +107,7 @@ over the earlier 29767 ms receipt, and the measured Nix time must not be
 attributed to Scheme file reads or silently excluded from endpoint duration.
 Observation and progress-aware deadlines remain enabled throughout.
 
-The focused native observation test checks owner/phase/caller attribution and
+The focused runtime observation test checks owner/phase/caller attribution and
 the disjoint effect totals using injected diagnostic events. Those events are
 test probes; the AWS counts above come from actual source-producer events.
 Existing disabled-observation, no-domain-slot-read and failure-release controls

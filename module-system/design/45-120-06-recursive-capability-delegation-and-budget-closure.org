@@ -35,7 +35,7 @@ An import makes Module evidence reachable.  It does not implicitly
 delegate recovery authority.
 
 Capability authority does not propagate through an import edge unless
-an explicit native POO delegation value authorizes that exact edge and
+an explicit POO delegation value authorizes that exact edge and
 scope.
 
 Every delegation is a refinement of already admitted parent authority.
@@ -65,7 +65,7 @@ explicit delegation proof.
 
 * Delegation responsibility
 
-A delegation is a native POO value with semantic evidence for:
+A delegation is a POO value with semantic evidence for:
 
 - the delegating Module identity;
 - the parent capability or parent delegation identity;
@@ -224,10 +224,10 @@ Ordinary users continue to select Module profiles through
 =use-composition=, =compose profiles=, and =use-module=.  Recursive
 delegation does not add a user-facing clause language.
 
-Advanced delegation is represented by native =gerbil-poo= objects,
+Advanced delegation is represented by runtime =gerbil-poo= objects,
 prototypes, slots, composition, and dispatch in the =capabilities=
 responsibility.  A macro may be considered only by a later RFC that
-proves necessary hygienic syntax or phase semantics over this native
+proves necessary hygienic syntax or phase semantics over this runtime
 POO representation.
 
 * Implementation admission checklist

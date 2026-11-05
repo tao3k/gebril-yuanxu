@@ -59,7 +59,7 @@ scope linking and the publication evidence now originate from one receiver.
 Default declarations with no value normalization preserve their old identity.
 This changes neither the declaration surface nor the existing module namespace.
 
-* Native regression controls
+* Runtime regression controls
 
 [[file:../../../../../t/module-publication-test.ss][The existing source publication suite]] uses real temporary role sources,
 the existing init selection, the actual Contract and the actual Graph linker.
@@ -119,7 +119,7 @@ compatibility forwarding layer or upstream modification is introduced.
 
 * Focused qualification
 
-All native gates used the existing source-only isolated environment, the locked
+All runtime gates used the existing source-only isolated environment, the locked
 gerbil-poo revision, existing heap/progress/total budgets and serial test
 execution. No SDK cache was cleared or added and no upstream file was edited.
 

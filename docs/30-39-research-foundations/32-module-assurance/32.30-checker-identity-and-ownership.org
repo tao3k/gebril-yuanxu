@@ -8,7 +8,7 @@ does not claim to authenticate their issuance or fix production replay.
 
 * Question and scope
 
-Can the closed verification segment in [[file:32.29-constrained-return-tail.org][32.29]] admit MOP checkers by native
+Can the closed verification segment in [[file:32.29-constrained-return-tail.org][32.29]] admit MOP checkers by runtime
 identity and receiver ownership, without asking users to claim that a closure
 is pure? This qualification audits the actual producer and runs hostile-record
 controls against the unchanged runtime. It does not modify production Scheme,
@@ -33,7 +33,7 @@ selection, not a compatibility runtime. No package is uninstalled or rewritten.
 
 | Entry | Actual behavior | Assurance implication |
 |-------+-----------------+-----------------------|
-| =object-record-read= | Constructs records with =object-read-current?= and receiver revision/instance | One native constructor for the selected read routes |
+| =object-record-read= | Constructs records with =object-read-current?= and receiver revision/instance | One runtime constructor for the selected read routes |
 | =.ref= cold | Stores the value and the exact read token on that receiver | Ordinary token membership is checkable |
 | =.ref= hot, =.ref/cached= hit, =.ref/inline= hit | Deliver the receiver's retained token when observation is active | No inherited parent token substitutes for a child's cache |
 | =object-read-bootstrap= | Stores a token for the pinned bootstrap anchor | Checker tests the anchor, not table membership |
@@ -45,7 +45,7 @@ Relevant implementations are
 [[file:../../../../.gerbil/pkg/github.com/tao3k/gerbil-poo/object.ss][object.ss]],
 [[file:../../../../.gerbil/pkg/github.com/tao3k/gerbil-poo/slot-observation.ss][slot-observation.ss]] and
 [[file:../../../../.gerbil/pkg/github.com/tao3k/gerbil-poo/mop.ss][mop.ss]].
-Native replay is identity-based DFS; this work does not replace its ordering or
+Runtime replay is identity-based DFS; this work does not replace its ordering or
 claim to order the final =hash-keys= sweep across executions.
 =without-observation= suppresses observation/precheck parameters; it is not a
 write barrier. Running a stored checker inside it does not make that procedure
@@ -71,20 +71,20 @@ injection; it is not represented as an ordinary supported Profile edit.
 
 ** Currentness does not authenticate construction
 
-Copying a normal symbolic token while retaining the native checker fails:
+Copying a normal symbolic token while retaining the runtime checker fails:
 =object-read-current?= requires the exact registered token. However, a copied
-bootstrap token and a synthetic cache-miss token both pass the native checker.
+bootstrap token and a synthetic cache-miss token both pass the runtime checker.
 Their checker branches compare the anchor or cache absence, respectively.
-Neither branch proves that the token was issued by a native access route.
+Neither branch proves that the token was issued by a runtime access route.
 
-The isolated preflight inspects the exact native record class, compares the
+The isolated preflight inspects the exact runtime record class, compares the
 checker with =object-read-current?= using =eq?=, requires receiver-table token
 membership, and recursively checks dependencies with identity-based deduplication.
 It does not execute a foreign checker and does not use a purity annotation.
 
 This preflight is deliberately NOT ready for production: it also rejects a
 genuine =.ref/cached= miss, whose token is intentionally uncached. Requiring
-table membership everywhere would break supported native behavior. A production
+table membership everywhere would break supported runtime behavior. A production
 issuance protocol must cover transient tokens without making absence queries
 populate the value cache or forcing unselected getters.
 
@@ -117,18 +117,18 @@ Gitea contract accepts arbitrary incompatible ports. Raw replay calls a foreign
 checker twice in the single-root control, including its final sweep.
 Domain obligations are already executable extension code. This witness does not
 establish a new privilege escalation: it falsifies the stronger premise that
-everything invoked by replay must be a read-only native operation.
+everything invoked by replay must be a read-only runtime operation.
 
 The qualification preflight rejects the foreign identity with zero calls. A
-native, registered root can still depend on a foreign record; therefore checking
+runtime, registered root can still depend on a foreign record; therefore checking
 only root identities is insufficient. Every selected dependency must be covered
 before invoking any checker. Complete extraction is a separate correspondence
 premise, not a theorem obtained from checking a list's members.
 
-** Native identity is not transitive purity
+** Runtime identity is not transitive purity
 
 The installed SDK's =gerbil/runtime/hash.ss= implements =hash-get= through the
-=HashTable.ref= interface. The current native checker calls =hash-get= on the
+=HashTable.ref= interface. The current runtime checker calls =hash-get= on the
 receiver's read table. The following fault injection changes that table's own
 method, without changing the checker identity:
 
@@ -149,10 +149,10 @@ metadata operations; it is not a safe inspection sandbox for hostile tables.
 The earlier 32.23 snapshot also remains =state-current!= and =state-closed?=
 after this method replacement: it retained the table pointer, not the mutable
 interface's =ref= procedure. Its previous sufficient-gate interpretation must
-therefore retain the unchanged-native-metadata premise. In this stronger fault
-model it is not a complete read-only certificate, and invoking its native checker
+therefore retain the unchanged-runtime-metadata premise. In this stronger fault
+model it is not a complete read-only certificate, and invoking its runtime checker
 can itself perform the injected write. The old extractor is not silently changed.
-A separate raw write can register a forged native-identity token in the read
+A separate raw write can register a forged runtime-identity token in the read
 table, making both membership and currentness pass. The supported POO edit
 protocol is not used for these raw writes and cannot invalidate them for us.
 
@@ -183,7 +183,7 @@ responsibility evidence entries. Explicit Gitea client port =5440= is rejected
 against PostgreSQL =5433=. Substituting the cached parent plan is rejected.
 After a source-file change, that same stale-plan candidate reports
 =configuration source changed=: the earlier source diagnosis retains priority.
-An error-valued unselected slot remains unforced in the native access control.
+An error-valued unselected slot remains unforced in the runtime access control.
 These controls establish semantic behavior, not a performance improvement.
 
 * Lean and QNT correspondence
@@ -195,7 +195,7 @@ ownership remain necessary, and the prior source fault keeps priority. Concrete
 counterexamples separate bootstrap/miss currentness from ownership and show why
 writable table membership cannot prove issuance.
 
-Its pure =kernelCurrent= projects the native checker's three branches. The
+Its pure =kernelCurrent= projects the runtime checker's three branches. The
 =fixed_kernel_preserves_state= theorem is CONDITIONAL on those comparisons
 being primitive read-only metadata operations. The raw HashTable-method control
 shows why this is a runtime premise, not an automatic proof of Scheme effects.
@@ -217,7 +217,7 @@ Scheme procedures have been automatically classified as pure.
 
 * Design conclusion and remaining work
 
-1. Retain a single native creation/delivery protocol. A future trusted issuance
+1. Retain a single runtime creation/delivery protocol. A future trusted issuance
    mechanism must authenticate persistent AND transient records, their receiver,
    revision and dependency closure. Do not expose a second user protocol or
    require user lists of paths, records or purity facts.
@@ -226,7 +226,7 @@ Scheme procedures have been automatically classified as pure.
    read/dependency lifetime; a process-global strong registry or a scan of all
    modules is not an acceptable substitute. This association is not implemented
    or performance-qualified here.
-2. Prefer closed native checker operations over an arbitrary =current?= closure
+2. Prefer closed runtime checker operations over an arbitrary =current?= closure
    at the verification boundary. Authenticity must be checked before invocation,
    and independently of currentness. A stale authentic token still fails.
 3. Protect or constrain the metadata operations that the checker and gate use.
@@ -249,7 +249,7 @@ Scheme procedures have been automatically classified as pure.
    snapshots or conditional publication remain separate requirements.
 
 This is evidence against installing the simplistic membership preflight, not a
-request to add another series of return-time sweeps. First make native issuance
+request to add another series of return-time sweeps. First make runtime issuance
 and trusted metadata ownership precise; then prove the execution correspondence.
 No production MOP, SourceAdmissionContract or Loader change is made here.
 
@@ -261,12 +261,12 @@ path. Local qualification artifacts and failed attempts remain under
 =/private/tmp/core-checker-origin-20261018/=. They are not committed as logs.
 The final result counts and limitations are recorded after qualification below.
 
-** Native result
+** Runtime result
 
 Ten cases complete through =MODULE-OK=, =HARNESS-OK= and final =OK=, without an
 error/heap/stack marker. The final run binds 46 source/library identities before
 and after execution with no change. These include installed producer sources,
-the tested native libraries, runtime hash implementation, service sources and
+the tested runtime libraries, runtime hash implementation, service sources and
 qualification code. It is a stable run cut, not a rebuild proof that every
 compiled library was produced from the whole current dirty worktree.
 Earlier import/fixture failures remain in local artifacts; they are not counted

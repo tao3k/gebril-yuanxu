@@ -1,7 +1,7 @@
 #+title: 12.27.48 Authoring Dispatch Work And Open Return Boundaries
 #+property: DOCUMENT_ID 12.27.48
 #+language: en
-#+property: STATUS native-work-and-return-qualified-capacity-open
+#+property: STATUS runtime-work-and-return-qualified-capacity-open
 
 This topic records the pre-staging probe. The follow-up
 [[file:36-carrier-candidate-admission.org][EffectiveMethod candidate admission]] implements the closed-path construction/
@@ -39,10 +39,10 @@ The relevant owners are:
 The descriptor predicates in =poo-clos/types.ss= recursively inspect children:
 EffectiveMethod checks its Generic and Method lists; Frame checks its
 EffectiveMethod and Method. This is an actual nesting of validation work, not
-a new source-directory traversal. A read delivered during native dependency
+a new source-directory traversal. A read delivered during runtime dependency
 replay must not be relabeled as a fresh predicate invocation.
 
-* Native work probe
+* Runtime work probe
 
 =t/module-authoring-dispatch-work-test.ss= uses the existing Case macro and a
 passive public slot observer. It warms the actual operation, then admits 1, 4
@@ -55,7 +55,7 @@ counts =.element?= deliveries for exact policy receiver identities:
 |      4 |      16 |              16 |               8 |     48 |
 |      8 |      32 |              32 |              16 |     96 |
 
-These are policy-slot deliveries, including native replay. They are not
+These are policy-slot deliveries, including runtime replay. They are not
 predicate execution counts, allocation attribution or a capacity result.
 The probe does not replace predicates or clear SDK state. For this fixed
 method family the measured delivery component is linear in datum count;
@@ -63,7 +63,7 @@ it cannot by itself explain or refute prefix-dependent work elsewhere.
 
 * Why a construction check is insufficient at an open return
 
-The second native probe installs a public =compute-effective-method= hook on
+The second runtime probe installs a public =compute-effective-method= hook on
 a private derived Generic. It deliberately edits the already checked default
 before returning it. This is negative injection, not module-authoring code.
 
@@ -73,14 +73,14 @@ before returning it. This is negative injection, not module-authoring code.
   checked-default)
 #+end_src
 
-The native run rejects this result with =invalid-effective-method-result=,
+The runtime run rejects this result with =invalid-effective-method-result=,
 after exactly one hook invocation and before executing a method. Merely
 remembering that the constructor checked the same object identity is unsound.
-Both native cases finish with =MODULE-OK=, =HARNESS-OK=, final =OK= and natural
+Both runtime cases finish with =MODULE-OK=, =HARNESS-OK=, final =OK= and natural
 exit zero, without error/overflow markers.
 
 The first hook probe failed earlier with =no-applicable-method= and zero hook
-calls. Native =.cc= copies formulas, not receiver runtime caches/overrides;
+calls. Runtime =.cc= copies formulas, not receiver runtime caches/overrides;
 the registered Generic's constructor default has an empty method list. The
 final private probe explicitly retains the original Method descriptors when
 copying the Generic. This is test-only hook injection, not a new Generic
@@ -99,7 +99,7 @@ Lean's =checkCallbackReturn= in
 implies the returned value satisfies the supplied predicate. A concrete
 counterexample shows construction-time validity does not imply post-callback
 validity. This assumes the predicate represents the actual boundary check;
-it does not prove predicate purity or identify native read costs.
+it does not prove predicate purity or identify runtime read costs.
 
 The three scoped Quint entries typecheck and qualify against the current
 source cut: the safe model passes, while skipped-return and acceptance controls
@@ -133,7 +133,7 @@ them. No upstream code, limits, cache policy or Loader is changed.
 
 * Reproduction
 
-Run the native probe serially with the repository-locked source environment:
+Run the runtime probe serially with the repository-locked source environment:
 
 #+begin_src sh
 just test-file t/module-authoring-dispatch-work-test.ss true
@@ -142,6 +142,6 @@ cd dev/proofs/lean
 lake build YuanxuProof.ModuleSystem.Graph.SourceClosureWork
 #+end_src
 
-Only a completed native run with all harness markers and no error/overflow
+Only a completed runtime run with all harness markers and no error/overflow
 markers qualifies the two cases. Source-bound formal receipts must name their
 current source cut. Raw logs remain local artifacts.

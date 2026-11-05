@@ -56,7 +56,7 @@ The source explains the nonzero costs:
   even without an observer. Otherwise an already-warmed Profile could later
   enter admission with its computed-value provenance missing.
   An absent observer does not mean an absent capture frame inside a cold getter.
-- Native instance preparation is recorded separately and attached to value
+- Runtime instance preparation is recorded separately and attached to value
   records. Removing that record is not a valid cold-path optimization.
 
 * Allocation evidence rejected

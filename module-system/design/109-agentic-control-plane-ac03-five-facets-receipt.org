@@ -7,7 +7,7 @@
 * Result
 
 The Canonical Organization Bundle is cut over to schema v2 with five mandatory
-POO-native facets: Organization, Authority, Context, Protocol, and Evidence.
+POO facets: Organization, Authority, Context, Protocol, and Evidence.
 Typed-empty constructors represent empty facets; the flat Bundle constructor is
 removed.
 

@@ -59,7 +59,7 @@ registration and verification plus Core's existing handoff/publication gate.
   output and logs for the isolated Nix calls. Gerbil's installed compiler remains
   untouched.
 
-The native experiment uses =nix-store --store daemon --add= for an owned packet
+The runtime experiment uses =nix-store --store daemon --add= for an owned packet
 directory, then =--check-validity= and =--verify-path= on its exact selected root.
 It does not download providers, alter existing store objects, repair the store,
 update locks or restart the host daemon.
@@ -122,7 +122,7 @@ There is no static-directory catalogue traversal, timestamp manipulation,
 prewarming, deletion of unrelated generations or Gerbil source change. This
 qualifies the ordinary installed =gxc= route, not all possible compiler modes.
 
-* Native controls and observable decisions
+* Runtime controls and observable decisions
 
 The current experiment covers:
 
@@ -183,7 +183,7 @@ restore adapter, retain the artifact/GC lease, and own the restoration phase
 before concurrent publication can start. The isolated adapter assumes one
 serial owner. Full compiler dependency closure, artifact relocation, cross-host
 ABI qualification, external atomic/conditional commit and privileged store/DB
-tampering remain outside this result. Native field/source currentness cannot
+tampering remain outside this result. Runtime field/source currentness cannot
 prove an external writer never changed and restored bytes between checks.
 The release selection is fixed for each test receiver. Live revocation or a
 change of approved release is not inferred from a mutable "latest" link. The
@@ -223,7 +223,7 @@ an alternative runtime. Run 09 exposed a test script's top-level =identity=
 binding shadowing the standard function while dependencies were interpreted;
 the probe binding is now =probe-identity=. Both failures remain unqualified.
 
-The final native receipt is =core-build-store-recovery-10=: natural exit zero,
+The final runtime receipt is =core-build-store-recovery-10=: natural exit zero,
 =MODULE-OK=, =HARNESS-OK= and final =OK=. All nine observed decisions match:
 
 #+begin_src scheme
@@ -235,14 +235,14 @@ The final native receipt is =core-build-store-recovery-10=: natural exit zero,
 
 The actual JSON trace passes =CoreStoreRecoveryCheck.lean=. Changing the observed
 =other-store= decision to acceptance makes the decoder fail with
-=native store recovery/Lean decision mismatch=. The full Lean project builds
+=runtime store recovery/Lean decision mismatch=. The full Lean project builds
 184 jobs and audits 6259 declarations using only standard Lean axioms. These
 numbers describe the proof project, not 6259 new recovery theorems.
 
 The final =core-store-recovery-quint-08= receipt qualifies all ten selected cases:
 one safety model and nine expected counterexamples, including an acceptance
 witness. Its hashes bind the current Core/qualification sources; model checking
-does not prove the subprocess extraction or Nix implementation. The final native
+does not prove the subprocess extraction or Nix implementation. The final runtime
 run supplies the separate executable correspondence evidence.
 
 The first additional normal-build regression (=build-process-01=) compiled and

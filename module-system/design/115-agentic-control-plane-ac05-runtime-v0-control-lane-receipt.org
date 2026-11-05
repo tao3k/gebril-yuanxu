@@ -14,7 +14,7 @@ pre-v1 control lane.  =abi-v1-frozen?= remains =#f=.
 - Installed public header =agentic_ai_lab/runtime_v0.h=.
 - Installed static and shared =libagentic_ai_lab_runtime_v0= libraries.
 - Version/capability contract generating the public header and conformance
-  vector.  AC-06 subsequently moved this owner to POO-native Scheme types and
+  vector.  AC-06 subsequently moved this owner to POO Scheme types and
   removed the intermediate JSON/Python generator route.
 - Gerbil projection from validated Bundle Kernel state to
   =agentic-ai-lab.runtime-v0.control-packet.1=.
@@ -64,7 +64,7 @@ stuck before =main= while =libclang_rt.asan_osx_dynamic= initializes shadow
 memory through dyld and recursively enters the malloc interceptor spin lock.
 This is a host sanitizer-runtime initialization failure, not a sampled C engine
 frame.  Homebrew GCC 13 cannot link =libasan= on this host.  The code-level
-sanitizer gate therefore uses passing UBSan plus the native =leaks= result.
+sanitizer gate therefore uses passing UBSan plus the runtime =leaks= result.
 
 This exception does not freeze ABI v1.  AC-06/CI must run ASan on a supported
 host before any v1 claim.
@@ -84,7 +84,7 @@ claiming control-plane ABI conformance.
 
 * Deferred
 
-AC-06 owns hot/bulk lanes, caller buffers, leases, arenas, native fast views,
+AC-06 owns hot/bulk lanes, caller buffers, leases, arenas, runtime fast views,
 zero-copy evidence, full ASan CI, and =.data/gerbil-mysql= performance/owner
 research.  AC-07 owns the production Python CFFI API-mode runtime over the
 installed public ABI.  Bundle and ABI v1 remain reserved for complete stable

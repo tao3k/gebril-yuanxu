@@ -3,8 +3,8 @@ module IssuedReadModel {
   const BUG: str
   type State = {phase: int, kind: str, token: int, birthToken: int,
     value: int, birthValue: int, checker: int, birthChecker: int,
-    birthNative: bool, registered: int, presented: int, childIssued: bool, route: int, fault: int,
-    calls: int, observed: int, missCached: bool, nativeCreated: bool,
+    birthRuntime: bool, registered: int, presented: int, childIssued: bool, route: int, fault: int,
+    calls: int, observed: int, missCached: bool, runtimeCreated: bool,
     a: bool, b: bool, accepted: bool, parent: int, config: int, plan: int}
   var s: State
   action init = {
@@ -16,14 +16,14 @@ module IssuedReadModel {
       token: if (Set("copy","borrow","rawBirth").contains(kind)) 2 else 1,
       birthToken: if (kind == "copy") 0 else if (kind == "rawBirth" and BUG == "rawBirth") 2 else 1,
       value: if (kind == "payload") 5440 else 5433, birthValue: 5433,
-      checker: 0, birthChecker: 0, birthNative: kind != "copy",
+      checker: 0, birthChecker: 0, birthRuntime: kind != "copy",
       registered: if (kind == "copy") 0 else 1, presented: if (kind == "displaced") 2 else 1,
       childIssued: kind != "child", route: if (kind == "route") 1 else 0,
       fault: -1, calls: 0, observed: 0, missCached: false,
-      nativeCreated: not(Set("copy","borrow","rawBirth").contains(kind)),
+      runtimeCreated: not(Set("copy","borrow","rawBirth").contains(kind)),
       a: a, b: b, accepted: false, parent: 5432, config: 5433, plan: 5433}}
   }
-  val rootIssued = s.birthNative and s.registered == s.presented and s.token == s.birthToken and
+  val rootIssued = s.birthRuntime and s.registered == s.presented and s.token == s.birthToken and
     s.value == s.birthValue and s.checker == s.birthChecker
   val wholeIssued = rootIssued and (BUG == "rootOnly" or s.childIssued)
   action source = all {s.phase == 0,
@@ -56,7 +56,7 @@ module IssuedReadModel {
       (BUG == "dropB" or s.b)).with("plan",if (BUG == "parent") s.parent else s.plan)}
   action terminal = all {s.phase == 6, s' = s}
   action step = any {source, authenticate, firstCheck, callback, finalCheck, finish, terminal}
-  val NoForgery = not(s.accepted) or s.nativeCreated
+  val NoForgery = not(s.accepted) or s.runtimeCreated
   val WholeClosureBeforeObserve = s.observed == 0 or s.childIssued
   val NoForeignCheckerCalls = s.calls == 0
   val FinalAuthenticity = not(s.accepted) or (rootIssued and s.childIssued and s.route == 0)

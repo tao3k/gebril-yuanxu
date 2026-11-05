@@ -126,7 +126,7 @@ Target user code, within the bounded Guestbook scope from module 22:
 Image and env are assignments. The Service list is deliberately replaced: the
 user wants precisely one published 8080 endpoint, not every future upstream
 Service. The intermediate frontend and labels objects retain their other inherited
-slots. Dotted direct assignment is pending. Its intended native expansion is:
+slots. Dotted direct assignment is pending. Its intended runtime expansion is:
 
 #+begin_src scheme
 (.def (Development @ GuestbookDefaults)
@@ -155,7 +155,7 @@ wants one additional replica while continuing to track upstream sizing:
 
 Here + receives the inherited replicas value as its first argument. If upstream
 replicas changes from 2 to 3, TeamEnvironment changes from 3 to 4; replicas: 3
-would remain 3. Native refinement is justified by that requirement, not by the
+would remain 3. Runtime refinement is justified by that requirement, not by the
 fact that the data is a POO object. No extra replicas helper or DSL is necessary.
 
 * Contract reuse and the endpoint policy revision
@@ -166,7 +166,7 @@ remain enforceable. Do not hand-copy Server fields into another schema validator
 All proposed Core calls use the target yuanxu- naming from module 22.
 
 The Schema establishes field types, list cardinality, TCP and numeric port ranges.
-The Scenario Contract associates its three final children through native
+The Scenario Contract associates its three final children through runtime
 responsibilities:
 
 #+begin_src scheme
@@ -224,7 +224,7 @@ no targetPort defaults to target=8080 and fails. Redis port=6380 is refused even
 though it is a valid integer: this recipe has no qualified client/listener adapter
 for that change. Changing Service configuration does not configure a Redis process.
 The reserved component label cannot be silently overwritten or silently repaired.
-This policy is a pending Guestbook revision, not a new native validation result.
+This policy is a pending Guestbook revision, not a new runtime validation result.
 
 * Resource projection takes the effective Profile, not a captured parent
 
@@ -274,7 +274,7 @@ resource relationship admission and safe serialization are separate provider gat
        '(frontend leader follower)))
 #+end_src
 
-The internal env value above remains the input's native name-to-value object.
+The internal env value above remains the input's runtime name-to-value object.
 The provider must lower it to Kubernetes EnvVar[] and schedulingStrategy.resource
 to qualified requests/limits (including the disk policy), then validate complete
 output. This kernel is deliberately a pre-render candidate, not an admitted
@@ -295,7 +295,7 @@ remain provider work; input admission alone cannot establish them.
 
 Resource checks compare the effective admitted input with the resource candidate,
 not with expectations extracted from the parent. These small internal functions
-use native slot access; they are not another public configuration DSL. Safe access
+use runtime slot access; they are not another public configuration DSL. Safe access
 returns #f for absent fields so malformed candidates produce rejection diagnostics.
 
 #+begin_src scheme
@@ -435,7 +435,7 @@ This local record preserves associations; it is not a new user configuration lay
    guestbook-plan-obligations))
 #+end_src
 
-The public native admission call is simply:
+The public runtime admission call is simply:
 
 #+begin_src scheme
 (yuanxu-contract-admit GuestbookCandidatePlanContract candidate-plan context)
@@ -456,7 +456,7 @@ records and basis tokens retained behind the admitted provider boundary are
 eligible for cache lookup. A generic user-supplied .o record is not trusted evidence.
 Provider issuance/currentness, persistent cache validation and post-render resource
 admission remain pending adaptations. The existing Core evidence predicates validate
-native evidence structure; they do not cryptographically authenticate its issuer.
+runtime evidence structure; they do not cryptographically authenticate its issuer.
 
 Required rejection cases, not executed results:
 
@@ -508,7 +508,7 @@ TeamEnvironment has replicas=3; verify the retained parent still has 80 and
 replicas=2. Verify all maintained label slots survive the single env assignment. Reject a parent resource
 list presented as evidence for the child even when unchanged Redis rows happen
 to be equal. Reuse per-Profile projection only with source/input/context/schema/
-provider and dependency-currentness qualification; native memoization alone is
+provider and dependency-currentness qualification; runtime memoization alone is
 not complete plan-cache invalidation. Earlier Pipeline receiver controls are
 reusable semantic evidence, not execution of this Kubernetes consumer.
 
@@ -524,7 +524,7 @@ reusable semantic evidence, not execution of this Kubernetes consumer.
 The named projection function takes the final Scenario explicitly. It does not
 read a lexical variable containing a precomputed parent resource list. If a
 provider instead publishes a receiver-aware computed resource slot, that slot
-must preserve the native effective receiver and receiver-local memoization; the
+must preserve the runtime effective receiver and receiver-local memoization; the
 existing Pipeline controls motivate that law but do not qualify this provider.
 Same-source children are not interchangeable cache keys. Output evidence must bind
 the admitted effective input, namespace, schema/provider revisions and current
@@ -532,7 +532,7 @@ selected graph. A reusable Redis subprojection requires its own justified
 currentness and resource-association checks; it cannot stand in for Scenario
 admission. No new Kubernetes cache test was run in this documentation change. The new
 Scheme resource and cache Contracts are proposed design code, not implementation
-or executed controls. Native evidence field names and final-child responsibility
+or executed controls. Runtime evidence field names and final-child responsibility
 admission were checked against Core types.ss; target renamed APIs remain pending.
 
 * D2: architecture and service relationships
@@ -592,7 +592,7 @@ of services, source/dependency-indexed selective projection must replace full
 catalog realization. Admission still has to inspect every required relationship
 for the selected Scenario; laziness cannot excuse omitted evidence. Measure cold
 selected work, unused-branch demand and warm invalidation before claiming scale.
-Next compare KCL output for the same port/label experiment, verify the native path
+Next compare KCL output for the same port/label experiment, verify the runtime path
 lowering, execute the warmed-parent controls and qualify DNS behavior separately.
 
 * Reflection: matched user experience, questions and design revisions
@@ -607,7 +607,7 @@ Schema checks and a backend. The Scheme Development block must be compared with
 an equivalent KCL override, not with the source of its own provider implementation.
 The port/label experiment still needs execution on both sides with matched defaults.
 
-Our potential differentiation is a coherent native extension boundary spanning
+Our potential differentiation is a coherent runtime extension boundary spanning
 independently maintained Profiles, functional transformations, selected module
 scopes and source-qualified projection/admission. A provider can retain the exact
 final Scenario/child association through preview, while contributors reuse ordinary
@@ -626,7 +626,7 @@ errors. It is not established that KCL cannot implement the same discipline.
 | Does checking final values prove connectivity? | No. Input, output, image behavior and cluster readiness are different obligations. | Where is the pinned DNS/listener qualification and how is its unsupported scope shown? |
 | Can unchanged Redis resources be reused after a frontend edit? | Possibly, with qualified dependency and input/output association. Whole-parent plan reuse is invalid. | Does reuse include all relevant namespace, policy, schema and provider dependencies, and does Scenario admission still cover every required child? |
 | Are thousands of services handled efficiently? | Not established by lazy slots or these three roles. | What selected work is measured, what remains cold, and can missing required evidence still be detected? |
-| Does a POO receipt authenticate its origin? | No; native structural evidence checks do not authenticate arbitrary user-created records. | Which provider boundary issues the cache record and validates its current basis before lookup? |
+| Does a POO receipt authenticate its origin? | No; runtime structural evidence checks do not authenticate arbitrary user-created records. | Which provider boundary issues the cache record and validates its current basis before lookup? |
 
 ** An overall improvement path, before Loader integration
 
@@ -662,7 +662,7 @@ errors. It is not established that KCL cannot implement the same discipline.
 ** Why this design rather than another configuration framework?
 
 The motivation is to let maintained enterprise libraries expose small configuration
-surfaces while retaining native programmable extensions for real upstream-aware
+surfaces while retaining runtime programmable extensions for real upstream-aware
 changes. Scheme/POO is a means to unify values, Contracts and extensible behavior;
 it is not a reason to reproduce a mature Kubernetes ecosystem unnecessarily.
 Reuse existing Schemas and domain libraries where possible. If the short user edit,
@@ -671,7 +671,7 @@ prefer reducing or removing the added public abstraction. A successful compariso
 must produce that design decision, not merely a longer list of language features.
 
 No new runtime result is claimed by this reflection. D2 rendering and document
-checks remain distinct from native receiver controls, the unexecuted Guestbook
+checks remain distinct from runtime receiver controls, the unexecuted Guestbook
 projection/admission design and pending persistent-cache/Loader integration.
 
 The [[file:11.25-guestbook-field-discovery-and-diagnostics.org][follow-up user-facing UX design]] maps these internal checks to field discovery,

@@ -4,13 +4,8 @@
 
 ;;; Boundary: constant-slot lookup and field indexing for POO object support;
 ;;; inheritance resolution remains owned by object.ss.
-(import :gerbil/core
-        (only-in :clan/poo/object
-                 $constant-slot-spec
-                 $constant-slot-spec-value
-                 $constant-slot-spec?
-                 .ref
-                 object-slots)
+(import (runtime: :gerbil/core) (only-in :gerbil/core object? make-object)
+        (runtime: :clan/poo/object)
         :yuanxu/module-system/schema/support/contracts)
 
 (export yuanxu-module-object-constant-slot

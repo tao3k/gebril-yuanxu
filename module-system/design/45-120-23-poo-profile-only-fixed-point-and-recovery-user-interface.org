@@ -37,7 +37,7 @@ The public surface remains:
 - =use-composition= as a thin hygienic binding projection;
 - =use-module= as a thin hygienic Module/profile-selection projection;
 - =compose= as an ordinary pure function;
-- =profiles= as a first-class native POO composition strategy.
+- =profiles= as a first-class POO composition strategy.
 
 No additional public macro or configuration clause is introduced for
 fixed-point observation, recovery, continuations, budgets, receipts, or
@@ -79,7 +79,7 @@ A profile value may refine:
 - deterministic structural budget restrictions;
 - runtime watchdog policy.
 
-These refinements are native POO values and Contracts.  They are not new Module
+These refinements are POO values and Contracts.  They are not new Module
 responsibility slots.
 
 A profile MAY:
@@ -121,7 +121,7 @@ Neither macro may contain:
 
 * Advanced extension boundary
 
-Advanced users extend native =gerbil-poo= objects, prototypes, Contracts, slot
+Advanced users extend runtime =gerbil-poo= objects, prototypes, Contracts, slot
 operators, and pure functions.
 
 An advanced policy value enters =compose profiles= directly.  It does not
@@ -189,7 +189,7 @@ None of them becomes a POO profile clause.
 - [X] Profiles may restrict but cannot grant authority.
 - [X] =use-module= selects an already-visible binding and does not manage
   packages or builds.
-- [X] Advanced extensions use native POO objects and prototypes.
+- [X] Advanced extensions use POO objects and prototypes.
 - [X] Doctor, CLI, receipts, and telemetry remain outside composition.
 - [X] Core, package, and final-application ownership remain separate.
 - [X] Git, =gerbil.pkg=, Gerbil-Bazel, Nix, and GSLPH remain outside the user

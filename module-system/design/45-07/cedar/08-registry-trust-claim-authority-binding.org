@@ -1,0 +1,124 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Registry trust-claim authority binding
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Registry trust-claim authority binding
+
+** Registry trust-claim requirement
+
+The publication-domain registry authority identity and registry semantic
+identity MUST participate in admission as an exact acceptance-authority-
+validated claim.  Merely carrying those fields in
+=PublicationDomainRegistryTrustRoot=, while indexing checkpoint evidence by its
+=registry= field, does not prove that the metadata selected for this admission
+is the canonical metadata of that root.
+
+Registry authority identity and registry semantic identity are registry-level
+identities.  They MUST remain distinct from publication-domain descriptor
+identity and Cedar input content identity.
+
+** Registry metadata-substitution counterexample
+
+The lineage model already keeps registry authority and semantics stable across
+valid transitions.  However, the earlier
+=TrustRootBoundCheckpointWatermarkEvidence= wrapper consumes only
+=trustRoot.registry=.  The theorem
+=trustRootBoundEvidencePermitsRegistryMetadataSubstitution= therefore constructs
+two roots backed by the same registry and registered evidence while both
+registry authority identity and registry semantic identity differ.
+
+This demonstrates a first-admission gap, not a lineage rollback: stable lineage
+cannot repair metadata that was never authority-bound at the admission edge.
+
+** Registry trust-claim Typst model
+
+#+begin_export typst
+$
+  "RegistryClaim"(r) :=
+    (r."registry-authority-id", r."registry-semantic-id")
+
+  "AuthorityValidatedRegistryEvidence"(e, r) :=
+    e."validated-claim" = "RegistryClaim"(r)
+    and e."registered-evidence" in r."registry"
+
+  "AuthorityValidatedRegistryEvidence"(e, r)
+  implies
+  e."validated-claim"."authority-id" = r."registry-authority-id"
+  and e."validated-claim"."semantic-id" = r."registry-semantic-id"
+$
+#+end_export
+
+** Registry trust-claim Mermaid closure
+
+#+begin_src mermaid
+flowchart LR
+  R["Registry trust root<br/>authority + semantics + registry"]
+  C["Canonical registry trust claim"]
+  V["Acceptance-authority validation"]
+  E["Registered checkpoint evidence<br/>indexed by the same registry"]
+  A["Authority-validated trust-root evidence"]
+  X["Metadata substitution rejected"]
+
+  R -->|"project authority + semantics"| C
+  C -->|"status: exact claim"| V
+  R -->|"type-indexed registry"| E
+  V -->|"claim equality"| A
+  E -->|"same-root registry evidence"| A
+  A -->|"authority/semantics preserved"| X
+#+end_src
+
+** Registry trust-claim decision
+
+- Preserve =TrustRootBoundCheckpointWatermarkEvidence= as the weak model and
+  counterexample owner.
+- Add =PublicationDomainRegistryTrustClaim= as the registry-level authority and
+  semantics projection, without domain or Cedar semantic fields.
+- Strengthen the existing v1 contract with
+  =AuthorityValidatedTrustRootBoundCheckpointWatermarkEvidence=.  Exact claim
+  equality binds registry metadata, while the dependent type of
+  =registeredEvidence= binds the registry used by the checkpoint evidence.
+- Do not introduce V2 and do not use structural equality of the registry
+  predicate as a commitment.  The full String/Cedar lifecycle validator remains
+  the owner of signature, envelope commitment, and cross-carrier refinement.
+
+** Registry trust-claim checklist
+
+- [X] Audit lineage, replica join, and recovery uses of registry trust-root
+  authority and semantic identities.
+- [X] Construct two metadata-distinct roots that admit the same registered
+  checkpoint evidence through the weak wrapper.
+- [X] Define the canonical registry-level trust claim.
+- [X] Join an exact validated claim with evidence indexed by the same root
+  registry.
+- [X] Prove registry authority and semantic identities are preserved.
+- [X] Prove either identity mismatch prevents the closed claim from binding.
+
+** Registry trust-claim Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryTrustClosure= exited 0 for 7
+  jobs with no warning or error.
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI rejected the
+  caller-supplied six-source envelope with exit 2 and required the exact
+  three-source envelope owned by AXLE.  That envelope accepted all 7 theorem
+  roots and 47 declarations: 17 source declarations, 17 environment
+  declarations, 0 proof-base declarations/imports, no failed declaration, and
+  no Lean diagnostic.  Closure digest:
+  =sha256:554c24a32db6339ef5de657ac0debc048c4b7b727e9a1b1ea2150b93c71d5a6f=;
+  bundle digest:
+  =sha256:ba6c3b87c5f9af0031d90344088a68f818b1b811eef0f084f86f9c65f4136d73=;
+  canonical source digest:
+  =sha256:3347b2291a3dfd51be9d81376ceb46813909bac2b24d425b38e7cb905c59da6d=;
+  independent bundle digest:
+  =sha256:16d365caf72be26d7b6ec6bfff7d73e8c42ae97eb336722ada669fc07a475d35=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
+  build= exited 0 for 587 jobs.  Both reported only the existing
+  =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
+- =asp org lint= accepted this RFC with =[ok] orgize lint=.
+- =git diff --check= and =git diff --cached --check= both exited 0.
+

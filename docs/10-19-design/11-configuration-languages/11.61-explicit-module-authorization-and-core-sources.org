@@ -38,21 +38,21 @@ The core paths above are explicit repository inputs, not built-in fallback
 locations. A missing explicit origin is an error even if a same-named local
 module exists. Disabled origins are not opened. Distinct declarations cannot
 claim the same physical source owner. Directory style, non-symlink checks,
-Module identity admission and native role preparation remain unchanged.
+Module identity admission and runtime role preparation remain unchanged.
 
-The context indexes enabled source owners once. Native source import ownership
+The context indexes enabled source owners once. Runtime source import ownership
 is found through the path's ancestors instead of scanning a module catalog. The
 same source tree covers local and explicitly bound origins, including auto-mode
 namespace projection. No global search path or Loader registry is introduced.
 
-* Native type identity across module boundaries
+* Runtime type identity across module boundaries
 
-The native publication reader reuses an observed compiler context for the same
+The runtime publication reader reuses an observed compiler context for the same
 physical source, whether the source is imported by its owner or by another
 declared owner. This is necessary for prototype-bearing Contracts: identical
-source text expanded twice does not give the same native prototype identity.
+source text expanded twice does not give the same runtime prototype identity.
 The source guard still checks every retained dependency before publication.
-Canonical compiled SDK imports keep their original native import closure;
+Canonical compiled SDK imports keep their original runtime import closure;
 redirecting imports inside a compiled library would disagree with its compiled
 runtime symbols. Only the source caller is redirected to a declared owner.
 Trusted SDK source-identity projection is checked against that explicit owner;
@@ -80,8 +80,8 @@ OpenTofu now explicitly publishes both Nix and JSON Schema requirements:
 * Upstream policy and downstream ordinary values
 
 Core's default Config.source remains unset. Upstream package configuration must
-supply a native Nix Source. That configuration is separate from where the Core
-implementation is located. The direct-source control derives the actual native
+supply a runtime Nix Source. That configuration is separate from where the Core
+implementation is located. The direct-source control derives the actual runtime
 publication through the existing SourceContext/read-publication capability:
 its ordinary link and delayed Build.module receive the same configured scope.
 It creates no alternative declaration, does not modify Core files, and does not
@@ -108,7 +108,7 @@ Infrastructure retains only its ordinary config.ss and interface.ss dependency:
 There is no Infrastructure/build.ss, Provider selection list, manual phase
 assembly or root-init reload. The existing core.configuration-build association
 projects Provider demand from final Config, realizes the upstream Source, derives
-a receiver-local artifact scope and performs final native .admit before success.
+a receiver-local artifact scope and performs final runtime .admit before success.
 Adding Null changes the demand and requires a fresh build generation; it does
 not modify the cached parent Contract or enable awscc.
 
@@ -116,11 +116,11 @@ not modify the cached parent Contract or enable awscc.
 
 Actual Core files, their private dependencies, ancestor package observations,
 init declarations, consumer Config and Nix inputs remain currentness inputs.
-Cached values do not authorize publishing a stale plan. The native reader may
-reuse source bytes, native compiler identity and package-snapshot comparisons
+Cached values do not authorize publishing a stale plan. The runtime reader may
+reuse source bytes, runtime compiler identity and package-snapshot comparisons
 only inside one synchronous, effect-free guard validation. File reads still
 check regular-file status; identical package snapshots share one check in that
-boundary. The observation cache ends before native expansion or an external
+boundary. The observation cache ends before runtime expansion or an external
 effect, and each independent validation starts fresh.
 Negative controls continue to reject changed inputs and missing/disabled owners.
 
@@ -129,7 +129,7 @@ Provider RPC plan/apply and cloud deployment remain outside this change.
 
 * Qualification boundary
 
-The subsequent [[file:11.62-currentness-cost-and-shared-validation.org][currentness and native Ops qualification]] closes the new three-round gate.
+The subsequent [[file:11.62-currentness-cost-and-shared-validation.org][currentness and runtime Ops qualification]] closes the new three-round gate.
 The historical failures below are retained; they are not rewritten as passes.
 The current Core publishes external-package contributions for the explicit Ops
 consumer rather than exposing the removed write-build-entry API.
@@ -158,12 +158,12 @@ performance qualification. All tracked qualification inputs and the locked
 Flake fixture were rehashed after the failure and were unchanged. The failure
 and passing rounds are retained together; no timeout, assertion or historical
 receipt was adjusted to turn that run into a pass. The delayed measurement
-includes both native checking and Nix evaluation, so it does not establish a
+includes both runtime checking and Nix evaluation, so it does not establish a
 cause for the slowdown.
 
 Fourteen focused heap-fenced regression gates passed after the final source
 changes, covering explicit authorization, directory and collection admission,
-native publication, scope linking, Config/Build roles, selected build graphs,
+runtime publication, scope linking, Config/Build roles, selected build graphs,
 configuration sources, Nix publication and LoadPath behavior. The new explicit
 source control has 11 named assertions; actual OpenTofu publication has 15.
 The structured [[file:../../../t/fixtures/opentofu/explicit-core-sources-control.json][qualification receipt]] retains source hashes, both complete rounds and the

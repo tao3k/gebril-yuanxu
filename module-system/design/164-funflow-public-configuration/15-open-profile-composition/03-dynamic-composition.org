@@ -7,7 +7,7 @@
 * Open participants; complete selected admission
 
 The complete dependencies are [[file:01-feature-admission.org][configured-feature admission]],
-[[file:02-profile-admission.org][Profile admission]] and existing Core/native/list utilities. These declarations
+[[file:02-profile-admission.org][Profile admission]] and existing Core/runtime/list utilities. These declarations
 replace the fixed two-participant Contract from module 14 in this design family;
 do not load both into one namespace. There is no predefined language enum, pair
 of participants or task count. Contract shape covers composition data. Actual
@@ -266,7 +266,7 @@ Seven tasks are a fixture outcome only.
 
 The context owns lazy preparation and candidate slots. Composition obligations
 explicitly demand tasks, so selected Profile/feature Contracts and graph checks
-actually run before acceptance. Re-reading these slots may reuse native getter
+actually run before acceptance. Re-reading these slots may reuse runtime getter
 caches on that exact supported context, not an old parent view. New receiver,
 policy or selection requires a new applicable context/evidence; mutable getters
 still require a supported stable-view boundary. No clone of a cache flag proves

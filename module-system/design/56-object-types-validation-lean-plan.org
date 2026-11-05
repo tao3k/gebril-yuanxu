@@ -86,11 +86,11 @@ The new structures are:
 
 The original generic =agentic-ai-lab-type-validation-receipt= and ASP Harness
 adapter were superseded. =agentic-ai-lab-sandbox-resources-prototype-contract-validation=
-now returns a native POO receipt with local typed diagnostics. Alists exist
+now returns a POO receipt with local typed diagnostics. Alists exist
 only at its explicit final report projection.
 ** 10.06.56.40 Why defstruct Here
 =defstruct= remains appropriate for fixed type-fact and Lean-fact projection
-rows. Validation receipts themselves use native POO objects because they are
+rows. Validation receipts themselves use POO objects because they are
 public module-boundary values and must not create a second semantic authority.
 
 =defstruct= is used here only for closed type-fact and Lean-fact rows. A
@@ -119,7 +119,7 @@ The intended path is:
 flowchart TD
   SlotContract["Slot contract\nfield, kind, merge, default"]
   TypeFact["Type fact\nScheme defstruct"]
-  Validation["Native POO validation receipt\nvalid, diagnostics, owner"]
+  Validation["POO validation receipt\nvalid, diagnostics, owner"]
   LeanContract["Lean fact contract\nowner, name, polarity"]
   LeanProjection["Lean input projection\nstable fact rows"]
   Theorem["Lean theorem / obligation"]

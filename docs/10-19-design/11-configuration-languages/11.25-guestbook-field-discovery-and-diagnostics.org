@@ -70,7 +70,7 @@ options, then compare selected fields and documented intentional differences.
 * Field discovery is a Contract projection, not a second field catalog
 
 The editor/help/Agent consumer requests the frontend field view from the selected
-Guestbook scope. A proposed native describe procedure may expose this through the
+Guestbook scope. A proposed runtime describe procedure may expose this through the
 existing bounded use-module/with-slots binding pattern, but no new config syntax
 or command language is required. Its export/adapter is not yet implemented.
 Ordinary users need only the configuration block above.
@@ -164,7 +164,7 @@ Never suggest changing the container listener as a safe automatic repair.
 A discovery/why-value view should show that frontend.labels.env is local while
 other label keys and frontend listener are inherited. Distinguish ordinary override
 from a conflicting declaration. Different parent values resolved by a declared
-native prototype precedence are not automatically an error. Show the selected
+runtime prototype precedence are not automatically an error. Show the selected
 origin and shadowed origins, without replacing C4 with a new conflict engine.
 
 For two assignments to the same leaf in one local declaration, the proposed
@@ -179,7 +179,7 @@ Two local assignments target frontend.labels.env.
   inherited defaults may still be overridden normally
 #+end_example
 
-This duplicate-local-write gate is proposed, not existing native POO behavior.
+This duplicate-local-write gate is proposed, not existing POO behavior.
 A value computed by an arbitrary function may only have a function-definition/
 call-site origin; do not fabricate per-element provenance from the resulting data.
 Wrapper/path lowering must preserve original spans before same-prefix edits merge.
@@ -212,7 +212,7 @@ Maintainer diagnostics may preserve the typed internal failure separately.
 
 | Question | Answer for this matched task | Next falsifiable check |
 |----------+------------------------------+------------------------|
-| Is Scheme shorter or easier here? | Not established; it still exposes list construction and .o for new records. Native refinement is hidden for direct edits, which is useful but pending. | Give both blocks and field help to users/Agents; compare successful edits, corrections and ability to predict replacement versus retention. |
+| Is Scheme shorter or easier here? | Not established; it still exposes list construction and .o for new records. Runtime refinement is hidden for direct edits, which is useful but pending. | Give both blocks and field help to users/Agents; compare successful edits, corrections and ability to predict replacement versus retention. |
 | What does KCL already do well? | Published Server/Service models, short environment instances and a real backend/renderer. | Run the port/Pod-label experiment with its actual package/options; retain emitted resources and real errors rather than guessing error quality. |
 | What could be better in Agentic AI Lab? | One final-value/origin view across Profiles and concrete relationship errors, without exposing admission bookkeeping. | Reject a wrong targetPort with the correct input/output path and preserved upstream origin; preview the corrected final child after warming its parent. |
 | What is still weak? | Generic mismatch codes lack paths; field discovery and origin projection are not implemented; labels scope differs from KCL; full resource translation is incomplete. | Qualify these gaps before claiming ecosystem parity or a usability advantage. |
@@ -220,7 +220,7 @@ Maintainer diagnostics may preserve the typed internal failure separately.
 | What if inference cannot recover an origin? | Say it is unavailable; retain the computation call site and qualified artifact instead. | Exercise macro lowering, function-generated values and missing source metadata without fabricated line numbers. |
 
 The next coherent revision is: establish label/metadata scope and replacement
-semantics; project discoverable fields from the existing Schema/native Contract;
+semantics; project discoverable fields from the existing Schema/Contract;
 preserve spans through path lowering; add structured field/related-path diagnostics
 at obligation owners; then expose a simple current preview. Keep the user surface
 small while testing the internal projection/admission correspondence separately.

@@ -5,7 +5,7 @@
 * Registered Gerbil toolchain convergence
 
 The Scheme Bazel surface now requests a Gerbil capability through Bazel's
-native toolchain resolution instead of binding project rules to labels inside
+runtime toolchain resolution instead of binding project rules to labels inside
 =@local_gerbil=.  =MODULE.bazel= registers one host-derived toolchain;
 =local_gerbil_repository= emits a private implementation plus a public
 =registered_toolchain= target constrained to the detected Darwin or Linux
@@ -14,7 +14,7 @@ resolved =ToolchainInfo= through =ctx.toolchains=.
 
 This separation makes the BUILD surface declarative: =scheme/BUILD.bazel=
 declares source sets, output projections, and test roots, while the selected
-execution platform supplies =gxi=, =gxc=, =gxpkg=, =gxtest=, native tools,
+execution platform supplies =gxi=, =gxc=, =gxpkg=, =gxtest=, runtime tools,
 compiled external dependencies, physical memory, runfiles, and the canonical
 host receipt.  No Scheme project rule names =@local_gerbil= or depends on its
 internal target layout.
@@ -24,7 +24,7 @@ It normalizes an installed Gerbil and the canonical compiled dependency view;
 it does not claim remote-execution hermeticity.  A future Nix or archive-backed
 repository may register another implementation of the same toolchain type
 without changing project BUILD declarations.  It must not replace =build.ss=:
-the native Scheme project and Building Framework remain the only owners of
+the Scheme project and Building Framework remain the only owners of
 topology, scheduling, compilation policy, guards, and receipts.
 
 ** Checked GSLPH component closure
@@ -70,7 +70,7 @@ output root under the same host-pressure gate.  A failed 278-second trial that
 exposed a missing relative import is diagnostic evidence, not a performance
 baseline; GSLPH now treats =../building/facade= and wrapped relative imports as
 parser-owned module facts, and the checked manifest includes the resulting
-=building/facade=, =building/model=, and =building/native-toolchain= closure.
+=building/facade=, =building/model=, and =building/runtime-toolchain= closure.
 Revision =49a4cac696855fb129fba321813996ba840abb98= additionally declares
 =src/testing/build.ss= as an external-facing component root, so Agentic AI Lab's
 =src/testing/project.ss= resolves the complete GSLPH testing/build closure

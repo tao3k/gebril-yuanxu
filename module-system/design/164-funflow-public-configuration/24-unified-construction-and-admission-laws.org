@@ -14,21 +14,21 @@ constructor sketch or establish complete dependency discovery.
 
 This makes module 23's constructor protocol concrete and adds five checked Lean
 reference theorems plus two controls. It does not implement the protocol in the
-native dependency, and does not claim that the Scheme sketch has been executed.
-Module 21's native receiver/cache evidence remains separate and unchanged.
+runtime dependency, and does not claim that the Scheme sketch has been executed.
+Module 21's runtime receiver/cache evidence remains separate and unchanged.
 
-The public surface stays .def, native multiple inheritance, .+, .cc and =>.+.
+The public surface stays .def, runtime multiple inheritance, .+, .cc and =>.+.
 The common constructor owns capture; callers supply extra sources only when
-native semantic parents omit a consumed source identity. No user-maintained
+runtime semantic parents omit a consumed source identity. No user-maintained
 Contract list, provenance record, public annotation or new configuration DSL
 is required. The source audit and mutation exclusions in module 23 still apply.
 
 * Complete key constructor body: proposed internal fields and keyword
 
-The native object struct would acquire a private %construction field. The
+The runtime object struct would acquire a private %construction field. The
 following accessor, metadata record and sources: keyword do NOT exist today.
 The kernel's existing make-object/:init! path would initialize them. The sketch
-uses ordinary native constructor dispatch, not a public raw self/super hook.
+uses ordinary runtime constructor dispatch, not a public raw self/super hook.
 
 #+begin_src scheme
 ;; DESIGN ONLY. Internal metadata; do not allocate it through POO itself.
@@ -40,7 +40,7 @@ uses ordinary native constructor dispatch, not a public raw self/super hook.
     (map
       (lambda (source)
         (unless (object? source)
-          (error "construction-source-is-not-native-object" source))
+          (error "construction-source-is-not-poo-object" source))
         (let ((origin (object-%construction source)))
           (unless (construction-node? origin)
             (error "untracked-object-construction" source))
@@ -88,8 +88,8 @@ before the existing slot-definer has finished building it.
 * Lowering and source-loss owners
 
 #+begin_src scheme
-;; Existing native .def / .o / multi-parent lowering reaches this shape.
-;; slot-specs are native SlotSpecs; they are not eagerly read business values.
+;; Existing .def / .o / multi-parent lowering reaches this shape.
+;; slot-specs are runtime SlotSpecs; they are not eagerly read business values.
 (make-object supers: (list A B) slots: slot-specs defaults: defaults)
 
 ;; Proposed .+ owner: semantic supers remain EXACTLY the existing ones.
@@ -108,17 +108,17 @@ before the existing slot-definer has finished building it.
 
 .mix and .extend already provide their operands as supers. MOP instance, the
 descriptor form of define-type and Lens setters inherit .cc coverage once that
-single native owner is adapted. A data decoder or map-object-values is not
+single runtime owner is adapted. A data decoder or map-object-values is not
 automatically a certified semantic copy; module 23 classifies those boundaries.
 
-The existing native object/slot-spec rule expands =>.+ to => .+. Therefore the
+The existing runtime object/slot-spec rule expands =>.+ to => .+. Therefore the
 same allocation capture runs when a selected nested refinement is demanded.
 There is no separate eager provenance pass over all nested slots and no separate
 instrumentation of .def, braces or Core's merged path-prefix expansion.
 
 * Actual receiver/cache control and final-value admission
 
-The following is the structure of module 21's executed native control, with
+The following is the structure of module 21's executed runtime control, with
 force counters omitted. value is a fixture field, not a Funflow public schema.
 
 #+begin_src scheme
@@ -144,7 +144,7 @@ force counters omitted. value is a fixture field, not a Funflow public schema.
 #+end_src
 
 The public ProfileShapeContract and final identity obligations are defined in
-module 21's probe: native proto ancestry plus build/pipeline responsibilities,
+module 21's probe: runtime proto ancestry plus build/pipeline responsibilities,
 then ordered identity comparison against the final candidate's selected slots.
 That public Core path is executed evidence. It is not the complete proposed
 automatic provenance collector or a full Funflow domain Contract.
@@ -158,7 +158,7 @@ For a real Scenario, selected Profile/module/Pipeline/Check identities are
 separate admission demands. For each demand:
 
 1. Resolve the selected effective candidate and its declared Contract associations
-   in the sealed publication view, forcing only the necessary native slots.
+   in the sealed publication view, forcing only the necessary runtime slots.
 2. Complete any constructor work triggered by that demand, then collect the
    resulting candidate's immutable construction history against the same index.
 3. Invoke public yuanxu-contract-admit for every retained requirement, with
@@ -194,15 +194,15 @@ theorem capture_membership (index : Nat → List Nat) (token requirement : Nat)
 This is exact membership, not only a lower bound. inputs is parents ++ sources.
 It covers arbitrary many source nodes and shared roots. The repeated token in
 the algebraic fold denotes the ONE constructor's own requirement contribution;
-fold nodes are NOT additional native allocations or distinct fresh tokens.
-Duplicate requirements do not alter membership. Native identity deduplication
+fold nodes are NOT additional runtime allocations or distinct fresh tokens.
+Duplicate requirements do not alter membership. Runtime identity deduplication
 and collector order remain separate correspondence obligations.
 
 source_receipt_checked proves that a requirement from ANY such input must be
 retained and have a successful correlated receipt for the final candidate/context
 when the constructor's modeled compositionGate accepts. Thus .cc's original
 object can contribute requirements without becoming a semantic parent, and
-both .+ operands can contribute without changing native precedence.
+both .+ operands can contribute without changing runtime precedence.
 
 The selected-demand model makes closure a separate premise:
 
@@ -223,18 +223,18 @@ violates closure. Two kernel-checked controls exhibit an outer gate that passes
 while its selected list omits a required child. Therefore nestedGate ALONE is
 not sufficient to authorize plan publication.
 
-These theorems do not prove that a native discovery procedure reports all
+These theorems do not prove that a runtime discovery procedure reports all
 dependencies or that all reported candidate/context IDs are final. Those are
-explicit projection/protocol premises. The existing ContextSlot and native
+explicit projection/protocol premises. The existing ContextSlot and runtime
 receiver controls continue to provide separate cache evidence, not a theorem
-about mutable native heaps.
+about mutable runtime heaps.
 
 * Qualification and implementation boundary
 
 The five new theorems use only ordinary Lean axioms; no sorry or custom axiom is
 introduced. They are included in the existing YuanxuProof.ModuleSystem.Schema.Association
 target. The original three ConstructionRequirements theorems and the historical
-native receipts remain unchanged.
+runtime receipts remain unchanged.
 
 Validation on 2026-10-15: lake env lean on UnifiedConstruction.lean passed;
 lake build YuanxuProof.ModuleSystem.Schema.Association passed with 47 jobs, including the
@@ -242,8 +242,8 @@ two controls. The axiom output contains only propext, Quot.sound and
 Classical.choice; the missing-dependency theorem needs no axioms. Scheme code
 was reviewed against the source audit but was not compiled or executed.
 
-Still pending: protected metadata storage, every native entrypoint's capture
-coverage, source-token authentication, native n-ary union/dedup correspondence,
+Still pending: protected metadata storage, every runtime entrypoint's capture
+coverage, source-token authentication, runtime n-ary union/dedup correspondence,
 complete selected dependency discovery and closure, immutable-generation
 enforcement, mutation invalidation and plan-publication view validation.
 Foreign objects, raw copies and wire reconstruction do not get certified source

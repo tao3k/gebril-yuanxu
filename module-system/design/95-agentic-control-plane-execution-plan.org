@@ -88,7 +88,7 @@ These are migration inputs and validation anchors, not licenses to overload one 
 - AC-00 must preserve them and must not fold them into agentic-control-plane commits.
 
 * Operating Principles
-1. Public authoring remains 100% POO-native and functional.
+1. Public authoring remains 100% POO and functional.
 2. The Bundle is compiler output, not a new user-written record or alist DSL.
 3. C4 resolves definitions; facet-specific algebra decides semantics.
 4. The implementation begins with a read-only shadow Bundle and one vertical slice.
@@ -232,7 +232,7 @@ A parent agent delegates one restricted tool capability to a child. The child re
 
 ** Exit Criteria
 - Every entity and invariant has one unambiguous meaning.
-- Existing authoring remains POO-native.
+- Existing authoring remains POO.
 - The scenario can be evaluated without executing an external effect.
 
 * AC-02 — Bundle Kernel
@@ -320,7 +320,7 @@ Close the performance architecture with evidence from Gerbil/Gambit and gerbil-m
 - Add explicit owned, borrowed, caller-provided, and negotiated-arena lifetimes.
 - Prohibit Scheme-heap zero-copy without verified pinning.
 - Freeze bytes covered by authorization during their lease.
-- Differentially validate native fast views against canonical packets.
+- Differentially validate runtime fast views against canonical packets.
 
 ** Performance Matrix
 - batches: =1, 8, 32, 128, 1024=;

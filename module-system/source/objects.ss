@@ -6,7 +6,7 @@
 ;;; Source identity is inert POO metadata. Discovery and activation belong to
 ;;; the consuming product, not to this Core owner.
 
-(import (only-in :clan/poo/object .o object-revision object-protocol)
+(import (runtime: :clan/poo/object)
         (only-in :yuanxu/object-family/syntax defpoo-object-family))
 
 (export yuanxu-module-source-ref-prototype

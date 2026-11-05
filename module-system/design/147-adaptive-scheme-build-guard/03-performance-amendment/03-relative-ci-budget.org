@@ -36,7 +36,7 @@ ceiling_ms = ceil(B * (10000 + P) / 10000)
 
 The policy contains no machine-specific CPU count or duration.  Machine
 capacity is observed and becomes part of the comparison identity.  The
-implementation is POO-native: observations and the comparison receipt are
+implementation is POO: observations and the comparison receipt are
 immutable =.o= objects, while sorting, projection, and identity comparison use
 the shared functional combinators from =src/utilities/functional.ss=.
 

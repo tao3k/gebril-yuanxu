@@ -175,7 +175,7 @@
   (method ((object (prototype SyntaxPrototype.))) 'protocol-inline))
 
 (def poo-clos-syntax-test
-  (test-suite "hygienic POO-native CLOS declarations"
+  (test-suite "hygienic POO CLOS declarations"
     (yuanxu-test-case "generic protocol identity reaches inline method admission"
       (check (eq? (.ref (poo-clos-generic-binding-current
                          protocol-inline$poo-clos-generic) 'protocol)
@@ -197,7 +197,7 @@
                             "poo-clos-invalid-generic-option"))
           => #t))
        '((protocol) (protocol first second) (protocol . improper))))
-    (yuanxu-test-case "prototype declarations preserve native ancestry and next methods"
+    (yuanxu-test-case "prototype declarations preserve runtime ancestry and next methods"
       (check-equal? (describe-prototype (.o (:: @ SyntaxPrototype.))) 'base)
       (check-equal? (describe-prototype (.o (:: @ SyntaxChildPrototype.)))
                     '(child base #t))
@@ -217,7 +217,7 @@
         (check-equal? (prototype-crossing right left) 'fallback)
         (check-equal? (prototype-crossing left (.o)) 'fallback)))
 
-    (yuanxu-test-case "private defrules frames preserve native prototype annotation hygiene"
+    (yuanxu-test-case "private defrules frames preserve runtime prototype annotation hygiene"
       (check-equal? (framed-prototype (.o (:: @ SyntaxChildPrototype.)))
                     'framed-prototype)
       (let* ((generic (poo-clos-generic-binding-current

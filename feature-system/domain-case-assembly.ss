@@ -5,7 +5,7 @@
 ;;; Boundary: assembles accepted feature plans into one DomainCase receipt;
 ;;; component closure semantics remain owned by module-system/domain-case.
 (import (only-in :std/list/list map filter-map)
-        (only-in :clan/poo/object .ref object<-alist)
+        (runtime: :clan/poo/object)
         :yuanxu/composition/roles
         :yuanxu/feature-system/capability-model
         :yuanxu/feature-system/composition

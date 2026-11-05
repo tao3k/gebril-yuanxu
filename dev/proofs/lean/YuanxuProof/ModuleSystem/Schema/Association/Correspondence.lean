@@ -17,14 +17,14 @@ theorem inherited_root_checked {Object : Type} (projection : IdentityProjection 
     (anchor : Anchor) (rhs retained : List Nat) (context : Nat) (receipts : Nat → Receipt)
     (success : Traversal.visit projection.graph fuel (projection.encode object) [] [] = .ok done)
     (declared : anchor ∈ index) (rootAligned : anchor.root = projection.encode root)
-    (path : NativePath projection.directParents object root)
+    (path : ArtifactPath projection.directParents object root)
     (accepted : checkedBoundary done index rhs retained (projection.encode object) context receipts = .ok ()) :
     anchor.contract ∈ retained ∧
       receiptGate anchor.contract (projection.encode object) context (receipts anchor.contract) = true := by
   have member : anchor ∈ Traversal.dfsAssociations done index := by
     apply (Traversal.successful_dfs_association_iff projection.graph fuel
       (projection.encode object) done index anchor success).mpr
-    exact ⟨declared, rootAligned ▸ native_path_projects projection path⟩
+    exact ⟨declared, rootAligned ▸ runtime_path_projects projection path⟩
   have mandatory : anchor.contract ∈ (Traversal.dfsAssociations done index).map Anchor.contract ++ rhs :=
     List.mem_append_left _ (List.mem_map.mpr ⟨anchor, member, rfl⟩)
   exact accepted_right_requirement_checked _ retained _ anchor.contract mandatory accepted
@@ -34,7 +34,7 @@ theorem inherited_root_receipt_final {Object : Type} (projection : IdentityProje
     (anchor : Anchor) (rhs retained : List Nat) (context : Nat) (receipts : Nat → Receipt)
     (success : Traversal.visit projection.graph fuel (projection.encode object) [] [] = .ok done)
     (declared : anchor ∈ index) (rootAligned : anchor.root = projection.encode root)
-    (path : NativePath projection.directParents object root)
+    (path : ArtifactPath projection.directParents object root)
     (accepted : checkedBoundary done index rhs retained (projection.encode object) context receipts = .ok ())
     (law : CoreRule (receipts anchor.contract)) :
     (receipts anchor.contract).candidate = projection.encode object ∧

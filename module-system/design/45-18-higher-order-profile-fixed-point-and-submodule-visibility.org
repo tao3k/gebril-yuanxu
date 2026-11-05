@@ -88,7 +88,7 @@ already contains its output.  It then derives a same-lineage refinement as a
 pure POO extension.
 
 The public interface exposes no raw =(lambda (self super) ...)= hook.
-Predecessor or super behavior belongs to the native POO prototype mechanism,
+Predecessor or super behavior belongs to the POO prototype mechanism,
 not a patch DSL or another evaluator.  A missing predecessor produces a
 missing-target condition.  Cycles through ordinary context imports follow the
 normal fixed-point and cycle contract.
@@ -137,7 +137,7 @@ Textual order determines the order of distinct contributions.  Evidence
 correlates lineage, contribution, context inputs, and runtime realization
 without treating any of them as interchangeable.
 
-Identity representation uses native =gerbil-poo= object capabilities and
+Identity representation uses runtime =gerbil-poo= object capabilities and
 [[file:45-15-receipt-object-canonical-evidence-projection.org][the canonical
 evidence contract]].  Agentic AI Lab introduces no string-based identity system.
 
@@ -229,7 +229,7 @@ Moving a child under a different parent changes canonical causal instance
 identity because its causal parent changed.  Identity does not depend on
 mutable display paths, module names, or collection ordinals.
 
-A multi-instance Capability contract supplies an explicit POO-native element
+A multi-instance Capability contract supplies an explicit POO element
 identity or key.  List position is not an identity mechanism.  Canonical
 identity supports provenance, replay, and graph correlation; it never replaces
 live runtime POO identity and requires no submodule registry.
@@ -260,7 +260,7 @@ Parent composition declares a child prototype, embedding edge, and canonical
 causal instance identity.  Declaration does not eagerly realize every child
 runtime instance.
 
-The first demand for an exported child Capability asks native =gerbil-poo= to
+The first demand for an exported child Capability asks runtime =gerbil-poo= to
 realize that child in the current root and generation.  Repeated demands for
 the same instance identity in that root and generation observe the same POO
 realization.  Alias and re-export reach that realization rather than creating a
@@ -292,7 +292,7 @@ flowchart LR
     CP -->|"no demand"| U
     CP -->|"Capability demanded"| D
     CI -->|"identity input"| D
-    D -->|"native gerbil-poo demand"| R
+    D -->|"gerbil-poo demand"| R
     R -->|"imports and exports become active"| F
 #+end_src
 
@@ -385,13 +385,13 @@ flowchart TB
 - [ ] Fresh replay realizes canonical causality in a new runtime object.
 - [ ] Moving a child to a different parent changes canonical causal instance
   identity.
-- [ ] Multi-instance contracts provide explicit POO-native keys rather than
+- [ ] Multi-instance contracts provide explicit POO keys rather than
   list positions.
 - [ ] Submodule identity uses neither display paths, module names, ordinals,
   nor a registry.
 - [ ] Parent composition declares child prototypes and embedding identity
   without eager child realization.
-- [ ] First Capability demand realizes a child through native =gerbil-poo=.
+- [ ] First Capability demand realizes a child through runtime =gerbil-poo=.
 - [ ] Same-instance repeated demand, alias, and re-export observe one runtime
   realization in the same root and generation.
 - [ ] Unused submodules remain unrealized.
@@ -401,7 +401,7 @@ flowchart TB
   evaluator.
 - [ ] Distinct contribution identities remain ordered refinements even when
   their produced values appear similar.
-- [ ] Identity uses native POO objects and canonical evidence rather than
+- [ ] Identity uses POO objects and canonical evidence rather than
   strings.
 - [ ] Missing targets and unrelated singleton providers produce structured
   Capability conditions.

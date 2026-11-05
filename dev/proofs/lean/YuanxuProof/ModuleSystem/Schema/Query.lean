@@ -5,7 +5,7 @@
 import LeanPoo.Functional.Assembly
 
 /-!
-The formal core shared by native POO Objects, identity-bearing Entity roles,
+The formal core shared by POO Objects, identity-bearing Entity roles,
 Contract-scoped Elements, Relations and bounded read-only Queries.
 
 This model deliberately does not formalize GQL syntax or execution. A GQL
@@ -19,11 +19,11 @@ abbrev ObjectIdentity := String
 abbrev QueryIdentity := String
 abbrev SemanticRevision := Nat
 
-structure NativeObject where
+structure RuntimeObject where
   identity : ObjectIdentity
   deriving DecidableEq, Repr
 
-/-- Entity is a role of one native Object, not a second stored object. -/
+/-- Entity is a role of one runtime Object, not a second stored object. -/
 structure EntityRole where
   objectIdentity : ObjectIdentity
   deriving DecidableEq, Repr
@@ -84,7 +84,7 @@ def evaluateQuery (space : ElementSpace) (query : Query) (_admitted : query.Admi
     carriesActionAuthority := false
     runtimeExecuted := false }
 
-theorem entityRolePreservesNativeObjectIdentity (object : NativeObject) :
+theorem entityRolePreservesRuntimeObjectIdentity (object : RuntimeObject) :
     (EntityRole.mk object.identity).objectIdentity = object.identity := by
   rfl
 
@@ -129,7 +129,7 @@ def queryFactory : LeanPoo.Functional.Factory (ElementSpace × Query) (fun _ => 
   fun (space, query) => (admitQuery space query).map fun checked =>
     evaluateQuery space checked.val checked.property.2
 
-theorem projection_does_not_claim_native_execution (space : ElementSpace) (query : Query)
+theorem projection_does_not_claim_runtime_execution (space : ElementSpace) (query : Query)
     (admitted : query.Admitted space) : (evaluateQuery space query admitted).runtimeExecuted = false := rfl
 
 #guard (queryFactory (⟨1, ["a"]⟩, ⟨"q", ["a"], true, true⟩)).toOption.isSome

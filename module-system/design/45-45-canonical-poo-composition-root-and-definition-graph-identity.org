@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 #+title: Canonical POO Composition Root and Definition-Graph Identity
-#+subtitle: Lazy semantic projection, directional native operations, closure identity, and cyclic definitions
+#+subtitle: Lazy semantic projection, directional runtime operations, closure identity, and cyclic definitions
 #+startup: overview
 
 * RFC status
 
 - Status :: Accepted design
 - Kind :: Normative design module
-- Semantic core :: Native =gerbil-poo= objects, prototypes, and operations
+- Semantic core :: Runtime =gerbil-poo= objects, prototypes, and operations
 - Related modules :: =45-35-macro-expanded-poo-prototype-definition-identity.org= and =45-44-semantic-generation-transition-and-execution-identity.org=
 
 This module defines how an active POO composition becomes a canonical semantic root without serializing runtime object representations, forcing lazy slots, or reimplementing =gerbil-poo= evaluation.
@@ -18,7 +18,7 @@ This module defines how an active POO composition becomes a canonical semantic r
 * Core decision
 
 #+begin_quote
-The canonical active POO composition root is a lazy Merkle graph whose nodes have stable POO definition identities and whose labeled edges preserve native operation roles. It preserves explicit identity and direction, separates provenance, does not force slot evaluation, and represents cyclic definitions through definition-SCC projection.
+The canonical active POO composition root is a lazy Merkle graph whose nodes have stable POO definition identities and whose labeled edges preserve runtime operation roles. It preserves explicit identity and direction, separates provenance, does not force slot evaluation, and represents cyclic definitions through definition-SCC projection.
 #+end_quote
 
 * Three identity domains
@@ -42,7 +42,7 @@ The canonical projection describes:
 - the root POO definition identity;
 - prototype and extension relationships;
 - slot definition identities;
-- native POO operation identities;
+- POO operation identities;
 - operation operands and their semantic roles;
 - captured pure dependency identities;
 - imports, contracts, priorities, and capability requirements;
@@ -53,7 +53,7 @@ The projection does not serialize a printed runtime object or force a lazy slot 
 #+begin_src mermaid
 flowchart LR
     R["Live gerbil-poo object graph"] -->|"project definitions without forcing slot values"| P["Canonical POO definition graph"]
-    P -->|"preserve native operation roles and direction"| N["Semantic node and edge projection"]
+    P -->|"preserve runtime operation roles and direction"| N["Semantic node and edge projection"]
     N -->|"apply domain-separated content addressing"| I["POOSemanticProjectionIdentity"]
     R -->|"record address and allocation only operationally"| O["Execution receipt"]
     S["Source path, line, and macro call site"] -->|"link as non-semantic provenance"| E["Provenance evidence"]
@@ -62,25 +62,25 @@ flowchart LR
 
 Identity projection must not trigger fixed-point evaluation, runtime handoff, capability use, or a demand for a business slot.
 
-* Native operation direction
+* Runtime operation direction
 
-A native operation may be directional. Its canonical projection preserves:
+A runtime operation may be directional. Its canonical projection preserves:
 
 - operation semantic identity;
 - operand roles;
 - operand order or edge direction where semantic;
 - resulting definition identity.
 
-Directional operands must not be sorted merely to obtain a stable digest. Sorting would erase native POO semantics.
+Directional operands must not be sorted merely to obtain a stable digest. Sorting would erase POO semantics.
 
 Only an operation already proven canonical and presentation-order-independent for its operands may normalize those operands as an unordered or canonically sorted collection.
 
 #+begin_src mermaid
 flowchart LR
-    B["Base prototype identity"] -->|"role: base operand"| O["Directional native POO operation"]
+    B["Base prototype identity"] -->|"role: base operand"| O["Directional POO operation"]
     X["Extension identity"] -->|"role: extending operand"| O
     O -->|"preserve operation and operand roles"| R["Result definition identity"]
-    U["Order-independent native operation"] -->|"normalize only after canonicality is established"| C["Canonical operand collection"]
+    U["Order-independent runtime operation"] -->|"normalize only after canonicality is established"| C["Canonical operand collection"]
 #+end_src
 
 This RFC does not assign semantics to specific =gerbil-poo= operators before their real interfaces and laws are verified.
@@ -211,7 +211,7 @@ github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
 - Source relocation invariance :: Moving source without semantic changes does not alter semantic identity.
 - Hygienic alpha normalization :: Hygiene-preserving renaming does not create a semantic change.
 - Semantic sensitivity :: Operation, operand role, priority, contract, and semantic dependency changes alter identity.
-- Direction preservation :: Canonicalization does not erase directional native operations.
+- Direction preservation :: Canonicalization does not erase directional runtime operations.
 - Lazy projection :: Identity construction does not force slot evaluation.
 - Cycle closure :: Cycles use definition-graph projection instead of evaluated fixed-point hashing.
 - Explicit-identity preservation :: Structurally similar definitions with distinct semantic identities remain distinct.
@@ -225,7 +225,7 @@ Projection evidence records:
 - projection schema and domain-separation identity;
 - root POO definition identity;
 - node and labeled-edge counts;
-- native operation identities and operand roles;
+- runtime operation identities and operand roles;
 - definition-SCC member and external-edge identities;
 - captured pure dependency identities;
 - rejected non-projectable captures;
@@ -238,7 +238,7 @@ Evidence may disclose opaque identities under redaction, but it must preserve en
 
 - [ ] Define the canonical POO definition-graph projection schema.
 - [ ] Project stable definition identities without forcing slot values.
-- [ ] Preserve native operation identity, operand role, and direction.
+- [ ] Preserve runtime operation identity, operand role, and direction.
 - [ ] Normalize only operations whose order independence has been verified.
 - [ ] Define intensional identity for functions and delayed computations.
 - [ ] Canonicalize captured pure values and semantic dependencies.
@@ -257,7 +257,7 @@ Evidence may disclose opaque identities under redaction, but it must preserve en
 
 - Do not serialize printed runtime POO objects as semantic identity.
 - Do not prove general extensional equivalence of Scheme functions.
-- Do not sort directional native-operation operands.
+- Do not sort directional runtime-operation operands.
 - Do not use source paths or line numbers as semantic identity.
 - Do not hash runtime addresses, capabilities, continuations, or mutable cells.
 - Do not evaluate a value fixed point to identify a cyclic definition graph.

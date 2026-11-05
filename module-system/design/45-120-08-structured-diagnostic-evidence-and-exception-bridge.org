@@ -29,7 +29,7 @@ It also defines:
 
 * Central decision
 
-The source of diagnostic truth is immutable native POO evidence, not a
+The source of diagnostic truth is immutable POO evidence, not a
 text log.
 
 Human explanation, automated recovery policy, Org or CLI rendering,
@@ -118,7 +118,7 @@ identified observation.
 
 * Shared recovery-option values
 
-A recovery option is a native POO value derived from diagnostic
+A recovery option is a POO value derived from diagnostic
 evidence.  It identifies:
 
 - the source diagnostic and generation;
@@ -198,12 +198,12 @@ exception clauses, trace mutations, or recovery macros in the Module
 composition interface.
 
 Advanced diagnostic projections, recovery options, and policies are
-native =gerbil-poo= values composed through existing POO and functional
+runtime =gerbil-poo= values composed through existing POO and functional
 boundaries.
 
 A later RFC may admit a hygienic projection macro only when necessary
 syntax or phase semantics cannot be represented by ordinary functions
-and native POO values.
+and POO values.
 
 * Implementation admission checklist
 
@@ -218,7 +218,7 @@ and native POO values.
 - [ ] Keep all semantic inspection projections pure.
 - [ ] Ensure inspection does not create a generation or consume a
   recovery budget.
-- [ ] Represent candidate recovery options as native POO values.
+- [ ] Represent candidate recovery options as POO values.
 - [ ] Treat human and automated selection as the same kind of pure
   decision proposal.
 - [ ] Require authorization after every option selection.

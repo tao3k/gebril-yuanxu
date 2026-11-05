@@ -1,9 +1,9 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Rebuilt Isolated Native Combination and Selected-Child Boundary
+#+title: Rebuilt Isolated Runtime Combination and Selected-Child Boundary
 #+date: [2026-10-15]
-#+property: STATUS executed-native-combination-and-test-local-closure-no-construction-hook-no-module-adapter-no-loader
+#+property: STATUS executed-runtime-combination-and-test-local-closure-no-construction-hook-no-module-adapter-no-loader
 
 * Result and scope
 
@@ -11,10 +11,10 @@
 schema-owned selected responsibility projection and internal receipt coverage;
 the hand-fed input in this module remains a historical fixture, not that adapter.
 
-A freshly rebuilt source-only Gerbil environment executes the COMPLETE native
+A freshly rebuilt source-only Gerbil environment executes the COMPLETE runtime
 sequence: multiple inheritance -> .+ -> .cc -> deferred nested =>.+. The final
 probe exits 0 with 30 assertions. Parent Pipeline warm-up happens BEFORE this
-sequence. The final native run is not inferred from separate operation tests.
+sequence. The final runtime run is not inferred from separate operation tests.
 
 The public Core yuanxu-contract-admit protocol admits the final shape/value
 fixture and rejects stale final Check identities. A separate TEST-LOCAL Contract
@@ -24,11 +24,11 @@ proposed Module resolver, automatic provenance collector or Loader.
 | Artifact | Evidence |
 |----------+----------|
 | [[file:25-isolated-combined-validation/probe.ss][probe.ss]] | Complete executed objects, public Contracts, counters, receipt checks and negative controls |
-| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/native.log][native.log]] | Final output, including assertions=30 |
-| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/native-receipt.json][native-receipt.json]] | Exact pinned source hashes, interpreter, fresh environment, command, timeout, output/probe/runner hashes and exit |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/scheme.log][native.log]] | Final output, including assertions=30 |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/scheme-receipt.json][runtime-receipt.json]] | Exact pinned source hashes, interpreter, fresh environment, command, timeout, output/probe/runner hashes and exit |
 | [[file:25-isolated-combined-validation/run.py][run.py]] | Fresh-environment replay from the pinned archive, refusing to overwrite evidence |
 | [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/lean-reference.log][Lean reference check]] | Separate successful recheck of module 24's five theorems and two controls |
-| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/qualification.json][Qualification summary]] | Links native and reference evidence by source hashes, without claiming interpreter correspondence |
+| [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/qualification.json][Qualification summary]] | Links runtime and reference evidence by source hashes, without claiming interpreter correspondence |
 | [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/25-isolated-combined-validation/development-attempts.json][Development attempts]] | Four original failed logs and preliminary success; draft source snapshots reconstructed from the edits and labeled as such |
 
 * Exact reconstruction boundary
@@ -46,14 +46,14 @@ it neither installs dependencies nor changes the real Core package declaration.
 
 The runtime is /opt/homebrew/bin/gxi, Gerbil 1cfb032 on Gambit ea114fc. A fresh
 GERBIL_PATH and explicit GERBIL_LOADPATH isolate project/package source; standard
-libraries still come from that installed interpreter. This is interpreted native
+libraries still come from that installed interpreter. This is interpreted runtime
 source evidence, not hermetic AOT, installed-package qualification or remote CI.
 The old incompatible installed artifact was not repaired or used as a pass.
 
 * One executed sequence, with source information losses still visible
 
 Root in the complete probe defines build/test/package and a Pipeline whose
-checks map selected-checks through the native outer effective-config lexical
+checks map selected-checks through the runtime outer effective-config lexical
 binding. The key executed continuation is:
 
 #+begin_src scheme
@@ -74,9 +74,9 @@ binding. The key executed continuation is:
   (yuanxu-contract-admit ProfileShapeContract Final context))
 #+end_src
 
-Native assertions establish both Root and Policy are direct parents of Joined;
+Runtime assertions establish both Root and Policy are direct parents of Joined;
 .+ retains Joined but not Override's own identity; .cc retains Patched's parent
-list but not Patched itself as a direct parent. These are existing native
+list but not Patched itself as a direct parent. These are existing runtime
 semantics. The sources: keyword and private construction metadata proposed in
 modules 23/24 are ABSENT from this run. It does not certify automatic provenance
 retention or a complete Contract association mechanism.
@@ -96,7 +96,7 @@ parent's Pipeline and Check list remain the same cached objects.
 #+end_example
 
 ProfileShapeContract derives from the PUBLIC YuanxuObjectContract. Its
-responsibilities check build and pipeline as native objects. Its own obligation
+responsibilities check build and pipeline as runtime objects. Its own obligation
 compares the ordered Pipeline checks with eq? on the final candidate's selected
 Check slots and verifies the context target. It is a fixture Contract, not the
 full Funflow schema. Every accepted receipt inspected by receipt-ok? must match
@@ -104,7 +104,7 @@ the Contract identity, final candidate, context and classification identities.
 
 Frozen explicitly reuses parent-checks after adding smoke; it is refused with
 stale-final-checks. SameCountFrozen retains only three selected names but replaces
-build via the full native combination; its old three-element parent list is ALSO
+build via the full runtime combination; its old three-element parent list is ALSO
 refused. Counts or printed values alone cannot establish final object identity.
 
 * What missing-child rejection does, and does not, establish
@@ -129,20 +129,20 @@ child objects. CheckPolicyContract rejects value='forbidden.
 (assertions 30)
 #+end_example
 
-The first pair uses Final with smoke missing from completed-checks: native outer
+The first pair uses Final with smoke missing from completed-checks: runtime outer
 shape/final-identity admission passes, while the closure fixture refuses with
 incomplete-selected-closure. The second successful case includes every required
 child and admits its actual final value. BadSmoke then refines the inherited
 smoke to forbidden: outer shape/identity admission still passes, but the complete
 child closure refuses with selected-child-refused.
 
-Thus PUBLIC NATIVE ADMISSION does not automatically infer arbitrary missing
+Thus PUBLIC RUNTIME ADMISSION does not automatically infer arbitrary missing
 dependency checks. A suitable Contract can enforce a KNOWN selected-child
 boundary. Complete discovery of unknown/custom dependencies remains an adapter
 and protocol premise. These results do not close arbitrary cyclic, effectful,
 concurrent or hidden-demand configurations.
 
-* Native observations versus Lean premises
+* Runtime observations versus Lean premises
 
 The existing UnifiedConstruction.lean recheck exits 0. capture_membership and
 source_receipt_checked establish requirement-union laws in the reference model.
@@ -150,18 +150,18 @@ nested_dependency_checked requires Closed; missing_dependency_not_closed proves
 an omitted declared child violates it. Two controls show an outer gate can pass
 without that closure. Axiom output remains limited to ordinary Lean axioms.
 
-This NEW native transcript is NOT automatically translated into Lean fixtures.
+This NEW runtime transcript is NOT automatically translated into Lean fixtures.
 Module 21's earlier transcript correspondence and historical receipt remain
 unchanged. The new concrete run and the reference laws are distinct evidence.
 Still assumed/pending are:
 
-- Complete native construction capture, protected provenance and token/index
+- Complete runtime construction capture, protected provenance and token/index
   authenticity; .+ and .cc source loss is observed, not fixed here.
-- Faithful native object/view/context identity projection into the model.
+- Faithful runtime object/view/context identity projection into the model.
 - Complete selected dependency discovery, multi-level closure and cycle policy;
   this fixture covers one selected Check layer under a final Pipeline.
 - Stable immutable generations and explicit dependencies for mutable external
-  state; no general native cache-invalidation theorem is established.
+  state; no general runtime cache-invalidation theorem is established.
 - Correct custom Contract protocol laws and unchanged source/policy view through
   plan publication. No real plan publication or runtime Session runs here.
 
@@ -176,7 +176,7 @@ python3 docs/10-19-design/10.06-poo-module-system/164-funflow-public-configurati
   --archive /private/tmp/agenticailab-poo-099b381-source.tar.gz --label replay
 #+end_src
 
-The runner rebuilds another fresh directory and refuses an existing label. Native
+The runner rebuilds another fresh directory and refuses an existing label. Runtime
 execution is bounded by 60 seconds; timeout is a refusal, never a pass. Source
 hash drift stops reconstruction. No package installation, uninstallation,
 dependency upgrade or Loader call occurs.

@@ -5,8 +5,7 @@
 
 ;;; Multi-argument applicability, specificity and standard method combination.
 
-(import (only-in :clan/poo/object
-                 .ref .slot? object? compute-precedence-list!)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop element?)
         (only-in :std/list/list drop filter-map find flatten1)
         "types.ss" "objects.ss" "method-combination.ss"
@@ -23,7 +22,7 @@
         poo-clos-call-next-method poo-clos-next-method?
         poo-clos-funcall poo-clos-setf)
 
-;;; Native memq preserves identity comparison; length difference yields its
+;;; Runtime memq preserves identity comparison; length difference yields its
 ;;; position in the finite C4 precedence list without a project-local walker.
 ;; : (forall (a) (-> a [a] (Maybe Natural)))
 (def (identity-index target values)
@@ -37,7 +36,7 @@
        (element? ClosInstanceState (.ref value '%poo-clos-state))))
 
 ;;; Logical class precedence follows the identity-preserved class generation;
-;;; native POO prototypes remain the sole source of its C4 order.
+;;; POO prototypes remain the sole source of its C4 order.
 ;; : (-> SchemeValue (Maybe ClosClass))
 (def (argument-clos-class argument)
   (and (clos-instance-state-bearing? argument)
@@ -62,7 +61,7 @@
                      (compute-precedence-list! argument))))
          0)))
 
-;;; Eql ranks before every class; a class rank is its native C4 distance; the
+;;; Eql ranks before every class; a class rank is its runtime C4 distance; the
 ;;; universal specializer follows every applicable class.
 ;; : (-> ClosSpecializer SchemeValue (Maybe Natural))
 (def (specializer-distance specializer argument)

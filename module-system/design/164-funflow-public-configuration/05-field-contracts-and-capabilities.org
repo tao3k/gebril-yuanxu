@@ -15,7 +15,7 @@ downstream users keep the bounded module interface in the complete case.
 
 The source distinction matters. In [[file:../../../../modules/workflow/types.ss][workflow/types.ss]],
 yuanxu-cicd-command-vector? accepts a nonempty proper string list and
-yuanxu-cicd-profile-ref? accepts symbols, native objects or nonempty recursive
+yuanxu-cicd-profile-ref? accepts symbols, runtime objects or nonempty recursive
 reference lists. [[file:../../../../modules/workflow/objects.ss][workflow/objects.ss]] mainly checks list shape for inputs,
 config, artifacts, cache, secrets and result. Its durable action vocabulary
 comes from [[file:../../../../modules/memory-core/durable/policy.ss][the durable policy owner]]. Those checks do not establish complete
@@ -162,7 +162,7 @@ that admission stage; no Loader is implied.
 For this recipe, nonempty inputs/config/observation payloads fail the selected
 payload Contracts instead of passing through an unqualified list? check. A
 future supported consumer publishes an actual stronger payload Contract and
-native capability refinement. This policy does not remove existing forwarding
+runtime capability refinement. This policy does not remove existing forwarding
 APIs or claim those consumers can never support nonempty values.
 
 Likewise, '(unknown-decoder) passes the structural ResultProtocolContract but
@@ -173,7 +173,7 @@ accepted only when the selected capability declares it supported.
 * Context is supplied by the admission owner
 
 The context used by [[file:06-admission-algorithms.org][the admission algorithms]] and their
-[[file:07-admission-source.org][complete proposed source bodies]] has these native values:
+[[file:07-admission-source.org][complete proposed source bodies]] has these runtime values:
 
 | Slot | Owner and meaning |
 |------+-------------------|
@@ -189,8 +189,8 @@ The context used by [[file:06-admission-algorithms.org][the admission algorithms
 
 Required context/capability fields must be structurally validated before use.
 The required declaration has proper unique symbolic vocabularies, a proper list
-of result-protocol values, native objects for inline-sandbox-profiles,
-and all six payload-contracts entries as native Contracts. Missing or malformed
+of result-protocol values, runtime objects for inline-sandbox-profiles,
+and all six payload-contracts entries as Contracts. Missing or malformed
 context produces invalid-admission-context. The complete source checks declared
 local compatibility and retained source identity, not the provenance of those
 declarations or actual runtime availability. A later boundary must report

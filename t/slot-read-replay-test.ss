@@ -33,7 +33,7 @@
     parent: (gitea-application (.get documents-value postgresql value) (.get documents-value gitea value))))
 (.def (ReplayFixture @ DirectoryFixture) .prepare: prepare)
 (def (admit contract value) (.call contract .admit value #f))
-;; Each accessor below is the public native operation, not a hand-built trace.
+;; Each accessor below is the public runtime operation, not a hand-built trace.
 (def accessors
   (list (let (site (make-slot-cache 'port)) (cut .ref/inline <> site)) (cut .ref <> 'port)
         (lambda (object) (.get object port))
@@ -205,7 +205,7 @@
                     "stale slot dependency")
       (check-equal? calls 0)
       (set! completed (+ completed 1)))
-    (yuanxu-test-fixture "native fallback retains delegate source on warm reads"
+    (yuanxu-test-fixture "runtime fallback retains delegate source on warm reads"
       (fixture DirectoryFixture)
       (def path (path-expand "delegate.ss" (.get fixture root)))
       (write-source path "(.def Observed port: 5432)\n")

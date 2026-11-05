@@ -7,14 +7,7 @@
 ;;; Invariant: gerbil-poo owns primitive Type validation and prototype dispatch;
 ;;; this module owns only evidence-bearing Yuanxu classification/contracts.
 
-(import (only-in :clan/poo/object
-                 .cc
-                 .all-slots
-                 .o
-                 .ref
-                 .slot?
-                 compute-precedence-list!
-                 object?)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop
                  .defgeneric
                  define-type
@@ -25,7 +18,7 @@
                  TypeError?
                  validate
                  raise-type-error)
-        (only-in :clan/poo/object-contract-flow checked-action)
+        (only-in :clan/poo/object-contract checked-action)
         (only-in :clan/poo/type Record Symbol List)
         (only-in :std/error Error-irritants)
         (only-in :std/list/list every)
@@ -44,6 +37,7 @@
         yuanxu-contract-obligations
         yuanxu-context-contract-obligations
         yuanxu-contract-admit
+        yuanxu-value-admit
         call-with-contract-analysis-root
         yuanxu-classification-evidence
         yuanxu-classification-evidence?
@@ -106,7 +100,7 @@
 
 (define-type (EvidenceIdentity @ Type.) .element?: yuanxu-type-identity?)
 ;; These are required opaque REFERENCES, not configurable untyped data. Slot
-;; presence is native; normalization must not rewrite either referent. Their
+;; presence is runtime; normalization must not rewrite either referent. Their
 ;; relation to classification/publication is checked below and at bind-evidence.
 (def EvidenceReferences
   (.o candidate: (instance Slot) context: (instance Slot)))
@@ -123,7 +117,7 @@
                 obligation-evidence: [(List Object)] accepted?: [Bool]
                 diagnostics: [(List Object)]))
   slots: =>.+ EvidenceReferences
-  ;; Only contextual relations remain here; native Slot/Record owns shape.
+  ;; Only contextual relations remain here; runtime Slot/Record owns shape.
   (.element? (inherited)
     (lambda (value)
       (and ((inherited) value)
@@ -245,15 +239,44 @@
   (contract-admit-evidence contract candidate context owned?
     (and owned? (contract-analysis-child? pending))))
 
-;; Only the native VALUE action is inside this refusal boundary. Contextual
+;; Named runtime value Types are not contextual Contract adapters. Module
+;; publication/scope admission uses this one value path; domain .admit retains
+;; its explicit responsibilities and authorization protocol above.
+(def (yuanxu-value-admit descriptor candidate context)
+  ;; An independent value boundary cannot borrow a pending child permission.
+  (current-contract-analysis #f)
+  (validate Type descriptor)
+  (unless (and (.slot? descriptor 'identity) (symbol? (.get descriptor identity))
+               (not (ormap (cut .slot? descriptor <>) '(.classify .obligations .admit))))
+    (error "value admission requires a named value Type" descriptor))
+  (def revision (object-revision descriptor))
+  (let/cc refuse
+    (def checked
+      (with-catch
+        (lambda (cause)
+          (if (TypeError? cause)
+            (refuse (value-contract-refusal descriptor candidate context cause))
+            (raise cause)))
+        (cut validate descriptor candidate)))
+    ;; Runtime obligations/constraints ran inside validate. Platform policy is
+    ;; distinct and must inspect the actual normalized subject, on every call.
+    (def obligations (context-contract-obligations context descriptor checked))
+    (unless (= revision (object-revision descriptor))
+      (error "value Type changed during admission" descriptor))
+    (def classification
+      (yuanxu-classification-evidence (.get descriptor identity) checked #t '() context))
+    (yuanxu-validation-evidence descriptor checked classification obligations
+      (null? obligations) obligations context)))
+
+;; Only the runtime VALUE action is inside this refusal boundary. Contextual
 ;; obligations, source checks and publication callbacks are deliberately outside.
-;; Preserve native diagnostic objects/paths and the original condition itself.
-(def (native-value-refusal contract candidate context cause)
+;; Preserve runtime diagnostic objects/paths and the original condition itself.
+(def (value-contract-refusal contract candidate context cause)
   (def details (Error-irritants cause))
   (def rejected
     (match details
       ([_where value (? list? _failures)]
-       ;; Native rebinding derives the checked root from the supplied root.
+       ;; Runtime rebinding derives the checked root from the supplied root.
        ;; A nested validator's child must never replace that root in evidence.
        (if (and (object? candidate) (object? value)
                 (memq candidate (compute-precedence-list! value))) value candidate))
@@ -265,8 +288,8 @@
                 (every (lambda (issue)
                          (and (object? issue) (.slot? issue 'kind) (.slot? issue 'path))) failures))
          failures
-         (list (.o kind: 'native-type-refused path: '() cause: cause))))
-      (else (list (.o kind: 'native-type-refused path: '() cause: cause)))))
+         (list (.o kind: 'type-contract-refused path: '() cause: cause))))
+      (else (list (.o kind: 'type-contract-refused path: '() cause: cause)))))
   (def classification
     (yuanxu-classification-evidence (.get contract identity) rejected #f issues context))
   (.cc (yuanxu-validation-evidence contract rejected classification '() #f issues context)
@@ -284,7 +307,7 @@
           (with-catch
             (lambda (cause)
               (if (TypeError? cause)
-                (refuse (native-value-refusal contract candidate context cause))
+                (refuse (value-contract-refusal contract candidate context cause))
                 (raise cause)))
             (cut action candidate)))
         candidate))
@@ -348,13 +371,13 @@
   ;; Optional public POO Type. The single producer normalizes once before
   ;; contextual classification; its result is the evidence/publication subject.
   value-contract: #f
-  ;; Native FUN composition is prepared on the effective descriptor, not per
+  ;; Runtime FUN composition is prepared on the effective descriptor, not per
   ;; candidate. It validates afresh and returns its actual normalized value.
   prepared-value-action: (if value-contract (checked-action value-contract values) values)
   ;; Contextual child Contracts, not a duplicate map of public field Types.
   ;; Ordinary value responsibilities belong to value-contract/ObjectContract.
   responsibilities: (.o)
-  ;; The native value Type already owns shape, normalization and refinements.
+  ;; The runtime value Type already owns shape, normalization and refinements.
   ;; Domains do not repeat a success classifier just to project its receipt.
   .classify: (cut yuanxu-classification-evidence identity <> #t '() <>)
   .obligations: yuanxu-contract-empty-obligations
@@ -415,7 +438,7 @@
        '.obligations obligations
        'sexp identity))
 
-;;; Object responsibility admission delegates every slot to its native Contract.
+;;; Object responsibility admission delegates every slot to its Contract.
 ;;; The map is a POO value; inherited map slots follow upstream precedence.
 (def (yuanxu-responsibility-evidence candidate context responsibilities slot owned?)
   (if (.slot? candidate slot)
@@ -440,7 +463,7 @@
                       #f (.ref classification 'diagnostics) context))
         (owned-read-copy! evidence (.cc evidence 'responsibility slot))))))
 
-;;; Domain declarations inherit this native prototype-aware responsibility contract.
+;;; Domain declarations inherit this runtime prototype-aware responsibility contract.
 (def (yuanxu-prototype-classify identity proto candidate context)
   (let (accepted?
         (and (object? candidate)
@@ -450,7 +473,7 @@
      (if accepted? '()
        (list (.o kind: 'prototype-mismatch type-identity: identity))) context)))
 
-;;; Invariant: native objects must prove prototype ancestry before slot obligations run.
+;;; Invariant: runtime objects must prove prototype ancestry before slot obligations run.
 (define-type (YuanxuObjectContract. @ YuanxuContract.
                                          identity proto)
   .classify: (cut yuanxu-prototype-classify identity proto <> <>))

@@ -3,5 +3,5 @@
 (import :std/test "./qualification/module-scale/fixture.ss")
 (export module-declaration-calibration-test)
 (def module-declaration-calibration-test
-  (test-suite "Native declaration calibration"
+  (test-suite "Runtime declaration calibration"
     (declaration-scale-case "sixteen real module declarations" 16)))

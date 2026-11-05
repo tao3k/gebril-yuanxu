@@ -46,7 +46,7 @@ The [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d
 [[https://github.com/tao3k/hivebus/blob/edc6095bed63a3c14f9f7147c931378d3e9d1609/units/self/flakeOutputs.nix][export policy]] owns advanced POP renaming separately. Users are not required
 to restate those implementation layers merely to change the host address.
 The [[https://nixos.org/manual/nixos/stable/#sec-writing-modules][NixOS module model]] is a useful control for typed option/configuration
-composition; arbitrary native functions alone do not supply its ecosystem tooling.
+composition; arbitrary runtime functions alone do not supply its ecosystem tooling.
 
 For Agentic AI Lab, interface/config/contracts separation should be infrastructure that
 maintainers and Agents can navigate. It should not burden the user changing one

@@ -37,7 +37,7 @@ POO values would not form a redaction boundary.
 Agentic AI Lab adds a distinct guarded receiver rather than patching global =.ref=
 behavior.  Every inherited slot is replaced by an upstream
 =$computed-slot-spec= whose resolver first performs a pure, typed admission
-decision.  The public surface remains native POO: policies and receipts are
+decision.  The public surface remains POO: policies and receipts are
 validated Contract values, and the returned subject is an ordinary composed
 POO object.
 
@@ -71,7 +71,7 @@ remains lexical and becomes the computed-slot result after tracing finishes.
 The upstream printer therefore sees a symbolic label, no arguments, and one
 closed result symbol.
 
-Each phase also has a native =YuanxuDebugSlotReceiptContract= value:
+Each phase also has a runtime =YuanxuDebugSlotReceiptContract= value:
 
 | Outcome | Accepted | Stable reason |
 |---------+----------+---------------|
@@ -166,5 +166,5 @@ The framework gate must prove:
 The existing upstream debug-admission suite remains responsible for proving
 raw =DDT= / =trace-poo= behavior and demonstrating that upstream output is not
 a redaction boundary.  Full acceptance also requires the module-system source
-authoring gate, native process heap ceiling, observability regression suites,
+authoring gate, runtime process heap ceiling, observability regression suites,
 and the pinned ASP project-policy scan.

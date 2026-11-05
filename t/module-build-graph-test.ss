@@ -5,12 +5,14 @@
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/make make)
         (only-in :std/list/list find)
-        (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list core-read-module/sexp)
-        (only-in :clan/poo/object .o .+ .cc .ref .get .call object? NoApplicableMethod?)
+        (only-in :gerbil/expander eval-syntax current-expander-context make-top-context syntax->list core-read-module/sexp
+                 core-import-module module-context-path)
+        (only-in :clan/poo/object .o .+ .cc .ref .get .call object? NoApplicableMethod?
+                 object-slots $constant-slot-spec?)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/type String)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
+        (only-in :clan/poo/mop Type.)
         (only-in :yuanxu/feature-system/model feature-descriptor)
         (only-in :yuanxu/feature-system/capability-model feature-projection-request)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
@@ -22,7 +24,7 @@
         (only-in "../core-spec.ss" core-spec)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
 (export module-build-graph-test)
-(def Scope (yuanxu-predicate-contract 'test/build-scope object? (lambda (_v _c) '())))
+(def Scope (.cc Type. identity: 'test/build-scope .element?: object?))
 (def (write-file path text)
   (create-directory* (path-directory path))
   (call-with-output-file (list path: path truncate: #t) (lambda (port) (display text port))))
@@ -42,7 +44,7 @@
         (lambda (id)
           (let (directory (path-expand (string-append "modules/" id) root))
             (write-file (path-expand "types.ss" directory)
-             "(import (only-in :clan/poo/object object?) (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)) (def Scope (yuanxu-predicate-contract 'fixture object? (lambda (_v _c) '()))) (export Scope)")
+             "(import (only-in :clan/poo/object object?) (only-in :clan/poo/mop Type.)) (def Scope (.cc Type. identity: 'fixture .element?: object?)) (export Scope)")
             (write-file (path-expand "objects.ss" directory)
              "(import (only-in :clan/poo/object .o) \"types.ss\") (def Defaults (.o retained: #t)) (export Defaults)")
             (write-file (path-expand "config.ss" directory) "(import (only-in :std/source this-source-file)) (def Greeting \"ready\") (def Origin (this-source-file)) (export Greeting Origin)")
@@ -94,7 +96,7 @@
       (check-equal? (member "modules/json-schema/interface" core-spec) #f)
       (check-equal? (member "modules/funflow/interface" core-spec) #f)
       (check-equal? (ormap (cut string-prefix? "scenarios/" <>) core-spec) #f))
-    (yuanxu-test-case "retained inclusion preserves native leading-header semantics"
+    (yuanxu-test-case "retained inclusion preserves runtime leading-header semantics"
       (with-source
        (lambda (root prefix)
          (for-each
@@ -102,11 +104,20 @@
             (def path (path-expand (string-append (car case) ".ss") root))
             (write-file path (cadr case))
             (def prepared (yuanxu-prepare-module-retained-source path void))
+            ;; Captured identity and guard are direct runtime values; compiler
+            ;; forms remain demand-computed and keep their runtime header rules.
+            (for-each
+              (lambda (name)
+                (check-equal?
+                  ($constant-slot-spec? (cdr (assq name (object-slots prepared)))) #t))
+              '(path compiler-identity admit-current))
+            (check-equal?
+              ($constant-slot-spec? (cdr (assq 'compiler-forms (object-slots prepared)))) #f)
             (check-equal? (.get prepared compiler-identity)
                           (string->symbol (string-append prefix "/" (car case))))
             (def direct? (and (member `(include ,path) (.get prepared compiler-forms)) #t))
             (check-equal? direct? (caddr case))
-            (write-file path ";; changed after native preparation")
+            (write-file path ";; changed after runtime preparation")
             (check-exception ((.get prepared admit-current)) error?))
           '(("plain" ";; comment\n(def value '(namespace: package:)) (export value)" #t)
             ("empty" ";; comment only\n" #t)
@@ -114,7 +125,7 @@
             ("prelude" "prelude: :gerbil/core\n(def value 7) (export value)" #f)
             ("package" "package: #f\n(def value 7) (export value)" #f)))
          ;; This SDK rejects an explicit false namespace under gerbil.pkg.
-         ;; Preparation must preserve that native refusal rather than normalize it.
+         ;; Preparation must preserve that runtime refusal rather than normalize it.
          (def path (path-expand "namespace-false.ss" root))
          (write-file path "namespace: #f\n(def value 7) (export value)")
          (check-exception (core-read-module/sexp path) syntax-error?)
@@ -149,7 +160,7 @@
              (lambda () (map identity (spec '()))) receive '("spec") (path-expand "lib" root))
            error?)
          (check-equal? calls 1)
-         ;; A native package callback returns no publication authority. The
+         ;; A runtime package callback returns no publication authority. The
          ;; explicit projection .compile must reject missing compiler outputs.
          (def compile-calls 0)
          (def (uncompiled admitted arguments)
@@ -185,13 +196,17 @@
            "(yuanxu! :load-modules \"./modules\" mode: explicit :app (web))")
          (def settings-type (.cc ObjectContract. 'responsibilities (.o message: String)))
          (def bindings 0)
+         (def shared (.o value: (list 'warm)))
+         (def warm (.get shared value))
          ;; The hook is an effect probe: a rejected configuration must never
          ;; reach it, even when the scope's outer shape Contract accepts.
          (def export-value
            (.o .bind-publication:
-             (lambda (_selection owner-id admission-name guard)
+             (lambda (resolve-publication owner-id admission-name guard)
+               (unless (procedure? resolve-publication) (error "expected lazy publication resolver"))
                (set! bindings (1+ bindings))
-               (.o owner: owner-id admission: admission-name package-current: guard))))
+               (.o owner: owner-id admission: admission-name package-current: guard
+                   resolve: resolve-publication payload: shared))))
          ;; Each request has its own ordinary selection and refused epoch.
          (def (select candidate-value)
            (yuanxu-load-modules (path-expand "init.ss" root)
@@ -216,7 +231,13 @@
          (check-equal? (.get accepted value owner) 'app/web)
          (check-equal? (.get accepted value admission) 'Value)
          (check-equal? (.get accepted value package-current) #f)
-         (check-equal? bindings 1))))
+         (check-equal? bindings 1)
+         (def successor (.get (select (.o message: "revised")) modules modules app web))
+         (check-equal? (.get successor config message) "revised")
+         (check-equal? (eq? (.get accepted value resolve) (.get successor value resolve)) #f)
+         (check-equal? (eq? (.get successor value payload) shared) #t)
+         (check-equal? (eq? (.get successor value payload value) warm) #t)
+         (check-equal? bindings 2))))
     (yuanxu-test-case "direct package scope is confined to its selected publication"
       (with-source
        (lambda (root _prefix)
@@ -326,7 +347,12 @@
                   (entry (find (lambda (entry) (equal? (.get entry path) path))
                                (.get graph entries))))
              (check-equal? (object? observed) #t)
-             (check-equal? (eq? (.get entry input) observed) #t))
+             (check-equal? (eq? (.get entry input) observed) #t)
+             (for-each
+               (lambda (name)
+                 (check-equal?
+                   ($constant-slot-spec? (cdr (assq name (object-slots entry)))) #t))
+               '(kind path compiler-identity input options owner contributor)))
            (let (names (map symbol->string (entry-names graph)))
              ;; Contribution targets belong to the contribution package. SDK
              ;; tools stay guarded, but must not become its compiler targets.
@@ -339,11 +365,18 @@
                                (when (and (pair? key) (eq? (car key) 'file-read))
                                  (set! reads (cons (caddr key) reads))))))
                ((.get graph compiler-current)))
-             (for-each
-               (lambda (suffix)
-                 (check-equal? (ormap (cut string-suffix? suffix <>) reads) #t))
-               '("/module-system/source/declaration.ss" "/types.ss")))
-           (check-exception (.get view modules app web) error?)))))
+             (check-equal? (ormap (cut string-suffix? "/types.ss" <>) reads) #t)
+             (check-exception (.get view modules app web) error?)
+             (let* ((tool (core-import-module ':yuanxu/module-system/source/declaration))
+                    (origin (module-context-path tool)))
+               (if (string=? (path-extension origin) ".ss")
+                 (check-equal? (ormap (cut equal? (path-normalize origin) <>) reads) #t)
+                 ;; An installed compiler dependency has a captured runtime
+                 ;; identity, not a dependency on an optional checkout.
+                 (dynamic-wind
+                   (lambda () (slot-set! tool 'path (string-append origin ".changed")))
+                   (lambda () (check-exception ((.get graph compiler-current)) error?))
+                   (lambda () (slot-set! tool 'path origin))))))))))
     (yuanxu-test-case "roles derive once, Core dependency precedes consumer, optional order follows Graph"
       (with-source
        (lambda (root prefix)

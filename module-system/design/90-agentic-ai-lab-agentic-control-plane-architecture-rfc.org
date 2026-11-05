@@ -176,12 +176,12 @@ A concept required by a projection but absent from the Bundle is a schema or com
 * Public Programming Model
 The project invariants remain binding:
 
-- ordinary extension APIs are POO-native;
+- ordinary extension APIs are POO;
 - composition is expressed as POO objects and functional values;
 - Scheme remains the high-level control plane;
 - effects remain behind explicit runtime handoff boundaries;
 - raw alist DSLs, record DSLs, patch languages, and raw =(lambda (self super) ...)= hooks are not ordinary public APIs;
-- Gerbil declarative macros, procedural macros, and bounded compile-time metaprogramming may generate repeated internal object families, manifests, and projections when the expansion remains ordinary POO-native or functional code.
+- Gerbil declarative macros, procedural macros, and bounded compile-time metaprogramming may generate repeated internal object families, manifests, and projections when the expansion remains ordinary POO or functional code.
 
 C4 linearization resolves definition lookup. It is not an authorization, information-flow, protocol, or evidence policy.
 

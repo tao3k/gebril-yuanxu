@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Local native publication. SourceRef is metadata, never authentication.
+;;; Local runtime publication. SourceRef is metadata, never authentication.
 (import (only-in :clan/poo/object .def .o)
         (only-in :yuanxu/modules/funflow/objects FunflowModule.)
         (only-in :yuanxu/module-system/source/objects
@@ -19,7 +19,7 @@
   (.o check: funflow-check
       pipeline: funflow-pipeline)
 
-  ;; Shared-slot capture is native POO: values come from the outer receiver.
+  ;; Shared-slot capture is POO: values come from the outer receiver.
   ;; This view deliberately has no profiles slot and no publishing parent.
   prototype-scope:
   (.o (source) (prototypes))

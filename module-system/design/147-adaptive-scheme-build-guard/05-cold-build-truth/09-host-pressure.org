@@ -27,7 +27,7 @@ policy:
 - insufficient memory headroom fails fast before =gxi= starts;
 - the derived worker and RSS values are installed only across the explicit
   Building Framework handoff with =dynamic-wind= and are restored afterward;
-- the native Scheme JSON receipt records every admission input and decision.
+- the Scheme JSON receipt records every admission input and decision.
 
 #+begin_src mermaid
 flowchart TD

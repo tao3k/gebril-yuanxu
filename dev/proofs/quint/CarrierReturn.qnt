@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-// Finite callback schedule; not a native dispatch or performance model.
+// Finite callback schedule; not a runtime dispatch or performance model.
 module CarrierReturnModel {
   const BUG: str
   var phase: int

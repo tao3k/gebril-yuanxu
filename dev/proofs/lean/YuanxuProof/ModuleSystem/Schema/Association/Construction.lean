@@ -3,7 +3,7 @@
 import YuanxuProof.ModuleSystem.Schema.Association.Requirements
 
 /-! Reference laws for the proposed constructor and selected admission closure.
-The fold below is a requirement-algebra encoding, not extra native allocations.
+The fold below is a requirement-algebra encoding, not extra runtime allocations.
 Actual constructor capture and dependency completeness remain premises. -/
 namespace YuanxuProof.ModuleSystem.Schema.Association.Construction
 open Requirements Projection

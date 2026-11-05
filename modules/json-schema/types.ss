@@ -5,7 +5,6 @@
         (only-in :clan/poo/mop Type Type. Function Any)
         (only-in :clan/poo/type Record String Symbol)
         (only-in :clan/poo/object-contract ObjectContract.)
-        (only-in :yuanxu/object-types/contracts YuanxuContract.)
         (only-in "functional.ss" yuanxu-contract-json-object?)
         (only-in "json-schema-ir.ss" yuanxu-json-schema-normalization?)
         (only-in "json-schema-receipt.ss" yuanxu-json-schema-contract-artifact?)
@@ -32,9 +31,7 @@
           contract: (list (Function (list Type) (list Symbol)
                                    optional: (list SchemaSourceContract)))
           validate: (list (Function (list Validation) (list SchemaArtifactContract Any)))))
-;; The prototype constructs reusable native objects. The public value protocol
+;; The prototype constructs reusable runtime objects. The public value protocol
 ;; is structural and checks actual callable signatures, independent of a source
 ;; role's private prototype instance. Core retains source/context authority.
-(def JsonSchemaScopeContract
-  (.cc YuanxuContract. identity: 'json-schema/scope proto: (.o)
-       value-contract: ScopeFields))
+(def JsonSchemaScopeContract (.cc ScopeFields identity: 'json-schema/scope))

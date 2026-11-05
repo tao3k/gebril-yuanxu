@@ -25,7 +25,7 @@
 (def (artifacts checks) (map (lambda (check) (.get check artifact-outputs)) checks))
 
 (def funflow-profile-test
-  (test-suite "Funflow local native publication"
+  (test-suite "Funflow local runtime publication"
     (test-case "independent Profile uses the migrated Core functional DAG"
       (def selected (profile Funflow))
       (def graph (yuanxu-funflow-poo-pipeline->functional-dag (.get selected pipeline)))
@@ -111,7 +111,7 @@
           (cleanup/package-artifacts) release-retained))
       (check-equal? (.get selected pipeline pipeline-name) 'default)
       (check-equal? (.get selected pipeline metadata)
-                    '((scenario . funflow-cicd) (authoring-style . gerbil-poo-native)))
+                    '((scenario . funflow-cicd) (authoring-style . gerbil-poo)))
       (check-equal? (map yuanxu-funflow-poo-check? (.get selected pipeline checks)) '(#t #t #t))
       (check-equal? (yuanxu-funflow-poo-pipeline? (.get selected pipeline)) #t)
       (check-equal? (.get selected test cache-intents) '())

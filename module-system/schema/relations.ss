@@ -5,7 +5,7 @@
 
 ;;; Boundary: reusable POO module identity and directional contribution relations.
 ;;; Authoring roles and source-file policy belong to the consuming package.
-(import (only-in :clan/poo/object .o .mix .ref)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop define-type validate)
         (only-in :yuanxu/object-types/contracts
                  YuanxuContract. YuanxuObjectContract.

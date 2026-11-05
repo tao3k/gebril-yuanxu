@@ -21,7 +21,7 @@ The reference organization has modules/core/json-schema/interface.ss,
 modules/infrastructure/kubernetes/interface.ss and an optional
 modules/sandbox/nono-sandbox/interface.ss. A separate contributions/guestbook/interface.ss
 publishes the Guestbook scope, its default-bearing Profiles and Scenario.
-The module/Contract/scope design code is in [[file:11.16-directory-contract-and-native-tree.org][module 15]]; the complete bounded
+The module/Contract/scope design code is in [[file:11.16-directory-contract-and-runtime-tree.org][module 15]]; the complete bounded
 Server input schema and link checks are in [[file:11.14-guestbook-module-contract-admission.org][module 13]]. These are proposed sources
 and integration, not claims that Kubernetes/Guestbook modules already exist.
 
@@ -80,7 +80,7 @@ Both modes use the same complete user-interface/config.ss body:
           labels: =>.+ (.o team: "checkout")))))
 #+end_src
 
-This body uses existing native object/refinement syntax. It replaces a known image
+This body uses existing runtime object/refinement syntax. It replaces a known image
 and team string; frontend and labels retain their other inherited fields. The
 scope is supplied by the proposed selected-publication integration. Its source
 identity must come from the admitted guestbook declaration, not a global mutable
@@ -89,7 +89,7 @@ pending path assignment and would lower to this same single frontend refinement.
 
 The declaration path custom/guestbook is a selected-source identity, not a demand
 to relocate independent Profiles under a feature module. Guestbook's scope exposes
-its baseline and native admission; Profile roles remain separate domain objects.
+its baseline and runtime admission; Profile roles remain separate domain objects.
 
 * Retain the negative decisions as real values
 
@@ -204,7 +204,7 @@ not generated resources or a deployment claim.
 
 * Conclusion: reduce two catalogs to one qualified intent graph
 
-Existing assets: init declaration macros, native negative-flag queries, source
+Existing assets: init declaration macros, runtime negative-flag queries, source
 selection, object<-fun/lazy scopes, Core JSON Schema Contracts and responsibility
 admission. Pending: expanded init attributes/categories, signed-feature override
 normalization, qualified directory/interface publication, retained-disable dependency

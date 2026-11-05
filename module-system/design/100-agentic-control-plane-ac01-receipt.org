@@ -6,7 +6,7 @@
 
 * Scope
 
-AC-01 establishes the first executable control-plane artifact: a POO-native,
+AC-01 establishes the first executable control-plane artifact: a POO,
 canonically normalized organization bundle with a versioned S-expression
 payload, pluggable digest boundary, SHA-256 identity, read-only contract
 projection, and deterministic fail-closed validation receipt.

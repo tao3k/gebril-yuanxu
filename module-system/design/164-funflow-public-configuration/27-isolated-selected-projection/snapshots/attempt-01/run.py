@@ -20,7 +20,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--archive', type=Path, required=True)
     parser.add_argument('--interpreter', default='/opt/homebrew/bin/gxi')
-    parser.add_argument('--label', default='native')
+    parser.add_argument('--label', default='runtime')
     args = parser.parse_args()
     if not args.label.replace('-', '').replace('_', '').isalnum():
         parser.error('label must contain only letters, digits, hyphens or underscores')
@@ -104,7 +104,7 @@ def main():
         'exit': code,
         'elapsed_seconds': round(elapsed, 3),
         'log_sha256': digest(output),
-        'native_construction_capture_implemented': False,
+        'runtime_construction_capture_implemented': False,
         'dependency_discovery_completeness_proved': False,
     }
     receipt_path.write_text(json.dumps(receipt, indent=2) + '\n')

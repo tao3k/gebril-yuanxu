@@ -63,7 +63,7 @@ A proposal may describe:
 - a priority adjustment for an identified contribution;
 - replacement or removal of an identified contribution;
 - an explicitly constructed Profile operand identity;
-- a canonical native POO operation admitted for the projected values;
+- a canonical POO operation admitted for the projected values;
 - explicit termination of the composition.
 
 A proposal is not a raw callback and does not contain authority to apply itself. Every semantic reference inside a proposal must be identity-addressed and carry enough provenance to explain its origin.
@@ -202,7 +202,7 @@ The ordinary user interface remains:
 
 A resolver is an advanced POO object introduced through an independently admitted Profile or composition-strategy extension. It does not add a =:resolver= clause, a recovery DSL, a public domain macro, or a raw =(lambda (self super) ...)= hook.
 
-Concrete prototype operations and resolver construction helpers must be based on verified native =gerbil-poo= interfaces. This RFC does not invent a parallel resolver object system.
+Concrete prototype operations and resolver construction helpers must be based on verified runtime =gerbil-poo= interfaces. This RFC does not invent a parallel resolver object system.
 
 * Implementation checklist
 

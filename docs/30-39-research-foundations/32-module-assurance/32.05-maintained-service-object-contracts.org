@@ -11,7 +11,7 @@ shared source-admission extraction and its new qualification are recorded in
 [[file:32.06-source-aware-admission-convergence.org][32.06]]. Its source manifest is separate; the historical 32.05 hashes and
 failure records are not rewritten.
 
-The maintained [[file:../../../scenarios/gitea-postgresql/postgresql/types.ss][PostgreSQL Types]] and [[file:../../../scenarios/gitea-postgresql/gitea/types.ss][Gitea Types]] now use native ObjectContract
+The maintained [[file:../../../scenarios/gitea-postgresql/postgresql/types.ss][PostgreSQL Types]] and [[file:../../../scenarios/gitea-postgresql/gitea/types.ss][Gitea Types]] now use runtime ObjectContract
 descriptors for configuration and plan fields. The actual Scenario continues to
 inject the dependency's published Config Contract and Port Type; it does not
 reconstruct a private PostgreSQL schema. No Loader or Core admission-kernel
@@ -33,7 +33,7 @@ Its Config admission Contract uses this descriptor as value-contract. Gitea's
 value descriptor is parameterized by the dependency's Port for the application;
 the independently usable Gitea Config Contract supplies the same finite range.
 Both services validate their allowed-ports fields as well as their connection
-ports. Unknown configuration fields are rejected by native field closure.
+ports. Unknown configuration fields are rejected by runtime field closure.
 
 Scope-presence probes remain metadata-only. They intentionally inspect declared
 export names without validating/demanding config, document, policy or callable
@@ -62,11 +62,11 @@ responsibilities: (.o config: config-type plan: plan-type)
 After the inherited public .admit normalizes the candidate, application-issues
 checks equality of the client/server ports, exact identity between plan.configuration
 and final config, and both scalar plan projections. No plan is repaired after a
-failed identity check. Native lexical slots in the existing Application. compute
+failed identity check. Runtime lexical slots in the existing Application. compute
 the plan against the final receiver; user code does not extract/reinsert it.
 
 "Once" means one canonical configuration normalization path, not one field
-observation in the entire protocol. Native ObjectContract still performs its own
+observation in the entire protocol. Runtime ObjectContract still performs its own
 structural and final validation. Source diagnosis and relational obligations are
 checks, not additional configuration normalization calls. Contextual admission
 still runs for both services through Core's existing responsibilities protocol.
@@ -81,7 +81,7 @@ the root .admit must refuse and retain that service Contract's ancestry and
 diagnostic. This direct, context-free derivation control isolates domain delegation;
 it does not claim selected-publication coverage for an unregistered descriptor.
 Production coverage is exercised separately with the real bound publication Context.
-Child refusal receipts retain their native responsibility/Contract lineage rather
+Child refusal receipts retain their runtime responsibility/Contract lineage rather
 than being treated as flat field issues by the source diagnostic adapter.
 
 Nested contextual obligations share Core's existing source-read window only
@@ -96,8 +96,8 @@ No package/provider effect is executed inside this cache scope.
 
 * Rejection and provenance without weakening Type validation
 
-The maintained .admit method composes with its inherited native admission method.
-Before normalization, it checks JSON source currentness, then runs ordered native
+The maintained .admit method composes with its inherited runtime admission method.
+Before normalization, it checks JSON source currentness, then runs ordered runtime
 diagnostic-then stages with their original Scheme source guards:
 
 1. application/config envelope;
@@ -109,7 +109,7 @@ A null PostgreSQL settings subtree therefore refuses before any derived Gitea
 port is demanded. Source guarding the Gitea path is itself deferred until the
 PostgreSQL stage succeeds: the source walker can force a default while traversing
 its receiver. Moving only Type checks into stages is insufficient. A malformed
-candidate returns a rejected native validation
+candidate returns a rejected runtime validation
 receipt; the Type validator is not changed to silently return invalid data.
 Accepted candidates go through the inherited .admit exactly once.
 
@@ -117,7 +117,7 @@ The original candidate is retained only within this call to locate diagnostics.
 Classification and publication still refer to the normalized final candidate.
 There is no global candidate parameter, side registry, copied provenance table
 or reassignment of parent source metadata. config-field-origin remains the owner
-of JSON baseline and native Scheme derivation information.
+of JSON baseline and Scheme derivation information.
 
 Unknown-field diagnostics inspect names without demanding the unknown field's
 value. Their source locator uses an unobserved marker rather than evaluating an
@@ -133,7 +133,7 @@ precision change, not relaxation of the null rejection.
 
 The Scenario interface's two contribution declarations and Core .for-export
 collection/coverage/source guards remain unchanged. Each effective requirement
-row is checked with a native ObjectContract containing allowed-ports and the two
+row is checked with a runtime ObjectContract containing allowed-ports and the two
 source fields; the domain obligation still requires the final database port to
 belong to EVERY contributor's allowed set. Shape validation does not establish
 origin authenticity: the existing selected publication protocol does that work.
@@ -164,21 +164,21 @@ evaluating it. Relocation controls retain exact Scheme source line/column,
 JSON baseline, inherited origins, .cc/.+ behavior and source-currentness refusal.
 
 No dependency pin or installed runtime is changed. Qualification uses the host
-Gerbil and current Core sources with a temporary native output directory, avoiding
+Gerbil and current Core sources with a temporary runtime output directory, avoiding
 the repository's stale compiled object layout. The original heap/watchdog bounds
 remain mandatory. Import, compilation and source-interpreted memory failures are
-retained under /private/tmp/poo-plan-identity-native; they are not counted as passes.
+retained under /private/tmp/poo-plan-identity-runtime; they are not counted as passes.
 
 An existing compiled-prelude defect was exposed while rebuilding the closure:
 generated role interfaces load macro code at phase one, where load-module was
 not available from the compiled custom prelude. The narrow correction in
 [[file:../../../module-system/source/module-prelude.ss][module-prelude.ss]] explicitly exports =(phi: 1 load-module)=. The real
 json-schema-ir interface and its consumers subsequently compiled successfully.
-This is a native phase-export fix, not a Loader integration or alternate runtime.
+This is a runtime phase-export fix, not a Loader integration or alternate runtime.
 
 The source-interpreted repeated-Scenario run exceeded the retained-memory guard;
 collect-before-sample did not remove that failure and its attempted test Profile
-was withdrawn. Native compilation then enabled the full publication suite under
+was withdrawn. Runtime compilation then enabled the full publication suite under
 the unchanged 1 GiB/120-second fences. No claim is made that source-mode memory
 behavior was repaired. The shared Fixtures and relocation test source remain
 byte-identical to the prior source manifest; no additional Fixture API was added.
@@ -190,7 +190,7 @@ its final qualification must include natural process exit zero.
 
 ** Final focused receipt, 2026-10-18
 
-| Native gate | Cases | Result |
+| Runtime gate | Cases | Result |
 |-------------+-------+--------|
 | gitea-postgresql-publication-test.ss | 11 | MODULE-OK, HARNESS-OK, OK; exit 0 |
 | gitea-json-configuration-test.ss | 4 | MODULE-OK, HARNESS-OK, OK; exit 0 |
@@ -201,11 +201,11 @@ All final gates use =just test-file= with the original 1 GiB heap and 120-second
 worker fence, without error/overflow markers. Final receipts are local files
 =production-publication-window.log=, =production-json-window.log=,
 =production-relocation-window.log= and =production-role-prelude-final.log= under
-=/private/tmp/poo-plan-identity-native/=. These are 21 focused controls, not a full
+=/private/tmp/poo-plan-identity-runtime/=. These are 21 focused controls, not a full
 suite, performance benchmark, deployment or cross-platform execution result.
 
-The native host library path is =/Users/guangtao/.gerbil/lib=; current Core
-dependencies were compiled to =/private/tmp/poo-plan-identity-native/lib= with
+The runtime host library path is =/Users/guangtao/.gerbil/lib=; current Core
+dependencies were compiled to =/private/tmp/poo-plan-identity-runtime/lib= with
 the current source-tree fallback under its =sources/= directory. No frozen Core
 copy or compatibility runtime is used. [[file:32.05-source-manifest.sha256][The bounded per-file source manifest]]
 records the maintained service, Scenario, admission/source owners and controls.
@@ -217,7 +217,7 @@ Pulumi is an infrastructure framework hosted in general-purpose languages such
 as TypeScript and Python. Its SDK and engine must be compared to our module,
 admission and execution boundaries, not to Scheme syntax alone. Scheme is also
 a general-purpose host: our intended configuration interface is a maintained
-typed value layer with optional native functional/prototype extension.
+typed value layer with optional runtime functional/prototype extension.
 
 The stronger capability we aim to deliver is a coherent combination of ordinary
 data entry, inspectable Contracts, open typed behavior and source-bound modular

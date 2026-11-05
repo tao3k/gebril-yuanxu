@@ -7,7 +7,7 @@
 ;;; Never re-evaluates the observed candidate, reads a clock, or prints a value.
 ;;; Canonical library imports retain one descriptor/prototype identity when
 ;;; source consumers and compiled owners share the same process.
-(import (only-in :clan/poo/object .o .ref .slot? object?)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate raise-type-error)
         (only-in :yuanxu/object-types/contracts YuanxuValidationEvidence)
         :yuanxu/observability/types)
@@ -270,7 +270,7 @@
         (list 'accepted? (.ref receipt 'accepted?))
         (list 'reason (.ref receipt 'reason))))
 
-;;; Public policy construction remains POO-native. The defaults affect debug
+;;; Public policy construction remains POO. The defaults affect debug
 ;;; observation; the package test entrypoint applies the independent runtime
 ;;; heap profile before loading suites.
 (def (yuanxu-debug-memory-policy label-value
@@ -289,7 +289,7 @@
         collect-before-sample?: collect-value
         fail-closed?: fail-closed-value)))
 
-;;; At the runtime Case boundary, check the native POO shape owned by this
+;;; At the runtime Case boundary, check the POO shape owned by this
 ;;; constructor.  A compiled test batch may hold a distinct descriptor copy;
 ;;; descriptor identity is checked when the policy is constructed, while the
 ;;; resource-facing fields are checked again here before they are read.
@@ -369,9 +369,9 @@
           reason: reason-value))))
 
 ;;; Only bounded scalar diagnostics reach DDT or a terminal. The policy and raw
-;;; samples remain available as native objects for local drill-down.
+;;; samples remain available as runtime objects for local drill-down.
 (def (yuanxu-debug-allocation-current? current? previous observed)
-  ;; Once a native counter moves backwards, later increases cannot repair the
+  ;; Once a runtime counter moves backwards, later increases cannot repair the
   ;; allocation evidence for that Case. Capacity/currentness gates are separate.
   (and current? (>= observed previous)))
 

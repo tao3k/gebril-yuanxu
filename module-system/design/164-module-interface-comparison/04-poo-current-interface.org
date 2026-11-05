@@ -7,13 +7,13 @@
 
 * Actual upstream publication
 
-The following is extracted verbatim from [[file:../../../../modules/funflow/native-scope.ss][modules/funflow/native-scope.ss]].
+The following is extracted verbatim from [[file:../../../../modules/funflow/runtime-scope.ss][modules/funflow/runtime-scope.ss]].
 
 #+begin_src scheme
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Local native publication. SourceRef is metadata, never authentication.
+;;; Local runtime publication. SourceRef is metadata, never authentication.
 (import (only-in :clan/poo/object .def .o)
         (only-in :yuanxu/module-system/source/objects
                  make-yuanxu-module-local-source yuanxu-module-source-ref?)
@@ -30,7 +30,7 @@ The following is extracted verbatim from [[file:../../../../modules/funflow/nati
   (.o check: funflow-check
       pipeline: funflow-pipeline)
 
-  ;; Shared-slot capture is native POO: values come from the outer receiver.
+  ;; Shared-slot capture is POO: values come from the outer receiver.
   ;; This view deliberately has no profiles slot and no publishing parent.
   prototype-scope:
   (.o (source) (prototypes))
@@ -70,7 +70,7 @@ hypothetical future library:
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Native default Profile construction, with no import of the publishing scope.
+;;; Runtime default Profile construction, with no import of the publishing scope.
 (import :yuanxu/profile-composition/selection-syntax
         (only-in :clan/poo/object .o .get))
 (export make-gerbil-scheme-ci-profile)
@@ -122,7 +122,7 @@ hypothetical future library:
         pipeline-name: 'default
         checks: (list build test package)
         metadata: '((scenario . funflow-cicd)
-                    (authoring-style . gerbil-poo-native))))))
+                    (authoring-style . gerbil-poo))))))
 #+end_src
 
 The user is not asked to repeat the Check parent, runtime mode, result protocol
@@ -139,7 +139,7 @@ scope alias is lexically bounded; the body can capture it in delayed slots.
 #+begin_src scheme
 (import :yuanxu/object-syntax/path-slots
         :yuanxu/profile-composition/selection-syntax
-        (only-in :agentic-ai-lab/modules/funflow/native-scope Funflow))
+        (only-in :agentic-ai-lab/modules/funflow/runtime-scope Funflow))
 
 (.def ProjectCI
   funflow: (use-module Funflow as ff (.o (:: @ ff))))
@@ -164,10 +164,10 @@ vocabulary: .def, a prototype parent and =>.+. We cannot call that cost zero.
 The benefit is an explicit connection to the same objects used for extension;
 the remaining task is good defaults, attribute discovery and useful errors.
 
-* Layer two: native extension, without rebuilding existing defaults
+* Layer two: runtime extension, without rebuilding existing defaults
 
 For a shared artifact transformation, use a named pure function and the existing
-native inherited-value operator. This is illustrative configuration, not a new
+runtime inherited-value operator. This is illustrative configuration, not a new
 public helper API:
 
 #+begin_src scheme
@@ -204,9 +204,9 @@ field or asking users to rebuild a hidden list.
 * Reflection: what the current interface has not solved
 
 1. use-module has two meanings: identifier tails select a Bundle; one compound
-   body binds a native scope. as means instance identity in one branch and a
+   body binds a runtime scope. as means instance identity in one branch and a
    lexical alias in the other. This is compatibility, not a finished UX decision.
-2. Funflow versus funflow: avoids native slot capture by a naming convention.
+2. Funflow versus funflow: avoids runtime slot capture by a naming convention.
    It does not create an independently authenticated source namespace.
 3. Open POO extension allows arbitrary new slots. A typo can look like a valid
    extension until a checked consumer rejects it, or can remain unused.
@@ -217,6 +217,6 @@ field or asking users to rebuild a hidden list.
 6. Scheme permits arbitrary computation and effects. Named pure functions are
    a style discipline; this configuration route does not prove purity/termination.
 
-Keep the native model, but repair these configuration-facing boundaries before
+Keep the runtime model, but repair these configuration-facing boundaries before
 presenting the system as simpler than every alternative. Proposed improvements
 and acceptance conditions are in [[file:05-reflection-and-improvement-plan.org][the next module]].

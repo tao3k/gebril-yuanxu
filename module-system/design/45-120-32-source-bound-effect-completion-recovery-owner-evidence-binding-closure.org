@@ -358,7 +358,7 @@ Key declarations:
   =/private/tmp/45-120-32-owner-binding-closure.lean= (303279 bytes).
 - The Python audit suite passed 76 tests in 13.34 seconds, and Ruff reported
   no findings.
-- Native Orgize found 14 source blocks: 13 Typst blocks and one Mermaid
+- Runtime Orgize found 14 source blocks: 13 Typst blocks and one Mermaid
   block.  The parser-owned Typst bodies compiled together with Typst 0.14.2
   to =/private/tmp/45-120-32-owner-evidence-binding-closure.pdf= (22490
   bytes).  The Orgize owner checkout also passed 78 unit tests, 264
@@ -386,7 +386,7 @@ Key declarations:
 - [X] Run Enterprise aggregate and full Lean builds.
 - [X] Run current-source AXLE roots without timeout inflation.
 - [X] Run the existing Python audit gates.
-- [X] Validate final Org through native Orgize, compile every Typst block, and
+- [X] Validate final Org through runtime Orgize, compile every Typst block, and
   run whitespace audits.
 
 * Next proof gap
@@ -399,7 +399,7 @@ liveness obligations remain genuinely absent:
 
 The next proof must determine whether current runtime and storage owners already
 have suitable evidence under another name.  If they do not, the architecture
-must discuss the smallest owner-native receipt contract before any
+must discuss the smallest owner-runtime receipt contract before any
 implementation is added.
 
 The existing =semanticRemaining= coordinate must not be reused for storage

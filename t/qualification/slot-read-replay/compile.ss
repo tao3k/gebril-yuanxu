@@ -2,7 +2,7 @@
 ;;; Compile the experiment against source, never mutate installed dependencies.
 (import :gerbil/expander :gerbil/compiler (only-in :std/misc/ports read-all-as-string))
 (def root (path-expand (getenv "CORE_REPLAY_ROOT")))
-(def native (path-expand "source/clan/poo/" root))
+(def runtime (path-expand "source/clan/poo/" root))
 (def core (path-expand (getenv "CORE_REPLAY_CORE")))
 (def output (path-expand "lib" root))
 (def visited (make-hash-table-eq))
@@ -14,7 +14,7 @@
 (def (source-for-name name)
   (cond
     ((string-prefix? "clan/poo/" name)
-     (path-expand (string-append (substring name 9 (string-length name)) ".ss") native))
+     (path-expand (string-append (substring name 9 (string-length name)) ".ss") runtime))
     ((string-prefix? "yuanxu/" name)
      (path-expand (string-append (substring name (string-length "yuanxu/") (string-length name)) ".ss") core))
     (else #f)))
@@ -49,7 +49,7 @@
            (displayln "COMPILE " id) (force-output)
            (compile-module source [output-dir: output invoke-gsc: #t keep-scm: #t])
            (execute-pending-compile-jobs!)
-           ;; Only successful native modules receive a resumable checkpoint.
+           ;; Only successful runtime modules receive a resumable checkpoint.
            (call-with-output-file (list path: checkpoint truncate: #t)
              (cut write text <>))))))))
 (parameterize ((current-expander-context (make-top-context))
@@ -58,7 +58,7 @@
     ((getenv "CORE_REPLAY_COMPILE_FILE" #f)
      => (lambda (source) (visit (core-import-module source))))
     ((string=? (getenv "CORE_REPLAY_OBJECT_ONLY" "") "yes")
-     (visit (core-import-module (path-expand "object.ss" native))))
+     (visit (core-import-module (path-expand "object.ss" runtime))))
     (else (for-each (lambda (name) (visit (core-import-module (path-expand name core))))
       '("module-system/source/module-prelude.ss"
         "t/slot-read-replay-test.ss"

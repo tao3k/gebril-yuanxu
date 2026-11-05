@@ -36,7 +36,7 @@ package: tao3k/yuanxu
 Its sole published identity is =:tao3k/yuanxu/prelude=. No =lang/= directory,
 second package root, forwarding module or =:yuanxu/prelude= alias is needed.
 The ordinary surface reexports Gerbil and gerbil-poo. Expansion phases one and
-two expose the Gerbil helpers required by native macro definitions; a macro
+two expose the Gerbil helpers required by runtime macro definitions; a macro
 that constructs POO values at compile time explicitly imports that phase's POO
 dependency. The prelude does not broadcast the whole object library at every
 phase. It neither imports the Module System nor loads user modules or executes Scripts.
@@ -44,11 +44,11 @@ phase. It neither imports the Module System nor loads user modules or executes S
 During a source-only build, registering the =yuanxu= library directory alone
 cannot resolve the distinct =tao3k/yuanxu= prefix. The existing build bootstrap
 therefore imports the actual root file with =core-import-module=, verifies its
-native compiler identity, and binds that module context using Gerbil's
+runtime compiler identity, and binds that module context using Gerbil's
 =core-bind-root-syntax!=. The expander's existing
 =core-bound-module-prelude?= branch selects it before library-path resolution.
 This is a binding to the unique module context, not a second implementation or
-a generated source alias. The source preparer projects a bound module/prelude context back to its native
+a generated source alias. The source preparer projects a bound module/prelude context back to its runtime
 source path before serializing compiler headers; it must not write an opaque
 context object into generated Scheme. The existing source-byte and ancestor
 package guards still apply. Installed consumers resolve the compiled public
@@ -88,9 +88,9 @@ projection recognizes the exact =yuanxu/= prefix and strips its computed
 length. Reader tool eligibility and observed compiler identities use the same
 namespace. Package mismatch still refuses before source registration.
 
-The migration does not relax native read issuance, dependency replay, child
+The migration does not relax runtime read issuance, dependency replay, child
 Contract obligations, independent requirements, source currentness, receiver
-identity, parent-cache isolation or lazy demand. Existing native dependency
+identity, parent-cache isolation or lazy demand. Existing runtime dependency
 revision and Gerbil compiler remain unchanged. New processes and newly built
 Yuanxu artifacts are required; old =core= artifacts are not reused as aliases.
 
@@ -133,7 +133,7 @@ The root-file change removes the temporary =lang/= source scope. The owned
 source-identical baseline artifacts; this is not a claim of a fresh 49-unit
 build within the monolithic gate. The first cold run exposed an opaque bound
 prelude being serialized into generated Scheme. Source preparation now extracts
-its native source path. The next run exposed runtime rather than expansion-time
+its runtime source path. The next run exposed runtime rather than expansion-time
 bootstrap; the build entry now binds the module in =begin-syntax=.
 
 A subsequent source-only =build.ss spec= returned successfully, but the reduced
@@ -142,7 +142,7 @@ refused the incomplete specification. The fixture now retains the same unique
 language root as the real =core-spec.ss=. Build projection permits that exact
 foreign compiler identity only for the root =prelude.ss= and still checks the
 prepared identity and actual source path. All other targets retain package
-prefix confinement. Artifact assertions derive identities from the native
+prefix confinement. Artifact assertions derive identities from the runtime
 reader instead of assuming every output belongs below =lib/yuanxu/=.
 
 The following cold run hit the unchanged 60-second Script deadline and remains
@@ -164,7 +164,7 @@ package identity, prelude, source admission, issued-root forwarding, diagnostics
 path slots, module scopes, and the eleven-case Gitea/PostgreSQL publication
 control. The fresh 49-unit compile attempt hit its original 120-second deadline;
 the source-identical-baseline delta gate passed. Neither receipt is erased or
-relabelled as a complete native suite.
+relabelled as a complete runtime suite.
 
 ** Integration and external consumer ownership
 
@@ -178,29 +178,29 @@ qualification rejected one run after concurrent integration changed its source
 cut; another hit the existing five-second Quint typecheck deadline. Both failure
 receipts are retained outside Git. The final stable run passes all eight model
 and matched counterexample controls without changing either deadline or model.
-These finite-model controls and the Lean source model are separate from native
+These finite-model controls and the Lean source model are separate from runtime
 execution evidence.
 
 The product's pinned =gerbil-parser@78507e68b1275be1be748be465d6354f596d9063=
 has not been independently qualified against the new namespace. Its independently modified checkout and the installed
 package cache are not rewritten by this migration. That consumer requires a
-coordinated namespace/dependency update before a full product native build can
+coordinated namespace/dependency update before a full product runtime build can
 be claimed. Gerbil compiler and runtime sources are unchanged. Focused Core
 consumer verification and product-wide dependency closure are separate gates.
 
 The default local package cache exposed an older compiled POO API that rejects
 =unique-roots?:=. Qualification therefore uses the installed, unchanged Gerbil
 with the exact declared gerbil-poo build and the current owned Yuanxu artifacts
-in a private package state. This is dependency isolation, not a replacement SDK
+in a private package state. This is dependency isolation, not a replacement Gerbil
 or compatibility runtime. It does not overwrite another session's package cache.
 The cold child still excludes both Yuanxu namespaces, and each normal-build
 child clears =GERBIL_LOADPATH= so that an overlay cannot mask missing inputs.
 
 The pinned-dependency normal-build control generates its specification in
 14.65 seconds and passes the separate package/source-currentness controls. Its
-fresh native compilation reaches the original 60-second Script deadline
+fresh runtime compilation reaches the original 60-second Script deadline
 (status 124; 62.23 seconds including termination). Compile/clean/rebuild as one
-complete control is therefore still unqualified locally; no complete native
+complete control is therefore still unqualified locally; no complete runtime
 suite or end-to-end build pass is claimed. The public CI remains responsible
 for a clean installation/build and all directory tests under its existing
 one-GiB worker policy.
@@ -212,11 +212,11 @@ The complete Linux CI build rejected a duplicate retained
 =module-system/source/module-prelude= identity. The duplicate inventory row
 is removed; duplicate-target rejection itself is unchanged.
 
-Native CI builds once per platform and transfers that exact-head package tree
+Runtime CI builds once per platform and transfers that exact-head package tree
 to six independent domain groups. The all-files manifest must equal the sorted
 union of group manifests, including multiplicity. The current partition has
 204 top-level test files; each group still runs serial one-GiB workers through
-the same heap-fenced Just recipe and requires all native harness markers.
+the same heap-fenced Just recipe and requires all runtime harness markers.
 The platform workflows can advance independently. No test or timeout is removed.
 
 The 434 Quint cases and every all-scope typecheck entry are partitioned by a
@@ -235,10 +235,10 @@ remain mandatory. No compiler sources are modified.
 
 The follow-up local normal-build control still hit its 60-second compilation
 deadline (63.89 seconds including termination); specification took 23.69 seconds.
-A two-second sample within the compile window observed native Scheme compiler
+A two-second sample within the compile window observed Scheme compiler
 expansion/optimization work. This is a sampled phase observation, not a proof
 of a single bottleneck. The failure receipt is retained outside Git. Neither
-parallel CI grouping nor removing a duplicate root establishes a local native
+parallel CI grouping nor removing a duplicate root establishes a local runtime
 compile speedup; the complete build/clean/rebuild gate must be rerun.
 
 
@@ -335,7 +335,7 @@ AOT callback controls use the existing compiler qualification and std/test
 facade. Interpreting that implementation file without its issued compilation
 would test a different calling boundary. The discovered-file dispatcher supplies
 an owned temporary fixture, runs the existing assertion suite, and rechecks the
-compiled callback/source/runtime hashes. All native harness marker checks remain.
+compiled callback/source/runtime hashes. All runtime harness marker checks remain.
 Artifact-authority controls retain their own producer/consumer fixture lifecycle.
 Dependency sources resolve from the selected GERBIL_PATH, not a parent product
 checkout. No installed Gerbil compiler or loader source is modified.
@@ -355,10 +355,10 @@ with MODULE-OK, HARNESS-OK and final OK after declared-tool dependency repair.
 
 
 The follow-up import audit found both syntax-wrapped library identifiers and
-resolved .ssi paths at the actual native import hook. The reader now unwraps
+resolved .ssi paths at the actual runtime import hook. The reader now unwraps
 syntax only for catalog membership and indexes the exact .ssi paths of
 already captured tool contexts. The original import argument still reaches
-the native importer. Unknown identifiers/paths still open the candidate boundary;
+the runtime importer. Unknown identifiers/paths still open the candidate boundary;
 a Core-like spelling or an arbitrary compiled file is not added to the catalog.
 This is a reader classification repair, not permission to run unknown callbacks.
 
@@ -368,9 +368,9 @@ expectations: forged records are unissued, metadata route substitution is refuse
 and replay-time object writes fail before changing the receiver. The corresponding
 controls keep exact errors, callback counts, victim values and case totals.
 The unsafe experimental snapshot helper remains an explicit counterexample:
-its earlier side effect cannot be undone by a later native refusal.
+its earlier side effect cannot be undone by a later runtime refusal.
 
-The AOT store-suite facade explicitly calls the installed native load-module
+The AOT store-suite facade explicitly calls the installed runtime load-module
 entry before exposing its extern test bindings. This prevents the source
 harness from evaluating an unlowered substitute for the compiler-issued unit.
 The compiler and loader under the installed Gerbil tree remain untouched.
@@ -382,7 +382,7 @@ Script limits, read guards and negative compilation assertions are unchanged.
 ** Focused qualification after the partition repairs
 
 The issued AOT store facade passes all twelve cases with MODULE-OK, HARNESS-OK
-and final OK. Compiler inputs, SDK inputs and independently compiled callback
+and final OK. Compiler inputs, Gerbil inputs and independently compiled callback
 hashes pass the post-run checks. The old unprocessed callback remains an explicit
 negative control. No installed compiler/runtime source is modified.
 
@@ -400,8 +400,8 @@ source identities do not create compatibility entrypoints.
 
 The stable-source rerun passes the sixteen-declaration calibration through the
 current reader. It preserves the closed-boundary assertion and exact work counters;
-syntax wrappers and native SSI paths no longer force the open-boundary fallback.
-The sixteen-case native read-replay consumer and eleven-case Gitea/PostgreSQL
+syntax wrappers and runtime SSI paths no longer force the open-boundary fallback.
+The sixteen-case runtime read-replay consumer and eleven-case Gitea/PostgreSQL
 publication suite also pass with all harness markers. The checker-origin suite
 passes its ten cases, including refusal before forged callbacks execute.
 The namespace gate also covers proof models, scripts, generated-code sources and
@@ -420,12 +420,12 @@ scale 4, contracts 16, objects 18, scenarios 15, providers 19, runtime 49. All 2
 files remain covered. The four capacity controls have their own runner; each
 runner still executes one 2 GiB test process at a time.
 
-CI now selects the official Nix 2.34.4 installer, matching the existing native
+CI now selects the official Nix 2.34.4 installer, matching the existing runtime
 cache controls. The 2.28.5 cache failures are retained. One pinned package-source
 record supplies both its path and NAR identity. Flake fixtures import that package
 set to obtain real derivations, rather than copying executable packages into
 source inputs and losing their Linux runtime dependency closure. Package setup
-uses the existing Ops execution function, with native Nix progress and owned
+uses the existing Ops execution function, with runtime Nix progress and owned
 process cleanup. No source lock is updated implicitly.
 
 Provider selection controls consume actual AWS-only/AWS+Null collections; family
@@ -442,7 +442,7 @@ pipe's resource issuance; saved procedure/cache and joint replacement controls
 remain intact. The local complete-module activation control passes; Linux still
 requires the next exact-head run.
 
-The source-tail compiler uses the native parallel job interface with the existing
+The source-tail compiler uses the runtime parallel job interface with the existing
 two-worker bound and drains it before reporting completion. Its 120-second limit
 is unchanged. A busy-host local attempt still exceeds that limit and remains a
 failure; it is not presented as qualification. Compiler process groups must stop
@@ -455,7 +455,7 @@ total limits are unchanged. An unexpected reader opening also reports scalar
 heap/live counters before raising, avoiding typed-receipt recursion in diagnostic
 attribution. The capacity rerun remains pending.
 
-Deferred Build support is checked against its complete native transitive closure,
+Deferred Build support is checked against its complete runtime transitive closure,
 not a removed bootstrap-only dependency. Macro-location qualification selects a
 fresh source generation after writing malformed input; reusing the prior SourceRef
 would test stale-source refusal instead. The strengthened publication suite passes

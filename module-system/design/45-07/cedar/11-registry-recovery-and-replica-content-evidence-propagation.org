@@ -1,0 +1,148 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Registry recovery and replica content-evidence propagation
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Registry recovery and replica content-evidence propagation
+
+** Content-aware recovery and join requirement
+
+Recovery and replica join MUST propagate descriptor disposition evidence, not
+only a checkpoint position.  A recovered or joined position is content-safe
+only when every descriptor registered at each committed input origin is either
+still registered at the selected position or has an authority-validated
+retirement at an adjacent transition inside that interval.
+
+Both replica inputs MUST be indexed by the same governed lineage.  Equality or
+ordering of their numeric positions does not establish equality of registry
+content.
+
+** Position-only recovery and join counterexamples
+
+=positionOnlyRecoveryPermitsSilentRegistryContentLoss= constructs a lineage and
+a valid =committedPosition <= recoveredPosition= receipt in which a descriptor
+registered at the committed position is absent at the recovered position.
+
+=positionOnlyReplicaJoinIsIndependentOfRegistryContent= constructs two
+registries that disagree about a descriptor while the position-only replica
+join reports the same maximum checkpoint.  The old Nat projection is therefore
+useful for rollback arithmetic but cannot own content admission.
+
+** Content-aware interval Typst model
+
+#+begin_export typst
+$
+  "IntervalDisposition"(d, g, c, r) :=
+    "registered"(g(r)."registry", d)
+    or exists k:
+      c <= k and k < r
+      and "AuthorityValidatedRetirement"(d, g(k), g(k + 1))
+
+  "ContentAwareRecovery"(e, g) :=
+    e.c <= e.r
+    and forall d in g(e.c)."registry":
+      "IntervalDisposition"(d, g, e.c, e.r)
+
+  "ContentAwareJoin"(l, r, j, g) :=
+    j."position" = max(l."position", r."position")
+    and "DispositionsFromBothOrigins"(l, r, j, g)
+$
+#+end_export
+
+** Content-evidence propagation Mermaid closure
+
+#+begin_src mermaid
+flowchart LR
+  L["Governed registry lineage<br/>adjacent dispositions"]
+  I["Interval induction<br/>preserved or retired"]
+  R["Content-aware recovery evidence"]
+  A["Durable recovery authority<br/>issues whole receipt"]
+  X["Two content-aware replicas"]
+  J["Max-position join<br/>both origin dispositions"]
+  P["Position-only projection"]
+  F["Content-blind admission rejected"]
+
+  L -->|"compose adjacent steps"| I
+  I -->|"status: interval closed"| R
+  A -->|"bind durable positions + receipt"| R
+  R -->|"derive same-lineage replica"| X
+  X -->|"carry left + right obligations"| J
+  J -->|"safe arithmetic projection"| P
+  P -.->|"insufficient without J"| F
+#+end_src
+
+** Content-aware recovery and join decision
+
+- Define =DescriptorDispositionAcrossRegistryInterval= as final preservation or
+  an authority-validated adjacent retirement inside the committed/recovered
+  interval.
+- Prove by induction that a governed lineage composes adjacent dispositions
+  across every ordered interval.  Use
+  =contentAwareRecoveryEvidenceOfGovernedLineage= as the canonical constructor;
+  callers do not invent a second interval proof language.
+- Make =DurableContentAwareRegistryCheckpointRecoveryAuthority= issue the whole
+  content-aware receipt and bind its position projection to the existing durable
+  recovery authority.
+- Derive =ContentAwareReplicaRegistryCheckpointKnowledge= from that issued
+  recovery on the same governed-lineage index.
+- Require =ContentAwareReplicaRegistryCheckpointJoinEvidence= to carry
+  dispositions from both input committed origins to the max-position join.
+- Retain the existing Nat recovery and replica join as arithmetic projections
+  and counterexample owners, not as full content-admission evidence.
+
+** Content-aware recovery and join checklist
+
+- [X] Construct valid position recovery that loses registry content.
+- [X] Construct position-equal replica knowledge independent of registry
+  content.
+- [X] Define preservation-or-retirement across a recovery interval.
+- [X] Prove governed adjacent transitions compose across every ordered
+  interval.
+- [X] Provide a canonical content-aware recovery constructor.
+- [X] Bind content-aware recovery to the durable recovery authority.
+- [X] Bind both replica inputs to the same governed lineage.
+- [X] Require descriptor dispositions from both committed origins at the joined
+  maximum position.
+- [X] Preserve the original position join as an exact projection.
+
+** Content-aware recovery and join Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  9 jobs with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  for 10 jobs with no warning or error.
+- The standard AXLE CLI rejected each single-source request with
+  =axle-source-set-mismatch= and exit 2.  The exact four-source recovery envelope
+  accepted all 12 roots and 75 declarations: 37 source declarations, 37
+  environment declarations, 0 proof-base declarations/imports, no failed
+  declaration, and no Lean diagnostic.  Recovery closure digest:
+  =sha256:44488eeb0e08cb4be10f2077e153ca07d06b762d6b58f5c341e1c222828e8260=;
+  bundle digest:
+  =sha256:2812274712984f965dd14a7870517120fa34fae416a47099b39ca6c45ed06e18=;
+  canonical source digest:
+  =sha256:22f00bcb99235a62ee1a3a13a9dee00453c8d26bb55285d27f9afec87e374c8a=;
+  independent bundle digest:
+  =sha256:d5c6bd864850789a99d92eb417b78aa1243434d9e950947cb6d7e25c5f34d681=.
+- The exact five-source replica envelope accepted all 14 roots and 75
+  declarations: 41 source declarations, 41 environment declarations, 0
+  proof-base declarations/imports, no failed declaration, and no Lean
+  diagnostic.  Replica closure digest:
+  =sha256:a6ce9bc17b095ea440d6809b1da34e40e73646c4eceb2c110dbacabb46d3579f=;
+  bundle digest:
+  =sha256:8cd5e8df606fa102ee7653b41f34574ba1b2952b78d074e512f5c44c7210025f=;
+  canonical source digest:
+  =sha256:e854fea81822b6d0fd172dd84801f7e380f3b0a0a5749458b19d468b9f46c7df=;
+  independent bundle digest:
+  =sha256:3e25c0c53f59612d5d8a7881988da73374814934a3b63450352e47543465f207=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
+  build= exited 0 for 587 jobs.  Both reported only the existing
+  =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
+- =asp org lint= accepted this RFC with =[ok] orgize lint=.
+- =git diff --check= and =git diff --cached --check= both exited 0.
+

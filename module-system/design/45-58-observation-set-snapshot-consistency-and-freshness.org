@@ -134,7 +134,7 @@ view of the world.
   validated set rather than a raw observation list.
 - [ ] =versionComparabilityCarriesDeclaredDomain=: cross-resource version
   comparison carries a declared resource domain and version relation.
-- [ ] Refine the validated set and contract through native =gerbil-poo=
+- [ ] Refine the validated set and contract through runtime =gerbil-poo=
   prototypes and runtime adapter snapshot/watermark implementations.
 - [ ] Replay the synchronized Lean and Typst claims through external AXLE.
 

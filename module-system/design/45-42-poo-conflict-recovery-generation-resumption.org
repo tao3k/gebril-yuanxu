@@ -32,7 +32,7 @@ When equal-priority contributions cannot be combined canonically, generation =G=
 - the semantic slot identity;
 - the composition generation identity;
 - candidate identities, exact priorities, and provenance;
-- the canonical native operation that was considered;
+- the canonical runtime operation that was considered;
 - why no canonical combination was admitted;
 - the affected demand root and current-generation SCC;
 - the classes of recovery that may be requested.

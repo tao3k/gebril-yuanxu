@@ -25,7 +25,7 @@
    (lambda (entry)
      (let ((directory (path-expand (car entry) root)) (id (cdr entry)))
        (write-source (path-expand "types.ss" directory)
-         "(import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract) :clan/poo/object) (def Scope (yuanxu-predicate-contract 'scope object? (lambda (_v _c) '()))) (export Scope)")
+         "(import (only-in :clan/poo/mop Type.) :clan/poo/object) (def Scope (.cc Type. identity: 'scope .element?: object?)) (export Scope)")
        (write-source (path-expand "objects.ss" directory)
          "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
        (write-source (path-expand "config.ss" directory) "(def Config (.o))")
@@ -39,7 +39,7 @@
   (write-source (path-expand "modules/core/dependency/interface.ss" root) "(((must-not-read")
   (write-source (path-expand "unselected/interface.ss" root) "(((must-not-read"))
 (def module-explicit-sources-test
-  (test-suite "Explicit authorization and native SourceRef bindings"
+  (test-suite "Explicit authorization and runtime SourceRef bindings"
     (yuanxu-test-case "required dependencies must be declared and cannot be disabled"
       (call-with-temporary-directory "explicit-denied"
         (lambda (root)
@@ -65,7 +65,7 @@
             (assert 'bound-module-scope (= (.get view modules core dependency value) 42))
             (def source (.get (car (.get view selected-records)) source))
             (def metadata (yuanxu-module-source-ref-metadata source))
-            (assert 'native-explicit-source-ref (eq? (cdr (assq 'source-binding metadata)) 'explicit))
+            (assert 'runtime-explicit-source-ref (eq? (cdr (assq 'source-binding metadata)) 'explicit))
             (assert 'physical-owner-retained
               (equal? (path-normalize (cdr (assq 'module-root metadata)))
                       (path-normalize (path-expand "contribution" root))))

@@ -74,7 +74,7 @@
       tail)))
 
 ;; Normalize a candidate object once per recursive object validation. Reversing
-;; the rows before the native constructor preserves leftmost JSON-key binding.
+;; the rows before the runtime constructor preserves leftmost JSON-key binding.
 ;; : (-> JsonSchemaCandidateRows HashTable)
 (def (yuanxu-json-schema-candidate-row-index rows)
   (list->hash-table-eq
@@ -479,7 +479,7 @@
                (yuanxu-json-schema-validation-node-constraints node))
               ;; A permissive object with no pattern or size constraints is
               ;; completely checked by its declared property lookups.  Keep a
-              ;; native std/text/json hash native instead of allocating
+              ;; runtime std/text/json hash runtime instead of allocating
               ;; hash->list rows that no rule consumes.
               (rows-required?
                (or (pair? constraints)

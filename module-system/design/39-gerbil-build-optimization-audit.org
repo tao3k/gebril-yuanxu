@@ -10,7 +10,7 @@ Agentic AI Lab must improve build performance without replacing Gerbil's build
 semantics.  The ownership split is:
 
 1. Gerbil and Gambit own expansion, import semantics, dependency completion,
-   native compilation, incremental validity, and worker scheduling.
+   runtime compilation, incremental validity, and worker scheduling.
 2. ASP Build API owns a small declarative package/profile projection, portable
    toolchain capabilities, validation, and typed observability receipts.  It
    must not infer a second import graph or decide whether Gerbil output is
@@ -18,15 +18,15 @@ semantics.  The ownership split is:
 3. =gerbil-bazel= owns the reusable mapping from the same upstream package
    entry to Bazel toolchains, actions, and content-addressed dependency caches.
    It does not know Agentic AI Lab modules or scenarios.
-4. Agentic AI Lab owns its module roots, roles, exceptional native specs, scenario
+4. Agentic AI Lab owns its module roots, roles, exceptional runtime specs, scenario
    selection, and project performance gates.
 
 #+begin_src mermaid
 flowchart TD
-  P["Agentic AI Lab package declarations<br/>roots, roles, native specs, scenarios"]
+  P["Agentic AI Lab package declarations<br/>roots, roles, runtime specs, scenarios"]
   A["ASP Build API<br/>declarative profile, validation, typed receipts"]
   M["Gerbil std/make and expander<br/>dependency truth, currentness, scheduling"]
-  G["Gambit and host C compiler<br/>native compilation"]
+  G["Gambit and host C compiler<br/>runtime compilation"]
   B["gerbil-bazel<br/>toolchain and atomic dependency cache mapping"]
   C["Agentic AI Lab performance scenarios<br/>cold, warm, CPU, RSS, compiler jobs"]
 
@@ -43,14 +43,14 @@ flowchart TD
 
 This boundary does not prohibit optimization.  It determines where a proven
 fix belongs.  A Gerbil expansion or scheduling defect is reproduced through
-the native package entry and reported as an upstream limitation; Agentic AI Lab and
+the runtime package entry and reported as an upstream limitation; Agentic AI Lab and
 ASP do not patch or replace the upstream executor.  An ASP declaration,
 platform capability, or receipt defect is fixed in ASP Build API.  A Bazel
 cache-key or action defect is fixed in =gerbil-bazel=.  A Agentic AI Lab module graph,
 macro hot path, scenario, or project budget is fixed here.
 
 The acceptance rule is executable: a performance change must name the owner,
-retain an upstream-native comparison, and report elapsed time, CPU utilization,
+retain an upstream-runtime comparison, and report elapsed time, CPU utilization,
 peak RSS, configured cores, observed compiler jobs, profile, source identity,
 and toolchain identity.  A faster result obtained by changing dependency or
 currentness semantics is not an optimization receipt.
@@ -61,11 +61,11 @@ Gerbil =std/make= computes =settings-parallelize= through =gerbil-build-cores=. 
 The worker model still has an important limit: =make-build= first normalizes the build spec, creates completion/timestamp tables, imports spec modules under a mutex, checks dependency timestamps, then pushes buildable specs to a work channel. The worker count only helps after that import/dependency phase.
 
 For =agentic-ai-lab=, the expensive section is not only =gsc= compilation. The heavy module-system and POO macro modules make the pre-worker expander/import phase large enough to look like a single-threaded stall.
-** 10.06.39.20 Finding: Thin Package Builds Depend On Public Native Ownership
+** 10.06.39.20 Finding: Thin Package Builds Depend On Public Runtime Ownership
 :PROPERTIES:
 =agentic-ai-lab/build.ss= consumes only the public
 =:asp-gerbil-scheme/building-api=.  Its PackageSpec declares stable public
-entry modules and exceptional native options; ASP projects the native import
+entry modules and exceptional runtime options; ASP projects the runtime import
 closure, while =std/build-script= and =std/make= retain command, dependency,
 currentness, and execution ownership.
 
@@ -77,7 +77,7 @@ the complete set of local package targets because passing one root source to
 artifacts.  A same-target V19 A/B found no stable performance advantage over
 an explicit complete target declaration.  Consequently, target-count
 reduction against a full source catalog must never be reported as an
-improvement to the native graph algorithm.
+improvement to the runtime graph algorithm.
 
 Neither Agentic AI Lab nor ASP imports =clan/building=, initializes a parallel build
 environment, or maintains a second source graph.  The package root may contain
@@ -115,7 +115,7 @@ The current implementation contract is:
    =begin-ffi= module's host flags and the small user-interface entry surface
    that must be package-managed. Gerbil owns the FFI module outputs.
 4. Treat =src= and root =t= as the ordinary package surface. =.data=, docs, generated state, user examples, and fixtures stay out because they are not included, not because the build file carries a long negative directory list.
-5. Keep diagnostics on the native package entry.  Do not introduce a direct
+5. Keep diagnostics on the runtime package entry.  Do not introduce a direct
    =compile-module= build path as a downstream performance workaround; bootstrap
    internals remain upstream implementation evidence only.
 6. Continue reducing heavy POO macro expansion in module-system files. The earlier =object<-alist= fixes are aligned with this because they reduce compile-time expansion pressure before any build runner optimization starts.
@@ -169,7 +169,7 @@ For package modules that produce large mostly-data POO values, prefer a smaller 
 4. Avoid hot-path repeated =.ref= traversal through nested child POO objects; derive rows or summaries once, then pass stable values forward.
 5. Keep POO extension semantics intact. The optimization target is macro expansion and construction shape, not replacing POO with raw alists in public APIs.
 
-This fits the existing POO rules: public extension surfaces remain POO-native, but implementation modules should choose the POO construction form with the smallest compile-time footprint that still preserves object/prototype semantics.
+This fits the existing POO rules: public extension surfaces remain POO, but implementation modules should choose the POO construction form with the smallest compile-time footprint that still preserves object/prototype semantics.
 ** 10.06.39.60 Implementation Step: Thin =agentic-ai-lab= Build Entry
 :PROPERTIES:
 The current build implementation has been corrected toward the =gerbil-poo= / =gerbil-utils= pattern:
@@ -181,7 +181,7 @@ The current build implementation has been corrected toward the =gerbil-poo= / =g
   target duplicates Gerbil's generated outputs;
 - =GERBIL_BUILD_CORES= remains the normal parallelism knob, matching the reference packages and avoiding custom thread logic in =build.ss=.
 - dependency ordering must remain a single =std/make= concern.  A Agentic AI Lab
-  declaration may expose exceptional native entries, but it must not introduce
+  declaration may expose exceptional runtime entries, but it must not introduce
   a bootstrap scheduler or a second coordinator to repair an inferred graph.
 - focused CLI compiler/test gates use the project package-local =.gerbil/lib= loadpath and never depend on a user's =~/.gerbil/lib= cache. This is fixed as benchmark scenario =GERBIL-SCHEME-AGENT-R039= under =t/scenarios/performance/focused-build-loadpath/benchmark.ss=: the optimization is not raw speed alone, but moving the focused build surface toward Gerbil/gxpkg's package-local build model while preventing stale user-cache artifacts from entering the compiler path.
  - package-local compilation is still guarded by =GERBIL_PATH=, but =gxpkg env= is not the ordinary developer hot-path wrapper. In a package-manager context, the externally supplied =GERBIL_PATH= remains authoritative. For the canonical direct self-host path, project configuration supplies the repository-local =.gerbil= only when the variable is absent. The normal warm-path check is therefore =./build.ss compile=; =gxpkg build -g= remains the package-manager and CI parity gate.
@@ -218,11 +218,11 @@ $
 
 If =package-total= is small but external =real= is high, investigate =gxpkg=
 environment startup, process startup, or output piping before changing stage
-code. If =package-total= is high, profile the native upstream package build and
+code. If =package-total= is high, profile the runtime upstream package build and
 send the fix to the owner of that phase.  For build performance work, record
 these receipts separately:
 - plain =gxi -e '(void)'= when measuring runtime startup;
-- the native =build.ss= entry for cold and repeated warm runs;
+- the runtime =build.ss= entry for cold and repeated warm runs;
 - =gxpkg build -g= for package-manager and CI parity.
 
 Currentness, generated-unit ownership, and dependency completion belong to
@@ -309,9 +309,9 @@ The repository-owned cross-platform refresh workflow run =33738373632= then
 completed Linux seed in =20 seconds=, Darwin merge in =28 seconds=, and final
 Linux verification in =14 seconds=.  Its merged artifact is the tracked lock;
 the JSON was not edited by hand.
-** 10.06.39.75 Field Receipt: Harness Native POO Policy Hot Path
+** 10.06.39.75 Field Receipt: Harness POO Policy Hot Path
 :PROPERTIES:
-The next optimization pass used the Gerbil Scheme harness native POO scenarios as the pattern source. The useful rules were:
+The next optimization pass used the Gerbil Scheme harness POO scenarios as the pattern source. The useful rules were:
 1. keep public extension APIs as POO objects and prototypes;
 2. avoid rebuilding adapter objects or child POO objects inside validation loops;
 3. replace repeated list membership and duplicate scans with local hash indexes;
@@ -333,10 +333,10 @@ Local package-gate receipts on 2026-06-29 with =GERBIL_BUILD_CORES=8=:
 
 The conclusion is deliberately split. The policy dependency chain improved enough to justify the indexed POO implementation change, but the full package aggregate gate is not a stable no-op: repeated receipts in this pass ranged from =24.82s= to =41.77s= while still recompiling broad downstream groups. The next speedup owner is therefore not more sandbox-policy micro-optimization. It is either the focused =agentic-ai-lab= CLI gate returning to the package workspace, or the build-spec/cache owner that decides why the aggregate package gate keeps recompiling broad downstream groups.
 
-This is the boundary that keeps POO-native design and performance work aligned. Public APIs remain object/prototype oriented, while implementation hot paths choose the construction and traversal form that keeps macro expansion, allocation, and validation costs bounded.
+This is the boundary that keeps POO design and performance work aligned. Public APIs remain object/prototype oriented, while implementation hot paths choose the construction and traversal form that keeps macro expansion, allocation, and validation costs bounded.
 ** 10.06.39.80 Field Receipt: Generated Receipt Struct Boundary
-The next optimization owner was the loop-engine capability receipt. The earlier bounded-alist stopgap fixed the serialization boundary, but it still blurred internal representation and ABI projection. The better Gerbil-native shape is now the project rule:
-1. user authoring and module config stay POO-native;
+The next optimization owner was the loop-engine capability receipt. The earlier bounded-alist stopgap fixed the serialization boundary, but it still blurred internal representation and ABI projection. The better Gerbil-runtime shape is now the project rule:
+1. user authoring and module config stay POO;
 2. generated runtime receipts use fixed =defstruct= values and struct accessors;
 3. manifest, JSON, Marlin handoff, and test summaries receive an explicit bounded =receipt->alist= projection.
 

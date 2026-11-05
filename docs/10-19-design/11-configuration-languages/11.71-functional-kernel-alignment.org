@@ -98,7 +98,7 @@ separate runtime capability requiring aggregate resource admission.
 
 The declarative module-test design is tracked independently in
 [[file:../13-module-loading/13.12-declarative-module-testing.org][Module Testing and Benchmark Projection]]. Its proposed init exports are not
-implemented merely because existing native suites now belong to Core.
+implemented merely because existing runtime suites now belong to Core.
 
 Focused qualification on the declared Core dependency environment:
 
@@ -115,7 +115,7 @@ Focused qualification on the declared Core dependency environment:
   failure cleanup, selected-source mutation cleanup, parent-cached Graph/final
   child message, Schema upgrade, old evidence refusal and AWS validate passed.
 
-Each passing native gate required MODULE-OK, HARNESS-OK, final OK and exit zero.
+Each passing runtime gate required MODULE-OK, HARNESS-OK, final OK and exit zero.
 The historical Funflow filenames above have since moved under
 =t/Modules/funflow/=. Current module execution uses the automatically
 discovered =tests.qualification= projection; publication/dependency checks now

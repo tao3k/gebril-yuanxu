@@ -3,7 +3,7 @@ import Std
 
 /-! Logical completeness of a semantic-read projection, for arbitrary identities.
 Quint checks finite mutation/publication schedules. These theorems do not certify
-native read-token reconstruction, callback non-escape, or a byte/GC bound. -/
+runtime read-token reconstruction, callback non-escape, or a byte/GC bound. -/
 namespace YuanxuProof.ModuleSystem.Graph.SemanticReads
 
 def Complete (required projected : α → Prop) : Prop :=

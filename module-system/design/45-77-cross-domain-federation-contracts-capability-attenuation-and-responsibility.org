@@ -110,7 +110,7 @@ flowchart LR
 - [X] =requirementChangeCreatesNewAgreementIdentity=
 - [X] =offerChangeCreatesNewAgreementIdentity=
 - [X] =federationCutChangeCreatesNewAgreementIdentity=
-- [ ] Project federation relations and policy through native =gerbil-poo=.
+- [ ] Project federation relations and policy through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.Admission.Federation=.  It imports RFC
@@ -154,7 +154,7 @@ Remote internal POO graphs and capabilities are not imported implicitly.
 Federation requirement, offer, compatibility, agreement, attenuation, and
 responsibility policy are ordinary higher-order POO objects.
 
-Native prototype composition defines:
+Runtime prototype composition defines:
 
 - exported and imported contract projections;
 - trust and evidence requirements;
@@ -164,7 +164,7 @@ Native prototype composition defines:
 - failure and revocation policy;
 - governance and responsibility.
 
-The public federation interface remains POO-native. Agreement modes,
+The public federation interface remains POO. Agreement modes,
 delegation, trust, and degraded behavior must not become unstructured macro
 tokens or a hidden global registry.
 
@@ -468,12 +468,12 @@ The implementation must distinguish at least:
 12. Every domain approves only obligations it owns.
 13. Federated receipts preserve exact responsibility roles.
 14. Cross-domain atomicity requires a proven transaction adapter.
-15. Public federation extension remains POO-native.
+15. Public federation extension remains POO.
 
 * Implementation checklist
 
 - [ ] Define domain identity and ownership schemas.
-- [ ] Define POO-native federation requirement and offer objects.
+- [ ] Define POO federation requirement and offer objects.
 - [ ] Define directional federation compatibility closure.
 - [ ] Define versioned federation agreement proposals and receipts.
 - [ ] Define cross-domain module and submodule instance identities.

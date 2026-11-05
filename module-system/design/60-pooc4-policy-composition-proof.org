@@ -44,7 +44,7 @@ $
 $
 #+end_src
 
-The key separation is that policy composition is POO-native, while
+The key separation is that policy composition is POO, while
 =StartFrame= keeps dependency, scope, precondition, and guard gates out of the
 policy object itself.
 

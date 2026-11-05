@@ -13,7 +13,7 @@ reproducible vertical-slice qualification.  It introduces a canonical release
 assurance manifest and an orchestration harness; it does not introduce another
 semantic model, runtime, proof kernel, or compatibility ABI.
 
-The manifest is a POO-native Scheme value projected into a deterministic
+The manifest is a POO Scheme value projected into a deterministic
 machine-readable receipt.  It references evidence produced by existing owners
 and never converts “test command succeeded” into a stronger semantic claim.
 
@@ -45,7 +45,7 @@ epoch, token/effect binding, semantic root, execution root, and proof vector.
 | Existing AC-01–09 semantic owners | Produce canonical facts and focused receipts |
 | Scheme assurance manifest | Declare claims, TCBs, levels, evidence references, exclusions, and qualification state |
 | Qualification runner | Execute owner commands and assemble receipts without reinterpreting them |
-| Native C harness | Prove installed ABI, lifecycle, fault, memory, and hot-path properties |
+| Runtime C harness | Prove installed ABI, lifecycle, fault, memory, and hot-path properties |
 | Python runtime harness | Prove installed production CFFI behavior and cross-language conformance |
 | Lean package | Check only the named formal claims and their bound identities |
 | Release reviewer | Decide ABI freeze and cutover from the complete receipt set |
@@ -72,7 +72,7 @@ functional combinators.  Raw alists, record DSLs, patch languages, and shell
 fragments are not the ordinary manifest API.
 
 The serialized receipt may be JSON for tooling interchange, but JSON is not a
-native runtime ABI and is never passed through the C hot path.
+runtime ABI and is never passed through the C hot path.
 
 * Claim model
 
@@ -117,10 +117,10 @@ missing obligation, malformed vector, and stale proof identity.
 flowchart TD
     PLAN["Declarative gate registry"] --> RUNNER["Qualification runner"]
     RUNNER --> SCHEME["Scheme owner gates"]
-    RUNNER --> CTEST["Native C and installed consumers"]
+    RUNNER --> CTEST["Runtime C and installed consumers"]
     RUNNER --> PYTEST["Installed Python suites"]
     RUNNER --> LEANTEST["Lean build and FFI smoke"]
-    RUNNER --> PERF["Native and CFFI benchmarks"]
+    RUNNER --> PERF["Runtime and CFFI benchmarks"]
     SCHEME --> RECEIPTS["Immutable gate receipts"]
     CTEST --> RECEIPTS
     PYTEST --> RECEIPTS
@@ -150,7 +150,7 @@ recorded budget exists and the real hot path has no unexplained regression.
 * Private-bypass audit
 
 Qualification fails if production Python can execute without a negotiated
-native context, if an effect can bypass authorization/mediation, if a proof
+runtime context, if an effect can bypass authorization/mediation, if a proof
 digest is caller-injected, if the retired graph ABI reappears, or if checkout
 imports substitute for the installed consumer.
 

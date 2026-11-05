@@ -4,10 +4,10 @@
 * Question and decision
 
 [[file:32.20-remaining-read-boundaries.org][32.20]] proved coverage for a tree-shaped replay projection but explicitly left
-native sharing/cycles open. This follow-up supplies a finite identity-graph DFS,
+runtime sharing/cycles open. This follow-up supplies a finite identity-graph DFS,
 a correspondence from recursive for-each frames, and a complete final-token
 pass. It does not change Scheme, connect a Loader, or authorize deleting the
-two JSON checks. The 356-read count is earlier native evidence, not a new
+two JSON checks. The 356-read count is earlier runtime evidence, not a new
 measurement or a qualification of concurrently changed Scheme consumers.
 
 Owners:
@@ -16,11 +16,11 @@ Owners:
 [[file:../../../dev/proofs/quint/IdentityDFS.qnt][IdentityDFS.qnt]]. The dependency remains LeanPoo
 =6e6a706e14fa6f8199e4f36711440355b42ef335=. The graph termination argument
 specializes its =C4.ReachabilityInvariant= pending/unseen-weight method. That
-owner implements BFS; its traversal order is NOT substituted for native DFS.
+owner implements BFS; its traversal order is NOT substituted for runtime DFS.
 The new owner imports the dependency's proof module and uses Std HashSet laws;
 its private BFS-specific lemmas are not presented as reusable public theorems.
 
-* What native identity means
+* What runtime identity means
 
 The audited producer remains gerbil-poo
 =ece6f609357ea918038090559ac051a8d9f3e52f=. Its =replay-slot-reads!=:
@@ -97,7 +97,7 @@ pending pops <= 7; pending ends empty; record 4 is never visited
 This fixture is an adversarial graph projection. It is not a claim that the
 recorded Gitea/PostgreSQL production trace contains that cycle.
 
-* Correspondence to recursive native for-each
+* Correspondence to recursive runtime for-each
 
 DFSFrames retains nested lists as actual traversal frames. An empty frame
 returns without a check. A nonempty frame either skips a seen identity, or
@@ -116,10 +116,10 @@ theorem enter_refines (edges : Edges) (id : Nat) (tail : List Nat)
 =frames_drain= and =replay_exact= establish termination and exact reachability
 for the recursive-frame projection itself; =replay_nodup= preserves identity
 uniqueness. This is stronger than asserting that two traversals visit the same
-set: each active frame transition retains the native dependency-before-sibling
+set: each active frame transition retains the runtime dependency-before-sibling
 schedule, and returns introduce no diagnostic operation.
 
-The Scheme interpreter, Gerbil pointer hashing, heap/stack limits and native
+The Scheme interpreter, Gerbil pointer hashing, heap/stack limits and runtime
 exception payloads are not mechanically translated by this proof. The source
 audit relates their control flow to these frames; an executable extraction
 or full language-level refinement is still outside the established result.
@@ -142,7 +142,7 @@ its first visit. The second pass compares final bindings; it never reuses an
 earlier Boolean currentness result.
 
 These Binding coordinates project receiver, revision, instance, record and value
-identity. Bootstrap/cache-miss variants still need their exact native predicate
+identity. Bootstrap/cache-miss variants still need their exact runtime predicate
 mapping. Under a stable closed structural checker, the final pass covers every
 reachable identity. If a =current?= callback checks itself and THEN changes a
 previously checked record, coverage alone is insufficient to certify return.
@@ -160,9 +160,9 @@ hashes recorded in 32.20. The current Core consumers are
 =configuration/slot-origin.ss=, =module-system/source/admission.ss= and
 =admission/source.ss=. No Scheme changes are made here.
 
-- Native =object-read-current?= is a structural checker. Public low-level read
+- Runtime =object-read-current?= is a structural checker. Public low-level read
   construction/delivery still permits procedure-valued checks in reachable
-  dependencies; native roots alone do not close that producer set.
+  dependencies; runtime roots alone do not close that producer set.
 - Core's singleton source path avoids the deep =.ref= path walker, but
   =slot-origins= still calls =compute-precedence-list!=. A cached precedence
   list returns directly; a cold one can invoke a replaceable MOP hook.
@@ -183,7 +183,7 @@ hashes recorded in 32.20. The current Core consumers are
   =without-observation= does not suppress this separate parameter.
 
 A future closed adapter must derive readiness and producer/observer closure
-from actual native state and supported operations, including failure cleanup;
+from actual runtime state and supported operations, including failure cleanup;
 it cannot infer them from revision equality, a method name or a user marker.
 Present JSON checks and fresh post-callback/return checks remain unchanged.
 
@@ -234,7 +234,7 @@ its seven-pop invariant is violated first. The positive program never reaches
 that cap. The general Lean termination theorem has no fixed graph-size cap.
 
 The finite model establishes selected schedules, not arbitrary callback purity,
-dynamic graph closure, native source/exception extraction or wall-time bounds.
+dynamic graph closure, runtime source/exception extraction or wall-time bounds.
 No source currentness result is carried across its modeled effects.
 
 * Qualification and concurrent-source boundary
@@ -244,7 +244,7 @@ Prop-valued shells, and its axiom audit covered 4,581 declarations using only
 standard Lean axioms. No =sorry=, =native_decide= axiom, larger recursion limit,
 new runtime or Scheme patch was introduced.
 
-The first full QNT qualification typechecked the 56 native sources and completed
+The first full QNT qualification typechecked the 56 runtime sources and completed
 all 55 expected outcomes. After that receipt, another session updated
 =module-system/source/admission.ss=: pure-query keys now include the enclosing
 source-collector scope. This retains distinct nested enrollment demands rather
@@ -259,10 +259,10 @@ below; it must not overwrite or retroactively refresh the old receipt.
 The new frame proof was built after the first QNT run and is required by the
 final Lean aggregate. The source-bound current QNT receipt binds both graph and
 frame sources; the joined qualification records their hashes and independent
-Lean output. No module consumer tests, native read counts or timings were rerun.
+Lean output. No module consumer tests, runtime read counts or timings were rerun.
 
 The current-source rerun completed all 55 expected outcomes after typechecking
-all 56 native QNT sources. It retained the 45-second case deadline, five-second
+all 56 runtime QNT sources. It retained the 45-second case deadline, five-second
 real-output watchdog, five-second per-source typecheck limit and 1GB TLC heap.
 No deadlock suppression or larger limit was introduced. Its nine new case
 counts match the table above. The watched Scheme source cut remained stable
@@ -275,9 +275,9 @@ Artifacts stay local at =/private/tmp/core-identity-dfs-20261018/=:
   both graph/frame owners bound, all 55 expected outcomes.
 - =lean-all-03.log=: final aggregate, including recursive frames.
 - =concurrent-source-change.json=: the external source-cut change.
-- =audited-dependencies.json=: pinned native and LeanPoo source hashes.
+- =audited-dependencies.json=: pinned runtime and LeanPoo source hashes.
 - =qualification.json=: joins exact source/output hashes, gate results and
-  remaining assumptions. It does not replace the native Scheme proof receipt.
+  remaining assumptions. It does not replace the Scheme proof receipt.
 
 Earlier proof elaboration/launcher failures are retained in this directory;
 they were resolved without admitted axioms or raised resource limits. The
@@ -292,15 +292,15 @@ requirements, manual completion lists or payload-based merging. The final pass
 covers all reachable seen identities even when a later visit invalidates an
 earlier record. Check order remains explicit throughout the projection.
 
-This does not close the whole native optimization. We still need a supported,
+This does not close the whole runtime optimization. We still need a supported,
 producer-derived account of metadata readiness, custom read-record checks and
 source observers, plus exact Scheme predicate/exception correspondence. A
 currentness callback that mutates AFTER checking defeats a mere coverage proof.
 Consequently no JSON check is removed, no byte window crosses an open callback,
-and no new claim of a lower native read count or faster execution follows.
+and no new claim of a lower runtime read count or faster execution follows.
 
 * Follow-up: actual entry qualification
 
 [[file:32.22-state-derived-read-only-entry.org][32.22]] audits cold hook, bootstrap-token and source-observer entry state.
 It adds a conservative raw-state closure model without changing the Scheme
-consumer or weakening the native correspondence premises retained here.
+consumer or weakening the runtime correspondence premises retained here.

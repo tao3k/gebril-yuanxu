@@ -13,7 +13,7 @@
   (displayln "GITEA-RELOCATED-PACKAGE: 4 cases completed"))
 (def relocation-test
   (test-suite "Selected Scenario package relocation"
-    (yuanxu-test-fixture "observed JSON follows the selected graph and relocated native sources"
+    (yuanxu-test-fixture "observed JSON follows the selected graph and relocated runtime sources"
       (fixture ServicesFixture)
       (with-slots (root selection) fixture
         (def graph (.get selection build-graph))
@@ -115,7 +115,7 @@
         (check-equal? (.get (.call (.get publication contract) .admit parent (.get publication context)) accepted?) #t)
         (check-equal? (.get cached postgresql port) 5432)
         (set! completed (+ completed 1))))
-    (yuanxu-test-fixture "native plus, cc and delayed refinement share source checks after parent and child caches"
+    (yuanxu-test-fixture "runtime plus, cc and delayed refinement share source checks after parent and child caches"
       (fixture RelocatedServicesFixture)
       (with-slots (root selection publication) fixture
         (def moved (.get fixture source))

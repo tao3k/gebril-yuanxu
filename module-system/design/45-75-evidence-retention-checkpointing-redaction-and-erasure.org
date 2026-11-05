@@ -107,7 +107,7 @@ flowchart LR
 - [X] =governedErasureCapabilityIsAtMostOnce=
 - [X] =retentionPolicyChangeCreatesNewDecisionIdentity=
 - [X] =retentionObservationChangeCreatesNewDecisionIdentity=
-- [ ] Project retention and erasure policy through native =gerbil-poo=.
+- [ ] Project retention and erasure policy through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.Admission.Retention=.  It imports
@@ -128,7 +128,7 @@ data.
 * POO semantic ownership
 
 Evidence retention policy is represented by ordinary higher-order POO objects.
-Native prototype composition defines:
+Runtime prototype composition defines:
 
 - evidence classification;
 - retention windows;
@@ -141,7 +141,7 @@ Native prototype composition defines:
 - reference closure;
 - reclamation receipts.
 
-The public extension interface remains POO-native. Retention, deletion,
+The public extension interface remains POO. Retention, deletion,
 redaction, and replay level must not become unstructured macro tokens or raw
 storage callbacks.
 
@@ -467,13 +467,13 @@ The implementation must distinguish at least:
 13. Schema evolution derives new views without rewriting old receipts.
 14. Confidential commitments remain disclosure-scoped.
 15. Partial and unknown erasure outcomes remain visible.
-16. Public retention policy extension remains POO-native.
+16. Public retention policy extension remains POO.
 
 * Implementation checklist
 
 - [ ] Define canonical receipt-header schemas.
 - [ ] Separate evidence bodies, sensitive payloads, and operational indexes.
-- [ ] Define POO-native retention classifications and policies.
+- [ ] Define POO retention classifications and policies.
 - [ ] Define evidence checkpoint coverage and root commitments.
 - [ ] Define full, proof-verifiable, audit-summary, and identity-only replay
       levels.

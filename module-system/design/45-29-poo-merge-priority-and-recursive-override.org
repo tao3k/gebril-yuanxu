@@ -9,7 +9,7 @@
 
 Accepted design.
 
-The POO Module System defines native merge-priority and recursive-override
+The POO Module System defines runtime merge-priority and recursive-override
 semantics using POO objects and slot contracts.
 
 The design absorbs several strong ideas documented by
@@ -21,7 +21,7 @@ The design absorbs several strong ideas documented by
 - contracts remain applicable when a weaker value is suppressed;
 - recursive dependencies observe the selected value.
 
-These ideas are reconstructed in Gerbil Scheme through native =gerbil-poo=
+These ideas are reconstructed in Gerbil Scheme through runtime =gerbil-poo=
 prototype, slot, open-recursion, Capability, authority, and receipt semantics.
 This is not a Nickel language mode, compatibility layer, record model, or
 annotation syntax.
@@ -30,8 +30,8 @@ The design integrates with:
 
 - [[file:45-19-capability-ambiguity-resolution-overlay-and-replay.org][45-19]]
   singleton ambiguity and explicit resolution;
-- [[file:45-28-poo-native-slot-contracts-and-algebraic-laws.org][45-28]]
-  POO-native slot contracts and algebraic laws.
+- [[file:45-28-poo-slot-contracts-and-algebraic-laws.org][45-28]]
+  POO slot contracts and algebraic laws.
 
 It does not adopt Nix's lower-number-wins direction or its independent order
 priority.
@@ -134,9 +134,9 @@ When active values have equal priority, the governing 45-28 contract decides:
 - canonical sets perform identity-based union;
 - equal primitive or singleton values may coalesce when their semantic
   identities agree;
-- nested objects refine through native ==>.+= or the declared recursive object
+- nested objects refine through runtime ==>.+= or the declared recursive object
   contract;
-- ordered same-lineage behavior follows native prototype inheritance;
+- ordered same-lineage behavior follows runtime prototype inheritance;
 - singleton unrelated values remain ambiguous;
 - incompatible values produce a structured non-mergeable condition.
 
@@ -212,9 +212,9 @@ flowchart LR
 
 It provides an overridable contribution while preserving recursive dependency.
 When a stronger contribution wins, slots depending on the selected value are
-recomputed through the native demand-lazy fixed point.
+recomputed through the runtime demand-lazy fixed point.
 
-=default= is distinct from native =gerbil-poo= =?=:
+=default= is distinct from runtime =gerbil-poo= =?=:
 
 - =?= supplies the base of one inherited slot computation;
 - merge-priority =default= marks one contribution as weaker than all numeric
@@ -266,7 +266,7 @@ When a stronger contribution replaces a weaker value:
 No external tree-rewrite pass is required.
 
 This is the POO equivalent of Nickel's recursive overriding, implemented by
-native =gerbil-poo= open recursion rather than a second record evaluator.
+runtime =gerbil-poo= open recursion rather than a second record evaluator.
 
 * Singleton Capability
 
@@ -298,7 +298,7 @@ ordinary ambiguity rules.
 
 * Same-lineage refinement
 
-Native =gerbil-poo= inheritance precedence remains the mechanism for ordered
+Runtime =gerbil-poo= inheritance precedence remains the mechanism for ordered
 same-lineage slot computations.
 
 Merge priority does not reorder the =.mix= prototype chain and does not change
@@ -315,7 +315,7 @@ This design does not introduce Nix-style =order-priority=.
 
 Ordering is expressed by:
 
-- native =.mix= precedence for same-lineage prototype refinement;
+- runtime =.mix= precedence for same-lineage prototype refinement;
 - canonical unordered identity for set-valued contracts;
 - an explicit ordered-value contract when an application genuinely requires
   an ordered collection.
@@ -392,7 +392,7 @@ forced merge.
 
 * Runtime and ownership boundary
 
-=gerbil-poo= owns native prototype, slot, inheritance, and fixed-point
+=gerbil-poo= owns runtime prototype, slot, inheritance, and fixed-point
 evaluation.
 
 Agentic AI Lab owns the POO priority domain, contribution metadata, selection proof,
@@ -419,10 +419,10 @@ provider.
 - [ ] Propagate applicable contracts independently from value suppression.
 - [ ] Require explicit authority for =force=.
 - [ ] Keep =force= subject to authority, conservation, continuity, and replay.
-- [ ] Support recursive override through native POO open recursion.
+- [ ] Support recursive override through POO open recursion.
 - [ ] Produce singleton selection proof from the full priority closure.
 - [ ] Preserve ambiguity for tied unrelated strongest candidates.
-- [ ] Keep native =.mix= precedence separate from merge priority.
+- [ ] Keep runtime =.mix= precedence separate from merge priority.
 - [ ] Do not add an independent order-priority axis.
 - [ ] Allow slot contracts to reject priority where it violates their laws.
 - [ ] Expose active, suppressed, contract, and authority evidence to

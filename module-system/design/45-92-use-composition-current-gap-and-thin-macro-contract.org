@@ -5,6 +5,16 @@
 #+title: use-composition Current Gap and Thin Macro Contract
 #+startup: overview
 
+* Current implementation boundary
+
+The composition-binding macro described below is a historical design.
+Current code uses native =def= and =.new Scenario= from
+=:yuanxu/modules/funflow/scenario=. Its Record Contract and private plan
+projection share one owner. No compatibility macro or Workflow facade
+is published. The module-authoring and evidence arguments below retain
+their stated premises; they do not establish the removed syntax as an API.
+See [[file:../../dev/sysml/20-module-loading/20.30-test-discovery-and-domain-demand.org][the current ownership and assurance boundary]].
+
 * Status
 
 Accepted target architecture.
@@ -96,7 +106,7 @@ is not the accepted first-class POO composition-strategy object.
 currently lowers local profile sections through alists, ~object<-alist~,
 special section names, hooks, and host conditional dispatch.
 
-That lowering is outside the accepted POO-native public contract.
+That lowering is outside the accepted POO public contract.
 
 ** Current call sites
 
@@ -236,7 +246,7 @@ The observable target expansion is equivalent to:
 
 1. define the requested module-level identifier;
 2. evaluate the supplied expression without rewriting its internal syntax;
-3. attach the declared composition identity through an ordinary POO-native
+3. attach the declared composition identity through an ordinary POO
    identity projection; and
 4. instantiate the resulting composition root exactly once.
 
@@ -429,7 +439,7 @@ the textual names of identifiers inside it.
 |-------+------------------------+----------------------------|
 | expansion | arity, identifier, hygienic binding, identity projection | Profile evaluation or clause parsing |
 | module value initialization | evaluate the ordinary composition expression | package discovery |
-| root boundary | one POO-native instantiation | a second prototype evaluator |
+| root boundary | one POO instantiation | a second prototype evaluator |
 | runtime | evaluate admitted Profile and control semantics | macro re-entry |
 
 The composition expression may contain ordinary Scheme abstraction created
@@ -509,7 +519,7 @@ The macro does not provide special syntax for:
 - priority; or
 - capability requirements.
 
-Advanced extension remains the native POO object and prototype interface.
+Advanced extension remains the POO object and prototype interface.
 
 * Error contract
 
@@ -620,7 +630,7 @@ This RFC owns the exact thin-macro boundary around that surface.
 - [ ] Prove that value composition remains pure.
 - [ ] Prove that root identity is stable.
 - [ ] Prove that runtime control does not re-enter macro expansion.
-- [ ] Prove erasure to the same native POO result or failure for allowed
+- [ ] Prove erasure to the same POO result or failure for allowed
   completed execution.
 
 * Admission criteria
@@ -629,10 +639,10 @@ Implementation may begin only when:
 
 - [ ] the two-operand public syntax is the only accepted grammar;
 - [ ] the macro creates one binding without an enclosing ~def~;
-- [ ] composition identity projection is POO-native and inspectable;
+- [ ] composition identity projection is POO and inspectable;
 - [ ] ~compose~ is an ordinary pure function;
 - [ ] ~profiles~ is a first-class POO strategy object;
-- [ ] POO-native ~imports~ owns recursive dependency semantics beneath
+- [ ] POO ~imports~ owns recursive dependency semantics beneath
   ~use-module~;
 - [ ] independent ~use-module~ lowers directly to a POO ProfileBundle;
 - [ ] physical Gerbil import/load is only a phase-owned backend projection;

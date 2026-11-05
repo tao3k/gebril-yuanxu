@@ -66,7 +66,7 @@ The important properties are:
 - =compile= creates a runnable graph and accepts =checkpointer=, =store=, =interrupt_before=, =interrupt_after=, =debug=, and =name=.
 - checkpointer plus =thread_id= is the durable execution key for pause, resume, replay, and time-travel debugging.
 
-For =agentic-ai-lab=, this confirms that the user surface should stay compact and declarative, but our surface should be module-owned and POO-native rather than Python builder-native. A =agentic-ai-lab= user enables modules and writes profile/case POO objects inside those module surfaces. Module projections then play the role that LangGraph's =compile= plays: they turn declarations into validated descriptors and runtime handoff receipts without executing the runtime.
+For =agentic-ai-lab=, this confirms that the user surface should stay compact and declarative, but our surface should be module-owned and POO rather than Python builder-runtime. A =agentic-ai-lab= user enables modules and writes profile/case POO objects inside those module surfaces. Module projections then play the role that LangGraph's =compile= plays: they turn declarations into validated descriptors and runtime handoff receipts without executing the runtime.
 ** 10.06.32.40 Runtime Injection
 LangGraph has a run-scoped =Runtime= object injected into graph nodes. It bundles:
 - =context= for static run dependencies such as user id or database handles;
@@ -154,7 +154,7 @@ The CLI owns:
 - =langgraph build= for Docker image build;
 - =langgraph dockerfile= for generated deployment artifacts.
 
-For =agentic-ai-lab= this reinforces that user project config and runtime/deployment config should remain separate. =init.ss= should stay clean and POO-native. Backend/runtime descriptors can be projected into Marlin-owned config or future deployment artifacts without putting Docker/server concerns into the Scheme user interface.
+For =agentic-ai-lab= this reinforces that user project config and runtime/deployment config should remain separate. =init.ss= should stay clean and POO. Backend/runtime descriptors can be projected into Marlin-owned config or future deployment artifacts without putting Docker/server concerns into the Scheme user interface.
 ** 10.06.32.100 Agentic AI Lab Design Takeaways
 LangGraph is useful precisely where it exposes clean engineering boundaries:
 - Builder declarations are inert until compiled.

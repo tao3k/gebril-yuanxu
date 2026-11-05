@@ -12,7 +12,7 @@
 Agentic AI Lab distinguishes Gerbil language modules from selectable product
 features.  A Gerbil module is a static namespace, compilation, macro-phase,
 import/export, and single-instantiation boundary.  A Agentic AI Lab =Feature= is a
-POO-native declarative capability contribution selected by a profile.  Importing
+POO declarative capability contribution selected by a profile.  Importing
 a Gerbil module makes exported definitions available; it never enables a
 Feature.
 
@@ -27,7 +27,7 @@ reimplemented by Agentic AI Lab.
 #+begin_src mermaid
 flowchart TB
     GM["GerbilModule: namespace, phase, import/export, AOT, single instantiation"]
-    FD["FeatureDescriptor: POO-native static capability contribution"]
+    FD["FeatureDescriptor: POO static capability contribution"]
     FS["FeatureSelection and FeatureProfile: user intent, flags, dependencies"]
     AP["FeatureActivationPlan and FeatureInstance: explicit runtime handoff"]
     CC["CaseComponent"]
@@ -80,7 +80,7 @@ borrow another layer's edge semantics.
 | module category | Feature namespace/category | semantic grouping only |
 | module | FeatureDescriptor | immutable POO value, not a Gerbil module |
 | module flag | FeatureOption selection | typed and schema-versioned |
-| init.el selection | FeatureProfile | pure POO-native declaration |
+| init.el selection | FeatureProfile | pure POO declaration |
 | package declaration | build/package contribution | resolved by canonical build layer |
 | init/config hooks | FeatureActivationPlan steps | effects occur only through runtime handoff |
 | autoload/dynamic load | explicit plugin loader adapter | never implicit in selection macros |
@@ -196,7 +196,7 @@ Dynamic loading MUST NOT execute during macro expansion, ordinary profile
 selection, or DomainCase instantiation.  The loader is a runtime boundary, not
 a second module system.
 
-* POO-native public model
+* POO public model
 
 =FeatureDescriptor= contains at least:
 
@@ -235,7 +235,7 @@ The intended static authoring shape is:
           durable-history: #t))
 #+end_src
 
-The macro syntax is declarative, but its expansion is ordinary POO-native and
+The macro syntax is declarative, but its expansion is ordinary POO and
 functional code.  The option forms are not runtime alists.
 
 * Relationship to CaseComponent and DomainCase
@@ -262,7 +262,7 @@ The lowering boundary is:
 #+begin_src mermaid
 flowchart LR
     UF["use-feature funflow"] --> FM["Compiled FunFlow feature macro"]
-    FM --> PO["POO-native FeatureSelection and CaseComponents"]
+    FM --> PO["POO FeatureSelection and CaseComponents"]
     PO --> FP["Pure functional plan"]
     FP --> RP["Runtime projection"]
     RP --> RR["Runtime receipt"]
@@ -346,7 +346,7 @@ owner exists, the same checks remain deterministic resolver diagnostics.
 
 - [X] Phase 1: canonical vocabulary, four-layer boundary, and legacy guidance
   removal.
-- [X] Phase 2: POO-native Feature fragments, Descriptor, Selection, Profile,
+- [X] Phase 2: POO Feature fragments, Descriptor, Selection, Profile,
   ActivationPlan, and pure resolver under =src/feature-system=.
 - [X] Phase 3A: compiled declaration macros and hygienic POO lowering.
 - [ ] Phase 3B: syntax-safe manifests and cross-declaration build diagnostics.
@@ -363,7 +363,7 @@ FeatureDescriptor, FeatureSelection, FeatureProfile, or Agent instance.
 1. Land this vocabulary and layering decision; reduce the old =use-module=
    Macro IR path to a non-compatibility canonical-link page with no legacy
    examples or contract.
-2. Introduce POO-native FeatureDescriptor, FeatureSelection, FeatureProfile, and
+2. Introduce POO FeatureDescriptor, FeatureSelection, FeatureProfile, and
    pure resolver functions under =src/feature-system=.
 3. Add thin =defpoo-feature= and =defpoo-feature-profile= compiled macros with
    phase-hygiene tests.

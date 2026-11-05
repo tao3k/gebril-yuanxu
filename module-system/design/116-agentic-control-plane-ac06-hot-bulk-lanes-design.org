@@ -13,20 +13,20 @@ limitation is recorded as a host-toolchain exception rather than hidden.
 * Objective
 
 AC-06 extends runtime v0.1 with a production batch event lane and bulk payload
-lane.  The default production memory model is a caller-owned negotiated native
+lane.  The default production memory model is a caller-owned negotiated runtime
 arena.  Fixed headers carry offsets and lengths into the arena; Scheme heap
-pointers, per-field native pointers, implicit strings, and hidden payload copies
+pointers, per-field runtime pointers, implicit strings, and hidden payload copies
 are forbidden.
 
 This is a pre-v1 ABI.  Passing AC-06 does not freeze Bundle or ABI v1.
 
 * Owner evidence
 
-The reviewed =.data/gerbil-mysql= owners establish distinct native lifetimes:
+The reviewed =.data/gerbil-mysql= owners establish distinct runtime lifetimes:
 
 - =db/_mysql.scm= defines =MYSQL_RES*= and =MYSQL_FIELD*= as borrowed pointers
   whose lifetime terminates through =mysql_free_result=;
-- =MYSQL_BIND*= and primitive result buffers have explicit native allocation
+- =MYSQL_BIND*= and primitive result buffers have explicit runtime allocation
   and release ownership;
 - =db/mysql.ss= closes metadata/result scopes with =mysql_free_result=;
 - =char-string= paths imply scanning, conversion, and possible allocation.
@@ -37,7 +37,7 @@ release functions.  It confirms that ownership must be explicit and that a
 Scheme foreign object is not itself a stable public buffer contract.
 
 Therefore AC-06 never exposes a Scheme/Gerbil/Gambit object pointer as
-zero-copy.  Production zero-copy claims apply only to caller-owned native arena
+zero-copy.  Production zero-copy claims apply only to caller-owned runtime arena
 payload bytes whose address, immutability, generation, and lease are verified.
 
 * Architecture
@@ -68,7 +68,7 @@ reimplement Authority, Context, Protocol, Evidence, Cedar, or Lean semantics.
 
 The default profile is caller-owned negotiated arena:
 
-1. the runtime allocates an aligned contiguous native region;
+1. the runtime allocates an aligned contiguous runtime region;
 2. =arena_register= declares address, capacity, alignment, generation, access
    mode, and synchronization profile;
 3. the engine returns a generation-bound arena handle and lease;
@@ -103,7 +103,7 @@ Bundle digest, epoch, policy digest, and complete identity strings remain bound
 to the session and its collision-checked identity table.  They are not repeated
 per event.
 
-The 128-bit identities are process-local native fast-view keys derived from full
+The 128-bit identities are process-local runtime fast-view keys derived from full
 canonical identities.  Identity-table construction detects collisions and
 fails closed.  Full digests remain in canonical packets and evidence.  A header
 layout change requires a new negotiated layout version/profile; reserved fields
@@ -188,13 +188,13 @@ races and lock contention in the first production profile.
 
 * Differential validation
 
-Native event/outcome views and canonical packets derive from the same runtime
+Runtime event/outcome views and canonical packets derive from the same runtime
 contract schema.  Qualification proves:
 
-- canonical to native to typed equivalence;
-- native to canonical equivalence for every supported kind;
-- malformed native views cannot normalize into a different valid event;
-- native layout bytes are never persisted or hashed as canonical evidence;
+- canonical to runtime to typed equivalence;
+- runtime to canonical equivalence for every supported kind;
+- malformed runtime views cannot normalize into a different valid event;
+- runtime layout bytes are never persisted or hashed as canonical evidence;
 - full identity, Bundle epoch, authorization, and evidence links survive the
   fast-view round trip.
 
@@ -236,7 +236,7 @@ count, capacity, bitmap, identity, sequence, status, generation, lease, overlap,
 overflow, duplicate submission, early recycle, stale handle, and partial
 acceptance.
 
-Required native gates are strict C11 warnings, UBSan, ASan on a supported host,
+Required runtime gates are strict C11 warnings, UBSan, ASan on a supported host,
 and platform leak checking.  The macOS 26.5 Apple Clang ASan initialization
 failure recorded by AC-05 is not treated as a code pass; another supported host
 must supply the ASan receipt before any v1 freeze claim.
@@ -245,7 +245,7 @@ must supply the ASan receipt before any v1 freeze claim.
 
 1. Generated public header and vectors are fresh.
 2. Pure C conformance, fault, property, and installed-consumer harnesses pass.
-3. Native sanitizer and leak gates pass according to the supported-host matrix.
+3. Runtime sanitizer and leak gates pass according to the supported-host matrix.
 4. Real Gerbil wrapper benchmarks run; pure C measurements alone are
    insufficient.
 5. =.data/gerbil-mysql= ownership/release evidence is recorded.

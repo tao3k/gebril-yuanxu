@@ -91,7 +91,7 @@
 ;; yuanxu-modules!
 ;;   : (-> QualifiedModuleDeclarations ModuleSelectionBundles)
 ;;   | contract: dispatch Doom-style category sections to hygienic row walkers
-;;   | result: one ordered list of POO-native module selection bundles
+;;   | result: one ordered list of POO module selection bundles
 ;;   | doc m%
 ;;       The same declaration syntax is used by the repository-maintained
 ;;       collection and downstream init.ss files.

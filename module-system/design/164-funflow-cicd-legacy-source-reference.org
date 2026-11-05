@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Funflow CI/CD Historical Source and Native Constructor Reference
+#+title: Funflow CI/CD Historical Source and Runtime Constructor Reference
 #+date: [2026-10-15]
 #+property: STATUS historical-reference-not-user-interface
 
@@ -20,7 +20,7 @@ The original implementation remains unchanged.
 The actual [[file:../../../modules/funflow/config-prototypes.ss][funflow-check prototype]] is exported by
 [[file:../../../modules/funflow/config.ss][the Funflow config interface]]. The following earlier Profile/library recipe used normal Gerbil import. It is
 retained for source comparison; the current design uses bounded module scope for
-Profile authors too. Native imports remain a bootstrap implementation mechanism:
+Profile authors too. Runtime imports remain a bootstrap implementation mechanism:
 
 #+begin_src scheme
 ;; Upstream authoring, not repeated downstream configuration.
@@ -55,7 +55,7 @@ Profile authors too. Native imports remain a bootstrap implementation mechanism:
 
 No use-module call is required merely to obtain the same already imported Check
 prototype again. Those named upstream Profile symbols and publication shape are
-proposed. Their real native values would be exposed in the Module's profiles
+proposed. Their real runtime values would be exposed in the Module's profiles
 catalog through the existing source/publication owner. Library definitions must
 not become eager import-all facades; production discovery loads precise owners.
 
@@ -67,8 +67,8 @@ syntax is proposed here.
 
 Ordinary user configuration selects a configured Module with its defaults, then
 refines existing objects; it does not also reconstruct each Check from its raw
-proto. Advanced native authors may still create new reusable Checks directly.
-That path requires native source imports and admission, but must not require a
+proto. Advanced runtime authors may still create new reusable Checks directly.
+That path requires runtime source imports and admission, but must not require a
 second use-module call whose only job is retrieving the same constructor.
 If use-module is retained publicly, its added responsibility must be actual
 configured-Module binding/selection/provenance, not duplicate Scheme import.
@@ -76,7 +76,7 @@ configured-Module binding/selection/provenance, not duplicate Scheme import.
 * Source scope must be real, not just visible spelling
 
 A naked funflow-check name communicates no visible source scope by itself.
-Native Gerbil import can bind its actual origin and give that binding an explicit
+Runtime Gerbil import can bind its actual origin and give that binding an explicit
 scoped local spelling without new syntax:
 
 #+begin_src scheme
@@ -85,7 +85,7 @@ scoped local spelling without new syntax:
     (only-in :agentic-ai-lab/modules/funflow/config funflow-check)
     (funflow-check funflow/check)))
 
-(.def (NativeBuild @ funflow/check)
+(.def (RuntimeBuild @ funflow/check)
   command-vector: '("gerbil" "build"))
 #+end_src
 
@@ -94,7 +94,7 @@ authenticated runtime Module occurrence or a complete configured Check. The
 example does not fill all required Check defaults. The slash is a conventional
 identifier spelling; the import declaration supplies its actual binding.
 
-If use-module is used instead, it must provide a usable native Module scope,
+If use-module is used instead, it must provide a usable runtime Module scope,
 not merely a label alongside unrelated imported symbols. The proposed advanced
 authoring protocol would expose admitted prototype objects on that Module:
 
@@ -115,7 +115,7 @@ origin string or an identifier spelling alone is not a proof.
 
 Do not require both routes just to acquire one prototype. Module binding must
 add actual configured scope, instance/selection provenance and Loader ownership;
-otherwise using native import is sufficient and the extra wrapper is redundant.
+otherwise using runtime import is sufficient and the extra wrapper is redundant.
 Neither form injects arbitrary lexical symbols automatically. Ordinary Scenario
 users refine existing Module Profile values and need neither raw constructor
 reference; scoped prototype access is for deliberate new-object authoring.
@@ -124,7 +124,7 @@ reference; scoped prototype access is for deliberate new-object authoring.
 
 From [[file:../../../user-interface/custom/my-module/cases/funflow-cicd.ss][the existing CI/CD user configuration]]. Its import is
 :agentic-ai-lab/modules/funflow/config. The payload below preserves every Check and
-Pipeline definition, native header binding and body assignment.
+Pipeline definition, runtime header binding and body assignment.
 
 #+begin_src scheme
 (def agentic-ai-lab-custom-my-module-funflow-cicd-case
@@ -181,6 +181,6 @@ Pipeline definition, native header binding and body assignment.
     pipeline-name: 'default
     checks: (list funflow/build funflow/test funflow/package)
     metadata: '((scenario . funflow-cicd)
-                (authoring-style . gerbil-poo-native)))))
+                (authoring-style . gerbil-poo)))))
 #+end_src
 

@@ -1,0 +1,131 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Cedar input content-identity refinement
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Cedar input content-identity refinement
+
+** Input-identity requirement
+
+An authority-bound node containing an exact grant and an exact admitted Cedar
+evidence value does not, by containment alone, prove that the grant's four
+subject digests identify the evidence's request, entities, and policies.
+
+Final admission MUST use a versioned content-identity authority that projects:
+
+- =Cedar.Spec.Request -> requestDigest=;
+- =Cedar.Spec.Entities -> entityStoreDigest=;
+- =Cedar.Spec.Policies -> policySetDigest=;
+- the complete request/entities/policies tuple to =bundleDigest=.
+
+The projection is bound to the selected lifecycle evidence's authority identity
+and to semantic identity/generation fields carried by the authority-validated
+grant binding.
+
+** Digest mismatch and collision boundary
+
+=weakAcceptedBindingAllowsCrossSubjectCedarInputs= constructs one accepted pair
+whose request, entity-store, and policy identities all differ from the grant
+subject.  Merely placing both values in one binding therefore proves nothing
+about their content identity.
+
+The contract deliberately does *not* claim that a finite cryptographic digest
+is globally injective.  Instead, each authority proves uniqueness only over the
+request/entity/policy/snapshot values admitted by its exact generation.  This is
+the mathematical boundary needed for replay-safe equality without asserting an
+impossible collision-free universe.
+
+#+begin_export typst
+$
+  I_(closed)(a, s, x) :=
+    a.authority = x.authority
+    and a.semantic-id = x.semantic-id
+    and a.generation = x.generation
+    and a."admitted"(x.request, x.entities, x.policies)
+    and s.request-digest = a.request-digest(x.request)
+    and s.entity-digest = a.entity-digest(x.entities)
+    and s.policy-digest = a.policy-digest(x.policies)
+    and s.bundle-digest = a.bundle-digest(x.request, x.entities, x.policies)
+$
+
+$
+  "UniqueOnAdmitted"(a, d) :=
+    forall u, v in a."admitted": d(u) = d(v) => u = v
+$
+#+end_export
+
+#+begin_export mermaid
+flowchart LR
+    G["Exact capability grant"] -->|"subject digests"| J{"Content-identity refinement"}
+    E["Registry-selected Cedar evidence"] -->|"request + entities + policies"| J
+    A["Versioned content-identity authority"] -->|"project only admitted inputs"| J
+    A -->|"bounded uniqueness"| U["Equal admitted digest identifies exact input"]
+    J -->|"four projections equal"| C["Subject and Cedar inputs closed"]
+    J -.->|"rejected: request digest mismatch"| X["Typed identity mismatch"]
+    J -.->|"rejected: entity or policy digest mismatch"| X
+    J -.->|"rejected: bundle digest or stale authority generation"| X
+#+end_export
+
+** Input-identity decision
+
+- =CedarInputContentIdentityAuthority= is the formal owner of input projection,
+  admission, semantic identity, and generation.
+- =CompositionCedarInputIdentityRefinementClosed= consumes the exact grant and
+  full-lifecycle evidence already paired by the authority-bound node; it does
+  not introduce a second copy of either value.
+- The full-lifecycle grant binding now carries the identity authority's semantic
+  identity and generation so an old projection cannot be replayed.
+- Uniqueness is scoped to admitted inputs.  Global cryptographic hash
+  injectivity is neither required nor claimed.
+- This contract is runtime policy-input identity.  It is not a replacement for
+  =gerbil.pkg=, Gerbil-Bazel, or package/source dependency identity.
+
+** Input-identity verification checklist
+
+- [X] Lean counterexample: accepted containment permits cross-subject Cedar
+  request/entity/policy inputs.
+- [X] Lean theorem: closed refinement rejects request-digest mismatch.
+- [X] Lean theorem: closed refinement rejects entity-store-digest mismatch.
+- [X] Lean theorem: closed refinement rejects policy-set-digest mismatch.
+- [X] Lean theorem: closed refinement rejects bundle-digest mismatch.
+- [X] Lean theorem: equal digest identifies an exact request only inside the
+  authority's admitted input set.
+- [X] Lean theorem: stale content-identity authority generation is rejected.
+- [X] Real Lean closure binds the projection authority to the exact
+  authority-validated full-lifecycle grant/evidence node.
+- [ ] Runtime content-identity authority implementation publishes canonical
+  projections and admitted-input uniqueness evidence.
+
+** Input-identity Lean and AXLE receipt
+
+- Pure content-identity model:
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityRefinementModel=
+  returned exit =0= for =2= jobs with zero warnings.
+- Real Cedar input refinement:
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityRefinementClosure=
+  returned exit =0= for =404= jobs with zero warnings.
+- AXLE verified all seven public roots in
+  =UseCompositionCedarInputIdentityRefinementModel.lean=: =40= declarations,
+  =14= source declarations, =14= environment declarations, zero proof-base
+  declarations, and zero failures.  The result was =status: accepted= and
+  =verification.okay: true= with no Lean diagnostics.
+- AXLE closure digest:
+  =sha256:0ae6064b6b8be575049024895fd2a97c26833e38d2828967cb07628cb0a66c87=.
+- AXLE exact bundle digest:
+  =sha256:0edaa5b562ac576745a123b709068ae8e0f981fa17977cb2e6f099cc3c91b796=.
+- AXLE canonical source digest:
+  =sha256:9216aac4a9663e6904eecf3cf825f711aa87d450d7cc9adf01764703ebc3c4b0=.
+- AXLE independent bundle digest:
+  =sha256:0b0ab1b00793d4abf58b7536a66060ca4bd3c0ce717c5a65cd60173c2bad9af5=.
+- Every AXLE phase stayed below the fixed =40 s= operation deadline; owner
+  extraction was the slowest phase at =2664 ms=.
+- Enterprise aggregate returned exit =0= for =505= jobs; full Lean returned
+  exit =0= for =577= jobs.  Both emitted only the pre-existing
+  =AgentRedTeamProofRegressionClosure.lean:194= unnecessary-=simpa= warning.
+- RFC45-07 Orgize Org/Typst/Mermaid lint, =git diff --check=, and
+  =git diff --cached --check= returned exit =0=.
+

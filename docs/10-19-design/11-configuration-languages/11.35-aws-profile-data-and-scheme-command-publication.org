@@ -77,7 +77,7 @@ artifact: generation-qualified executable path
 #+end_example
 
 These are GENERATED observations, not another author-written manifest. The
-compiler may generate the native executable wrapper below in its build area,
+compiler may generate the runtime executable wrapper below in its build area,
 with its import resolved from that admitted source identity:
 
 #+begin_src scheme
@@ -127,7 +127,7 @@ by local config admission or projected-unadmitted preview.
 
 * Existing and pending; acceptance questions
 
-Existing source foundations: Gerbil run-process and JSON serialization; native
+Existing source foundations: Gerbil run-process and JSON serialization; runtime
 POO procedure/value slots and inheritance. The AWS files remain unexecuted design
 source. Pending Core support: export-to-source identity, fragment preparation,
 selected executable graph projection, generated wrapper/linkage, admitted artifact

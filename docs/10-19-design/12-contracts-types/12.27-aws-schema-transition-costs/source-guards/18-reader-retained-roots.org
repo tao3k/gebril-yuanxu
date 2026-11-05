@@ -21,13 +21,13 @@ evidence. The authoring negative controls exercise this distinction.
 * Retention owners, rather than just traversal work
 
 The publication reader keeps SDK contexts, input objects, preparations and
-source guards. Those are distinct from native slot-read records held by an
+source guards. Those are distinct from runtime slot-read records held by an
 enclosing lazy Graph computation. Counting contexts does not measure that
 second retention root. Neither counts nor heap samples establish bytes retained
 by an individual category.
 
 The private per-root transitive context-list index has been removed. Current
-input registrations are streamed through the existing native Context walk into
+input registrations are streamed through the existing runtime Context walk into
 the publication's own input projection. Repeated demands still check sources;
 they may walk topology again. The canonical compiler-tool dependency index is
 unchanged. No new cache is introduced and no CPU speedup is inferred.
@@ -40,7 +40,7 @@ boundary, not a proved garbage-collection bound.
 At the retained 74-publication capacity refusal, streaming changed retained
 private closure/context entries from 222/222 to 0/0. It retained 222 source
 objects and 297 guards, and still refused at 74 publications under the original
-policy. Thus removing those lists did not resolve native declaration capacity.
+policy. Thus removing those lists did not resolve runtime declaration capacity.
 That failed result must not be replaced by a traversal-only scale pass.
 
 * Ordinary fields versus contextual Role admission
@@ -75,7 +75,7 @@ Context, refined responsibilities and obligations remain Core admission concerns
 A context-sensitive Role policy must still reject. No public generic callback
 or source-policy validation is skipped.
 
-[[file:../../../../../t/semantic-module-test.ss][Native controls]] cover malformed symbol lists, booleans and symbols; open policy
+[[file:../../../../../t/semantic-module-test.ss][Runtime controls]] cover malformed symbol lists, booleans and symbols; open policy
 extensions; wrong ancestry with a poisoned field; exact candidate identity;
 executor/five-Role child evidence with the same Context; and a rejecting derived
 Role obligation. The derived policy deliberately preserves the original proto:
@@ -100,7 +100,7 @@ iteration had 389510 edges; adding explicit required-prototype checking retains
 320 additional edge occurrences with the same distinct token count. That
 ancestry/laziness check is retained, rather than removed to lower a counter.
 
-The bounded census reads only already allocated/cached native instances. It
+The bounded census reads only already allocated/cached runtime instances. It
 prints closed scalar categories for actual cached Contract references and known
 Context presence. An absent cache entry remains unknown. It never invokes a
 getter or retains a descriptor, candidate, read token or receiver in telemetry.
@@ -116,7 +116,7 @@ Schema changes made by the observer. This is a focused source-only cut, not
 qualification of unrelated concurrent checkout changes.
 
 The publication suite also passes after the value-boundary refactor. It retains
-native macro-binding reuse, independent full-DFS projection comparison, warm
+runtime macro-binding reuse, independent full-DFS projection comparison, warm
 input identity, stale source refusal and deferred build projection controls.
 
 * Quint and Lean have different responsibilities
@@ -132,22 +132,22 @@ same ordered input sequence, including multiplicity before publication-level
 deduplication. It also states the premise for a safe private projection cut and
 shows later registrations cannot be omitted. Lean does not prove SDK wrapper
 transparency, public Contract implementation behavior or collector memory usage.
-Those remain native tests and explicit implementation premises.
+Those remain runtime tests and explicit implementation premises.
 
 No theorem here licenses dropping contextual obligations, bypassing dispatch,
-clearing SDK bindings or hiding native read events. Scalar field checking is
+clearing SDK bindings or hiding runtime read events. Scalar field checking is
 validated against the public library in Scheme, not asserted from the integer
 source-projection model.
 
 * Remaining capacity gate
 
-The final-prototype 1000-Module run completed 200 publications and 800 native
+The final-prototype 1000-Module run completed 200 publications and 800 runtime
 role/interface bodies before the unchanged live-growth policy refused it. It
 retained 600 private contexts/source objects, 801 source guards and zero private
 transitive closure lists. The refusal sample had 1502324672 live bytes and
 1075184528 live-growth bytes. This moves the observed refusal from publication
 74 to publication 200; it is still a failed 1000-Module qualification, not a
-capacity pass or an independently controlled throughput comparison. The native
+capacity pass or an independently controlled throughput comparison. The runtime
 harness rejected the child result and the fixture directory was removed.
 
 Physical reads also grew to 360435 at that failure boundary, versus a smaller
@@ -155,15 +155,15 @@ workload at the previous refusal. Different completed-work counts must not be
 used to claim a regression or a source-read reduction. The 16-Module matched
 counts above are the appropriate work comparison.
 
-Thousands of real native declarations remain a separate gate. The observer
-census completes only when the enclosing native slot read returns; an unfinished
+Thousands of real runtime declarations remain a separate gate. The observer
+census completes only when the enclosing runtime slot read returns; an unfinished
 Graph's direct-dependency collector is not accessible through this public API.
 Intermediate completed-read widths cannot be relabelled as its final width.
 The upstream collector is unchanged. The next implementation decision must
 preserve semantic policy dependencies and contextual evidence while avoiding
 unnecessary derived receipts; it cannot assume that a cached acceptance is valid.
 
-Run focused native gates serially through =just test-file=. Use the existing
+Run focused runtime gates serially through =just test-file=. Use the existing
 Quint checker with =--case-prefix ReaderProjection --typecheck-scope selected=.
 Keep failed capacity receipts as local artifacts, not committed logs. No heap
 or timeout increase, compiler cache, upstream patch or runtime Loader is part

@@ -71,7 +71,7 @@ The split also requires a semantic distinction before migration:
   ordinary provider-shaped configuration.
 
 The next implementation slice should first characterize both paths using the
-existing native test harness: a value-contract that returns a changed checked
+existing runtime test harness: a value-contract that returns a changed checked
 receiver, a rejecting Context obligation, and child contextual evidence.
 Then migrate value responsibilities to the public library and route contextual
 admission through the existing producer. Preserve required child evidence and

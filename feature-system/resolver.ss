@@ -5,7 +5,7 @@
 ;;; Boundary: resolves feature-profile selections into deterministic feature sets.
 ;;; Invariant: dependency closure cannot introduce an undeclared feature identity.
 (import (only-in :std/list/list fold fold-right map filter-map)
-        (only-in :clan/poo/object .ref)
+        (runtime: :clan/poo/object)
         :yuanxu/feature-system/model
         :yuanxu/utilities/functional)
 

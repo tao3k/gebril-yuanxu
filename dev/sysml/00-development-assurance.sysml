@@ -28,7 +28,7 @@ package YuanxuDevelopment {
         attribute sourceRevision : String;
         attribute testEntry : String;
         attribute failureControls : String;
-        doc /* Existing Just gate and native Scheme mechanisms, not a model runner. */
+        doc /* Existing Just gate and Scheme mechanisms, not a model runner. */
     }
     part def Measurement {
         attribute workloadIdentity : String;

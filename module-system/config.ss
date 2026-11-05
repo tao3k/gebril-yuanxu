@@ -3,9 +3,9 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Native Module System interface configuration. Product identity and policy are
+;;; Runtime Module System interface configuration. Product identity and policy are
 ;;; supplied by the caller; gerbil-poo owns effective Slot metadata.
-(import (only-in :clan/poo/object .all-slots .o .ref .slot? object?)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
         (only-in :yuanxu/module-system/types ModuleAuthoringProfileContract))
 

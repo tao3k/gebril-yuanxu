@@ -22,7 +22,7 @@ module CallPhasesModel {
   action lookup = all {s.phase == 0,
     s' = s.with("phase",1).with("methodFrame",s.cold)
       .with("acquired",if (s.cold) 1 else 0)}
-  // Native .call applies the returned procedure AFTER .get has returned.
+  // Runtime .call applies the returned procedure AFTER .get has returned.
   // An enclosing preview frame survives; the operation lookup frame does not.
   action body = all {s.phase == 1,
     s' = s.with("phase",2).with("methodFrame",BUG == "leak" and s.cold)

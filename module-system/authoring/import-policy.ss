@@ -3,10 +3,10 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: reader-native policy for imports written inside a POO module role.
+;;; Boundary: reader-runtime policy for imports written inside a POO module role.
 ;;; Invariant: this owner reads datums only; it never expands or evaluates them.
 
-(import (only-in :clan/poo/object .o .ref)
+(import (runtime: :clan/poo/object)
         (only-in :yuanxu/utilities/algorithms
                  yuanxu-read-datums/append-map
                  yuanxu-scheme-datum-find))
@@ -27,7 +27,7 @@
 (def yuanxu-module-owner-import-observation-kind
   "yuanxu.module-owner-import-observation.v1")
 
-;;; A consumer supplies repository policy as a native value. No product
+;;; A consumer supplies repository policy as a runtime value. No product
 ;;; namespace, source directory or build frontend is inferred by Core.
 (def SourceInspectionPolicy.
   (.o aggregate-imports: '()

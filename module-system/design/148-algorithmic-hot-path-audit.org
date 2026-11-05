@@ -25,17 +25,17 @@ first choice when it already owns the algorithm: this pass uses
 | Organization shadow | current and bundle facts were cross-scanned | each side and the profile are indexed once |
 | Flow memoization | cache hit used =assoc= over every earlier input | =core/funcs.ss= owns a hash-backed memoizer, including correct cached =#f= behavior |
 | Indexed object family | its slot index was an alist and every lens lookup used =assoc= | =object-family/funcs.ss= builds a leftmost identity-to-position hash |
-| CLOS effective slots | every effective slot rescanned every owner's direct slot declarations | =poo-clos/funcs.ss= builds one leftmost direct-slot index per native C4 owner; C4 and declaration order remain authoritative |
-| CLOS effective slot access | every slot operation linearly searched the class effective-slot list | construction and redefinition publish one identity index beside the canonical effective-slot value; lookup remains a projection of native C4-derived slots |
+| CLOS effective slots | every effective slot rescanned every owner's direct slot declarations | =poo-clos/funcs.ss= builds one leftmost direct-slot index per runtime C4 owner; C4 and declaration order remain authoritative |
+| CLOS effective slot access | every slot operation linearly searched the class effective-slot list | construction and redefinition publish one identity index beside the canonical effective-slot value; lookup remains a projection of runtime C4-derived slots |
 | CLOS applicability ordering | every stable-sort comparison used =list-ref= over required-argument distances | each admitted method stores one distance vector and comparison uses constant-time =vector-ref= in the generic's argument-precedence order |
 | CLOS protocol customization | hook output rescanned the generic method list and recomputed applicability distances | one leftmost identity index projects hook-selected methods from the already validated ranked set |
-| CLOS dependent evolution | diamond reachability used =memq= against the growing result list | one =make-hash-table-eq= visited set admits each class generation once before Gerbil =stable-sort= orders it by native C4 depth |
+| CLOS dependent evolution | diamond reachability used =memq= against the growing result list | one =make-hash-table-eq= visited set admits each class generation once before Gerbil =stable-sort= orders it by runtime C4 depth |
 | JSON Schema fast validation | every declared property rescanned all candidate rows at every recursive object node | one candidate identity index per node changes property admission from properties times rows to properties plus rows |
 | Runner DAG execution | each dependency edge used =assoc= against prior values and every node rescanned the complete plan to reconstruct its frontier | =core/funcs.ss= owns structural-id values plus an incremental dependency-count frontier; receipts retain canonical plan order and stored =#f= values |
 | Profile composition lowering | every target and explicit edge rescanned stage targets, stages, or bindings | =src/scenario/plan-projection.ss= builds leftmost target, stage, and binding indexes once per owning scope with Gerbil =list->hash-table-eq= |
 | Set-shaped contract checks | each required value rescanned the complete observed/allowed list | =utilities/functional.ss= builds one hash membership index and preserves the existing list-shaped public contract |
 
-* Native product and type expression
+* Runtime product and type expression
 
 The core and Module System previously owned separate, identical field-row
 macros.  Both have been replaced by one internal
@@ -75,7 +75,7 @@ sample, observed these milliseconds:
 These measurements establish the intended scaling on this fixture. They are
 not a whole-program complexity proof and CLOS timings retain allocator noise.
 
-The second batch passed the native CLOS lifecycle, control-plane, tutorial
+The second batch passed the runtime CLOS lifecycle, control-plane, tutorial
 feature batch, profile-composition, profile expansion performance, and public
 Module System facade suites. The incremental-frontier unit fixture also counts
 node accessor calls: four nodes require twelve calls during index construction
@@ -100,10 +100,10 @@ execution loop no longer rescans source nodes.
 
 * Current CR and CI evidence
 
-The post-change focused native batch passed class lifecycle, class evolution,
+The post-change focused runtime batch passed class lifecycle, class evolution,
 dispatch, method-combination, recursive GitHub workflow validation, JSON Schema
 bridge validation, and the JSON Schema performance gate.  The evolution fixture
-now includes a native-POO diamond and proves that redefining the root increments
+now includes a runtime-POO diamond and proves that redefining the root increments
 the shared leaf generation exactly once.
 
 One local post-change p95 receipt reported =63.19 ms= for 80 alist workflow
@@ -113,7 +113,7 @@ us= receipt average.  These are host-local regression evidence, not a portable
 hardware claim; the existing budgets were not relaxed.
 
 Run =34847512726= separates the CI bottleneck from Testing: Ubuntu spent =6m17s=
-in native package build, =23s= in the single native unit entrypoint, and =1m14s=
+in runtime package build, =23s= in the single runtime unit entrypoint, and =1m14s=
 in isolated performance scenarios.  The macOS lane remained in =gerbil build=
 before either test step began.  ASP's pinned Build API already initializes
 =GERBIL_BUILD_CORES= from =##cpu-count= and assigns Gerbil compiler
@@ -125,7 +125,7 @@ host contention.
 * Build boundary
 
 The root and contributor scripts declare precise public entry modules. ASP's
-native Gerbil import closure discovers their dependencies without an aggregate
+Gerbil import closure discovers their dependencies without an aggregate
 Module System API or =all-gerbil-modules= enumeration.
 
 This correction invalidates the former 1.95-second root comparison: that build
@@ -142,19 +142,19 @@ multiple prior revisions, so the exact dependency was also compiled in an
 isolated =GERBIL_PATH=. Its zero-job warm runs took 28.56 and 23.46 seconds.
 The verbose boundary projected 137 targets before handing control to
 =std/make=. The persistent projection experiment and its complete-build
-rejection are recorded in =149-persistent-native-public-closure-projection.org=.
+rejection are recorded in =149-persistent-runtime-public-closure-projection.org=.
 
 The experiment did prove that a receipt can reduce isolated 112-module closure
 projection from a 24.682-second p50 to 0.984 seconds. It did not remove that
-work from the complete build. Fresh native projection constructs module
+work from the complete build. Fresh runtime projection constructs module
 contexts that the following =std/make= invocation can reuse; receipt admission
 returns only paths, so =std/make= reconstructs those contexts after the verbose
 handoff.
 
-Three zero-job native-projection builds measured 51.68, 38.24, and 28.63
+Three zero-job runtime-projection builds measured 51.68, 38.24, and 28.63
 seconds. Three zero-job receipt-hit builds measured 31.73, 47.97, and 39.80
 seconds. The medians were 38.24 and 39.80 seconds respectively, making the
 receipt path about 4.1 percent slower. The receipt implementation, policy slot,
 CI timing lane, and downstream opt-ins were removed. Agentic AI Lab retains the
-standard native closure and =std/make= even though the remaining warm latency
+standard runtime closure and =std/make= even though the remaining warm latency
 is unresolved.

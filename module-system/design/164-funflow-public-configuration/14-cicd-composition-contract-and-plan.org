@@ -18,7 +18,7 @@ This completes the composition boundary of [[file:13-independent-profiles-and-sc
 feature publications; GerbilCIProfile and RustCIProfile remain independent
 recipes. CICDScenario references both and owns their relationship. A derived
 Scenario may refine that relationship without mutating either Profile publication.
-Native objects, slot inheritance, define-type and named pure functions provide
+Runtime objects, slot inheritance, define-type and named pure functions provide
 the entire design vocabulary. No imports/compose language or runtime scheduler
 is added.
 
@@ -141,7 +141,7 @@ representation without encoding it into public names.
   .obligations: cicd-composition-obligations)
 #+end_src
 
-CompositionObjectContract only establishes native object shape. It is not deep
+CompositionObjectContract only establishes runtime object shape. It is not deep
 Profile admission. The obligations below require separately admitted, exactly
 correlated Profile occurrences; without them CICDCompositionContract refuses.
 This avoids pretending that the kernel's recursive responsibility traversal,
@@ -156,7 +156,7 @@ CICD handoff elements. It does not replace an incompatible base requirement.
 
 The following source is a bounded reference algorithm over selected tasks. It
 does not execute commands, register methods or create a runtime scheduling loop.
-Native task references stay attached to current objects, and emitted command
+Runtime task references stay attached to current objects, and emitted command
 values come from those objects. The caller must establish the same stable input
 view for projection and admission; retaining object references does not freeze
 arbitrary mutable getters.
@@ -253,7 +253,7 @@ arbitrary mutable getters.
 Lists of symbols retain path segment boundaries; string concatenation is not an
 identity encoding. A consumer path is qualified by the Scenario input occurrence
 in the candidate; final wire/runtime IDs need the consumer's admitted mapping.
-Do not globally deduplicate two native Checks by name, commands or source digest.
+Do not globally deduplicate two runtime Checks by name, commands or source digest.
 The algorithm chooses the first ready node in participant/selection order, so
 ties are deterministic. Dependencies dominate that preference. The simple scans
 are a reference design, not a linear-time algorithm or a scale-performance claim.
@@ -263,7 +263,7 @@ runtime scheduler. Reject consumer key collisions at the consumer boundary.
 * Exact Profile admission evidence before composition acceptance
 
 The planning owner first admits each selected independent Profile under its
-applicable Contract and constructs a native context containing two binding maps:
+applicable Contract and constructs a runtime context containing two binding maps:
 profile-contexts and profile-evidence. Each child context carries scenario,
 profile-binding, effective-profile, effective-config, applicable owner/policy and
 configured occurrence path. profile-contracts holds the expected Contract for
@@ -317,17 +317,17 @@ Gerbil cleanup policy cannot stand in for Rust's distinct cleanup requirement.
 The function above checks current occurrence correlation; it does not reconstruct
 or authenticate an entire deep admission tree by inspecting its root identity.
 
-Native .admit traversal and the evidence primitives already exist. The corrected
+Runtime .admit traversal and the evidence primitives already exist. The corrected
 Profile-context preparation/guards and trusted policy association are proposed
 adapters, not implemented by the context map or these design blocks. Composition
 acceptance is impossible without their actual valid receipts. Field-shape checks
-alone, including native object shape in responsibilities, are insufficient.
+alone, including runtime object shape in responsibilities, are insufficient.
 
 * User adds smoke, then extends a cross-Profile relation
 
 Module 13 defines ReleaseCI with a release Gerbil command, Rust artifact append
 and a selected Gerbil smoke Check. Its parents may already have cached both
-Pipelines. The additional relationship is expressed with ordinary native object
+Pipelines. The additional relationship is expressed with ordinary runtime object
 and list refinement:
 
 #+begin_src scheme
@@ -396,7 +396,7 @@ Preview performs none of these effects and reads no secrets or execution state.
 * Evidence and future acceptance
 
 All new declarations, functions and previews here are document-only. The existing
-POO responsibility/admission kernel, native refinement, lexical receiver pattern
+POO responsibility/admission kernel, runtime refinement, lexical receiver pattern
 and earlier focused cache probe are foundations, not execution of this composition
 adapter. ContextSlot, ConstructionCache and ContractConsequence impose the reuse
 premises in module 08; they do not certify this Scheme projection automatically.

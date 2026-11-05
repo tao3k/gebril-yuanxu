@@ -11,6 +11,16 @@ not current implementation verification. Premise-only and classification-only
 models were retired; see [[file:../../dev/proofs/lean/README.org][the current Lean proof boundary]].
 #+end_note
 
+* Current implementation boundary
+
+The composition-binding macro described below is a historical design.
+Current code uses native =def= and =.new Scenario= from
+=:yuanxu/modules/funflow/scenario=. Its Record Contract and private plan
+projection share one owner. No compatibility macro or Workflow facade
+is published. The module-authoring and evidence arguments below retain
+their stated premises; they do not establish the removed syntax as an API.
+See [[file:../../dev/sysml/20-module-loading/20.30-test-discovery-and-domain-demand.org][the current ownership and assurance boundary]].
+
 * Status
 
 This RFC records the accepted public-interface projection for the POO module
@@ -78,7 +88,7 @@ flowchart TB
   C["Layer 2: package author"] -->|"ordinary first-class profile values"| A
   C -->|"prototype lineage / slots / imports / identity / capability requirements"| D["profiles strategy"]
   D -->|"pure compose function"| A
-  E["Layer 3: advanced native extension"] -->|"canonical gerbil-poo objects and prototypes"| C
+  E["Layer 3: advanced runtime extension"] -->|"canonical gerbil-poo objects and prototypes"| C
   E -->|"never second POO library"| F["Unique POO semantic core"]
   B -->|"runtime handoff occurs later"| G["Evaluation and effect boundaries"]
   A -->|"no nested macro / clause DSL / hidden registry"| H["Bounded public syntax"]
@@ -103,12 +113,12 @@ flowchart TB
 - [X] =userMacroBuildsNoHiddenRegistry=
 - [X] =userMacroCreatesNoSecondObjectSystem=
 - [X] =packageProfileIsFirstClassPooValue=
-- [X] =nativeExtensionUsesCanonicalGerbilPoo=
+- [X] =runtimeExtensionUsesCanonicalGerbilPoo=
 - [X] =nativeExtensionCreatesNoAlternativePooLibrary=
 - [X] =threeLayerSurfaceIsExplicit=
 - [X] =strategyChangeCreatesNewRootIdentity=
 - [X] =profileSetChangeCreatesNewRootIdentity=
-- [ ] Project the accepted surface through native =gerbil-poo= implementation.
+- [ ] Project the accepted surface through runtime =gerbil-poo= implementation.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =AgenticAILabProof.PooC4.MinimalUserCompositionSurface=.  The
@@ -131,7 +141,7 @@ The public surface has three layers:
 
 1. user composition;
 2. package author construction;
-3. advanced native POO extension.
+3. advanced POO extension.
 
 The complexity of governance, rollout, migration, caching, distributed
 evaluation, event ingress, evidence retention, and federation remains behind
@@ -291,11 +301,11 @@ construction.
 The composition root must not use host-language =if=, =cond=, or =case= to
 select semantic variants at runtime.
 
-A package author constructs a new profile value through native POO prototype
+A package author constructs a new profile value through POO prototype
 extension and ordinary functional composition. The user then places that value
 in =compose profiles=.
 
-The exact native operator names remain deferred until verified against the real
+The exact runtime operator names remain deferred until verified against the real
 =gerbil-poo= API.
 
 The RFC must not invent an alternative =poo-object= language or unverified
@@ -313,21 +323,21 @@ They may use constrained Gerbil macros and functional helpers for:
 - generation of ordinary profile definitions;
 - bounded compile-time validation.
 
-Every helper expands or evaluates to ordinary POO-native or functional code.
+Every helper expands or evaluates to ordinary POO or functional code.
 
 Package-author helpers do not create a second runtime registry, patch language,
 effect channel, or capability system.
 
 * Advanced semantic layer
 
-The advanced extension interface is the native object and prototype semantics
+The advanced extension interface is the runtime object and prototype semantics
 of the canonical dependency:
 
 #+begin_example
 github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
 #+end_example
 
-Advanced users may work with verified native operations for:
+Advanced users may work with verified runtime operations for:
 
 - object extension;
 - prototype composition;
@@ -349,7 +359,7 @@ Admitted macro roles include:
 - package-internal repeated POO object generation;
 - contract projection boilerplate;
 - manifest or schema declaration;
-- bounded compile-time work producing ordinary POO-native code.
+- bounded compile-time work producing ordinary POO code.
 
 Macros must not:
 
@@ -374,7 +384,7 @@ The governing principle is:
 
 #+begin_quote
 Every convenience macro is constrained by POO core semantics and expands to
-ordinary POO-native or functional code.
+ordinary POO or functional code.
 #+end_quote
 
 Interface simplicity comes from curated first-class values, not from adding a
@@ -423,7 +433,7 @@ ordinary POO profile objects.
 
 ** Advanced semantic layer
 
-This layer uses verified native =gerbil-poo= object and prototype operations
+This layer uses verified runtime =gerbil-poo= object and prototype operations
 directly.
 
 Movement to a more advanced layer is explicit. Ordinary users are not required
@@ -442,7 +452,7 @@ The implementation must distinguish at least:
 - host-language semantic branch attempted;
 - macro expansion introduced runtime semantics;
 - package helper produced non-POO extension;
-- unverified native operation exposed as implemented;
+- unverified runtime operation exposed as implemented;
 - diagnostic projection incomplete;
 - module binding or provenance incomplete.
 
@@ -457,8 +467,8 @@ The implementation must distinguish at least:
 6. No secondary clause language is introduced.
 7. Operand order does not hide ambiguous slot conflicts.
 8. Higher-order POO profiles replace host-language semantic branching.
-9. Package-author macros expand to ordinary POO-native or functional code.
-10. Native =gerbil-poo= operations are the only advanced semantic interface.
+9. Package-author macros expand to ordinary POO or functional code.
+10. Runtime =gerbil-poo= operations are the only advanced semantic interface.
 11. Unverified conceptual operations are not exposed as implemented APIs.
 12. Diagnostics project from canonical evidence.
 13. Interface simplicity does not justify macro proliferation.
@@ -470,7 +480,7 @@ The implementation must distinguish at least:
 - [ ] Guarantee single evaluation of the composition expression.
 - [ ] Define the pure =compose= function contract.
 - [ ] Define empty and single-operand behavior through strategy objects.
-- [ ] Verify the =profiles= strategy against native =gerbil-poo= semantics.
+- [ ] Verify the =profiles= strategy against runtime =gerbil-poo= semantics.
 - [ ] Define package-exported first-class profile contracts.
 - [ ] Keep governance, rollout, migration, caching, retention, and federation
       inside POO profile contributions.
@@ -485,6 +495,6 @@ The implementation must distinguish at least:
 - [ ] Add tests for one-time composition-expression evaluation.
 - [ ] Add tests preventing nested =user-composition=.
 - [ ] Add tests preventing operand order from resolving ambiguous conflicts.
-- [ ] Add tests proving convenience macros expand to ordinary POO-native code.
+- [ ] Add tests proving convenience macros expand to ordinary POO code.
 - [ ] Add tests preventing conceptual unverified operations from entering the
       public API.

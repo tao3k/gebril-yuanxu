@@ -21,7 +21,7 @@
         (check-equal? (.ref (hash-get index "endpoint") 'type) String)
         (check-equal? (.ref append-policy 'policy) 'append)
         (check-equal? (yuanxu-module-kind=? "core.module" "core.module") #t)))
-    (yuanxu-test-case "native Record preserves defaults, constants and optional absence"
+    (yuanxu-test-case "runtime Record preserves defaults, constants and optional absence"
       (def shape (Record name: [String] mode: [String default: "dev"]
                          backend: [String constant: "postgresql"]
                          note: [String optional: #t]))

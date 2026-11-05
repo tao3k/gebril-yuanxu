@@ -8,9 +8,9 @@
 
 GeneratedProviders and ConfigurationContract are no longer opaque names:
 
-- GeneratedProviders is native object<-fun over selected locked providers, with
+- GeneratedProviders is runtime object<-fun over selected locked providers, with
   nested lazy resource/data/field scopes compiled through Core's existing Schema
-  subsystem and the native adapter defined in module 38.
+  subsystem and the runtime adapter defined in module 38.
 - ConfigurationContract is compiled from a concrete generated configuration schema:
   locked requirements, selected provider configs, demanded resources/data, outputs
   and an explicitly versioned language/backend subset.
@@ -19,7 +19,7 @@ Read the modular design in dependency order:
 
 1. [[file:11.65-selection-lock-and-build.org][Selection, lock and selected build graph]] defines provider request derivation,
    readonly acquisition commands, phase/input identities and invalidation.
-2. [[file:11.66-conversion-and-schema-compilation.org][Conversion and Core compilation]] defines native cty/block conversion and
+2. [[file:11.66-conversion-and-schema-compilation.org][Conversion and Core compilation]] defines runtime cty/block conversion and
    exact compiler/adapter delegation; unsupported semantics fail explicitly.
 3. [[file:11.67-generated-scopes-and-configuration-contract.org][Generated scopes, configuration schema and publication]] defines both generated
    values, concrete interface.ss, locked wire sealing and AWS consumption.
@@ -34,7 +34,7 @@ they do not author lock-derived tables, schemas, caches or compiler manifests.
 |------+-----------------------|
 | types.ss | selection/lock/schema-format/coverage/scope Contracts |
 | config.ss | selected provider sources and lock source |
-| objects.ss | immutable requests and native generated scope objects |
+| objects.ss | immutable requests and runtime generated scope objects |
 | func.ss | pure converter/compiler/config-schema/wire functions |
 | interface.ss | one prepared publication of config/providers/types/operations |
 
@@ -60,7 +60,7 @@ ambiguous resource ownership, unprepared member demand, conflicting wire provide
 pins and stale graph artifacts. Positive controls must use real pinned extraction
 and compare complete output/plan behavior; they do not follow from balanced code.
 
-Native laziness is useful but not free: provider CLI extraction returns bulk
+Runtime laziness is useful but not free: provider CLI extraction returns bulk
 metadata, and first-demand Contract compilation costs CPU. Measure working-set
 behavior and explicit prewarming; do not advertise zero startup/first-access cost.
 A single facade can coordinate preparation and preview while retaining explicit
@@ -70,7 +70,7 @@ Only English documentation/design code was added. No runtime files, Loader,
 provider extraction or deployment execution was implemented. The precise tf-ncl
 PR 83 diff remains unverified as recorded in module 38.
 
-* Full configuration constructor and native execution boundary
+* Full configuration constructor and runtime execution boundary
 
 Chapter 03 now includes the complete configuration-schema constructor and its
 helpers, conflict-checking seal-wire, and the final AWS/Configuration .admit flow.
@@ -83,4 +83,4 @@ unexecuted design and cannot claim full AWS semantic coverage.
 
 [[file:11.42-provider-collections-and-nested-types.org][The real-fixture conversion extension]] supersedes the earlier structural
 rejection branches for set, tuple and nested_type. Provider identity/default
-requirements remain explicit native obligations; no full AWS acceptance is claimed.
+requirements remain explicit runtime obligations; no full AWS acceptance is claimed.

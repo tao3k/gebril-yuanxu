@@ -1,0 +1,321 @@
+#+title: 13.36 Native Make Spec Projection and Performance Gates
+#+property: DOCUMENT_ID 13.36
+#+language: en
+
+* The Gerbil boundary
+
+The executable package entry uses =#!/usr/bin/env gxi=, as the MCP reference
+package does. Gerbil invokes that entry for build and clean. Qualification
+timeouts belong to the invoking test or CI job, so the entry does not start
+another watchdog process group.
+
+In Gerbil revision =1cfb032=, =std/build-script.ss= evaluates the
+=defbuild-script= expression in =main= and hands its list and settings to
+=std/make.ss=. =make-build= normalizes the list, checks for duplicate source
+files, imports compiler contexts, tests freshness, and schedules compilation.
+=make-clean= uses =spec-outputs= and deletes the named products. It does not
+need the compiler import graph to compute those output names. An entry's
+kind, options and submodules matter. The source directory, effective package
+prefix, and output directory are part of its meaning. The build-deps file
+belongs to Make and cannot substitute for this list or for source authority.
+Gerbil treats a literal list and a computed list the same once the expression
+returns the same ordered rows and settings. The cost of producing those rows
+belongs to Yuanxu. Make creates completion entries for the supplied targets,
+then uses the imports of each target's Context to determine which completions
+to wait for and which targets need rebuilding. An import does not add another
+row to the list. In particular, the closed ownership route should check
+coverage at the existing Gerbil import boundary as Make uses it. A separate
+pre-expansion pass would keep the same cost in front of Make.
+In this revision, normalization runs on the build path. Verify parity against
+the actual native clean command, including grouped or nested rows, before
+adopting new row kinds in the projector.
+
+Yuanxu currently asks for the full selected build Graph before it knows whether
+the consumer will compile or clean. In the JsonSchema qualification this put
+selection, Gerbil tool imports, and preparation of admitted compiler inputs
+ahead of native clean. The public =defbuild-script= boundary already gives
+both commands a common entry. The design change belongs in the projector that
+supplies its first argument.
+
+* Project targets before preparing execution
+
+1. Use the existing selected Module IDs, Interface declarations and role
+   inventory to determine which owners contribute targets. An owner contributes
+   its ordinary role sources and explicit native Make rows through the same
+   Interface. The ordinary package library spec is collected independently.
+2. Lower those contributions once in selection order. Index physical source
+   and output identity during the collection. Preserve native row kind,
+   options, submodules and settings. Merge only entries whose source,
+   target and options agree. Reject collisions before any Make effect. Retain
+   the owner and actual source support used to authorize each row, through
+   existing source and publication mechanisms.
+3. Publish the ordinary Make list through =init.exports.std-make-spec=. Spec,
+   compile, and clean consume the same ordered rows and native settings for
+   the same selection. A compile request may prepare compiler inputs and
+   use native Gerbil imports after the rows are known. An exact clean request
+   checks target ownership and source currentness, takes the existing output
+   lock where required, invalidates issuance, calls native clean, removes
+   remaining owned output generations, and rechecks before return.
+
+For existing declarations that compute targets, demand the minimum native
+declaration support needed to determine the exact rows. Keep their current
+checked preparation path until parity is established. Do not infer targets
+from filenames, installed outputs, or a declaration's apparent purity.
+A role whose value is not needed to choose a target should not be evaluated
+by target collection. Reuse the existing POO slot/identity indexing within a
+selected epoch. Source changes and independent operations retain their existing
+authentication boundaries. There is no additional inventory, receipt format,
+cache protocol, or public command.
+
+For declarative owners, the target collector's own work should be proportional
+to the selected owners, inspected dependency edges and emitted rows. This
+excludes Gerbil's compilation work and the checked preparation of genuinely
+computed targets. No whole-graph traversal per target and no traversal of
+unselected role bodies are needed on that path.
+
+* Qualification and promotion
+
+The [[file:../../../dev/sysml/20-module-loading/20.21-build-execution-cost.org][build execution cost model]]
+keeps build work separate from Module namespace acquisition. For the
+projector cutover, Lean should check ordered row parity and ownership of the
+collector's input support. Use Quint for the command transitions, including a
+source change between preparation and effect, refusal before deletion, and
+an independent check after the callback. Native tests establish that the
+actual Gerbil rows, contexts and commands satisfy those models.
+
+Use the existing =just test-bootstrap= recipe in Core, or
+=just test-core-file t/module-build-process-test.ss= from the containing
+workspace. Keep the existing serial child budget and pre-import heap fence.
+The JsonSchema lifecycle exercises =spec=, a cold compile, a fresh-process
+zero-compile hot invocation, clean, rebuild and final clean. Both cleans
+must emit no compiler work, remove exactly the interfaces enumerated by
+the initial spec, and retain the unselected sentinel. The lifecycle also
+checks output identities, prelude ordering, and changed-source rejection.
+
+Before enabling the cheaper path, extend the same qualification with these
+controls. Keep the existing source-bound rejection controls in place.
+
+| Control | Required observation |
+|---------+----------------------|
+| Native target parity | Compare ordered rows and options, actual srcdir and prefix batches, and outputs from compile and clean. Include a cross-owner source view, the prelude's different prefix, and a computed contribution. |
+| Collision and drift | Reject conflicting owners, differing options, substituted Contexts and changed sources before any unauthorized compile or deletion. Keep the independent post-callback check. |
+| Demand | Count actual role expansion and compiler-input preparation. On declarative clean there are zero compiler-only preparations and zero business role evaluations. A computed target may demand only its admitted support. |
+| Width | Increase selected owners and targets independently while keeping an unselected branch with a failing initializer. Report visits per owner, edge and target. Neither an extra unrelated owner nor more retained library targets may multiply a whole-graph pass. |
+
+The current 60-second child timeout is a hard stop, not a latency target.
+The executable gate above checks actual work and output parity. The latency
+promotion gate uses the public =gerbil build= and =gerbil clean= entrypoints
+against the same source snapshot on a fixed runner. Compare the current
+implementation and the candidate with the same compiler, dependency artifacts,
+worker count, heap limit, verbosity and target selection. Alternate baseline
+and candidate across at least three isolated lifecycles. Capture all failures
+and keep logs outside Org.
+
+- Keep the installed dependency binaries at their original file identities in
+  performance comparisons. Use the bootstrap fixture's linked dependencies
+  and private Yuanxu output directories. On macOS, copying a dependency can
+  change the time spent mapping its dynamic objects even when the bytes and
+  compiler match. Compare the names removed from the private output directory
+  separately from any dependency loading.
+- Collect process stacks and file-call timing in a separate diagnostic run.
+  Attribute dynamic loading to the actual artifact and distinguish that time
+  from source I/O and projection. The CLI waits for its build child, so their
+  elapsed times overlap.
+  Use the build recipe's normal verbosity for end-to-end timings. Verbosity
+  two enables invocation-wide operation accounting in addition to stage logs;
+  collect those work counts separately from the normal-entry timing.
+- Split a cold build at the first Make compilation. Within Make, distinguish
+  Gerbil expansion, optimization and code generation from the pending Gambit
+  and C compiler jobs. Count duplicate target names and duplicate physical
+  job paths separately. A module's runtime loader, runtime implementation and
+  syntax phases are distinct compiler inputs. Observe worker utilization
+  before treating a long build as redundant work.
+- Record startup to first bootstrap output, startup to the first actual Make
+  compile, target projection, Make execution, process exit and peak memory.
+  Report CPU alongside wall time. For clean, also record first owned removal
+  and natural exit. Exclude only known generated files such as =manifest.ss=
+  from the authored-source comparison.
+- Require fewer measured projection operations on declarative clean, zero hot
+  compilation and successful exact-output cleanup. Require lower median
+  end-to-end clean and no median regression in cold time to first real compile
+  or hot elapsed time on the matched runner. Never qualify a failed lifecycle
+  with a recovery run or count an earlier bootstrap print as progress in Make.
+- The product target is a single-digit end-to-end clean for this qualification.
+  It is a design target until measured on the fixed runner. Promote an absolute
+  CI latency limit only after recording the runner's baseline variance. Keep
+  the existing timeout and deterministic work gates in the meantime.
+
+* Implementation correspondence
+
+The build entry asks Gerbil's library resolver for the package language in
+the current Make output library. The bootstrap checks the local prelude and
+its declaration syntax with Gerbil's ordinary timestamp rule before using
+the compiled interfaces. An empty output library or a newer bootstrap
+source uses the original source declaration. Gerbil then supplies the
+=yuanxu!= binding to =init.ss= through the package prelude. =init.ss= does
+not open the declaration syntax again by its relative source path.
+
+This choice affects the expander Context used at startup. Output ownership
+and currentness still come from the original source support of the same
+Make targets. Clean computes those output names from the admitted spec,
+without the compilation-only dependency walk for the language batch.
+
+The =yuanxu!= expander and the source reader use the same Gerbil parser for
+literal init declarations. Expansion uses the parsed mount names to bind the
+exports. The source reader projects the parsed rows into runtime POO
+selection objects after reading the init source. The build entry therefore
+does not import the runtime selection object family at expansion phase.
+
+Core's =core-spec.ss= declares the complete ordinary library target list.
+=build.ss= supplies this list to the selected Module export. The package
+library test checks that the list still covers the public Funflow import
+closure. Gerbil resolves the imports during compilation.
+
+Clean uses the admitted rows and their output prefixes. Prefix grouping can
+skip the language dependency traversal because removal has no prerequisite
+order. The output lock covers native deletion and cleanup of the same owners'
+remaining products. Source currentness and target identity are checked around
+the effect.
+
+The selected target graph still admits the chosen Interface declarations.
+Its reader bootstraps the Gerbil contexts used for this admission. The
+artifact publication API is acquired by the existing =.for-export= operation,
+so reading targets does not import the issuer as a compiler tool. When an
+Interface actually demands its =Build= role, the role reader reuses the
+outer reader's exact compiler contexts and source support. Its independent
+entry and return checks still run.
+
+The existing target lowering consumes admitted entries from the selected
+Interface owners. The projection now captures the selected compiler routing
+index only inside =.with-compiler-inputs=, before its fresh guard. The clean
+route reads the same rows and never asks for selected compiler routing.
+Retained library source state still comes from the original input constructor.
+The checks on both sides of the compiler or clean callback are unchanged.
+
+=TargetProjection.lean= checks ordered row equality across compiler
+preparation and rejection of conflicting options for one output.
+=BuildTargetExecution.qnt= isolates the proposed command boundary. Its
+mutations cover eager compiler work on clean, deletion without the output
+lock or issuance invalidation, and source changes at entry or return.
+The lock in that model represents the shared selected-output path.
+The model does not prove that a concrete Gerbil import is unnecessary.
+
+To check the focused model from the Core root, use the existing Lake project
+and the Quint file directly:
+
+#+begin_src sh
+(cd dev/proofs/lean && lake env lean YuanxuProof/ModuleSystem/Building/TargetProjection.lean)
+quint run dev/proofs/quint/BuildTargetExecution.qnt --main BuildTargetExecution --invariant safety --max-steps 6 --max-samples 100
+#+end_src
+
+Run the same Quint command with =BuildTargetExecution_eager=,
+=BuildTargetExecution_unlocked=, =BuildTargetExecution_issued=,
+=BuildTargetExecution_stale=, and =BuildTargetExecution_noReturn= as the main
+module to check that each mutation has a counterexample.
+
+The clean gate checks that accounting is active and that compiler routing,
+compiler-input enrollment and compiler role inventory do not execute. The
+cross-package product control independently checks that the selected compiler
+state function is never called on clean. These controls do not imply a
+metadata-only selection pass. The current Reader still obtains the actual
+publication and transitive import support before it can establish all rows.
+Moving target discovery ahead of that work requires a native correspondence
+for the complete support, including imports introduced by macro expansion.
+
+* Make target ownership independent of import discovery
+
+The current Reader records a private or tool source when a publication imports
+it. =source/build.ss= promotes eligible records in =source-dependencies= to
+compiler rows. Under that rule, a Module ID and the Interface fields do not
+determine the whole native spec. Two roles can have the same explicit import
+declaration and differ by a macro call that introduces another local import.
+Gerbil's real expansion Context discovers the extra edge without initializing
+the role. A header projection cannot infer that edge, and an export-only
+classifier says nothing about imports introduced from a definition's body.
+
+The proposed boundary gives each compiler target one source owner:
+
+- The selected Interface owns its associated role targets through the
+  existing role assembly and its explicit native Build contributions.
+- The existing package library specification owns ordinary library targets.
+  A Module may refer to an ordinary library without declaring its targets a
+  second time.
+- The compiler still resolves actual Gerbil imports. A local import that
+  requires building an additional unit must match an owned native row.
+  An import from an installed package still requires its existing native
+  package and Context authority. A new import is never silently promoted to
+  a target by the closed route.
+
+This changes the contract for the closed route. Validate coverage against the
+actual imports before treating a converted owner as eligible. An uncovered
+macro-introduced local dependency rejects with its importing owner and source.
+Any legacy producer that still relies on implicit import promotion uses the
+existing checked projection until it is migrated. The fallback prevents a
+clean from acting on a partial target list. Both routes return the same native
+Make list for their selected owner set. No second clean list is needed.
+
+The native control in =t/module-compiler-context-test.ss= uses the same explicit
+macro-module import on both sides. Only one role invokes the import-generating
+macro. Both role bodies contain a failing runtime initializer. The Lean
+indistinguishability theorem explains why the shared observation is
+insufficient, and the coverage theorems show that a fixed owned list either
+retains its original order or rejects an unowned actual target.
+
+The timing gate covers two separate boundaries. The early bootstrap marker
+does not stop the startup clock. Time to the first owned clean removal and
+natural command exit includes the import of =building/script=, products and
+source admission, plus spec projection. A 3–4 second clean is a design target
+for the bounded JsonSchema fixture. Removing work after Make begins or
+deferring an eager import until later in the same clean cannot meet that
+target by itself. The ownership route and its reduced startup dependency
+closure still require production implementation and matched measurements.
+
+* Isolating the Make expression from its producers
+
+Use the JsonSchema-only bootstrap fixture and retain its ordinary library
+roots. Capture the complete Make list from =build.ss spec=. In the bounded
+fixture, 38 selected rows and six retained rows yield 42 distinct targets.
+The overlaps are =module-system/selection/init-syntax= and
+=object-types/contracts=. The selected projection checks and merges these
+before Gerbil receives the list.
+
+In a disposable copy, compare the original entry, the existing build-script
+wrapper without the init import, and Gerbil's direct =std/build-script=
+consuming the captured rows. Compare a literal and an =append= expression
+that returns precisely the same ordered rows. Reuse the same Gerbil and
+external dependencies, alternate the order, and run =gerbil clean= with a
+fresh empty output directory under the existing 60-second limit. The
+literal controls isolate evaluation and dispatch cost. They omit Yuanxu's
+source and publication guards and therefore do not qualify as replacements
+for the production clean path. The performance gate must still exercise
+the original ownership, prefix, and cleanup rules with real outputs.
+
+For the complete Core library control, leave its existing library roots and
+their native closure enabled and remove the init consumer in the disposable
+entry. Compare the Yuanxu wrapper with native =std/build-script= using the
+same library expression. Take wall and CPU timestamps at source registration,
+each import, and library target collection. This isolates a build entry's
+eager imports from the selected Module Graph and the library closure itself.
+
+The init-owned projection binds the actual source location supplied by the
+build macro. A standalone init projection anchors to its own source. Neither
+operation discovers an entry by constructing a =build.ss= path.
+
+The build entry and product operations import =source/observations= for
+file kinds, currentness windows and accounting. Publication admission
+re-exports those same bindings. One implementation owns the observers and
+source windows, while authoring and publication admission remain separate
+from the build entry's dependency closure.
+
+Record time to Make's first actual compile line separately from library
+collection. The native control consumes the full captured Core target list
+without evaluating the producer. Make still imports target Contexts to
+register completion identities before dispatching compilation. The native
+control measures that cost alongside the ordinary Core startup.
+
+For a target bisection, copy the Core sources and comment rows in the existing
+=core-spec.ss= in that copy. Disable the public-root closure in the diagnostic
+entry and feed =core-spec= to native =defbuild-script=. Start with the first
+row and restore one row at a time. Use fresh output state for each run and
+record both the first compile line and the exit status. A partial list can
+omit a compiler dependency and is diagnostic evidence only.

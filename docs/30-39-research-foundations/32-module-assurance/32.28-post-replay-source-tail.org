@@ -12,7 +12,7 @@ The production code is unchanged. Passing a limitation test means the undesired
 behavior was reproduced; it does not mean that behavior is safe. No production
 Scheme fix or Loader adaptation is included.
 
-The native controls establish three different outcomes:
+The runtime controls establish three different outcomes:
 
 - Changes in the context callback or at MOP replay entry are rejected by replay.
 - During final source inspection, object changes can escape: source bytes still
@@ -33,7 +33,7 @@ preserved. gerbil-poo: =fdeadfa40ca5cee5fe20308985aef1577f2eb49b=. LeanPoo:
 (def evidence
   (call-with-source-slot-reads
     (cut source-contract-admit @ (inherited) candidate context)))
-;; The helper has completed its native MOP replay here.
+;; The helper has completed its MOP replay here.
 (parameterize ((current-module-source-phase 'return-currentness))
   (sources-current!))
 evidence
@@ -57,7 +57,7 @@ The replaceable context =admit-current= callback executes before MOP replay.
 The tests do not pretend it is a post-replay callback. Post-replay injection uses
 the actual public source observer and producer-owned phase/event values.
 
-* Actual native tests
+* Actual runtime tests
 
 Owner: [[file:../../../t/source-admission-tail-test.ss][source-admission-tail-test.ss]]. It calls real =.admit= and never imports
 =recorded=, installs active MOP frames or invokes a test replay. The event helper
@@ -73,10 +73,10 @@ A probe's test data is not a new public configuration API or purity assertion.
 
 ** Before replay: the existing checks still reject
 
-1. A context =admit-current= callback edits the observed External.port. Native
+1. A context =admit-current= callback edits the observed External.port. Runtime
    replay raises =stale slot dependency=.
 2. A source observer at actual phase =slot-replay=, event =checks=, edits the
-   dependency before native replay starts. The same refusal occurs.
+   dependency before runtime replay starts. The same refusal occurs.
 
 The writes are not rolled back. These controls preserve the earlier qualified
 body/callback boundary rather than weakening it to make late witnesses pass.
@@ -93,7 +93,7 @@ A successful call first warms .admit. On the next call, the observer waits for
 | Independent dependency | port 5432 → 5433 | accepted evidence returns |
 
 All selected source bytes remain ={}=. The obligation's captured values remain
-=(0 5432 5432)=, and the changed receiver's native revision advances once. A
+=(0 5432 5432)=, and the changed receiver's runtime revision advances once. A
 subsequent independent admission without the observer sees the changed policy
 and returns rejected evidence. The original returned acceptance was stale;
 calling the independent checker later does not retroactively repair it.
@@ -168,7 +168,7 @@ currentness. No publish/deploy effect is executed or claimed qualified here.
 
 [[file:../../../dev/proofs/lean/YuanxuProof/Admission/ReturnTail.lean][Admission/ReturnTail]] explicitly separates the live selected object/file
 versions, the successful earlier MOP check, and the source versions seen at each
-file comparison. These are projections of the native controls, not new runtime
+file comparison. These are projections of the runtime controls, not new runtime
 epochs or trusted user labels.
 
 - =object_tail_counterexample=: the actual sequence can accept with a stale
@@ -181,13 +181,13 @@ epochs or trusted user labels.
 - =closed_inspection_trace= and =quiet_tail_preserves_replay=: a structurally
   read-only trace preserves a checked state. Its event algebra has no writes
   to admitted objects or sources; private instrumentation is outside that state.
-  This is a conditional law, not a native mechanism restricting arbitrary source
+  This is a conditional law, not a runtime mechanism restricting arbitrary source
   observer procedures. The current observer API has not been proved to map to
   that closed algebra, and cannot acquire the property from a manual pure flag.
 - =late_source_failure_first=: the completed-source-error order remains intact.
 
 The revision projection remains necessary rather than sufficient for full MOP
-currentness; native checks also cover cache/instance/checker identity. Stronger
+currentness; runtime checks also cover cache/instance/checker identity. Stronger
 cache controls from prior chapters remain in the full regression catalog.
 
 * Quint: three limitation witnesses on the correct implementation model
@@ -218,7 +218,7 @@ counterexamples, not asserting the stronger predicates.
 
 The final file checks assumed stable, effect-free inspection. The source code
 comments state that assumption; the public observer is an arbitrary procedure
-and the tested native path does not enforce it. These witnesses do not refute
+and the tested runtime path does not enforce it. These witnesses do not refute
 a theorem conditioned on a closed read-only tail. They refute inferring that
 premise automatically from the existence of fresh reads, restored dynamic scope,
 a successful MOP pass or the name of an instrumentation callback.
@@ -267,11 +267,11 @@ first diagnostic.
 Raw logs and the source-bound Quint receipt remain local under
 =/private/tmp/core-return-tail-20261018/=; no raw execution logs are committed.
 The production/fixture/installed-MOP source manifest was rechecked without drift.
-The supported sequential writes and real native observation events are tested.
+The supported sequential writes and real runtime observation events are tested.
 A closed effect-free return tail, atomic external-source snapshot and conditional
 commit remain unestablished premises. No deployment or publication effect is run.
 
-** Native gates and retained failed attempt
+** Runtime gates and retained failed attempt
 
 Using the existing heap-fenced =just test-file= entrypoint serially, the new
 return-tail test completed six cases, actual body regression six, root/child

@@ -1,58 +1,80 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Selected Graph/native test demand -> observed compiler inputs. No compilation or execution.
+;;; Selected Graph/runtime test demand -> observed compiler inputs. No compilation or execution.
 (import (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
-                 current-expander-module-import core-import-module syntax-e
-                 expander-context-id module-context-path)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
+                 core-import-module __module-registry expander-context-id module-context-path
+                 core-read-module core-expand-module-begin make-module-context
+                 core-module->prelude-context module-context? prelude-context?
+                 make-prelude-context current-expander-module-prelude
+                 current-expander-path current-expander-marks current-expander-phi
+                 current-import-expander-phi current-export-expander-phi raise-syntax-error)
+        (only-in :yuanxu/module-system/building/source-closure for-each-build-module package-library-spec/source-context)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/string/path path-absolute? path-default-extension)
-        (only-in :std/list/list find)
-        (only-in :gerbil/expander expander-context-id module-context-path)
-        (only-in :yuanxu/module-system/building/source-closure package-library-spec)
-        (only-in :clan/poo/object .o .cc .ref .get .slot? .all-slots object?)
-        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
-        (only-in :yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? module-source-admit-current! call-with-module-source-read-cache module-source-observe current-module-source-phase current-module-source-observer)
+        (only-in :std/list/list find foldl)
+        (only-in :clan/poo/slot-observation without-observation)
+        (only-in :clan/poo/read-route require-read-route!)
+        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
+        (runtime: :clan/poo/object)
+        (only-in :clan/poo/mop define-type Type.)
+        (only-in :clan/poo/type List)
+        (only-in :clan/poo/object-contract ObjectContract.)
+        (only-in :yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? module-source-admit-current! call-with-module-source-read-cache module-source-observe module-source-object-policy current-module-source-phase current-module-source-observer module-source-measure-operation call-with-module-source-callback)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source
-                 build-target-name yuanxu-prepare-module-retained-source)
+                 build-target-name yuanxu-prepare-module-retained-source module-compiler-source-owner?)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
+        (only-in :yuanxu/module-system/source/publication requirement-option)
         (only-in :yuanxu/feature-system/capability-model feature-projection-request?)
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
         (only-in :yuanxu/module-system/building/package write-selected-package))
-(export module-test-source-spec module-build-graph unique-build-inputs retained-build-entries BuildContributionContract ExternalPackageContributionContract
+(export module-test-source-spec module-build-graph unique-build-inputs retained-build-entries BuildContributionContract ExternalPackageContributionContract BuildSpecContract
         BuildPublicationContract)
-(def BuildPublicationContract
-  (yuanxu-predicate-contract 'module/build-publication
-    (lambda (value)
-      (and (object? value) (.slot? value '.restore-build)
-           (procedure? (.ref value '.restore-build))))
-    (lambda (_v _c) '())))
-(def (native-build-root? value)
+(define-type (BuildPublicationContract @ Type.)
+  identity: 'module/build-publication
+  .element?: (lambda (value)
+               (and (object? value) (.slot? value '.restore-build)
+                    (procedure? (.ref value '.restore-build)))))
+(def (build-root? value)
   (or (and (string? value) (> (string-length value) 0))
       (and (list? value) (>= (length value) 2) (eq? (car value) 'gxc:)
            (string? (cadr value)) (> (string-length (cadr value)) 0)
            (andmap string? (cddr value)))))
+(define-type (BuildTargetContract @ Type.)
+  identity: 'module/build-target .element?: build-root?)
+;; Pure native-spec shape and composition. Source/publication authentication
+;; remains in the enclosing init-owned boundary, never in a claimed origin tag.
+(def BuildSpecContract
+  (.cc ObjectContract. identity: 'module/build-spec
+    responsibilities:
+    (.o module-spec: (List BuildTargetContract)
+        library-spec: (List BuildTargetContract)
+        spec: (List BuildTargetContract))
+    obligations:
+    (lambda (candidate location)
+      (if (equal? (.ref candidate 'spec)
+                  (append (.ref candidate 'module-spec) (.ref candidate 'library-spec)))
+        '()
+        (list (.o kind: 'build-spec-merge-mismatch path: (append location '(spec))))))))
 (def (build-contribution? value)
   (and (object? value) (.slot? value 'kind) (.slot? value 'roots)
        (eq? (.ref value 'kind) 'module/build)
-       (list? (.ref value 'roots)) (andmap native-build-root? (.ref value 'roots))
+       (list? (.ref value 'roots)) (andmap build-root? (.ref value 'roots))
        (or (not (.slot? value 'library-roots))
            (and (list? (.ref value 'library-roots))
                 (andmap string? (.ref value 'library-roots))))))
-(def BuildContributionContract
-  (yuanxu-predicate-contract 'module/build-contribution build-contribution? (lambda (_v _c) '())))
-(def ExternalPackageContributionContract
-  (yuanxu-predicate-contract 'module/external-package
-    (lambda (value)
+(define-type (BuildContributionContract @ Type.)
+  identity: 'module/build-contribution .element?: build-contribution?)
+(define-type (ExternalPackageContributionContract @ Type.)
+  identity: 'module/external-package
+  .element?: (lambda (value)
       (and (object? value)
            (andmap (cut .slot? value <>) '(kind identity .prepare))
            (eq? (.ref value 'kind) 'module/external-package)
            (symbol? (.ref value 'identity))
            (module-source-name? (symbol->string (.ref value 'identity)))
-           (procedure? (.ref value '.prepare))))
-    (lambda (_v _c) '())))
+           (procedure? (.ref value '.prepare)))))
 (def (confined-build-path root relative)
   (unless (and (string? relative) (not (path-absolute? relative))
                (andmap module-source-name? (string-split relative #\/)))
@@ -71,18 +93,18 @@
            (error "inconsistent build input snapshots" (car entry)))
          (begin (hash-put! seen (car entry) (cdr entry)) (set! result (cons entry result))))) observations)
     (reverse result)))
-(def (module-build-graph selected-value prepare-publication)
+(def (module-build-graph selected-value prepare-publication (source-window #f) (source-state #f))
   (parameterize ((current-module-build-phase? #t))
-    (module-build-graph/phase selected-value prepare-publication)))
-(def (module-build-graph/phase selected-value prepare-publication)
+    (module-build-graph/phase selected-value prepare-publication source-window source-state)))
+(def (module-build-graph/phase selected-value prepare-publication source-window source-state)
   (parameterize ((current-module-source-phase 'build-entry))
     ((.ref selected-value 'admit-current)))
-  (let ((entry-values '()) (by-path (make-hash-table)) (by-id (make-hash-table))
+  (let ((entry-values '()) (by-path (make-hash-table)) (by-id (make-hash-table-eq))
         (prepared (make-hash-table)) (checks '()) (other '())
         (asset-values '()) (asset-paths (make-hash-table))
         (package-values '()) (package-demands '()) (library-demands '()) (package-refused? #f)
         (package-ids (make-hash-table-eq))
-        (cores (make-hash-table-eq)))
+        (cores (make-hash-table-eq)) (owned-graph #f) (graph-policy #f) (entry-construction-intact? (object-construction-current?)))
     ;; Index the already-selected Core nodes once; dependency edges select
     ;; configuration builders, never a second directory/provider scan.
     (for-each (lambda (node)
@@ -109,24 +131,29 @@
             (error "build source belongs to a different selected Graph" owner))
           (hash-put! prepared owner value)
           (set! checks (cons (.ref value 'admit-current) checks)) value)))
-    (def (add! kind-value input-value options-value owner-id contributor-id)
-      (let* ((path-value (if (eq? kind-value 'publication)
-                           (.ref (.ref input-value 'source) 'value) (.ref input-value 'path)))
-             (id (.ref input-value 'compiler-identity)))
+    (def (add! kind input options owner contributor)
+      (let* ((path (if (eq? kind 'publication)
+                      (.ref (.ref input 'source) 'value) (.ref input 'path)))
+             (compiler-identity (.ref input 'compiler-identity)))
         (cond
-         ((hash-key? by-path path-value)
-          (let (old (hash-ref by-path path-value))
-            (unless (and (eq? kind-value (.ref old 'kind))
-                         (equal? options-value (.ref old 'options)))
-              (error "conflicting build contributions" path-value (.ref old 'contributor) contributor-id))))
-         ((hash-key? by-id id)
-          (error "duplicate compiler identity in selected build Graph" id path-value
-                 (.ref (hash-ref by-id id) 'path)))
+         ((hash-key? by-path path)
+          (let (old (hash-ref by-path path))
+            (unless (and (eq? kind (.ref old 'kind))
+                         (equal? options (.ref old 'options)))
+              (error "conflicting build contributions" path (.ref old 'contributor) contributor))))
+         ((hash-key? by-id compiler-identity)
+          (error "duplicate compiler identity in selected build Graph" compiler-identity path
+                 (.ref (hash-ref by-id compiler-identity) 'path)))
          (else
-          (let (entry (.o kind: kind-value path: path-value compiler-identity: id
-                          input: input-value options: options-value owner: owner-id contributor: contributor-id))
-            (hash-put! by-path path-value entry) (hash-put! by-id id entry)
-            (set! checks (cons (.ref input-value 'admit-current) checks))
+          ;; These are immutable captures, not receiver-dependent formulas.
+          ;; Runtime lexical slots retain the same values without getter closures.
+          (set! entry-construction-intact?
+            (and entry-construction-intact? (object-construction-current?)))
+          (let (entry (.o kind path compiler-identity input options owner contributor))
+            (set! entry-construction-intact?
+              (and entry-construction-intact? (object-construction-current?)))
+            (hash-put! by-path path entry) (hash-put! by-id compiler-identity entry)
+            (set! checks (cons (.ref input 'admit-current) checks))
             (set! entry-values (cons entry entry-values)))))))
     (def (add-asset! input-value owner-id)
       (def file (.ref input-value 'path))
@@ -141,8 +168,12 @@
     (def (add-source! path options-value owner contributor (observed-input #f))
       (if (hash-key? by-path path)
         (add! 'source (.ref (hash-ref by-path path) 'input) options-value owner contributor)
-        (add! 'source (or observed-input (yuanxu-prepare-module-build-source path void))
-              options-value owner contributor)))
+        (add! 'source
+          (or observed-input
+            (yuanxu-prepare-module-build-source path void
+              capture: (lambda (value checker path ready? state)
+                         (when state (hash-put! by-id value state)) value)))
+          options-value owner contributor)))
     ;; Package public entries belong to their declaring Module. Gerbil supplies
     ;; the actual import graph; the existing preparer guards every local source.
     ;; Owner-relative roots remain confined and keep their explicit options.
@@ -153,12 +184,12 @@
                                 (and (cdr row) (string=? (path-strip-directory (car row)) "gerbil.pkg")))
                               (.ref publication 'source-inputs)))
                (package-root (and metadata (path-normalize (path-directory (car metadata))))))
-          (unless package-root (error "public library entries require native package metadata" owner))
+          (unless package-root (error "public library entries require runtime package metadata" owner))
           (let* ((properties (call-with-input-string (cdr metadata) read))
                  (field (and (list? properties) (memq 'package: properties)))
                  (package (and field (pair? (cdr field)) (cadr field)))
                  (entries (.ref projection 'library-roots)))
-            (unless (symbol? package) (error "public library entries require a native package identity" owner))
+            (unless (symbol? package) (error "public library entries require a runtime package identity" owner))
             ;; Confine before expansion, including every unresolved path part.
             (def prefix (string-append (symbol->string package) "/"))
             (for-each
@@ -166,7 +197,7 @@
                 (def path (confined-build-path package-root entry))
                 (def input (yuanxu-prepare-module-build-source path void))
                 (unless (string-prefix? prefix (symbol->string (.ref input 'compiler-identity)))
-                  (error "public library entry belongs to another native package" path)))
+                  (error "public library entry belongs to another runtime package" path)))
               entries)
             (def (admit-context context)
               (def identity (expander-context-id context))
@@ -177,13 +208,30 @@
                        (actual (module-context-path context)))
                   (unless (and (string? actual) (equal? path (path-normalize actual)))
                     (error "public library compiler source differs from declared package" identity path actual))
-                  ;; Imported leaves inherit an explicitly selected native option
+                  ;; Imported leaves inherit an explicitly selected runtime option
                   ;; set; two explicit contributions still conflict in add!.
                   (add-source! path
                     (if (hash-key? by-path path) (.ref (hash-ref by-path path) 'options) '())
                     owner contributor))))
-            (package-library-spec package-root package
-              (map (cut path-default-extension <> ".ss") entries) admit-context: admit-context)))))
+            (def (declared-source-context context)
+              (let ((identity (expander-context-id context))
+                    (actual (module-context-path context)))
+                (if (and (symbol? identity) (string? actual)
+                         (string=? (path-extension actual) ".ssi")
+                         (string-prefix? prefix (symbol->string identity)))
+                  ;; A compiled dependency may be this consumer's hot product.
+                  ;; Expand the confined source before traversing its imports.
+                  (let* ((relative (substring (symbol->string identity) (string-length prefix)
+                                             (string-length (symbol->string identity))))
+                         (path (confined-build-path package-root relative))
+                         (source (core-import-module path)))
+                    (unless (eq? identity (expander-context-id source))
+                      (error "public library compiler identity differs from declared package" identity path))
+                    source)
+                  context)))
+            (package-library-spec/source-context package-root package
+              (map (cut path-default-extension <> ".ss") entries)
+              admit-context declared-source-context)))))
     (def (add-package! owner contributor projection (provider #f))
       (admit-module-value! ExternalPackageContributionContract projection selected-value)
       (let* ((publication (owner-preparation owner))
@@ -222,9 +270,10 @@
     (def (add-configuration-builds! owner requirements)
       (for-each
        (lambda (alias)
-         (let* ((provider (.ref (.ref requirements alias) 'module-id))
+         (let* ((requirement (.ref requirements alias))
+                (provider (.ref requirement 'module-id))
                 (baseline (hash-ref cores provider)))
-           (when (.slot? baseline 'configuration-build)
+           (when (and (not (requirement-option requirement 'view)) (.slot? baseline 'configuration-build))
              (set! package-demands
                (cons (lambda () (add-package! owner alias (.ref baseline 'configuration-build) provider))
                      package-demands)))))
@@ -264,7 +313,9 @@
          (case (.ref node 'kind)
            ((module-core)
             (let* ((publication (owner-preparation owner))
-                   (core (.ref (.ref node 'publication) 'core)))
+                   (core (.ref (.ref node 'publication) 'core))
+                   (inputs (and (.slot? publication 'source-dependencies)
+                                (.ref publication 'source-dependencies))))
               (when (.slot? core 'build-entries)
                 (error "Core build entries are derived from roles; declare only additional projections" owner))
               ;; Preserve the existing compiler order and identity checks. The
@@ -272,17 +323,17 @@
               ;; reuse that exact input instead of parsing/retaining it twice.
               (for-each (lambda (path)
                           (add-source! path '() owner contributor
-                            (and (.slot? publication 'source-dependencies)
+                            (and inputs
                                  (find (lambda (input)
                                          (equal? (.ref input 'path) path))
-                                       (.ref publication 'source-dependencies)))))
+                                       inputs))))
                         (.ref publication 'role-sources))
-              (when (.slot? publication 'source-dependencies)
+              (when inputs
                 (for-each (lambda (input)
                             (if (and (.slot? input 'kind) (eq? (.ref input 'kind) 'data))
                               (add-asset! input owner)
                               (add! 'source input '() owner contributor)))
-                          (.ref publication 'source-dependencies)))
+                          inputs))
               (add! 'publication publication '() owner contributor)
               (when (.slot? core 'projections)
                 (add-projections! owner contributor (.ref core 'projections)))
@@ -294,10 +345,115 @@
     ;; closure inherits them. Module order cannot manufacture an option conflict.
     (for-each (lambda (request) (apply add-library! request)) (reverse library-demands))
     (set! library-demands '())
+    (def entry-policy
+      (and entry-construction-intact? (module-source-object-policy entry-values)))
+    (def (bound-input-state input)
+      (or (hash-get by-id input) (and source-state (source-state input))))
+    (def (compiler-prefix predicate entries)
+      (let loop ((rest entries) (prefix '()))
+        (if (and (pair? rest) (predicate (car rest)))
+          (loop (cdr rest) (cons (car rest) prefix))
+          (reverse prefix))))
+    (def (with-compiler-source-import entry input importer target identity action)
+      ;; The original compiler row owns this exact entry. Do not demand a cold
+      ;; input.path getter merely to rediscover its already indexed path.
+      (call-with-module-source-callback
+        (lambda ()
+          (def import-kind
+            (with-catch (lambda (_unsupported) #f)
+              (lambda ()
+                (and (not (current-module-source-observer)) (owned-read-function-scope?)
+                 (without-observation
+                  (lambda ()
+                    (and source-window graph-policy entry-policy
+                         (eq? importer core-import-module) (string? target)
+                         (object-construction-current?) (graph-policy) (entry-policy)
+                         (object? entry) (object-%instance entry) (object-%precedence-list entry)
+                         (not (object-protocol entry))
+                         (let (path (.ref/cached entry 'path (lambda () #f)))
+                           (and (string? path) (eq? entry (hash-get by-path path))
+                                (module-compiler-source-owner? owned-graph path)
+                                (eq? input (.ref/cached entry 'input (lambda () #f)))
+                                (begin
+                                  (require-read-route! 'compiler-module-cache __module-registry #f)
+                                  (let (context (or (hash-get __module-registry target)
+                                                    (hash-get __module-registry (path-normalize target))))
+                                    (and (module-context? context)
+                                         (eq? identity (expander-context-id context))
+                                         (case (.ref/cached entry 'kind (lambda () #f))
+                                           ((publication) 'publication)
+                                           ((source)
+                                            ;; Only this Graph's constructor can
+                                            ;; bind a void-context source checker.
+                                            ;; Reader-derived inputs keep the full
+                                            ;; Link qualification; kind alone is
+                                            ;; never a claim of purity.
+                                            (let (state (hash-get by-id input))
+                                              (and state (state) 'input)))
+                                           (else #f))))))))))))))
+          (if (not import-kind) (action)
+            (module-source-measure-operation 'compiler-import-cache-hit
+              (lambda ()
+                (if (eq? import-kind 'input)
+                  ;; Both original guards still execute. They are precisely
+                  ;; check-source! from prepare-build-source with native void.
+                  ;; They have no Link/MOP closure to authenticate or skip.
+                  (module-source-measure-operation 'compiler-source-input-shared
+                    (lambda () (call-with-module-source-read-cache action)))
+                  (source-window (list entry) (list input) action bound-input-state))))))))
+    (def (with-compiler-source-reads batch action)
+      (def (owned? entry)
+        (with-catch (lambda (_unsupported) #f)
+         (lambda () (without-observation
+          (lambda ()
+            (and (object? entry) (object-%instance entry) (object-%precedence-list entry)
+                 (not (object-protocol entry))
+                 (begin
+                   (require-read-route! 'compiler-entry #f (object-%instance entry))
+                   (let (path (.ref/cached entry 'path (lambda () #f)))
+                     (and (string? path) (eq? entry (hash-get by-path path)))))))))))
+      (def (run segment)
+        ;; An intervening foreign entry may have replaced metadata. Recheck the
+        ;; captured native policy before EVERY closed segment, not just entry.
+        (if (not (and (object-construction-current?) graph-policy (graph-policy) (entry-policy)))
+          (action segment)
+          (let ()
+        ;; The final publication's ORIGINAL guards remain outside the shared
+        ;; interval. Native MOP replay and all source bytes are fresh there.
+        (def boundary
+          (without-observation
+            (lambda ()
+              (foldl (lambda (entry last)
+                       (if (eq? (.ref entry 'kind) 'publication) entry last))
+                     (car (reverse segment)) segment))))
+        (def prefix (compiler-prefix (lambda (entry) (not (eq? entry boundary))) segment))
+        (unless (null? prefix)
+          (source-window prefix
+            (without-observation (lambda () (map (cut .ref <> 'input) prefix)))
+            (lambda () (action prefix)) bound-input-state))
+        ;; The publication fence itself remains a fresh original guard. Its
+        ;; source-only suffix is another segment, not permission to carry this
+        ;; interval across the fence. Requalify actual metadata before sharing
+        ;; that suffix; its final input remains fresh too. Every entry keeps
+        ;; its original position and invokes its original guard exactly once.
+        (let (tail (memq boundary segment))
+          (action (list (car tail)))
+          (when (pair? (cdr tail)) (run (cdr tail)))))))
+      (if (not (and source-window entry-policy graph-policy (object-construction-current?)
+                    (graph-policy) (entry-policy)
+                    (or (null? batch)
+                        (module-compiler-source-owner? owned-graph (.ref (car batch) 'path)))))
+        (action batch)
+        (let loop ((rest batch))
+          (unless (null? rest)
+            (let (segment (compiler-prefix owned? rest))
+              (if (null? segment)
+                (begin (action (list (car rest))) (loop (cdr rest)))
+                (begin (run segment) (loop (list-tail rest (length segment))))))))))
     (let ((init-inputs
            ;; Finalization only reads the init source. Share the existing pure
            ;; window for its two Graph checks; close it before any consumer can
-           ;; demand external packages, native imports or publication effects.
+           ;; demand external packages, runtime imports or publication effects.
            (call-with-module-source-read-cache
              (lambda ()
                (current! 'build-finalize)
@@ -306,7 +462,9 @@
                                 (list (cons path (module-source-read path))) '())))
                  (current! 'build-finalize)
                  inputs)))))
-      (.o (:: graph) compiler-inputs:
+      (def graph-construction-intact? (object-construction-current?))
+      (def value
+        (.o (:: graph) compiler-inputs:
           (unique-build-inputs
            (append init-inputs
                    (foldr append '() (map (cut .ref <> 'source-inputs) asset-values))
@@ -345,6 +503,9 @@
             (append compiler-inputs
                     (foldr append '() (map (cut .ref <> 'source-inputs) external-packages))))
           compiler-current: current!
+          .with-compiler-source-reads: with-compiler-source-reads
+          .with-compiler-source-import: with-compiler-source-import
+          .source-input-state: bound-input-state
           admit-current:
           (lambda ()
             (current! 'build-admit-before)
@@ -362,10 +523,15 @@
                       (lambda () (observer (list 'admission-stage-end name) 1)))
                     ((.ref (car requests) 'admit-current))))
                 (loop (cdr requests) (+ position 1))))
-            (current! 'build-admit-after))))))
+            (current! 'build-admit-after))))
+      (set! owned-graph value)
+      (set! graph-policy
+        (and graph-construction-intact? (object-construction-current?)
+             (module-source-object-policy (list value))))
+      value)))
 
-;; Cache a native binding, never a Graph or an admission result. Only a
-;; nonempty native support spec demands the existing artifact producer.
+;; Cache a runtime binding, never a Graph or an admission result. Only a
+;; nonempty runtime support spec demands the existing artifact producer.
 (def test-build-projector
   (delay
     (parameterize ((current-expander-context (make-top-context)))
@@ -375,7 +541,7 @@
 
 ;; Discover only the demanded import closure. Never project production entries,
 ;; evaluate business scopes or scan peer suites to obtain test support.
-(def (retained-build-entries specs root package-prefix selected)
+(def (retained-build-entries specs root package-prefix selected capture: (capture #f))
   (unless (and (list? specs) (or (null? specs) (and (string? root) (path-absolute? root))))
     (error "retained build entries require a source root" root))
   (let ((seen (make-hash-table-eq)) (selected-by-path (make-hash-table)))
@@ -389,38 +555,66 @@
      (lambda (spec)
        (let* ((parts (if (string? spec) (list spec)
                         (if (and (pair? spec) (eq? (car spec) 'gxc:)) (cdr spec)
-                            (error "retained entry must be a native Scheme target" spec))))
+                            (error "retained entry must be a Scheme target" spec))))
               (name (and (pair? parts) (car parts)))
-              (options-value (and (pair? parts) (cdr parts))))
-         (unless (and (string? name) (list? options-value) (andmap string? options-value)
+              (options (and (pair? parts) (cdr parts))))
+         (unless (and (string? name) (list? options) (andmap string? options)
                       (andmap module-source-name? (string-split name #\/))
                       (not (string-suffix? ".ss" name)))
            (error "invalid retained Scheme target" spec))
          ;; Check every unresolved component; normalization must not hide links.
-         (def path-value
+         (def path
            (path-normalize
             (let walk ((directory root) (parts (string-split (string-append name ".ss") #\/)))
              (let (file (path-expand (car parts) directory))
                (unless (eq? (module-source-type file) (if (pair? (cdr parts)) 'directory 'regular))
                  (error "retained source is missing, non-regular or a symlink" file))
                (if (pair? (cdr parts)) (walk file (cdr parts)) file)))))
-         (def old (hash-get selected-by-path path-value))
-         (def prepared-input (if old (.ref old 'input)
+         (def old (hash-get selected-by-path path))
+         (def input (if old (.ref old 'input)
                                  ;; Ordinary retained files own their source/package guards.
                                  ;; The projection checks its selected Graph once at each
                                  ;; independent boundary; do not attach that whole Graph
                                  ;; replay to every file (including every read of its fields).
-                                 (yuanxu-prepare-module-retained-source path-value void)))
-         (def identity (.ref prepared-input 'compiler-identity))
-         (unless (equal? name (build-target-name identity package-prefix))
-           (error "retained source path and compiler identity disagree" name identity))
-         (when (hash-key? seen identity)
-           (error "duplicate retained compiler target" identity))
-         (hash-put! seen identity #t)
-         (when (and old (not (equal? options-value (.ref old 'options))))
-           (error "conflicting retained compiler options" identity))
-         (or old (.o kind: 'source path: path-value input: prepared-input options: options-value
-                     compiler-identity: identity owner: 'build contributor: 'retained)))) specs)))
+                                 (yuanxu-prepare-module-retained-source path void capture: capture)))
+         (def compiler-identity (.ref input 'compiler-identity))
+         (unless (equal? name (build-target-name compiler-identity package-prefix))
+           (error "retained source path and compiler identity disagree" name compiler-identity))
+         (when (hash-key? seen compiler-identity)
+           (error "duplicate retained compiler target" compiler-identity))
+         (hash-put! seen compiler-identity #t)
+         (when (and old (not (equal? options (.ref old 'options))))
+           (error "conflicting retained compiler options" compiler-identity))
+         (def kind 'source)
+         (def owner 'build)
+         (def contributor 'retained)
+         (or old (.o kind path input options compiler-identity owner contributor)))) specs)))
+;; This is compiler-input analysis, not module loading. Read package/prelude
+;; metadata and expand the COMPLETE body with Gerbil, including generated and
+;; phase-shifted imports. The private context is never installed in the loader,
+;; given an evaluator or exposed as a publication capability. Imported modules
+;; still go through core-import-module and retain their canonical identities.
+(def (test-input-context path)
+  (when (member path (current-expander-path))
+    (raise-syntax-error #f "Cyclic expansion"
+      (append (member path (reverse (current-expander-path))) (list path))))
+  (parameterize ((current-expander-context (make-top-context))
+                 (current-expander-marks '())
+                 (current-expander-phi 0)
+                 (current-expander-path (cons path (current-expander-path)))
+                 (current-import-expander-phi #f)
+                 (current-export-expander-phi #f))
+    (let-values (((prelude identity namespace body) (core-read-module path)))
+      (def super
+        (cond ((prelude-context? prelude) prelude)
+              ((module-context? prelude) (core-module->prelude-context prelude))
+              ((string? prelude) (core-module->prelude-context (core-import-module prelude)))
+              ((not prelude) (or (current-expander-module-prelude) (make-prelude-context #f)))
+              (else (error "unsupported runtime module prelude" path prelude))))
+      (def context (make-module-context identity super namespace path))
+      (core-expand-module-begin body context)
+      context)))
+
 (def (module-test-source-spec view demand root entry-source (retained '()))
   ((.ref demand 'admit-current))
   (def entry (yuanxu-prepare-module-retained-source entry-source void))
@@ -434,7 +628,7 @@
   (def entries '())
   (def support-contexts '())
   (def compiler-observations (.ref entry 'source-inputs))
-  (def native-targets (retained-build-entries retained root package-prefix '()))
+  (def compiler-targets (retained-build-entries retained root package-prefix '()))
   (def (input! path)
     (def normalized (path-normalize path))
     (def input
@@ -450,11 +644,11 @@
       (def input (input! (.get target path)))
       (set! compiler-observations
         (append (.ref input 'source-inputs) compiler-observations)))
-    native-targets)
-  (def (native-spec entry)
-    (def target (find (lambda (candidate) (eq? (.get candidate compiler-identity) (car entry))) native-targets))
+    compiler-targets)
+  (def (std-make-spec entry)
+    (def target (find (lambda (candidate) (eq? (.get candidate compiler-identity) (car entry))) compiler-targets))
     `(gxc: ,(cdr entry) ,@(if target (.get target options) '())))
-  ;; Derive each demanded package from the native header/package snapshot.
+  ;; Derive each demanded package from the runtime header/package snapshot.
   ;; External selected owners keep their own identities; no catalog is scanned.
   (def packages (list (cons root package-prefix)))
   (for-each
@@ -474,44 +668,12 @@
             (substring id 0 (- (string-length id) (string-length relative)))))
         (unless (assoc directory packages)
           (set! packages (cons (cons directory namespace) packages)))))) files)
-  (def native-import (current-expander-module-import))
-  (def (source-import path (reload? #f))
-    (def datum (syntax-e path))
-    (def name (and (symbol? datum) (symbol->string datum)))
-    (def local
-      (or
-        (and name
-          (ormap
-            (lambda (package)
-              (def prefix (string-append ":" (cdr package) "/"))
-              (and (string-prefix? prefix name)
-                (path-expand (string-append (substring name (string-length prefix)
-                  (string-length name)) ".ss") (car package)))) packages))
-        (and (equal? package-prefix "yuanxu") (eq? datum ':tao3k/yuanxu/prelude)
-          (path-expand "prelude.ss" root))
-        (and (string? datum) (path-absolute? datum) (string=? (path-extension datum) ".ss")
-          (ormap (lambda (package) (string-prefix? (car package) datum)) packages) datum)))
-    (cond
-     ;; A compiled library owns its native import closure. Rewriting imports
-     ;; inside its interface made discovery depend on which SDK modules had
-     ;; already been loaded, and rebuilt library sources as test support.
-     ((and (string? datum) (string=? (path-extension datum) ".ssi"))
-      (parameterize ((current-expander-module-import native-import))
-        (native-import path reload?)))
-     ((and local (module-source-type local))
-      (begin
-        (when reload? (error "test imports require a fresh source epoch" local))
-        (let* ((input (input! local)) (context (native-import local #f)))
-          ((.ref input 'admit-current))
-          context)))
-     (else (native-import path reload?))))
-  (parameterize ((current-expander-context (make-top-context))
-                 (current-expander-module-import source-import))
+  (parameterize ((current-expander-context (make-top-context)))
     (def seen (make-hash-table-eq))
     (for-each
       (lambda (file)
         (input! file)
-        (for-each-build-module (core-import-module file)
+        (for-each-build-module (test-input-context file)
           (lambda (context)
             (def id (expander-context-id context))
             (def name (and (symbol? id) (symbol->string id)))
@@ -519,9 +681,12 @@
             (when (and (string? path) (eq? (module-source-type path) 'regular))
               (let (package
                 (and name (find (lambda (entry)
-                  (or (string-prefix? (string-append (cdr entry) "/") name)
-                      (and (equal? (cdr entry) "yuanxu") (eq? id 'tao3k/yuanxu/prelude)))) packages)))
-              (if (and package (string=? (path-extension path) ".ss"))
+                  (string-prefix? (string-append (cdr entry) "/") name)) packages)))
+              (if (and package
+                       (equal? (path-normalize path)
+                         (path-normalize (path-expand
+                           (string-append (build-target-name id (cdr package)) ".ss")
+                           (car package)))))
                 (let* ((target (build-target-name id (cdr package)))
                        (expected (path-expand (string-append target ".ss") (car package)))
                        (input (input! expected)))
@@ -529,7 +694,7 @@
                                (eq? id (.ref input 'compiler-identity)))
                     (error "test dependency does not match current package source" id path expected))
                   (unless (member (path-normalize expected) files)
-                    ;; Native Make resolves BOTH sources and expected products
+                    ;; std/make resolves BOTH sources and expected products
                     ;; from this projection's root/prefix. A nested gerbil.pkg
                     ;; may identify the source without changing that Make root.
                     ;; Absolute targets discard libdir during path-expand and
@@ -538,17 +703,16 @@
                       (unless (equal? (path-normalize expected)
                                       (path-normalize
                                         (path-expand (string-append make-target ".ss") root)))
-                        (error "test dependency requires its package-owned native Make root" id expected root))
+                        (error "test dependency requires its package-owned runtime Make root" id expected root))
                       (set! entries
                         (cons (cons id make-target) entries))
                       (set! support-contexts (cons context support-contexts)))))
                 ;; Observe actual external interfaces, never their entire catalog.
-                (when (member (path-extension path) '(".ss" ".ssi"))
-                  (set! observations (cons (cons path (module-source-read path)) observations)))))))
+                (set! observations (cons (cons path (module-source-read path)) observations))))))
           seen)) files))
   ;; A Suite is interpreted by the harness, not compiled into its support
   ;; library. Bind products to the actual compiler dependency closure instead
-  ;; of the requesting Suite's bytes. Walk native contexts, rather than simply
+  ;; of the requesting Suite's bytes. Walk runtime contexts, rather than simply
   ;; removing Suite paths: a Suite imported by support (including for-syntax)
   ;; IS a compiler input and must still invalidate those products.
   (let (seen (make-hash-table-eq))
@@ -562,7 +726,7 @@
                 (if input
                   (set! compiler-observations
                     (append (.ref input 'source-inputs) compiler-observations))
-                  (when (member (path-extension path) '(".ss" ".ssi"))
+                  (when (eq? (module-source-type path) 'regular)
                     (set! compiler-observations
                       (cons (cons path (module-source-read path)) compiler-observations)))))))
           seen))
@@ -570,7 +734,7 @@
   (def inputs (unique-build-inputs observations))
   (def compiler-inputs (unique-build-inputs compiler-observations))
   (def (selected-graph!)
-    ;; The init owner supplies a native thunk. Merely projecting an empty
+    ;; The init owner supplies a runtime thunk. Merely projecting an empty
     ;; support spec must not evaluate every selected Module declaration.
     (def selected (.ref (if (procedure? view) (view) view) 'selected-graph))
     (unless (eq? selected (.ref demand 'selected-graph))
@@ -587,7 +751,7 @@
   (def source
     (.o selected-graph: (selected-graph!) demand-source: demand
         compiler-identities: (map car (reverse entries)) source-inputs: compiler-inputs
-        source-root: root spec: (map native-spec (reverse entries))
+        source-root: root spec: (map std-make-spec (reverse entries))
         admit-current: current!))
   ;; No products means no compiler/signing authority. Keep the same source and
   ;; selected-Graph guards without importing the artifact implementation.

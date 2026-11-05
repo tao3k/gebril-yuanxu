@@ -1,6 +1,6 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Source text is parser input data here: no files or native imports.
+;;; Source text is parser input data here: no files or runtime imports.
 (import (only-in :std/test test-suite test-case check-equal?)
         (only-in :yuanxu/module-system/source/deferred-declaration module-deferred-role-exports))
 (export module-deferred-projection-test)
@@ -14,7 +14,7 @@
           '((types . "(def ScopeContract #f) (export ScopeContract)")
             (config . "(def Config #f) (export Config)")))
         '((types ScopeContract) (config Config)))
-      ;; Preserve the original implicit Config capability. Its native binding
+      ;; Preserve the original implicit Config capability. Its runtime binding
       ;; is resolved after role expansion, as the integration Case checks.
       (check-equal?
         (module-deferred-role-exports interface
@@ -26,7 +26,11 @@
           '((types . "(import (only-in :clan/poo/mop define-type)) (define-type (ScopeContract @ [])) (export ScopeContract)")
             (config . "(def Config #f)")))
         '((types ScopeContract) (config Config)))
+      (def private-roles '())
       (check-equal?
         (module-deferred-role-exports interface
           '((types . "(import (only-in \"private.ss\" Private)) (export ScopeContract)")
-            (config . "(def Config #f) (export Config)"))) #f))))
+            (config . "(def Config #f) (export Config)"))
+          private-import: (lambda (role) (set! private-roles (cons role private-roles))))
+        '((types ScopeContract) (config Config)))
+      (check-equal? private-roles '(types)))))

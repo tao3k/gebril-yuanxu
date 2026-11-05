@@ -115,7 +115,7 @@ binding receipt, while backlink status remains independently inspectable.
 
 Session owns a versioned =SessionSchedule= with tasks, dependency edges, join
 conditions, placement constraints, resource budgets and cancellation policy.
-Context compiles admitted Org plans into native Session proposals. Ordinary Org
+Context compiles admitted Org plans into runtime Session proposals. Ordinary Org
 hierarchy supplies content structure; scheduling edges require explicit admitted
 relations. Editing a task headline does not itself spawn an agent.
 
@@ -153,7 +153,7 @@ current Demand and constructs a new projection for the next parent turn.
 
 * Scheduler semantics and runtime boundary
 
-Public Session scheduling values are native POO objects. Named pure functions
+Public Session scheduling values are POO objects. Named pure functions
 validate graphs, compute readiness, allocate budgets and produce dispatch/join/
 cancellation intents. Runtime/Marlin executes provider work and conditional
 publication. Scheduler state belongs to Session; physical storage belongs to the
@@ -254,7 +254,7 @@ Quint models use bounded Sessions, anchors, tasks, revisions, workers and claim
 generations. Match controls for duplicate Org IDs, copied Session properties,
 missing/cyclic dependencies, over-budget fan-out, stale claims, retry double-count,
 source correction after dispatch, parent-close/child-spawn races and dropped
-pending obligations. Replay each trace through native admitted contracts.
+pending obligations. Replay each trace through runtime admitted contracts.
 Fairness/liveness require explicit eventual-worker/clock assumptions; finite
 safety checks cannot establish high performance or unconditional completion.
 

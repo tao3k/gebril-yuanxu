@@ -12,9 +12,9 @@
 (def (store-command arguments)
   (def command (append '("nix-store" "--store" "daemon") arguments))
   ;; Observability records the real process boundary; it never returns a
-  ;; verification verdict or skips a later native check.
+  ;; verification verdict or skips a later runtime check.
   (let (observe (current-module-source-observer))
-    (when observe (observe (list 'native-store-process command) 1)))
+    (when observe (observe (list 'runtime-store-process command) 1)))
   (.get (run-script (.cc Config command: command timeout: 120)
                     output-port: (current-error-port)) output))
 (def (store-add directory)

@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source-bound admission is above the pure Contract kernel, not a Loader.
-(import :clan/poo/object
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop define-type call-with-slot-read-observer replay-slot-reads!)
         (only-in :clan/poo/object-contract diagnose)
         (prefix-in (only-in :clan/poo/method-combination
@@ -71,7 +71,7 @@
   (def (locate failures)
     (map (cut (.get contract .locate-diagnostic) candidate <>) failures))
   ;; Complete locator checks inside collection, before the final replay.
-  ;; Native .cc receives these eagerly evaluated values, not deferred hooks.
+  ;; Runtime .cc receives these eagerly evaluated values, not deferred hooks.
   (def classification-issues (locate (.get evidence classification diagnostics)))
   (def issues (locate (.get evidence diagnostics)))
   (def result
@@ -95,7 +95,7 @@
   source-inputs: '()
   .preflight: (lambda (_candidate _path) '())
   .locate-diagnostic: (lambda (_candidate diagnostic) diagnostic)
-  ;; Domain guards stage dependent reads. Native FUN owns whole-value
+  ;; Domain guards stage dependent reads. Runtime FUN owns whole-value
   ;; validation/refusal below; do not diagnose that same value a second time.
   (.admit (inherited)
     ;; Prepare only the method skeleton on this effective receiver. Every

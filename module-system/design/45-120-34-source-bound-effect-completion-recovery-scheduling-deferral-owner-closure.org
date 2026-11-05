@@ -21,7 +21,7 @@ The recovery progress algebra already has three owner coordinates:
 - scheduler admission;
 - completion storage admission.
 
-45-120-33 supplies owner-native transitions for the crash and storage
+45-120-33 supplies owner-runtime transitions for the crash and storage
 coordinates. The scheduling coordinate remains only a projection from
 =SourceBoundDeterministicBudgetReceipt.schedulingRemaining=.
 
@@ -213,7 +213,7 @@ promoted into scheduling authority.
 - no recovery identity is inferred from plan identity;
 - no epoch or fence is inferred from generation;
 - no new convergence theorem is introduced;
-- the proof model remains native Lean structures and propositions.
+- the proof model remains runtime Lean structures and propositions.
 
 An implementation RFC must identify the runtime scheduler owner before this
 proof contract becomes a runtime artifact.
@@ -274,7 +274,7 @@ proof contract becomes a runtime artifact.
   =AxleIsUnavailable= because =axle.axiommath.ai= did not resolve.
 - No timeout was increased and no whole-file fallback or alternate AXLE entry
   point was used.
-- Native Orgize found eight Typst blocks, one Mermaid block, and the complete
+- Runtime Orgize found eight Typst blocks, one Mermaid block, and the complete
   checklist structure in this exact RFC.
 - All eight parser-projected Typst blocks compiled into
   =/private/tmp/45-120-34-scheduling-deferral-owner-closure.pdf= at 23,033
@@ -304,7 +304,7 @@ proof contract becomes a runtime artifact.
 - [ ] Run the existing Python audit gates.
 - [X] Compile every Typst block.
 - [X] Check whitespace.
-- [X] Validate Org with the native Orgize-backed parser.
+- [X] Validate Org with the runtime Orgize-backed parser.
 - [X] Validate Mermaid with an admitted local validator.
 
 * Next proof gap

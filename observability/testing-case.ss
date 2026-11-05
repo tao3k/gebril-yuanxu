@@ -3,12 +3,12 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; A POO policy around native std/test cases.  This does not own test
+;;; A POO policy around runtime std/test cases.  This does not own test
 ;;; discovery, assertion semantics, or the gxtest runner.
 (import (only-in :std/test test-case)
         (only-in :yuanxu/ops/progress call-with-execution-progress execution-progress!
                  execution-idle-seconds execution-total-seconds)
-        (only-in :clan/poo/object .call .o .cc .ref .slot? object?)
+        (runtime: :clan/poo/object)
         (only-in :gerbil/expander core-resolve-identifier core-context-root
                  feature-binding? current-expander-context make-top-context eval-syntax)
         (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
@@ -32,7 +32,7 @@
 ;;; All declared Yuanxu cases receive this default.  The heap counters are
 ;;; process-wide, so the memory policy is a guard on a Case execution span,
 ;;; not a claim of independent thread-local heap accounting.  Assertions stay
-;;; on the native harness thread; a separate sampler may interrupt it.  The native
+;;; on the runtime harness thread; a separate sampler may interrupt it.  The runtime
 ;;; worker's hard managed-heap cap is set by the Testing Interface.
 (def yuanxu-testing-case-profile-prototype
   (.o (testing-case-profile? #t)
@@ -95,7 +95,7 @@
                     (quotient (* (- (current-jiffy) started) 1000)
                               (jiffies-per-second))
                     (quotient (- (yuanxu-debug-cpu-microseconds) started-cpu) 1000)
-                    ;; Includes native source imports before the Case begins.
+                    ;; Includes runtime source imports before the Case begins.
                     ;; This is the existing SDK process counter, not a probe or
                     ;; a claim that parent and worker CPU clocks share an epoch.
                     (quotient (yuanxu-debug-cpu-microseconds) 1000))
@@ -215,12 +215,12 @@
 (def yuanxu-current-testing-case-profile
   (make-parameter yuanxu-default-testing-case-profile))
 
-;; The native harness binds -D features in its root before importing tests.
+;; The runtime harness binds -D features in its root before importing tests.
 ;; Resolve at execution time, including for compiled test modules. A lexical
 ;; cond-expand here would freeze the build process's observation decision.
 (def module-observation-profile
   (delay
-    ;; Capture native harness features before entering the private import frame.
+    ;; Capture runtime harness features before entering the private import frame.
     (let (trace? (feature-binding?
                   (core-resolve-identifier 'yuanxu-module-test-trace 0 (core-context-root))))
       (parameterize ((current-expander-context (make-top-context)))
@@ -236,7 +236,15 @@
       profile)))
 
 ;;; Hygienic syntax projects directly to the upstream test-case macro.  The
-;;; native harness still registers and reports the resulting TestCase.
+;;; runtime harness still registers and reports the resulting TestCase.
+(def (call-with-testing-case-profile profile describe thunk)
+  ;; Resolve .run on every invocation, before evaluating the label. Keeping
+  ;; this frame here avoids copying its expansion into every source Case.
+  ;; Neither a method, a receipt nor an admission result is retained.
+  (call-with-values
+    (lambda () (.call profile .run profile (describe) thunk))
+    (lambda (value receipt) value)))
+
 (defrules yuanxu-test-case ()
   ((_ description body rest ...)
    (yuanxu-test-case/with
@@ -246,9 +254,5 @@
 (defrules yuanxu-test-case/with ()
   ((_ profile description body rest ...)
    (test-case description
-     (let (active-profile profile)
-       (call-with-values
-        (lambda ()
-          (.call active-profile .run active-profile description
-                 (lambda () body rest ...)))
-        (lambda (value receipt) value))))))
+     (call-with-testing-case-profile profile
+       (lambda () description) (lambda () body rest ...)))))

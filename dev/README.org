@@ -18,7 +18,7 @@ SysML is the organization entry, not a replacement for the other owners. A
 model requirement needs an identified verification obligation. QNT can expose a
 bad interleaving without proving arbitrary executions; Lean proves its stated
 model under explicit premises; Scheme establishes tested correspondence with
-native calls. None alone authenticates external files or proves performance.
+runtime calls. None alone authenticates external files or proves performance.
 
 * Change route
 

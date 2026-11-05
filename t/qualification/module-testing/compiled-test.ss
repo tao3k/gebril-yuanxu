@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Imported in a fresh native process after the consumer sources are removed.
+;;; Imported in a fresh runtime process after the consumer sources are removed.
 (import :std/test :clan/poo/object
         (only-in :std/source this-source-file)
         (only-in :std/misc/ports read-all-as-string)
@@ -10,14 +10,14 @@
         (rename-in :yuanxu/compiled-bindings/only
                    (namespace only-namespace) (atomic only-atomic))
         (rename-in :yuanxu/compiled-bindings/renamed
-                   (namespace renamed-namespace)))
+                   (namespace renamed-namespace) (atomic renamed-atomic)))
 (export compiled-binding-test)
 (def root (path-expand "../../.." (path-directory (this-source-file))))
 (def (write-text path text)
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (display text port))))
 (def compiled-binding-test
-  (test-suite "Native compiled namespace binding"
+  (test-suite "Runtime compiled namespace binding"
     (test-case "compiler artifacts are actually imported"
       (for-each
         (lambda (name)
@@ -41,22 +41,18 @@
       (check-equal? (.slot? modules 'json-schema) #t)
       (check-equal? (.slot? modules 'missing) #f)
       (check-equal? (.ref/cached modules 'json-schema) #f)
-      (def module (.get modules json-schema))
-      (check-equal? (.all-slots/sort module) '(identity scope tests))
-      (check-equal? (.ref/cached module 'scope) #f)
-      (check-equal? (.ref/cached module 'tests) #f)
       (check-equal? (file-exists? (path-expand "json-schema.scope" root)) #f)
       (check-equal? (file-exists? (path-expand "testing-execution.loaded" root)) #f))
     (test-case "compiled binding keeps test identity and source guards"
       (def tests (only-atomic))
-      (check-equal? (eq? tests (.get (renamed-namespace) json-schema tests)) #t)
-      (.call tests .run)
+      (check-equal? (eq? tests (renamed-atomic)) #t)
+      ((.get tests admit-current))
       (check-equal? (file-exists? (path-expand "json-schema.scope" root)) #f)
       (def file (car (.get tests spec)))
       (def original (call-with-input-file file read-all-as-string))
       (dynamic-wind
         (lambda () (write-text file (string-append original "\n;; changed compiled test input\n")))
-        (lambda () (check-exception (.call tests .run) error?))
+        (lambda () (check-exception ((.get tests admit-current)) error?))
         (lambda () (write-text file original))))
     (test-case "compiled reads recheck init while a captured value stays a snapshot"
       (def captured (only-namespace))

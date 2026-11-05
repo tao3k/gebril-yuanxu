@@ -4,7 +4,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import (only-in :std/test test-suite test-case check-equal?)
-        (only-in :clan/poo/object .o .ref .call)
+        (only-in :clan/poo/object .o .ref .call .cc object-slots object-%slot-funs
+                 $constant-slot-spec? object-protocol-set!)
         (only-in :yuanxu/object-types/ports Port valid-port?)
         (only-in :clan/poo/mop define-type element?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
@@ -43,6 +44,13 @@
   (accessors (core-name name))
   (projections (core->alist (name name))))
 
+;; The field intentionally has the same spelling as the prototype binding.
+(defpoo-object-family
+  (prototype FamilyData family-data? family-data?)
+  (constructor make-family-data (value FamilyData) (optional optional))
+  (accessors (family-value FamilyData))
+  (projections))
+
 (def +core-case-profile+
   (.o (:: @ yuanxu-default-testing-case-profile)
       (identity 'core/qualification)
@@ -50,7 +58,34 @@
 
 (def core-test
   (test-suite "Core"
-    (test-case "native contracts retain prototype ancestry"
+    (test-case "family values use runtime constants with hygienic ancestry and stable methods"
+      (def effects 0)
+      (def events '())
+      (object-protocol-set! FamilyData
+        (.o compute-slot: (lambda (_self next name)
+                            (set! events (cons name events)) (next))))
+      (def value (make-family-data (begin (set! effects (1+ effects)) 41) #f))
+      (check-equal? effects 1)
+      (check-equal? (family-data? value) #t)
+      (check-equal? (family-value value) 41)
+      (def first-events (reverse events))
+      ;; Gerbil tables have independent random seeds. Check the EXACT runtime
+      ;; traversal of this receiver, not another receiver's accidental order.
+      (check-equal? first-events (map car (hash->list (object-%slot-funs value))))
+      (def method (hash-get (object-%slot-funs value) 'FamilyData))
+      (check-equal? (family-value value) 41)
+      (check-equal? (eq? method (hash-get (object-%slot-funs value) 'FamilyData)) #t)
+      (for-each (lambda (entry) (check-equal? ($constant-slot-spec? (cdr entry)) #t)) (object-slots value))
+      (set! events '())
+      (def reference (.o (:: @ FamilyData) (FamilyData 41) (optional #f)))
+      (check-equal? (family-value reference) 41)
+      (check-equal? (reverse events) (map car (hash->list (object-%slot-funs reference))))
+      (check-equal? (.ref value 'optional) #f)
+      (def child (.cc value FamilyData: 42))
+      (check-equal? (family-value child) 42)
+      (check-equal? (family-value value) 41)
+      (check-equal? effects 1))
+    (test-case "runtime contracts retain prototype ancestry"
       (let* ((proto (.ref CoreNameContract 'proto))
              (value (.o (:: @ proto) name: 'core)))
         (check-equal? (element? CoreNameContract value) #t)
@@ -62,7 +97,7 @@
       (for-each (lambda (value) (check-equal? (element? Port value) #t)) '(1 5432 65535))
       (for-each (lambda (value) (check-equal? (valid-port? value) #f))
         '(0 -1 65536 5432.0 "5432" #f)))
-    (test-case "object-family projection stays POO-native"
+    (test-case "object-family projection stays POO"
       (let (value (.o name: 'core))
         (check-equal? (core-name value) 'core)
         (check-equal? (core->alist value) '((name . core)))))

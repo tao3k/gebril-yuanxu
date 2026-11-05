@@ -22,12 +22,12 @@ or claim their correctness from an upstream Lean proof.
 This is the complete proposed Scheme body for the three obligations and three
 inherited .admit adapters. Every new internal helper used below is defined here.
 It supersedes the algorithm-only bodies in [[file:06-admission-algorithms.org][module 06]], which remains a readable
-behavior specification. The [[file:01-surface-and-schema.org][native Contract declarations]],
+behavior specification. The [[file:01-surface-and-schema.org][Contract declarations]],
 [[file:05-field-contracts-and-capabilities.org][field Contracts/capability value]] and [[file:02-complete-cicd-case.org][complete upstream/downstream case]] retain
 their bindings and public syntax. These are documentation blocks, not installed
 source, a Loader integration or a new execution receipt.
 
-Existing dependencies are native .o/.get/.ref/.slot?/.all-slots,
+Existing dependencies are .o/.get/.ref/.slot?/.all-slots,
 compute-precedence-list!, Core's classification/validation constructors and
 protocols, YuanxuContract., the source-ref predicate, with-catch, standard
 list/hash operations, and the existing append-map, find and
@@ -45,7 +45,7 @@ Required readiness receipts still belong to a later admission boundary. In
 particular, capabilities in the complete local context is a declaration, not
 a bag of fabricated execution evidence.
 
-* Diagnostics, safe shape checks and native evidence
+* Diagnostics, safe shape checks and runtime evidence
 
 #+begin_src scheme
 (def (ff-issue code-value path-value detail-value)
@@ -121,8 +121,8 @@ a bag of fabricated execution evidence.
 #+end_src
 
 The ff- prefix denotes private owner functions, not the user's ff scope alias.
-Constructor parameters use distinct names so native slot lexical bindings do
-not shadow a same-named outer variable accidentally. Diagnostics retain native
+Constructor parameters use distinct names so runtime slot lexical bindings do
+not shadow a same-named outer variable accidentally. Diagnostics retain runtime
 values/evidence; eventual diagnostic serialization must handle causes separately.
 Exceptions are rejected with their original cause. Divergence/resource limits
 remain outside this exception wrapper.
@@ -227,12 +227,12 @@ source receipt. Context validation also cannot attest a caller-chosen owner.
 * Selector and Pipeline preflight before checks demand
 
 #+begin_src scheme
-(def (native-check? value)
+(def (runtime-check? value)
   (ff-derives? value funflow-check))
 
 (def (funflow-selected-checks profile names)
   (unless (object? profile)
-    (error "Expected a native Funflow Profile" profile))
+    (error "Expected a runtime Funflow Profile" profile))
   (unless (nonempty-unique-symbols? names)
     (error "Expected nonempty unique Check names" names))
   (map
@@ -240,7 +240,7 @@ source receipt. Context validation also cannot attest a caller-chosen owner.
       (unless (.slot? profile name)
         (error "Selected Check does not exist" name))
       (let ((check (.ref profile name)))
-        (unless (native-check? check)
+        (unless (runtime-check? check)
           (error "Selected slot is not a Funflow Check" name))
         check))
     names))
@@ -253,7 +253,7 @@ source receipt. Context validation also cannot attest a caller-chosen owner.
          (list (ff-issue 'reserved-check-position path-value name)))
         ((not (.slot? profile name))
          (list (ff-issue 'selected-check-missing path-value name)))
-        ((not (native-check? (.ref profile name)))
+        ((not (runtime-check? (.ref profile name)))
          (list (ff-issue 'selected-slot-not-check path-value name)))
         (else '())))
     names))
@@ -334,7 +334,7 @@ preflight is a private function argument supplied by these three named adapters,
 not a configured callback slot. .admit inherits Core admission; it does not
 reimplement responsibility traversal. Returned root evidence retains the caller's
 candidate/context. A failed getter produces rejection, not a successful empty
-selection. An explicit owner-controlled alternative Contract remains a different
+selection. An explicit owner-controlled alterContract remains a different
 trust association, not something a candidate.contract field can authorize.
 
 * Capability, metadata and payload helpers
@@ -585,7 +585,7 @@ smoke without package fails graph closure. Placing package first in the name
 list does not bypass its test dependency. A wrong decoder passes list shape but
 fails the declared result-protocol membership check.
 
-After parent Pipeline/checks caching, the inherited native getter still captures
+After parent Pipeline/checks caching, the inherited runtime getter still captures
 the child's effective-profile and selected-checks. It resolves child build,
 test, package and smoke. Assigning a fixed saved parent list instead fails the
 pairwise eq? check, even if both lists contain individually valid Checks.
@@ -597,7 +597,7 @@ that object; this code cannot infer a different intended configuration.
 Only document structure, links and Scheme reader syntax are checked for this
 new source listing. No function here has been installed, compiled as a product
 module or executed to claim admission success. The historical ten-assertion
-probe and real fixed-list publication controls remain evidence for native
+probe and real fixed-list publication controls remain evidence for runtime
 receiver/cache semantics only. Exception conversion, context rejection, capability
 checks, graph ordering, domain identity rejection and their evaluation-demand
 counts all require future implementation qualification. Loader/authentication,

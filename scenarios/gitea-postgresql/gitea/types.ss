@@ -1,12 +1,13 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :clan/poo/object :clan/poo/object-contract
-        (only-in :clan/poo/mop define-type Object Any)
+(import (only-in :clan/poo/object o?/slots .get .o .cc .def)
+        (only-in :clan/poo/object-contract ObjectContract. diagnose refine)
+        (only-in :clan/poo/mop define-type Type. Object Any)
         (only-in :yuanxu/object-types/ports Port)
         (only-in :clan/poo/type List)
-        (only-in :clan/poo/object-diagnostics diagnostic-then)
+        (only-in :clan/poo/object-contract diagnostic-then)
         (only-in :std/list/list every)
-        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-predicate-contract)
+        (only-in :yuanxu/object-types/contracts YuanxuContract.)
         (only-in :yuanxu/admission/source SourceAdmissionContract. source-diagnose-at)
         (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator))
 (export ApplicationContract GiteaConfigContract GiteaScopeContract PostgreSQLScopeContract)
@@ -26,14 +27,14 @@
   (.o postgresql: (.o (:: @ database-contract) value-contract: #f)
       gitea: (.o (:: @ GiteaConfigContract) value-contract: #f)))
 ;; These scope probes inspect names only, rather than normalizing lazy exports.
-(def PostgreSQLScopeContract
-  (yuanxu-predicate-contract 'gitea/postgresql-dependency
-    (lambda (value)
-      (and ((o?/slots '(config types)) value)
-           ((o?/slots '(port Config)) (.get value types))))))
-(def GiteaScopeContract
-  (yuanxu-predicate-contract 'gitea/scope
-    (o?/slots '(config document application types policy))))
+(define-type (PostgreSQLScopeContract @ Type.)
+  identity: 'gitea/postgresql-dependency
+  .element?:
+  (lambda (value)
+    (and ((o?/slots '(config types)) value)
+         ((o?/slots '(port Config)) (.get value types)))))
+(define-type (GiteaScopeContract @ Type.)
+  identity: 'gitea/scope .element?: (o?/slots '(config document application types policy)))
 (def (issue kind-value path-value actual-value)
   (.o kind: kind-value path: path-value actual: actual-value))
 (def ApplicationEnvelope
@@ -86,7 +87,7 @@
   database-value-type: (.get database-contract value-contract)
   client-value-type: (gitea-value-contract port-type)
   ;; Dependency guards belong to contextual admission, not to the reusable
-  ;; native value Type. Share its actual child Types and short-circuit before
+  ;; runtime value Type. Share its actual child Types and short-circuit before
   ;; forcing a client/plan that depends on invalid database settings.
   .preflight:
   (foldr diagnostic-then (lambda (_value _path) '())

@@ -7,7 +7,7 @@
 * Consolidated design
 
 The earlier exploratory examples have been removed. Read
-[[file:164-profile-module-targeting-design.org][Scenario CompositionContracts and Native Profiles Objectification]] for the single complete
+[[file:164-profile-module-targeting-design.org][Scenario CompositionContracts and Runtime Profiles Objectification]] for the single complete
 example, Module/Profile roles, inherited slot refinement, automatic composition and
-existing-versus-proposed capability matrix. Native POO remains the semantic
+existing-versus-proposed capability matrix. POO remains the semantic
 owner; the document explicitly records unimplemented syntax and admission.

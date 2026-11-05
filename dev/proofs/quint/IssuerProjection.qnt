@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 // Construct registry/environment entries by mint transitions, never by a
-// birthNative flag. Handle 3 is an untrusted, self-consistent user closure.
+// birthRuntime flag. Handle 3 is an untrusted, self-consistent user closure.
 module IssuerProjectionModel {
   const BUG: str
   pure val ids = Set(0, 1, 2, 3)
@@ -11,7 +11,7 @@ module IssuerProjectionModel {
     planOwner: int, unselected: int}
   var s: State
   action init = {
-    nondet kind = Set("native", "fake", "borrowed", "payload", "replaced",
+    nondet kind = Set("runtime", "fake", "borrowed", "payload", "replaced",
       "closureRestore", "metadataRestore", "metadataStay", "revisionABA").oneOf()
     nondet miss = Set(false, true).oneOf()
     nondet a = Set(false, true).oneOf()

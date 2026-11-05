@@ -50,20 +50,20 @@ Module discovery must not import every Profile or Scenario owned by the package.
 dependency interfaces to support separately checked packages and later linking.
 The architectural lesson is to state feature assumptions independently of a
 particular configured use. Our proposal separates feature interface publication,
-Profile configuration and Scenario binding. A POO Contract and native prototype
+Profile configuration and Scenario binding. A POO Contract and runtime prototype
 are not Backpack signatures, and this design does not establish static separate
 typechecking, applicative identity or recursive-linking guarantees for Scheme.
 
 [[https://www.microsoft.com/en-us/research/wp-content/uploads/2018/03/build-systems.pdf][Build Systems a la Carte, ICFP 2018]], especially sections 4.1 and 4.2,
 distinguishes task scheduling from the decision whether to rebuild. Applied here,
 resolve the selected dependency closure separately from deciding whether its
-construction or validation may be reused. Source/build ordering, native prototype
+construction or validation may be reused. Source/build ordering, runtime prototype
 precedence and CI task execution edges have different meanings. This is an
 architectural application, not a claim that the paper specifies our Loader or
 that its minimality results apply to arbitrary effectful Scheme getters.
 
 No public package/linking DSL, second scheduler or parallel dependency authority
-is introduced. Use the existing source/build graph and native POO values, with
+is introduced. Use the existing source/build graph and POO values, with
 typed relation/projection roles for different dependencies.
 
 * Owners, dependencies and identity
@@ -83,13 +83,13 @@ can bind the same published Profile and produce different effective descendants.
 Different local bindings to two Profiles each using Funflow do not collide just
 because both contain build. Consumer output identities must retain qualification.
 
-Composition of independent Profiles is explicit native object composition and
+Composition of independent Profiles is explicit runtime object composition and
 declared relationships. Multiple inheritance is useful when its slot semantics
 are intentional; never flatten all Profiles and silently choose duplicate funflow
 or build slots by parent order. Scenario references do not prescribe execution
 order, which comes from the admitted composition/task relationships.
 
-* Native CI/CD design: pure Module, independently published Profile
+* Runtime CI/CD design: pure Module, independently published Profile
 
 The neutral Check/Pipeline defaults and field Contracts remain the reusable
 parts of [[file:02-complete-cicd-case.org][the earlier complete recipe listing]]. Its old ownership/publication and
@@ -276,7 +276,7 @@ example each Profile retains its own local build -> test -> package dependency
 chain. A cross-Profile edge is not implied by these bindings; the inherited
 domain composition explicitly supplies Gerbil-package -> Rust-build. A future GitHub Actions Profile can be
 another independent input. Whole-Scenario scheduling or workflow projection is
-not implemented just by adding another native slot. Prototype order and the
+not implemented just by adding another runtime slot. Prototype order and the
 order of gerbil/rust declarations are not execution order.
 
 | Selected local name | Qualified configured identity |
@@ -302,7 +302,7 @@ not the whole Profile or Scenario. The current helper name funflow-selected-chec
 is retained for reference, but its argument role must be the configured Funflow
 object containing the named Checks. Do not silently pass the enclosing Profile.
 
-* Downstream differences and native lowering
+* Downstream differences and runtime lowering
 
 #+begin_src scheme
 (.def (ProjectCI @ CICDScenario))
@@ -318,7 +318,7 @@ object containing the named Checks. Do not silently pass the enclosing Profile.
         gerbil.funflow.build.commands: '("gerbil" "build" "release")
         gerbil.funflow.build.artifact-outputs: '(release-build-log)
         rust.funflow.build: =>.+
-        {artifact-outputs: => append '(release-log)}
+        {(artifact-outputs => append '(release-log))}
         gerbil.funflow.smoke:
         (.o (:: @ (.get ff prototypes check))
           check-name: 'smoke
@@ -334,10 +334,10 @@ object containing the named Checks. Do not silently pass the enclosing Profile.
 gerbil is an ordinary Scenario binding to a Profile occurrence, not a reserved
 category or built-in stage. The proposed direct-path adapter refines gerbil once,
 then funflow once, then build once with both leaf assignments; pipeline is also
-refined once. smoke is assigned as a genuinely new object. Intermediate native
+refined once. smoke is assigned as a genuinely new object. Intermediate runtime
 inheritance preserves the other slots. The separate rust prefix refines its build
 once and deliberately appends release-log to its inherited artifact list. It does
-not change Rust commands or its three-member Pipeline selection. This is native
+not change Rust commands or its three-member Pipeline selection. This is runtime
 inherited-value transformation, not implicit list merging during assignment.
 The append form's syntax already exists; the other dotted assignments still
 require the proposed adapter. Duplicate/ancestor-overlap rules from module 11
@@ -420,7 +420,7 @@ Scheme owner/context adaptation or separate static checking of Profiles.
 
 The inherited getter must use ReleaseCI.gerbil.funflow as effective-config, so
 it resolves the refined build and new smoke without replacing the parent's list.
-Compare actual versus expected selected objects pairwise by native identity and
+Compare actual versus expected selected objects pairwise by runtime identity and
 order. A fixed parent list fails effective-checks-mismatch. Verify the independent
 Profile publication and other Scenario occurrences are unchanged.
 
@@ -475,7 +475,7 @@ publish. A refusal retains any previous admitted plan labelled previous.
 | Claim | Evidence status |
 |-------+-----------------|
 | Interface/linking separation and scheduling/rebuilding separation | Paper-derived design inspiration, not imported implementations or Scheme guarantees |
-| Native inheritance, lexical slots, bounded scopes and dotted object =>.+ | Existing foundations; source/earlier focused tests, not this complete architecture |
+| Runtime inheritance, lexical slots, bounded scopes and dotted object =>.+ | Existing foundations; source/earlier focused tests, not this complete architecture |
 | Parent-cache/child selected-value pattern | Historical domain-free executed probe in module 04; unchanged receipt |
 | LeanPoo reuse laws | Pinned upstream definitions/proofs; no automatic proof of this Scheme projection |
 | Pure Module publication and complete independent Gerbil/Rust recipes above | Corrected design; current runtime still publishes a Module-local Profile; no Cargo/Gerbil commands executed |

@@ -60,7 +60,7 @@
    "feature system Bundle v1 foreign arena"
 
    (yuanxu-test-case
-    "accepted lowering plan becomes a packed native arena image"
+    "accepted lowering plan becomes a packed runtime arena image"
     (let* ((plan (sample-lowering-plan))
            (descriptor (.ref plan 'descriptor))
            (image (feature-bundle-v1-write-foreign-arena plan))

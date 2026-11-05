@@ -194,7 +194,7 @@ There is no universal merge function:
 - Protocol checks refinement.
 - Evidence accumulates obligations.
 
-A generic map merge, edge union, last-writer-wins overlay, or untyped patch is non-conforming. When more than one semantic resolution remains possible, the author MUST supply a named POO-native or functional resolution. That resolution enters normalized provenance and affects the digest.
+A generic map merge, edge union, last-writer-wins overlay, or untyped patch is non-conforming. When more than one semantic resolution remains possible, the author MUST supply a named POO or functional resolution. That resolution enters normalized provenance and affects the digest.
 
 C4 answers only which inherited definition is examined first and how compatible POO definitions are collected. Each facet algebra decides semantic compatibility afterward.
 

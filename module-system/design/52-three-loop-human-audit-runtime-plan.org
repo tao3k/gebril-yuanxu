@@ -204,7 +204,7 @@ Acceptance:
 - The manifest names the consumer contract without pretending that =agentic-ai-lab=
   owns the Marlin runtime ABI.
 - Projection payloads are final alists only at the boundary; user-facing
-  construction remains POO-native and functional.
+  construction remains POO and functional.
 
 Phase 5: Graph and validator gates.
 - Add graph diagnostics for proposal source paths, affected policy cones,
@@ -233,7 +233,7 @@ Acceptance:
 
 ** 10.06.52.80 Immediate Next Slice
 The next code slice should be small enough to verify without a full runtime:
-1. add POO-native =external-feedback-receipt= and =spec-change-proposal= objects;
+1. add POO =external-feedback-receipt= and =spec-change-proposal= objects;
 2. add a =spec-evolution-review-item= object consumed by =human-audit=;
 3. project those values into a report-only manifest extension;
 4. add focused tests for valid, rejected, escalated, and invalid proposal cases;
@@ -294,7 +294,7 @@ Acceptance:
 ** 10.06.52.90 Next Code Slice
 The next code slice should be narrow:
 
-1. Add POO-native spec evolution proposal objects.
+1. Add POO spec evolution proposal objects.
 2. Add a proposal-to-human-audit review projection.
 3. Add focused tests proving proposals are report-only until approved.
 4. Add a runtime manifest row that records Human Audit approval evidence.

@@ -30,7 +30,7 @@ module ReplayBoundaryModel {
       s.with("phase", 9).with("issue", 1)
     else s.with("phase", 2).with("visits", Set(0))
   }
-  // Cold precedence preparation can invoke the native compute-precedence hook.
+  // Cold precedence preparation can invoke the runtime compute-precedence hook.
   // It need not happen in the measured cut; no all-producers theorem excludes it.
   action metadata = {
     nondet hookWrite = Set(false, true).oneOf()

@@ -7,7 +7,7 @@
 
 * Decision
 
-Phase 3F introduces three POO-native declaration values and one immutable
+Phase 3F introduces three POO declaration values and one immutable
 binding receipt:
 
 - =FeatureAdapterCapability= declares what a provider module can satisfy;
@@ -69,7 +69,7 @@ A projection request contains:
 2. the Domain Case =projection-id=;
 3. the required =schema-id=.
 
-The ordinary declaration surface is fully POO-native:
+The ordinary declaration surface is fully POO:
 
 #+begin_src scheme
 (defpoo-feature-adapter-capability python-runtime-capability

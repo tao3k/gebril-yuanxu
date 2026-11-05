@@ -7,7 +7,7 @@
 
 * Decision
 
-Phase 3E introduces POO-native policy and strategy contributions plus an
+Phase 3E introduces POO policy and strategy contributions plus an
 immutable =FeaturePolicyStrategyBinding= receipt.
 
 The binder consumes an accepted =FeatureDomainCaseAssembly=.  It does not
@@ -179,7 +179,7 @@ reach backward and reinterpret raw Feature declarations.
 
 The implementation proves:
 
-- the public contribution and binding surface is POO-native and declarative;
+- the public contribution and binding surface is POO and declarative;
 - a real accepted Domain Case assembly supplies both algebra identities;
 - parent and child prototype slots survive while child overrides take
   precedence;

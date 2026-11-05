@@ -109,7 +109,7 @@
           (current-module-source-observer #f))))
     (def result (admit (.get sample contract) (.get sample candidate) #f attack))
     ;; Matched compiled-policy control. This flag selects the EXPECTATION only;
-    ;; it never changes the source dispatcher or skips a native admission.
+    ;; it never changes the source dispatcher or skips a runtime admission.
     (case (string->symbol (getenv "CORE_SOURCE_TAIL_POLICY" "segment"))
       ((return-only)
        (check-equal? (.get result accepted?) #t)

@@ -34,13 +34,13 @@
 (def (literal-symbol term)
   (match term (['quote (? symbol? id)] id)
     (else (error "calculated dependency needs the original guarded reader" term))))
-(def (native-object-body term)
+(def (poo-object-body term)
   (match term
     (['.o [':: (? symbol?) parents] . body]
      (unless (equal? parents (list '@list)) (error "inherited metadata requires original reader" parents))
      (slot-rows body))
     (['.o . body] (slot-rows body))
-    (else (error "nonliteral native object requires original reader" term))))
+    (else (error "nonliteral runtime object requires original reader" term))))
 (def (project-metadata path)
   ;; Classify the actual source shape, never a manually supplied purity bit.
   (match (forms path)
@@ -51,13 +51,13 @@
                    (else #f)))
        (error "inherited module metadata requires original guarded reader" binding))
      (def slots (slot-rows body))
-     (def core (native-object-body (field slots 'core:)))
-     (def requirements (native-object-body (field core 'requires:)))
-     (unless (null? (native-object-body (field slots 'features:)))
+     (def core (poo-object-body (field slots 'core:)))
+     (def requirements (poo-object-body (field core 'requires:)))
+     (unless (null? (poo-object-body (field slots 'features:)))
        (error "feature-bearing metadata requires original guarded reader" path))
      (def id (literal-symbol (field slots 'identity:)))
      (def ids (map (lambda (row)
-                     (literal-symbol (field (native-object-body (cdr row)) 'module-id:)))
+                     (literal-symbol (field (poo-object-body (cdr row)) 'module-id:)))
                    requirements))
      (.o identity: id requires: ids))
     (else (error "open interface requires original guarded reader" path))))
@@ -74,7 +74,7 @@
   (def owner (path-normalize root))
   (def prepared (yuanxu-prepare-module-private-source owner (path-expand name owner) void))
   (def binding (string->symbol (symbol->string (gensym 'RoleValues))))
-  ;; Extend the SAME existing native include wrapper with an ordinary POO
+  ;; Extend the SAME existing runtime include wrapper with an ordinary POO
   ;; tuple of actual exports. Never reconstruct or replace issued read tokens.
   (def bundled
     (.cc prepared compiler-forms:

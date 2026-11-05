@@ -1,0 +1,20 @@
+# ASCENT Scheme projection; no layout coordinates.
+direction: right
+classes: {
+"design": {}
+"evidence": {}
+"implementation": {}
+"model-check": {}
+"proof": {}
+}
+"lean": "Lean: refinement" {class: "proof"}
+"qualification": "Build / std/test" {class: "evidence"}
+"quint": "Quint: transitions" {class: "model-check"}
+"scheme": "Scheme: correspondence" {class: "implementation"}
+"sysml": "SysML: ownership" {class: "design"}
+"lean" -> "scheme": "premises"
+"qualification" -> "sysml": "gaps"
+"quint" -> "scheme": "controls"
+"scheme" -> "qualification": "real-entrypoints"
+"sysml" -> "lean": "laws"
+"sysml" -> "quint": "traces"

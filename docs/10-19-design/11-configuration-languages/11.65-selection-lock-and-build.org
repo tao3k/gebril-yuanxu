@@ -26,7 +26,7 @@ must retain source spans and duplicate/conflict rejection. No such parsed lock
 or checksum is fabricated in this study. Engine/toolchain pinning is separate
 from the provider lock; .terraform.lock.hcl does not pin the OpenTofu executable.
 
-The precise native request construction after lock admission is:
+The precise runtime request construction after lock admission is:
 
 #+begin_src scheme
 (def (selected-provider-requests selected lock)
@@ -113,7 +113,7 @@ Initial field demands come from declared domain Contract/projection dependencies
 Full resource/data demands may be discovered from a pure candidate projection.
 A dynamic demand not prepared in the current generation returns build-required;
 it cannot trigger provider installation, an external build, or a new graph
-generation inside .admit. Pure native Schema predicate construction may remain
+generation inside .admit. Pure runtime Schema predicate construction may remain
 lazy within an already prepared generation; its first-access CPU cost is real. An explicit prepare
 operation can extend/freeze the selected generation, then retry admission. A
 source import scan alone cannot predict every Scheme-computed resource name.
@@ -143,7 +143,7 @@ checksum receipt or acquisition success is asserted as current local evidence.
 
 This proposed pure lookup is inside Core preparation, not user configuration.
 expected-key is the content/source/version identity derived from the selected
-node inputs; artifacts is a prepared native object indexed by that key.
+node inputs; artifacts is a prepared runtime object indexed by that key.
 
 #+begin_src scheme
 (def (prepared-artifact generation expected-key artifacts)
@@ -171,4 +171,4 @@ rejection; neither is fixed by silently retrying a build. The source facade must
 surface build-required before returning an admitted scope, or raise its typed
 preparation result for a new demand. Never place that result in a slot expected
 to contain a Contract/provider object. Explicit preparation satisfies the node,
-freezes the generation and retries; native slot access does not start the worker.
+freezes the generation and retries; runtime slot access does not start the worker.

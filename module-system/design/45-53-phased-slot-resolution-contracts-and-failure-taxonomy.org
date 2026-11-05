@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative slot-resolution protocol
-- Semantic core :: Native POO composition and demand-driven Agentic AI Lab evaluation
+- Semantic core :: POO composition and demand-driven Agentic AI Lab evaluation
 - Related modules :: =45-41-poo-profile-slot-contribution-priority.org= and =45-52-capability-roles-admission-scope-and-cache-isolation.org=
 
 This module defines an explicit phase pipeline for slot resolution. It prevents metadata inspection from forcing business values, runtime authorization failure from becoming semantic conflict, and disclosure policy from changing business identity.
@@ -196,7 +196,7 @@ The highest-priority layer is resolved as follows:
 
 - one candidate becomes the active definition;
 - repeated identical contribution identity is idempotently deduplicated;
-- equal-priority candidates use a native POO operation only when that operation is canonical for the current values;
+- equal-priority candidates use a POO operation only when that operation is canonical for the current values;
 - directional or non-confluent operations are not selected by operand order or identity sorting;
 - absence of a canonical combination produces structured =CanonicalCombinationConflict=.
 
@@ -414,7 +414,7 @@ Evidence generation must not force dormant business values.
 - [ ] Separate metadata projection from business-value evaluation.
 - [ ] Complete semantic admission before priority selection.
 - [ ] Keep dormant values and implementation contracts unevaluated.
-- [ ] Admit equal-priority combination only through a canonical native POO operation.
+- [ ] Admit equal-priority combination only through a canonical POO operation.
 - [ ] Define projection, admission, result/interface, and implementation contract roles.
 - [ ] Accumulate declared result contracts independently from implementation priority.
 - [ ] Fail closed on incompatible result-contract composition.

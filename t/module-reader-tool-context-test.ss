@@ -6,8 +6,12 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :clan/poo/object .get)
+        (only-in :gerbil/expander core-import-module module-context-path)
+        (only-in :yuanxu/module-system/source/reader module-publication-reader)
+        (only-in "qualification/module-publication/fixtures.ss" with-publication-source)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/admission module-source-read))
+        (only-in :yuanxu/module-system/source/admission module-source-read current-module-source-observer
+                 call-with-module-source-operation-measurement))
 (export module-reader-tool-context-test)
 (def root (getenv "CORE_QUALIFICATION_ROOT" #f))
 (def (write-source path text)
@@ -35,15 +39,76 @@
   (def module-reader-tool-context-test
     (if root
     (test-suite "Compiler tool reuse preserves source confinement"
+      (test-case "installed execution does not own an unrelated checkout"
+        (def tool (core-import-module ':yuanxu/module-system/source/declaration))
+        (check-equal? (path-extension (module-context-path tool)) ".ssi")
+        (with-publication-source
+          (lambda (_root _module-root _source view)
+            (def graph (.get view build-graph))
+            (with-change "module-system/source/declaration.ss"
+              (lambda (text) (string-append text "\n;; unrelated installed-tool checkout edit\n"))
+              (lambda ()
+                ((.get graph admit-current))
+                (check-equal? (.get graph selected-graph module-order) '(custom/example)))))))
+      (test-case "captured installed artifact path remains part of runtime identity"
+        (def tool (core-import-module ':yuanxu/module-system/source/declaration))
+        (def path (module-context-path tool))
+        (def reader (module-publication-reader))
+        (dynamic-wind
+          (lambda () (slot-set! tool 'path (string-append path ".changed")))
+          (lambda ()
+            (check-equal? (rejects? "compiler tool context changed"
+                            (lambda () ((.get reader admit-current)))) #t))
+          (lambda () (slot-set! tool 'path path))))
+      (test-case "observer return cannot change installed tool identity"
+        (def tool (core-import-module ':yuanxu/module-system/source/declaration))
+        (def path (module-context-path tool))
+        (def reader (module-publication-reader))
+        (dynamic-wind
+          void
+          (lambda ()
+            (parameterize ((current-module-source-observer
+                (lambda (event _amount)
+                  (when (and (pair? event) (eq? (car event) 'publication-guard-end))
+                    (slot-set! tool 'path (string-append path ".changed"))
+                    (current-module-source-observer #f)))))
+              (check-equal? (rejects? "compiler tool context changed"
+                              (lambda () ((.get reader admit-current)))) #t)))
+          (lambda () (slot-set! tool 'path path))))
       (test-case "exact tool bytes remain guarded after Graph construction"
         (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                (graph (.get view build-graph)))
-          (check-equal? (.get graph selected-graph module-order) '(json-schema))
+          (check-equal? (and (member 'json-schema (.get graph selected-graph module-order)) #t) #t)
           (with-change "module-system/source/declaration.ss"
             (lambda (text) (string-append text "\n;; changed tool source\n"))
             (lambda ()
               (check-equal? (rejects? "tool source changed|stale|refused"
                               (lambda () ((.get graph admit-current)))) #t)))))
+      (test-case "bound owner paths skip rediscovery while source bytes remain fresh"
+        (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph)
+        (defvalues (graph counts)
+          (call-with-module-source-operation-measurement
+            (lambda () (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph))
+            accounting?: #f))
+        (check-equal? (or (hash-get counts '(calls reader-owned-source-resolution)) 0) 0)
+        (check-equal? (> (or (hash-get counts '(calls reader-bound-source-reuse)) 0) 0) #t)
+        (def reads 0)
+        (for-each (lambda (row)
+                    (when (and (pair? (car row)) (eq? (caar row) 'physical-reads))
+                      (set! reads (+ reads (cdr row))))) (hash->list counts))
+        (check-equal? (> reads 0) #t)
+        ((.get graph admit-current)))
+      (test-case "removed owned tool remains a required input in a fresh Graph"
+        (def graph (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph))
+        (def file (path-expand "module-system/source/declaration.ss" root))
+        (def backup (string-append file ".saved"))
+        (dynamic-wind
+          (lambda () (rename-file file backup))
+          (lambda ()
+            (check-exception ((.get graph admit-current)) (lambda (_failure) #t))
+            (check-exception (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph)
+                             (lambda (_failure) #t)))
+          (lambda () (rename-file backup file))))
       (test-case "foreign same-identity declaration is rejected before evaluation"
         (call-with-temporary-directory "foreign-tool-context"
           (lambda (foreign)

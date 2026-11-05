@@ -1,0 +1,197 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Mix structure and dependency topology
+#+language: en
+
+[[file:../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Mix identity scope and Profile projection
+
+A Mix is an independent higher-order POO composition boundary.  Its internal
+=identity=, =imports=, and =capabilities= slots MUST NOT be flattened into the
+ordinary slot namespace of the final Profile root, where unrelated Mix
+identities would overwrite one another.
+
+#+begin_export mermaid
+flowchart TD
+    A["Final Profile prototype"] --> B["Ordinary Profile lineage"]
+    A --> C["Internal Mix-space POO prototype"]
+    C --> D["Mix identity A"]
+    C --> E["Mix identity B"]
+    D --> F["A imports and capabilities"]
+    E --> G["B imports and capabilities"]
+#+end_export
+
+=Mix space= is a conceptual name for this internal POO composition boundary.
+It is not public grammar, a raw map, a registry, or a second object system.
+Its implementation consists only of =gerbil-poo= objects and public prototype
+operations.
+
+** Mix operand projection
+
+The public composition remains:
+
+#+begin_src scheme
+(use-composition my-system
+  (use-module local-profiles as local
+    (profile wendao-episteme)
+    (profile another-mix)
+    (profile production))
+  (compose
+    (profiles local wendao-episteme another-mix production)))
+#+end_src
+
+The Agentic AI Lab role combinator distinguishes an ordinary Profile contribution
+from a higher-order Mix contribution without adding a Profile runtime tag.
+Ordinary contributions join the Profile lineage.  A Mix contribution enters
+the internal Mix space under its identity boundary.
+
+#+begin_export mermaid
+flowchart LR
+    A["Profile operand"] --> B{"Exposes Mix structure?"}
+    B -->|no| C["Ordinary Profile lineage contribution"]
+    B -->|yes| D["Contribute Mix root by identity"]
+    D --> E["Internal Mix-space prototype"]
+    C --> F["Final Profile prototype"]
+    E --> F
+#+end_export
+
+Within one Mix space, different identities establish sibling Mix roots.
+Contributions with the same identity refine one another only when they share
+the same lineage root.  Independent roots that claim the same identity raise
+an identity-collision condition.  A Profile refinement cannot change an
+existing Mix root identity.
+
+** Imports boundary
+
+A Mix =imports= slot denotes lazy POO dependencies in the Mix semantic model.
+It is not a Gerbil module =import=, a =gerbil.pkg= dependency, or a Bazel or Nix
+build dependency.  Shape validation MUST NOT force it.  Demand, recursion,
+cycle behavior, and fixed-point evaluation remain =gerbil-poo= semantics.
+
+** Capability space
+
+The =capabilities= slot is itself an internal POO prototype space.  Each
+capability is a POO prototype whose identity establishes its refinement
+boundary.  Different capability identities form sibling roots; contributions
+to the same identity use the normal =gerbil-poo= lineage when they share a
+root.  Capability removal or narrowing requires an explicit refinement rather
+than an absent key or =#f= overwrite.
+
+The same scoped structure may recur inside a Mix Submodule, allowing arbitrary
+to-B and to-C nesting without introducing another module language.
+
+* Recursive scoped identity and dependency topology
+
+A Mix identity is unique only among sibling roots in its enclosing Mix space.
+It is not a global system name.  The same local identity may legally occur
+under different parent Mix roots.
+
+#+begin_export mermaid
+flowchart TD
+    A["Root Profile"] --> B["Root Mix space"]
+    B --> C["wendao-episteme"]
+    B --> D["production-services"]
+    C --> E["observability"]
+    C --> F["research"]
+    D --> G["observability"]
+#+end_export
+
+The two =observability= roots above do not collide because their enclosing Mix
+spaces differ.  Their readable structural addresses are derived from POO
+containment lineage; they are not global string registry keys.
+
+** Recursive local flatness
+
+Each POO composition boundary owns one flat, ordered refinement lineage.  A
+recursive Submodule hierarchy is therefore a hierarchy of locally flat
+lineages, not one global flattened list and not a runtime tree of nested
+=compose= calls.
+
+The root Profile, its Mix space, every Mix root, and every nested Capability or
+Submodule boundary each normalize their own contributions once.  Composition
+does not cross or erase these identity scopes.
+
+** Containment and import edges
+
+#+begin_export mermaid
+flowchart LR
+    A["wendao-episteme"] -->|"contains"| B["research"]
+    A -->|"contains"| C["observability"]
+    B -. "lazy import" .-> C
+    C -. "lazy import" .-> D["shared telemetry capability"]
+#+end_export
+
+Containment establishes ownership and identity scope.  A Mix =imports= edge
+establishes a lazy demand dependency and does not change the imported object's
+parent.  Import cycles use =gerbil-poo= recursive-object, fixed-point, and cycle
+semantics.
+
+An internal import should hold a lexically resolved POO prototype reference or
+a structural reference carrying the parent-scope identity.  It MUST NOT depend
+on a mutable global registry or a global string path.  Human-readable paths in
+conditions and receipts are observation projections derived from containment
+lineage rather than the source of object identity.
+
+** Cross-boundary case refinements
+
+A statically declared Profile case may contribute a refinement to a nested
+boundary.  The declaration descriptor records the target structural boundary
+and hygienically contributes the nested prototype while the public form
+remains:
+
+#+begin_src scheme
+(wendao-episteme +observability)
+#+end_src
+
+The author does not write a public path-refinement DSL.  A dynamic operand that
+needs the same behavior returns an already constructed nested POO prototype.
+
+** Scoped collision condition
+
+An identity collision requires all three facts:
+
+#+begin_example
+same enclosing Mix space
+  + same local identity
+  + distinct lineage roots
+#+end_example
+
+Equal local identities under different parents are valid siblings in different
+scopes.  Contributions sharing the same root form an ordinary refinement
+lineage.
+
+* Higher-order Mix module
+
+#+begin_src text
+MixModuleObject
+  identity
+  imports
+  capabilities
+#+end_src
+
+All three are POO slots:
+
+- =identity= is immutable semantic module identity.
+- =imports= is a POO object of lazy capability computations.
+- =capabilities= is a POO object of composable values.
+
+The local alias is presentation identity only.  It does not enter module
+identity, G0 canonical values, package identity, or receipts.
+
+Profiles remain separate POO composition objects.  There is no required fourth
+=profiles= semantic slot on =MixModuleObject=.
+
+The slots have distinct extension rules:
+
+| Slot | Rule |
+|-
+| =identity= | established by the module object and preserved unchanged by Profile composition |
+| =imports= | POO object that Profiles may extend with lazy module-capability demands |
+| =capabilities= | POO object that Profiles may extend/override through normal self/super composition |
+
+A Profile cannot change module identity by overriding a slot.  The expansion
+validates that final identity equals the base module identity before publishing
+the object.

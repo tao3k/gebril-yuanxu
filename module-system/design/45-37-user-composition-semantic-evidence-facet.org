@@ -6,6 +6,16 @@
 #+status: Accepted
 #+language: en
 
+* Current implementation boundary
+
+The composition-binding macro described below is a historical design.
+Current code uses native =def= and =.new Scenario= from
+=:yuanxu/modules/funflow/scenario=. Its Record Contract and private plan
+projection share one owner. No compatibility macro or Workflow facade
+is published. The module-authoring and evidence arguments below retain
+their stated premises; they do not establish the removed syntax as an API.
+See [[file:../../dev/sysml/20-module-loading/20.30-test-discovery-and-domain-demand.org][the current ownership and assurance boundary]].
+
 * Decision
 
 The POO object produced for a =user-composition= has two conceptually parallel
@@ -14,7 +24,7 @@ facets:
 - the ordinary business POO graph;
 - a hygienically isolated semantic evidence POO graph.
 
-The evidence facet is accessed through native =gerbil-poo= reflection and an
+The evidence facet is accessed through runtime =gerbil-poo= reflection and an
 imported hygienic slot binding.  It is not a string-key registry, command DSL,
 provider interface or nested composition layer.
 
@@ -48,7 +58,7 @@ needed to justify composition, reuse, convergence or recovery.
 
 * Hygienic evidence access
 
-Conceptually, the evidence root is obtained through native slot access:
+Conceptually, the evidence root is obtained through runtime slot access:
 
 #+begin_src scheme
 (.@ my-system composition-evidence)
@@ -57,7 +67,7 @@ Conceptually, the evidence root is obtained through native slot access:
 =composition-evidence= denotes an imported hygienic binding established by the
 module interface and macro expansion.  It is not a raw string or runtime token.
 
-The final implementation MAY use the appropriate native lexical-slot or
+The final implementation MAY use the appropriate runtime lexical-slot or
 binding mechanism supplied by =gerbil-poo=.  It MUST preserve these
 properties:
 
@@ -66,15 +76,15 @@ properties:
 - no string-path dispatch;
 - no hidden global evidence registry;
 - no alternative object or record model;
-- expansion to ordinary native POO access.
+- expansion to ordinary POO access.
 
 #+begin_src mermaid
 flowchart LR
-  U["user-composition result"] -->|"ordinary native slot demand"| V["Business POO graph"]
+  U["user-composition result"] -->|"ordinary runtime slot demand"| V["Business POO graph"]
   U -->|"explicit hygienic binding access"| E["Semantic evidence facet"]
   E -->|"mirrors demanded object and submodule identities"| G["Evidence POO graph"]
-  G -->|"native slot access selects one demand receipt"| X["Invalidation explanation"]
-  X -->|"native reflection exposes causes and affected demands"| C["Causal evidence closure"]
+  G -->|"runtime slot access selects one demand receipt"| X["Invalidation explanation"]
+  X -->|"runtime reflection exposes causes and affected demands"| C["Causal evidence closure"]
 #+end_src
 
 * Parallel object graphs
@@ -106,9 +116,9 @@ Submodule evidence follows submodule identity recursively.  Any to-B, to-C or
 deeper composition retains its own generation, capability, authority,
 dependency and receipt evidence within the mirrored graph.
 
-* Native reflection only
+* Runtime reflection only
 
-Conceptually, a user may traverse the evidence graph with ordinary native POO
+Conceptually, a user may traverse the evidence graph with ordinary POO
 access:
 
 #+begin_src scheme
@@ -127,8 +137,8 @@ access:
 The identifiers shown here represent hygienically bound semantic slots.  The
 interface MUST NOT lower them to quoted string paths or raw symbol dispatch.
 
-Native =.has?=, =.key?=, =.all-slots= or other =gerbil-poo= reflection may be
-used on evidence objects according to their native semantics.  No
+Runtime =.has?=, =.key?=, =.all-slots= or other =gerbil-poo= reflection may be
+used on evidence objects according to their runtime semantics.  No
 =explain-cache-miss= command family is required.
 
 * Observation must not create business demand
@@ -305,10 +315,10 @@ Evidence access MUST fail closed or produce an authorized condition when:
 - [X] =user-composition= syntax remains unchanged.
 - [X] Correctness evidence is always produced and is not an optional debug
   Profile.
-- [X] The evidence facet uses a hygienically isolated native POO binding.
+- [X] The evidence facet uses a hygienically isolated POO binding.
 - [X] Business and evidence graphs remain conceptually parallel.
 - [X] Submodule evidence recursively follows submodule identity.
-- [X] Evidence traversal uses native =gerbil-poo= reflection.
+- [X] Evidence traversal uses runtime =gerbil-poo= reflection.
 - [X] Evidence lookup never forces an unobserved business slot.
 - [X] System objects and evidence facets are immutable and generation-specific.
 - [X] Live recovery authority remains in the condition-handler boundary.
@@ -326,7 +336,7 @@ Evidence access MUST fail closed or produce an authorized condition when:
 - [[file:45-17-profile-expansion-reflection-and-identity.org][Profile Expansion, Reflection and Identity]]
 - [[file:45-18-higher-order-profile-fixed-point-and-submodule-visibility.org][Higher-Order Profile Fixed Point and Submodule Visibility]]
 - [[file:45-24-fixed-point-observability-and-recoverable-debugging.org][Fixed-Point Observability and Recoverable Debugging]]
-- [[file:45-26-native-gerbil-poo-operation-surface.org][Native gerbil-poo Operation Surface]]
+- [[file:45-26-runtime-gerbil-poo-operation-surface.org][Runtime gerbil-poo Operation Surface]]
 - [[file:45-31-incremental-poo-fixed-point-invalidation-and-reuse.org][Incremental POO Fixed-Point Invalidation and Reuse]]
 - [[file:45-34-pure-poo-cache-materialization-and-live-object-boundary.org][Pure POO Cache Materialization and Live Object Boundary]]
 - [[file:45-36-poo-definition-invalidation-explanation-and-causal-diff.org][POO Definition Invalidation Explanation and Causal Diff]]

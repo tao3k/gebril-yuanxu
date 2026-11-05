@@ -8,7 +8,7 @@
 * Shared mechanism and product adapter
 
 The Feature System implementation is owned by Core, not the product's former
-src/feature-system. Public declarations remain native POO objects and the existing
+src/feature-system. Public declarations remain POO objects and the existing
 bounded defrules forms. No compatibility modules or parallel implementation remain.
 
 | Owner | Contents |
@@ -23,8 +23,8 @@ The adapter reference identifies a downstream integration, not a Core import.
 Core never imports its Plan types or Scenario syntax. Wire IDs, Bundle layout,
 source-lock IDs and feature resolution precedence are unchanged.
 
-The extracted [[file:../../composition/roles.ss][native role algorithms]] retain the existing constant-slot fast lane
-and native .mix fallback semantics. Computed/self/super slots are not silently
+The extracted [[file:../../composition/roles.ss][runtime role algorithms]] retain the existing constant-slot fast lane
+and runtime .mix fallback semantics. Computed/self/super slots are not silently
 flattened into constants. Product flow/task/runtime roles remain product objects.
 [[file:../../utilities/functional.ss][Pure functions]] and [[file:../../object-family/role-syntax.ss][existing role-object syntax]] have a single shared owner.
 The public function names are retained as definitions at that owner, not aliases
@@ -59,13 +59,13 @@ module initialization. The existing load-modules collection API is unchanged.
 
 The Core-only source environment contains Core and the immutable gerbil-poo
 099b381 dependency, with no Agentic AI Lab namespace. All 17 relocated Feature/DomainCase/
-functional/overlay suites pass there. A separate fresh native build of the full
+functional/overlay suites pass there. A separate fresh runtime build of the full
 Core build graph also completes. Installed product .ssi files were not used as
-an import fallback; incompatible older native artifacts were excluded.
+an import fallback; incompatible older runtime artifacts were excluded.
 
 Product Plan/Scenario and Funflow tests are separate consumer controls. The
 existing gxtest entry could not load interpreted test modules on this installed
-runtime, so the local source controls use native std/test/base test-suite! and
+runtime, so the local source controls use runtime std/test/base test-suite! and
 fail the process on any failed TestResult. This is test execution through the
 existing test library, not a production harness or a new configuration DSL.
 

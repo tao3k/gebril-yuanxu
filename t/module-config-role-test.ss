@@ -30,31 +30,31 @@
             (eval-syntax `(import ,wrapper))
             (test source prepared)))))))
 (def module-config-role-test
-  (test-suite "Native config role defaults"
-    (yuanxu-test-case "bare Config gets native POO and only its conventional export"
+  (test-suite "Runtime config role defaults"
+    (yuanxu-test-case "bare Config gets POO and only its conventional export"
       (with-config
         "(def Private 41) (.def Base answer: Private) (.def (Config @ Base) answer: => 1+)"
         (lambda (_source _prepared)
-          (assert 'native-poo-refinement (= (.get (eval-syntax 'Config) answer) 42))
+          (assert 'poo-refinement (= (.get (eval-syntax 'Config) answer) 42))
           (assert 'private-binding-not-exported
             (with-catch (lambda (_e) #t) (lambda () (eval-syntax 'Private) #f)))
           (assert 'private-prototype-not-exported
             (with-catch (lambda (_e) #t) (lambda () (eval-syntax 'Base) #f))))))
-    (yuanxu-test-case "native explicit headers remain valid without exporting all names"
+    (yuanxu-test-case "runtime explicit headers remain valid without exporting all names"
       (with-config
         "prelude: :gerbil/core\n(import :clan/poo/object) (def Private 7) (def Config (.o answer: Private)) (export Config)"
         (lambda (_source _prepared)
-          (assert 'explicit-native-header (= (.get (eval-syntax 'Config) answer) 7)))))
-    (yuanxu-test-case "explicit POO extension imports retain their native binding"
+          (assert 'explicit-runtime-header (= (.get (eval-syntax 'Config) answer) 7)))))
+    (yuanxu-test-case "explicit POO extension imports retain their runtime binding"
       (with-config
         "(import (only-in :yuanxu/object-syntax/path-slots .o)) (def Config (.o answer: 9))"
         (lambda (_source _prepared)
           (assert 'explicit-object-syntax (= (.get (eval-syntax 'Config) answer) 9)))))
-    (yuanxu-test-case "native inclusion retains the original config source location"
+    (yuanxu-test-case "runtime inclusion retains the original config source location"
       (with-config
         "(import (only-in :std/source this-source-file)) (def Config (.o origin: (this-source-file)))"
         (lambda (source _prepared)
-          (assert 'native-source-location
+          (assert 'runtime-source-location
             (equal? (path-normalize (.get (eval-syntax 'Config) origin)) (path-normalize source))))))
     (yuanxu-test-case "unrelated config bindings do not acquire an unbound Config export"
       (with-config "(def Greeting \"hello\") (export Greeting)"

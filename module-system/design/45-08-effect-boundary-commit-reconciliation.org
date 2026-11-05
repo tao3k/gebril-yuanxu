@@ -26,7 +26,7 @@ continuation-aware control.
 
 Agentic AI Lab owns:
 
-- the POO-native effect-provider capability contract;
+- the POO effect-provider capability contract;
 - the permitted evidence-state transitions;
 - recovery and retry policy;
 - commit, cancellation, and reconciliation receipts;
@@ -34,7 +34,7 @@ Agentic AI Lab owns:
 
 The runtime or Marlin handoff performs the external operation.  Agentic AI Lab
 governs the evidence and control boundary around that operation; it does not
-replace the external system's native transaction, verification, or
+replace the external system's runtime transaction, verification, or
 reconciliation mechanism.
 
 * Concrete runtime correspondence evidence state
@@ -169,7 +169,7 @@ The internal projection operation MUST:
   reconstructed from serialized receipt fields;
 - bind receipt identity, operation, prior attempt, fresh next attempt, boundary
   root, and generation;
-- return a POO-native =RetryCapability= object;
+- return a POO =RetryCapability= object;
 - reject caller-supplied scalar policy evidence, caller-fabricated tokens, raw
   alists, and public mutation through =.put!=.
 
@@ -221,7 +221,7 @@ The exact Scheme constructor, runtime primitive, durable consumption evidence,
 and installed-artifact correspondence are unqualified until their real owners
 are located and tested.
 
-* POO-native effect-provider capability
+* POO effect-provider capability
 
 An effect provider is a POO capability object.  Its semantic responsibilities
 include:

@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; JSON is data, never evaluated identifiers or procedures.
-(import :clan/poo/object
+(import (runtime: :clan/poo/object)
         (only-in :std/encoding/json JSONReadOptions current-json-read-options read-json)
         (only-in :std/list/walist PureAList? walist->list)
         (only-in :yuanxu/configuration/slot-origin field-slot-origins/value)
@@ -9,11 +9,11 @@
 (export config-json-file config-defaults config-field-origin current-configuration-input-observer)
 ;; A reader-local capability; ordinary callers do not maintain asset lists.
 (def current-configuration-input-observer (make-parameter #f))
-(def (native-data value)
+(def (runtime-data value)
   (cond ((PureAList? value)
-         (object<-alist (map (lambda (row) (cons (car row) (native-data (cdr row)))) (walist->list value))))
-        ((vector? value) (map native-data (vector->list value)))
-        ((list? value) (map native-data value))
+         (object<-alist (map (lambda (row) (cons (car row) (runtime-data (cdr row)))) (walist->list value))))
+        ((vector? value) (map runtime-data (vector->list value)))
+        ((list? value) (map runtime-data value))
         ((or (void? value) (memq value '(null json-null))) 'json-null)
         (else value)))
 (def (config-json-file path)
@@ -23,7 +23,7 @@
     (call-with-input-string text
       (lambda (port)
         (parameterize ((current-json-read-options (JSONReadOptions key-as-symbol: #t)))
-          (def result (native-data (read-json port)))
+          (def result (runtime-data (read-json port)))
           (let loop ((char (read-char port)))
             (unless (eof-object? char)
               (unless (char-whitespace? char) (error "trailing JSON data" source-path))
@@ -64,7 +64,7 @@
      (else
       (.o source: (.get document source) path: field-path presence: 'missing kind: 'default)))))
 
-;; The same field diagnostic keeps its JSON baseline and native derivation chain.
+;; The same field diagnostic keeps its JSON baseline and runtime derivation chain.
 (def (config-field-origin document field-path actual-value (effective #f))
   (def baseline (json-field-origin document field-path actual-value))
   (def origins (if effective (field-slot-origins/value effective field-path) '()))

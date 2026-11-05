@@ -1,0 +1,174 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Lean proof closure for public syntax
+#+language: en
+
+[[file:../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Lean proof closure for the public syntax boundary
+
+** Requirement
+
+The conceptual domain may be called /User Composition/, but the only public
+macro head is =use-composition=.  A successful expansion MUST prove all of the
+following properties together:
+
+- the outer form is exactly one =use-composition= form;
+- the module header is exactly =use-module MODULE as ALIAS=;
+- every body clause is either =compose= or =stage=, and stage identifiers are
+  unique;
+- the admitted plan contains at least one profile operand; an empty body or a
+  stage-only body fails with =composition-missing-profile-operand=;
+- the generated alias is a hygienic lexical identifier and cannot capture an
+  outer binding with the same spelling;
+- the alias is presentation identity only and does not enter module semantic
+  identity, profile identity, or the resulting POO lineage.
+
+No theorem about the final list of composed profiles is sufficient by itself.
+Such a theorem cannot distinguish the canonical macro from a second
+=user-composition= wrapper, a name-only alias resolver, or another rejected
+surface that happens to produce the same profile list.
+
+** Observation and counterexamples
+
+The earlier generic composition proofs establish fixed-point and effect
+closure after a composition object already exists.  They do not own parser
+admission or hygienic binding.  Two minimal counterexamples therefore remain
+possible under that weaker model:
+
+1. a noncanonical =user-composition= form and the canonical
+   =use-composition= form have the same generic module/profile projection;
+2. an outer identifier and a generated alias have the same spelling, so a
+   string-only resolver reports a match even though their lexical scopes are
+   distinct;
+3. the former parser accepted an empty body or a stage-only body even though
+   the RFC requires at least one profile operand.
+
+The dedicated Lean owner
+=AgenticAILabProof.Enterprise.UseCompositionSyntaxClosure= constructs both
+counterexamples.  It then models the fail-closed parser and proves that parser
+acceptance implies a single canonical =use-composition= outer form.
+
+** Mathematical contract
+
+#+begin_src typst :file ../../../.data/45-07-use-composition-syntax-closure.svg
+$ "Accepted"(s) := exists p: "parse"(s) = "ok"(p) $
+
+$ "Accepted"(s) => exists n, m, b:
+    s = "use-composition"(n, m, b) $
+
+$ "Accepted"(s) => "profile-operands"("parse"(s)) != () $
+
+$ "spelling"(x) = "spelling"(y) and "scope"(x) != "scope"(y)
+    => x != y $
+
+$ "semantic-projection"("rename-alias"(p, a))
+    = "semantic-projection"(p) $
+
+$ "generic-projection"("legacy-surface")
+    = "generic-projection"("canonical-surface")
+    not=> "Accepted"("legacy-surface") $
+#+end_src
+
+The last formula is the RFC defect detector: equality after generic profile
+projection does not establish public syntax admission.
+
+** Parser, hygiene, and semantic projection
+
+#+begin_export mermaid
+flowchart LR
+    A["Raw composition surface"] --> B{"Canonical parser"}
+    B -->|"accepted: single use-composition"| C["Canonical composition plan"]
+    B -->|"rejected: alternate outer form"| D["nonCanonicalOuterForm"]
+    B -->|"rejected: malformed module header"| E["invalidModuleHeader"]
+    B -->|"rejected: unsupported body"| F["invalidBodyClause"]
+    B -->|"rejected: duplicate stage"| G["duplicateStage"]
+    B -->|"rejected: no profile operand"| N["missingProfileOperand"]
+    C --> H{"Hygienic alias resolution"}
+    H -->|"same spelling, fresh scope"| I["No capture"]
+    H -->|"exact lexical identity"| J["Bound module alias"]
+    C --> K["Semantic projection"]
+    K -->|"alias erased"| L["Module identity + profiles + stages"]
+    M["Generic profile-only projection"] -->|"counterexample: insufficient"| D
+#+end_export
+
+** Decision
+
+- =use-composition= is the canonical public macro; no second public
+  =user-composition= macro is introduced.
+- Parser admission, hygienic alias binding, and alias-erased semantic
+  projection form one proof boundary.
+- Parser admission requires at least one profile operand across the entire
+  body; the presence of a =stage= clause cannot satisfy this obligation.
+- Generic fixed-point and effect closure consume the admitted semantic
+  projection; they do not retroactively prove syntax validity.
+- The dedicated proof module is imported by the Enterprise aggregate so a
+  future parser/RFC drift fails the formal build.
+
+** Verification receipt
+
+- [X] Concrete Gerbil owner:
+  =src/module-system/profile-composition/use-syntax.ss=.
+- [X] Parser owner:
+  =src/module-system/profile-composition/declaration-syntax.ss=.
+- [X] Focused Scheme owner: =t/profile-composition-test.ss= and the
+  composition syntax smoke scenario.
+- [X] Lean counterexample: generic composition equality does not imply parser
+  admission.
+- [X] Lean theorem: parser acceptance implies one canonical
+  =use-composition= outer form.
+- [X] Lean theorem: every accepted plan contains at least one profile operand.
+- [X] Lean theorem: fresh lexical scope prevents same-spelling alias capture.
+- [X] Lean theorem: alias renaming preserves semantic projection.
+- [X] Focused and aggregate Lean commands recorded after the proof module is
+  compiled in the current worktree.
+
+*** Parser defect and implementation repair
+
+The proof audit found that the original parser returned a plan when its body
+was empty and when its body contained stages but no =compose profiles=
+operand.  This contradicted the already normative non-empty profile
+requirement.  The parser owner now checks its accumulated composed profile
+references before constructing =composition-declaration= and raises
+=composition-missing-profile-operand= when that set is empty.  Focused Scheme
+tests contain separate empty-body and stage-only counterexamples so the two
+invalid forms cannot regress independently.
+
+*** Lean and AXLE receipt
+
+All paths below are repository-relative.  The receipt records content
+identities and logical module/declaration identities; it does not record host
+installation paths or temporary output bases.
+
+- Focused Lean:
+  =cd packages/proofs/lean && direnv exec . lake env lean AgenticAILabProof/Enterprise/UseCompositionSyntaxClosure.lean=
+  returned exit =0= with zero diagnostics.
+- Enterprise aggregate:
+  =cd packages/proofs/lean && direnv exec . lake build AgenticAILabProof.Enterprise=
+  returned exit =0= for =483= jobs.
+- Full Lean aggregate:
+  =cd packages/proofs/lean && direnv exec . lake build= returned exit =0= for
+  =555= jobs.  Its only warning is the pre-existing =unnecessarySimpa= warning
+  owned by =AgentRedTeamProofRegressionClosure.lean=.
+- Focused Scheme owner (historical execution): the predecessor owner-map
+  target returned exit =0= with =2= suites, =15= cases, and =63= checks.  The
+  maintained successor is
+  =//t/qualification/module-system:owner_map_tests=; it must be executed anew
+  for current acceptance.
+- AXLE closure mode:
+  =cd packages/proofs/python && uv run --extra axle agentic-ai-lab-axle-verify=
+  with the repository-relative Lean root, module
+  =AgenticAILabProof.Enterprise.UseCompositionSyntaxClosure=, and the five root
+  declarations named above returned exit =0= and =status: accepted=.
+- AXLE declaration closure: =72= declarations; source declarations =35=;
+  environment declarations =35=; failed declarations =0=.
+- AXLE closure digest:
+  =sha256:dc9097476be758b277f17d9bdad96c22dd6fd4f936e917fee8d48d35395e84bf=.
+- AXLE exact bundle digest:
+  =sha256:d1cb7d43d0b077676002362cb11e7e1f445fd0f53fa7b580f0c800ab33ffb7f4=.
+- AXLE canonical source digest:
+  =sha256:1519df472622046aaebd8171f636166940be5861772f54310c2b564dc23761d1=.
+- Orgize Org/Typst/Mermaid lint returned exit =0=.
+

@@ -8,7 +8,7 @@
 
 This module owns the common Agentic AI Lab semantics for:
 
-- an in-process POO-native receipt object;
+- an in-process POO receipt object;
 - canonical causal projection across runtime boundaries;
 - stable causal receipt identity;
 - external provider outcome identity and verifier evidence;
@@ -62,7 +62,7 @@ flowchart LR
   D -.->|"no global active closure or retention mandate"| G["State: external storage policy"]
 #+end_src
 
-* POO-native receipt object
+* POO receipt object
 
 Inside Gerbil, a receipt is an ordinary POO object.  Receipt families use POO
 prototype identity, composition, and refinement.  The ordinary Scheme

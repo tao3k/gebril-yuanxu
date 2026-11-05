@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Bounded native POO path-slot declarations
+#+title: Bounded POO path-slot declarations
 
 * Entry and boundary
 
@@ -24,7 +24,7 @@ interpreter, Loader hook or global syntax replacement.
   module.test: =>.+ {command: '("gerbil" "test" "release")})
 #+end_src
 
-The child lowers to one native refinement of module:
+The child lowers to one runtime refinement of module:
 
 #+begin_src scheme
 (.def (Child @ Parent)
@@ -35,16 +35,16 @@ The child lowers to one native refinement of module:
 
 * Expansion law
 
-Paths admit a direct leaf assignment or an explicit native ==>.+= refinement.
+Paths admit a direct leaf assignment or an explicit runtime ==>.+= refinement.
 Direct assignment replaces the complete leaf value, including an object-valued
 leaf; it does not implicitly merge that leaf. Every intermediate path segment
-still lowers to native ==>.+=, retaining the inherited intermediate object.
+still lowers to runtime ==>.+=, retaining the inherited intermediate object.
 An ordered expansion-time trie
-merges shared prefixes, including interleaved roots, and emits one native slot
+merges shared prefixes, including interleaved roots, and emits one runtime slot
 method per prefix. Work is linear in declarations plus path segments and emitted
-syntax, excluding the native expander's own work. No source or payload is
-executed during lowering. Native payload expressions retain their syntax and
-lexical scope; generated ancestor objects use the native object constructor.
+syntax, excluding the runtime expander's own work. No source or payload is
+executed during lowering. Runtime payload expressions retain their syntax and
+lexical scope; generated ancestor objects use the runtime object constructor.
 
 #+begin_src scheme
 (.def (Observed @ tests)
@@ -59,17 +59,17 @@ lexical scope; generated ancestor objects use the native object constructor.
 #+end_src
 
 Explicit =.o= and brace refinement bodies support relative paths. Arbitrary
-expressions and quoted data are opaque to the lowering. Native headers, defaults,
-shared slots and ordinary methods retain native normalization; object/brace
-match patterns delegate to the native matcher. This adapter reserves dotted
+expressions and quoted data are opaque to the lowering. Runtime headers, defaults,
+shared slots and ordinary methods retain runtime normalization; object/brace
+match patterns delegate to the runtime matcher. This adapter reserves dotted
 slot names for paths; use the primitive binding to author a literal dotted slot.
 Leading-dot method names such as =.run=, =.acquire= and =.release= remain ordinary
-slots in this entry, so native fixture and execution objects need no aliases.
+slots in this entry, so runtime fixture and execution objects need no aliases.
 
 Duplicate paths, empty segments, unsupported path operators and ancestor/descendant
 overlaps in one body fail during expansion. Express an intentional ancestor
 refinement and its relative descendant inside that ancestor's object body.
-Missing/non-object intermediates fail on native demand; they are not created.
+Missing/non-object intermediates fail on runtime demand; they are not created.
 
 * Receiver and lazy cache evidence
 
@@ -79,10 +79,10 @@ inherited intermediate fields, lazy payloads and whole-object leaf replacement,
 as well as simultaneous build/test/package/Pipeline
 refinement after the parent Pipeline/list are cached, exact child Check identities,
 parent cache and sibling isolation, warm-cache identity, a fixed-parent-list stale
-negative control, native-expansion parity, aliases/payload hygiene, relative paths,
-interleaved prefixes, native syntax/matching, lazy payload demand and diagnostics.
+negative control, runtime-expansion parity, aliases/payload hygiene, relative paths,
+interleaved prefixes, runtime syntax/matching, lazy payload demand and diagnostics.
 
-The Pipeline relationship remains a native lexical slot expression:
+The Pipeline relationship remains a runtime lexical slot expression:
 
 #+begin_src scheme
 pipeline: (.o checks: (list build test package))
@@ -90,17 +90,17 @@ pipeline: (.o checks: (list build test package))
 
 No checks synchronization is added. Reading one target does not evaluate a
 sibling payload. These source-runtime controls do not establish Loader demand
-granularity, native AOT qualification or first-access latency guarantees.
+granularity, runtime AOT qualification or first-access latency guarantees.
 
 * Field diagnostic provenance
 
 Authoring constructors now retain the original slot token's one-based line and
-column on a private native computed-slot specification subtype. Native .+
+column on a private runtime computed-slot specification subtype. Runtime .+
 copies retain the right-hand specification's locator. No public metadata slots
 or parallel field registry are added. Diagnostic lookup follows only the
-requested object path and checked native precedence; unknown raw-native writes
+requested object path and checked runtime precedence; unknown raw-runtime writes
 are not attributed to an older inherited declaration. Default-only clauses
-remain native defaults and do not relabel a paired method.
+remain runtime defaults and do not relabel a paired method.
 
 See [[file:../docs/10-19-design/10-configuration/10.17-scheme-field-origins.org][10.17]] and =t/slot-origin-test.ss= for JSON baseline retention,
 source-currentness checks, payload laziness, relocated Scenario validation and

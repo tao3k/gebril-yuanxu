@@ -15,8 +15,8 @@
   (yuanxu-module-field-contract identity type merge default metadata))
 
 (def module-schema-validation-test
-  (test-suite "native POO module schema validation"
-    (yuanxu-test-case "uses native Type and C4 without an ASP harness"
+  (test-suite "POO module schema validation"
+    (yuanxu-test-case "uses Type and C4 without an ASP harness"
       (let* ((parent
               (yuanxu-module-object
                'schema.parent '()
@@ -49,7 +49,7 @@
         (check-equal? (.ref summary 'object-count) 2)
         (check-equal? (.ref summary 'invalid-count) 0)))
 
-    (yuanxu-test-case "rejects invalid merge, metadata, and native default"
+    (yuanxu-test-case "rejects invalid merge, metadata, and runtime default"
       (let* ((bad
               (yuanxu-module-object
                'schema.invalid '()
@@ -65,9 +65,9 @@
         (check-equal? (map (lambda (diagnostic) (.ref diagnostic 'code))
                            (.ref field-validation 'diagnostics))
                       '(unsupported-merge metadata-not-association-list
-                        default-not-in-native-type))))
+                        default-not-in-poo-type))))
 
-    (yuanxu-test-case "rejects merge operations incompatible with native types"
+    (yuanxu-test-case "rejects merge operations incompatible with runtime types"
       (let* ((bad
               (yuanxu-module-object
                'schema.bad-merge '()

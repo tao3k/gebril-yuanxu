@@ -54,7 +54,7 @@
          (cons (test-feature feature-id requires) features))))))
 
 (def feature-system-test
-  (test-suite "POO-native Feature system"
+  (test-suite "POO Feature system"
     (yuanxu-test-case "descriptor is an immutable module-owned POO value"
       (let ((descriptor (test-feature 'memory-core)))
         (check (.ref descriptor 'kind) => 'feature-descriptor)

@@ -22,10 +22,10 @@
         +feature-bundle-v1-component-kind+
         +feature-bundle-v1-edge-kind+
         +feature-bundle-v1-evidence-kind+
-        +feature-bundle-v1-native-component-kind+
-        +feature-bundle-v1-native-symbol-kind+
-        +feature-bundle-v1-native-edge-kind+
-        +feature-bundle-v1-native-evidence-kind+
+        +feature-bundle-v1-runtime-component-kind+
+        +feature-bundle-v1-runtime-symbol-kind+
+        +feature-bundle-v1-runtime-edge-kind+
+        +feature-bundle-v1-runtime-evidence-kind+
         +feature-bundle-v1-region-kind+
         +feature-bundle-v1-descriptor-kind+
         +feature-bundle-v1-diagnostic-kind+
@@ -44,10 +44,10 @@
         feature-bundle-v1-edge?
         feature-bundle-v1-evidence
         feature-bundle-v1-evidence?
-        feature-bundle-v1-native-component?
-        feature-bundle-v1-native-symbol?
-        feature-bundle-v1-native-edge?
-        feature-bundle-v1-native-evidence?
+        feature-bundle-v1-runtime-component?
+        feature-bundle-v1-runtime-symbol?
+        feature-bundle-v1-runtime-edge?
+        feature-bundle-v1-runtime-evidence?
         feature-bundle-v1-region?
         feature-bundle-v1-descriptor?
         feature-bundle-v1-diagnostic?
@@ -62,7 +62,7 @@
 (import (only-in :std/list/list map find)
         (only-in :std/crypto/digest sha256)
         (only-in :std/list/list fold-right)
-        (only-in :clan/poo/object .ref .slot? object? object<-alist)
+        (runtime: :clan/poo/object)
         :yuanxu/utilities/functional)
 
 (import :yuanxu/feature-system/bundle-v1-lowering-model)
@@ -74,7 +74,7 @@
    ((feature-bundle-v1-compact-id=? left right) 0)
    (else 1)))
 
-;; : (-> PooFeatureBundleV1NativeComponent PooFeatureBundleV1NativeComponent Integer)
+;; : (-> PooFeatureBundleV1RuntimeComponent PooFeatureBundleV1RuntimeComponent Integer)
 (def (compare-component-rows left right)
   (let ((case-order
          (compare-compact-ids (.ref left 'case-id) (.ref right 'case-id))))
@@ -83,7 +83,7 @@
          (.ref left 'component-id) (.ref right 'component-id))
         case-order)))
 
-;; : (-> PooFeatureBundleV1NativeSymbol PooFeatureBundleV1NativeSymbol Integer)
+;; : (-> PooFeatureBundleV1RuntimeSymbol PooFeatureBundleV1RuntimeSymbol Integer)
 (def (compare-symbol-rows left right)
   (compare-compact-ids (.ref left 'id) (.ref right 'id)))
 
@@ -99,7 +99,7 @@
   (or (find (lambda (value) (not (= value 0))) comparisons)
       0))
 
-;; : (-> PooFeatureBundleV1NativeEdge PooFeatureBundleV1NativeEdge Integer)
+;; : (-> PooFeatureBundleV1RuntimeEdge PooFeatureBundleV1RuntimeEdge Integer)
 (def (compare-edge-rows left right)
   (first-nonzero-comparison
    (list
@@ -116,7 +116,7 @@
     (compare-compact-ids
      (.ref left 'relation-id) (.ref right 'relation-id)))))
 
-;; : (-> PooFeatureBundleV1NativeEvidence PooFeatureBundleV1NativeEvidence Integer)
+;; : (-> PooFeatureBundleV1RuntimeEvidence PooFeatureBundleV1RuntimeEvidence Integer)
 (def (compare-evidence-rows left right)
   (let ((case-order
          (compare-compact-ids (.ref left 'case-id) (.ref right 'case-id))))
@@ -146,7 +146,7 @@
 (def (compact-id->canonical value)
   (list (.ref value 'high) (.ref value 'low)))
 
-;; : (-> PooFeatureBundleV1NativeComponent List)
+;; : (-> PooFeatureBundleV1RuntimeComponent List)
 (def (component-row->canonical value)
   (list
    (compact-id->canonical (.ref value 'case-id))
@@ -165,7 +165,7 @@
    (.ref value 'reserved0)
    (.ref value 'reserved1)))
 
-;; : (-> PooFeatureBundleV1NativeSymbol List)
+;; : (-> PooFeatureBundleV1RuntimeSymbol List)
 (def (symbol-row->canonical value)
   (list
    (compact-id->canonical (.ref value 'id))
@@ -175,7 +175,7 @@
    (.ref value 'flags)
    (u8vector->list (.ref value 'value-bytes))))
 
-;; : (-> PooFeatureBundleV1NativeEdge List)
+;; : (-> PooFeatureBundleV1RuntimeEdge List)
 (def (edge-row->canonical value)
   (list
    (compact-id->canonical (.ref value 'case-id))
@@ -186,7 +186,7 @@
    (.ref value 'flags)
    (.ref value 'reserved0)))
 
-;; : (-> PooFeatureBundleV1NativeEvidence List)
+;; : (-> PooFeatureBundleV1RuntimeEvidence List)
 (def (evidence-row->canonical value)
   (list
    (compact-id->canonical (.ref value 'case-id))
@@ -213,7 +213,7 @@
               (map evidence-row->canonical evidence))
         port))))))
 
-;; : (-> [PooFeatureBundleV1NativeSymbol] U8Vector)
+;; : (-> [PooFeatureBundleV1RuntimeSymbol] U8Vector)
 (def (symbol-metadata-image symbols)
   (list->u8vector
    (fold-right
@@ -313,44 +313,44 @@
                    'expected-proper-lists))
    ((not (yuanxu-list-of? valid-symbol? symbols))
     (rejected-plan 'invalid-symbol bundle-id
-                   'expected-poo-native-symbol))
+                   'expected-poo-symbol))
    ((not (yuanxu-list-of? valid-component? components))
     (rejected-plan 'invalid-component bundle-id
-                   'expected-poo-native-component))
+                   'expected-poo-component))
    ((not (yuanxu-list-of? valid-edge? edges))
-    (rejected-plan 'invalid-edge bundle-id 'expected-poo-native-edge))
+    (rejected-plan 'invalid-edge bundle-id 'expected-poo-edge))
    ((not (yuanxu-list-of? valid-evidence? evidence))
     (rejected-plan 'invalid-evidence bundle-id
-                   'expected-poo-native-evidence))
+                   'expected-poo-evidence))
    (else
     (let* ((lowered-symbols
             (list-sort (lambda (left right)
                          (< (compare-symbol-rows left right) 0))
                        (map lower-symbol symbols)))
-           (native-symbols (assign-symbol-offsets lowered-symbols))
-           (native-components
+           (runtime-symbols (assign-symbol-offsets lowered-symbols))
+           (runtime-components
             (list-sort (lambda (left right)
                          (< (compare-component-rows left right) 0))
                        (map lower-component components)))
-           (native-edges
+           (runtime-edges
             (list-sort (lambda (left right)
                          (< (compare-edge-rows left right) 0))
                        (map lower-edge edges)))
-           (native-evidence
+           (runtime-evidence
             (list-sort (lambda (left right)
                          (< (compare-evidence-rows left right) 0))
                        (map lower-evidence evidence))))
       (cond
-       ((not (strictly-ordered? native-symbols compare-symbol-rows))
+       ((not (strictly-ordered? runtime-symbols compare-symbol-rows))
         (rejected-plan 'duplicate-symbol-key bundle-id
                        'symbol-ids-must-be-unique))
-       ((not (strictly-ordered? native-components compare-component-rows))
+       ((not (strictly-ordered? runtime-components compare-component-rows))
         (rejected-plan 'duplicate-component-key bundle-id
                        'case-id-and-component-id-must-be-unique))
-       ((not (strictly-ordered? native-edges compare-edge-rows))
+       ((not (strictly-ordered? runtime-edges compare-edge-rows))
         (rejected-plan 'duplicate-edge-key bundle-id
                        'edge-key-must-be-unique))
-       ((not (strictly-ordered? native-evidence compare-evidence-rows))
+       ((not (strictly-ordered? runtime-evidence compare-evidence-rows))
         (rejected-plan 'duplicate-evidence-key bundle-id
                        'case-id-and-obligation-id-must-be-unique))
        (else
@@ -359,7 +359,7 @@
         (build-descriptor
           (feature-bundle-v1-lower-compact-id 'bundle bundle-id)
           bundle-epoch
-          native-symbols native-components native-edges native-evidence)
+          runtime-symbols runtime-components runtime-edges runtime-evidence)
          '())))))))
 
 ;; : (-> PooFeatureBundleV1LoweringPlan PooFeatureBundleV1LoweringPlan)

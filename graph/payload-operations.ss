@@ -5,10 +5,7 @@
 
 ;;; Boundary: explicit extension-node slot and child operations.
 
-(import (only-in :clan/poo/object
-                 .o
-                 .ref
-                 object?)
+(import (runtime: :clan/poo/object)
         :yuanxu/graph/contribution)
 
 (export yuanxu-graph-slots-merge

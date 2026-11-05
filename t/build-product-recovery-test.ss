@@ -2,6 +2,11 @@
 ;;; Filesystem controls only; marker repair never issues artifact authority.
 (import :std/test
         (only-in :std/io/tempfile call-with-temporary-directory)
+        (only-in :std/make make-clean)
+        (only-in :yuanxu/module-system/building/products
+                 build-output-directory current-build-output-directory current-build-source-directory)
+        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
         (only-in :yuanxu/module-system/building/artifacts
                  repair-build-products! require-build-products! test-build-publication)
         :clan/poo/object)
@@ -18,6 +23,114 @@
     (cut setenv "GERBIL_PATH" previous)))
 (def build-product-recovery-test
   (test-suite "SDK product completion and selected marker recovery"
+    (test-case "cross-package Make clean uses admitted targets without materializing source frames"
+      (call-with-temporary-directory "clean-output-only"
+        (lambda (root)
+          (def build (path-expand "build.ss" root))
+          (def libdir (path-expand "lib" root))
+          (def source (path-expand "foreign/unit.ss" root))
+          (write-product root "build.ss")
+          (write-product root "foreign/unit.ss")
+          (call-with-output-file (path-expand "gerbil.pkg" root)
+            (cut display "(package: clean-consumer)\n" <>))
+          (call-with-output-file (path-expand "foreign/gerbil.pkg" root)
+            (cut display "(package: clean-producer)\n" <>))
+          (def input (yuanxu-prepare-module-retained-source source void))
+          (def entry (.o kind: 'source path: source input options: '()
+                         compiler-identity: (.get input compiler-identity)))
+          (def compiler-state-reads 0)
+          (def graph
+            (.o entries: (list entry) compiler-inputs: (.get input source-inputs)
+                other-projections: '() selected-graph: #f compiler-current: void
+                .source-input-state:
+                (lambda (_input)
+                  (set! compiler-state-reads (+ compiler-state-reads 1))
+                  #f)))
+          (def projection (yuanxu-project-source-spec (.o build-graph: graph) '() root build))
+          (write-product libdir "clean-producer/unit.ssi")
+          (write-product libdir "unrelated/unit.ssi")
+          (parameterize ((current-build-output-directory libdir))
+            (def entered? #f)
+            (def substituted (.cc projection 'spec '("unrelated/unit")))
+            (check-equal? (.get substituted spec) '("unrelated/unit"))
+            (check-exception
+              (.call substituted .with-clean-outputs
+                (lambda () (set! entered? #t))) error?)
+            (check-exception
+              (.call substituted .with-compiler-inputs
+                (lambda () (set! entered? #t))) error?)
+            (check-equal? entered? #f)
+            (check-equal? compiler-state-reads 0)
+            (.call projection .with-clean-outputs
+              (lambda ()
+                (def directory (current-build-source-directory))
+                (check-equal? (file-exists? directory) #f)
+                (make-clean (.get projection spec) srcdir: directory libdir: libdir))))
+          (check-equal? (file-exists? (path-expand "clean-producer/unit.ssi" libdir)) #f)
+          (check-equal? (file-exists? (path-expand "unrelated/unit.ssi" libdir)) #t)
+          (check-equal? compiler-state-reads 0)
+          (check-equal? (file-exists? (path-expand ".yuanxu-source" libdir)) #f))))
+    (test-case "clean partitions the admitted targets by prefix without expanding the language"
+      (call-with-temporary-directory "clean-target-prefix"
+        (lambda (root)
+          (def build (path-expand "build.ss" root))
+          (def libdir (path-expand "lib" root))
+          (write-product root "build.ss")
+          (write-product root "owned.ss")
+          (call-with-output-file (path-expand "gerbil.pkg" root)
+            (cut display "(package: yuanxu)\n" <>))
+          (call-with-output-file (path-expand "prelude.ss" root)
+            (cut display "package: tao3k/yuanxu\n(import :no-such-clean-import/module)\n" <>))
+          (def graph (.o entries: '() compiler-inputs: '()
+                        other-projections: '() selected-graph: #f compiler-current: void))
+          (def projection
+            (yuanxu-project-source-spec (.o build-graph: graph) '("prelude" "owned") root build))
+          (check-equal? (.get projection spec) '("prelude" "owned"))
+          (write-product libdir "tao3k/yuanxu/prelude.ssi")
+          (write-product libdir "yuanxu/owned.ssi")
+          (write-product libdir "yuanxu/prelude.ssi")
+          (parameterize ((current-build-output-directory libdir))
+            (.call projection .with-clean-outputs
+              (lambda ()
+                (for-each
+                  (lambda (group)
+                    (make-clean (.get group spec) srcdir: root
+                                libdir: libdir prefix: (.get group prefix)))
+                  (.call projection .make-groups #f)))))
+          (check-equal? (file-exists? (path-expand "tao3k/yuanxu/prelude.ssi" libdir)) #f)
+          (check-equal? (file-exists? (path-expand "yuanxu/owned.ssi" libdir)) #f)
+          (check-equal? (file-exists? (path-expand "yuanxu/prelude.ssi" libdir)) #t)
+          (check-equal? (file-exists? (path-expand ".yuanxu-source.lock" libdir)) #t)
+          (write-product libdir "yuanxu/owned.ssi")
+          (call-with-output-file (list path: (path-expand "owned.ss" root) truncate: #t)
+            (cut display "(export #t)\n" <>))
+          (def entered? #f)
+          (parameterize ((current-build-output-directory libdir))
+            (check-exception
+              (.call projection .with-clean-outputs (lambda () (set! entered? #t)))
+              error?))
+          (check-equal? entered? #f)
+          (check-equal? (file-exists? (path-expand "yuanxu/owned.ssi" libdir)) #t))))
+    (test-case "product checks and Make agree on the default and explicit output directories"
+      (call-with-temporary-directory "product-output-directory"
+        (lambda (root)
+          (def previous (getenv "GERBIL_PATH" #f))
+          (def default (path-expand "lib" root))
+          (def explicit (path-expand "override" root))
+          (def relative "fixture/unit.ssi")
+          (dynamic-wind
+            (cut setenv "GERBIL_PATH" root)
+            (lambda ()
+              (for-each (cut write-product <> relative) (list default explicit))
+              (check-equal? (build-output-directory #f) default)
+              (parameterize ((current-build-output-directory explicit))
+                (check-equal? (build-output-directory) explicit))
+              (make-clean '("unit") srcdir: root libdir: explicit prefix: "fixture")
+              (check-equal? (file-exists? (path-expand relative explicit)) #f)
+              (check-equal? (file-exists? (path-expand relative default)) #t)
+              (make-clean '("unit") srcdir: root prefix: "fixture")
+              (check-equal? (file-exists? (path-expand relative default)) #f))
+            (cut setenv "GERBIL_PATH" previous)))))
     (test-case "a missing dynamic phase invalidates only its own marker"
       (call-with-temporary-directory "product-recovery"
         (lambda (root)

@@ -107,16 +107,16 @@ artifacts can raise before invocation begins. No candidate was published, but
 that setup error is not claimed to be a three-value metadata refusal. Input and
 Context contents remain immutable premises. External effects are not rolled back.
 
-* Native controls and their boundaries
+* Runtime controls and their boundaries
 
-[[file:../../../t/admission-publication-test.ss][The native Scheme suite]] has eight cases:
+[[file:../../../t/admission-publication-test.ss][The Scheme suite]] has eight cases:
 
 - Platform-generated Context; parent resource already cached; child resource
   and admitted candidate read port 443 while the old parent remains port 80.
 - Source and Schema edits after Context demand refuse before admission.
 - Source and Schema edits inside admission refuse at the publication relation.
 - Selected Graph replacement during admission refuses publication.
-- An old accepted receipt returned by a deliberately bad native override is
+- An old accepted receipt returned by a deliberately bad runtime override is
   refused under the new platform binding.
 - Rebuilding the platform snapshot after an upstream source update permits
   fresh admission without any user-maintained Context.
@@ -127,13 +127,13 @@ Context contents remain immutable premises. External effects are not rolled back
 
 The suite uses the actual selected-Graph resolver, build-Graph algorithm, source
 observation checker, JsonSchema artifact/normalizer, Core =.admit= and public
-binding/publication. Local files are real native temporary inputs. Publication
+binding/publication. Local files are real runtime temporary inputs. Publication
 preparation and the Graph generation capability are bounded fixture providers;
 the Graph-replacement injector is not an implemented concurrent selector.
 Effectful obligations only inject faults in tests and are not normal authoring
 practice. This is not a real AWS deployment or Kubernetes renderer qualification.
 
-Native Scheme controls use the existing heap-fenced =just test-file= entrypoint.
+Runtime Scheme controls use the existing heap-fenced =just test-file= entrypoint.
 All eight cases passed, as did the seven existing JsonSchema value-contract
 cases. Final suites reported MODULE-OK, HARNESS-OK and final OK without error
 case/check/harness or heap/stack overflow markers. No full local build or remote
@@ -160,7 +160,7 @@ for genuine reuse; simple leaf changes remain assignments.
 
 ** Scheme/POO integration: retain executable configuration meaning
 
-The same native objects support defaults, functional transformations, resource
+The same runtime objects support defaults, functional transformations, resource
 projection and admission. Public generic/slot protocols remain available for
 advanced domain extensions. The checked receiver need not be flattened to JSON
 and reconstructed merely to establish which configuration was admitted. JSON
@@ -190,7 +190,7 @@ is not a differentiator established by this work.
 
 ** What specific problem does this integration address?
 
-Its target is a long-lived native Scheme configuration process: several Agents
+Its target is a long-lived Scheme configuration process: several Agents
 or maintainers edit shared inputs while a cached receiver, preview and admission
 result remain in memory. One platform-owned selected-input boundary ties that
 receiver to the actual Contract and rechecks currentness before value publication.
@@ -213,7 +213,7 @@ claim has been measured. Content-addressed immutable inputs and verified
 dependency-scoped revisions are future optimization options, not reasons to
 weaken checks or trust file timestamps.
 
-The native language also does not supply KCL/NixOS-style field discovery,
+The runtime language also does not supply KCL/NixOS-style field discovery,
 actionable stale-input diagnostics or a polished effective-value diff by itself.
 Current refusal causes retain file paths, but the UI still needs to present
 which contribution changed and how to refresh. Better UX requires that product

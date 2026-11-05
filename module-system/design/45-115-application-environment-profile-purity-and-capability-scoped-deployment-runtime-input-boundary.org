@@ -105,7 +105,7 @@ to the derived profile revision and composition receipt.
 
 ** DeploymentReference
 
-=DeploymentReference= is an opaque POO-native reference to a deployment-owned
+=DeploymentReference= is an opaque POO reference to a deployment-owned
 resource.
 
 It may identify:
@@ -199,7 +199,7 @@ base profile value
 
 This is a semantic equation, not a new reader form or macro.
 
-Exact authoring syntax must use verified native =gerbil-poo= operations.  This
+Exact authoring syntax must use verified runtime =gerbil-poo= operations.  This
 RFC does not invent an application-profile DSL.
 
 * Environment-variable boundary
@@ -373,7 +373,7 @@ Nix does not become semantic owner merely because it supplies deployment
 inputs.
 
 The adapter boundary must explicitly project permitted non-secret values or
-opaque references into native POO values.
+opaque references into POO values.
 
 * Deployment input receipt
 
@@ -595,7 +595,7 @@ The system fails closed on:
   adapters.
 - [ ] Profile resolution performs no environment, filesystem, clock, entropy,
   network, or secret effects.
-- [ ] Static semantic inputs are native POO values with safe content identity.
+- [ ] Static semantic inputs are POO values with safe content identity.
 - [ ] Deployment references are opaque and grant no authority.
 - [ ] Secret requirements contain no secret bytes.
 - [ ] Secret capabilities are attenuated, non-serializable, and purpose-scoped.

@@ -21,7 +21,7 @@
     (recorded (cut .get Root port)))))
 (def mop-metadata-route-test
  (test-suite "Selected metadata lookup route, not a production read-only seal"
-  (yuanxu-test-case "cold and warm native reads pass without forcing an unselected getter"
+  (yuanxu-test-case "cold and warm runtime reads pass without forcing an unselected getter"
     (def calls 0)
     (.def Root port: (begin (set! calls (+ calls 1)) 5432)
       unused: (error "unselected branch forced"))

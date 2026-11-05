@@ -156,7 +156,7 @@ The corrected path also requires these existing boundaries to agree:
   observation builder. Config can reuse its actual prelude/declaration context
   without wrapping the compiler tool again or requiring a caller-prebuilt Core.
 
-These are build-time native expander paths, not a runtime Loader. Failed source
+These are build-time runtime expander paths, not a runtime Loader. Failed source
 or authoring checks are repaired rather than disabled. In particular, the AWS
 scope constructor avoids a real lexical self-reference between its Scenario
 slot and the imported Scenario prototype.
@@ -180,7 +180,7 @@ module source; each version still creates its own Graph, package, scope,
 descriptor and Context. A source change refuses reader reuse.
 
 SDK compiler-tool projections are retained by exact context identity in a weak
-cache. Reuse validates the original path, source bytes and native package
+cache. Reuse validates the original path, source bytes and runtime package
 metadata. This cache contains prepared source, never admission evidence.
 
 Inside the existing synchronous, effect-free source observation boundary,
@@ -210,7 +210,7 @@ is not the required latency or repeatability evidence.
 The earlier file called atomic-test actually performed two package generations,
 Nix realization and full publication checks. It has moved intact to the explicit
 integration projection. Default atomic controls now own the five existing small
-Contract cases, using the native case macro instead of manual completion counts.
+Contract cases, using the runtime case macro instead of manual completion counts.
 All field, nominal identity, cached-parent and stale projection assertions are
 retained. No integration assertion is removed or relabeled as an atomic pass.
 
@@ -359,7 +359,7 @@ cannot assume that property merely because this fixture calls it immediately.
 
 ** Import, expansion and discovery attribution
 
-The native Ops probe now runs the public expander in its child process. It times
+The runtime Ops probe now runs the public expander in its child process. It times
 incremental imports, then =core-expand=, =current-expander-compile= and
 =current-expander-eval= separately for a real inherited Profile. It also observes
 source reads while demanding the actual =init.modules.aws.tests= projection.
@@ -402,10 +402,10 @@ Two bounded duplicate operations have been removed:
   composition/cache insertion before returning it. Cache hits still recheck;
   no observation is reused across caller actions or execution.
 - A prepared publication retains the compiler identity determined by its exact
-  header/role bytes and native package snapshot, just as prepared build sources
+  header/role bytes and runtime package snapshot, just as prepared build sources
   already do. Its guard checks all those bytes, negative role/package lookups,
-  native package metadata and prelude inputs without reopening/parsing the
-  interface just to derive the same identity again. The native regression checks
+  runtime package metadata and prelude inputs without reopening/parsing the
+  interface just to derive the same identity again. The runtime regression checks
   one identity read over preparation plus five independent guards, then refuses
   a changed header and a newly inserted closer gerbil.pkg. Existing manifest,
   role-byte and init-change controls remain unchanged. The later discovery
@@ -414,7 +414,7 @@ Two bounded duplicate operations have been removed:
 The CLI contributes another concrete cost. The installed original Standard
 Library maps =gerbil env= to =gxpkg env=, whose module imports =std/net/request=
 and whose env command invokes the requested test tool as a child process.
-=gxtest= itself already calls the native local-environment setup helper. A
+=gxtest= itself already calls the runtime local-environment setup helper. A
 same-file Ops control with the same heap options measured 3.715 seconds through
 the package wrapper versus 2.168 seconds through =gerbil test=. This is a local,
 ordered observation, not a portable speedup ratio.
@@ -430,7 +430,7 @@ the existing Ops completion receipt remains the result. No user initializes Cont
 maintains a runner, imports gxpkg, or declares an extra function to obtain this.
 
 The prepared environment pair is frozen into the actual Ops request so ambient
-changes after the decision do not change the tested PATH priority. A native
+changes after the decision do not change the tested PATH priority. A runtime
 same-source regression also changes PATH via an Ops override; the delegated
 route must restore package-bin priority in the child. This tests effective
 environment behavior, not an assumed argv field on Ops receipts (they do not
@@ -454,9 +454,9 @@ aggregate test run is used as a substitute for these focused controls.
 An intermediate real AWS integration printed all completion markers but Ops
 still received status 124. It remains a failed natural-exit gate: markers alone
 do not establish successful completion. That observation preceded the direct
-native test launch, and was not converted to success or assigned to Nix time.
+runtime test launch, and was not converted to success or assigned to Nix time.
 
-After the native launch and environment snapshot changes, a fresh invocation of
+After the runtime launch and environment snapshot changes, a fresh invocation of
 =t/aws-context-publication-test.ss= passed through the actual init-owned endpoint
 with MODULE-OK, HARNESS-OK, final OK and natural exit 0. The full existing Schema
 upgrade, cached-parent/final-child, Context refusal, stale receipt, typo and
@@ -479,7 +479,7 @@ The existing source observer now accepts numeric events keyed by
 unchanged aggregate symbol keys. Requests include cache hits; reads count actual
 =module-source-read= byte reads. These events are emitted only while an observer
 is installed. They do not measure the SDK's own file IO or prove that filesystem
-data came from disk rather than the OS cache. The native Ops startup probe emits
+data came from disk rather than the OS cache. The runtime Ops startup probe emits
 stage totals and the ten busiest files, rather than a complete path transcript.
 
 The eight-declaration control initially recorded:
@@ -520,7 +520,7 @@ This index stores objects, not accepted freshness results or source bytes. No
 second module namespace, resolver, execution Graph or initialization cache exists.
 After lazy author slots have been evaluated, an independent source check must
 succeed before the candidate Graph can be returned. The existing outer selection
-guard remains. A native regression mutates source-currentness from a lazy Feature
+guard remains. A runtime regression mutates source-currentness from a lazy Feature
 slot, observes exactly one publication acquisition, and requires final refusal.
 
 An un-realized selection also no longer performs the same source guard twice
@@ -528,14 +528,14 @@ with no intervening operation. A realized selection still rechecks after its
 package admission, which may execute external effects. The configuration-role
 reader's own pure currentness traversal now shares the existing bounded read
 cache across tool and role observations. This scope ends before wrapper writes,
-native imports, expansion or evaluation and begins afresh on the post-check. It
+runtime imports, expansion or evaluation and begins afresh on the post-check. It
 does not account for the discovery reduction above: that control did not enter
 the configuration-role stage.
 
 The configuration-role regression exposed a separate, reproducible stale-value
 bug. A new role session read the edited source but returned the old imported
 object (=1= rather than =2=). Removing the proposed pure observation window did
-not fix it. A temporary native import trace located the problem: importing the
+not fix it. A temporary runtime import trace located the problem: importing the
 generated entry disabled our role interceptor before its relative imports were
 expanded, so the SDK original-path registry supplied the previous role context.
 The generated entry now keeps interception active; SDK/library delegation still
@@ -561,7 +561,7 @@ same existing canonical-library identity/path check, extracted into one private
 function. A configuration import outside its recorded Core closure is accepted
 only as an exact SDK-resolved non-Core library source; its byte/package guard
 joins the current input observations. A Core-like name or same-name foreign file
-does not qualify. The added native configuration control accepts the actual
+does not qualify. The added runtime configuration control accepts the actual
 public metadata library and rejects a foreign same-identity file before its
 initialization marker can run. Parent/child isolation and the original unadmitted
 local-import rejection pass unchanged. These corrections do not relax source
@@ -582,10 +582,10 @@ duplicate traversals were identified in the corrected role path:
   that reader, paired with their recorded guarded input. Owner-local roles keep
   fresh private wrappers. Shared dependency references check their source again;
   reloads and changed source epochs refuse. No global path-to-expanded-value
-  cache is added. The native importer still owns each module context's evaluation
+  cache is added. The runtime importer still owns each module context's evaluation
   promise; this layer neither forces nor memoizes initialization results itself.
 
-A native initialization-effect control edits the configuration from an imported
+A runtime initialization-effect control edits the configuration from an imported
 role initializer. The final guard must reject it. Its private entry is read by
 exactly the two complete pre/post guards, rather than once for every SDK import.
 This control passes with the original memory policy and watchdog, alongside the
@@ -598,7 +598,7 @@ from another already-selected module use the reader's existing
 input closure joins the pre/post guards. No new directory traversal, role scan
 or second namespace is introduced for this lookup.
 
-The later native memory diagnostic found an execution-boundary defect as well:
+The later runtime memory diagnostic found an execution-boundary defect as well:
 =just test-file= reported =##get-max-heap = 0= inside its test process, despite a
 heap option on the parent command. The original SDK =gxpkg env-exec= invokes a
 child and does not inherit the dispatcher's VM options. Justfile and the Ops
@@ -611,7 +611,7 @@ options to =gerbil test= in that child:
   "gerbil" "-:max-heap=1G,debug=q" "test" "t/module-source-cost-test.ss")
 #+end_src
 
-The native control now reports =1073741824= in the actual test VM and asserts a
+The runtime control now reports =1073741824= in the actual test VM and asserts a
 nonzero cap. No memory policy, assertion, timeout or worker count was weakened.
 The prepared direct route keeps its existing command; delegated routes keep
 their original package/PATH setup. Earlier wrapper/direct timing observations
@@ -628,7 +628,7 @@ Production still uses the original SDK read-all implementation and existing
 phase-local cache. The retained source-cost control compares 200 independent
 reads with the same 200 checks inside one pure window and verifies actual opens.
 
-The completed native control used the same 30,686-character source snapshot:
+The completed runtime control used the same 30,686-character source snapshot:
 200 independent checks opened it 200 times and allocated 4,519,856 bytes; the
 same checks in one pure window opened it once and allocated 1,719,472 bytes.
 Observed work times were 0.0298 and 0.0067 seconds. This isolates source reads,
@@ -650,7 +650,7 @@ their SDK type identity; it does not link a module's business scope, admit a
 foreign source, cache evidence, or initialize a selected Profile early.
 
 The warm single-version AWS cost probe completed with natural exit zero and all
-native harness markers. It recorded one registration, one realization and four
+runtime harness markers. It recorded one registration, one realization and four
 read-only queries (0.93, 0.93, 0.87 and 0.76 seconds). Its complete selected-build
 workload recorded 17,959 reads, including configuration and later admission
 guards. That is a different workload from the eight-declaration table above;
@@ -659,7 +659,7 @@ validate the single-version assertions, not the complete version-transition
 integration gate or a subsecond cold start.
 
 A later full init-owned integration invocation was refused by the sandbox at
-the Nix daemon socket before package selection. The native harness correctly
+the Nix daemon socket before package selection. The runtime harness correctly
 rejected its captured error even though the child exited zero. This is an
 environmental failure, not Schema-upgrade validation. The authorized daemon
 route must be qualified separately under the unchanged watchdog and heap cap.
@@ -754,7 +754,7 @@ guard scopes. Incremental import measurements identified =init-syntax= at 1.844
 seconds, POO MOP at 0.891, slot-debug at 0.403 and JsonSchema Contracts at 0.232.
 These are observed incremental source imports in that order, not independently
 measured module costs. The small user Profile expanded in 0.000277 seconds;
-its expansion is not the dominant startup cost. Native module loading and
+its expansion is not the dominant startup cost. Runtime module loading and
 declaration execution remain separate from the pure read optimization.
 No end-to-end startup speedup is established by this receipt.
 
@@ -841,7 +841,7 @@ separate qualifications.
 The integration test's opt-in trace now reports relative phase/step times and
 the existing Nix process-completion observations. The init-owned Ops endpoint
 prints its captured receipt only when that trace is requested; it still owns
-the same native test, command, Graph, fixture and original 60-second deadline.
+the same runtime test, command, Graph, fixture and original 60-second deadline.
 The post-coalescing invocation completed naturally with both child and outer
 MODULE-OK/HARNESS-OK/final OK and the actual one-GiB child heap cap.
 
@@ -967,7 +967,7 @@ not counted as validation. No active checkout source was edited by that gate.
 These receipts establish bounded correctness controls, not a benchmark or a
 general performance claim.
 
-Focused native gates are recorded after completion. A test that only discovers
+Focused runtime gates are recorded after completion. A test that only discovers
 the atomic filename, reports a nested harness error, times out or skips a
 source-only control is not a passing AWS integration. Existing heap fences and
 timeouts are retained. No full Core build, cloud deployment or push is part of

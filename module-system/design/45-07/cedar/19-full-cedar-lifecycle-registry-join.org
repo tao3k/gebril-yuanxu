@@ -1,0 +1,131 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Full Cedar lifecycle registry join
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Full Cedar lifecycle registry join
+
+** Full-registry requirement
+
+The local =AuthorizationLifecycleEvidence.Closed= model establishes lifecycle
+semantics once its authority-path and separation-of-duty predicates are given.
+It does not prove that those predicates, the evidence, or the commitment came
+from the installed registry/signature lifecycle owner.
+
+Final composition admission therefore MUST additionally consume the existing
+=SourceBoundEffectCompletionRecoveryCedarAuthorizationLifecycleEvidence= and
+its selected, registered Cedar evidence.  The selected evidence must be the
+same evidence carried by an authority-validated binding of the exact capability
+grant.
+
+** Carrier mismatch and unregistered-evidence counterexample
+
+The local lifecycle model and the full registry model are intentionally not the
+same type:
+
+- the local model uses =Nat= identities and a reduced authorization response;
+- the full model uses =String= identities, =Cedar.Spec.Response=, and the real
+  Cedar request, entity, and policy values.
+
+No implicit conversion between them is permitted.  A validator owns any
+cross-carrier refinement and produces one exact authority-bound binding.
+
+=localClosedAuthorityEpochJoinAcceptsUnregisteredEvidence= constructs locally
+closed evidence with the expected authority and epoch, while the evidence is
+not the value selected by the active registry at its claimed commitment.  This
+proves that local closure is not registry authenticity.
+
+#+begin_export typst
+$
+  R_(closed)(q, g, b, s) :=
+    G_(closed)(q, g)
+    and A_(full).validate(b.receipt) = b.binding
+    and A_(full).accepted(b.binding)
+    and b.grant = g
+    and b.evidence = s.registry(s.envelope.commitment)
+    and L_(full)(s)
+    and L_(full)(s) => "Admitted"(b.evidence)
+    and s.envelope.runtime-epoch = q.generation = q.subject.epoch
+    and b.evidence.fence = s.envelope.fence
+$
+#+end_export
+
+#+begin_export mermaid
+flowchart LR
+    G["Closed capability grant"] -->|"exact artifact"| A["Full-lifecycle AcceptanceAuthority"]
+    A -->|"validated binding: exact grant + exact Cedar evidence"| B["Authority-bound full lifecycle node"]
+    C["Commitment + signature authenticity"] -->|"registered commitment"| S["FullCedarLifecycleSelection"]
+    R["Cedar evidence registry"] -->|"lookup envelope commitment"| S
+    S -->|"full lifecycle theorem"| D["Registry evidence Admitted"]
+    B -->|"evidence equals selected registry value"| J{"Full registry join"}
+    D -->|"authority path + SoD + credential + real Cedar allow"| J
+    J -->|"runtime epoch + active fence bound"| U["Final composition admission"]
+    B -.->|"rejected: locally closed but unregistered evidence"| X["Typed registry mismatch"]
+    S -.->|"rejected: stale registry generation or invalid signature"| X
+#+end_export
+
+** Full-registry decision
+
+- =FullCedarLifecycleSelection= dependent-packs the existing trace, budgets,
+  scopes, commitment scheme, signature verifier, registry, envelopes,
+  authenticity evidence, and full lifecycle proof.  Composition receives one
+  package instead of reproducing its parameter list or semantics.
+- =CompositionCedarFullLifecycleRegistryJoinClosed= joins that package to the
+  exact capability grant through =AcceptanceAuthority/AuthorityBoundNode=.
+- =closedFullLifecycleJoinProvidesRegistryAdmission= calls the existing
+  =closedCedarLifecycleAuthorizationAdmitted= theorem.  It does not replace the
+  registry or signature owner with a local Boolean.
+- =closedFullLifecycleJoinBindsRuntimeAndFence= derives runtime epoch and fence
+  equality from the existing full lifecycle =cedarBindings= field.
+- Structural similarity between the Nat model and String/Cedar evidence is
+  explicitly non-authoritative; the validator owns the refinement relation.
+
+** Full-registry verification checklist
+
+- [X] Lean counterexample: local closure plus authority/epoch equality accepts
+  evidence not selected by the active registry.
+- [X] Lean theorem: full join rejects unselected evidence.
+- [X] Lean theorem: full join rejects stale registry generation.
+- [X] Lean theorem: full registry closure requires signature, authority, and
+  commitment binding.
+- [X] Real Lean theorem: the dependent-packed full lifecycle selection produces
+  existing registry =Admitted= evidence.
+- [X] Real Lean theorem: the exact grant/evidence pair is authority validated.
+- [X] Real Lean theorem: runtime epoch and active fence are derived from the
+  existing full lifecycle =cedarBindings= proof.
+- [ ] POO Scheme runtime publishes and consumes the full-lifecycle
+  authority-bound receipt before capability slots become usable.
+
+** Full-registry Lean and AXLE receipt
+
+- Pure registry-join model:
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarLifecycleRegistryJoinModel=
+  returned exit =0= for =2= jobs with zero warnings.
+- Real full lifecycle registry join:
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarFullLifecycleRegistryJoinClosure=
+  returned exit =0= for =402= jobs with zero warnings.
+- AXLE verified all four public roots in
+  =UseCompositionCedarLifecycleRegistryJoinModel.lean=: =43= declarations,
+  =15= source declarations, =15= environment declarations, zero proof-base
+  declarations, and zero failures.  The result was =status: accepted= and
+  =verification.okay: true= with no Lean diagnostics.
+- AXLE closure digest:
+  =sha256:b01f7685e6d18b79fc0319735eb4b2160f3ad20643f9b37c663594b51b443d51=.
+- AXLE exact bundle digest:
+  =sha256:ecfd72c32420a39d73f9c5922586b8076dca4dff1b396d3f77bb165c2e9afa4c=.
+- AXLE canonical source digest:
+  =sha256:8a221251714628e85bb4252e268321b30fea49cfff6bbfedab7daaa2b8355580=.
+- AXLE independent bundle digest:
+  =sha256:b3dc63d18c3e6dccf3a004e213394e0edb1b8c6ed83ae501612ad5b0d0868680=.
+- Every AXLE phase stayed below the fixed =40 s= operation deadline; owner
+  extraction was the slowest phase at =4477 ms=.
+- Enterprise aggregate returned exit =0= for =503= jobs; full Lean returned
+  exit =0= for =575= jobs.  Both emitted only the pre-existing
+  =AgentRedTeamProofRegressionClosure.lean:194= unnecessary-=simpa= warning.
+- RFC45-07 Orgize Org/Typst/Mermaid lint, =git diff --check=, and
+  =git diff --cached --check= returned exit =0=.
+

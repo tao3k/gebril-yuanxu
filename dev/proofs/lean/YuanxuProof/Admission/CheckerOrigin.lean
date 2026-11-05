@@ -4,7 +4,7 @@ import YuanxuProof.Admission.ClosedTail
 namespace YuanxuProof.Admission.CheckerOrigin
 
 def quintSourceDigest : String :=
-  "sha256:ea7777873af378dc52d97b1c1878eacdca6d6c556ca8417434793783e2904c24"
+  "sha256:2b44c7e38283406db1b9eedef0dc2997f534609e529d2cd610b30a5e85cf00b0"
 
 -- The producer identity is projected as 0. This is not procedure-effect inference.
 structure Read where
@@ -16,7 +16,7 @@ structure Read where
 def owned (r : Read) : Bool := r.checker == 0 && r.record == r.registered
 def preflight (closure : List Read) : Bool := closure.all owned
 
-theorem accepted_record_has_native_identity_and_owner (r : Read)
+theorem accepted_record_has_runtime_identity_and_owner (r : Read)
     (h : owned r = true) : r.checker = 0 ∧ r.record = r.registered := by
   simpa [owned, Bool.and_eq_true] using h
 

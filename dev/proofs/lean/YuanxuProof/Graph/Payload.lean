@@ -25,7 +25,7 @@ def prependSlot (key : String) (value : List Nat) : Proto Unit Payload Payload :
 def removeSlot (key : String) (values : List Nat) : Proto Unit Payload Payload :=
   fun _ inherited query => if query = key then some (((inherited key).getD []).filter (fun value => !values.contains value)) else inherited query
 
-/-- The native coalescer can fuse adjacent appends of ONE slot in encounter
+/-- The runtime coalescer can fuse adjacent appends of ONE slot in encounter
 order. No commutativity or cross-operation reordering is required. -/
 theorem adjacent_appends_coalesce (key : String) (left right : List Nat) (payload : Payload) :
     appendSlot key right () (appendSlot key left () payload) = appendSlot key (left ++ right) () payload := by

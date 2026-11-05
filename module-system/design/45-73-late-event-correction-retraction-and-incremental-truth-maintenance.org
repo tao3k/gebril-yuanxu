@@ -105,7 +105,7 @@ flowchart LR
 - [X] =cutChangeCreatesNewConclusionIdentity=
 - [X] =policyChangeCreatesNewConclusionIdentity=
 - [X] =historicalCutReplayRemainsStable=
-- [ ] Project truth-maintenance policy through native =gerbil-poo=.
+- [ ] Project truth-maintenance policy through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.Modules.Funflow.ConclusionRevision=.  It
@@ -127,7 +127,7 @@ Historical conclusions, proofs, and effect receipts remain immutable.
 * POO semantic ownership
 
 Truth-maintenance policy is represented by ordinary higher-order POO objects.
-Native prototype composition defines:
+Runtime prototype composition defines:
 
 - monotonicity;
 - correction and retraction semantics;
@@ -137,7 +137,7 @@ Native prototype composition defines:
 - continuation migration;
 - scoped finality.
 
-The public extension interface remains POO-native. Correction, finality,
+The public extension interface remains POO. Correction, finality,
 retraction, and compensation must not become unstructured macro tokens or
 mutable callbacks.
 
@@ -436,7 +436,7 @@ The implementation must distinguish at least:
 12. Absence requires closed source, sequence, watermark, and coverage evidence.
 13. Non-monotone SCCs stabilize before publication.
 14. Continuations remain bound to their original cut.
-15. Public truth-maintenance policy extension remains POO-native.
+15. Public truth-maintenance policy extension remains POO.
 
 * Implementation checklist
 

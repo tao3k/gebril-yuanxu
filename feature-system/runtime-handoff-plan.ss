@@ -5,10 +5,7 @@
 ;;; Boundary: projects resolved feature bindings into inert runtime handoff plans.
 ;;; Invariant: handoff planning records requirements but performs no runtime effects.
 (import (only-in :std/list/list fold filter-map)
-        (only-in :clan/poo/object
-                 .ref
-                 object<-alist
-                 object?)
+        (runtime: :clan/poo/object)
         :yuanxu/composition/roles
         :yuanxu/feature-system/adapter-projection-binding
         :yuanxu/utilities/functional)

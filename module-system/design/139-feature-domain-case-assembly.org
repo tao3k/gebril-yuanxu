@@ -17,7 +17,7 @@ projection catalog construction, canonical identity, and caching remain owned by
 
 * Existing owner contract
 
-The Gerbil module owner already exports POO-native values and operations for:
+The Gerbil module owner already exports POO values and operations for:
 
 - =yuanxu-case-component=;
 - case type, slot, and method contracts;

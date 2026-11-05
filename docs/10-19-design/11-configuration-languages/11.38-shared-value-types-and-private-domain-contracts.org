@@ -22,7 +22,7 @@ string->ip4-address and string->ip6-address, and their stringer owns formatting.
 These are source observations, not new execution/compatibility test results.
 They describe parsed runtime values. The public config can still contain a string.
 
-.data/gerbil-poo/type.ss uses native define-type for String, Bytes and parameterized
+.data/gerbil-poo/type.ss uses runtime define-type for String, Bytes and parameterized
 BytesN., including .element?, conversion and marshaling slots. Core types.ss adds
 YuanxuPredicateType., Contract descriptors and evidence-bearing .admit. Reuse
 those layers rather than introducing another static type checker or record DSL.
@@ -33,14 +33,14 @@ an arbitrary configuration; domain admission is still an explicit runtime step.
 
 | Layer | Examples | Owner / purpose |
 |-------+----------+-----------------|
-| Shared values | IPv4/IPv6 text, address family, prefix length, CIDR, port | Cohesive Core type-library capability, built on native Gerbil |
+| Shared values | IPv4/IPv6 text, address family, prefix length, CIDR, port | Cohesive Core type-library capability, built on Gerbil |
 | Module-private values | AWS region syntax, AMI identifier, role ARN, state key, logical references | AWS types.ss; expose only those useful to other modules |
 | Object Contracts | NetworkContract, InstanceContract, ApplicationContract | AWS types.ss: responsibilities plus relational obligations |
 | Runtime representation | Existing IP4Address/IP6Address; private parsed CIDR/cache keys if necessary | Parser/algorithm implementation, not public config objects |
 
 The shared library need not put everything in core/types.ss. That file currently
 owns the fundamental Type/Contract protocol. Cohesive network/path/etc libraries
-should publish native descriptors through the Module System and load only the
+should publish runtime descriptors through the Module System and load only the
 selected dependency closure. AWS-specific naming/policy must not leak into Core.
 The precise new module path and public export names remain design decisions.
 
@@ -55,9 +55,9 @@ A port Type must state whether zero is allowed: a runtime bind endpoint and a
 service destination can have different requirements. A private/public address
 policy is a domain refinement, not a universal property of every valid VPC.
 
-* Native Type / Contract bridge
+* Runtime Type / Contract bridge
 
-A native Type descriptor and an evidence-bearing Contract are not interchangeable.
+A Type descriptor and an evidence-bearing Contract are not interchangeable.
 responsibilities currently delegates to the Contract admission protocol, so a bare
 String-derived Type needs an explicit internal bridge. For example, this proposed
 library code uses existing syntax and protocol functions:
@@ -85,7 +85,7 @@ becomes an implemented API; there is no claim it exists today. It is not a new
 regular expression copied independently into every cloud Module.
 
 Likewise a parsed-address descriptor can use IP4Address? directly. Do not create
-another public defstruct IPv4 just to rename the native structure. If a private
+another public defstruct IPv4 just to rename the runtime structure. If a private
 parsed CIDR struct is needed, keep it behind a checked constructor and do not
 assume defstruct alone enforces prefix/family/network invariants. Immutable source
 snapshots or explicit mutation policy are required for cached parsed values.
@@ -136,7 +136,7 @@ noncanonical network base, missing referenced network and provider policy failur
 Each has its own type/Contract identity, field path and user source origin; do not
 collapse all into AWSString rejected. The same descriptors supply discoverable
 field meaning and accepted examples, not a parallel hand-maintained field table.
-Existing JSON Schema-derived constraints should compose with these native value
+Existing JSON Schema-derived constraints should compose with these runtime value
 refinements and link obligations; they must not be weakened or copied into a
 second contradictory schema. Discoverable types must not force every module.
 

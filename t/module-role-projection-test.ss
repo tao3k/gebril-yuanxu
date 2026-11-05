@@ -24,7 +24,7 @@
         (string-append "(package: " prefix
           " prelude: :gerbil/core)\n"))
       (write-source (path-expand "types.ss" root)
-        "(import (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)) (def ScopeContract (yuanxu-predicate-contract 'role/scope object? (lambda (_v _c) '()))) (export ScopeContract)\n")
+        "(import (only-in :clan/poo/mop Type.)) (def ScopeContract (.cc Type. identity: 'role/scope .element?: object?)) (export ScopeContract)\n")
       (write-source (path-expand "objects.ss" root)
         "(import (only-in :std/source this-source-file)) (.def Value answer: 42 origin: (this-source-file)) (export Value)\n")
       (write-source (path-expand "func.ss" root)
@@ -74,7 +74,7 @@
             (check-equal? (.get effective config mode) 'check)
             (check-equal? (with-catch (lambda (_e) #t)
                             (lambda () (eval-syntax 'Config) #f)) #t)))))
-    (test-case "native Make consumes the same role frames without nested package metadata"
+    (test-case "runtime Make consumes the same role frames without nested package metadata"
       (with-module
         (lambda (root prefix)
           (def source (make-yuanxu-module-source-ref 'local (path-expand "interface.ss" root)

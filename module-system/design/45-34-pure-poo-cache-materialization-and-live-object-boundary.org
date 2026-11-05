@@ -22,7 +22,7 @@ Cache materialization preserves pure semantic evidence; it never preserves
 live authority.
 #+end_quote
 
-* Native POO boundary
+* POO boundary
 
 =gerbil-poo= remains the sole implementation of POO objects, prototypes, slots
 and open recursion.  Agentic AI Lab does not serialize the implementation object and
@@ -31,20 +31,20 @@ later pretend that it is the same live object.
 The cache boundary MUST NOT introduce:
 
 - a second object model;
-- a record DSL that replaces native POO composition;
+- a record DSL that replaces POO composition;
 - a portable raw memory image of a POO object;
 - serialization-defined slot semantics;
 - a cache-provider API in ordinary user composition;
 - automatic effect replay on retrieval.
 
-Cache projection and retrieval are evidence operations around native POO
+Cache projection and retrieval are evidence operations around POO
 evaluation.
 
 * Materialized projection, not live object
 
 #+begin_src mermaid
 flowchart LR
-  O["Live native POO demand"] -->|"produces a pure validated result"| S["Canonical semantic receipt"]
+  O["Live POO demand"] -->|"produces a pure validated result"| S["Canonical semantic receipt"]
   S -->|"projects only stable value and evidence identities"| A["Inert cache artifact"]
   A -->|"decodes without authority or execution"| Q["Quarantined candidate"]
   Q -->|"validates against the current POO context and generation"| V["Replay-equivalent candidate"]
@@ -176,7 +176,7 @@ Cache retrieval follows a fail-closed evidence sequence:
 
 1. decode the artifact into a quarantined inert representation;
 2. verify schema, canonical encoding and content digest;
-3. resolve the current native POO object, prototype and slot identities;
+3. resolve the current POO object, prototype and slot identities;
 4. compare complete contribution, contract, priority and dependency identities;
 5. revalidate current capability and authority requirements;
 6. reject stale generation-bound control or runtime state;
@@ -201,7 +201,7 @@ revoked authority.
 
 * Mutable POO values
 
-Native POO supports effectful object operations, but mutable live objects do
+POO supports effectful object operations, but mutable live objects do
 not have portable cache identity merely because they are POO objects.
 
 A cacheable projection may be derived only through an explicit pure semantic
@@ -213,7 +213,7 @@ projection that:
 - records the generation and predecessor receipt;
 - does not claim that rehydration restores the mutable object.
 
-Retrieval may supply data from which current live code constructs a new native
+Retrieval may supply data from which current live code constructs a new runtime
 object.  The newly constructed object has current identity and authority; it is
 not the old object revived.
 
@@ -282,7 +282,7 @@ Retrieval MUST fail closed when:
 
 - [X] Cache artifacts contain canonical pure projections, not live POO objects.
 - [X] Retrieval begins as quarantined inert evidence.
-- [X] Current native POO identities and contracts are revalidated.
+- [X] Current POO identities and contracts are revalidated.
 - [X] Continuations, resumptions and dynamic control extent are never cached.
 - [X] Capability, authority and resource handles are never cached.
 - [X] Mutable POO identity is never revived through materialization.

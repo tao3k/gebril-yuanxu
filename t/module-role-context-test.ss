@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Public role identity and source admission through the native test entry.
+;;; Public role identity and source admission through the runtime test entry.
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/object .o .get .call)
@@ -31,7 +31,7 @@
             features: (.o)))))
     (finally (.call PublicLibraryFixture .release library))))
 (def module-role-context-test
-  (test-suite "Native role contexts retain values and refuse changed source authority"
+  (test-suite "Runtime role contexts retain values and refuse changed source authority"
     (yuanxu-test-case "private and public imports retain one role value"
       (def package (gensym 'role-context-))
       (def library (string->symbol
@@ -76,7 +76,7 @@
             (set-load-path! (cons (.get library shadow) previous))
             (check-equal?
               (refusal (lambda () (.call reader admit-current) (set! entered? #t)))
-              "public dependency source or native identity changed")
+              "public dependency source or runtime identity changed")
             (check-equal? entered? #f)
             (finally (set-load-path! previous)))
           (.call reader admit-current)
@@ -92,7 +92,7 @@
             (write-file path "(def ExternalValue \"changed\") (export ExternalValue)")
             (check-equal?
               (refusal (lambda () (.call reader admit-current) (set! entered? #t)))
-              "public dependency source or native identity changed")
+              "public dependency source or runtime identity changed")
             (check-equal? entered? #f)
             (finally (write-file path original)))
           (.call reader admit-current))))))

@@ -14,7 +14,7 @@ structure Cell where
   deriving Repr, DecidableEq
 
 /-- Allocation returns actual fresh-reference observations indexed by slot.
-Freshness of native allocation is an external fact, not a stored proof flag. -/
+Freshness of runtime allocation is an external fact, not a stored proof flag. -/
 def migrate (localSlots : List String) (old : String → Option Cell)
     (allocate : String → Cell) : String → Option Cell :=
   fun slot => if slot ∈ localSlots then some ((old slot).getD (allocate slot)) else none

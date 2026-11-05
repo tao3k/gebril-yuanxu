@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; POO-native CLOS class, slot, and instance lifecycle conformance.
+;;; POO CLOS class, slot, and instance lifecycle conformance.
 
 (import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
@@ -28,9 +28,9 @@
        (poo-clos-class-effective-slots class-value)))
 
 (def poo-clos-lifecycle-test
-  (test-suite "POO-native CLOS class and instance lifecycle"
-    (yuanxu-test-case "class descriptors and identities stay on the native MOP spine"
-      (let (class-value (poo-clos-class 'native-mop-spine))
+  (test-suite "POO CLOS class and instance lifecycle"
+    (yuanxu-test-case "class descriptors and identities stay on the MOP spine"
+      (let (class-value (poo-clos-class 'runtime-mop-spine))
         (check (element? Type ClosClass) => #t)
         (check (eq? (.ref (.ref class-value 'instance-prototype)
                           '%poo-clos-class)
@@ -40,7 +40,7 @@
                     class-value)
                => #t)))
 
-    (yuanxu-test-case "native POO C4 closes a diamond and effective slot options merge"
+    (yuanxu-test-case "POO C4 closes a diamond and effective slot options merge"
       (let* ((root-slot
               (poo-clos-direct-slot-definition
                'payload initargs: (list root:)
@@ -72,7 +72,7 @@
         (check-equal? (poo-clos-slot-value instance-value 'payload) 'right)
         (check (poo-clos-class-subclass? leaf root) => #t)))
 
-    (yuanxu-test-case "native POO C4 preserves monotonic pedalo precedence"
+    (yuanxu-test-case "POO C4 preserves monotonic pedalo precedence"
       ;; Barrett et al., figure 2, separates the historical ANSI topological
       ;; order from C4. POO CLOS intentionally follows upstream prototype
       ;; linearization, so day-boat remains before wheel-boat in pedalo.

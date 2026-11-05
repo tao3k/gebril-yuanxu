@@ -13,7 +13,7 @@ Accepted RFC and design specification.
 
 This document defines an optional Bazel/Starlark build surface that completely
 replaces =bindings/runtime-c/Makefile= while preserving =build.ss= as the
-authoritative native Scheme build system.
+authoritative Scheme build system.
 
 * Objective
 
@@ -21,7 +21,7 @@ Provide a reproducible external build choice for the Scheme-to-C-to-Python
 runtime boundary.  The Bazel path MUST build the runtime contract, C library,
 C tests, benchmarks, and Python runtime integration without invoking Make.
 
-Bazel MUST NOT replace or reproduce the native Scheme build semantics owned by
+Bazel MUST NOT replace or reproduce the Scheme build semantics owned by
 =build.ss=.
 
 * Ownership Boundary
@@ -126,7 +126,7 @@ model Scheme build stages.
 
 ** runtime_c_library
 
-A native Bazel C/C++ library target consuming
+A runtime Bazel C/C++ library target consuming
 =runtime_v0_generated_sources=.  It explicitly declares sources, public
 headers, include paths, compilation definitions, and link dependencies.
 
@@ -136,7 +136,7 @@ actions that reproduce Makefile compiler commands.
 
 ** runtime_c_tests
 
-Native =cc_test= targets cover the C ABI, generated contract, and runtime
+Runtime =cc_test= targets cover the C ABI, generated contract, and runtime
 behavior.  Fixtures and runtime files are declared through target dependencies
 and =data=.  Tests MUST NOT discover artifacts through working-directory
 assumptions.
@@ -164,8 +164,8 @@ Starlark defines only:
 - small macros that remove repeated target declarations;
 - bounded platform selection not covered by standard toolchains.
 
-Native Bazel rules own ordinary C and Python compilation and testing.  Starlark
-MUST NOT implement Scheme compilation semantics or replace a native rule with
+Runtime Bazel rules own ordinary C and Python compilation and testing.  Starlark
+MUST NOT implement Scheme compilation semantics or replace a runtime rule with
 an opaque shell action when a standard rule suffices.
 
 * Hermeticity and Reproducibility
@@ -193,7 +193,7 @@ dependents.
 ** Bazel Gerbil source lock
 
 Contract generation uses immutable source archives rather than a workspace or
-user =.gerbil/lib= cache.  The native =gerbil.pkg= declarations and Bazel
+user =.gerbil/lib= cache.  The runtime =gerbil.pkg= declarations and Bazel
 archive pins MUST identify the same revisions.
 
 | Package owner | Revision | Archive SHA-256 |
@@ -241,9 +241,9 @@ Scheme-side cleaning semantics.
 - implement the generated-contract provider;
 - prove clean-checkout generation and cache invalidation.
 
-** Slice 3: Native C graph
+** Slice 3: Runtime C graph
 
-- add native C library targets;
+- add runtime C library targets;
 - migrate C contract and runtime tests;
 - migrate benchmark construction and bounded smoke tests.
 
@@ -266,7 +266,7 @@ No slice redirects Scheme module compilation away from =build.ss=.
 The Makefile is removed only when all criteria pass:
 
 1. A clean checkout generates the runtime-v0 contract through Bazel.
-2. Required static and shared runtime libraries build with native Bazel
+2. Required static and shared runtime libraries build with runtime Bazel
    toolchains.
 3. C contract and runtime tests pass.
 4. C benchmarks build and complete a bounded smoke run.

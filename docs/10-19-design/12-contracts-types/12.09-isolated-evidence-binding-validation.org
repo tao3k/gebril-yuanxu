@@ -4,7 +4,7 @@
 #+property: DOCUMENT_ID 12.09
 #+language: en
 #+date: [2026-10-17]
-#+property: STATUS native-scheme-fixture-validated-no-production-integration
+#+property: STATUS runtime-scheme-fixture-validated-no-production-integration
 
 * Source boundary and runner
 
@@ -16,11 +16,11 @@ retain their original source and scope.
 This validates [[file:12.08-evidence-binding-and-publication-boundary.org][the invocation/publication binding design]] using actual
 gerbil-poo =declarative-metadata= and Core's public =yuanxu-contract-admit=.
 The qualification source is
-[[file:../../../t/qualification/contract-adaptation/evidence-binding-test.ss][evidence-binding-test.ss]]. Native Scheme preparation extracts =bind-evidence=
+[[file:../../../t/qualification/contract-adaptation/evidence-binding-test.ss][evidence-binding-test.ss]]. Runtime Scheme preparation extracts =bind-evidence=
 verbatim from the design document into a private temporary module and copies
 the test there. No Python preparation, custom shell runner or new Justfile is
 used. The existing heap-fenced =just test-file= recipe supplies the 120-second
-limit and checks native harness failure markers.
+limit and checks runtime harness failure markers.
 
 Public gerbil-poo checkout advanced independently to
 =850d7c81e77a92b261d16a0c081018244e22370a=. The final control uses that checkout;
@@ -63,9 +63,9 @@ Production work still needs to record this reference inside the existing
 admission producer and expose it through its output contract. This experiment
 does not alter =core/types.ss= or install a forwarding admission API.
 
-* Bounded native results
+* Bounded runtime results
 
-The final suite has 9 cases. Preparation has one separate native case.
+The final suite has 9 cases. Preparation has one separate runtime case.
 
 | Control | Observed result |
 |---------+-----------------|
@@ -88,7 +88,7 @@ raw logs remain outside source control. No full build or remote CI is claimed.
 * Actual mechanisms versus premises
 
 Actual mechanisms exercised: public Type/Schema projection, diagnostic checking,
-Core classification and obligations through public =.admit=, native POO receiver
+Core classification and obligations through public =.admit=, POO receiver
 and cache behavior, metadata input/output/relation checking, formula composition
 and =metadata.publish= refusal preserving the old state.
 

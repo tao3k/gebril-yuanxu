@@ -8,7 +8,7 @@
 
 Accepted architecture RFC.
 
-This document fixes the POO-native Module construction algebra. It does not
+This document fixes the POO Module construction algebra. It does not
 authorize implementation work and does not invent unverified =gerbil-poo= call
 forms.
 
@@ -85,7 +85,7 @@ Parser-owned Scheme discovery currently emits the following upstream
 - =object-compose=;
 - =object-mix=.
 
-This proves that the native operation surface is broader than =object-mix=.
+This proves that the runtime operation surface is broader than =object-mix=.
 
 The discovery proves identifier ownership, not the complete operational
 contract of every procedure. An exact query for =object-compose= currently
@@ -106,7 +106,7 @@ to verified implementation facts by this RFC.
 The identifiers listed in the evidence state are owned by the pinned
 =gerbil-poo= implementation.
 
-They provide the native object, slot, prototype, delegation, extension,
+They provide the runtime object, slot, prototype, delegation, extension,
 composition, mix, and precedence vocabulary from which the Agentic AI Lab Module
 model must be built.
 
@@ -143,7 +143,7 @@ object graph own:
 - evidence projection hooks;
 - version and source identity where required by owning RFCs.
 
-The Module is constructed by native POO object and prototype operations.
+The Module is constructed by POO object and prototype operations.
 
 No parallel map representation, raw alist representation, clause tree, or
 registry is semantically authoritative.
@@ -164,7 +164,7 @@ Module prototype
 The exact Scheme call spelling remains subject to verified =gerbil-poo=
 selectors and procedure contracts.
 
-* Native operation families
+* Runtime operation families
 
 ** Object identity and lifecycle
 
@@ -173,11 +173,11 @@ upstream object representation.
 
 Agentic AI Lab must not expose manual lifecycle mutation as the ordinary Module
 authoring surface. The public route constructs a complete value through named
-POO-native or pure functional helpers.
+POO or pure functional helpers.
 
 ** Slot projection
 
-=object-ref=, =object-slot-has?=, and related slot operations provide native
+=object-ref=, =object-slot-has?=, and related slot operations provide runtime
 projection.
 
 Module identity, exports, imports, capabilities, and responsibility references
@@ -187,9 +187,9 @@ alist for bounded diagnostics.
 
 ** Prototype extension
 
-=object-extend= and =extend-object!= belong to the native extension family.
+=object-extend= and =extend-object!= belong to the runtime extension family.
 
-Public advanced authoring uses a named POO-native extension helper whose result
+Public advanced authoring uses a named POO extension helper whose result
 is a Module value. Destructive variants may be used internally only when their
 identity, isolation, and purity boundary is explicit.
 
@@ -206,12 +206,12 @@ implements a particular Module composition law.
 ** Delegation, super, and precedence
 
 =object-delegate=, =object-super=, =object-precedence-list=, and the upstream
-precedence computation family provide the native ancestry and resolution
+precedence computation family provide the runtime ancestry and resolution
 surface.
 
 Agentic AI Lab does not introduce a second super chain or precedence list.
 
-Any project-level conflict policy must project through the native object
+Any project-level conflict policy must project through the runtime object
 ancestry and must produce evidence identifying the selected and shadowed
 origins.
 
@@ -241,7 +241,7 @@ An admitted functional wrapper must prove:
 - the result has stable identity and prototype ancestry;
 - repeated construction from equivalent inputs is deterministic;
 - capability authority is not widened;
-- the resulting value remains a native =gerbil-poo= object.
+- the resulting value remains a runtime =gerbil-poo= object.
 
 * Module object structure
 
@@ -264,7 +264,7 @@ Those identities may be recorded in evidence, but they remain distinct.
 
 ** Export object
 
-Exports are represented by a POO object or a POO-native projection owned by the
+Exports are represented by a POO object or a POO projection owned by the
 Module.
 
 Each exported identity resolves to a Profile operand. Under the current
@@ -279,7 +279,7 @@ The export object is not:
 
 ** Direct imports object
 
-A Module owns direct import relationships as native POO object structure.
+A Module owns direct import relationships as POO object structure.
 
 The recursive active imports closure is derived from:
 
@@ -332,7 +332,7 @@ ProfileBundle. They are not placed in a parallel Module clause table.
 
 #+begin_src mermaid
 flowchart LR
-  Prototype["Module prototype"] -->|"extends through native POO ancestry"| Module["Module object"]
+  Prototype["Module prototype"] -->|"extends through POO ancestry"| Module["Module object"]
   Module -->|"projects stable export identity"| Export["export object"]
   Export -->|"references without flattening"| Bundle["production ProfileBundle"]
   Bundle -->|"preserves member identity"| Profiles["low-level Profiles"]
@@ -354,12 +354,12 @@ attachment primitive.
 
 * Composition and precedence
 
-** Native precedence first
+** Runtime precedence first
 
-Native =gerbil-poo= precedence is the first and authoritative object-resolution
+Runtime =gerbil-poo= precedence is the first and authoritative object-resolution
 layer.
 
-When Module objects or their prototypes are composed, native =gerbil-poo=
+When Module objects or their prototypes are composed, runtime =gerbil-poo=
 ancestry and precedence remain the base resolution mechanism.
 
 Agentic AI Lab may constrain admissible compositions, but it does not replace the
@@ -369,7 +369,7 @@ upstream precedence model with a macro-owned merge algorithm.
 
 If multiple operands contribute the same export identity, composition must:
 
-- resolve it through an explicitly admitted native POO rule and emit the
+- resolve it through an explicitly admitted POO rule and emit the
   selected ancestry path; or
 - reject the composition as an unresolved export conflict.
 
@@ -379,7 +379,7 @@ update is never a valid resolution.
 ** Responsibility accumulation
 
 Selecting one export accumulates every responsibility reachable from the
-selected ProfileBundle after native precedence resolution.
+selected ProfileBundle after runtime precedence resolution.
 
 A stronger prototype value cannot erase an independent lower-precedence
 requirement merely by replacing a neighboring slot. Constraint preservation
@@ -407,7 +407,7 @@ sequenceDiagram
   participant Bind as "thin binding macro"
   participant Select as "use-module"
 
-  Author->>Upstream: "constructs or extends native POO values"
+  Author->>Upstream: "constructs or extends POO values"
   Upstream-->>Adapter: "returns identity-bearing object"
   Adapter->>Adapter: "validates Module interface and purity boundary"
   Adapter-->>Module: "projects exports, imports, and requirements"
@@ -417,19 +417,19 @@ sequenceDiagram
   Module-->>Select: "returns value and reachability evidence"
 #+end_src
 
-The adapter validates a native object. It does not convert that object into a
+The adapter validates a runtime object. It does not convert that object into a
 second semantic representation.
 
 * Construction laws
 
-** Native object law
+** Runtime object law
 
-Every admitted Module value is a native object of the pinned =gerbil-poo=
+Every admitted Module value is a runtime object of the pinned =gerbil-poo=
 implementation.
 
 ** Prototype ancestry law
 
-Extension and composition preserve an inspectable native precedence list.
+Extension and composition preserve an inspectable runtime precedence list.
 
 ** Identity preservation law
 
@@ -462,7 +462,7 @@ obligation, or veto.
 
 ** Conflict evidence law
 
-Every resolved duplicate export identifies the native ancestry and rule that
+Every resolved duplicate export identifies the runtime ancestry and rule that
 selected its value. Unresolved conflicts fail closed.
 
 ** Representation uniqueness law
@@ -497,7 +497,7 @@ implementation proof.
 
 Construction fails closed when:
 
-- a value is not a native =gerbil-poo= object;
+- a value is not a runtime =gerbil-poo= object;
 - the expected Module interface is absent;
 - stable Module identity is missing;
 - an export identity is malformed or duplicated without an admitted rule;
@@ -506,7 +506,7 @@ Construction fails closed when:
 - direct imports are stored only in a parallel representation;
 - responsibility reachability is incomplete;
 - a destructive operation leaks mutation to shared inputs;
-- native precedence cannot be inspected;
+- runtime precedence cannot be inspected;
 - capability authority is widened;
 - the upstream primitive contract required by an adapter is unverified.
 
@@ -518,7 +518,7 @@ slot identity, ancestry path, and missing evidence.
 The following alternatives are rejected:
 
 - treating =object-mix= as the whole POO API;
-- creating local substitutes for native object extension or precedence;
+- creating local substitutes for runtime object extension or precedence;
 - inventing exact upstream call syntax from identifier names;
 - exposing =object->alist= or =yuanxu-module-object->alist= as the canonical
   Module interface;
@@ -543,15 +543,15 @@ The following alternatives are rejected:
 - [ ] No second POO implementation is introduced.
 - [ ] Exact upstream call forms are not invented.
 
-** Native object construction
+** Runtime object construction
 
-- [ ] Every Module is a native =gerbil-poo= object.
+- [ ] Every Module is a runtime =gerbil-poo= object.
 - [ ] Module prototype ancestry is inspectable.
 - [ ] Extension uses verified upstream semantics.
 - [ ] Composition uses verified upstream semantics.
 - [ ] Mix uses verified upstream semantics.
-- [ ] Delegation and super relations use native semantics.
-- [ ] Native precedence remains the base resolution model.
+- [ ] Delegation and super relations use runtime semantics.
+- [ ] Runtime precedence remains the base resolution model.
 - [ ] Ordinary public authoring is pure.
 - [ ] Internal mutation is isolated and evidenced.
 
@@ -581,7 +581,7 @@ The following alternatives are rejected:
 ** Conflict and authority
 
 - [ ] Duplicate exports never use silent overwrite.
-- [ ] Resolved conflicts identify native ancestry.
+- [ ] Resolved conflicts identify runtime ancestry.
 - [ ] Unresolved conflicts fail closed.
 - [ ] Prototype precedence does not erase independent constraints.
 - [ ] Policy priority remains distinct from prototype precedence.
@@ -613,7 +613,7 @@ Implementation work is not admitted until:
 - [ ] slot projection and update contracts are verified;
 - [ ] mutating and non-mutating operation families are distinguished;
 - [ ] the Module prototype maps directly to pinned upstream primitives;
-- [ ] export projection has a POO-native representation test;
+- [ ] export projection has a POO representation test;
 - [ ] ProfileBundle identity preservation has a focused test;
 - [ ] responsibility reachability has a focused test;
 - [ ] imports closure has a focused test;
@@ -624,10 +624,10 @@ Implementation work is not admitted until:
 
 * Consequences
 
-Agentic AI Lab uses the full native POO vocabulary rather than reducing the design to
+Agentic AI Lab uses the full POO vocabulary rather than reducing the design to
 =mix=.
 
-Module construction remains POO-native and extensible, while the ordinary
+Module construction remains POO and extensible, while the ordinary
 authoring route remains pure and comprehensible.
 
 Exports, ProfileBundles, responsibilities, and imports stay inside one
@@ -636,7 +636,7 @@ they cannot become its semantic owner.
 
 * References
 
-- [[file:45-98-gerbil-poo-native-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - gerbil-poo Native Boundary and Agentic AI Lab Adapter Minimization]]
+- [[file:45-98-gerbil-poo-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - gerbil-poo Runtime Boundary and Agentic AI Lab Adapter Minimization]]
 
 - [[file:44-current-project-programming-style.org][44 - Current Project Programming Style]]
 - [[file:45-84-profile-object-and-prototype-extension-correspondence.org][45-84 - Profile Object and Prototype Extension Correspondence]]
@@ -644,4 +644,4 @@ they cannot become its semantic owner.
 - [[file:45-90-poo-control-policy-composition-priority-conflict-and-veto-resolution.org][45-90 - POO Control Policy Composition, Priority, Conflict, and Veto Resolution]]
 - [[file:45-93-module-profile-selection-bundle-and-imports-closure-algebra.org][45-93 - Module, Profile Selection, Bundle, and imports Closure Algebra]]
 - [[file:45-95-aggregate-profile-responsibility-projection-and-bounded-macro-boundary.org][45-95 - Aggregate Profile Responsibility Projection and Bounded Macro Boundary]]
-- [[file:45-96-poo-native-module-authoring-and-thin-binding-macro-contract.org][45-96 - POO-Native Module Authoring and Thin Binding Macro Contract]]
+- [[file:45-96-poo-module-authoring-and-thin-binding-macro-contract.org][45-96 - POO-Runtime Module Authoring and Thin Binding Macro Contract]]

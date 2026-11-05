@@ -1,8 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Real init -> std/make -> issuance -> native Harness, with inert modules.
+;;; Test metadata and support specification; native build qualification owns compilation.
 (import "./qualification/module-init/fixture.ss" :std/test :clan/poo/object
-        (only-in :std/error Error? Error-message)
-        (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :gerbil/runtime/loader list-modules)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
@@ -19,17 +17,12 @@
     (def root (.get workspace root))
     (def package-name (string->symbol (symbol->string (gensym 'test-package-))))
     (forms root "gerbil.pkg" `((package: ,package-name)))
-    ;; The requested test lives in an aligned nested package. Native Make must
-    ;; still receive a root-relative target, never the absolute source path.
-    (forms root "modules/example/tests/gerbil.pkg"
-      `((package: ,(string->symbol
-                    (string-append (symbol->string package-name) "/modules/example/tests")))))
     (forms root "init.ss"
       '((import :yuanxu/module-system/selection/init-syntax)
         (yuanxu! mode: explicit source: "./modules" (example))))
     (forms root "modules/example/types.ss"
-      '((import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract))
-        (def Scope (yuanxu-predicate-contract 'test/scope object? (lambda (_v _c) '())))
+      '((import :clan/poo/object (only-in :clan/poo/mop Type.))
+        (def Scope (.cc Type. identity: 'test/scope .element?: object?))
         (export Scope)))
     (forms root "modules/example/config.ss" '((def Config (.o enabled: #t))))
     (forms root "modules/example/objects.ss" '((def Defaults #t) (export Defaults)))
@@ -42,12 +35,12 @@
     (forms root "modules/example/tests/atomic-test.ss"
       `((import :std/test "./shared.ss") (export atomic-test)
         (call-with-output-file ,(path-expand "harness-started" root)
-          (lambda (out) (display "native Harness import" out)))
-        (def atomic-test (test-suite "prepared native support"
+          (lambda (out) (display "runtime Harness import" out)))
+        (def atomic-test (test-suite "prepared runtime support"
           (test-case "compiled helper"
             (check-equal? answer 42)
             (call-with-output-file ,(path-expand "case-finished" root)
-              (lambda (out) (display "native TestCase executed" out))))))))
+              (lambda (out) (display "runtime TestCase executed" out))))))))
     workspace))
 (def (exports-at root)
   (parameterize ((current-expander-context (make-top-context)))
@@ -60,47 +53,35 @@
            (string-prefix? "yuanxu/module-system/building/artifacts" (car entry)))
          (list-modules)))
 (def module-test-preparation-test
-  (test-suite "Automatic test preparation under native publication"
-    (yuanxu-test-fixture "support-free files never demand selected declarations"
+  (test-suite "Init-owned test inputs and native Make support"
+    (yuanxu-test-fixture "support-free projection neither loads business roles nor an issuer"
       (workspace TestPackage)
       (def root (.get workspace root))
       (forms root "modules/example/types.ss" '((error "business Types were demanded")))
       (forms root "modules/example/tests/plain-test.ss"
         '((import :std/test) (export plain-test)
-          (def plain-test (test-suite "source-only native test"
-            (test-case "real native Case" (check-equal? (+ 1 1) 2))))))
+          (def plain-test (test-suite "plain" (test-case "native" (check-equal? 1 1))))))
       (def exports (exports-at root))
       (def tests (.call (.get exports tests) .for-files
         (list (path-expand "modules/example/tests/plain-test.ss" root))))
       (check-equal? ((.get tests std-make-spec)) '())
       (check-equal? (artifact-runtime-loaded?) #f)
-      (.call tests .compile)
-      (check-equal? (artifact-runtime-loaded?) #f)
-      (check-equal?
-        (ormap (lambda (entry)
-                 (string-prefix? "yuanxu/module-system/building/test-retention" (car entry)))
-               (list-modules)) #f)
       (check-equal? (.ref/cached tests 'selected-graph) #f)
-      (check-equal? (.ref/cached exports 'modules) #f)
-      (check-equal? (.get (.call tests .run) status) 0)
-      (check-equal? (artifact-runtime-loaded?) #f)
-      (check-equal? (.ref/cached tests 'selected-graph) #f)
+      (for-each (lambda (name) (check-equal? (.slot? tests name) #f))
+                '(.run .compile execution))
+      ((.get tests admit-current))
       (forms root "init.ss" '((error "changed init")))
-      (check-exception (.call tests .run) error?))
-    (yuanxu-test-fixture "narrow cold/hot compilation, isolated issuance and source refusal"
+      (check-exception ((.get tests admit-current)) error?))
+    (yuanxu-test-fixture "native spec binds shared inputs without compiling or running a Suite"
       (workspace TestPackage)
       (def root (.get workspace root))
       (def exports (exports-at root))
-      (check-equal? (.ref/cached exports 'tests) #f)
-      (def tests
-        (.call (.get exports tests) .for-files
-          (list (path-expand "modules/example/tests/atomic-test.ss" root))))
+      (def tests (.call (.get exports tests) .for-files
+        (list (path-expand "modules/example/tests/atomic-test.ss" root))))
       (check-equal? (.ref/cached tests 'build) #f)
-      (check-equal? (.ref/cached tests 'execution) #f)
       (def spec ((.get tests std-make-spec)))
       (check-equal? (map cadr spec) '("modules/example/tests/shared"))
-      ;; One explicit file-source guard checks selection once. Observation is
-      ;; local to this call; no check result survives Make or Harness effects.
+      (check-equal? (file-exists? (path-expand "modules/example/tests/gerbil.pkg" root)) #f)
       (def windows 0)
       (parameterize ((current-module-source-observer
                       (lambda (kind amount)
@@ -108,83 +89,24 @@
         ((.get tests admit-current)))
       (check-equal? windows 1)
       (def build (.get tests build))
-      (check (eq? (.get build selected-graph) (.get tests selected-graph)) => #t)
+      (check-equal? (eq? (.get build selected-graph) (.get tests selected-graph)) #t)
+      ;; A source projection alone never grants product approval.
       (check-exception ((.get build admit-artifacts)) error?)
-      ;; Compilation is the same issuance phase used by .run, without importing
-      ;; the Suite. Neither phase may erase the captured compiler association.
-      (check-exception (.call (.cc (.get tests execution) build: #f) .run) error?)
-      (check-exception (.call (.cc (.get tests execution) build: #f) .compile) error?)
-      (def prepared (.call tests .compile))
-      (check-equal? (artifact-runtime-loaded?) #t)
-      (check (eq? (.get prepared source) (.get tests source)) => #t)
       (check-equal? (file-exists? (path-expand "harness-started" root)) #f)
       (check-equal? (file-exists? (path-expand "case-finished" root)) #f)
-      ((.get build admit-artifacts))
-      (def cold (.call tests .run))
-      (check-equal? (.get cold status) 0)
-      (check-equal? (file-exists? (path-expand "harness-started" root)) #t)
-      (check-equal? (file-exists? (path-expand "case-finished" root)) #t)
-      (def lib (.get build output-directory))
-      (def identity (symbol->string (car (.get build compiler-identities))))
-      (def output (path-expand (string-append identity ".o1") lib))
-      (def before (time->seconds (file-info-last-modification-time (file-info output))))
-      (def hot (.call tests .run))
-      (check-equal? (.get hot status) 0)
-      (check-equal? (time->seconds (file-info-last-modification-time (file-info output))) before)
-      (check-equal? (file-exists? (path-expand (string-append identity ".o2") lib)) #f)
-      ;; Another receiver restores the same approved native handoff rather than
-      ;; inheriting this receiver's in-memory publication or adopting its files.
-      (def fresh (.call (.get exports tests) .for-files
-        (list (path-expand "modules/example/tests/atomic-test.ss" root))))
-      (def fresh-build (.get fresh build))
-      (check (eq? (.get build build-graph) (.get fresh-build build-graph)) => #f)
-      (check-equal? (.get fresh-build output-directory) lib)
-      (check-equal? (.get (.call fresh .run) status) 0)
-      (check-equal? (time->seconds (file-info-last-modification-time (file-info output))) before)
-      ;; A joint product/sidecar replacement cannot rewrite the package-owned
-      ;; approval. Restore bytes in cleanup even if the refusal assertion fails.
-      (def source (.get fresh-build build-graph build-publication))
-      (def packet (call-with-input-file (.get source reference) read))
-      (def record (list-ref packet 5))
-      (def originals (map (lambda (path) (cons path (call-with-input-file path read-all-as-u8vector)))
-                         (list output record)))
-      (dynamic-wind
-        (lambda ()
-          (write-source output "replaced native product")
-          (write-source record "(replaced native record)"))
-        (lambda ()
-          (def failure (with-catch values (lambda () ((.get fresh-build admit-artifacts)))))
-          (check (Error? failure) => #t)
-          (check-equal? (Error-message failure) "test approved issuance record changed"))
-        (lambda ()
-          (for-each
-            (lambda (row)
-              (call-with-output-file (list path: (car row) truncate: #t)
-                (lambda (port) (write-subu8vector (cdr row) 0 (u8vector-length (cdr row)) port))))
-            originals)))
-      ((.get build admit-artifacts))
       (check-equal? (.ref/cached exports 'std-make-spec) #f)
       (forms root "modules/example/tests/shared.ss" '((export answer) (def answer 43)))
-      (check-exception (.call tests .run) error?)
+      (check-exception ((.get tests std-make-spec)) error?)
       (check-exception ((.get build admit-artifacts)) error?)
       (def changed (.call (.get exports tests) .for-files
         (list (path-expand "modules/example/tests/atomic-test.ss" root))))
-      (check (equal? (.get (.get changed build) output-directory) lib) => #f))
-    (yuanxu-test-fixture "preparation failure never starts Harness"
+      (check-equal? (equal? (.get (.get changed build) output-directory)
+                           (.get build output-directory)) #f))
+    (yuanxu-test-fixture "support projection failure never imports the Suite"
       (workspace TestPackage)
       (def root (.get workspace root))
-      (def marker (path-expand "harness-started" root))
-      (forms root "modules/example/tests/atomic-test.ss"
-        `((import :std/test "./shared.ss") (export atomic-test)
-          (call-with-output-file ,marker (lambda (out) (display "started" out)))
-          (def atomic-test (test-suite "never executed" (test-case "native" (void))))))
-      (forms root "modules/example/tests/shared.ss"
-        '((export answer) (def answer 42)
-          (begin-foreign (c-declare "#error injected-test-support-compiler-failure"))))
-      (def tests (.get (exports-at root) tests))
-      (def failure (with-catch values (cut .call tests .run)))
-      (check (Error? failure) => #t)
-      (def diagnosis
-        (call-with-output-string (lambda (out) (display-exception failure out))))
-      (check (not (not (string-contains diagnosis "injected-test-support-compiler-failure"))) => #t)
-      (check-equal? (file-exists? marker) #f))))
+      (write-source (path-expand "modules/example/tests/shared.ss" root) "(import")
+      (def tests (.call (.get (exports-at root) tests) .for-files
+        (list (path-expand "modules/example/tests/atomic-test.ss" root))))
+      (check-exception ((.get tests std-make-spec)) syntax-error?)
+      (check-equal? (file-exists? (path-expand "harness-started" root)) #f))))

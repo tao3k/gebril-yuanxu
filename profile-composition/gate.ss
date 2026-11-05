@@ -4,9 +4,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Boundary: proof-backed user-interface profile gate objects.
-;;; Invariant: public gate data is POO-native; alists appear only as Lean facts.
+;;; Invariant: public gate data is POO; alists appear only as Lean facts.
 
-(import (only-in :clan/poo/object .o .ref object?)
+(import (runtime: :clan/poo/object)
         (only-in :yuanxu/profile-composition/user-profile
                  yuanxu-user-profile?
                  yuanxu-user-profile-name))
@@ -176,7 +176,7 @@
 
 ;; yuanxu-user-interface-profile-gate
 ;;   : (-> PooUserProfile Symbol [Symbol] [Symbol] Symbol [Symbol] Alist POOObject)
-;;   | contract: constructs a POO-native proof gate for a reusable UI profile
+;;   | contract: constructs a POO proof gate for a reusable UI profile
 ;;   | doc m%
 ;;       # Examples
 ;;
@@ -213,7 +213,7 @@
 
 ;; yuanxu-user-interface-profile-gate/receipt
 ;;   : (-> PooUserProfile Symbol [Symbol] [Symbol] Symbol [Symbol] POOObject Alist POOObject)
-;;   | contract: constructs a profile gate with POO-native library receipt
+;;   | contract: constructs a profile gate with POO library receipt
 ;; : (-> PooUserProfile Symbol [Symbol] [Symbol] Symbol [Symbol] POOObject Alist POOObject)
 (def (yuanxu-user-interface-profile-gate/receipt profile
                                                    status
@@ -296,7 +296,7 @@
 
 ;; yuanxu-user-interface-profile-gate?
 ;;   : (-> PooUserInterfaceProfileGateCandidate Boolean)
-;;   | contract: recognizes POO-native user-interface profile gate objects
+;;   | contract: recognizes POO user-interface profile gate objects
 ;;   | doc m%
 ;;       # Examples
 ;;

@@ -18,11 +18,12 @@
                  core-context-prelude core-module->prelude-context expander-context-table)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
         (only-in :yuanxu/module-system/building/source-closure
-                 for-each-build-module yuanxu-bootstrap-contexts yuanxu-bootstrap-source-path)
+                 for-each-build-module yuanxu-bootstrap-contexts)
+        (only-in :yuanxu/module-system/building/source-package module-build-source-path)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
         (rename-in (only-in :yuanxu/module-system/source/declaration .def) (.def publication-definition))
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
-        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         :yuanxu/module-system/source/objects
@@ -33,7 +34,7 @@
                  module-publication-contract-current?)
         :yuanxu/module-system/source/preparation
         :yuanxu/module-system/interface)
-(import (only-in "./fixtures.ss" write-file remove-tree with-publication-source domain-entry-count native-import-value exception-message PublicLibraryFixture core-source-root))
+(import (only-in "./fixtures.ss" write-file remove-tree with-publication-source domain-entry-count gerbil-import-value exception-message PublicLibraryFixture core-source-root))
 (export register-reader-root-collection-cases! register-build-support-control-cases!)
 
 (def (register-reader-root-collection-cases!)
@@ -105,7 +106,7 @@
             ;; zero-closure telemetry as a passing memory optimization.
             (check-equal? (any (lambda (read) (pair? (slot-read-dependencies read))) roots) #t)
             (replay-slot-reads! roots (lambda (_receiver _key) (void))))
-          ;; The real paired reader publishes its native support guard. No
+          ;; The real paired reader publishes its runtime support guard. No
           ;; synthetic reads, hand-maintained requirements or purity labels.
           (def candidate-reader (module-publication-reader))
           (def result
@@ -116,13 +117,16 @@
           (defvalues (_checked times)
             (parameterize ((current-module-source-observer #f))
               (call-with-module-source-operation-measurement current!)))
-          (check-equal? (hash-ref times '(calls metadata-replay)) 2)
+          ;; The closed guard replays the joined original roots once. An
+          ;; observer keeps the independent preparation/admission/tail checks
+          ;; below, including mutation after the admission replay.
+          (check-equal? (hash-ref times '(calls metadata-replay)) 1)
           (check-equal? (> (hash-ref times '(visits metadata-replay)) 0) #t)
           (check-equal? (number? (hash-ref times '(collections metadata-replay))) #t)
           (def replays 0)
           (parameterize ((current-module-source-observer
                           (lambda (key amount)
-                            (when (equal? key '(metadata-replay-end native))
+                            (when (equal? key '(metadata-replay-end runtime))
                               (set! replays (+ replays amount))))))
             (current!))
           (check-equal? replays 3)
@@ -131,7 +135,7 @@
           (set! replays 0)
           (parameterize ((current-module-source-observer
                           (lambda (key amount)
-                            (when (equal? key '(metadata-replay-end native))
+                            (when (equal? key '(metadata-replay-end runtime))
                               (set! replays (+ replays amount))
                               (when (= replays 2)
                                 (.put! source 'value "changed-after-admission-replay")
@@ -149,13 +153,13 @@
       (with-publication-source
        (lambda (_root module-root source _view)
          (def projection
-           (path-normalize (yuanxu-bootstrap-source-path
+           (path-normalize (module-build-source-path
              (core-import-module ':yuanxu/module-system/building/build-projection) core-source-root)))
          (def dependencies (make-hash-table))
          (for-each-build-module
            (core-import-module ':yuanxu/module-system/building/build-projection)
            (lambda (context)
-             (let (path (yuanxu-bootstrap-source-path context core-source-root))
+             (let (path (module-build-source-path context core-source-root))
                (when path (hash-put! dependencies (path-normalize path) #t)))))
          (def (observed-paths reader)
            (def paths (make-hash-table))
@@ -171,7 +175,7 @@
          (.call reader read source)
          (check-equal? (hash-key? (observed-paths reader) projection) #f)
          ;; Changing a role requires a fresh reader. Its actual import must
-         ;; register the entire native transitive closure, not only the root.
+         ;; register the entire runtime transitive closure, not only the root.
          (write-file (path-expand "build.ss" module-root)
            "(import (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)) (.def Build function: yuanxu-project-source-spec)")
          (write-file (path-expand "interface.ss" module-root)
@@ -186,7 +190,7 @@
              (procedure? (.get published core configuration-build function))) #t)
          (def paths (observed-paths demanded))
          (check-equal? (hash-key? paths projection) #t)
-         ;; Compare the entire real native dependency closure, rather than a
+         ;; Compare the entire real runtime dependency closure, rather than a
          ;; former compiler-bootstrap helper no longer imported by this owner.
          (for-each (lambda (entry) (check-equal? (hash-key? paths (car entry)) #t))
                    (hash->list dependencies))

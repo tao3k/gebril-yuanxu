@@ -8,7 +8,7 @@ module CheckerOriginModel {
     parent: int, config: int, plan: int}
   var s: State
   action init = {
-    nondet kind = Set("native","copy","bootstrap","miss","foreign","nested","rawTable","metadataHook","earlierSource").oneOf()
+    nondet kind = Set("runtime","copy","bootstrap","miss","foreign","nested","rawTable","metadataHook","earlierSource").oneOf()
     nondet a = Set(false,true).oneOf()
     nondet b = Set(false,true).oneOf()
     all {s' = {phase: 0, kind: kind,
@@ -52,7 +52,7 @@ module CheckerOriginModel {
   val DiagnosticOrder = s.phase == 0 or s.kind != "earlierSource" or s.fault == 0
   val RejectAll = not(s.accepted)
   // A fixed checker can still dispatch an altered runtime HashTable method.
-  // The positive law is CONDITIONAL on unchanged native metadata operations.
+  // The positive law is CONDITIONAL on unchanged runtime metadata operations.
   // The separate metadataHook model checks and refutes the unconditional law.
   val safety = (s.kind == "metadataHook" or (NoForeignCalls and Current)) and
     OwnedAtAdmission and BothRequirements and ParentIsolated and FinalPlan and DiagnosticOrder

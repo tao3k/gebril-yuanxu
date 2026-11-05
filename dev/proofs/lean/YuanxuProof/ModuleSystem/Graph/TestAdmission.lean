@@ -1,6 +1,7 @@
 -- SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import YuanxuProof.ModuleSystem.Graph.Cache
+import Std.Data.HashSet.Lemmas
 
 /-! A demand worklist over one immutable source dependency function. This is
 an algorithm model, not a proof that the Scheme reader discovers every import.
@@ -276,5 +277,171 @@ theorem test_demand_does_not_discover_other_selected_owner :
 
 theorem full_demand_uses_same_dependencies :
     discover independentOwners 8 ⟨[], [0, 2]⟩ = ⟨[3, 2, 1, 0], []⟩ := by decide
+
+/-- The list records deterministic admission order. Only the native indexed
+membership participates in the worklist decision. It is invocation-local. -/
+structure IndexedDiscovery where
+  ordered : Discovery Nat
+  visited : Std.HashSet Nat
+
+def IndexedDiscovery.Exact (state : IndexedDiscovery) : Prop :=
+  ∀ node, node ∈ state.visited ↔ node ∈ state.ordered.seen
+
+def advanceIndexed (dependencies : Nat → List Nat) (state : IndexedDiscovery) :
+    IndexedDiscovery :=
+  match state.ordered.pending with
+  | [] => state
+  | node :: rest =>
+    if node ∈ state.visited then
+      { state with ordered := ⟨state.ordered.seen, rest⟩ }
+    else
+      ⟨⟨node :: state.ordered.seen, dependencies node ++ rest⟩, state.visited.insert node⟩
+
+/-- An already visited root or shared edge consumes its queue entry without
+expanding its outgoing bucket again. -/
+theorem advance_indexed_skips_visited (dependencies : Nat → List Nat)
+    (seen pending : List Nat) (visited : Std.HashSet Nat) (owner : Nat)
+    (present : owner ∈ visited) :
+    advanceIndexed dependencies ⟨⟨seen, owner :: pending⟩, visited⟩ =
+      ⟨⟨seen, pending⟩, visited⟩ := by
+  simp [advanceIndexed, present]
+
+theorem advance_indexed_refines (dependencies : Nat → List Nat)
+    (state : IndexedDiscovery) (exactIndex : state.Exact) :
+    (advanceIndexed dependencies state).ordered = advance dependencies state.ordered ∧
+      (advanceIndexed dependencies state).Exact := by
+  rcases state with ⟨⟨seen, pending⟩, visited⟩
+  cases pending with
+  | nil => exact ⟨rfl, exactIndex⟩
+  | cons node rest =>
+    have index : ∀ k, k ∈ visited ↔ k ∈ seen := exactIndex
+    by_cases present : node ∈ visited
+    · have inList := (index node).mp present
+      exact ⟨by simp [advanceIndexed, advance, present, inList],
+        by simpa [advanceIndexed, present, IndexedDiscovery.Exact] using index⟩
+    · have absent : node ∉ seen := fun member => present ((index node).mpr member)
+      constructor
+      · simp [advanceIndexed, advance, present, absent]
+      · intro k
+        simp [advanceIndexed, present, Std.HashSet.mem_insert, index k]
+        exact or_congr eq_comm Iff.rfl
+
+def discoverIndexed (dependencies : Nat → List Nat) :
+    Nat → IndexedDiscovery → IndexedDiscovery
+  | 0, state => state
+  | fuel + 1, state => discoverIndexed dependencies fuel (advanceIndexed dependencies state)
+
+theorem discover_indexed_refines (dependencies : Nat → List Nat) (fuel : Nat)
+    (state : IndexedDiscovery) (exactIndex : state.Exact) :
+    (discoverIndexed dependencies fuel state).ordered = discover dependencies fuel state.ordered := by
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih =>
+    have next := advance_indexed_refines dependencies state exactIndex
+    simp only [discoverIndexed, discover, ih _ next.2, next.1]
+
+theorem discover_indexed_keeps_exact (dependencies : Nat → List Nat) (fuel : Nat)
+    (state : IndexedDiscovery) (exactIndex : state.Exact) :
+    (discoverIndexed dependencies fuel state).Exact := by
+  induction fuel generalizing state with
+  | zero => exact exactIndex
+  | succ fuel ih =>
+    exact ih _ (advance_indexed_refines dependencies state exactIndex).2
+
+theorem completed_indexed_discovery_exact (dependencies : Nat → List Nat) (roots : List Nat)
+    (fuel : Nat)
+    (complete : (discoverIndexed dependencies fuel ⟨⟨[], roots⟩, ∅⟩).ordered.pending = [])
+    (node : Nat) :
+    node ∈ (discoverIndexed dependencies fuel ⟨⟨[], roots⟩, ∅⟩).ordered.seen ↔
+      Demanded dependencies roots node := by
+  have same := discover_indexed_refines dependencies fuel ⟨⟨[], roots⟩, ∅⟩
+    (by intro k; simp)
+  rw [same] at complete ⊢
+  exact completed_discovery_exact dependencies roots fuel complete node
+
+theorem indexed_discovery_visit_bound (dependencies : Nat → List Nat)
+    (catalog roots : List Nat) (fuel : Nat)
+    (rootCoverage : ∀ root ∈ roots, root ∈ catalog)
+    (dependencyCoverage : ∀ node ∈ catalog, ∀ child ∈ dependencies node, child ∈ catalog) :
+    let result := discoverIndexed dependencies fuel ⟨⟨[], roots⟩, ∅⟩
+    result.ordered.seen.Nodup ∧ result.ordered.seen.length ≤ catalog.length := by
+  dsimp
+  rw [discover_indexed_refines dependencies fuel ⟨⟨[], roots⟩, ∅⟩ (by intro k; simp)]
+  exact ⟨discover_preserves_unique_reads dependencies fuel _ (by simp),
+    discovery_visit_bound dependencies catalog roots fuel rootCoverage dependencyCoverage⟩
+
+/-- First admission authenticates the reached owners. Full certification is
+the same check with the complete roster as roots. The catalog predicate is a
+point lookup in the existing directory. A dangling dependency fails closed. -/
+def admitIndexed (state : IndexedDiscovery) (known verify : Nat → Bool) : Bool :=
+  state.ordered.pending.isEmpty &&
+    state.ordered.seen.all (fun owner => known owner && verify owner)
+
+theorem indexed_admission_boundary (dependencies : Nat → List Nat)
+    (roots : List Nat) (fuel : Nat) (known verify : Nat → Bool)
+    (complete : (discoverIndexed dependencies fuel ⟨⟨[], roots⟩, ∅⟩).ordered.pending = []) :
+    admitIndexed (discoverIndexed dependencies fuel ⟨⟨[], roots⟩, ∅⟩) known verify = true ↔
+      ∀ owner, Demanded dependencies roots owner → known owner = true ∧ verify owner = true := by
+  simp only [admitIndexed, complete, List.isEmpty_nil, Bool.true_and, List.all_eq_true,
+    Bool.and_eq_true]
+  exact forall_congr' fun owner =>
+    imp_congr (completed_indexed_discovery_exact dependencies roots fuel complete owner) Iff.rfl
+
+theorem full_catalog_certification_exact (dependencies : Nat → List Nat)
+    (catalog : List Nat) (fuel : Nat) (known verify : Nat → Bool)
+    (directory : ∀ owner, known owner = true ↔ owner ∈ catalog)
+    (closed : ∀ owner ∈ catalog, ∀ child ∈ dependencies owner, child ∈ catalog)
+    (complete : (discoverIndexed dependencies fuel ⟨⟨[], catalog⟩, ∅⟩).ordered.pending = []) :
+    admitIndexed (discoverIndexed dependencies fuel ⟨⟨[], catalog⟩, ∅⟩) known verify = true ↔
+      ∀ owner ∈ catalog, verify owner = true := by
+  rw [indexed_admission_boundary dependencies catalog fuel known verify complete]
+  constructor
+  · intro all owner member
+    exact (all owner (.root owner member)).2
+  · intro all owner demand
+    have member : owner ∈ catalog := by
+      induction demand with
+      | root _ member => exact member
+      | dependency parent child _ edge ih => exact closed parent ih child edge
+    exact ⟨(directory owner).mpr member, all owner member⟩
+
+theorem incomplete_admission_refuses (state : IndexedDiscovery)
+    (known verify : Nat → Bool) (pending : state.ordered.pending ≠ []) :
+    admitIndexed state known verify = false := by
+  cases h : state.ordered.pending with
+  | nil => contradiction
+  | cons head tail => simp [admitIndexed, h]
+
+theorem empty_discovery_index_exact (roots : List Nat) :
+    (⟨⟨[], roots⟩, ∅⟩ : IndexedDiscovery).Exact := by
+  intro owner
+  simp
+
+/-- An independent bad declaration is outside a selected demand, but remains
+observable when certifying the complete roster. -/
+theorem selected_admission_is_not_catalog_certification :
+    let known := fun owner => owner < 4
+    let verify := fun owner => owner != 3
+    admitIndexed (discoverIndexed independentOwners 4 ⟨⟨[], [0]⟩, ∅⟩) known verify = true ∧
+    admitIndexed (discoverIndexed independentOwners 8 ⟨⟨[], [0, 1, 2, 3]⟩, ∅⟩)
+      known verify = false := by
+  dsimp only [admitIndexed]
+  rw [discover_indexed_refines _ _ _ (empty_discovery_index_exact [0]),
+    discover_indexed_refines _ _ _ (empty_discovery_index_exact [0, 1, 2, 3])]
+  decide
+
+/-- Both fixtures have 10,000 possible owners. The sparse query has two
+reachable owners. The dense chain has exactly 9,999 edges. These are checked
+algorithmic workloads, not Gerbil latency or a hash worst-case bound. -/
+def tenThousandIndexedScale : Bool :=
+  let sparse := discoverIndexed (fun node => if node = 1 then [0] else []) 2
+    ⟨⟨[], [1]⟩, ∅⟩
+  let dense := discoverIndexed (fun node => if node = 0 then [] else [node - 1]) 10000
+    ⟨⟨[], [9999]⟩, ∅⟩
+  sparse.ordered.seen == [0, 1] && sparse.ordered.pending.isEmpty &&
+    dense.ordered.seen == List.range 10000 && dense.ordered.pending.isEmpty
+
+#eval if tenThousandIndexedScale then "INDEXED-ADMISSION-10000-OK" else "INDEXED-ADMISSION-10000-FAIL"
+#guard tenThousandIndexedScale
 
 end YuanxuProof.ModuleSystem.Graph.TestAdmission

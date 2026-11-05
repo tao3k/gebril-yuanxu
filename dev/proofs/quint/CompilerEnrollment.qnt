@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 module CompilerEnrollmentModel {
   const BUG: str
-  // Two demanded SDK contexts share a source. Topology enrollment is NOT a
+  // Two demanded Gerbil contexts share a source. Topology enrollment is NOT a
   // successful admission: source can change between two demands of one root.
   pure def closure(root: int): Set[int] = Set(root, 2)
   var enrolled: Set[int]
@@ -40,4 +40,45 @@ module CompilerEnrollmentModel {
 }
 module CompilerEnrollment {
   import CompilerEnrollmentModel(BUG = "none").*
+}
+
+// Temporal ownership of the existing compiler-input index. SourceView's Lean
+// laws own descriptor/output correspondence; this model only checks ordering
+// of the native dynamic extents, including return and callback failure.
+module CompilerInputExtentModel {
+  const ROUTE_FIRST: bool
+  var phase: int
+  var indexed: bool
+  var routed: bool
+  var failed: bool
+  action init = all { phase' = 0, indexed' = false, routed' = false, failed' = false }
+  action enterIndex = all {
+    phase == (if (ROUTE_FIRST) 1 else 0), phase' = phase + 1,
+    indexed' = true, routed' = routed, failed' = failed
+  }
+  action enterRoute = all {
+    phase == (if (ROUTE_FIRST) 0 else 1), phase' = phase + 1,
+    routed' = true, indexed' = indexed, failed' = failed
+  }
+  action callback = {
+    nondet throws = Set(false, true).oneOf()
+    all { phase == 2, phase' = 3, failed' = throws,
+      indexed' = indexed, routed' = routed }
+  }
+  action leaveRoute = all { phase == 3, phase' = 4, routed' = false,
+    indexed' = indexed, failed' = failed }
+  action leaveIndex = all { phase == 4, phase' = 5, indexed' = false,
+    routed' = routed, failed' = failed }
+  action terminal = all { phase == 5, phase' = phase, indexed' = indexed,
+    routed' = routed, failed' = failed }
+  action step = any { enterIndex, enterRoute, callback, leaveRoute, leaveIndex, terminal }
+  val RouteHasOwner = not(routed) or indexed
+  val Restored = phase != 5 or (not(indexed) and not(routed))
+  val safety = RouteHasOwner and Restored
+}
+module CompilerInputExtent {
+  import CompilerInputExtentModel(ROUTE_FIRST = false).*
+}
+module CompilerInputExtentBroken {
+  import CompilerInputExtentModel(ROUTE_FIRST = true).*
 }

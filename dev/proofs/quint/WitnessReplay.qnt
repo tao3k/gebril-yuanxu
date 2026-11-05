@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-// One closed live-witness replay; native DFS and its final pass are premises.
+// One closed live-witness replay; runtime DFS and its final pass are premises.
 module WitnessReplayModel {
   const BUG: str
   pure val owned = Set(0, 1)

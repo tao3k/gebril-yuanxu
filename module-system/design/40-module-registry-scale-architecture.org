@@ -63,14 +63,14 @@ The scenario builds 500 synthetic module roots, expands them into 1000 source re
 Focused receipts after the split:
 - =direnv exec . true=: real 3.58s
 - =gxpkg env gxi -e '(display "ok") (newline)'=: real 26.68s
-- historical compiled CLI experiments validated that bypassing package-env startup matters, but the current focused test gate is native =gxtest=.
-- =gxtest t/module-system-lazy-loader-test.ss=: validates native focused tests, =real 8.94s=.
+- historical compiled CLI experiments validated that bypassing package-env startup matters, but the current focused test gate is runtime =gxtest=.
+- =gxtest t/module-system-lazy-loader-test.ss=: validates runtime focused tests, =real 8.94s=.
 
 The clean Bazel bootstrap was also reduced from ten roots to seven by removing
 three framework sources from the bootstrap closure. At that historical point
 they were =init-syntax.ss=, =config-discovery-syntax.ss= and
 =declaration-case.ss=; =config-discovery-syntax.ss= has since been retired in
-favor of explicit native imports. In the same checkout, the ten-root Gerbil
+favor of explicit runtime imports. In the same checkout, the ten-root Gerbil
 action used 107.456 seconds and peaked at
 5,363,187,712 bytes. The seven-root action used 23.746 seconds and peaked at
 2,872,836,096 bytes; total Bazel wall time was 44.836 seconds. Focused consumers
@@ -83,10 +83,10 @@ BuildSpec, leaving six framework roots. Its focused test explicitly imports and
 compiles the owner in the independent testing lane. After the User Interface
 root was corrected to the actual init declaration owner, the exact six-root
 cold Gerbil action completed in 22.457 seconds with a 2,784,985,088-byte peak
-process-tree footprint. Runnable process count was 6 under the native core limit
+process-tree footprint. Runnable process count was 6 under the runtime core limit
 7, and total Bazel wall time was 41.443 seconds.
 
-Module admission also performs a reader-native owner-import inspection over
+Module admission also performs a reader-runtime owner-import inspection over
 every =.ss= file below each module root. An implementation role importing an
 aggregate framework surface emits
 =yuanxu.module-owner-import-observation.v1= and fails admission with
@@ -94,16 +94,16 @@ aggregate framework surface emits
 evaluates module source. Its repository gate covers all maintained module role
 files, including nonstandard private helpers below the canonical role owners.
 
-The native unit-test entrypoint does not rely on the production PackageSpec to
+The runtime unit-test entrypoint does not rely on the production PackageSpec to
 publish test-only owners. =unit-tests.ss= imports
 =observability/testing-extension.ss= through its relative source owner, so the
 extension is expanded only inside the test process. No test BuildSpec, alternate
 builder, or added production root is needed.
 
-The package-env receipt is the removed cost center. Native runner startup is sub-second; focused tests remain bounded by =gxtest= and the module/test load graph, while the millisecond gate lives inside the registry scenario so the test distinguishes module catalog expansion from runner startup and Gerbil compilation work.
+The package-env receipt is the removed cost center. Runtime runner startup is sub-second; focused tests remain bounded by =gxtest= and the module/test load graph, while the millisecond gate lives inside the registry scenario so the test distinguishes module catalog expansion from runner startup and Gerbil compilation work.
 
 ** 40.55 Fast Gate Entrypoint
-Focused module-system gates must not be run through =gxpkg env=. Native =gxtest= owns focused single-file tests:
+Focused module-system gates must not be run through =gxpkg env=. Runtime =gxtest= owns focused single-file tests:
 #+begin_src sh
 just test-file t/module-system-lazy-loader-test.ss
 #+end_src
@@ -128,20 +128,20 @@ Reject future changes that do any of the following:
 
 When a new module family is needed, add manifest data to =module-registry.ss=, add loader/action behavior to =loader-tree.ss= or the real owner, and keep facade imports bounded to stable module-system contracts.
 
-** 40.70 Native build configuration
+** 40.70 Runtime build configuration
 
 =build.ss= is the unique package build entry.  It declares one POO PackageSpec
 and delegates to the same ASP Build API and =std/make= executor for development,
 CI, Bazel, and release builds.  Its =public-entry-modules= slot names the
 stable public owners used directly by the package and published bindings.  The
-=gerbil.pkg=-pinned ASP revision projects their native import closure and
+=gerbil.pkg=-pinned ASP revision projects their runtime import closure and
 =std/make= compiles that result.  The entry contains no
 =all-gerbil-modules= scan, package-local owner import, test PackageSpec, or
 second build script.
 
-Native unit CI builds the public package once and then invokes =unit-tests.ss=.
+Runtime unit CI builds the public package once and then invokes =unit-tests.ss=.
 Its ASP Testing Interface discovers atomic files and delegates selected batches
-to native =gxtest=.  The POO testing profile projects =.gerbil/lib= before the
+to runtime =gxtest=.  The POO testing profile projects =.gerbil/lib= before the
 repository source root into the child Gerbil load path.  Compiled public and
 FFI owners therefore win, while qualification, policy, evidence, and scenario
 owners outside the public package closure resolve from source for the selected
@@ -162,10 +162,10 @@ Repository-owned command helpers and user configuration are not package
 artifacts.  The PackageSpec excludes the two contribution observation commands
 and =user-interface/custom/my-module/config.ss= explicitly; atomic tests still
 load the user-owned configuration by its relative source boundary.
-=build.ss= remains the sole =defbuild-script= entry.  The default native source
+=build.ss= remains the sole =defbuild-script= entry.  The default runtime source
 catalog projected 512 targets and its isolated Bazel action exceeded the local
 180-second bound.  Passing the interface roots through PackageSpec =modules=
-produced only those direct native targets plus the nono-C prelude, but CI then
+produced only those direct runtime targets plus the nono-C prelude, but CI then
 failed while importing =src/core/api.ssi=: =std/make= does not compile the
 transitive package closure from root strings.  The smaller count was an
 incomplete artifact, not a performance improvement.

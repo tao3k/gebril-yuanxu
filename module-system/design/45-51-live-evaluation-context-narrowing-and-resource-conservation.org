@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative runtime evaluation-context protocol
-- Semantic core :: POO-native policy and capability objects with explicit pure/live separation
+- Semantic core :: POO policy and capability objects with explicit pure/live separation
 - Related modules :: =45-42-poo-conflict-recovery-generation-resumption.org= and =45-50-pure-slot-demand-identity-projections-and-cache-isolation.org=
 
 This module separates a pure evaluation-context policy from its live realization during one runtime execution. It defines monotonic child-context narrowing, budget conservation, hierarchical cancellation, and bounded continuation use.
@@ -28,7 +28,7 @@ PureEvaluationContextPolicy
 LiveEvaluationContext
 #+end_src
 
-POO-native does not imply that a live context belongs in the pure semantic composition graph.
+POO does not imply that a live context belongs in the pure semantic composition graph.
 
 * Typst formalization: context narrowing preorder
 
@@ -116,7 +116,7 @@ The policy:
 
 - is canonicalizable;
 - may participate in =DemandExecutionPolicyIdentity=;
-- may be cached, compared, and extended through native POO operations;
+- may be cached, compared, and extended through POO operations;
 - contains no live token, counter, clock, worker, portal, or handle.
 
 Changing only execution policy does not manufacture a new business semantic value.

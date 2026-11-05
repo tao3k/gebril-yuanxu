@@ -70,22 +70,24 @@
       (def receipt (yuanxu-module-load-source-receipt (list backend) source))
       (check-equal? (eq? (.get receipt module) module) #t)
       (check-equal? (.get receipt code) 'loaded))
-    (yuanxu-test-case "native Function normalization is not an identity-preserving inspection"
+    (yuanxu-test-case "the checked Backend retains its identity under the same Function policy"
       (def calls 0)
       (def source (make-yuanxu-module-local-source "feature/interface.ss"))
       (def module (.o name: 'feature))
       (def load (lambda (_) (set! calls (+ calls 1)) module))
-      (def backend (make-instance ModuleLoaderBackend name: 'probe source-kind: 'local load: load))
+      (def checked-load (validate (.get ModuleLoaderBackend effective-slots load type) load))
+      (def backend (make-instance ModuleLoaderBackend name: 'probe source-kind: 'local load: checked-load))
       (check-equal? (eq? (.get backend load) load) #f)
       (check-equal? (eq? (.get backend load) (.get backend load)) #t)
       (def rechecked (validate ModuleLoaderBackend backend))
       (check-equal? calls 0)
-      (check-equal? (eq? (.get rechecked load) (.get backend load)) #f)
+      (check-equal? (eq? rechecked backend) #t)
+      (check-equal? (eq? (.get rechecked load) (.get backend load)) #t)
       (check-equal? (eq? ((.get rechecked load) source) module) #t)
       (check-equal? calls 1)
       (check-exception ((.get rechecked load) #f) TypeError?)
       (check-equal? calls 1))
-    (yuanxu-test-case "receipt data uses native field validation"
+    (yuanxu-test-case "receipt data uses runtime field validation"
       (def source (make-yuanxu-module-local-source "feature/interface.ss"))
       (check-exception
         (make-instance ModuleLoadReceipt source: source code: 'loaded messages: '(7))

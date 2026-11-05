@@ -25,7 +25,7 @@ def checkRow (j : Json) : Except String String := do
       (← a[3]!.getNat?) == expected.parent &&
       (← a[4]!.getNat?) == expected.hot &&
       (← a[5]!.getNat?) == expected.cold do
-    throw s!"native store/model mismatch: {name}"
+    throw s!"runtime store/model mismatch: {name}"
   return name
 
 def checkTrace (j : Json) : Except String Unit := do
@@ -42,4 +42,4 @@ def main (args : List String) : IO UInt32 := do
     match Json.parse text >>= checkTrace with
     | .error message => IO.eprintln message; return 1
     | .ok _ => IO.println "STORE-LOWERING-CORRESPONDENCE-OK: 6 actual compiled routes"; return 0
-  | _ => IO.eprintln "expected native compiled trace JSON path"; return 2
+  | _ => IO.eprintln "expected runtime compiled trace JSON path"; return 2

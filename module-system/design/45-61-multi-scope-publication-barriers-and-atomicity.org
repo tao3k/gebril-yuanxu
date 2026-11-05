@@ -121,14 +121,14 @@ transactional adapter capability.
 - [ ] =atomicHeadSetProjectionComesFromConditionalCommits=: every after-entry
   in the atomic head set is projected from an RFC 45-59 conditional
   active-head commit witness.
-- [ ] Refine barriers and relation modes through native =gerbil-poo=
+- [ ] Refine barriers and relation modes through runtime =gerbil-poo=
   prototypes.
 - [ ] Replay the synchronized Lean and Typst claims through external AXLE.
 
-* POO-native relation model
+* POO relation model
 
 Relationships among publication scopes are ordinary higher-order POO objects.
-They are extended through native prototype composition and object operations
+They are extended through runtime prototype composition and object operations
 provided by the canonical =gerbil-poo= dependency.
 
 The model must not expose an enum-like =#:atomic= or =#:ordered= token DSL as
@@ -320,7 +320,7 @@ The implementation must distinguish at least:
 9. Unknown outcomes require reconciliation.
 10. Convergence requires fresh evidence and new authority.
 11. Assignment expansion cannot precede publication of its target head.
-12. Public semantic extension remains POO-native.
+12. Public semantic extension remains POO.
 
 * Implementation checklist
 

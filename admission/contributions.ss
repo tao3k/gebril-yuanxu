@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Selected Core routes -> source-bound rows, guarded at native admission.
-(import :clan/poo/object
+;;; Selected Core routes -> source-bound rows, guarded at runtime admission.
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop .defgeneric validate)
         (only-in :std/list/list every append-map)
         (only-in :yuanxu/module-system/source/publication ContributionRouteContract)
@@ -69,7 +69,7 @@
   ;; Do not retain the weak cache key in its value.
   (.cc (.o) revision: (object-revision graph) routes: routes observations: observations))
 
-;; A route-free index needs only already-demanded native metadata. A cache miss
+;; A route-free index needs only already-demanded runtime metadata. A cache miss
 ;; or any contribution declaration takes the guarded reader path below. This
 ;; constructs an index, never a source approval or publication receipt.
 (def (cached-route-free-index graph)
@@ -172,7 +172,7 @@
   (def graph (.get publication graph selected-graph))
   (def index (selected-index selection graph))
   (def edges (incoming index owner name))
-  ;; With no incoming rows, only native index inspection precedes this source
+  ;; With no incoming rows, only runtime index inspection precedes this source
   ;; collection boundary. Demand it BEFORE cold Contract metadata/handlers;
   ;; an empty index never grants permission to read them from stale sources.
   (def source-base (and (null? edges) (.get publication context)))

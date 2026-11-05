@@ -21,7 +21,7 @@
                      (yuanxu-contract-admit contract (.o port: 80) #f)) #t)
       (check-equal? (yuanxu-validation-evidence-accepted?
                      (yuanxu-contract-admit contract (.o prot: 80) #f)) #f))
-    (yuanxu-test-case "boolean additionalProperties agrees for native and JSON objects"
+    (yuanxu-test-case "boolean additionalProperties agrees for runtime and JSON objects"
       (for-each
         (lambda (allowed?)
           (def contract

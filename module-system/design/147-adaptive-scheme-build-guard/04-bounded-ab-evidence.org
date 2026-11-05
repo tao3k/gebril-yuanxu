@@ -110,7 +110,7 @@ specs in 23,058 ms, 24,144 ms, and 19,161 ms.  Together with the first
 58-spec group, the first 161 specs completed in approximately 107.5 seconds
 without a superlinear topology anomaly.
 
-An experimental pending-native-queue flusher reduced the 58-spec guard time
+An experimental pending-runtime-queue flusher reduced the 58-spec guard time
 from 41,159 ms to 39,822 ms, only 3.25%, while retaining essentially the same
 memory peak.  It is not productized: a polling wrapper around an upstream
 queue is not a sufficient gain and would duplicate coordinator policy.

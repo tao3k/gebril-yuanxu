@@ -21,7 +21,7 @@
   (test-suite "Core Funflow declarative Job to Ops"
     (yuanxu-test-case "public Scope admits its actual Job configuration"
       (def scope
-        (validate (.get FunflowScopeContract value-contract)
+        (validate FunflowScopeContract
           (.o (:: @ FunflowModule.) config: Config)))
       (check-equal? (.get scope config selected) '())
       (check-equal? (.get scope config finalizers) '()))

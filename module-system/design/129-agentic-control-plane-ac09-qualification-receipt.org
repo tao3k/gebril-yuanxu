@@ -10,7 +10,7 @@
 
 AC-09 is qualified as the Lean/evidence proof bridge and as a completed Bundle
 v1 component.  The AuthorizedEffectToken proof chain is implemented across the
-Scheme POO control plane, runtime-v0 native kernel, public C ABI, production
+Scheme POO control plane, runtime-v0 runtime kernel, public C ABI, production
 Python CFFI runtime, and Lean theorem package.
 
 This qualification does not freeze the public ABI and does not recreate the
@@ -24,7 +24,7 @@ Qualification base commit: =50339d2=.
 
 #+begin_src mermaid
 flowchart TD
-    MANIFEST["Canonical ProofCaseVector v1 manifest"] --> SCHEME["Scheme POO native encoder"]
+    MANIFEST["Canonical ProofCaseVector v1 manifest"] --> SCHEME["Scheme POO runtime encoder"]
     MANIFEST --> LEAN["Lean typed decoder and theorem set"]
     SCHEME --> CABI["Runtime-v0 caller-owned bulk C ABI"]
     CABI --> PYTHON["Installed Python CFFI runtime"]
@@ -51,9 +51,9 @@ flowchart TD
 
 * Scheme and control-plane receipt
 
-- The public proof-case route is POO-native and retains the functional
+- The public proof-case route is POO and retains the functional
   control-plane boundary; no raw alist or record DSL became a public API.
-- Scheme emits the exact caller-owned 424-byte native vector and the
+- Scheme emits the exact caller-owned 424-byte runtime vector and the
   manifest-owned domain-separated digest.
 - Proof-case projection: 21 checks passed.
 - Proof-case vector: 14 checks passed.
@@ -62,7 +62,7 @@ flowchart TD
 - Control-plane handoff, proof-gate Bundle, decision, receipt, and FFI owners
   passed.
 
-* Native C ABI receipt
+* Runtime C ABI receipt
 
 - The production surface is =measure/write= over caller-owned storage; JSON and
   Gerbil GC/object layouts do not cross the ABI.
@@ -101,7 +101,7 @@ flowchart TD
 
 - Table-driven structural mutations cover unknown tags, unsupported masks,
   reserved boundaries, malformed sizing, invalid handles, and mutable borrowed
-  buffer TOCTOU; they fail closed at the native/Python boundary.
+  buffer TOCTOU; they fail closed at the runtime/Python boundary.
 - Token, policy, effect, subject, resource, action, semantic root, execution
   root, batch root, nonce, epoch, session, lease, and batch substitutions change
   proof identity and report the first divergent owner, field, and byte offset.
@@ -115,11 +115,11 @@ flowchart TD
 The first supported-host measurements are baselines, not ABI or latency
 thresholds:
 
-- Native receipt:
+- Runtime receipt:
   =bindings/runtime-c/benchmarks/receipts/proof_case_v1_macos_arm64.receipt=.
 - Installed-wheel CFFI receipt:
   =packages/proofs/python/benchmarks/receipts/proof_case_cffi_wheel_macos_arm64.receipt=.
-- Native batches 1, 8, 32, 128, and 1024 exercise the real Strict/Batched
+- Runtime batches 1, 8, 32, 128, and 1024 exercise the real Strict/Batched
   caller-owned whole-vector path.
 - Python steady state performs three crossings per item after one layout
   measurement per runtime instance.

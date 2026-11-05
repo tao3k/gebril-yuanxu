@@ -1,4 +1,4 @@
-#+title: 32.08 Collected source observations in native admission
+#+title: 32.08 Collected source observations in runtime admission
 #+language: en
 #+property: DOCUMENT_ID 32.08
 #+property: STATUS implemented-focused-qualification
@@ -13,7 +13,7 @@ Contracts, contextual child obligations, two independent port policies and plan
 identity rules are unchanged.
 
 The collection point is the existing module-source-admit-current!, rather than
-only admit-origins!. Native slot guards delegate to that function, as do JSON
+only admit-origins!. Runtime slot guards delegate to that function, as do JSON
 input and selected-publication guards. Collecting only at admit-origins! would
 miss a nested SourceAdmissionContract. that declares JSON inputs but does not
 inspect a Scheme field.
@@ -45,7 +45,7 @@ failed invocations from leaking observations into an independent admission.
 * Maintainer surface
 
 Gitea's existing dependency order remains explicit. These are actual maintained
-excerpts, not the proposed native field-access hook:
+excerpts, not the proposed runtime field-access hook:
 
 #+begin_src scheme
 ;; Existing preflight retains these source paths once.
@@ -78,7 +78,7 @@ Root source-inputs are still checked at entry and after contextual currentness;
 they are not replaced by inferred field discovery.
 
 Diagnostic decoration is explicitly materialized inside the collection scope.
-Native .cc is a function with eagerly evaluated arguments; this refactor does
+Runtime .cc is a function with eagerly evaluated arguments; this refactor does
 not repair an alleged lazy-.cc behavior. The explicit local values make the
 collection boundary clear and prevent a future deferred diagnostic projection
 from performing its checks after the collector closes. Original contextual
@@ -93,12 +93,12 @@ candidate scan is introduced.
 
 - Ordinary domain relationships are still checked by application-issues and
   port-contributions; neither is replaced by source observations.
-- Native responsibility admission still requires exact normalized child identity.
+- Runtime responsibility admission still requires exact normalized child identity.
 - Selected contribution completeness, object revision checks and source binding
   remain owned by the existing publication protocol.
 - Collection is limited to actual source checks. It does not discover arbitrary
   .get/.ref reads or hidden dependencies of cached computed slots. The explicit
-  preflight guards must remain until the separate native-access work is qualified.
+  preflight guards must remain until the separate runtime-access work is qualified.
 - No unselected branch is traversed to construct a manifest. A publication's
   existing selected-source checks may already read its source closure; this
   collector rechecks what those checks actually observed. It does not promise
@@ -123,7 +123,7 @@ decoration, and two different source revisions observed under one path.
 
 The first collected-source-controls.log run is retained as a FAILED fixture run:
 a scalar Range was passed to the object diagnostic entrypoint, and a local path
-variable named unused was shadowed by the native unused slot. The controls were
+variable named unused was shadowed by the runtime unused slot. The controls were
 corrected to use ObjectContract like the real preflight and distinct path names;
 no production guarantee, timeout or assertion was weakened.
 
@@ -132,7 +132,7 @@ No cross-platform runtime comparison, full-suite or deployment result is implied
 
 * Final focused receipt, 2026-10-18
 
-| Native gate | Cases | Result |
+| Runtime gate | Cases | Result |
 |-------------+-------+--------|
 | t/source-observation-test.ss | 5 | MODULE-OK, HARNESS-OK, OK; exit 0 |
 | t/source-admission-test.ss | 5 | MODULE-OK, HARNESS-OK, OK; exit 0 |
@@ -154,9 +154,9 @@ retain exact Scheme override locations, JSON baselines, .cc/ .+ provenance and
 unselected malformed branches. No Fixture or relocation test changes were
 needed for this extraction.
 
-Qualification uses Gerbil 1cfb032 on Gambit ea114fc, native host dependencies
+Qualification uses Gerbil 1cfb032 on Gambit ea114fc, runtime host dependencies
 under /Users/guangtao/.gerbil, current Core libraries compiled under
-/private/tmp/poo-plan-identity-native/lib, and the existing current-source
+/private/tmp/poo-plan-identity-runtime/lib, and the existing current-source
 fallback. This is not a compatibility runtime, frozen Core snapshot, clean
 default-path build or complete dependency attestation. The dirty Core base HEAD
 is 7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e; the
@@ -164,7 +164,7 @@ is 7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e; the
 32.05/32.06 manifests. Concurrent edits and historical receipts were retained.
 
 Local final logs remain outside source control under
-/private/tmp/poo-plan-identity-native/:
+/private/tmp/poo-plan-identity-runtime/:
 
 - collected-source-controls-02.log
 - collected-source-admission-final.log
@@ -174,9 +174,9 @@ Local final logs remain outside source control under
 - collected-source-cache-final.log
 
 The initial collected-source-controls.log failure is retained as described
-above. No Loader integration or native field-access/cache-trace implementation
+above. No Loader integration or runtime field-access/cache-trace implementation
 is part of this receipt.
 
 The design for removing the remaining explicit preflight leaf guards is
-[[file:32.09-contract-demand-and-cache-replay.org][32.09 Contract field demand and receiver-bound cache replay]]. Its native
+[[file:32.09-contract-demand-and-cache-replay.org][32.09 Contract field demand and receiver-bound cache replay]]. Its runtime
 read hooks and cache dependency traces are proposed, not covered by this receipt.

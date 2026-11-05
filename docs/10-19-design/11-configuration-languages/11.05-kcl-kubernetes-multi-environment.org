@@ -20,7 +20,7 @@ The comparison uses the same data fields and types: strings for image/protocol,
 integer replicas/ports, string-keyed labels, and a sequence of port records.
 KCL units normalize to byte counts in its displayed output; the Scheme defaults
 below use those integers directly. Both structures retain the complete server
-record. Existing native POO scope/refinement semantics are distinguished from
+record. Existing POO scope/refinement semantics are distinguished from
 proposed field Contracts, direct dotted assignment and Kubernetes projection.
 No examples were executed for this new document; no manifests were applied.
 The platform code is a reviewable design, not a shipping module API.
@@ -91,7 +91,7 @@ KCL codelab's prod output, which only adds an env label. The same user can also
 construct an independent Profile when no reuse is needed.
 
 ServerContract here is the proposed Contract-directed parent interpretation
-specified in [[file:11.09-contract-directed-service-scenarios.org][module 08]], not already supported by native .def. It expands to
+specified in [[file:11.09-contract-directed-service-scenarios.org][module 08]], not already supported by .def. It expands to
 inheritance of that descriptor's proto plus retained Contract association and
 later admission. The author need not write @ ServerDefaults, resource boilerplate
 or =>.+ in this first Profile. .o only constructs record-shaped values. Omitted replicas/resource/name
@@ -169,7 +169,7 @@ Scheme matched desired interface:
                    (list (.o protocol: "TCP" port: 443 targetPort: 1100))))))))
 #+end_src
 
-KubernetesHelpers here means an already resolved local native helper scope
+KubernetesHelpers here means an already resolved local runtime helper scope
 publishing data.append, not a new Loader name or syntax. Image and env are
 assignments; ports intentionally retains the original list. with-slots is existing
 POO syntax, but this helper publication and dotted assignments remain proposed.
@@ -192,7 +192,7 @@ wanting an exact complete ports list may assign it directly; appending is only
 appropriate when retaining upstream ports is part of the requirement. Do not
 require a generic function tutorial or explicit =>.+ at every path ancestor.
 
-* Native expansion reference: keep machinery out of normal configuration
+* Runtime expansion reference: keep machinery out of normal configuration
 
 This is the ordinary POO expansion specified for Development, not captured output
 from an implemented direct-assignment expander. It is supplied so reviewers can
@@ -256,7 +256,7 @@ bounded helper scope. Generic data.update-by remains an internal dependency:
         (.o (ports => route-443-to-8443))))))
 #+end_src
 
-This updates only the selected targetPort. It uses existing native object
+This updates only the selected targetPort. It uses existing runtime object
 refinement inside a named function, not user-written lambdas or an inline patch
 language. No TLS or ingress behavior is inferred from a port number.
 Missing/duplicate protocol+port identity is rejected by update-by. The contribution uses data.update-by internally and must publish its own
@@ -342,12 +342,12 @@ to provide automatic inter-service endpoint binding or global graph admission.
 |-------------+-------------------+------------------------|
 | Change image/label/replicas | Assignment to named fields | Contract definitions, MOP, proto lookup, recursive objectification |
 | Retain ports and add one | One selected data function and record value | Catalog loading, generic helper bindings, context propagation |
-| Modify an existing port by meaning | Named business function, native => | Key traversal/duplicate policy implementation |
-| Maintain a new shared configuration type | Native prototypes and Contracts | Not necessary for ordinary app configuration |
+| Modify an existing port by meaning | Named business function, runtime => | Key traversal/duplicate policy implementation |
+| Maintain a new shared configuration type | Runtime prototypes and Contracts | Not necessary for ordinary app configuration |
 | Change Kubernetes projection/consumer behavior | A separately admitted platform extension | Not an ordinary image/port field or function injection |
 
 The KCL case already offers a short app-centric interface and tested environment
-organization. Scheme must not claim better UX solely because native POO is more
+organization. Scheme must not claim better UX solely because POO is more
 general. Current Scheme setup and nested port construction remain longer; the
 projected simpler dotted assignments are not implemented. Field discovery should
 show actual defaults, assignment versus append guidance, valid protocol/port

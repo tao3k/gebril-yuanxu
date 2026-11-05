@@ -117,7 +117,7 @@ flowchart LR
 - [ ] =lateEventNeverSilentlyMutatesClosedCut=
 - [X] =admittedEventSetChangeCreatesNewCutIdentity=
 - [X] =sameCausalCutReplayIsStable=
-- [ ] Project ingress and causal-cut policy through native =gerbil-poo=.
+- [ ] Project ingress and causal-cut policy through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.Modules.Funflow.CausalCut=.  It imports RFC
@@ -139,7 +139,7 @@ consume a live transport stream directly.
 Ingress, deduplication, causal closure, watermark, acknowledgement, and replay
 policy are ordinary higher-order POO objects.
 
-Native prototype composition defines:
+Runtime prototype composition defines:
 
 - admitted event identities;
 - schema and provenance requirements;
@@ -149,7 +149,7 @@ Native prototype composition defines:
 - acknowledgement obligations;
 - replay and late-event policy.
 
-The public extension interface remains POO-native. Delivery modes,
+The public extension interface remains POO. Delivery modes,
 exactly-once claims, ordering, and acknowledgement must not become an
 unstructured macro token DSL.
 
@@ -446,7 +446,7 @@ The implementation must distinguish at least:
 13. Rebalance fencing prevents stale cursor commit.
 14. Continuations preserve generation, cut, and acknowledgement obligations.
 15. Replay does not duplicate live effects.
-16. Public ingress policy extension remains POO-native.
+16. Public ingress policy extension remains POO.
 
 * Implementation checklist
 

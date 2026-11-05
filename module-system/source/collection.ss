@@ -6,7 +6,7 @@
 ;;; Boundary: admitted source collections for maintained, contributor,
 ;;; and user module trees. Selection declarations remain separate POO values.
 
-(import (only-in :clan/poo/object .o .ref .slot? object?)
+(import (runtime: :clan/poo/object)
         (only-in :std/list/list every)
         :yuanxu/module-system/loader/load-path
         :yuanxu/module-system/source/admission
@@ -101,12 +101,14 @@
 
 ;;; Categories stay in module identity. Directory collections use the
 ;;; flat <modules-root>/<module-name> repository convention.
-(def (yuanxu-module-source-collection-default-locate collection module-key
-                                                       entrypoint-roles)
+(def (module-source-key-valid! module-key)
   (unless (and (pair? module-key) (symbol? (car module-key)) (symbol? (cdr module-key))
                (module-source-name? (symbol->string (car module-key)))
                (module-source-name? (symbol->string (cdr module-key))))
-    (error "invalid source collection module key" module-key))
+    (error "invalid source collection module key" module-key)))
+(def (yuanxu-module-source-collection-default-locate collection module-key
+                                                       entrypoint-roles)
+  (module-source-key-valid! module-key)
   (let (module-name (cdr module-key))
     (if (eq? module-name
              (yuanxu-module-source-collection-identity collection))
@@ -131,17 +133,15 @@
 (def (yuanxu-module-source-collection-directory-names collection)
   (let (modules-root
         (yuanxu-module-source-collection-modules-root collection))
-    (if (file-exists? modules-root)
-      (let (module-names
+    ;; Enumeration is a demand on this declared directory, not an optional
+    ;; search probe. Runtime directory-files rejects missing/non-directory roots.
+    (let (module-names
           (filter
            (lambda (name)
              (and (not (member name (.ref collection 'excluded-directories)))
-                  (eq? (file-info-type
-                   (file-info (path-expand name modules-root)))
-                  'directory)))
+                  (eq? (module-source-type (path-expand name modules-root)) 'directory)))
            (list-sort string<? (directory-files modules-root))))
-        module-names)
-      '())))
+      module-names)))
 
 (def (yuanxu-module-source-collection-validate-directory-names!
       collection module-names)
@@ -221,6 +221,7 @@
 ;;; directories.  The selected module identity chooses packages/<identity>;
 ;;; no contributor name, URL, or revision is registered in Scheme.
 (def (yuanxu-contribution-root-locate collection module-key entrypoint-roles)
+  (module-source-key-valid! module-key)
   (let* ((identity (cdr module-key))
          (source-root
           (path-expand
@@ -229,16 +230,21 @@
          (contribution
           (make-yuanxu-contribution-module-source
            identity source-root style-policy: (.ref collection 'style-policy))))
-    (if (file-exists?
-         (yuanxu-module-source-collection-modules-root contribution))
+    (if (module-source-type source-root)
       ;; std/list/list append-map reverses each produced list.  Entrypoint order
       ;; is part of the loader contract, so flatten the bounded role projection
-      ;; with native map/apply/append and preserve both role and module order.
-      (apply append
+      ;; with runtime map/apply/append and preserve both role and module order.
+      (let (entries (apply append
              (map (lambda (entrypoint-role)
                     (yuanxu-module-source-collection-role-entrypoints
                      contribution entrypoint-role))
-                  entrypoint-roles))
+                  entrypoint-roles)))
+        (unless (pair? entries)
+          (error "selected contribution package exports no Module entrypoints" identity source-root))
+        entries)
+      ;; Only absence of the candidate package is an optional search miss.
+      ;; A found package owns this lookup; malformed/empty contents must not
+      ;; fall through to another collection carrying the same identity.
       '())))
 
 (def (make-yuanxu-contribution-root-module-source identity-value

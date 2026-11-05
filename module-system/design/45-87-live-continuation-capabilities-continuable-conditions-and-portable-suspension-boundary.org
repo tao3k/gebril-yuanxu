@@ -84,7 +84,7 @@ an independent one-shot resumption capability is required.
 
 - [X] A fresh capability can be consumed exactly once.
 - [X] A consumed capability cannot be consumed again.
-- [X] A control rejection is not a native POO failure.
+- [X] A control rejection is not a POO failure.
 - [X] A live continuation is process-local.
 - [X] A live continuation is not serializable.
 - [X] A live continuation is not cacheable.
@@ -105,7 +105,7 @@ an independent one-shot resumption capability is required.
 - [X] Resumption preserves demand identity.
 - [X] A stale continuation cannot retarget a newer root.
 - [X] A continuable condition communicates control rather than a Profile value.
-- [X] A recovery value requires an explicit native recovery protocol.
+- [X] A recovery value requires an explicit runtime recovery protocol.
 - [X] Portable reconstruction preserves the semantic demand.
 - [X] Portable reconstruction does not promise raw VM continuation identity.
 - [X] Portable reconstruction enters an admitted safe point.
@@ -187,9 +187,9 @@ Profile, or used after its fence changes.
 
 ** Portable suspension descriptor
 
-The POO-native condition, decision, capability, and later-resumption admission
+The POO condition, decision, capability, and later-resumption admission
 object algebra is owned by
-[[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89]].
+[[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89]].
 This section owns descriptor purity and safe-point projection, not the control
 object family definitions.
 
@@ -285,7 +285,7 @@ The handler may select an explicit control decision:
 - resume under newly authorized control resources.
 
 Returning from a handler MUST NOT inject an arbitrary Profile domain value.
-A recovery value is valid only when the native POO computation explicitly
+A recovery value is valid only when the POO computation explicitly
 defines a recovery protocol that admits it.
 
 The exact Gerbil or Gambit condition API remains an implementation-verification
@@ -295,13 +295,13 @@ question.
 
 #+begin_src mermaid
 flowchart LR
-    DEMAND["native POO semantic demand"] -->|"reaches an explicit evaluator safe point"| CONDITION["continuable control condition"]
+    DEMAND["POO semantic demand"] -->|"reaches an explicit evaluator safe point"| CONDITION["continuable control condition"]
     CONDITION -->|"handler authorizes immediate continuation"| RUN["same local evaluation"]
     CONDITION -->|"handler captures local control authority"| LIVE["live continuation capability"]
     LIVE -->|"passes process, root, revision, generation, and demand fences"| RESUME["one-shot local resumption"]
     RESUME -->|"continues the captured semantic demand"| RUN
     LIVE -->|"fails one fence or was already consumed"| REJECT["control-plane rejection"]
-    RUN -->|"completes under the erasure law"| RESULT["native-equivalent value or failure"]
+    RUN -->|"completes under the erasure law"| RESULT["runtime-equivalent value or failure"]
 #+end_src
 
 Local resumption may preserve an exact runtime continuation, but only inside
@@ -316,7 +316,7 @@ flowchart LR
     AUTH["resumption capability"] -->|"authorizes one reconstruction attempt"| COORD
     COORD -->|"validates root, revision, generation, evaluator, budget, and authority"| REBUILD["checkpoint restoration or deterministic replay"]
     REBUILD -->|"re-enters the same semantic demand at the admitted safe point"| LOCAL["new process-local continuation context"]
-    LOCAL -->|"continues under the native POO oracle"| RESULT["native-equivalent value or failure"]
+    LOCAL -->|"continues under the POO oracle"| RESULT["runtime-equivalent value or failure"]
     COORD -->|"detects a stale or incompatible fence"| REJECT["portable resumption rejection"]
     WORKER["remote pure worker"] -->|"returns candidate computation evidence but no live action authority"| COORD
 #+end_src
@@ -373,7 +373,7 @@ call MUST NOT be hidden inside a portable descriptor.
 This RFC does not define effect protocols.  It requires the suspension owner to
 respect their existing handoff and receipt boundaries.
 
-* Control rejection is not a native failure
+* Control rejection is not a runtime failure
 
 The following are control-plane rejections:
 
@@ -386,7 +386,7 @@ The following are control-plane rejections:
 - unresolved side effect; and
 - replay incompatibility.
 
-They do not replace a native POO value or native failure.  They indicate that
+They do not replace a POO value or runtime failure.  They indicate that
 the requested control transition was not admitted.
 
 * Distributed evaluator boundary
@@ -408,7 +408,7 @@ evaluation under a fresh local continuation context.
 
 * Conservative-extension relationship
 
-[[file:45-86-poo-conservative-extension-criterion-and-cross-module-obligations.org][45-86]] owns the erasure law and requires resumed completion to match the native
+[[file:45-86-poo-conservative-extension-criterion-and-cross-module-obligations.org][45-86]] owns the erasure law and requires resumed completion to match the runtime
 POO result.
 
 This RFC owns the control objects, fences, and transition rules used to satisfy
@@ -432,7 +432,7 @@ Evidence may record:
 - capability consumption;
 - reconstruction or replay;
 - fence rejection; and
-- completed native-equivalent result.
+- completed runtime-equivalent result.
 
 Evidence cannot invoke a continuation, grant resumption authority, or become a
 Profile slot.
@@ -450,7 +450,7 @@ The following designs violate the approved boundary:
 - suspending across an unresolved external effect;
 - caching a callable continuation;
 - reconstructing an evaluator without a safe point; or
-- reporting a control rejection as a native POO failure.
+- reporting a control rejection as a POO failure.
 
 * Implementation admission checklist
 
@@ -458,7 +458,7 @@ The following designs violate the approved boundary:
 - [ ] Verify the exact continuable-exception and handler APIs.
 - [ ] Verify =dynamic-wind= behavior across local continuation capture and
   resumption.
-- [ ] Define POO-native live continuation, descriptor, and resumption control
+- [ ] Define POO live continuation, descriptor, and resumption control
   objects without freezing user macros.
 - [ ] Verify a live continuation cannot be serialized.
 - [ ] Verify a remote worker cannot receive live resumption authority.
@@ -472,7 +472,7 @@ The following designs violate the approved boundary:
   demand.
 - [ ] Verify handler return cannot inject an undeclared Profile value.
 - [ ] Verify suspension does not cross an unresolved external effect.
-- [ ] Verify control rejection remains distinct from native POO failure.
+- [ ] Verify control rejection remains distinct from POO failure.
 - [ ] Reuse =45-68= worker-fencing evidence.
 - [ ] Reuse =45-86= erasure-law evidence.
 - [ ] Render and validate both Mermaid diagrams.

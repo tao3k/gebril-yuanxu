@@ -1,16 +1,46 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import LeanPoo.Functional.ContractConsequence
 import LeanPoo.Functional.ConstructionCache
+import Std.Data.HashSet.Lemmas
 
 /-! Closed declaration projection and exact-context delayed construction.
 The syntax decoder is a separate Scheme correspondence obligation: these
-constructors cannot stand for arbitrary Scheme or authenticate native reads. -/
+constructors cannot stand for arbitrary Scheme or authenticate runtime reads. -/
 namespace YuanxuProof.ModuleSystem.Loading.MetadataProjection
 open LeanPoo.Functional LeanPoo.Functional.Requirements
 
+/-! Context admission currently repeats a namespace list search for every
+selected identity. The index is per validation, not a cached acceptance. This
+law is only about already obtained immutable-in-the-window symbol values;
+actual warm receiver/observer routing is a separate Scheme correspondence. -/
+namespace SelectionIndex
+def build : List String → Std.HashSet String
+  | [] => {}
+  | name :: rest => (build rest).insert name
+
+theorem lookup_exact (names : List String) (name : String) :
+    (build names).contains name = names.contains name := by
+  induction names with
+  | nil => simp [build]
+  | cons first rest ih =>
+    by_cases same : first = name
+    · subst first
+      simp [build, Std.HashSet.contains_insert, List.contains_cons]
+    · simp [build, Std.HashSet.contains_insert, ih, List.contains_cons,
+        same, Ne.symm same]
+
+theorem selected_membership_exact (names selected : List String) :
+    selected.all (fun name => (build names).contains name) =
+      selected.all (fun name => names.contains name) := by
+  simp only [lookup_exact]
+
+theorem first_missing_unchanged (names selected : List String) :
+    selected.find? (fun name => !(build names).contains name) =
+      selected.find? (fun name => !names.contains name) := by
+  simp only [lookup_exact]
+end SelectionIndex
+
 def quintSourceDigest : String := "sha256:3cc007e7bd3f45c624c19e08ac0b4c9c4a9ed2e8a89f78251521f3fbb2dda31a"
-def declaredPooRevision : String := "e281ad2e33784cfb9951c684b6be78bd2f4b7fca"
-def declaredLeanPooRevision : String := "5d4587a30e2333fc5f935dac6163aa56ff16a2dc"
 
 structure Dependency where
   alias : String
@@ -66,7 +96,7 @@ theorem immutableDeclarationShared {K : Type} {V : K → Type} [DecidableEq K]
    LeanPoo.Functional.ConstructionCache.Cache.retain_work cache order⟩
 
 /-- Receiver identity and every semantic revision are cache keys, not labels.
-This is an explicit correspondence requirement on native memo ownership. -/
+This is an explicit correspondence requirement on runtime memo ownership. -/
 structure Context where
   receiver : Nat
   sourceRevision : Nat

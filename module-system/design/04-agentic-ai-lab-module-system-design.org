@@ -82,7 +82,7 @@ maintained module owns a directory and supplies =types.ss=, =objects.ss=,
 implementation files may extend that shell.  =interface.ss= imports and
 re-exports each role and is the sole public entrypoint. Missing roles, a
 module-local =init.ss=, reversed role dependencies, or incomplete interface
-exports fail during loader projection before native build execution.
+exports fail during loader projection before runtime build execution.
 
 Default flags and module bundles have exactly one owner: the module's own
 =config.ss=. Kernel and user profiles compose those exports; they do not copy

@@ -4,7 +4,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Core owns the semantic Module value; a product supplies its authoring Profile.
-(import (only-in :clan/poo/object .o .mix .ref)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
         (only-in :yuanxu/module-system/schema/relations
                  SemanticImports.

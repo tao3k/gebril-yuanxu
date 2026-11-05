@@ -57,7 +57,7 @@ may supply typed facts, but do not own comparison semantics.
 
 * Typed semantic fact contract
 
-A shadow fact is a POO-native internal value with the following stable slots:
+A shadow fact is a POO internal value with the following stable slots:
 
 | Slot | Meaning |
 |------+---------|
@@ -92,7 +92,7 @@ order, then path, then key before comparison.
 
 * Shadow receipt
 
-The receipt is an internal POO-native value containing:
+The receipt is an internal POO value containing:
 
 | Slot | Meaning |
 |------+---------|

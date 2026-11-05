@@ -13,7 +13,7 @@ without naming these guarantees hides the engineering problem.
 
 The candidate distinction is a coherent module-owned chain: ordinary JSON or
 Scheme values, maintained domain objects, independently retained requirements,
-final-instance admission, and guarded plan publication. Native POO makes this
+final-instance admission, and guarded plan publication. POO makes this
 chain expressible; neither POO nor Scheme automatically proves it correct.
 This is a design differentiator to substantiate, not a claim of superiority
 across all platforms or proof that every infrastructure consumer is safe.
@@ -59,7 +59,7 @@ See the real
 source records. Missing Gitea database.port is defaulted from the effective
 PostgreSQL instance. Explicit values, including null, are not silently replaced.
 
-The real [[file:../../../scenarios/gitea-postgresql/gitea/objects.ss][object constructor]] retains that dependency with native lexical binding:
+The real [[file:../../../scenarios/gitea-postgresql/gitea/objects.ss][object constructor]] retains that dependency with runtime lexical binding:
 
 #+begin_src scheme
 (def (gitea-application database client)
@@ -81,7 +81,7 @@ The reusable service modules own field semantics. The maintained
 [[file:../../../scenarios/gitea-postgresql/interface.ss][Scenario interface]] owns dependency bindings and two contribution declarations,
 both targeted at its Application admission. The Scenario's application-scope
 binds PostgreSQLConfigContract and the real JSON documents into the Gitea
-ApplicationContract. Native scope publication supplies them once, rather than
+ApplicationContract. Runtime scope publication supplies them once, rather than
 asking an ordinary user to provide requirements or evidence manually.
 
 ** Ordinary user edit versus policy permission
@@ -213,13 +213,13 @@ The research comparison has separate owners:
   and maintained lifecycle integration. Preserve that ordinary user experience;
   qualify our explicit contribution and publication boundary against it.
 - [[file:../../20-29-ecosystem-research/26-pulumi/26.02-assurance-and-final-value-boundaries.org][Pulumi assurance comparison]] asks how dependency-bearing, unknown and secret
-  values constrain preview. Native lazy slots do not replace Pulumi Outputs.
+  values constrain preview. Runtime lazy slots do not replace Pulumi Outputs.
 - [[file:../../20-29-ecosystem-research/23-terraform/23.04-schema-plan-and-execution.org][Terraform planning]] already separates validation and execution phases. Its
   blocking preconditions differ from advisory check blocks; our API must be
   equally explicit about whether a refusal actually blocks publication.
 - [[file:../../20-29-ecosystem-research/25-nickel/25.01-index.org][Nickel and Omnibus]] provide prior art for composable field contracts and
   introspection. Our opportunity is to carry obligations through selected
-  native-object publication and final plan admission, not merely add contracts.
+  poo-object publication and final plan admission, not merely add contracts.
 
 The user's unconfirmed name "Plumr" is not treated as another researched product;
 Pulumi is the independently documented platform used for this comparison.

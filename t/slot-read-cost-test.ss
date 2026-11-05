@@ -65,7 +65,7 @@
     (verify receipt)
     (report (list 'ADMISSION-COST phase round 3 costs))))
 
-;; Independent graph-size oracle only; native replay remains the only validator.
+;; Independent graph-size oracle only; runtime replay remains the only validator.
 (def (graph-size roots)
   (def seen (make-hash-table-eq))
   (let loop ((pending roots) (edges 0))

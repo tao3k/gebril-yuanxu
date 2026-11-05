@@ -27,8 +27,8 @@ landed or released baseline.
 
 * 10.06.47.10 Invariants
 
-1. Public extension surfaces are POO-native. Objects, prototypes, slots,
-   native CLOS dispatch and named functional composition are the ordinary API.
+1. Public extension surfaces are POO. Objects, prototypes, slots,
+   runtime CLOS dispatch and named functional composition are the ordinary API.
 2. Pure algorithms live in the nearest reusable =funcs.ss= owner and use
    Gerbil std or SRFI implementations before project-local substitutes.
 3. A generic function is introduced only for an open dispatch axis. Direct
@@ -36,7 +36,7 @@ landed or released baseline.
    they express the domain more directly.
 4. Public macros only project syntax or phase semantics onto ordinary POO and
    functional code. They do not create a parallel runtime or object model.
-5. =build.ss= is the unique package build entry. ASP PackageSpec owns native
+5. =build.ss= is the unique package build entry. ASP PackageSpec owns runtime
    import closure projection and =std/make= owns compilation.
 6. =yuanxu-load-modules= owns runtime module-source discovery. It does not
    execute inside =build.ss=.
@@ -55,14 +55,14 @@ landed or released baseline.
 
 | Area | Current state | Remaining closure |
 |------+---------------+-------------------|
-| Profile and Scenario expression | Direct =agentic-ai-lab.scenario-case.v1= values, cached ExecutionPlan and 1,000/5,000 Profile receipts exist | finish directory discovery and user-facing config roles |
+| Profile and Scenario expression | Direct =yuanxu.funflow.scenario.v1= values, cached ExecutionPlan and 1,000/5,000 Profile receipts exist | finish directory discovery and user-facing config roles |
 | Session policy generation | =modules/session/policy-syntax.ss= exists | verify family coverage and reduce remaining large owners |
 | Runtime projection generation | =src/utilities/runtime-receipt-syntax.ss= exists | separate receipt/request/envelope/manifest/snapshot owners |
 | Loop intent | =runtime-intent.ss= exists but remains a large mixed owner | make =runtime.ss= a small orchestrator |
 | Standards | RFC 163 M0--M4 are implemented in the working tree | land the core and preserve contribution ownership |
 | Sources Lock | POO Feature, generated module writer and indexed verification exist | canonical generation, scale and Provider gates |
 | CLOS and algorithms | major O(n²) paths have indexed or std-backed implementations | measure the bounded candidates in RFC 148 before changing them |
-| Build | ASP dependency-first native closure and build observability exist | qualify clean cold/warm currentness without a shadow builder |
+| Build | ASP dependency-first runtime closure and build observability exist | qualify clean cold/warm currentness without a shadow builder |
 | Lambda Aitia | SDLC/NASA/GitOps and causal assurance are Aitia-owned | close child tests and child commit before parent gitlink |
 | Lambda Episteme | Healthcare/FHIR and ontology are contributor-owned | close child tests and child commit independently from Aitia |
 
@@ -125,14 +125,14 @@ Exit criteria:
 Current mechanism receipt (2026-09-18):
 
 - the Feature canonicalizes discovery order, materializes one constructor-owned
-  native hash index and emits byte-identical generated source for equivalent
+  runtime hash index and emits byte-identical generated source for equivalent
   declarations;
 - the atomic Feature suite passes 15 checks covering text, bytevector,
   duplicate identity, digest, byte count and generated source identity;
 - =just test-sources-lock-performance= constructs 10,000 reversed admitted
   entries in 187 ms and completes 20 full 10,000-lookup samples with a 5.000114
   ms p95 under the 50 ms hard gate;
-- the reader-native POO authoring gate now covers =t/performance/**/*.ss=, so a
+- the reader-POO authoring gate now covers =t/performance/**/*.ss=, so a
   self-referential fixture slot is rejected before benchmark realization.
 
 Contribution-owned generated locks and Provider-specific source inventories
@@ -373,7 +373,7 @@ Every implementation slice follows this order:
 A slice is complete only when:
 
 - ownership is correct;
-- public values are POO-native or functional;
+- public values are POO or functional;
 - generated syntax lowers to ordinary code;
 - negative behavior is executable;
 - source and installed-artifact behavior are distinguished;

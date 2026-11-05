@@ -25,12 +25,12 @@ these internal edges and semantic obligations, as observed in this generation
 It does not mean a permanent numeric component identifier, a source-level
 module group or a cache namespace.
 
-* Native POO boundary
+* POO boundary
 
 =gerbil-poo= remains the sole implementation of POO objects, prototype
 composition, slot demand and open recursion.
 
-Agentic AI Lab derives SCC evidence from native demand.  It MUST NOT add:
+Agentic AI Lab derives SCC evidence from runtime demand.  It MUST NOT add:
 
 - a second fixed-point evaluator;
 - a static module dependency graph presented as runtime truth;
@@ -43,7 +43,7 @@ language.
 
 * Provisional and sealed topology
 
-During evaluation, the demand graph is provisional.  New native slot demand
+During evaluation, the demand graph is provisional.  New runtime slot demand
 may add an edge, reveal a back edge, join previously separate components or
 show that a predecessor edge is no longer demanded.
 
@@ -65,7 +65,7 @@ every syntactically reachable branch merely to construct a global static graph.
 flowchart LR
   G["Current contribution generation"] -->|"starts from an invalidated demand frontier"| P["Provisional demand graph"]
   H["Predecessor footprint"] -->|"offers scheduling hints without reuse authority"| P
-  P -->|"native slot demand discovers an ordinary edge"| P
+  P -->|"runtime slot demand discovers an ordinary edge"| P
   P -->|"a back edge reveals mutual dependency"| W["Provisional cycle witness"]
   W -->|"expands observation to the complete demanded component"| C["Current SCC candidate"]
   C -->|"new demand changes membership or internal edges"| P
@@ -157,7 +157,7 @@ final receipt apply to the whole merged SCC.
 * Cross-submodule SCCs
 
 Module and submodule boundaries do not arbitrarily cut a real dependency
-cycle.  If native demand produces mutual reachability across nested submodules,
+cycle.  If runtime demand produces mutual reachability across nested submodules,
 the sealed SCC may cross those boundaries.
 
 Every cross-boundary edge still retains:

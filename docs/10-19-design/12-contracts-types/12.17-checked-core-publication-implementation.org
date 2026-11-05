@@ -103,7 +103,7 @@ Core source namespace. All final runs exited 0 with MODULE-OK, HARNESS-OK and
 final OK, without ERROR CASE/CHECK/HARNESS or heap/stack overflow. The new suite
 also checked completion of all seven case bodies. No full build was run.
 
-| Native suite | Cases | Result |
+| Runtime suite | Cases | Result |
 |--------------+-------+--------|
 | admission-checked-publication-test | 7 | Production producer/publication/Context; wrapped root, final receiver and file-backed invalidation |
 | admission-publication-test | 8 | Existing Graph/source/Schema publication regressions, including nested refusal cause/phase |
@@ -168,7 +168,7 @@ The actual generated Schema is evidence, not a substitute for provider validatio
 * Remaining boundaries
 
 Platform code still supplies the selected Schema artifacts; complete automatic
-export/Schema/Contract association is NOT implemented. Native reference binding
+export/Schema/Contract association is NOT implemented. Runtime reference binding
 requires immutable descriptors/subjects and controlled producers. Filesystem
 rechecks are not a concurrent compare-and-swap or cryptographic authority. Source
 changes after the final check and before external effects need a separately

@@ -3,13 +3,12 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; POO-native CLOS descriptor family.
+;;; POO CLOS descriptor family.
 ;;;
 ;;; This factor owns values and validation only.  Dispatch and mutation policy
 ;;; remain in their dedicated factors.
 
-(import (only-in :clan/poo/object
-                 .o .ref .slot? .all-slots object? compute-precedence-list! object-protocol object-revision)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop define-type Type. element?)
 )
 
@@ -295,7 +294,7 @@
                    (compute-precedence-list! owner)
                    (not (object-protocol owner))) owners)))
   (lambda ()
-    ;; Native names queries retain these exact owner revisions in an enclosing
+    ;; Runtime names queries retain these exact owner revisions in an enclosing
     ;; read frame, without forcing policy fields or minting application records.
     (for-each .all-slots owners)
     (and closed? (equal? revisions (map object-revision owners)))))
@@ -336,7 +335,7 @@
                       function-name-list? function-name-list? list? string-or-false?
                       class-references? class-reference?))))
 
-;;; Effective slots are immutable projections over the native POO class CPL.
+;;; Effective slots are immutable projections over the POO class CPL.
 (define-type (ClosEffectiveSlotDefinition @ ClosType.)
   proto: (clos-prototype ClosEffectiveSlotDefinition
                          'poo-clos/effective-slot-definition)
@@ -365,7 +364,7 @@
                       procedure-or-false? procedure-or-false?
                       string-or-false? any-value?))))
 
-;;; Class metaobjects own lazy native prototypes and class-allocated storage;
+;;; Class metaobjects own lazy runtime prototypes and class-allocated storage;
 ;;; they do not replace gerbil-poo's inheritance or C4 implementation.
 (define-type (ClosClass @ ClosType.)
   proto: (clos-prototype ClosClass 'poo-clos/class)

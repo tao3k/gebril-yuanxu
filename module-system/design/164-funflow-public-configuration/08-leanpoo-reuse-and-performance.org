@@ -58,15 +58,15 @@ supported projection, not an invented dependency certificate.
 
 ProjectCI publishes build/test/package and a Pipeline. ReleaseCI refines those
 Checks; ExtendedCI adds smoke and changes membership to include it. The
-[[file:07-admission-source.org][complete native Scheme source]] already checks actual selected values and
+[[file:07-admission-source.org][complete Scheme source]] already checks actual selected values and
 pairwise object identities. The Lean models suggest the following safe reuse
 boundaries without changing the user's configuration:
 
 1. Reuse a prepared declared-field index across candidates only when the
    effective Contract family and immutable declaration revision are established
-   unchanged. Native .all-slots already caches slot-name/precedence information;
+   unchanged. Runtime .all-slots already caches slot-name/precedence information;
    a separate membership index could remove repeated memq scans, not claim that
-   native POO currently rebuilds its entire schema on every access.
+   POO currently rebuilds its entire schema on every access.
 2. Keep final receiver, selected membership, source occurrence and applicable
    policy/Contract context in the preparation/snapshot boundary. A new child
    receiver must not inherit the parent's cached Check list as current data.
@@ -85,11 +85,11 @@ boundaries without changing the user's configuration:
    is supplied and applies to the same data family. Adding a stronger arbitrary
    domain rule is not an implication from an old, weaker rule.
 
-The existing native receiver cache and LeanPoo materialized construction cache
-are different mechanisms. The former already serves getter values per native
+The existing runtime receiver cache and LeanPoo materialized construction cache
+are different mechanisms. The former already serves getter values per runtime
 receiver. The latter models explicit cross-revision transport with equality
 premises. Neither a new wrapper nor a copied stamp is a substitute for those
-premises. User-visible native paths and =>.+ remain unchanged.
+premises. User-visible runtime paths and =>.+ remain unchanged.
 
 * Performance results actually inspected at this cut
 

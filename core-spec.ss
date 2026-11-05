@@ -1,14 +1,11 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(export core-spec core-public-roots)
+(export core-spec)
 
-;; Public facade installation follows its actual import closure, independently
-;; of Module Scope selection and runtime activation.
-(def core-public-roots '("modules/funflow/control-plane/api.ss"))
-
-;; Ordinary library roots only. init.ss is consumed by build.ss, not compiled
-;; as a library target. Selected Module targets come from init.exports.
+;; Ordinary library targets, including the public Funflow facades and their
+;; owned libraries. Gerbil resolves their imports when compiling. Selected
+;; Module targets come from init.exports.
 (def core-spec
   '("prelude"
     "core-spec"
@@ -156,6 +153,15 @@
     "module-system/source/module-prelude"
     "module-system/source/config-prelude"
     "module-system/source/preparation"
+    "module-system/source/role-context"
+    "module-system/source/reader-evaluation"
+    "module-system/source/reader-support"
+    "module-system/source/compiler-tools"
+    "module-system/source/configuration-reader"
+    "module-system/source/reader-session"
+    "module-system/source/reader-preparation"
+    "module-system/source/reader-guards"
+    "module-system/source/publication-reader"
     "module-system/source/reader"
     "module-system/source/collection"
     "module-system/source/projection"
@@ -163,6 +169,7 @@
     "module-system/source/directory"
     "module-system/source/selection"
     "module-system/building/package"
+    "module-system/building/products"
     "module-system/building/artifacts"
     "module-system/source/build"
     "module-system/source/link"
@@ -187,7 +194,36 @@
     "module-system/catalog/values"
     "module-system/authoring/syntax"
     "module-system/selection/init-syntax"
-    ;; Advanced consumers explicitly import this existing library API.
-    ;; Compiling it does not import it into the ordinary Funflow module.
-    "modules/funflow/control-plane/api"))
-
+    "module-system/selection/init-expansion"
+    "modules/funflow/control-plane/api"
+    "modules/funflow/control-plane/projection-syntax"
+    "poo-clos/generic-syntax"
+    "module-system/source/observations"
+    "module-system/source/role-forms"
+    "modules/funflow/control-plane/failure"
+    "modules/funflow/control-plane/signatures"
+    "modules/funflow/control-plane/runtime-protocol"
+    "modules/funflow/control-plane/runtime-command-invocation"
+    "modules/funflow/control-plane/roles"
+    "modules/funflow/control-plane/task"
+    "modules/funflow/control-plane/runtime-adapter"
+    "modules/funflow/control-plane/flow-declarations"
+    "modules/funflow/control-plane/flow-strand"
+    "modules/funflow/control-plane/flow"
+    "modules/funflow/control-plane/graph"
+    "modules/funflow/control-plane/strategy"
+    "modules/funflow/control-plane/runner-support/adapter-dispatch"
+    "modules/funflow/control-plane/receipt"
+    "modules/funflow/control-plane/runner-support/receipt"
+    "modules/funflow/control-plane/runner-support/validation"
+    "modules/funflow/control-plane/replay"
+    "modules/funflow/control-plane/policy"
+    "modules/funflow/control-plane/runner"
+    "modules/funflow/control-plane/config"
+    "modules/funflow/control-plane/agent-harness-vocabulary"
+    "modules/funflow/control-plane/agent-harness"
+    "modules/funflow/control-plane/runtime-command-descriptor"
+    "modules/funflow/control-plane/flow-syntax"
+    "modules/funflow/scenario"
+    "modules/funflow/workload"
+    "modules/funflow/bundle-v1"))

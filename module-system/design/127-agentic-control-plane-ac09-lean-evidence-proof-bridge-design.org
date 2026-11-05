@@ -36,10 +36,10 @@ The first complete proof case is an =AuthorizedEffectToken= bound to:
 
 | Owner | Responsibility |
 |-------+----------------|
-| Scheme POO control plane | Declare proof facts, obligation profiles, and evidence projections as POO-native objects |
+| Scheme POO control plane | Declare proof facts, obligation profiles, and evidence projections as POO objects |
 | Cedar adapter | Produce and preserve the authorization decision; it does not generate Lean theorems |
 | Runtime-v0 kernel | Validate mediation state and construct the canonical proof-case vector |
-| C ABI | Transport the stable native representation and errors; it does not decide proof truth |
+| C ABI | Transport the stable runtime representation and errors; it does not decide proof truth |
 | Python runtime | Production-capable CFFI runtime, generator, and differential oracle |
 | Lean package | Typed decode, theorem ownership, and proof-receipt construction |
 | Downstream adapters | Adapt the public C ABI into Rust, TypeScript, or other runtime languages |
@@ -75,7 +75,7 @@ Lean theorem has been proved.
 
 ** Representation
 
-The canonical vector is versioned, deterministic, and native. Its logical
+The canonical vector is versioned, deterministic, and runtime. Its logical
 fields are:
 
 | Group | Fields |
@@ -101,7 +101,7 @@ are invalid.
 ** Digest identity derivation
 Proof identity v1 uses =sha256= with two distinct, manifest-owned domains:
 - =agentic-ai-lab.proof-case-vector.v1= hashes the domain, one zero separator byte,
-  and the exact canonical 424-byte native vector;
+  and the exact canonical 424-byte runtime vector;
 - =agentic-ai-lab.authorized-effect-theorem-set.v1= hashes the domain, one zero
   separator byte, and the ordered newline-separated theorem names.
 
@@ -110,7 +110,7 @@ canonical manifest and generated into C, Lean, and Python projections. Lean
 models SHA-256 as a trusted primitive, but =verifiedProofReceipt= applies that
 primitive internally. Callers cannot supply =vectorDigest= or
 =theoremSetDigest=. Executable runtimes discharge the trusted primitive
-through native SHA-256 and cross-runtime differential gates.
+through runtime SHA-256 and cross-runtime differential gates.
 
 ** Rejected representations
 
@@ -214,7 +214,7 @@ freshness tests from one manifest.
 
 ** S2 Scheme POO projection
 
-Add POO-native proof-case, obligation, and evidence projections. Raw alists,
+Add POO proof-case, obligation, and evidence projections. Raw alists,
 record DSLs, ad hoc patch languages, and raw compute hooks are not the ordinary
 public interface.
 
@@ -231,11 +231,11 @@ and emit a ProofReceipt bound to the vector and theorem set.
 ** S5 Python CFFI differential
 Qualification includes a non-editable installed wheel consumer. Importing the
 checkout source or relying on development =PYTHONPATH= fails the gate.
-The executable gate launches the Scheme encoder, compares its complete native
+The executable gate launches the Scheme encoder, compares its complete runtime
 vector and SHA-256 with the manifest/Lean fixture, and then sends those same
 bytes through the CFFI C ABI. A mismatch reports the two owners, first field,
 and byte offset.
-Use the Scheme caller-owned native encoder as the upstream vector owner, then
+Use the Scheme caller-owned runtime encoder as the upstream vector owner, then
 compare the C round trip, Python layout/status projection, and Lean canonical
 fixture without introducing a JSON representation.
 
@@ -269,7 +269,7 @@ are not committed merely because they were edited together.
 - Generated artifacts are reproducible and fresh.
 - Reserved fields and unknown tags fail according to the declared version rule.
 
-** Native conformance
+** Runtime conformance
 
 - Pure-C consumers verify layout, alignment, endianness, sizing, zero-length,
   insufficient capacity, and invalid-handle behavior.
@@ -345,7 +345,7 @@ The RFC does not invent an unmeasured millisecond threshold.
 
 1. One canonical proof manifest regenerates every language projection.
 2. All generated-artifact freshness gates pass.
-3. The public Scheme proof surface is POO-native.
+3. The public Scheme proof surface is POO.
 4. The C ABI contains no JSON and exposes no Gerbil object layout.
 5. The bulk path has no per-field FFI reconstruction or per-item allocation.
 6. Lean build, FFI smoke, and the AuthorizedEffectToken theorem set pass.
@@ -367,7 +367,7 @@ The RFC does not invent an unmeasured millisecond threshold.
 - Treating Python as a proof kernel.
 - Proving arbitrary user code or external side effects.
 - Replacing Cedar authorization with Lean theorem evaluation.
-- Introducing a serialized document protocol into the native hot path.
+- Introducing a serialized document protocol into the runtime hot path.
 
 * Delivery Boundary
 

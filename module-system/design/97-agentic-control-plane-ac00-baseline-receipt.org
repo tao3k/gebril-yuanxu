@@ -57,7 +57,7 @@ current owners:
 
 | Concern | Confirmed current owner set |
 |-
-| POO-native authoring and =session-case= | =src/user-interface/init-syntax.ss= |
+| POO authoring and =session-case= | =src/user-interface/init-syntax.ss= |
 | Profile composition | =core/profile-composition/= owns ProfileBundle, bindings, and selection syntax; =src/scenario/= owns product composition syntax and Scenario root/accessors |
 | Policy | =src/core/policy.ss=, =modules/session/policy.ss=, =policy-syntax.ss=, and =policy-validation*.ss= |
 | Receipts | Core/runner receipts, session receipt syntax and validation receipt, contract receipt, loop-engine extension receipt, and proof-gate receipts |
@@ -165,7 +165,7 @@ missing-human-approval cases exhibit the same record/object mismatch.
 
 Owner boundary: the graph runtime receipt accessor contract and its scenario.
 The repair must use the existing record accessor or an already canonical
-POO-native projection consistently; AC-00 does not authorize a new receipt
+POO projection consistently; AC-00 does not authorize a new receipt
 model.
 
 At discovery time AC-01 remained blocked until both scenarios passed. The

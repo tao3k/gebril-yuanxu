@@ -3,12 +3,12 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: native POO type and contract descriptors for observability.
+;;; Boundary: POO type and contract descriptors for observability.
 ;;; Invariant: validation dispatches through gerbil-poo descriptors; contract
 ;;; evidence is projected only after the semantic decision has been made.
 
-(import :gerbil/core
-        (only-in :clan/poo/object .cc .mix .o .ref .slot? object? object<-alist)
+(import (runtime: :gerbil/core) (only-in :gerbil/core make-object)
+        (runtime: :clan/poo/object)
         (only-in :clan/poo/mop define-type element? validate)
         (only-in :yuanxu/object-types/contracts
                  YuanxuContract.
@@ -222,7 +222,7 @@
 (def (yuanxu-observability-require-receipt! candidate)
   (validate YuanxuObservabilityReceiptContract candidate))
 
-;;; Framework foundation: explicit native prototypes, independent of legacy
+;;; Framework foundation: explicit runtime prototypes, independent of legacy
 ;;; feedback receipts and strict module-system presentation structs.
 (def (yuanxu-observation-scalar-classify identity predicate candidate context)
   (let (accepted? (predicate candidate))
@@ -251,7 +251,7 @@
                   'observation/natural yuanxu-observation-natural? <> <>))
 
 ;;; These owner-local constructors keep dependency primitives out of domain
-;;; declarations while returning ordinary native POO values.
+;;; declarations while returning ordinary POO values.
 ;; : (-> Unit POOObject)
 (def (yuanxu-observation-empty-prototype) (.o))
 ;; : (-> Alist POOObject)
@@ -277,7 +277,7 @@
   (yuanxu-observability-list-of?
    (cut element? YuanxuObservationIdentityContract <>) value))
 
-;;; Invariant: causal identity lists contain only admitted native identity objects.
+;;; Invariant: causal identity lists contain only admitted runtime identity objects.
 (define-type (ObservationIdentities @ YuanxuContract.)
   identity: 'observation/identities
   .classify: (cut yuanxu-observation-scalar-classify
@@ -352,7 +352,7 @@
   .classify: (cut yuanxu-observation-scalar-classify
                   'observation/failures yuanxu-observation-failures? <> <>))
 
-;;; Boundary: this empty responsibility base is the native extension point for fact families.
+;;; Boundary: this empty responsibility base is the runtime extension point for fact families.
 (define-type (YuanxuObservationFactsContract @ YuanxuObjectContract.)
   identity: 'observation/facts
   proto: (yuanxu-observation-empty-prototype)
@@ -395,7 +395,7 @@
   .classify: (cut yuanxu-observation-scalar-classify
                   'observation/disclosure yuanxu-observation-internal? <> <>))
 
-;;; Boundary: the event contract binds lineage, disclosure, and native evidence responsibilities.
+;;; Boundary: the event contract binds lineage, disclosure, and runtime evidence responsibilities.
 (define-type (YuanxuObservationContract @ YuanxuObjectContract.)
   identity: 'observation/event
   proto: (yuanxu-observation-empty-prototype)
@@ -495,7 +495,7 @@
   .obligations: yuanxu-authoring-observation-obligations)
 
 ;;; Boundary: traced calls carry an explicit depth budget.  The policy is a
-;;; native POO value rather than an ambient global tracer setting.
+;;; POO value rather than an ambient global tracer setting.
 (define-type (YuanxuDebugCallPolicyContract @ YuanxuObjectContract.)
   identity: 'observation/debug-call-policy
   proto: (yuanxu-observation-empty-prototype)
@@ -613,7 +613,7 @@
      (collect-before-sample? . ,ObservationBoolean)
      (fail-closed? . ,ObservationBoolean))))
 
-;;; Boundary: a sample projects Gerbil runtime counters into a native POO
+;;; Boundary: a sample projects Gerbil runtime counters into a POO
 ;;; value; it never retains heap objects or exposes the runtime statistics row.
 (define-type (YuanxuDebugMemorySampleContract @ YuanxuObjectContract.)
   identity: 'observation/debug-memory-sample

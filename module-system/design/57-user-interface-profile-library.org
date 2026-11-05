@@ -125,7 +125,7 @@ validate.
 | proof facts | facts emitted by Scheme for Lean obligations |
 | scenario benchmark | representative case for validation |
 
-This is intentionally POO-native.  The ordinary contribution path should not be
+This is intentionally POO.  The ordinary contribution path should not be
 an untyped alist, ad hoc patch language, or raw JSON manifest.  Those formats may
 exist at import/export boundaries, but the public authoring surface should be
 Gerbil POO objects and functional composition.
@@ -198,7 +198,7 @@ treated as public reusable library surface.
 
 | Gate | Required evidence |
 |------+-------------------|
-| POO-native shape | profile, strategy, policy, and extension points are represented through POO objects or functional helpers |
+| POO shape | profile, strategy, policy, and extension points are represented through POO objects or functional helpers |
 | Scenario test | at least one concrete scenario exercises the profile |
 | Scheme fact projection | the profile emits proof-addressable facts for its session, sandbox, loop, profile, workflow, and runtime boundaries |
 | Lean obligation mapping | emitted facts map to named Lean obligations |
@@ -261,7 +261,7 @@ honest: core profile, community contribution, experimental sketch, rejected
 case, or proof-backed reusable profile.
 
 * 10.06.57.85 Receipt-Backed Gate Semantics
-The implementation gate is intentionally POO-native. A public reusable profile is not accepted by writing a JSON manifest or hand-authored fact table. The authoring object is a profile gate, and the acceptance evidence is a profile gate receipt.
+The implementation gate is intentionally POO. A public reusable profile is not accepted by writing a JSON manifest or hand-authored fact table. The authoring object is a profile gate, and the acceptance evidence is a profile gate receipt.
 #+begin_src typst
 $
 op("AcceptedGate")(p)

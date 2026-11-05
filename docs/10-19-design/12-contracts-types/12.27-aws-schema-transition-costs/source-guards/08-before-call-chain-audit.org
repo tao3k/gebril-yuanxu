@@ -54,7 +54,7 @@ AdmissionPublication.publish / package-before or package-after
 The real callbacks are resolved through public POO slots. The package checker
 is not a closed continuation of the preceding guard. Its slot getter, body,
 Source methods and cold lazy values can execute code. A warm artifact removes
-one realization, not these extension boundaries. The existing native
+one realization, not these extension boundaries. The existing runtime
 warm-callback mutation control checks inputs and then writes a configuration
 file; the enclosing return guard must observe that write. The earlier failing
 whole-body read-window mutation remains relevant, not superseded by a warm

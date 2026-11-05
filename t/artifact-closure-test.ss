@@ -67,7 +67,7 @@
   (path-expand (string-append prefix name suffix) (.get resource lib)))
 (def artifact-closure-test
  (test-suite "Compiler artifact closure before callback loading"
-  (yuanxu-test-case "actual native closure admits without loading callback code"
+  (yuanxu-test-case "actual runtime closure admits without loading callback code"
     (with-closure (lambda (_resource issued)
       (check-equal? (> (length (.get issued units)) 2) #t)
       (check-equal? (.get (observe "selected" issued) issues) '())))
@@ -78,7 +78,7 @@
             (local resource "precompiled-stores" "~0.o1"))
       (check-equal? (has-issue? issued 'artifact-closure-changed) #t)))
     (set! completed (+ completed 1)))
-  (yuanxu-test-case "native highest oN resolution rejects a newly mixed binary"
+  (yuanxu-test-case "runtime highest oN resolution rejects a newly mixed binary"
     (with-closure (lambda (resource issued)
       (copy (local resource "precompiled-stores" "~0.o1")
             (local resource "precompiled-stores" "~0.o2"))
@@ -150,7 +150,7 @@
       (check-equal? (.get (observe "unselected" issued) issues) '())))
     (set! completed (+ completed 1)))
   (yuanxu-test-case "loading selected callback before admission refuses even when files are unchanged"
-    ;; Last case: native loaded-module state intentionally persists to process exit.
+    ;; Last case: runtime loaded-module state intentionally persists to process exit.
     (with-closure (lambda (_resource issued)
       (load-module entry)
       (check-equal? (has-issue? issued 'callback-already-loaded) #t)))
@@ -164,4 +164,4 @@
   (vector-set! (vector-ref trace 0) 6 #f)
   (call-with-output-file (list path: (path-expand "artifact-observations-tampered.json" root) truncate: #t)
     (lambda (port) (write-json port trace)))
-  (displayln "ARTIFACT-CLOSURE: 13 cases; callback admission before native loading"))
+  (displayln "ARTIFACT-CLOSURE: 13 cases; callback admission before runtime loading"))

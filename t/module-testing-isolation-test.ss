@@ -1,11 +1,10 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Real module qualifications share init selection, guards and Ops execution.
+;;; Real module qualifications share init selection and source guards; no executor.
 (import :std/test :yuanxu/object-syntax/path-slots
         (only-in :clan/poo/object .get .call .ref/cached)
         (only-in "../init.ss" yuanxu.init.exports)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :std/misc/ports read-all-as-string)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint
                  yuanxu-test-observe)
@@ -16,25 +15,16 @@
               (let (root (make-temporary-file-name "module-qualifications-"))
                 (create-directory root) root))
   .release: (lambda (root)
-              ;; Preserve the existing Ops observation stream before removing
-              ;; its fixture. A failed Case must not erase its last phase.
-              (dynamic-wind void
-                (lambda ()
-                  (let (log (path-expand "harness.log" root))
-                    (when (file-exists? log)
-                      (display (call-with-input-file log read-all-as-string) (current-error-port))
-                      (force-output (current-error-port)))))
-                (lambda ()
-                  (clear-temporary-file! root)
-                  (check-equal? (file-exists? root) #f)))))
+              (clear-temporary-file! root)
+              (check-equal? (file-exists? root) #f)))
 (def module-testing-isolation-test
   (test-suite "JsonSchema and Funflow init-owned qualifications"
     (yuanxu-test-fixture "multi-owner selection and publication share one bounded Case"
       (workspace Workspace)
       (yuanxu-test-checkpoint 'selection-start)
-      (def json (.get yuanxu.init.exports Modules json-schema))
-      (def flow (.get yuanxu.init.exports Modules funflow))
-      (def unused (.get flow tests))
+      (def json (.call (.get yuanxu.init.exports tests) .select '(json-schema)))
+      (def flow (.call (.get yuanxu.init.exports tests) .select '(funflow)))
+      (def unused flow)
       (def reads 0)
       (def funflow-read? #f)
       (def previous-observer (current-module-source-observer))
@@ -51,14 +41,14 @@
       (check-equal? (.ref/cached all 'selected-graph) #f)
       (check-equal? (.ref/cached all 'execution) #f)
       (check-equal? (.ref/cached all 'spec) #f)
-      (check-equal? (.ref/cached (.get flow tests) 'qualification) #f)
+      (check-equal? (.ref/cached flow 'qualification) #f)
       (def json-tests
         (parameterize ((current-module-source-observer observe))
-          (.get json tests qualification)))
+          (.get json qualification)))
       (check-equal? funflow-read? #f)
       (check-equal? (eq? json-tests (.call all .select '(json-schema))) #t)
-      (check-equal? (.ref/cached (.get flow tests) 'qualification) #f)
-      (def flow-tests (.get flow tests qualification))
+      (check-equal? (.ref/cached flow 'qualification) #f)
+      (def flow-tests (.get flow qualification))
       (def selected (.call all .select '(json-schema funflow)))
       (check-equal? (eq? selected (.call selected .select '(json-schema funflow))) #t)
       (check-equal? (.get selected spec)
@@ -71,46 +61,19 @@
       (check-equal? (.ref/cached selected 'execution) #f)
       (yuanxu-test-checkpoint 'selection-verified)
       (check-equal? (.ref/cached all 'spec) #f)
-      (for-each (lambda (module) (check-equal? (.ref/cached module 'scope) #f))
-        (list json flow))
+      (for-each (lambda (owner) (check-equal? (.ref/cached (.get yuanxu.init.exports Modules) owner) #f))
+        '(json-schema funflow))
       (check-equal?
         (eq? selected (.call all .select '(json-schema funflow))) #t)
       (def source (.get selected source))
       (def guard (.get selected admit-current))
-      ;; xcrun's actual cache database must not occupy source-reader scratch.
-      ;; Reuse the SAME Fixture; no shared host cache or ignored residue.
-      (with-yuanxu-fixture (tool-cache Workspace)
-        (.def (Run @ selected)
-          ;; Observation belongs to this init-owned test object. Ops propagates
-          ;; the selected policy to child fixtures; no author-side Profile.
-          execution.profile.emit?: #t
-          execution.profile.trace-enabled?: #t
-          execution.environment.TMPDIR: workspace
-          execution.environment.xcrun_db: (path-expand "xcrun_db" tool-cache)
-          execution.log: (path-expand "harness.log" workspace))
-        (check-equal? (.get Run execution profile emit?) #t)
-        (check-equal? (.get Run execution profile trace-enabled?) #t)
-        (check-equal? (eq? (.get Run execution source) source) #t)
-        (check-equal? (eq? (.get Run admit-current) guard) #t)
-        (yuanxu-test-checkpoint 'qualification-run)
-        (def receipt (.call Run .run))
-        (yuanxu-test-observe 'test-worker-milliseconds
-          (inexact->exact (round (* 1000 (.get receipt seconds)))))
-        (yuanxu-test-checkpoint 'qualification-complete)
-        (check-equal? (directory-files workspace) '("harness.log"))
-        ;; The unselected integration branch stays cold during qualification.
-        (check-equal? (.ref/cached (.get flow tests) 'integration) #f)
-        (check-equal? (.ref/cached all 'spec) #f)
-        (for-each (lambda (module) (check-equal? (.ref/cached module 'scope) #f))
-          (list (.get yuanxu.init.exports Modules json-schema)
-                (.get yuanxu.init.exports Modules funflow)))))
-    (test-case "Ops failure unwinds the existing fixture"
-      (def acquired #f)
-      (check-exception
-        (with-yuanxu-fixture (workspace Workspace)
-          (set! acquired workspace)
-          (.def (Failed @ (.get yuanxu.init.exports Modules funflow tests qualification))
-            execution.command: '("false")
-            execution.environment.TMPDIR: workspace)
-          (.call Failed .run)) error?)
-      (check-equal? (file-exists? acquired) #f))))
+      (check-equal? (eq? guard (.get source admit-current)) #t)
+      (for-each (lambda (name) (check-equal? (.slot? selected name) #f))
+                '(.run .compile execution))
+      (guard)
+      ;; Qualification selection never runs a Suite or forces business scopes.
+      (check-equal? (.ref/cached flow 'integration) #f)
+      (check-equal? (.ref/cached all 'spec) #f)
+      (check-equal? (directory-files workspace) '())
+      (for-each (lambda (module) (check-equal? (.ref/cached module 'scope) #f))
+                (list json flow)))))

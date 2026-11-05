@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; A selected source package, not a compiler/runtime or a catalog copier.
-(import :clan/poo/object
+(import (runtime: :clan/poo/object)
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/string/path path-absolute?)
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-admit-current!)
@@ -51,7 +51,7 @@
       (def source-root (cdr (or (assq 'module-root metadata) (assq 'module-tree-root metadata))))
       (def prefix (string-append (path-strip-trailing-directory-separator (path-normalize source-root)) "/"))
       (defvalues (category name relative) (package-location owner))
-      ;; Preserve the actual native package and prelude, not an invented alias.
+      ;; Preserve the actual runtime package and prelude, not an invented alias.
       (def package-id (string->symbol (path-strip-trailing-directory-separator
                                       (path-directory (symbol->string (.get entry compiler-identity))))))
       (stage! (string-append relative "/gerbil.pkg")
@@ -93,7 +93,7 @@
     (append declared
       (filter (lambda (owner) (not (memq owner declared)))
               (append (.get selected module-order) (.get selected denied-modules)))))
-  ;; Ungrouped names precede categories, matching the native init grammar.
+  ;; Ungrouped names precede categories, matching the runtime init grammar.
   (def ordered
     (append (filter (lambda (owner) (not (memv #\/ (string->list (symbol->string owner))))) order)
             (filter (lambda (owner) (memv #\/ (string->list (symbol->string owner)))) order)))

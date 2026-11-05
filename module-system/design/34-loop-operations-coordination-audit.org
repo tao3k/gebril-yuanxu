@@ -79,7 +79,7 @@ cause was no =acting_on= collision check.
 
 * Implication For Agentic AI Lab
 We should keep the current =memory-policies= implementation as the state shape
-for each use case, then add a POO-native policy extension surface around it.
+for each use case, then add a POO policy extension surface around it.
 The runtime core should not grow one bespoke function per policy family.
 
 Operational policy families should be regular POO objects that can project
@@ -92,7 +92,7 @@ report-only receipts through a shared extension collection:
 - =loop-engine-safety-policy=: denylist paths, allowlist paths, human gate
   categories, max attempts, connector scopes, auto-merge policy.
 
-All three should follow the existing POO-native pattern:
+All three should follow the existing POO pattern:
 
 #+begin_src scheme
 (.def (repo-loop-coordination @ loop-engine-coordination-policy
@@ -115,7 +115,7 @@ The receipt projection should stay report-only and be collected generically:
 - =observability-receipt= states run-log/budget schema and pause signals;
 - =safety-receipt= states denylist, connector, and human-gate policy.
 
-The first implementation step is now in place as a shared =loop-engine-policy-extension= prototype plus concrete POO-native sub-prototypes: =loop-engine-coordination-policy-extension=, =loop-engine-observability-policy-extension=, and =loop-engine-safety-policy-extension=. Profiles attach concrete extension objects through =policy-extensions=, and lowering projects a =policy-extension-receipts= collection. The runtime handoff, manifest request, and presentation surfaces pass that collection through without hard-coding =coordination=, =observability=, or =safety= in =loop-engine-runtime.ss=.
+The first implementation step is now in place as a shared =loop-engine-policy-extension= prototype plus concrete POO sub-prototypes: =loop-engine-coordination-policy-extension=, =loop-engine-observability-policy-extension=, and =loop-engine-safety-policy-extension=. Profiles attach concrete extension objects through =policy-extensions=, and lowering projects a =policy-extension-receipts= collection. The runtime handoff, manifest request, and presentation surfaces pass that collection through without hard-coding =coordination=, =observability=, or =safety= in =loop-engine-runtime.ss=.
 
 The initial user-facing scenario is now a three-object operational policy set in =user-interface/custom/my-module/profiles/loops.ss=: =repo-loop-coordination=, =repo-loop-observability=, and =repo-loop-safety=. They are normal POO objects that extend the concrete policy-extension prototypes and declare priority, state files, =acting_on=, run-log schema, lifecycle signals, path policy, connector scopes, human gates, and auto-merge policy. Scheme still does not acquire locks, schedule loops, mutate state files, pause or kill loops, or resolve conflicts; those remain Marlin/runtime responsibilities.
 
@@ -124,7 +124,7 @@ GitHub Actions, or write run logs. Those are Marlin or external runtime
 responsibilities.
 
 * Next Implementation Order
-1. Add a POO-native policy-extension protocol so =loop-engine-runtime= can
+1. Add a POO policy-extension protocol so =loop-engine-runtime= can
    collect extension receipts without knowing each concrete policy family.
 2. Re-express existing policy receipts through that collection path where
    practical, while keeping the current manifest contract stable.

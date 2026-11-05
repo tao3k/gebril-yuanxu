@@ -12,7 +12,7 @@ qualification passes; preserve unrelated build and CLI-support changes.
 
 * Step 1 — Facet object family
 
-Add POO-native constructors and predicates for Organization, Authority,
+Add POO constructors and predicates for Organization, Authority,
 Context, Protocol, and Evidence facets, including named typed-empty
 constructors.  Each facet exposes the common schema/name/entities/relations/
 constraints contract.

@@ -7,7 +7,7 @@
 
 * Decision
 
-Phase 3B introduces immutable POO-native =FeatureManifest= values and explicit
+Phase 3B introduces immutable POO =FeatureManifest= values and explicit
 =FeatureManifestBundle= qualification.  This RFC refines RFC 136 without
 changing its Gerbil-module/POO-feature layering:
 
@@ -54,7 +54,7 @@ It carries neither a mutable registry callback nor a runtime compute hook.
 
 =feature-manifest-bundle= receives a semantic bundle id and descriptor POO
 values.  =defpoo-feature-manifest-bundle= is the declarative spelling for that
-same POO-native value construction.  The bundle exposes:
+same POO value construction.  The bundle exposes:
 
 - descriptors and their immutable manifests;
 - the existing resolver activation plan;
@@ -191,7 +191,7 @@ resolver or change diagnostic semantics.
 
 The qualification suite includes a 1024-feature dependency chain.  It proves
 manifest cardinality, activation order, accepted status, source-mode completion,
-and bounded RSS under the same POO-native public interface.
+and bounded RSS under the same POO public interface.
 
 * Implemented optimization: bundle-owned manifest lookup index
 

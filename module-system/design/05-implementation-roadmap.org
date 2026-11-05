@@ -128,7 +128,7 @@ Delivered behavior:
 - updated =t/module-system-user-interface-test.ss= to cover macro-facing authoring.
 ** 10.06.05.21 Slice 1F: Historical Option Merge Receipts
 Status: superseded. The initial =projection/interface.ss= aggregate and its
-general merge-receipt helpers are not the current API. Core now owns native
+general merge-receipt helpers are not the current API. Core now owns runtime
 Slot value policies and option POO values/validation; Agentic AI Lab retains
 descriptor-specific =src/authoring/module-option-projection.ss=. Module inheritance remains with
-native POO C4, not a second merge evaluator.
+POO C4, not a second merge evaluator.

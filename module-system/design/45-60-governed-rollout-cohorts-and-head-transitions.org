@@ -132,14 +132,14 @@ between cohorts.
 - [ ] =authorizedRolloutTransitionCarriesConditionalHeadCommit=: every live
   rollout transition couples its immutable cohort assignment receipt to the
   RFC 45-59 conditional active-head commit witness.
-- [ ] Refine rollout definitions and assignment receipts through native
+- [ ] Refine rollout definitions and assignment receipts through runtime
   =gerbil-poo= prototypes.
 - [ ] Replay the synchronized Lean and Typst claims through external AXLE.
 
 * POO semantic ownership
 
 Rollout policy is an ordinary higher-order POO object. Prototype extension and
-native object operations define:
+runtime object operations define:
 
 - cohort assignment policy;
 - ordered rollout stages;
@@ -156,7 +156,7 @@ github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
 This design introduces no rollout DSL, local object system, raw alist patch
 language, runtime token dispatcher, or ordinary raw compute hook.
 
-The exact public Scheme spelling remains deferred until the required native
+The exact public Scheme spelling remains deferred until the required runtime
 =gerbil-poo= operations have been verified. Any later convenience macro must
 expand to the same ordinary POO objects and must not create new rollout
 semantics.
@@ -330,11 +330,11 @@ These failures must not collapse into a generic rollout failure.
 7. Unknown outcomes enter reconciliation.
 8. Promotion and reversion append new transition history.
 9. Live progress state does not become hidden semantic configuration.
-10. Public extension remains POO-native.
+10. Public extension remains POO.
 
 * Implementation checklist
 
-- [ ] Verify the exact native =gerbil-poo= operations used by rollout policy
+- [ ] Verify the exact runtime =gerbil-poo= operations used by rollout policy
       prototypes.
 - [ ] Define canonical identities for policy, topology, assignment, stage, and
       evidence contracts.

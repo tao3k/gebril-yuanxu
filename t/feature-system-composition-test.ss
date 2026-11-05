@@ -120,7 +120,7 @@
               (cons descriptor descriptors))))))
 
 (def feature-system-composition-test
-  (test-suite "POO-native Feature composition plan"
+  (test-suite "POO Feature composition plan"
     (yuanxu-test-case "composition follows resolver order, not declaration order"
       (check (.ref composition-plan 'kind) => 'feature-composition-plan)
       (check (.ref composition-plan 'schema-version) => 1)

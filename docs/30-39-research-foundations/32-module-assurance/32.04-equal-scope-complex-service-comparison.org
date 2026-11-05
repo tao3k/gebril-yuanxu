@@ -5,7 +5,7 @@
 
 * Equal complexity before comparing expression size
 
-The subsequent real-service ObjectContract implementation and focused native
+The subsequent real-service ObjectContract implementation and focused runtime
 qualification are recorded in [[file:32.05-maintained-service-object-contracts.org][32.05]]. NixOS/Pulumi code below remains explicitly
 unexecuted analysis; the new Scheme receipt does not change that evidence status.
 
@@ -18,7 +18,7 @@ are separate shared-envelope responsibilities, not extra requirements imposed
 only on the Scheme example.
 
 The previous [[file:32.02-maintainer-publication-comparison.org][32.02]] comparison includes bounded full-envelope guards and their
-limitations. [[file:32.03-service-type-declaration-convergence.org][32.03]] contains the complete proposed native field declarations.
+limitations. [[file:32.03-service-type-declaration-convergence.org][32.03]] contains the complete proposed runtime field declarations.
 Do not compare Pulumi's one Config read against our entire provenance protocol,
 or one .for-export call against all of an upstream framework's implementation.
 
@@ -147,7 +147,7 @@ The contribution fragment is real Scenario interface structure. Current service
 defaults allow only 5432; the successful 5433 control intentionally supplies both
 5432 and 5433 in both policies. The constructor supplies an absent client port
 from the effective PostgreSQL value. Domain equality, policy conjunction and
-plan association remain maintained checks. Shape declarations can use the native
+plan association remain maintained checks. Shape declarations can use the runtime
 ObjectContract proposal in 32.03; it has not replaced the production predicates.
 
 * Same failure matrix, separate evidence levels
@@ -161,11 +161,11 @@ ObjectContract proposal in 32.03; it has not replaced the production predicates.
 | Omit/substitute one contributor | application needs an authoritative selected-owner inventory | component/library needs authoritative composition inventory | .for-export coverage/source-binding centralizes declared selected routes |
 | Source changes after prior observation | source-bound detached preview needs a capture/check policy | source-bound detached preview needs a capture/check policy | selected publication guards have prior controls, not atomic filesystem snapshots |
 | Reuse detached parent application plan | final evaluation can rebuild; detached envelope needs applicability policy | prepare makes fresh envelope; reused JS object needs applicability policy | plan/config identity and endpoint checks reject tested stale objects |
-| Provider/resource unknowns, secrets and effects | evaluation and activation have distinct boundaries | Output and engine plans already support important semantics | native lazy slots alone do not supply the external protocol |
+| Provider/resource unknowns, secrets and effects | evaluation and activation have distinct boundaries | Output and engine plans already support important semantics | runtime lazy slots alone do not supply the external protocol |
 
 NixOS/Pulumi rows are source-backed analysis expectations, not newly executed
 results. Our prior service publication controls do not establish their absence
-upstream. The new native normalization probe uses an isolated constructor fixture
+upstream. The new runtime normalization probe uses an isolated constructor fixture
 and does not establish production role/Loader integration.
 
 * Fixed source and reflection
@@ -185,7 +185,7 @@ The defensible improvement target is a reusable publication library that retains
 selected independent requirements and source association before validating a
 final application value. POO and typed functional composition can make that
 library extensible, but do not eliminate its implementation or domain policy.
-Our previous hand-written shape predicates are unnecessarily verbose; native
+Our previous hand-written shape predicates are unnecessarily verbose; runtime
 ObjectContract reduces that burden. Whether total maintainer cost beats a good
 NixOS/Pulumi library is still unmeasured. Count public declarations, domain code,
 framework code and diagnostic quality separately, under equivalent scope.

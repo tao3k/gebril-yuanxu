@@ -3,12 +3,12 @@
 (import :clan/poo/object
         (prefix-in (only-in :gerbil/runtime/mop find-method bind-method! slot-ref) runtime.))
 (export before-store! specification-owners register-allocation! store-frame-depth)
-;; Qualification-only access to the CURRENT producer's PRIVATE native frame.
+;; Qualification-only access to the CURRENT producer's PRIVATE runtime frame.
 ;; Production integration belongs inside object.ss, without this extern bridge.
 (extern namespace: clan/poo/object active-read-replays)
 (def direct-owners (make-hash-table test: eq? weak-keys: #t))
 (def (store-frame-depth) (length (active-read-replays)))
-;; The native initializer supplies identities for EVERY constructor route,
+;; The runtime initializer supplies identities for EVERY constructor route,
 ;; including .cc/direct metadata copies which have no ancestry edge to SELF.
 (def original-init (runtime.find-method object::t #f ':init!))
 (def (register-allocation! self)
@@ -27,7 +27,7 @@
 (runtime.bind-method! object::t ':init! tracked-init #t)
 
 ;; A diagnostic query, not a full-graph scan at each read/store. Descendants
-;; come from the native constructor's existing weak dependency edges.
+;; come from the runtime constructor's existing weak dependency edges.
 (def (specification-owners spec)
   (def seen (make-hash-table-eq))
   (def result '())
@@ -42,14 +42,14 @@
     (when owners (for-each (lambda (entry) (visit (car entry))) (hash->list owners))))
   result)
 
-;; Called automatically from lowered native structure stores. The actual
+;; Called automatically from lowered runtime structure stores. The actual
 ;; receiver guard still owns the diagnostic and dynamic replay protection.
 (def (before-store! target)
   (when (pair? (active-read-replays))
     (when ($slot-spec? target)
       (unless (hash-get direct-owners target)
         (error "unregistered specification allocation"))
-      ;; Read-only preflight of ALL native registered users, including copies
+      ;; Read-only preflight of ALL runtime registered users, including copies
       ;; without a parent edge. No invalidation or revision change occurs here.
       (for-each
         (lambda (owner) (check-object-edit owner (object-%state owner)))

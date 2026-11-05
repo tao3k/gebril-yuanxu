@@ -37,10 +37,10 @@ merge obscures the contract users need to understand.
 | Nickel | recursive record merge with field metadata/priorities | defaults, contracts and documentation travel with definitions |
 | Jsonnet | object inheritance and self/super; explicit +: for nested inheritance | derived fields can see the effective object; nested replacement is otherwise normal |
 | Dhall | typed records, explicit record operations and total functions | a checked function can reconstruct derived outputs explicitly |
-| Current Agentic AI Lab | native inheritance, replacement, => and =>.+ | effective receiver relationships work; cross-owner semantic merge is not automatic |
+| Current Agentic AI Lab | runtime inheritance, replacement, => and =>.+ | effective receiver relationships work; cross-owner semantic merge is not automatic |
 
 The Nickel [[https://nickel-lang.org/user-manual/merging/][merge specification]] describes conflicts rather than an unconditional
-last-writer-wins policy, and metadata determines priority. Native POO's ordered
+last-writer-wins policy, and metadata determines priority. POO's ordered
 inheritance is not that algebra. Converting one into the other requires a stated
 policy, not a renamed operator.
 
@@ -75,7 +75,7 @@ The shallow child still contains the base list. Reconstructing with a function
 uses the changed Check. This does not show that Nix cannot express late binding;
 NixOS config and library fixed points provide stronger composition patterns.
 
-** Jsonnet: native receiver-dependent inheritance
+** Jsonnet: runtime receiver-dependent inheritance
 
 #+begin_src jsonnet
 local base = {
@@ -100,7 +100,7 @@ silently merge siblings. Jsonnet is therefore an essential comparison for POO,
 not just another JSON emitter.
 
 Reflection: late-bound values and programmable object inheritance are shared
-capabilities. Our possible benefit is integration with native POO Contracts,
+capabilities. Our possible benefit is integration with POO Contracts,
 Generic/MOP extension and a common module/plan object model. That benefit must be
 shown in a real extension task; object inheritance alone cannot establish it.
 
@@ -126,7 +126,7 @@ no-arbitrary-effects guarantee.
 Reflection: a reconstruction function makes dependencies explicit and checkable;
 open inheritance makes future refinements convenient. Neither is uniformly
 better. For an audited fixed schema, Dhall may be the more appropriate boundary.
-For an open family of native strategies, POO may offer less adapter work, while
+For an open family of runtime strategies, POO may offer less adapter work, while
 requiring stronger policy around effects and validation.
 
 ** Nickel: recursive configuration and contract-carrying defaults
@@ -149,9 +149,9 @@ let child = base & { build.artifacts = ["release-log"] } in
 This probe asks whether recursive field relationships follow the refined record.
 It is retained as an unexecuted language-reference probe here, not claimed as
 an observed interpreter/cache result. Nickel field contracts also provide a
-place to validate the resulting data; our native inheritance alone does not.
+place to validate the resulting data; our runtime inheritance alone does not.
 
-** POO: the actual native relationship
+** POO: the actual runtime relationship
 
 #+begin_src scheme
 (import :yuanxu/object-syntax/path-slots

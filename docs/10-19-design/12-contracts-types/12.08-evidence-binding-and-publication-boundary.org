@@ -37,7 +37,7 @@ remain local. Relevant source owners are:
   described below. It still does not supply a complete freshness protocol.
   Accepted evidence is not automatically current evidence.
 
-These source properties were reviewed. The binding-specific native controls are
+These source properties were reviewed. The binding-specific runtime controls are
 recorded in [[file:12.09-isolated-evidence-binding-validation.org][the isolated validation record]]; no production implementation was changed.
 
 * Minimal generic design: specialize the existing invocation Contract

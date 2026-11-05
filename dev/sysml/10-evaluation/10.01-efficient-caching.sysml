@@ -65,15 +65,15 @@ package YuanxuCaching {
         attribute opaqueFrontiers : Integer;
         attribute processLiveBefore : Integer;
         attribute processLiveHeld : Integer;
-        doc /* Compare the same producer, input and native workload. Classify
+        doc /* Compare the same producer, input and runtime workload. Classify
                descriptor preparation separately from candidate-owned receipts.
                Schema ownership is an overlapping partition of original reads,
                not an extra additive cost or a per-module multiplier. Compare
                whole source/library cohorts, never substituted ABI fragments.
-               Native lengths with the installed ABI supply body bytes; identity union
+               Runtime lengths with the installed ABI supply body bytes; identity union
                charges shared payload once. Code, type descriptors, opaque POO
                referents and GC-table policy remain explicit frontiers. Only
-               environments belonging to the actual native issuer code family
+               environments belonging to the actual runtime issuer code family
                are traversed; arbitrary callback environments remain opaque.
                Malformed inspection edges fail the census, rather than being
                counted as successfully inspected payload. Header
@@ -99,12 +99,12 @@ package YuanxuCaching {
         ref part orderedRoots : ReadDependency[0..*];
         ref part preorder : ReadDependency[0..*];
         ref part protectedReceivers : Receiver[0..*];
-        attribute nativeOwner : Boolean;
+        attribute runtimeOwner : Boolean;
         attribute exactSignedPayloads : Boolean;
         attribute weakOwnerPresent : Boolean;
         attribute orderedRootsMatch : Boolean;
         attribute constructorIdentitiesMatch : Boolean;
-        doc /* Native issuer owns one private ordinary POO cache receiver.
+        doc /* Runtime issuer owns one private ordinary POO cache receiver.
                A weak key/value index only locates it; GC eviction rebuilds.
                Roots are copied after successful original DFS authentication.
                Hit: compare the ordered root snapshot, authenticate every saved
@@ -112,9 +112,9 @@ package YuanxuCaching {
                Changed receiver revisions do not turn shape into validity:
                fresh per-record and final checks must refuse stale records.
                Selected-closure congruence requires no unselected reads.
-               A miss with changed native CLOS initializers uses the original
+               A miss with changed runtime CLOS initializers uses the original
                uncached DFS; authentication never invokes that new callback. */
-        doc /* Native derived value, NOT implemented in Core.
+        doc /* Runtime derived value, NOT implemented in Core.
                Reuse requires the identical ordered root records and unchanged
                authenticated dependency sequences. Revision alone is insufficient.
                Never share mutable DFS seen state or a passing admission verdict.
@@ -131,20 +131,20 @@ package YuanxuCaching {
             ((sourceObserverPresent and preparationReplays == 2) or
              (not sourceObserverPresent and preparationReplays == 1))
         }
-        doc /* Non-void admission support only. Native issuer/checker ownership
+        doc /* Non-void admission support only. Runtime issuer/checker ownership
                and revision-only policy are derived from private call sites,
                never supplied as user purity declarations. Keep preflight
-               order; do not merge the two native authentication traversals. */
+               order; do not merge the two runtime authentication traversals. */
     }
 
     requirement def SourceQueryLookup {
         attribute sourceObserverPresent : Boolean;
         attribute hits : Integer;
         attribute misses : Integer;
-        attribute nativeLookups : Integer;
+        attribute runtimeLookups : Integer;
         require constraint {
-            (sourceObserverPresent and nativeLookups == 2 * hits + misses) or
-            (not sourceObserverPresent and nativeLookups == hits + misses)
+            (sourceObserverPresent and runtimeLookups == 2 * hits + misses) or
+            (not sourceObserverPresent and runtimeLookups == hits + misses)
         }
         doc /* The existing pure source window is the only owner. A private
                absence identity distinguishes false from a miss. Open observers
@@ -192,7 +192,7 @@ package YuanxuCaching {
         attribute selectedInputsUnchanged : Boolean;
         attribute validApprovedProductsPresent : Boolean;
         attribute noNewCompilerDependency : Boolean;
-        attribute nativeTimestampsStable : Boolean;
+        attribute runtimeTimestampsStable : Boolean;
         attribute warmReuseAccepted : Boolean;
     }
 
@@ -281,7 +281,7 @@ package YuanxuCaching {
         require constraint {
             not (demand.warmReuseAccepted and demand.selectedInputsUnchanged and
                  demand.validApprovedProductsPresent and demand.noNewCompilerDependency and
-                 demand.nativeTimestampsStable)
+                 demand.runtimeTimestampsStable)
             or demand.compileActions == 0
         }
     }
@@ -316,8 +316,8 @@ package YuanxuCaching {
         action recoverPublication;
         then checkBeforeMake;
         action checkBeforeMake;
-        then nativeMake;
-        action nativeMake;
+        then runtimeMake;
+        action runtimeMake;
         then checkAfterMake;
         action checkAfterMake;
         then runHarness;
@@ -341,30 +341,30 @@ package YuanxuCaching {
     }
 
     requirement def ReplayPhaseAccounting {
-        doc /* Native call-with-issued-reads owns lookup, identity DFS and the
+        doc /* Runtime call-with-issued-reads owns lookup, identity DFS and the
                immutable projection. SelectionReplay Lean proves exact selected
-               preorder and native cache lookup refinement; QNT owns callbacks,
+               preorder and runtime cache lookup refinement; QNT owns callbacks,
                eviction/mutation, frames and independent final certification.
                Acquisition includes fresh issuance, even on projection hits.
                Cold DFS interleaves issuance with traversal: measure that joint
                interval without regrouping checks or changing the first failure.
                Issuance and route/live-state microprobes run only on ORIGINAL
-               issued records inside their native protected frame. Their batch
+               issued records inside their runtime protected frame. Their batch
                costs are diagnostic, not additive slices of ordinary replay.
                Reuse shape and private receiver sets, NEVER a currentness or
                admission verdict. Install/unwind a fresh frame on every call.
                Runtime owns VM accounts, post-GC live deltas and weak identity
                survival; none independently gives exclusive SDK/procedure bytes.
-               Diagnostic native builds are separate source cuts, not releases.
+               Diagnostic runtime builds are separate source cuts, not releases.
                Candidate: require-current! already issued the record; use the
                existing private route/live-state primitives immediately instead
                of calling a public predicate which issues it again. Lean owns
-               first-error equivalence for the SAME closed native operation.
+               first-error equivalence for the SAME closed runtime operation.
                No callback, observer or second record may intervene. Public
                standalone predicates retain their own issuance check; acquisition,
                before-visitor and final phases each remain freshly authenticated.
                The source-call graph, not a producer purity flag, supplies this
-               native closed-operation premise. QNT still owns effect schedules. */
+               runtime closed-operation premise. QNT still owns effect schedules. */
     }
 
     requirement def ReplayCostAttribution {
@@ -412,7 +412,7 @@ package YuanxuCaching {
         }
         then completeOuterInvocation;
         action completeOuterInvocation {
-            doc /* Native metadata.publish still checks output and dependent
+            doc /* Runtime metadata.publish still checks output and dependent
                    meaning after the bound invocation returns. Do not merge
                    these checks based on the meaning procedure's name. */
         }
@@ -425,8 +425,8 @@ package YuanxuCaching {
         action bindDemand;
         then projectMakeLayout;
         action projectMakeLayout;
-        then nativeMakeInOwnedStaging;
-        action nativeMakeInOwnedStaging;
+        then runtimeMakeInOwnedStaging;
+        action runtimeMakeInOwnedStaging;
         then verifyProducts;
         action verifyProducts;
         then submitPublication;

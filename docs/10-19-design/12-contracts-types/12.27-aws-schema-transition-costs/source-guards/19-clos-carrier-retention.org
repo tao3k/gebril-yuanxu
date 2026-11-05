@@ -13,7 +13,7 @@ meta-level code.
 | Requirement | Default mechanism |
 |-------------+-------------------|
 | Replace a configuration value | Ordinary value/path assignment |
-| Transform an inherited value | Native slot refinement and a named function |
+| Transform an inherited value | Runtime slot refinement and a named function |
 | Extend behavior on one receiver axis | POO prototype/slot method |
 | Inspect or customize construction, slots or inheritance | Existing MOP |
 | Dispatch across independently extensible argument axes | CLOS |
@@ -28,7 +28,7 @@ silently reduce that public method space.
 
 * Actual retention paths
 
-The native reader retains prepared bytes/guards and private SDK contexts. SDK
+The runtime reader retains prepared bytes/guards and private SDK contexts. SDK
 contexts retain binding tables and runtime/macro bindings. Clearing the completed
 module-context code field does not prove that every program or syntax object
 reachable through those bindings has been reclaimed. No registry, binding,
@@ -46,7 +46,7 @@ method, arguments, method and optional next-method continuation. In the authorin
 crossing the arguments include an Interface and the inert Scheme datum being
 checked. These are real payload references, not merely receipt labels.
 
-Native slot-read records retain their receiver, instance, value, currentness
+Runtime slot-read records retain their receiver, instance, value, currentness
 procedure and dependencies. An enclosing lazy selected-graph computation can
 therefore retain completed CLOS calls after their Scheme stack frames return.
 Core's diagnostic observer neither owns nor clears that collector. A reduction
@@ -73,7 +73,7 @@ in Core validation receipts does not imply removal of this root.
 
 The inputs are already evaluated values. A declaration such as
 =generic: generic-value= creates a self-slot initializer over its lexical
-environment; the native unary =generic= form captures the surrounding value as
+environment; the runtime unary =generic= form captures the surrounding value as
 a constant slot specification. It does not introduce a macro, representation,
 cache, new public constructor or unvalidated execution path.
 
@@ -85,15 +85,15 @@ uses the existing constant lexical slots inside it.
 
 The constructors still validate the completed object. Protocol hooks, malformed
 descriptor rejection, qualifiers and next-method behavior remain checked. The
-native test compares the original independent object shape and payload identity,
+runtime test compares the original independent object shape and payload identity,
 checks that the actual direct specifications are constant, and retains negative
 constructor cases. This is source-level initializer/environment contraction,
 not proof of a byte reduction or argument reclamation. A constant slot can still
-acquire a native getter/read record when accessed.
+acquire a runtime getter/read record when accessed.
 
 * Observation must not become another root
 
-The existing test-macro adapter now classifies CLOS values by cached native
+The existing test-macro adapter now classifies CLOS values by cached runtime
 prototype identity, even when their kind slot has never been forced. It inspects
 only existing instances and C4 lists. It never computes a prototype, invokes a
 MOP hook, forces a cold field or loads a business scope to obtain a label.
@@ -110,10 +110,10 @@ part of the measurement boundary.
 The reader separately reports existing private binding counts and remaining
 code-body pointers at geometric publication counts. It reads direct SDK table
 metadata without enumerating binding values or changing compiler state. This
-keeps reader roots distinct from CLOS payloads and native read-record roots.
+keeps reader roots distinct from CLOS payloads and runtime read-record roots.
 Disabled/deep-trace-disabled observation does not allocate this census.
 
-* Matched native control and limits
+* Matched runtime control and limits
 
 The original and value-slot constructors were compared through the same real
 16-Module fixture and init-owned tests object, with identical tracing and policy.
@@ -146,19 +146,19 @@ The difference from the preceding 200-publication refusal is not evidence of a
 regression or an improvement: this run includes weak lifecycle instrumentation
 and another GC schedule. It remains a failed thousand-Module qualification.
 No timeout/heap change, dropped source check or success relabeling was used.
-Failure-path code retention remains intentional: the existing native negative
+Failure-path code retention remains intentional: the existing runtime negative
 test requires unadmitted post-evaluation bodies to remain untouched. Only
 successfully source-admitted completed bodies are released; fixture filesystem
 cleanup is a separate obligation.
 
 * Historical controlled cache cut: diagnostic only
 
-An earlier revision of the [[file:../../../../../t/qualification/module-scale/worker-test.ss][native worker]] observed the actual selected-graph read receivers
+An earlier revision of the [[file:../../../../../t/qualification/module-scale/worker-test.ss][runtime worker]] observed the actual selected-graph read receivers
 while acquiring the Graph, without retaining the read tokens. All ordinary
 identity, expansion-count and cold-scope assertions run first. It then binds the
 original source guard, samples existing Observability live memory with collection,
 drops its local Graph reference and invalidates only those fixture-owned
-selected-graph caches using the public native setter. A second collected sample
+selected-graph caches using the public runtime setter. A second collected sample
 measures the region released by that cut. This is deliberately destructive
 qualification instrumentation, not a production cache strategy or a new API.
 
@@ -186,7 +186,7 @@ evaluated interface-wrapper bindings, with zero completed private code-body
 pointers. Those counters do not describe every runtime closure or expansion
 object reachable from a binding. The cache-cut result demonstrates that the
 observed CLOS calls are not permanently pinned merely by those SDK bindings;
-the native Graph read records provide a distinct retaining path.
+the runtime Graph read records provide a distinct retaining path.
 
 No byte threshold is used to manufacture a pass. The worker still acquires the
 whole selected Graph before this diagnostic cut. A thousand-Module run that
@@ -201,21 +201,21 @@ forgotten read roots. A separate counterexample rejects clearing canonical SDK
 roots: the shared method remains owned after private call values are released.
 The seven cases include an acceptance witness. Another counterexample disproves the claim that
 payloads disappear merely because the call returned. It is a retention topology
-model, not a native GC or allocation model. Constructor validation is a native
+model, not a runtime GC or allocation model. Constructor validation is a runtime
 gate; the modeled lifecycle starts at the completed-call boundary.
 
 [[file:../../../../../dev/proofs/lean/YuanxuProof/PooClos/CarrierCapture.lean][CarrierCapture]] proves arbitrary-list payload identity support is unchanged
 when a shared initializer environment over supplied field values is replaced
 by individual constant captures. The result deliberately preserves payload
 membership, rather than claiming it is freed. It says nothing about field-read
-order, SDK hooks, continuation environments or bytes. Its native correspondence
+order, SDK hooks, continuation environments or bytes. Its runtime correspondence
 premise is that constructor arguments are already supplied values and are not
 rebound by a receiver-dependent formula; the direct specification test checks
-the actual native lowering in the locked library.
+the actual runtime lowering in the locked library.
 
 ReaderProjection and ImportCorrespondence retain ownership of current source
 registration/projection and freshness premises. They are not duplicated here.
-Full-source native qualification remains the capacity gate.
+Full-source runtime qualification remains the capacity gate.
 
 * Core boundary still requiring design
 
@@ -236,19 +236,19 @@ not implemented or claimed by the successful cache-cut experiment.
 
 * Reproduction
 
-Focused native dispatch, method combination, cached-prototype/cold-field
+Focused runtime dispatch, method combination, cached-prototype/cold-field
 observation, the complete publication controls and the 16-Module lifecycle
 control pass naturally with MODULE-OK, HARNESS-OK and final OK. The publication
 suite retains macro reuse and the negative control that leaves unadmitted bodies
 untouched. The original init-owned AWS/JsonSchema/Funflow aggregation also passes
 with observation and progress-aware timeouts: Schema upgrades, stale-evidence
 rejection, accepted-value preservation and cleanup remain in the same Case.
-Neither native suite reports an error/overflow marker. These are targeted
+Neither runtime suite reports an error/overflow marker. These are targeted
 source-only receipts; no full build or complete-checkout qualification is claimed.
 
 CarrierRoots has seven expected outcomes and CarrierCapture's focused Lean
 check passes. Source-projection correspondence remains separate; model passes
-are not a native capacity result. The thousand-Module failure above is retained.
+are not a runtime capacity result. The thousand-Module failure above is retained.
 
 #+begin_src text
 just test-file t/poo-clos-dispatch-test.ss true

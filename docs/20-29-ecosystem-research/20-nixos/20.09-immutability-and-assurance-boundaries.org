@@ -54,7 +54,7 @@ observed inputs; immutable generation pinning can help close a check/use gap,
 but it is not interchangeable with a field Contract.
 
 Our proposed distinction is preserving selected requirements and source
-associations through native object derivation into a guarded final-plan
+associations through runtime object derivation into a guarded final-plan
 publication. That needs controls for missing contributions, stale source and
 wrong receiver caches; it cannot be established by a vocabulary comparison.
 The current Core source guards are not a Nix Store replacement and do not

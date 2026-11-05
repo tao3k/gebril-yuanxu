@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Narrow native compiler/import qualification, not a build or test runner.
+;;; Narrow runtime compiler/import qualification, not a build or test runner.
 (import "../init.ss" :std/test :clan/poo/object
         (only-in :std/source this-source-file)
         (only-in :yuanxu/ops/objects ProcessScript.)
@@ -32,7 +32,7 @@
           (.call (.cc Build 'directory root 'environment (.o GERBIL_PATH: state)) .run "compile"))
         (unless (zero? (.get prepared status))
           (error "fixture source build failed" (.get prepared status) (.get prepared output)))
-        (yuanxu-test-checkpoint 'fixture-native-build-complete)
+        (yuanxu-test-checkpoint 'fixture-runtime-build-complete)
         (def lib (path-expand "lib" state))
         (def compiled-init (path-expand "yuanxu/init.ssi" lib))
         (def directory (path-expand "compiled-bindings" root))
@@ -41,12 +41,13 @@
           `((import :clan/poo/object (only-in ,compiled-init yuanxu.init.exports))
             (export namespace atomic)
             (def (namespace) (.get yuanxu.init.exports modules))
-            (def (atomic) (.get yuanxu.init.exports modules json-schema tests))))
+            (def (atomic) (.call (.get yuanxu.init.exports tests) .select '(json-schema)))))
         (write-forms (path-expand "renamed.ss" directory)
           `((import :clan/poo/object
                     (rename-in (only-in ,compiled-init yuanxu.init.exports)
                                (yuanxu.init.exports Modules)))
-            (export namespace)
+            (export namespace atomic)
+            (def (atomic) (.call (.get Modules tests) .select '(json-schema)))
             (def (namespace)
               (let ((init-modules-getter 'caller-binding)) (.get Modules modules)))))
         (write-forms (path-expand "readonly.ss" directory)
@@ -68,7 +69,7 @@
             (def receipt (.call Compiler .run source))
             (unless (and (zero? (.get receipt status))
                          (not (string-contains (.get receipt output) "*** ERROR")))
-              (error "focused native compilation failed" source
+              (error "focused runtime compilation failed" source
                      (.get receipt status) (.get receipt output)))
             (yuanxu-test-checkpoint (string->symbol source)))
           ;; Build already owns the real prelude target. This gate compiles

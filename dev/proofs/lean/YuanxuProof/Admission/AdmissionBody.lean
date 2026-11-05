@@ -3,7 +3,7 @@ import YuanxuProof.Admission.CallPhases
 
 namespace YuanxuProof.Admission.AdmissionBody
 
--- Native receiver identities/revisions projected from actual body observations.
+-- Runtime receiver identities/revisions projected from actual body observations.
 -- A complete projection is a correspondence premise, not a supplied field list.
 def quintSourceDigest : String :=
   "sha256:d3e32c9165e7638fd444580a888244b2d0618645e6583db6080b0d491e196646"

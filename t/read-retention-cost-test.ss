@@ -105,7 +105,7 @@
 
 (def read-retention-cost-test
   (test-suite "Real Scenario demanded read-graph cost"
-    (yuanxu-test-case "distinct native misses remain outside the read cache"
+    (yuanxu-test-case "distinct runtime misses remain outside the read cache"
       (.def Policy port: 5432 unused: (error "unselected slot forced"))
       (defvalues (_answer reads)
         (%call-with-recorded-slot-reads

@@ -30,7 +30,7 @@ theorem preserves_every_check (visited : List Nat) (check : Nat → Prop) :
   simp [retain]
 
 -- Apply to a COMPLETE demanded traversal, including misses/preparation/bootstrap.
--- Completeness is an explicit native-extraction premise, not a theorem about GC.
+-- Completeness is an explicit runtime-extraction premise, not a theorem about GC.
 theorem closure_coverage (roots : List Nat) (deps : Nat → List Nat)
     (visited : List Nat) (complete : ∀ token, Reach roots deps token → token ∈ visited) :
     ∀ token, Reach roots deps token → token ∈ retain visited := by

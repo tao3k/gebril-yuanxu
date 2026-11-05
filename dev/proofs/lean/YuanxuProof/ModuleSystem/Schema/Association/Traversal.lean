@@ -3,7 +3,7 @@
 import YuanxuProof.ModuleSystem.Schema.Association.Semantics
 
 /-! Success semantics of the Scheme recursive DFS: visiting/done states, ordered
-parent calls and done-cache skips. Fuel exhaustion and cycles refuse. Native
+parent calls and done-cache skips. Fuel exhaustion and cycles refuse. Runtime
 object/eq? projection is handled separately; no Scheme evaluator is axiomatized. -/
 namespace YuanxuProof.ModuleSystem.Schema.Association.Traversal
 
@@ -118,7 +118,7 @@ theorem closed_inherits (parents : Parents) (done : List Nat) (closed : Closed p
   | step edge path ih => exact ih (closed _ present _ edge)
 
 /-- On normal completion from an empty cache, DFS done-membership is exactly
-native reflexive parent reachability. No termination/fuel bound is assumed proved. -/
+runtime reflexive parent reachability. No termination/fuel bound is assumed proved. -/
 theorem success_membership_iff (parents : Parents) (fuel node : Nat) (final : List Nat)
     (success : visit parents fuel node [] [] = .ok final) (root : Nat) :
     root ∈ final ↔ Inherits parents node root := by

@@ -33,7 +33,7 @@
       (check-equal? calls 1)
       (check-equal? (cdr (assq 'argv manifest)) '("never-run" "--preview"))
       (check-equal? (cdr (assq 'request-id manifest)) "public-function")
-      ;; The native Function boundary checks input BEFORE the builder and
+      ;; The runtime Function boundary checks input BEFORE the builder and
       ;; output BEFORE publication. A projection is not a process execution.
       (check-exception
         (runtime-command-fields->manifest 'inspect "never-run"

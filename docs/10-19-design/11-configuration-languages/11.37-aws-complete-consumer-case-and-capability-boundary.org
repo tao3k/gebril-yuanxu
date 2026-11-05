@@ -104,7 +104,7 @@ The complete source is [[file:scenarios/modular-configuration/contributions/aws-
 ** objects.ss
 
 #+begin_src scheme
-;;; Native construction of user-owned Profiles from their configuration values.
+;;; Runtime construction of user-owned Profiles from their configuration values.
 ;;; These explicit proto expansions do NOT establish automatic Contract association.
 (.def (TestNetworkProfile @
        (.+ (.get NetworkContract proto) (.get Config networks test))))
@@ -127,7 +127,7 @@ The complete source is [[file:scenarios/modular-configuration/contributions/aws-
   outputs: =>.+ (.o build_ip: 'build))
 
 ;;; An OPTIONAL later specialization, after the complete inputs above are supplied.
-;;; Target path assignment is still pending; the equivalent native form is below.
+;;; Target path assignment is still pending; the equivalent runtime form is below.
 (.def (Production @ Build)
   instances: =>.+ (.o build: =>.+ (.o type: "t3.medium")))
 #+end_src
@@ -160,7 +160,7 @@ The complete source is [[file:scenarios/modular-configuration/contributions/aws-
 ;;; does not manually extract config, collect policies, or register methods.
 #+end_src
 
-* Contract-directed declaration versus current native expansion
+* Contract-directed declaration versus current runtime expansion
 
 The desired shape is:
 
@@ -172,14 +172,14 @@ The desired shape is:
 
 Contract-directed parent recognition must select the descriptor's proto and
 retain its mandatory association. Current .def does not do that substitution.
-The current native CONSTRUCTION expansion is:
+The current runtime CONSTRUCTION expansion is:
 
 #+begin_src scheme
 (.def (MachineVariant @ (.get InstanceContract proto))
   type: "t3.medium")
 #+end_src
 
-This native expression creates a partial object; it does not automatically admit
+This runtime expression creates a partial object; it does not automatically admit
 it, preserve every associated policy, or fill missing deployment information.
 For the complete ordinary Config data, the actual objects.ss uses .+ to apply
 the Contract proto to the data object before naming it. This is internal object
@@ -248,16 +248,16 @@ without requiring POO extension operators. A reusable Profile can reduce repeate
 values across Scenarios; inheritance is appropriate for Build's shared machine
 policy and a later Production variant. Neither replaces ownership of real inputs.
 
-Native .def/.+/.admit foundations exist. The files here remain design source.
+Runtime .def/.+/.admit foundations exist. The files here remain design source.
 Pending: Contract-parent normalization/association, typed source injection,
 optional example source selection, artifact resolution, source diagnostics,
 direct path assignment and full AWS input/output qualification. No runtime code,
-Loader or build integration was implemented. No AWS/native controls executed.
+Loader or build integration was implemented. No AWS/runtime controls executed.
 
 * Shared and private value-type refinement
 
 [[file:11.38-shared-value-types-and-private-domain-contracts.org][The value-type library design]] records why current AWSString/map predicates are
-insufficient, which native Gerbil address structures/parsers can be reused, and
+insufficient, which Gerbil address structures/parsers can be reused, and
 which field/type/Contract refinements remain unimplemented.
 
 * Provider-schema-first refinement

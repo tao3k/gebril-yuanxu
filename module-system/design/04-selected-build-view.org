@@ -12,7 +12,7 @@ the traversal owner. A target core field layout must map to existing Module valu
 once; it is not currently an exported descriptor schema. Consumer init lowering,
 source resolution and feature providers are not reimplemented here.
 
-catalog is an admitted keyed native Module view. root-ids and disabled-module-ids
+catalog is an admitted keyed runtime Module view. root-ids and disabled-module-ids
 are normalized identities; the source-qualified decision records remain retained
 outside these lookup inputs. A production implementation must add full requester
 chains/currentness evidence to the bounded errors below.
@@ -65,7 +65,7 @@ Contracts and the mapping to a particular build provider remain pending.
 The consumer supplies selected optional contributions through a protocol; Core
 must not import Agentic AI Lab's feature model/resolver or ASP build APIs. A build provider
 then closes phase imports, macro/for-syntax dependencies, FFI and generated assets.
-Native entry strings in this bounded example are not a qualified complete build
+Runtime entry strings in this bounded example are not a qualified complete build
 manifest. Avoid repeating one manually maintained source list in several layers.
 
 * Lazy generic composition view
@@ -87,7 +87,7 @@ build-projections. This input protocol needs its own Contract in implementation.
 #+end_src
 
 The view does not read directories, parse consumer syntax, run a provider or compile
-sources. Its native slots defer work until demanded. Reject stale/mismatched
+sources. Its runtime slots defer work until demanded. Reject stale/mismatched
 optional plans and module graph generations before exposing results. Source/schema
 and executor-specific evidence remain additional required boundaries.
 
@@ -127,12 +127,12 @@ the user does not add manual exports or a graph factory to init.ss.
 
 Gerbil's existing defbuild-script accepts a build-spec expression and places it
 inside the generated main procedure. This permits demanding the graph at explicit
-build invocation rather than during macro expansion. No change to that native
+build invocation rather than during macro expansion. No change to that runtime
 macro is implied. The adapter must not recursively build the modules needed to
 run itself: its minimal bootstrap provider/compiler closure is an independently
 available build tool dependency, not a selected application Module.
 
-The init publication retains one native object with generation/source identity,
+The init publication retains one runtime object with generation/source identity,
 selection decisions, admitted module/feature contribution references and a deferred
 build projection. The namespace and build graph are two views over this same
 selection, not independently resolved graphs. Build projection may inspect selected
@@ -143,7 +143,7 @@ bounded preparation route; compiling and loading every selected implementation t
 learn its roots would recreate the bootstrap/loading problem.
 
 Build roots come from selected role wrappers and admitted optional contributions;
-compiler closure adds phase imports, native link requirements and generated assets.
+compiler closure adds phase imports, runtime link requirements and generated assets.
 The earlier selected-build-entries example consumes normalized derived entries;
 core.build-entries is not an additional handwritten interface requirement. Disabled
 Module/Feature contributions remain excluded; a hard dependency on one is rejected

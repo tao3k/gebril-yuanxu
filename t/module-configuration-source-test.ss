@@ -13,7 +13,7 @@
 (def (write-source path text)
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
 (def module-configuration-source-test
-  (test-suite "Observed native configuration roles"
+  (test-suite "Observed runtime configuration roles"
     (yuanxu-test-case "reader return owns the final check, not a duplicate after private cleanup"
       (call-with-temporary-directory "configuration-return-guard"
         (lambda (root)
@@ -113,7 +113,7 @@
                 (check-equal? (.get parent value answer) 1)
                 ((.get child admit-current)))
               ;; A source not in the admitted role set may not hide behind the
-              ;; native global import cache or bypass the source observations.
+              ;; runtime global import cache or bypass the source observations.
               (write-source config "(import \"unobserved.ss\") (def Config Hidden) (export Config)")
               (write-source (path-expand "unobserved.ss" root) "(def Hidden #t) (export Hidden)")
               (check-exception (yuanxu-configuration-source config 'Config void role-sources: (list config objects)) error?))))))))

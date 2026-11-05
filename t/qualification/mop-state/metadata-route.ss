@@ -54,5 +54,5 @@
 (def (guarded-current? read)
   (require-read-route! read)
   ;; No extension callback is accepted between the route check and this fixed
-  ;; native call. This is not a replacement for production replay-slot-reads!.
+  ;; runtime call. This is not a replacement for production replay-slot-reads!.
   (object-read-current? read))

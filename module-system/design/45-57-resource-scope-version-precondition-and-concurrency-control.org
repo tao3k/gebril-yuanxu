@@ -136,7 +136,7 @@ atomic runtime relation can authorize a mutation.
   authoritative generation.
 - [ ] =detachedCheckThenWriteDoesNotEstablishSafety=: check-then-write without
   an atomic relation does not establish TOCTOU safety.
-- [ ] Refine these propositions through native =gerbil-poo= resource-scope
+- [ ] Refine these propositions through runtime =gerbil-poo= resource-scope
   objects and runtime lock, lease, transaction, or fencing implementations.
 - [ ] Replay the synchronized Lean and Typst claims through external AXLE.
 
@@ -436,7 +436,7 @@ Live token, secret, connection, and lock handles are never serialized.
 
 * Implementation checklist
 
-- [ ] Define POO-native =ResourceScopeProjection=.
+- [ ] Define POO =ResourceScopeProjection=.
 - [ ] Define extensible access-role prototypes and conflict relations.
 - [ ] Require adapter-defined canonical resource overlap.
 - [ ] Fail closed or conservatively serialize unknown relations.

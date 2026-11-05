@@ -9,7 +9,7 @@
 Package management selects, locks, fetches and packages the engine and Provider.
 The schema export is a build output of those exact inputs. The Scheme module
 consumes that output, projects its cty/block declarations into standard JSON
-Schema and publishes native Contracts through the existing compiler. Runtime
+Schema and publishes Contracts through the existing compiler. Runtime
 admission never downloads a plugin, authenticates a Go source tree, or invokes
 OpenTofu. The package producer is explicit; no Loader is connected.
 
@@ -29,16 +29,16 @@ not its Nickel wrapper API or an implicit runtime package registry.
   handwritten replicas of Provider source code.
 - =source.ss= reads the artifact: it checks manifest shape, hashes and decodes
   the same schema bytes. It neither publishes a user scope nor executes a Provider.
-- =objects.ss= owns =OpenTofuModule.=, =OpenTofu= and native Contract catalogs.
+- =objects.ss= owns =OpenTofuModule.=, =OpenTofu= and Contract catalogs.
   It consumes the checked artifact and resolves the named Provider. Resource/data
-  catalogs use native =object<-fun=; accessing one slot compiles only that Contract.
+  catalogs use runtime =object<-fun=; accessing one slot compiles only that Contract.
   The complete export is read when the module's provider is first demanded;
   this is not resource-granular file loading.
 - =func.ss= owns pure structural conversion; =objects.ss= uses the existing
   JSON Schema compiler and keeps supplemental collection checks separate.
 - =config.ss= owns lazy package-path injection from =YUANXU_OPENTOFU_ARTIFACT=.
   This development adapter is internal to the module, not user resource config.
-- =interface.ss= exports the maintained =OpenTofu= module object and its native
+- =interface.ss= exports the maintained =OpenTofu= module object and its runtime
   kernels, not a fixed AWS release.
 
 The former fixed-release runtime =config.ss= was removed. The role now contains
@@ -92,11 +92,11 @@ The historical standalone export retains its original Terraform registry key.
                 (list (.o from_port: 443 to_port: 443 protocol: "tcp"
                           cidr_blocks: '("10.0.0.0/16"))))))
     (.call (.get tf types resources aws_security_group) .admit Web #f)))
-;; Native accepted evidence. Resource authors do not call getenv, artifact
+;; Runtime accepted evidence. Resource authors do not call getenv, artifact
 ;; factories or a provider .contract method.
 #+end_src
 
-Contract identity is a native symbol qualified by Provider address, package
+Contract identity is a runtime symbol qualified by Provider address, package
 version, resource/data kind, name and schema digest. The published Contract also
 exposes Provider/version/schema-digest slots. These retain package association;
 they are not a new Evidence protocol. Requesting an unpublished resource or an
@@ -119,7 +119,7 @@ normal production boundary.
 Local caller-supplied manifests cannot prove plugin authenticity. This consumer
 does not accept a claimed version/hash as a substitute for package-manager trust.
 Ordinary users obtain Contracts from a selected package scope and supply only
-configuration to native =.admit=; they do not manage receipts or source locks.
+configuration to runtime =.admit=; they do not manage receipts or source locks.
 
 * Configuration admission remains narrower than Provider validation
 
@@ -129,7 +129,7 @@ is never grounds for rejecting an otherwise valid Security Group configuration.
 The exported Schema lacks some SDK validators and nested required flags. The
 matched 5.100.0 controls still distinguish number-type rejection from CIDR-host-bit
 and missing-port export gaps. Provider validate/plan owns the latter until a
-separately reviewed native refinement covers them. Planning additionally needs
+separately reviewed runtime refinement covers them. Planning additionally needs
 engine expressions, defaults, unknown values and state. None is authorized or
 executed by =.admit=.
 
@@ -138,7 +138,7 @@ executed by =.admit=.
 =just test-file t/opentofu-provider-artifact-test.ss= exercises the real checked-in
 AWS 5.100.0 export through the generic public consumer. An explicit package
 output is tested with =just test-opentofu-provider-artifact <output-directory>=;
-the same test checks native Security Group admission, number errors and paths,
+the same test checks runtime Security Group admission, number errors and paths,
 spelling errors, CIDR export gaps, Contract memoization, source metadata, missing
 outputs, byte mismatches, wrong Provider keys and malformed manifests.
 
@@ -164,7 +164,7 @@ callers must supply their own locked package set. The exact realized paths and
 selected results are in product
 =t/fixtures/opentofu/aws-5.100.0/package-control.json=.
 
-Eight distinct focused suites passed under the default native runtime (nine
+Eight distinct focused suites passed under the default runtime (nine
 invocations because the artifact suite ran against both the checked-in actual
 export and the realized Nix output). Each returned exit 0, =MODULE-OK=,
 =HARNESS-OK= and final =OK= without case/check/harness or heap/stack errors:
@@ -177,12 +177,12 @@ export and the realized Nix output). Each returned exit 0, =MODULE-OK=,
 - =t/opentofu-schema-test.ss=: 57 structural conversion controls.
 - =t/opentofu-aws-binary-test.ss=: 3 controls, this time using the Nix-packaged
   AWS binary, not a substitute executable.
-- The two existing JSON Schema Contract suites and native runtime import suite.
+- The two existing JSON Schema Contract suites and runtime import suite.
 
 The actual Nix-packaged engine/plugin independently ran all four maintained
 Security Group controls through backend-disabled local-mirror init and offline
 =validate -json=. Valid input passed; wrong port type, CIDR host bits and missing
-rule port were rejected. The native Contract intentionally records the last two
+rule port were rejected. The Contract intentionally records the last two
 export gaps rather than claiming those Provider checks. No credentials, cloud
 queries, refresh, plan or apply were involved.
 
@@ -200,12 +200,12 @@ not complete-suite or remote-CI qualification.
 The product =devenv.nix= now adds the schema output and its =engine= package to
 =packages=, and sets =YUANXU_OPENTOFU_ARTIFACT= to that exact schema output.
 On aarch64-darwin the selected provider is the matched 5.100.0 test package;
-other hosts select their native nixpkgs AWS package. This is development-only
+other hosts select their runtime nixpkgs AWS package. This is development-only
 selection, not a new production default or a change to Loader behavior.
 The artifact test already reads this environment variable, so inside devenv
 =just test-file t/opentofu-provider-artifact-test.ss= consumes the package output
-without a handwritten store path. Resource configuration still uses only native
-Contract =.admit=. A new schema/package generation gets a fresh native scope;
+without a handwritten store path. Resource configuration still uses only runtime
+Contract =.admit=. A new schema/package generation gets a fresh runtime scope;
 package metadata is not repeated in user resource values.
 
 * Module-owned injection and existing bounded use-module
@@ -215,7 +215,7 @@ to the module's lazy configuration. An upstream integrator can instead derive
 =OpenTofuModule.= and supply a package path through its =config= slot; that
 operation is not repeated in user resource configurations.
 
-The implemented object shell is native POO:
+The implemented object shell is POO:
 
 #+begin_src scheme
 (.def OpenTofuModule.
@@ -230,14 +230,14 @@ The implemented object shell is native POO:
 =required-provider= is private module orchestration, not a user helper. It
 rejects a missing/incomplete injection with build-required instead of starting
 package resolution. =interface.ss= exports the two maintained objects alongside
-the existing native kernels. The lower-level directory factory is retained for
+the existing runtime kernels. The lower-level directory factory is retained for
 explicit build/qualification use, not the normal resource-author path.
 
-The package snapshot publishes resource and data catalogs using native
+The package snapshot publishes resource and data catalogs using runtime
 =object<-fun= with keys taken from the actual exported Schema. No AWS-specific
 field table, special alias syntax or new macro was introduced. The bounded
-=use-module= macro is unchanged; it binds the same native module object once.
-Native lexical slots connect config -> provider -> types/source using the
+=use-module= macro is unchanged; it binds the same runtime module object once.
+Runtime lexical slots connect config -> provider -> types/source using the
 current receiver. The existing hygienic expansion is:
 
 #+begin_src scheme
@@ -248,17 +248,17 @@ current receiver. The existing hygienic expansion is:
 
 Binding the alias forces neither config, package IO nor Contract compilation.
 First types/source demand reads the injected immutable package snapshot. Reading
-=types.resources= constructs its native catalog but does not compile all its
+=types.resources= constructs its runtime catalog but does not compile all its
 Contracts. Resource slot access compiles/memoizes the selected Contract;
 =.admit= validates only the submitted final value and does not invoke OpenTofu.
 Unselected data/resource branches stay uncompiled. Importing the module without
 package injection is allowed; attempting to demand its types fails clearly.
 
 The module source uses the existing generated SourceRef with the artifact
-location as value and Provider/version/schema digest as native metadata. This
+location as value and Provider/version/schema digest as runtime metadata. This
 is provenance association, not independent authentication: package management
 remains the trust owner. User-derived modules keep this association through
-native slots; overriding config rebuilds a child provider/catalog even after
+runtime slots; overriding config rebuilds a child provider/catalog even after
 the parent's provider and Contract have been cached. No artifact watchers or
 cross-generation shared cache were added.
 
@@ -269,7 +269,7 @@ validation boundary. No Loader or Provider RPC adapter was connected.
 
 The executable owner is product =t/opentofu-module-scope-test.ss=. It checks the
 bounded user expression, alias scope, inert construction/binding, catalog
-laziness, unselected Contracts, source metadata, native admission/type rejection,
+laziness, unselected Contracts, source metadata, runtime admission/type rejection,
 CIDR gaps and child receiver isolation after parent caching. The existing
 bounded-scope macro suite and artifact/conversion controls remain separate gates.
 
@@ -287,13 +287,13 @@ collection suites also passed serially through =just test-file= with exit 0,
 No Nix producer change or Provider invocation was needed for this publication
 refactor. These are focused default-runtime controls, not a full-suite or
 remote-CI claim. The unchanged bounded macro does not authenticate a SourceRef;
-it only binds a native object. Package integrity and generated provenance remain
+it only binds a runtime object. Package integrity and generated provenance remain
 their respective existing boundaries.
 
 * Superseding cross-version qualification
 
 [[file:11.47-provider-version-cache-isolation.org][Chapter 46]] adds actual Nix-produced AWS 5.99.0 and 5.100.0 outputs, tests
-upgrade and rollback after parent caching, and preserves both origins and native
+upgrade and rollback after parent caching, and preserves both origins and runtime
 admission identities. This extends the earlier same-artifact receiver controls;
 it does not change their historical scope or imply multiple Provider families
 have been qualified.
@@ -301,4 +301,4 @@ have been qualified.
 * Subsequent Provider configuration publication
 
 [[file:11.48-real-provider-family-publication.org][Chapter 47]] adds the real shared =types.provider= entry beside resource/data
-catalogs. It remains lazy and uses the same package-qualified native publisher.
+catalogs. It remains lazy and uses the same package-qualified runtime publisher.

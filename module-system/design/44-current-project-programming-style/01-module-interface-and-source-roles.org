@@ -19,11 +19,14 @@ must own its declared responsibility.  The functional Funflow module has
 | =objects= | inert POO values and one-receiver behavior | =.o=, =.def=, slot =.defgeneric= |
 | =funs/contracts= | pure algorithms, indexes, relations and receipts | named functions and Contract objects |
 | =config/provider= | Profile composition and open crossings | POO composition; CLOS only for independent axes |
-| =interface= | one public POO entry and closed re-export | imports/exports only |
+| =interface= | one public POO entry | Ordinary library: closed imports/reexports; managed Module: one declarative POO publication |
 
 For roles that are present, imports flow
 =types -> objects -> funs/contracts -> config/provider=.
-=interface.ss= closes and re-exports the surface but owns no behavior.  A
+=interface.ss= closes the public surface but owns no business behavior. Managed
+Module assembly uses the existing declarative =.def= publication; ordinary
+Gerbil library facades can use closed imports/reexports. These are distinct
+source classifications, not interchangeable loading protocols. A
 specialized Provider interface may be opt-in; it is never a second default
 entrypoint.
 
@@ -46,6 +49,41 @@ facilities in their role-owned modules.
 - empty role files used to disguise misplaced responsibility;
 - a package build root that imports the package loader while building it.
 
+* Interface is the managed Module entry authority
+
+The Module System consumes =interface.ss= as declarative loading configuration.
+Downstream applications obtain configured Module scopes through their owning
+=init.exports= POO namespace and =.get=; they do not directly import Interface
+or enumerate =types/objects/func/config= as a parallel installation manifest.
+They must not import a private role to bypass scope linking. The existing
+preparer owns bounded role association once. Publication reading and compiler
+lowering consume that same association. Gerbil expansion closes actual helper,
+prelude and phase imports; selected owner contributions add explicit native,
+resource or public-library obligations. See
+[[file:../../../docs/10-19-design/13-module-loading/13.32-interface-entry-and-compilation-authority.org][13.32]] for the phase and acceptance contract.
+
+An Interface publication is not an admitted runtime scope, a compile request or
+an execution grant. Compile availability of a default role differs from demand
+of its business values. Optional Features and the Build role retain their
+existing selection/phase boundaries. A test compares compiler events to native
+entry-rooted dependency observations; it must not maintain another role list.
+
+* Scope value contracts are Types
+
+The source publisher's =core.scope-contract= and each dependency's =contract=
+are named Type descriptors. Use =define-type= for a predicate boundary
+or a named =Record=/=ObjectContract= for field normalization and constraints.
+Do not wrap these descriptors in =yuanxu-predicate-contract= or attach empty
+=.classify=, =.obligations= or =.admit= methods merely to satisfy the publisher.
+The value boundary rejects that contextual protocol rather than choosing a
+compatibility path.
+
+Runtime validation runs once per admission and platform policy sees its actual
+normalized result. Source authentication and genuine contextual domain
+responsibilities remain separate obligations of publication and Application
+admission. A shape Type is not evidence that a source or execution plan is
+current. Never remove those checks while simplifying a scope declaration.
+
 * Pending design revision: published Module role shell
 
 The [[file:../01-source-roles.org][Core Module source-role design]] specifies a stronger target for published
@@ -61,11 +99,11 @@ when implementation is authorized. Do not add empty alias files or enforce a
 half-migrated policy. The design eliminates duplicate export/build registration;
 it does not require restating the same definition in multiple role files.
 
-** Interface field declarations use native Record and Slot contracts
+** Interface field declarations use runtime Record and Slot contracts
 
 A Module Interface's =schemas= value is a gerbil-poo =Record= descriptor, not
 an object containing symbolic type names. Required fields, optional absence,
-constants and defaults belong to the native effective =Slot= declarations:
+constants and defaults belong to the runtime effective =Slot= declarations:
 
 #+begin_src scheme
 (def WorkspaceConfig
@@ -83,30 +121,30 @@ an ordinary POO value, for example =(.o workspace: "demo")=.
 The interface's receiver-bound index projects its current =effective-slots=.
 A derived interface with a different Record must compute its own index even
 when its parent's index has already been read. Product descriptors compose the
-supplied configuration over the Record's native =proto=, preserving defaults
+supplied configuration over the Record's runtime =proto=, preserving defaults
 without replacing an explicit value. A missing optional field is not synthesized.
 
-Option receipts retain the actual native Slot and contributing module. Their
+Option receipts retain the actual runtime Slot and contributing module. Their
 Type, constant/default and merge-rule presentation are derived from that Slot;
-there is no second symbolic type evaluator. Validation delegates to the native
-Record diagnostic protocol, retaining the exact native issue path. This replaces
+there is no second symbolic type evaluator. Validation delegates to the runtime
+Record diagnostic protocol, retaining the exact runtime issue path. This replaces
 the previous constant-only check, which silently accepted wrong nonconstant
 field types. Unknown option diagnostics retain the existing source module.
 
 The =policy= annotation describes contribution combination (append, override,
-conflict); it is not a Type or an alternative contract system. Native Record
+conflict); it is not a Type or an alternative contract system. Runtime Record
 owns field constraints. The existing contribution resolver owns cross-source
 conflicts, and publication owns source currentness and plan applicability.
 Neither an effective-slot index nor a diagnostic receipt caches admission.
 
 The retired =yuanxu-string-*= and =yuanxu-option-*= constructors have no
-compatibility aliases. Consumers declare native Records, including empty
+compatibility aliases. Consumers declare runtime Records, including empty
 Records for authoring-only interfaces. The indexed option performance scenario
-constructs native =RecordSlot= inputs rather than symbolic schema objects.
+constructs runtime =RecordSlot= inputs rather than symbolic schema objects.
 
 Verification uses the heap-fenced =just test-file= entrypoint. The focused
-interface suite covers native defaults/constants/optional fields and derived
-index isolation. The option suite covers native diagnostics and source/order
+interface suite covers runtime defaults/constants/optional fields and derived
+index isolation. The option suite covers runtime diagnostics and source/order
 receipts; the maintained Gitea/PostgreSQL publication suite retains the domain
 checks for both requirements, parent-plan isolation, source-change rejection
 and unused-branch laziness. These bounded checks do not qualify the 10k gate.
@@ -119,7 +157,7 @@ integration, using the unchanged heap-fenced Just entrypoint:
 - =t/module-interface-test.ss=: four cases passed, including inherited Record
   defaults and parent-index/child-index separation.
 - =t/module-option-objects-test.ss=: three cases passed, including rejection of
-  a nonconstant String field with its native =(endpoint)= diagnostic path and
+  a nonconstant String field with its runtime =(endpoint)= diagnostic path and
   the original contributing module.
 - =t/gitea-postgresql-publication-test.ss=: eleven maintained Scenario cases
   passed, including both requirements, parent-cached child plans, explicit-port
@@ -145,8 +183,8 @@ Both product failures retain their local logs; they did not relax any gate.
 
 The failures above are retained historical attempts, not the final status.
 After removing unused aggregate imports, replacing repeated reverse traversals
-with ordinary functional/native-slot projections and fixing the sparse
+with ordinary functional/runtime-slot projections and fixing the sparse
 constructor's empty Record default, both product consumers passed cold and
 fresh-process hot runs under the original budgets. Both hot runs compiled zero
 targets. The detailed attribution, failure evidence and remaining costs are in
-[[file:../../../dev/sysml/20-module-loading/20.07-fixture-preparation-and-native-make.org][20.07 Fixture Preparation and Native Make Attribution]].
+[[file:../../../dev/sysml/20-module-loading/20.07-fixture-preparation-and-std-make.org][20.07 Fixture Preparation and std/make Attribution]].

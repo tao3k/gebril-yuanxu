@@ -57,7 +57,7 @@ Disclosure classification describes the visibility requirement of evidence.
 It does not contain, create, delegate, or grant a capability.
 
 Domain observations refine the base prototype with domain-specific
-responsibility-slot Contracts.  Recovery policy interpretation uses native POO
+responsibility-slot Contracts.  Recovery policy interpretation uses POO
 dispatch over prototype lineage.  It does not use a central kind switch or tag
 registry.
 
@@ -156,8 +156,8 @@ enumeration.
 
 * Dispatch governance
 
-Recovery policies MUST dispatch through native POO prototype relations or named
-POO-native dispatch helpers.
+Recovery policies MUST dispatch through POO prototype relations or named
+POO dispatch helpers.
 
 They MUST NOT:
 
@@ -210,7 +210,7 @@ No observation prototype may add a fifth responsibility slot to =ModuleType=.
 
 * References
 
-- =45-120-01-poo-native-type-and-contract-prototype-foundation.org=
+- =45-120-01-poo-type-and-contract-prototype-foundation.org=
 - =45-120-04-observation-recovery-action-and-telemetry-consumption-boundary.org=
 - =45-120-06-recursive-capability-delegation-and-budget-closure.org=
 - =45-120-07-semantic-cache-scc-evidence-generation-invalidation-and-fail-closed-convergence.org=

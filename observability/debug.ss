@@ -7,7 +7,7 @@
 ;;; Upstream owns tracing and typed printing. No global hook or tracer is copied.
 (import :yuanxu/observability/memory
         (only-in :clan/poo/support/base λ)
-        (only-in :clan/poo/object .o .call .ref)
+        (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
         (only-in :clan/poo/support/debug traced-function)
         (only-in :clan/poo/debug DDT trace-poo)
@@ -185,7 +185,7 @@
 ;;   : (-> YuanxuDebugMemoryReceipt Never)
 ;;   | doc m%
 ;;       Raise the typed fail-closed anomaly while retaining the exact rejected
-;;       receipt for native Scheme handlers and audit projections.
+;;       receipt for Scheme handlers and audit projections.
 ;;       The specialized constructor path mutates only the exception's receipt
 ;;       field before raising and cannot substitute or recompute the evidence.
 ;;
@@ -212,7 +212,7 @@
 ;;   : (-> YuanxuObservation OutputPort trace?: Boolean YuanxuObservationSummary)
 ;;   | doc m%
 ;;       Emit only the admitted closed-schema observation summary and return
-;;       that identical native POO aggregate to the caller.
+;;       that identical POO aggregate to the caller.
 ;;       The specialized trace branch constructs a fresh bounded view, so it
 ;;       cannot dispatch a renderer on the observed Module receiver.
 ;;

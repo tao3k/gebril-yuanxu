@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Integration boundary: native source loading, imports and source mutation.
+;;; Integration boundary: runtime source loading, imports and source mutation.
 (import (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/source this-source-file)
         (only-in :std/list/list find)
@@ -20,7 +20,7 @@
                  core-context-prelude core-module->prelude-context expander-context-table)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
         (only-in :yuanxu/module-system/building/source-closure
-                 for-each-build-module yuanxu-bootstrap-contexts yuanxu-bootstrap-source-path)
+                 for-each-build-module yuanxu-bootstrap-contexts)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
@@ -36,11 +36,24 @@
                  module-publication-contract-current?)
         :yuanxu/module-system/source/preparation
         :yuanxu/module-system/interface)
-(import (only-in "qualification/module-publication/fixtures.ss" write-file remove-tree with-publication-source domain-entry-count native-import-value exception-message PublicLibraryFixture core-source-root)
+(import (only-in "qualification/module-publication/fixtures.ss" write-file remove-tree with-publication-source domain-entry-count gerbil-import-value exception-message PublicLibraryFixture core-source-root)
         (only-in "qualification/module-publication/controls.ss" register-reader-root-collection-cases! register-build-support-control-cases!))
 (export module-publication-test)
 (def module-publication-test
-  (test-suite "Native Module imports and source currentness"
+  (test-suite "Runtime Module imports and source currentness"
+    (yuanxu-test-case "reader snapshots materialize once per closed query window, never across calls"
+      (def reader (module-publication-reader))
+      (def current! (.get reader admit-current))
+      (defvalues (_ counts)
+        (call-with-module-source-operation-measurement
+          (lambda ()
+            (call-with-module-source-read-cache
+              (lambda () (current!) (current!)))
+            (current!))))
+      ;; An open source observer keeps the original eager snapshots/callback
+      ;; order. The closed path materializes only on an actual window miss.
+      (check-equal? (hash-get counts '(calls reader-source-snapshot))
+                    (if (current-module-source-observer) 3 2)))
 
 
     (yuanxu-test-case "publication normalization cannot carry a source mutation into the Graph"
@@ -48,7 +61,7 @@
         (lambda (root module-root _source _view)
           (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
-          (def original (.get ModulePublicationContract value-contract))
+          (def original (.get ModulePublicationContract .validate))
           (def calls 0)
           (def ValueContract
             (.o (:: @ Type.)
@@ -60,7 +73,7 @@
                   "(def Greeting \"changed by normalization\") (export Greeting)")
                 (.o (:: @ value)))))
           (dynamic-wind
-            (lambda () (.put! ModulePublicationContract 'value-contract ValueContract))
+            (lambda () (.put! ModulePublicationContract '.validate (.get ValueContract .validate)))
             (lambda ()
               (check-exception (.get view selected-graph) error?)
               (check-equal? calls 1)
@@ -68,7 +81,7 @@
               ;; restoring a Contract does not revive the refused session.
               (check-exception (.call view .selected-record 'custom/example) error?)
               (check-equal? calls 1))
-            (lambda () (.put! ModulePublicationContract 'value-contract original))))))
+            (lambda () (.put! ModulePublicationContract '.validate original))))))
     (yuanxu-test-case "extended publication Contracts retain guards before declaration or Feature callbacks"
       (for-each
         (lambda (boundary)
@@ -97,7 +110,7 @@
                     (object->string marker)
                     " (lambda (port) (display \"unexpected\" port))) (error \"Feature executed before source refusal\"))))")))
               (def view (yuanxu-load-modules (path-expand "init.ss" root)))
-              (def original (.get ModulePublicationContract value-contract))
+              (def original (.get ModulePublicationContract .validate))
               (def calls 0)
               (def ValueContract
                 (.o (:: @ Type.)
@@ -109,13 +122,13 @@
                       "(def Greeting \"changed before continuation\") (export Greeting)")
                     value)))
               (dynamic-wind
-                (lambda () (.put! ModulePublicationContract 'value-contract ValueContract))
+                (lambda () (.put! ModulePublicationContract '.validate (.get ValueContract .validate)))
                 (lambda ()
                   (check-equal? (module-publication-contract-current?) #f)
                   (check-exception (.get view selected-graph) error?)
                   (check-equal? calls 1)
                   (check-equal? (file-exists? marker) #f))
-                (lambda () (.put! ModulePublicationContract 'value-contract original))))))
+                (lambda () (.put! ModulePublicationContract '.validate original))))))
         '(declaration feature)))
     (yuanxu-test-case "publication identity remains an open computation after reader return"
       (with-publication-source
@@ -266,13 +279,13 @@
           (def prelude
             (core-module->prelude-context
               (core-import-module ':yuanxu/module-system/source/config-prelude)))
-          (def native-eval (current-expander-eval))
+          (def gerbil-eval (current-expander-eval))
           (def interfaces (make-hash-table-eq))
           (parameterize
               ((current-expander-eval
                  (lambda (program)
                    (def context (current-expander-context))
-                   (call-with-values (cut native-eval program)
+                   (call-with-values (cut gerbil-eval program)
                      (lambda results
                        (when (and (module-context? context)
                                   (string? (module-context-path context))
@@ -285,7 +298,7 @@
           (hash-for-each
             (lambda (context _seen)
               (check-equal? (eq? (core-context-prelude context) prelude) #t)
-              ;; .o remains available through the shared native weak prelude;
+              ;; .o remains available through the shared runtime weak prelude;
               ;; its import alias is not copied into either local table.
               (check-equal? (hash-key? (expander-context-table context) '.o) #f)
               (check-equal? (hash-key? (expander-context-table context) '.def) #t))
@@ -304,7 +317,7 @@
                 (write '(def FixtureScope (.o retained: ExternalValue)) port)
                 (write '(export FixtureScope) port))))
           ;; An explicit interface import is revisited on every declaration,
-          ;; even when the native role contexts have already been evaluated.
+          ;; even when the runtime role contexts have already been evaluated.
           (write-file (path-expand "interface.ss" module-root)
             (string-append
               (call-with-output-string
@@ -326,15 +339,15 @@
             (check-equal? preparations first-preparations)
             (.call reader admit-current))
           ;; Do not modify the installed SDK. This external public source is
-          ;; owned by the fixture and published through the real native resolver.
+          ;; owned by the fixture and published through the real runtime resolver.
           (write-file (.get library path)
             "(def ExternalValue \"changed\") (export ExternalValue)")
           (check-exception (.call reader admit-current)
             (lambda (exception)
               (and (Error? exception)
                    (string=? (Error-message exception)
-                     "public dependency source or native identity changed")))))))
-    (yuanxu-test-fixture "warm public source refuses native name redirection"
+                     "public dependency source or runtime identity changed")))))))
+    (yuanxu-test-fixture "warm public source refuses runtime name redirection"
       (library PublicLibraryFixture)
       (with-publication-source
         (lambda (_root module-root source _view)
@@ -350,7 +363,7 @@
             (lambda (exception)
               (and (Error? exception)
                    (string=? (Error-message exception)
-                     "public dependency source or native identity changed")))))))
+                     "public dependency source or runtime identity changed")))))))
 
     (register-build-support-control-cases!)
     (yuanxu-test-case "completed reader bodies release without discarding macro bindings"
@@ -362,14 +375,14 @@
          (def sdk-context (core-import-module ':clan/poo/object))
          (def sdk-code (module-context-code sdk-context))
          (check-equal? (not (not sdk-code)) #t)
-         (def native-eval (current-expander-eval))
+         (def gerbil-eval (current-expander-eval))
          (def evaluated (make-hash-table-eq))
          (def runtime-state (make-hash-table-eq))
          (parameterize
              ((current-expander-eval
                 (lambda (program)
                   (def context (current-expander-context))
-                  (call-with-values (lambda () (native-eval program))
+                  (call-with-values (lambda () (gerbil-eval program))
                     (lambda results
                       (when (module-context? context)
                         (hash-put! evaluated context (module-context-code context))
@@ -384,7 +397,7 @@
                  (hash-keys evaluated)))
          (check-equal? (module-context? macro-context) #t)
          (check-equal? (module-context-code macro-context) #f)
-         ;; Independent full native DFS is the oracle for the cut traversal.
+         ;; Independent full runtime DFS is the oracle for the cut traversal.
          ;; Register every evaluated private wrapper, a superset of role inputs;
          ;; both projections must preserve exact order and identities.
          (def canonical (make-hash-table-eq))
@@ -459,13 +472,13 @@
                (write '(def Greeting "hello") port)
                (write '(export Greeting) port))))
          (def reader (module-publication-reader))
-         (def native-eval (current-expander-eval))
+         (def gerbil-eval (current-expander-eval))
          (def evaluated (make-hash-table-eq))
          (parameterize
              ((current-expander-eval
                 (lambda (program)
                   (def context (current-expander-context))
-                  (call-with-values (lambda () (native-eval program))
+                  (call-with-values (lambda () (gerbil-eval program))
                     (lambda results
                       (when (module-context? context)
                         (hash-put! evaluated context (module-context-code context)))
@@ -591,7 +604,7 @@
            (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
              (check-exception (.get view build-graph) error?))))))
 
-    (yuanxu-test-case "prepared native interface defers roles and exports only the Module automatically"
+    (yuanxu-test-case "prepared runtime interface defers roles and exports only the Module automatically"
       (with-publication-source
        (lambda (root module-root _source _view)
          (def config-marker (path-expand "config-initialized" root))
@@ -633,7 +646,7 @@
             (lambda () (set-load-path! (cons lib previous-path)))
             (lambda ()
              (let (publication
-                    (native-import-value
+                    (gerbil-import-value
                       (path-expand (string-append (symbol->string (.get prepared compiler-identity)) ".ssi") lib)
                       'Fixture))
                (check-equal? (file-exists? config-marker) #f)
@@ -650,7 +663,7 @@
                  (check-equal? (module-source-read config-marker) "once")
                  (check-equal? (module-source-read objects-marker) "once"))))
             (lambda () (set-load-path! previous-path)))
-           (check-exception (native-import-value wrapper 'Greeting) true)
+           (check-exception (gerbil-import-value wrapper 'Greeting) true)
            (let* ((original (path-expand "interface.ss" module-root))
                   (text (module-source-read original)))
              (check-exception (yuanxu-write-module-publication prepared original) error?)
@@ -673,7 +686,9 @@
               (write-file file (string-append (module-source-read file) extra)))
             (let (message (exception-message (lambda () (yuanxu-prepare-module-publication source))))
               (check-equal? (if (string-contains message "interface.ss must contain one Module .def") #t #f) #t)))))
-       '(" (export Fixture)" " (begin (error \"must not evaluate\"))")))
+       '(" (export Fixture)"
+         " (export (import: \"unimported.ss\"))"
+         " (begin (error \"must not evaluate\"))")))
     (yuanxu-test-case "unchanged publication identity is parsed once; changed header and closer package refuse"
       (with-publication-source
        (lambda (_root module-root source _view)

@@ -8,7 +8,7 @@
 * Decision
 
 AC-06 hot/bulk lanes are qualified as a complete pre-v1 feature.  The public
-boundary is native C ABI over fixed Scheme-owned types; JSON is not a contract
+boundary is runtime C ABI over fixed Scheme-owned types; JSON is not a contract
 owner.  =abi-v1-frozen? #f= remains mandatory until Bundle v1 is stable.
 
 * Algorithm receipt
@@ -24,7 +24,7 @@ owner.  =abi-v1-frozen? #f= remains mandatory until Bundle v1 is stable.
 - Average p50 ns by batch: 1/42, 8/112, 32/315, 128/1326,
   1024/19177.  Crossings per item amortize from 3 to 0.002929688.
 
-* Native ABI and memory receipt
+* Runtime ABI and memory receipt
 
 - Generated Scheme-owned contract/header/vector freshness: pass.
 - Strict C control, batch, and differential-vector harnesses: pass.
@@ -53,7 +53,7 @@ owner.  =abi-v1-frozen? #f= remains mandatory until Bundle v1 is stable.
 
 - Scheme POO objects own the ABI schema and typed runtime projection.
 - Generated C declarations and vectors are projections, not sources of truth.
-- The C engine owns native handles, caller arenas, leases, ordered windows,
+- The C engine owns runtime handles, caller arenas, leases, ordered windows,
   generation checks, and the hot batch state machine.
 - Python remains a production-capable validation runtime; Agentic AI Lab exports the
   C binding interface and does not own downstream Rust/TypeScript runtimes.

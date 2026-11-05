@@ -30,8 +30,8 @@ authoritative semantic evidence.
 Authoritative semantic evidence and observability projections have separate
 owners.
 
-- =ObservationEvent= is a POO-native immutable semantic evidence value.
-- =RecoveryDecision= is a pure POO-native decision derived from visible
+- =ObservationEvent= is a POO immutable semantic evidence value.
+- =RecoveryDecision= is a pure POO decision derived from visible
   evidence and bounded authority.
 - =src/user-interface/module-presentation.ss= remains the strict read-only projection
   owner for doctor, CLI, serialization, and presentation consumers.
@@ -50,8 +50,8 @@ and the structured evidence contract established by
 #+begin_src mermaid
 flowchart LR
   Evaluation["POO evaluation"]
-  Evidence["POO-native ObservationEvent"]
-  Decision["Pure POO-native RecoveryDecision"]
+  Evidence["POO ObservationEvent"]
+  Decision["Pure POO RecoveryDecision"]
   Coordinator["Authorized runtime coordinator"]
   Projection["Strict observability projection"]
   Doctor["Doctor / CLI / presentation"]
@@ -74,7 +74,7 @@ flowchart LR
 
 =ObservationEvent= MUST:
 
-- be an ordinary native =gerbil-poo= object or prototype refinement;
+- be an ordinary runtime =gerbil-poo= object or prototype refinement;
 - carry stable semantic identity;
 - carry evaluation generation and causal predecessor evidence;
 - distinguish observed facts from policy interpretation;
@@ -152,7 +152,7 @@ The current strict observability owner is reused and specialized only as a
 projection consumer.  It is not replaced and is not promoted into the semantic
 evidence owner.
 
-The authoritative POO-native semantic evidence owner remains a distinct source
+The authoritative POO semantic evidence owner remains a distinct source
 responsibility.  Its concrete source path MUST be resolved through parser-owned
 owner discovery before implementation.  This RFC does not invent that source
 path and does not authorize a parallel generic type, object, debug, or
@@ -162,7 +162,7 @@ fixed-point foundation.
 
 For the current implementation task, the user explicitly authorized =rg= / =fd=
 exploration while the ASP parser route is unavailable. Local source and caller
-inspection identified the native =core/observability/types.ss= and
+inspection identified the runtime =core/observability/types.ss= and
 =core/observability/objects.ss= as the Diagnostic/Receipt owner. Its
 existing consumers include =src/contract/json-schema-receipt.ss= and
 =src/contract/boundary-namespace.ss=, with executable feedback scenarios in
@@ -171,13 +171,13 @@ existing consumers include =src/contract/json-schema-receipt.ss= and
 The first framework slice extends that owner rather than creating a parallel
 observation package:
 
-- =types.ss= declares the native identity, provenance, context, fact, event,
+- =types.ss= declares the runtime identity, provenance, context, fact, event,
   and aggregate Contracts through upstream =define-type=;
 - =func.ss= performs pure bounded inspection of already-computed admission
   evidence;
 - =objects.ss= constructs observations and uses upstream =.defgeneric= for
   derived explanation/summary responsibilities;
-- =interface.ss= exposes the pure native interface;
+- =interface.ss= exposes the pure runtime interface;
 - =debug.ss= explicitly consumes upstream =DDT= / =trace-poo= at the
   development-output boundary.
 
@@ -193,7 +193,7 @@ recorded in =docs/10-19-design/10.06-poo-module-system/observability-ownership.o
 * Conformance checklist
 
 - [X] Semantic evidence and presentation projection are distinct owners.
-- [X] =ObservationEvent= is POO-native, immutable, and authoritative.
+- [X] =ObservationEvent= is POO, immutable, and authoritative.
 - [X] =RecoveryDecision= is pure and carries no raw continuation.
 - [X] Existing strict observations remain non-authoritative projection values.
 - [X] Alists are confined to terminal presentation or serialization edges.

@@ -9,7 +9,7 @@
 
 AC-07 is qualified as the production Python adapter for runtime v0.  The wheel
 contains an out-of-line CFFI API extension and a qualified platform library.
-Production graph execution requires a negotiated native context; the pure
+Production graph execution requires a negotiated runtime context; the pure
 Python backend is available only through explicit reference constructors.
 
 =abi-v1-frozen? #f=
@@ -27,7 +27,7 @@ Python backend is available only through explicit reference constructors.
 - The unreferenced 1500-line legacy CABI benchmark was deleted rather than
   preserved or split; dependency and manifest search found zero external users.
 
-* Native lifecycle receipt
+* Runtime lifecycle receipt
 
 - Dynamic library loading: bundled path and explicit
   =AGENTIC_AI_LAB_RUNTIME_V0_LIBRARY= override pass.
@@ -44,7 +44,7 @@ Python backend is available only through explicit reference constructors.
 - Wheel: CPython 3.13, macOS arm64.
 - Isolated installation without Gerbil: pass.
 - Loaded library resolves inside the installed wheel package: pass.
-- Native session and full batch path from installed wheel: pass.
+- Runtime session and full batch path from installed wheel: pass.
 
 Actual-wheel p50 results for 20 iterations:
 
@@ -72,7 +72,7 @@ All rows report zero-copy payloads, =O(log n + k)= lookup, and
 
 * Production policy
 
-- =RuntimeGraphRuntime()= selects native production policy.
+- =RuntimeGraphRuntime()= selects runtime production policy.
 - Missing or closed negotiated context fails before graph validation/execution.
 - =RuntimeGraphRuntime.reference()=,
   =RuntimeGraphProgram.reference()=, and

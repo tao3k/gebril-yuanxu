@@ -3,12 +3,12 @@
 This maintained Scenario composes the selected =services/postgresql= and
 =services/gitea= scopes. It owns their connection requirements and the
 =Application= admission entry; the reusable service modules have no fixed
-consumer target. Native plan construction starts no services.
+consumer target. Runtime plan construction starts no services.
 
 * Ownership and configuration roles
 
 The maintained example service entries live in [[file:postgresql/interface.ss][postgresql/]] and
-[[file:gitea/interface.ss][gitea/]], not Core's built-in modules/. They retain the same native
+[[file:gitea/interface.ss][gitea/]], not Core's built-in modules/. They retain the same runtime
 module role and publication mechanism; a Scenarios window is a namespace, not
 another evaluator. Core owns only the general admission/source protocols.
 
@@ -49,12 +49,12 @@ The suite also reads real Scheme overrides after relocation, checks exact
 slot-token positions alongside the JSON baseline, and refuses edits even after
 the child plan is cached. See [[file:../../docs/10-19-design/10-configuration/10.17-scheme-field-origins.org][10.17]] for the authoring-binding and AOT boundaries.
 
-The native operator control additionally combines .+, .cc and delayed =>.+,
+The runtime operator control additionally combines .+, .cc and delayed =>.+,
 checks copied right-hand sources without making that operand an ancestor, and
 rejects stale derived sources while leaving the cached parent admissible.
-See [[file:../../docs/10-19-design/10-configuration/10.18-native-copy-source-boundaries.org][10.18]] for opaque-write attribution and the common MOP query.
+See [[file:../../docs/10-19-design/10-configuration/10.18-runtime-copy-source-boundaries.org][10.18]] for opaque-write attribution and the common MOP query.
 
-Core qualifications share the native Service/Relocated Fixture library rather
+Core qualifications share the runtime Service/Relocated Fixture library rather
 than importing other test suites or repeating temporary-directory setup.
 See [[file:../../docs/10-19-design/10-configuration/10.19-service-publication-fixtures.org][10.19]] for preparation/release ownership and executable cleanup controls.
 

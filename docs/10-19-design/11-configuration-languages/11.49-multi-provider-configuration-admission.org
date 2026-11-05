@@ -13,7 +13,7 @@ it does not describe the current ordinary user path.
 The [[file:11.48-real-provider-family-publication.org][three actual Nix-produced Provider exports]] now form one selected
 ConfigurationContract. Package integration owns artifact injection. Modules own
 publication. Resource authors supply ordinary configuration objects and call
-native =.admit=. No Loader, provider acquisition on demand, RPC, plan or apply
+runtime =.admit=. No Loader, provider acquisition on demand, RPC, plan or apply
 is introduced here. This is configuration admission, not a deployable plan.
 
 The executable consumer is Agentic AI Lab's
@@ -57,13 +57,13 @@ author input and do not cause package acquisition:
 #+end_src
 
 All aliases are bounded by the existing hygienic =use-module=. The selection
-is a native POO object containing native Contracts, not a raw Schema DSL.
+is a POO object containing Contracts, not a raw Schema DSL.
 Aliases deliberately use =aws-scope/awscc-scope/null-scope= rather than the
-names of the inner =aws:/awscc:/null:= slots. Native POO lexical slot binding
+names of the inner =aws:/awscc:/null:= slots. POO lexical slot binding
 can shadow an identically spelled enclosing alias: the initial =aws= example
 recursed when demanding its Provider Contract and was rejected by the memory
 policy. The failed run is retained locally. Hygiene does not remove deliberate
-lexical shadowing. This fix changes alias names, not native slot semantics.
+lexical shadowing. This fix changes alias names, not runtime slot semantics.
 Defining it leaves Provider slots unforced; constructing ConfigurationContract
 then demands exactly its listed Contracts. This finite selection is maintained
 by the configuration publisher rather than an automatic directory scanner.
@@ -101,7 +101,7 @@ a cloud resource exists. No data-source read or Null provisioner executes.
 
 Every =.o= here creates an ordinary object. No inheritance is necessary to
 supply these values. A later user can reuse this maintained Configuration and
-override only a desired value through the existing native object operators.
+override only a desired value through the existing runtime object operators.
 
 * Composition boundary
 
@@ -113,10 +113,10 @@ controls; ordinary module consumers need not retrieve those blocks.
 The new function rejects a selection with the wrong provider/resource/data
 kind or resource/data name. Every selected resource/data Contract must have
 the same Provider address, version and Schema digest as a selected Provider
-configuration Contract. The resulting native Contract retains =selected-types=
+configuration Contract. The resulting Contract retains =selected-types=
 as the original object, preserving each member Contract and its provenance.
 
-Published Contracts now carry =kind=, =name= and the same native =source=
+Published Contracts now carry =kind=, =name= and the same runtime =source=
 SourceRef used by their module. This supplements existing =provider=, =version=
 and =schema-digest= slots. It does not create a second Provider trust root.
 
@@ -128,7 +128,7 @@ own explicit composition protocol; retaining metadata alone is not admission.
 
 * Equal names and failures
 
-All three selected configuration nodes are named =provider=. Their native
+All three selected configuration nodes are named =provider=. Their runtime
 Contract identities remain distinct. The awscc resource and data nodes are both
 named =awscc_ec2_security_group=, but have distinct kinds, cache keys, identities
 and input requirements. The overall root has separate =resource= and =data=
@@ -146,7 +146,7 @@ The executed negative candidates preserve their complete root-relative paths:
 | awscc resource receives data fields | resource.awscc_ec2_security_group.web.group_description |
 | Unselected AWS resource type | resource.aws_s3_bucket |
 
-Native inherited modifications in the controls preserve unrelated fields; for
+Runtime inherited modifications in the controls preserve unrelated fields; for
 example this changes only the Null Provider entry:
 
 #+begin_src scheme
@@ -168,7 +168,7 @@ are publisher errors before candidate admission, not cloud execution failures.
 
 Constructing the overall Contract reads/decodes each selected Provider export
 once and compiles its selected Contracts. It does not compile every catalog
-member. The final native =.admit= checks the candidate against that finite input
+member. The final runtime =.admit= checks the candidate against that finite input
 schema, retaining full error paths.
 
 AWS S3 resource and Security Group data Contracts remain uncached after both

@@ -157,7 +157,7 @@ They cannot happen within the final pure window in the positive model.
 These are bounded transition results, not evidence that arbitrary callbacks,
 all filesystem interleavings or production observation discovery are modeled.
 The Lean model covers arbitrary finite source/contribution lists. QNT explicitly
-checks schedules and negative controls. Neither replaces native correspondence.
+checks schedules and negative controls. Neither replaces runtime correspondence.
 
 * Deriving an optimization without weakening the protocol
 
@@ -174,7 +174,7 @@ pre-getter rejection, graph/coverage checks, or independent post-effect rechecks
 A pure child may produce evidence before the final source Certificate; it must
 not publish or authorize effects on that evidence.
 
-The prior repaired native measurement is 718 opens: 606 publication reads,
+The prior repaired runtime measurement is 718 opens: 606 publication reads,
 102 final-source reads, 4 config/source reads and 6 graph reads. This turn does
 NOT reduce those counts. The six whole-publication windows are an optimization
 target, not proof that all six are removable. [[file:32.17-publication-check-callers.org][32.17]] now attributes the measured
@@ -269,7 +269,7 @@ gate. An aggregate Lean attempt also failed when another session added imports
 before their object files existed; the subsequent build resolved those modules
 without reverting that session's changes.
 
-No Scheme source or Loader implementation was changed. No new native runtime
+No Scheme source or Loader implementation was changed. No new runtime
 acceptance or performance improvement is claimed. The observation-discovery,
 identity projection, stable-window and publication-coverage premises above remain
 production correspondence obligations.

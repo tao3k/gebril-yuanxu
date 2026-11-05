@@ -18,7 +18,7 @@ module IncrementalRolesModel {
     val edges = if (compileOnly) compileEdges else valueEdges
     expand(expand(changed, edges), edges)
   }
-  pure def nativeImpact(changed) = expand(expand(changed, registeredEdges), registeredEdges)
+  pure def runtimeImpact(changed) = expand(expand(changed, registeredEdges), registeredEdges)
   val Registration = valueEdges.subseteq(registeredEdges)
   val trace = List(1, 2, 3, 3, 4, 6)
   var s: {phase: int, dataOnly: bool, changed: Set[int], invalid: Set[int],
@@ -35,7 +35,7 @@ module IncrementalRolesModel {
   }
   action edit = {
     val changed = if (s.dataOnly) Set(2) else Set(1)
-    val affected = nativeImpact(changed)
+    val affected = runtimeImpact(changed)
     all {s.phase == 0, s' = s.with("phase", 1).with("changed", changed)
       .with("invalid", affected.intersect(demanded)).with("source", 1)}
   }

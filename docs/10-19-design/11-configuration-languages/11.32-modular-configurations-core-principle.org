@@ -16,7 +16,7 @@ requiring consumers to reconstruct its implementation. This applies to both
 maintained contribution libraries and downstream user configurations.
 
 We borrow selectively from ecosystems. We do not reproduce the Nix module system,
-equate native POO composition with Nickel merge, or add a parallel evaluator.
+equate POO composition with Nickel merge, or add a parallel evaluator.
 The existing [[file:11.31-module-config-types-and-function-slots.org][config/types/function-slot design]] supplies the public scope;
 the [[file:../../../module-system/design/03-publication-selection.org][publication and selection protocol]] supplies module ownership and eligibility.
 
@@ -69,7 +69,7 @@ check is distinct from the high-level input declarations. Terraform interpolatio
 strings in this source are also distinct from evaluated cloud resource values.
 
 For our design, this is a concrete reason to keep Profile input Contracts,
-Scenario relationship admission and output resource Contracts separate. A native
+Scenario relationship admission and output resource Contracts separate. A runtime
 Schema-derived output Contract does not by itself validate the high-level input
 or prove that generated references identify a live resource.
 
@@ -93,13 +93,13 @@ This is not evidence that every useful interface must be a partial record.
 An explicit function is appropriate for a bounded transformation or renderer.
 However, consumers should not have to invoke a renderer merely to discover the
 configuration fields it accepts. We must provide that discovery through the
-published native Contract/config scope, rather than invent another field table.
+published Contract/config scope, rather than invent another field table.
 
 * Requirements for our POO configuration interface
 
 ** Keep configuration inspectable; keep algorithms callable
 
-Publish config, types and named function slots as one native scope. A module's
+Publish config, types and named function slots as one runtime scope. A module's
 whole public configuration must not become an opaque factory with a growing
 parameter list. Functions such as from-file, data transformations and resource
 projection remain explicit operations. Callable values are not inherently bad;
@@ -120,14 +120,14 @@ or maintain complex inherited families. Neither group is restricted to one level
 (.def (LocalCI @ PublishedCI)
   commands: '("gerbil" "build" "--release"))
 
-;; Preserve the maintained command and add a flag using native field refinement.
+;; Preserve the maintained command and add a flag using runtime field refinement.
 (.def (ReleaseCI @ PublishedCI)
   (commands => append '("--release")))
 #+end_src
 
 Here PublishedCI is the same maintained Profile in both examples, with commands
 initially ='("gerbil" "build")=. =append= is the ordinary Scheme function in
-the first argument position after native =>; no overlay DSL is introduced.
+the first argument position after runtime =>; no overlay DSL is introduced.
 If upstream changes that command, LocalCI retains its replacement; ReleaseCI
 transforms the inherited command. Whether the added flag remains valid is a
 domain compatibility question, not something list typing can prove.
@@ -137,11 +137,11 @@ domain compatibility question, not something list typing can prove.
 Maintained Pipeline and resource consumers must read the effective Profile or
 Scenario. They must not capture a materialized parent Check list or parent
 resource plan as the child's input. Parent cache hits cannot certify a child.
-Use native outer lexical slots where the native receiver relationship applies;
+Use runtime outer lexical slots where the runtime receiver relationship applies;
 explicit pure projections must receive the final object.
 
 The [[file:11.24-guestbook-effective-services.org][Guestbook study]] specifies port/label/selector correspondence and stale-parent
-rejection. Prior native Pipeline controls are useful evidence, not verification
+rejection. Prior runtime Pipeline controls are useful evidence, not verification
 of the proposed Kubernetes consumer or cross-generation cache invalidation.
 
 ** Compose independently maintained units without hiding policy
@@ -152,7 +152,7 @@ need to contain Profiles. Contribution packaging may publish all three without
 collapsing their identities. Combining unrelated units should not require
 repeating their complete argument or component inventories.
 
-Native parent order resolves inheritance; it does not define task scheduling or
+Runtime parent order resolves inheritance; it does not define task scheduling or
 guarantee conflict detection. Distinct Profile namespaces preserve identically
 named Checks. Same-path writes need documented resolution and origin diagnostics.
 Do not describe .+ as symmetric merge, or add Nickel force/default keywords as
@@ -160,7 +160,7 @@ aliases for operations with different semantics.
 
 ** Project public output explicitly
 
-Contracts, helper functions and source metadata belong to the native scope; they
+Contracts, helper functions and source metadata belong to the runtime scope; they
 are not automatically JSON deployment fields. A selected resource projection
 chooses output fields and admits the resulting values against output Contracts.
 This separation does not require a new public export-control syntax. Scope

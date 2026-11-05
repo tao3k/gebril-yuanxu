@@ -9,7 +9,7 @@ the flowing value and multi-agent coordination as session graph composition.
 
 The goal is not to copy OpenRath's Python API. The goal is to use OpenRath as
 evidence for a stronger Agentic AI Lab design:
-1. user declarations stay POO-native;
+1. user declarations stay POO;
 2. functional arrows transform session values;
 3. generated runtime receipts use fixed internal structures where appropriate;
 4. Marlin or another runtime owns execution through explicit handoff payloads.
@@ -292,7 +292,7 @@ The exact syntax can evolve, but the invariants should not:
 
 ** 10.06.42.70 Implementation Milestones
 *** 10.06.42.70.00 P0 Session Policy Contract Foundation
-Start with a POO-native policy object family for session isolation and sharing:
+Start with a POO policy object family for session isolation and sharing:
 - =session-isolation-policy=;
 - =session-sandbox-policy=;
 - =session-context-policy=;
@@ -444,7 +444,7 @@ Current implementation:
   child-parent, sibling, and cross-root routing without runtime delivery.
 
 *** 10.06.42.70.40 P4 Session Policy Validation Receipt
-Add a POO-native policy object family for session isolation and sharing:
+Add a POO policy object family for session isolation and sharing:
 - =session-isolation-policy=;
 - =session-sandbox-policy=;
 - =session-context-policy=;
@@ -486,7 +486,7 @@ The validation receipt must also include:
 Current implementation:
 - =modules/session/policy.ss= exposes the foundational POO policy family for isolation, sandbox, context, history, communication, session-sharing, resource, model, prompt, tool, hook, resource-sharing, and agent-execution policies through the shared =policy-syntax.ss= constructor pattern.
 - =t/session-policy-contract-test.ss= projects the foundational isolation, sandbox, context, history, communication, session-sharing, and resource policy rows so sandbox and session-sharing cannot remain untested constructor surfaces.
-- =user-interface/custom/my-module/cases/session-policy.ss= projects isolation, sandbox, and session-sharing policy rows beside the effective validation receipt, keeping the downstream custom module on the same POO-native object path.
+- =user-interface/custom/my-module/cases/session-policy.ss= projects isolation, sandbox, and session-sharing policy rows beside the effective validation receipt, keeping the downstream custom module on the same POO object path.
 - =modules/session/policy-validation.ss= treats isolation and sandbox as first-class effective policy inputs: bounded projection includes =effective-isolation-mode=, isolation sibling/parent/peer controls, =effective-sandbox-profile-ref=, sandbox inheritance mode, and sandbox sharing mode. Metadata-provided sibling session refs drive explicit =sibling-context-not-granted= diagnostics so child sessions cannot read sibling context through a generic context-policy fallback.
 - =t/scenarios/performance/session-policy-family/benchmark.ss= and =t/performance/session-policy-family-performance-test.ss= keep the foundational constructor family as a hot benchmark gate before effective validation.
 - =modules/session/policy-validation.ss= owns the defstruct-backed
@@ -512,7 +512,7 @@ Current implementation:
   =hook-tool-agent-permission-not-inherited=, and
   =resource-sharing-missing-accounting-owner=.
 - =user-interface/custom/my-module/cases/session-policy.ss= now projects a
-  real custom validation receipt from its POO-native policies, attempts, and
+  real custom validation receipt from its POO policies, attempts, and
   tool-core catalog-validation row.
 - =t/session-policy-validation-test.ss= covers the denied sibling context,
   denied history replay, denied peer channel, denied resource capability,
@@ -523,7 +523,7 @@ Current implementation:
   benchmark gate. The gate validates 240 agent attempts and 240 hook attempts
   through POO-authored policy objects and bounded receipt projection.
 *** 10.06.42.70.50 P5 AgentParam Contract Object
-Model OpenRath's =AgentParam= as a POO-native contract object:
+Model OpenRath's =AgentParam= as a POO contract object:
 - agent/system session;
 - provider ref;
 - memory store refs;
@@ -661,7 +661,7 @@ Near-term execution-policy gates:
 - =gxtest t/session-agent-tool-policy-test.ss=
 - =gxtest t/session-hook-tool-policy-test.ss=
 Each gate should prove:
-- user declarations remain POO-native;
+- user declarations remain POO;
 - generated runtime facts are fixed receipts or bounded rows;
 - runtime owner remains =marlin-agent-core=;
 - =runtime-executed= remains =#f= in Scheme;

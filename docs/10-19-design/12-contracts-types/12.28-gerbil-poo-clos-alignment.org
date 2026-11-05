@@ -9,7 +9,7 @@ The inspected [[https://github.com/tao3k/gerbil-poo/pull/13][gerbil-poo PR 13]] 
 =798804132ffd9ac69df7bcf062911db48321a9a2= (2026-10-18).
 No dependency revision was changed by this audit.
 
-The five commits after the pin refine native formal forwarding, combined
+The five commits after the pin refine runtime formal forwarding, combined
 generic argument-row construction, prototype suffix reduction and OpenSSL
 link discovery. Method declarations and combination adapters also exist at
 the inspected head; they must not all be presented as additions in those five
@@ -27,7 +27,7 @@ commits.
 | CLOS replacement =call-next-method= arguments | Core CLOS invocation frame | Retain applicable-method-set validation |
 | Graph, package/source/Schema currentness and publication policy | Core admission | Keep separate from generic selection and public value contracts |
 
-The two =.defgeneric= bindings have different grammars and semantics. A native
+The two =.defgeneric= bindings have different grammars and semantics. A runtime
 receiver generic is not a drop-in replacement for a CLOS generic merely
 because a particular call currently has one specialized parameter.
 
@@ -108,7 +108,7 @@ a new standard/short/long execution engine or alter CLOS applicability.
 The control forces a parent's callback, derives a short combination with
 another identity and checks that qualifier admission follows the child while
 the parent's result remains intact. A refined standard policy rejects a
-primary before registration, proving the consumer reaches the native slot.
+primary before registration, proving the consumer reaches the runtime slot.
 
 ** Authoring keeps independent axes without manual construction
 
@@ -198,7 +198,7 @@ Two fixture assumptions were corrected during qualification: =.declare='s
 second argument is declaration context, not an inherited base (the runtime
 declaration constructor takes =supers:=); and a composed Core method is owned
 by its generic, so a production bundle is not replayed into another owner.
-Gerbil keyword call rows also retain their native =#!rest= boundary. These
+Gerbil keyword call rows also retain their runtime =#!rest= boundary. These
 corrections changed the fixtures, not upstream implementation or test limits.
 
 The subsequent [[file:../13-module-loading/13.15-import-and-source-guard-correspondence.org::#post-clos-source-graph-reuse-and-aws-acceptance][AWS source Graph reuse qualification]] passes the original Ops endpoint on

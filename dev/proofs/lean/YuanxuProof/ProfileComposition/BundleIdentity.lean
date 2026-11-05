@@ -5,7 +5,7 @@
 namespace YuanxuProof.ProfileComposition.BundleIdentity
 
 /-! Projections of `profile-bundle.ss` selection keys and duplicate checks.
-Native object reference identity is supplied by the projection, not inferred
+Runtime object reference identity is supplied by the projection, not inferred
 from content, a digest, a lexical alias or a caller's injectivity proposition. -/
 inductive SelectionKey where
   | direct (profile : String)

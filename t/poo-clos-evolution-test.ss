@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; POO-native CLOS class evolution, identity, and reflection conformance.
+;;; POO CLOS class evolution, identity, and reflection conformance.
 
 (import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
@@ -19,7 +19,7 @@
          (eq? (.ref error 'code) code))))
 
 (def poo-clos-evolution-test
-  (test-suite "POO-native CLOS class evolution"
+  (test-suite "POO CLOS class evolution"
     (yuanxu-test-case "redefinition preserves class identity and migrates lazily"
       (let* ((updates '())
              (x-slot
@@ -195,7 +195,7 @@
     (yuanxu-test-case "MOP-EXTENDED is a sealed read-only capability profile"
       (let (profile (poo-clos-mop-extended-profile))
         (check (poo-clos-mop-profile-admits? profile 'generic-methods) => #t)
-        (check (poo-clos-mop-profile-admits? profile 'replace-native-c4)
+        (check (poo-clos-mop-profile-admits? profile 'replace-runtime-c4)
                => #f)
         (check-equal? (.ref profile 'status) 'admitted)
         (check-equal? (.ref profile 'sealed?) #t)))

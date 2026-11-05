@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-* 10.06.07 Loop Engineering With Native C4
+* 10.06.07 Loop Engineering With Runtime C4
 ** 10.06.07.10 Purpose
 This note records the local research pass over =cobusgreyling/loop-engineering= and maps it onto =agentic-ai-lab='s Gerbil POO design.
 
@@ -46,7 +46,7 @@ Key upstream evidence:
 
 This is stronger than a normal workflow library because it treats time, memory, safety, cost, and human escalation as first-class design inputs.
 ** 10.06.07.40 C4 Baseline And Historical Evidence
-The old C3/POO baseline belongs to the v0.18 period. Native C4 is the current v0.19 baseline; the source evidence below explains its relationship to C3.
+The old C3/POO baseline belongs to the v0.18 period. Runtime C4 is the current v0.19 baseline; the source evidence below explains its relationship to C3.
 
 - =doc/reference/gerbil/runtime/c3.md:1-90= describes C4 as a slight extension of C3 that preserves linearization, local precedence, monotonicity, shape determinism, extended precedence, and the C4 suffix property.
 - =src/gerbil/runtime/c3.ss= exports =c4-linearize=, =c4-linearize*=, and =c4-compute-class-slots=.
@@ -54,7 +54,7 @@ The old C3/POO baseline belongs to the v0.18 period. Native C4 is the current v0
 - =src/gerbil/runtime/c3.ss:356-383= computes class slots from the precedence list, then applies direct slots.
 - =src/gerbil/runtime/mop.ss:591-605= shows the MOP computing class precedence via =c4-linearize=.
 
-The important property for =agentic-ai-lab= is that independently authored roles merge into one deterministic, monotonic native C4 precedence list before a run starts.
+The important property for =agentic-ai-lab= is that independently authored roles merge into one deterministic, monotonic runtime C4 precedence list before a run starts.
 ** 10.06.07.50 Boundary Rule
 Use POO/C4 where the question is:
 

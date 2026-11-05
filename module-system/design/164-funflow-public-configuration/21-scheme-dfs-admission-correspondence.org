@@ -3,40 +3,40 @@
 
 #+title: Scheme DFS, Object Identity and Real Core Admission: Conditional Correspondence
 #+date: [2026-10-15]
-#+property: STATUS conditional-theorems-and-executed-native-replay-no-module-adapter-no-loader
+#+property: STATUS conditional-theorems-and-executed-runtime-replay-no-module-adapter-no-loader
 
 * Results and precise scope
 
 Follow-up: [[file:22-construction-requirement-preservation.org][module 22]] designs automatic capture of mandatory RHS histories at
-native construction and adds three separate reference proofs. The 39-theorem,
+runtime construction and adds three separate reference proofs. The 39-theorem,
 61-assertion receipt below remains historical and unchanged; it does not claim
 that the proposed construction hook or selected-candidate closure is implemented.
 
 The same existing Lean proof target now builds 39 named theorems and 91 finite
 Lean guards (21 retained controls plus 70 generated transcript checks), with
 an additional 70 generated instance proofs checked by the kernel using by decide. A new
-isolated native probe passes 61 assertions. It runs the exact module-18 DFS body,
-actual native POO objects and the CURRENT Core types.ss .admit kernel; it does
+isolated runtime probe passes 61 assertions. It runs the exact module-18 DFS body,
+actual POO objects and the CURRENT Core types.ss .admit kernel; it does
 not substitute a boolean test Contract for that kernel.
 
-The native run exports six reachable parent graphs, roots shared by multiple
+The runtime run exports six reachable parent graphs, roots shared by multiple
 Contracts, ordered final Check identities, 24 distinct actual Core receipt rows,
 three responsibility groups, three combined boundary outcomes, a cycle control
 and 144 eq?-versus-ID observations over 12 sampled object positions (including
-aliases). The native interner also checks all observed value pairs in its
-72-value registry. Native observations are tests, not universal FFI theorems.
+aliases). The runtime interner also checks all observed value pairs in its
+72-value registry. Runtime observations are tests, not universal FFI theorems.
 
 | Source or artifact | Role |
 |--------------------+------|
 | [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Traversal.lean][Traversal.lean]] | Successful recursive DFS invariants, closure and complete root membership |
 | [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Projection.lean][Projection.lean]] | Injective identity/edge projection, path equivalence, ordered list equality and correlated Core receipts |
 | [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/Correspondence.lean][Correspondence.lean]] | Join inherited-root discovery and mandatory RHS requirements to current candidate/context receipt checks |
-| [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/NativeFixtures.lean][NativeFixtures.lean]] | Lean re-evaluates the model on data emitted by the actual native run |
-| [[file:21-scheme-dfs-admission-correspondence/probe.ss][Native probe]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/native.log][transcript]] | Actual object/Contract execution, assertions and emitted input/output |
-| [[file:21-scheme-dfs-admission-correspondence/generate-native-fixtures.py][Numeric transcript generator]] | Strict S-expression parsing and deterministic Lean fixture generation, without eval or handwritten observations |
+| [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/SchemeFixtures.lean][SchemeFixtures.lean]] | Lean re-evaluates the model on data emitted by the actual runtime run |
+| [[file:21-scheme-dfs-admission-correspondence/probe.ss][Runtime probe]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/scheme.log][transcript]] | Actual object/Contract execution, assertions and emitted input/output |
+| [[file:21-scheme-dfs-admission-correspondence/generate-runtime-fixtures.py][Numeric transcript generator]] | Strict S-expression parsing and deterministic Lean fixture generation, without eval or handwritten observations |
 | [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/receipt.json][Receipt]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/build.log][build]] / [[file:../../../t/evidence/module-system/design/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/axioms.log][axiom audit]] | Exact sources, dependency pin, output hashes and all-theorem audit |
 
-The original [[file:19-native-parent-validation.org][44-assertion native validation]] and [[file:20-lean-profile-association.org][19-theorem reference-model receipt]]
+The original [[file:19-prototype-parent-validation.org][44-assertion runtime validation]] and [[file:20-lean-profile-association.org][19-theorem reference-model receipt]]
 remain historical independent evidence, unchanged. They were not rerun or
 relabeled as proofs of the full implementation. The new target extends that
 model; the original Model.lean and Checks.lean are retained.
@@ -63,7 +63,7 @@ The proof work changes only the proof target and documentation/harness artifacts
 * DFS control correspondence, including visited shared parents
 
 DFS.visit is the recursive control translation: active nodes correspond to
-native visiting marks, completed nodes to done marks, and visitParents runs
+runtime visiting marks, completed nodes to done marks, and visitParents runs
 parents in source order. Already-done parents are skipped; a visiting parent
 refuses as a cycle. Explicit fuel produces a separate exhausted error. The
 Scheme helper has no fuel argument, so the Lean budget is a model boundary.
@@ -76,7 +76,7 @@ visitParents_spec and visit_spec prove that a successful visit:
 - adds only nodes inherited from the requested node, apart from prior input.
 
 From an initially empty state, success_membership_iff proves that done membership
-is EXACTLY native parent reachability, not merely a subset. The derived
+is EXACTLY runtime parent reachability, not merely a subset. The derived
 successful_dfs_association_iff proves index membership plus reachability for every
 retained Anchor, including different Contracts sharing one root object.
 
@@ -93,14 +93,14 @@ finite graph, successful replay or matching cycle refusal is kernel-checked.
 
 * Identity and parent projection are explicit, inspectable obligations
 
-IdentityProjection has an encode function, an injectivity proof, native direct
+IdentityProjection has an encode function, an injectivity proof, runtime direct
 parents and the exact equation mapping their encoded list to the model graph.
 Under these premises, identity_iff and list_identity_iff prove that projected
 identity equality and ORDERED list equality reflect actual equality. Path
-projection/lifting is proved in both directions. dfs_native_path_iff then connects
-successful modeled DFS membership to the native-object parent relation.
+projection/lifting is proved in both directions. dfs_runtime_path_iff then connects
+successful modeled DFS membership to the poo-object parent relation.
 
-The probe assigns tokens with an eq?-keyed interner; every native graph edge,
+The probe assigns tokens with an eq?-keyed interner; every runtime graph edge,
 Check identity, candidate, context and Contract identity uses that same interner.
 It checks injectivity on all observed values and exports an alias/equal-shaped-
 distinct-object sample matrix. Lean checks all 144 exported comparisons rather
@@ -123,7 +123,7 @@ accepted final child; cached-parent-list refusal; same-count stale Check refusal
 primitive classifier refusal; failed child responsibility; prototype mismatch;
 wrong candidate/context replay; and RHS policy failure.
 
-Each projected Receipt includes actual native evidence-type acceptance,
+Each projected Receipt includes actual runtime evidence-type acceptance,
 Contract identity, candidate and context identities, classification type/candidate/
 context, classification acceptance, failure/obligation identities and final
 acceptance. The generated checks recompute receiptGate, not just the accepted
@@ -161,7 +161,7 @@ that success cannot omit or skip a mandatory RHS receipt.
 The emitted positive boundary admits both multi-parent roots and the shared-root
 Contracts in one context. Two negative boundaries use actual .+ composition:
 
-1. The right provider's own identity/requirement is absent from the native parent
+1. The right provider's own identity/requirement is absent from the runtime parent
    graph. Its explicit mandatory requirement is not retained: refusal.
 2. The requirement is retained explicitly, but its real .admit returns a policy
    failure: refusal again.
@@ -169,7 +169,7 @@ Contracts in one context. Two negative boundaries use actual .+ composition:
 This closes the model's gate logic but does NOT automatically discover RHS
 provider obligations. The integration must provide the complete mandatory set.
 If an obligation is absent from BOTH the graph and that set, these theorems cannot
-recover it. Native .+ semantics are unchanged. No integration gate is installed
+recover it. Runtime .+ semantics are unchanged. No integration gate is installed
 in the product runtime by this proof task.
 
 * Newly discovered public API gap
@@ -191,10 +191,10 @@ an import or copied as a replacement kernel.
 | Boundary | Status |
 |----------+--------|
 | Successful DFS completed membership and root association | General Lean theorems for the recursive control model |
-| Native identity/edge path bridge and ordered equality | General Lean theorems under the explicit IdentityProjection premises |
+| Runtime identity/edge path bridge and ordered equality | General Lean theorems under the explicit IdentityProjection premises |
 | Receipt correlation, discharged failures and child acceptance | General Lean theorems under CoreRule/ResponsibilityRule and the corresponding gate |
 | Combined inherited-root/RHS admission | General conditional Lean theorems; actual positive and negative boundary instances replayed |
-| Six native graphs, multi-parent/shared root, cached finals and .+ RHS loss | Executed native observations plus generated Lean model checks |
+| Six runtime graphs, multi-parent/shared root, cached finals and .+ RHS loss | Executed runtime observations plus generated Lean model checks |
 | Arbitrary Scheme interpreter semantics and universal heap projection | Still premises / future correspondence work |
 | Complete trusted publication index, RHS requirement collection and source/identity binding | Still owner/integration premises; not implemented |
 | Stable graph/view, mutation invalidation, general fuel adequacy | Still explicit premises; no concurrency or termination guarantee added |
@@ -217,8 +217,8 @@ clan/poo source at the verified dependency pin and a fresh home. Then run:
 
 #+begin_src sh
 GERBIL_PATH=/tmp/agenticailab-dfs-admit-20261015/home GERBIL_LOADPATH=/tmp/agenticailab-dfs-admit-20261015 /opt/homebrew/bin/gxi docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/probe.ss > /tmp/profile-native.log
-python3 docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/generate-native-fixtures.py /tmp/profile-native.log /tmp/NativeFixtures.lean
-cmp /tmp/NativeFixtures.lean core/dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/NativeFixtures.lean
+python3 docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/generate-runtime-fixtures.py /tmp/profile-native.log /tmp/SchemeFixtures.lean
+cmp /tmp/SchemeFixtures.lean core/dev/proofs/lean/YuanxuProof/ModuleSystem/Schema/Association/SchemeFixtures.lean
 cd packages/proofs/lean-poo
 lake build YuanxuProof.ModuleSystem.Schema.Association
 lake env lean ../../../docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/21-scheme-dfs-admission-correspondence/axiom-audit.lean

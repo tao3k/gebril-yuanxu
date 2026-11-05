@@ -108,7 +108,7 @@ mutable adapter object.
 
 * Capability-materialization intent
 
-The capability-materialization intent is an internal POO-native specialization
+The capability-materialization intent is an internal POO specialization
 of EffectIntent.
 
 It contains:
@@ -176,7 +176,7 @@ The following remain distinct:
 
 * Adapter selection
 
-Runtime adapter selection is POO-native.
+Runtime adapter selection is POO.
 
 An admitted adapter prototype provides the materialization responsibility for a
 capability identity or family.  Selection may use upstream generic and
@@ -494,7 +494,7 @@ Runtime materialization is initiated only by admitted effect boundaries.
 - [X] Require runtime authorization at materialization time.
 - [X] Stabilize intent before external effects.
 - [X] Claim a materialization fence before adapter invocation.
-- [X] Require POO-native adapter selection.
+- [X] Require POO adapter selection.
 - [ ] Define concrete adapter authorization and materialization responsibilities.
 - [ ] Prove idempotent and non-idempotent provider behavior.
 
@@ -504,7 +504,7 @@ Runtime materialization is initiated only by admitted effect boundaries.
 - [X] Require current authorization for delivery and reuse.
 - [X] Keep handles within adapter and consumer runtime boundaries.
 - [X] Require revocation and cleanup receipts.
-- [ ] Define renewal, expiration, revocation, and cleanup policies as native POO
+- [ ] Define renewal, expiration, revocation, and cleanup policies as POO
   prototypes.
 
 ** Recovery and ambiguity
@@ -526,7 +526,7 @@ Runtime materialization is initiated only by admitted effect boundaries.
 
 ** Implementation admission
 
-- [ ] Define the runtime materializer as a POO-native adapter object.
+- [ ] Define the runtime materializer as a POO adapter object.
 - [ ] Implement intent stabilization and fence claims.
 - [ ] Implement lease, revocation, cleanup, and handle-cache behavior.
 - [ ] Integrate RecoveryExecutionIntent.
@@ -561,7 +561,7 @@ It should have three required semantic/runtime-boundary slots:
 
 Authorization, claim, materialization, lease, handoff, revocation, cleanup,
 reconciliation, outcome, and receipt should remain derived responsibilities
-implemented through native POO policy prototypes.
+implemented through POO policy prototypes.
 
 It must not expose the handle as a semantic slot or ordinary user value.
 

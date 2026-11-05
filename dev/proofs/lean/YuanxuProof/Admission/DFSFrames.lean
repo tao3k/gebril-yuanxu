@@ -2,7 +2,7 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import YuanxuProof.Admission.IdentityDFS
 
-/-! Native recursive for-each frames refine the DFS pending-stack projection.
+/-! Runtime recursive for-each frames refine the DFS pending-stack projection.
 Empty-frame returns stutter; each new identity is marked before its children.
 This correspondence excludes callbacks changing the dependency graph. -/
 namespace YuanxuProof.Admission.DFSFrames
@@ -36,6 +36,41 @@ theorem enter_refines (edges : Edges) (id : Nat) (tail : List Nat)
     flatten (advance edges ⟨(id :: tail) :: rest, seen, order⟩) =
       step edges (flatten ⟨(id :: tail) :: rest, seen, order⟩) := by
   by_cases visited : seen.contains id <;> simp [advance, flatten, step, visited ]
+
+/-- Hoist the active pending list out of the allocated frame spine. Runtime
+postorder callbacks additionally carry `after`; its order is checked by the
+runtime cursor fixture, not identified with this model's entry-order trace. -/
+structure Cursor where
+  pending : List Nat
+  suspended : List (List Nat)
+  seen : Std.HashSet Nat
+  order : List Nat
+
+def cursorFrames (s : Cursor) : Frames := ⟨s.pending :: s.suspended, s.seen, s.order⟩
+
+def advanceCursor (edges : Edges) (s : Cursor) : Cursor :=
+  match s.pending with
+  | [] => match s.suspended with
+    | [] => s
+    | next :: rest => { s with pending := next, suspended := rest }
+  | id :: tail =>
+    if s.seen.contains id then { s with pending := tail }
+    else ⟨edges id, tail :: s.suspended, s.seen.insert id, s.order ++ [id]⟩
+
+theorem cursor_enter_refines (edges : Edges) (id : Nat) (tail : List Nat)
+    (rest : List (List Nat)) (seen : Std.HashSet Nat) (order : List Nat) :
+    cursorFrames (advanceCursor edges ⟨id :: tail, rest, seen, order⟩) =
+      advance edges ⟨(id :: tail) :: rest, seen, order⟩ := by
+  by_cases visited : seen.contains id <;>
+    simp [advanceCursor, cursorFrames, advance, visited]
+
+theorem cursor_return_refines (edges : Edges) (next : List Nat)
+    (rest : List (List Nat)) (seen : Std.HashSet Nat) (order : List Nat) :
+    cursorFrames (advanceCursor edges ⟨[], next :: rest, seen, order⟩) =
+      advance edges ⟨[] :: next :: rest, seen, order⟩ := rfl
+
+theorem cursor_terminal_empty (seen : Std.HashSet Nat) (order : List Nat) :
+    (flatten (cursorFrames ⟨[], [], seen, order⟩)).pending = [] := rfl
 
 def frameMeasure (vertices : List Nat) (edges : Edges) (s : Frames) : Nat :=
   2 * measure vertices edges (flatten s) + s.frames.length

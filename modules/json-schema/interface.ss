@@ -6,9 +6,5 @@
   core:
   (.o requires: (.o)
       scope-contract: JsonSchemaScopeContract
-      exports:
-      (.o (:: @ JsonSchema.)
-        defaults: JsonSchemaDefaults
-        types: (.o source: SchemaSourceContract artifact: SchemaArtifactContract
-                   config: JsonSchemaConfigContract scope: JsonSchemaScopeContract)))
+      exports: JsonSchemaScope)
   features: (.o))

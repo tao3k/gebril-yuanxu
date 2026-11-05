@@ -3,8 +3,8 @@
 
 * Decision and evidence boundary
 
-[[file:32.25-serial-computation-and-conditional-use.org][32.25]] audited the native =.call= expansion without a dedicated execution
-control. This chapter closes that specific native test gap. It changes only
+[[file:32.25-serial-computation-and-conditional-use.org][32.25]] audited the runtime =.call= expansion without a dedicated execution
+control. This chapter closes that specific runtime test gap. It changes only
 qualification tests, formal models, proof gates and documentation. Production
 Scheme and Loader remain unchanged.
 
@@ -75,7 +75,7 @@ its returned lambda increments =invoked=, samples =body-frames= and reads port:
 #+end_src
 
 The warm function retains actual identity, but its body is invoked again. The
-actual ambient frame parameter restores to its prior identity. This is native
+actual ambient frame parameter restores to its prior identity. This is runtime
 behavioral evidence, not a Lean proof of compiled closure identity.
 
 ** Top-level body mutation of the receiver
@@ -102,7 +102,7 @@ Root.operation is explicitly warmed before the observed call. Its lambda reads
 Database.port and changes that independent object to 5433. Neither Root nor
 Database has an active computation frame at the body entry. Root revision
 remains unchanged, but the observer surrounding the complete call records an
-actual Database read. Native replay raises =stale slot dependency=.
+actual Database read. Runtime replay raises =stale slot dependency=.
 
 Root's revision or the validity of its cached procedure is therefore not a
 certificate for the procedure's later demands.
@@ -158,15 +158,15 @@ not discover arbitrary raw I/O or prove all effects of an unknown lambda.
 
 * Lean correspondence
 
-[[file:../../../dev/proofs/lean/YuanxuProof/Admission/CallPhases.lean][Admission/CallPhases]] projects frames as receiver/slot identities. Native
+[[file:../../../dev/proofs/lean/YuanxuProof/Admission/CallPhases.lean][Admission/CallPhases]] projects frames as receiver/slot identities. Runtime
 =.get= entry/exit and complete identity-based projection remain correspondence
 premises; this is not a compiler/continuation semantics proof. The lookup
 projection describes successful non-cyclic acquisition: no same receiver/slot
-frame is already active. Native cyclic acquisition raises instead of pushing
+frame is already active. Runtime cyclic acquisition raises instead of pushing
 a duplicate frame; that error path is not newly qualified here.
 
 - =cold_lookup_pushes= and =warm_lookup_adds_no_frame= distinguish acquisition.
-- =body_restores_ambient= expresses the audited expansion and native observations.
+- =body_restores_ambient= expresses the audited expansion and runtime observations.
 - =top_level_receiver_edit_allowed= uses the existing concrete invalidation
   =commit= model with no active receiver; no artificial frame is created.
 - =nested_receiver_edit_vetoed= uses the same model with an actual outer receiver.
@@ -181,7 +181,7 @@ a duplicate frame; that error path is not newly qualified here.
 
 The frames for top-level, nested and unrelated objects are finite projections
 of the actual test configurations; they are not user-supplied runtime flags.
-The native weak invalidation closure and observed read graph are not identical;
+The runtime weak invalidation closure and observed read graph are not identical;
 neither model nor consumer may silently replace one with the other.
 
 * Quint correspondence
@@ -190,7 +190,7 @@ neither model nor consumer may silently replace one with the other.
 certification. Cold/warm and top-level/nested contexts are explicit alternatives.
 A blocked body propagates its failure and cannot certify. Source-first final
 diagnostics apply to bodies that complete; an escaping body exception is not
-replaced with a later final-check error. Terminal states retain a self-step. Each call invokes its body once; the native
+replaced with a later final-check error. Terminal states retain a self-step. Each call invokes its body once; the runtime
 two-call test separately verifies reuse of the same cached function identity.
 
 | Control | Meaning |
@@ -207,10 +207,10 @@ two-call test separately verifies reuse of the same cached function identity.
 | acceptance | Valid configuration reaches certification |
 
 =protected= does not mean the positive algorithm failed: it intentionally asks
-for a guarantee that native =.call= does not supply. The retained
+for a guarantee that runtime =.call= does not supply. The retained
 frame facts are samples at lookup/body entry, not a claim that the ambient
-frame remains installed after a returned/failed caller. Native controls separately
-check actual stack restoration. The root/demand/source counters model concrete observed changes; no native
+frame remains installed after a returned/failed caller. Runtime controls separately
+check actual stack restoration. The root/demand/source counters model concrete observed changes; no runtime
 observer epoch or purity label is inferred from them.
 
 * Real Scenario controls and remaining external premise
@@ -229,7 +229,7 @@ explicit provider/runtime premise established in 32.25; acquiring a cached
 function, returning from =.call= or restoring dynamic scope supplies no external
 atomicity or rollback. No check is removed across arbitrary method execution.
 Parallel mutation, manual registry shadowing, raw unsupported writes and
-continuation re-entry are outside the current native qualification.
+continuation re-entry are outside the current runtime qualification.
 
 * Qualification
 
@@ -238,22 +238,22 @@ local, never source-controlled. No production Scheme, Loader or timeout change
 is part of this work.
 
 
-** Native and Lean gates
+** Runtime and Lean gates
 
 The final six-case call suite passed =MODULE-OK=, =HARNESS-OK= and final =OK=,
 with no harness/error/overflow markers. Four serial-use controls, seven lifetime
-controls and eleven real service-publication controls also passed: 28 native
+controls and eleven real service-publication controls also passed: 28 runtime
 cases in total. The initial five-case run is retained separately; it is not
-counted twice. Native frame samples were never replaced by fabricated stacks.
+counted twice. Runtime frame samples were never replaced by fabricated stacks.
 
 The final Lean build passed 166 jobs, the structure-shape audit and the standard
 axiom audit over 5231 declarations. Ten CallPhases theorems are explicitly
 required by the aggregate gate. The earlier successful model build (5228
-declarations) was superseded when the native veto-exception path was represented
+declarations) was superseded when the runtime veto-exception path was represented
 explicitly. No axiom, execution limit or timeout was enlarged.
 
 The first full Quint run used a model that did not yet explicitly reject a body
-whose nested receiver edit throws. Correspondence auditing against the native
+whose nested receiver edit throws. Correspondence auditing against the runtime
 exception control exposed that omission. The model now derives =blocked= from
 the actual projected target/frame relation, refuses certification of that body,
 and preserves its escaping failure instead of substituting a later diagnostic.
@@ -264,7 +264,7 @@ qualification-source changes; no passing receipt was issued. Its input/differenc
 manifests, full output, and exact initial QNT source (hash matched to its input
 cut) are retained under =/private/tmp/core-call-phases-20261018/=. This is a model
 correction, not a production-code repair or a passing gate relabeled after edits.
-The final six-case native source is bound by the subsequent qualification cut.
+The final six-case runtime source is bound by the subsequent qualification cut.
 
 
 ** Final source-bound Quint gate
@@ -289,13 +289,13 @@ source-cut assertion passed and produced =quint-final-receipt.ss= with its
 | CallPhases_acceptance | RejectAll | 388 / 388 | Expected counterexample |
 
 The positive model exhausts 480 distinct states, with zero states queued. The
-=protected= counterexample concerns a deliberately stronger claim than native
+=protected= counterexample concerns a deliberately stronger claim than runtime
 .call provides; it is not a failing positive invariant. The external conditional
 commit assumptions of 32.25 remain unchanged and are also retained in the full
 catalog. No provider commit implementation was added.
 
 The audited production/admission/helper and gerbil-poo source identities remained
-unchanged during the final audit. Native controls and formal results qualify the
+unchanged during the final audit. Runtime controls and formal results qualify the
 recorded cuts, not every unrelated dirty file or reproducibility of installed
 binaries. Raw logs, the rejected earlier cut and exact initial model remain only
 under =/private/tmp/core-call-phases-20261018/=. =qualification.json= joins

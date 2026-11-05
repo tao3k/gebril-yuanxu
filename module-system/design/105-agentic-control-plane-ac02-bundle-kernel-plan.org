@@ -12,7 +12,7 @@ build and CLI-support changes.
 
 * Steps
 
-1. Implement POO-native state, diagnostic, and receipt constructors.
+1. Implement POO state, diagnostic, and receipt constructors.
 2. Implement pure =open= and =validate= transitions over AC-01 functions.
 3. Implement compare-and-advance with phase, identity, epoch, no-op, and next
    Bundle validation gates in that order.

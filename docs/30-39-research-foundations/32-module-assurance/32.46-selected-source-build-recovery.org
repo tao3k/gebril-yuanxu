@@ -11,7 +11,7 @@ an atomic deployment effect.
 [[file:32.45-selected-nix-release-recovery.org][32.45]] qualified recovery with an independently supplied exact release path.
 This step removes that path from restarted readers' arguments. The existing
 selected Module graph now discovers an upstream =core.build-publication= value,
-an ordinary Nix Source. The Source's native publication derives and realizes
+an ordinary Nix Source. The Source's runtime publication derives and realizes
 the approved package. Core's normal =.for-export= boundary invokes recovery on
 demand; domain callers do not reconstruct a projection or read a receipt.
 
@@ -46,14 +46,14 @@ The qualification publishes these ordinary roles under =building/release=:
   features: (.o))
 #+end_src
 
-Imports and native role exports remain ordinary module-authoring declarations;
+Imports and runtime role exports remain ordinary module-authoring declarations;
 the executable fixture provides them explicitly. The type role's ScopeContract
 checks publication shape, not artifact authenticity. Nix content verification
 and Core's retained build protocol own the latter boundaries.
 
 The package publisher creates =release.nix= after its Core build completes. It
 references the registered immutable issuance input, rather than reading a mutable
-sidecar to invent expectations. A native derivation copies that regular input to
+sidecar to invent expectations. A runtime derivation copies that regular input to
 its output's =issuance.ss=. Its output path is derived by the existing Source;
 neither the controller nor a reader chooses a candidate store path at recovery.
 The initial producer and the original pipe receiver exit before the new reader.
@@ -84,7 +84,7 @@ Independent parent and child graphs have separate issuance and recovery state.
 The field is a release of this complete selected compiler graph, not a provider
 artifact declaration to repeat in every service Module. Existing external-package
 contributions remain the mechanism for independent provider/package dependencies.
-Its native BuildPublicationContract checks the method protocol. A Source which
+Its runtime BuildPublicationContract checks the method protocol. A Source which
 returns without installing real Core issuance, or recursively requests the same
 recovery, is refused and cannot silently enable source-only publication.
 
@@ -110,7 +110,7 @@ compiler invocation and managed child-process boundaries also own fresh package
 checks. Saved =.publish= and hot exports retain both boundaries.
 
 An earlier attempt put the full Nix guard in every internal artifact check.
-Run 08 performed more than 300 native Nix operations and correctly hit the
+Run 08 performed more than 300 runtime Nix operations and correctly hit the
 unchanged 120-second process limit. More importantly, that put package effects
 inside the source-only Context check window. The correction is an ownership
 split using the existing package protocol, not a cross-callback success cache.
@@ -128,7 +128,7 @@ It does not memoize currentness across callbacks or external processes. Source
 observations, derivation selection and registered Nix contents remain distinct
 checks. Source lifetime/GC at ecosystem scale is not qualified by this small run.
 
-* Native validation and formal correspondence
+* Runtime validation and formal correspondence
 
 The executable is =t/approved-build-recovery-test.ss=. Its restarted worker
 receives only a source workspace and a control name. Local artifact paths are
@@ -143,7 +143,7 @@ independent contributions. Disabled malformed interfaces and unread malformed
 JSON remain undemanded.
 
 =CoreApprovedRecovery.lean= models restoration followed by final approval,
-source, file and two-requirement checks. The decoder compares actual native
+source, file and two-requirement checks. The decoder compares actual runtime
 decisions with that projection. Existing handoff theorems own receiver-indexed
 installation. =CoreApprovedRecovery.qnt= adds the warm-compilation edge and
 negative controls for losing its guard, omitting approval/source/file checks,
@@ -182,14 +182,14 @@ Raw outputs remain local artifacts. No failure is relabeled as a pass.
 Early runs encountered mixed compiled/current-source ABI references in the shared
 Core cache. The private overlay now compiles the current dependencies it uses;
 it does not modify the shared installation or Gerbil. Further fixture failures
-exposed missing native role exports and a top-level conditional definition. Those
+exposed missing runtime role exports and a top-level conditional definition. Those
 are fixture corrections, not evidence that recovery passed. Final executable
 and formal outcomes are recorded below only after qualification.
 
 Other retained refusals include the 60-second idle fence when completed worker
 checks were not decoded, and the 120-second process fence in the over-eager Nix
 guard version described above. The final harness reuses the existing progress
-decoder; worker progress counts only successfully completed native Nix operations.
+decoder; worker progress counts only successfully completed runtime Nix operations.
 It has no timer heartbeat and does not expand any watchdog.
 
 The publisher declares its generated policy filenames before source selection;
@@ -212,9 +212,9 @@ the installed Gerbil writer takes the output port before the value. That run is
 NOT a successful harness receipt. Run 15 hit the unchanged idle fence during the
 multi-stage producer. The producer now reports only completed selection,
 compilation and managed-publication phases through the existing progress API;
-readers report completed native Nix operations. Neither uses a periodic heartbeat.
+readers report completed runtime Nix operations. Neither uses a periodic heartbeat.
 
-Recovery 16 is the first fully qualified native receipt: natural exit zero,
+Recovery 16 is the first fully qualified runtime receipt: natural exit zero,
 =MODULE-OK=, =HARNESS-OK= and final =OK=. Its eight observed decisions are:
 
 #+begin_src scheme
@@ -225,7 +225,7 @@ Recovery 16 is the first fully qualified native receipt: natural exit zero,
 
 The actual JSON trace passes =CoreApprovedRecoveryCheck.lean=. Flipping only
 =policy-change= to acceptance fails that decoder with
-=native approved recovery/Lean decision mismatch=. This is an extraction
+=runtime approved recovery/Lean decision mismatch=. This is an extraction
 consistency control, not a proof of Nix's implementation.
 
 The focused =build-recovery-boundary= regression passes its three controls for

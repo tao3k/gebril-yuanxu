@@ -62,7 +62,7 @@ Every doctor or presentation helper must keep:
 * 10.06.11.03 Nono C Binding Split
 
 The descriptor side can live in this repository because it is Scheme-side
-contract data.  Runtime execution and native binding lifecycle stay Marlin-owned.
+contract data.  Runtime execution and runtime binding lifecycle stay Marlin-owned.
 
 This allows =agentic-ai-lab= to test nono/C binding shape without pretending it owns
 the backend that will execute it.

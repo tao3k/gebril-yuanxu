@@ -106,7 +106,7 @@ For v0.18.2, =gerbil-poo= and =gerbil-utils= use GitHub identities.
 the direct parent of the provider-migration commit.  The migration commit
 =f4b322299830acbd1cd5b91984c4107ac56bdac3= is not a valid v0.18.2 pin because
 its manifest changes =gerbil-utils= to =git.cons=.  The dependency installer
-invokes native =gxpkg deps --install= without adding a =git.cons= directory and
+invokes runtime =gxpkg deps --install= without adding a =git.cons= directory and
 without an overlay.
 
 * Cache identity
@@ -116,7 +116,7 @@ A cache is reusable only when every ABI-relevant capability matches.
 #+begin_src mermaid
 flowchart TD
   Inputs["OS + architecture + Gerbil revision<br/>source owner + compiler + architecture profile"]
-  ABI["Native ABI fingerprint"]
+  ABI["Runtime ABI fingerprint"]
   Bootstrap["Gerbil install cache"]
   CompilerCache["ccache"]
   Packages["Gerbil package cache"]
@@ -136,7 +136,7 @@ The cache key must distinguish:
 
 - operating system and architecture;
 - exact Gerbil label and revision;
-- native ABI fingerprint;
+- runtime ABI fingerprint;
 - architecture profile;
 - dependency manifest digest;
 - the capability generation when the source owner or formula layout changes.
@@ -163,7 +163,7 @@ evidence fields, not permission to reuse a cache with a different revision.
 8. Adaptive slow-window diagnostics expose a logarithmic frontier for further
    diagnosis.  A selected window is not reported as per-module timing or as
    proof that the underlying compiler work is logarithmic.
-9. Native CI job and dependency-materialization timeouts are explicit matrix
+9. Runtime CI job and dependency-materialization timeouts are explicit matrix
    capability fields.  The outer job timeout must leave every declared phase
    budget executable; it must not cancel a Scheme compile before that compile's
    own timeout or receipt guard can decide the result.
@@ -190,7 +190,7 @@ evidence modes without deleting a shared GitHub cache:
 
 Forced evidence runs do not save the Gerbil install tree into the immutable
 production key.  A completed compiler cache remains safe to publish under its
-run-scoped, native-ABI-keyed ccache identity; subsequent =cold= runs bypass that
+run-scoped, runtime-ABI-keyed ccache identity; subsequent =cold= runs bypass that
 cache explicitly.  Pull-request and push events always select =normal=.
 
 The state JSON records the current phase, its elapsed time, and the completed
@@ -246,7 +246,7 @@ The resulting declared limits are:
 The =install-miss= dispatch at commit
 =1b29317237b72167563e6e0dcf6f2f4769e85ddb= was run =29657309639=.  It
 restored the capability-keyed ccache, bypassed the complete Gerbil install
-cache, and entered =Build Gerbil= at =2026-07-18T19:11:41Z=.  The native
+cache, and entered =Build Gerbil= at =2026-07-18T19:11:41Z=.  The runtime
 12-minute step guard terminated it at =2026-07-18T19:23:54Z=, and the Linux job
 failed at =2026-07-18T19:24:02Z=.  The outer 45-minute ceiling was not involved.
 
@@ -306,19 +306,19 @@ cost to individual modules.
 ** CI cold dependency timeout receipt: run 29654454695
 
 Attempt 1 rematerialized the newly pinned Building Framework dependency on both
-native platforms.  Linux completed the full native producer in 11 minutes 59
+runtime platforms.  Linux completed the full runtime producer in 11 minutes 59
 seconds.  The macOS job reached =//scheme:compile= only after approximately 10
 minutes 45 seconds, then the outer 12-minute job timeout cancelled Bazel after
 88 seconds.  The Scheme step had its own eight-minute timeout and emitted no
 compiler failure before the outer cancellation.
 
-Attempt 2 reused the dependency products saved by attempt 1.  The macOS native
+Attempt 2 reused the dependency products saved by attempt 1.  The macOS runtime
 job completed in 5 minutes 29 seconds and the downstream Python wheel consumer
 completed in 31 seconds; the complete run passed.  This establishes a cold
 dependency-materialization timeout mismatch rather than a Scheme or Bazel graph
 failure.
 
-The native matrix therefore declares the dependency phase budget separately at
+The runtime matrix therefore declares the dependency phase budget separately at
 15 minutes and names the outer job budgets per capability: 60 minutes for the
 source-Gerbil Linux lane and 30 minutes for the Homebrew macOS lane.  The Scheme
 compile keeps its independent eight-minute guard.  These outer limits preserve
@@ -362,10 +362,10 @@ provides fast edit-compile-test feedback without duplicating build semantics.
 
 ** Python wheel canonical Scheme-action reuse
 
-The Linux =native= job produces the canonical =//scheme:compile= Bazel
+The Linux =runtime= job produces the canonical =//scheme:compile= Bazel
 action and then produces =//scheme:wheel_smoke_projection_artifact= from the
 declared compiled tree.  The reusable Python wheel workflow depends on the
-complete =native= matrix and downloads that projection as a named workflow
+complete =runtime= matrix and downloads that projection as a named workflow
 artifact.  It verifies the producer receipt and artifact digest before any
 runtime packaging step.
 
@@ -373,7 +373,7 @@ The capability-keyed =setup-bazel= disk cache remains an acceleration layer.
 It is not the cross-job projection delivery contract: a prefix cache restore
 can select a valid cache container without proving that a specific declared
 action result is present.  The named workflow artifact is the explicit,
-fail-closed handoff between the native producer and Python wheel consumer.
+fail-closed handoff between the runtime producer and Python wheel consumer.
 
 =GerbilProjectProjection= consumes
 =GerbilProjectInfo.compiled_root= and declares one projection action.  It
@@ -387,31 +387,31 @@ digest, and fail-closed verification result.  The projection action must emit
 the declared wheel projection artifact within 120 seconds.  The Python wheel
 consumer must never invoke =//scheme:compile= or rebuild the projection.
 
-*** Runtime-C native producer handoff
+*** Runtime-C runtime producer handoff
 
-The Linux native matrix entry is the single CI producer for both the canonical
+The Linux runtime matrix entry is the single CI producer for both the canonical
 Scheme projection and the runtime-C library consumed by the Python wheel.  It
 reuses the same Bazel server that owns =//scheme:compile=, builds the existing
 =runtime_c_static= and =runtime_c_shared= targets, and runs the complete Linux
 runtime-C acceptance matrix before publishing any runtime library.
 
-The named =agentic-ai-lab-runtime-native-library= artifact contains the staged shared
+The named =agentic-ai-lab-runtime-library= artifact contains the staged shared
 library, its producer receipt, and the Bazel acceptance receipt.  The producer
 receipt is fail-closed and records the producer job and target, platform,
-current commit, Gerbil native-ABI capability, artifact path and byte count,
+current commit, Gerbil runtime-ABI capability, artifact path and byte count,
 SHA-256 digest, exported-symbol digest and count, acceptance-receipt digest,
 elapsed time, budget, status, and availability.
 
 The reusable Python workflow contains only the wheel consumer.  It downloads
 the Scheme projection and runtime-C handoffs, verifies their commit identities
-and digests, runs the Python native-runtime validation, and builds and installs
+and digests, runs the Python runtime validation, and builds and installs
 the wheel.  It performs zero Gerbil setup and zero Bazel invocation.  Disk
-cache state is therefore an acceleration concern of the native producer, not a
+cache state is therefore an acceleration concern of the runtime producer, not a
 cross-job delivery protocol.
 
 **** CI receipt: run 29650370739
 
-The first complete runtime-C native-producer run passed for branch head
+The first complete runtime-C runtime-producer run passed for branch head
 =eafc59f21195174dbb01a460ba4f47085b53fc29=.  GitHub tested pull-request merge
 commit =671a3299e2bdf5be179a1a60af30e0e8a5c3a19e=.  The authoritative run is
 [[https://github.com/tao3k/agentic-ai-lab/actions/runs/29650370739][CI run 29650370739]].
@@ -421,13 +421,13 @@ The workflow ran from =2026-07-18T15:38:00Z= through
 29648716785 required 240 seconds, so the topology change removed 59 seconds,
 or 24.6 percent, while expanding runtime-C acceptance.  Job receipts were:
 
-- Linux native producer: 97 seconds.
-- macOS native acceptance: 135 seconds.
+- Linux runtime producer: 97 seconds.
+- macOS runtime acceptance: 135 seconds.
 - Lean proof bridge: 29 seconds.
 - The single Python wheel consumer: 39 seconds.
 - The former 88-second intermediate projection/runtime producer job is absent.
 
-Within Linux native, canonical Scheme compilation required 26 seconds, the
+Within Linux runtime, canonical Scheme compilation required 26 seconds, the
 Scheme projection handoff required 5 seconds, runtime-C static/shared production
 required 5 seconds against its 90-second budget, and the expanded acceptance
 matrix required 21 seconds against its 150-second budget.
@@ -436,7 +436,7 @@ The runtime-C producer receipt reported:
 
 - schema =agentic-ai-lab.ci.runtime-c-handoff.v1=;
 - producer target =//bindings/runtime-c:runtime_c_shared= on =Linux-X64=;
-- Gerbil native-ABI capability
+- Gerbil runtime-ABI capability
   =8f2f6ea8e4a6c1e86c5b5a31a8e36d185cd9a5d0=;
 - a 35,200-byte artifact with SHA-256
   =4a0bd9822157a03c0bbdf966f793e775b6aee44b9ab5eb758e13a236da147a62=;
@@ -465,8 +465,8 @@ The first declared-artifact handoff run completed successfully on 2026-07-18.
 The workflow-lint run =29648488847= also completed successfully.
 
 - full CI wall time: 257 seconds;
-- Linux native producer job: 79 seconds;
-- macOS native job: 128 seconds;
+- Linux runtime producer job: 79 seconds;
+- macOS runtime job: 128 seconds;
 - declared projection action: 7 seconds of a 120-second budget;
 - Python runtime/projection consumer job: 92 seconds;
 - clean wheel build and install job: 28 seconds;
@@ -483,19 +483,19 @@ The workflow-lint run =29648488847= also completed successfully.
 *** Linux producer critical-path isolation
 
 GitHub Actions =needs= addresses a job identifier, not one expansion of a
-matrix job.  A consumer that needs a two-platform =native= matrix therefore
+matrix job.  A consumer that needs a two-platform =runtime= matrix therefore
 waits for both Linux and macOS even when every consumed artifact is produced
 only by Linux.  Agentic AI Lab makes that dependency explicit with two one-entry
-jobs, =native-linux= and =native-macos=.  Both jobs consume the same anchored
+jobs, =runtime-linux= and =runtime-macos=.  Both jobs consume the same anchored
 step sequence; the split changes scheduling ownership, not build semantics.
 
 #+begin_src mermaid
 flowchart LR
-  STEPS["&native-steps<br/>single declarative step sequence"]
-  LINUX["native-linux<br/>Linux producer"]
-  MACOS["native-macos<br/>macOS acceptance"]
+  STEPS["&runtime-steps<br/>single declarative step sequence"]
+  LINUX["runtime-linux<br/>Linux producer"]
+  MACOS["runtime-macos<br/>macOS acceptance"]
   PROJECTION["Scheme projection handoff"]
-  RUNTIMEC["runtime-C native handoff"]
+  RUNTIMEC["runtime-C runtime handoff"]
   WHEEL["Python runtime wheel<br/>clean consumer"]
   COMPLETE["Complete cross-platform CI"]
 
@@ -513,10 +513,10 @@ flowchart LR
 The scheduling invariants are:
 
 - Linux producer work executes exactly once.
-- =python-runtime-wheel= needs =native-linux= directly and does not need the
+- =python-runtime-wheel= needs =runtime-linux= directly and does not need the
   unrelated macOS acceptance job.
 - The producer artifact names and JSON receipt schemas remain unchanged.
-- =native-linux= and =native-macos= share the same YAML step alias, preventing
+- =runtime-linux= and =runtime-macos= share the same YAML step alias, preventing
   platform job bodies from drifting into separate build systems.
 - Overall CI completion still requires macOS; only Linux-artifact feedback is
   removed from the macOS critical path.
@@ -524,8 +524,8 @@ The scheduling invariants are:
 Run =29956993962= is the before-refactor receipt.  Linux completed in =746 s=,
 macOS completed in =1385 s=, and the =22 s= wheel job started =642 s= after the
 Linux producer had finished.  The acceptance gate for the split topology is:
-the wheel job starts no more than =60 s= after =native-linux= completes,
-regardless of whether =native-macos= is still running.
+the wheel job starts no more than =60 s= after =runtime-linux= completes,
+regardless of whether =runtime-macos= is still running.
 
 **** After receipt: run 29960600457
 
@@ -541,7 +541,7 @@ regardless of whether =native-macos= is still running.
 | Wheel lead over macOS completion | =6m 53s=   |
 | Overall workflow outcome         | all green  |
 
-The wheel consumer completed while =native-macos= was still running, finishing 6 minutes 53 seconds before macOS completed. The 4-second start lag satisfies the 60-second acceptance gate and proves that Linux-produced artifacts are no longer blocked on unrelated macOS acceptance. All jobs completed successfully.
+The wheel consumer completed while =runtime-macos= was still running, finishing 6 minutes 53 seconds before macOS completed. The 4-second start lag satisfies the 60-second acceptance gate and proves that Linux-produced artifacts are no longer blocked on unrelated macOS acceptance. All jobs completed successfully.
 
 Dependency-install resource governance and its runtime receipt remain owned by [[file:147-adaptive-scheme-build-guard.org][Adaptive Scheme Build Guard]]; this document owns CI topology, capability, and cache evidence only.
 
@@ -603,12 +603,12 @@ hold:
 
 ** Runtime-C producer-consumer gate
 
-- Linux native must build =runtime_c_static= and =runtime_c_shared= and must run
+- Linux runtime must build =runtime_c_static= and =runtime_c_shared= and must run
   =runtime_c_tests=, =runtime_c_sanitizer_tests=, =runtime_c_leak_test=,
   =runtime_v0_batch_benchmark_smoke=, and
   =runtime_v0_gerbil_ffi_benchmark= before uploading the runtime handoff.
 - The runtime producer receipt must report schema, producer identity and target,
-  platform and native ABI capability, artifact availability, expected artifact
+  platform and runtime ABI capability, artifact availability, expected artifact
   path, SHA-256 and exported-symbol digests, elapsed time, budget, and status.
 - The Python consumer must verify both producer receipts, both artifact digests,
   the runtime acceptance-receipt digest, and the runtime exported-symbol digest
@@ -630,4 +630,4 @@ hold:
 The future v0.19 change is a new capability generation, not a compatibility
 patch for v0.18.2.  Its RFC must update the source owner, package identities,
 cache namespace, toolchain acceptance predicate, and receipts in one change.
-Until that RFC lands, v0.18.2 remains GitHub-native.
+Until that RFC lands, v0.18.2 remains GitHub-runtime.

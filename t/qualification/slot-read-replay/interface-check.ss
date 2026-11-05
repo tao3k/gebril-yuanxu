@@ -42,7 +42,7 @@
 (def after (read-forms (path-expand "lib/clan/poo/object.ssi" root)))
 (unless (and (= (length before) (length after))
              (andmap values (map top-row=? before after)))
-  (error "native interface changed beyond disjoint import-alias order"))
+  (error "runtime interface changed beyond disjoint import-alias order"))
 ;; Negative controls: changed binding and module order cannot be normalized away.
 (when (or (body-row=? '(%#import (spec: (:a) (0 x 0 x)))
                      '(%#import (spec: (:a) (0 x 0 y))))
@@ -50,4 +50,4 @@
           (aliases=? '((0 x 0 x) (0 x 0 x)) '((0 x 0 x) (0 y 0 y)))
           (aliases=? '((0 x 0 a) (0 x 0 b)) '((0 x 0 b) (0 x 0 a))))
   (error "interface comparison control failed"))
-(displayln "NATIVE-BINDINGS-UNCHANGED")
+(displayln "RUNTIME-BINDINGS-UNCHANGED")

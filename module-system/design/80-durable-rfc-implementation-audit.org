@@ -20,7 +20,7 @@
 This audit checks the current Durable implementation against the active RFC and
 delivery-plan direction:
 
-- POO-native authoring remains the public Scheme interface.
+- POO authoring remains the public Scheme interface.
 - Durable runtime work is represented as receipts, manifests, operations, and
   handoff envelopes; Scheme must not execute runtime persistence side effects.
 - Runtime-heavy behavior belongs behind Marlin/Python/Turso backend boundaries.
@@ -31,7 +31,7 @@ delivery-plan direction:
 
 ** Implemented And Verified
 
-- Durable policy objects are POO-native and produce bounded runtime manifests.
+- Durable policy objects are POO and produce bounded runtime manifests.
 - Runtime store contracts model fact logs, checkpoints, derived indexes, job
   stores, repair journals, artifacts, communication ledgers, and sandbox ledgers.
 - Backend negotiation validates required ledger kinds, capability flags, and
@@ -71,7 +71,7 @@ delivery-plan direction:
 
 | RFC Area | Completion | Evidence | Remaining Work |
 |----------+------------+----------+----------------|
-| POO-native durable policy authoring | Complete | =agentic-ai-lab-durable-policy= returns a POO object with durable slots and =durable-runtime-executed: #f=. | Keep public API POO-native. |
+| POO durable policy authoring | Complete | =agentic-ai-lab-durable-policy= returns a POO object with durable slots and =durable-runtime-executed: #f=. | Keep public API POO. |
 | Policy manifest boundary | Complete | =agentic-ai-lab-durable-policy-runtime-manifest-alist/string/bytes= project policy receipts for runtime consumers. | None found. |
 | Runtime store contract | Complete | =agentic-ai-lab-durable-runtime-store-contract= models all ledger/store refs and capability flags as a POO object. | None found. |
 | Backend negotiation | Complete | Backend negotiation checks ledgers, capabilities, operation support, and handoff readiness. | None found in Scheme path. |

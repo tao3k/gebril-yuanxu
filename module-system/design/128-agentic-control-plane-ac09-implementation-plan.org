@@ -47,7 +47,7 @@ freshness tests form one feature.
 
 * Step 2 — Scheme POO Proof Projection
 
-Add POO-native proof-case, obligation, evidence-root, and AuthorizedEffectToken
+Add POO proof-case, obligation, evidence-root, and AuthorizedEffectToken
 projection objects. Scheme normalizes proof facts but does not assert Lean proof
 success.
 
@@ -80,7 +80,7 @@ Focused gates:
 * Step 4 — Lean Typed AuthorizedEffectToken Proof
 The typed vector covers every field in the 424-byte manifest. Receipt digests
 are derived internally with manifest-owned SHA-256 domains and are not
-constructor arguments. Lean treats SHA-256 as a trusted primitive; native
+constructor arguments. Lean treats SHA-256 as a trusted primitive; runtime
 differential tests verify its executable realization.
 
 Decode ProofCaseVector v1 into typed Lean values. Implement the first theorem
@@ -92,7 +92,7 @@ execution root, and any claimed committed batch root.
 
 Focused gates:
 
-- Lake build and native FFI smoke;
+- Lake build and runtime FFI smoke;
 - positive AuthorizedEffectToken theorem fixtures;
 - refuted, malformed, and unsupported-obligation fixtures;
 - no constructor that treats Scheme runtime execution as already proved.
@@ -106,7 +106,7 @@ fixture, compares against the generator-owned Lean bytes, and round-trips the
 same buffer through CFFI. Failures identify the first divergent owner, field,
 and offset.
 Scheme first projects the POO proof case into the exact caller-owned 424-byte
-native vector and computes the manifest-owned domain-separated SHA-256. The
+runtime vector and computes the manifest-owned domain-separated SHA-256. The
 encoder rejects malformed digest widths, invalid hex, unsupported tags, and
 incorrect target sizes before the C/Python differential comparison.
 
@@ -186,7 +186,7 @@ flowchart TD
 
 * Stop Conditions
 
-- Stop if the canonical manifest would require JSON in the native ABI.
+- Stop if the canonical manifest would require JSON in the runtime ABI.
 - Stop if a proposed field exposes Gerbil object or GC layout.
 - Stop if generated language projections can drift independently.
 - Stop if a transport success is treated as proof verification.

@@ -131,7 +131,7 @@ allocation policy.  The harness may validate conservation and replay evidence,
 but it is not a budget provider.
 
 No new scheduler, local fixed-point implementation, promise system, or
-provider-order fallback is introduced here.  Native =gerbil-poo= demand-lazy
+provider-order fallback is introduced here.  Runtime =gerbil-poo= demand-lazy
 evaluation remains the sole POO evaluation mechanism.
 
 * Replay

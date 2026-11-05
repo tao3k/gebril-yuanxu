@@ -5,7 +5,7 @@ namespace YuanxuProof.Admission.ReplayOwnership
 
 def quintSourceDigest : String := "sha256:c9ac0ade273e4c602f97ff12c626d8b26ec4e64efbc5ed1f8d4c27bd99b6d336"
 
--- Native eq? identities project to Nat; each frame is built from authenticated
+-- Runtime eq? identities project to Nat; each frame is built from authenticated
 -- selected-read receivers. affected is the existing invalidation closure.
 def guarded (frames : List (List Nat)) (affected : List Nat) : Prop :=
   ∃ frame ∈ frames, ∃ owner ∈ affected, owner ∈ frame
@@ -33,7 +33,7 @@ theorem nested_frame_keeps_outer (outer : List (List Nat)) (inner frame : List N
 
 -- Reobservation's delivery/work callback is inside the same selected frame as
 -- initial/final currentness. Moving delivery outside it violates this premise;
--- the matched QNT dropDelivery case and native callbacks exercise that boundary.
+-- the matched QNT dropDelivery case and runtime callbacks exercise that boundary.
 theorem delivery_write_refused (outer : List (List Nat)) (selected affected : List Nat)
     (owner : Nat) (revisions : Nat → Nat)
     (a : owner ∈ affected) (s : owner ∈ selected) :
@@ -56,7 +56,7 @@ theorem unaffected_parent_unchanged (frames : List (List Nat)) (affected : List 
 
 -- Dynamic parameter unwinding restores the caller's frame stack on BOTH
 -- success and exceptional return. Compiler/runtime parameterize correctness
--- remains a premise, checked by independent native exception/nesting cases.
+-- remains a premise, checked by independent runtime exception/nesting cases.
 def returnFrame {ε α : Type} (outer : List (List Nat)) (outcome : Except ε α) :=
   (outer, outcome)
 

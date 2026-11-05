@@ -8,7 +8,7 @@
 
 * Decision
 
-Incremental fixed-point evaluation is defined over native POO slot demand.
+Incremental fixed-point evaluation is defined over POO slot demand.
 
 - An observed POO slot demand is the ordinary minimum invalidation unit.
 - A strongly connected component of mutually dependent slot demands is the
@@ -23,12 +23,12 @@ module trees when a smaller causally complete demand closure is available.  It
 also MUST NOT split a cyclic fixed-point component merely to obtain a smaller
 cache key.
 
-* Native semantic basis
+* Runtime semantic basis
 
 This RFC does not introduce a second evaluator.
 
-=gerbil-poo= remains responsible for native objects, prototypes, slot demand
-and open recursion.  Agentic AI Lab observes those native operations and adds:
+=gerbil-poo= remains responsible for runtime objects, prototypes, slot demand
+and open recursion.  Agentic AI Lab observes those runtime operations and adds:
 
 - stable demand identity;
 - contribution generations;
@@ -39,7 +39,7 @@ and open recursion.  Agentic AI Lab observes those native operations and adds:
 - replay equivalence;
 - bounded incremental-work evidence.
 
-All ordinary user composition remains native POO composition.  Cache commands,
+All ordinary user composition remains POO composition.  Cache commands,
 dependency alists, invalidation patches and raw evaluator callbacks MUST NOT
 become public configuration syntax.
 
@@ -83,7 +83,7 @@ A reusable slot-demand result MUST be bound to at least:
 | Identity dimension | Required meaning |
 |--------------------+------------------|
 | POO object identity | The higher-order object being observed |
-| Prototype lineage | The native supers and refinement lineage participating in lookup |
+| Prototype lineage | The runtime supers and refinement lineage participating in lookup |
 | Slot identity | The demanded semantic slot, including its nested object path |
 | Contribution-closure identity | Every active and suppressed contribution relevant to the slot |
 | Slot-contract identity | The POO contract objects and algebra governing combination |
@@ -97,7 +97,7 @@ not semantic identities.
 
 * Dependency footprint
 
-A dependency footprint is accumulated from actual native slot demand.  An edge
+A dependency footprint is accumulated from actual runtime slot demand.  An edge
 means that one observed slot computation consumed another semantic value.
 
 #+begin_src mermaid
@@ -265,7 +265,7 @@ when:
 
 - [X] Slot demand is the ordinary minimum invalidation unit.
 - [X] A cyclic SCC is the minimum fixed-point recomputation closure.
-- [X] Dependency footprints come from actual native POO demand.
+- [X] Dependency footprints come from actual POO demand.
 - [X] Previous footprints are scheduling hints, not current-generation proofs.
 - [X] Suppressed contributions and retained contracts participate in reuse
   identity.
@@ -285,6 +285,6 @@ when:
 - [[file:45-22-continuation-resumption-and-budget-generation.org][Continuation Resumption and Budget Generation]]
 - [[file:45-23-resumption-contribution-generation-closure.org][Resumption Contribution Generation Closure]]
 - [[file:45-24-fixed-point-observability-and-recoverable-debugging.org][Fixed-Point Observability and Recoverable Debugging]]
-- [[file:45-28-poo-native-slot-contracts-and-algebraic-laws.org][POO-Native Slot Contracts and Algebraic Laws]]
+- [[file:45-28-poo-slot-contracts-and-algebraic-laws.org][POO-Runtime Slot Contracts and Algebraic Laws]]
 - [[file:45-29-poo-merge-priority-and-recursive-override.org][POO Merge Priority and Recursive Override]]
 - [[file:45-30-nix-modules-and-nickel-design-reflection.org][Nix Modules and Nickel Design Reflection]]

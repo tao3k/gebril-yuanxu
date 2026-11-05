@@ -3,7 +3,7 @@ import YuanxuProof.Admission.MetadataOwnership
 
 namespace YuanxuProof.Admission.MetadataAllocation
 
-def quintSourceDigest : String := "sha256:b42483a55b9ff9bc89d016ad1f8799d26f4958c0a32e8b1493d8614fa3d887f7"
+def quintSourceDigest : String := "sha256:61e55c61a683581d1edb443eb9d2fa1d31265fd648aa8d7f50e86e1af70250cd"
 
 -- Specification identity is shared by derivation. A fresh list spine is not a
 -- fresh payload. Private allocation registration, not public owner assertions,

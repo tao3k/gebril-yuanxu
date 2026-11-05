@@ -18,7 +18,7 @@ to that file, not something already exported by it.
 
 Root init declares source ownership. A module interface publishes its declaration.
 The existing product yuanxu-load-modules name should remain the single consumer
-facade for obtaining selected native scopes; shared source/link Contracts and pure
+facade for obtaining selected runtime scopes; shared source/link Contracts and pure
 composition belong to Core. Core must not import a product's facade, filesystem
 policy, PackageSpec or Kubernetes implementation to realize this protocol.
 
@@ -97,7 +97,7 @@ The .def binding is the Module name: JsonSchema, not JsonSchemaModule. The
 qualified identity is a source/link key, not a second object name. Neither the
 filename nor the binding suffix supplies a Type or admission proof.
 
-core.exports declares the native public scope, not a second flat list of Scheme
+core.exports declares the runtime public scope, not a second flat list of Scheme
 exports. Its procedure/config bindings come from the role graph. The scope
 prototype in objects.ss already publishes compile, contract, validate and admit;
 repeating that mapping here would duplicate its authority. A Module with no such
@@ -140,10 +140,10 @@ are fresh syntax identifiers, represented readably here with a percent prefix.
 
 The generated link slot is the normalized private representation consumed by the
 reference linker below. It is not another public author requirement. Moving the
-exports expression into this factory must preserve native computed-slot semantics;
+exports expression into this factory must preserve runtime computed-slot semantics;
 it must not eagerly construct or enumerate every exported value. Required Module
 scopes are admitted before factory invocation; individual exports retain their
-native demand behavior. This does not promise zero compilation or first-use cost.
+runtime demand behavior. This does not promise zero compilation or first-use cost.
 
 Source preparation resolves the role graph and supplies syntax plus binding/source
 provenance. A bounded hygienic lowering generates imports, the factory and the
@@ -246,7 +246,7 @@ back into identifiers or textually replace references. Undeclared dependency
 references are expansion errors; bindings do not leak into other role files.
 
 The complete generated Guestbook compilation unit uses ordinary Scheme/POO.
-The compiler owner also supplies the reviewed native syntax support imports;
+The compiler owner also supplies the reviewed runtime syntax support imports;
 these role imports show the module-specific edges, not a standalone runnable file.
 
 #+begin_src scheme
@@ -312,11 +312,11 @@ adapter is pending and must preserve source/currentness evidence.
 
 * A complete bounded linker reference behind the facade
 
-The following proposed composition algorithm reuses public .admit and native POO.
+The following proposed composition algorithm reuses public .admit and POO.
 It recursively links declared Module requirements and checks dependency scopes.
 It is not installed or executed, and it does not implement filesystem I/O.
 
-The static declaration shape can itself be admitted with a concrete native
+The static declaration shape can itself be admitted with a concrete runtime
 predicate Contract. This bounded design uses the existing Core Contract prototype
 identity to distinguish descriptors from arbitrary objects with a named slot:
 
@@ -476,7 +476,7 @@ The target application route is:
 
 Directory/init-source resolution and an admitted namespace returned from this call
 remain proposed; current load-modules only projects collection interface SourceRefs.
-The generated declaration/environment supplies native syntax and dependency binding;
+The generated declaration/environment supplies runtime syntax and dependency binding;
 there are no user-written imports, exports or calls to link factories here.
 
 ** Root build.ss: only the init source is project-specific
@@ -493,7 +493,7 @@ The :yuanxu namespace and yuanxu-build-spec binding are target names;
 Core currently uses package core. See the [[file:../../../module-system/design/05-namespace-and-build-ownership.org][Core/product namespace boundary]].
 The reusable adapter belongs to Core and does not import the product Loader facade.
 
-This minimal build script retains the native build macro and a proposed functional
+This minimal build script retains the runtime build macro and a proposed functional
 adapter. The imports are fixed build-tool dependencies, not a per-project module
 inventory. The generated init publication exports its graph automatically; authors
 do not add a graph factory, explicit compiler export or repeated build entries.
@@ -504,7 +504,7 @@ The adapter path/spelling is a target API, not currently available.
 #+begin_example
 init source + admitted source policy + retained decisions
   -> generation-qualified selected Module/Feature graph
-       -> scope view: realize dependencies, admit scopes, expose native namespace
+       -> scope view: realize dependencies, admit scopes, expose runtime namespace
        -> build view: selected role roots + Feature contributions + compiler closure
 #+end_example
 
@@ -524,7 +524,7 @@ requirement for the pending adapter, not a proven property of arbitrary Scheme I
   an explicitly authorized higher-level policy changes that decision.
 - Unselected implementations, disabled smoke code and unrelated Schema bodies stay
   cold. Metadata discovery does not imply implementation import or execution.
-- Native slots defer contracts/baseline work; scope-shape admission may demand
+- Runtime slots defer contracts/baseline work; scope-shape admission may demand
   required procedure slots but must not call those procedures or enumerate every
   Profile. No claim of zero first-use cost follows.
 - Module dependency cycles are refused with the active requester path. The build

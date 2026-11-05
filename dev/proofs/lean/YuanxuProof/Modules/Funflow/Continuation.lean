@@ -26,7 +26,7 @@ inductive ControlDecision where
 
 inductive RejectionKind where
   | controlRejection
-  | nativePooFailure
+  | runtimePooFailure
   deriving DecidableEq, Repr
 
 structure SuspensionContext
@@ -51,8 +51,8 @@ theorem successfulConsumptionCannotBeRepeated (before after : CapabilityState)
     (consumed : consumeOneShot before = some after) : consumeOneShot after = none := by
   cases before <;> cases after <;> simp_all [consumeOneShot, Factory.choose]
 
-theorem controlRejectionIsNotNativePooFailure :
-    RejectionKind.controlRejection ≠ .nativePooFailure := by
+theorem controlRejectionIsNotRuntimePooFailure :
+    RejectionKind.controlRejection ≠ .runtimePooFailure := by
   decide
 
 end YuanxuProof.Modules.Funflow.Continuation

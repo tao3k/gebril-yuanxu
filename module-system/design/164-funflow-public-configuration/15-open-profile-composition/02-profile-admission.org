@@ -23,7 +23,7 @@ and policy declaration. The configured Profile cannot authorize itself by adding
 a contract or accepted flag. Context derivation is performed here, rather than
 assuming Core magically changes context during responsibility traversal.
 
-The example Contracts declare funflow, but the constructor accepts any native
+The example Contracts declare funflow, but the constructor accepts any runtime
 responsibility object. A contribution may publish another Profile Contract and
 another binding name without editing the composition kernel. Additional feature
 families need their own admitted position Contract/projection, not an assertion
@@ -199,12 +199,12 @@ protocol. No catalog-wide source scan or factory call is implied by this value.
           names))))
 #+end_src
 
-The map is a native lazy slot: callers must demand preparation.profiles before
+The map is a runtime lazy slot: callers must demand preparation.profiles before
 claiming it has admitted anything. The next module explicitly does so, checks the
 occurrence again, and rejects on failure. Errors are caught by composition
 obligations, preserving refusal rather than fabricating an accepted empty list.
 The same selected association may be reused under any user-chosen binding when
 authorized; no iteration over '(gerbil rust), fixed language enum or fixed task
 count appears in this preparation. Context variables and constructor parameters
-must not shadow the native slot they initialize; the code uses distinct value
+must not shadow the runtime slot they initialize; the code uses distinct value
 names at construction boundaries.

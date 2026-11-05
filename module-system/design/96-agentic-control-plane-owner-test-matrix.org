@@ -41,7 +41,7 @@ The matrix keeps three boundaries explicit:
 
 | Concern | Current owner candidate | Required AC-00 evidence |
 |-
-| Public POO-native authoring | =src/user-interface/init-syntax.ss=, including =session-case= | Exact definitions, exports, and scenario consumers |
+| Public POO authoring | =src/user-interface/init-syntax.ss=, including =session-case= | Exact definitions, exports, and scenario consumers |
 | Profile composition | =core/profile-composition/=; product =src/scenario/composition-syntax.ss= and =profile-root.ss= | Composition order, override rules, and Scenario receipt path |
 | Session policy | =modules/session/policy-syntax.ss=, validation and receipt modules; =src/core/policy.ss= | Policy normalization, validation, evaluation, and public surface |
 | Core receipts | =src/core/receipt.ss= and policy-validation receipt owners | Stable fields, digest inputs, and serialization boundaries |
@@ -65,9 +65,9 @@ preserving the ownership boundaries.
 |-
 | AC-00 Inventory | Existing owners only | No new implementation owner | ASP owner receipts, baseline tests, ABI probe, Python suite |
 | AC-01 Vertical-slice contract | =src/semantic/organization-*.ss= and =src/contract/organization-bundle*.ss= | Existing public module facade | Focused Gerbil contract scenarios |
-| AC-02 Bundle kernel | =src/semantic/organization-bundle*.ss= | POO-native module-system/core implementation | Bundle identity, composition, digest, and immutability scenarios |
-| AC-03 Five facets | =src/semantic/organization-*.ss= and corresponding contract projections | POO-native facet implementations | Per-facet invariants plus cross-facet composition scenarios |
-| AC-04 Shadow projection | =src/semantic/organization-bundle-shadow.ss= | Internal POO-native typed-fact comparator; no public facade export | Equivalence, precise difference, rejection, order, and Kernel-immutability scenarios |
+| AC-02 Bundle kernel | =src/semantic/organization-bundle*.ss= | POO module-system/core implementation | Bundle identity, composition, digest, and immutability scenarios |
+| AC-03 Five facets | =src/semantic/organization-*.ss= and corresponding contract projections | POO facet implementations | Per-facet invariants plus cross-facet composition scenarios |
+| AC-04 Shadow projection | =src/semantic/organization-bundle-shadow.ss= | Internal POO typed-fact comparator; no public facade export | Equivalence, precise difference, rejection, order, and Kernel-immutability scenarios |
 | AC-05 C control lane | =src/contract/organization-bundle-runtime-v0.ss= and =bindings/runtime-c/schema/= | =bindings/runtime-c/include/agentic_ai_lab/runtime_v0.h= and =bindings/runtime-c/src/runtime_v0.c= | Pure C install/harness, handle-negative, checkpoint, regeneration, sanitizer, and retained-domain tests |
 | AC-06 C hot and bulk lanes | Same contract owners as AC-05 | Boundary implementation plus public ABI artifacts | Microbenchmarks, allocation counters, payload and batch fixtures |
 | AC-07 Python CFFI runtime | No new semantic owner | =packages/python-runtime/= and its wheel artifacts | Python conformance, integration, packaging, and benchmark suites |
@@ -131,7 +131,7 @@ durable-I/O performance claims.
 | AC-00 | Baseline captured; remediation open | Isolated clean worktree or completed clean tranche | Owner inventory, baseline receipt, frozen first slice |
 | AC-01 | Complete | AC-00 accepted | One end-to-end semantic contract with focused scenarios |
 | AC-02 | Complete | AC-01 | Canonical Bundle kernel and identity receipts |
-| AC-03 | Complete | AC-02 | Five facets composed through POO-native public APIs |
+| AC-03 | Complete | AC-02 | Five facets composed through POO public APIs |
 | AC-04 | Complete | AC-03 | Stable internal shadow projection and deterministic difference receipts; Bundle remains draft |
 | AC-05 | Complete | AC-04 | Installed runtime v0.1 control lane; ABI v1 remains unfrozen |
 | AC-06 | Complete | AC-05 | Qualified hot/bulk lanes with copy and allocation baselines |
@@ -165,7 +165,7 @@ decision accepts that ledger's canonical routes and authorized removals.
 * Acceptance criteria for this planning artifact
 
 - Every implementation work package has a named semantic or contract owner.
-- Every public boundary has both native C and Python validation responsibility.
+- Every public boundary has both runtime C and Python validation responsibility.
 - Functional correctness, performance, evidence integrity, and proof linkage
   have separate gates.
 - The current ctypes runtime is treated as migration input; production validation
@@ -177,7 +177,7 @@ decision accepts that ledger's canonical routes and authorized removals.
 
 | Concern | Runtime owner | Contract owner | Qualification owner |
 |---------+---------------+----------------+---------------------|
-| POO-native organization values | =src/semantic/organization-bundle.ss= | =src/contract/organization-bundle.ss= | =t/scenarios/canonical-organization-bundle-test.ss= |
+| POO organization values | =src/semantic/organization-bundle.ss= | =src/contract/organization-bundle.ss= | =t/scenarios/canonical-organization-bundle-test.ss= |
 | Canonical S-expression v1 | =agentic-ai-lab-organization-bundle-normalize= | =agentic-ai-lab-organization-bundle-contract= | order-invariance and idempotence cases |
 | SHA-256 identity | =agentic-ai-lab-organization-bundle-identity= | read-only identity projection | frozen digest and mutation cases |
 | Fail-closed authority checks | =agentic-ai-lab-organization-bundle-validate= | deterministic validation receipt | authority, context, delegation, effect, reference, epoch, and unstable-value cases |
@@ -216,15 +216,15 @@ over the canonical bundle identity established here.
 | Concern | Owner | Qualification |
 |---------+-------+---------------|
 | Typed Scheme control packet | =src/contract/organization-bundle-runtime-v0.ss= | =t/scenarios/organization-bundle-runtime-v0-test.ss= |
-| Native C control ABI | =bindings/runtime-c/src/runtime_v0.c= | strict C and installed public consumer |
+| Runtime C control ABI | =bindings/runtime-c/src/runtime_v0.c= | strict C and installed public consumer |
 
-* AC-06 Native Hot and Bulk Lanes
+* AC-06 Runtime Hot and Bulk Lanes
 
 | Concern | Owner | Qualification |
 |---------+-------+---------------|
 | Scheme-owned ABI schema | =src/contract/runtime-v0-abi-schema.ss= | generated header/vector freshness |
 | Typed batch projection | =src/contract/organization-bundle-runtime-v0-batch.ss= | =t/scenarios/organization-bundle-runtime-v0-batch-test.ss= |
-| Ordered native batch engine | =bindings/runtime-c/src/runtime_v0.c= | C fault, UBSan, leak, installed-consumer, and 140-block performance matrix |
+| Ordered runtime batch engine | =bindings/runtime-c/src/runtime_v0.c= | C fault, UBSan, leak, installed-consumer, and 140-block performance matrix |
 | Algorithmic bound | ordered pending window and persistent poll cursor | one =lower_bound= plus sequential merge, =O(log n + k)= |
 | Python validation runtime | =packages/python-runtime= | retained suite: 176 passed |
 | ABI freeze | RFC 116 and qualification receipt 119 | =abi-v1-frozen? #f= |
@@ -234,19 +234,19 @@ over the canonical bundle identity established here.
 | Concern | Owner | Qualification |
 |---------+-------+---------------|
 | Public atomic producer batch | =bindings/runtime-c/src/runtime_v0.c= | strict C, UBSan, leak, installed consumer |
-| Out-of-line CFFI build and wheel | =packages/python-runtime/setup.py= and =agentic_ai_lab_runtime/_native/_build.py= | isolated wheel without Gerbil |
-| Native loading and ownership | =agentic_ai_lab_runtime/_native/loader.py=, =session.py=, =arena.py= | Bundle/session/arena lifecycle and fail-closed tests |
-| Production graph boundary | =RuntimeGraphRuntime= and =RuntimeGraphProgram._validated_plan= | negotiated native required; explicit reference API |
-| Actual-wheel performance | =agentic_ai_lab_runtime/_native/benchmark.py= | batches 1/8/32/128/1024 and receipt 122 |
+| Out-of-line CFFI build and wheel | =packages/python-runtime/setup.py= and =agentic_ai_lab_runtime/_runtime/_build.py= | isolated wheel without Gerbil |
+| Runtime loading and ownership | =agentic_ai_lab_runtime/_runtime/loader.py=, =session.py=, =arena.py= | Bundle/session/arena lifecycle and fail-closed tests |
+| Production graph boundary | =RuntimeGraphRuntime= and =RuntimeGraphProgram._validated_plan= | negotiated runtime required; explicit reference API |
+| Actual-wheel performance | =agentic_ai_lab_runtime/_runtime/benchmark.py= | batches 1/8/32/128/1024 and receipt 122 |
 | ABI freeze | RFC 120 and qualification receipt 122 | =abi-v1-frozen? #f= |
 
 * AC-08 Cedar, Tokens, And Evidence Roots
 
 | Concern | Owner | Qualification |
 |---------+-------+---------------|
-| POO-native authorization input and token | =src/policy/authorized-effect-token.ss= | allow, deny, replay, revocation, expiry, and substitution scenarios |
-| Runtime evidence sink | runtime-v0 native kernel and public C ABI | Strict, Batched, Diagnostic, fork, truncation, and root-history gates |
-| Batched Merkle evidence | Scheme evidence objects and native batch owner | deterministic roots and inclusion receipts |
+| POO authorization input and token | =src/policy/authorized-effect-token.ss= | allow, deny, replay, revocation, expiry, and substitution scenarios |
+| Runtime evidence sink | runtime-v0 runtime kernel and public C ABI | Strict, Batched, Diagnostic, fork, truncation, and root-history gates |
+| Batched Merkle evidence | Scheme evidence objects and runtime batch owner | deterministic roots and inclusion receipts |
 | Qualification | RFC 123–126 and their focused owners | AC-08 owner suites green |
 
 * AC-09 Lean / Evidence Proof Bridge
@@ -254,8 +254,8 @@ over the canonical bundle identity established here.
 | Concern | Owner | Qualification |
 |---------+-------+---------------|
 | Canonical ProofCaseVector v1 | proof manifest and generated projections | freshness plus four-way differential |
-| POO-native proof projection | Scheme proof-case object family | projection and vector scenario owners |
-| Native proof ABI | runtime-v0 caller-owned =measure/write= | C, installed consumer, sanitizer, leak, and benchmark gates |
+| POO proof projection | Scheme proof-case object family | projection and vector scenario owners |
+| Runtime proof ABI | runtime-v0 caller-owned =measure/write= | C, installed consumer, sanitizer, leak, and benchmark gates |
 | Named claims | =packages/proofs/lean/= | Lake build, typed decoder, theorem set, and FFI smoke |
 | Production Python differential | =packages/proofs/python/= | isolated wheel, mutation, determinism, and performance receipts |
 | Qualification | receipt 129 | =abi-v1-frozen? #f= |
@@ -264,12 +264,12 @@ over the canonical bundle identity established here.
 
 | Concern | Owner | Qualification |
 |---------+-------+---------------|
-| Assurance manifest schema | =src/contract/release-assurance-manifest.ss= | POO-native construction, canonical identity, completeness, and mutation gates |
+| Assurance manifest schema | =src/contract/release-assurance-manifest.ss= | POO construction, canonical identity, completeness, and mutation gates |
 | Qualification runner | =t/qualification/agentic-control-plane/= | clean-build lane orchestration and machine-readable receipts |
 | Claim registry | RFC 93 claim-specific TCB and assurance ladder | every claim names its TCB, level, evidence, exclusions, and failure state |
 | Cross-language replay | Scheme, C, Python, and Lean existing owners | one canonical fixture traverses every accepted boundary |
 | Fault matrix | existing runtime/evidence/proof owners | crash, timeout, cancel, retry, restore, indeterminate, fork, and truncation |
-| Performance matrix | existing native and Python benchmark owners | actual paths, reproducible environment, allocation/copy/crossing accounting |
+| Performance matrix | existing runtime and Python benchmark owners | actual paths, reproducible environment, allocation/copy/crossing accounting |
 | ABI review | public C contract owner plus qualification receipt | explicit freeze decision; no implicit stability claim |
 
 * AC-11 Canonical Cutover

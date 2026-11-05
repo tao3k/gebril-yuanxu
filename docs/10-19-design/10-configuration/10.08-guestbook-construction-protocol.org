@@ -1,4 +1,4 @@
-#+title: 10.08 Guestbook Construction: Native Contract Metadata, Bindings and Publication
+#+title: 10.08 Guestbook Construction: Runtime Contract Metadata, Bindings and Publication
 #+language: en
 #+property: DOCUMENT_ID 10.08
 #+date: [2026-10-17]
@@ -10,7 +10,7 @@ This expands [[file:10.07-guestbook-data-input-and-object-construction.org][the 
 Org design source, not a new Core implementation. Read the companion
 [[file:10.09-guestbook-construction-reflection.org][research-to-design reflection]] before interpreting the code as a settled protocol.
 
-The kernel uses native .ref/.slot?/.+/object<-alist and public .admit. It introduces
+The kernel uses .ref/.slot?/.+/object<-alist and public .admit. It introduces
 no user macro, expression interpreter or string substitution language. Private
 construction results use defstruct, not another public configuration model.
 
@@ -25,7 +25,7 @@ implementation or qualify the construction kernel. Its source remains in
 implemented boundary. Do not validate the same selected value twice by stacking
 both protocols.
 
-Other names in the listings are native POO forms, Core's exported predicate/
+Other names in the listings are POO forms, Core's exported predicate/
 classification evidence helpers, or ordinary std/sugar/SRFI list utilities
 (cut, iota, every, filter-map). Package imports are implementation concerns.
 The generic kernel/factories belong to one shared Core construction library that
@@ -38,12 +38,12 @@ No role loads its own assembled interface or the root init.
 
 * Internal kernel: presence, binding and construction
 
-The source reader normalizes native decoded JSON maps to POO data objects once.
+The source reader normalizes runtime decoded JSON maps to POO data objects once.
 It preserves arrays, scalars, null, unknown keys and paths; it never validates by
-discarding fields. The objectification body can reuse native JSON representations:
+discarding fields. The objectification body can reuse runtime JSON representations:
 
 #+begin_src scheme
-;; Shared Core construction library; native PureAList?/walist->list bindings.
+;; Shared Core construction library; runtime PureAList?/walist->list bindings.
 (def (objectify value)
   (cond
    ((PureAList? value)
@@ -141,22 +141,22 @@ discarding fields. The objectification body can reuse native JSON representation
 #+end_src
 
 Omitted input uses the actual baseline, including false or empty values. An absent
-required field without a baseline stays absent and final native responsibility
+required field without a baseline stays absent and final runtime responsibility
 admission rejects it. Null without input-binding is passed to its ordinary field
 Contract; it is not silently replaced by a default. Names are enumerated only in
 the selected supplied record; omitted children remain inherited and unforced by
 construction. Final Contracts may subsequently demand them.
 
-The primitive objectifier assumes native walist JSON objects and symbol/string
+The primitive objectifier assumes runtime walist JSON objects and symbol/string
 keys, with the reader's list/vector arrays. Hash-object reader modes are not
 silently accepted by this listing. Repeated object keys must be diagnosed before
 any decoding/normalization that discards them; that reader qualification is pending.
 
-* Contract factories: one field map, native admission
+* Contract factories: one field map, runtime admission
 
 The construction policy is attached to the same Contract objects that own field
 admission, not a parallel options table. Object fields come from responsibilities.
-List item admission is an ordinary native Contract obligation; this is not a
+List item admission is an ordinary Contract obligation; this is not a
 second validator or an arbitrary expression evaluator.
 
 #+begin_src scheme
@@ -370,7 +370,7 @@ The interface publishes GuestbookEntry once through its existing core.exports
 scope, with a scope Contract admitting these properties. No per-hole registry or
 user-side substitute call is needed. The generic construction hook below is an
 internal method/function contribution, associated with this configured entry.
-Its native construct slot publishes construct-entry once, so the orchestrator
+Its runtime construct slot publishes construct-entry once, so the orchestrator
 does not infer a factory name or require per-user registration. It receives the
 current configured entry and admitted context. The algorithm lives in the shared Core library;
 the entry/interface only binds the procedure.
@@ -412,7 +412,7 @@ must use existing role/selection mechanisms rather than a user-written factory.
 
 GuestbookEntry is the ordinary-data route: input is the objectified record and
 bindings is empty. Its empty default input retains maintained defaults without
-inventing required placeholders. GuestbookTemplateEntry is a native derived
+inventing required placeholders. GuestbookTemplateEntry is a runtime derived
 publication for the optional template route, not the default for every user.
 For that route the user supplies only ordinary named values:
 
@@ -421,16 +421,16 @@ For that route the user supplies only ordinary named values:
 #+end_src
 
 A JSON binding input can contain the same names and scalar values. Scheme may
-compute those values in native lazy slots. The constructor forces a used binding
+compute those values in runtime lazy slots. The constructor forces a used binding
 and records its name; it never automatically invokes a procedure stored as data.
-Repeated references reuse the same binding object's native slot cache.
+Repeated references reuse the same binding object's runtime slot cache.
 
 Arbitrary recursion hidden inside a Scheme computation is not detected by this
 kernel. Named binding-to-binding graphs would require their own explicit dependency
 protocol; that extension is not implemented or silently promised here. Required
 module cycles remain the existing linker's responsibility.
 
-* Final native admission and effective-value publication
+* Final runtime admission and effective-value publication
 
 #+begin_src scheme
 (def (construct-entry entry context)
@@ -482,7 +482,7 @@ candidate; it does not certify the projected resources, source currentness or
 runtime permission. A malicious supplied project procedure is outside the purity
 assumption and must not be accepted merely because it is callable.
 
-In configure-entry, @ and context are native receiver/lexical slot bindings.
+In configure-entry, @ and context are runtime receiver/lexical slot bindings.
 They are not eagerly extracted parent state. A derived entry must receive its
 qualified child input/bindings/context, and preview must be forced on that entry.
 The installed module supplies the constructor, Contract and consumer; ordinary
@@ -512,14 +512,14 @@ proof of currentness. Full consumer/cache qualification is pending.
 
 Selected JSON decoding/objectification reads the selected document, not individual
 fields lazily from its text. Construction forces supplied fields; omitted inherited
-children and unused binding values need not be forced at that stage. Final native
+children and unused binding values need not be forced at that stage. Final runtime
 responsibility admission does force the children the selected Contract requires.
 These are distinct costs. Large publication/type collections still require indexed
 source selection; this constructor is not an indexed JSON loader.
 
 The input path is for ordinary authored data, not arbitrary externally contracted
 Profile objects. Do not extract another publication's slots and thereby drop its
-additional requirements or provenance. Such Profiles use the native extension/
+additional requirements or provenance. Such Profiles use the runtime extension/
 association route; complete requirement retention remains an independent MOP and
 module-adaptation obligation. Finite acyclic structural Contract trees are the
 scope of this construction listing; recursive Types require a specified demand

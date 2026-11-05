@@ -3,14 +3,14 @@
 import YuanxuProof.ModuleSystem.Graph.TestAdmission
 import YuanxuProof.Admission.Source
 
-/-! The native reader produces a finite source-text observation list. Reuse the
+/-! The runtime reader produces a finite source-text observation list. Reuse the
 public source-check model to supply the discovery model's currentness premise.
-Native context/path projection and event completeness remain executable gates. -/
+Runtime context/path projection and event completeness remain executable gates. -/
 namespace YuanxuProof.ModuleSystem.Graph.ImportCorrespondence
 open TestAdmission
 open YuanxuProof.Admission.Source
 
--- Context order is supplied by the completed native traversal. Resolve the
+-- Context order is supplied by the completed runtime traversal. Resolve the
 -- CURRENT input registry during consumption; no per-root transitive list or
 -- previously projected registration is required to preserve this result.
 def registeredInputs (contexts : List Context) (lookup : Context → Option Input) : List Input :=
@@ -40,7 +40,7 @@ theorem stream_registered_exact (contexts : List Context) (lookup : Context → 
 
 -- Cutting a canonical SDK subtree is valid only when every omitted context
 -- has no private-source registration. Equality of names is insufficient.
--- This preserves order and multiplicity, not merely set membership. Native
+-- This preserves order and multiplicity, not merely set membership. Runtime
 -- traversal completeness and independent SDK source guarding remain gates.
 theorem private_projection_cut (contexts : List Context) (keep : Context → Bool)
     (lookup : Context → Option Input)
@@ -84,7 +84,7 @@ theorem later_registration_is_visible (contexts : List Context)
 def snapshot (inputs : List (String × String)) : List (String × Option String) :=
   inputs.map (fun input => (input.1, some input.2))
 
--- Native guards distinguish absence from a directory/symlink/nonregular file.
+-- Runtime guards distinguish absence from a directory/symlink/nonregular file.
 -- Mapping both to Option.none would incorrectly authorize negative observations.
 inductive PathState where
   | missing
@@ -111,18 +111,18 @@ def expectedState : Option String → PathState
   | none => .missing
   | some text => .regular text
 
-theorem native_entry_exact (expected : Option String) (state : PathState) :
+theorem runtime_entry_exact (expected : Option String) (state : PathState) :
     entryAccepted expected state = true ↔ state = expectedState expected := by
   cases expected <;> cases state <;> simp [entryAccepted, expectedState]
 
-def nativeGuard (inputs : List (String × Option String)) (read : String → PathState) : Bool :=
+def runtimeGuard (inputs : List (String × Option String)) (read : String → PathState) : Bool :=
   inputs.all (fun input => entryAccepted input.2 (read input.1))
 
--- Source bytes and the native public-name resolution are distinct premises.
+-- Source bytes and the runtime public-name resolution are distinct premises.
 -- This models the retained preparation, not a memoized successful admission.
 def publicPreparationGuard (inputs : List (String × Option String))
     (read : String → PathState) (expected : String) (resolved : Option String) : Bool :=
-  nativeGuard inputs read && (resolved == some expected)
+  runtimeGuard inputs read && (resolved == some expected)
 
 theorem public_resolution_change_refused (inputs : List (String × Option String))
     (read : String → PathState) (expected : String) (resolved : Option String)
@@ -134,51 +134,51 @@ theorem public_resolution_change_refused (inputs : List (String × Option String
 -- world. An effect still requires a fresh guard; no temporal law follows.
 theorem repeated_registration_same_requirements (inputs : List (String × Option String))
     (read : String → PathState) :
-    nativeGuard (inputs ++ inputs) read = nativeGuard inputs read := by
-  simp [nativeGuard, List.all_append]
+    runtimeGuard (inputs ++ inputs) read = runtimeGuard inputs read := by
+  simp [runtimeGuard, List.all_append]
 
 -- Adjacent private lookups leave the same read function and requirements.
 -- This law does NOT identify worlds separated by an import or a callback.
 theorem adjacent_guard_collapse (inputs : List (String × Option String))
     (read : String → PathState) :
-    (nativeGuard inputs read && nativeGuard inputs read) = nativeGuard inputs read := by
-  cases nativeGuard inputs read <;> rfl
+    (runtimeGuard inputs read && runtimeGuard inputs read) = runtimeGuard inputs read := by
+  cases runtimeGuard inputs read <;> rfl
 
-#guard nativeGuard [("provider.nix", some "old")] (fun _ => .regular "old") == true
-#guard nativeGuard [("provider.nix", some "old")] (fun _ => .regular "new") == false
+#guard runtimeGuard [("provider.nix", some "old")] (fun _ => .regular "old") == true
+#guard runtimeGuard [("provider.nix", some "old")] (fun _ => .regular "new") == false
 
-theorem native_guard_exact (inputs : List (String × Option String))
+theorem runtime_guard_exact (inputs : List (String × Option String))
     (read : String → PathState) :
-    nativeGuard inputs read = true ↔ ∀ input ∈ inputs, read input.1 = expectedState input.2 := by
-  simp only [nativeGuard, List.all_eq_true, native_entry_exact]
+    runtimeGuard inputs read = true ↔ ∀ input ∈ inputs, read input.1 = expectedState input.2 := by
+  simp only [runtimeGuard, List.all_eq_true, runtime_entry_exact]
 
 theorem changed_kind_or_text_rejected (inputs : List (String × Option String))
     (read : String → PathState) (input : String × Option String)
     (present : input ∈ inputs) (changed : read input.1 ≠ expectedState input.2) :
-    nativeGuard inputs read ≠ true := by
+    runtimeGuard inputs read ≠ true := by
   intro accepted
-  exact changed ((native_guard_exact inputs read).mp accepted input present)
+  exact changed ((runtime_guard_exact inputs read).mp accepted input present)
 
 -- A retained inert projection never substitutes for the actual source guard.
 -- The Scheme gate separately checks that evaluated publications are NOT reused.
 def guardedPreparation (inputs : List (String × Option String))
     (projection : Projection) (read : String → PathState)
     (policyAccepted : Bool) : Option Projection :=
-  if nativeGuard inputs read = true ∧ policyAccepted = true then some projection else none
+  if runtimeGuard inputs read = true ∧ policyAccepted = true then some projection else none
 
 theorem preparation_hit_requires_current (inputs : List (String × Option String))
     (projection result : Projection) (read : String → PathState) (policyAccepted : Bool)
     (hit : guardedPreparation inputs projection read policyAccepted = some result) :
     ∀ input ∈ inputs, read input.1 = expectedState input.2 := by
-  by_cases accepted : nativeGuard inputs read = true ∧ policyAccepted = true
-  · exact (native_guard_exact inputs read).mp accepted.1
+  by_cases accepted : runtimeGuard inputs read = true ∧ policyAccepted = true
+  · exact (runtime_guard_exact inputs read).mp accepted.1
   · simp [guardedPreparation, accepted] at hit
 
 theorem preparation_hit_requires_fresh_policy (inputs : List (String × Option String))
     (projection result : Projection) (read : String → PathState) (policyAccepted : Bool)
     (hit : guardedPreparation inputs projection read policyAccepted = some result) :
     policyAccepted = true := by
-  by_cases accepted : nativeGuard inputs read = true ∧ policyAccepted = true
+  by_cases accepted : runtimeGuard inputs read = true ∧ policyAccepted = true
   · exact accepted.2
   · simp [guardedPreparation, accepted] at hit
 
@@ -203,7 +203,7 @@ theorem checked_texts_are_current (inputs : List (String × String))
   subst entry
   exact certificate (sourceObligation inputs) (by simp [sourceObject]) input present
 
-theorem native_guard_supplies_source_admission (state : Discovery String)
+theorem runtime_guard_supplies_source_admission (state : Discovery String)
     (inputs : List (String × String)) (read : String → Option String)
     (complete : state.pending = [])
     (covered : ∀ path ∈ state.seen, ∃ text, (path, text) ∈ inputs)
@@ -214,7 +214,7 @@ theorem native_guard_supplies_source_admission (state : Discovery String)
   obtain ⟨text, recorded⟩ := covered path present
   exact ⟨some text, List.mem_map.mpr ⟨(path, text), recorded, rfl⟩⟩
 
-theorem changed_source_rejects_native_guard (inputs : List (String × String))
+theorem changed_source_rejects_runtime_guard (inputs : List (String × String))
     (read : String → Option String) (input : String × String)
     (present : input ∈ inputs) (changed : read input.1 ≠ some input.2) :
     checkSources inputs read ≠ true := by

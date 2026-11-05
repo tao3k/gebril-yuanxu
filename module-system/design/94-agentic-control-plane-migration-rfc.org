@@ -17,7 +17,7 @@ The architecture in RFC 90–93 spans organization semantics, composition, runti
 
 The accepted migration is compiler-first and vertical-slice driven:
 
-- retain the existing POO-native authoring direction;
+- retain the existing POO authoring direction;
 - compile current scenarios into a shadow Canonical Organization Bundle;
 - validate semantics before changing runtime behavior;
 - introduce the public C ABI and first-party Python runtime only after the Bundle contract is stable enough to measure;
@@ -392,7 +392,7 @@ For effects:
 The migration distinguishes authoring compatibility from external ABI compatibility.
 
 ** Authoring
-When a canonical POO-native authoring surface replaces an older public form, the old route is removed after the cutover gate. Permanent aliases, duplicate semantics, and stale examples are rejected.
+When a canonical POO authoring surface replaces an older public form, the old route is removed after the cutover gate. Permanent aliases, duplicate semantics, and stale examples are rejected.
 
 ** Bundle Schema
 Breaking semantic changes increase the Bundle schema major version. A consumer never ignores unknown semantic content silently.
@@ -425,7 +425,7 @@ Agentic AI Lab does not grant assurance merely because a downstream adapter link
 | C ABI freezes implementation accidents | Bundle-first ordering and ABI freeze gate |
 | Python becomes a private semantic owner | Public installed-ABI-only build and tests |
 | C4 precedence widens security semantics | Facet-specific algebra and negative fixtures |
-| High-performance views create second semantics | One generated schema and native/canonical differential validation |
+| High-performance views create second semantics | One generated schema and runtime/canonical differential validation |
 | Zero-copy introduces lifetime or TOCTOU defects | Explicit leases, freeze rules, ownership tags, and mutation tests |
 | Cedar allow is treated as total safety | Claim discipline and evidence closure |
 | Lean artifact is used as runtime proof | Separate conformance, mediation, and proof gates |
@@ -437,7 +437,7 @@ Agentic AI Lab does not grant assurance merely because a downstream adapter link
 * Security Considerations
 - Shadow mode MUST remain read-only for external effects so comparison cannot execute an effect twice.
 - Canonical cutover MUST reject mixed Bundle epochs, policies, tokens, and receipt schemas.
-- High-performance native views MUST pass the same authorization, mutation, and evidence tests as the portable path.
+- High-performance runtime views MUST pass the same authorization, mutation, and evidence tests as the portable path.
 - A Python production runtime remains an implementation owner, not the semantic owner.
 - P6 MUST remove retired public routes so a caller cannot select a weaker legacy semantic path.
 - Rollback creates a new validated epoch; it never rewrites historical evidence or silently revives revoked authority.

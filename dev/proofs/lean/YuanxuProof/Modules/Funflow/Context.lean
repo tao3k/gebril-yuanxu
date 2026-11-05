@@ -52,7 +52,7 @@ structure Admitted
     context.cancelled = false
 
 /-- Mathematical context policy is explicit input. The current Funflow strategy
-has capability checks; this checker does not assert that the native runner meters
+has capability checks; this checker does not assert that the runtime runner meters
 all future budget/deadline/continuation coordinates. -/
 def Checks (context : LiveEvaluationContext Capability Adapter Disclosure)
     (demand : ExecutionDemand Capability Adapter Disclosure) : Prop :=

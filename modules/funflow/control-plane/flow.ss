@@ -6,11 +6,11 @@
 ;;; Boundary: flows describe workflow composition and contract shape.
 ;;; Invariant: task execution is deferred to runner/runtime-adapter code.
 
-(import (only-in :clan/poo/object .@ .o .cc .ref .get .call .slot? object?)
+(import (only-in :clan/poo/object .@ .o .cc .ref .get .call .slot? object?
+                 compute-precedence-list!)
         (only-in :clan/poo/object-contract ObjectContract. refine)
-        (only-in :clan/poo/object compute-precedence-list!)
         (only-in :clan/poo/type Pair.)
-        (only-in :clan/poo/generalized-prototype Observation.)
+        (only-in :clan/poo/fun Observation.)
         :yuanxu/modules/funflow/control-plane/signatures
         :yuanxu/modules/funflow/control-plane/roles
         :yuanxu/modules/funflow/control-plane/failure
@@ -130,7 +130,7 @@
 (def (kleisli-step? value)
   (and (object? value) (.slot? value 'funflow-kleisli-step?) (.ref value 'funflow-kleisli-step?)))
 
-;; Forward through native Types so nested steps use the same recursive Class
+;; Forward through Types so nested steps use the same recursive Class
 ;; normalization as callbacks returned by a binder. There is no field walker.
 (def Step
   (.cc Type. sexp: 'FunflowStep
@@ -147,7 +147,7 @@
       (if (flow-edges-match? flow) '()
         (list (.o kind: 'incompatible-flow-route path: location))))))
 ;; The signature describes the actual ordered route, including empty identity
-;; flows. These relations inspect Types; native Function owns value validation.
+;; flows. These relations inspect Types; runtime Function owns value validation.
 (def (step-signature step) (.get step signature))
 (def (flow-edges-match? flow)
   (let walk ((previous (flow-input-contract flow)) (steps (flow-steps flow)))
@@ -156,7 +156,7 @@
       (let (signature (step-signature (car steps)))
         (and (type-flows? previous (operation-input signature))
              (walk (operation-output signature) (cdr steps)))))))
-;; Inspect the native carrier parameters instead of reconstructing a Type
+;; Inspect the runtime carrier parameters instead of reconstructing a Type
 ;; and asking the finite expression checker to infer opaque predicate inclusion.
 (def (pair-output-matches? output left right)
   (and (memq Pair. (compute-precedence-list! output))
@@ -397,7 +397,7 @@
 
 
 
-;;; The category is an extensible native POO object. Every operation slot uses
+;;; The category is an extensible POO object. Every operation slot uses
 ;;; the same Function descriptor as the module export; derived callbacks acquire
 ;;; that boundary before dispatch.
 ;; : (-> Unit FlowCategoryPrototype)

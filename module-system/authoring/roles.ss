@@ -4,7 +4,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Boundary: construct values from prototypes owned by explicit Type declarations.
-(import (only-in :clan/poo/object .o .mix .ref)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
         :yuanxu/module-system/schema/relations
         :yuanxu/module-system/types
@@ -22,7 +22,7 @@
         make-default-module-authoring-profile
         yuanxu-default-module-authoring-profile)
 
-;;; The executor stays a native POO prototype.  CLOS specializes it through
+;;; The executor stays a POO prototype.  CLOS specializes it through
 ;;; the explicit prototype bridge rather than requiring a duplicate class.
 (def ModuleAuthoringExecutor.
   (.o identity: 'module-authoring/default-executor))
@@ -55,14 +55,14 @@
 (def ObjectsSourceRole.
   (yuanxu-module-source-role
    'objects '(.def .o .defgeneric defmethod) '(add remove replace delete) '()
-   'open-native-poo))
+   'open-runtime-poo))
 (def FunsSourceRole.
   (yuanxu-module-source-role
    'funs '(def lambda) '(add remove replace delete) '()
    'open-pure-functions))
 (def ConfigSourceRole.
   (yuanxu-module-source-role
-   'config '(.def .o user-composition use-module)
+   'config '(def .new .def .o use-module)
    '(add remove replace delete)
    '(stage graph loop prove handoff provider runtime)
    'composition-only))

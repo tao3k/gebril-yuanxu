@@ -263,7 +263,7 @@ cannot both publish a head transition.
    cut cannot certify a new cut, and a retention verdict cannot imply truth.
    In Quint, explore source change, revocation, two workers, stale assessment,
    and lost CAS. Scheme tests prove the actual projection and policy behavior;
-   Python coordinates these native gates only.
+   Python coordinates these runtime gates only.
 5. Only after source authentication, semantic evidence and runtime CAS exist,
    consider moving a visible head. The current Orgize query selector and pure
    Session intent do not establish that path.

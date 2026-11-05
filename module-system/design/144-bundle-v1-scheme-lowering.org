@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: RFC 0144: POO-native Bundle v1 Scheme Lowering
+#+title: RFC 0144: POO Bundle v1 Scheme Lowering
 #+status: accepted
 #+phase: 3I
 
@@ -15,12 +15,12 @@ accepted as a user DSL.
 
 This phase does not write through C pointers and does not call Python. It
 lowers the component, edge, and evidence identities required by a Domain Case
-into fixed-width compact IDs, strictly sorted native rows, aligned regions, a
+into fixed-width compact IDs, strictly sorted runtime rows, aligned regions, a
 256-byte descriptor receipt, and a 32-byte Bundle digest. The next phase can
 encode this receipt into a registered foreign arena without interpreting POO
 semantics again.
 
-* Control-plane and native boundary
+* Control-plane and runtime boundary
 
 #+begin_src mermaid
 flowchart LR
@@ -50,7 +50,7 @@ The Phase 3I plan is an immutable semantic value. The C ABI never observes a
 Scheme object, and the Scheme control plane does not assemble C structs
 directly.
 
-* POO-native public surface
+* POO public surface
 
 Public constructors and operations:
 
@@ -75,14 +75,14 @@ The output surface also consists entirely of POO objects:
 
 A module-local declarative macro generates the repeated object-family
 constructors and expands into ordinary POO object construction. The module
-uses an explicit export list, so its macro, native-row constructors,
+uses an explicit export list, so its macro, runtime-row constructors,
 validators, and layout helpers do not leak into the public API. There is no
 raw =(lambda (self super) ...)= compute hook and no public record, alist, or
 patch language.
 
 * Scheme identity to C compact ID
 
-Every native identity uses the following canonical input:
+Every runtime identity uses the following canonical input:
 
 #+begin_example
 yuanxu.bundle-v1.id/<domain>/<typed-semantic-id>
@@ -151,7 +151,7 @@ The descriptor size is fixed at 256 bytes. The arena is at least 64 bytes and
 is rounded to a 64-byte boundary. The lowering plan fixes every C descriptor
 field: =struct_size=, flags, schema major and minor, =reserved0=, Bundle ID,
 digest, epoch, arena bytes, five regions, and seven reserved uint64 values.
-Native component, edge, and evidence rows also carry their required zeroed
+Runtime component, edge, and evidence rows also carry their required zeroed
 reserved fields explicitly. The arena writer therefore encodes the receipt;
 it does not add or infer ABI semantics.
 
@@ -273,7 +273,7 @@ runtime handoff.
 * fold-left semantic regression
 
 The first 1,000-agent benchmark correctly rejected a duplicate evidence key.
-The audit found that the former shared fold wrapper (now native =fold=) callback order is
+The audit found that the former shared fold wrapper (now runtime =fold=) callback order is
 =(element accumulator)=, while the first compact-ID implementation used
 =(accumulator element)=. That error collapsed SHA-256 segments into small
 integers.
@@ -304,8 +304,8 @@ bundle-epoch=1
 arena-bytes=375936
 digest-bytes=32
 elapsed-seconds=.618149995803833
-input-interface=poo-native
-layout=typed-native-regions
+input-interface=poo
+layout=typed-runtime-regions
 json-in-hot-path=false
 #+end_example
 
@@ -316,13 +316,13 @@ cross-hardware SLA.
 * Relationship to Phase 3G
 
 The Phase 3G =FeatureRuntimeHandoffPlan= separates Bundle, Cedar, and
-Lean/Evidence handoffs. Phase 3I freezes the native identities and table
+Lean/Evidence handoffs. Phase 3I freezes the runtime identities and table
 layouts ultimately consumed by those handoffs.
 
-The next phase must add a POO-native projection from an accepted Domain Case
+The next phase must add a POO projection from an accepted Domain Case
 assembly and its adapter/projection bindings into the component, edge, and
 evidence objects defined by this RFC. Users must not be required to enumerate
-native rows manually. After that projection is complete, the implementation
+runtime rows manually. After that projection is complete, the implementation
 can add the foreign arena writer and make Runtime v1 consume Bundle v1
 directly.
 

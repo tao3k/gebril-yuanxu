@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 11.67 OpenTofu Generation 03: Concrete Generated Scopes and Configuration Contract
 #+property: DOCUMENT_ID 11.67
-#+property: STATUS native-scheme-design-only-not-installed
+#+property: STATUS runtime-scheme-design-only-not-installed
 
 * Snapshots and Demands are derived, not user-maintained registries
 
@@ -139,7 +139,7 @@ The generated object is not a procedure pretending to be a Module scope, and no
 new lazy wrapper language is introduced. .get Generation GeneratedProviders aws fields
 resources aws_instance instance_type demands only that selected field descriptor.
 It does not demand aws_vpc, another provider, or the whole output Contract.
-Each scope's native slot cache belongs to its immutable generation.
+Each scope's runtime slot cache belongs to its immutable generation.
 
 Field identities include provider/version, resource/data category and the member
 path via member-path, preventing collisions between similarly named members.
@@ -304,7 +304,7 @@ it does not claim to decide general version-constraint equivalence.
 The frozen request set, not the installed registry's newest version, determines
 both the injected wire and output Contract.
 
-* Native publication: two names are now fully derived
+* Runtime publication: two names are now fully derived
 
 #+begin_src scheme
 (.def OpenTofu
@@ -321,8 +321,8 @@ both the injected wire and output Contract.
 
 Generation.GeneratedProviders is the lazy object defined above;
 Generation.ConfigurationContract is the
-existing compiler plus native adapter applied to the concrete assembled schema.
-The two generated results are native lazy SLOTS, not eager top-level def calls
+existing compiler plus runtime adapter applied to the concrete assembled schema.
+The two generated results are runtime lazy SLOTS, not eager top-level def calls
 to the compiler. Inspecting/publishing the interface does not demand the output
 Contract. No root scope access may perform acquisition/builds. Canonical typed publication
 must check the shared generation/coverage/source context before exposing an

@@ -5,10 +5,7 @@
 ;;; Boundary: binds resolved feature requirements to adapter and projection objects.
 ;;; Invariant: binding consumes declared capabilities without widening requested policy.
 (import (only-in :std/list/list fold filter-map)
-        (only-in :clan/poo/object
-                 .ref
-                 object<-alist
-                 object?)
+        (runtime: :clan/poo/object)
         :yuanxu/composition/roles
         :yuanxu/feature-system/capability-model
         :yuanxu/feature-system/policy-strategy-binding

@@ -55,7 +55,7 @@ This RFC does not define:
 No terminal outcome resumes itself.
 
 All work after a terminal outcome begins with a coordinator decision over pure
-POO-native values:
+POO values:
 
 #+begin_example
 PriorOutcomeReference
@@ -91,7 +91,7 @@ start a new evaluation.
 
 * RecoveryProposal
 
-=RecoveryProposal= is a native POO object.  It carries:
+=RecoveryProposal= is a POO object.  It carries:
 
 - the prior outcome reference;
 - the requested recovery relation;
@@ -409,7 +409,7 @@ admitted cache.
 Ordinary user composition does not expose admission receipts, fence claims, or
 lineage construction.
 
-Advanced extensions use native =gerbil-poo= objects and prototype operations
+Advanced extensions use runtime =gerbil-poo= objects and prototype operations
 for:
 
 - recovery proposal specialization;
@@ -451,12 +451,12 @@ The coordinator fails closed on:
 - [X] Retry preserves demand identity only when semantic inputs are unchanged.
 - [X] Replay remains isolated and cannot replace admitted history.
 - [X] Lineage is append-only and typed.
-- [X] The public algebra remains POO-native and functional.
+- [X] The public algebra remains POO and functional.
 
 * Conformance checklist
 
 - [ ] ASP emits parser-owned RFC and implementation owners.
-- [ ] Recovery proposals are native =gerbil-poo= objects.
+- [ ] Recovery proposals are runtime =gerbil-poo= objects.
 - [ ] Resume, retry, replay, duplicate delivery, and finalization recovery are
   represented by distinct typed relations.
 - [ ] Every new evaluation obtains a fresh execution identity.
@@ -495,7 +495,7 @@ implementation completion, not owner selection.
 - [[file:45-51-live-evaluation-context-narrowing-and-resource-conservation.org][45-51 - Live Evaluation Context Narrowing and Resource Conservation]]
 - [[file:45-87-live-continuation-capabilities-continuable-conditions-and-portable-suspension-boundary.org][45-87 - Live Continuation Capabilities, Continuable Conditions, and Portable Suspension Boundary]]
 - [[file:45-88-gerbil-gambit-continuation-and-condition-runtime-correspondence.org][45-88 - Gerbil/Gambit Continuation and Condition Runtime Correspondence]]
-- [[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89 - POO-Native Control Condition, Decision, and Capability Algebra]]
+- [[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89 - POO-Runtime Control Condition, Decision, and Capability Algebra]]
 - [[file:45-103-precedence-conflict-debugging-inspection-explanation-simulation-and-continuable-recovery.org][45-103 - Precedence Conflict Debugging, Inspection, Explanation, Simulation, and Continuable Recovery]]
 - [[file:45-106-debug-evaluation-context-narrowing-budget-redaction-and-cache-isolation-contract.org][45-106 - Debug Evaluation Context Narrowing, Budget, Redaction, and Cache Isolation Contract]]
 - [[file:45-107-debug-evaluation-outcome-context-transition-and-exactly-once-reconciliation-contract.org][45-107 - Debug Evaluation Outcome, Context Transition, and Exactly-Once Reconciliation Contract]]

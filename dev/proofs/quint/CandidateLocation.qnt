@@ -24,7 +24,7 @@ module CandidateLocationModel {
     s' = s.with("phase", if (allowed) 1 else 3).with("held", allowed)
       .with("enteredStale", allowed and not(current(s.dirty, actual)))
   }
-  action nativeRole = {
+  action runtimeRole = {
     nondet changed = selected.union(Set(-1)).oneOf()
     all {s.phase == 1,
       val dirty = if (changed == -1) s.dirty else s.dirty.union(Set(changed))
@@ -44,7 +44,7 @@ module CandidateLocationModel {
   action terminate = all {s.phase < 3,
     s' = s.with("phase", 3).with("visible", false).with("held", false)}
   action terminal = all {s.phase == 3, s' = s}
-  action step = any {locate, nativeRole, commit, terminate, terminal}
+  action step = any {locate, runtimeRole, commit, terminate, terminal}
   val LocalEntry = not(s.enteredStale)
   val LocalReturn = not(s.returnedStale)
   val FinalCurrent = not(s.visible) or current(s.dirty, selected)

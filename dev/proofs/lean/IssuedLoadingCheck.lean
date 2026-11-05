@@ -16,8 +16,8 @@ def checkIssuedRow (j : Json) : Except String (String × Bool) := do
   let allowed ← a[7]!.getBool?
   let consumed ← a[8]!.getNat?
   unless allows s s' u u' p p' == allowed do
-    throw s!"native issued-loading/model mismatch: {label}"
-  unless allowed || consumed == 0 do throw s!"rejected native load consumed code: {label}"
+    throw s!"runtime issued-loading/model mismatch: {label}"
+  unless allowed || consumed == 0 do throw s!"rejected runtime load consumed code: {label}"
   if label == "private-snapshot-late-public-change" then
     unless consumed > 0 && !(← a[9]!.getBool?) do
       throw "late public replacement limitation missing"
@@ -29,13 +29,13 @@ def checkIssuedTrace (j : Json) : Except String Unit := do
   unless rows.map Prod.fst == ["record-and-binary", "higher-object", "after-resolution",
       "dependency-at-handoff", "after-snapshot", "private-copy-before-consumption",
       "private-snapshot-late-public-change", "cached-valid", "cached-record-replacement"] do
-    throw "native issued loading coverage mismatch"
+    throw "runtime issued loading coverage mismatch"
   unless rows.map Prod.snd == [false, false, false, false, false, false, true, true, false] do
-    throw "native issued loading decision coverage mismatch"
+    throw "runtime issued loading decision coverage mismatch"
 
 def checkLegacyDispatch (j : Json) : Except String Unit := do
   let a ← j.getArr?
-  unless a.size == 2 do throw "legacy native dispatch observation needs two fields"
+  unless a.size == 2 do throw "legacy runtime dispatch observation needs two fields"
   unless (← a[0]!.getBool?) && !(← a[1]!.getBool?) do
     throw "expected observed original-SDK cached return without issuer checking"
 
@@ -53,4 +53,4 @@ def main (args : List String) : IO UInt32 := do
       | .ok _ =>
         IO.println "ISSUED-LOADING-CORRESPONDENCE-OK: 9 controls; original SDK dispatch bypass retained"
         return 0
-  | _ => IO.eprintln "expected native issued-loading trace path"; return 2
+  | _ => IO.eprintln "expected runtime issued-loading trace path"; return 2

@@ -475,7 +475,7 @@ Proposed Core work: association preservation, trusted selection snapshot binding
 currentness consumption and selected-service integration.
 
 The Type/object, Schema/AWS factory and Core adapter blocks were extracted into
-private test modules and exercised by native Scheme controls. They remain
+private test modules and exercised by Scheme controls. They remain
 unpublished discussion APIs. The tests do not close live-provider conversion,
 automatic association/discovery, production snapshot currentness, Loader or
 formal-correspondence gates. See the [[file:12.05-isolated-scheme-validation.org][validation record]] and

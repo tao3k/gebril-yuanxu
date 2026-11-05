@@ -94,7 +94,7 @@ No action overwrites, deletes, or mutates its source generation.  Even
 an =abort= action produces terminal successor evidence so that the
 failure and the authorized response remain independently inspectable.
 
-Project extensions MAY add recovery actions only as native POO values
+Project extensions MAY add recovery actions only as POO values
 with explicit capability, Contract, lineage, and coordinator execution
 semantics.  They MUST NOT add host-language conditionals to the ordinary
 composition interface.
@@ -172,10 +172,10 @@ Ordinary composition remains:
 The ordinary interface does not expose continuation handling, recovery
 conditionals, trace mutation, or telemetry publication.
 
-Advanced recovery extension uses native =gerbil-poo= objects,
+Advanced recovery extension uses runtime =gerbil-poo= objects,
 prototypes, slots, composition, and dispatch.  A hygienic macro may be
 admitted only when a later RFC proves that it projects necessary syntax
-or phase semantics onto this native POO model.
+or phase semantics onto this POO model.
 
 * Implementation admission checklist
 
@@ -209,7 +209,7 @@ or phase semantics onto this native POO model.
 
 - [[file:45-120-05-profile-policy-authority-bounds-and-coordinator-execution.org][Profile Policy Authority Bounds and Coordinator Execution]]
 - [[file:45-120-03-module-debug-observability-recovery-and-telemetry-plane-governance.org][Module Debug, Observability, Recovery, and Telemetry Plane Governance]]
-- [[file:45-120-01-poo-native-type-and-contract-prototype-foundation.org][POO-Native Type and Contract Prototype Foundation]]
+- [[file:45-120-01-poo-type-and-contract-prototype-foundation.org][POO-Runtime Type and Contract Prototype Foundation]]
 - [[file:45-120-02-module-local-functional-kernel-governance.org][Module-Local Functional Kernel Governance]]
 - [[file:44-current-project-programming-style.org][Current Project Programming Style]]
 - [[https://github.com/mighty-gerbils/gerbil-poo/tree/1c3225637525400341a09e958296962c10184ead][Pinned gerbil-poo source]]

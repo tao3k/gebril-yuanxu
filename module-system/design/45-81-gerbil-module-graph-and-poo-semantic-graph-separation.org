@@ -117,7 +117,7 @@ flowchart LR
 - [X] =graphIdentitiesRemainDistinct=
 - [X] =profileSetChangeCreatesNewSemanticGraphIdentity=
 - [X] =semanticPolicyChangeCreatesNewGraphIdentity=
-- [ ] Project the semantic graph through native =gerbil-poo=.
+- [ ] Project the semantic graph through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.ModuleSystem.Graph.Roles=.  It
@@ -240,7 +240,7 @@ The complete lifecycle has six phases.
 
 ** Expansion phase
 
-Hygienic macros expand to ordinary POO-native and functional code.
+Hygienic macros expand to ordinary POO and functional code.
 
 Expansion must not query live runtime evidence or evaluate the global POO fixed
 point.
@@ -308,10 +308,10 @@ POO cycles must not be built through:
 - import-time registries;
 - ordinary raw =lambda (self super)= compute hooks.
 
-Semantic cycles use verified native =gerbil-poo= object, prototype, and demand
+Semantic cycles use verified runtime =gerbil-poo= object, prototype, and demand
 semantics.
 
-Exact native operator spelling remains deferred until verified against the real
+Exact runtime operator spelling remains deferred until verified against the real
 library.
 
 * Graph identities
@@ -422,7 +422,7 @@ The user does not encode semantic cycles through module imports.
 11. Macros do not query live semantic or runtime state.
 12. Nested B2B2C cycles remain semantic SCCs.
 13. Diagnostics identify exact graph and phase.
-14. Public semantic extension remains POO-native.
+14. Public semantic extension remains POO.
 
 * Implementation checklist
 
@@ -434,7 +434,7 @@ The user does not encode semantic cycles through module imports.
 - [ ] Prevent loaded-module, package, filesystem, and registry discovery.
 - [ ] Define structural closure independently from module loading.
 - [ ] Define semantic SCC evaluation through Agentic AI Lab.
-- [ ] Verify native cycle representation against =gerbil-poo=.
+- [ ] Verify runtime cycle representation against =gerbil-poo=.
 - [ ] Reject mutable placeholder and import-order cycle construction.
 - [ ] Define separate module-graph and semantic-graph identities.
 - [ ] Enforce macro phase separation from live evaluation.

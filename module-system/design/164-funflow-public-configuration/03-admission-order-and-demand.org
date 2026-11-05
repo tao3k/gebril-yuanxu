@@ -10,7 +10,7 @@ The [[file:05-field-contracts-and-capabilities.org][field Contract declarations 
 [[file:06-admission-algorithms.org][selector/obligation/guard algorithms]] now supply the concrete design behind
 this lifecycle. The complete case retains its upstream defaults and both user
 layers in [[file:02-complete-cicd-case.org][module 02]]. These domain definitions are still proposed, not installed.
-The [[file:07-admission-source.org][complete native Scheme design source]] now expands every obligation,
+The [[file:07-admission-source.org][complete Scheme design source]] now expands every obligation,
 inherited adapter and internal helper; no algorithm table substitutes for a
 missing function body. It remains unexecuted domain design code.
 
@@ -66,7 +66,7 @@ need the role migration specified there.
   '("gerbil" "build"))
 #+end_src
 
-Native construction may succeed: the object still inherits commands and
+Runtime construction may succeed: the object still inherits commands and
 has an additional commmands slot. The proposed closed Check preflight
 operates after the proposed assignment lowering; the current dotted parser does
 not yet accept this form. Once lowered, domain admission
@@ -97,7 +97,7 @@ schema can detect every semantic naming mistake.
 
 | Meaning | Authority and rule |
 |---------+--------------------|
-| Prototype precedence | native C4 and native slot operators; inspectable ancestry, not execution order |
+| Prototype precedence | runtime C4 and runtime slot operators; inspectable ancestry, not execution order |
 | Field refinement | =>.+ inherits the nested object; ordinary leaf assignment replaces a value; => performs an explicit pure transformation |
 | Selected Check list | selected-checks is an ordered unique value, not all available Check slots and not an inheritance-side effect |
 | Execution dependency | dependency-refs determines the DAG; selection position is only a stable tie-break among otherwise ready nodes |
@@ -108,33 +108,33 @@ first. The planner obeys dependencies. Duplicate names, missing dependencies
 and cycles reject admission. This ordering policy must be implemented/qualified
 in the future adapter; it is not a claim about every current scheduler.
 
-When two Profiles own the same nested module slot, native multiple inheritance
+When two Profiles own the same nested module slot, runtime multiple inheritance
 does not automatically deep-union both subtrees. Upstream must publish explicit
-native nested refinements that preserve the intended contributions. Check
+runtime nested refinements that preserve the intended contributions. Check
 membership is always explicit in the selected Pipeline. For the general
 Gerbil/Rust case, keep distinct paths gerbil-scheme.build and rust.build;
 flatten only with qualified identities, never both as an unqualified build.
 
-An explicit descendant override is an intentional native choice. Two peer
+An explicit descendant override is an intentional runtime choice. Two peer
 contributions with incompatible source identities at the same module binding
 must fail source admission; C4 cannot authenticate one as the winner. A future
 composition audit should report competing peer definitions of an ordinary
 business leaf unless the descendant explicitly resolves it. This requires
 origin data and is proposed policy, not a change to C4 or a proven detector.
-Until that adapter exists, document native precedence honestly rather than
+Until that adapter exists, document runtime precedence honestly rather than
 claiming Nickel-like equal-priority conflict detection.
 
 At projection the canonical identity is a tuple including selected Scenario
 instance, actual module source/occurrence, Profile name and Check slot name.
-Local check-name/durable-task-id values remain visible in the native objects.
+Local check-name/durable-task-id values remain visible in the runtime objects.
 The adapter must qualify or reject collisions before flattening into today's
 symbol-based consumer protocol. Symbol concatenation, an alias named ff, or a
 user-editable metadata key cannot establish that identity. The exact wire-name
 encoding remains an adapter decision with collision/round-trip tests required.
 
-* Native receiver, caching and final effective Checks
+* Runtime receiver, caching and final effective Checks
 
-[[file:11-direct-path-assignment-and-refinement.org][Module 11]] adds the proposed ordinary dotted-assignment surface and native
+[[file:11-direct-path-assignment-and-refinement.org][Module 11]] adds the proposed ordinary dotted-assignment surface and runtime
 shared-prefix lowering. It changes no admission rule here. The existing adapter
 accepts dotted =>.+ only; the new assignment surface remains unimplemented.
 
@@ -142,26 +142,26 @@ The existing [[file:../164-pipeline-receiver-cache-validation.org][receiver/cach
 lexical checks: (list build test package): force the parent Pipeline and its
 Check list, then derive a child with three Check refinements and a Pipeline
 refinement. The child's list contains the child's final Check objects; parent
-and sibling caches remain independent. The [[file:../../../../t/funflow-native-publication-test.ss][real local publication tests]] cover
+and sibling caches remain independent. The [[file:../../../../t/funflow-runtime-publication-test.ss][real local publication tests]] cover
 those effective values and eq? identities through the current list adapter.
 
-The proposed generalized form retains the same native receiver relationship:
+The proposed generalized form retains the same runtime receiver relationship:
 
 #+begin_src scheme
-;; Inside the native Profile with explicit receiver effective-profile:
+;; Inside the runtime Profile with explicit receiver effective-profile:
 pipeline:
 (.o (:: @ (.get ff prototypes pipeline))
   selected-checks: '(build test package)
   checks: (funflow-selected-checks effective-profile selected-checks))
 #+end_src
 
-effective-profile is lexically bound by the outer native object declaration,
+effective-profile is lexically bound by the outer runtime object declaration,
 and selected-checks by the nested Pipeline. They are evaluated for that effective
 receiver. A cached parent Pipeline is not a shared mutable accumulator into
 which a child is patched. The child's inherited getter computes with the child
 receiver; the child's checks getter resolves the child's selected values.
 
-The product resolver is proposed. In this design turn a domain-free native
+The product resolver is proposed. In this design turn a domain-free runtime
 probe also passed ten assertions: an explicitly named outer receiver, a nested
 selected-checks slot, four grouped path refinements, an added smoke name,
 effective eq? identities, warm repeats, unchanged parent cache and a frozen-list
@@ -180,11 +180,11 @@ the parent remains the negative control:
   {checks: saved-parent-checks})
 #+end_src
 
-That is legal native authoring but fails the proposed Pipeline identity
+That is legal runtime authoring but fails the proposed Pipeline identity
 obligation. It cannot become correct through lazy registration or by validating
 the saved Checks individually. A future plan cache must key the effective
 receiver, selection, schema/protocol association and source revision context,
-not just pipeline-name. Do not introduce a global cache to defeat native
+not just pipeline-name. Do not introduce a global cache to defeat runtime
 receiver-local semantics.
 
 * Demand boundary and cost
@@ -193,21 +193,21 @@ receiver-local semantics.
 |------+----------------+------------------|
 | Source/bootstrap availability | current static definition imports | no claim of lazy source-file imports |
 | Bounded use-module | evaluate source value once, object? check, lexical alias | all module slot values, Profile factories, field admission |
-| Scenario construction/refinement | native object declarations and path-prefix lowering | Checks, Pipeline values, Contract traversal and execution |
+| Scenario construction/refinement | runtime object declarations and path-prefix lowering | Checks, Pipeline values, Contract traversal and execution |
 | Read one known Profile | its factory/prototype view | sibling Profiles and leaf Check fields |
 | Inspect declared field names | schema/MOP slot metadata | unrelated getter values; computed defaults only if explicitly requested |
 | Select Pipeline members | requested name list and those Check objects | unrelated modules, Profiles and unselected Checks |
 | Admit selected closure | selected fields, contracts, graph and required capability evidence | commands, secret resolution, runtime Session |
 | Project admitted plan | final selected objects and consumer data | execution until explicit handoff |
 
-Full native responsibility admission may force every responsibility it visits.
+Full runtime responsibility admission may force every responsibility it visits.
 That is intentional at a selected complete boundary. Metadata-only inspection
 must use a different pure inspection path rather than call full admission and
 label it lazy. User-defined getters can still diverge or perform effects:
 source-role governance, trusted owners and effect tests are needed. POO laziness
 alone is not totality, effect isolation or a latency guarantee.
 
-For thousands of modules, measure source-import costs separately from native
+For thousands of modules, measure source-import costs separately from runtime
 slot demand. A 10000-entry catalog must not be enumerated to resolve one known
 selected path. First selected-plan admission costs at least its K selected
 Checks/edges and demanded attributes. It is impossible to promise zero initial
@@ -218,11 +218,11 @@ needed, not a deferred whole-catalog spike.
 
 | Item | Current state |
 |------+---------------|
-| Native inheritance, receiver-local caching and lexical slots | existing; fixed-list controls executed previously |
+| Runtime inheritance, receiver-local caching and lexical slots | existing; fixed-list controls executed previously |
 | Generalized selected-name receiver pattern | domain-free ten-assertion probe executed; [[file:04-selection-probe.org][full source and evidence boundary]] |
 | Bounded use-module and grouped dotted path lowering | implemented locally; aliases do not become global names |
 | Prototype/Profile local getter split | implemented locally; static imports remain |
-| Core native responsibilities/obligations and CLOS declarations/bundles | available; declaration alone is not domain integration or registration |
+| Core runtime responsibilities/obligations and CLOS declarations/bundles | available; declaration alone is not domain integration or registration |
 | Closed Funflow Check schema and field metadata discovery | designed here; not implemented |
 | Structural field predicates and narrow recipe capabilities | concrete declarations in module 05; not installed or consumer-qualified |
 | FunflowProfile., selected-checks and named pure resolver | designed here; not implemented |
@@ -230,12 +230,12 @@ needed, not a deferred whole-catalog spike.
 | Complete obligation/adapter/helper Scheme bodies | module 07 documentation source only; reader checks are not execution |
 | Selected-only admission, qualified diagnostics and identity projection | designed here; not implemented |
 | Complete input/report/decoder capability Contracts | consumer audit and domain definitions still required |
-| Native user-root source-role policy alignment | unresolved; current gates must be reconciled explicitly before product claims |
+| Runtime user-root source-role policy alignment | unresolved; current gates must be reconciled explicitly before product claims |
 | Authenticated publication, Loader cycle detection and lazy file loading | outside this change |
 
 Required future controls:
 
-- Compare four simultaneous path refinements with their grouped native
+- Compare four simultaneous path refinements with their grouped runtime
   expansion; assert effective object identities as well as values.
 - Cache parent checks first, extend the child with smoke, then select it. Assert
   child identities, unchanged parent/sibling values and warm-repeat identity.

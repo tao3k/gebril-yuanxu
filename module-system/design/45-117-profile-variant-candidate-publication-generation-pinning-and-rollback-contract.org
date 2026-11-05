@@ -490,7 +490,7 @@ The user defines immutable composition values:
     application-production))
 #+end_src
 
-Publication consumes the bound composition value through POO-native candidate
+Publication consumes the bound composition value through POO candidate
 and intent objects.
 
 The ordinary composition form contains no:
@@ -542,7 +542,7 @@ The system fails closed on:
 
 - [ ] ASP emits parser-owned implementation owners for candidate publication.
 - [ ] Candidate, validation, publication intent, and transition receipts are
-  native POO objects.
+  POO objects.
 - [ ] Head commit enforces expected revision and exact scope.
 - [ ] Concurrent stale commits return typed conflict.
 - [ ] Evaluation contexts record generation and head-transition identities.

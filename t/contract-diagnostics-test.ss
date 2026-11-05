@@ -9,8 +9,8 @@
 (export contract-diagnostics-test)
 
 (def contract-diagnostics-test
-  (test-suite "Native diagnostics at the contextual admission boundary"
-    (yuanxu-test-case "metadata contracts use native predicates without empty callbacks"
+  (test-suite "Runtime diagnostics at the contextual admission boundary"
+    (yuanxu-test-case "metadata contracts use runtime predicates without empty callbacks"
       (def Contract (yuanxu-predicate-contract 'test/scope (o?/slots '(payload))))
       (def scope (.o payload: (error "unselected scope payload forced")))
       (check-equal? (.get (.call Contract .admit scope #f) accepted?) #t)
@@ -36,7 +36,7 @@
       (check-equal? (.get evidence accepted?) #t)
       (check-equal? (eq? (.get evidence admission-contract) Contract) #t)
       (check-equal? (.get evidence candidate port) 5432))
-    (yuanxu-test-case "native diagnostics become the same rejection facts"
+    (yuanxu-test-case "runtime diagnostics become the same rejection facts"
       (def issue (.o kind: 'port-conflict path: '(port)))
       (.def (Contract @ SourceAdmissionContract.)
         identity: 'test/port
@@ -47,7 +47,7 @@
       (check-equal? (.get evidence accepted?) #f)
       (check-equal? (eq? (car (.get evidence diagnostics)) issue) #t)
       (check-equal? (eq? (car (.get evidence classification diagnostics)) issue) #t))
-    (yuanxu-test-case "normalized refusal retains the checked root and native cause"
+    (yuanxu-test-case "normalized refusal retains the checked root and runtime cause"
       (def Port (IntegerRange min: 1 max: 65535))
       (.def (Increment @ Port) .validate: (lambda (value) (+ value 1)))
       (def issue (.o kind: 'normalized-port path: '(port)))
@@ -82,7 +82,7 @@
         .obligations: (lambda (_value _context) (raise typed-cause)))
       (check-equal? (eq? typed-cause
                         (with-catch values (cut .call Contextual .admit (.o) #f))) #t))
-    (yuanxu-test-case "a child prepares its own native refinement after a warm parent"
+    (yuanxu-test-case "a child prepares its own runtime refinement after a warm parent"
       (def Shape (.cc ObjectContract. responsibilities: (.o port: (IntegerRange min: 1 max: 65535))))
       (.def (Parent @ SourceAdmissionContract.) identity: 'test/parent value-contract: Shape)
       (check-equal? (.get (.call Parent .admit (.o port: 5432) #f) accepted?) #t)
@@ -114,7 +114,7 @@
       (check-equal? (.get evidence accepted?) #f)
       (check-equal? (eq? (.get child candidate) (.get candidate child)) #t)
       (check-equal? (eq? (car (.get child diagnostics)) issue) #t)
-      ;; A contextual Contract used as a native field Type must not expose a
+      ;; A contextual Contract used as a runtime field Type must not expose a
       ;; shape-only .diagnose that bypasses its own admission obligations.
       (def Shape (.cc ObjectContract. responsibilities: (.o child: Child)))
       (check-exception (validate Shape candidate) TypeError?))

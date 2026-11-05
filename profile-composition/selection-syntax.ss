@@ -3,9 +3,9 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Hygienic bounded native scopes and indexed Core Module Profile selection.
+;;; Hygienic bounded runtime scopes and indexed Core Module Profile selection.
 
-(import (only-in :clan/poo/object .ref)
+(import (runtime: :clan/poo/object)
         (only-in :yuanxu/profile-composition/profile-bundle
                  yuanxu-select-module-profiles)
         (only-in :yuanxu/profile-composition/bindings yuanxu-module-scope)

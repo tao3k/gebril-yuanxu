@@ -15,8 +15,8 @@ print("QUINT-PREPARE backend=0.62.1 (not a proof receipt)", flush=True)
 with tempfile.TemporaryDirectory(prefix="core-quint-prepare-") as directory:
     config = Path(directory) / "backend.json"
     config.write_text('{"workers":"1","maxHeap":"-Xmx1G"}\n')
-    subprocess.run([quint, "verify", str(models / "NativeSemanticQuery.qnt"),
-        "--main", "NativeSemanticQuery", "--backend", "tlc", "--apalache-version", "0.62.1",
+    subprocess.run([quint, "verify", str(models / "RuntimeSemanticQuery.qnt"),
+        "--main", "RuntimeSemanticQuery", "--backend", "tlc", "--apalache-version", "0.62.1",
         "--invariant", "safety", "--verbosity", "3", "--tlc-config", str(config)],
         cwd=directory, check=True, timeout=60)
 print("QUINT-PREPARE-OK (not a proof receipt)", flush=True)

@@ -103,7 +103,7 @@ flowchart LR
 - [X] =operationalRandomnessCannotChangeSemanticResult=
 - [X] =operationalRandomnessCannotChangeSemanticCacheKey=
 - [X] =entropyDeterminismConflictRequiresQuarantine=
-- [ ] Project entropy and derivation policy through native =gerbil-poo=.
+- [ ] Project entropy and derivation policy through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.Modules.Funflow.Entropy=.  It imports
@@ -125,7 +125,7 @@ Three distinct roles remain separate:
 
 * POO semantic ownership
 
-Entropy and derivation policy are ordinary higher-order POO objects. Native
+Entropy and derivation policy are ordinary higher-order POO objects. Runtime
 prototype composition defines:
 
 - deterministic derivation domains;
@@ -136,7 +136,7 @@ prototype composition defines:
 - replay policy;
 - operational-choice constraints.
 
-The public extension interface remains POO-native. Randomness, seed, fallback,
+The public extension interface remains POO. Randomness, seed, fallback,
 and sampling must not become an unstructured macro token DSL.
 
 Pure policy may consume an admitted immutable entropy observation. It must not
@@ -434,7 +434,7 @@ The implementation must distinguish at least:
 12. Evidence-affecting sampling declares policy, entropy, and coverage.
 13. Fallback that changes semantics creates a new proposal.
 14. Divergent same-cut results fail closed.
-15. Public entropy policy extension remains POO-native.
+15. Public entropy policy extension remains POO.
 
 * Implementation checklist
 

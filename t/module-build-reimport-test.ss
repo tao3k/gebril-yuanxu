@@ -21,7 +21,7 @@
 (def module-build-reimport-test
   (if root
     (test-suite "Cross-process rebuild in the same compiled and cleaned state"
-      (test-case "native resolver distinguishes a residual loader from the source module"
+      (test-case "runtime resolver distinguishes a residual loader from the source module"
         (def lib (path-expand "lib" (getenv "GERBIL_PATH")))
         (def source (path-expand "object-family/syntax.ss" root))
         (def loader (path-expand "yuanxu/object-family/syntax.scm" lib))
@@ -71,8 +71,11 @@
           (def current! (eval-syntax '(.get yuanxu.init.exports admit-current)))
           (def retained (eval-syntax 'core-spec))
           ;; Fail before any compile if the fixture is accidentally a full build.
-          (check-equal? retained '("prelude" "utilities/algorithms" "object-types/contracts" "object-types/ports" "core-spec"))
-          (unless (equal? retained '("prelude" "utilities/algorithms" "object-types/contracts" "object-types/ports" "core-spec"))
+          (def expected-retained
+            '("prelude" "module-system/selection/init-syntax" "utilities/algorithms"
+              "object-types/contracts" "object-types/ports" "core-spec"))
+          (check-equal? retained expected-retained)
+          (unless (equal? retained expected-retained)
             (error "same-state regression requires the bounded JsonSchema fixture"))
           (def targets (spec retained))
           (def names (map (lambda (entry) (if (string? entry) entry (cadr entry))) targets))

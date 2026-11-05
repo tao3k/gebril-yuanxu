@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Existing Observability memory policies and Case watchdog, isolated from
 ;;; optional typed printers and slot tracing. No separate runner or sampler.
-(import (only-in :clan/poo/object .o .ref)
+(import (runtime: :clan/poo/object)
         (only-in :yuanxu/ops/progress current-execution-progress execution-progress-status
                  execution-progress-idle-milliseconds execution-progress-limit)
         (only-in :clan/poo/mop validate)
@@ -183,7 +183,7 @@
 
 ;;; The monitored form is the asynchronous debug boundary: the observed
 ;;; operation runs in a Scheme thread while its owner samples from the calling
-;;; thread. Native POO cycle failures propagate immediately; non-returning
+;;; thread. POO cycle failures propagate immediately; non-returning
 ;;; operations remain subject to the monitor's memory and duration limits.
 ;;; The test entrypoint applies Gambit's heap boundary declaratively before the
 ;;; suites load; this monitor adds phase-attributed growth evidence in-band.
@@ -191,7 +191,7 @@
 ;; call-with-yuanxu-debug-memory-monitor
 ;;   : (-> YuanxuDebugMemoryPolicy Symbol (-> Object) port: OutputPort emit?: Boolean (values Object YuanxuDebugMemoryReceipt))
 ;;   | doc m%
-;;       Run one development operation in a native Scheme worker while the
+;;       Run one development operation in a Scheme worker while the
 ;;       caller samples bounded heap counters and enforces its POO policy.
 ;;       The specialized timeout branch preserves the worker's lexical result
 ;;       or exception and terminates it only after a fail-closed anomaly.
@@ -301,7 +301,7 @@
         (unless joined?
           (thread-terminate! worker))))))
 
-;;; Native std/test checks use a continuation installed by the harness.  The
+;;; Runtime std/test checks use a continuation installed by the harness.  The
 ;;; Case body must therefore remain on the harness thread.  Only the sampler
 ;;; runs on a separate Scheme thread and interrupts the owner on rejection.
 ;;; Heap counters remain process-wide; this is not a thread-local heap quota.

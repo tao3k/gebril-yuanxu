@@ -1,12 +1,12 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Native authoring Interface; branding and source policy are consumer inputs.
-(import (only-in :clan/poo/object .o .ref .slot? object?)
+;;; Runtime authoring Interface; branding and source policy are consumer inputs.
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/type Record)
         :yuanxu/module-system/config
         (only-in :yuanxu/module-system/authoring/roles
-                 yuanxu-default-module-authoring-profile))
+                 make-default-module-authoring-profile yuanxu-default-module-authoring-profile))
 (export yuanxu-module-interface-prototype yuanxu-module-interface
         yuanxu-module-interface? yuanxu-module-interface-id
         yuanxu-module-interface-authoring)
@@ -18,7 +18,7 @@
       authoring: (yuanxu-default-module-authoring-profile)
       metadata: '()))
 (def (yuanxu-module-interface id schemas metadata
-                                 authoring: (authoring (yuanxu-default-module-authoring-profile)))
+                                 authoring: (authoring (make-default-module-authoring-profile)))
   (make-module-interface yuanxu-module-interface-prototype id schemas metadata authoring))
 (def (yuanxu-module-interface? value)
   (and (object? value) (.slot? value 'module-interface?)

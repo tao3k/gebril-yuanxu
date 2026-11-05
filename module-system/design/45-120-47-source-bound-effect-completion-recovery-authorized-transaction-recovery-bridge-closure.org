@@ -510,7 +510,7 @@ is not replaced by the successful independent receipt.
   seconds.
 
 The five slowest entries remain the existing proof-vector, installed-wheel,
-native CFFI, and AXLE CLI tests.  The new recovery bridge is not their timing
+runtime CFFI, and AXLE CLI tests.  The new recovery bridge is not their timing
 owner.
 
 ** Org, Typst, and Mermaid

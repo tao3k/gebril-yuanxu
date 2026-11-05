@@ -5,10 +5,7 @@
 
 ;;; Boundary: extension contribution coalescing and single-pass resolution.
 
-(import (only-in :clan/poo/object
-                 .o
-                 .ref
-                 object?)
+(import (runtime: :clan/poo/object)
         :yuanxu/graph/contribution
         :yuanxu/graph/payload-operations
         :yuanxu/graph/operation)
@@ -485,7 +482,7 @@
 ;; yuanxu-graph-resolve
 ;;   : (-> YuanxuGraph [PooGraphContribution] PooGraphResult)
 ;;   | doc m%
-;;       Apply the ordered operation algebra exactly once. Native
+;;       Apply the ordered operation algebra exactly once. Runtime
 ;;       operation prototypes own behavior; Yuanxu does not run a shadow
 ;;       evaluator or local fixed-point engine.
 ;;

@@ -53,7 +53,7 @@ Generic structural contracts and Type adaptation should be proposed upstream.
 AWS/Kubernetes/CI/CD field and relationship contracts belong to their libraries.
 Core may retain an admission adapter over those descriptors and existing receipts.
 The final public names and whether the current base class survives are migration
-decisions, not assumptions frozen by these examples. Do not add Native to names.
+decisions, not assumptions frozen by these examples. Do not add Runtime to names.
 
 ** Counter-question and acceptance criterion
 
@@ -134,7 +134,7 @@ alone distinguish our proposal. See [[https://www.kcl-lang.io/docs/0.12/referenc
 Our target is one extensible object/type boundary spanning data configuration,
 module APIs and executable services, with context-bound admission of selected
 contributions. An AWS Profile can be consumed by ordinary functions and refined
-as a POO object while its constraints remain discoverable. Native higher-order
+as a POO object while its constraints remain discoverable. Runtime higher-order
 functions, macro hygiene and the MOP can reduce library maintenance work; they
 must not require simple configuration authors to write metaprograms.
 

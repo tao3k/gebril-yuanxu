@@ -40,37 +40,37 @@
 (def typo-result (admit-selected-profile FixturePolicy Typo typo-context))
 (check 'typo-rejected (not (.get typo-result accepted?)))
 ;; Inspect the genuine Core rejection nested inside the adapter's failure.
-(def typo-native (.get (car (.get typo-result obligation-evidence)) evidence))
-(def typo-child (entry-for typo-native 'smkoe))
-(check 'typo-native-missing-role (not (.get typo-child accepted?)))
+(def typo-runtime (.get (car (.get typo-result obligation-evidence)) evidence))
+(def typo-child (entry-for typo-runtime 'smkoe))
+(check 'typo-runtime-missing-role (not (.get typo-child accepted?)))
 (check 'typo-not-filtered
   (eq? (.get (car (.get typo-child diagnostics)) kind) 'missing-responsibility))
 (report 'typo-admitted (.get typo-result accepted?))
-(report 'typo-native-diagnostic (.get (car (.get typo-child diagnostics)) kind))
+(report 'typo-runtime-diagnostic (.get (car (.get typo-child diagnostics)) kind))
 
-;; Deliberately faulty Contract override: run REAL native admission first, then
+;; Deliberately faulty Contract override: run REAL runtime admission first, then
 ;; corrupt only its evidence list. This is an internal fault, not user input.
 (.def (OmittingTemplate @ SelectedChecksContract)
   .admit:
   (lambda (candidate context)
     (let* ((clean (.cc SelectedChecksContract
                     'responsibilities (.get @ responsibilities)))
-           (native (yuanxu-contract-admit clean candidate context)))
-      (.cc native 'responsibility-evidence
+           (runtime (yuanxu-contract-admit clean candidate context)))
+      (.cc runtime 'responsibility-evidence
         (filter (lambda (entry) (not (eq? (.get entry responsibility) 'smoke)))
-                (.get native responsibility-evidence))))))
+                (.get runtime responsibility-evidence))))))
 (.def (FaultyPolicy @ FixturePolicy) selected: OmittingTemplate)
 (def faulty-descriptor
   (project-selected-contract FaultyPolicy (.get Release pipeline selected-checks)))
-(def incomplete-native (yuanxu-contract-admit faulty-descriptor Release context))
-(check 'fault-has-stale-accepted-header (.get incomplete-native accepted?))
+(def incomplete-runtime (yuanxu-contract-admit faulty-descriptor Release context))
+(check 'fault-has-stale-accepted-header (.get incomplete-runtime accepted?))
 (check 'fault-only-three-child-receipts
-  (= (length (.get incomplete-native responsibility-evidence)) 3))
+  (= (length (.get incomplete-runtime responsibility-evidence)) 3))
 (check 'missing-evidence-coverage-rejected
-  (not (covers-responsibilities? faulty-descriptor Release context incomplete-native)))
+  (not (covers-responsibilities? faulty-descriptor Release context incomplete-runtime)))
 (def missing-result (admit-selected-profile FaultyPolicy Release context))
 (check 'end-to-end-missing-evidence-rejected (not (.get missing-result accepted?)))
-(report 'corrupt-header-accepted (.get incomplete-native accepted?))
+(report 'corrupt-header-accepted (.get incomplete-runtime accepted?))
 (report 'omitted-smoke-admitted (.get missing-result accepted?))
 
 ;; An old parent Check receipt cannot stand in for the final child's receipt.
@@ -86,9 +86,9 @@
 (def frozen-context (.o target: Frozen))
 (def frozen-result (admit-selected-profile FixturePolicy Frozen frozen-context))
 (check 'stale-parent-list-rejected (not (.get frozen-result accepted?)))
-(def frozen-native (.get (car (.get frozen-result obligation-evidence)) evidence))
+(def frozen-runtime (.get (car (.get frozen-result obligation-evidence)) evidence))
 (check 'stale-final-identity-reason
-  (eq? (.get (car (.get frozen-native obligation-evidence)) kind) 'stale-final-checks))
+  (eq? (.get (car (.get frozen-runtime obligation-evidence)) kind) 'stale-final-checks))
 (report 'stale-parent-admitted (.get frozen-result accepted?))
 
 (.def (BadSmoke @ Release) smoke: =>.+ (.o commands: '("forbidden")))

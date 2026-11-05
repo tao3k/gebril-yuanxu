@@ -240,7 +240,7 @@ Bad macro properties:
 - expansion exposes private kernel hooks as normal user knobs;
 - expansion changes plugin attachment semantics silently.
 
-The correct Gerbil shape is: macro syntax is authoring sugar over POO-native and
+The correct Gerbil shape is: macro syntax is authoring sugar over POO and
 functional values.  It is not the owner of the runtime.
 
 ** 10.06.86.80 Agentic AI Lab Mapping Table
@@ -310,7 +310,7 @@ Do not copy these Doom traits directly:
 
 =agentic-ai-lab= is a Scheme control plane for policy, composition, and runtime
 projection.  It should absorb Doom's boundary discipline while staying
-POO-native, data-first, receipt-driven, and runtime-neutral.
+POO, data-first, receipt-driven, and runtime-neutral.
 
 ** 10.06.86.110 Design Consequences For Current Module Work
 The module-system design should stay small at the public surface:
@@ -371,10 +371,10 @@ modules such as =(:flow . funflow)=:
 
 - =config.ss= owns only module interface, descriptor, selection, depth, and the
   canonical entrypoint, without importing runtime factors;
-- =types.ss=, =objects.ss=, =classes.ss=, and =dispatch.ss= extend the native
+- =types.ss=, =objects.ss=, =classes.ss=, and =dispatch.ss= extend the runtime
   Gerbil POO MOP and C4;
 - =interface.ss= is the explicit opt-in runtime factor;
-- =t/scenarios/performance/poo-clos-native-c4/= proves native precedence and
+- =t/scenarios/performance/poo-clos-runtime-c4/= proves runtime precedence and
   exact metaobject identity.
 
 The kernel profile declares =(:core . poo-clos)= and the registry resolves its
@@ -413,5 +413,5 @@ When in doubt:
 - verify the current Doom checkout with ASP provider-neutral discovery;
 - classify the change as kernel, public factor, plugin, macro, fixture, or
   diagnostic operation;
-- keep public syntax POO-native and functional;
+- keep public syntax POO and functional;
 - keep runtime handoff behind stable projections.

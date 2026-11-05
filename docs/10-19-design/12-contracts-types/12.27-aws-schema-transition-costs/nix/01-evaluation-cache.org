@@ -7,7 +7,7 @@
 
 The retained 24.195-second receipt only records the aggregate duration of the
 first four Nix calls. It does not identify an individually slow operation or
-contain Nix-native activity messages. Its historical cause remains unqualified;
+contain Nix-runtime activity messages. Its historical cause remains unqualified;
 later successful execution must not be used to assign it to cold building,
 daemon locks, host scheduling or observation overhead.
 
@@ -37,7 +37,7 @@ run or a claim that the slow receipt is fixed.
 The validity result is reported from the actual =nix-store --check-validity=
 exit status, not inferred from a fast duration. It is a hit in both runs; this
 specifically proves derivation registration, not by itself output availability.
-The bounded native realization trace contains no concrete build/substitution
+The bounded runtime realization trace contains no concrete build/substitution
 activity. A separate read-only output metadata inspection finds the artifact's
 registration time more than eleven hours before the historical failed run's
 log completion. It supports a pre-existing output for the reproduced selection;
@@ -61,7 +61,7 @@ candidate identity, check its registration, demand its outputs, and recheck
 identity after that effect. Later queries straddle package handoffs, arbitrary
 Contract/Context callbacks and publication. Existing pure source-read windows
 remain reusable inside one synchronous guard; a Nix result does not cross those
-authority boundaries. The native derivation regression still rejects undeclared
+authority boundaries. The runtime derivation regression still rejects undeclared
 transitive-file changes, a newly present optional file, and mutation between
 lookup and registration. A source-list-only memo would miss those changes.
 
@@ -102,12 +102,12 @@ repeated evaluation for those samples, not a measured file count for all
 eighteen queries. This audit removes no query by assuming an unobserved file
 closure or treating store availability as evaluation-cache evidence.
 
-** Native evaluation-cache qualification
+** Runtime evaluation-cache qualification
 
-=t/nix-evaluation-cache-test.ss= uses the existing native Case macro, std/test
+=t/nix-evaluation-cache-test.ss= uses the existing runtime Case macro, std/test
 and std/run-process. It invokes the installed Nix, without providers, external
 flake inputs, package builds, a new evaluator service or a Scheme result cache.
-Each operation starts a fresh process; a native =builtins.trace= in the imported
+Each operation starts a fresh process; a runtime =builtins.trace= in the imported
 value distinguishes actual evaluation from reuse. The fixture supplies these
 equivalent output forms:
 
@@ -129,9 +129,9 @@ equivalent output forms:
 On installed Nix 2.34.4+1, repeated =nix eval --raw= of =cached= still emits the
 body trace. Repeated =--apply= of =applied= also emits it. In contrast, repeated
 =nix derivation show= of =package= omits the trace on its warm call; disabling
-the native evaluation cache restores it. Changing =value.nix= invalidates that
+the runtime evaluation cache restores it. Changing =value.nix= invalidates that
 reuse: the next derivation query emits the trace, then its warm successor does
-not. These assertions distinguish a native derived-path cache hit from a fast
+not. These assertions distinguish a runtime derived-path cache hit from a fast
 process or registered store object. No derivation output is realized.
 
 The initial experiment expected scalar =nix eval= to reuse evaluation and
@@ -149,19 +149,19 @@ adding =--impure=, or snapshotting only Scheme's declared observations would not
 prove this closure. Existing tests intentionally change undeclared transitive
 and optional files; those refusals must survive any future adapter.
 
-Native derived-path caching can reduce reevaluation while retaining a fresh
+Runtime derived-path caching can reduce reevaluation while retaining a fresh
 process at each effect boundary. It does not by itself remove process startup.
-Multiple independent installables could share one native command at one such
+Multiple independent installables could share one runtime command at one such
 boundary, but this AWS selection has one provider-artifact request: its
 eighteen time-separated checks cannot be batched as independent attributes.
-No persistent evaluator or new caching protocol is introduced here. The native
+No persistent evaluator or new caching protocol is introduced here. The runtime
 cache route is qualified only by the small fixture; a closed AWS publication
 and its full invalidation qualification remain unfinished.
 
 The unchanged, observation-enabled three-owner Case was requalified after this
 audit: natural exit zero, 55077 milliseconds for the aggregate body, 31390
 milliseconds through AWS publication completion, seven MODULE-OK markers,
-two HARNESS-OK markers and two final OK markers, with no native error/overflow
+two HARNESS-OK markers and two final OK markers, with no runtime error/overflow
 markers. Its eighteen derivation queries total 10979 milliseconds; all twenty-two
 Nix process spans total 12842 milliseconds. The original Case/worker limits,
 Schema transition, stale evidence refusal, retained previous value and fixture

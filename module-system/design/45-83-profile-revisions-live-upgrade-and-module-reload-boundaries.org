@@ -115,7 +115,7 @@ flowchart LR
 - [X] =replRevisionIsNotProductionEvidence=
 - [X] =reversionReprovesCurrentChecks=
 - [X] =reversionCannotReuseStaleCapability=
-- [ ] Project revision and upgrade policy through native =gerbil-poo=.
+- [ ] Project revision and upgrade policy through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.ProfileComposition.Revision=.  It imports RFC
@@ -415,7 +415,7 @@ The implementation must distinguish at least:
 11. REPL redefinition produces ephemeral revisions.
 12. Reversion is a new active-head transition.
 13. No reload mechanism mutates an existing composition root.
-14. Public upgrade policy extension remains POO-native.
+14. Public upgrade policy extension remains POO.
 
 * Implementation checklist
 

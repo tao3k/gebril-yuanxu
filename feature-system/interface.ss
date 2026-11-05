@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: re-exports the public POO-native feature-system surface.
+;;; Boundary: re-exports the public POO feature-system surface.
 ;;; Invariant: implementation ownership remains in the imported feature modules.
 (import :yuanxu/feature-system/model
         :yuanxu/feature-system/resolver

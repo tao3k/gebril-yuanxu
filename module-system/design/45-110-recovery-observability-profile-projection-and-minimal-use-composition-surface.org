@@ -49,7 +49,7 @@ Therefore:
 This RFC defines:
 
 - the minimal ordinary user surface;
-- projection of POO-native profiles into recovery and observability policies;
+- projection of POO profiles into recovery and observability policies;
 - the boundary between profile selection and capability admission;
 - ordinary, advanced, and framework extension layers;
 - macro-governance constraints;
@@ -93,7 +93,7 @@ In these examples:
 - =compose= is a pure function;
 - =profiles= is the first-class POO composition strategy;
 - =use-module= is the thin module/profile-selection macro;
-- =production= and =resilient-observability= denote POO-native profile values.
+- =production= and =resilient-observability= denote POO profile values.
 
 The example fixes interface shape.  It does not require
 =resilient-observability= to become a globally built-in profile name.
@@ -121,12 +121,12 @@ The following conceptual shapes are rejected:
 #+end_example
 
 Composition is flat at the call site.  Optional and higher-order variation is
-represented by POO-native profile objects and prototype extension, not by host
+represented by POO profile objects and prototype extension, not by host
 conditionals inside the composition form.
 
 * Profile projection
 
-A selected profile is a native POO object that may contribute typed facets for:
+A selected profile is a POO object that may contribute typed facets for:
 
 - recovery policy;
 - continuation policy;
@@ -216,14 +216,14 @@ The ordinary surface stays at =use-composition=, =compose profiles=, and
 
 Profile authors:
 
-- compose existing POO-native profile values;
+- compose existing POO profile values;
 - extend prototypes with upstream =gerbil-poo= operations;
 - attach typed policy facets;
 - publish profile identity and responsibility;
 - preserve pure functional composition.
 
 This RFC introduces no generic =profile= macro.  Exact object authoring syntax
-must come from verified native =gerbil-poo= operations rather than an invented
+must come from verified runtime =gerbil-poo= operations rather than an invented
 local DSL.
 
 ** Framework extension
@@ -235,7 +235,7 @@ Framework authors may:
 - implement Agentic AI Lab adapters around upstream POO objects;
 - connect admitted POO values to explicit runtime boundaries.
 
-Framework extension remains POO-native.  Raw alists, records, patch DSLs, and
+Framework extension remains POO.  Raw alists, records, patch DSLs, and
 ordinary =(lambda (self super) ...)= hooks are not the normal interface.
 
 * Projection flow
@@ -292,7 +292,7 @@ The ordinary composition still selects one profile value.  It does not embed
 
 * Conflict behavior
 
-Profile conflicts reuse the existing POO-native composition, precedence, and
+Profile conflicts reuse the existing POO composition, precedence, and
 control-policy conflict semantics.
 
 Source order is not an implicit override mechanism.
@@ -324,7 +324,7 @@ Validation checks:
 - runtime adapter availability;
 - cache and publication isolation.
 
-Validation produces POO-native evidence.  It does not claim that a future live
+Validation produces POO evidence.  It does not claim that a future live
 continuation, runtime epoch, or principal will be admitted.
 
 * Explanation surface
@@ -354,9 +354,9 @@ strategy.
 A new macro is admissible only when:
 
 - hygiene or phase behavior cannot be expressed clearly as a function or
-  POO-native object;
+  POO object;
 - its expansion is small and inspectable;
-- it expands to ordinary POO-native and functional code;
+- it expands to ordinary POO and functional code;
 - it has an independently reviewed RFC contract;
 - it does not hide authority, effects, control flow, or conflict resolution.
 
@@ -414,7 +414,7 @@ flowchart TD
   U -->|"pure profile composition succeeds"| P["Resolved ProfileBundle"]
   P -->|"inspection remains effect-free"| I["Explanation and validation"]
   P -->|"live demand requests fresh authority"| C["Coordinator admission"]
-  A["Advanced profile author"] -->|"uses verified native POO prototype operations"| P
+  A["Advanced profile author"] -->|"uses verified POO prototype operations"| P
   F["Framework author"] -->|"defines typed facets and bounded adapters"| P
   C -->|"accepted demand produces stabilized effect intent"| R["Explicit runtime boundary"]
   C -->|"rejected demand produces typed evidence"| I
@@ -444,20 +444,20 @@ The composition fails closed on:
 - [X] Ordinary users compose profile values, not runtime mechanisms.
 - [X] =use-composition= and =use-module= remain thin hygienic macros.
 - [X] =compose= remains a pure function.
-- [X] =profiles= remains the POO-native composition strategy.
+- [X] =profiles= remains the POO composition strategy.
 - [X] The ordinary composition shape is flat.
 - [X] Recovery and observability are typed profile projections.
 - [X] Profiles attenuate or request authority; they do not grant it.
 - [X] Optionality is expressed by higher-order POO values, not host conditionals.
 - [X] Existing precedence and conflict semantics are reused.
-- [X] Advanced extension uses native =gerbil-poo= prototypes and operations.
+- [X] Advanced extension uses runtime =gerbil-poo= prototypes and operations.
 - [X] Runtime effects remain behind explicit handoff boundaries.
 - [X] No new public macro is introduced.
 
 * Conformance checklist
 
 - [ ] ASP publishes the Org source envelope and emits parser-owned owners.
-- [ ] Module profiles resolve into native POO =ProfileBundle= values.
+- [ ] Module profiles resolve into POO =ProfileBundle= values.
 - [ ] Recovery and observability facets are typed POO projections.
 - [ ] Flat ordinary examples expand only through approved thin macros.
 - [ ] Profile selection performs no runtime effect.
@@ -481,7 +481,7 @@ This section is normative and supersedes earlier audit statements that
 implementation ownership was =MISSING=. Unchecked items below concern
 implementation completion, not owner selection.
 
-- [X] Upstream =gerbil-poo= owns the native object and prototype operators used
+- [X] Upstream =gerbil-poo= owns the runtime object and prototype operators used
   to author the profiles.
 - [X] =yuanxu= owns generic recovery and observability Profile
   semantics and the thin =use-composition= projection.
@@ -499,7 +499,7 @@ implementation completion, not owner selection.
 - [[file:45-93-module-profile-selection-bundle-and-imports-closure-algebra.org][45-93 - Module Profile Selection, Bundle, and Imports Closure Algebra]]
 - [[file:45-94-user-interface-case-projection-and-reachable-imports-validation.org][45-94 - User-Interface Case Projection and Reachable Imports Validation]]
 - [[file:45-95-aggregate-profile-responsibility-projection-and-bounded-macro-boundary.org][45-95 - Aggregate Profile Responsibility Projection and Bounded Macro Boundary]]
-- [[file:45-96-poo-native-module-authoring-and-thin-binding-macro-contract.org][45-96 - POO-Native Module Authoring and Thin Binding Macro Contract]]
-- [[file:45-102-native-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][45-102 - Native Prototype Precedence and Typed Relation Conflict Resolution Bridge]]
+- [[file:45-96-poo-module-authoring-and-thin-binding-macro-contract.org][45-96 - POO-Runtime Module Authoring and Thin Binding Macro Contract]]
+- [[file:45-102-runtime-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][45-102 - Runtime Prototype Precedence and Typed Relation Conflict Resolution Bridge]]
 - [[file:45-108-coordinator-resumption-admission-execution-lineage-continuation-fence-and-replay-retry-boundary.org][45-108 - Coordinator Resumption Admission, Execution Lineage, Continuation Fence, and Replay-Retry Boundary]]
 - [[file:45-109-recovery-admission-effect-intent-runtime-handoff-and-continuation-claim-dag-correspondence.org][45-109 - Recovery Admission, Effect Intent, Runtime Handoff, and Continuation-Claim DAG Correspondence]]

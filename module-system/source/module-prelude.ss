@@ -4,13 +4,15 @@
 prelude: :gerbil/core
 ;;; Role bindings refine the package language, including its compile-time phases.
 ;;; Explicit role imports remain authoritative over these weak prelude bindings.
-(import (except-in :gerbil/core object? make-object)
-        (except-in :clan/poo/object .def)
-        (only-in :yuanxu/module-system/source/declaration .def)
+(import :gerbil/core
+        :clan/poo/object
+        (rename-in (only-in :yuanxu/module-system/source/declaration .def)
+                   (.def role-.def))
         (phi: +1 :gerbil/core)
         (phi: +2 :gerbil/core))
-(export (import: :gerbil/core :clan/poo/object)
+(export (except-out (import: :gerbil/core) object? make-object)
+        (except-out (import: :clan/poo/object) .def)
         (phi: +1 (import: :gerbil/core))
         (phi: +2 (import: :gerbil/core))
         (phi: 1 load-module)
-        .def)
+        (rename-out role-.def (role-.def .def)))

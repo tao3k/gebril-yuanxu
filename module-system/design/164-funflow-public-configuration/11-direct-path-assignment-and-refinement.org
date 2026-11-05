@@ -16,12 +16,12 @@ effective-config, distinct from the enclosing Profile occurrence.
 * Decision: write a value, or explicitly depend on its inherited value
 
 Ordinary configuration assigns the complete intended value. It does not need
-an override wrapper merely because the slot was inherited. Native functional
+an override wrapper merely because the slot was inherited. Runtime functional
 refinement is for deriving a new value from an inherited value; =>.+ is for
 extending an existing object while retaining its other slots. Constructing a
 new Check uses its published prototype and is a separate operation.
 
-| Intent | Native expression within the owning object | Meaning |
+| Intent | Runtime expression within the owning object | Meaning |
 |--------+-------------------------------------------+---------|
 | Set commands | commands: '("gerbil" "build" "release") | Replace the slot value; no implicit shell |
 | Set all artifacts | artifact-outputs: '(release-build-log) | Replace, not append |
@@ -29,14 +29,14 @@ new Check uses its published prototype and is a separate operation.
 | Refine an existing Check | build: =>.+ {(commands => append '("--release"))} | Retain its defaults and append to its maintained command |
 | Add a Check | smoke: (.o (:: @ (.get ff prototypes check)) ...) | New object with an explicit module-owned prototype |
 
-The last row is notation describing an existing native constructor, not a new
+The last row is notation describing an existing runtime constructor, not a new
 form or a complete example. The complete example below has no omitted fields.
 The Contract defines representation and constraints; commands names the task
 attribute, not its string/list implementation type.
 
 * Normative disclosure rule: start from the user's intent
 
-Expose only the native mechanism needed for the requested operation. The same
+Expose only the runtime mechanism needed for the requested operation. The same
 admitted object graph serves ordinary configuration and advanced extension;
 there is no separate user data model translated into a second extension model.
 The fact that a value is inherited or happens to be a POO object is not, by
@@ -44,12 +44,12 @@ itself, a reason to require explicit object-extension syntax from its user.
 
 | User intent | Default expression | What the user must understand |
 |-------------+--------------------+-------------------------------|
-| Set or completely replace an ordinary value | Native slot assignment | Field meaning and Contract; no inherited-value operation |
+| Set or completely replace an ordinary value | Runtime slot assignment | Field meaning and Contract; no inherited-value operation |
 | Set a field inside a known inherited object | Proposed direct path assignment | Target path and field Contract; intermediate =>.+ is lowering machinery |
-| Append, filter or calculate from the inherited value | Native => with a named pure transformation | The original value and the transformation; do not silently append |
-| Explicitly extend an existing object or strategy | Native =>.+ or prototype inheritance | Which object is retained and which slots/behavior are refined |
-| Create a genuinely new domain object | Module-scoped prototype plus native construction | Prototype origin, required fields and containing extension position |
-| Change a core mechanism or extend a protocol | Native prototype methods and Contract extension; Generic only for independent axes | Upstream extension boundary, consumer support and admission obligations |
+| Append, filter or calculate from the inherited value | Runtime => with a named pure transformation | The original value and the transformation; do not silently append |
+| Explicitly extend an existing object or strategy | Runtime =>.+ or prototype inheritance | Which object is retained and which slots/behavior are refined |
+| Create a genuinely new domain object | Module-scoped prototype plus runtime construction | Prototype origin, required fields and containing extension position |
+| Change a core mechanism or extend a protocol | Runtime prototype methods and Contract extension; Generic only for independent axes | Upstream extension boundary, consumer support and admission obligations |
 
 Assignment replaces the complete leaf. Object refinement retains other inherited
 slots. A path assignment uses refinement internally to retain intermediate
@@ -99,7 +99,7 @@ gerbil.funflow.build.commands:
 #+end_src
 
 For an author who wants the inherited artifact list plus one more item, use the
-already available enclosing-object refinement shape and a native transformation:
+already available enclosing-object refinement shape and a runtime transformation:
 
 #+begin_src scheme
 gerbil.funflow.build: =>.+
@@ -114,7 +114,7 @@ exposes the Check prototype because a new object really is being created. Its
 complete construction and selected-checks assignment remain below.
 
 For a core-mechanism change, the maintained Check Contract exposes a different
-level. Its existing design contains the following native method/obligation
+level. Its existing design contains the following runtime method/obligation
 extension, rather than a callback stored in commands:
 
 #+begin_src scheme
@@ -127,7 +127,7 @@ extension, rather than a callback stored in commands:
 
 This retains the inherited admission and adds domain guards/obligations. It is
 an upstream extension example, not another declaration ordinary CI users must
-write. Native method/Contract syntax exists; the named Funflow guard/obligations
+write. Runtime method/Contract syntax exists; the named Funflow guard/obligations
 remain the reference design in module 07. A genuinely new protocol needs its
 own compatible Contract and consumer qualification. Merely editing a policy
 value or constructing smoke does not require a new Generic method family.
@@ -151,7 +151,7 @@ requirements, not its decoration language. Dmerge protects its collection spine
 and constrains changes by the preceding value's type; those are library policy
 choices, not requirements to copy into POO assignment semantics.
 
-Native => supplies the inherited value to an ordinary function. Maintained
+Runtime => supplies the inherited value to an ordinary function. Maintained
 libraries should offer small, task-appropriate functions so configuration authors
 need not repeat filter/lambda/cut expressions. These are regular callable Scheme
 values, usable and testable outside configuration, not syntax decorations or a
@@ -166,7 +166,7 @@ claim of command execution. The task owner must verify their supported semantics
 
 The contribution library owns the following illustrative business definitions;
 module 29 supersedes generic operation naming/signatures with the data namespace
-and value-first native argument forms. These unary business policies need no
+and value-first runtime argument forms. These unary business policies need no
 extra parameter binding. They are design code, not newly installed runtime
 exports. The function names state the user's intent; general sequence machinery
 stays in the library:
@@ -211,7 +211,7 @@ independent alternatives, not four patches implicitly combined:
 #+end_src
 
 The deep assignment in ScriptCI still needs the proposed assignment adapter.
-The other forms use existing path-object refinement and native => function
+The other forms use existing path-object refinement and runtime => function
 application. Module publication, domain admission and preview integration remain
 separate adaptation work. No imports, Loader behavior or new DSL is prescribed.
 
@@ -255,7 +255,7 @@ Even if the parent Pipeline was previously cached, the descendant Pipeline must
 resolve checks from the descendant's effective Profile. Each Check in the preview
 and admission evidence must match that final receiver's selected object by
 identity. A frozen parent Check list fails that condition. Existing receiver/cache
-controls support the native semantic boundary; these four domain examples and
+controls support the runtime semantic boundary; these four domain examples and
 their rendered previews are design illustrations, not additional execution or
 Loader qualification. Unselected task commands must remain undemanded.
 
@@ -264,7 +264,7 @@ Loader qualification. Unselected task commands must remain undemanded.
 An upstream/contribution package may publish reusable Profiles and Scenarios
 with complete defaults and declared extension points. A downstream project
 retains only its business-value differences and deliberate transformations.
-That project may itself publish a reusable native Profile/Scenario for another
+That project may itself publish a reusable runtime Profile/Scenario for another
 consumer; it need not copy the upstream defaults, rewrite Contracts, or invent
 its own patch/collector language. Explicit protocol extensions still carry their
 own compatible Contract and consumer support.
@@ -290,7 +290,7 @@ A suggested direct path must be labelled proposed until supported. Missing
 guidance is unavailable information, not permission to guess a writable field.
 
 Acceptance: changing commands needs no prototype tutorial; extending artifacts
-explains native =>; adding smoke identifies the scoped Check prototype; inspecting
+explains runtime =>; adding smoke identifies the scoped Check prototype; inspecting
 pipeline.checks points to selected-checks rather than inviting manual list edits;
 and core extension points explain their Contract/consumer boundary. Description
 mode does not force task values or install method bundles to produce this advice.
@@ -298,18 +298,18 @@ mode does not force task values or install method bundles to produce this advice
 * Existing support and the proposed extension
 
 [[file:../../../object-syntax/path-slots.ss][The current path adapter]] lower-path-spec accepts dotted leaves only with
-native =>.+ and reports "path slots require native =>.+" or "path slots require
+runtime =>.+ and reports "path slots require runtime =>.+" or "path slots require
 one =>.+ object expression" for other shapes. It already groups shared prefixes
-and rejects duplicate/overlapping paths. Native non-dotted assignment and =>
+and rejects duplicate/overlapping paths. Runtime non-dotted assignment and =>
 already exist. Neither commands as a runtime field nor direct dotted assignment
 is implemented by this document.
 
-The bounded proposal adds dotted leaf assignment, preserving native assignment
+The bounded proposal adds dotted leaf assignment, preserving runtime assignment
 semantics. It is not a recursive patch language or a new object evaluator.
 Do not use =>.+ on a string/list simply to satisfy the current path adapter.
 Use the existing enclosing-object form until an assignment adapter is qualified.
 This revision does not broaden dotted => support; an inherited list transform
-can use native => within an existing dotted object refinement.
+can use runtime => within an existing dotted object refinement.
 
 * Complete minimum downstream example: proposed user surface
 
@@ -351,9 +351,9 @@ This changes build only, inherits test/package, creates smoke, and replaces the
 selection list. Adding a task and selecting it remain distinct. The script is
 a recipe requirement, not a verified file or an execution claim.
 
-* Corresponding native lowering: one inherited object per shared prefix
+* Corresponding runtime lowering: one inherited object per shared prefix
 
-Replace only the inner .o above with this native expression. The surrounding
+Replace only the inner .o above with this runtime expression. The surrounding
 let/use-module keeps ff hygienic; the expansion must not inject global bindings.
 This is the specified lowering, not captured output from an implemented adapter:
 
@@ -378,7 +378,7 @@ This is the specified lowering, not captured output from an implemented adapter:
 #+end_src
 
 Each intermediate gerbil/funflow/build/pipeline object derives
-from its corresponding effective inherited slot. Other slots retain native
+from its corresponding effective inherited slot. Other slots retain runtime
 inheritance; they are not copied from a forced parent snapshot. The leaf commands
 and artifact-outputs are ordinary replacements. smoke is a new object assignment,
 not an attempt to refine a missing inherited Check.
@@ -393,32 +393,32 @@ does not merge list values or resolve contributions from independent publishers.
 1. Parse dotted names into a compile-time prefix tree. A terminal records plain
    assignment or the already supported object refinement. Preserve source and
    lexical context; never evaluate user payloads while grouping declarations.
-2. Emit every implicit shared prefix once as a native =>.+ object refinement.
-   Emit a terminal assignment as an ordinary native slot assignment. Preserve
+2. Emit every implicit shared prefix once as a runtime =>.+ object refinement.
+   Emit a terminal assignment as an ordinary runtime slot assignment. Preserve
    the payload expression without inserting getters, collectors or validation.
 3. Support nonadjacent sibling declarations under the same prefix. Retain stable
    source order among siblings. This is not a promise about evaluation order of
    arbitrary side-effectful lazy getters; ordinary configuration remains pure.
 4. Reject duplicate terminal paths within the declaration. Reject explicit
    ancestor/descendant overlap, including assignment of build together with
-   build.commands. Do not invent a last-wins rule. Put both changes in one native
+   build.commands. Do not invent a last-wins rule. Put both changes in one runtime
    owning-object expression if both are intentional. Keep existing bounded overlap
    behavior for explicit ancestor =>.+ plus a separate descendant declaration.
-5. Intermediate inherited slots must exist and resolve to native objects when
+5. Intermediate inherited slots must exist and resolve to runtime objects when
    demanded. Do not silently create a missing module/Profile, autoload a source,
    or infer its prototype. A missing/nonobject prefix needs a qualified diagnostic.
    Domain field validity remains a Contract responsibility, not macro inference.
 6. A new terminal Check is allowed only at its declared extension position and
    admitted via its owner Contract. At an existing terminal, direct assignment
    replaces the whole value; if retaining that object's other slots is intended,
-   use native =>.+. Assignment does not change the module's retained source claim.
+   use runtime =>.+. Assignment does not change the module's retained source claim.
 
 The prefix tree is expansion machinery only. It is not runtime state, a Loader
 catalog, a mutable patch plan or an alternate contract authority.
 
 * Smoke admission, parent cache and preview
 
-Upstream keeps the original native outer receiver relationship:
+Upstream keeps the original runtime outer receiver relationship:
 
 #+begin_src scheme
 ;; Inside (.o (:: effective-config ...)), on the inherited Pipeline:
@@ -435,7 +435,7 @@ with unique applicable durable identities. Source association is not source trus
 
 The parent control first caches three Checks. The child must then resolve its
 four selected Check objects on its own effective Profile. Compare actual and
-expected lists in order and pairwise by native object identity, not just names
+expected lists in order and pairwise by runtime object identity, not just names
 or commands. The parent must retain its original build/default selection; it
 is neither mutated nor entitled to supply the child's cached result.
 
@@ -469,14 +469,14 @@ opaque/effectful getters or unsupported dependencies need conservative treatment
 
 | Capability | Status |
 |------------+--------|
-| Native assignment, inherited => and object =>.+ | Existing native mechanisms |
+| Runtime assignment, inherited => and object =>.+ | Existing runtime mechanisms |
 | Bounded module alias and dotted object =>.+ with shared-prefix grouping | Existing syntax support in the inspected source |
-| Native parent/child receiver behavior | Historical domain-free executed probe; unchanged receipt |
+| Runtime parent/child receiver behavior | Historical domain-free executed probe; unchanged receipt |
 | Dotted ordinary leaf assignment and its mixed lowering | Proposed adapter extension; no implementation/test result here |
 | commands producer/consumer migration | Proposed public design; existing runtime spelling remains unchanged |
 | Dynamic Check admission, rich provenance and admitted plan preview/publication | Proposed domain/consumer adapters; no Loader integration |
 
-Future qualification must compare the new surface with its native lowering;
+Future qualification must compare the new surface with its runtime lowering;
 merge nonadjacent same-prefix edits; reject duplicates/overlaps; preserve alias
 hygiene and payload source locations; verify no expansion-time evaluation;
 and diagnose missing/nonobject prefixes. The same test then caches the parent,

@@ -148,7 +148,7 @@ Explicit alternative:
 
 Auto makes discovered publications eligible for requested exports; explicit
 restricts optional owner eligibility to admitted declarations/dependency policy.
-Neither activates every module. The target init extension lowers to native intent:
+Neither activates every module. The target init extension lowers to runtime intent:
 
 #+begin_src scheme
 (.def GuestbookAutoIntent
@@ -273,7 +273,7 @@ required compilation unit is distinct from executing module initialization.
 
 * 6. User values, final admission and demand
 
-Once a selected interface supplies Guestbook's export scope, the existing native
+Once a selected interface supplies Guestbook's export scope, the existing runtime
 body is:
 
 #+begin_src scheme
@@ -311,7 +311,7 @@ an assertion that using POO or Core automatically makes startup fast.
 |----------+--------------+---------------------|
 | Root publication | AgenticAILabModules source object | Init-source selection/normalization |
 | Interface discovery | Current collection -> interface SourceRefs | Hierarchical/keyed namespace and source-to-scope linkage |
-| Schema | Core interface, artifacts, generated native Contracts, validation | Full-root/public .admit/default association for Guestbook |
+| Schema | Core interface, artifacts, generated Contracts, validation | Full-root/public .admit/default association for Guestbook |
 | Module baseline | Existing descriptors and module-closure | One qualified target core layout, retained module denials |
 | Features | Core descriptors/resolver/manifests/composition/capability binding | -feature intent and hard-denial/source chain integration |
 | Build | Existing selected-view design and compiler/build executor owners | Admitted projection kinds, source/phase closure and build-root handoff |

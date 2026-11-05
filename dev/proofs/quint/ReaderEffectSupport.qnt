@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 module ReaderEffectSupportModel {
   const BUG: str
-  // 0/1 are actual native imports; 2 is an earlier publication reachable
+  // 0/1 are actual runtime imports; 2 is an earlier publication reachable
   // through ambient state; 3 is an already observed Schema/policy source.
   pure val imports = Set(0, 1)
   pure val prefix = Set(0, 1, 2, 3)
@@ -22,7 +22,7 @@ module ReaderEffectSupportModel {
   }
   action enter = all {
     s.phase == 0,
-    // Native import discovery does NOT certify confinement of an initializer.
+    // Runtime import discovery does NOT certify confinement of an initializer.
     val checked = if (BUG == "importsOnly") imports else support(s.confined)
     val allowed = current(s.dirty, checked)
     s' = s.with("phase", if (allowed) 1 else 3)

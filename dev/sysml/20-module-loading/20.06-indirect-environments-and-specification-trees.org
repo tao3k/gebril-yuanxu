@@ -3,15 +3,15 @@
 
 * Latest bounded qualification (2026-10-25)
 
-After correcting the test observer's completed-work relay, the native Core
+After correcting the test observer's completed-work relay, the runtime Core
 build, module-observation regression, two serial 16/32-module census processes,
 and all eleven real Gitea/PostgreSQL publication controls pass. Each focused
 run has MODULE-OK, HARNESS-OK and final OK without error/overflow markers.
 The frozen 566-file Scheme source snapshot is unchanged across the paired
 census runs and the consumer regression. No global cache clean was performed.
 
-Native Make compiled 14 support units in the cold process and zero in the
-fresh hot process. This is native incremental reuse, not a new cache or a
+std/make compiled 14 support units in the cold process and zero in the
+fresh hot process. This is runtime incremental reuse, not a new cache or a
 cached admission verdict. Both processes still authenticate currentness.
 The existing within-VM query checks also retain the same graph receiver by
 =eq?= and require zero additional role expansion on the hot query.
@@ -39,7 +39,7 @@ payload words and must not be compared as equivalent cost units.
 
 Post-GC live is a whole-VM measurement, not the exclusive cost of these roots.
 Covered words exclude string backing storage, allocation headers/padding, code,
-foreign storage, weak-table referents, SDK-context interiors and receiver
+foreign storage, weak-table referents, Gerbil-context interiors and receiver
 interiors at the explicit frontiers. The two Cases share one VM, so their live
 byte difference is not an exclusive per-module allocation slope. No physical
 byte/GC-dominator theorem or storage-sharing optimization follows from this
@@ -63,7 +63,7 @@ retained tree nodes. The installed Gerbil =std/struct/rbtree.ss= owns the
 =RBTree=, =Tree= and =Empty= representations.
 
 =object.ss:compute-slot-funs!= builds receiver-local thunks and can invoke
-the native =compute-slot= hook. =apply-slot-spec= can capture a receiver
+the runtime =compute-slot= hook. =apply-slot-spec= can capture a receiver
 through another function. Equal printed code or equal slot names therefore
 do not authorize environment pooling. A private ordered tree and the mutable
 values to which its entries point have different ownership boundaries.
@@ -74,7 +74,7 @@ The existing opt-in =ModuleTestingProfile.= follows original issued records.
 Its additional diagnostic walk follows closure captures (excluding code),
 pair cars/cdrs, vectors, and raw structure fields (excluding the descriptor).
 Identity tables terminate cycles and count shared nodes once. POO receivers,
-class descriptors and SDK expander contexts are explicit frontiers. No slot,
+class descriptors and Gerbil expander contexts are explicit frontiers. No slot,
 promise, interface method, checker or callback is invoked by the walk.
 
 Separate walks report the specification forest and the thunk environments;

@@ -215,7 +215,7 @@ Manifest rows, type facts, and Lean facts are drill-down artifacts. The default 
 *** 10.06.55.50.60 Observability Framework Correction
 The diagnostic surface should be understood as part of a Scheme-side observability framework.
 
-BAML's product feedback is strong because authoring evidence is visible immediately. =agentic-ai-lab= should not copy that as a text-only doctor command. It should build a POO-native observability object graph whose projections include diagnostics, receipts, doctor reports, graph previews, proof facts, and runtime handoff previews.
+BAML's product feedback is strong because authoring evidence is visible immediately. =agentic-ai-lab= should not copy that as a text-only doctor command. It should build a POO observability object graph whose projections include diagnostics, receipts, doctor reports, graph previews, proof facts, and runtime handoff previews.
 
 The corrected layer is:
 #+begin_src mermaid
@@ -248,7 +248,7 @@ Canonical P0 boundary and namespace names are defined in =58 P0 Boundary Namespa
 Use the following layer names when designing new work:
 
 1. Author surface.
-   =init.ss=, =use-module=, profiles, feature flags, and POO-native declarations.
+   =init.ss=, =use-module=, profiles, feature flags, and POO declarations.
 2. Semantic object graph.
    POO objects, prototype extension, C4 composition, inherited policy fragments, and functional workflow builders.
 3. Contract and validator layer.
@@ -279,7 +279,7 @@ Agents should modify the highest legal layer, not generated payloads.
 
 Allowed:
 - add or remove module features through =use-module=;
-- extend a profile through POO-native objects;
+- extend a profile through POO objects;
 - tighten sandbox resources;
 - add human gates;
 - add loop-governor checks;
@@ -311,7 +311,7 @@ Phase 3: doctor and preview surface.
 
 Phase 4: generated projection helpers.
 - Use Gerbil macros only for mechanical constructor/projection/validator frames.
-- Keep expansion output ordinary POO-native or functional code.
+- Keep expansion output ordinary POO or functional code.
 - Do not generate a second public DSL.
 
 Phase 5: Marlin-facing stability.

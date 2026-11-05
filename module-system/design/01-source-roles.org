@@ -28,7 +28,7 @@ not a Agentic AI Lab-specific configuration language rule.
 #+end_example
 
 Contracts live with Types; configs consumes them. interface may define a thin
-native Module assembly object referring to these owners. It must not contain
+runtime Module assembly object referring to these owners. It must not contain
 business algorithms, source scans or hidden runtime activation. Object defaults
 and configured selections have distinct owners; do not independently repeat the
 same default. Reuse schema-generated Contract bindings rather than copying fields.
@@ -51,13 +51,13 @@ a role file.
 
 Publish one closed public Module object or explicitly declared additional values.
 Do not require flat re-export of every private role binding. Do not reconstruct
-Module metadata in init, source registration and build scripts. A native core
+Module metadata in init, source registration and build scripts. A runtime core
 slot grouping, if adopted, maps to the existing Module descriptor authority once;
 it does not create a second parallel descriptor model.
 
 * Declarative interface and generated wrapper
 
-The target author-facing interface is one native Module declaration. core.exports
+The target author-facing interface is one runtime Module declaration. core.exports
 is its public scope; it is not a request to re-export every private role binding.
 Source preparation generates the role imports and Gerbil compilation-unit export
 from that declaration. Do not require authors to repeat (export ModuleName), a
@@ -72,14 +72,14 @@ This is pending design, not current yuanxu-load-modules behavior.
 
 * Public config/types and function slots
 
-The [[file:../../docs/10-19-design/11-configuration-languages/11.31-module-config-types-and-function-slots.org][config/types/function-slot design]] publishes values and native Contracts through
+The [[file:../../docs/10-19-design/11-configuration-languages/11.31-module-config-types-and-function-slots.org][config/types/function-slot design]] publishes values and Contracts through
 one admitted Module scope. types.ss owns the Contract, config.ss owns its actual
 default and func.ss owns algorithms. interface.ss binds them once, inheriting an
 objects.ss prototype only where real reuse warrants it. Do not add a forwarding
 prototype for each exported function or duplicate config/type fields in core and
 exports. A generated compiler wrapper does not invent another field registry.
 
-The config/types paths are normal native slots; actual import/discovery/selection
+The config/types paths are normal runtime slots; actual import/discovery/selection
 admission is still separate. Namespace access cannot bypass dependency/disable
 policy, and a shared view does not justify eagerly loading all module Types.
 
@@ -111,16 +111,16 @@ absence in currentness, and supplies a lazy hygienic Build identifier to the
 interface. Only the selected build-publication phase may force it. Ordinary
 runtime/config roles do not import or evaluate it; it is not an ordinary runtime
 compiler root. Root init remains above all Module roles. See
-[[file:../../docs/10-19-design/11-configuration-languages/11.57-module-build-role-and-final-admission.org][chapter 56]] for implementation and native controls; product Loader integration
+[[file:../../docs/10-19-design/11-configuration-languages/11.57-module-build-role-and-final-admission.org][chapter 56]] for implementation and runtime controls; product Loader integration
 remains separate from this source/build protocol.
 
 * Implemented Config role defaults
 
-Admitted config.ss uses a native POO prelude and automatically exports Config
-when that binding exists after native expansion. Private helpers remain private;
+Admitted config.ss uses a POO prelude and automatically exports Config
+when that binding exists after runtime expansion. Private helpers remain private;
 explicit extension imports override weak prelude bindings. Interpreter and
 compiler projections retain the original body/source observations. See
-[[file:../../docs/10-19-design/11-configuration-languages/11.58-config-role-native-defaults.org][the config-role implementation boundary]]. This does not require build.ss in
+[[file:../../docs/10-19-design/11-configuration-languages/11.58-config-role-runtime-defaults.org][the config-role implementation boundary]]. This does not require build.ss in
 consumer Modules or implement cross-owner build/config injection.
 
 * Upstream configuration-build contributions
@@ -140,11 +140,11 @@ Its Gerbil exports make bindings available to higher source roles; they do not
 implicitly publish every helper to users. The existing source-role wrapper owns
 discovery/import mechanics and does not call exported functions during loading.
 
-interface.ss explicitly selects those bindings as native Module scope slots and
+interface.ss explicitly selects those bindings as runtime Module scope slots and
 its scope Contract checks the declared API. Consumers obtain the admitted scope
-through the Loader and use native use-module/with-slots. This is one publication
+through the Loader and use runtime use-module/with-slots. This is one publication
 path with two responsibilities, not two user-facing APIs. Do not add a funcs
 registry/container or a macro DSL just to forward function names. objects.ss
-owns inert native objects and thin receiver methods that delegate to the same
+owns inert runtime objects and thin receiver methods that delegate to the same
 named algorithms/adapters. Keep stateful service lifecycle separate from a
 one-shot process runner.

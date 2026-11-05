@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative design module
-- Semantic core :: Native =gerbil-poo= definitions and Agentic AI Lab identity projection
+- Semantic core :: Runtime =gerbil-poo= definitions and Agentic AI Lab identity projection
 - Related modules :: =45-35-macro-expanded-poo-prototype-definition-identity.org= and =45-45-canonical-poo-composition-root-and-definition-graph-identity.org=
 
 This module separates the stable logical identity of a POO definition from the identity of its current semantic content.
@@ -63,7 +63,7 @@ H(
   definition-revision schema identity,
   DefinitionAnchorIdentity,
   normalized expanded POO definition,
-  native operation identities and operand roles,
+  runtime operation identities and operand roles,
   captured pure dependency revisions,
   priority, contract, and capability-requirement projections
 )
@@ -120,7 +120,7 @@ Anonymous definitions are divided into:
 
 If an anonymous object must be recognized across revisions, it is no longer semantically anonymous.
 
-An explicit role is expressed through POO identity values and native object construction, not a new public identity macro or configuration DSL.
+An explicit role is expressed through POO identity values and runtime object construction, not a new public identity macro or configuration DSL.
 
 * Macro-generated definitions
 
@@ -253,7 +253,7 @@ Definition identity evidence records:
 - anchor schema and namespace projection;
 - definition kind and binding role;
 - revision schema and normalized semantic dependencies;
-- native operation identities and operand roles;
+- runtime operation identities and operand roles;
 - macro semantic identity and generated role key where applicable;
 - explicit identity declarations;
 - public binding and object-anchor relationships;

@@ -11,8 +11,8 @@
 
 Continue [[file:11.25-guestbook-field-discovery-and-diagnostics.org][the matched Guestbook user task]]. A short ordinary configuration is a
 first-class goal. Governed macros may hide structural nesting and preserve source
-syntax; users changing a port/label should not have to learn the generated native
-refinements. Checking macro/native correspondence is an internal acceptance gate,
+syntax; users changing a port/label should not have to learn the generated runtime
+refinements. Checking macro/runtime correspondence is an internal acceptance gate,
 not an ordinary user's workflow or the principal UX metric.
 
 Reuse the existing [[file:../../../module-system/design/45-40-10-poo-constrained-gerbil-macro-governance.org][POO-constrained macro governance owner]] and
@@ -22,7 +22,7 @@ second macro evaluator, duplicate macro registry or another field schema.
 The source audit uses actual files and existing names. All proposed Scheme code
 below uses target yuanxu- names, as established in module 22; those renamed
 exports are not yet available. Internal normalized IR records are reused as data;
-public discovery and diagnostic projections remain native POO objects.
+public discovery and diagnostic projections remain POO objects.
 
 * End-to-end Guestbook walkthrough: one edit and one artifact revision
 
@@ -36,17 +36,17 @@ The user's complete edit remains the same two changes from module 24:
          (list (.o port: 8080 targetPort: 80 protocol: "TCP")))))
 #+end_src
 
-The intended native value expansion has one frontend refinement and one occurrence
+The intended runtime value expansion has one frontend refinement and one occurrence
 of the Service-list initializer; source-map construction never evaluates it:
 
 #+begin_src scheme
 (def Development
-  (native-.o (:: @ GuestbookDefaults)
+  (runtime-.o (:: @ GuestbookDefaults)
     frontend: =>.+
-    (native-.o labels: =>.+ (native-.o env: "dev")
+    (runtime-.o labels: =>.+ (runtime-.o env: "dev")
                services:
-               (list (native-.o ports:
-                      (list (native-.o port: 8080 targetPort: 80 protocol: "TCP")))))))
+               (list (runtime-.o ports:
+                      (list (runtime-.o port: 8080 targetPort: 80 protocol: "TCP")))))))
 #+end_src
 
 The private origin row for frontend.labels.env uses that original slot/expression
@@ -56,8 +56,8 @@ No duplicate public .def, manual origin declaration or user-maintained field tab
 is required. Generated identifiers are fresh; printed names are explanatory only.
 
 The [[file:11.29-imported-schema-contracts-and-observed-expansion-origins.org][source-corrected design]] replaces the earlier synthetic SchemaV1/SchemaV2
-walkthrough as the primary route: import pinned original JSON, generate the native
-Contract and derive supported discovery from that same artifact. Native Guestbook
+walkthrough as the primary route: import pinned original JSON, generate the runtime
+Contract and derive supported discovery from that same artifact. Runtime Guestbook
 input/relationship Contracts are distinct from standard resource output Contracts.
 Synthetic bound changes may test the bridge in isolation; users do not maintain
 those Schemas or repeat imported field definitions. A real upstream source update
@@ -66,7 +66,7 @@ qualified rather than assumed.
 
 Use KCL's actual inspected Server/podMetadata/services fields for the matched
 experiment (module 24); its upstream dev file itself changes only image. The
-Scheme expansion/native checks are maintainer controls. Evaluate user experience
+Scheme expansion/runtime checks are maintainer controls. Evaluate user experience
 by whether the short edit, discovery and correction work without understanding
 any of the generated nesting, source rows or cache internals.
 
@@ -75,7 +75,7 @@ any of the generated nesting, source rows or cache internals.
 | Existing owner | Available fact | Remaining work |
 |----------------+----------------+----------------|
 | [[file:../../../modules/json-schema/json-schema-receipt.ss][Schema artifact]] | normalization, object-contract, source-ref, diagnostics | Selected scope publication and discovery adapter |
-| [[file:../../../modules/json-schema/json-schema-ir.ss][Normalized IR]] | node kind/value/metadata; property name/schema/required?/doc; object properties/additional-properties | Bounded native field views; do not duplicate the IR |
+| [[file:../../../modules/json-schema/json-schema-ir.ss][Normalized IR]] | node kind/value/metadata; property name/schema/required?/doc; object properties/additional-properties | Bounded runtime field views; do not duplicate the IR |
 | [[file:../../../modules/json-schema/json-schema-validate.ss][Full-root validation]] | Structured metadata path and reason, including additional-property diagnostics | Prefix final Profile path, attach retained sources, render useful messages |
 | [[file:../../../object-syntax/path-slots.ss][Path-slot lowering]] | Syntax-aware splitting, shared-prefix trie, stx-source on reconstructed identifiers, duplicate/overlap errors | Direct assignment and retained publication-side write/source metadata |
 | Gerbil expander | stx-source, syntax objects, datum->syntax, binding-aware comparison | Preserve both original and generated spans in the bounded lowering |
@@ -172,10 +172,10 @@ value dependencies; discovery must not render plans or realize sibling modules.
 The bounded parser retains an original slot syntax object, original expression
 syntax, full relative path and declaration identity before inserting a trie leaf.
 Do not derive those from the generated nested forms or from a printed identifier.
-A proposed syntax-time helper constructs the private native origin row:
+A proposed syntax-time helper constructs the private runtime origin row:
 
 #+begin_src scheme
-;; Internal syntax owner; native-.o is imported hygienically at this phase.
+;; Internal syntax owner; runtime-.o is imported hygienically at this phase.
 ;; declaration-id is data from admitted source preparation, not inferred authority.
 (begin-syntax
   (def (origin-form declaration-id path slot-stx value-stx)
@@ -183,7 +183,7 @@ A proposed syntax-time helper constructs the private native origin row:
                   (path-data (datum->syntax slot-stx path))
                   (slot-location (datum->syntax slot-stx (stx-source slot-stx)))
                   (value-location (datum->syntax value-stx (stx-source value-stx))))
-      #'(native-.o declaration: 'id-data
+      #'(runtime-.o declaration: 'id-data
                   path: 'path-data
                   slot-location: 'slot-location
                   expression-location: 'value-location))))
@@ -191,7 +191,7 @@ A proposed syntax-time helper constructs the private native origin row:
 
 The generated row evaluates no user expression. Its path and locations are quoted
 metadata; syntax identifiers used for the configuration expansion remain original
-syntax objects. The lowerer emits one native object and a fresh private metadata
+syntax objects. The lowerer emits one runtime object and a fresh private metadata
 binding in the compilation artifact. For example the target transformation is:
 
 #+begin_src scheme
@@ -201,14 +201,14 @@ binding in the compilation artifact. For example the target transformation is:
 
 ;; Generated configuration value, not another public config protocol:
 (def Development
-  (native-.o (:: @ GuestbookDefaults)
-    frontend: =>.+ (native-.o labels: =>.+ (native-.o env: "dev"))))
+  (runtime-.o (:: @ GuestbookDefaults)
+    frontend: =>.+ (runtime-.o labels: =>.+ (runtime-.o env: "dev"))))
 #+end_src
 
 The companion write rows retain path=(frontend labels env) and the user's original
 span; no source/debug slots are added to Development, where they could violate
 additionalProperties=false or leak into Kubernetes JSON. Source publication keeps
-the native value and metadata associated using hygienic binding/source-generation
+the runtime value and metadata associated using hygienic binding/source-generation
 identity, not a global symbol registry. This association is pending; stx-source on
 a generated identifier alone does not implement persistent runtime provenance.
 
@@ -217,18 +217,18 @@ Record an ancestor replacement at its actual ancestor path; do not claim it is a
 leaf refinement. For services assigned a list, a diagnostic may have a precise
 runtime path down to targetPort but only a source span for the services expression.
 Report that enclosing expression honestly. Exact literal subexpression mapping may
-be added only for binding-recognized native .o/list constructors, without evaluating
+be added only for binding-recognized .o/list constructors, without evaluating
 or expanding arbitrary user functions. For function-produced lists, retain the
-call-site and mark element-level origin unavailable. Each initializer occurs once in the native expansion; metadata construction must
-not evaluate it again. Native lazy demand and receiver-local memoization govern
+call-site and mark element-level origin unavailable. Each initializer occurs once in the runtime expansion; metadata construction must
+not evaluate it again. Runtime lazy demand and receiver-local memoization govern
 execution: a different derived receiver can legitimately evaluate its own slot.
 Do not promise one execution globally across all descendants or processes.
 
 * Join diagnostic paths with the effective source projection
 
 The retained source owner must first select writes associated with the effective
-native declaration/prototype path. These inputs are not every write ever seen in
-the file: native resolution, ancestor replacement and declared precedence matter.
+runtime declaration/prototype path. These inputs are not every write ever seen in
+the file: runtime resolution, ancestor replacement and declared precedence matter.
 A full source-to-MOP association adapter remains pending. Do not implement a
 second inheritance algorithm by sorting source timestamps or searching names.
 
@@ -276,7 +276,7 @@ one. Suggested field names come from schema-fields at the relevant object node,
 not a handwritten typo dictionary. A spelling-suggestion function may rank those
 candidates, but cannot change configuration or reject valid open label keys.
 
-Domain relationship diagnostics use the same native shape. In the mismatch branch
+Domain relationship diagnostics use the same runtime shape. In the mismatch branch
 of guestbook-endpoint-errors, the design becomes:
 
 #+begin_src scheme
@@ -316,7 +316,7 @@ frontend.services[0].ports[0].targetPort: 8080 does not match listener 80
 
 * Govern macros as an owned, reviewable surface
 
-A small native macro surface may remove user boilerplate. It must still have an
+A small runtime macro surface may remove user boilerplate. It must still have an
 owner, a justified syntax/phase need, a normal-form expansion and diagnostic/budget
 controls. Do not equate macro quantity with expressiveness or quality. Strengthen
 the existing governance module before widening direct assignment or source wrappers.
@@ -324,7 +324,7 @@ the existing governance module before widening direct assignment or source wrapp
 | Concern | Required rule for this path/source macro |
 |---------+------------------------------------------|
 | Admission | Bounded syntax/hygiene/source capture need; no new config evaluator |
-| Semantic authority | Assignment replaces the leaf; generated ancestors use native =>.+; POO owns precedence, receiver and lazy cache |
+| Semantic authority | Assignment replaces the leaf; generated ancestors use runtime =>.+; POO owns precedence, receiver and lazy cache |
 | Phase | No filesystem scan, Module loading, Schema compilation or runtime registry mutation in expansion |
 | Hygiene | Preserve syntax identities and source spans; fresh private metadata bindings; no textual name substitution |
 | Demand | Initializer evaluated once; source metadata never forces original or sibling values |
@@ -332,9 +332,9 @@ the existing governance module before widening direct assignment or source wrapp
 | Budget | Bound input depth/generated forms/metadata; traversal work proportional to total path segments and supported constructor syntax |
 | Publication | Private source association is not a public value slot or user-maintained field table |
 | Failure | Typed source-aware expansion errors; unsupported forms retained as opaque expressions or explicitly refused |
-| Review gate | Expansion/native controls plus user-task/diagnostic evaluation; no macro-generated public macro tower |
+| Review gate | Expansion/runtime controls plus user-task/diagnostic evaluation; no macro-generated public macro tower |
 
-No new runtime governance module is implemented here. The native governance and
+No new runtime governance module is implemented here. The runtime governance and
 source-association APIs themselves require ownership, tests and admission before
 implementation. Macro support is not permission to run arbitrary compile-time
 code on behalf of an untrusted contribution.
@@ -350,7 +350,7 @@ specific phase/context coupling examples, not proof that every Doom macro is bad
 
 Borrow concise task declarations and explicit enable/disable intent. Avoid hiding
 phase-dependent policy or global-context decisions in our macro expander: lower
-intent to native values and let the admitted selection/provider owner interpret it.
+intent to runtime values and let the admitted selection/provider owner interpret it.
 No Doom startup, performance or safety result was measured in this comparison.
 
 * Reflection, questions and the next design gate
@@ -359,12 +359,12 @@ A short user edit is a legitimate UX requirement; testing inheritance laws belon
 behind the authoring surface. Macro-generated syntax may meet that requirement,
 but the matched KCL experiment must show whether users actually do less work.
 KCL already has published field models and a renderer. Our proposed additional
-value is coherent field/value/origin discovery across native extensions, not a
+value is coherent field/value/origin discovery across runtime extensions, not a
 claim that KCL lacks diagnostics or metaprogramming.
 
 | Question | Design answer | Required validation |
 |----------+---------------+---------------------|
-| Can short syntax and strong native semantics coexist? | Yes as a target: bounded lowering into native leaf assignment and ancestor refinement. | Same-prefix writes, upstream changes, one evaluation and literal dotted-slot escape cases |
+| Can short syntax and strong runtime semantics coexist? | Yes as a target: bounded lowering into runtime leaf assignment and ancestor refinement. | Same-prefix writes, upstream changes, one evaluation and literal dotted-slot escape cases |
 | Does discovery need another field registry? | No: normalized Schema plus final value and obligation-owned explanations. | Change Schema once; verify validation/help/suggestions all change together |
 | Can every exact field location be recovered? | No: arbitrary function results may have only a call site. | Literal versus computed Service list; no invented spans or wrong inherited origin |
 | What improves on the current UX? | Specific paths, local and related origins, fallback explanation; no provider bookkeeping. | Wrong targetPort, omitted targetPort, lables and valid envr, macro-expanded and inherited sources |
@@ -374,15 +374,15 @@ claim that KCL lacks diagnostics or metaprogramming.
 First qualify discovery from the real artifact and structured validator paths.
 Then add source-preserving direct assignment lowering and private publication
 association under the existing macro governance. Finally connect the diagnostic
-view and user preview to those native facts. Keep Loader and persistent-cache
+view and user preview to those runtime facts. Keep Loader and persistent-cache
 integration out of this phase. No implementation or Scheme execution occurred;
-source inspection, document checks and prior native controls remain distinct.
+source inspection, document checks and prior runtime controls remain distinct.
 
 The [[file:11.27-guestbook-macro-admission-and-minimal-controls.org][admission and minimal qualification plan]] now specifies the four control groups,
-manual native comparator, test-only demand counter and paired Schema revisions.
+manual runtime comparator, test-only demand counter and paired Schema revisions.
 These are proposed controls; no fixture or runtime gate was implemented here.
 
-The [[file:11.28-guestbook-concrete-qualification-fixtures.org][concrete fixture definitions]] now provide SchemaV1/V2, the native baseline,
+The [[file:11.28-guestbook-concrete-qualification-fixtures.org][concrete fixture definitions]] now provide SchemaV1/V2, the runtime baseline,
 RangeProbe/failure variants and original-syntax origin-row construction. The source
 row is expected fixture data; observing actual macro-emitted source associations
 remains a separate pending gate, not a self-comparison accepted as evidence.

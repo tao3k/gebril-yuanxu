@@ -6,7 +6,7 @@
 
 Agentic AI Lab documents the reusable module convention. Contribution repositories
 own domain source, while Agentic AI Lab owns the Gerbil package namespace and build
-environment. Native =std/make= owns source dependency analysis, compilation and
+environment. Runtime =std/make= owns source dependency analysis, compilation and
 scheduling; Agentic AI Lab does not expose a second compiler or scheduler.
 
 The contribution exports its domain module interfaces. It owns neither a
@@ -47,7 +47,7 @@ The final =user-interface/config.ss= explicitly imports only the POO values it
 composes. Reusable Profiles and =scenarios/<name>/scenario.ss= values keep
 stable module paths and are never implicitly re-exported by the root config.
 Case declarations and auxiliary assurance or Provider projections remain
-demand-loaded. Gerbil's native import graph therefore closes over selected
+demand-loaded. Gerbil's runtime import graph therefore closes over selected
 values without a second filesystem scan or mutable expander-context cache.
 =module-system/observability/testing-extension.ss= follows the same ownership
 rule from the testing side: it is imported and compiled by the focused testing
@@ -56,16 +56,16 @@ User-owned and contributor-owned selections stay in their independent loading
 and build lanes.
 The root-owned =build-contribute= adapter applies =yuanxu-load-modules=
 discovery to each direct =modules/<module-name>/= tree and therefore applies
-the same reader-native owner-import admission to contributor roles. Aggregate
+the same reader-runtime owner-import admission to contributor roles. Aggregate
 framework imports return the structured
 =yuanxu.module-owner-import-observation.v1= diagnostic and fail with
-=AGENTIC-AI-LAB-MODULE-E008= before a contribution reaches native compilation.
-The loader admits exactly the module's public =interface.ss=; native Gerbil
+=AGENTIC-AI-LAB-MODULE-E008= before a contribution reaches runtime compilation.
+The loader admits exactly the module's public =interface.ss=; Gerbil
 imports close over its internal
 roles before ASP =package-source-stage= hands the entrypoint to =std/make=.
 The contribution owns no
 package manager, scanner, scheduler, cache, or build framework. Its sole
-=build.ss= is the native Gerbil entry and inherits ASP's PackageSpec. Core and contribution
+=build.ss= is the Gerbil entry and inherits ASP's PackageSpec. Core and contribution
 artifacts share the package namespace while their build and test lanes remain
 independent.
 
@@ -132,7 +132,7 @@ are permitted; the public entry remains =interface.ss=.
 |------+----------------+--------------|
 | types.ss | Predicates and source contracts | Default activation, runtime effects |
 | objects.ss | POO prototypes and default values | Configuration routing |
-| funs.ss | Pure operations over native objects | User syntax or hidden I/O |
+| funs.ss | Pure operations over runtime objects | User syntax or hidden I/O |
 | config.ss | User selection to module/profile projection | Runtime execution |
 | interface.ss | Public exports | Business logic or another DSL |
 
@@ -146,11 +146,11 @@ runtime effect.  The public =interface.ss= imports it explicitly when present.
 An extension-bearing module uses one closed expression chain:
 
 #+begin_example
-generic protocol -> checked method bundle -> native POO/type composition
+generic protocol -> checked method bundle -> POO/type composition
                  -> thin hygienic defrule -> public interface
 #+end_example
 
-=types.ss= owns the native classes or =define-type= carriers needed by the
+=types.ss= owns the runtime classes or =define-type= carriers needed by the
 domain. =objects.ss= owns protocol objects, generics and inheritable prototypes.
 =funs.ss= owns pure implementation functions and the default method bundles.
 =contracts.ss=, when present, owns cross-object admission and is called by the
@@ -161,7 +161,7 @@ second registry. =interface.ss= closes the chain for consumers.
 
 This requirement applies wherever a module exposes behavior intended for
 downstream extension, such as workflow providers, storage backends or policy
-families. A data-only leaf module reuses its owner's protocol and native types;
+families. A data-only leaf module reuses its owner's protocol and runtime types;
 it must not create an empty generic, bundle or macro merely to imitate the file
 shape. Every behavior still has one protocol owner and one evaluator.
 
@@ -171,10 +171,10 @@ build preflight, including wrapped and relative imports. This check covers
 literal top-level import declarations; std/make remains responsible for the full
 Scheme dependency graph and compilation. Cross-module consumers use public
 interfaces; focused internal owners may import lower-level implementation units.
-Public extension is native POO derivation; do not bind type identity to a user's
+Public extension is POO derivation; do not bind type identity to a user's
 chosen profile identity string. Functions validate derived inputs at boundaries.
 When capturing local values inside =.o=, use names distinct from the emitted
-slot names (for example =status-value= for =status:=). Native slot binding can
+slot names (for example =status-value= for =status:=). Runtime slot binding can
 otherwise shadow the lexical value. Tests must read diagnostic/result slots,
 not only construct the object, to expose recursive or incorrect bindings.
 No contributor runtime, backend or implicit registration is installed by import.
@@ -189,7 +189,7 @@ examples directory. Its Scheme-bearing top level is closed:
 | =init.ss= | Module enablement only through =yuanxu!=. |
 | =config.ss= | Final direct =use-composition= declarations. |
 | =modules/= | User-owned =modules/<module-name>/= trees that are private or not ready for contribution. |
-| =profiles/= | Reusable native POO Profile objects and their refinements. |
+| =profiles/= | Reusable POO Profile objects and their refinements. |
 | =scenarios/= | Reusable scenario cases and review exercises consumed by compositions. |
 
 This borrows Doom's fixed entry roles and the repository classification common
@@ -211,7 +211,7 @@ the user does not write an aggregate import list or wrapper form.
 “Best practice” is a quality responsibility of these
 Profile objects; filenames identify concrete reusable cases. A user refinement
 lives under an owner namespace such as =profiles/tao3k/promotion.ss= and records
-its owner and feature set on the native POO object.
+its owner and feature set on the POO object.
 
 The root Agentic AI Lab contributor builder validates this shape before invoking ASP.
 Any other top-level =*.ss= file is rejected with =AGENTIC-AI-LAB-UI-E002= rather than
@@ -251,7 +251,7 @@ dependency parser, scheduler, or generated list of test files is introduced.
 
 * Qualification boundary
 
-The package-native build and =unit-tests.ss= are the executable evidence.
+The package-runtime build and =unit-tests.ss= are the executable evidence.
 Generated output enumeration and independent source-catalog receipts are not
 part of this module convention.
 
@@ -278,7 +278,7 @@ catalog data rather than being turned into lifecycle instances.
 
 
 * Large source catalogs and warm-build cost
-Native =std/make= expands selected source modules while determining dependencies
+Runtime =std/make= expands selected source modules while determining dependencies
 even when no output needs recompilation. Public-entry PackageSpec projection
 imports only the stable framework roots during clean-image bootstrap.
 A large data catalog should use one shared POO constructor over ordinary quoted
@@ -291,7 +291,7 @@ Scale receipts keep catalog size =N= distinct from selected module count =K=.
 The 100 and 1,000 module cases project source-ref data without forcing a loader
 and report =selected-build-target-count=0=. Timing is emitted as Observability
 evidence rather than compared with a machine-specific constant in a semantic
-unit test. Test observation cadence is selected by a native POO Observability
+unit test. Test observation cadence is selected by a POO Observability
 Profile, so CI and user profiles can refine heartbeat timing without editing
 the observer.
 
@@ -309,11 +309,11 @@ Before evaluating an atomic test, Agentic AI Lab applies its strict POO slot aut
 observation to the selected module tree and exact test file, then dynamically
 imports that exact compiled test before =gxtest=. Events are flushed at
 =source-start=, =source-scanned=, =source-admitted=, =test-start= and
-=test-complete=. The reader-native preflight never imports or compiles the test;
-native =gxtest= owns that boundary. Separate budgets bound the
+=test-complete=. The reader-runtime preflight never imports or compiles the test;
+runtime =gxtest= owns that boundary. Separate budgets bound the
 source/import preflight and case execution, so the last event identifies the
 stalled boundary. The normal path stays lightweight. The opt-in
-=observe-contribute-import-memory= path wraps import in the native POO Debug
+=observe-contribute-import-memory= path wraps import in the POO Debug
 memory monitor and terminates excessive heap or live-set growth with a typed
 receipt.
 

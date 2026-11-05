@@ -28,10 +28,11 @@
 
 (def feature-system-sources-lock-test
   (test-suite
-   "POO-native Sources Lock Feature"
+   "POO Sources Lock Feature"
    (yuanxu-test-case
     "publishes one reusable Feature and an indexed immutable lock"
     (check-equal? (.ref sources-lock-feature 'feature-id) 'sources-lock)
+    (check-equal? (.ref sources-lock-feature 'owner-module-id) 'yuanxu)
     (check-equal? (sources-lock? example-sources-lock) #t)
     (check-equal? (.ref example-sources-lock 'entry-count) 1)
     (check-equal? (.ref example-sources-lock 'byte-count)
@@ -99,7 +100,7 @@
        '("another/source" "example/source"))
       (check-equal? left-source right-source)))
    (yuanxu-test-case
-    "locks native bytevector sources without a text conversion boundary"
+    "locks runtime bytevector sources without a text conversion boundary"
     (let* ((payload #u8(0 1 2 127 128 255))
            (source
             (.o (:: @ SourceReference.)

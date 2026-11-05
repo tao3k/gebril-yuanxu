@@ -12,7 +12,7 @@
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export source-admission-test test-cleanup!)
 
-;; Test-only instrumentation below the adapter in the native method chain.
+;; Test-only instrumentation below the adapter in the runtime method chain.
 ;; Counting classification alone would not prove inherited .admit ran once.
 (def (counted-contract calls (returned #f))
   (def base
@@ -34,7 +34,7 @@
   (unless (= completed 6) (error "incomplete source admission controls" completed))
   (displayln "SOURCE-ADMISSION: 6 cases completed"))
 (def source-admission-test
-  (test-suite "Source-bound native Contract admission"
+  (test-suite "Source-bound Contract admission"
     (yuanxu-test-fixture "replaceable currentness callbacks cannot lend bytes across their effects"
       (fixture DirectoryFixture)
       (def path (path-expand "context.json" (.get fixture root)))

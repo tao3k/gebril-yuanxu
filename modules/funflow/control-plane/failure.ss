@@ -48,7 +48,7 @@
 (def ExecutionFailureType
   (.cc Type. sexp: 'FunflowExecutionFailure '.element? execution-failure?))
 
-;; Native Sum owns the POO carrier, tag recognition and payload normalization.
+;; Runtime Sum owns the POO carrier, tag recognition and payload normalization.
 ;; A right payload remains polymorphic until TryValue supplies its actual Type.
 (def TryResultType (Sum left: ExecutionFailureType right: Any))
 (def (make-try-result side value)

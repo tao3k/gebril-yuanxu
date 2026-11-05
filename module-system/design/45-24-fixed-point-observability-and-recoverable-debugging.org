@@ -276,10 +276,10 @@ flowchart TD
     CTRL -->|"captures live control state behind an opaque session boundary"| SUSP
 #+end_src
 
-* Native POO composition
+* POO composition
 
 Fixed-point core, observability, breakpoint, durable-evidence, and
-recovery-control behavior are native POO prototypes.  They are composed with
+recovery-control behavior are POO prototypes.  They are composed with
 =gerbil-poo= =.mix= into one higher-order fixed-point object.
 
 That object participates as one operand in the existing =compose profiles=
@@ -287,7 +287,7 @@ interface.  The outer Profile composition and inner prototype inheritance are
 distinct semantic layers.
 
 The concrete public shape is defined by
-[[file:45-25-native-poo-fixed-point-operand-composition.org][45-25]].
+[[file:45-25-poo-fixed-point-operand-composition.org][45-25]].
 
 This document introduces no fixed-point category selectors, =defobserver=,
 =defdebugger=, handler registry, string-keyed configuration table, or raw
@@ -336,7 +336,7 @@ recovery authority is evidence only and cannot authorize a live action.
 Gerbil supplies continuable exceptions, first-class continuations, condition
 handling, and hygienic macro facilities.
 
-Native =gerbil-poo= remains the sole POO evaluation mechanism.  Agentic AI Lab defines
+Runtime =gerbil-poo= remains the sole POO evaluation mechanism.  Agentic AI Lab defines
 semantic evidence, diagnostic projections, authority scopes, breakpoint
 meaning, recovery dispositions, and receipts.
 
@@ -365,7 +365,7 @@ is not an observer, recovery provider, or debugger authority.
 - [ ] Keep source location optional and non-authoritative.
 - [ ] Preserve opaque live debugger handles outside canonical evidence.
 - [ ] Treat disconnect and timeout separately from decline.
-- [ ] Compose fixed-point observability and recovery through native POO
+- [ ] Compose fixed-point observability and recovery through POO
       prototypes and pass the resulting object as one Profile operand.
 - [ ] Replay diagnostic and recovery receipts without live continuations,
       handlers, or debugger sessions.

@@ -105,10 +105,10 @@ paper's use of the word /causal/ does not itself admit a Agentic AI Lab causal f
 |----+---------------------------+-----------+-------------------------------------------|
 | R1 | Lamport, [[https://lamport.org/pubs/time-clocks.pdf][Time, Clocks, and the Ordering of Events in a Distributed System]] (1978) | high | =modules/temporal-causality/{types,objects,funs}.ss=: =AgenticAILabTemporalObservation= has clock role and position, but =causal-events-analyze= compares positions without a clock-domain comparison contract. Add explicit comparable-clock and partial-order evidence before treating positions as ordered; equal or incomparable timestamps do not establish causal order. |
 | R2 | Kowalski and Sergot, [[https://www.doc.ic.ac.uk/~rak/papers/event%20calculus.pdf][A Logic-based Calculus of Events]] (1986; author-hosted paper) | medium | =modules/temporal-causality/= should distinguish event occurrence, interval state and observation. Current event graph and cut provide occurrence snapshots, not a fluent/event-calculus engine; do not label snapshot reachability as persistent state. |
-| R3 | Kakas, Kowalski and Toni, [[https://www.doc.ic.ac.uk/~rak/papers/abdsurv.pdf][Abductive Logic Programming]] (1992) | high | Add POO-native candidate hypothesis, integrity constraint and explanation-set contracts under =modules/temporal-causality/=. A candidate explains observations only relative to declared assumptions and constraints; current =hypothesized= event modality is not an abductive search result. ASCENT or another rule engine may derive candidates but does not own their admission. |
+| R3 | Kakas, Kowalski and Toni, [[https://www.doc.ic.ac.uk/~rak/papers/abdsurv.pdf][Abductive Logic Programming]] (1992) | high | Add POO candidate hypothesis, integrity constraint and explanation-set contracts under =modules/temporal-causality/=. A candidate explains observations only relative to declared assumptions and constraints; current =hypothesized= event modality is not an abductive search result. ASCENT or another rule engine may derive candidates but does not own their admission. |
 | R4 | Halpern and Pearl, [[https://www.journals.uchicago.edu/doi/10.1093/bjps/axi147][Causes and Explanations: A Structural-Model Approach, Part I: Causes]] (2005) | high | Add separate intervention/model-family evidence before any actual-cause claim. =agentic-ai-lab-temporal-causal-classify= and GQL paths are structural/temporal witnesses; neither implements structural equations or intervention semantics. |
 | R5 | Alvaro et al., [[https://www2.eecs.berkeley.edu/Pubs/TechRpts/2009/EECS-2009-173.html][Dedalus: Datalog in Time and Space]] (2009) | medium | For optional ASCENT/Scheme derivation, represent delay and reordering as explicit time/arrival facts; do not assume rule closure equals committed event time. =modules/temporal-causality/= remains the semantic owner, not an ASCENT-specific facade. |
-| R6 | [[https://github.com/informalsystems/quint][Quint specification language]] | high | =packages/proofs/quint/= owns the finite models and verifier entry points; native POO values retain semantic ownership. |
+| R6 | [[https://github.com/informalsystems/quint][Quint specification language]] | high | =packages/proofs/quint/= owns the finite models and verifier entry points; POO values retain semantic ownership. |
 | R7 | Quint safety and temporal properties | high | A progress claim states fairness and environment assumptions; the shared catalog selects temporal properties explicitly. |
 | R8 | [[https://www.iso.org/standard/76120.html][ISO/IEC 39075:2024, GQL]] | medium | =packages/lambda-episteme/user-interface/scenarios/healthcare/reasoning/prescription-causal-trajectory.gql= asks snapshot graph questions. =modules/query/gql.ss= and the MRR execution boundary may produce candidate paths, not causal admission or complete-world claims. |
 | R9 | =AgenticAILabProof.PooC4.TemporalCausality= and [[https://lean-lang.org/][Lean]] | medium | =packages/proofs/lean/AgenticAILabProof/PooC4/TemporalCausality.lean= proves current event modality and cut laws. An optional later theorem can prove soundness of Quint-to-POO projection and result quantifiers after the Scheme contract is executable; source/digest equality alone is not semantic correspondence. |
@@ -182,18 +182,18 @@ attribution. [[file:../../../modules/temporal-causality/design-audit.org][Audit 
 The Cedar analogy is useful at the projection boundary: a POO value can own
 semantic identity while language source is composed and validated for an exact
 instance.  The current Cedar path accepts =AgenticAILabCedarPolicy= objects with
-=.cedar= source and projects them to a native engine; its Lean definitional
+=.cedar= source and projects them to a runtime engine; its Lean definitional
 semantics and differential tests are separate evidence.  Dynamic Cedar source
 does not mean that every newly supplied policy already has an instance-specific
 Lean theorem.  Temporal Causality needs the same distinction.
 
-The first-class =TemporalModel= POO composition is built from native observation
+The first-class =TemporalModel= POO composition is built from runtime observation
 domains, hypotheses, constraints, family completeness and query obligations.
-Pure functional helpers extend it. Native admission assigns a semantic revision
+Pure functional helpers extend it. Runtime admission assigns a semantic revision
 and digest; source data never grants authority. The public vocabulary does not
 expose the verifier's internal transition relation.
 
-The executable native classifier is in =modules/temporal-causality/= and its
+The executable runtime classifier is in =modules/temporal-causality/= and its
 focused tests cover unknown evidence, overlapping mechanisms, incomparable
 clocks, incomplete families and finite bounds. The formal projection is
 =packages/proofs/quint/TemporalFamily.qnt=. Its full, bounded and discriminating
@@ -242,7 +242,7 @@ The precise semantics and limits are in
 
 The formal family model takes =OBS=, =CONSTRAINTS= and =LIMIT= as internal
 Quint constants, with expected classification selected by each instance.
-Native POO construction uses the public clock-domain, observation, hypothesis
+POO construction uses the public clock-domain, observation, hypothesis
 and constraint objects directly. Each path has its own source and semantic
 identity; no automatic translation is claimed. Comparable clocks and observed
 evidence determine admitted/refuted/unknown status, and a bounded unexplored
@@ -356,7 +356,7 @@ positive-rule subset, an independent verifier and bounded test progress;
 that commit had not been pushed when this record was written.  Non-positive
 rules remain unsupported, and the source inventory is not authenticated by
 ASCENT.  Its source withdrawal may recompute.
-The POO-native =modules/temporal-causality/candidates/= slice now binds an
+The POO =modules/temporal-causality/candidates/= slice now binds an
 exact evidence cut/generation, required-provider set, declared provider
 receipt metadata and a separate check bound to each exact receipt digest.
 Its canonical audit returns =reviewable=, =pending=, =contested= or
@@ -368,18 +368,18 @@ specified in the [[file:../../../modules/temporal-causality/candidates/model.org
 The GQL bridge now checks an admitted Query, complete ElementSpace, Provider
 method and source receipt against the exact Temporal cut before making an
 unchecked =CandidateReceipt=.  It replays the Query admission and Provider
-binding, including the Query source hash and result bounds.  A new POO-native
+binding, including the Query source hash and result bounds.  A new POO
 finite scalar [[file:../../../modules/query/results/model.org][result-row contract]] canonicalizes materialized rows.  A separate local
 check compares those rows with the candidate digest, count and completion
 bit.  This scalar digest has a distinct =agentic-ai-lab.query.scalar-row-v1:= label.
-MRR already has a richer typed =QueryResultAdmissionReceipt= with a native
+MRR already has a richer typed =QueryResultAdmissionReceipt= with a runtime
 CBOR-based digest; the MRR-owned Provider still has no live transport of
 that receipt or its rows.  An end-to-end adapter must preserve MRR's query
 binding, generation, catalog and snapshot identities and establish their
 mapping to the POO Query and Temporal cut.  The new
 MRR-owned result projection structurally retains those identities and forces
 the Temporal candidate to stay incomplete.  It is a declared POO projection,
-not a verified native exporter.  The local scalar row check cannot establish
+not a verified runtime exporter.  The local scalar row check cannot establish
 execution or verifier authority.
 
 =packages/proofs/quint/CandidateExchange.qnt=
@@ -547,10 +547,10 @@ Gerbil POO owns declarative Event, Decision, Effect, Observation, Profile,
 Scenario and Case objects.  It validates identities, seals the event graph,
 derives the committed causal cut, projects the finite graph and produces
 deterministic witness paths.  It also
-combines its native temporal classification with independently admitted Quint
+combines its runtime temporal classification with independently admitted Quint
 and Lean evidence into one inert assurance receipt.  Content-bound GQL Sources
 remain non-authoritative analysis contracts until the downstream MRR Rust
-library executes them through gerbil-parser's native FFI and returns a separate
+library executes them through gerbil-parser's runtime FFI and returns a separate
 execution receipt.
 
 Scheme must not infer a clinical causal fact merely because two nodes are
@@ -630,7 +630,7 @@ correct handling of whatever evidence and modality the receipt actually binds.
 
 ** Lean module ownership mirrors POO Module ownership
 
-Lean's native module, root and library-target model is the proof equivalent of
+Lean's runtime module, root and library-target model is the proof equivalent of
 the Scheme PackageSpec boundary.  A proof-bearing =modules/<owner>= has one
 Lake library named =AgenticAILabModule<Owner>Proof=.  Its =roots= are the public
 proof roots for that owner, and Lake alone derives their import closure.
@@ -682,7 +682,7 @@ flowchart LR
    MRR Rust execution receipt may add non-authoritative analysis witnesses.
 5. Quint explores bounded present/future/counterfactual transitions.
 6. Lean proves generic invariants and the Healthcare refinement boundary.
-7. Scheme combines the native, Quint and Lean receipts without treating one as
+7. Scheme combines the runtime, Quint and Lean receipts without treating one as
    proof of another.
 8. Cedar separately decides whether the exact next action may execute; the
    dual-engine Host remains the authority boundary.
@@ -734,7 +734,7 @@ requires a fresh, exact Cedar decision at the effect boundary.
 - [X] Add parser-qualified GQL queries for retrospective, current and prospective
    candidate paths plus explicit unknown-frontier queries.
 - [ ] Bind those GQL queries to an MRR Rust execution receipt through the
-   gerbil-parser native FFI; parser qualification alone is not query execution
+   gerbil-parser runtime FFI; parser qualification alone is not query execution
    and Lambda must not add a subprocess or a second graph runtime.  Agentic AI Lab's
    typed candidate, CLOS admission, and Scheme-owned typed Rust projection are ready; the
    remaining owner is the MRR Rust adapter from its admitted physical result
@@ -744,7 +744,7 @@ requires a fresh, exact Cedar decision at the effect boundary.
    semantic-revision identities from the result receipt.
   A separate bounded synthetic read-only chain now passes original GQL
    compilation, immutable Arrow recovery, historical MRR receipt admission
-   and native finite-family Temporal classification. That receipt predates the
+   and runtime finite-family Temporal classification. That receipt predates the
    fixed Scheme v1 transport migration and does not qualify the current ABI. Its exact pins
    and evidence are recorded in
    [[https://github.com/tao3k/meta-relational-reasoning/blob/0d792ceb67b27276eaf5255057943830643faa72/runtime/qualification/physical-roundtrip/README.org][physical roundtrip qualification]].
@@ -752,7 +752,7 @@ requires a fresh, exact Cedar decision at the effect boundary.
    current-cut fences, correction/re-query, deployed recovery and IFC effect
    publication. Historical model receipts are not a fresh model run at these pins.
 - [X] Add the Healthcare Quint prescription lifecycle and Quint configuration;
-   native parser qualification and byte-exact roundtrip are closed.
+   runtime parser qualification and byte-exact roundtrip are closed.
 - [X] Run official Quint model exhaustion through the explicit devenv-backed
    assurance gate and retain its typed receipt.  The exact AI-assisted
    prescription model generates 16 states, closes 11 distinct states at graph
@@ -784,10 +784,10 @@ requires a fresh, exact Cedar decision at the effect boundary.
 
 * Detached Family history replay boundary
 
-The Library now projects a native =AgenticAILabTemporalFamilyArchive= through the
+The Library now projects a runtime =AgenticAILabTemporalFamilyArchive= through the
 Scheme C ABI. Its full Family Model/Query/Source/Frontier premises allow the Rust
 Library adapter to replay a correction/retraction graph in a fresh process with
-an independently retained digest. Native replay reconstructs proofs and canonical
+an independently retained digest. Runtime replay reconstructs proofs and canonical
 history; it does not select a current Source or restore runtime handles.
 
 This closes the Family history transport/replay gate only. Original physical MRR
@@ -799,7 +799,7 @@ See =.ci/mrr-runtime/runtime/README.org= and
 
 * MRR Context current binding adapter
 
-The Rust Library's optional =mrr-context= adapter now joins a native Family
+The Rust Library's optional =mrr-context= adapter now joins a runtime Family
 admission to the original pinned MRR Context facade. It retains the original
 MRR result/receipt and host correspondence, uses an exact Scheme receipt fact
 as a typed temporal reference, rechecks Context source/query/policy bindings,
@@ -816,7 +816,7 @@ integration test and its open gates.
 
 * Production integration sequence (fixed Scheme v1)
 
-MRR owns typed semantic admission, the single native execution owner and effect
+MRR owns typed semantic admission, the single runtime execution owner and effect
 coordination. MRR Data owns physical Backend/Protocols, the authenticated
 content head and the conditional head/operation-ledger transaction. The runtime
 must not duplicate Backend storage or treat a sampled current proof as an

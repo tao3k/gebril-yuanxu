@@ -24,7 +24,7 @@
   (check-equal? (Error-message failure) message))
 (def mop-state-snapshot-test
  (test-suite "Actual MOP state extraction without producer changes"
-  (yuanxu-test-case "native field reflection, shared ancestor and unselected getter"
+  (yuanxu-test-case "runtime field reflection, shared ancestor and unselected getter"
     (def calls 0)
     (.def Shared port: (begin (set! calls (+ calls 1)) 5432)
       unused: (error "unselected branch forced"))

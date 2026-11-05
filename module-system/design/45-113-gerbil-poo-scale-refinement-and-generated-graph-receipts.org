@@ -25,7 +25,7 @@ implementation must produce before Agentic AI Lab may claim that one
   Scale evidence applies to the admitted value graph and does not own the
   current binding-macro name or authorize a clause grammar.
 - Modules, Profiles, imports, identities, capabilities, and receipts are
-  POO-native objects or projections of POO-native objects.
+  POO objects or projections of POO objects.
 - A generator may create executable evidence graphs, but it is not a second
   public Module language.
 - Lean proves the abstract obligations.  Generated Gerbil runs establish the
@@ -79,17 +79,17 @@ constraints.  The abstract result is one composition root.
 
 ** Concrete side
 
-The concrete witness is a finite graph whose nodes are native ~gerbil-poo~
+The concrete witness is a finite graph whose nodes are runtime ~gerbil-poo~
 objects:
 
-- Agentic AI Lab declares a Module prototype whose native object slots project stable
+- Agentic AI Lab declares a Module prototype whose runtime object slots project stable
   identity, imports, exported Profiles, and capability constraints;
-- Agentic AI Lab declares a Profile prototype whose native object slots project
+- Agentic AI Lab declares a Profile prototype whose runtime object slots project
   stable identity and reachable responsibilities;
 - an import edge refers to another Module identity;
 - a final ~use-composition~ invocation selects the aggregate Profiles from
   which the reachable Module closure is computed;
-- Agentic AI Lab declares receipt prototypes whose native object slots record the
+- Agentic AI Lab declares receipt prototypes whose runtime object slots record the
   observed graph, closure, capability result, fixed-point outcome, resource
   attribution, and deterministic digest.
 
@@ -119,37 +119,37 @@ $ Refines(A_n, G_n) :=
 Refinement is exact.  Matching only the final Profile count is insufficient:
 identity, reachability, capabilities, and failure outcome must also agree.
 
-* POO-native projection contract
+* POO projection contract
 
-The refinement adapter is internal.  It observes native objects without
+The refinement adapter is internal.  It observes runtime objects without
 introducing a competing public data model.
 
-** Verified native ~gerbil-poo~ substrate
+** Verified runtime ~gerbil-poo~ substrate
 
 The local ~gerbil-poo~ checkout provides the following generic mechanisms:
 
 - ~instantiate-proto~, ~identity-proto~, ~compose-proto~, and
   ~compose-proto*~ for functional prototype instantiation and composition;
-- the native ~object~ representation with supers, direct slots, defaults,
+- the runtime ~object~ representation with supers, direct slots, defaults,
   instance values, C4 precedence, computed slot functions, and the complete
   slot set;
 - ~.def~ and the object construction macros for declarative object families;
 - ~.@~ / ~.get~ for nested slot projection;
 - ~.cc~ for a pure cloned object with explicit overrides;
 - ~.putslot!~, ~.putdefault!~, and ~.put!~ as explicit mutation operations;
-- native precedence computation that detects a circular precedence graph
+- runtime precedence computation that detects a circular precedence graph
   rather than silently recursing forever.
 
 The scale refinement uses the functional and declarative route by default:
-~compose-proto~ / ~compose-proto*~, declarative native objects, slot projection,
+~compose-proto~ / ~compose-proto*~, declarative runtime objects, slot projection,
 and pure ~.cc~ overrides.  Mutation operators are not the ordinary
 ~use-composition~ path; they remain behind explicit construction, runtime, or
 observability boundaries.
 
-The following concepts are not native domain concepts of ~gerbil-poo~:
+The following concepts are not runtime domain concepts of ~gerbil-poo~:
 ~Module~, ~Profile~, ~imports~, ~capability~, ~receipt~, and
 ~use-composition~.  Agentic AI Lab defines them as prototypes, objects, slots, and a
-thin hygienic projection over the verified native substrate.  It must not claim
+thin hygienic projection over the verified runtime substrate.  It must not claim
 that ~gerbil-poo~ itself owns those names or their policy.
 
 In particular, stable Module/Profile identity is an explicit Agentic AI Lab slot.  It
@@ -177,13 +177,13 @@ expansion.  The hygienic ~use-composition~ form may project to ordinary
 
 | Abstract component | Concrete ~gerbil-poo~ witness | Required equality |
 |-
-| Module index | Agentic AI Lab ~identity~ slot on a native Module object | bijective identity map |
-| Profile selection | Agentic AI Lab Profile object exported through a native slot | exact selected identity |
-| import relation | Agentic AI Lab ~imports~ slot containing native Module objects | exact edge relation after identity projection |
-| reachable closure | projected native Module objects | sound and complete identity set |
+| Module index | Agentic AI Lab ~identity~ slot on a runtime Module object | bijective identity map |
+| Profile selection | Agentic AI Lab Profile object exported through a runtime slot | exact selected identity |
+| import relation | Agentic AI Lab ~imports~ slot containing runtime Module objects | exact edge relation after identity projection |
+| reachable closure | projected runtime Module objects | sound and complete identity set |
 | capability meet | Agentic AI Lab capability object/slot | no capability amplification |
-| fixed-point result | Agentic AI Lab observation over native evaluation | exact outcome |
-| composition root | final ~use-composition~ native-object result | exactly one root |
+| fixed-point result | Agentic AI Lab observation over runtime evaluation | exact outcome |
+| composition root | final ~use-composition~ poo-object result | exactly one root |
 
 #+begin_src text
 $ forall m in G_n.modules:
@@ -200,7 +200,7 @@ invent missing identities, imports, Profiles, or authority.
 
 RFC 45-93 owns ~Module~, ~Profile~, ~ProfileBundle~, ~imports~, ~profiles~,
 identity projection, capability attenuation, and the constrained ~use-module~
-boundary.  This RFC must refine those objects to the native substrate; it must
+boundary.  This RFC must refine those objects to the runtime substrate; it must
 not redefine their domain meaning.
 
 RFC 45-93 fixes those concepts at the object/projection level but does not yet
@@ -209,18 +209,18 @@ projection for discussion, not an accepted new API:
 
 | Object family | Candidate projected responsibilities |
 |-
-| Module | immutable native POO object; stable definition identity; exported stable Profiles; recursive imported Module objects; capability requirements; submodule relationships; revision/generation |
-| Profile | immutable native POO value; stable Profile identity; owning Module identity; dependency projection; capability requirements; prototype lineage |
-| ProfileBundle | immutable native POO value; Module definition and instance identities; selected Profile identities; selected dependency roots; capability requirements; revision/generation provenance; export-membership proof; admitted Profile-operand evidence |
+| Module | immutable POO object; stable definition identity; exported stable Profiles; recursive imported Module objects; capability requirements; submodule relationships; revision/generation |
+| Profile | immutable POO value; stable Profile identity; owning Module identity; dependency projection; capability requirements; prototype lineage |
+| ProfileBundle | immutable POO value; Module definition and instance identities; selected Profile identities; selected dependency roots; capability requirements; revision/generation provenance; export-membership proof; admitted Profile-operand evidence |
 
-The object graph retains native POO object references.  Stable identities are
+The object graph retains POO object references.  Stable identities are
 projected at comparison, serialization, and receipt boundaries.  Replacing the
 ~imports~ edge with only a string or package coordinate would discard the POO
 object graph and is not this refinement.
 
 These rows are proof responsibilities, not a demand for one physical slot per
 proposition.  An approved POO prototype may derive several proof
-responsibilities from a smaller set of native slots and pure projections.
+responsibilities from a smaller set of runtime slots and pure projections.
 
 The corresponding negative boundaries are equally normative:
 
@@ -287,7 +287,7 @@ outer form does not repeat them, parse their list, or inspect their semantics.
 
 ** Minimal physical slot proposal
 
-The proof responsibilities can be refined from a small POO-native physical
+The proof responsibilities can be refined from a small POO physical
 surface:
 
 | POO object | Physical slots proposed for discussion | Pure/computed projections |
@@ -302,7 +302,7 @@ first-class POO values.  They are not raw strings, package coordinates, alists,
 or policy records.
 
 ~ProfileBundle~ intentionally has only two physical slots.  Its other
-obligations are computed from the selected native Module/Profile graph.  This
+obligations are computed from the selected runtime Module/Profile graph.  This
 keeps ~use-module~ a pure projection instead of introducing a second materialized
 graph that can drift from the Module definitions.
 
@@ -324,8 +324,8 @@ $ op("bundle-identity")(bundle(m, P))
 
 #+begin_src mermaid
 flowchart LR
-  GP["gerbil-poo object / prototype substrate"] -->|"confirmed: native composition and slots"| M["Module physical slots"]
-  GP -->|"confirmed: native composition and slots"| P["Profile physical slots"]
+  GP["gerbil-poo object / prototype substrate"] -->|"confirmed: runtime composition and slots"| M["Module physical slots"]
+  GP -->|"confirmed: runtime composition and slots"| P["Profile physical slots"]
   M -->|"proposed: module + selected profiles only"| B["ProfileBundle physical value"]
   P -->|"proposed: module + selected profiles only"| B
   B -->|"derived: imports closure"| I["Reachable Module objects"]
@@ -518,14 +518,14 @@ one integer:
 - graphs with deliberately conflicting identities;
 - graphs with deliberately attempted capability amplification.
 
-Every graph is built from native ~gerbil-poo~ objects and reaches the ordinary
+Every graph is built from runtime ~gerbil-poo~ objects and reaches the ordinary
 ~use-composition~ entry.  Test-only graph constructors must not become an
 alternative user interface.
 
 #+begin_src mermaid
 flowchart LR
   A["Abstract Fin(n) model"] -->|"proved: selection and closure laws"| R["Refinement relation"]
-  G["Generated native gerbil-poo graph"] -->|"pending: Agentic AI Lab slot projection"| R
+  G["Generated gerbil-poo graph"] -->|"pending: Agentic AI Lab slot projection"| R
   R -->|"pending: identity / edge / Profile equality"| C["Concrete semantic receipt"]
   C -->|"pending: cycle outcome and capability attenuation"| F["Fixed-point receipt"]
   F -->|"pending: PID / phase / RSS / PSS attribution"| P["Performance receipt"]
@@ -537,7 +537,7 @@ flowchart LR
 
 * Receipt object family
 
-The runtime-facing values are POO-native receipt objects.  Serialization is an
+The runtime-facing values are POO receipt objects.  Serialization is an
 evidence boundary, not the public composition interface.
 
 ** Graph identity receipt
@@ -683,12 +683,12 @@ Gerbil scale admission.
 * Discussion checklist
 
 - [X] Confirm that ~gerbil-poo~ supplies generic prototype/object/slot
-  mechanisms rather than native Module/Profile domain concepts.
-- [X] Confirm ~compose-proto~ / ~compose-proto*~ as the native functional
+  mechanisms rather than runtime Module/Profile domain concepts.
+- [X] Confirm ~compose-proto~ / ~compose-proto*~ as the runtime functional
   prototype-composition substrate.
 - [X] Confirm that stable Module/Profile identities are explicit Agentic AI Lab
-  slots, not native object addresses or package identities.
-- [X] Confirm that runtime ~imports~ retain native Module-object edges and that
+  slots, not runtime object addresses or package identities.
+- [X] Confirm that runtime ~imports~ retain runtime Module-object edges and that
   receipts compare their stable identity projection.
 - [X] Confirm RFC 45-93 as the owner of Module/Profile/ProfileBundle domain
   meaning.
@@ -732,10 +732,10 @@ Gerbil scale admission.
 * Implementation checklist
 
 - [ ] Add the internal abstract-to-~gerbil-poo~ projection.
-- [ ] Add native POO graph generators for every required graph family.
-- [ ] Add POO-native graph identity receipts.
-- [ ] Add POO-native semantic refinement receipts.
-- [ ] Add POO-native fixed-point and recovery receipts.
+- [ ] Add POO graph generators for every required graph family.
+- [ ] Add POO graph identity receipts.
+- [ ] Add POO semantic refinement receipts.
+- [ ] Add POO fixed-point and recovery receipts.
 - [ ] Add process-attributed resource receipts.
 - [ ] Add deterministic replay checks.
 - [ ] Add focused 100-Module validation.

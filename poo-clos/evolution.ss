@@ -5,7 +5,7 @@
 
 ;;; Transaction-shaped class generation and dependent-class evolution.
 
-(import (only-in :clan/poo/object .ref)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop element?)
         "types.ss" "objects.ss" "classes.ss")
 
@@ -51,7 +51,7 @@
   (if (and root? (not (eq? supplied +poo-clos-unspecified+)))
     supplied fallback))
 
-;;; Stage all dependent native C4 projections before the first live mutation.
+;;; Stage all dependent runtime C4 projections before the first live mutation.
 ;;; The tables only connect candidate prototypes and declarations; the upstream
 ;;; POO linearizer still owns the order and rejection decision.
 ;; : (-> [ClosClass] ClosClass SchemeValue SchemeValue [Pair])

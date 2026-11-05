@@ -7,9 +7,8 @@
         (only-in "../init.ss" yuanxu.init.exports )
         (rename-in (only-in "../init.ss" yuanxu.init.exports) (yuanxu.init.exports ModuleNamespace))
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/building/test-projection module-test-projection module-test-file-source
-                 module-test-directory-source)
-        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
+        (only-in :yuanxu/module-system/building/test-projection module-test-projection module-test-file-source)
+        (only-in :clan/poo/mop Type.)
         (only-in :yuanxu/module-system/source/admission module-source-read)
         (only-in :yuanxu/observability/testing-fixture
                  with-yuanxu-fixture yuanxu-test-fixture)
@@ -24,7 +23,7 @@
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (for-each (cut pretty-print <> port) forms))))
 (def FixtureContract
-  (yuanxu-predicate-contract 'test/fixture-scope object? (lambda (_v _c) '())))
+  (.cc Type. identity: 'test/fixture-scope .element?: object?))
 ;; This fixture supplies an inert publication, not a qualified domain scope.
 ;; Real JsonSchema and Funflow are selected and executed by Core init above.
 (def (fixture-reader source)
@@ -36,39 +35,11 @@
   (module-test-projection (yuanxu-load-modules source read-publication: fixture-reader)))
 (def module-testing-test
   (test-suite "Selected module atomic testing"
-    (yuanxu-test-fixture "directory discovery prunes excluded branches and guards membership"
-      (directory Workspace)
-      (create-directory (path-expand "nested" directory))
-      (create-directory (path-expand "excluded" directory))
-      (def first (path-expand "first-test.ss" directory))
-      (def second (path-expand "nested/second-test.ss" directory))
-      (write-forms first '((error "discovery executed a test")))
-      (write-forms second '((error "discovery executed another test")))
-      ;; If the excluded subtree is traversed, this non-regular entry refuses.
-      (def link (path-expand "excluded/loop" directory))
-      (dynamic-wind
-        (lambda () (create-symbolic-link directory link))
-        (lambda ()
-          (def projection (module-test-directory-source directory '("excluded")))
-          (check-equal? (.get projection spec) (list first second))
-          ((.get projection admit-current))
-          (write-forms (path-expand "excluded/new-test.ss" directory) '((error "excluded")))
-          ((.get projection admit-current))
-          (write-forms (path-expand "added-test.ss" directory) '((void)))
-          (check-exception ((.get projection admit-current)) error?))
-        ;; The outer generic directory Fixture must never follow our loop.
-        (lambda () (delete-file link))))
-    (yuanxu-test-fixture "directory demand rejects source changes and unsafe exclusions"
-      (directory Workspace)
-      (def file (path-expand "atomic-test.ss" directory))
-      (write-forms file '((void)))
-      (def projection (module-test-directory-source directory))
-      ((.get projection admit-current))
-      (write-forms file '((error "changed")))
-      (check-exception ((.get projection admit-current)) error?)
-      (check-exception (module-test-directory-source directory '("../other")) error?))
     (test-case "importing the init source does not acquire a Graph or enumerate tests"
-      (check-equal? (.slot? (.get yuanxu.init.exports tests) '.run) #t)
+      (check-equal? (.slot? (.get yuanxu.init.exports tests) '.run) #f)
+      (check-equal? (.slot? (.get yuanxu.init.exports tests) '.compile) #f)
+      (check-equal? (.slot? (.get yuanxu.init.exports tests) 'execution) #f)
+      (check-equal? (.slot? (.get yuanxu.init.exports tests) 'std-make-spec) #t)
       (check-equal? (.ref/cached (.get yuanxu.init.exports tests) 'command) #f)
       (check-equal? (.ref/cached (.get yuanxu.init.exports tests) 'spec) #f)
       (check-equal? (.ref/cached (.get yuanxu.init.exports tests) 'selected-graph) #f))
@@ -92,20 +63,16 @@
       (check-equal? (.ref/cached modules 'funflow) #f)
       (check-equal? (.ref/cached (.get yuanxu.init.exports tests) 'spec) #f)
       (check-equal? (.ref/cached (.get yuanxu.init.exports tests) 'selected-graph) #f)
-      (def module (.get modules json-schema))
-      (check-equal? (.all-slots/sort module) '(identity scope tests))
-      (check-equal? (.slot? module 'tests) #t)
-      (check-equal? (.slot? module 'missing) #f)
-      (check-equal? (.ref/cached module 'scope) #f)
-      (check-equal? (.ref/cached module 'tests) #f))
+      (check-equal? (.ref/cached modules 'json-schema) #f))
     (test-case "init exports inert test files selected from its existing Graph"
       (def json (.get (.call (.get yuanxu.init.exports tests) .select '(json-schema)) spec))
       (def flow (.get (.call (.get yuanxu.init.exports tests) .select '(funflow)) spec))
       (check-equal? (map path-strip-directory json) '("atomic-test.ss"))
       (check-equal? (map path-strip-directory flow) '("atomic-test.ss"))
       (check-equal? (.get (.call (.get yuanxu.init.exports tests) .select '()) spec) '())
-      ;; Empty selection must never become gxtest's implicit directory scan.
-      (check-exception (.call (.call (.get yuanxu.init.exports tests) .select '()) .run) error?)
+      ;; Empty metadata must not expose an executor that could start the
+      ;; official tool with no arguments and trigger its default directory scan.
+      (check-equal? (.slot? (.call (.get yuanxu.init.exports tests) .select '()) '.run) #f)
       (check-exception (.get (.call (.get yuanxu.init.exports tests) .select '(unselected)) spec) error?)
       (def scenarios
         (.get (.call (.get yuanxu.init.exports tests) .select
@@ -114,14 +81,11 @@
       (check-equal? (.get yuanxu.init.exports tests spec) (append json flow scenarios))
       (check-equal? (eq? json (.get (.call (.get yuanxu.init.exports tests) .select '(json-schema)) spec)) #t)
       (def selected (.call (.get yuanxu.init.exports tests) .select '(json-schema)))
-      (check-equal? (.slot? selected '.run) #t)
+      (check-equal? (.slot? selected '.run) #f)
       (check-equal? (eq? selected (.call (.get yuanxu.init.exports tests) .select '(json-schema))) #t)
       (check-equal? (eq? (.get selected selected-graph) (.get yuanxu.init.exports tests selected-graph)) #t)
       (check-equal? (eq? (.get selected admit-current) (.get selected source admit-current)) #t)
-      (def module (.get yuanxu.init.exports Modules json-schema))
-      (check-equal? (eq? module (.get yuanxu.init.exports Modules json-schema)) #t)
-      (check-equal? (eq? selected (.get module tests)) #t)
-      (check-equal? (.ref/cached module 'scope) #f)
+      (check-equal? (.ref/cached (.get yuanxu.init.exports Modules) 'json-schema) #f)
       (check-equal? (eq? (.get yuanxu.init.exports tests spec) (.get yuanxu.init.exports tests spec)) #t)
       ((.get yuanxu.init.exports tests admit-current)))
     (test-case "build and testing reuse one source epoch without building test files"

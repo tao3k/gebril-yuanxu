@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 module TestMakeLayoutModel {
   const BUG: str
-  // Start at a valid restored warm publication. Native Make's source/dependency
+  // Start at a valid restored warm publication. std/make's source/dependency
   // timestamps are stable; only target layout can make the expected output miss.
   var s: {phase: int, expectedMatches: bool, roots: int, compiles: int, source: int,
     a: bool, b: bool, accepted: bool, parent: int, unused: int}

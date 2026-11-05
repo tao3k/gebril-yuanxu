@@ -17,7 +17,7 @@ module MetadataAllocationModel {
       revision: 0, accepted: false, planOwner: 2, unused: 0}}
   }
   // Allocation/derivation registers all consumers of one shared specification.
-  // This reverse ownership ledger is a DESIGN; native tests observe the aliases.
+  // This reverse ownership ledger is a DESIGN; runtime tests observe the aliases.
   action inherit = all {s.phase == 0,
     s' = s.with("phase", 1).with("owners",
       if (BUG == "lastOwner") Set(3) else s.owners.union(Set(2,3)))}

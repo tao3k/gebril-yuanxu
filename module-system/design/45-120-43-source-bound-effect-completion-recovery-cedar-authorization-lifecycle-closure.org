@@ -401,11 +401,11 @@ owner-source-extract payload_bytes=153561 state=completed
 
 Request-time AXLE dependency merge was measured and rejected: 60 source units
 timed out at 300 seconds and 21 units timed out at 180 seconds.  RFC 45-120-45
-therefore requires a native cached exporter plus a source-bound Cedar typed
+therefore requires a runtime cached exporter plus a source-bound Cedar typed
 proof-base interface.  The warm exporter receipt is 3.80 seconds; the focused
 Lake lifecycle/subject/exporter build is 2.45 seconds.
 
-The approved remote root run used the formal Python owner and the native Lean
+The approved remote root run used the formal Python owner and the runtime Lean
 exporter.  It did not use the temporary adapter, request-time dependency merge,
 or a timeout increase.
 

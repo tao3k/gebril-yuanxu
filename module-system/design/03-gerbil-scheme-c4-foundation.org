@@ -8,14 +8,14 @@
 
 This is not accidental. The module system should be designed around Gerbil POO rather than treating Scheme as a thin syntax layer over a Rust runtime.
 ** 10.06.03.20 C4 As A Core Design Tool
-The current =agentic-ai-lab= control plane uses native C4 role composition. Descriptors can inherit behavior from multiple roles without reimplementing linearization in local code.
+The current =agentic-ai-lab= control plane uses runtime C4 role composition. Descriptors can inherit behavior from multiple roles without reimplementing linearization in local code.
 
 The module system follows that rule:
 - =poo-module-role= extends the control-plane role family;
 - =poo-module-descriptor-prototype= supplies module-owned slots;
 - future module descriptors can add UX, backend, or policy roles through the same Gerbil POO composition path.
 
-=core/module-system/schema/interface.ss= exposes =yuanxu-module-object= as a Gerbil POO object with inherited objects passed as =supers:=. The =fields= slot is computed through gerbil-poo =superfun=, so object field resolution uses native POO/C4 precedence rather than a local recursive inheritance merge.
+=core/module-system/schema/interface.ss= exposes =yuanxu-module-object= as a Gerbil POO object with inherited objects passed as =supers:=. The =fields= slot is computed through gerbil-poo =superfun=, so object field resolution uses POO/C4 precedence rather than a local recursive inheritance merge.
 ** 10.06.03.25 v0.19 Source Evidence
 =agentic-ai-lab= now targets Gerbil v0.19. The earlier staging checkout below is historical research; the active =gerbil-poo/object.ss= delegates =compute-precedence-list!= to =c4-linearize= in the installed v0.19 runtime.
 
@@ -85,7 +85,7 @@ Those are execution-DAG concerns. In this repository they remain inspectable fac
 The practical design rule is:
 #+begin_src text
 POO/C4 now for descriptor inheritance and role precedence.
-Native Gerbil v0.19 C4 remains the sole precedence owner.
+Runtime Gerbil v0.19 C4 remains the sole precedence owner.
 Explicit DAG/topological planning for workflow execution, implemented outside this project.
 #+end_src
 

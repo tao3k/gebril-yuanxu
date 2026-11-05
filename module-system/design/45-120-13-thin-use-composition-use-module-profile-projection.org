@@ -40,8 +40,8 @@ It separates:
 this expression.
 
 =compose= is an ordinary pure function.  =profiles= is a first-class
-native POO strategy value.  Module selections, profile values, and the
-resulting composition remain ordinary native POO values.
+POO strategy value.  Module selections, profile values, and the
+resulting composition remain ordinary POO values.
 
 The macros provide necessary hygienic binding and phase semantics only.
 They do not own Module evaluation, import closure, fixed points, profile
@@ -78,10 +78,10 @@ semantics are preserved.
 
 * use-module responsibility
 
-=use-module= hygienically resolves an already available native Module
+=use-module= hygienically resolves an already available runtime Module
 binding and an admitted profile selector.
 
-It projects that selection to an ordinary native Module/Profile POO
+It projects that selection to an ordinary runtime Module/Profile POO
 value suitable for =compose=.  It preserves source mapping for both the
 Module binding and selector.
 
@@ -106,11 +106,11 @@ import behavior.
 =compose= remains an ordinary pure function that accepts a composition
 strategy and ordinary values.
 
-=profiles= is a first-class native POO strategy.  It owns the pure
+=profiles= is a first-class POO strategy.  It owns the pure
 ProfileBundle composition semantics admitted by the relevant Module and
 profile RFCs.
 
-The strategy may use native =gerbil-poo= prototype composition,
+The strategy may use runtime =gerbil-poo= prototype composition,
 dispatch, slot operations, priority evidence, and functional
 combinators.  It does not require a macro wrapper.
 
@@ -131,10 +131,10 @@ composition syntax does not grow a clause language for them.
 
 #+begin_src mermaid
 flowchart LR
-  U["use-module source syntax"] -->|"hygienically resolves Module and profile-selection bindings"| M["Native Module/Profile POO value"]
+  U["use-module source syntax"] -->|"hygienically resolves Module and profile-selection bindings"| M["Runtime Module/Profile POO value"]
   M -->|"enters composition as an ordinary value"| C["Pure compose function"]
   P["First-class profiles POO strategy"] -->|"defines admitted ProfileBundle composition"| C
-  A["Advanced native POO profile values"] -->|"participate without new syntax"| C
+  A["Advanced POO profile values"] -->|"participate without new syntax"| C
   C -->|"returns one pure composed POO value"| V["Composition value"]
   B["use-composition source syntax"] -->|"hygienically binds the ordinary expression result"| V
   V -->|"is evaluated later by Module, authority, and observability semantics"| E["Agentic AI Lab evaluator"]
@@ -186,14 +186,14 @@ The following are rejected:
 
 - =user-composition= as a redundant outer wrapper;
 - =initial= as an implicit phase;
-- =poo-compose= as a wrapper around native POO composition;
+- =poo-compose= as a wrapper around POO composition;
 - host-language =if= for profile-policy extension;
 - recovery, observability, build, package, or provider clauses;
 - hidden registry mutation;
 - macro-phase import-closure or fixed-point evaluation;
 - a macro-only ProfileBundle representation.
 
-Higher-order policy variation is represented by native POO objects,
+Higher-order policy variation is represented by POO objects,
 prototypes, dispatch, and functional values.
 
 * Implementation admission checklist
@@ -203,8 +203,8 @@ prototypes, dispatch, and functional values.
 - [ ] Keep =use-module= limited to hygienic Module/profile selection
   projection.
 - [ ] Keep =compose= an ordinary pure function.
-- [ ] Keep =profiles= a first-class native POO strategy.
-- [ ] Return ordinary native POO values from expansion.
+- [ ] Keep =profiles= a first-class POO strategy.
+- [ ] Return ordinary POO values from expansion.
 - [ ] Keep ProfileBundle, authority, fixed-point, observability,
   recovery, and runtime behavior after macro expansion.
 - [ ] Prevent macro-phase package discovery, import traversal, build,
@@ -212,7 +212,7 @@ prototypes, dispatch, and functional values.
 - [ ] Preserve call-site source mapping and phase-aware expansion
   receipts.
 - [ ] Attribute post-expansion failures to their actual semantic owner.
-- [ ] Accept advanced native POO profile values without adding syntax.
+- [ ] Accept advanced POO profile values without adding syntax.
 - [ ] Add no registry, initialization, lifecycle, or private macro AST.
 - [ ] Reject =user-composition=, =initial=, =poo-compose=, host =if=,
   and recovery or infrastructure clauses.

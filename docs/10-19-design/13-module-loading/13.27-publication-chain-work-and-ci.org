@@ -1,0 +1,805 @@
+#+title: 13.27 Publication Chain Work and Refactor CI
+
+* Init-owned manifest ownership
+
+The build entry only consumes =init.exports.std-make-spec= with runtime
+=defbuild-script=. =yuanxu!= lowers hygienic declarations to the existing Module
+System; runtime selection, source authentication and lazy projections stay with
+their existing owners. They are not a build.ss program or compile-time effects.
+
+[[file:../../../../dev/sysml/20-module-loading/20.21-build-execution-cost.org][20.21]] traces the actual manifest demand to first publication construction and
+admission. Retained library headers account for .077–.145 seconds of the measured
+roughly five-to-six-second projection; they are not its dominant cost. Internal
+public-binding factories now inherit Gerbil's runtime language frame instead of
+strongly copying all language aliases for fresh target names. Actual export-name
+collisions preserve runtime strong-import behavior. Each invocation still resolves
+its target afresh, with no saved function or admission result.
+
+Runtime binding/phase and failure-restoration controls, scoped Lean lookup proofs,
+existing QNT source-window cases and five Core gates pass. The 16/32 cold/hot
+results are recorded separately from build costs. Final-source manifest samples
+still vary from 5.369 to 10.894 seconds; the default zero-compile build takes
+27.20 seconds. This is a verified construction reduction, not performance closure
+or scale acceptance. Required checks across callbacks are not removed to improve
+these numbers. No additional Builder, cache protocol or public entry is added.
+
+* Measurement boundary
+
+The latest role-prelude follow-up in
+[[file:../../../../dev/sysml/20-module-loading/20.21-build-execution-cost.org][20.21]] separates compiled-library probes from the actual source build entry.
+Role prelude imports shrink from 6888/7107 entries to 2/221 runtime entries;
+binding/phase/weakness and dependency DFS identity/order are checked against
+the former source forms. Config completes previously omitted weak Core bindings
+at phase +1/+2 (2650/2158 entries), with NO runtime export additions; Module
+preserves its entire export multiset and dedicated .def.
+This surface correction is not claimed invisible to arbitrary unboundness tests.
+
+The actual source-entry projection changes from 4.928 to 4.667 seconds; runtime
+Make changes from 6.509 to 4.354 seconds with all 12692 source reads, 414339 replay
+visits and four build currentness checks retained. Default zero-compile builds
+take 17.71/19.77 seconds. The 32-module cold result regresses to 4.402 seconds and
+the full-VM language inventory grows about 1.875 MB, so loading/scale acceptance
+remains open despite the verified Make improvement. No policy/Contract callback
+boundary is merged, and build.ss remains unchanged.
+
+The 16,972 physical source reads in [[file:13.18-guarded-test-precompilation.org][13.18]] are the sum of exclusive
+Graph-attribution rows across eleven Gitea/PostgreSQL Cases. The approximately
+26-second Harness interval also covers the complete suite, not one Graph.
+Each destructive source control gets its own selected source environment.
+Those environments must not share an admission verdict or a mutable Fixture.
+
+The existing observer now prints its bounded phase totals at Case completion
+without enabling the separate retained-object census. A diagnostic run on the
+preceding implementation completed all eleven Cases and reported these totals:
+
+| Runtime reader span | Aggregate wall time | Interpretation |
+|--------------------+---------------------+----------------|
+| Metadata replay | 7.639 s | 4,615,360 runtime DFS visitor deliveries |
+| Runtime source import | 4.666 s | union of imports inside each Case |
+| Source guard | 3.646 s | union of reader guard intervals inside each Case |
+| Interface processing | 6.542 s | includes nested import/check work |
+| Runtime compilation / evaluation | 0.034 / 0.089 s | observed owned role bodies |
+
+These spans overlap and must not be added as a partition of Harness time.
+The diagnostic invocation took 100.13 s wall, 48.96 s user and 9.13 s system;
+support Make itself took 31.41 s for two compilations. A concurrent, unrelated
+runtime compiler was observed, but that does not prove all latency came from
+host load. Keep this result; do not replace it with the faster older receipt.
+
+* One Graph per export assembly
+
+=AdmissionPublication..for-export= previously read =selection.build-graph= at
+entry, again while constructing the publication and again for package guards.
+These are POO reads, not plain pointer lookups: a cached read retains
+and replays the original construction dependency graph.
+
+The assembler now binds the Graph once and uses that same object throughout.
+It captures receiver/ancestor revisions with the existing
+=module-source-object-policy= and checks them before returning. Replacing the
+selection and restoring its old value cannot authorize the assembly. No read
+record is forged, merged with another identity or removed from the one original
+Graph read. Independent calls still read their own effective selection.
+
+The existing admission suite checks one observed Graph read and separately
+injects replace-and-restore during =.selected-record=. Artifact entry admission,
+Schema resolution, contribution collection and the binder's final source check
+remain in their original order. The real service suite keeps its ordinary
+execution path; the slot-observer counter belongs to the isolated assembly
+control, not to its performance benchmark.
+
+* Input projection instead of source payloads in query keys
+
+The reader already has a call-local pure-source observation window. Previously
+every nested reader guard materialized =hash->list= of its tool sources before
+looking up the same bounded query. The query arguments contained the source
+texts themselves, even on an eventual hit.
+
+The closed path now passes an actual private input-projection procedure and
+the collection's cardinality to that same existing query mechanism. The
+procedure identity distinguishes reader/candidate collections. Rows are
+materialized only on a miss. There is no additional cache table, persistent
+approval, source revision registry or public strategy flag.
+
+This compact key is valid only because =record-source-observations!= enforces
+the following producer invariant: a new path grows the collection; inserting
+an existing path must preserve equal expected bytes or raise. It cannot be
+generalized to arbitrary mutable maps. Guard-list growth also remains part of
+the query key. Metadata authentication still executes at its original boundary.
+The source window ends at the same points as before, including independent
+admissions and callback handoffs.
+
+An installed source observer keeps the original eager snapshot and callback
+order. The actual reader regression calls its public guard twice in one window
+and once independently: two snapshots on the closed path, three with an open
+observer. It neither disables observers nor substitutes a handwritten checker.
+The existing source-window formal results remain relevant to lifetime/freshness;
+this change does not claim a new proof of arbitrary map or callback purity.
+
+* Refactor CI: one root package, Contract refusals
+
+PR #19 at =bd9641f= passed both platform builds, Lean and all eight Quint shards.
+Several test groups then failed. The removed =t/gerbil.pkg= remains removed.
+
+- The default Just test entry exposed =$PWD/t= but not the actual source package
+  root. Runtime =:yuanxu/t/...= imports and generated test support therefore
+  failed in clean CI. The entry now puts compiled support and package libraries
+  first and appends =$PWD= as runtime source fallback. No nested package,
+  copied source tree, custom resolver or manual support manifest is restored.
+- The JSON Schema adapter still supplied backend diagnostic records through
+  a hand-written classifier. The runtime evidence Record correctly rejected
+  those non-POO diagnostics. The adapter now binds its existing Schema value
+  Type to =value-contract= and uses the standard TypeError-to-refusal boundary.
+  The published =value-type= is the same Schema Type association consumed by
+  provider integrations; it is not a second validator or a second traversal.
+- Ownership controls now use an actual Contract and POO diagnostic objects;
+  explicit negative controls reject the old malformed values. Scope admission
+  assertions inspect rejected evidence and diagnostics, while actual calls of
+  admitted Functions still assert TypeError at their invocation boundary.
+- The observability import control compares Type/number dependencies with the
+  pinned runtime Object and required watchdog-Contract baseline, while continuing to forbid optional debug
+  and retained-object printers. POO dependency changes are not grounds
+  for dropping the printer-laziness check.
+- Source-only role controls use the existing source reader. Compiler frames
+  are qualified through actual runtime Make, not by interpreting a compiled
+  role resolver without its products. The isolated source-build Fixture now
+  links installed dependency namespaces intact instead of manufacturing leaf
+  links or rewriting/copying metadata according to its filename suffix.
+  Compiler metadata currentness and Core-source isolation remain enforced.
+
+Full remote CI is an independent result. Local focused passes and model passes
+must not be described as complete platform acceptance. No timeout, heap budget,
+test roster or rejection assertion is relaxed by these repairs.
+
+* Acceptance status
+
+Only the root-package/Schema CI repairs were pushed as =3cfb6a1= on existing
+PR #19. The one-Graph assembly, compact bounded query preparation and passive
+phase reports remain separate working changes pending performance acceptance.
+
+The final same-source observation pair used fresh private support products,
+the installed Gerbil, pinned POO revision and unchanged default Just entry.
+
+| Invocation | Wall / user / system (s) | Support compilations | Harness (s) | Exclusive Graph read sum |
+|------------+--------------------------+----------------------+-------------+--------------------------|
+| Fresh support namespace / fresh process | 54.73 / 44.55 / 7.92 | 2 | 28.594 | 16,972 |
+| Retained support / new process | 43.72 / 34.77 / 6.25 | 0 | 28.728 | 16,972 |
+
+Both completed all eleven service Cases and all Harness markers. std/make
+hot reuse is preserved, as are the two independent requirements, cached-parent
+controls and source-change refusal. These results do not establish a whole-suite
+speedup over 13.18. Source observers intentionally retain the original query
+path, so this pair also cannot certify the closed compact-key path's speed.
+The closed reader control verifies snapshot lifetime/reuse, not reduced file I/O
+or a cached admission decision. The remaining cold-Graph and authentication cost
+is open and must not be presented as a completed performance optimization.
+
+* Scale failure attribution at =9b9f0ab=
+
+The previous Linux run reached its 600-second outer limit. The next run at
+=9b9f0ab= supplies a more precise nested failure: both platforms entered the
+worker's =runtime-graph-start= phase, then exhausted the unchanged 2 GiB heap.
+Linux completed about 2,100 publications (reported live value 1,869,075,432
+bytes); macOS completed about 2,000. These are actual nested Harness failures,
+even though the runtime process returned zero. The Harness rejection remains
+mandatory. No new local ten-thousand-module run was started.
+
+The worker's raw allocation column is not qualified: its enormous/negative
+values cannot establish physical allocation or exclusive retained memory.
+Heap capacity, last-GC live samples, identity-based reachability and measured
+phase intervals are separate observations. Even the last-GC live sample is not
+an exclusive byte count for one publication.
+
+The existing sixteen/thirty-two census now uses the existing reader operation
+meter and actual replay start/end events. It preserves the previous observer
+callback, all runtime records and all hot/cold assertions. Spans are inclusive
+and overlapping; they must not be added into an invented total.
+
+| Modules | Cold Graph wall / CPU (s) | Hot wall (s) | Cold physical reads | Cold role bodies |
+|---------+---------------------------+--------------+---------------------+------------------|
+| 16 | 4.114 / 4.054 | 0.076 | 5,409 | 32 |
+| 32 | 6.268 / 5.869 | 0.154 | 10,353 | 64 |
+
+For 32 modules, owned compilation/evaluation took 0.0147/0.0065 seconds.
+Candidate reading took 4.291 seconds, preparation 0.833, interface processing
+1.652, admission 0.627 and observed runtime replay 1.203 (589 calls, 654,131
+visits). Replay is already inside several of these spans. Neither timeouts
+nor compilation alone explain the capacity failure.
+
+The acquisition control separates actual init import, namespace demand,
+test-source preparation and execution. At 16 modules those intervals were
+0.101, 0.371, 0.888 and 10.987 seconds respectively; execution includes the
+separate worker's startup and complete Graph. It is not one atomic Graph timer.
+
+** Shared Gerbil versus per-publication state
+
+The figures in this subsection were collected with the full live read
+observer enabled. The ordinary-route correspondence correction below supersedes
+their use as an estimate of uninstrumented Generic construction.
+
+The union walk reached 1,191,533 Gerbil-shell nodes for sixteen modules and
+1,191,709 for thirty-two: only 176 additional nodes, not another full Gerbil for
+every publication. This bounded traversal does not prove an exclusive byte
+size, but it rules out charging its entire shared Gerbil frontier per module.
+
+In contrast, retained runtime receivers grew from 886 to 1,686 and issued read
+tokens from 9,314 to 18,178. Effective-method/invocation receivers grew from
+154/154 to 298/298; their associated read records grew from 3,980 to 7,724.
+At thirty-two modules the selected-Graph dependencies included 4,836 authoring
+admission reads, 2,821 invocation-frame reads and 4,495 effective-method reads.
+These are identity-based counts, not byte totals and not proof that all these
+dependencies may be removed.
+
+The next construction-level question is therefore how default role analysis
+can avoid creating temporary Generic carriers while preserving the open
+Generic path, per-datum Type checks, hooks and source observations. Merely
+deduplicating record identities, sharing mutable frames or retaining a passing
+admission verdict is not justified. Existing =PayloadSharing= theorems preserve
+records, edges and observation order; they do not prove such a bypass. The
+SysML allocation of structural sharing to Lean and callback/invalidation
+transitions to QNT remains authoritative. No new sharing implementation or
+formal closure is claimed by this diagnostic change.
+
+The CI load-order repair has passed Linux contracts at this revision. Scale
+remains failed, and complete CI acceptance is still open. Diagnostic working
+changes are not a claimed repair of the two-thousand-publication heap boundary.
+
+* Default role function route and the observer effect
+
+The candidate production refactor keeps the public authoring Generic and its
+method bundle. Its internal declaration rule captures one lexical function
+identity for both the normal method body and its direct primary. Runtime issued
+reads authenticate the maintained Method/Generic/Type support on every call;
+applicability and domain Type validation still run for each datum. Unknown
+observers, prechecks, registration changes and open protocols retain Generic
+dispatch. Nothing caches an admission conclusion.
+
+The Reader's cold-read precheck now has one maintained identity and a private
+dynamic stack of original boundary callbacks. Actual protocol-bearing reads
+still run inner then outer callbacks. Exceptions restore the stack, and runtime
+observation suppression does not resurrect an outer callback. The two stable
+method descriptors use runtime guarded slot access sites; this is not a vector
+cache per selected module. Runtime layout still retains the instance hash table.
+
+The first full census installed an arbitrary read callback while constructing
+the Graph. That correctly selected the open Generic path and retained 154/298
+effective methods and invocation frames at 16/32 modules. A temporary bounded
+real-reader probe then confirmed compatible scope, warm hook-free arguments,
+current original issued support and unchanged carrier predicates. The normal
+route was already eligible; the full observer changed the route being measured.
+All temporary probe output and counters have been removed.
+
+The maintained census now uses a runtime capture frame during the operation and
+walks original dependencies after the measured interval. This is diagnostic
+reachability, not another authentication procedure. It never invokes a checker
+or authorizes a candidate. Identity DFS handles shared and cyclic dependencies;
+the existing payload census excludes opaque Gerbil frontiers and counts each
+reachable payload once. The open-observer controls remain active separately.
+
+** Final bounded receipts
+
+Validation uses a fresh runtime package prefix built from PR13 =6232e11= plus
+the uncommitted runtime scope-query candidate. Core's declared dependency has
+not been advanced to an unpublished revision. No compiler source changed.
+
+| Modules | Cold wall / CPU seconds | Hot wall / CPU seconds | Issued dependencies, cold = hot | Retained carrier instances, cold / hot | Payload body bytes, cold = hot |
+|---------+-------------------------+------------------------+--------------------------------+---------------------------------------+--------------------------------|
+| 16 | 7.448 / 3.996 | 0.212 / 0.079 | 6330 | 0 / 0 | 5510508 |
+| 32 | 18.625 / 5.769 | 0.552 / 0.169 | 11274 | 0 / 0 | 8125680 |
+
+Cold expansion counts are 32/64; both hot counts are zero. The zero-carrier
+assertion inspects already computed precedence lists of actual retained read
+receivers, excluding the two declaration prototypes. It does not force a slot
+or suppress an observer. Receiver-shell body counts are 90840/152280 bytes;
+neither they nor the payload counts are exclusive VM heap attribution.
+
+An earlier capture-only run measured cold wall 3.732/5.104 seconds and hot wall
+0.066/0.149 seconds with the SAME dependency and payload counts. The final wall
+regression exceeds the corresponding CPU change. This is unresolved timing
+variability, not an established scheduling diagnosis or performance acceptance.
+Comparing the open-observer run with capture-only timing is not a valid
+implementation speedup claim because their observation semantics differ.
+
+The default bounded Just entry passed the real Gitea/PostgreSQL publication
+suite, the eight authoring dispatch/scope/layout cases and the runtime
+=slot-observation-test= suite. All have MODULE-OK, HARNESS-OK and final OK.
+The default batch case now includes the actual maintained source precheck and
+still validates a rejected datum without constructing invocation carriers.
+Lean's focused Dispatch build passes 37 jobs; the existing Quint runner passes
+five RoleFunction gates including matched revision, observer and verdict-reuse
+counterexamples. Lean owns the known non-next primary equivalence and boundary
+order laws; QNT owns temporal routing changes. Neither proves a heap bound or
+replaces runtime extraction evidence.
+
+** Remaining boundary
+
+This closes the ordinary-role carrier-construction correspondence, not the
+ten-thousand-module design. Remaining reachable payloads and receiver shells
+must be attributed along the same production dependency graph before choosing
+further runtime sharing. The fixed 2 GiB and time limits remain unchanged; no
+ten-thousand-module rerun, new cache protocol, admission-result cache, commit or
+push was performed. Whole-CI and scale acceptance remain open.
+
+* Retained specification paths at PR13 =8024904=
+
+The existing PR branch was checked live and advanced from =6232e11= to
+=80249046b7f3429efc4fb75b7209da87cd6ae8bd=. Its runtime representation design
+still explicitly retains the instance hash. Compact specification storage is
+an existing opt-in policy; it does not justify converting every receiver or
+sharing receiver values. Core's published dependency pin remains unchanged:
+the runtime candidate is uncommitted and must not be represented as a released
+dependency or remote CI result.
+
+** Actual holders and source repairs
+
+The post-operation identity census now reports runtime structure families and
+the number of incoming receiver references versus distinct specification roots.
+At 32 modules the baseline has 2538 direct/default map references but only 2460
+distinct snapshots. Thus some metadata is already shared. Its reachable union
+includes 11720 RBTree nodes, 4887 tree containers, 4741 self-slot specifications
+and 11274 actual issued dependencies. Counting the entire Gerbil once per receiver
+would not explain these quantities correctly.
+
+The following concrete holding paths were repaired without a new protocol:
+
+- Runtime =.+=: override receiver → public reflection list/entry copies → newly
+  rebuilt tree → composite receiver. The constructor now receives the original
+  runtime persistent snapshots directly, as =.cc= already does. Supported edits
+  replace snapshots rather than mutating their entries. Reflection still returns
+  owned lists, caches are still new, and the override is not made a new parent.
+- Core =defpoo-object-family=: evaluated constructor argument → self SlotSpec
+  closure → receiver-bound effective thunk. Both existing constructor clauses
+  now bind argument values lexically and emit runtime =(slot)= constant shorthand.
+  An independently hygienic parent binding prevents a field with the prototype's
+  name from shadowing that prototype. Arbitrary computed slots are untouched.
+
+All six runtime consumers of this existing family macro were rebuilt; no public
+API or second object constructor was introduced. The runtime =.+= change lives
+in the isolated gerbil-poo checkout, not in a Core patch file.
+
+** Correspondence and controls
+
+SysML 20.04 allocates =constructorValueMethod= and
+=constructorValueInComposition= to LeanPoo's actual SlotSpec interpreter.
+=snapshotReflectionRoundtrip= reuses its runtime representation observation law.
+The focused PayloadSharing Lean build passes 105 jobs. This proves ordered/value
+semantics; it does not prove arbitrary reflective setters safe or pointer-level
+heap sizes. Existing ReadRetention QNT passes seven positive/negative gates
+after the candidate edits; its callback/currentness, both-requirement, parent
+isolation and lazy-branch responsibilities were not duplicated in a new model.
+
+Default heap-fenced Just tests pass the runtime representation suite, Core suite,
+authoring scope/layout suite and real Gitea/PostgreSQL publication suite, each
+with MODULE-OK, HARNESS-OK and final OK. The added runtime control checks actual
+snapshot identity, a previously failed override computation, false defaults,
+right-side edits remaining independent, shared-parent invalidation and an unused
+erroring slot. The Core control checks exactly-once argument evaluation, prototype
+name hygiene, constant SlotSpecs, stable repeated thunk identity, runtime hook
+traversal and independent child values. The cross-receiver hook-order assumption
+is corrected by the subsequent bounded-storage qualification below.
+
+The first test incorrectly expected a generic Error for a missing slot; it now
+requires the actual NoApplicableMethod class. A subsequent snapshot-identity
+failure exposed mixed dynamic artifacts: a newly written =.o1= coexisted with
+older higher-numbered products. Recompiling actual owners in a fresh isolated
+output prefix made the source/runtime correspondence test pass. No generated
+file was rewritten or selected by an application extension-name workaround.
+The upstream package build also hit its original 120-second fence; the runtime
+incremental continuation completed without increasing that fence. Failed logs
+remain local artifacts, not committed source.
+
+** Bounded before/after results and rejected conclusion
+
+Both runs use the same 16/32 fixture source and PR13 base; the after run uses
+the clean runtime output prefix to exclude mixed dynamic artifacts.
+
+| Modules | Payload body bytes before → after | Self-slot specifications before → after | Distinct snapshot roots before → after | Issued dependencies, unchanged |
+|---------+-----------------------------------+------------------------------------------+---------------------------------------+--------------------------------|
+| 16 | 5510172 → 5508924 | 2869 → 2821 | 1468 → 1466 | 6330 |
+| 32 | 8125344 → 8122944 | 4741 → 4645 | 2460 → 2458 | 11274 |
+
+Receiver shell counts remain 757/1269, and their counted bodies remain
+90840/152280 bytes. Cold expansion remains 32/64, hot expansion zero, and
+retained invocation/effective-method instances zero in both phases. No read
+identity, dependency edge or observer callback was removed.
+
+Cold wall/CPU seconds before → after are 3.744/3.413 → 3.184/3.136 (16) and
+4.819/4.643 → 4.283/4.269 (32). Hot wall/CPU seconds are
+0.120/0.081 → 0.077/0.075 and 0.169/0.158 → 0.131/0.131. This is one bounded
+pair, not statistically qualified speedup. VM live at 32 modules is 208407368
+bytes after versus approximately 208 MB before; no VM live reduction is shown.
+
+The 32-module payload difference is only 2400 bytes, about 0.03 percent. It is
+valid representation cleanup, NOT the fundamental scale repair. Only two map
+roots disappear, so =.+= snapshot copying is not the dominant ordinary Graph
+holder. The remaining 4645 self SlotSpecs, receiver metadata, original read/birth
+payloads and opaque callback/Gerbil/GC frontiers require further attribution.
+Opaque frontiers must not be silently reported as zero memory, and weak targets
+must not be treated as strong owned payload. Do not extrapolate this bounded
+body count into a ten-thousand-module heap acceptance claim.
+
+The 2 GiB and time fences, publication/currentness checks and independent domain
+obligations are unchanged. No ten-thousand-module rerun, commit or push was made.
+
+* Computed-environment attribution and runtime bounded storage
+
+** Source and verification scope
+
+The latest inspected PR13 head is =7b2ead60d52c3648a26e65ca149636f5ab6f39dc=.
+Its production object/map/layout sources are unchanged from =8024904=; the
+update adds startup workflows and tests. The isolated candidate was moved to
+that head with all local changes preserved, including the upstream's new test
+cases. Core's released dependency pin is not updated to an unpublished candidate.
+
+The extra census opens indirect closure captures after admission. It never
+follows code at closure offset zero or executes a closure; receiver, Gerbil,
+class, continuation and weak-table interiors remain explicit frontiers. A
+single identity union prevents charging shared captures for every specification.
+This is still not a dominator analysis or exclusive VM heap measurement.
+
+At 32 modules all 4645 direct self specifications are attributed. The largest
+fields are diagnostics/accepted? (509 each), module/role (429 each), followed
+by compiler-identity/compiler-forms/source-inputs (160 each). Expanding ordinary
+captures raises covered bodies from 8122944 to 12097596 bytes. It encounters
+1496 receiver frontiers, including 227 not direct read owners. Their interiors
+are unmeasured, not zero bytes. Duplicate string bodies are 557912 bytes. This
+does not justify canonicalizing exposed mutable strings or pooling receipts.
+
+** Production change
+
+The existing runtime object/init macro now wraps its original method and default
+lists with =prototype-map ... policy: 'compact=. No SlotSpec expression changes,
+no field is forced sooner, and no recipe or receiver identity is merged. The
+existing upstream backend uses a compact vector for up to eight contributions
+and its standard RBTree beyond that bound. Runtime persistent edits and .cc keep
+that policy. Bare prototype-map retains its original tree default.
+
+This is an internal choice of the already implemented representation protocol,
+not a new module flag, Builder, cache or admission protocol. The actual Core
+authoring, interface, source preparation, reader, linker, directory and receipt
+owners were compiled against this lowering, not only the census fixture. Shared
+Gerbil libraries may still contain previously compiled tree-policy declarations;
+the receipt does not claim a complete upstream/package/CI rebuild.
+
+Lean =PayloadSharing.constructorStorageObservations= reuses LeanPoo's actual
+=entries_packWith= for BOTH ordered contribution lists, treating SlotSpec
+identities as arbitrary values. The focused build passes 105 jobs. QNT reuses
+ReadRetention's seven positive/negative gates for source effects, both
+requirements, parent isolation and unused-value laziness. Neither layer proves
+weak-table/compiler correctness or physical heap bounds.
+
+** Measured ordinary-route results
+
+| Quantity | 16 before → after | 32 before → after |
+|----------+-------------------+-------------------|
+| Direct/issuer payload bodies | 5508924 → 5285788 | 8122944 → 7744800 |
+| Including indirect closure environments | 8891320 → 8709244 | 12097596 → 11801984 |
+| Runtime RBTree nodes in that union | 7044 → 3086 | 11716 → 5038 |
+| Distinct direct self SlotSpecs | 2821 → 2821 | 4645 → 4645 |
+| Read-owner receiver count | 757 → 757 | 1269 → 1269 |
+| Issued dependency count | 6330 → 6330 | 11274 → 11274 |
+| Cold / hot role expansion | 32 / 0 → 32 / 0 | 64 / 0 → 64 / 0 |
+
+The direct/issuer and expanded-environment counters have different explicit
+frontiers and must NOT be added. Their differences are not allocator-exact
+savings. At 32 modules the runtime tree-node count drops by about 57 percent;
+the expanded union drops by 295612 bytes, about 2.44 percent. It remains
+11801984 bytes; this is not a claim that the main VM retention is solved.
+The measured whole-VM live values after are 189621840/207275112 bytes, compared
+with approximately 190/208 MB before. That pair does not prove exclusive
+memory reduction or a ten-thousand-module slope.
+
+Cold/hot wall seconds after are 3.159/0.065 (16) and 4.192/0.132 (32), with
+CPU 3.130/0.065 and 4.176/0.131. Original file-read counts remain 5409/106 and
+10353/170. Retained effective/invocation carrier instances stay zero. This is
+one bounded cohort, not statistically qualified performance acceptance.
+
+** Hook-order failure and the corrected guarantee
+
+A Core control comparing two fresh receivers' event lists failed. Installed
+Gerbil runtime/hash.ss:396-399 generates a random seed per new hash table, and
+runtime compute-slot-funs! traverses hash->list. Cross-receiver order was never
+guaranteed. Sorting the lists would hide this distinction; no sort was added.
+The controls now require each event sequence to equal that SAME receiver's
+runtime method-table traversal exactly, and hot reads to emit no further hooks.
+The runtime test includes both explicit tree and compact instances. The runtime
+hook traversal algorithm and per-slot calls were left unchanged. A deterministic
+global hook-order specification remains a separate design decision.
+
+The bounded Just gates cover real Gitea/PostgreSQL, Core constructor behavior,
+open authoring dispatch and runtime representation. Source currentness, both
+requirements, parent-cache isolation and unselected value refusal controls
+remain intact. No ten-thousand-module rerun, timeout/heap increase, commit,
+push or successful-admission cache was introduced.
+
+** Remaining design constraint
+
+The 4645 computations were NOT replaced by eager constants. In particular,
+module/role lookups and compiler forms can cross deferred-source or extension
+boundaries. Receipt identities and per-datum Type callbacks also remain
+independent. Whole closure environments or receipts cannot be pooled because
+their field names match. The remaining receiver/expander/weak frontiers and the
+incremental growth of read/birth/instance metadata require further attribution
+before any lifetime or value-store change. This candidate is a verified runtime
+representation step, not closure of the 2 GiB architecture goal.
+
+** Strong, weak and shared edges
+
+[[file:../../../../dev/sysml/20-module-loading/20.15-strong-weak-and-shared-retention.org][20.15]] corrects the previous broad use of "Gerbil": the measured objects are
+installed Gerbil expander contexts, runtime tables and receiver captures.
+There is no separate Gerbil dependency and no Gerbil compiler source change.
+The shared binding universe must not be charged once per module. Weak-key
+values and weak-value entries have different retention semantics; neither
+table counts nor flags establish exclusive heap ownership.
+
+SysML assigns the structural edge projection to Lean and uses the existing
+ReadRetention QNT family for callback/currentness, both requirements, parent
+isolation and laziness. Production sharing remains limited to the already
+owned persistent specification snapshots and runtime bounded representation.
+No weak registry is cleared and no read edge is discarded as an optimization.
+
+** Reduce factory receipt query construction
+
+[[file:../../../../dev/sysml/20-module-loading/20.16-factory-receipt-inventory.org][20.16]] follows the strong path from an authoring receipt's presence-query
+records through its instance, specifications and captured functions. The
+production predicate now uses one original runtime inventory for a freshly
+owned, unexposed receipt in a closed observation scope. Public/contributed
+values, edited receivers, exposed names and arbitrary observers keep ordinary
+presence queries. Type/value checks still run for every datum; actual records
+are never filtered. At 32 modules the bounded comparison is 11,274 -> 9,131
+records and 11,812,064 -> 11,166,732 covered body bytes. This narrows real
+growth without certifying the ten-thousand-module budget.
+
+The root build remains the only maintained Core package entry. The orphan
+=yuanxu/build.ss= is removed; root =prelude.ss= and =core-spec.ss= already own
+the prelude target and runtime source binding. Library and init-selected Module
+inventories remain separate inputs to root =build.ss=.
+
+** Avoid per-Core temporary Feature specifications
+
+[[file:../../../../dev/sysml/20-module-loading/20.17-synthetic-core-descriptor-and-construction.org][20.17]] traces the next receiver-retention path: mandatory Core selection
+constructed a temporary three-slot Feature specification for every module.
+The closed route now obtains complete defaults from the existing Feature
+publisher once and uses runtime =.cc= with fresh identity, owner and dependency
+values. Runtime constructor identity and actual template reads are authenticated;
+an unknown observer, changed constructor or unsafe import origin retains the
+original construction route. No issued record or dependency edge is removed.
+
+On the locally qualified c192fc2 runtime cohort with coordinated unpublished
+MOP changes, 32 modules retain 8,603 records rather than 9,131, and covered body
+bytes decrease from 11,165,492 to 10,949,556. These are covered-graph measurements,
+not exclusive retained heap or evidence that the ten-thousand-module budget
+is closed. The declared release dependency is unchanged pending publication.
+The default Interface factory also leaves complete admission to its constructor
+once; explicitly supplied Profiles still receive fresh admission.
+
+Runtime issuance, public selection including unsafe import-origin fallback,
+authoring admission, product consumers, 16/32 cold/hot measurements and the real
+Gitea/PostgreSQL regression passed. Lean checks the persistent-storage update
+laws; the existing RoleFunction and ReadRetention QNT families check route and
+transition boundaries. No admission result is cached. Resource limits, source
+currentness, parent isolation, both requirements and lazy branches are retained.
+No ten-thousand-module run, commit or push is part of this qualification.
+
+** Use upstream runtime entries and receiver-local indexes
+
+[[file:../../../../dev/sysml/20-module-loading/20.18-index-and-module-actions.org][20.18]] replaces six runtime factory/trace import promises with upstream
+=io.module-action=, removes the positional artifact-procedure bundle, and uses
+runtime demand-filled access sites for Core dependencies and prepared build
+spec/currentness methods. Sites are candidate/init-owned rather than global
+roots of the last publication. Every checker is still invoked; successful
+admission is never memoized. Syntax/lexical role imports remain expander-owned.
+
+The runtime IO host-macro import defect is fixed in gerbil-poo, not Gerbil.
+The local ec5ab0a-based cohort retains the preceding unpublished issuance work.
+See 20.18 for actual cold/hot figures and acceptance boundaries: record counts
+are unchanged, observed reads retain the ordinary path, no speedup or complete
+source-bootstrap/CI closure is claimed. No dependency pin is advanced to an
+unpublished implementation and no parallel cache protocol is introduced.
+
+** Empty-library source bootstrap
+
+[[file:../../../../dev/sysml/20-module-loading/20.19-source-bootstrap-and-cold-query.org][20.19]] closes the compiled-only entry defect using the existing deferred
+declaration owner: actual source creation uses official import; compiled creation
+uses upstream module-action. No caught loader failure selects a fallback. The
+unchanged root build passes with an empty Core output; a same-output hot build
+performs zero compilation. Source/currentness controls use relocated sources.
+
+The 16-module first cold query is now attributed to sequential source acquisition,
+Graph demand and independent authentication. First namespace initialization is
+the major additional boundary; nested reader spans overlap. Hot getters are
+microseconds but authentication still runs. See 20.19 for CPU/GC counters, failed
+preparation receipts and limits on causal/performance claims.
+
+** First namespace: binding acquisition versus whole runtime loading
+
+[[file:../../../../dev/sysml/20-module-loading/20.20-namespace-loading-and-factory-boundaries.org][20.20]] separates the original entry's load, lookup and apply operations. The
+observed 2.639 s belongs to loading; lookup is .000053 s and namespace execution
+.001609 s. POO preparation counters show no same-revision repeated preparation
+in that load. A synchronized runtime sample identifies dyld/image work, with
+explicit limits on extrapolating sampled notification waits.
+
+Platform value factories now import one public binding through Gerbil
+semantics on each call; actual runtime effects retain whole module-action
+initialization. The build producer is requested by the existing lazy POO slot,
+and bootstrap metadata coverage remains tested. A local ordinary 16-module
+namespace demand is .192 s; complete cold demand is 3.091 s in the final run. Record counts,
+independent currentness, parent isolation and both requirements are retained.
+See 20.20 for observations and limits; no capacity or remote CI pass is claimed.
+
+** Core package build accounting
+
+[[file:../../../../dev/sysml/20-module-loading/20.21-build-execution-cost.org][20.21 Build Execution Cost]] treats the zero-compilation package build as a
+separate workload. Existing optional diagnostics now distinguish compiler-spec
+projection, runtime std/make, independent compiler-current calls and product
+repair/completeness. Ordinary package compilation does not mint publication
+approval; explicit projection =.compile= retains issuance. The initial ordinary
+build took 48.26 seconds with zero compile jobs; this was attribution, not closure.
+
+The subsequent production change uses Gerbil's existing =runtime:= import in
+113 fixed-prelude Core library owners. It keeps runtime/Make dependency
+edges while reusing the package's POO bindings, avoiding duplicate strong alias
+tables and per-alias dependency representations. Reusable Scenario roles retain
+bounded explicit imports. Nine owners preserve deliberate Gerbil Core
+constructor/predicate shadows; actual resolved binding identity is checked.
+No installed Gerbil source, Make implementation or shared expander context is
+modified. See 20.21 for the runtime correspondence proof and failed intermediates.
+
+Two exploratory hot samples observe projection 4.92/5.06 seconds and std/make
+6.92/7.04 seconds, with all four currentness calls and 12692 physical reads kept.
+Against the controlled broad-import sample, Make CPU decreases about 13 percent;
+the larger wall difference is not wholly attributed to code. Final uninstrumented
+ordinary build: 20.13 seconds, zero compilation. Runtime GAMBOPT propagates the
+unchanged 2 GiB per-VM limit to child processes for this final run; earlier
+exploratory samples did not independently certify the child heap limit.
+No byte window crosses runtime import, Make or an independent return check.
+Build cost, 16/32 module-loading cost and Scenario admission are separate
+workloads. Ten-thousand-module capacity and remote CI remain open, and no
+commit/push is made before design closure.
+
+The follow-on in 20.21 keeps this as one compiler data-flow refactor. Runtime
+lexical slots replace computed wrappers around immutable Build Entry/input
+values, while compiler forms and currentness remain lazy/independent. The
+prelude now filters exports after a complete runtime import-set: 20891 public
+entries preserve actual resolved binding identity/phase/weakness, and 96
+dependency contexts preserve postorder; top-level import nodes fall from 6890
+to 4. The runtime dependency DFS hoists its live cursor instead of allocating
+replacement frames for already-seen aliases. No import or observer edge is
+removed, and no context or approval cache is introduced.
+
+Final local hot observations: projection 4.91/5.34 seconds, Make 6.63/6.81
+seconds; unchanged ordinary build 19.72 seconds with zero compilation. The
+retained slow samples and old-representation control show substantial wall/CPU
+variation, so a stable speedup and five-second projection closure are NOT
+claimed. See 20.21 for source-level allocation bounds, Lean/runtime/QNT roles,
+unmodified authentication counters and separately qualified Module/Scenario
+receipts. Resource limits and the no-push/no-ten-thousand-run boundary remain.
+
+* Follow-up: shared language support is not a per-Module code allocation
+
+The runtime retained-read identity census now follows existing context links
+without forcing new phase frames. Both 16 and 32 Modules reference 54 runtime
+code-parent identities, 322 phi contexts (94943 entries) and five prelude
+contexts (10175 entries). Additional private contexts add only five bindings
+each. Closure references nevertheless grow from 12651 to 21288, so the code
+identity union must not be mistaken for an environment-retention bound.
+
+The approximately 1.875 MB VM delta against the previous prelude representation
+is almost constant across these two sizes; exclusive attribution is unproved.
+The serial rerun remains 3.254/.059 seconds cold/hot for 16, and 4.583/.120 for
+32. Graph construction accounts for 4.262 seconds of the latter cold phase;
+explicit authentication takes .107 seconds. Additional GC explains only about
+.107 seconds of the .528-second CPU increase against the old sample. Therefore
+the 32-Module cold regression is still open, not dismissed as host load or GC.
+
+Lean owns deduplicated weighted-support accounting; existing QNT SourceWindows
+owns effects and freshness, with eight qualifying cases. The real eleven-Case
+Gitea/PostgreSQL regression and census both pass the official default test-file
+gates. Production guards, role binding precedence and build entry are unchanged.
+Detailed evidence and allocator limitations are recorded in Dev SysML 20.21.
+No production memory fix is asserted until the actual retained environment and
+its runtime immutable sharing/invalidation boundary are identified.
+
+* Aligned PR index consumer: structural names are owned snapshots
+
+The gerbil-poo PR 13 baseline =670146317f844ae78b3d5261a3f6805584730046=
+is qualified with the existing local producer protections retained. The bare
+upstream revision does not yet publish every constructor/observer guard API
+required by this Core worktree; the release dependency pin is intentionally
+unchanged until that integration is publishable. This is not a pin-only upgrade.
+
+Core now inspects declaration membership through runtime persistent-map length,
+reads declaration sources through owned reflection, and uses demand-filled
+runtime caches for the maintained role method body/primary access sites. Actual
+MOP eligibility, open Generic dispatch and mandatory Type checking are preserved.
+
+The important producer/consumer incompatibility was structural name ownership.
+A names read owns a list distinct from the directory cache. Requiring =eq?=
+discarded valid dependency projections, causing two extra guarded public reads
+per dependent Module. The existing continuation gate reproduced the failure.
+Projection now compares finite ordered symbols for names only, retaining actual
+observation, receiver revision, instance and ordinary value identities. It never
+authenticates a fake record by content; runtime final authentication remains required.
+
+The 32-Module regression is repaired: link guards 75 -> 13, physical reads
+17172 -> 10352, cold wall 8.176 -> 4.220 seconds. Final 16 cold/hot is
+3.460/.058 and 32 is 4.220/.115 seconds. Six focused default test-file gates
+pass, including eleven real Gitea/PostgreSQL Cases. Cyclic names, missing
+observation, cold replacement and source-change/parent-cache controls remain.
+
+This does not establish memory closure: the 32-Module whole VM is 203279592
+live bytes and the retained closure union is 21774. Actual code fingerprints
+identify 9105 issuer-birth closures and 6134 receiver-bound self closures; neither
+is permission to merge identities or remove dependencies. SysML 20.21 records
+the exact paths, models, failed qualification attempts and remaining boundaries.
+No ten-thousand-module run, resource increase, cached admission or push is made.
+
+** Direct-capture audit and loading acceptance
+
+The follow-up census separates closure bodies, captured identities and edge
+multiplicity. At 32, issuer closure bodies total 701184 bytes, bound-self bodies
+147216. The latter reference 1128 distinct receivers through 6134 edges; these
+are not 6134 full receiver copies. Shared language support is counted by identity,
+not repeatedly charged per edge. The memory design remains open; no unsafe
+pooling or producer-memory saving is claimed.
+
+The repeated selected-graph cold/hot measurements are 3.494/.064 seconds at 16
+and 9.133/.250 at 32. The regression is retained, not attributed to host load
+without evidence. Eleven Gitea/PostgreSQL cases, the census, Lean PayloadSharing
+and seven existing QNT ReadRetention cases pass. SysML 20.21 records exact CPU,
+GC, capture/body accounting and the distinction between the qualified 6701463
+development cohort and newly audited upstream head 3ba1b34.
+
+Build preparation, selected-graph admission, first business-scope demand and
+compiled-module loading require separate evidence. This census covers the second
+stage only. The 10000-module loading gate remains required at 2 GiB; it has not
+passed and is not rerun while the known structural failure remains unresolved.
+The next runtime sharing change must preserve each record/function identity,
+dependency and observer order, with a concrete write/escape/invalidation argument.
+
+** Indexed provenance and retained entry roots
+
+The initial =3ba1b34= development cohort qualified with the prior local producer
+protections and a fresh ABI-coherent Core library. Production source attribution
+uses the runtime persistent name index instead of copying complete specification
+lists before each point lookup. Original specifications, C3 order, opaque/false
+metadata barriers, source checks and receiver caches remain. Lean's first-lookup
+and presence refinements and the real source/Scenario controls qualify the change.
+
+The census also finds an important retained root: after the sixteen-module Fixture
+releases and two collections run, its weak namespace witness still has the exact
+cached =module-0/tests/source/selected-graph= path to the old Graph. Runtime entry
+exports are process roots; deleting a Fixture directory does not unload them.
+This is not proof of a private Reader leak. Do not reinterpret cumulative VM live
+as exclusive per-module memory, or clear runtime globals to meet the budget.
+
+[[file:../../../dev/sysml/20-module-loading/20.22-root-lifetime-and-runtime-catalog-lookup.org][SysML 20.22]] records the source path, exact runtime witnesses, two diagnostic
+regimes, failed build attempts and qualified controls. The 9105 issuer and 6134
+bound-self closure identities remain; the principal retention problem is not
+closed. This finding does not explain away the existing fresh-worker 10000-module
+performance Case. No capacity rerun, budget change, release-pin update or push.
+
+** Typed functional role analysis
+
+[[file:../../../dev/sysml/20-module-loading/20.23-typed-functional-role-analysis.org][SysML 20.23]] records the directed production migration from per-datum
+admission wrappers to one typed diagnostic-analysis protocol. Every result is
+checked with runtime =List Diagnostic=; an admission object is constructed only
+at the explicit single or aggregate admission boundary. Contributed methods and
+Type overrides are tested at their actual boundaries. There is no acceptance
+cache or discarded issued edge. Existing source/Scenario callers retain the
+public admission signatures; method-package authors migrate to analysis results.
+The structural construction control does not discharge the 10000-module Case.
+
+Final qualification advances to =96ab90b= with the same local guards, runtime
+std/make dependency refresh and the runtime declaration-index suite's twelve
+passing Cases. The eight affected Core test-file gates pass with all three
+success markers and no failure/skip/overflow markers. The exact old-source
+refusal requires =module role must be a regular file= and a =types.ss= path under
+the prior Fixture root; the guessed generation-message failure is retained.
+The new root still admits after the old root refuses.
+
+Final 16/32 Graph cold/hot wall seconds are 3.580255/.058647 and
+4.190346/.113117. Read counts and the 9105/6134 issuer/bound-self counts remain;
+no causal A/B speedup or capacity closure is claimed. The matched source-root
+union attributes 2806936 additional covered body bytes to the still-live prior
+entry without double-charging shared support. Opaque/runtime VM storage remains
+outside that byte account. Full source and final artifact details remain in 20.22.

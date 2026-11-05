@@ -6,29 +6,29 @@
 
 Design only. No code in this document is installed or executed. The binding factory and source/artifact checks are defined in [[file:12.12-publication-owned-admission-associations.org][11]]. This document covers Contract association, derivation requirements, final-object admission and evidence. Module selection and build-spec production are separate features under [[file:../13-module-loading/13.01-index.org][Module loading and building]]. An admitted selected Graph is an input here, not an instruction to build or load modules.
 
-* Native construction information: necessary upstream input
+* Runtime construction information: necessary upstream input
 
-Current gerbil-poo object.ss has object-revision and native constructor/slot
+Current gerbil-poo object.ss has object-revision and runtime constructor/slot
 protocols. Its .+ copies the right operand's direct specifications and uses the
 right operand's parents plus the left operand as supers. Therefore the resulting
 supers list does NOT retain the identity of the right operand itself. Declaration
 metadata copying is not proof that all Core admission requirements survive.
 
 The proposed upstream extension retains an immutable construction observation
-inside native object state, not in candidate-editable slots or Core-specific
+inside runtime object state, not in candidate-editable slots or Core-specific
 fields. A read-only construction-view exposes kind, operands, revision and operand
 revisions. The initializer stores the data using private compact storage; it must
 not recursively allocate POO trace objects from inside its own initializer.
 
-| Native route | Required observed operands |
+| Runtime route | Required observed operands |
 |--------------+----------------------------|
-| Fresh .o / object<-fun / object<-alist | Native parents, possibly empty |
-| .def / .mix multiple inheritance | ALL native parents |
-| .cc / .extend | The copied/extended object, plus any other native parent |
+| Fresh .o / object<-fun / object<-alist | Runtime parents, possibly empty |
+| .def / .mix multiple inheritance | ALL runtime parents |
+| .cc / .extend | The copied/extended object, plus any other runtime parent |
 | .+ | BOTH actual operands, before right-side identity is erased |
 | =>.+ | The inherited slot object and refinement object, when demanded |
 
-The unified initializer accepts observations only from governed native constructor
+The unified initializer accepts observations only from governed runtime constructor
 paths. .+ must transmit its operands at the copying site: an initializer cannot
 reconstruct information already erased. This small operand capture is unavoidable;
 it is not a second implementation of .+ semantics. Raw struct mutation, unsupported
@@ -48,7 +48,7 @@ these functions are NEW; ordinary users keep their existing .+ syntax):
     (make-construction-observation
       kind operands (object-revision result) (map object-revision operands))))
 
-;; Final initializer step after native state/dependency initialization:
+;; Final initializer step after runtime state/dependency initialization:
 ;; (record-construction! self 'inherit (object-supers self))
 
 (def (.+ base override)
@@ -65,7 +65,7 @@ these functions are NEW; ordinary users keep their existing .+ syntax):
 
 (def (construction-view value)
   (let (record (object-%construction value))
-    (unless record (error "Missing native construction observation" value))
+    (unless record (error "Missing runtime construction observation" value))
     (.o kind: (construction-observation-kind record)
         operands: (construction-observation-operands record)
         revision: (construction-observation-revision record)
@@ -75,7 +75,7 @@ these functions are NEW; ordinary users keep their existing .+ syntax):
 These private setters are not exports. Copy-specific operands replace the fresh
 initializer's default observation before the result is exposed; observations are
 immutable after that construction boundary. This is a proposed upstream change,
-not permission to replace native .+ with a Core wrapper. Equivalent copy routes
+not permission to replace runtime .+ with a Core wrapper. Equivalent copy routes
 must supply their actual operands at that same boundary.
 
 Proposed read-side code, using existing object-revision and the NEW read-only
@@ -281,7 +281,7 @@ Publication reuses AdmissionPublication. with the resolved aggregate Contract,
 all resolved binding artifacts, and existing bind-evidence. Requirements must be
 resolved before admission, then Graph, construction revisions and EVERY binding
 guard rechecked inside its context-current guard before publication. Existing
-native .cc permits replacing the context slot with a guarded derived Context;
+runtime .cc permits replacing the context slot with a guarded derived Context;
 the following is the proposed orchestration, not a new evidence system. Validating
 only before .admit leaves a time-of-check gap and is explicitly insufficient.
 
@@ -325,13 +325,13 @@ only before .admit leaves a time-of-check gap and is explicitly insufficient.
 #+end_src
 
 The private roots/anchor index must be immutable for this Graph session. Revision
-snapshots cover subjects and descriptor objects, whose supported native dependency
+snapshots cover subjects and descriptor objects, whose supported runtime dependency
 invalidation must include their referenced specifications. A domain Contract that
 hides mutable dependencies in arbitrary Scheme closures still needs an explicit
 source/currentness guard. Plain scalar/collection fields do not acquire object
 revisions: the admitted boundary must require immutable/frozen values or a
 complete owner guard and reject unsupported mutable payloads. This precondition
-is not established merely by returning #f from revision. The native context-slot override is unqualified here:
+is not established merely by returning #f from revision. The runtime context-slot override is unqualified here:
 it needs a focused inherited-publish test before implementation claims are made.
 
 | Control | Expected design result |

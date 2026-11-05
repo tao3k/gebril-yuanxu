@@ -27,7 +27,7 @@ AC-08 qualification.  ABI v1 remains unfrozen.
 
 - Add atomic nonce reservation, lease binding, token consumption, and execution
   root commit to the kernel.
-- Invoke downstream native adapters through a synchronous C vtable only after
+- Invoke downstream runtime adapters through a synchronous C vtable only after
   token/root/lease validation and nonce reservation.  The invocation exposes
   strided kernel headers and the caller-owned payload arena as zero-copy views.
 - Treat adapter failure or unknown observation as a successful mediation receipt

@@ -1,13 +1,13 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Directory Source Contract and Native Lazy Namespace
+#+title: Directory Source Contract and Runtime Lazy Namespace
 #+date: [2026-10-16]
 #+property: STATUS bounded-design-code-not-implemented-or-executed
 
 * Scope and explicit premises
 
-This design validates resolved one-directory snapshots and creates native lazy
+This design validates resolved one-directory snapshots and creates runtime lazy
 namespace views. Filesystem/source admission is an explicit protocol dependency,
 not I/O hidden in a pure Contract predicate. The source shell is owned by
 [[file:01-source-roles.org][the published Module source Contract]]. interface.ss publishes Module objects;
@@ -23,7 +23,7 @@ production implementations are still pending, not hidden completed helpers.
 A snapshot contains one directory's immediate metadata. children and exports are
 symbol lists, never recursively instantiated module bodies. exports is the selected
 interface's admitted scope-key declaration; it is not every transitively imported symbol.
-A metadata projector should derive it from the bounded native publication form,
+A metadata projector should derive it from the bounded runtime publication form,
 not require authors to keep a second manual export-name registry.
 
 #+begin_src scheme
@@ -94,9 +94,9 @@ An empty root policy can be added explicitly; an explicitly selected empty modul
 must not silently disappear. Mixed nodes may publish exports and contain children
 only when their names do not collide. source is reserved by this bounded view.
 
-* Full native projection algorithm over the admitted snapshot protocol
+* Full runtime projection algorithm over the admitted snapshot protocol
 
-Existing gerbil-poo object<-fun creates a native thunk slot for each supplied
+Existing gerbil-poo object<-fun creates a runtime thunk slot for each supplied
 key. It defers f(key) until the slot is read. This is sufficient for a directory
 view; a new dotted-path evaluator or raw self/super hook is unnecessary.
 
@@ -126,25 +126,25 @@ view; a new dotted-path evaluator or raw self/super hook is unnecessary.
 #+end_src
 
 read-child(snapshot, name) resolves only that immediate selected child and returns
-a DirectorySnapshot. realize-interface(snapshot) checks/adopts the selected interface's native
+a DirectorySnapshot. realize-interface(snapshot) checks/adopts the selected interface's runtime
 publication and returns its export scope; it does not activate other modules.
 Both capabilities must reject stale/changed source generations. An implementation
 must bind them to admitted source resolution, not arbitrary untrusted callbacks.
 They are required I/O/source protocol dependencies, not implementations supplied by
 this design. The exact callback interfaces make the unresolved boundary explicit.
 
-Constructing publication above does not call realize-interface: its native value slot
+Constructing publication above does not call realize-interface: its runtime value slot
 is lazy. Reading a child forces only read-child; reading an export forces the
 selected publication once for that view. Reading source needs neither. The initial
 keys list requires immediate child/export metadata; it does not enumerate all
-leaves. Native receiver/cache behavior is reusable, but the generation and lifetime
+leaves. Runtime receiver/cache behavior is reusable, but the generation and lifetime
 of an I/O-backed tree still need new source-adapter qualification. No performance
 measurement is implied.
 
 
 * Conclusion and next controls
 
-Native object<-fun/slot caching supply useful mechanics. Source snapshots, root
+Runtime object<-fun/slot caching supply useful mechanics. Source snapshots, root
 containment/currentness, collision policy and directory/source adapters still need
 qualification. Check missing interfaces, selected one-child traversal, unselected
 module effects, mixed-node collisions, source changes and warm publication reuse.

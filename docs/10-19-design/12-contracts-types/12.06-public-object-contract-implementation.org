@@ -13,8 +13,8 @@ The active gerbil-poo PR 13 checkout on =feat/positive-closure-costs=, based on
 
 - =object-contract.ss=: public =ObjectContract.=, =TypeContract.=, =diagnose= and
   =as-value-contract=.
-- =build.ss=: one native package build entry for the new module.
-- =t/object-contract-test.ss=: native positive/negative library controls.
+- =build.ss=: one runtime package build entry for the new module.
+- =t/object-contract-test.ss=: runtime positive/negative library controls.
 - =BUILD.bazel=: only the new test's entry in the existing contracts group;
   other concurrent CI/Bazel edits are not owned by this task.
 - =doc/object-contracts.md= and its README link: English public API documentation.
@@ -88,11 +88,11 @@ Focused results:
 | Gate | Result |
 |------+--------|
 | New public API suite | 14 cases passed from source |
-| Single-module native compilation | Passed; explicit module-context path check confirmed the compiled SSI |
+| Single-module runtime compilation | Passed; explicit module-context path check confirmed the compiled SSI |
 | Public API suite with compiled module | Same 14 cases passed |
 | Existing MOP / Type / invocation Contract suites | 6 / 10 / 6 cases passed |
 | External generic / JsonSchema-consumer controls using public API | 7 / 10 cases passed |
-| Native Scheme fixture preparation | Passed |
+| Runtime Scheme fixture preparation | Passed |
 
 Every suite reported MODULE-OK, HARNESS-OK and final OK with no error-case/check/
 harness/module or heap/stack-overflow markers. Logs and generated compiler files

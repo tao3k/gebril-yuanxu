@@ -29,7 +29,7 @@
         (read-next (foldl cons values-rev (project datum)))))))
 
 ;;; Find the first truthy projection in inert Scheme reader data. Quoted syntax
-;;; stays opaque. This core owner deliberately uses the native pair walk: a
+;;; stays opaque. This core owner deliberately uses the runtime pair walk: a
 ;;; std/list import here leaks into generated .ssi consumers, and pair walking
 ;;; is also required for dotted source forms that list combinators reject.
 ;; : (-> (-> Value Value) Value Value)

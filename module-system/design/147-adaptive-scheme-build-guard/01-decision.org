@@ -5,7 +5,7 @@
 * Decision
 
 Agentic AI Lab keeps =std/make= as the only Scheme build executor and extends the
-Building Framework with an optional POO-native adaptive execution-window
+Building Framework with an optional POO adaptive execution-window
 controller.  The controller does not create another scheduler.  It submits one
 contiguous, dependency-order-preserving window to one =std/make= coordinator,
 observes a Scheme-owned process-tree memory receipt, derives an immutable next

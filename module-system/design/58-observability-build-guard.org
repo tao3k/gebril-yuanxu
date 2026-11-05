@@ -14,7 +14,7 @@ watchdog, process-tree sampler, RSS policy, compiler supervisor, or guard
 receipt described below.  The root =build.ss= installs the top-level upstream
 =std/build-script#defbuild-script= entrypoint; gerbil-bazel owns its enclosing
 resource guard.  Explicit downstream build work may enter the pinned public ASP
-Gerbil Scheme native memory-guard composition.  The old =AGENTIC_AI_LAB_BUILD_*= variables and local guard
+Gerbil Scheme runtime memory-guard composition.  The old =AGENTIC_AI_LAB_BUILD_*= variables and local guard
 schemas are not supported interfaces.  Current ownership and evidence limits
 are recorded in RFC 0147 modules 17 and 20.
 
@@ -67,7 +67,7 @@ flowchart LR
 #+end_src
 
 The public Scheme surface is intentionally small:
-- construct a POO-native gate object;
+- construct a POO gate object;
 - ask whether the gate is accepted;
 - project final Scheme-to-Lean facts;
 - validate the fact-key contract.
@@ -170,7 +170,7 @@ The implementation invariants are:
   minimum, while =AGENTIC_AI_LAB_BUILD_MAX_RSS_BYTES= remains an explicit override;
 - there is no fixed machine-independent timeout; an unset or zero
   =AGENTIC_AI_LAB_BUILD_TOTAL_TIMEOUT_SECONDS= means no deadline;
-- native commands resolve from the configured project environment and must not
+- runtime commands resolve from the configured project environment and must not
   silently select a Nix- or Cellar-internal Gerbil toolchain.
 
 #+begin_src typst

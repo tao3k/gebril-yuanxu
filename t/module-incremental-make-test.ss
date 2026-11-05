@@ -18,7 +18,7 @@
               ((string-prefix? "... compile " line)
                (next (cons (substring line 12 (string-length line)) lines)))
               (else (next lines)))))))
-(def (native-make root lib)
+(def (std-make root lib)
   (def output (open-output-string))
   (parameterize ((current-output-port output))
     (make '("provider" "consumer" "unrelated")
@@ -40,7 +40,7 @@
       (dynamic-wind
         (lambda () (add-load-path! lib))
         (lambda ()
-          (def cold (native-make root lib))
+          (def cold (std-make root lib))
           (check-equal? (length cold) 3)
           (for-each
             (lambda (name)
@@ -50,17 +50,17 @@
                   (check-equal? (file-exists? (path-expand
                     (string-append package "/" name suffix) lib)) #t)) '(".ssi" "~0.o1")))
             '("provider" "consumer" "unrelated"))
-          (check-equal? (native-make root lib) '())
+          (check-equal? (std-make root lib) '())
           (def unrelated (path-expand (string-append package "/unrelated.ssi") lib))
           (def unchanged-time (file-info-last-modification-time (file-info unrelated)))
           ;; std/make uses modification times, not content hashes. Cross a
           ;; filesystem timestamp tick; this is not a relaxed watchdog.
           (thread-sleep! 1.1)
           (write-source root "provider.ss" "(export value)\n(def value 2)\n")
-          (def edited (native-make root lib))
+          (def edited (std-make root lib))
           (check-equal? edited '("provider" "consumer"))
           (check-equal? (time->seconds (file-info-last-modification-time (file-info unrelated)))
                         (time->seconds unchanged-time))
-          (check-equal? (native-make root lib) '())
+          (check-equal? (std-make root lib) '())
           (displayln "INCREMENTAL-MAKE cold=3 hot=0 source-edit=2 unrelated=unchanged next-hot=0"))
         (lambda () (set-load-path! prior-path))))))

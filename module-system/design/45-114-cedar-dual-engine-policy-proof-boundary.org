@@ -605,9 +605,9 @@ Verification:
 - [ ] produce a real =CedarAdapterReceipt= from the configured Cedar engines;
 - [ ] execute pinned DRT targets and retain actual case/failure counts;
 - [ ] refine the adapter receipt into this contract.
-* POO-native Cedar adapter refinement
+* POO Cedar adapter refinement
 
-The single Agentic AI Lab owner is a native =gerbil-poo= adapter object.  Its
+The single Agentic AI Lab owner is a runtime =gerbil-poo= adapter object.  Its
 physical representation has exactly three object slots:
 
 #+begin_src text
@@ -680,7 +680,7 @@ The public composition surface remains the existing form:
 
 =cedar-policy-profile= is an ordinary POO Profile containing the adapter
 responsibility.  There is no =use-cedar=, =cedar-composition=, or other
-Cedar-specific public macro.  Internal construction may use native
+Cedar-specific public macro.  Internal construction may use runtime
 =instantiate-proto= and slot projection, but that construction does not expand
 the public macro surface.
 

@@ -42,21 +42,21 @@ dependency order, key-shape copy and original closure identity stay intact.
 Inspector results copy the payload vector, dependency spine and compound-key
 spine. Mutating these copies must not mutate or authenticate a signed record.
 
-* Formal and native correspondence
+* Formal and runtime correspondence
 
 [[file:../../proofs/lean/YuanxuProof/Admission/IssuerProjection.lean][IssuerProjection]] proves =single_closure_authentication=,
 =inspection_cannot_authenticate= and =inspection_preserves_ordered_payload=.
-[[file:../../proofs/lean/IssuerProjectionCheck.lean][IssuerProjectionCheck]] compares the alternative predicate with native
+[[file:../../proofs/lean/IssuerProjectionCheck.lean][IssuerProjectionCheck]] compares the alternative predicate with runtime
 observations instead of assuming that an arbitrary supplied Birth is authentic.
 The existing QNT issuer controls still cover forged/borrowed/replaced closures,
 transient misses, callback restoration, revision changes and parent isolation.
 
-The model assumes the native identity projection, RTD guard, private lexical
+The model assumes the runtime identity projection, RTD guard, private lexical
 capture and sequential execution boundary. It does not prove Gambit's closure
 layout, GC behavior, arbitrary FFI safety or atomic external-file deployment.
 Compiled closure counts and retained bytes require separate runtime evidence.
 
-Native producer tests pass the existing seventeen issued-read cases and the
+Runtime producer tests pass the existing seventeen issued-read cases and the
 slot-observation regression. The persistent/forged case additionally mutates
 detached inspection copies and checks that original authentication is unchanged.
 Core consumer, matched retention and full capacity qualification must also pass
@@ -79,12 +79,12 @@ upgrade. No compiler or SDK source is modified.
 
 | Check | Result |
 |-------+--------|
-| Native issued reads / slot observation | Pass, including detached-copy mutation and transient miss |
-| Core native observations / independent Lean decoder | 4 cases, 12 observations agree |
+| Runtime issued reads / slot observation | Pass, including detached-copy mutation and transient miss |
+| Core runtime observations / independent Lean decoder | 4 cases, 12 observations agree |
 | Lean complete audit | 199 jobs; 6807 declarations, standard Lean axioms only |
 | QNT issuer / selected replay controls | 11 + 11 qualified cases, including expected negative counterexamples |
 | Real Gitea/PostgreSQL publication and JSON configuration | Both default Just entries pass |
-| Native build lifecycle | Spec, cold build, zero-compilation hot build, clean, rebuild and cleanup pass |
+| Runtime build lifecycle | Spec, cold build, zero-compilation hot build, clean, rebuild and cleanup pass |
 | Immediate Core hot build | Zero compiler invocations |
 | 256 real declarations | Pass, including stale-source refusal and unselected-scope/Feature assertions |
 
@@ -119,7 +119,7 @@ cached admission decisions.
 
 * Remaining storage: private dependency snapshot
 
-The next candidate changes private representation only. Each native record
+The next candidate changes private representation only. Each runtime record
 keeps its original public dependency list, including repeated occurrences. Its
 issuer previously copied the same sequence into another pair spine. A private
 vector can retain the same identities in order; inspection converts it back to
@@ -133,8 +133,8 @@ boundary and supplies expected counterexamples for deduplication, reordering and
 aliasing the inspection result. Existing issuer/replay controls still own
 forgery, currentness, parent isolation, both requirements and laziness. These
 models do not prove vector GC layout or private reflection resistance.
-The native loop's bounded index traversal and pointer-to-model identity mapping
-remain source-correspondence assumptions, checked by the native repeated-edge
+The runtime loop's bounded index traversal and pointer-to-model identity mapping
+remain source-correspondence assumptions, checked by the runtime repeated-edge
 controls; there is no extracted compiler-correctness proof.
 
 ** Rejected attribution hypotheses
@@ -167,7 +167,7 @@ ten-thousand-module capacity gate. Concurrent build changes remain intact.
 
 The dense-snapshot producer is =fe82518686c21b11f6f1b91e44b35f3dfbab52c8=,
 published on the existing PR 13 branch. It is a child of the selected merge,
-not a downgrade to the earlier narrow history. Native issued-read controls
+not a downgrade to the earlier narrow history. Runtime issued-read controls
 complete all seventeen cases, including mutated inspection copies, mutated
 public dependencies and deletion/reordering of actual repeated dependencies.
 Slot-observation regressions also pass. A test initially selected the external
@@ -176,7 +176,7 @@ failure is retained rather than relabeled as a production defect.
 
 The complete Lean build passes 199 jobs and the 6816-declaration standard-axiom
 audit. QNT qualifies fifteen issuer/sequence cases and eleven selected-replay
-cases. Core's independent Lean decoder agrees with twelve actual native
+cases. Core's independent Lean decoder agrees with twelve actual runtime
 observations. Core's full default build and subsequent zero-compilation hot
 build pass. The real Gitea/PostgreSQL publication entry completes eleven cases.
 Further capacity measurements remain separate acceptance requirements.
@@ -221,7 +221,7 @@ end-to-end capacity result or all-green PR is claimed.
 ** User-selected two-GiB capacity boundary
 
 After that refusal, the user explicitly changes the ten-thousand-module budget
-to 2 GiB. The outer fixture and its worker share one native Case-profile function,
+to 2 GiB. The outer fixture and its worker share one runtime Case-profile function,
 which derives the existing POO Case profile with
 =live-growth-limit-bytes: 2147483648=. The VM's existing 2 GiB hard managed-heap
 cap and the Case's 2 GiB heap-size guard remain in place: the change removes
@@ -241,7 +241,7 @@ cache protocol is introduced.
 
 ** Unified two-GiB rerun and remaining ownership
 
-Core =a3736ea381b003c46be3905bc42ccc1e02aebe85=, native producer
+Core =a3736ea381b003c46be3905bc42ccc1e02aebe85=, runtime producer
 =fe82518686c21b11f6f1b91e44b35f3dfbab52c8=: the default Just ten-thousand
 entry with the shared outer/worker policy exits 70. Its last completed scalar
 checkpoint is 2000 publications, 2147277856 managed-heap bytes and 1862349584
@@ -262,7 +262,7 @@ older Core cohort's different event sequence.
 Attribution of already demanded selected-graph roots, without invoking another
 getter, finds:
 
-| Native family | Distinct original reads | Receiver identities |
+| Runtime family | Distinct original reads | Receiver identities |
 |---------------+-------------------------+---------------------|
 | Effective method | 36865 | 2305 |
 | Invocation frame | 23041 | 2305 |
@@ -284,7 +284,7 @@ Before another production storage change, the existing =ReadRetention= and
 QNT controls qualify, including the expected receiver-coalescing, omitted-miss,
 memoized-approval, missing-second-requirement and eager-branch counterexamples.
 These prove the abstract sharing restrictions, not a two-GiB heap bound or a
-new compressed native layout. The existing real Scenario cost entry also
+new compressed runtime layout. The existing real Scenario cost entry also
 passes its three matched raw/unique cold/warm rounds. Parent 5432 stays cached;
 each child admits 5433/5433 with exact final Config/plan identity, both contextual
 child obligations, both contributions and fresh physical-source checks. Full
@@ -301,7 +301,7 @@ including their existing source-change, parent-cache and lazy-branch controls.
 
 No further graph pruning, cross-effect approval cache, collector rewrite or
 unqualified producer upgrade is admitted by these results. The next storage
-candidate must account for native Generic/authoring metadata ownership while
+candidate must account for runtime Generic/authoring metadata ownership while
 preserving the complete original token and edge sequence; a local vector
 micro-optimization is not evidence of ten-thousand-module capacity. This
 capacity gate remains failed, independently of passing smaller controls and

@@ -46,7 +46,7 @@ No Nix evaluation, VM test, deployment or benchmark was run.
   requirements and a current metadata index.
 - Dependency injection is phase-sensitive. Lexical bindings can improve locality,
   but cannot make source selection depend safely on its own evaluated result.
-- Option types participate in merge and discovery. Native POO slot precedence
+- Option types participate in merge and discovery. POO slot precedence
   cannot silently replace independent-contribution or requirement semantics.
 - Laziness is not absence, complete validation or reuse across derived instances.
   Discovery, admitted preview and execution need different forcing boundaries.
@@ -63,7 +63,7 @@ bugs, and upstream tests inspected in source are not local passes.
 * Conclusion and Onwards
 
 The design target is a more inspectable, selectively loaded and extensible module
-framework, with small value inputs and deliberate native extension. Evidence
+framework, with small value inputs and deliberate runtime extension. Evidence
 still required includes pinned issue reproductions, selected-graph cold/warm
 measurements and real consumer qualification. See the concrete acceptance controls
 in 20.08; this dossier now contains research and decisions, not only a map.

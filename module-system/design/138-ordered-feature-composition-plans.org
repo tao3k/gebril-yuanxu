@@ -7,7 +7,7 @@
 
 * Decision
 
-Phase 3C introduces an immutable POO-native =FeatureCompositionPlan=.  It is the
+Phase 3C introduces an immutable POO =FeatureCompositionPlan=.  It is the
 canonical bridge from a qualified =FeatureManifestBundle= to downstream Case,
 agent-role, policy, strategy, adapter, and projection assembly.
 

@@ -1,10 +1,10 @@
 #+title: 20.12 Thunk Construction Observation Boundary
 #+language: en
 
-* Scope and exact native owner
+* Scope and exact runtime owner
 
 This follows [[file:20.11-thunk-demand-and-capture-retention.org][20.11]] and investigates its 3341 cold-only function identities,
-not 3341 duplicated SDK environments. The native source cut remains gerbil-poo
+not 3341 duplicated SDK environments. The runtime source cut remains gerbil-poo
 =29c58aa9c5be103ba843767e3d22ef8802b79342=, the observed latest PR13 head.
 =object.ss= SHA256 is
 =0c28298e1047e17b9fc67c5489f4f3d48ce07a79f93adc8e00ef101893737ced=.
@@ -14,7 +14,7 @@ No Gerbil compiler or SDK source is changed.
 
 1. =instantiate-object!= first computes checked precedence and the complete
    effective thunk table, then installs the receiver instance and preparation
-   read. An exception clears the partial native caches before propagation.
+   read. An exception clears the partial runtime caches before propagation.
 2. =declaration-specifications= calls the actual Slot protocol for declared
    descriptors and registers descriptor/type dependencies. An absent explicit
    inheritance protocol alone does not eliminate declaration callbacks.
@@ -40,24 +40,24 @@ candidate, not the selected architecture.
 
 | Boundary | Result |
 |----------+--------|
-| Value body of an unselected slot | Already lazy; retain existing native behavior |
-| Custom construction callback with observable events or refusal | Preserve before first selected-value return and retain native order |
+| Value body of an unselected slot | Already lazy; retain existing runtime behavior |
+| Custom construction callback with observable events or refusal | Preserve before first selected-value return and retain runtime order |
 | Standard function observed by a hook's =next= | Materialize one identity before that observation; do not replace it on subsequent =next= |
 | Function exposed by full metadata reflection | Materialize before exposure; a missing or proxy entry changes the existing observable API |
 | Function absent from a proven restricted observation projection, with no moved callback | Identity projection can be unchanged under deferral, conditional on that observation restriction |
 | Every cold entry inferred eligible solely from value-cache absence or no protocol | Unsound |
 
 The conditional row is not a user-maintained purity flag and not an existing
-native certificate. Current raw metadata export does not establish absence of
+runtime certificate. Current raw metadata export does not establish absence of
 future reflection. Thus this audit does not turn the 3341 cold-only entries into
 3341 automatically removable or delayed closures. There is no production MOP
 change, second cache or wrapper entry pretending to close that gap.
 
-A future native implementation would need a materialization boundary that also
+A future runtime implementation would need a materialization boundary that also
 covers metadata exposure, construction callbacks, exceptions and receiver
-revision changes, using the existing native cache/invalidation ownership.
+revision changes, using the existing runtime cache/invalidation ownership.
 Merely delaying Core calls or returning an incomplete table cannot provide it.
-That is a native interface/temporal question, not a manual purity annotation.
+That is a runtime interface/temporal question, not a manual purity annotation.
 
 * SysML, Lean and Quint responsibilities
 
@@ -73,20 +73,20 @@ The [[file:20.04-payload-ownership.sysml][SysML owner]] assigns:
   publication. This does not duplicate read-coverage/currentness models.
 - Existing QNT =ReadRetention=: all original reads/misses, two requirements,
   currentness across effects, parent isolation and unselected VALUE laziness.
-- Scheme consumer regressions: real native functions, actual hook enumeration,
+- Scheme consumer regressions: real runtime functions, actual hook enumeration,
   eager unselected hook refusal, cache cleanup and parent/child identities.
 
 The QNT restricted-kind branch is a mathematical observation restriction.
-It is NOT extracted from a native object or asserted as a production fast path.
+It is NOT extracted from a runtime object or asserted as a production fast path.
 The model uses two schedules to avoid assuming declaration order; runtime
-compares against the actual native enumeration in the same constructed table.
+compares against the actual runtime enumeration in the same constructed table.
 It does not establish a deterministic order across separate hash tables.
 
 * Formal receipt
 
-Lean builds PayloadSharing and its 101 dependencies successfully. Native Quint
+Lean builds PayloadSharing and its 101 dependencies successfully. Runtime Quint
 0.33.0 typechecks the new model family and the maintained runner verifies one
-positive and six matched negative cases. The actual native source closure,
+positive and six matched negative cases. The actual runtime source closure,
 model digest, Lean projection and Scheme test are bound into the receipt.
 Expected counterexamples cover deferred hooks, reordered hooks, incomplete
 metadata, fresh =next= identities, fresh repeated-read identities, and the
@@ -98,28 +98,28 @@ These proofs/finite traces are not evidence of an implemented lazy constructor.
 They establish why a blind rewrite would break observable semantics and what
 observation restriction a valid implementation would have to establish.
 
-* Native and bounded receiver results
+* Runtime and bounded receiver results
 
 The new three-case consumer suite runs through the existing default
 =just test-file t/mop-thunk-construction-test.ss= route and passes MODULE-OK,
-HARNESS-OK and final OK with no error/heap/stack markers. It uses actual native
+HARNESS-OK and final OK with no error/heap/stack markers. It uses actual runtime
 =with-inheritance-hooks=, =instantiate-object!=, exported metadata and cached
 reads; there is no deferred-evaluator fixture or alternative read engine.
 
 - All hook events precede selected value delivery while the unused value body
   remains cold. Repeated =next= returns one standard procedure identity.
-- Its captured event order matches the actual native table enumeration of that
+- Its captured event order matches the actual runtime table enumeration of that
   SAME receiver. No ordering across separately seeded tables is asserted.
 - Parent and child retain their own port/function identities. A cached parent
   stays at 5432 when its child port becomes 5433.
-- Hook-free native objects already expose a procedure for the unused slot;
+- Hook-free runtime objects already expose a procedure for the unused slot;
   that procedure remains the same after another slot is demanded.
 - An unselected construction-hook refusal propagates the original cause before
-  the selected body runs; native instance/thunk caches are cleared on failure.
+  the selected body runs; runtime instance/thunk caches are cleared on failure.
 
 The existing bounded 16/32 census also passes all harness markers:
 
-| Raw current native observation | 16 | 32 |
+| Raw current runtime observation | 16 | 32 |
 |--------------------------------+----+----|
 | Cold-only functions | 1780 | 3341 |
 | Cold entry with protocol present on precedence chain | 0 | 0 |
@@ -134,7 +134,7 @@ At this source cut there are no ambiguous entries and no custom hook/descriptor
 on the measured cold entries. Consequently CUSTOM HOOKS are not the measured
 3341-entry blocker; the remaining general API barrier is full function-table
 reflection/identity publication, plus any implementation's required preservation
-of the native preparation/dependency protocol.
+of the runtime preparation/dependency protocol.
 
 Original read counts remain 9231/18159, dependency occurrences 22619/42923,
 source reads cold/hot 6960/106 and 13968/170, role expansions 32/0 and 64/0.
@@ -145,27 +145,27 @@ observations, not a production speedup or capacity claim.
 
 * Source binding follow-up
 
-The prior SelectionReplay native source digest still named the =40c61fe=
+The prior SelectionReplay runtime source digest still named the =40c61fe=
 object source even though its revision field had moved. The exact diff to
 =29c58aa= changes only the issuer-private singleton parent codec; it leaves the
 public inspection sequence and original record identities intact. That codec
-has the existing PayloadSharing round-trip proof and the executed native
+has the existing PayloadSharing round-trip proof and the executed runtime
 issuance/copy-isolation controls (20.10). The projection source binding now
 names the actual object source above, with that correspondence documented;
 this is not a source-currentness fingerprint replacement or cached approval.
 
 The source-bound SelectionReplay/SelectionReplayTopology qualification passes
-all 11 positive/negative cases against that exact native source closure. The
+all 11 positive/negative cases against that exact runtime source closure. The
 existing ReadRetention family passes its seven controls after the new model was
 added. Lean rebuilds PayloadSharing and SelectionReplay with the final source
 bindings (110 dependency jobs). The real Gitea/PostgreSQL publication regression
 passes all 11 cases again with the required harness markers and no error/overflow
 markers, retaining both requirements, source changes, child obligations and
 parent-cache/final-plan checks. The disjoint test-group check includes the new
-native consumer suite through the existing runtime group.
+runtime consumer suite through the existing runtime group.
 
 There is no automatic lazy-thunk constructor deployed by this work. The measured
-no-hook/no-descriptor population motivates a native materialization boundary,
+no-hook/no-descriptor population motivates a runtime materialization boundary,
 but does not by itself prove that future reflection cannot occur. In particular,
 calling it "pure" would not preserve its exported function table. The next
 producer design must retain full reflection and stable identities on demand,

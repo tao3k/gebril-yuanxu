@@ -20,7 +20,7 @@ introduce joint recursive Graph/approval snapshots and final =admit:= hooks.
 See the pinned [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/recursive-approvals.ss][recursive-approvals implementation]] and
 [[https://github.com/tao3k/gerbil-poo/blob/26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5/doc/recursive-validation.md][recursive validation documentation]]. Core still locks =099b381=.
 The Scheme below is proposed Core integration using existing public operations;
-it has not been installed or executed. Historical native controls remain separate.
+it has not been installed or executed. Historical runtime controls remain separate.
 
 Preserve the existing .admit arity and evidence representation. Its candidate
 field must identify the actual checked result, which may differ from the input.

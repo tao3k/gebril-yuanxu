@@ -4,7 +4,7 @@ import Std
 /-! Constructor arguments are already values and are not rebound after capture.
 Constant lexical slots and lazy initializers over their shared argument frame
 retain the same payload identities. Removing initializer environments therefore
-does NOT prove reclamation of arguments held by native read records. Native slot
+does NOT prove reclamation of arguments held by runtime read records. Runtime slot
 lowering, MOP hooks, the collector and byte costs are outside this theorem. -/
 namespace YuanxuProof.PooClos.CarrierCapture
 

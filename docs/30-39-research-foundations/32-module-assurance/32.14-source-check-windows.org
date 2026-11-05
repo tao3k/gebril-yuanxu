@@ -11,7 +11,7 @@ callback counterexample in 32.15. Its measurements below are historical.
 The Scheme performance goal remains open. Its new per-source replay-count
 control failed before the formal-model pass; it is not a completed performance
 change. Further runtime optimization is paused in favor of the source-window
-model and matched counterexamples in [[file:32.15-source-window-model.org][32.15]]. No native correspondence or
+model and matched counterexamples in [[file:32.15-source-window-model.org][32.15]]. No runtime correspondence or
 net speedup is claimed by the 614-open measurement.
 
 * Question
@@ -42,7 +42,7 @@ Only counter runs install this observer; timed runs still omit it.
 
 The publication phase reads the same 101 files twice. The final collector
 checks 102 distinct observed files. Thus 310 is not 310 redundant reads of a
-single file, and native dependency replay is not the main source-I/O owner.
+single file, and runtime dependency replay is not the main source-I/O owner.
 The inherited Contract kernel previously ran under one source-byte cache;
 that scope included independent child/local/platform obligation calls.
 
@@ -55,7 +55,7 @@ proof that currentness can safely be reused across obligations or effects.
 * Rejected boundary experiment (614 opens)
 
 This section describes the withdrawn experiment, not the current adapter.
-The replaceable-inspector purity assumption was refuted by a native control;
+The replaceable-inspector purity assumption was refuted by a runtime control;
 see 32.15 for the repaired boundary and its final qualification.
 
 
@@ -74,7 +74,7 @@ admit-current guard and the descriptor's source-input check. Invalid configurati
 also receives the final context/source check before returning a refusal.
 
 MOP replay separately receives a fresh pure source-check window. Its callback
-inspects one-slot source metadata; it does not call a candidate getter. Native
+inspects one-slot source metadata; it does not call a candidate getter. Runtime
 replay still checks receiver/revision/instance validity. This helps Scheme slot
 sources but is not credited with removing the real Scenario's 202 publication
 opens. The collector remains independent of this replay window.
@@ -130,7 +130,7 @@ reuse the bytes obtained by the source-only inspector in that *same fresh
 return window*; a missing inspector input still requires a fresh read. It has
 not been removed or satisfied by an earlier obligation's cache.
 
-The native observed dependency graph remains 871 nodes / 1938 edges and 871
+The runtime observed dependency graph remains 871 nodes / 1938 edges and 871
 replay callbacks for both full-context cold/warm modes. Read events fall to
 2396/2383 because callback-free duplicate platform guards and the redundant
 separate post-kernel guard are gone. Nested contextual controls go from 8 to
@@ -161,7 +161,7 @@ the existing heap-fenced Just gates and unchanged 120-second watchdogs. Private
 input copies pin the earlier audit's Core closure while other sessions edit the
 workspace; these are source snapshots, not compatibility runtimes. Only the
 five changed consumer/guard/test sources are overlaid in the candidate. Baseline
-and candidate use the same maintained Scenario/fixtures, native dependency and
+and candidate use the same maintained Scenario/fixtures, runtime dependency and
 configuration values. No raw logs are committed.
 
 The baseline input and first run are under /private/tmp/core-source-window-before;
@@ -194,13 +194,13 @@ separate gates. The latter is not achieved.
 The [[file:32.14-source-manifest.sha256][source manifest]] fingerprints the fixed candidate's 102 selected source/test
 inputs. This manifest belongs to the rejected 614-open experiment, not the repaired
 working tree. The final source-bound receipt and controls are described in 32.15;
-unrelated concurrent changes are not certified by this historical receipt. The native dependency remains ece6f60 in both variants.
+unrelated concurrent changes are not certified by this historical receipt. The runtime dependency remains ece6f60 in both variants.
 
 * Repair and current result
 
 The callback experiment was reproduced and rejected, then the original
 independent fresh collector boundary was restored. The repaired cold/warm
-control reads 718 files, with all 31 focused native cases passing. The new
+control reads 718 files, with all 31 focused runtime cases passing. The new
 source-window laws, exact dependency pins, 20 Quint controls and remaining
 premises are recorded in [[file:32.15-source-window-model.org][32.15]]. This supersedes the experimental boundary
 description above without rewriting its failed performance history.

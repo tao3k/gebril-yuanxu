@@ -11,7 +11,7 @@ import LeanPoo.Proof.Invalidation
 
 /-! One executable Core scenario using the dependency's public API. C4 validates
 module inheritance; it is not a scheduler or an SCC solver for workflow loops.
-The Receipt is projected input, not authenticated native evidence. -/
+The Receipt is projected input, not authenticated runtime evidence. -/
 namespace YuanxuProof.ModuleSystem.Workflow
 open LeanPoo Functional Requirements
 open YuanxuProof.ModuleSystem.Schema.Association

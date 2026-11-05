@@ -116,7 +116,7 @@ Functions remain useful for deriving individual values; composable, inspectable
 configuration values need their own treatment.
 
 The [[https://nickel-lang.org/user-manual/merging/][merge manual]] describes symmetric merging with defaults/priorities and
-field-associated contracts. Native POO inheritance has its own ordering and
+field-associated contracts. POO inheritance has its own ordering and
 refinement semantics. Nickel's commutative merge is not interchangeable with
 POO C4. Borrow the authoring goals and contract discipline without silently
 claiming identical merge laws. Likewise Nix's [[https://nix.dev/tutorials/nix-language.html][language facilities]] supply
@@ -127,7 +127,7 @@ update. HiveBus's POP layer is another explicit owner.
 Derived-field behavior needs particular care: Nickel recursive records can
 recompute dependent fields after overriding their inputs. Ordinary eager
 Scheme lexical bindings do not acquire that property from compact syntax.
-Any promised effective-object dependency must use the native POO computation
+Any promised effective-object dependency must use the POO computation
 owner, handle cycles and distinguish declaration dependencies from runtime
 effects. This research does not claim that correspondence is implemented.
 
@@ -144,7 +144,7 @@ effects. This research does not claim that correspondence is implemented.
    effective value and receive a field-specific diagnostic.
 4. Ordinary Scheme =let=, =if= and named pure functions own calculation and
    parameterization; declarations own domain shape. Public configurable slot
-   results remain ordinary inert values or native POO objects/prototypes,
+   results remain ordinary inert values or POO objects/prototypes,
    including Type/Contract. This result restriction does not ban expressions.
 5. Select, compose and refine already published capabilities in default config.
    Use the existing POO Profile/prototype configuration layer when reusable
@@ -152,7 +152,7 @@ effects. This research does not claim that correspondence is implemented.
    protocols and Provider crossings are deeper Extend implementation work.
    More Scheme calculations alone do not provide this abstraction.
 6. Lower hygienic domain declarations to the existing POO objects/functions and
-   preserve identity, provenance and native composition. Never construct a
+   preserve identity, provenance and runtime composition. Never construct a
    second runtime clause interpreter or hidden patch/merge evaluator.
 7. Package acquisition, source loading and execution remain explicit owners.
    User syntax may declare intent and dependencies; a config declaration does
@@ -160,7 +160,7 @@ effects. This research does not claim that correspondence is implemented.
 
 The goal is Scheme's own best configuration expression, not translation of
 Nickel or Nix examples. Start with the [[file:164-user-interface-scenario-case-previews.org][downstream Scenario examples]]: choose a
-maintained Scenario, inherit it with native .def, explicitly use-module where
+maintained Scenario, inherit it with .def, explicitly use-module where
 needed, and refine desired configuration. Defaults stay inherited; selected
 composition reads the modified effective Profile. Module instance names come
 from slots; source exports remain visible through use-module.
@@ -168,7 +168,7 @@ from slots; source exports remain visible through use-module.
 The [[file:164-profile-module-targeting-design.org][Scenario design]] puts this user route before internal details. Its later
 specification covers CompositionContract/domain refinement, optional direct
 Contract initialization, dynamic Profile-name resolution, responsibility-driven
-objectification and native expansion. SDLC names are examples, not a generic
+objectification and runtime expansion. SDLC names are examples, not a generic
 fixed Project Contract. Real Profiles slots and optional Category framing remain
 distinct. Contract-family resolution, contextual construction, collection
 admission and effective evidence projection are explicitly unimplemented design

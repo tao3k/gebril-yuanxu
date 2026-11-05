@@ -39,7 +39,7 @@ flowchart LR
 
 * Contract
 
-The POO-native verifier owner is
+The POO verifier owner is
 =src/qualification/cutover-readiness.ss=.  It requires:
 
 - non-empty AC-10 source revision and manifest digest;

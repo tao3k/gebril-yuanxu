@@ -13,7 +13,7 @@ manifest and test receipts remain unchanged.
 
 Implemented extraction, 2026-10-18. The shared lifecycle now lives in
 [[file:../../../admission/source.ss][admission/source.ss]], and generic field origin decoration in
-[[file:../../../configuration/diagnostics.ss][configuration/diagnostics.ss]]. Gitea consumes these through ordinary native
+[[file:../../../configuration/diagnostics.ss][configuration/diagnostics.ss]]. Gitea consumes these through ordinary runtime
 inheritance. The pure Contract kernel, contribution collector, publication
 authority and Loader are unchanged. Earlier controls remain historical in
 [[file:32.05-maintained-service-object-contracts.org][32.05]]; this extraction has its own focused receipts below.
@@ -102,7 +102,7 @@ violate laziness.
 2. Run the existing ordered preflight. Guard each demanded Scheme path only
    after the preceding shape check makes that traversal safe. A null PostgreSQL
    settings object must fail before Gitea's dependent default is forced.
-3. On refusal, construct ordinary native evidence; do not invoke normalization,
+3. On refusal, construct ordinary runtime evidence; do not invoke normalization,
    child admissions or contribution policies on an invalid shape.
 4. On success, invoke inherited .admit exactly once in the existing bounded
    source-read window. Its normalized candidate remains the evidence subject.
@@ -222,9 +222,9 @@ suite or CI result. The adapter tests count inherited method invocations rather
 than merely counting classifications. Service tests use the maintained module
 sources through the existing publication protocol, not a replacement producer.
 
-The runtime is Gerbil 1cfb032 on Gambit ea114fc. Qualification uses the native
+The runtime is Gerbil 1cfb032 on Gambit ea114fc. Qualification uses the runtime
 host dependencies under /Users/guangtao/.gerbil and newly compiled current Core
-modules in /private/tmp/poo-plan-identity-native/lib, with the current Core
+modules in /private/tmp/poo-plan-identity-runtime/lib, with the current Core
 source-tree fallback. No compatibility runtime or frozen source snapshot is used.
 This does not attest a clean default build path or complete dependency closure.
 
@@ -233,7 +233,7 @@ The dirty Core checkout has base HEAD
 [[file:32.06-source-manifest.sha256][separate source manifest]] binds 17 relevant files; it does not rewrite the
 historical 32.05 manifest or include binaries. Existing Fixture and relocation
 controls were reused unchanged. Local final logs remain outside the repository
-under /private/tmp/poo-plan-identity-native/:
+under /private/tmp/poo-plan-identity-runtime/:
 
 - source-admission-final.log
 - source-publication-final.log

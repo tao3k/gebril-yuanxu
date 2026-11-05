@@ -1,0 +1,123 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Gap-separated same-domain rotation
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Gap-separated same-domain rotation
+
+** Temporal rotation requirement
+
+Same-domain rotation MUST remain authority-issued when retirement and admission
+occur at different adjacent transitions.  An empty registry generation between
+the old and new descriptors MUST NOT erase the relationship visible at the
+interval endpoints.
+
+If an old descriptor is registered at the committed position and a distinct new
+descriptor with the same =domainIdentity= is registered at the recovered or
+summary position, the governed interval MUST expose both:
+
+- an authority-issued retirement step for the old descriptor; and
+- an authority-issued admission step for the new descriptor.
+
+The two steps need not be equal.  This permits an intentional quarantine gap
+without reducing the rotation to an ungoverned new-domain admission.
+
+** Adjacent-only rotation observation
+
+=sameDomainReplacementRequiresIssuedPredecessorRetirement= correctly owns an
+adjacent replacement, but its predecessor-same-domain obligation is vacuous
+when the immediate predecessor registry is empty.  Therefore that one-step
+theorem cannot by itself justify a gap-separated rotation.
+
+Endpoint registry injectivity supplies the missing bridge.  A distinct
+same-domain new descriptor proves that the old descriptor is absent at the
+interval end and that the new descriptor was absent at the interval start.
+Those facts force the interval retirement branch for the old descriptor and the
+interval admission theorem for the new descriptor.
+
+** Temporal rotation Typst model
+
+#+begin_export typst
+$
+  "SameDomainRotationAcrossInterval"(d_old, d_new, g, c, r) :=
+    d_old."domainIdentity" = d_new."domainIdentity"
+    and d_old != d_new
+    and exists k_retire:
+      c <= k_retire and k_retire < r
+      and "AuthorityIssuedRetirement"(
+        d_old, g(k_retire), g(k_retire + 1),
+      )
+    and exists k_admit:
+      c <= k_admit and k_admit < r
+      and "AuthorityIssuedAdmission"(
+        d_new, g(k_admit), g(k_admit + 1),
+      )
+$
+#+end_export
+
+** Temporal rotation Mermaid closure
+
+#+begin_src mermaid
+flowchart LR
+  O["Committed position<br/>old descriptor registered"]
+  T["Authority-issued retirement<br/>step k-retire"]
+  Q["Optional quarantine gap<br/>domain absent"]
+  A["Authority-issued admission<br/>step k-admit"]
+  N["Recovered or summary position<br/>new same-domain descriptor"]
+  I["Endpoint registry injectivity"]
+  R["Interval rotation evidence"]
+
+  O -->|"old becomes absent"| T
+  T -->|"status: retired"| Q
+  Q -->|"gap does not erase lineage"| A
+  A -->|"status: admitted"| N
+  O -->|"distinct same-domain endpoints"| I
+  N -->|"distinct same-domain endpoints"| I
+  I -->|"forces old absence and new prior absence"| R
+  T -->|"retirement witness"| R
+  A -->|"admission witness"| R
+#+end_src
+
+** Temporal rotation decision
+
+- Define =DescriptorRetirementAcrossRegistryInterval= as the authority-issued
+  retirement existential symmetric to
+  =DescriptorAdmissionAcrossRegistryInterval=.
+- Define =AuthorityIssuedDomainRotationAcrossRegistryInterval= as same-domain
+  distinctness plus both interval witnesses.  Do not require retirement and
+  admission to share one adjacent position.
+- Prove =governedLineageRequiresIssuedRotationAcrossRegistryInterval= from
+  endpoint registrations, interval order, registry identity injectivity, and
+  the existing retirement/admission interval theorems.
+- Project the paired rotation witness from every covered origin of an
+  =AuthorityProvenanceReplicaRegistryCheckpointSummary=.  Because join preserves
+  origin coverage and the recovered-head floor, the proof composes through
+  N-way summaries.
+
+** Temporal rotation checklist
+
+- [X] Distinguish adjacent replacement from gap-separated rotation.
+- [X] Model independent retirement and admission positions inside one interval.
+- [X] Use endpoint registry injectivity to prove old-final and new-initial
+  absence.
+- [X] Extract authority-issued retirement for the old descriptor.
+- [X] Extract authority-issued admission for the new descriptor.
+- [X] Project paired rotation evidence from a covered provenance-summary origin.
+- [ ] Reverify the 21-root recovery and 46-root replica AXLE envelopes.
+- [ ] Reverify enterprise/full Lean aggregates and Org/diff gates.
+
+** Temporal rotation Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  9 jobs in 0.771 seconds with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  for 10 jobs in 1.5 seconds with no warning or error.
+- AXLE, aggregate Lean, Orgize, and diff receipts are pending this tranche's
+  final gates.
+

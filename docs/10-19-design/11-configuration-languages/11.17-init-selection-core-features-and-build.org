@@ -24,7 +24,7 @@ Do not inherit Doom's initialization-order semantics as a POO execution or build
 ordering rule; dependency edges must determine those relationships explicitly.
 
 Agentic AI Lab already has [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/init-declaration-syntax.ss][yuanxu!]], [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/module-selection-syntax.ss][yuanxu-modules!]] and an actual
-[[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/user-interface/init.ss][user init.ss]]. Those declarations lower to native selection values without
+[[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/user-interface/init.ss][user init.ss]]. Those declarations lower to runtime selection values without
 reading source files. The current grammar has fixed categories and flag rows;
 [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/src/user-interface/selection-flags.ss][flag extension]] merges raw flag keys. Core [[file:../../../module-system/funs.ss][negative-flag queries]] exist, but a
 negative query does not implement disabling an auto-selected feature/dependency.
@@ -36,9 +36,9 @@ negative decisions. Gerbil uses disable: #t; Doom uses :disable t.
 
 * Core is a capability role, not a user-selectable feature flag
 
-JSON Schema -> native Contract belongs to Core infrastructure, alongside the
+JSON Schema -> Contract belongs to Core infrastructure, alongside the
 module/source/Contract mechanisms. Do not require +json-schema or present it as an
-optional module enhancement. Its native scope should be available under
+optional module enhancement. Its runtime scope should be available under
 modules.core.json-schema. Scope/phase availability does not require compiling all
 schemas, constructing all Profiles or loading every optional backend at startup.
 
@@ -58,7 +58,7 @@ Schema Contract silently disappear from Guestbook admission.
 
 * One init policy supports discovery and explicit selection
 
-Two modes use the same native selection representation. Directory discovery makes
+Two modes use the same runtime selection representation. Directory discovery makes
 modules available, not necessarily evaluated or built. auto permits discovered
 optional modules to satisfy requested exports/Scenario dependencies according to
 policy; explicit permits only modules named by declarations plus mandatory Core
@@ -100,7 +100,7 @@ The explicit mode describes the desired optional set instead:
 
 Both are target extensions of yuanxu!, not a new package! DSL. Existing grammar
 does not interpret mode:/root:/disable: this way today. The init parser should
-lower once, retaining syntax locations, to native POO decisions such as:
+lower once, retaining syntax locations, to POO decisions such as:
 
 #+begin_src scheme
 (.o mode: 'auto
@@ -142,13 +142,13 @@ work. Runtime cancellation/revocation needs a separate explicit protocol.
 
 * interface.ss publishes; init.ss selects
 
-A module's interface.ss publishes its native object, Core dependencies/exports,
+A module's interface.ss publishes its runtime object, Core dependencies/exports,
 schemas and optional features. Root/contribution/user init.ss selects sources and
 applies enable/disable intent at its allowed policy level. It does not duplicate
 that publication. Existing Module System already uses interface.ss for public
 entrypoints; retain that division rather than renaming the public entry to init.
 
-The [[file:11.16-directory-contract-and-native-tree.org][directory projection design]] admits interface metadata and keeps unselected
+The [[file:11.16-directory-contract-and-runtime-tree.org][directory projection design]] admits interface metadata and keeps unselected
 interface bodies cold. [[file:11.19-feature-system-guestbook-selection.org][yuanxu-load-modules is the common facade]] for directory
 sources and init selection. Internally it delegates to existing module closure,
 Feature System and build owners. It is not another all-purpose resolver. Metadata
@@ -158,12 +158,12 @@ computation cannot be assumed statically knowable.
 * Build from the selected admitted graph, not a second module list
 
 The target build roots are selected public exports. Their closure must include
-compile-time and runtime imports, macro/for-syntax dependencies, native/FFI inputs,
+compile-time and runtime imports, macro/for-syntax dependencies, runtime/FFI inputs,
 generated schema assets, enabled feature edges and required toolchain inputs.
 An exports-only list cannot infer hidden imports, dynamic loads or generated files.
 Publication must declare dynamic edges or refuse unqualified build closure.
 
-The existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/build.ss][build.ss]] still lists module public entries and native build details.
+The existing [[https://github.com/tao3k/agentic-ai-lab/blob/7ab549d060c98b9a0997f6f1879da3d0eec4b07d/build.ss][build.ss]] still lists module public entries and runtime build details.
 The design removes repeated per-module registration from that list. build.ss
 remains a small bootstrap/coordinator for the existing ASP PackageSpec/std-make
 execution owner; init does not replace the compiler/toolchain or grant execution
@@ -184,7 +184,7 @@ a second handwritten build catalog that can disagree with user init.
 
 The benefit borrowed from Doom is centralized declarative intent and explicit
 negative overrides. The improvement sought is one typed, source-qualified graph
-across discovery, native scopes, features and build projection, without eager
+across discovery, runtime scopes, features and build projection, without eager
 catalog initialization. Existing macros, source selection, lazy slots and build
 execution are assets; hierarchical interface publication, policy normalization and the
 unified selected-graph adapter remain new design.

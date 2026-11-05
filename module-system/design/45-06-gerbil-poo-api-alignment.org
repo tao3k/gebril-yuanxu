@@ -287,7 +287,7 @@ github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead
 The pinned repository is
 [[https://github.com/mighty-gerbils/gerbil-poo/tree/1c3225637525400341a09e958296962c10184ead][mighty-gerbils/gerbil-poo at 1c3225637525400341a09e958296962c10184ead]].
 Agentic AI Lab and =wendao-episteme= are downstream users of that implementation;
-neither is an alternative POO library.
+neither is an alterPOO library.
 
 #+begin_export mermaid
 flowchart LR

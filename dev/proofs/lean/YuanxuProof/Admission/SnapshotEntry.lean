@@ -2,7 +2,7 @@
 import YuanxuProof.Admission.ReadOnlyEntry
 
 /-! Selected raw-state snapshot equality is a reuse precondition, not source
-currentness or history authentication. Native extraction remains an observed
+currentness or history authentication. Runtime extraction remains an observed
 correspondence, with identity-injective references and sequential stable cuts. -/
 namespace YuanxuProof.Admission.SnapshotEntry
 open ReadOnlyEntry ReplayBoundary SourceWindows
@@ -54,7 +54,7 @@ theorem guarded_projection (project : Cut → Frame) (expected actual result : C
   have same := (guard_accepts_exactly expected actual result).mp success
   rw [same.1]
 
-/-- Once projection has yielded a closed native-entry program, no arbitrary
+/-- Once projection has yielded a closed runtime-entry program, no arbitrary
 callback implementation can affect that program's execution. -/
 theorem guarded_no_callbacks (project : Cut → Frame) (expected actual result : Cut)
     (success : guard expected actual = .ok result) (kernel : Nat)

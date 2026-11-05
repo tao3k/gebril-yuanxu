@@ -58,7 +58,7 @@ not an admissible fallback.  Any AXLE phase exceeding ten seconds is abnormal
 for this lane and must fail closed.
 
 The local exporter also re-elaborated its Lean source and loaded overlapping
-environments repeatedly.  It is now a native Lake executable with a
+environments repeatedly.  It is now a runtime Lake executable with a
 content-addressed receipt cache.  Its measured warm path is 3.80 seconds.
 
 The implemented typed proof-base path now closes both actual roots without
@@ -112,7 +112,7 @@ graph has elaborated successfully.
 #+begin_src mermaid
 flowchart TD
   R[Root Cedar lifecycle declaration] --> E[Lean declaration export]
-  E --> N[Native exporter executable]
+  E --> N[Runtime exporter executable]
   N --> K[Content-addressed closure cache]
   K --> M[Owner module and import graph closure]
   M --> S[Unique source-unit resolution]
@@ -163,7 +163,7 @@ Python may implement an internal ABI adapter, but Python source paths are not
 part of the declarative composition contract.  The same rule applies to Rust
 and Lean artifacts.
 
-* 6. POO-native composition surface
+* 6. POO composition surface
 
 The user composes an authorization capability, not the proof toolchain.  The
 following is the intended interface shape; the names remain subject to the
@@ -185,7 +185,7 @@ public API RFC:
    record-effect-completion))
 #+end_src
 
-This surface remains POO-native and functional.  It does not expose a raw
+This surface remains POO and functional.  It does not expose a raw
 alist DSL, a Python callback, or a proof-script filename.
 
 * 7. Reflection contract
@@ -234,7 +234,7 @@ generation.
 - [X] Active Lean toolchain source roots are resolved from =LEAN_PATH=.
 - [X] The Cedar lifecycle closure resolves all current owner sources.
 - [X] AXLE owner-source extraction advances beyond source resolution.
-- [X] Native exporter and content-addressed warm cache are implemented.
+- [X] Runtime exporter and content-addressed warm cache are implemented.
 - [X] Warm declaration export completes in 3.80 seconds.
 - [X] Slow AXLE multi-document merge is rejected as a runtime fallback.
 - [X] The actual import graph is closed at module-source granularity locally
@@ -258,5 +258,5 @@ generation.
 - Publishing Python, Rust, or Lean filenames as user configuration.
 - Adding more ad hoc namespace/string rewriting to declaration slices.
 
-Performance generation, native multi-root reuse, and phase reflection are
+Performance generation, runtime multi-root reuse, and phase reflection are
 owned by RFC 45-120-63 rather than extending this source-authority RFC.

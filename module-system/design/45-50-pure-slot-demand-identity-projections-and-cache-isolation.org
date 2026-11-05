@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative demand and cache protocol
-- Semantic core :: Native POO demand values and Agentic AI Lab evaluation
+- Semantic core :: POO demand values and Agentic AI Lab evaluation
 - Related modules :: =45-44-semantic-generation-transition-and-execution-identity.org= and =45-49-profiles-strategy-facets-and-pure-demand-boundary.org=
 
 This module defines one pure POO slot-demand object with multiple identity projections. It prevents causal roots, evidence requests, budgets, deadlines, and live authorization resources from contaminating business-result cache identity.
@@ -92,7 +92,7 @@ flowchart LR
 - [X] Changing live evaluation context cannot split the business-result cache.
 - [X] Lean witness: =YuanxuProof.ModuleSystem.Schema.Demand=.
 - [ ] A later implementation-refinement proof must connect the abstract
-  semantic-target projection to the canonical native POO slot identity.
+  semantic-target projection to the canonical POO slot identity.
 
 * Semantic slot target identity
 

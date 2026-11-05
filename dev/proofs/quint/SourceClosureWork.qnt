@@ -53,7 +53,7 @@ module SourceClosureWorkModel {
       s' = s.with("before", s.before.union(Set(n)))
         .with("beforeReads", s.beforeReads.set(n, s.beforeReads.get(n) + 1)) }
   }
-  // An opaque callback is an epoch boundary. Versions include native name
+  // An opaque callback is an epoch boundary. Versions include runtime name
   // resolution as well as bytes; topology is immutable within this model.
   action effect = {
     nondet changed = nodes.union(Set(-1)).oneOf()
@@ -96,4 +96,134 @@ module SourceClosureWorkModel {
 }
 module SourceClosureWork {
   import SourceClosureWorkModel(BUG = "none").*
+}
+
+// Refinement of the existing publication table's native POO topology slot.
+// Count identifies immutable append-only membership, never a fresh verdict.
+module SessionMetadataIndexModel {
+  const BUG: str
+  pure val owners = Set(0, 1)
+  pure val sources = Set(0, 1, 2, 3)
+  type State = {members: Set[int], roots: int -> Set[int],
+    indexedCount: int, indexedRoots: Set[int], dirty: Set[int],
+    coverage: bool, current: bool, approved: bool, steps: int}
+  var s: State
+  pure def support(state: State): Set[int] =
+    state.members.fold(Set(), (out, owner) => out.union(state.roots.get(owner)))
+  action init = s' = {members: Set(), roots: owners.mapBy(owner => Set(owner, 2)),
+    indexedCount: -1, indexedRoots: Set(), dirty: Set(),
+    coverage: true, current: true, approved: false, steps: 0}
+  action insert = {
+    nondet owner = owners.oneOf()
+    all {s.steps < 5, not(s.members.contains(owner)),
+      s' = s.with("members", s.members.union(Set(owner))).with("steps", s.steps + 1)}
+  }
+  // Illegal same-cardinality replacement demonstrates the necessary premise.
+  action replace = {
+    nondet owner = owners.oneOf()
+    all {BUG == "replace", s.steps < 5, s.members.contains(owner),
+      s' = s.with("roots", s.roots.set(owner, Set(3))).with("steps", s.steps + 1)}
+  }
+  action change = {
+    nondet source = sources.oneOf()
+    all {s.steps < 5,
+      s' = s.with("dirty", s.dirty.union(Set(source))).with("steps", s.steps + 1)}
+  }
+  action demand = {
+    val complete = support(s)
+    val rebuilt = if (BUG == "drop") complete.exclude(Set(2)) else complete
+    val indexed = if (s.indexedCount != s.members.size()) rebuilt else s.indexedRoots
+    val fresh = indexed.intersect(s.dirty) == Set()
+    val accepts = fresh or (BUG == "approval" and s.approved)
+    all {s.steps < 5,
+      s' = s.with("indexedCount", s.members.size()).with("indexedRoots", indexed)
+        .with("coverage", s.coverage and indexed == complete)
+        .with("current", s.current and (not(accepts) or complete.intersect(s.dirty) == Set()))
+        .with("approved", accepts).with("steps", s.steps + 1)}
+  }
+  action terminal = all {s.steps >= 5, s' = s}
+  action step = any {insert, replace, change, demand, terminal}
+  val Coverage = s.coverage
+  val Current = s.current
+  val safety = Coverage and Current
+}
+
+// Call-local default authoring support. Token IDs are original issued records;
+// the full native event trace, not only roots, is forwarded into the parent.
+module AuthoringSupportForwardModel {
+  const BUG: str
+  pure val events = List(0, 1, 2)
+  pure val prior = List(2)
+  var s: {phase: int, known: bool, plain: bool, authentic: bool, payload: bool,
+          changed: bool, fast: bool, forwarded: List[int], captures: int}
+  action init = {
+    nondet known = Set(false, true).oneOf()
+    nondet plain = Set(false, true).oneOf()
+    nondet authentic = Set(false, true).oneOf()
+    nondet payload = Set(false, true).oneOf()
+    s' = {phase: 0, known: known, plain: plain, authentic: authentic,
+          payload: payload, changed: false, fast: false, forwarded: prior, captures: 0}
+  }
+  action capture = all {
+    s.phase == 0,
+    s' = s.with("phase", 1).with("captures", 1)
+  }
+  action pureContinuation = all {
+    s.phase == 1,
+    s' = s.with("phase", 2).with("changed", BUG == "reuse")
+  }
+  action forward = all {
+    s.phase == 2,
+    val fast = s.authentic and s.payload and
+      (BUG == "observer" or (s.known and s.plain))
+    val trace = if (BUG == "drop") List(0, 1)
+      else if (BUG == "duplicate") events.concat(events) else events
+    s' = s.with("phase", 3).with("fast", fast)
+      .with("forwarded", if (fast) prior.concat(trace) else prior)
+  }
+  action terminal = all { s.phase == 3, s' = s }
+  action step = any { capture, pureContinuation, forward, terminal }
+  val Trace = not(s.fast) or s.forwarded == prior.concat(events)
+  val Eligibility = not(s.fast) or (s.known and s.plain and s.authentic and s.payload)
+  val Current = not(s.fast) or not(s.changed)
+  val SingleCapture = s.phase == 0 or s.captures == 1
+  val safety = Trace and Eligibility and Current and SingleCapture
+}
+
+// Bare lexical role alias lowering. Values stand for exact object identities;
+// a single native receiver/name read must retain its original lazy demand.
+module DirectRoleAliasModel {
+  const BUG: str
+  type State = {done: bool, receiver: int, name: int, bare: bool, shadowed: bool,
+    fast: bool, value: int, reads: List[int]}
+  var s: State
+  action init = {
+    nondet receiver = Set(0, 1).oneOf()
+    nondet name = Set(0, 1, 2).oneOf()
+    nondet bare = Set(true, false).oneOf()
+    nondet shadowed = Set(true, false).oneOf()
+    s' = {done: false, receiver: receiver, name: name, bare: bare, shadowed: shadowed,
+      fast: false, value: -1, reads: List()}
+  }
+  pure def eligible(n: int, bare: bool, hidden: bool): bool =
+    bare and n < 2 and not(hidden)
+  action lower = all {
+    not(s.done),
+    val fast = eligible(s.name, s.bare, s.shadowed) or
+      (BUG == "shadow" and s.bare and s.name < 2)
+    val receiver = if (BUG == "receiver") 0 else s.receiver
+    val selected = if (BUG == "alias" and fast) 1 - s.name else s.name
+    s' = s.with("done", true).with("fast", fast)
+      .with("value", if (fast) receiver * 100 + selected + 10 else
+        (if (eligible(s.name, s.bare, s.shadowed)) s.receiver * 100 + s.name + 10 else s.name + 20))
+      .with("reads", if (fast) List(receiver, selected) else
+        (if (eligible(s.name, s.bare, s.shadowed)) List(s.receiver, s.name) else List()))
+  }
+  action terminal = all { s.done, s' = s }
+  action step = any { lower, terminal }
+  val Eligibility = not(s.fast) or eligible(s.name, s.bare, s.shadowed)
+  val Identity = not(s.done) or s.value ==
+    (if (eligible(s.name, s.bare, s.shadowed)) s.receiver * 100 + s.name + 10 else s.name + 20)
+  val NativeDemand = not(s.fast) or s.reads == List(s.receiver, s.name)
+  val safety = Eligibility and Identity and NativeDemand
 }

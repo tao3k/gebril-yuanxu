@@ -27,11 +27,11 @@ Unrelated CLI, build-cache, and CI work stays outside the commit.
 - Compile/link against the qualified runtime v0 library with package-relative
   loader paths.
 
-* Step 3 — Native loading and errors
+* Step 3 — Runtime loading and errors
 
-- Add internal =_native= loader, typed errors, status mapping, ABI/layout health
+- Add internal =_runtime= loader, typed errors, status mapping, ABI/layout health
   probe, and explicit library override.
-- Keep all native symbols private to the package.
+- Keep all runtime symbols private to the package.
 - Fail closed in production; reference mode requires explicit selection.
 
 * Step 4 — Resource owners
@@ -45,9 +45,9 @@ Unrelated CLI, build-cache, and CI work stays outside the commit.
 * Step 5 — Python runtime integration
 
 - Keep =RuntimeGraphProgram= as the graph-domain execution owner.
-- Attach the native adapter through =RuntimeGraphRuntime= context construction.
+- Attach the runtime adapter through =RuntimeGraphRuntime= context construction.
 - Preserve graph materialization and =RuntimeReceipt.plan_digest= unchanged.
-- Bind native lifecycle/receipt metadata around execution without inventing C
+- Bind runtime lifecycle/receipt metadata around execution without inventing C
   event-kind semantics.
 
 * Step 6 — Qualification

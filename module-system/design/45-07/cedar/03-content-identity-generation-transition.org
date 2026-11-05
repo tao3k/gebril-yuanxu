@@ -1,0 +1,128 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Content-identity generation transition
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Content-identity generation transition
+
+** Generation-transition requirement
+
+The input-identity refinement proves that one admitted grant is bound to the
+current authority generation.  It does not by itself constrain how two
+successive generations relate.  The architecture therefore needs two distinct
+transitions:
+
+- a compatible generation advance keeps the authority identity and semantic
+  identity stable, admits every previously admitted input, and preserves every
+  digest projection on those old admitted inputs;
+- a semantic-identity rotation advances the generation but changes the
+  semantic identity, so a receipt issued for the old semantic identity cannot
+  be accepted by the current refinement.
+
+This is a v1 identity-transition invariant for the new architecture.  It is
+not a compatibility-migration or deprecation policy.
+
+** Generation-transition observation and counterexample
+
+Authority identity, semantic identity, and a strictly increasing generation
+are insufficient on their own.  Two authorities may satisfy all three facts
+while mapping the same previously admitted Cedar input to different digests.
+The executable counterexample
+=legacySameSemanticTransitionAllowsDigestDrift= witnesses exactly that hole.
+
+#+begin_export typst
+$
+  "CompatibleAdvance"(a_o, a_n) :=
+    a_o.authority = a_n.authority
+    and a_o.semantic-id = a_n.semantic-id
+    and a_o.generation < a_n.generation
+    and forall u in a_o."admitted": a_n."admitted"(u)
+    and forall u in a_o."admitted": a_o.digest(u) = a_n.digest(u)
+$
+
+$
+  "SemanticRotation"(a_o, a_n) :=
+    a_o.authority = a_n.authority
+    and a_o.semantic-id != a_n.semantic-id
+    and a_o.generation < a_n.generation
+$
+
+$
+  "Accept"(a_n, r_o) =>
+    r_o.semantic-id = a_n.semantic-id
+    and r_o.generation = a_n.generation
+$
+#+end_export
+
+#+begin_export mermaid
+flowchart LR
+    O["Old admitted Cedar inputs"] -->|"compatible: admission retained"| N["Current generation"]
+    O -->|"compatible: four digest projections stable"| N
+    C["Same authority + same semantic identity"] -->|"status: compatible advance"| N
+    R["Same authority + changed semantic identity"] -->|"status: semantic rotation"| N
+    S["Old-generation receipt"] -.->|"rejected: stale generation"| X["Typed identity rejection"]
+    Q["Old-semantic-identity receipt"] -.->|"rejected: semantic rotation"| X
+    D["Same semantic identity + digest drift"] -.->|"rejected: transition contract absent"| X
+#+end_export
+
+** Generation-transition decision
+
+The machine-owned transition contract is split deliberately:
+
+1. =CompatibleCedarInputIdentityGenerationTransitionClosed= requires stable
+   authority and semantic identity, a strictly newer generation, monotone
+   admission for request/entities/policies/snapshot, and stable
+   request/entity/policy/bundle projections for every old admitted input.
+2. =CedarInputSemanticIdentityRotationClosed= requires stable authority,
+   changed semantic identity, and a strictly newer generation.
+3. A current refinement rejects the old semantic identity after rotation and
+   cannot also bind the old generation.  No theorem assumes global hash
+   injectivity; uniqueness remains bounded to authority-admitted inputs.
+
+** Generation-transition verification checklist
+
+- [X] Construct a same-authority, same-semantic-id, increasing-generation
+  counterexample whose digest drifts on an old admitted input.
+- [X] Prove compatible advances retain old request and snapshot admission.
+- [X] Prove compatible advances preserve request and bundle digest projection
+  on old admitted inputs; the contract also covers entities and policies.
+- [X] Prove a compatible advance cannot reuse the old generation.
+- [X] Prove semantic rotation rejects the old semantic identity under the
+  current real Cedar input-identity refinement.
+- [X] Keep the transition contract on the existing
+  =CedarInputContentIdentityAuthority= rather than introduce a parallel
+  runtime authority.
+- [ ] Implement the runtime producer that emits transition evidence; this is a
+  separate executable owner and is not established by Lean.
+
+** Generation-transition Lean and AXLE receipt
+
+- Pure counterexample/contract model:
+  =lake build AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityGenerationTransitionModel=
+  exited 0 for 2 jobs with no warning or error.
+- Real Cedar authority/refinement closure:
+  =lake build AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityGenerationTransitionClosure=
+  exited 0 for 406 jobs with no warning or error.
+- AXLE standard CLI verified all 6 public theorem roots: 28 declarations
+  (14 source, 14 environment, 0 proof-base), no failed declaration and no Lean
+  diagnostic.  Closure digest:
+  =sha256:9fe4ea5478692ba09ff21bcf0bae6c82e6e4c974a444acce57a981a3fa423c54=;
+  bundle digest:
+  =sha256:e381dc7d50e7bd8f88778051a561fde7595bbbc81131ac657a11dffc6bcf6462=;
+  canonical source digest:
+  =sha256:ab6b04d839283b831b8cdb5164aabffcb74436d981352151145fd6074810eb66=;
+  independent bundle digest:
+  =sha256:4348becc96cde0d28beddd5469a1c4957798d44d05758f07513dd712d415ce55=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 507 jobs.  =lake build=
+  exited 0 for 579 jobs.  Both emitted only the pre-existing
+  =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
+- =asp org lint
+  docs/10-19-design/10.06-poo-module-system/45-07-user-composition-and-mix-module-interface.org=
+  returned =[ok] orgize lint= and exit 0; the CLI emitted no separate
+  Org/Typst/Mermaid counts.  =git diff --check= and
+  =git diff --cached --check= both returned exit 0 with no diagnostic.
+

@@ -17,7 +17,7 @@ def checkTrace (j : Json) : Except String Unit := do
     let digest := if changed then "changed" else "issued"
     let gate := current "issued" digest digest
     unless actual == publish gate gate true true do
-      throw "native Core publication/Lean decision mismatch"
+      throw "runtime Core publication/Lean decision mismatch"
 
 def main (args : List String) : IO UInt32 := do
   match args with
@@ -25,5 +25,5 @@ def main (args : List String) : IO UInt32 := do
     let text ← IO.FS.readFile path
     match Lean.Json.parse text >>= checkTrace with
     | .error message => IO.eprintln message; return 1
-    | .ok _ => IO.println "CORE-BUILD-PUBLICATION-CORRESPONDENCE-OK: six native decisions"; return 0
+    | .ok _ => IO.println "CORE-BUILD-PUBLICATION-CORRESPONDENCE-OK: six runtime decisions"; return 0
   | _ => IO.eprintln "expected Core build publication trace"; return 2

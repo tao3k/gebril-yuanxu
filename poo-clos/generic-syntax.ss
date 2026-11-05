@@ -311,7 +311,7 @@
 ;;       (.defmethod (render (object Point) &key format) object)
 ;;       ;; => ClosMethod
 ;;       (.defmethod (render (object (prototype Point.)) &key format) object)
-;;       ;; => native POO prototype dispatch, without a shadow CLOS class
+;;       ;; => POO prototype dispatch, without a shadow CLOS class
 ;;       ```
 ;;     %
 (defsyntax (.defmethod stx)

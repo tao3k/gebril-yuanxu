@@ -10,7 +10,7 @@
 
 Agentic AI Lab treats declaration-closure performance as a generation-level proof
 substrate property.  One admitted generation performs one Lake build, hashes
-the native exporter once, imports one union Lean environment, derives trusted
+the runtime exporter once, imports one union Lean environment, derives trusted
 and Cedar proof-base module partitions from module metadata, and emits one
 independent closure per requested root.
 
@@ -21,7 +21,7 @@ only how already required evidence is computed and observed.
 * Authority invariants
 
 - Lake build admission remains before cache use.
-- Root =.olean= content and native exporter content remain cache identities.
+- Root =.olean= content and runtime exporter content remain cache identities.
 - The Cedar boundary remains a typed proof-base interface.
 - A batch generation never becomes a second declaration or source authority.
 - Every root retains an independent canonical closure and digest.
@@ -36,9 +36,9 @@ only how already required evidence is computed and observed.
 
 #+begin_src mermaid
 flowchart LR
-  U[POO-native user composition] --> R[Requested proof roots]
+  U[POO user composition] --> R[Requested proof roots]
   R --> L[One Lake generation admission]
-  L --> H[One native exporter content digest]
+  L --> H[One runtime exporter content digest]
   H --> E[One union Lean Environment]
   E --> M[Module metadata partition]
   M --> T[Trusted module closure]
@@ -95,17 +95,17 @@ environment and derives both partitions from its module graph.
 | Responsibility | Owner |
 |----------------+-------|
 | One-environment import and module partition | =AgenticAILabProof/Export/DeclarationClosure.lean= |
-| Native multi-root protocol | =AgenticAILabProof/Export/DeclarationClosure.lean= |
+| Runtime multi-root protocol | =AgenticAILabProof/Export/DeclarationClosure.lean= |
 | Generation build, exporter hash, root cache | =lean_declaration_closure.py= |
 | Reproducible lifecycle/subject benchmark | =tools/benchmark_lean_declaration_closure.py= |
 | Strict remote verification | =axle_closure_verify.py= |
 
 The Python batch API is internal orchestration.  It does not alter the public
-POO-native composition surface or expose a filename as backend configuration.
+POO composition surface or expose a filename as backend configuration.
 
 * Reflection contract
 
-Native phases use =agentic-ai-lab.lean-export-phase.v1=:
+Runtime phases use =agentic-ai-lab.lean-export-phase.v1=:
 
 - =search-path-initialization=;
 - =environment-import=;
@@ -148,7 +148,7 @@ roots when compared with the latest pre-optimization cache artifacts.
 | Receipt | Before | After |
 |---------+--------+-------|
 | Two-root cold-or-mixed generation | =16.27s= | =7.15s= |
-| Environment imports per native batch | =2 separate full imports= | =1 union import= |
+| Environment imports per runtime batch | =2 separate full imports= | =1 union import= |
 | Ten-run warm batch p50 | not recorded | =2298ms= |
 | Ten-run warm batch p95 | not recorded | =4695ms= |
 | Ten-run warm batch maximum | not recorded | =4695ms= |
@@ -217,11 +217,11 @@ this tests failure reporting and does not replace the normal 30-second gate.
 
 * Historical acceptance criteria
 
-- [X] One native environment serves a compatible multi-root generation.
+- [X] One runtime environment serves a compatible multi-root generation.
 - [X] Trusted and proof-base membership derive from Lean module metadata.
 - [X] The exporter content digest is reused inside one generation.
 - [X] Every root retains an independent content-addressed cache entry.
-- [X] Native and driver phase receipts are machine-readable.
+- [X] Runtime and driver phase receipts are machine-readable.
 - [X] Optimized closure JSON is semantically and bytewise unchanged.
 - [X] Ten warm dual-root runs have p50 below =2.5s=.
 - [X] Ten warm dual-root runs have p95 below =5s=.

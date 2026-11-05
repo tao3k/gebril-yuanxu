@@ -108,7 +108,7 @@ A live DebugEvaluationContext projects:
 - isolated simulation cache namespace when applicable;
 - source and admission evidence.
 
-The context remains a native POO object.
+The context remains a POO object.
 
 * Identity separation
 
@@ -522,14 +522,14 @@ If intersection is empty or inconsistent, derivation fails closed.
 
 * Macro governance
 
-Functions and native POO objects remain the default abstractions.
+Functions and POO objects remain the default abstractions.
 
 No public context macro is introduced.
 
 A bounded internal macro may generate repeated context projection or receipt
 families only when it:
 
-- expands to native POO objects and pure functions;
+- expands to POO objects and pure functions;
 - captures no ambient context;
 - owns no capability, budget, redaction, or cache policy;
 - mutates no ledger;
@@ -681,7 +681,7 @@ The following alternatives are rejected:
 
 ** Context identity
 
-- [ ] DebugEvaluationContext is a native POO object.
+- [ ] DebugEvaluationContext is a POO object.
 - [ ] Every context has stable identity and revision.
 - [ ] Parent and child identities remain distinct.
 - [ ] Principal and session identities remain distinct.
@@ -769,7 +769,7 @@ Implementation work is not admitted until:
 - [ ] ambient parameter use is audited;
 - [ ] DebugEvaluationContext prototype is specified;
 - [ ] BudgetLedger and reservation prototypes are specified;
-- [ ] capability attenuation is mapped to native POO objects;
+- [ ] capability attenuation is mapped to POO objects;
 - [ ] redaction and retention intersections are specified;
 - [ ] child context narrowing is specified;
 - [ ] functional reconciliation is specified;
@@ -821,7 +821,7 @@ implementation completion, not owner selection.
 - [[file:45-70-explicit-temporal-observations-clock-domains-and-replay.org][45-70 - Explicit Temporal Observations, Clock Domains, and Replay]]
 - [[file:45-75-evidence-retention-checkpointing-redaction-and-erasure.org][45-75 - Evidence Retention, Checkpointing, Redaction, and Erasure]]
 - [[file:45-87-live-continuation-capabilities-continuable-conditions-and-portable-suspension-boundary.org][45-87 - Live Continuation Capabilities, Continuable Conditions, and Portable Suspension Boundary]]
-- [[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89 - POO-Native Control Condition, Decision, and Capability Algebra]]
+- [[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89 - POO-Runtime Control Condition, Decision, and Capability Algebra]]
 - [[file:45-103-precedence-conflict-debugging-inspection-explanation-simulation-and-continuable-recovery.org][45-103 - Precedence and Conflict Debugging, Inspection, Explanation, Simulation, and Continuable Recovery]]
 - [[file:45-104-minimal-functional-debugging-interface-and-poo-debug-demand-contract.org][45-104 - Minimal Functional Debugging Interface and POO DebugDemand Contract]]
 - [[file:45-105-poo-debug-query-and-counterfactual-proposal-composition-algebra.org][45-105 - POO Debug Query and Counterfactual Proposal Composition Algebra]]

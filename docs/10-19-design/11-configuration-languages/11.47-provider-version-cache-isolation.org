@@ -40,13 +40,13 @@ The full schema SHA-256 values are:
 
 Equal Security Group shapes make a shape-only test insufficient: using the
 stale parent Contract would still accept the same valid candidate. The test
-therefore checks native Contract identity, package version, source location,
-Schema digest and the Contract identity in each native admission result.
+therefore checks Contract identity, package version, source location,
+Schema digest and the Contract identity in each runtime admission result.
 Equal resource shapes do not permit replacing package association with a cache
 hit from another scope. Different versions need not always export different
 schemas; the differing full digests are a fact about this particular pair.
 
-* Native upstream injection; unchanged downstream configuration
+* Runtime upstream injection; unchanged downstream configuration
 
 The following is the exact configuration shape used by the executable control.
 The two paths are build inputs supplied to the test, not resource-user fields:
@@ -64,7 +64,7 @@ The two paths are build inputs supplied to the test, not resource-user fields:
 #+end_src
 
 Only =config.provider-artifact= changes. The child's source, provider and types
-methods are inherited; =purpose= remains inherited. Native receiver-aware slots
+methods are inherited; =purpose= remains inherited. Runtime receiver-aware slots
 recompute the child provider and its lazy Contract catalog from the child's
 config. No reset, manual cache invalidation, copied types table or special child
 factory is involved. The parent continues using its original package snapshot.
@@ -87,7 +87,7 @@ Resource authors use the same bounded module API for either selected Module:
 The actual test admits the parent candidate before creating the child, so the
 parent's provider, Contract and validation path have already been exercised.
 The child alias remains inert until its types are demanded. Accessing the
-resource catalog uses native =object<-fun=; discovery of =aws_dsql_cluster=
+resource catalog uses runtime =object<-fun=; discovery of =aws_dsql_cluster=
 reflects the selected package without compiling that unselected Contract.
 The separate module-scope regression also uses the exported =OpenTofu= default
 with the 5.99.0 artifact injected by the environment. Resource code still has no
@@ -121,7 +121,7 @@ back to synthetic data. The checks cover:
   DSQL Contracts remain uncompiled. The 5.100.0-only catalog entry is present
   only on the corresponding side in either direction.
 
-These controls validate the existing native Module implementation; no Core
+These controls validate the existing runtime Module implementation; no Core
 runtime repair or new public macro was required.
 
 * Scope, comparison and remaining qualifications
@@ -142,7 +142,7 @@ such planning claim follows from their coexistence as Scheme Contracts.
 The existing CIDR boundary is unchanged: exported Schema enforces structural
 fields and Types; unexported SDK validators remain Provider responsibilities.
 No Provider validate RPC, plan, apply, cloud access, mutable-folder watcher,
-Loader or cross-process cache was added to native admission. SourceRef metadata
+Loader or cross-process cache was added to runtime admission. SourceRef metadata
 retains origin but does not independently authenticate a caller-supplied package.
 
 * Executed default-runtime receipt (2026-10-17)

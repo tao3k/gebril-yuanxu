@@ -38,7 +38,7 @@ This RFC does not define:
 
 * Durable POO identity
 
-Every relation, contribution, conflict, and withdrawal is a native POO object
+Every relation, contribution, conflict, and withdrawal is a POO object
 of:
 
 #+begin_example
@@ -52,7 +52,7 @@ ancestry, extension, composition, delegation, super, and precedence.
 
 Current parser-owned discovery identifies project selectors named:
 
-- Native Record Slot =policy= annotations for append, override and conflict;
+- Runtime Record Slot =policy= annotations for append, override and conflict;
 - Module import kind and source selectors.
 
 Their exact bodies are unavailable. The exact provider blocker is:
@@ -100,7 +100,7 @@ domains.
 #+begin_example
 typed-empty relation
   + contribution objects
-  + native prototype ancestry
+  + runtime prototype ancestry
   + domain composition law
   -> typed relation object
 #+end_example
@@ -129,7 +129,7 @@ An export contribution relates:
 Module identity + export identity -> Profile operand identity
 #+end_example
 
-The Profile operand remains a native Profile or ProfileBundle object.
+The Profile operand remains a runtime Profile or ProfileBundle object.
 
 The contribution does not copy, flatten, or re-identify the operand.
 
@@ -149,7 +149,7 @@ identities create an export conflict.
 
 The conflict may:
 
-- resolve through an explicitly admitted native prototype precedence rule with
+- resolve through an explicitly admitted runtime prototype precedence rule with
   complete selected and shadowed ancestry evidence; or
 - remain unresolved and fail closed.
 
@@ -335,7 +335,7 @@ A typed conflict object identifies:
 - semantic subject identity;
 - conflicting contribution identities;
 - owning Module and revision identities;
-- native prototype ancestry;
+- runtime prototype ancestry;
 - constraints that remain independently active;
 - admitted resolution policy identity, if any;
 - selected and shadowed origins, if resolved;
@@ -353,7 +353,7 @@ flowchart TD
   Relation -->|"supplies active provenance"| Decision
   Decision -->|"yes; preserve both origins"| Next["new relation identity"]
   Decision -->|"no; retain every constraint"| Conflict["typed conflict object"]
-  Conflict -->|"native precedence and policy evidence complete"| Resolved["resolved relation and receipt"]
+  Conflict -->|"runtime precedence and policy evidence complete"| Resolved["resolved relation and receipt"]
   Conflict -->|"resolution absent or unauthorized"| Rejected["fail-closed rejection"]
   Withdrawal["authorized withdrawal object"] -->|"targets exact contribution in new revision"| Next
 #+end_src
@@ -403,7 +403,7 @@ An index:
 - is invalidated by contribution or withdrawal;
 - cannot accept mutation as semantic input;
 - cannot become a public generic map;
-- does not replace native POO ancestry.
+- does not replace POO ancestry.
 
 * Recursive and fixed-point boundary
 
@@ -450,9 +450,9 @@ the existing structured =Conflict= object; source order, parser order, hash-map
 iteration order, and module loading order are not tie breakers.
 
 Authority intersection and domain qualification occur before priority
-comparison.  Native prototype precedence and C4 method resolution occur in
+comparison.  Runtime prototype precedence and C4 method resolution occur in
 their own structural plane as specified by
-[[file:45-102-native-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][Native
+[[file:45-102-runtime-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][Runtime
 Prototype Precedence and Typed Relation Conflict Resolution Bridge]].  Numeric
 priority cannot reorder a prototype list, synthesize a C4 position, or create a
 third precedence axis.
@@ -466,7 +466,7 @@ flowchart LR
   Priority -->|"equal priorities recursively compose POO values"| Equal["Equal-priority composition"]
   Equal -->|"compatible values preserve one semantic result"| Selected
   Equal -->|"incompatible values emit structured evidence"| Conflict["Conflict object"]
-  Graph["Immutable prototype graph"] -->|"orders behavior through native precedence"| C4["C4 method resolution"]
+  Graph["Immutable prototype graph"] -->|"orders behavior through runtime precedence"| C4["C4 method resolution"]
   Priority -.->|"never reorders prototype ancestry"| C4
 #+end_src
 
@@ -484,27 +484,27 @@ flowchart LR
 - [ ] Prove source order and module loading order cannot resolve a tie.
 - [ ] Prove priority cannot widen capabilities or erase independent
       requirements.
-- [ ] Prove numeric priority cannot alter native prototype or C4 precedence.
+- [ ] Prove numeric priority cannot alter runtime prototype or C4 precedence.
 
-Native POO prototype precedence resolves object ancestry.
+POO prototype precedence resolves object ancestry.
 
 Control-policy priority resolves authorized policy decisions as defined by
 [[file:45-90-poo-control-policy-composition-priority-conflict-and-veto-resolution.org][45-90]].
 
 Relation composition does not introduce a third generic priority axis.
 
-An export conflict may consult admitted native precedence. A capability
+An export conflict may consult admitted runtime precedence. A capability
 requirement conflict may consult control policy. Neither may erase independent
 constraints without evidence.
 
 * Macro governance
 
-Functions and native POO objects remain the default abstractions.
+Functions and POO objects remain the default abstractions.
 
 A bounded macro may generate repeated contribution object declarations only
 when it:
 
-- expands to ordinary POO-native objects and pure functions;
+- expands to ordinary POO objects and pure functions;
 - assigns stable source and contribution identities;
 - does not parse a generic CRUD language;
 - does not own conflict resolution;
@@ -563,7 +563,7 @@ A relation composition receipt identifies:
 - output relation identity;
 - compatibility judgments;
 - conflict identities;
-- native precedence evidence;
+- runtime precedence evidence;
 - preserved constraints;
 - derived index invalidations.
 
@@ -590,7 +590,7 @@ Relation construction or composition fails closed when:
 - a generic option token replaces a domain law;
 - an import instance identity points to incompatible targets;
 - capability requirements become weaker without authority;
-- native precedence or policy evidence is incomplete;
+- runtime precedence or policy evidence is incomplete;
 - input mutation is observable.
 
 Withdrawal fails closed when:
@@ -630,7 +630,7 @@ The following alternatives are rejected:
 - [ ] Capability requirements have a distinct relation prototype.
 - [ ] Each domain has a typed-empty identity value.
 - [ ] Cross-domain composition is rejected.
-- [ ] Relations remain native POO objects.
+- [ ] Relations remain POO objects.
 - [ ] No generic CRUD map is public.
 
 ** Contributions
@@ -661,7 +661,7 @@ The following alternatives are rejected:
 - [ ] Export conflicts never silently overwrite.
 - [ ] Import instance conflicts fail closed.
 - [ ] Unsatisfiable requirement sets fail closed.
-- [ ] Native precedence evidence is explicit.
+- [ ] Runtime precedence evidence is explicit.
 - [ ] Control-policy evidence is explicit.
 - [ ] Selected and shadowed origins remain visible.
 - [ ] Conflict objects grant no authority.
@@ -691,7 +691,7 @@ The following alternatives are rejected:
 
 - [ ] Functions and POO objects remain default abstractions.
 - [ ] Contribution-family macros are bounded and internal.
-- [ ] Macro expansions are POO-native and functional.
+- [ ] Macro expansions are POO and functional.
 - [ ] Macros own no conflict resolution.
 - [ ] Macros authorize no withdrawal.
 - [ ] No public CRUD macro surface is introduced.
@@ -703,7 +703,7 @@ The following alternatives are rejected:
 - [ ] Conflict receipts preserve every constraint.
 - [ ] Withdrawal receipts preserve target history.
 - [ ] Receipts identify Module revisions.
-- [ ] Receipts identify native precedence and policy evidence.
+- [ ] Receipts identify runtime precedence and policy evidence.
 - [ ] Receipts identify cache and closure invalidation.
 - [ ] Authority neutrality is explicit.
 
@@ -716,7 +716,7 @@ Implementation work is not admitted until:
 - [ ] current export relation representation is verified;
 - [ ] current capability requirement representation is verified;
 - [ ] upstream composition semantics are verified;
-- [ ] typed relation prototypes are mapped to native POO objects;
+- [ ] typed relation prototypes are mapped to POO objects;
 - [ ] contribution identity formats are specified;
 - [ ] conflict object contracts are specified;
 - [ ] withdrawal authority contracts are specified;
@@ -741,7 +741,7 @@ creating three incompatible versions of a generic CRUD interface.
 
 * References
 
-- [[file:45-102-native-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][45-102 - Native Prototype Precedence and Typed Relation Conflict Resolution Bridge]]
+- [[file:45-102-runtime-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][45-102 - Runtime Prototype Precedence and Typed Relation Conflict Resolution Bridge]]
 
 - [[file:44-current-project-programming-style.org][44 - Current Project Programming Style]]
 - [[file:45-82-explicit-requirement-contribution-and-resolution-policy.org][45-82 - Explicit Requirement Contribution and Resolution Policy]]

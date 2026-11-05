@@ -184,7 +184,7 @@ directly to the actual after and before receipts.
 | Scheduler | =afterReceipt.schedulerOwnerIdentity= | =beforeReceipt.receiptId= | =afterReceipt.receiptId= | =afterReceipt.recoveryId= |
 | Completion storage | =afterReceipt.storageOwnerIdentity= | =beforeReceipt.receiptId= | =afterReceipt.receiptId= | =afterReceipt.recoveryId= |
 
-Each constructor also contains the existing owner-native transition closure and
+Each constructor also contains the existing owner-runtime transition closure and
 progress projection.  No parallel transition semantics are introduced.
 
 The following properties are projected from the concrete owner receipts:
@@ -342,7 +342,7 @@ unrelated enterprise metadata.
 - [X] Focused Lean closure build: 139 jobs passed.
 - [X] Enterprise aggregate build: 427 jobs passed.
 - [X] Full Lean build: 499 jobs passed.
-- [X] Native Orgize block validation: nine Typst blocks and one Mermaid block.
+- [X] Runtime Orgize block validation: nine Typst blocks and one Mermaid block.
 - [X] Typst rendering: =/private/tmp/45-120-41-audit-witness.pdf=, 19,776 bytes.
 - [X] Mermaid parser validation: one source block.
 - [ ] Mermaid renderer validation: no local Mermaid CLI is available.

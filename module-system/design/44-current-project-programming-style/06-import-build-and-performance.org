@@ -6,21 +6,90 @@
 
 * Import ownership
 
-Normal consumers import =modules/<name>/interface.ss=.  Module roles use
-relative imports for their own owners.  Cross-domain implementations import a
+Managed Module consumers use the owning =init.exports= namespace and ordinary
+POO =.get= demand. =modules/<name>/interface.ss= is the Module System's loading
+configuration, not a second native-import application API. Ordinary library
+facades remain native Gerbil imports, including built-ins such as Ops. Backend
+compiler imports and explicit authoring inspection do not replace scope linking.
+Module roles use relative imports for their own owners. Cross-domain implementations import a
 precise public owner and use =only-in= for a bounded symbol set.  Global
 facades deliberately export a stable surface and never wildcard-reexport
 concrete Profiles, Scenarios or test owners.
 
+The Core package's fixed prelude already owns the normal POO bindings. An
+internal library may keep an explicit runtime =(runtime: :clan/poo/object)=
+dependency instead of copying those same strong bindings again. Runtime
+resolution must identify the inherited binding with the original export;
+matching symbol spelling is insufficient. This also keeps one runtime context
+edge for Make instead of one edge per only-in alias. Do not apply this rule to
+custom preludes, renamed/phase imports, import reexports or reusable Module
+roles whose caller may choose another package language. Those retain explicit
+binding imports. No public macro or alternative dependency inventory is added.
+Check the remaining strong imports too: plain =:gerbil/core= can shadow the
+prelude's POO =object?=/=make-object=. Preserve deliberate Gerbil constructor or
+predicate imports explicitly, and never replace a POO constructor with the
+similarly named runtime constructor. Binding identity after migration is the
+criterion; equality with the prelude before migration alone is insufficient.
+
+When a prelude must reexport a filtered runtime interface, prefer a complete
+runtime import-set followed by export filtering, provided actual weak-binding
+precedence is verified. =except-in= flattens the import-set into aliases and
+can make Make revisit one owner thousands of times. This is not permission to
+move arbitrary filters: compare every published binding, phase and weakness,
+keep initialization/phase dependencies, and test constructor shadows.
+
+This rule also applies to the maintained Module/Config role preludes. Runtime
+=import:= treats grouped imports and flattened aliases differently by phase and
+export owner. Do not assume identical public
+inventories: retain all prior bindings, and describe any completion of the
+runtime language surface explicitly. The audited Config completion is at
+phase +1/+2 only; runtime exports remain unchanged. Added names must already be public Core
+names, expose the same effective POO-shadowed binding, and remain weak. Audit
+renamed exports with runtime terminal identifier resolution, not raw export
+resolution (which can return an intermediate import/alias binding). The role
+prelude's specialized =.def= remains owned by Source declaration lowering.
+
+The Module role prelude imports the complete POO owner and renames its dedicated
+declaration binding privately. Export filtering substitutes that binding as
+=.def= without flattening all other POO names into import aliases. The private
+name is not exported. =t/prelude-test.ss= checks real terminal bindings/phases,
+explicit-over-weak precedence and the complete ordered dependency callback trace
+against the former import form; export-name equality alone is insufficient.
+
+Build phase timing uses the existing scalar accounting mode. Full VM/GC sampling
+around every physical source read is qualification instrumentation, not an
+ordinary build latency measurement. Keep actual authentication, replay visitors
+and source observers intact in both modes, and never report a partial recovery
+as a zero-compilation hot build.
+
+Compiler entries whose fields are immutable lexical values use runtime lexical
+slot shorthand, such as =(.o kind path input options owner contributor)=.
+Do not wrap each captured value in a computed getter. Receiver-dependent
+formulas, defaults, compiler forms and effectful methods remain explicit lazy
+slots; never freeze those just to reduce closures.
+
 * Build roots and laziness
 
-A production ASP PackageSpec root is a separately required bootstrap artifact,
-not a source inventory.  Native Gerbil imports close dependencies.  Do not list
+Gerbil's =make-prelude-context= constructor is valid without the reverse cache
+entry installed by =core-module->prelude-context=. Compilation dependency
+projection must accept both Gerbil paths. Prefer an exact registered association;
+otherwise verify the constructor's complete ordered import/export payload,
+including the same module identity, source path and export object identities.
+One matching export or a matching name alone is insufficient. An incomplete
+payload is rejected. An empty payload still needs an exact registered owner;
+it cannot establish a missing origin. Do not import a language during this
+metadata walk, guess a source filename, or introduce a second registry.
+The regression lives in =t/module-bootstrap-test.ss= and uses the actual Gerbil
+constructor, with an omitted-export negative control.
+
+A production library root is a separately required public artifact,
+not a source inventory. Runtime Gerbil imports close dependencies. Do not list
 both facade and internals, or production and test owners, as independent roots.
 Profiles, Scenarios, contribution modules and advanced authoring owners remain
 lazy until an explicit consumer demands them.
 
-Use the ASP Build API and upstream =std/make=.  Do not add a scheduler,
+Use the existing import-closure projection and upstream =std/make=. ASP remains
+a development policy dependency, not a production build prerequisite. Do not add a scheduler,
 currentness cache, source expander or duplicate graph.  Diagnose root count,
 compile count, first-event latency, wall time, peak process-tree memory and
 saturation separately.
@@ -36,7 +105,7 @@ and semantic result; an optimization without a receipt is not project style.
 
 Ops is an ordinary Core library, not an optional Module selected through root
 init. Import its published Ops object from =:yuanxu/ops/interface=; functions
-and native Script methods share one executor. Core owns compilation through
+and runtime Script methods share one executor. Core owns compilation through
 its ordinary library roots. Module =core.requires= lists selectable Module
 publications, not built-in library imports. No bootstrap selection or second
 interface registry is required to execute an explicitly declared Script.

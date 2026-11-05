@@ -8,7 +8,7 @@ module MetadataRouteModel {
     parent: int, config: int, plan: int}
   var s: State
   action init = {
-    nondet kind = Set("native","ref","instance","hash","test","backend",
+    nondet kind = Set("runtime","ref","instance","hash","test","backend",
       "late","aba","genuineMiss","forgedMiss","earlierSource").oneOf()
     nondet a = Set(false,true).oneOf()
     nondet b = Set(false,true).oneOf()
@@ -30,7 +30,7 @@ module MetadataRouteModel {
   action entry = all {s.phase == 1,
     s' = s.with("phase",2).with("entryOK",selectedRoute)}
   // The qualified helper has no extension callback argument in this interval.
-  // Mutants open such an interval; a native pointer comparison is not a fence.
+  // Mutants open such an interval; a runtime pointer comparison is not a fence.
   action gap = all {s.phase == 2,
     s' = s.with("phase",3).with("ref",
       if ((BUG == "entryOnly" and s.kind == "late") or

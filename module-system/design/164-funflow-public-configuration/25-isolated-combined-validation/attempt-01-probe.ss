@@ -6,7 +6,7 @@
 
 (def assertions 0)
 (def (check name result)
-  (unless result (error "combined-native-control-failed" name))
+  (unless result (error "combined-runtime-control-failed" name))
   (set! assertions (+ assertions 1)))
 (def (report name value) (write (list name value)) (newline))
 (def pipeline-forces 0)
@@ -43,7 +43,7 @@
 (check 'plus-left-retained (memq Joined (object-supers Patched)))
 (check 'plus-right-own-root-absent (not (memq Override (object-supers Patched))))
 (check 'copy-own-source-absent (not (memq Patched (object-supers Copied))))
-(check 'copy-keeps-native-parents (equal? (object-supers Copied) (object-supers Patched)))
+(check 'copy-keeps-prototype-parents (equal? (object-supers Copied) (object-supers Patched)))
 (check 'copy-label (.get Copied label))
 (check 'policy-retained (eq? (.get Final policy) 'release))
 (check 'unrelated-demand-keeps-pipeline-lazy (= pipeline-forces 1))

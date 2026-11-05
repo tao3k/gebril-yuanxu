@@ -10,7 +10,7 @@
 
 - Status :: Accepted design
 - Kind :: Normative user-interface and macro contract
-- Semantic core :: Native =gerbil-poo= objects and ordinary functional composition
+- Semantic core :: Runtime =gerbil-poo= objects and ordinary functional composition
 - Related modules :: =45-40-10-poo-constrained-gerbil-macro-governance.org= and =45-46-poo-definition-anchor-and-revision-identity.org=
 
 This module defines the narrow responsibility that justifies =user-composition= as a public hygienic macro. It is a module-definition boundary for a stable composition root, not a composition DSL.
@@ -51,7 +51,7 @@ This is a semantic sketch, not a commitment to an unverified Gerbil API.
 - =root-anchor-descriptor= comes from hygienic package, module, binding-role, and definition-kind context.
 - =source-provenance= belongs to evidence and diagnostics.
 - =compose= is an ordinary function.
-- =make-user-composition= is an ordinary function or native POO constructor.
+- =make-user-composition= is an ordinary function or POO constructor.
 - Macro expansion does not traverse or interpret the operands of =compose=.
 
 Concrete expansion primitives must be selected only after verification against real Gerbil macro, hygiene, and module interfaces.

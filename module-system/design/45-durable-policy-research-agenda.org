@@ -8,7 +8,7 @@ Draft for discussion.
 
 This document strengthens the durable-policy thread started in [[file:43-session-memory-recovery-rfc.org][43 Session Memory Durable Policy RFC]].
 The goal is not to copy Codex, Claude Code, OpenRath, Temporal, Azure Durable Functions, or any agent-memory paper.
-The goal is to extract the durable invariants that fit =agentic-ai-lab=: functional flow values, POO-native policy objects, explicit session identity, and Rust/Marlin-owned durable runtime machinery.
+The goal is to extract the durable invariants that fit =agentic-ai-lab=: functional flow values, POO policy objects, explicit session identity, and Rust/Marlin-owned durable runtime machinery.
 
 ** 10.06.45.20 Main Conclusion
 Durable should be a first-class capability, not a helper called "recovery".
@@ -68,7 +68,7 @@ What =agentic-ai-lab= should do better:
 - Make durable policy explicit at authoring time, not hidden in runtime conventions.
 - Attach durable behavior to session, memory, workflow, sandbox, and artifact policies through POO inheritance/composition.
 - Validate resume/replay constraints before projection.
-- Keep Scheme objects high-level and POO-native, but project hot receipts into fixed =defstruct= values before ABI alists.
+- Keep Scheme objects high-level and POO, but project hot receipts into fixed =defstruct= values before ABI alists.
 
 *** 10.06.45.30.20 OpenRath Evidence From =.data/OpenRath=
 The local OpenRath checkout is at =.data/OpenRath=, revision =ab884ab= when this audit was written.
@@ -341,7 +341,7 @@ Pros:
 - strong enough for long-lived agent projects;
 - supports parent/child/session graph recovery;
 - handles memory as a durable pipeline;
-- lets Scheme stay POO-native and high level;
+- lets Scheme stay POO and high level;
 - lets Rust/Marlin own IO, concurrency, storage, and repair.
 
 Cons:
@@ -374,7 +374,7 @@ Projection produces bounded runtime receipts.
 
 ** 10.06.45.60 Runtime Receipt Shape
 The runtime should receive fixed, bounded shapes.
-The Scheme side can use native POO while authoring and validating, but hot receipts should use =defstruct= internally before ABI projection.
+The Scheme side can use POO while authoring and validating, but hot receipts should use =defstruct= internally before ABI projection.
 
 Representative receipt fields:
 
@@ -653,7 +653,7 @@ has not justified itself.
 - Decide the final public names: =durable-policy=, =checkpoint-policy=, =journal-policy=, =resume-policy=, =repair-policy=.
 
 *** 10.06.45.80.20 P1: POO Object Layer
-- Add POO-native durable objects under the module-system object layer.
+- Add POO durable objects under the module-system object layer.
 - Let session, memory, workflow, sandbox, and artifact policies inherit/reference durable prototypes.
 - Validation must reject fake durable profiles: no checkpoint store, no journal owner, no resume identity, no repair mode.
 
@@ -707,7 +707,7 @@ Use Approach C.
 
 Treat durable as a shared POO capability with runtime-backed fact logs, checkpoints, derived indexes, repair jobs, and memory pipelines.
 
-The user should see concise POO-native policy and module forms.
+The user should see concise POO policy and module forms.
 The Scheme implementation should validate object composition and project bounded receipts.
 The runtime should own storage, replay, backfill, leases, corruption repair, and cross-session delivery.
 

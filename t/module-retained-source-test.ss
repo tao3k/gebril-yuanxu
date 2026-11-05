@@ -16,7 +16,7 @@
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (display text port))))
 (def module-retained-source-test
-  (test-suite "Ordinary retained libraries keep native export semantics"
+  (test-suite "Ordinary retained libraries keep runtime export semantics"
     (yuanxu-test-case "different ancestor lists share package identity only within one pure window"
       (call-with-temporary-directory "retained-package"
         (lambda (root)

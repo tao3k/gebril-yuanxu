@@ -9,7 +9,7 @@ The direct-directory fixture described here is superseded by
 [[file:12.26-selected-packages-and-owned-aws-tests.org][selected packages and init-owned AWS tests]]. This record retains its earlier
 execution evidence; it is not the current fixture's implementation listing.
 
-[[file:../../../t/aws-context-publication-test.ss][The native integration test]] now connects the maintained AWS contribution to
+[[file:../../../t/aws-context-publication-test.ss][The runtime integration test]] now connects the maintained AWS contribution to
 the unified producer through the existing selected publication. It acquires the
 real AWS 5.99.0 and 5.100.0 provider Schema packages from
 [[file:../../../t/fixtures/opentofu/versioned-schemas.nix][the existing versioned fixtures]], using declarative Ops ProcessScript objects
@@ -144,7 +144,7 @@ final OK, without an error/heap/stack marker. Its fixture releases the temporary
 project and mutable Schema copy. Raw output is not committed.
 
 The following focused regressions also passed serially through the same bounded
-native harness with all required completion markers and natural exit 0:
+runtime harness with all required completion markers and natural exit 0:
 
 | Suite | Existing behavior preserved |
 |-------+-----------------------------|
@@ -153,7 +153,7 @@ native harness with all required completion markers and natural exit 0:
 | t/admission-publication-test.ss | Existing platform Context, Schema/source invalidation and publication refusal behavior. |
 
 Initial acquisition failed because the execution sandbox could not connect to
-the local Nix daemon. The same native test then ran with permitted daemon access.
+the local Nix daemon. The same runtime test then ran with permitted daemon access.
 The first actual publication run exposed the optional value-contract edge defect;
 that failed run is not a pass. The corrected test and the same-label negative
 control subsequently passed without changing timeouts or substituting a Schema.

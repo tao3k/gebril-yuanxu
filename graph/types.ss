@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: graph facts are POO-native control-plane values.
+;;; Boundary: graph facts are POO control-plane values.
 ;;; Invariant: graph objects describe topology; they never schedule or run it.
 
 (export +yuanxu-graph-node-prototype-kind+

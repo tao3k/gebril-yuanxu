@@ -68,7 +68,7 @@
 (def yuanxu-module-observation-kind
   "yuanxu.modules.observation.v1")
 
-;;; Observation values are strict native POO objects. They contain only eager
+;;; Observation values are strict POO objects. They contain only eager
 ;;; slots, so debugging a lazy `.ref` recursion never creates another lazy path.
 ;; : (-> Symbol Symbol Symbol Integer Integer [Symbol] Alist Boolean Boolean YuanxuModuleObservation)
 (defpoo-object-family
@@ -237,11 +237,11 @@
      identifier (vector->list datum)))
    ((not (pair? datum)) #f)
    ((memq (car datum) '(quote quasiquote syntax quasisyntax)) #f)
-   ;; Native .get/.@ expand their path names to quoted symbols. Only the
+   ;; Runtime .get/.@ expand their path names to quoted symbols. Only the
    ;; receiver is an expression; a same-named path is not a slot dependency.
    ((and (memq (car datum) '(.get .@)) (pair? (cdr datum)))
     (yuanxu-poo-slot-authoring-identifier-reference? identifier (cadr datum)))
-   ;; Native .call quotes a literal method name too. Its receiver and argument
+   ;; Runtime .call quotes a literal method name too. Its receiver and argument
    ;; expressions still participate; a method spelling is not a free reference.
    ((and (eq? (car datum) '.call) (pair? (cdr datum))
          (pair? (cddr datum)) (symbol? (caddr datum)))
@@ -352,7 +352,7 @@
           slot-initializer))
        slot-initializers))
 
-;;; Read-only source inspection recognizes both POO-native slot spellings:
+;;; Read-only source inspection recognizes both POO slot spellings:
 ;;; `slot: initializer` and `(slot initializer)`.  It operates on reader data,
 ;;; never expands `.o`/`.def`, constructs a POO object, or evaluates an
 ;;; initializer.  In particular, a lexical spelling such as `values: values`
@@ -470,7 +470,7 @@
 ;; yuanxu-poo-slot-authoring-file-observations
 ;;   : (-> Symbol PathString [Alist])
 ;;   | doc m%
-;;       Open one Scheme source file and return its reader-native POO authoring
+;;       Open one Scheme source file and return its reader-POO authoring
 ;;       observations without loading the module or realizing an object.
 ;;
 ;;       # Examples

@@ -12,13 +12,13 @@ is unchanged. gerbil-poo's existing integration branch advanced to
 =6a43e2ad7c72a3b2bb1c5380c3a33f70d964711e= before this change; that other-session
 work was retained with a fast-forward and an additional baseline run.
 
-* Native collection and Core consumers
+* Runtime collection and Core consumers
 
 =slot-observation.ss= has one recording implementation with an internal
-=unique-roots?:= option. The default exact trace is essential: native object
+=unique-roots?:= option. The default exact trace is essential: runtime object
 construction, computed slots, preparation and query capture use this function
 to construct dependency lists. Changing its default would delete edge
-occurrences before native issuance. Those callers remain unchanged.
+occurrences before runtime issuance. Those callers remain unchanged.
 
 #+begin_src scheme
 (%call-with-recorded-slot-reads action unique-roots?: #t)
@@ -53,7 +53,7 @@ the actual root list, while observer multiplicity is checked independently.
 
 The graph/currentness premises from 32.52 remain. In particular, the diagnostic
 lemma does not authorize treating an effectful checker as pure or sharing an
-approval across callbacks. Native protected replay and SourceAdmissionContract
+approval across callbacks. Runtime protected replay and SourceAdmissionContract
 still own those checks. This is not a VM, GC-scheduling or external-effect proof.
 
 [[file:../../../dev/proofs/quint/RootCollection.qnt][RootCollection.qnt]] checks eight controls: normal streaming, suppressed duplicate
@@ -61,7 +61,7 @@ callbacks, reversed observer order, reordered first diagnostics, receiver-only
 coalescing, copied identities, deleted edge occurrences and a progress witness.
 The model and Lean source binding passed before production collection changed.
 
-Native regressions compare exact original record references and observer event
+Runtime regressions compare exact original record references and observer event
 payload/order for the same input. They also cover an exception on the second
 duplicate callback, a newer record for the same field retaining its stale
 predecessor, duplicate dependency edges under an enclosing compact root frame,
@@ -84,7 +84,7 @@ descriptor functions/data, not child values or approvals. Every measured call
 still performs 224 physical source reads and its return-currentness boundary.
 
 The corrected twelve samples compare the ENTIRE ordered observer-key sequences,
-not just their lengths. Same-context native tests additionally compare exact
+not just their lengths. Same-context runtime tests additionally compare exact
 record identities; different normalized child instances need not share identities.
 
 | Measured property | Raw | Unique |
@@ -135,8 +135,8 @@ builds =AgenticAILabProof=. An empty default invocation is not counted as proof 
 
 * Recorded gates and remaining limits
 
-The native integration is =0df023fd9e15192156935c971f0f1940028c5277= on the existing
-=feat/positive-closure-costs= branch. Native =just test= completed 122 modules and
+The runtime integration is =0df023fd9e15192156935c971f0f1940028c5277= on the existing
+=feat/positive-closure-costs= branch. Runtime =just test= completed 122 modules and
 1,124 cases with complete harness markers and natural exit 0. Exact-head
 [[https://github.com/tao3k/gerbil-poo/actions/runs/39550961039][CI]] completed all 42 jobs successfully. Both Core and product dependency
 declarations name this revision; the concurrent dirty installed package was not
@@ -153,7 +153,7 @@ seven controls under the same watchdog limits. The earlier failure remains a
 failure; no new complete QNT-suite pass is claimed here.
 
 Current consumer gates completed Gitea/PostgreSQL publication (11 cases), original
-issued-root forwarding (5), source admission (6), native/contextual Contract
+issued-root forwarding (5), source admission (6), runtime/contextual Contract
 diagnostics (6), and all twelve matched Scenario measurements. Their complete
 markers and normal exits were checked. The source-hash manifest matches all 47
 Core production units; the incremental compilation receipt remains distinct
@@ -167,7 +167,7 @@ The zero-closure weak-retention telemetry is replaced by an explicit full-graph
 control; historical weak-retention acceptance is NOT claimed. Both focused
 original-root reader controls passed. A later deferred Build source-enrollment
 assertion failed in both the owned baseline and candidate Core artifacts with
-the same current native dependency. This excludes the Core collector change as
+the same current runtime dependency. This excludes the Core collector change as
 the sole cause, but does not isolate every dependency effect. The complete
 module-publication suite is not claimed as passing; its expected result remains
 unchanged. The explicit diagnostic target reuses the original Std TestSuite case

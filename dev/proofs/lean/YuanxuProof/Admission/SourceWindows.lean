@@ -121,6 +121,102 @@ theorem two_requirements_one_read (world : World) (path left right : String) :
     (check [(path, left), (path, right)] world empty).reads = 1 := by
   simp [check, fetch, ensureLookup, empty]
 
+/-- Ordered mismatch projection. Reusing bytes does not sort, deduplicate or
+collapse requirements, and is not valid after an unobserved world change. I/O
+exceptions and Scheme callback extraction remain native bridge obligations. -/
+def firstIssue (requirements : List (String × String)) (world : World) : Option String :=
+  match requirements with
+  | [] => none
+  | (path, expected) :: rest =>
+    if world path == some expected then firstIssue rest world else some path
+
+def checkedIssue (requirements : List (String × String)) (world : World)
+    (cache : Bytes) : Option String :=
+  match requirements with
+  | [] => none
+  | (path, expected) :: rest =>
+    let loaded := fetch cache world path
+    if loaded.1 == some expected then checkedIssue rest world loaded.2 else some path
+
+theorem pure_window_preserves_first_issue (requirements : List (String × String))
+    (world : World) (cache : Bytes) (sound : Sound cache world) :
+    checkedIssue requirements world cache = firstIssue requirements world := by
+  induction requirements generalizing cache with
+  | nil => rfl
+  | cons input rest ih =>
+    rcases input with ⟨path, expected⟩
+    simp only [checkedIssue, firstIssue, fetch_value cache world path sound]
+    split
+    · exact ih _ (fetch_sound cache world path sound)
+    · rfl
+
+/-- Extracted from the actual context procedure: only native `void` selects
+`identity`. Every other procedure is opaque, including normal and exceptional
+resumption. This is not a caller-supplied purity annotation. -/
+inductive ContextStep where
+  | identity
+  | opaque (after : World)
+
+def contextWorld (step : ContextStep) (before : World) : World :=
+  match step with
+  | .identity => before
+  | .opaque after => after
+
+def contextBytes (step : ContextStep) (before : Bytes) : Bytes :=
+  match step with
+  | .identity => before
+  | .opaque _ => empty
+
+theorem context_resume_sound (step : ContextStep) (world : World) (cache : Bytes)
+    (sound : Sound cache world) :
+    Sound (contextBytes step cache) (contextWorld step world) := by
+  cases step with
+  | identity => exact sound
+  | «opaque» after => exact empty_sound after
+
+theorem context_resume_checks_all (step : ContextStep) (world : World) (cache : Bytes)
+    (sound : Sound cache world) (requirements : List (String × String)) :
+    (check requirements (contextWorld step world) (contextBytes step cache)).accepted = true ↔
+      ∀ input ∈ requirements, contextWorld step world input.1 = some input.2 :=
+  check_exact requirements _ _ (context_resume_sound step world cache sound)
+
+theorem context_resume_preserves_first_issue (step : ContextStep) (world : World)
+    (cache : Bytes) (sound : Sound cache world) (requirements : List (String × String)) :
+    checkedIssue requirements (contextWorld step world) (contextBytes step cache) =
+      firstIssue requirements (contextWorld step world) :=
+  pure_window_preserves_first_issue requirements _ _ (context_resume_sound step world cache sound)
+
+/-- A positive byte observation is produced only by a regular-file read. A
+second lookup of that same kind in the stable window adds no requirement.
+The native bridge keeps the original double lookup for open observers. -/
+theorem positive_bytes_imply_kind (bytes : Option String) (expected : String) :
+    (bytes.isSome && (bytes == some expected)) = (bytes == some expected) := by
+  cases bytes with
+  | none => rfl
+  | some actual => simp
+
+/-- Sharing filesystem bytes cannot collapse two independently enrolled
+requirements, even when their path and expected-text lengths agree. -/
+theorem conflicting_requirements_rejected
+    (requirements : List (String × String)) (world : World) (cache : Bytes)
+    (sound : Sound cache world) (path left right : String)
+    (first : (path, left) ∈ requirements) (second : (path, right) ∈ requirements)
+    (different : left ≠ right) :
+    (check requirements world cache).accepted = false := by
+  cases accepted : (check requirements world cache).accepted with
+  | false => rfl
+  | true =>
+    have exactChecks := (check_exact requirements world cache sound).mp accepted
+    have same : some left = some right :=
+      (exactChecks (path, left) first).symm.trans (exactChecks (path, right) second)
+    exact False.elim (different (Option.some.inj same))
+
+-- A same-cardinality, same-path, same-length projection cannot distinguish
+-- these requirements. Neither fact establishes expected-source equivalence.
+#guard "5432".length == "5440".length
+#guard (check [("config.ss", "5432"), ("config.ss", "5440")]
+  (fun _ => some "5432") empty).accepted == false
+
 /-- Reuse Core's existing exact-text/absence source Obligation model. -/
 theorem fresh_certificate (inputs : List (String × String)) (world : World) :
     (check inputs world empty).accepted = true ↔

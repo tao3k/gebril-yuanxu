@@ -165,7 +165,7 @@ A divergence continuation may explicitly extend the observation budget, inject
 a resolution Profile, or terminate demand.  It never returns an incomplete
 value or switches evaluators.
 
-* POO-native observation budget
+* POO observation budget
 
 The observation budget is a Capability provided by an ordinary higher-order
 Profile:
@@ -220,7 +220,7 @@ flowchart LR
   progress.
 - [ ] Runtime pointers, closures, and continuations remain outside unit
   identity.
-- [ ] Missing native transition evidence is an API gap, never synthetic
+- [ ] Missing runtime transition evidence is an API gap, never synthetic
   progress.
 - [ ] Cycle detection, semantic divergence budget, and host resource guard are
   independent.

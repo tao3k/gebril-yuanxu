@@ -4,7 +4,7 @@ import YuanxuProof.Admission.ReturnTail
 namespace YuanxuProof.Admission.ClosedTail
 
 def quintSourceDigest : String :=
-  "sha256:1cce84f046df2f34b002d519d38df3f028c5412684b0f1436b9382a322b992ad"
+  "sha256:e25ec75a707793520605c42fc2fa6a4092c6db303d563dba506df011d8636e64"
 
 -- This is the isolated dispatcher, NOT an effect analysis of arbitrary Scheme.
 inductive Observer where

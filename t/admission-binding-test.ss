@@ -19,7 +19,7 @@
       (def context (.o revision: 1))
       (for-each
         (lambda (current)
-          ;; Exercise the native slot directly as well as the generic entry.
+          ;; Exercise the runtime slot directly as well as the generic entry.
           (def accepted (.call current .admit "web" context))
           (def refused (yuanxu-contract-admit current 7 context))
           (check-equal? (yuanxu-validation-evidence-accepted? accepted) #t)

@@ -14,7 +14,7 @@ It defines dispatch as a first-class POO semantic plane.  It does not admit a
 Agentic AI Lab dispatch implementation, replace upstream =gerbil-poo= dispatch, or add
 a public dispatch DSL.
 
-RFC 45-120 now admits the direct native generic, computed-slot, inherited-
+RFC 45-120 now admits the direct runtime generic, computed-slot, inherited-
 continuation, and precedence substrate.  Concrete dispatch demand, explanation,
 condition, fixed-point, and integration values remain blocked by the unchecked
 items in this RFC.
@@ -116,7 +116,7 @@ A dispatch demand contains the minimum semantic inputs:
 
 This is an internal semantic value, not a new ordinary user form.
 
-The receiver is a native upstream POO value.  The requested responsibility may
+The receiver is a runtime upstream POO value.  The requested responsibility may
 name a required Module slot, a derived responsibility, or an admitted generic
 operation.
 
@@ -312,17 +312,17 @@ Higher-order POO profile extension changes the profile or prototype semantic
 identity and therefore changes the key.  A raw conditional syntax tree is
 never a profile identity.
 
-Normalization does not sort or rewrite native prototype ancestry.  The key
+Normalization does not sort or rewrite runtime prototype ancestry.  The key
 records the resulting immutable prototype-graph identity and precedence
 generation separately from numeric control priority.  Two demands share a
 refinement key only when both their normalized contribution semantics and
-their native prototype-graph identity are equal.
+their runtime prototype-graph identity are equal.
 
 Priority ownership remains with
 [[file:45-101-typed-module-relation-contribution-composition-conflict-and-withdrawal-algebra.org][Typed
-Module Relation Contribution and Conflict Algebra]].  Native prototype and C4
+Module Relation Contribution and Conflict Algebra]].  Runtime prototype and C4
 precedence ownership remains with
-[[file:45-102-native-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][Native
+[[file:45-102-runtime-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][Runtime
 Prototype Precedence and Typed Relation Conflict Resolution Bridge]].
 
 The composition-local alias is excluded from both keys.  It is diagnostic and
@@ -444,12 +444,12 @@ from =ResolvedCompositionReceipt=.
 
 * Macro governance and public interface
 
-=.defgeneric= is an upstream native POO macro.  Its use in the advanced
+=.defgeneric= is an upstream POO macro.  Its use in the advanced
 extension interface does not authorize a project-specific dispatch macro
 family.
 
 Project macros may only provide a small hygienic or phase-semantic projection
-onto ordinary native POO and functional code.
+onto ordinary POO and functional code.
 
 The ordinary interface remains:
 
@@ -487,7 +487,7 @@ Dispatch is not written inside =use-composition=.
 - [X] Prove upstream =NoApplicableMethod= identity.
 - [X] Prove upstream C4 precedence entrypoints.
 - [X] Keep upstream dispatch mechanics outside =yuanxu= ownership.
-- [X] Move the exact direct native dispatch paths needed by the first focused
+- [X] Move the exact direct runtime dispatch paths needed by the first focused
   Module kernel to =ADMITTED= in RFC 45-120.
 
 ** Semantic dispatch
@@ -532,7 +532,7 @@ Dispatch is not written inside =use-composition=.
 - Unbounded global dispatch tracing.
 - Cache keys that omit receiver, responsibility, prototype generation,
   inherited position, authority, or redaction identity.
-- A public dispatch DSL layered over native POO operations.
+- A public dispatch DSL layered over POO operations.
 
 * Successor contract
 
@@ -543,10 +543,10 @@ The next RFC may define the first concrete Agentic AI Lab dispatch semantic valu
 - dispatch explanation;
 - structured dispatch condition.
 
-It must keep them native POO values, preserve upstream mechanics, and avoid
+It must keep them POO values, preserve upstream mechanics, and avoid
 exposing a new ordinary user interface.
 
-A focused implementation may consume only the exact direct native paths marked
+A focused implementation may consume only the exact direct runtime paths marked
 =ADMITTED= by RFC 45-120.  Any additional operation family remains blocked until
 it independently reaches that state.
 
@@ -558,7 +558,7 @@ it independently reaches that state.
 - [[file:45-108-coordinator-resumption-admission-execution-lineage-continuation-fence-and-replay-retry-boundary.org][RFC 45-108: resumption and continuation fences]]
 - [[file:45-109-recovery-admission-effect-intent-runtime-handoff-and-continuation-claim-dag-correspondence.org][RFC 45-109: recovery intent and runtime handoff]]
 - [[file:45-111-profile-ownership-naming-export-identity-and-composition-repository-boundaries.org][RFC 45-111: ownership and identity boundaries]]
-- [[file:45-119-poo-native-implementation-admission-topology-and-layer-convergence-contract.org][RFC 45-119: implementation admission topology]]
+- [[file:45-119-poo-implementation-admission-topology-and-layer-convergence-contract.org][RFC 45-119: implementation admission topology]]
 - [[file:45-120-module-domain-upstream-operation-correspondence-and-thin-adapter-admission-contract.org][RFC 45-120: upstream operation correspondence]]
 - [[file:45-121-minimal-higher-order-module-poo-value-and-responsibility-slot-algebra.org][RFC 45-121: minimal Module POO value]]
 - [[file:44-current-project-programming-style.org][Current project programming style]]

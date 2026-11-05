@@ -1,9 +1,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Consumer boundary of the actual native MOP, not a replacement evaluator.
-(import :std/test :clan/poo/object :clan/poo/inheritance-hooks)
+;;; Consumer boundary of the actual MOP, not a replacement evaluator.
+(import :std/test :clan/poo/object (only-in :clan/poo/mop with-inheritance-hooks))
 (export mop-thunk-construction-test)
 (def mop-thunk-construction-test
-  (test-suite "Native construction identity and observation boundaries"
+  (test-suite "Runtime construction identity and observation boundaries"
     (test-case "hooks precede value demand and observe one stable standard function"
       (def events '())
       (def bodies 0)
@@ -20,7 +20,7 @@
       (check-equal? bodies 0)
       (check-equal? (.ref/cached parent 'port) #f)
       (check-equal? (.ref/cached parent 'unused) #f)
-      ;; The native hash enumeration supplies the actual schedule; declaration
+      ;; The runtime hash enumeration supplies the actual schedule; declaration
       ;; or prototype order is NOT assumed to be the hook execution order.
       (let* ((trace (reverse events))
              (port-function (cadr (assq 'port trace))))

@@ -2,44 +2,44 @@
 #+language: en
 #+property: DOCUMENT_ID 10.07
 #+date: [2026-10-17]
-#+property: STATUS design-only-native-json-api-source-inspected-no-new-adapter-implemented
+#+property: STATUS design-only-runtime-json-api-source-inspected-no-new-adapter-implemented
 
 * Two layers and two independent sources of Contracts
 
-The [[file:10.08-guestbook-construction-protocol.org][native construction protocol]] now expands presence/default handling, field
+The [[file:10.08-guestbook-construction-protocol.org][runtime construction protocol]] now expands presence/default handling, field
 policy, Contract-associated holes, used bindings and final .admit into concrete
 Scheme design bodies. The [[file:10.09-guestbook-construction-reflection.org][companion reflection]] ties each decision to actual
 ecosystem mechanisms, reports and matched controls. Both remain design-only.
 
 The authoring model has ordinary data and domain objects. A user may supply JSON
 or equivalent Scheme data. The Module constructs effective domain objects using
-maintained defaults, functions and Contracts. Native refinement is an optional
+maintained defaults, functions and Contracts. Runtime refinement is an optional
 capability of the object layer, not a third mandatory wrapper or another engine.
 
 JSON Schema is not a prerequisite for loading JSON or constructing a POO object:
 
 | Source situation | Contract authority | Construction consequence |
 |------------------+--------------------+--------------------------|
-| Ordinary machine/deployment data without a supplied Schema | Maintained native Scheme Types/Contracts | Decode, objectify, then check applicable input and final-object Contracts |
+| Ordinary machine/deployment data without a supplied Schema | Maintained Scheme Types/Contracts | Decode, objectify, then check applicable input and final-object Contracts |
 | Upstream supplies a standard JSON Schema | Existing JSON Schema -> Scheme Contract bridge | Generate covered field Contracts and reuse them in the same object path |
 | OpenTofu provider exports its Schema representation | Provider-format adapter, then shared Contract generation | Preserve provider/version/type identity; do not call every JSON Schema-shaped file standard JSON Schema |
 
-These are sources of requirements, not separate user interfaces. Native domain
+These are sources of requirements, not separate user interfaces. Runtime domain
 Contracts may add relationships not covered by a generated field Contract. Do not
-require a user to write a JSON Schema for ordinary data, or regenerate native
+require a user to write a JSON Schema for ordinary data, or regenerate runtime
 Contracts through JSON Schema merely to use the same pipeline.
 
 This continues [[file:10.05-guestbook-context-and-contribution-design.org][the lexical-context Guestbook design]] and its selected Module/Scenario
 graph. No new selection syntax, role filename, Loader or execution API is added.
 
-* Native JSON support: verified source boundary
+* Runtime JSON support: verified source boundary
 
 The installed Gerbil package is gerbil-scheme@0.19,
 0.19.20261009110849.1cfb032.patch618d76f9eb72. Its std/encoding/json.ss re-exports
 the JSON API, and src/std/encoding/json/util.ss defines string->json, json->string,
 u8vector->json and read-json. Source was inspected, not executed in this change.
 
-Native decoding can be expressed directly:
+Runtime decoding can be expressed directly:
 
 #+begin_src scheme
 (import :std/encoding/json)
@@ -58,10 +58,10 @@ Do not use truthiness to decide whether a default applies.
 
 Core already uses read-json and explicit reader options in
 [[file:../../../modules/json-schema/json-schema-source.ss][its JSON Schema source reader]]. That owner reads Schema documents. Ordinary
-configuration ingestion should reuse native decoding without pretending that the
+configuration ingestion should reuse runtime decoding without pretending that the
 Schema reader already implements domain construction, input publication or source
 locations. The [[file:../../../module-system/source/config-prelude.ss][current config prelude]] provides POO/Core forms, not automatic
-JSON bindings. Package/prelude publication of selected native utilities remains
+JSON bindings. Package/prelude publication of selected runtime utilities remains
 an integration decision; no hand-written import is required by this target UX.
 
 * One Guestbook input, two representations
@@ -126,7 +126,7 @@ Kubernetes defaults or a claim about the live images.
 | Omitted replicas | Fill from maintained defaults | 2 |
 | Omitted Leader/Follower | Retain selected Profiles | Their final values remain available |
 
-This field policy is maintained once alongside the native Contract/interface. It
+This field policy is maintained once alongside the Contract/interface. It
 is not inferred from JSON punctuation or duplicated in a separate JSON-only field
 schema. Field discovery projects the same policy and Contract metadata.
 
@@ -139,7 +139,7 @@ POO data object does not acquire every domain meaning merely because it has slot
 For a later upstream default of replicas 3 and owner=platform-v3, both ordinary
 inputs above receive those new defaults in a new qualified instance, while keeping
 their explicit image/env/Service list. If a user requests whole-label replacement,
-the maintained interface must provide an explicit intent or native object-layer
+the maintained interface must provide an explicit intent or runtime object-layer
 assignment. A plain JSON object cannot silently mean both merge and replacement.
 
 * Functions are ordinary Scheme, not strings evaluated as code
@@ -212,18 +212,18 @@ execution are separate capabilities, not consequences of a placeholder.
 | Internal responsibility | Input/output and rejection boundary |
 |-------------------------+-------------------------------------|
 | Acquire selected source | Read only selected file/value; retain source identity and reader options |
-| Decode and objectify data | Native JSON or Scheme value to lossless data objects; no domain defaults yet |
-| Check input intent | Native authored or generated input Contract; retain unknown-field paths; permit only declared holes |
+| Decode and objectify data | Runtime JSON or Scheme value to lossless data objects; no domain defaults yet |
+| Check input intent | Runtime authored or generated input Contract; retain unknown-field paths; permit only declared holes |
 | Bind selected holes | Check demanded binding values and provenance; reject missing/cyclic bindings |
 | Construct effective domain objects | Apply field policy, maintained defaults and selected prototypes; evaluate demanded pure functions |
-| Admit effective objects and connections | Public native .admit owners inspect final values, required children and field/relationship constraints |
+| Admit effective objects and connections | Public runtime .admit owners inspect final values, required children and field/relationship constraints |
 | Project and check resources | Deployment/Service use the admitted effective instance; check selector/port correspondence |
 | Publish preview | Expose effective values, covered checks, origins and remaining limitations; no deployment |
 
 These responsibilities may be demand-driven rather than eight global passes.
 Input acceptance is not final object admission. Generated field Contracts do not
 replace domain connection checks, and local acceptance does not prove cluster
-readiness. Reuse the public native Contract protocol; do not introduce a second
+readiness. Reuse the public Contract protocol; do not introduce a second
 JSON-specific admission engine or let an input override its required Contract.
 
 * Effective preview and failure controls
@@ -248,7 +248,7 @@ an unknown declared field, missing required data, null outside declared holes,
 an unused binding and a cyclic function/binding demand. An open labels map does
 not make evn a provable typo. Prefer a declared key policy or a labelled heuristic.
 
-JSON errors must retain the selected filename and JSON path. The native decoder
+JSON errors must retain the selected filename and JSON path. The runtime decoder
 alone does not establish a complete field source map; precise token ranges and
 duplicate-key diagnostics need separate qualification. Scheme source maps must
 survive hygienic lowering. Both errors should point to the authored value rather
@@ -269,7 +269,7 @@ module linking eagerly traverses declared interface requirements; this proposal
 does not claim finer granularity from a lazy slot alone. Build/runtime phase guards
 remain in force. No JSON parse or ordinary preview should launch a process.
 
-Existing, source-inspected: native string->json/read-json, POO construction and
+Existing, source-inspected: runtime string->json/read-json, POO construction and
 slot semantics, the JSON Schema Contract bridge, and current publication/linking
 primitives. Pending: common deployment-input objectification, source association,
 template metadata/publication, role-wide lexical context, completion/merge policy,

@@ -1,9 +1,9 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Bounded authoring syntax. The native object kernel keeps literal slot names.
-(import (prefix-in (only-in :clan/poo/object .o .def .o/ctx) native-)
-        (prefix-in (only-in :clan/poo/brace @method) native-)
+;;; Bounded authoring syntax. The runtime object kernel keeps literal slot names.
+(import (prefix-in (only-in :clan/poo/object .o .def .o/ctx) runtime-)
+        (prefix-in (only-in :clan/poo/brace @method) runtime-)
         (only-in :yuanxu/profile-composition/selection-syntax use-module)
         (only-in :yuanxu/configuration/slot-origin source-object-slots)
         (for-syntax :gerbil/expander
@@ -31,7 +31,7 @@
   (def (path-node name) (vector name #f (make-hash-table-eq) '()))
   (def (path-parts name)
     (let* ((text (symbol->string (syntax-e name))) (size (string-length text)))
-      ;; Native method names (.run, .acquire, .release) are ordinary slots,
+      ;; Runtime method names (.run, .acquire, .release) are ordinary slots,
       ;; never paths with an empty leading segment.
       (if (and (> size 0) (char=? (string-ref text 0) #\.))
         (list name)
@@ -68,13 +68,13 @@
           (loop child (cdr parts))))))
 
   (def (lower-path-value value)
-    ;; Only native object constructors in refinement position are traversed.
+    ;; Only runtime object constructors in refinement position are traversed.
     ;; Quoted data, functions, and arbitrary expressions remain untouched.
-    (syntax-case value (.o @method native-.o native-@method)
+    (syntax-case value (.o @method runtime-.o runtime-@method)
       ((.o args ...) (lower-path-object value #'(args ...)))
       ((@method args ...) (lower-path-object value #'(args ...)))
-      ((native-.o args ...) (lower-path-object value #'(args ...)))
-      ((native-@method args ...) (lower-path-object value #'(args ...)))
+      ((runtime-.o args ...) (lower-path-object value #'(args ...)))
+      ((runtime-@method args ...) (lower-path-object value #'(args ...)))
       (_ value)))
 
   (def (refinement? operator)
@@ -105,7 +105,7 @@
            (with-syntax ((name leaf) (op #'op)
                          (value (lower-path-value #'value)))
              #'(name op value))
-           (raise-syntax-error #f "path slots require native =>.+" name)))
+           (raise-syntax-error #f "path slots require runtime =>.+" name)))
         (_ (raise-syntax-error #f "path slots require one value or =>.+ object expression" name)))
       (syntax-case tail ()
         ((value) (lower-slot-assignment name #'value))
@@ -119,7 +119,7 @@
 
   (def (lower-path-body ctx specs)
     (def root (path-node #f))
-    ;; Ordinary declarations are grouped by root but left to the native
+    ;; Ordinary declarations are grouped by root but left to the runtime
     ;; normalizer, including the valid method + default pair for one slot.
     (def ordinary (make-hash-table-eq))
     (def order '())
@@ -164,7 +164,7 @@
                ((name . tail)
                 (identifier? #'name)
                 (begin (add #'name #'tail) (parse #'more)))
-               (_ (raise-syntax-error #f "invalid native slot specification" #'arg))))
+               (_ (raise-syntax-error #f "invalid runtime slot specification" #'arg))))
             (else (raise-syntax-error #f "invalid path slot specification" #'arg)))))
         (_ (raise-syntax-error #f "improper slot specification list" rest))))
     (def (emit node)
@@ -172,7 +172,7 @@
           (let (children (map emit (reverse (vector-ref node 3))))
             (with-syntax ((name (vector-ref node 0))
                           ((child ...) children))
-              (with-syntax ((object (source-path-object children #'(native-.o child ...))))
+              (with-syntax ((object (source-path-object children #'(runtime-.o child ...))))
                 #'(name =>.+ object))))))
     (foldr
       (lambda (key tail)
@@ -189,10 +189,10 @@
                 (eq? (syntax-e (stx-car #'header)) '::)))
        (let (slots (lower-path-body ctx #'specs))
          (with-syntax ((ctx ctx) (header #'header) ((slot ...) slots))
-           (source-path-object slots #'(native-.o/ctx ctx header slot ...)))))
+           (source-path-object slots #'(runtime-.o/ctx ctx header slot ...)))))
       (_ (let (slots (lower-path-body ctx args))
            (with-syntax ((ctx ctx) ((slot ...) slots))
-             (source-path-object slots #'(native-.o/ctx ctx slot ...))))))))
+             (source-path-object slots #'(runtime-.o/ctx ctx slot ...))))))))
 
 (defsyntax (.def stx)
   (syntax-case stx ()
@@ -206,12 +206,12 @@
 
 (defsyntax-for-match .o
   (lambda (stx)
-    (syntax-case stx () ((_ args ...) #'(native-.o args ...))))
+    (syntax-case stx () ((_ args ...) #'(runtime-.o args ...))))
   (lambda (stx)
     (syntax-case stx () ((_ args ...) (lower-path-object stx #'(args ...))))))
 
 (defsyntax-for-match @method
   (lambda (stx)
-    (syntax-case stx () ((_ args ...) #'(native-.o args ...))))
+    (syntax-case stx () ((_ args ...) #'(runtime-.o args ...))))
   (lambda (stx)
     (syntax-case stx () ((_ args ...) (lower-path-object stx #'(args ...))))))

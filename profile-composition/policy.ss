@@ -6,7 +6,7 @@
 ;;; Boundary: test-time admission policy for module-system profiles.
 ;;; Invariant: diagnostics are data and never realize descriptors or runtimes.
 
-(import (only-in :clan/poo/object .o .ref .slot? object?)
+(import (runtime: :clan/poo/object)
         (only-in :std/list/list any filter filter-map)
         (only-in :yuanxu/module-system/selection/objects
                  yuanxu-user-module-selection-key)
@@ -238,7 +238,7 @@
    (else 'ok)))
 
 ;;; Test-time policy validates a profile before descriptor realization or
-;;; runtime activation and returns a POO-native admission receipt.
+;;; runtime activation and returns a POO admission receipt.
 ;; : (-> PooUserProfile POOObject)
 (def (yuanxu-user-profile-policy-admit profile)
   (let* ((diagnostics (yuanxu-user-profile-diagnostics profile))

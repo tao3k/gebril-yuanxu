@@ -13,7 +13,7 @@ The downstream guard implementation described by the earlier sections of this
 RFC has been removed.  Agentic AI Lab does not own build-process sampling, heap/RSS
 classification, compiler-job observation, worker admission, or abnormal-build
 termination.  Its root =build.ss= declares the package with the public ASP
-Gerbil Scheme =PackageSpec= API and composes that native projection with the
+Gerbil Scheme =PackageSpec= API and composes that runtime projection with the
 top-level =std/build-script#defbuild-script= entrypoint.
 The enclosing gerbil-bazel action owns the root build resource guard.  The
 upstream guard owns
@@ -41,7 +41,7 @@ flowchart LR
   I --> E[Receipts and evidence]
   I --> H[Historical acceptance]
   I --> C[Current Build API cutover]
-  I --> W[Native warm invalidation]
+  I --> W[Runtime warm invalidation]
   I --> M[Upstream trace and memory guard]
 #+end_src
 
@@ -67,6 +67,6 @@ flowchart LR
 - [[file:147-adaptive-scheme-build-guard/15-authoritative-ci-acceptance.org][Authoritative CI acceptance]]
 - [[file:147-adaptive-scheme-build-guard/16-real-downstream-acceptance.org][Real downstream acceptance]]
 - [[file:147-adaptive-scheme-build-guard/17-build-api-cutover-closure.org][Build API cutover closure]]
-- [[file:147-adaptive-scheme-build-guard/18-native-warm-invalidation.org][Native warm invalidation]]
-- [[file:147-adaptive-scheme-build-guard/19-native-public-closure.org][Native public closure and warm-build convergence]]
+- [[file:147-adaptive-scheme-build-guard/18-runtime-warm-invalidation.org][Runtime warm invalidation]]
+- [[file:147-adaptive-scheme-build-guard/19-runtime-public-closure.org][Runtime public closure and warm-build convergence]]
 - [[file:147-adaptive-scheme-build-guard/20-reactive-memory-anomaly-guard.org][Reactive memory anomaly guard]]

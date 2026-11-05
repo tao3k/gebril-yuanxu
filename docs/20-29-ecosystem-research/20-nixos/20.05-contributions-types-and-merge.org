@@ -53,7 +53,7 @@ Reversing imports is not a valid general conflict-resolution policy. A mkForce
 definition can suppress weaker definitions; it cannot make the chosen value
 valid for a declared port type.
 
-Contrast a native child overriding a parent's port: that is deliberate inheritance
+Contrast a runtime child overriding a parent's port: that is deliberate inheritance
 with one effective slot value. Two independent security teams contributing
 requirements are a different problem. C4 gives lookup precedence; it does not
 prove those requirements are compatible or authorize dropping the losing one.
@@ -63,9 +63,9 @@ prove those requirements are compatible or authorize dropping the losing one.
 | User intent | Proposed ownership | Why and cost |
 |-------------+--------------------+--------------|
 | Replace a desired ordinary value | Direct field assignment | Small interface; inherited dependency must be recomputed |
-| Preserve and transform an old value | Native inherited-value function/refinement | Explicit dependence; function order and purity become review concerns |
+| Preserve and transform an old value | Runtime inherited-value function/refinement | Explicit dependence; function order and purity become review concerns |
 | Combine independent contributions | Maintained domain merge policy | No universal deep merge; conflicts need both source locations |
-| Accumulate requirements | Native Contracts plus admission protocol | Winning a value must not silently discard a separate requirement |
+| Accumulate requirements | Runtime Contracts plus admission protocol | Winning a value must not silently discard a separate requirement |
 | Add an unknown extension field | Explicit open Contract region | Closed business fields catch typos; open labels/maps remain useful |
 
 Do not copy numeric priorities into every user field. First decide whether a
@@ -80,7 +80,7 @@ These merge rules are documented/source-observed tradeoffs, not bug claims.
 [[file:20.07-issues-and-evidence.org][The issue register]] distinguishes performance and phase reports from merge
 semantics. A future Scheme contribution system must also answer whether discarded
 values are checked, which requirements survive, and whether two transformation
-orders produce different outputs. Current native slot precedence is not evidence
+orders produce different outputs. Current runtime slot precedence is not evidence
 that these independent-contributor obligations have been implemented.
 
 * Reflection and conclusion

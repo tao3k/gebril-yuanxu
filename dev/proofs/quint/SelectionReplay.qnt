@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 module SelectionReplayModel {
   const BUG: str
-  // Serial native checker + revision policy contain no opaque callbacks.
+  // Serial runtime checker + revision policy contain no opaque callbacks.
   // A source observer is an open boundary and retains the original keepTail.
   var s: {done: bool, sameDiagnostic: bool, staleAccepted: bool,
     observerTail: bool, parent: int, unused: int, accepted: bool, costBound: bool, lookupCorrect: bool}
@@ -15,7 +15,7 @@ module SelectionReplayModel {
     nondet changes = Set(false, true).oneOf()
     nondet a = Set(false, true).oneOf()
     nondet b = Set(false, true).oneOf()
-    // Independent collector placement; not a native GC prediction.
+    // Independent collector placement; not a runtime GC prediction.
     nondet collection = Set(0, 45).oneOf()
     // 0 absent, 1 cached false, 2 cached true. Cache state is fixed within
     // one existing pure window; a miss invokes the original query once.

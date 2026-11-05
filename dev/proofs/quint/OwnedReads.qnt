@@ -3,13 +3,13 @@
 module OwnedReadsModel {
   const BUG: str
   // External policy, Contract, source, Generic and transitive parent policy;
-  // the last covers both carrier prototypes and native validation ancestors.
+  // the last covers both carrier prototypes and runtime validation ancestors.
   // 5 and 6 are Core-created call/receipt identities. 7 is unchanged.
   pure val external = Set(0, 1, 2, 3, 4)
   pure val owned = Set(5, 6)
   pure val trace = external.union(owned)
   // A shared/cyclic owned region exposes the Contract only BELOW node 6.
-  // Stop at external tokens; their original native replay owns their suffix.
+  // Stop at external tokens; their original runtime replay owns their suffix.
   pure def deps(n: int): Set[int] =
     if (n == 5) Set(0, 2, 3, 4, 6)
     else if (n == 6) Set(1, 5) else Set()

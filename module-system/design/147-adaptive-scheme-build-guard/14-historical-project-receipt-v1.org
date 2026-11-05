@@ -13,4 +13,4 @@
 - [[file:14-historical-project-receipt-v1/03-tuple-lock.org][Gerbil-Bazel tuple and lock convergence]]
 - [[file:14-historical-project-receipt-v1/04-immutable-pin.org][Immutable Git-pin acceptance]]
 - [[file:14-historical-project-receipt-v1/05-producer-mode.org][Producer-mode restoration acceptance]]
-- [[file:14-historical-project-receipt-v1/06-native-failure.org][Native compiler failure evidence]]
+- [[file:14-historical-project-receipt-v1/06-runtime-failure.org][Runtime compiler failure evidence]]

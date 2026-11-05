@@ -121,7 +121,7 @@ flowchart LR
 - [X] =evidenceCutChangeCreatesNewDecisionIdentity=
 - [X] =scopeChangeCreatesNewDecisionIdentity=
 - [X] =policyChangeCreatesNewDecisionIdentity=
-- [ ] Project governance policy and receipts through native =gerbil-poo=.
+- [ ] Project governance policy and receipts through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.Admission.Decision=.  It
@@ -141,7 +141,7 @@ the system in general.
 
 * POO semantic ownership
 
-Governance policy is represented by ordinary higher-order POO objects. Native
+Governance policy is represented by ordinary higher-order POO objects. Runtime
 prototype composition defines:
 
 - decision roles;
@@ -455,7 +455,7 @@ The implementation must distinguish at least:
 11. Break-glass remains narrow and preserves mandatory invariants.
 12. Human restart selection binds exact suspension and continuation identities.
 13. Decision, authorization, and action chains close separately.
-14. Public governance extension remains POO-native.
+14. Public governance extension remains POO.
 
 * Implementation checklist
 

@@ -108,7 +108,7 @@ flowchart LR
 - [X] =backpressureSuspensionCarriesNoActionAuthority=
 - [X] =resourceReleaseIsObservable=
 - [X] =releasedResourceIsNotStillConsumed=
-- [ ] Project admission and scheduling policy through native =gerbil-poo=.
+- [ ] Project admission and scheduling policy through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.Admission.Isolation=.  Its
@@ -157,7 +157,7 @@ Runtime scheduling uses distinct higher-order POO objects such as:
 These objects describe execution policy. They do not alter the semantic demand
 identity or its canonical pure result.
 
-The public extension interface remains POO-native. Scheduling must not become
+The public extension interface remains POO. Scheduling must not become
 an unstructured queue-number or macro-token DSL.
 
 * Admission boundary
@@ -413,12 +413,12 @@ The implementation must distinguish at least:
 12. Queues, checkpoints, continuations, and wake sets remain bounded.
 13. Unknown resource release enters reconciliation.
 14. Scheduling decisions emit canonical observability receipts.
-15. Public policy extension remains POO-native.
+15. Public policy extension remains POO.
 
 * Implementation checklist
 
 - [ ] Prevent semantic slot priority from entering scheduler admission.
-- [ ] Define POO-native service, fairness, deadline, budget, preemption, and
+- [ ] Define POO service, fairness, deadline, budget, preemption, and
       admission-scope objects.
 - [ ] Define immutable resource snapshots.
 - [ ] Define pure admission proposals.

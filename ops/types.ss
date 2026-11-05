@@ -1,8 +1,8 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
-        (only-in :clan/poo/mop Type. Function Any Bool element?)
+(import :clan/poo/object
+        (only-in :clan/poo/mop Type. define-type Function Any Bool element?)
         (only-in :clan/poo/type Record String List OrFalse Union Unit)
         (only-in :clan/poo/number Integer Real))
 (export ProcessScriptContract ProcessResultContract OpsConfigContract OpsScopeContract OpsEnvironmentContract)
@@ -69,5 +69,4 @@
                        (and (object? prototype) (.slot? prototype '.run)
                             (procedure? (.get prototype .run))))))
               '(Script SelectedPackages))))
-(def OpsScopeContract
-  (yuanxu-predicate-contract 'ops/scope ops-scope? (lambda (_v _c) '())))
+(define-type (OpsScopeContract @ Type.) identity: 'ops/scope .element?: ops-scope?)

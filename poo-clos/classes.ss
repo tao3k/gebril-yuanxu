@@ -3,10 +3,9 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; POO-native CLOS classes and direct/effective slot projection.
+;;; POO CLOS classes and direct/effective slot projection.
 
-(import (only-in :clan/poo/object
-                 .o .ref .put! .slot? compute-precedence-list!)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop element?)
         (only-in :std/hash/misc hash-ref/default hash-remove!)
         (only-in :std/list/list delete-duplicates/hash)
@@ -197,7 +196,7 @@
              (class-direct-superclasses class-value)))
     (instance-prototype-value class-value superclass-prototypes)))
 
-;;; Native POO is the sole precedence owner. Every class generation owns one
+;;; POO is the sole precedence owner. Every class generation owns one
 ;;; instance prototype, and each prototype points back to that exact class
 ;;; metaobject. Projecting upstream C4 preserves identity without a second
 ;;; class graph or linearization algorithm.
@@ -218,7 +217,7 @@
       (compute-precedence-list! prototype)))))
 
 ;; Each owner index retains its first direct declaration for a slot name.  The
-;; outer list stays in native C4 order, so option inheritance follows POO.
+;; outer list stays in runtime C4 order, so option inheritance follows POO.
 ;; : (-> [ClosClass] Procedure [Pair])
 (def (class-direct-slot-indexes precedence direct-slots-for)
   (map
@@ -342,7 +341,7 @@
 ;;   : (-> Symbol [ClosClass] [ClosDirectSlotDefinition] [Pair] Natural
 ;;        (Maybe Procedure) (Maybe Procedure)
 ;;        (Maybe Procedure) (Maybe Procedure) ClosClass)
-;;   | contract: validates and finalizes one native-POO class generation before
+;;   | contract: validates and finalizes one runtime-POO class generation before
 ;;     registering its direct dependency edges.
 ;;   | doc m%
 ;;       `%poo-clos-make-class-generation` is the checked internal constructor.
@@ -355,7 +354,7 @@
 ;;       ```
 ;;
 ;;       result: a complete class generation whose class and slot precedence
-;;       are projected from its native POO prototype C4.
+;;       are projected from its POO prototype C4.
 ;;     %
 (def (%poo-clos-make-class-generation
       identity-value superclass-values direct-slot-values
@@ -428,7 +427,7 @@
 ;; : (-> ClosClass [ClosClass] Procedure Procedure POOObject)
 (def (%poo-clos-project-class-redefinition
       class-value superclasses prototype-for direct-slots-for)
-  ;; Project against a fresh native POO prototype before touching the live
+  ;; Project against a fresh POO prototype before touching the live
   ;; class or either parent's dependency edge.
   (let* ((prototype-value
           (instance-prototype-value
@@ -502,7 +501,7 @@
       (initialize-direct-class-slots! class-value))))
 
 ;;; The root class contributes no slots; all ordinary classes with an omitted
-;;; superclass list inherit from this exact class and native POO prototype.
+;;; superclass list inherit from this exact class and POO prototype.
 (def poo-clos-standard-object-class
   (%poo-clos-make-class-generation
    'standard-object '() '() '() 0 #f #f #f #f))
@@ -517,7 +516,7 @@
 ;;         default-initargs: [Pair] slot-missing-handler: (Maybe Procedure)
 ;;         slot-unbound-handler: (Maybe Procedure) ClosClass)
 ;;   | contract: creates one finalized class generation whose instance
-;;     prototype is the single native POO inheritance and precedence owner.
+;;     prototype is the single POO inheritance and precedence owner.
 ;;   | doc m%
 ;;   | result: a POO class metaobject with lazy effective slots.
 (def (poo-clos-class

@@ -12,7 +12,7 @@
 
 Historical macro-architecture evidence.  Its public clause grammar and parser
 ownership are superseded by RFC 45-92's thin binding macro, RFC 45-95's
-Profile-owned responsibilities, and RFC 164's native noun-slot surface.
+Profile-owned responsibilities, and RFC 164's runtime noun-slot surface.
 It must not be used to reintroduce a stage DSL or a second action evaluator.
 
 The document applied the Gerbil macro and module model from
@@ -33,7 +33,7 @@ responsibilities:
 - compile-time parsing and intermediate-list construction;
 - a re-export of the inline runtime helper module.
 
-The public macro already lowers to POO-native builders, which is the correct
+The public macro already lowers to POO builders, which is the correct
 semantic direction.  The implementation still has structural defects:
 
 - the grammar accepts a legacy alias-only =use-module= branch;
@@ -63,7 +63,7 @@ single-instantiation behavior, and compile-time allocation.
 
 | Owner | Responsibility | Public surface |
 |-------+----------------+----------------|
-| =profile-composition.ss= | Stable composition facade | =use-composition= plus explicitly selected native POO extension helpers |
+| =profile-composition.ss= | Stable composition facade | =use-composition= plus explicitly selected POO extension helpers |
 | =profile-composition-use-syntax.ss= | Thin public macro and final lowering | =use-composition= only |
 | =profile-composition-declaration-syntax.ss= | Phase-owned grammar parser, validation, and immutable declaration model | Compile-time import only |
 | =profile-composition-builders.ss= | Ordinary POO composition, module-binding, stage, and clause builders | Selected through the facade |
@@ -86,7 +86,7 @@ flowchart LR
   A["use-composition syntax object"] --> B["shape and literal validation"]
   B --> C["immutable composition declaration model"]
   C --> D["single lowering traversal"]
-  D --> E["ordinary POO-native builder forms"]
+  D --> E["ordinary POO builder forms"]
   E --> F["composition POO object"]
   F --> G["receipt or runtime projection"]
 #+end_src
@@ -271,7 +271,7 @@ The migration is intentionally compatibility-free:
 
 - the canonical facade becomes the only documented import path;
 - the syntax owner exports only =use-composition=;
-- native POO extension helpers are selectively exported by the facade;
+- POO extension helpers are selectively exported by the facade;
 - project user-interface compositions migrate in the same change;
 - the legacy inline module grammar is rejected by a focused negative test;
 - no legacy wrapper module or alias remains after consumers migrate.
@@ -324,7 +324,7 @@ The phase-aware refactor landed on 2026-07-09 with these owners:
 CrewAI, LangChain, LangGraph, and tool-calling user cases now use the canonical
 =(use-module module-name as alias ...)= grammar, with composition-level
 =compose= outside stage declarations.  =t/profile-composition-test.ss= proves
-native POO profile reuse, local =:extends=, named =:with= hooks, lexical alias
+POO profile reuse, local =:extends=, named =:with= hooks, lexical alias
 hygiene, duplicate rejection, and expansion-time rejection of alias-only legacy
 syntax.
 
@@ -332,7 +332,7 @@ The real expansion gate lives in
 =t/scenarios/performance/composition-macro-expansion/=.  It uses =gxc -S= and
 the upstream =:std/time/precise#current-time-precise= clock, so it measures Gerbil
 expansion and Scheme generation without a platform-specific =/usr/bin/time=
-parser.  Full native compilation remains a separate package-build backend gate,
+parser.  Full runtime compilation remains a separate package-build backend gate,
 while runtime heap limits remain owned by the ASP POO Testing Profile.
 
 The upstream Harness owns three corresponding policy scenarios:

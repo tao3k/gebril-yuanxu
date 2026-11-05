@@ -7,23 +7,26 @@
         (only-in :std/misc/ports read-all-as-string)
         (only-in :yuanxu/ops/process-script ProcessScript.)
         (only-in :yuanxu/ops/func run-script)
-        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in "./testing-case.ss" yuanxu-selected-testing-case-profile
                  yuanxu-testing-case-profile? yuanxu-test-checkpoint)
         (only-in "./testing-fixture.ss" call-with-yuanxu-fixture))
-(export TestingScript. admit-testing-result admit-testing-process-result testing-script-for-source make-compiler-progress-reader)
+(export TestingScript. admit-testing-result admit-testing-process-result make-compiler-progress-reader)
 
-;; Native bindings only: forcing this promise never stores an admission
-;; result. Empty support requests must not import the signing implementation.
-(def testing-build-api
-  (delay
-    (parameterize ((current-expander-context (make-top-context)))
-      (eval-syntax '(import :gerbil/core))
-      (eval-syntax '(import (only-in :yuanxu/module-system/building/artifacts
-                             current-build-phase-times require-build-artifacts!)))
-      (eval-syntax '(list current-build-phase-times require-build-artifacts!)))))
+;; One explicit .run owns one deadline, including source and final admission. This
+;; dynamic extent is not a cached result and is restored on failure/nesting.
+(def current-testing-deadline (make-parameter #f))
+(def (limit-testing-script script)
+  (let (deadline (current-testing-deadline))
+    (if (not deadline) script
+      (let (remaining (exact->inexact (/ (- deadline (current-jiffy)) (jiffies-per-second))))
+        (unless (> remaining 0) (error "test file budget exhausted before process launch"))
+        ;; GNU timeout accepts fractional seconds. Keep its hard process-group
+        ;; boundary; preparation must not reset the Harness's remaining budget.
+        (.cc script 'timeout
+          (if (.get script timeout) (min remaining (.get script timeout)) remaining))))))
 
-;; Relay only real std/make work through the existing Ops progress frame.
+;; Relay completed native build and source-index work through the existing Ops
+;; frame. An index result is still admitted separately from liveness.
 (def (make-compiler-progress-reader)
   (def completed 0)
   ;; Counts restart for each actual compiler process. Its identity must restart
@@ -35,7 +38,8 @@
       (when (or (string-prefix? "... compile " line)
                 (string-prefix? "... invoke " line)
                 (string-prefix? "... remove " line)
-                (string-prefix? "... execute compile job " line))
+                (string-prefix? "... execute compile job " line)
+                (and (string-prefix? "TAG " line) (> (string-length line) 4)))
         (set! completed (+ completed 1))
         (execution-progress! compiler completed)))))
 
@@ -52,32 +56,23 @@
         "yuanxu-module-test-observation"))
     '()))
 
-;; Called only at the explicit execution boundary, never while selecting init.
-(def (testing-script-for-source source-value (build-accessor #f))
-  (.o (:: script [TestingScript.])
-      source: source-value build: build-accessor
-      ;; Bind the required compiler association at publication. A child Script
-      ;; can refine its execution policy, but cannot silently erase preparation.
-      .compile: (lambda () (compile-testing-script script build-accessor))
-      .run: (lambda () (run-testing-script script build-accessor))))
-
 (def (check-testing-spec files)
   ;; Empty gxtest argv means "discover this directory", not "run no tests".
   (unless (and (list? files) (pair? files)
                (andmap (lambda (file) (and (string? file) (not (string-empty? file)))) files))
-    (error "testing spec requires explicit nonempty native harness inputs" files)))
+    (error "testing spec requires explicit nonempty runtime harness inputs" files)))
 
 (def (admit-testing-process-result result files)
   (check-testing-spec files)
   (def output (.get result output))
   (unless (and (eqv? (.get result status) 0) (string? output))
-    (error "native test process did not succeed" files (.get result status) output))
+    (error "runtime test process did not succeed" files (.get result status) output))
   (when (ormap (cut string-contains output <>)
                '("ERROR MODULE" "ERROR CASE" "ERROR CHECK" "ERROR HARNESS"
                  "Heap overflow" "Stack overflow" "*** ERROR"))
-    (error "native test harness reported failure" files (.get result status) output))
+    (error "runtime test harness reported failure" files (.get result status) output))
   (unless (member "OK" (string-split output #\newline))
-    (error "native test harness completion is missing" files (.get result status) output))
+    (error "runtime test harness completion is missing" files (.get result status) output))
   result)
 
 (def (admit-testing-result result files)
@@ -86,7 +81,7 @@
     (unless (and (andmap (lambda (file) (member (string-append "MODULE-OK " file) lines)) files)
                  (member (string-append "HARNESS-OK " (object->string files)) lines)
                  (member "OK" lines))
-      (error "native test harness completion is missing" files (.get result status) (.get result output))))
+      (error "runtime test harness completion is missing" files (.get result status) (.get result output))))
   result)
 
 (def (admit-testing-script-result script result)
@@ -115,155 +110,9 @@
   result)
 
 
-;; gxtest owns package-environment setup. Freeze an existing package root and
-;; its bin priority into the Ops request instead of spawning gxpkg just for PATH.
-;; Missing package context still delegates discovery to the original SDK.
-(def (testing-execution-script script files)
-  (def native-command
-    (append '("gerbil") (.get script runtime-options) '("test")
-            (testing-harness-options script) files))
-  (def declared-command (.get script command))
-  (def overrides (.get script environment))
-  (def (setting name)
-    (if (.slot? overrides name) (.ref overrides name) (getenv (symbol->string name) #f)))
-  (def root (setting 'GERBIL_PATH))
-  (def path (setting 'PATH))
-  (def prepared?
-    (and (string? root) (not (string-empty? root)) (string? path) (not (string-empty? path))))
-  (cond
-   ((not (equal? declared-command native-command)) script)
-   (prepared?
-    ;; Freeze the pair whose priority was checked into the actual Ops request;
-    ;; later ambient changes cannot invalidate the launch decision.
-    (.cc script 'environment
-      (.+ overrides
-        (.o GERBIL_PATH: root
-            PATH: (if (equal? (car (string-split path #\:)) (string-append root "/bin"))
-                    path (string-append root "/bin:" path))))))
-   (else
-    ;; Delegate missing initialization to the original tool; do not copy its
-    ;; directory/package lookup or silently change explicitly different commands.
-    (.cc script 'command
-      ;; gxpkg env spawns a child; VM flags on its dispatcher are not inherited.
-      (append '("gerbil") (.get script runtime-options) '("env" "gerbil")
-              (.get script runtime-options) '("test")
-              (testing-harness-options script) files)))))
-
-;; Native std/make is the sole compiler/dependency scheduler. The Script only
-;; brackets that existing compiler with the same issuance and Fixture boundary.
-(def (admit-retained-testing-support? build)
-  (def graph (.get build build-graph))
-  (def source (and (.slot? graph 'build-publication) (.get graph build-publication)))
-  ;; Availability alone grants nothing. Recovery checks the original approval,
-  ;; complete compiler inputs and every output digest before reuse. A corrupt
-  ;; approval/product MUST raise, rather than fall back to a fresh compilation.
-  (and source (.slot? source '.available?) (.call source .available?)
-       (begin ((.get build admit-artifacts)) #t)))
-
-(def (prepare-testing-script script files build)
-  (when build
-    (unless (and (eq? (.get build demand-source) (.get script source))
-                 ;; An empty support spec grants no compilation authority.
-                 ;; Keep Graph demand lazy until there are products to issue.
-                 (or (null? (.get build spec))
-                     (eq? (.get build selected-graph) (.get script source selected-graph))))
-      (error "test compiler projection belongs to another demand")))
-  (if (or (not build) (null? (.get build spec))) script
-    (let ((started (real-time))
-          (times (and (.get script profile emit?) (make-hash-table-eq))))
-      (defvalues (current-build-phase-times require-build-artifacts!)
-        (apply values (force testing-build-api)))
-      (def reused? (admit-retained-testing-support? build))
-      (def compilation
-       (and (not reused?)
-       (parameterize ((current-build-phase-times times))
-       (.call build .compile (.get build output-directory)
-        (lambda ()
-          (def expression
-            `(let (started (real-time))
-               (make ',(.get build spec) srcdir: ,(.get build source-root)
-                 libdir: ,((.get build compile-output)))
-               ,@(if times
-                   '((displayln "test-prepare phase=std-make seconds=" (- (real-time) started)))
-                   '())))
-          (when (and times (.slot? (.get script profile) 'trace-enabled?)
-                     (.get script profile trace-enabled?))
-            (displayln "test-prepare phase=make-request expression=" (object->string expression)))
-          (def environment (.get (testing-execution-script script files) environment))
-          (def prepared?
-            (and (.slot? environment 'GERBIL_PATH) (.slot? environment 'PATH)
-                 (string? (.get environment GERBIL_PATH)) (string? (.get environment PATH))
-                 (not (string-empty? (.get environment GERBIL_PATH)))
-                 (not (string-empty? (.get environment PATH)))))
-          (when times
-            (displayln "test-prepare phase=compiler-entry seconds=" (- (real-time) started)
-              " recovery-seconds=" (or (hash-get times 'recovery) 0)
-              " currentness-seconds=" (or (hash-get times 'currentness) 0)))
-          ;; Preserve the caller's native Make worker budget. A test launch
-          ;; must not silently force a different compiler scheduling mode.
-          (def receipt (run-script
-            (.cc ProcessScript.
-              'directory (.get script directory)
-              'environment (.+ environment (.o GERBIL_BUILD_VERBOSE: "1"))
-              'progress make-compiler-progress-reader
-              'timeout 120 'idle-timeout 60
-              'command
-              (append
-                ;; Native POSIX time reports child + descendant CPU separately
-                ;; from wall time. This is opt-in observation, not a new runner.
-                (if times '("/usr/bin/time" "-p") '())
-                (if prepared? '("gxi")
-                  (append '("gerbil") (.get script runtime-options) '("env" "gxi")))
-                (.get script runtime-options)
-                (append
-                  (if times '("-e" "(define test-make-started (real-time))") '())
-                  (list "-e" "(import :std/make)")
-                  (if times
-                    (list "-e" (object->string
-                      '(displayln "test-prepare phase=make-import seconds="
-                         (- (real-time) test-make-started)
-                         " cores=" (getenv "GERBIL_BUILD_CORES" "0"))))
-                    '())
-                  (list "-e" (object->string expression)))))))
-          ;; Report the actual compiler before completion admission: a refused
-          ;; new generation must not erase the producer's diagnostic counts.
-          (when times
-            (displayln "test-prepare phase=make-process seconds=" (.get receipt seconds)
-              " compile-count="
-              (length (filter (cut string-prefix? "... compile " <>)
-                        (string-split (.get receipt output) #\newline))))
-            (for-each displayln
-              (filter (lambda (line)
-                (ormap (cut string-prefix? <> line)
-                  '("test-prepare phase=" "real " "user " "sys ")))
-                (string-split (.get receipt output) #\newline))))
-          receipt)))))
-      (when (.get script profile emit?)
-        (displayln "test-prepare phase=compile seconds=" (- (real-time) started)
-          " reused=" reused?
-          " make-seconds=" (if compilation (.get compilation seconds) 0)
-          " compile-count="
-          (if compilation
-            (length (filter (cut string-prefix? "... compile " <>)
-                      (string-split (.get compilation output) #\newline))) 0)))
-      (parameterize ((current-build-phase-times times)) ((.get build admit-artifacts)))
-      (when times
-        (displayln "test-prepare phase=recovery seconds=" (or (hash-get times 'recovery) 0)
-          " currentness-seconds=" (or (hash-get times 'currentness) 0)
-          " publication-lookup-seconds=" (or (hash-get times 'publication-lookup) 0)
-          " publication-lookups=" (or (hash-get times 'publication-lookups) 0)))
-      (let* ((environment (.get script environment))
-             (prior (if (.slot? environment 'GERBIL_LOADPATH)
-                      (.get environment GERBIL_LOADPATH) (getenv "GERBIL_LOADPATH" ""))))
-        (.cc script 'environment
-          (.+ environment
-            (.o GERBIL_LOADPATH:
-              (string-append (.get build output-directory)
-                (if (string-empty? prior) "" (string-append ":" prior))))))))))
-
-(def (call-with-prepared-testing-script script required-build action)
-  (when (and required-build (not (eq? required-build (.get script build))))
-    (error "declared test compiler association cannot be replaced or removed"))
+;; Explicit external-process qualifications retain their source guard. Ordinary
+;; module tests are std/test inputs; this boundary never prepares or compiles.
+(def (call-with-testing-source script action)
   (def source (.get script source))
   (unless (and (object? source) (.slot? source 'spec) (.slot? source 'admit-current))
     (error "testing requires a source object binding spec and currentness"))
@@ -274,53 +123,34 @@
                (yuanxu-testing-case-profile? (.get script profile))
                (> (.get script profile heap-limit-bytes) 0))
     (error "invalid testing script guard or resource profile"))
-  (def compiled #f)
-  ;; The existing fixture boundary retains both process and post-check errors.
+  ;; The existing Fixture retains both the process failure and post-check error.
   (call-with-yuanxu-fixture
     (.o .acquire: (lambda () (current!) files)
-        .release: (lambda (_files)
-                    (when compiled ((.get compiled admit-artifacts)))
-                    (current!)))
-    (lambda (_files)
-      (def preparation-started (real-time))
-      (def build
-        (call-with-execution-watchdog #f 120000
-          (lambda ()
-            (let (value (and (.get script build) ((.get script build))))
-              (when (.get script profile emit?)
-                (displayln "test-prepare phase=projection seconds="
-                  (- (real-time) preparation-started)
-                  " support-count=" (if value (length (.get value spec)) 0)))
-              (when (and required-build (not (object? value)))
-                (error "declared test support requires a compiler projection"))
-              (set! script (prepare-testing-script script files value))
-              value))))
-      (when (and build (pair? (.get build spec))) (set! compiled build))
-      (action script files))))
+        .release: (lambda (_files) (current!)))
+    (lambda (_files) (action script files))))
 
-;; Compilation and execution share the same source/artifact Fixture. Preparing
-;; support never launches the Harness or turns a previous admission into a cache.
-(def (compile-testing-script script (required-build #f))
-  (call-with-prepared-testing-script script required-build
-    (lambda (prepared _files) prepared)))
-
-(def (run-testing-script script (required-build #f))
-  (call-with-prepared-testing-script script required-build
-    (lambda (script files)
-      (yuanxu-test-checkpoint 'test-worker-launch)
-      (let* ((receipt (run-script (testing-execution-script script files)))
-             (result (if (.get receipt log)
-                       (.cc receipt 'output
-                         (call-with-input-file (.get receipt log) read-all-as-string))
-                       receipt)))
-        (yuanxu-test-checkpoint 'test-worker-returned)
-        ;; Refining a specialized receipt cannot bypass the common process gate.
-        (admit-testing-process-result result files)
-        (.call script .admit-result result)))))
+(def (run-testing-script script)
+  (def milliseconds (.get script profile max-duration-milliseconds))
+  (parameterize ((current-testing-deadline
+                   (+ (current-jiffy) (* (/ milliseconds 1000) (jiffies-per-second)))))
+    (call-with-execution-watchdog #f milliseconds
+      (lambda ()
+        (call-with-testing-source script
+          (lambda (script files)
+            (yuanxu-test-checkpoint 'test-worker-launch)
+            (let* ((receipt (run-script
+                             (limit-testing-script script)))
+                   (result (if (.get receipt log)
+                             (.cc receipt 'output
+                               (call-with-input-file (.get receipt log) read-all-as-string))
+                             receipt)))
+              (yuanxu-test-checkpoint 'test-worker-returned)
+              ;; Specialized receipt policy cannot bypass the common gate.
+              (admit-testing-process-result result files)
+              (.call script .admit-result result))))))))
 
 (.def (TestingScript. script [ProcessScript.])
   source: #f
-  build: #f
   directory: (if (.slot? (.get script source) 'source-root)
                (.get script source source-root)
                (.get script config directory))
@@ -329,7 +159,7 @@
   (let (bytes (.get script profile heap-limit-bytes))
     ;; Gambit defaults unsuffixed sizes to KiB. Do not turn a byte budget into
     ;; a cap 1024 times larger; round down rather than exceed the policy.
-    (when (< bytes 1024) (error "native test heap budget must be at least one KiB" bytes))
+    (when (< bytes 1024) (error "runtime test heap budget must be at least one KiB" bytes))
     (list (string-append "-:max-heap="
             (number->string (quotient bytes 1024)) "K,debug=q")))
   command: (append '("gerbil") (.get script runtime-options) '("test")
@@ -337,11 +167,10 @@
   timeout: (/ (.get script profile max-duration-milliseconds) 1000)
   idle-timeout: (/ (.get script profile max-idle-milliseconds) 1000)
   progress: make-test-progress-reader
-  ;; Specialized native harnesses refine receipt admission, never process or
+  ;; Specialized runtime harnesses refine receipt admission, never process or
   ;; Fixture execution. The default keeps the original exact harness protocol.
   case-count: #f
   harness: #f
   required-lines: '()
   .admit-result: (lambda (result) (admit-testing-script-result script result))
-  .compile: (lambda () (compile-testing-script script))
   .run: (lambda () (run-testing-script script)))

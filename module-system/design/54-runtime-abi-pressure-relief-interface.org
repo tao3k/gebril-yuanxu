@@ -14,7 +14,7 @@ C4 slot precedence, functional strategy combinators, or downstream UI concepts.
 The goal is to make =agentic-ai-lab= a pressure-relief layer:
 
 #+begin_src text
-POO-native policy families
+POO policy families
   + functional strategy combinators
   + validation and readiness gates
   + compact packet projection
@@ -27,11 +27,11 @@ the same packet contract without copying Marlin internals.
 
 ** 10.06.54.20 Terms
 
-- Author UI :: the user-facing =agentic-ai-lab= surface: POO-native policy families,
+- Author UI :: the user-facing =agentic-ai-lab= surface: POO policy families,
   profile fragments, and functional strategy combinators.
 - Runtime UI :: the runtime-author surface: capability negotiation, packet
   validation, action batches, and receipt batches.
-- Native adapter :: an optional high-performance binding layer such as C ABI,
+- Runtime adapter :: an optional high-performance binding layer such as C ABI,
   Rust =cdylib=, or language-specific generated binding.
 - Pressure relief :: the act of resolving rich authoring semantics before the
   runtime boundary, so the runtime receives normalized facts rather than a
@@ -59,7 +59,7 @@ Runtime owners own:
 Language SDKs own:
 - binding ergonomics for a host language;
 - packet encoding and decoding;
-- memory/allocator rules for native adapters;
+- memory/allocator rules for runtime adapters;
 - transport selection;
 - conformance test invocation.
 
@@ -74,10 +74,10 @@ can vary by performance need.
 - L1 service transport :: local process, socket, HTTP, or gRPC transport for a
   service runtime, daemon, or remote worker. This has moderate overhead and easy
   deployment.
-- L2 native transport :: C ABI or Rust native library transport for in-process
+- L2 runtime transport :: C ABI or Rust runtime library transport for in-process
   runtime integration. This has low overhead and requires an explicit memory
   contract.
-- L3 optimized native transport :: C ABI plus epoch backing and batch packets
+- L3 optimized runtime transport :: C ABI plus epoch backing and batch packets
   for high-frequency policy projection. This has the lowest repeated
   marshalling cost.
 
@@ -115,7 +115,7 @@ Return monotonic receipt updates, telemetry refs, final status, lease state, new
 watermarks, and runtime-owned failure data.
 
 All names here are semantic operations. A transport may spell them as functions,
-commands, request types, messages, or native symbols.
+commands, request types, messages, or runtime symbols.
 
 ** 10.06.54.60 Packet Families
 
@@ -247,7 +247,7 @@ states otherwise.
    by an explicit handle or evidence ref.
 4. Slot precedence and role composition are resolved before packet projection.
 5. Functional combinators emit decision receipts before packet projection.
-6. Native ABI readiness is a strategy gate, not a late runtime surprise.
+6. Runtime ABI readiness is a strategy gate, not a late runtime surprise.
 7. Missing symbols, unsupported capabilities, expired leases, and privacy
    violations produce diagnostic packets or receipts before execution.
 8. Stable epoch keys should be reusable across repeated runtime calls.
@@ -260,10 +260,10 @@ Marlin gives the first concrete mapping for this interface:
 
 | =agentic-ai-lab= packet concept | Marlin reference concept |
 |---------------------------+--------------------------|
-| =runtime-capability-descriptor.v1= | native ABI id/version/exported-symbols and readiness plan |
+| =runtime-capability-descriptor.v1= | runtime ABI id/version/exported-symbols and readiness plan |
 | =policy-profile-packet.v1= | =LoopPolicyProfile= plus governance/evidence policy |
-| native readiness requirement | =GraphNativeAbiRequirement= |
-| native readiness result | =GraphNativeAbiReadinessReceipt= |
+| runtime readiness requirement | =GraphRuntimeAbiRequirement= |
+| runtime readiness result | =GraphRuntimeAbiReadinessReceipt= |
 | policy proposal | =GraphPolicyProposal= and validation receipt |
 | executable run intent | =GraphLoopRunRequest= / =GraphLoopExecutionRequest= |
 | continuation action | =GraphLoopContinuationAction= and continuation receipt |
@@ -271,7 +271,7 @@ Marlin gives the first concrete mapping for this interface:
 | tool batch policy | =GraphToolBatchExecutionMode= and batch receipt |
 | runtime snapshot | =RuntimePlanSnapshot= and =SessionRuntimeSnapshot= |
 | runtime concurrency policy | =TokioRuntimePolicy= and =TokioRuntimePolicyReceipt= |
-| high-frequency native calls | Gerbil native request epoch backing and conversion profile |
+| high-frequency runtime calls | Gerbil runtime request epoch backing and conversion profile |
 
 The mapping rule is strict: =agentic-ai-lab= should align with these shapes where
 they are already semantically right, but Marlin remains the runtime owner.
@@ -289,7 +289,7 @@ SDK minimum:
   class;
 - a receipt-batch encoder;
 - conformance fixtures;
-- optional C ABI/native adapter for L2/L3 performance.
+- optional C ABI/runtime adapter for L2/L3 performance.
 
 The lowest-cost SDK can start with L0 or L1. The high-performance SDK can add
 L2/L3 without changing the packet semantics.
@@ -298,7 +298,7 @@ L2/L3 without changing the packet semantics.
 
 M1. Specify packet schemas as Org contracts and Scheme schema constants.
 
-M2. Define POO-native policy families for:
+M2. Define POO policy families for:
 - work lane;
 - monitor;
 - user gate;
@@ -345,7 +345,7 @@ M7. Add performance receipts:
 - batch size;
 - repeated epoch scalar reuse;
 - per-decision payload marshalling count;
-- conversion diagnostics comparable to Marlin's native conversion profile.
+- conversion diagnostics comparable to Marlin's runtime conversion profile.
 
 ** 10.06.54.110 Acceptance Criteria
 
@@ -357,7 +357,7 @@ This design is closed when:
    semantics.
 3. A second runtime language can implement the conformance suite without
    importing Gerbil internals.
-4. The native path can optimize ABI transport through batching and epoch reuse
+4. The runtime path can optimize ABI transport through batching and epoch reuse
    without changing author UI.
 5. Runtime failures return receipts that can be replayed, audited, projected,
    and rendered in public/private surfaces.
@@ -411,12 +411,12 @@ The next implementation slice should not add another runtime language yet. It
 should first strengthen the packet interface around strategy facts:
 
 1. Move work-lane, gate, monitor, claim/lease, and handoff policy rows into
-   POO-native policy families.
+   POO policy families.
 2. Add functional strategy combinators that produce explicit decision receipts
    before packet projection.
 3. Add conformance fixtures for accepted readiness, missing-symbol readiness,
    =quiet-skip=, batched =run=, and runtime receipt batches.
-4. Decide whether high-frequency native transports need epoch-backed scalar
+4. Decide whether high-frequency runtime transports need epoch-backed scalar
    tables in Scheme, or whether that remains entirely runtime-owned.
 5. Split or justify large test owners before requiring the full scoped policy
    gate as a closure condition for this area.

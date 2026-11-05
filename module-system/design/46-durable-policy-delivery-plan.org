@@ -37,7 +37,7 @@ Current implementation state:
 Deliver durable as a shared POO capability for long-running agent projects.
 
 Success means:
-- user-facing configuration stays POO-native;
+- user-facing configuration stays POO;
 - durable policy can be inherited by session, memory, workflow, sandbox, and artifact policies;
 - Scheme validates policy shape and projects bounded receipts;
 - hot receipts use Gerbil =defstruct= internally before alist/JSON ABI projection;
@@ -81,7 +81,7 @@ The research agenda gives five implementation pressures. Each pressure becomes a
 5. Recovery and workflow literature: ARIES, sagas, and workflow patterns separate logging, compensation, resources, and exception behavior.
    Delivery line: P7 workflow/task/artifact receipts must declare action class, artifact provenance, sandbox refs, and compensation refs.
 
-This mapping is the guardrail against copying a reference project. =agentic-ai-lab= should absorb the durable invariant, then express it as POO-native policy plus functional flow values.
+This mapping is the guardrail against copying a reference project. =agentic-ai-lab= should absorb the durable invariant, then express it as POO policy plus functional flow values.
 ** 10.06.46.40 Phase Map
 *** 10.06.46.40.10 P0: Contract Closure
 Purpose:
@@ -109,13 +109,13 @@ Exit criteria:
 
 *** 10.06.46.40.20 P1: POO Object Layer
 Purpose:
-Implement durable as POO-native object families.
+Implement durable as POO object families.
 
 Implementation scope:
 - add shared durable object prototypes;
 - add checkpoint, journal, index, resume, and repair object prototypes;
 - extend session, memory, workflow, sandbox, and artifact policy objects to inherit or reference durable prototypes;
-- keep user-facing forms object-native; no raw alist DSL or ad hoc patch language;
+- keep user-facing forms object-runtime; no raw alist DSL or ad hoc patch language;
 - keep validation in structured object validation, not in tests or case-specific transformers.
 
 Expected source ownership:
@@ -276,8 +276,8 @@ Exit criteria:
 - Durable applies to Funflow/workflow and CI/CD, not only chat/session.
 
 ** 10.06.46.50 Cross-Cutting Requirements
-*** 10.06.46.50.10 POO-Native Public Surface
-All public configuration remains POO-native.
+*** 10.06.46.50.10 POO-Runtime Public Surface
+All public configuration remains POO.
 Objects, prototype inheritance, slot operators, and module macros are the normal path.
 Raw alists only exist at bounded ABI/manifest projection boundaries.
 
@@ -657,7 +657,7 @@ Fifth slice status: landed.
 Delivered:
 - runtime store contract owner:
   =modules/memory-core/durable/store.ss=;
-- POO-native runtime store contract object:
+- POO runtime store contract object:
   =agentic-ai-lab-durable-runtime-store-contract=;
 - shared default runtime store contract:
   =agentic-ai-lab-durable-runtime-store-contract/default=;
@@ -804,7 +804,7 @@ Next implementation pressure:
 - Keep Scheme report-only; runtime store implementations must own append, fsync, lease, checkpoint read/write, derived index rebuild, and repair journal append.
 ** 10.06.46.79.40 Ninth Slice Delivery Notes
 Ninth slice status: landed. Delivered:
-- =modules/memory-core/durable/store-backend.ss= adds POO-native runtime store backend objects, =defstruct= backend receipts, negotiation receipts, and a Marlin handoff ABI.
+- =modules/memory-core/durable/store-backend.ss= adds POO runtime store backend objects, =defstruct= backend receipts, negotiation receipts, and a Marlin handoff ABI.
 - Backend negotiation proves a store contract's ledger kinds and capability flags are covered by a concrete backend before the control plane marks the handoff ready.
 - The Marlin handoff projection reuses the existing runtime command descriptor manifest shape and records that Scheme does not parse source, manufacture runtime handlers, or execute the runtime.
 - =user-interface/custom/my-module/cases/durable-runtime-store-handoff.ss= demonstrates the downstream configuration case.

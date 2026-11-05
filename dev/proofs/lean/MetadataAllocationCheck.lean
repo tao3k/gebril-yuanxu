@@ -17,7 +17,7 @@ def checkRow (j : Json) : Except String String := do
   unless (← a[7]!.getBool?) do throw s!"payload identity was not shared: {name}"
   unless parent == rawRoundTrip.parent && hot == rawRoundTrip.hot &&
       some cold == rawRoundTrip.cold && spec == rawRoundTrip.spec do
-    throw s!"native allocation/model mismatch: {name}"
+    throw s!"runtime allocation/model mismatch: {name}"
   return name
 
 def checkTrace (j : Json) : Except String Unit := do
@@ -33,6 +33,6 @@ def main (args : List String) : IO UInt32 := do
     match Json.parse text >>= checkTrace with
     | .error message => IO.eprintln message; return 1
     | .ok _ =>
-      IO.println "METADATA-ALLOCATION-CORRESPONDENCE-OK: 2 actual native observations"
+      IO.println "METADATA-ALLOCATION-CORRESPONDENCE-OK: 2 actual runtime observations"
       return 0
-  | _ => IO.eprintln "expected native allocation trace JSON path"; return 2
+  | _ => IO.eprintln "expected runtime allocation trace JSON path"; return 2

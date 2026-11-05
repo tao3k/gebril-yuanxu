@@ -59,7 +59,7 @@ identifiers or a required generated spelling.  Their exact Gerbil construction
 is determined by pinned API evidence.
 
 Bare identifier use projects the private root binding.  Application use
-validates one or more Profile-local modifier selectors and emits ordered native
+validates one or more Profile-local modifier selectors and emits ordered runtime
 =gerbil-poo= composition over the stable private root and refinement bindings.
 There is no runtime token dispatch.  An empty application remains an expansion
 error.
@@ -91,7 +91,7 @@ flowchart LR
     M -->|"project private root"| V
     R -->|"first-class POO value"| V
     C -->|"validate one or more selectors"| M
-    M -->|"emit ordered native POO composition"| X
+    M -->|"emit ordered POO composition"| X
     R -->|"base prototype"| X
     A -->|"+research selected"| X
     O -->|"+observability selected"| X
@@ -169,7 +169,7 @@ A selector clause contains one or more ordinary POO refinement expressions:
 #+end_src
 
 Each expression receives its own hygienically generated private phase-0
-binding.  Selection emits those bindings directly into a flat native POO
+binding.  Selection emits those bindings directly into a flat POO
 composition chain.  It creates no list, alist, =begin= sequence, or intermediate
 refinement AST.
 
@@ -185,7 +185,7 @@ For example:
 (wendao-episteme +observability +research)
 #+end_src
 
-has the conceptual native composition order:
+has the conceptual runtime composition order:
 
 #+begin_src text
 base-episteme
@@ -216,7 +216,7 @@ flowchart LR
     O2 -->|"call-site selector order"| R
     R -->|"declaration order 1"| R1
     R1 -->|"declaration order 2"| R2
-    R2 -->|"native POO composition complete"| X
+    R2 -->|"POO composition complete"| X
 #+end_src
 
 * Binding evaluation and demand laziness
@@ -231,7 +231,7 @@ evaluation does not eagerly solve their slots, imports, or capabilities.
 Demand-driven semantic resolution remains the responsibility of the sole
 =gerbil-poo= lazy fixed point.
 
-If the pinned =gerbil-poo= API requires a particular native prototype
+If the pinned =gerbil-poo= API requires a particular runtime prototype
 constructor, the expansion uses that constructor directly rather than wrapping
 it in a second laziness mechanism.  Root and refinement expressions remain
 pure control-plane expressions; effects belong behind explicit runtime or
@@ -292,7 +292,7 @@ flowchart LR
     subgraph B["consumer Gerbil module"]
         I["normal module import"]
         U["wendao-episteme +research"]
-        E["expanded native POO expression"]
+        E["expanded POO expression"]
     end
 
     M -->|"single public export"| I
@@ -370,7 +370,7 @@ flowchart LR
     V["resolved value or continuable condition"]
 
     S -->|"validate syntax, ownership, order, hygiene"| M
-    M -->|"emit POO-native code and provenance"| P
+    M -->|"emit POO code and provenance"| P
     P -->|"ordinary phase-0 binding evaluation"| R
     R -->|"resolve imports and capabilities"| F
     F -->|"converge or signal"| V
@@ -411,7 +411,7 @@ flowchart LR
 
 * Safe modifier pre-expansion
 
-Modifier applications expand directly into ordered native POO extension
+Modifier applications expand directly into ordered POO extension
 expressions.  The expansion produces ordinary functional Scheme and POO code,
 not an intermediate runtime interpreter.
 
@@ -486,7 +486,7 @@ flowchart LR
 - [ ] Every refinement expression has a distinct private stable binding.
 - [ ] Selector order follows the application; clause-local expression order
   follows the declaration.
-- [ ] Expansion emits one flat native POO chain without list, alist, =begin=,
+- [ ] Expansion emits one flat POO chain without list, alist, =begin=,
   or refinement AST intermediates.
 - [ ] Provenance retains both selector and clause-local positions.
 - [ ] Root and refinement bindings follow ordinary Gerbil phase-0 definition

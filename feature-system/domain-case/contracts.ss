@@ -8,7 +8,7 @@
 
 (export #t)
 
-(import (only-in :clan/poo/object .ref object?)
+(import (runtime: :clan/poo/object)
         (only-in :std/crypto/digest sha256)
         (only-in :std/list/list delete-duplicates/hash)
         (only-in :std/encoding/hex hex-encode)

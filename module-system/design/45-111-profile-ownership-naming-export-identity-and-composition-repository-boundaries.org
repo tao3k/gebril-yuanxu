@@ -25,7 +25,7 @@ The receipt confirmed:
 - =profiles= is the first-class POO composition strategy;
 - =use-module= is a thin module/profile-selection macro;
 - composition is flat at the call site;
-- higher-order variation belongs in POO-native profile objects and prototype
+- higher-order variation belongs in POO profile objects and prototype
   extension;
 - missing profile-authoring operators must not be invented.
 
@@ -117,7 +117,7 @@ semantic module graph.
 
 ** PooModuleIdentity
 
-=PooModuleIdentity= identifies a POO-native semantic module object.
+=PooModuleIdentity= identifies a POO semantic module object.
 
 It owns:
 
@@ -272,7 +272,7 @@ impersonate or overwrite an upstream profile export.
 
 * Profile export relation
 
-A POO module exports a profile through a native POO relation that preserves:
+A POO module exports a profile through a POO relation that preserves:
 
 - owner module identity;
 - local export name;
@@ -423,7 +423,7 @@ contracts.
 
 #+begin_src mermaid
 flowchart TD
-  GP["upstream gerbil-poo"] -->|"provides native POO primitives and prototype operations"| PC["yuanxu"]
+  GP["upstream gerbil-poo"] -->|"provides POO primitives and prototype operations"| PC["yuanxu"]
   PC -->|"owns generic module, profile, admission, and runtime contracts"| APP["Application composition"]
   WE["wendao-episteme"] -->|"exports Wendao-owned POO modules and profile revisions"| APP
   AR["Application repository"] -->|"owns deployment profiles and final use-composition binding"| APP
@@ -455,7 +455,7 @@ deduplication opportunity that erases ownership.
 
 * Explanation surface
 
-The POO-native explanation interface can answer:
+The POO explanation interface can answer:
 
 - which repository and package supplied source;
 - which POO module owns the selected profile;
@@ -479,7 +479,7 @@ Ordinary users keep the concise interface:
     application-production))
 #+end_src
 
-Profile and framework authors use verified native =gerbil-poo= objects,
+Profile and framework authors use verified runtime =gerbil-poo= objects,
 prototype operations, and typed relations.
 
 No global registry, raw manifest DSL, profile-definition macro, or package
@@ -540,7 +540,7 @@ implementation completion, not owner selection.
 
 #+begin_src mermaid
 flowchart LR
-  P["upstream gerbil-poo"] -->|"owns native POO operators"| C["yuanxu"]
+  P["upstream gerbil-poo"] -->|"owns POO operators"| C["yuanxu"]
   C -->|"defines generic Module, Profile, identity, and composition contracts"| W["wendao-episteme"]
   W -->|"exports domain Modules and Profiles"| A["final application"]
   C -->|"projects admitted runtime intents and semantic receipts"| R["runtime/deployment adapters"]
@@ -559,8 +559,8 @@ flowchart LR
 - [[file:45-83-profile-revisions-live-upgrade-and-module-reload-boundaries.org][45-83 - Profile Revisions, Live Upgrade, and Module Reload Boundaries]]
 - [[file:45-93-module-profile-selection-bundle-and-imports-closure-algebra.org][45-93 - Module Profile Selection, Bundle, and Imports Closure Algebra]]
 - [[file:45-94-user-interface-case-projection-and-reachable-imports-validation.org][45-94 - User-Interface Case Projection and Reachable Imports Validation]]
-- [[file:45-96-poo-native-module-authoring-and-thin-binding-macro-contract.org][45-96 - POO-Native Module Authoring and Thin Binding Macro Contract]]
-- [[file:45-98-gerbil-poo-native-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - Gerbil POO Native Boundary and Agentic AI Lab Adapter Minimization]]
+- [[file:45-96-poo-module-authoring-and-thin-binding-macro-contract.org][45-96 - POO-Runtime Module Authoring and Thin Binding Macro Contract]]
+- [[file:45-98-gerbil-poo-boundary-and-agentic-ai-lab-adapter-minimization.org][45-98 - Gerbil POO Runtime Boundary and Agentic AI Lab Adapter Minimization]]
 - [[file:45-100-canonical-typed-empty-poo-values-shared-prototype-copy-on-extension-and-cache-safety.org][45-100 - Canonical Typed Empty POO Values, Shared Prototype, Copy-on-Extension, and Cache Safety]]
-- [[file:45-102-native-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][45-102 - Native Prototype Precedence and Typed Relation Conflict Resolution Bridge]]
+- [[file:45-102-runtime-prototype-precedence-and-typed-relation-conflict-resolution-bridge.org][45-102 - Runtime Prototype Precedence and Typed Relation Conflict Resolution Bridge]]
 - [[file:45-110-recovery-observability-profile-projection-and-minimal-use-composition-surface.org][45-110 - Recovery and Observability Profile Projection with a Minimal Use-Composition Surface]]

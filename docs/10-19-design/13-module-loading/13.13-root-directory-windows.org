@@ -39,7 +39,7 @@ build projection and test discovery retain their existing owners.
 There is one directory namespace, not a separately populated Scenario tree.
 Its mounted branches return the existing module views: identity, lazy scope and
 independently lazy tests. Selecting tests does not link the business scope.
-Single-directory and multi-window declarations expose only their native
+Single-directory and multi-window declarations expose only their runtime
 source-qualified init export object. Mounts are slots on that object.
 
 * Macro ownership and expansion
@@ -49,7 +49,7 @@ the literal declaration through module-init-intent; this same pure parser is use
 by source admission. Window splitting uses match and delegates row/header parsing
 to the existing single-window parser. It does not evaluate author expressions.
 
-The macro derives its sole public name from the enclosing native module
+The macro derives its sole public name from the enclosing runtime module
 Context; package identity, prelude identity and window names remain distinct.
 See [[file:13.19-source-qualified-init-exports.org][13.19]] for the exact naming and consumer migration.
 
@@ -70,7 +70,7 @@ Private identifiers are fresh in the real expansion. Window slots remain lazy
 on the same object; no public mount aliases are retained. Source guards remain
 owned by the selected namespace and the existing explicit build/test operations.
 A captured ordinary object remains a snapshot, not a live filesystem view.
-Native only-in and rename-in preserve the binding's lexical context.
+Runtime only-in and rename-in preserve the binding's lexical context.
 
 * Selection, conflicts and source bounds
 
@@ -110,7 +110,7 @@ The unchanged build entry consumes an ordinary standard-library spec:
 (defbuild-script (init.build-spec core-spec))
 #+end_src
 
-Compiler tools from an installed SDK remain guarded inputs, but are not compiled
+Compiler tools from an installed Gerbil remain guarded inputs, but are not compiled
 again as contribution-package targets. Locally owned Core compiler sources still
 participate in the Core build closure. This distinction is ownership filtering,
 not an exemption from source-currentness checks.
@@ -127,11 +127,11 @@ they do not certify AWS provider behavior or a general compilation benchmark.
 The seven focused directory, window, configuration-build, build-Graph, root
 testing, selected-package and real JsonSchema-publication controls passed through
 the heap-fenced =just test-file= entry with MODULE-OK,
-HARNESS-OK, final OK and natural exit zero. The original SDK and the repository's
+HARNESS-OK, final OK and natural exit zero. The original Gerbil and the repository's
 pinned POO dependency were used; no timeout or heap allowance was increased.
-The contribution build control initially expected installed SDK tools as build
+The contribution build control initially expected installed Gerbil tools as build
 targets. Its revised assertions require both their absence from contribution
-targets and actual SDK source reads during compiler-current checking.
+targets and actual Gerbil source reads during compiler-current checking.
 
 The mounted-root AWS integration was also attempted. It hit the unchanged
 60-second Ops deadline after parent publication, Context denial and old-source

@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; An import closure describes code use, not all effects of native Scheme.
+;;; An import closure describes code use, not all effects of Scheme.
 (import :std/test :clan/poo/object
         (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
@@ -25,7 +25,7 @@
                   (write-file (path-expand role second-root)
                     (module-source-read (path-expand role first-root))))
                 '("types.ss" "objects.ss"))
-              ;; There is deliberately NO import of the first Module. A native
+              ;; There is deliberately NO import of the first Module. A runtime
               ;; initializer can still change its source through ordinary IO.
               (write-file (path-expand "config.ss" second-root)
                 (string-append

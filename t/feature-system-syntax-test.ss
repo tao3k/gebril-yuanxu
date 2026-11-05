@@ -57,7 +57,7 @@
   (resolve-feature-profile syntax-agent-profile))
 
 (def feature-system-syntax-test
-  (test-suite "POO-native Feature declaration macros"
+  (test-suite "POO Feature declaration macros"
     (yuanxu-test-case "defpoo-feature lowers to a module-owned descriptor"
       (check-equal? (.ref syntax-session-feature 'kind)
                     'feature-descriptor)

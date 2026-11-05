@@ -2,9 +2,17 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .o .+ .cc .ref .get)
+        (only-in :std/list/list find)
+        (only-in :std/source this-source-file)
+        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
+                 core-import-module core-module->prelude-context)
+        (only-in :clan/poo/object .o .+ .cc .ref .get .all-slots object::t object-slots
+                 object-read-issued? object-construction-current?)
+        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
+                 call-with-slot-read-observer slot-read-receiver slot-read-key slot-read-value)
+        (prefix-in (only-in :gerbil/runtime/mop find-method bind-method!) runtime.)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract)
+        (only-in :clan/poo/mop Type.)
         :yuanxu/feature-system/model
         :yuanxu/module-system/source/init
         :yuanxu/module-system/source/objects
@@ -12,7 +20,7 @@
         :yuanxu/module-system/interface)
 (export module-selected-graph-test)
 (def Scope
-  (yuanxu-predicate-contract 'test/selected-scope (lambda (_value) #t) (lambda (_v _c) '())))
+  (.cc Type. identity: 'test/selected-scope .element?: (lambda (_value) #t)))
 (def (publication id requirement-values feature-values (factory (lambda (_dependencies) (.o ready: #t))))
   (.o identity: id features: feature-values
       core: (.o requires: requirement-values scope-contract: Scope link: factory)))
@@ -45,8 +53,91 @@
   (with-catch (lambda (exception)
                 (call-with-output-string (lambda (port) (display-exception exception port))))
               (lambda () (thunk) "unexpected success")))
+(def (core-sample (select select-module-graph))
+  (def declarations
+    (.o app/web: (publication 'app/web (.o Schema: (requirement 'core/schema))
+                    (.o unused: (error "unselected Feature forced")))
+        core/schema: (publication 'core/schema (.o) (.o))))
+  (def c (context declarations '((yuanxu! mode: explicit :core (schema) :app (web)))))
+  (%call-with-recorded-slot-reads
+    (lambda () (select c '(app/web) (cut .ref declarations <>) void))
+    unique-roots?: #t))
+(def (core-spec-count reads)
+  (def seen (make-hash-table-eq))
+  (for-each
+    (lambda (read)
+      (check-equal? (object-read-issued? read) #t)
+      (def receiver (slot-read-receiver read))
+      (def names (map car (object-slots receiver)))
+      (when (and (= (length names) 3)
+                 (andmap (cut memq <> names) '(feature-id owner-module-id requires)))
+        (hash-put! seen receiver #t))) reads)
+  (hash-length seen))
 (def module-selected-graph-test
   (test-suite "One selected Graph for init, mandatory Core and optional Features"
+    (yuanxu-test-case "closed Core selection reuses defaults without temporary Feature specs"
+      (defvalues (graph reads) (core-sample))
+      (check-equal? (.get graph module-order) '(core/schema app/web))
+      (check-equal? (.get graph feature-order) '())
+      (check-equal? (core-spec-count reads) 0)
+      (def core-reads
+        (filter (lambda (read)
+                  (and (eq? (slot-read-key read) 'feature-id)
+                       (eq? (slot-read-value read) 'app/web/:core))) reads))
+      (def descriptor
+        (find (lambda (value) (eq? (.get value kind) 'feature-descriptor))
+              (map slot-read-receiver core-reads)))
+      (def expected (feature-descriptor
+        (.o feature-id: 'app/web/:core owner-module-id: 'app/web requires: '(core/schema/:core))))
+      (for-each (lambda (name) (check-equal? (.ref descriptor name) (.ref expected name)))
+                (.all-slots expected)))
+    (yuanxu-test-case "unknown observation retains ordinary Core Feature specifications"
+      (call-with-slot-read-observer (lambda (_read) (void))
+        (lambda ()
+          (defvalues (graph reads) (core-sample))
+          (check-equal? (.get graph module-order) '(core/schema app/web))
+          (check-equal? (core-spec-count reads) 2))))
+    (yuanxu-test-case "changed runtime initializer retains ordinary constructor effects"
+      (def original (runtime.find-method object::t #f ':init!))
+      (def calls 0)
+      (dynamic-wind
+        (lambda ()
+          (runtime.bind-method! object::t ':init!
+            (lambda (self . args) (set! calls (1+ calls)) (apply original self args)) #t))
+        (lambda ()
+          (check-equal? (object-construction-current?) #f)
+          (defvalues (graph reads) (core-sample))
+          (check-equal? (.get graph module-order) '(core/schema app/web))
+          (check-equal? (core-spec-count reads) 2)
+          (check-equal? (> calls 0) #t))
+        (lambda () (runtime.bind-method! object::t ':init! original #t)))
+      (check-equal? (object-construction-current?) #t))
+    (yuanxu-test-case "restoring an initializer cannot certify an unsafe import origin"
+      ;; Evaluate the ACTUAL module body through runtime module/import in an
+      ;; independent lexical namespace. No copied guard or fabricated reads.
+      (def body (call-with-input-file
+        (path-expand "../module-system/source/selection.ss" (path-directory (this-source-file))) read-all))
+      ;; Reproduce the source package's language, including its POO bindings.
+      ;; A runtime-only import in the real body intentionally does not bind
+      ;; syntax into an unrelated :gerbil/core-only evaluation context.
+      (parameterize ((current-expander-context
+                      (make-top-context
+                        (core-module->prelude-context
+                          (core-import-module ':tao3k/yuanxu/prelude)))))
+        (def name (gensym 'core-feature-origin))
+        (def original (runtime.find-method object::t #f ':init!))
+        (dynamic-wind
+          (lambda ()
+            (runtime.bind-method! object::t ':init!
+              (lambda (self . args) (apply original self args)) #t))
+          (lambda ()
+            (eval-syntax `(module ,name ,@body))
+            (eval-syntax `(import (only-in ,name select-module-graph))))
+          (lambda () (runtime.bind-method! object::t ':init! original #t)))
+        (check-equal? (object-construction-current?) #t)
+        (defvalues (graph reads) (core-sample (eval-syntax 'select-module-graph)))
+        (check-equal? (.get graph module-order) '(core/schema app/web))
+        (check-equal? (core-spec-count reads) 2)))
     (yuanxu-test-case "dynamic eligibility cannot mutate sources before publication initialization"
       (def current? #t)
       (def reads 0)

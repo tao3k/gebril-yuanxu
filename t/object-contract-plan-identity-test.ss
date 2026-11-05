@@ -1,6 +1,6 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Native receiver/normalization qualification, without Loader or publication.
+;;; Runtime receiver/normalization qualification, without Loader or publication.
 (import :std/test :clan/poo/object :clan/poo/object-contract
         (only-in :clan/poo/mop define-type validate Object Bool Function)
         (only-in :clan/poo/number IntegerRange)

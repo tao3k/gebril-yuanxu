@@ -1,17 +1,17 @@
-#+title: 10.11 Selected Contributions: Isolated Native Publication Controls
+#+title: 10.11 Selected Contributions: Isolated Runtime Publication Controls
 #+language: en
 #+property: DOCUMENT_ID 10.11
 #+date: [2026-10-17]
-#+property: STATUS bounded-native-fixture-not-production-loader-integration
+#+property: STATUS bounded-runtime-fixture-not-production-loader-integration
 
 * Question and executable owner
 
 Does independently collecting two selected port requirements preserve both
-origins through native dispatch and Core admission, while rejecting incomplete
+origins through runtime dispatch and Core admission, while rejecting incomplete
 collection, substituted provenance, changed sources and stale parent previews?
 
 Executable owner: [[file:../../../t/contribution-publication-isolation-test.ss][Core isolated contribution/publication test]].
-Design owner: [[file:10.10-gitea-postgresql-native-module-design.org][10.10 Gitea/PostgreSQL]]. This is a qualification
+Design owner: [[file:10.10-gitea-postgresql-runtime-module-design.org][10.10 Gitea/PostgreSQL]]. This is a qualification
 fixture, not another public configuration API. Users do not maintain its records,
 source snapshots, edge lists or publication coordinator.
 
@@ -23,7 +23,7 @@ source snapshots, edge lists or publication coordinator.
   =26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=.
 - Upstream codeload archive SHA-256:
   =b1718c8d0ebe5ddf40b5f4f55bdc60032c802a8d8124285d8583a1615a7e5eda=.
-- Native runtime and Core Justfile heap-fenced launcher; no dependency patch,
+- Runtime runtime and Core Justfile heap-fenced launcher; no dependency patch,
   compatibility shim, Loader connection, Nix build or service execution.
 - Empty temporary GERBIL_PATH; GERBIL_LOADPATH maps =clan/poo= to the pinned
   source and =core= to this checkout. Concurrent sources are not overwritten.
@@ -42,7 +42,7 @@ GERBIL_LOADPATH=/private/tmp/poo-contribution-publication-20261017/source \
 just test-file t/contribution-publication-isolation-test.ss
 #+end_src
 
-* Native path and fixture path
+* Runtime path and fixture path
 
 | Layer | Exercised implementation | Qualification limit |
 |-------+--------------------------+---------------------|
@@ -50,13 +50,13 @@ just test-file t/contribution-publication-isolation-test.ss
 | Selected/build graph | Production select-module-graph and module-build-graph | Source publications/preparation are small fixtures |
 | Contribution collector | Test-local exact edge/record/export coverage and revision fences | Not production core.contributions indexing or .selected-record linking |
 | Domain dispatch | Real .defgeneric/.defmethod-bundle and explicit fresh Generic composition | One policy family; no method collision or dynamic method-update control |
-| Admission | Public native .admit backed by Core YuanxuContract. | Small connection/plan classifier, not complete service field Contracts |
+| Admission | Public runtime .admit backed by Core YuanxuContract. | Small connection/plan classifier, not complete service field Contracts |
 | Checked publication | Production AdmissionPublication. .publish and source Context | No new .for-export adapter is installed |
 | File currentness | Real module-source-admit-current! on temporary source bytes | Local observations, not remote publisher authentication |
 
 The test constructs private metadata through ordinary .cc constructor arguments
 where lexical values must be captured. Receiver-dependent application config,
-plan and admission behavior retain native .o declarations. This is not an extra
+plan and admission behavior retain .o declarations. This is not an extra
 user-facing object layer or an inheritance requirement for plain configuration.
 The fixture resolves a one-segment export path; the multi-segment receiver walk
 in 10.10 remains proposed and needs its own mutation controls.
@@ -65,11 +65,11 @@ in 10.10 remains proposed and needs its own mutation controls.
 
 | Control | Required result |
 |---------+-----------------|
-| Operations=5433, Security=5440 | Native .admit refuses; obligation constraints retain BOTH ordered diagnostic origins and values; .publish preserves supplied previous subject |
+| Operations=5433, Security=5440 | Runtime .admit refuses; obligation constraints retain BOTH ordered diagnostic origins and values; .publish preserves supplied previous subject |
 | Omitted row and duplicated row | Exact coverage raises the expected incomplete/substituted-origin error before a publication can be created |
 | Same-labelled replacement SourceRef | Identity-bound coverage refuses; post-assembly replacement also refuses checked publication |
 | Source file edited after assembly | Production source guard rejects publication |
-| Payload changed through .put! | Native revision fence rejects the old batch |
+| Payload changed through .put! | Runtime revision fence rejects the old batch |
 | Parent plan leaves forced before fresh child definition | Child admitted preview is 5433/5433, evidence.candidate is the published subject; parent remains 5432 |
 | Cached parent plan explicitly attached to child | Connection/plan classifier refuses stale projection |
 | Final Gitea port 6000 versus server 5433 | Final connection classifier refuses |
@@ -88,9 +88,9 @@ newly re-admitted or certified current under the changed source/policy.
    runtime's :std/list/list library.
 3. Duplicate fixture compiler identities were correctly refused by the REAL
    build graph; each owner now has its own compiler identity.
-4. =record: record= in .o raised native CyclicSlot: the slot binding shadows
+4. =record: record= in .o raised runtime CyclicSlot: the slot binding shadows
    the outer name. This exposed a real flaw in the previous 10.10 design snippets.
-   Metadata capture names were corrected there; the fixture uses ordinary native
+   Metadata capture names were corrected there; the fixture uses ordinary runtime
    constructor arguments for captured metadata. MOP is not a substitute for
    checking the actual declaration semantics.
 5. A mechanical constructor edit incorrectly moved =>.+ outside declaration

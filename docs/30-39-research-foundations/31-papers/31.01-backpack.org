@@ -21,7 +21,7 @@ contexts must not accidentally share context-capturing closures.
 
 Conclusion: replacing source paths with args is insufficient. Control both
 rename-preserves-origin and changed-arguments-create-a-distinct-instance. Open
-question: which pure context-free helpers can safely share native package caches?
+question: which pure context-free helpers can safely share runtime package caches?
 
 
 * Further reading and qualification

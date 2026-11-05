@@ -8,7 +8,7 @@
 * Status
 
 Historical scenario evidence.  Its stage/clause example is not a current
-authoring contract.  RFC 164 and RFC 29 require native noun slots and the
+authoring contract.  RFC 164 and RFC 29 require runtime noun slots and the
 five module-writing constraints; RFC 45-95 requires ordinary roots to select a
 prepared aggregate Profile such as =production=.
 

@@ -7,7 +7,7 @@
 Can one thousand real Module declarations fit the existing source-only test
 budget after the owned-call projection? The fixture writes actual role files,
 imports the generated init, and invokes the selected Module's =tests .run=.
-It does not substitute directory enumeration or publication values for native
+It does not substitute directory enumeration or publication values for runtime
 expansion. The 2 GiB process heap and 1 GiB live-growth guard remain unchanged.
 
 The first thousand-module run with the preceding owned-call implementation
@@ -24,7 +24,7 @@ compiled procedures are no longer reachable elsewhere.
 [[file:../../../../../module-system/source/preparation.ss][Preparation]] previously emitted a full explicit POO import into every
 interface. An interface consequently had approximately 223 local bindings in
 this fixture. The existing =source/config-prelude= already exports Scheme and
-POO bindings with native weak-prelude semantics. Gerbil's
+POO bindings with runtime weak-prelude semantics. Gerbil's
 =core-module->prelude-context= returns the same registered prelude for the same
 module context; Core must use that mechanism rather than copy its aliases.
 
@@ -44,7 +44,7 @@ projected paths shown above. Explicit role/import bindings retain ownership
 over weak defaults. A custom contributor prelude retains the former explicit
 POO import path. No SDK table, macro binding, runtime promise or registry entry
 is removed. The prelude's source closure remains a guarded compiler dependency.
-The native publication suite passed, including two independent interface
+The runtime publication suite passed, including two independent interface
 contexts whose prelude is identity-equal to the SDK-registered POO prelude.
 The sixteen-module run reduced evaluated interface-local bindings from 3,568
 to 112 (223 to 7 per interface), while keeping the 208 private role bindings.
@@ -53,8 +53,8 @@ the binding reduction is large; the process-memory reduction is modest.
 
 * Bounded original-token ownership at publication return
 
-[[file:../../../../../module-system/source/reader.ss][The Reader]] also bounds its native recording frame to one publication.
-It identity-normalizes the returned roots and delivers one native bundle whose
+[[file:../../../../../module-system/source/reader.ss][The Reader]] also bounds its runtime recording frame to one publication.
+It identity-normalizes the returned roots and delivers one runtime bundle whose
 dependencies are those ORIGINAL tokens. First occurrence order is preserved.
 Distinct tokens for the same receiver/key must remain distinct. Every suffix,
 including an unknown callback's dependencies, stays unchanged and strongly
@@ -62,7 +62,7 @@ owned; there is no callback purity exemption here.
 
 All original observers and prechecks still run on every actual access.
 Multiple values are forwarded unchanged. A callback exception delivers its
-dependency support before rethrowing. Native replay performs the original
+dependency support before rethrowing. Runtime replay performs the original
 currentness checks and final recheck. No approval, source bytes, dispatch result
 or replay result is cached. Nonlocal continuation escape is not certified by
 this bounded return/exception protocol.
@@ -76,11 +76,11 @@ The subsequent thousand-module run with token normalization alone completed
 1,502,968,584 live bytes and 1,075,842,408 growth bytes. Its final diagnostic
 had only one observed effective-method receiver, no invocation frame and two
 related read records. This is evidence to pursue Reader/SDK ownership, not
-permission to erase the remaining native dependencies or claim capacity closure.
+permission to erase the remaining runtime dependencies or claim capacity closure.
 
-* Observe actual native survivors
+* Observe actual runtime survivors
 
-The existing trace-enabled [[file:../../../../../module-system/building/test-observation.ss][ModuleTestingProfile]] instruments native compilation
+The existing trace-enabled [[file:../../../../../module-system/building/test-observation.ss][ModuleTestingProfile]] instruments runtime compilation
 without changing results. Weak-key tables track actual Reader contexts,
 expanded bodies and compiled programs; values are closed role labels only.
 Rows report surviving contexts, local binding counts, nonempty code pointers,
@@ -96,12 +96,12 @@ All tracked expanded bodies and compiled programs had disappeared, and all
 completed code pointers were empty. The remaining local bindings were 80 for
 Types, 64 for Objects, 64 for Config and 112 for Interface. This contradicts
 the hypothesis that completed Reader IR alone explains the remaining growth;
-it does not justify discarding any binding or native dependency.
+it does not justify discarding any binding or runtime dependency.
 
 The same final Graph read reported 37,772 direct dependency references and
 7,210 distinct tokens. Its scalar attribution included 208 authoring receipts,
 128 classification receipts and 128 validation receipts. These receivers are
-reachable through the real native dependencies; counts do not establish their
+reachable through the real runtime dependencies; counts do not establish their
 exclusive retained byte cost. Their Contract, candidate and Context support
 must be preserved before any further ownership reduction can be justified.
 
@@ -113,7 +113,7 @@ It is not a pass and does not establish a statistically stable capacity gain
 over 315 or 325: GC sampling and in-flight work affect the refusal position.
 
 The unwinding trace had zero surviving observed CLOS carriers/read records.
-Each role had 332 native contexts. Only the currently unsuccessful declaration
+Each role had 332 runtime contexts. Only the currently unsuccessful declaration
 kept one code pointer and expanded body per role; all tracked compiled programs
 were gone. Successful declarations had no remaining tracked expanded bodies.
 Preserving that unsuccessful declaration's code is intentional: post-evaluation
@@ -122,13 +122,13 @@ The original fixture directory was removed after failure.
 
 The next ownership audit must follow the real semantic path, not delete SDK
 state: style-policy validation, authoring admission, public value/Context
-contracts, their receipt candidates, and the native dependency graph that
+contracts, their receipt candidates, and the runtime dependency graph that
 retains them. A context-free receipt label alone does not prove non-escape or
 complete Contract support. Existing OwnedReads/PublicationReads coverage laws
 are prerequisites for a bounded producer projection; they do not certify these
 additional factories. No new projection for those receipts is claimed here.
 
-* Quint, Lean and native checks have separate jobs
+* Quint, Lean and runtime checks have separate jobs
 
 [[file:../../../../../dev/proofs/quint/PublicationReads.qnt][PublicationReads]] explores finite completion/failure, mutation and publication
 schedules. Controls omit a distinct same-key token, lose failure support,
@@ -145,17 +145,17 @@ suffixes. It does not prove a GC byte bound or certify the SDK prelude cache.
 identity and absence of omitted private registration before cutting a shared
 SDK subtree. A matching name alone grants neither condition.
 
-The native publication test checks shared prelude identity, absence of copied
+The runtime publication test checks shared prelude identity, absence of copied
 local =.o= aliases, retained explicit =.def=, original-token uniqueness and
 refusal after actual SourceRef mutation. Existing macro reuse, deferred Build,
 failed source admission and CLOS policy/Contract tests remain separate gates.
-The complete native publication suite and focused CLOS dispatch suite passed,
-with required module/harness/final markers and no native error/overflow marker.
+The complete runtime publication suite and focused CLOS dispatch suite passed,
+with required module/harness/final markers and no runtime error/overflow marker.
 The sixteen-module init-owned run also passed its same-Graph, cold-scope,
 stale-source refusal and fixture cleanup assertions. The failed thousand run
 remains a failed gate; passing these focused checks does not promote it.
 The real init-owned JsonSchema/Funflow/AWS aggregate also passed: seven module
-markers, two harness markers, two final OK markers, exit zero, and no native
+markers, two harness markers, two final OK markers, exit zero, and no runtime
 error/overflow marker. It retained the observed/progress-aware execution path,
 real Schema transition, stale evidence refusal, previous published value on
 failure, and fixture cleanup. This is functional regression evidence, not a

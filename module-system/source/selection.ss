@@ -3,13 +3,50 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module Core remains mandatory. Internal Core nodes let the existing Feature
 ;;; resolver check one selected dependency Graph without another ordering policy.
-(import (only-in :clan/poo/object .o .+ .ref .slot? .all-slots object?)
+(import (runtime: :clan/poo/object)
+        (only-in :clan/poo/slot-layout make-slot-cache)
+        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
+        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
         (only-in :yuanxu/module-system/graph/funs module-closure)
         (only-in :yuanxu/feature-system/model feature-descriptor feature-selection feature-profile)
         (only-in :yuanxu/feature-system/resolver resolve-feature-profile)
         (only-in :yuanxu/feature-system/feature-manifest feature-manifest-bundle)
         (only-in :yuanxu/feature-system/composition feature-composition-plan))
 (export select-module-graph)
+
+;; One complete value from the EXISTING Feature publisher. Runtime .cc copies
+;; direct persistent specifications, never this prototype's evaluated cells.
+;; No business module, optional Feature or acceptance result is materialized.
+(def runtime-construction-current? object-construction-current?)
+(def core-feature-prototype
+  ;; A changed constructor or unknown callback at IMPORT time cannot mint a
+  ;; trusted template merely by restoring its metadata before the first use.
+  (and (owned-read-function-scope?) (runtime-construction-current?)
+       (feature-descriptor
+         (.o feature-id: 'module-system/:core owner-module-id: 'module-system))))
+(def core-feature-reads
+  ;; Authenticate the completed FLAT descriptor, whose constants no longer
+  ;; depend on the temporary input specification. Its input is not a live
+  ;; prototype: feature-descriptor copies it into independent constant slots.
+  (if (not core-feature-prototype) '()
+    (let-values (((_ reads)
+                (%call-with-recorded-slot-reads
+                  (lambda ()
+                    (for-each (cut .ref core-feature-prototype <>)
+                              (.all-slots core-feature-prototype)))
+                  unique-roots?: #t)))
+      reads)))
+(def (core-feature-descriptor id owner required)
+  (def closed?
+    (and core-feature-prototype (owned-read-function-scope?) (runtime-construction-current?)
+         (with-catch (lambda (_changed-template) #f)
+           (lambda () (reobserve-slot-reads! core-feature-reads) #t))))
+  (if closed?
+    (.cc core-feature-prototype feature-id: id owner-module-id: owner
+      requires: (map values required))
+    ;; Unknown observers/initializers keep the original specification reads
+    ;; and constructor effects. Never catch a constructor's own exception.
+    (feature-descriptor (.o feature-id: id owner-module-id: owner requires: required))))
 (def (core-node-id id)
   ;; ':' cannot occur in an admitted module path or init feature name.
   (string->symbol (string-append (symbol->string id) "/:core")))
@@ -21,6 +58,10 @@
             (char=? (string-ref text 0) #\+))))
 (def (select-module-graph context root-values read-publication current!
                           (read-dependencies #f))
+  ;; Candidate-owned sites cannot retain its last publication in a global root.
+  ;; Runtime shared shapes remain reusable; optional payloads stay demand-filled.
+  (def publication-core-site (make-slot-cache 'core))
+  (def core-requires-site (make-slot-cache 'requires))
   ;; Resolve each selected declaration once for this candidate Graph. Reuse the
   ;; actual publication object for Core/Feature edges, not a source observation
   ;; or an admission result across declaration expansion/initialization.
@@ -46,7 +87,9 @@
                           ;; reader. Core/Feature resolution must not reread it.
                           (hash-put! publications id value)
                           ids))
-                      (let (requirements (.ref (.ref (publication-for id) 'core) 'requires))
+                      (let (requirements (.ref/inline
+                              (.ref/inline (publication-for id) publication-core-site)
+                              core-requires-site))
                         (map (lambda (alias) (.ref (.ref requirements alias) 'module-id))
                              (.all-slots requirements)))))
                (map (lambda (required)
@@ -101,12 +144,13 @@
     (let* ((core-selections
             (map (lambda (id)
                    (let* ((key (core-node-id id))
-                          (requirements (.ref (.ref (publication-for id) 'core) 'requires))
+                          (requirements (.ref/inline
+                            (.ref/inline (publication-for id) publication-core-site)
+                            core-requires-site))
                           (required (map (lambda (alias)
                                            (core-node-id (.ref (.ref requirements alias) 'module-id)))
                                          (.all-slots requirements)))
-                          (descriptor-value (feature-descriptor
-                                       (.o feature-id: key owner-module-id: id requires: required))))
+                          (descriptor-value (core-feature-descriptor key id required)))
                      (hash-put! nodes key (.o kind: 'module-core identity: id owner: id
                                              publication: (publication-for id)))
                      (feature-selection descriptor-value))) modules))
@@ -135,7 +179,8 @@
                      (.ref (.ref row 'selection) 'selection-flags)))))
               ;; Independent Features follow init declaration order, not DFS or
               ;; publication slot enumeration order. Dependencies still win.
-              (filter (lambda (id) (memq id modules))
+              ;; The closure populated publications for each visited Module.
+              (filter (lambda (id) (hash-key? publications id))
                       (map (cut .ref <> 'identity) decision-values)))))
            (resolution (resolve-feature-profile
                         (feature-profile 'module-selection (append core-selections feature-selections))))

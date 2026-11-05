@@ -16,7 +16,7 @@ Organization Bundle.  The kernel turns immutable Bundle values into replayable
 state transitions with explicit identity, epoch, validation, conflict, and
 receipt semantics.
 
-The public surface remains POO-native.  The kernel does not mutate Bundle
+The public surface remains POO.  The kernel does not mutate Bundle
 objects, introduce a parallel canonical representation, or embed runtime
 language state.
 
@@ -28,7 +28,7 @@ This feature owns:
 - =open=, =validate=, and compare-and-advance operations;
 - monotonic kernel epochs;
 - identity and epoch conflict detection;
-- deterministic POO-native kernel receipts;
+- deterministic POO kernel receipts;
 - focused positive, conflict, rejection, no-op, replay, and immutability tests.
 
 It does not own persistence, locks, threads, C handles, C ABI layout, Python

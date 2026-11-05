@@ -3,11 +3,11 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Boundary: POO-native Module profile selection and pure ProfileBundle algebra.
+;;; Boundary: POO Module profile selection and pure ProfileBundle algebra.
 ;;; Invariant: selection indexes are built once by the Module owner; composition
 ;;; neither discovers packages nor executes Runtime behavior.
 
-(import (only-in :clan/poo/object .all-slots .mix .o .ref .slot? object?)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop Type. define-type element? validate)
         (only-in :std/error deferror-class)
         (only-in :std/list/list append-map delete-duplicates/hash every filter-map)
@@ -126,7 +126,7 @@
        (eq? (.ref value 'kind) kind)))
 
 ;;; A Stage space is the progressive-disclosure boundary: the space is always
-;;; a POO object so named stages inherit and override natively, while each slot
+;;; a POO object so named stages inherit and override runtimely, while each slot
 ;;; may remain an inert data value.  An object-valued slot opts into recursive
 ;;; POO extension.  Executable procedures are never Stage data.
 (def (yuanxu-stage-value-shape? value)
@@ -295,9 +295,9 @@
 
 ;;; Stage spaces are POO objects whose slot names are Scenario stage names.
 ;;; Earlier operands retain normal composition precedence; a derived Profile
-;;; refines a stage explicitly with native `=>.+` before entering this merge.
+;;; refines a stage explicitly with runtime `=>.+` before entering this merge.
 ;;; Empty Stage spaces carry no semantics, so discard them before asking the
-;;; native POO engine for one flat precedence list.  This avoids manufacturing
+;;; POO engine for one flat precedence list.  This avoids manufacturing
 ;;; one empty object and one prototype layer per selected Profile.
 (def (yuanxu-compose-stage-spaces stage-spaces)
   (let (effective-stage-spaces
@@ -382,7 +382,7 @@
 
 (def (yuanxu-direct-profile-bundle profile)
   (unless (object? profile)
-    (error "profiles composition accepts only POO-native Profile values"
+    (error "profiles composition accepts only POO Profile values"
            profile))
   (let (profile-identity-value (yuanxu-profile-identity profile))
     (yuanxu-profile-bundle
@@ -523,5 +523,5 @@
 
 (def (compose strategy . operands)
   (unless (element? YuanxuProfileCompositionStrategy strategy)
-    (error "compose requires a POO-native composition strategy" strategy))
+    (error "compose requires a POO composition strategy" strategy))
   ((.ref strategy 'compose) operands))

@@ -4,7 +4,7 @@
 (export prepare-test)
 
 (def prepare-test
-  (test-suite "Native Scheme qualification preparation"
+  (test-suite "Runtime Scheme qualification preparation"
     (test-case "extract reviewed Scheme into an explicit private fixture directory"
       (def destination (getenv "CONTRACT_FIXTURE_DIR"))
       (unless destination

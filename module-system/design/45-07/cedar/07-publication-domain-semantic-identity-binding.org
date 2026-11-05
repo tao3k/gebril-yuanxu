@@ -1,0 +1,119 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Publication-domain semantic-identity binding
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Publication-domain semantic-identity binding
+
+** Publication-domain semantic-identity requirement
+
+A registered checkpoint watermark MUST bind its descriptor to the exact
+authoritative publication domain whose validation semantics the verifier will
+execute.  Matching only publication-domain identity and authority identity is
+insufficient: an independently registered descriptor can retain both values
+while substituting a different publication-domain semantic identity.
+
+This identity is the semantic identity of the publication-domain validator.  It
+MUST NOT be equated with the Cedar input content semantic identity or with the
+registry trust-root semantic identity; those identities have distinct owners.
+
+** Publication-domain semantic-substitution counterexample
+
+=RegisteredCheckpointWatermarkEvidence= previously established descriptor
+registration, publication-domain identity equality, and authority equality.  It
+did not relate that descriptor to the intended
+=AuthoritativeContextPublicationDomain=.  Therefore a descriptor with the same
+domain and authority identities but a different =semanticIdentity= could still
+form valid registered evidence.
+
+=registeredCheckpointWatermarkPermitsDomainSemanticSubstitution= constructs
+that witness using the real checkpoint-watermark structures.  The mismatch is
+not a hypothetical parser state: it is inhabited by the existing Lean model.
+
+** Typst model
+
+#+begin_export typst
+$
+  "DomainBoundWatermark"(e, d) :=
+    e."descriptor" = "project-domain-descriptor"(d)
+
+  "DomainBoundWatermark"(e, d)
+  implies
+  e."descriptor"."semantic-identity" = d."semantic-identity"
+
+  e."descriptor"."domain-id" = d."domain-id"
+  and e."descriptor"."authority-id" = d."authority-id"
+  and e."descriptor"."semantic-identity" != d."semantic-identity"
+  implies not "DomainBoundWatermark"(e, d)
+$
+#+end_export
+
+** Semantic-identity closure
+
+#+begin_src mermaid
+flowchart LR
+  D["Intended publication domain<br/>domain + authority + semantic identity"]
+  P["Canonical descriptor projection"]
+  R["Registered watermark evidence<br/>domain + authority matched"]
+  C["Publication-domain-bound evidence"]
+  X["Semantic substitution rejected"]
+
+  D -->|"project exact descriptor"| P
+  P -->|"status: identity-preserving"| C
+  R -->|"status: insufficient alone"| C
+  R -.->|"same domain/authority; different semantics"| X
+  C -->|"semantic identity theorem"| X
+#+end_src
+
+** Publication-domain semantic-identity decision
+
+- Preserve =RegisteredCheckpointWatermarkEvidence= as the weaker executable
+  model and as the owner of the substitution counterexample.
+- Strengthen the existing v1 closure with
+  =PublicationDomainBoundRegisteredCheckpointWatermarkEvidence=.  Its
+  =descriptorMatchesDomain= field binds the registered descriptor to the exact
+  projection of the intended publication domain.
+- Derive semantic-identity equality from that object equality.  Do not create a
+  V2 compatibility surface and do not conflate the three semantic-identity
+  domains.
+
+** Closure checklist
+
+- [X] Distinguish publication-domain, Cedar-content, and registry semantic
+  identities by owner.
+- [X] Construct same-domain/same-authority semantic substitution using the real
+  registered-watermark structures.
+- [X] Bind registered evidence to the exact intended publication-domain
+  descriptor projection.
+- [X] Prove bound evidence preserves publication-domain semantic identity.
+- [X] Prove a mismatched semantic identity cannot satisfy the closed evidence.
+
+** Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.CheckpointWatermarkRecoveryClosure= exited 0 for 6
+  jobs with no warning or error.
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI rejected a
+  single-source request with =axle-source-set-mismatch= and exit 2.  With the
+  exact four-source transitive envelope and 18 explicit root declarations it
+  accepted 92 declarations: 38 source declarations, 38 environment
+  declarations, 0 proof-base declarations/imports, no failed declaration, and
+  no Lean diagnostic.  Closure digest:
+  =sha256:b2c711127f134cdf07d490eaed08056081e4c3c3567e0c93dfb532dd9ce2e827=;
+  bundle digest:
+  =sha256:cf1c2b3f4d520786115e4db790d8d240d9cf5715205a45c826f94d5d48aedb50=;
+  canonical source digest:
+  =sha256:7dec04a1cb6f91b6af7fedefbb58855726de0b95d0a7f1d308f8d417340e97ba=;
+  independent bundle digest:
+  =sha256:6dd40c6616a099bc4c71c36a12bab5eb596abae2783bb57f3ba83190ca7fedf6=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
+  build= exited 0 for 587 jobs.  Both reported only the existing
+  =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
+- After assigning unique document-local heading targets, =asp org lint=
+  accepted the RFC with =[ok] orgize lint=.
+- =git diff --check= and =git diff --cached --check= both exited 0.
+

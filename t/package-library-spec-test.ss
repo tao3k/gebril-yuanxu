@@ -2,7 +2,7 @@
 (import :std/test
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/source this-source-file)
-        (only-in "../core-spec.ss" core-public-roots)
+        (only-in "../core-spec.ss" core-spec)
         (only-in :gerbil/expander expander-context-id)
         (only-in :yuanxu/module-system/building/source-closure package-library-spec))
 (export package-library-spec-test)
@@ -10,13 +10,16 @@
   (call-with-output-file (path-expand name root) (lambda (port) (display text port))))
 (def package-library-spec-test
   (test-suite "Selected package source projection"
-    (test-case "public Funflow facade includes command descriptors without compiling init"
+    (test-case "declared Make targets cover the public Funflow import closure"
       (def roots
         (package-library-spec
-          (path-expand ".." (path-directory (this-source-file))) 'yuanxu core-public-roots))
+          (path-expand ".." (path-directory (this-source-file))) 'yuanxu
+          '("modules/funflow/control-plane/api.ss" "modules/funflow/scenario.ss"
+            "modules/funflow/workload.ss" "modules/funflow/bundle-v1.ss")))
       (check-equal? (and (member "modules/funflow/control-plane/api" roots) #t) #t)
       (check-equal? (and (member "modules/funflow/control-plane/runtime-command-descriptor" roots) #t) #t)
-      (check-equal? (member "init" roots) #f))
+      (check-equal? (filter (lambda (target) (not (member target core-spec))) roots) '())
+      (check-equal? (member "init" core-spec) #f))
     (test-case "shared imports are projected once in dependency order; unused sources stay lazy"
       (call-with-temporary-directory "package-library-"
         (lambda (root)

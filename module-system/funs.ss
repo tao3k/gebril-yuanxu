@@ -3,10 +3,10 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Pure Module System queries over native slots. No source file is loaded and no
+;;; Pure Module System queries over runtime slots. No source file is loaded and no
 ;;; product-specific descriptor is admitted here.
 
-(import (only-in :clan/poo/object .ref))
+(import (runtime: :clan/poo/object))
 
 (export yuanxu-module-phase-file
         yuanxu-module-hook-values

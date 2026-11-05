@@ -1,7 +1,7 @@
 #+title: 32.15 Model-directed source admission and cache optimization
 #+language: en
 #+property: DOCUMENT_ID 32.15
-#+property: STATUS formal-qualified-native-correspondence-open
+#+property: STATUS formal-qualified-runtime-correspondence-open
 #+date: [2026-10-18]
 
 * Correct the method before optimizing another callback
@@ -30,7 +30,7 @@ The [[https://github.com/tao3k/gerbil-poo/pull/13][companion Gerbil PR 13]] head
 one intervening commit touching support/syntax, declaration examples/tests and
 documentation, with no change to object.ss or slot-observation.ss. This is narrow
 MOP source correspondence, not qualification of all latest macro behavior or
-exact-head native CI. Scheme dependency pins are not silently upgraded here.
+exact-head runtime CI. Scheme dependency pins are not silently upgraded here.
 
 * Three mechanisms, not one cache
 
@@ -133,14 +133,14 @@ This is the next design question, before another Scheme performance patch.
   not by themselves prevent an external process from editing a file. Atomic
   filesystem snapshots/concurrent source publication are not proved here.
 - MOP observations and publication collection cover every required source;
-  receiver/revision encodings correspond to actual reference identity; native
+  receiver/revision encodings correspond to actual reference identity; runtime
   cache hits replay all dependencies. The finite omission mutant only refutes
   one violated coverage case; it does not prove the collector complete.
-- Actual native Contract normalization, callbacks, cold/hit behavior and failures
+- Actual Contract normalization, callbacks, cold/hit behavior and failures
   match the modeled events. Existing real Scenario controls are independent
   evidence. The new replay-count control now passes after matching actual emitted
   read events rather than an unnormalized fixture path. This still does not
-  close full native refinement or performance acceptance.
+  close full runtime refinement or performance acceptance.
 - The finite model covers one shared source and one parent/child pair. Lean's
   finite-list laws generalize requirement counts, not arbitrary concurrent
   services, temporal behavior, Loader integration or CPU costs.
@@ -156,7 +156,7 @@ collector accepted a function inspect, which called the replaceable context
 admit-current method while byte reuse remained enabled. A negative context first
 called module-source-admit-current! for context.json, then rewrote that file.
 The collector reused the earlier bytes and returned a receipt instead of raising
-the expected stale-source error. The native negative gate failed at Error? = false;
+the expected stale-source error. The runtime negative gate failed at Error? = false;
 this is a real Scheme counterexample, not a fabricated evidence record.
 
 This is the cross-effect model counterexample embedded inside what had been
@@ -165,7 +165,7 @@ its final-window merge were withdrawn. Replaceable context checking runs outside
 the byte window; the existing collector performs its independent fresh final
 pass afterwards. No assertion or deadline was relaxed. The 614-open rows remain
 historical rejected-candidate evidence, not the count of the repaired adapter.
-A new performance comparison is required after native correspondence passes.
+A new performance comparison is required after runtime correspondence passes.
 
 This is the concrete benefit of modeling first: it rejects a locally cheaper
 cache boundary whose purity premise does not hold at the public POO protocol.
@@ -183,7 +183,7 @@ source-kind checks and arbitrary external edits still require further correspond
 Core built the exact PR dependency and all imported models with the existing
 whole-project shape/axiom audit. The first full Quint integration passed 20 cases:
 four positive finite checks, fifteen matched mutants and one acceptance witness.
-This is proof/model evidence for its recorded source hashes, not native equivalence.
+This is proof/model evidence for its recorded source hashes, not runtime equivalence.
 After the callback-boundary correction and source-model consolidation the final
 gates must be rerun against the new hashes before a new receipt is admitted.
 
@@ -207,17 +207,17 @@ committed. Whole-Core build success is local evidence, not exact-head remote CI.
 |------+--------------|
 | Core Lean aggregate, final 6e6a706 dependency | 138 build tasks; whole-closure shape/axiom audit passed |
 | Core Quint catalog | 20 cases passed: four positives, fifteen mutants, one non-vacuous acceptance witness |
-| Native source admission | 6 cases passed, including refusal after an effectful currentness callback |
-| Native source observations | 6 cases passed, including same-window replay reuse and immediate post-effect refusal |
-| Native read/replay consumers | 16 cases passed |
+| Runtime source admission | 6 cases passed, including refusal after an effectful currentness callback |
+| Runtime source observations | 6 cases passed, including same-window replay reuse and immediate post-effect refusal |
+| Runtime read/replay consumers | 16 cases passed |
 | Real Scenario cost/semantic controls | 3 cases passed, including cold/warm, parent cache, child obligation and lazy branch |
 
-All native gates use the default runtime through the serial heap-fenced Just
+All runtime gates use the default runtime through the serial heap-fenced Just
 entrypoints, with MODULE-OK, HARNESS-OK, final OK and no error/overflow marker.
 The negative callback run is retained; only the subsequent repaired run passes.
 The final Quint receipt binds the exact dependency declarations/lock/toolchain,
 Core's existing source model, the Scheme guard owners and consumer tests.
-Raw receipts/logs remain local. These 31 native cases and finite models are not
+Raw receipts/logs remain local. These 31 runtime cases and finite models are not
 the full product test suite, remote CI, observer-completeness proof or Loader acceptance.
 
 The repaired real Scenario has 718 opens in both cold/warm counter runs:
@@ -267,7 +267,7 @@ current hashes after the run. The 20-case integration result remains separately
 recorded with its earlier pin and complete-source hashes.
 
 Core's final exact-PR aggregate build completed 138 tasks and passed the
-whole-closure axiom/shape audit. The 31 focused native controls remain current
+whole-closure axiom/shape audit. The 31 focused runtime controls remain current
 for the unchanged owned Scheme sources; they are not relabeled as tests of the
 separate author's in-progress changes. No commits, pushes, Loader integration
 or claim of lower latency are part of this qualification.

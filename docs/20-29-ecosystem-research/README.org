@@ -55,8 +55,8 @@ implementation satisfies the paper's model or theorem.
 - [[file:../10-19-design/10-configuration/10.04-module-system-design-questions.org][Module-system interfaces, uniform context, contributions and invalidation]].
 - [[file:../10-19-design/10-configuration/10.05-guestbook-context-and-contribution-design.org][Guestbook: lexical context candidates, five improvements and effective preview]].
 - [[file:../10-19-design/10-configuration/10.06-human-agent-module-authoring.org][Human-Agent module creation, extension and review as a design goal]].
-- [[file:../10-19-design/10-configuration/10.07-guestbook-data-input-and-object-construction.org][Guestbook JSON/Scheme input, native Contracts, defaults, bindings and object construction]].
-- [[file:../10-19-design/10-configuration/10.08-guestbook-construction-protocol.org][Concrete native constructor, Contract metadata and template publication design]].
+- [[file:../10-19-design/10-configuration/10.07-guestbook-data-input-and-object-construction.org][Guestbook JSON/Scheme input, Contracts, defaults, bindings and object construction]].
+- [[file:../10-19-design/10-configuration/10.08-guestbook-construction-protocol.org][Concrete runtime constructor, Contract metadata and template publication design]].
 - [[file:../10-19-design/10-configuration/10.09-guestbook-construction-reflection.org][Constructor research lineage, real cases, limitations and Human-Agent controls]].
 - [[file:../10-19-design/10-configuration/10.20-module-system-assurance.org][Module assurance guarantees, real Gitea/PostgreSQL evidence and limits of immutability]].
 - [[file:../../module-system/design/08-infrastructure-platforms-and-design-gates.org][Architecture synthesis and gates before implementation]].

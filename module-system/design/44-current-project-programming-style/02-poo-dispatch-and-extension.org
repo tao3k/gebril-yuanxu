@@ -7,12 +7,12 @@
 * Public object law
 
 The ordinary surface consists of noun-valued slots such as =events=, =edges=,
-=trajectories=, =profiles= and =queries=.  Native =gerbil-poo= slot algebra
+=trajectories=, =profiles= and =queries=.  Runtime =gerbil-poo= slot algebra
 expresses default values, functional refinement, nested-object refinement and
 ordinary override.  Do not publish =add-*=, =remove-*=, =replace-*= or a patch
 language that restates those operations.
 
-* Native lexical slot law
+* Runtime lexical slot law
 
 ** Start from a maintained use case, not from an extension operator
 
@@ -33,7 +33,7 @@ extensions have separate prototype/Contract requirements.
 Simple configuration must be a first-class path. The suggested 80%/90% ordinary
 configuration share is a user-experience hypothesis, not a measured distribution
 or a target quota. Different users and Scenarios need different disclosure levels.
-The implementation may preserve intermediate objects through native refinement;
+The implementation may preserve intermediate objects through runtime refinement;
 that does not require ordinary authors to write those intermediate operations.
 
 Every configuration example must state whether a later upstream change is
@@ -43,7 +43,7 @@ must support that business distinction, not substitute for it.
 
 ** Receiver semantics supporting those use cases
 
-Use gerbil-poo's native lexical slot references for relationships between an
+Use gerbil-poo's runtime lexical slot references for relationships between an
 outer object and a nested object. A nested Pipeline can compute =checks= as
 =(list build test package)= from its enclosing effective Profile. Those names
 are receiver-aware slot identifiers, not eagerly extracted parent values.
@@ -51,13 +51,20 @@ Inheritance must retain the effective receiver and receiver-local lazy cache.
 Do not replace this relationship with a fixed parent list, manual extraction/
 reinsertion, or an ad hoc self/super hook in ordinary configuration.
 
-Native lexical shadowing still applies when an inner object defines the same
+Runtime lexical shadowing still applies when an inner object defines the same
 slot name. Preserve syntax objects/bindings through macros; textual identifier
 substitution is not equivalent. At a real function boundary, pass the effective
 receiver/values explicitly rather than assuming a free slot name is available.
 The [[file:../164-pipeline-receiver-cache-validation.org][pinned-source receiver/cache controls]] preserve the explicit-receiver baseline,
 the shorter lexical variants and the stale-parent-list negative control.
-This law is existing native POO semantics, not an unimplemented module adapter.
+This law is existing POO semantics, not an unimplemented module adapter.
+
+The native =self:= binder names the final receiver. A per-slot binder such as
+=(flags (sup) ...)=, or =super: inherited=, names the current slot's inherited
+computation; it does not name a containing namespace. Keyword =flags: => f=
+accepts one transform expression. For extra arguments use
+=(flags => append '("--debug"))= or a unary functional combinator. See
+[[file:../../../docs/10-19-design/13-module-loading/13.35-haumea-and-poo-namespace-projection.org][13.35 leaf receiver and namespace scope]] and the native leaf/path controls.
 
 * Dispatch ownership
 
@@ -74,7 +81,7 @@ dispatch or a function.  A base Provider method fails closed for unsupported
 crossings; symbolic =case= and provider-name tables are not substitutes.
 
 Use declarative =.defgeneric= and =.defmethod= for normal CLOS authoring.
-Native prototype parameters use =(value (prototype NativePrototype.))=; real
+Runtime prototype parameters use =(value (prototype RuntimePrototype.))=; real
 CLOS class parameters retain =(value ClosClass)=. Their lowering uses
 =poo-clos-prototype-specializer= and =poo-clos-class-specializer= respectively.
 Handwritten specializer lists and invocation-frame lambdas belong to kernel/

@@ -1,7 +1,7 @@
 #+title: Independent Session Attempt and Context Input Implementation
 #+date: [2026-10-10]
 #+language: en
-#+property: STATUS pure-native-protocol-qualified-locally
+#+property: STATUS pure-runtime-protocol-qualified-locally
 #+begin_comment
 SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 * Owned public roles
 
-Session remains an independent Module. =objects-attempt.ss= contributes native
+Session remains an independent Module. =objects-attempt.ss= contributes runtime
 =SessionInputRef.=, =SessionTask.=, =SessionAttempt.= and =SessionSchedule.=
 proposals to =objects.ss=. =types.ss= now defines their bounded input/task/schedule
 Types and routing/capacity invariants. =funs-attempt.ss= closes through =funs.ss=
@@ -49,7 +49,7 @@ Context's =funs-session.ss= produces an independent =SessionInputRef.= after
 replaying the supplied original source bytes and exact Scope. A Session-bound
 Scope is required. Context owns source/Query interpretation; Session preserves
 references. =receipt-ref= identifies a producer receipt to resolve at publication;
-caller creation or native shape admission does not authenticate that receipt.
+caller creation or runtime shape admission does not authenticate that receipt.
 
 Session preserves opaque =anchor-refs= for exact routing. Context now constructs
 those references from parser-owned Org =:ID:= spans after source/Scope replay.
@@ -60,13 +60,13 @@ the remaining authenticated-source/provider/backend qualification.
 * Executable qualification
 
 The canonical normal-compiler PackageSpec build includes the new source roles.
-Eight native Session cases cover textual identity/anchor preservation, eager
+Eight runtime Session cases cover textual identity/anchor preservation, eager
 input copy, wrong request/Task/Turn/generation/Session/input/anchor rejection,
 foreign consumer claims, once-per-Attempt completion, recovery obligations,
 reconciliation/retry and closed/exhausted refusal. Thirteen Context Delta cases
 cover existing patch controls plus real-byte incremental/full equality, bounded
 local reuse, forged caches and source-replayed Context-to-Session input.
-Native tests use =just test-file= and require =MODULE-OK=, =HARNESS-OK= and final
+Runtime tests use =just test-file= and require =MODULE-OK=, =HARNESS-OK= and final
 =OK=. Local qualification compiles only test artifacts with the previously
 recorded O0 setting; production modules use the unchanged default compiler.
 
@@ -74,8 +74,8 @@ recorded O0 setting; production modules use the unchanged default compiler.
 inventories 13 theorems including generated declarations with standard Lean
 axioms only. CI builds the separate =AgenticAILabAttemptProof= target. The finite
 model and matched controls are documented in [[file:context-delta-lean-quint-model-design.org][the Context Delta model receipt]].
-Source hash/invariant binding proves metadata freshness only. The native controls
-are matched by condition; automated model trace-to-native replay is still absent.
+Source hash/invariant binding proves metadata freshness only. The runtime controls
+are matched by condition; automated model trace-to-runtime replay is still absent.
 
 * Remaining production gate
 

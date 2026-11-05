@@ -25,7 +25,7 @@ owned by the project programming-style and macro-governance RFCs.
 
 * Central decision
 
-Functions and native POO objects remain the default abstractions.
+Functions and POO objects remain the default abstractions.
 
 When a macro has already been admitted because necessary syntax or
 phase semantics cannot be represented adequately by those defaults,
@@ -41,12 +41,12 @@ semantic identity, determinism, cache soundness, or replayability.
 This RFC inherits without redefining these rules:
 
 - public macros are a small RFC-reviewed surface;
-- public extension and Module semantics remain POO-native;
+- public extension and Module semantics remain POO;
 - business and domain logic belongs in functions and POO values;
 - internal macros may generate structurally repetitive POO object
   families, Contract projections, and declarations;
-- expansion produces ordinary POO-native or functional code;
-- a macro that merely renames or wraps a native POO operation is
+- expansion produces ordinary POO or functional code;
+- a macro that merely renames or wraps a POO operation is
   rejected as redundant.
 
 This document supplies evidence for admitted expansions.  It cannot be
@@ -113,7 +113,7 @@ An admitted result identifies:
 - output Contract and canonical identity schema;
 - an expansion receipt linking input and output evidence.
 
-Expansion output remains ordinary POO-native or functional code.  The
+Expansion output remains ordinary POO or functional code.  The
 receipt does not establish a second runtime object model or macro-only
 semantic layer.
 
@@ -189,7 +189,7 @@ inspection of the diagnostic does not.
 The ordinary public Module interface remains =use-composition=,
 =compose profiles=, and =use-module=.
 
-An advanced author implements domain behavior with native POO values and
+An advanced author implements domain behavior with POO values and
 functions.  An admitted macro projects only the necessary syntax or
 phase semantics and expands to those ordinary foundations.
 
@@ -201,9 +201,9 @@ object model, compile-time patch language, or generic declaration DSL.
 - [ ] Apply the macro-admission rules in
   [[file:44-current-project-programming-style.org][44]] before applying
   this evidence contract.
-- [ ] Keep functions and native POO values as the default abstractions.
+- [ ] Keep functions and POO values as the default abstractions.
 - [ ] Keep the public macro surface small and separately RFC-admitted.
-- [ ] Expand to ordinary POO-native or functional code.
+- [ ] Expand to ordinary POO or functional code.
 - [ ] Identify source syntax, macro binding, phase, hygienic context,
   dependencies, providers, expander, compiler, and Contract.
 - [ ] Exclude ambient environment, time, randomness, filesystem state,
@@ -222,7 +222,7 @@ object model, compile-time patch language, or generic declaration DSL.
   and generated-evidence lineage.
 - [ ] Treat hygiene as necessary binding evidence, not sufficient macro
   justification.
-- [ ] Reject redundant wrappers around native POO operations.
+- [ ] Reject redundant wrappers around POO operations.
 - [ ] Add no public macro without a separate RFC admission.
 - [ ] Apply the thin public composition projection boundary in
   [[file:45-120-13-thin-use-composition-use-module-profile-projection.org][45-120-13]].

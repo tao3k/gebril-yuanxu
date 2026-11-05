@@ -5,7 +5,7 @@
 ;;; Boundary: materializes Bundle v1 lowering output in a foreign-memory arena.
 ;;; Invariant: arena offsets are validated before any foreign view is exposed.
 (import (only-in :std/list/list fold)
-        (only-in :clan/poo/object .ref .slot? object<-alist object?)
+        (runtime: :clan/poo/object)
         :yuanxu/utilities/functional
         :yuanxu/feature-system/bundle-v1-lowering)
 

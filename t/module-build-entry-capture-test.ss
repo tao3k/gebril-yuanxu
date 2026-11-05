@@ -19,7 +19,7 @@
     main))
 
 (def module-build-entry-capture-test
-  (test-suite "Native build entry caller source capture"
+  (test-suite "Runtime build entry caller source capture"
     (test-case "spec compile and clean use the local source anchor"
       (call-with-temporary-directory "build-entry-capture"
         (lambda (root)
@@ -30,7 +30,7 @@
                  (output (path-expand "probe.ssi" lib)))
             (write-source (path-expand "probe.ss" source)
               "(export answer) (def answer 42)\n")
-            (write-source entry "; native dispatcher source anchor\n")
+            (write-source entry "; runtime dispatcher source anchor\n")
             (let (text (call-with-output-string
                          (lambda (port)
                            (parameterize ((current-output-port port)) (run "spec")))))

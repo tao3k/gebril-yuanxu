@@ -17,9 +17,9 @@ return main. The source context remains inside that function; no generated
 build script is executed and no second build process is started.
 
 The selected Graph is prepared once. spec, compile and clean consume its same
-ordinary spec list. The compiler's own subprocesses remain owned by the SDK.
+ordinary spec list. The compiler's own subprocesses remain owned by the Gerbil.
 
-The implemented build entry (retired control) is ordinary Scheme. With its optional SDK settings
+The implemented build entry (retired control) is ordinary Scheme. With its optional Gerbil settings
 omitted below, its central operation is:
 
 #+begin_src scheme
@@ -35,15 +35,15 @@ omitted below, its central operation is:
 
 init.build-entry now calls this helper with the existing prepared spec, anchor
 and currentness check. No fixture helper or source-anchor export is retained.
-Optional libdir:, bindir:, parallelize: and optimize: forward SDK settings;
-their production defaults match std/make. The unchanged SDK owns
+Optional libdir:, bindir:, parallelize: and optimize: forward Gerbil settings;
+their production defaults match std/make. The unchanged Gerbil owns
 command parsing, dependency scheduling, compilation, output identity and clean.
 The checks reuse existing input validity mechanisms. Post-command rejection
 prevents accepting results; it does not roll back compiler filesystem writes.
 
 * Verified controls
 
-The SDK-only control (retired control) places probe.ss exclusively in a temporary prepared
+The Gerbil-only control (retired control) places probe.ss exclusively in a temporary prepared
 directory. The returned main prints its spec, compiles package/probe.ssi and
 cleans that output. It also verifies both boundary checks for every command.
 
@@ -70,7 +70,7 @@ Negative checks inspect exception messages rather than matching a backtrace
 that could include expected text from the test source itself.
 
 Both controls passed with MODULE-OK, HARNESS-OK, final OK and natural exit 0.
-The SDK-only control used a fresh GERBIL_PATH and empty GERBIL_LOADPATH. The
+The Gerbil-only control used a fresh GERBIL_PATH and empty GERBIL_LOADPATH. The
 JsonSchema control used a fresh source-only Core snapshot, no compiled Core
 cache, and eight freshly compiled public dependency units from the clean locked
 gerbil-poo revision 099b381588360a8a49fd772f666a1a00351366f5.
@@ -79,7 +79,7 @@ The integrated run additionally exercises the actual root build.ss with its
 full retained manifest: 169 unique spec targets, clean, and changed-input
 rejection. That root control does not compile those 169 targets. JsonSchema's
 34-target control is the bounded compile/clean qualification. Both the init
-entry and the direct SDK helper now use production Building code rather than
+entry and the direct Gerbil helper now use production Building code rather than
 a duplicate qualification implementation. The source snapshot contains no
 bootstrap.ss or compiled Core library.
 
@@ -92,8 +92,8 @@ remains a local test artifact, not a source-controlled log.
 * Reproduce and limits
 
 Follow the fresh dependency/source-snapshot setup in
-[[file:13.07-core-build-entry.org][the build-entry qualification]]. Keep the original SDK; do not include an
-experimental SDK directory in GERBIL_PATH or GERBIL_LOADPATH. Run serially:
+[[file:13.07-core-build-entry.org][the build-entry qualification]]. Keep the original Gerbil; do not include an
+experimental Gerbil directory in GERBIL_PATH or GERBIL_LOADPATH. Run serially:
 
 #+begin_src sh
 just test-file t/module-build-entry-function-test.ss
@@ -102,7 +102,7 @@ just test-file t/module-build-dependency-qualification-test.ss
 just test-file t/module-json-schema-build-entry-test.ss
 #+end_src
 
-Use the documented setup transitions between the SDK-only, snapshot, public
+Use the documented setup transitions between the Gerbil-only, snapshot, public
 dependency and JsonSchema phases. The unchanged Just recipe fences the heap
 before imports and enforces the existing timeout. No complete Core build or
 independent bootstrap entry is required.
@@ -117,5 +117,5 @@ Production build.ss now imports the ordinary init function and defines main:
 
 Keeping defbuild-script literally in the consumer instead still requires its
 source-context binding for relocated compiler input. A plain list cannot supply
-that context to the current macro. These are placements of one SDK entry, not
+that context to the current macro. These are placements of one Gerbil entry, not
 two Graphs or builds. Runtime Loader integration remains outside this control.

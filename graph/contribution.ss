@@ -5,10 +5,7 @@
 
 ;;; Graph contribution and ordered-application receipt values; payload helpers.
 
-(import (only-in :clan/poo/object
-                 .o
-                 .ref
-                 object?)
+(import (runtime: :clan/poo/object)
 )
 
 (import :yuanxu/graph/rooted)

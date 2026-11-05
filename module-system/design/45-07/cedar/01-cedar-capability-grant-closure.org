@@ -1,0 +1,239 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Cedar capability grant closure
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Cedar capability grant closure
+
+** Cedar grant requirement
+
+A profile contributes capability *requests*.  It never manufactures policy
+grants.  A grant consumed by =use-composition= MUST be an =allow= decision from
+the Cedar dual-engine boundary and MUST be bound to all of the following:
+
+- the exact profile origin identity;
+- the active runtime generation;
+- one shared Cedar authorization subject for both engines and the grant;
+- the current authority, policy, authorization, and revocation validation
+  context;
+- a valid, versioned subject-context bridge receipt whose registry identity and
+  generation are bound to both request and grant, and whose mapping from Cedar
+  policy-set digest to policy snapshot identity is functional;
+- an authority-owned validation result whose authority identity equals the
+  current receipt-validation context and whose registry semantic identity is
+  bound to both request and grant;
+- an authorized capability set that is a subset of the profile request, and a
+  granted set that is a subset of that authorized set.
+
+The grant is therefore evidence owned by the policy/admission plane.  Neither a
+Mix object nor the composition macro may copy requested capabilities into a
+granted slot.
+
+** Observation and counterexample
+
+The existing dual-engine theorem proves that two distinct engines decide the
+same Cedar subject consistently.  The existing capability-envelope theorem
+proves confinement of granted capabilities to an authorized set.  Their plain
+conjunction is nevertheless insufficient for composition: it does not state
+that the grant belongs to the profile identity and runtime generation currently
+being composed.
+
+=legacyAdmissionAcceptsCrossProfileGrantReuse= constructs two valid, distinct
+Cedar =allow= receipts and a capability-confined grant issued for the
+origin-aware identity =(module 42, slot 7, lineage 100)=.  The legacy
+conjunction still admits it for =(module 42, slot 8, lineage 101)=.
+=legacyAdmissionAcceptsCrossGenerationGrantReuse= constructs the analogous
+replay from generation =11= into generation =12=.  These are architectural
+counterexamples, not Cedar engine failures.
+
+The first bridge draft still used the higher-order predicate
+=AuthorizationSubject -> ReceiptValidationContext -> Prop=.  The predicate
+=fun _ _ => True= inhabits that type while providing no registry owner,
+generation, lookup receipt, or uniqueness evidence.  Worse, an accept-all
+validator can admit two receipts mapping the same registry generation and
+policy digest to different snapshots.  The theorem
+=acceptAllBridgeReceiptsAreNotFunctional= is the executable counterexample.
+
+Functionality is still not authority.  A validator that accepts exactly one
+forged receipt is trivially single-valued.  The theorem
+=forgedSingletonIsFunctionalButUnauthorized= constructs such a validator: its
+claimed authority is =999= while the current validation-context authority is
+=17=.  Consequently, bridge closure now consumes the existing generic
+=AcceptanceAuthority= and =AuthorityBoundNode= contract instead of trusting a
+self-reported =valid= predicate.
+
+#+begin_export typst
+$
+  G_(closed)(q, g, l, r) :=
+    D_(dual)(l, r)
+    and l.subject = q.subject
+    and g.subject = q.subject
+    and l.decision = allow
+    and g.profile = q.profile
+    and g.generation = q.generation
+    and g.context = q.context
+    and V_(bridge)(b)
+    and A.validate(b.receipt) = b.binding
+    and A.accepted(b.binding)
+    and b.authority = q.context.authority
+    and b.semantic-id = q.bridge-semantic-id
+    and b.registry = (q.bridge-id, q.bridge-generation)
+    and b.policy-digest = q.subject.policy-digest
+    and b.policy-snapshot = q.context.policy-snapshot
+    and F_(bridge-registry)(V_(bridge))
+    and g.granted subset.eq g.authorized subset.eq q.requested
+$
+#+end_export
+
+The formula deliberately keeps profile identity separate from the Cedar
+subject.  The subject binds policy evaluation inputs; the profile identity
+binds the result to the precise composition operand.  Collapsing either one
+into the other would lose a required replay dimension.
+
+#+begin_export mermaid
+flowchart LR
+    P["Profile contribution"] -->|"requests only"| Q["Capability request"]
+    Q -->|"bind profile identity + generation"| S["Cedar subject"]
+    S -->|"evaluate same subject"| C1["Cedar specification engine"]
+    S -->|"evaluate same subject"| C2["Cedar runtime engine"]
+    C1 -->|"allow + valid receipt"| J{"Dual-engine join"}
+    C2 -->|"allow + valid receipt"| J
+    J -->|"same subject; distinct engine and receipt"| G["Context-bound grant"]
+    T["AcceptanceAuthority trust root"] -->|"validate artifact to exact binding"| B["Authority-bound bridge node"]
+    B -->|"authority + semantic identity + generation + unique mapping"| G
+    B -.->|"rejected: accept-all validator is non-functional"| X
+    B -.->|"rejected: singleton validator has wrong authority"| X
+    B -.->|"rejected: stale registry generation"| X
+    G -->|"current policy, auth, revocation, authority"| A{"Composition admission"}
+    Q -->|"requested capability upper bound"| A
+    A -->|"accepted: exact profile + generation"| U["use-composition"]
+    G -.->|"rejected: cross-profile reuse"| X["Typed admission failure"]
+    G -.->|"rejected: cross-generation or stale context"| X
+#+end_export
+
+** Cedar grant decision
+
+- =CompositionCedarGrantClosed= is the formal admission contract joining the
+  existing Cedar dual-engine, receipt-context, and capability-confinement
+  models.
+- A closed grant rejects profile mismatch, generation mismatch, Cedar-subject
+  mismatch, and stale policy/authority context independently.
+- Because Cedar uses content digests while the receipt context uses snapshot
+  identities, closure requires a valid bridge receipt from a named registry
+  generation.  Sharing one request record does not by itself prove that those
+  two namespaces denote the same policy snapshot.
+- =SubjectContextBridgeRegistryFunctional= makes the mapping single-valued for
+  every =(authority identity, registry semantic identity, registry identity,
+  registry generation, policy digest)= key.  An arbitrary proposition or
+  accept-all receipt validator is not admissible.
+- The bridge reuses =ReceiptAuthorityBindingClosure.AcceptanceAuthority= and
+  =AuthorityBoundNode=.  The receipt artifact is validated into an exact
+  binding; self-reported acceptance is never sufficient.
+- Every granted capability is proven to belong to the original requested set.
+- The parent proof owns this cross-plane contract.  The
+  =lambda-episteme= child may publish profiles and requests, but it does
+  not own the parent Cedar admission lifecycle and is never scanned or executed
+  implicitly to validate the proof.
+- This theorem does not claim that the current Scheme composition runtime has
+  implemented the admission call.  That concrete POO runtime owner
+  remains open together with =compose-proto*= and =instantiate-proto=; the proof
+  prevents an incomplete implementation from being described as closed.
+
+** Verification checklist
+
+- [X] Lean counterexample: dual-engine agreement plus capability confinement
+  alone accepts a grant issued to a different profile.
+- [X] Lean counterexample: the same legacy conjunction accepts a grant from a
+  different runtime generation.
+- [X] Lean theorem: closed admission rejects cross-profile grant reuse.
+- [X] Lean theorem: closed admission rejects cross-generation grant reuse.
+- [X] Lean theorem: closed admission rejects stale authority, policy,
+  authorization, or revocation context.
+- [X] Lean theorem: closed admission rejects a different Cedar subject.
+- [X] Lean counterexample: an accept-all bridge receipt validator is not a
+  functional digest-to-snapshot registry.
+- [X] Lean counterexample: a singleton validator can be functional while its
+  claimed authority is not the current validation-context authority.
+- [X] Lean theorem: an authority-bound bridge node is accepted only through the
+  generic acceptance authority's sound validator.
+- [X] Lean theorem: closed admission carries a valid bridge receipt bound to
+  authority identity, semantic identity, registry identity, registry
+  generation, policy digest, and policy snapshot.
+- [X] Lean theorem: closed admission rejects bridge-registry generation replay.
+- [X] Lean theorem: two accepted receipts for the same registry key resolve to
+  the same policy snapshot.
+- [X] Lean theorem: every granted capability is confined by both the authorized
+  set and the profile request.
+- [ ] POO Scheme runtime owner invokes Cedar admission before materializing
+  granted capability slots.
+
+** Cedar grant Lean and AXLE receipt
+
+- Pure mathematical model Lean:
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarCapabilityGrantModel=
+  returned exit =0= for =2= jobs with zero warnings.
+- Real Cedar bridge Lean:
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarCapabilityGrantClosure=
+  returned exit =0= for =117= jobs with zero warnings.
+- Enterprise aggregate returned exit =0= for =498= jobs.  Full Lean returned
+  exit =0= for =570= jobs.  Both emitted only the pre-existing
+  =AgentRedTeamProofRegressionClosure.lean:194:2= unnecessary-=simpa= warning.
+- AXLE verified all twelve public roots in
+  =UseCompositionCedarCapabilityGrantModel.lean= with zero failed
+  declarations.  The accepted root sets are pairwise disjoint and their union
+  is exactly the public theorem set.
+- The proof is intentionally partitioned by responsibility under AXLE's fixed
+  =40 s= operation deadline.  A combined =12=-root closure and two =4=-root
+  mixed-responsibility closures exceeded the deadline during extraction or
+  proof verification; no timeout is reported as a successful proof and the
+  deadline was not raised.
+- Counterexample shard
+  (=acceptAllBridgeReceiptsAreNotFunctional=,
+  =forgedSingletonIsFunctionalButUnauthorized=): =19= declarations, closure
+  =sha256:ed2ad7be90c395dbec04066705814b67003bab93552365d7f01442203044aa73=,
+  bundle
+  =sha256:ac7609ae561825b0214ddb87c2966c5c34b967285b2867a4987ef759e2ab3472=.
+- Authority shard (=bridgeAuthorityBoundNodeAccepted=,
+  =closedRequiresVersionedSubjectContextBridge=,
+  =closedRejectsBridgeRegistryGenerationReplay=,
+  =closedBridgeMappingIsUnique=): =66= declarations, closure
+  =sha256:0949a0e26666027a3602aea267b5bcdba64da724e1fd23424c0cada599c23068=,
+  bundle
+  =sha256:15c5fc58604086ddb8289df39e791fdc49808578d87604e05240198aeadfdf9f=.
+- Identity/generation rejection shard (=closedRejectsCrossProfileReuse=,
+  =closedRejectsCrossGenerationReuse=): =54= declarations, closure
+  =sha256:28895cfec28b9a4d1cb1e190b66d4d8ec24762b0ebe4b4f0e46c76924cd757e7=,
+  bundle
+  =sha256:9d2c7c955ae670738ddd0dd5169a948e1ce410d8862db575fde71886d44a80b2=.
+- =legacyAcceptsCrossProfileGrantReuse=: =40= declarations, closure
+  =sha256:44d8fcb2ba2bc51299f5933211b5bfa5a3fe2a60369074a0b5fa4585c86edce9=,
+  bundle
+  =sha256:fe59696624526bb27e039b22d0517dd205c96844c83bc3967059fa211f9699fd=.
+- =legacyAcceptsCrossGenerationGrantReuse=: =35= declarations, closure
+  =sha256:32839b4d9a4b9f3aba3c944a791b0116c0c0d7d4164e07431c23e40d9f36dc0c=,
+  bundle
+  =sha256:5bdd9fe6f1621f4f96ba251f93e001f4d4cb66b7511b3bde0c0d8f3b12273467=.
+- =closedRejectsStaleContext=: =52= declarations, closure
+  =sha256:b9fdd5e6283ef44792e3ff6006e7bb2cecfd8a3a5828448a0b62b63e8b84a193=,
+  bundle
+  =sha256:a75e7ff4c79247a562d27f3068efb429e2716c4d90e05e61f4c2a6d11ce6cdd5=.
+- =closedConfinesEveryGrantedCapability=: =52= declarations, closure
+  =sha256:5124497b113074163a48a589ac48821f7710a693202051dcbecc2b80b6bb9a84=,
+  bundle
+  =sha256:af209a65f68ee4f5c0a010252797b4b281b7b30f9febd11a4e4c118f20f13f67=.
+- All accepted shards reported =verification.okay: true=,
+  =status: accepted=, =roundtrip: accepted=, =theorem_proof: accepted=, and
+  =failed_declarations: []=.  The current pure-model source digest is
+  =sha256:be62ce8397e5f26b14dd229b70829ed679cd89b26d1c4c0559e0b84c3149ef02=.
+- The real bridge intentionally remains a Lean receipt because AXLE's Cedar
+  importer currently rejects =Cedar.Spec.Decision=.  The bridge theorem
+  =closedGrantProjectsCedarAllowToAxleModel= proves that the real Cedar =allow=
+  constructor projects to the AXLE model's =allow= constructor; no external
+  Cedar verification result is fabricated.
+- RFC45-07 Orgize Org/Typst/Mermaid lint, =git diff --check=, and
+  =git diff --cached --check= returned exit =0=.
+

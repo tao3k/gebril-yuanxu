@@ -54,9 +54,9 @@
 (.def (Release @ Root)
   ci: =>.+
   (.o funflow: =>.+
-      (.o build: =>.+ (.o commands: => append '("--release"))
+      (.o build: =>.+ (.o (commands => append '("--release")))
           smoke: (.o (:: @ [Check.]) commands: '("printf" "smoke"))
-          pipeline: =>.+ (.o selected-checks: => append '(smoke)))))
+          pipeline: =>.+ (.o (selected-checks => append '(smoke))))))
 ;; Different intent: replace the command value, preserving the surrounding Check.
 (.def (Replacement @ Root)
   ci: =>.+
@@ -87,22 +87,22 @@
   (if (and (eq? candidate (.get context target))
            (not (member "forbidden" (.get candidate commands))))
     '() (list (.o kind: 'check-policy-refused))))
-(def (native-contract contract-id family fields obligations-proc)
+(def (poo-contract contract-id family fields obligations-proc)
   (.cc YuanxuObjectContract.
     'identity contract-id 'proto family 'responsibilities fields '.obligations obligations-proc))
 (def ScenarioShape
-  (native-contract 'multi/scenario-shape Scenario.
+  (poo-contract 'multi/scenario-shape Scenario.
     (.o selected-profiles: SymbolsContract) same-target))
 (def ProfileShape
-  (native-contract 'multi/profile-shape Profile.
+  (poo-contract 'multi/profile-shape Profile.
     (.o selected-modules: SymbolsContract) same-target))
-(def ModuleShape (native-contract 'multi/module-shape Module. (.o) same-target))
+(def ModuleShape (poo-contract 'multi/module-shape Module. (.o) same-target))
 (def PipelineShape
-  (native-contract 'multi/pipeline-shape Pipeline.
+  (poo-contract 'multi/pipeline-shape Pipeline.
     (.o selected-checks: SymbolsContract) same-target))
 (def CheckShape
-  (native-contract 'multi/check-shape Check. (.o commands: CommandsContract) same-target))
-(def BindingsContract (native-contract 'multi/bindings Bindings. (.o) empty-obligations))
+  (poo-contract 'multi/check-shape Check. (.o commands: CommandsContract) same-target))
+(def BindingsContract (poo-contract 'multi/bindings Bindings. (.o) empty-obligations))
 
 ;; The small functional builder is fixture-upstream code, not a public DSL.
 (def (make-policy policy-id family shape-contract selector-slot fixed-policies default-policy scope-function obligations-proc)
@@ -111,7 +111,7 @@
            (map (lambda (name) (cons name (.get (.ref fixed-policies name) template)))
                 (.all-slots fixed-policies)))))
     (.o shape: shape-contract
-        template: (native-contract policy-id family fixed-contracts obligations-proc)
+        template: (poo-contract policy-id family fixed-contracts obligations-proc)
         fixed: fixed-policies
         default: default-policy
         selector: selector-slot

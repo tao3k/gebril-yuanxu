@@ -1,7 +1,7 @@
 #+title: 12.18 Provider Publication to Checked Admission and Local Execution
 #+property: DOCUMENT_ID 12.18
 #+language: en
-#+property: STATUS implemented-focused-native-test-no-runtime-loader
+#+property: STATUS implemented-focused-runtime-test-no-runtime-loader
 
 The [[file:12.19-selected-publication-contract-resolution.org][selected publication resolver]] supersedes the test-owned Graph/Contract
 association below. This document preserves the earlier implementation and run;

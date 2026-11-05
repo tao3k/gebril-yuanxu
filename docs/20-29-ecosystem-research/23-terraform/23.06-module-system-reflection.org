@@ -72,7 +72,7 @@ Schema or the renderer can invalidate admission even with identical user values.
 A child Scenario must obtain its own effective values after a parent projection
 was forced. Source currentness cannot establish absence of remote AWS drift.
 
-Native POO receiver behavior and existing isolated tests are useful inputs, but
+POO receiver behavior and existing isolated tests are useful inputs, but
 they do not establish end-to-end consumer correctness. A production cache claim
 requires effective-object identity, relevant Contract/source revisions and
 observations about which demands were reused. Dependency deletion and a changed
@@ -81,7 +81,7 @@ dependency set are negative controls, not just value changes.
 * What Scheme and POO can improve
 
 Named pure functions can express reusable data transformations; maintained
-prototypes can carry defaults and contracted extension points; native dispatch
+prototypes can carry defaults and contracted extension points; runtime dispatch
 can handle independently growing provider/domain axes. Hygienic role wrapping
 can remove repeated binding code without exposing generated metadata to users.
 
@@ -106,7 +106,7 @@ not fixes accepted by Terraform or claims that Core already implements them.
 * Conclusion and Onwards
 
 The differentiator to test is a maintained, inspectable module protocol with
-cheap ordinary configuration and deliberate native extension. Next review the
+cheap ordinary configuration and deliberate runtime extension. Next review the
 same publication, dependency and phase questions against NixOS's actual service
 modules, devenv's development services and Flox's environment composition.
 Freeze neither public syntax nor automatic dependency inference before that review.

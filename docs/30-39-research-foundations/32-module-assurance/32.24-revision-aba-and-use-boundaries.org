@@ -4,11 +4,11 @@
 * Decision
 
 [[file:32.23-mop-state-extraction.org][32.23]] compared selected MOP state at two endpoints. This follow-up tests the
-native lifetime between those endpoints and subsequent use. It changes tests,
+runtime lifetime between those endpoints and subsequent use. It changes tests,
 formal models and documentation only; production Scheme and Loader stay unchanged.
 No new purity flag, scope-generation counter or caller-supplied authority is used.
 
-The native results distinguish three cases:
+The runtime results distinguish three cases:
 
 1. Supported object/protocol ABA is observable: restoring a value or protocol
    does not restore revision. Descendants of shared prototypes invalidate once
@@ -41,7 +41,7 @@ on Gambit =ea114fc=. LeanPoo remains pinned to
 | =call-with-parameters= | Installed =runtime/control.ss= delegates to Gambit =##parameterize1= | Tested ordinary and exceptional restoration, not a global history observer |
 | [[file:../../../module-system/source/admission.ss][current-module-source-observer]] | An ordinary parameter made with =make-parameter #f= | Its visible value is separate from object revision |
 
-The supported setter path uses the fixed native =check-object-edit=. The exported
+The supported setter path uses the fixed runtime =check-object-edit=. The exported
 lower-level =invalidate-state!= can accept arbitrary callbacks; this chapter does
 not classify all such callers as read-only or transactional.
 
@@ -50,7 +50,7 @@ No per-observer monotonic generation is supplied by the audited interface. This
 is not a proof that every Gambit implementation detail lacks historical state;
 private unqualified VM internals are not substituted for a supported certificate.
 
-* Native test owner and isolation
+* Runtime test owner and isolation
 
 [[file:../../../t/mop-snapshot-lifetime-test.ss][mop-snapshot-lifetime-test.ss]] uses the existing
 [[file:../../../t/qualification/mop-state/snapshot.ss][snapshot helper]] and resource-owning Services/Directory fixtures. It runs in
@@ -63,7 +63,7 @@ It neither extends producer exports nor installs any observer generation/purity
 label. The injected gaps are deterministic sequential steps, so a refusal does
 not depend on winning a timing race or widening a timeout.
 
-* Seven actual native controls
+* Seven actual runtime controls
 
 ** Supported value ABA through a shared diamond
 
@@ -81,7 +81,7 @@ and restored using the supported slot setter:
 #+end_src
 
 All four owners advance twice; the shared route does not advance Root four
-times. Old native read replay also raises =stale slot dependency=. An unused
+times. Old runtime read replay also raises =stale slot dependency=. An unused
 slot deliberately raises if forced; it is never forced by this selected path.
 
 ** Read-dependency edges are not all invalidation edges
@@ -98,7 +98,7 @@ After warming and recording Application.route, a supported Database.port edit
 leaves Application's revision unchanged. Its root read record still passes the
 per-record currentness predicate; a plain cached read outside admission returns
 5432. However, the captured graph includes the real Database read dependency:
-full native replay rejects it, and the full snapshot guard rejects the change.
+full runtime replay rejects it, and the full snapshot guard rejects the change.
 
 This is why neither receiver revision nor prototype ancestry alone replaces
 read-dependency replay. It is not a claim that plain POO reads automatically
@@ -109,7 +109,7 @@ changed by this control.
 
 Installing a real protocol object and removing it again restores =#f= but
 increments the receiver revision twice. The old snapshot is rejected. A later
-edit to the removed protocol still invalidates the receiver: the native weak
+edit to the removed protocol still invalidates the receiver: the runtime weak
 dependency edge remains conservative. This is safe over-invalidation, not proof
 that every retained dependency remains semantically necessary. No edge-pruning
 optimization is proposed here.
@@ -118,7 +118,7 @@ optimization is proposed here.
 
 A Child slot attempts to modify its Shared ancestor. The test reads the actual
 =active-slot-computations= parameter inside the slot and confirms Child is
-present. Native =check-object-edit= rejects =object mutation during computation=.
+present. Runtime =check-object-edit= rejects =object mutation during computation=.
 Both owners' revisions and the original value remain unchanged. The parameter
 is restored after the exception.
 
@@ -130,7 +130,7 @@ preflight behavior, not proof of lock-based exclusion against another thread.
 
 A snapshot passes, then a supported mutation occurs before use of a captured
 scalar. The deliberately unsafe test body consumes that old scalar into a local
-counter. A later guard and native replay reject the stale state, but the counter
+counter. A later guard and runtime replay reject the stale state, but the counter
 still records the old use. No real infrastructure operation is executed.
 
 Moving a second comparison closer to use narrows the interval but does not make
@@ -185,14 +185,14 @@ replacing their guard, source or first-diagnostic models.
 | =late_rejection_not_rollback= | A later refusal does not erase an earlier delivery |
 | =ordered_diagnostics_retained= | Closed same-order checks keep the exact first source/token diagnostic under the existing sound-byte premise |
 
-The model's affected owner IDs and active IDs project actual native edges and
+The model's affected owner IDs and active IDs project actual runtime edges and
 runtime frames, not user declarations of purity. The =advance= law is membership
-based, reflecting the native seen-set. The model assumes a complete finite
-mutation closure and serial supported operations. It does not extract native
+based, reflecting the runtime seen-set. The model assumes a complete finite
+mutation closure and serial supported operations. It does not extract runtime
 weak-table enumeration, prove parallel atomicity, or prove minimal invalidation.
 
 Likewise, State/cut use a small concrete signature to expose lifetime properties;
-they are not a second configuration API. Actual native representation-to-Cut and
+they are not a second configuration API. Actual runtime representation-to-Cut and
 full footprint correspondence remain explicit premises from 32.23. Previous
 source coverage, child obligations and plan identity laws remain required.
 
@@ -225,13 +225,13 @@ before certification.
 | =acceptance= | Witness that the correct certification can accept a current configuration |
 
 The =priorEffect= field is a semantic trace observation populated by the modeled
-scope-effect transition, not a native epoch or a caller purity flag. The source
+scope-effect transition, not a runtime epoch or a caller purity flag. The source
 write is folded into that transition; intermediate VM binding operations are
-not extracted. The =mutate= action abstracts one serialized native call/batch;
-its QNT atomicity is not attributed to the native multi-step implementation.
+not extracted. The =mutate= action abstracts one serialized runtime call/batch;
+its QNT atomicity is not attributed to the runtime multi-step implementation.
 The pre-use comparison also requires both requirements, current source and correct
 owner at that point; the after-check witness therefore does not rely on skipping
-those preconditions. The after-check gap is an explicit adversarial interleaving, not a native thread
+those preconditions. The after-check gap is an explicit adversarial interleaving, not a runtime thread
 stress test or evidence of scheduler-specific behavior.
 
 * Architectural consequence and open work
@@ -255,11 +255,11 @@ identity checks and source-return authority are not removed.
 
 * Ownership reflection
 
-Why not use just the receiver revision? The native external-demand control shows
+Why not use just the receiver revision? The runtime external-demand control shows
 that the mutation graph and read-dependency graph have different edges. The
 complete selected replay is still needed, even with monotonic object revisions.
 
-Why not make a restored observer binding the certificate? Native ordinary and
+Why not make a restored observer binding the certificate? Runtime ordinary and
 exceptional restoration can leave a changed file. Current interface values are
 not an event history; adding a generation would be a new implementation/protocol,
 not something already proved by inspecting the current value.
@@ -275,8 +275,8 @@ manual purity labels, source catalogs or global revision flags.
 * Qualification
 
 Completed source-bound results follow below. Raw outputs stay in local artifacts,
-never Git. Native value/currentness behavior, source audit and model proofs are
-reported separately; no reduction of the earlier 356 native reads is claimed.
+never Git. Runtime value/currentness behavior, source audit and model proofs are
+reported separately; no reduction of the earlier 356 runtime reads is claimed.
 
 
 ** Recorded gates (2026-10-18)
@@ -322,7 +322,7 @@ Raw logs and receipts live only under
 =/private/tmp/core-mop-lifetime-20261018/=; they are not source artifacts. The
 passing receipt is =quint-final-receipt.ss= and its input cut is
 =quint-final-receipt.inputs.json=. The actual mutation/source-observer controls
-are executable Scheme tests, not proof of concurrent atomicity. Complete native
+are executable Scheme tests, not proof of concurrent atomicity. Complete runtime
 projection, serialized supported calls and selected-closure coverage remain the
 correspondence premises. No production Scheme, Loader, source epoch or runtime
 fencing implementation was changed by this work.
@@ -332,13 +332,13 @@ A later input audit detected another concurrent edit to
 =module-system/source/reader.ss= after the lifetime-test input manifest was
 captured. The six critical producer/admission/helper identities in
 =source-before.json= remained unchanged. The successful Quint receipt describes
-its own stable run cut, not the later moving workspace. Native controls and
+its own stable run cut, not the later moving workspace. Runtime controls and
 formal results must not be relabeled as an exact-current-head integration pass.
 No concurrent reader change was reverted or absorbed into this qualification.
 
 The final real service-publication rerun also passed eleven cases
 (=services-regression-02-current.log=). Together with the seven lifetime and
-seven extraction cases this supplies 25 passing native controls on their
+seven extraction cases this supplies 25 passing runtime controls on their
 recorded cuts, with the concurrent-reader caveat above. No failed attempt is
 removed, and no single-current-cut full-suite claim is made.
 

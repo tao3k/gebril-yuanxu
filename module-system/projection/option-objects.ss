@@ -6,7 +6,7 @@
 ;;; Core POO values for Module option configuration, schema, and validation.
 ;;; Product descriptors decide how these values are projected and presented.
 
-(import (only-in :clan/poo/object .cc .ref .slot? object<-alist)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/type Record String Symbol Or)
         (only-in :clan/poo/mop define-type Slot))
 
@@ -22,7 +22,7 @@
           source-module: [(Or String Symbol)]
           field: [Slot]))
 
-;; Reporting projections read the native effective Slot, never a shadow type DSL.
+;; Reporting projections read the runtime effective Slot, never a shadow type DSL.
 (def (yuanxu-module-option-schema-rule schema)
   (let (field (.ref schema 'field))
     (cond ((.slot? field 'policy) (.ref field 'policy))

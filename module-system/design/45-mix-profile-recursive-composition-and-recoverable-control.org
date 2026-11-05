@@ -85,7 +85,7 @@ observability contract is owned by [[file:45-04-observability-and-debugging.org]
 
 * Cross-module invariants
 
-- Public composition remains POO-native and functional-first.
+- Public composition remains POO and functional-first.
 - Public syntax remains =user-composition=, =use-composition=, =profiles=,
   =compose=, and canonical =use-module MODULE as ALIAS=.
 - Agentic AI Lab reuses pinned =gerbil-poo= fixed-point and prototype composition.

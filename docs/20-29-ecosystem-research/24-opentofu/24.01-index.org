@@ -41,7 +41,7 @@ silently become the key used to discover a new set of modules during admission.
 
 Controls: a stable named machine with an unknown VPC ID remains representable;
 an unknown machine-name set is rejected or explicitly staged. Two operators
-executing the same plan require a state/execution policy beyond native slot caches.
+executing the same plan require a state/execution policy beyond runtime slot caches.
 
 Reflection: what exactly can a configuration preview promise while some values
 remain unknown? Can a user distinguish omitted, null, unknown and invalid without

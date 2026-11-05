@@ -8,7 +8,7 @@
 The implementation now connects the existing NixFlakeSource and OpenTofu Build
 publication. A zero-argument Flake Source consumes a *package* attribute through
 =nix path-info --derivation=; parameterized function exports retain =nix eval
---apply=. The former uses Nix's native derived-path cursor and prints the
+--apply=. The former uses Nix's runtime derived-path cursor and prints the
 derivation identity without realizing its outputs. Realization remains the
 existing, explicit =nix-store --realise= operation. There is no Scheme result
 cache, new evaluator service, alternate Graph or alternate publication protocol.
@@ -20,7 +20,7 @@ serialize the demand into =--apply=. A NixFlakeSource retains these overrides in
 its ordinary =inputs= object, and its generated guard preserves the same input
 names and paths. Input paths are normalized without trailing directory
 separators: otherwise =path:/input= and =path:/input/= can produce different
-native cache identities for identical bytes. This was observed and repaired in
+runtime cache identities for identical bytes. This was observed and repaired in
 the public Source/serialized-guard control.
 
 #+begin_src scheme
@@ -39,7 +39,7 @@ All imports inside that tree are relative. The existing immutable store-backed
 package set is resolved once during fixture setup and recorded as a locked
 non-flake input. Only the explicit selected demand is overridden during queries;
 no =<nixpkgs>= lookup or =--impure= evaluation occurs in the final derivation.
-The native lock is created once during setup, not silently rewritten by guards.
+The runtime lock is created once during setup, not silently rewritten by guards.
 Original maintained files copied into that publication also retain their Core
 source observations. This is an explicit test publication closure, not a claim
 that arbitrary mutable Nix expressions can be closed automatically.
@@ -61,7 +61,7 @@ in {
 #+end_src
 
 Nix hashes the published root and explicit data input on every guard invocation.
-An unchanged fingerprint can reuse native evaluation; a changed transitive file
+An unchanged fingerprint can reuse runtime evaluation; a changed transitive file
 or selected demand produces a different fingerprint. Core still checks its
 observed source bytes before and after effects, and compares the freshly
 obtained derivation identity with the prepared identity. Configuration admission
@@ -72,20 +72,20 @@ The original AWS Case additionally creates an undeclared optional
 name. Its package-current guard must reject the old identity even though that
 file was absent from Scheme's observation list. Removing it restores the
 original package identity. The file is a negative-test injection; the
-=aws-final-package-evaluated= native trace is a test probe identifying actual
+=aws-final-package-evaluated= runtime trace is a test probe identifying actual
 evaluation, not a production policy or a timing-based cache claim. Existing
 Schema replacement, Contract/Context faults, old-evidence refusal,
 previous-value preservation and cleanup assertions remain unchanged.
 
 The first aggregate attempt at this revision failed the original 60-second
-Case watchdog during the parent Graph's native source import, before launching
+Case watchdog during the parent Graph's runtime source import, before launching
 the AWS worker or making a Nix query. Its failure is retained; it cannot qualify
-the new AWS path or be attributed to Nix evaluation. Focused native controls
+the new AWS path or be attributed to Nix evaluation. Focused runtime controls
 have qualified the public Source, serialized input binding, external transitive
 invalidation and unchanged lock bytes after path normalization. Aggregate
 qualification and actual AWS evaluation/read counts must be recorded separately.
 
-The focused native control also adds an unrelated, unlocked input while retaining
+The focused runtime control also adds an unrelated, unlocked input while retaining
 the explicit selection override. Nix rejects that query under
 =--no-update-lock-file= and leaves the lock unchanged. Explicit demand overrides
 therefore do not authorize unrelated dependency changes in this tested version.

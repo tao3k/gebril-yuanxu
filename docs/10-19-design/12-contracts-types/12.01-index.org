@@ -89,7 +89,7 @@ The [[file:12.07-json-schema-value-contract-implementation.org][JsonSchema value
 real AWS input controls and the separate receipt boundary.
 The [[file:12.08-evidence-binding-and-publication-boundary.org][evidence-binding and publication design]] reuses public invocation relations
 and existing admission results, separating reference binding from Core version policy.
-The [[file:12.09-isolated-evidence-binding-validation.org][native evidence-binding validation record]] reports exact-reference rejection,
+The [[file:12.09-isolated-evidence-binding-validation.org][runtime evidence-binding validation record]] reports exact-reference rejection,
 cached-parent/final-child behavior and refusal preserving the previous value.
 The [[file:12.10-public-binding-and-core-producer-implementation.org][public binding and unified Core producer implementation record]] supersedes
 that fixture-only gate: the helper is upstream and actual .admit results record
@@ -103,14 +103,14 @@ The [[file:12.13-graph-association-and-final-object-admission.org][Graph associa
 retention, final-object admission and evidence checks.
 
 [[file:../13-module-loading/13.01-index.org][Module loading and building]] is a separate design track. Its init selection,
-native build-spec integration and startup dependencies do not belong to the
+runtime build-spec integration and startup dependencies do not belong to the
 Contract-system implementation or its validation claims.
 
 This section belongs to Core design. Domain libraries own AWS/Kubernetes/CI/CD
 vocabularies. Generic object mechanisms can live upstream in gerbil-poo while
 remaining available through the same integrated Module System to authors.
 
-Do not add =Native= to new Contract, object, module or file names. Existing
+Do not add =Runtime= to new Contract, object, module or file names. Existing
 identifiers containing that word are cited only to locate current code; this
 design does not rename implementation symbols or add compatibility aliases.
 
@@ -123,4 +123,4 @@ shared Record normalization, Ops callback composition and qualification boundary
 
 The [[file:12.30-core-function-boundary-migration.org][Core Function boundary migration proposal]] inventories module operations,
 user-supplied functions and runtime callbacks against PR 13 revision =d87c44e=,
-with readable authoring examples, native signatures and duplicate-mechanism removals.
+with readable authoring examples, runtime signatures and duplicate-mechanism removals.

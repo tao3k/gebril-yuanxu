@@ -16,7 +16,7 @@ working tree: that commit alone does not identify the maintained code reviewed.
 [[file:32.01-source-manifest.sha256][The per-file manifest]] identifies the case's role files, JSON assets, admission
 owners, provenance/path bindings and relevant controls as read on 2026-10-17.
 Paths in the manifest are Core-relative. This is a bounded source-audit manifest,
-not a complete runtime closure or a new frozen executable receipt. The native
+not a complete runtime closure or a new frozen executable receipt. The runtime
 POO dependency in gerbil.pkg is pinned to
 =26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5=.
 
@@ -99,7 +99,7 @@ readiness and execution authorization likewise remain outside this local plan.
 
 The comparison uses the real upstream issue records in 20.10 and 26.03. Their
 reported recursion or RPC/Output failures are not reproduced or fixed by this
-case. No resolving PR is claimed. Native .cc opaque writes cannot be assigned
+case. No resolving PR is claimed. Runtime .cc opaque writes cannot be assigned
 invented source locations; arbitrary custom slot implementations and AOT source
 attribution need additional qualification. Module/Contract code remains trusted.
 

@@ -136,7 +136,7 @@ Projections hand validated evidence to runtime, proof, or reports.
 
 This matters because the agent feedback loop needs more than string errors. After each edit, the agent must receive a structured observation of what changed, which semantic graph facts were rebuilt, which validators fired, which node or edge was rejected, and which declaration layer is legal to repair next.
 
-The observability framework should be implemented on the Scheme side as POO-native object families:
+The observability framework should be implemented on the Scheme side as POO object families:
 - =observability/event=: the atomic fact that something was built, changed, validated, rejected, projected, or handed off;
 - =observability/span=: a bounded operation such as graph rebuild, C4 composition, contract validation, manifest projection, or doctor preview;
 - =observability/diagnostic=: a validator-owned explanation of invalid or risky evidence;

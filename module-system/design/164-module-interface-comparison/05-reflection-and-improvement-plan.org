@@ -15,7 +15,7 @@ maps all 31 reference functions to safe consolidation and LeanPoo reuse premises
 Those acceptance requirements are design work, not new runtime or Loader support.
 
 The first concrete follow-through is the
-[[file:../164-funflow-public-configuration-contract-design.org][Funflow public-configuration redesign]]. It separates defaults from native
+[[file:../164-funflow-public-configuration-contract-design.org][Funflow public-configuration redesign]]. It separates defaults from runtime
 field Contracts, gives the same CI/CD case at both user layers, and specifies
 closed Check fields, dynamic Check selection, ordering and scoped admission.
 It is a design result, not a completed validator or Loader improvement.
@@ -27,7 +27,7 @@ substantial extensibility. Our product must make an actual extension task easier
 without weakening ordinary configuration correctness or demanding more concepts.
 
 The current POO advantage is conditional. A single object model can connect
-business values, inherited strategies, native contracts and final consumers.
+business values, inherited strategies, runtime contracts and final consumers.
 It becomes an advantage when users can discover that model, obtain good errors,
 and extend a declared boundary without rebuilding the framework. Today several
 of those connections are incomplete.
@@ -51,20 +51,20 @@ no performance claim follows merely from wrapping the catalog in POO getters.
 ** Extension should not multiply representations
 
 The same public attribute should not be described independently in a UI schema,
-a validator table, a loader manifest and an output adapter. A canonical native
+a validator table, a loader manifest and an output adapter. A canonical runtime
 Contract/slot model should own its shape and obligations, with documentation and
 inspection as projections. Source authority is a separate fact attached by an
 admission boundary, not inferred from a nominal prototype or alias spelling.
 
 Use named functions for algorithms: selection, qualification, ordering and
-projection. Use a replaceable native slot for one receiver behavior axis. Use
+projection. Use a replaceable runtime slot for one receiver behavior axis. Use
 Core CLOS only when independent axes actually vary, such as provider and
 publication kind. Declare method bundles without registering them, then compose
 only the selected bundle at an explicit boundary. Do not install thousands of
 methods as an incidental consequence of importing declarations.
 
 Private defrules can generate genuinely repeated declaration families. Hygiene,
-source locations and ordinary native expansion are requirements, not reasons to
+source locations and ordinary runtime expansion are requirements, not reasons to
 invent another public configuration language inside Scheme.
 
 ** Scale acceptance must separate legitimate enumeration from accidental work
@@ -81,7 +81,7 @@ missing-dependency and cyclic-input controls. Distinguish a module registered in
 a catalog from a service enabled in a configuration. No such scale comparison
 has been executed in this study.
 
-* Axis two: first-layer configuration and second-layer native extension
+* Axis two: first-layer configuration and second-layer runtime extension
 
 ** First-layer success criteria
 
@@ -106,7 +106,7 @@ projection, rather than an alternate extension representation translated back
 into ordinary configuration later.
 
 The extra power has a cost: extension authors can introduce new slots, effects
-or recursion. Native object openness and domain admission must remain distinct.
+or recursion. Runtime object openness and domain admission must remain distinct.
 A source-role policy cannot establish purity of arbitrary higher-order code by
 looking for a few function names. Our Scheme host does not inherit Dhall's total
 language guarantees or a restricted evaluator's effect policy automatically.
@@ -119,9 +119,9 @@ Problem: SourceRef and object? are weaker than a published configuration contrac
 A nominal Check can still contain an invalid command or a misspelled unused slot.
 
 Design direction: project public fields, defaults, descriptions and extension
-roles from the authoritative native model. Identify which boundary checks field
+roles from the authoritative runtime model. Identify which boundary checks field
 shape and which evaluates cross-field obligations. Ordinary value fields and
-native POO object/type fields should be distinguishable in that description;
+POO object/type fields should be distinguishable in that description;
 users should not repeat the upstream responsibilities declaration.
 
 Acceptance: an author can discover commands and its domain constraints
@@ -135,7 +135,7 @@ implemented merely because a define-type form exists.
 Problem: current checks = (list build test package) follows refined values, but
 adding smoke does not add a fourth task. Multiple modules can also publish build.
 
-Design direction: a Scenario's explicit native relationship should select
+Design direction: a Scenario's explicit runtime relationship should select
 qualified Check identities and ordering. Defaults belong upstream; a business
 user edits the relevant relationship as data. Derivation computes the effective
 list from that relation. This is a proposed model requirement, not a new syntax
@@ -148,7 +148,7 @@ parent order never becomes implicit execution order.
 
 ** P0: resolve the source-role mismatch
 
-Problem: authoring examples use native .def/.o, while the existing ordinary
+Problem: authoring examples use .def/.o, while the existing ordinary
 user-root policy restricts reopening those forms. Implemented syntax is not
 universal source-role authorization.
 
@@ -166,10 +166,10 @@ with a targeted repair. This revision changes no admission policy.
 Problem: as names a Bundle instance in one use-module grammar and a lexical
 alias in another. Funflow versus funflow: is only a naming discipline.
 
-Design direction: make the bounded native scope the documented route for these
+Design direction: make the bounded runtime scope the documented route for these
 configuration examples, and describe indexed Bundle selection separately.
 A future migration decision should be explicit; do not silently reinterpret
-identifier tails or introduce another compatibility wrapper. Keep native lexical
+identifier tails or introduce another compatibility wrapper. Keep runtime lexical
 semantics and diagnose direct source/slot collisions rather than hidden lookup.
 
 Acceptance: a new user can state whether a form returns a Bundle or evaluates a
@@ -212,7 +212,7 @@ than this revision implements.
 
 Use lexical closures to preserve bounded dependencies instead of global symbol
 injection. Use map/fold and named functions to transform configuration without
-inventing an object for each intermediate value. Use native slots where the
+inventing an object for each intermediate value. Use runtime slots where the
 behavior must remain dependent on the effective receiver. Keep the existing
 =>/=>.+ algebra rather than layering an Override DSL over it. Use MOP/Generic
 machinery upstream to maintain open protocol families, not as mandatory concepts

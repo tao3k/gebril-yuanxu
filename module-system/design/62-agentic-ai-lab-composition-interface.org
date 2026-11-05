@@ -9,7 +9,7 @@
 
 Historical grammar evidence.  The public stage/clause syntax in this document
 is superseded by RFC 45-92, RFC 45-95 and RFC 164.  Current =config.ss= files
-compose maintained Profiles and Standards only; domain operations are native
+compose maintained Profiles and Standards only; domain operations are runtime
 =gerbil-poo= slots, and graph/loop/proof/handoff responsibilities are reachable
 POO values rather than sibling clauses.  Do not copy the examples below into
 current code.
@@ -23,7 +23,7 @@ production-only profile, and it is not an SDLC DSL. Develop, staging, and
 production are stage names inside the composition, while the main concept stays
 Agentic AI Lab strategy composition.
 
-The key design rule is POO-native profile selection:
+The key design rule is POO profile selection:
 
 #+begin_src scheme
 (profile session hardened)
@@ -455,5 +455,5 @@ Current boundary:
 
 This preserves the direction of the system: user files declare production,
 staging, or development composition values with Scheme macros, while the
-compile-time ownership and reusable POO-native semantics stay in the project
+compile-time ownership and reusable POO semantics stay in the project
 core.

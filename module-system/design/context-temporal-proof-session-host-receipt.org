@@ -6,7 +6,7 @@ SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+end_comment
 
-* Delivered native boundary
+* Delivered runtime boundary
 
 The Context Session Host now composes an existing registered Temporal proof Host.
 =require-proof!= takes a retained registration identity, expected source-state and
@@ -16,7 +16,7 @@ catalog or clock. Binding is permitted only for the exact idle Session revision
 and enrolled Context source generation with a currently matching Context grant.
 
 The binding digest includes the Context Scope, source generation, original Task
-input digest and native applicability digest. A new Task is replayed from the
+input digest and runtime applicability digest. A new Task is replayed from the
 Org source and its producer receipt includes that binding digest. The generic
 Session Attempt therefore retains the proof-bound input without depending on a
 Temporal registry or proof schema. Session's pure idle recovery transition fences
@@ -62,14 +62,14 @@ Org snapshots; enrollment success is distinct from current claim eligibility.
 * Qualification and evidence boundary
 
 The Temporal evaluator suite adds five integration controls using original ASCENT
-reasoning, native Rule/Derivation correspondence and registered source/policy
+reasoning, runtime Rule/Derivation correspondence and registered source/policy
 Hosts. They cover proof-bound input, prepared-claim fencing, correction recovery,
 repeat invalidation, source refresh/rebinding, unknown registration, exhausted
 budget, policy drift, catalog replacement and foreign-thread first use.
 The existing 23 evaluator cases and eight Context Session cases remain required.
 
 The existing ContextTemporalLifecycle Quint and Lean models describe the abstract
-version vector, support applicability and retained obligations. This native slice
+version vector, support applicability and retained obligations. This runtime slice
 implements current proof checks and local recovery; it does not establish complete
 model-to-code refinement. No new formal proof is claimed by this receipt.
 
@@ -85,7 +85,7 @@ atomic fences and terminal receipt resolution remain open.
 
 The canonical production =./build.ss= completed with normal compiler settings.
 Workflow actionlint and git diff whitespace checks passed.
-The static native entry completed with exit zero: 57 cases, four MODULE-OK
+The static runtime entry completed with exit zero: 57 cases, four MODULE-OK
 receipts, HARNESS-OK and final OK, with no error or overflow marker. The unchanged
 runtime limits were five seconds idle, 45 seconds total and a 1 GiB heap fence.
 The set comprises 28 original evaluator/Context controls, eight Context Session
@@ -96,10 +96,10 @@ consumer. A negative receipt showed that projection identity alone did not chang
 when a Temporal requirement was bound; the strengthened digest closes that defect.
 
 The dynamic Darwin run passed assertions but failed during Gambit module teardown.
-Native stack sampling located the active work in dyld dlclose. That run remains
-unqualified. The compiler-owned executable follows the existing native parser
+Runtime stack sampling located the active work in dyld dlclose. That run remains
+unqualified. The compiler-owned executable follows the existing runtime parser
 and Temporal family qualification pattern; upstream gxtest retains discovery,
-assertions, reporting and exit status. It links Gerbil modules as native objects,
+assertions, reporting and exit status. It links Gerbil modules as runtime objects,
 while normal Darwin system libraries remain dynamic. The installed SDK's missing
 test-tool C/object metadata is materialized from its exact generated sources in
 the separate user artifact root. The installed SDK is not modified. Test object
@@ -108,14 +108,14 @@ compilation uses the existing qualification O0 policy; no performance claim is m
 Build attempts that reached the original 180-second budget, failed SDK metadata
 linkage or failed progress checks are retained as negative local logs. The
 completed build reused compiler-owned objects without widening time limits.
-The native CI job now builds and runs the same executable. Remote CI completion
+The runtime CI job now builds and runs the same executable. Remote CI completion
 must be checked against the pushed commit before claiming consumer qualification.
 
-* Orgize native event migration
+* Orgize runtime event migration
 
 ** Dependency ownership
 
-Context consumes Org parsing through Orgize's native event and source
+Context consumes Org parsing through Orgize's runtime event and source
 interfaces. Orgize owns the parser implementation, generated folds and parser
 version requirement. Context must not import Gerbil Parser directly or own
 producer bootstrap logic.
@@ -134,37 +134,37 @@ Rust projection responsibilities to hide this dependency.
 The concurrent PR dependency update pins Orgize to
 =7561f82166124050a157c4fadc5f17927945dbea=. That producer removes the
 =languages/org/v1= interfaces and the Rowan parser operation. The consumer now
-imports =languages/org= and calls =parse-org-native-events= directly. Its parser
-identity is =orgize.org-v1.native-events+headline-properties.v1=; historical
+imports =languages/org= and calls =parse-org-events= directly. Its parser
+identity is =orgize.org-v1.runtime-events+headline-properties.v1=; historical
 receipts keep their original dependency boundary.
 
 Orgize requires parser =a36c4d1ba23245d0768c60c9a2e08ca8ccc01e6d=.
 The consumer direct pin, immutable archive digest and cross-platform Bazel lock
-projections are aligned with that requirement. The earlier remote native job at
+projections are aligned with that requirement. The earlier remote runtime job at
 =2979253a37fd5f5285bb192934782f3ad626048f= rejected the previous parser pin
 with an incompatible-tag error. This alignment addresses that exact failure;
 it does not establish subsequent clean-install success.
 
-The native qualification entry now includes eight Org ID controls and four
+The runtime qualification entry now includes eight Org ID controls and four
 source-replay controls in addition to the original 57 controls. Its executable
 gate requires 69 cases, six module receipts, HARNESS-OK, final OK and exit zero.
-The Orgize generated native fold source remains producer-owned. Its generation
+The Orgize generated runtime fold source remains producer-owned. Its generation
 and consumed source/runtime interface build completed under the same SDK as the
 consumer. Foreign producer SDK objects were rejected as ABI-incompatible and
 were not used for qualification.
 
 The complete producer parser build also attempts optional bridge modules. Its
-=gerbil-scheme-rust/scheme/native= import failed to resolve =:std/foreign= in
+=gerbil-scheme-rust/scheme/runtime= import failed to resolve =:std/foreign= in
 this local SDK. That negative receipt remains open; the consumed source/runtime
 interface build is a separate successful boundary. No complete Orgize bridge,
-MRR transport or MRR Data integration claim follows from the native Context gate.
+MRR transport or MRR Data integration claim follows from the runtime Context gate.
 
 * Open exact-pin gate and producer candidate
 
 The migrated Agentic AI Lab production build completed with normal settings. The
-six qualification suites compiled and the native executable linked. Running
+six qualification suites compiled and the runtime executable linked. Running
 that executable against the fixed Orgize/parser pair failed before test cases:
-the generated native fold SSI contained empty =%#import= forms, which this SDK's
+the generated runtime fold SSI contained empty =%#import= forms, which this SDK's
 runtime expander rejects. This exact-pin run is not qualified.
 
 A source-owned parser candidate removes empty import forms only when no module
@@ -190,7 +190,7 @@ separate Query/compiler imports. Archive digests and both platform Bazel lock
 projections were regenerated and the dependency contract check passed. The
 Context source boundary imports Orgize's current =languages/org/event-runtime=
 interface. Orgize producer CI and fresh consumer qualification remain required;
-manifest alignment alone does not qualify the new native artifacts.
+manifest alignment alone does not qualify the new runtime artifacts.
 
 The fresh local parser build reached the original 180-second budget. Its
 incremental continuation returned zero, but Orgize's producer build exposed
@@ -206,7 +206,7 @@ the watchdog, substituting older artifacts or changing runtime test assertions.
 ** Source-owned producer bootstrap
 
 Linux consumer CI at =7a031aee3a07530aa3a6acac5d2d4e74afa1885c= failed in both
-native dependency installation and the isolated Bazel package build because
+runtime dependency installation and the isolated Bazel package build because
 Orgize's standard build did not generate =orgize/fold= before importing it.
 Orgize now publishes =790212d09d0d5d7294a06c9657a8737d9a3e1728= with an owned
 declaration/generation/runtime bootstrap. The public event and headline property
@@ -222,7 +222,7 @@ successful completeness check. Earlier failed trials remain negative receipts.
 
 The producer's four-case dynamic source-headline qualification entry failed its
 five-second output watchdog before emitting cases. No timeout was extended.
-Fresh native consumer behavior remains required. The Agentic AI Lab production build
+Fresh runtime consumer behavior remains required. The Agentic AI Lab production build
 against these products completed in a continuation after its first bounded
 180-second pass timed out; the initial pass remains a failed receipt.
 
@@ -235,7 +235,7 @@ because the generated compilation products contain timestamps and temporary
 identifiers. That attempt is retained as a negative control and is not promoted
 to a byte-identity receipt.
 
-The unchanged native executable, with source-recompiled candidate SSI first on
+The unchanged runtime executable, with source-recompiled candidate SSI first on
 its load path, completed 69 cases and six module receipts with exit zero,
 HARNESS-OK and final OK. Runtime limits remained five seconds idle, 45 seconds
 total and a one GiB heap. This is a metadata compatibility control; it does not
@@ -243,20 +243,20 @@ qualify a freshly rebuilt complete producer/consumer pair. Immutable
 manifest/lock alignment, fresh artifact rebuilding and exact-head consumer CI
 remain required before closing the migration.
 
-Bounded native compilation passes also reached the original 180-second build
+Bounded runtime compilation passes also reached the original 180-second build
 budget. A terminated compiler left a temporary object lock, preventing the next
 pass from progressing. The exited process group and specific private lock were
 checked before each abandoned lock was removed. Completed compiler objects were
 reused; no watchdog or runtime test limit was widened. All failed passes remain
 local diagnostic artifacts, not source-controlled logs.
 
-** Fresh native consumer qualification
+** Fresh runtime consumer qualification
 
-A newly linked native executable against parser
+A newly linked runtime executable against parser
 =78507e68b1275be1be748be465d6354f596d9063= and Orgize
 =790212d09d0d5d7294a06c9657a8737d9a3e1728= completed all 69 cases,
 six MODULE-OK receipts, HARNESS-OK, final OK and process exit zero. The
-consumer used isolated producer namespaces rather than the earlier native
+consumer used isolated producer namespaces rather than the earlier runtime
 executable or older Orgize/parser products. Runtime budgets remain five seconds
 without output, 45 seconds total and a one GiB heap.
 
@@ -266,7 +266,7 @@ explicitly declares all six suite modules before its executable target. A matche
 control removed the private Query suite static product; the build recompiled
 that suite, recreated the missing product and linked successfully with exit zero.
 
-The qualification build now delegates native object jobs and the final link
+The qualification build now delegates runtime object jobs and the final link
 barrier to Gerbil's std/make, with four build workers. The build computes the
 entrypoint's dependency order using the official compiler/expander and publishes
 a companion =.modules= artifact after successful linking. Startup imports each
@@ -276,7 +276,7 @@ official gxtest discovery, assertions and exit propagation. No test assertion or
 watchdog was weakened. The earlier serial link timeout and silent startup
 watchdog failure remain negative receipts.
 
-This closes the local fresh native Context/Temporal/Session consumer gate.
+This closes the local fresh runtime Context/Temporal/Session consumer gate.
 Exact-head remote consumer CI and the independent producer qualification remain
 separate gates. It does not establish complete provider refinement, durable
 MRR Data integration or an end-to-end scheduling performance advantage.

@@ -1,6 +1,6 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Test resources only: native POO acquisition/preparation/release, no runner.
+;;; Test resources only: POO acquisition/preparation/release, no runner.
 (import :clan/poo/object
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile clear-temporary-file!)

@@ -6,7 +6,7 @@ namespace YuanxuProof.PooClos.MethodCombination
 open LeanPoo.Functional
 
 /-! Pure qualifier matching and ordered combination from
-`poo-clos/method-combination.ss`. Predicate matchers and native side effects are
+`poo-clos/method-combination.ss`. Predicate matchers and runtime side effects are
 outside this declarative-pattern fragment; they are not assumed to succeed. -/
 inductive Pattern where
   | rest
@@ -35,7 +35,7 @@ structure Group where
   mostSpecificLast : Bool
   deriving Repr, DecidableEq
 
-/-- Native `find` assigns each method only to its first matching group.
+/-- Runtime `find` assigns each method only to its first matching group.
 `reference` projects group object identity (`eq?`), not its possibly repeated label. -/
 def firstGroup (groups : List Group) (qualifiers : List String) : Option Group :=
   groups.find? (fun group => group.patterns.any (fun pattern => patternMatches pattern qualifiers))
@@ -142,9 +142,9 @@ theorem applicable_reference {Args : Type}
       (LeanPoo.Object.MethodCandidate.selected args) :=
   LeanPoo.Object.MethodCandidate.select_reference candidates args
 
-/-- Boolean-result fragment of the native and/or control drivers. Factories
+/-- Boolean-result fragment of the runtime and/or control drivers. Factories
 in the unused suffix are not applied. Other Scheme truthy values need the
-native value representation and are outside this fragment. -/
+runtime value representation and are outside this fragment. -/
 def shortAnd {Context : Type} : List (Factory Context (fun _ => Bool)) → Factory Context (fun _ => Bool)
   | [] => fun _ => true
   | head :: tail => Factory.bind head (fun _ value =>

@@ -227,7 +227,7 @@ Python object, C++ class, exception, or mangled name.
 * Deferred work
 
 AC-06 owns =poll_batch=, =submit_batch=, caller buffers, borrowed leases,
-arenas, native fast views, zero-copy evidence, and the deep
+arenas, runtime fast views, zero-copy evidence, and the deep
 =.data/gerbil-mysql= row/string/buffer/release owner and performance study.  That
 study does not block the v0.1 control lane but continues to block ABI v1 freeze.
 

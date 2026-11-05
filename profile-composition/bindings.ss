@@ -5,18 +5,18 @@
 
 ;;; Inert Profile selection and lexical binding values used by composition.
 
-(import (only-in :clan/poo/object .o .ref object?))
+(import (runtime: :clan/poo/object))
 
 (export yuanxu-module-scope
         yuanxu-profile-ref
         yuanxu-scenario-module-binding
         yuanxu-scenario-profile-binding)
 
-;; A bounded declaration binds an existing native scope, without copying it,
+;; A bounded declaration binds an existing runtime scope, without copying it,
 ;; forcing publication/source slots, or manufacturing source admission evidence.
 (def (yuanxu-module-scope value)
   (unless (object? value)
-    (error "use-module bounded body requires a native POO scope" value))
+    (error "use-module bounded body requires a POO scope" value))
   value)
 
 (def (yuanxu-profile-ref module slot)

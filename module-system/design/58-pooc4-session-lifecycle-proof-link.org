@@ -11,7 +11,7 @@ This document records the implementation contract for proving the session
 lifecycle boundary used by the Scheme control plane.
 
 The proof target is not the Scheme interpreter. The proof target is the typed
-projection emitted from POO-native session, policy, strategy, placement, and
+projection emitted from POO session, policy, strategy, placement, and
 handoff objects into Lean lifecycle declarations.
 
 * 10.06.58.20 Scheme Boundary

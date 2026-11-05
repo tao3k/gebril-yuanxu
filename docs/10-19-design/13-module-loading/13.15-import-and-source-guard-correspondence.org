@@ -1,25 +1,25 @@
-#+title: Native Import and Source Guard Correspondence
+#+title: Runtime Import and Source Guard Correspondence
 #+language: en
-#+property: STATUS focused-native-qualification-in-progress
+#+property: STATUS focused-runtime-qualification-in-progress
 
 * Concrete correspondence
 
 This continues [[file:13.14-test-source-graph-model.org][the demand/admission model]] at actual Gerbil
 import and source-check boundaries. The evidence is deliberately separated:
-Lean proves the list/checking laws, native Scheme tests exercise the SDK reader,
+Lean proves the list/checking laws, Scheme tests exercise the Gerbil reader,
 and the AWS endpoint must still complete independently.
 
 | Model value or transition | Actual Scheme producer | Executable observation |
 |---------------------------+------------------------+------------------------|
-| Demand root | =module-compiler-tools:inputs-for= | =compiler-demand= carries the actual SDK context |
-| First context discovery | =for-each-build-module= walks SDK import/export/import-set wrappers | =compiler-discovery= carries actual parent/child context objects and source path |
-| Context identity | Native object identity, through =make-hash-table-eq= | Per-context nested identity tables, not equality of printed module names |
+| Demand root | =module-compiler-tools:inputs-for= | =compiler-demand= carries the actual Gerbil expander context |
+| First context discovery | =for-each-build-module= walks Gerbil import/export/import-set wrappers | =compiler-discovery= carries actual parent/child context objects and source path |
+| Context identity | Runtime object identity, through =make-hash-table-eq= | Per-context nested identity tables, not equality of printed module names |
 | Reused source topology | Reader-local =kernel-closures= | =kernel-closure-requests= versus =kernel-closure-walks= |
 | Current input projection | Each consumer looks up =kernel-inputs= for every cached child | Private helper remains in =reader.inputs= on both first and repeated publication |
 | Current source evidence | =check-source-current!= inside =module-source-admit-current!= | Mutating the actually imported helper refuses old admission |
-| Expansion request | Native import of a prepared role | =native-source-import-start/end=; these timings include required macro phases, not all phase-zero body evaluation |
-| Macro initialization | Existing native =begin-syntax= probe | Confined initialization occurs once; independent canonical import is the negative control |
-| External execution boundary | Existing Ops =run-process= and watchdog | Original deadline, TERM/KILL report, native completion markers and natural exit |
+| Expansion request | Runtime import of a prepared role | =compiler-source-import-start/end=; these timings include required macro phases, not all phase-zero body evaluation |
+| Macro initialization | Existing runtime =begin-syntax= probe | Confined initialization occurs once; independent canonical import is the negative control |
+| External execution boundary | Existing Ops =run-process= and watchdog | Original deadline, TERM/KILL report, runtime completion markers and natural exit |
 
 The observer is optional and diagnostic. Its events are not admission evidence
 and cannot authorize publication. Actual context objects must not be replaced
@@ -28,8 +28,8 @@ can have similar labels. No second selected configuration Graph is constructed.
 
 * Structural reuse without input omission
 
-The reader previously traversed the SDK import graph again on every hit of a
-shared source context. The new reader-local index caches only the completed SDK
+The reader previously traversed the Gerbil import graph again on every hit of a
+shared source context. The new reader-local index caches only the completed Gerbil
 context list. It does not cache an accepted guard, an initializer result, a Nix
 result or a captured input-registration projection.
 
@@ -40,13 +40,13 @@ therefore resolves =kernel-inputs= against the cached context list again. In
 topology was first cached would be incorrect.
 
 The index has the same completed-context premise as the existing compiler-tool
-index: the SDK context import topology is stable within this reader snapshot.
+index: the Gerbil expander context import topology is stable within this reader snapshot.
 It is not a certificate for arbitrary out-of-band mutation of expander context
 internals. Source changes still require a fresh reader, and normal source,
 package identity and confinement guards are retained. A general proof that the
-SDK enforces immutable completed contexts remains outside these Lean models.
+Gerbil enforces immutable completed contexts remains outside these Lean models.
 
-The first native publication control now checks that each actual SDK child is
+The first runtime publication control now checks that each actual Gerbil child is
 discovered once per demanded closure, that repeated demands exist, and that
 kernel requests exceed first walks. The original confined macro initializer
 still runs once; the independent canonical-import negative control still fails.
@@ -62,18 +62,18 @@ The correspondence reuses =Admission.Source.checkSources=,
 
 - =checked_texts_are_current=: the public text checker supplies the demand
   model's actual current-input relation.
-- =native_guard_supplies_source_admission=: completed discovery plus complete
+- =runtime_guard_supplies_source_admission=: completed discovery plus complete
   input coverage and a successful current check supply source admission.
 - =return_guard_supplies_current_evidence=: initial success alone is insufficient;
   the returned evidence is tied to the after-effect observation.
 - =two_revisions_of_one_path_cannot_both_pass=: a later observation cannot erase
   an earlier conflicting revision by merely retaining the same path.
-- =native_guard_exact=: regular text, actual absence and nonregular paths are
+- =runtime_guard_exact=: regular text, actual absence and nonregular paths are
   distinguished; changed kind/text refuses. A directory or symlink cannot be
   used as evidence for an absent input.
 
 These laws do not prove filesystem snapshot atomicity, path authentication or
-SDK import completeness. The kind correspondence additionally assumes reliable
+Gerbil import completeness. The kind correspondence additionally assumes reliable
 metadata classification: =module-source-type= currently maps metadata exceptions
 to false, so error-versus-absence classification is not certified by this model.
 That is a specific remaining primitive boundary, not a reason to weaken guards.
@@ -89,7 +89,7 @@ reported 137. This establishes deadline escalation for that run; 137 alone did
 not establish OOM. The configured 60-second worker and 120-second outer limits
 were unchanged.
 
-Native import observations locate the broad path as:
+Runtime import observations locate the broad path as:
 
 #+begin_src scheme
 ;; Static dependency path, not a new user API.
@@ -101,7 +101,7 @@ test-body time, with 8,492 reads, 12,236 requests, 424 observation windows and
 280 compiler-closure demands versus 39 first walks. Package realization completed
 at 27.12 seconds, scope linking at 29.49, and parent publication at 39.89.
 The worker deadline was reached before Schema transition completed. Thus the
-endpoint time is not entirely Graph construction: native startup, declaration
+endpoint time is not entirely Graph construction: runtime startup, declaration
 expansion, repeated currentness checks, Nix operations and publication each
 consume part of the same worker budget.
 
@@ -124,7 +124,7 @@ is not an end-to-end speedup claim or a controlled benchmark.
 * Failure and deadline ownership
 
 The AWS parent uses the existing Ops log slot for optional local streaming, so
-the last completed native import survives a worker failure. It owns a temporary
+the last completed runtime import survives a worker failure. It owns a temporary
 directory through =with-yuanxu-fixture= and passes it as the worker's =TMPDIR=.
 When Ops returns a failure, parent cleanup can release worker files even if the
 worker did not unwind its own fixture. Hard termination of the parent itself is
@@ -149,12 +149,12 @@ just test-file t/module-testing-source-admission-test.ss
 just test-file ops/tests/atomic-test.ss
 #+end_example
 
-The first two passed after the topology index change, retaining native macro
+The first two passed after the topology index change, retaining runtime macro
 confinement, dependency projection and mutation refusal. The Ops atomic gate
 passed before the final process-owner extraction; it checks ordinary output,
 the exact deadline argv, real timeout signal diagnostics, and exception cleanup.
 The final process-owner extraction also passed =ops/tests/atomic-test.ss= and
-=t/funflow-job-test.ss= with natural exit zero and complete native harness
+=t/funflow-job-test.ss= with natural exit zero and complete runtime harness
 markers. No full build or aggregate proof/CI acceptance is claimed. Lean checks
 target only =ImportCorrespondence= and its existing
 =Admission.Source=/=TestAdmission= dependencies; the updated adapter elaborated
@@ -190,7 +190,7 @@ complete Schema-transition endpoint remains failed. No unchanged failed route
 is presented as a pass.
 
 The final executor import probe measured 0.23 seconds and its Script setup took
-less than a millisecond. Root import, worker native imports and full declaration
+less than a millisecond. Root import, worker runtime imports and full declaration
 expansion remain separate costs. Structural walk reductions are actual work
 counts, not a claim that the endpoint is now fast enough. Remaining eager role
 expansion, allocation/GC pressure and package-currentness handoffs need a
@@ -210,7 +210,7 @@ blaming expensive field validation or changing the Contract rules.
 Three narrow changes follow the existing observation-window model:
 
 - Configuration role/header preparation now shares one source-only window and
-  one Context observation. The window closes before the native binding import;
+  one Context observation. The window closes before the runtime binding import;
   the existing pre/post import checks remain independent.
 - OpenTofu's prepared-request guard shares bytes between its configuration guard
   and the adjacent observed-input comparison. Neither Nix nor value validators
@@ -222,10 +222,10 @@ Three narrow changes follow the existing observation-window model:
   the changed-world negative control still rejects a modified provider input.
 
 The AWS publication requirement path is AWS -> OpenTofu -> Nix/JsonSchema, but
-its native implementation also imports Funflow/Ops. An attempted four-root
+its runtime implementation also imports Funflow/Ops. An attempted four-root
 selection was rejected with =source import leaves its Module and package kernel=
 for Funflow's objects role. The original six roots have been restored; no source
-policy was relaxed. Under the present explicit directory policy, available native
+policy was relaxed. Under the present explicit directory policy, available runtime
 source owners and independently selected publications are coupled. Separating
 those authorities is a remaining design boundary, not an optimization assumed
 by this qualification. The endpoint additionally asserts that Funflow's actual
@@ -246,22 +246,22 @@ attaches the current SourceRef, rather than carrying an earlier caller's source
 capability into the new publication. A changed byte/package snapshot refuses the
 reader; it does not silently regenerate a cached entry under the old epoch.
 
-Retained native role contexts also need no unused wrapper file or repeated
-header preparation. The existing native import hook still consumes their actual
+Retained runtime role contexts also need no unused wrapper file or repeated
+header preparation. The existing runtime import hook still consumes their actual
 context identity and current input registry. It continues to produce each
 publication's dependency projection; no filtered input list is cached.
 
-The focused native regression observed two preparation demands, one preparation
+The focused runtime regression observed two preparation demands, one preparation
 walk and two distinct evaluated publication objects. The private runtime
-initializer still ran once under the existing native context cache, and helper
+initializer still ran once under the existing runtime context cache, and helper
 mutation rejected both the source guard and a subsequent read. This passed with
-natural exit zero and full native harness markers before the unused-wrapper
+natural exit zero and full runtime harness markers before the unused-wrapper
 elision; that final elision is qualified separately with the endpoint and
 publication regressions.
 
 Lean's =preparation_hit_requires_current= and =changed_preparation_refused=
 state the cache's guard obligation and changed-world rejection. They do not
-prove Gerbil parser purity, native expander completeness or filesystem
+prove Gerbil parser purity, runtime expander completeness or filesystem
 atomicity. The executable regression supplies the distinct-publication control;
 the default preparation implementation and stable metadata remain explicit
 correspondence premises. Macro, initializer, Contract and Nix results are never
@@ -286,10 +286,10 @@ the same capability alongside its existing reader inputs. The accessor returns
 the dependency registry's current projection with the prepared syntax in one
 guarded view, avoiding a second adjacent reader-input guard. The Graph guard
 checks both its Context and the prepared snapshot in one pure window, closing
-that window before native configuration evaluation or any package effect.
+that window before runtime configuration evaluation or any package effect.
 
 The configuration-build regression passed with natural exit zero and complete
-harness markers: native build evaluation stays deferred and occurs once,
+harness markers: runtime build evaluation stays deferred and occurs once,
 source owner/dependency alias are retained, changed config refuses the old
 Graph, the old cached value retains its own value, and unused/disabled builders
 do not execute. The complete AWS gate remains a separate qualification.
@@ -302,7 +302,7 @@ prepared snapshot before expansion. The build consumer does the same. Only
 role/header/compiler-form construction is retained. A revoked policy must still
 reject unchanged syntax; source guards cannot stand in for this admission.
 
-** Native authoring imports are a demand boundary too
+** Runtime authoring imports are a demand boundary too
 
 Role admission imported the complete =poo-clos/interface= although it uses only
 prototype specializers, generic dispatch and a method bundle. Its imports now
@@ -353,8 +353,8 @@ public evidence binding, post-admission package currentness, and dependent
 meaning checks. They do not cache evidence, change the producer, or open a byte
 window around callbacks. The AWS probe counts file reads and source windows
 without retaining per-path tables; it separately observes real Nix subprocesses
-and native reader imports. =CORE_AWS_ADMISSION_TRACE= enables this attribution.
-=CORE_AWS_STARTUP_TRACE= independently enables the existing native expander
+and runtime reader imports. =CORE_AWS_ADMISSION_TRACE= enables this attribution.
+=CORE_AWS_STARTUP_TRACE= independently enables the existing runtime expander
 probe in both the endpoint and its worker. Inclusive import time overlaps;
 owner self time must not be added to its inclusive time.
 An end event also runs during unwinding: it measures a bracket, not acceptance.
@@ -398,7 +398,7 @@ Existing controls still require successful admission to detect package changes
 on its second check. Source/Schema changes during callbacks remain refused.
 
 A subsequent original-endpoint run still timed out before Context denial. Its
-native worker import probe took 11.550 seconds, with self time attributed to
+runtime worker import probe took 11.550 seconds, with self time attributed to
 =observability/types= (1.156), =poo-clos/objects= (1.074), Core =types= (0.629),
 authoring admission (0.566), CLOS types (0.512) and schema relations (0.484).
 The first Graph took 11.820 body seconds; package realization finished at 21.333,
@@ -460,7 +460,7 @@ first Graph completed at 15.542 body seconds, packages at 26.951, parent
 publication at 39.003, Context denial at 41.385 and stale-source refusal at
 41.540; the deadline interrupted the second Graph. Therefore compiling more
 owners did not establish a stable improvement, and is not a production fix.
-A one-second native stack sample in the first package interval recorded 882 of
+A one-second runtime stack sample in the first package interval recorded 882 of
 903 main-thread samples in process I/O =select= and 11 in process spawning.
 That sample is narrow, not attribution of the entire run; it does disallow
 calling this sampled interval a tight Scheme source-guard loop.
@@ -546,12 +546,12 @@ the real deadline signal report and exception-path fixture release assertion.
 No deadline, heap limit, runtime Loader or
 upstream library was changed, and no full build or push was performed.
 
-Remaining work is the actual combined cost of native OpenTofu/Funflow source
+Remaining work is the actual combined cost of runtime OpenTofu/Funflow source
 imports, fresh authoring dispatch and source/Schema guards around package and
 Contract effects. The model permits eliminating adjacent same-world work; it
 does not permit dropping fresh policy checks, Nix identity checks after
 validators, or the second Graph's changed-version requirements. A further cache
-needs its dependency/invalidation proof and a native negative control before it
+needs its dependency/invalidation proof and a runtime negative control before it
 can be used to close this endpoint.
 
 ** Source-only final-publication attribution: endpoint still open
@@ -562,19 +562,19 @@ The first attempt against the live working directory refused a concurrent
 change to =types.ss= while constructing the Graph. That is a source-currentness
 refusal, not a valid timing receipt. A subsequent fixed source snapshot retained
 the original Ops endpoint, its 60-second worker deadline and five-second kill
-grace, the native test harness, and both provider versions. No runtime Loader,
+grace, the runtime test harness, and both provider versions. No runtime Loader,
 upstream library or full build was involved.
 
 The fixed-snapshot run failed too, before final publication:
 
 | Completed interval | Observed seconds | Interpretation |
 |--------------------+------------------+----------------|
-| Worker startup probe | 14.738 | Native import/expansion callbacks, before the test body |
-| First Graph construction | 18.193 | Includes native role imports and source preparation/guards |
+| Worker startup probe | 14.738 | Runtime import/expansion callbacks, before the test body |
+| First Graph construction | 18.193 | Includes runtime role imports and source preparation/guards |
 | First selected-package realization | 17.732 | Includes Nix processes, source checks and configuration validation |
 | First Nix derivation query | 3.932 | Process wall time; evaluator reports CPU time 0.540 |
 | Second Nix derivation query | 4.745 | Process wall time; evaluator reports CPU time 0.545 |
-| Cached-store validity / realization | 0.394 / 2.829 | Separate native Nix processes, not evaluator CPU measurements |
+| Cached-store validity / realization | 0.394 / 2.829 | Separate runtime Nix processes, not evaluator CPU measurements |
 
 The intervals overlap: Nix rows are inside package realization, and startup
 probe time is not the complete worker lifetime. Do not sum every row. The
@@ -599,7 +599,7 @@ validators or caching an accepted derivation for the Graph lifetime.
 The new =read-windows= counter counts only new outer windows. =reads= counts
 actual file reads; =check-seconds= measures outer window elapsed time. Thousands
 of requests must not be reported as thousands of complete filesystem passes.
-The existing native nested-window regression now asserts two requests / one
+The existing runtime nested-window regression now asserts two requests / one
 window / one read, followed by a fresh second window that rejects changed bytes.
 
 The existing passive publication observer now also brackets =selected-record=,
@@ -620,7 +620,7 @@ NIX_SHOW_STATS=1 just test-file t/aws-context-publication-test.ss
 Use a fixed source revision/snapshot and the locked dependency for attribution;
 exclude additional compiled Core qualification owners for this source-only
 control. Keep raw output outside tracked documentation. A successful follow-up
-must retain natural process exit zero, complete native harness markers, Schema
+must retain natural process exit zero, complete runtime harness markers, Schema
 upgrade and old-evidence rejection, final publication, and parent-owned fixture
 release. Raising the timeout or qualifying a different direct-call endpoint is
 not an acceptance substitute. No speedup is claimed by this failed control.
@@ -645,7 +645,7 @@ The source-only follow-up changes executable work at three existing owners:
    not a hash of the full source text. Distinct expected objects, conflicting
    revisions and independent windows still check independently. Failures are
    not cached. Collector enrollment remains outside the comparison memo, so a
-   newly entered collector records even a previously checked input. The native
+   newly entered collector records even a previously checked input. The runtime
    control replays such a collected hit after mutation and requires refusal.
 2. A source-policy invocation parses each role once. Nonempty-source, dependency
    direction, owner-import and authoring checks inspect that invocation's inert
@@ -671,7 +671,7 @@ that window. Fresh-read boundaries, independent collector replay, author-code
 callbacks and Nix effects retain their original checks. This is not filesystem
 transaction isolation or a proof that arbitrary callbacks are pure.
 
-*** Native work counts and expansion owners
+*** Runtime work counts and expansion owners
 
 With the first two changes, the original bounded Ops endpoint reached parent
 publication, Context rejection and refusal of the changed source. It still
@@ -686,15 +686,15 @@ comparison hits, with 93 role parses. By parent publication, comparison hits
 were 7,140. Hits establish avoided comparison work, not equivalent time saved.
 Counter scopes overlap and must not be added as independent cost intervals.
 
-The native import attribution identified nested OpenTofu =objects.ss= (5.098s),
+The runtime import attribution identified nested OpenTofu =objects.ss= (5.098s),
 =execution.ss= (3.401s), =collections.ss= (1.525s), the CLOS facade (1.470s)
 and CLOS syntax (1.180s). These intervals overlap. The expansion probe also
 reported a phase-2 generated helper compilation at 0.944s. This located the
 aggregate-facade dependency removed by change 3; it does not make all syntax
-compilation unnecessary. The source preparation still uses the SDK expander
+compilation unnecessary. The source preparation still uses the Gerbil expander
 and evaluates fresh declarations at the required phase boundaries.
 
-=CORE_AWS_GRAPH_TRACE= brackets the actual Graph demand with the existing SDK
+=CORE_AWS_GRAPH_TRACE= brackets the actual Graph demand with the existing Gerbil
 callback probe and restores hooks through =dynamic-wind=, including refusal.
 Each probe interval clears its own rows; startup and the second Graph cannot
 accidentally inherit the first Graph's counters. Acceptance uses the original
@@ -733,7 +733,7 @@ that collector, omitting evidence needed by its final replay. Each collector
 therefore receives its own enrollment; byte comparisons can still reuse the
 same stable read-window bytes. This is not a second evidence system.
 
-** Native controls
+** Runtime controls
 
 | Existing test entry | New boundary control |
 |---------------------+----------------------|
@@ -847,7 +847,7 @@ or environment-variable protocol:
 #+begin_src scheme
 (yuanxu-test-fixture "selected AWS publication remains current"
   (workspace Workspace)
-  ;; Ordinary native assertions and the existing Ops .run consumer.
+  ;; Ordinary runtime assertions and the existing Ops .run consumer.
   (check-equal? (file-exists? workspace) #t))
 #+end_src
 
@@ -864,10 +864,10 @@ it cannot support per-operation allocation deltas. Heap/live fields remain
 last-GC measurements. This follows the VM's =##process-statistics= definition
 in [[https://github.com/gambit/gambit/blob/master/lib/_kernel.scm][Gambit's kernel]].
 
-The focused =t/observability-test-import-test.ss= checks the actual SDK import
+The focused =t/observability-test-import-test.ss= checks the actual Gerbil import
 closure of the fixture macro, absence of optional printer/type dependencies,
 cumulative allocation and failure cleanup. It passes in the fully source-loaded
-=fdeadfa40= environment with natural exit zero and all native harness markers.
+=fdeadfa40= environment with natural exit zero and all runtime harness markers.
 The existing =t/core-test.ss= and =t/observability-feedback-test.ss= also pass
 in that environment, covering the Case policy and public debug facade.
 
@@ -887,7 +887,7 @@ failure cleanup and rejects the worker's misleading exit-zero harness failure.
 
 Cold imports happen before a runtime Case body. A Case watchdog alone cannot
 attribute macro-expansion retention or charge every live object to a Module.
-Any remaining SDK phase observation must be an adapter of the shared framework
+Any remaining Gerbil phase observation must be an adapter of the shared framework
 with explicit phase boundaries, rather than another AWS-specific memory system.
 Source observations, evaluated declarations and admitted evidence have distinct
 lifetimes; no cache may reuse acceptance across writes, author callbacks or Nix
@@ -896,7 +896,7 @@ effects merely to reduce this footprint.
 ** Private reader expansion lifetime
 
 The reader must distinguish its generated interpreter wrappers from canonical
-SDK contexts. A wrapper is never a compiler input: build projection prepares
+Gerbil expander contexts. A wrapper is never a compiler input: build projection prepares
 the guarded original source with its original compiler identity. The private
 context still owns live macro bindings, imports, phase tables and runtime values.
 Those are not disposable expansion intermediates.
@@ -906,9 +906,9 @@ The release boundary now requires all of the following:
 1. The normalized context path is an exact member of the current operation's
    generated-wrapper set. A directory prefix or a Core-looking identity is
    insufficient. Shared canonical dependencies are excluded.
-2. The SDK compiler receives the identical =module-context-code= body in phase
+2. The Gerbil compiler receives the identical =module-context-code= body in phase
    zero. An arbitrary expression evaluated in that context is insufficient.
-3. The SDK evaluator successfully returns from that exact compiled program.
+3. The Gerbil evaluator successfully returns from that exact compiled program.
    A completed macro-phase initializer or an import alone is insufficient.
 4. The requested binding returns and the operation's post-evaluation source
    guard passes. A failed guard preserves the bodies for failure inspection.
@@ -919,8 +919,8 @@ The scoped adapter delegates to the existing =current-expander-compile= and
 temporary program/body association is lifecycle tracking, not a result or
 admission cache. After the boundary it releases only the private context's
 =code= reference through Gerbil MOP and clears its own completed-work table.
-It does not alter the SDK module registry, imports, phase bindings, runtime
-promise, initializer results, or canonical library bodies. The SDK source
+It does not alter the Gerbil module registry, imports, phase bindings, runtime
+promise, initializer results, or canonical library bodies. The Gerbil source
 separates =module-context-e= (runtime evaluation) from =module-context-code=
 (expanded compiler body); both initially refer to the body. Merely removing
 one reference before evaluation would neither be safe nor prove reclamation.
@@ -932,7 +932,7 @@ An earlier isolated cleanup experiment that imported wrappers to obtain their
 contexts was also rejected: it expanded an unused related role. Neither
 experiment's passing subtests qualify the final lifetime rule.
 
-Focused native controls cover reuse of the same exported macro after release,
+Focused runtime controls cover reuse of the same exported macro after release,
 unchanged canonical context bodies, repeated publication reads, lazy domain
 slots, source invalidation, and original-source build projections. Another
 control makes an unused related role raise during expansion and runtime; an
@@ -945,7 +945,7 @@ The maintained =t/module-publication-test.ss= additionally checks identity of
 each observed context's runtime promise and import list across release, a
 nonempty canonical POO context body, and preservation of all observed bodies
 when an initializer changes its source before the post-evaluation guard.
-It passes with natural exit zero and all native harness markers, as do
+It passes with natural exit zero and all runtime harness markers, as do
 =t/module-build-role-test.ss= and =t/module-build-graph-test.ss=. The latter
 retains source identity, conflict/order and source-change checks; these tests
 do not substitute for the original Ops endpoint.
@@ -961,7 +961,7 @@ publications, then overflows during Funflow publication. Source-change refusal
 and previous-value retention run before that point; final fresh publication and
 the remaining Schema-transition assertions are still unqualified. The surviving
 parent continues to reject the child harness failure and owns failure cleanup.
-No additional SDK state may be erased to turn this remaining failure into a pass.
+No additional Gerbil state may be erased to turn this remaining failure into a pass.
 The private dependency census stays at 74 contexts in the second epoch; only
 one newly evaluated interface body is released per completed publication there.
 That rules out a second complete private-dependency import as the explanation
@@ -979,12 +979,12 @@ and 120 seconds. Historical one-GiB failures above are not rewritten.
 
 The original init-owned Ops endpoint passes at two GiB, before and after
 moving AWS's source-observer callback into =ModuleTestingProfile.=. The
-existing fixture macro selects that Profile normally. Native slot refinement
+existing fixture macro selects that Profile normally. Runtime slot refinement
 ~(.run => observe-module-test)~ wraps the original Case method; disabled
 observation installs no source adapter. Enabled observation forwards previous
 observers, accumulates bounded scalar work categories, emits phase receipts,
-and reports final totals on both success and failure. It roots no SDK contexts,
-syntax trees or candidate objects. No new runner or SDK-state cleanup is used.
+and reports final totals on both success and failure. It roots no Gerbil expander contexts,
+syntax trees or candidate objects. No new runner or Gerbil-state cleanup is used.
 
 A separate invocation of the same atomic file exposes the phase receipts;
 it is not a replacement for the independently passing Ops endpoint:
@@ -1020,7 +1020,7 @@ Two independently checked repetitions are removed without a new cache:
   evaluating it for both method lookup and the explicit receiver.
 - The existing pure read-window key shares file-kind queries across collectors.
   File-kind lookup has no collector enrollment. Arbitrary queries and byte
-  guards retain their collector-sensitive semantics. A native control performs
+  guards retain their collector-sensitive semantics. A runtime control performs
   three lookups through separate collector contexts with one physical stat,
   then verifies both collectors reject changed bytes and a fresh window sees
   a changed file kind. No reuse survives the window or an effect boundary.
@@ -1029,7 +1029,7 @@ The VM allocation reading also moved backwards during this workload despite
 the source definition describing counter 7 as allocated bytes. Raw readings
 remain diagnostic data. The Case now latches allocation validity to false on
 the first rollback; later increases cannot repair it. Allocation deltas are
-not emitted as performance evidence. A pure native control covers the sequence
+not emitted as performance evidence. A pure runtime control covers the sequence
 100, 120, 110, 130. This observation does not establish an upstream VM defect;
 the exact counter implementation and interpreter behavior remain an open
 measurement question. Heap/live capacity verdicts and source/evidence
@@ -1041,7 +1041,7 @@ evaluated bodies (80), guards (47) and stat work (11062) match the passing
 receipt, while wall time is 15921 rather than 8443 milliseconds. The stat-key
 control removes a demonstrated cross-collector duplicate; these end-to-end
 counts do not demonstrate a stat reduction in that particular first Graph.
-This timeout is retained as a failure. Subsequent requalification with SDK
+This timeout is retained as a failure. Subsequent requalification with Gerbil
 process CPU time beside wall time passes the original Ops endpoint with
 natural exit zero, complete Schema transition, stale-evidence refusal and
 failure cleanup. The CPU hook adds no process, sampler, environment switch or

@@ -34,7 +34,7 @@ Compare three designs before fixing the public surface:
 
 Preferred candidate for further validation: internally retain one selected-system
 authority, but instantiate each Module with admitted dependencies and expose ordinary
-lexical bindings to its role files. Use native POO scopes and with-slots for public
+lexical bindings to its role files. Use POO scopes and with-slots for public
 values. Keep explicit function parameters for pure domain algorithms. Do not impose
 user-written module factories, a dynamic global parameter or a new access DSL.
 
@@ -164,13 +164,13 @@ own policies. Rejecting all file cycles is not a substitute for those policies.
 
 [[file:10.07-guestbook-data-input-and-object-construction.org][The input-to-object design]] expands the JSON/Scheme paths, defaults, field
 policy, function and placeholder binding, and final admission. JSON Schema is
-optional: ordinary data can be objectified and checked by native Scheme Contracts.
-Native string->json is available; generic deployment-input integration is pending.
+optional: ordinary data can be objectified and checked by Scheme Contracts.
+Runtime string->json is available; generic deployment-input integration is pending.
 
 Ordinary configuration must support JSON-like name/value authoring, not require
 every user to understand prototype extension. JSON files and ordinary Scheme
 values are alternative input representations. The second layer constructs domain
-objects with maintained defaults, named functions and applicable Contracts. Native
+objects with maintained defaults, named functions and applicable Contracts. Runtime
 inheritance/refinement is an optional capability of that same object layer, not
 a mandatory third wrapper or a separate configuration engine.
 
@@ -203,7 +203,7 @@ such a record with .o does not imply inheritance. The compiled domain consumer
 may construct a fresh object using a Contract's prototype/defaults or instantiate
 a maintained Profile. Neither requires the user to write =>.+ for replacement.
 
-Native read-json is available through Gerbil's :std/encoding/json; Core already
+Runtime read-json is available through Gerbil's :std/encoding/json; Core already
 uses it in [[file:../../../modules/json-schema/json-schema-source.ss][the JSON Schema source reader]]. That reader is not a general deployment
 configuration loader. JSON-input publication, module-relative source tracking,
 missing/null policy, partial-input completion and provenance into final objects
@@ -242,7 +242,7 @@ They do not request inherited-value computation. Direct dotted assignment remain
 a target lowering, not an implementation claim. The services list is replacement;
 each .o in it constructs a new data object, not an extension with an unstated parent.
 
-Corresponding native object body, in the same lexical dependency scope:
+Corresponding runtime object body, in the same lexical dependency scope:
 
 #+begin_src scheme
 (.def (Development @ GuestbookDefaults)
@@ -273,7 +273,7 @@ instead. This distinction is driven by user intent, not by author sophistication
 
 ** Internal lexical lowering, not a user-maintained factory
 
-An illustrative native binding fragment explains the contextual boundary:
+An illustrative runtime binding fragment explains the contextual boundary:
 
 #+begin_src scheme
 (lambda (dependencies)
@@ -301,7 +301,7 @@ dependencies must be instantiated in the right context. No new macro is proposed
 - A functional refinement observes the value at that point in the declared
   composition sequence. Noncommutative transforms must retain their order.
 - Independent contributions assigning different ports must follow an explicit
-  domain policy or be rejected with both sources. Native parent precedence alone
+  domain policy or be rejected with both sources. Runtime parent precedence alone
   is not proof that the disagreement was intentional or safe.
 - Field shape Contracts cannot infer list identity, deletion or merge policy.
   Reuse Schema/Contract data for discovery, adding only genuinely missing semantic
@@ -344,7 +344,7 @@ records are optional inspection details, never required configuration syntax.
 
 | Change/control | Required observation | Current evidence boundary |
 |----------------+----------------------+---------------------------|
-| Parent resources already forced; child image/env changed | Child resources use child values; parent unchanged | Native receiver controls exist in earlier work; this full consumer is unvalidated |
+| Parent resources already forced; child image/env changed | Child resources use child values; parent unchanged | Runtime receiver controls exist in earlier work; this full consumer is unvalidated |
 | Frontend Service changes | Recheck that Service's target/selector and relevant resources | Dependency-granular consumer invalidation pending |
 | Leader endpoint changes | Recheck declared clients/connections, not every unrelated Profile | Proposed connection model and consumer demand tracking |
 | Schema or renderer revision changes | Requalify affected admission/projection even if config bytes match | Contract/source revision binding must be established end to end |

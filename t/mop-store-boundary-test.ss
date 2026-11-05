@@ -65,7 +65,7 @@
   (set! observations (cons (vector label (length owners) forced cached
                              (.get Hot port) (.get Cold port)) observations)))
 (def mop-store-boundary-test
- (test-suite "Compiler-lowered native owned stores"
+ (test-suite "Compiler-lowered runtime owned stores"
   (yuanxu-test-case "generated setter refuses before a first store"
     (refusal "generated" generated-store!)
     (set! completed (+ completed 1)))

@@ -39,8 +39,8 @@ contract or focused test receipt.
 
 ** 10.06.162.30 Receipts In This Change
 
-1. =model-core/types.ss= now owns four native =define-type= contracts.
-2. =model-core/objects.ss= owns POO constructors and an entirely POO-native
+1. =model-core/types.ss= now owns four runtime =define-type= contracts.
+2. =model-core/objects.ss= owns POO constructors and an entirely POO
    selection receipt.
 3. =model-core/funs.ss= owns lookup, capability matching and selection.
 4. =model-core/config.ss= owns only concrete catalog and policy composition.

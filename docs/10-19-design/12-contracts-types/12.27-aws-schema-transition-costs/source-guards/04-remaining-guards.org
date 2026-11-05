@@ -135,11 +135,11 @@ The OpenTofu request already shares configuration-role and observed-input reads
 inside its own synchronous window. The Graph's compiler guard also shares its
 selected and prepared-source traversals within its own window. Both use the
 existing source-read mechanism. Extending either window through an arbitrary
-request getter, native import, package callback or domain validator would be a
+request getter, runtime import, package callback or domain validator would be a
 different operation. Warm package state only removes a realization demand; it
 does not prove that a replaceable callback has become source-only.
 
-The native control in =t/ops-selected-packages-test.ss= now covers that exact
+The runtime control in =t/ops-selected-packages-test.ss= now covers that exact
 warm-state distinction. It publishes a package, runs its currentness check,
 then enables a callback that checks the inputs and changes a real configuration
 file before returning. The enclosing package guard must refuse before returning

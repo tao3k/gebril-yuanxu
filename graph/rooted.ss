@@ -6,7 +6,7 @@
 ;;; are paths, so equal local names in different branches remain distinct.
 ;;; Payloads belong to callers. All reachability uses the shared graph walker.
 (import (only-in :std/list/list find last)
-        (only-in :clan/poo/object .cc)
+        (runtime: :clan/poo/object)
         :yuanxu/graph/types
         :yuanxu/graph/algorithms)
 (export (import: :yuanxu/graph/types)

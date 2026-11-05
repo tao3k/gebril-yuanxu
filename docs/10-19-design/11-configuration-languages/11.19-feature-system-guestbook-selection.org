@@ -24,7 +24,7 @@ resolves selected features. These owners should collaborate, not be replaced.
 The [[file:../../../module-system/design/README.org][Core design]] owns shared directory, publication/selection and build-view protocols.
 This chapter owns their Agentic AI Lab and Guestbook consumption.
 
-The explicit core layout below is a proposed native descriptor refinement, not an
+The explicit core layout below is a proposed runtime descriptor refinement, not an
 already exported field layout. It makes baseline dependencies/exports/build inputs
 unambiguous. Map it to the existing descriptor authority once; do not keep a second
 catalog alongside interface/imports/schemas. The narrow constructor/projection
@@ -36,7 +36,7 @@ the schema module, not +json-schema. Global framework bootstrap roots are a sepa
 Module System policy; an owner's core slot does not by itself make that module a
 global bootstrap requirement.
 
-* Maintained baseline and optional extension use different native values
+* Maintained baseline and optional extension use different runtime values
 
 The canonical JsonSchema and Guestbook interface declarations are now in
 [[file:11.23-source-ref-to-admitted-scope.org][the complete Guestbook chain]]. They replace this chapter's earlier Module-suffix
@@ -99,7 +99,7 @@ then delegates each responsibility to its existing owner.
 | Module Core inclusion and owner disable | Module System descriptor/import closure |
 | Optional flag selection and capability binding | Existing Feature System model/resolver/binding |
 | Build entries and compiler closure | Selected Core + selected feature projections, then PackageSpec build owner |
-| Public namespace | Native lazy directory/export view and existing bounded use-module |
+| Public namespace | Runtime lazy directory/export view and existing bounded use-module |
 
 The proposed facade accepts the admitted init object; a directory string is a
 shorthand for its auto-policy default. Neither signature is implemented by the
@@ -127,7 +127,7 @@ admitted optional-contribution adapter derived from its existing Feature System;
 Core has no dependency on that implementation.
 
 
-Native lazy slots keep this a demand-driven view. Before build-entries is exposed,
+Runtime lazy slots keep this a demand-driven view. Before build-entries is exposed,
 the input projection list must be checked against feature-composition.projections,
 not trusted from a different graph generation. Source/currentness, capability binding,
 cycle and complete compiler-dependency gates remain required. No extra public
@@ -280,7 +280,7 @@ module initialization is implied merely by compiling a required source unit.
 
 Both init choices supply the selected Guestbook interface scope to this same
 config.ss. The source-to-lexical-scope handoff is pending facade integration;
-the body itself uses existing native POO syntax:
+the body itself uses existing POO syntax:
 
 #+begin_src scheme
 (def Development
@@ -297,7 +297,7 @@ and Deployment/Service consumer must read this effective Development value.
 
 * Final Guestbook values and demand remain the same
 
-The native user body and default-bearing Profile evolution are preserved in
+The runtime user body and default-bearing Profile evolution are preserved in
 modules 11–17. JSON Schema's existing generated Contract/full-root validator feeds
 Scenario responsibilities, and public .admit checks the effective frontend/Redis
 objects. Resource consumers must read those same admitted candidates, never a
@@ -313,7 +313,7 @@ import can violate those goals and needs a measured negative-demand control.
 * Conclusion: strengthen the correct owners
 
 Already implemented: Module descriptors/import closure, Feature descriptors and
-resolver, capability/requirement matching, manifest/composition, native scopes and
+resolver, capability/requirement matching, manifest/composition, runtime scopes and
 Schema Contracts. Pending: explicit Module core publication mapping/Contract,
 directory/interface discovery and init selection and retained negatives, automatic Core inclusion for
 selected modules, cross-boundary capability binding and selected build projection.

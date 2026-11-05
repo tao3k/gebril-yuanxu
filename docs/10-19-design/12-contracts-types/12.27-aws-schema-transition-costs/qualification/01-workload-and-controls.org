@@ -86,7 +86,7 @@ These counts cover the observed intervals, not all filesystem operations. They
 establish less duplicate traversal; they do not establish an end-to-end latency
 improvement under the observed CPU contention.
 
-The selected Graph, actual publication objects and native receiver caches remain
+The selected Graph, actual publication objects and runtime receiver caches remain
 authoritative. Replacing external version input still creates a fresh selection;
 declaration expansion and initialization results are not cached across that effect.
 
@@ -98,7 +98,7 @@ optimization. Existing callers already provide those pure observation windows.
 
 Readonly Nix queries still re-evaluate the expression and its arguments. A
 completed provider build does not prove that its current selection is unchanged.
-[[file:../../../../../t/nix-derivation-query-test.ss][The native transitive-input control]] changes an undeclared imported Nix file
+[[file:../../../../../t/nix-derivation-query-test.ss][The runtime transitive-input control]] changes an undeclared imported Nix file
 and adds a previously absent file; source observations alone cannot replace that
 query. No process result is reused across arbitrary validators or Context policy.
 
@@ -125,7 +125,7 @@ removed or replaced by a timing assertion.
   probes are not evidence of Nix package performance.
 - [[file:../../../../../t/module-selected-graph-test.ss][Selected-Graph controls]] retain dependency/Feature admission and add refusal
   when dynamic eligibility changes source state before publication reading.
-- [[file:../../../../../t/nix-derivation-query-test.ss][Native Nix controls]] check actual cold registration, warm store validity without
+- [[file:../../../../../t/nix-derivation-query-test.ss][Runtime Nix controls]] check actual cold registration, warm store validity without
   writable registration, undeclared transitive/negative-input changes, query-mode
   failure and a transitive change between lookup and registration. No provider
   acquisition is needed for this narrow derivation control.

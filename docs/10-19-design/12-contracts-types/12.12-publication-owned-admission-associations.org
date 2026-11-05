@@ -192,7 +192,7 @@ The proposed Graph service has two internal operations, not public macros:
    closure, constructs Context and delegates to AdmissionPublication. A Schema
    list is an internal projection of that resolved closure, never a caller input.
 
-These are pending capabilities. In particular, current native .def inheritance
+These are pending capabilities. In particular, current .def inheritance
 does not by itself implement a trusted Core export-association index. The future
 index records the actual exported root at publication resolution and follows
 verified construction/derivation observations. Multiple parents retain ALL
@@ -200,7 +200,7 @@ requirements. .+ right-side requirements must survive, or that construction is
 rejected for publication. Unresolved derivations fail closed; names or arbitrary
 POO slot scanning are not substitutes for this missing mechanism.
 
-Each resolved requirement consumes exactly one factory result. A native internal
+Each resolved requirement consumes exactly one factory result. A runtime internal
 projection can then collect its artifacts without an independent Schema picker:
 
 #+begin_src scheme
@@ -300,4 +300,4 @@ The cost is real: derivation provenance, complete input observation and bounded
 publication metadata still need executable qualification. Thousands of Modules
 remain practical only if discovery reads bounded metadata and demand does not
 become all-scope linking. No startup, scaling or completeness claim follows from
-the existence of native lazy slots alone.
+the existence of runtime lazy slots alone.

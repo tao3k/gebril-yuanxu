@@ -2,7 +2,7 @@
 import YuanxuProof.Admission.CoreApprovedRecovery
 namespace YuanxuProof.Admission.TestMakeLayout
 
-def quintSourceDigest : String := "sha256:e4d021a56802fa137cbb8af5783a4222e90804675119f039eaae257e6d678598"
+def quintSourceDigest : String := "sha256:44df7db711c1a732e982508e28e5d54d13f38515b46c1a50225ad3390ab7eb2f"
 
 -- Sanitized path components. Scheme's existing identity/path admission must
 -- establish this extraction; these lists do not model symlinks or host I/O.
@@ -29,16 +29,16 @@ theorem absolute_misses_owned_product (library namespacePrefix source identity :
     resolve (library ++ namespacePrefix) ⟨true, source⟩ ≠ library ++ identity := by
   simpa [resolve] using separate
 
--- Finite work projection of native build?/build-dependent?. Correct paths
+-- Finite work projection of runtime build?/build-dependent?. Correct paths
 -- alone are insufficient: stable source/dependency timestamps are a premise.
-def nativeWork (roots : Nat) (outputsPresent sourcesStable dependenciesStable : Bool) : Nat :=
+def runtimeWork (roots : Nat) (outputsPresent sourcesStable dependenciesStable : Bool) : Nat :=
   if outputsPresent && sourcesStable && dependenciesStable then 0 else roots
 
-theorem warm_zero_work (roots : Nat) : nativeWork roots true true true = 0 := by
-  simp [nativeWork]
+theorem warm_zero_work (roots : Nat) : runtimeWork roots true true true = 0 := by
+  simp [runtimeWork]
 theorem missing_output_rebuilds (roots : Nat) (sourcesStable dependenciesStable : Bool) :
-    nativeWork roots false sourcesStable dependenciesStable = roots := by
-  simp [nativeWork]
+    runtimeWork roots false sourcesStable dependenciesStable = roots := by
+  simp [runtimeWork]
 
 -- Fixing layout leaves the actual admission predicates unchanged.
 theorem layout_does_not_waive_source (restored approval files a b : Bool) :

@@ -94,7 +94,7 @@ interface. Automatically injecting all roots would only hide the coupling.
 
 NixOS supplies important infrastructure that a POO slot alone does not replace:
 option discovery, contribution semantics, provenance, migrations and activation
-integration. Native POO can be our object/extension foundation; Module System
+integration. POO can be our object/extension foundation; Module System
 semantics must still specify those services and their costs.
 
 Can a module move between roots without editing its dependency references? Can

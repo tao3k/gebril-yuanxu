@@ -34,7 +34,7 @@
     (slot-read-dependencies read) checker))
 (def mop-checker-origin-test
  (test-suite "MOP checker identity and receiver ownership boundaries"
-  (yuanxu-test-case "native cold and hot records remain owned without recomputation"
+  (yuanxu-test-case "runtime cold and hot records remain owned without recomputation"
     (def calls 0)
     (.def Root port: (begin (set! calls (+ calls 1)) 5432)
       unused: (error "unselected branch forced"))
@@ -48,7 +48,7 @@
     (replay-slot-reads! warm (lambda (_receiver _key) (void)))
     (check-equal? calls 1)
     (set! completed (+ completed 1)))
-  (yuanxu-test-case "copying a native symbolic record does not copy its ownership"
+  (yuanxu-test-case "copying a runtime symbolic record does not copy its ownership"
     (.def Root port: 5432)
     (def genuine (port-read (recorded (cut .get Root port))))
     (def forged (copy-read genuine object-read-current?))
@@ -71,7 +71,7 @@
     (check-equal? (require-owned-reads! roots) #t)
     (check-equal? hooks 0)
     (set! completed (+ completed 1)))
-  (yuanxu-test-case "transient native misses are valid while synthetic misses lack issuance"
+  (yuanxu-test-case "transient runtime misses are valid while synthetic misses lack issuance"
     (.def Root port: 5432)
     (.get Root port)
     (def genuine (recorded (cut .ref/cached Root 'missing (lambda () #f))))
@@ -86,7 +86,7 @@
     (check-equal? (object-read-current? forged) #f)
     (refuses "unowned slot-read record" (cut require-owned-reads! (list forged)))
     (set! completed (+ completed 1)))
-  (yuanxu-test-case "native replay refuses a foreign checker before calling it"
+  (yuanxu-test-case "runtime replay refuses a foreign checker before calling it"
     (.def Root port: 5432)
     (.def Victim port: 5432)
     (.get Root port)
@@ -195,7 +195,7 @@
     (refuses "changed metadata ref" (cut state-closed? snapshot))
     (refuses "changed metadata ref" (cut object-read-current? genuine))
     (check-equal? calls snapshot-calls)
-    ;; The native guard cannot undo an effect already performed by the weak
+    ;; The runtime guard cannot undo an effect already performed by the weak
     ;; experimental snapshot helper; it must not invoke that route again.
     (check-equal? (.get Victim port) 5440)
     (set! completed (+ completed 1)))

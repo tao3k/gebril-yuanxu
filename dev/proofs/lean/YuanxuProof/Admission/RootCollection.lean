@@ -4,7 +4,7 @@ import YuanxuProof.Admission.ReadRetention
 namespace YuanxuProof.Admission.RootCollection
 
 def quintSourceDigest : String :=
-  "sha256:5e40ce32b6ec4a13f91b7ec3c0a537e652bb48557f689cb9d507b090570b49ee"
+  "sha256:ef3d878991dbcdfa9984e52c1123d00435aee8c6cc0db033676d4a7d7d798c6a"
 
 -- Token Nat is original record identity. Observers see the uncompressed input.
 structure Frame (World : Type) where
@@ -38,6 +38,31 @@ theorem roots_are_original_first_occurrences (observe : World → Nat → World)
     simp only [List.foldl_cons, step]
     have h := ih (prior ++ [token]) (observe world token)
     simpa [append_identity, List.append_assoc] using h
+
+/-- Native child capture already delivered inherited observers at each actual
+read. Merging that capture records roots ONLY; it is not another delivery.
+The Boolean is the existing parent collection policy, not a purity flag. -/
+def mergeCaptured (unique : Bool) (parent : Frame World) (captured : List Nat) : Frame World :=
+  ⟨if unique then
+      (captured.foldl (step (fun world _ => world)) parent).roots
+    else parent.roots ++ captured, parent.world⟩
+
+theorem merge_does_not_redeliver (unique : Bool) (parent : Frame World)
+    (captured : List Nat) :
+    (mergeCaptured unique parent captured).world = parent.world := rfl
+
+theorem merge_occurrences (parent : Frame World) (captured : List Nat) :
+    (mergeCaptured false parent captured).roots = parent.roots ++ captured := rfl
+
+theorem merge_original_identities (prior captured : List Nat) (world : World) :
+    (mergeCaptured true ⟨prior.eraseDups, world⟩ captured).roots =
+      (prior ++ captured).eraseDups :=
+  roots_are_original_first_occurrences (fun world _ => world) captured prior world
+
+theorem capture_then_merge_keeps_callbacks (unique : Bool) (prior input : List Nat)
+    (observe : World → Nat → World) (world : World) :
+    (mergeCaptured unique ⟨prior, input.foldl observe world⟩ input.eraseDups).world =
+      input.foldl observe world := rfl
 
 theorem skip_nonfailure (input : List Nat) (bad : Nat → Bool) (token : Nat)
     (good : bad token = false) :

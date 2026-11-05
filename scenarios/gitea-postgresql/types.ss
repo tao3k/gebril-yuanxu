@@ -1,9 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract))
+(import (only-in :clan/poo/object o?/slots)
+        (only-in :clan/poo/mop define-type Type.))
 (export ServiceScopeContract ApplicationScopeContract)
-(def ServiceScopeContract
-  (yuanxu-predicate-contract 'application/service-scope
-    (o?/slots '(config document types))))
-(def ApplicationScopeContract
-  (yuanxu-predicate-contract 'application/scope
-    (o?/slots '(Scenario types))))
+(define-type (ServiceScopeContract @ Type.)
+  identity: 'application/service-scope .element?: (o?/slots '(config document types)))
+(define-type (ApplicationScopeContract @ Type.)
+  identity: 'application/scope .element?: (o?/slots '(Scenario types)))

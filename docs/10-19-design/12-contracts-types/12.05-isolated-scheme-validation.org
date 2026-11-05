@@ -4,7 +4,7 @@
 #+property: DOCUMENT_ID 12.05
 #+language: en
 #+date: [2026-10-17]
-#+property: STATUS bounded-native-controls-no-module-adapter-loader-or-push
+#+property: STATUS bounded-runtime-controls-no-module-adapter-loader-or-push
 
 * Ownership clarification: a public library does not depend on Core
 
@@ -45,14 +45,14 @@ The actual existing Schema implementation still imports Core schema/receipt
 helpers. That coupling is observed here; it is not a reason to put Core concepts
 into gerbil-poo. Making the Schema adapter a clean reusable library remains work.
 
-* Native tests and preparation
+* Runtime tests and preparation
 
 The executable owners are:
 
 - [[file:../../../t/qualification/contract-adaptation/generic-test.ss][generic-test.ss]]: public POO/Type and upstream invocation controls.
 - [[file:../../../t/qualification/contract-adaptation/schema-test.ss][schema-test.ss]]: existing Schema consumer, effective child values and Core admission control.
 - [[file:../../../t/qualification/contract-adaptation/receipt-fixture.ss][receipt-fixture.ss]]: explicit TEST-ONLY immutable-context receipts.
-- [[file:../../../t/qualification/contract-adaptation/prepare.ss][prepare.ss]] and [[file:../../../t/qualification/contract-adaptation/prepare-test.ss][prepare-test.ss]]: native Scheme extraction/copying of private test modules.
+- [[file:../../../t/qualification/contract-adaptation/prepare.ss][prepare.ss]] and [[file:../../../t/qualification/contract-adaptation/prepare-test.ss][prepare-test.ss]]: Scheme extraction/copying of private test modules.
 
 Preparation is itself a :std/test suite. The fixtures use :std/test and run
 serially through the existing Core Justfile test-file entrypoint, with its
@@ -62,7 +62,7 @@ unchanged; no replacement process orchestrator was introduced.
 
 The test environment supplies CONTRACT_FIXTURE_DIR, the isolated PR source path
 and the pinned consumer snapshot. prepare-test.ss creates private modules from
-the reviewed Scheme blocks and copies the native test sources there. Tests
+the reviewed Scheme blocks and copies the runtime test sources there. Tests
 then run as ordinary Scheme test files. None of those generated modules is an
 installed API or a production module adapter.
 
@@ -71,7 +71,7 @@ installed API or a production module adapter.
 The two contract suites contain 17 cases in total: seven public-library cases
 and ten Schema/consumer cases. Both reported MODULE-OK, HARNESS-OK and final OK,
 with no error-case/check/harness/module, heap-overflow or stack-overflow marker.
-The separate native preparation test also passed. Raw transcripts remain local
+The separate runtime preparation test also passed. Raw transcripts remain local
 temporary artifacts and are not committed.
 
 | Control | Observed result | What it does not establish |
@@ -116,10 +116,10 @@ consumer authority are still unqualified integration requirements.
 The first resource-cache fixture used an inner name: name expression, which
 shadowed the intended outer slot and raised CyclicSlot. It was corrected to a
 differently named output slot. This confirms why lexical slot examples must
-respect ordinary shadowing; the correction did not replace native receiver
+respect ordinary shadowing; the correction did not replace runtime receiver
 semantics with manually extracted parent values. Early preparation attempts
 also exposed an invalid SDK import spelling; the final preparation uses the
-normal Gerbil core prelude and passes its native test.
+normal Gerbil core prelude and passes its runtime test.
 
 * What is existing, private, or still missing?
 

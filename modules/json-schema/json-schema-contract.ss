@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Reusable native admission adapter; diagnostics retain JSON Schema paths.
+;;; Reusable runtime admission adapter; diagnostics retain JSON Schema paths.
 (import :clan/poo/object
         (only-in :yuanxu/object-types/contracts YuanxuContract.)
         "./json-schema-receipt.ss"
@@ -21,7 +21,7 @@
            (schema-type (.cc SchemaContract. 'identity identity-value 'node node)))
       (.o (:: @ [YuanxuContract.] value-type)
            identity: identity-value
-           ;; SchemaContract owns native value validation and POO diagnostics.
+           ;; SchemaContract owns runtime value validation and POO diagnostics.
            ;; The standard admission boundary converts its TypeError to refusal;
            ;; do not classify again using the backend's private diagnostic records.
            value-contract: value-type schema: schema-value sexp: identity-value

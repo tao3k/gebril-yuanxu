@@ -20,7 +20,7 @@ public runtime context boundary.  One internal, out-of-line CFFI API-mode
 adapter becomes the mandatory production backend.
 
 The pure Python implementation remains an explicitly selected reference and
-test backend.  Native loading or negotiation failure is fatal in production;
+test backend.  Runtime loading or negotiation failure is fatal in production;
 there is no silent fallback.
 
 * Non-goals
@@ -38,7 +38,7 @@ there is no silent fallback.
 
 Use an out-of-line CFFI API extension generated from the installed public
 header.  The compiler, rather than Python runtime guesses, validates layout,
-types, and calling convention.  The extension links a platform-native library
+types, and calling convention.  The extension links a platform-runtime library
 bundled in the wheel.  An explicit environment variable may override that
 library for development or controlled deployment, but the replacement must
 pass the same negotiation and identity gates.
@@ -54,9 +54,9 @@ contract.
 flowchart LR
     APP["Python application"]
     FACADE["RuntimeGraphRuntime<br/>public graph-domain facade"]
-    BACKEND["NativeRuntimeBackend<br/>internal production backend"]
+    BACKEND["RuntimeRuntimeBackend<br/>internal production backend"]
     CFFI["_agentic_ai_lab_runtime_v0<br/>out-of-line CFFI extension"]
-    LIB["Bundled runtime_v0<br/>native library"]
+    LIB["Bundled runtime_v0<br/>runtime library"]
     KERNEL["Agentic AI Lab C ABI<br/>handles / arenas / batches / receipts"]
     REF["PurePythonReferenceBackend<br/>explicit tests only"]
 
@@ -74,9 +74,9 @@ flowchart LR
 - Generated headers and CFFI declarations are projections, never independent
   contract sources.
 - The C runtime owns handles, arenas, leases, generations, ordered pending
-  windows, native lifecycle, and batch receipts.
+  windows, runtime lifecycle, and batch receipts.
 - Python owns graph-domain strategies and converts their typed results to the
-  public native submission contract.
+  public runtime submission contract.
 - Python consumes only published projection artifacts.  A production wheel
   requires no Gerbil installation or private Gerbil bypass.
 - Python receives a formal Bundle descriptor from its caller.  It cannot derive
@@ -106,7 +106,7 @@ event-kind semantics to Python or expose graph plans through the C ABI.
 #+begin_src mermaid
 sequenceDiagram
     participant P as "RuntimeGraphRuntime"
-    participant N as "NativeRuntimeBackend"
+    participant N as "RuntimeRuntimeBackend"
     participant F as "CFFI Extension"
     participant C as "runtime_v0 C ABI"
 
@@ -127,17 +127,17 @@ sequenceDiagram
     N->>F: "session/bundle/profile/instance release"
 #+end_src
 
-There are no native callbacks into Python.  Poll and submit remain explicit
+There are no runtime callbacks into Python.  Poll and submit remain explicit
 batch boundaries, avoiding callback/GIL crossings and per-event FFI calls.
 
 * Resource and buffer lifetime
 
-Each native handle has one Python owner object.  Owners implement explicit,
+Each runtime handle has one Python owner object.  Owners implement explicit,
 idempotent =close()= and context-manager protocols.  Finalization is only a
 last-resort safety net and cannot define correctness.
 
 An arena is created from a writable Python buffer through =ffi.from_buffer()=.
-The arena owner holds a strong reference to that buffer for the complete native
+The arena owner holds a strong reference to that buffer for the complete runtime
 registration lifetime.  While any lease is outstanding, the arena cannot be
 resized, recycled, or released.  Submission is followed by explicit
 acknowledgement before generation advancement.
@@ -147,7 +147,7 @@ addressed by checked offset and length inside the registered arena.
 
 * Error model
 
-Native status codes map to a stable Python exception hierarchy.  Exceptions
+Runtime status codes map to a stable Python exception hierarchy.  Exceptions
 carry operation, status, ABI version, Bundle digest, and session identity, but
 never copy payload content.
 
@@ -157,12 +157,12 @@ never copy payload content.
   to precise exception types.
 - Partial acceptance returns a typed per-item result and preserves accepted
   items; it is not collapsed into one exception.
-- Missing or invalid native libraries fail closed.  Production mode never
+- Missing or invalid runtime libraries fail closed.  Production mode never
   silently selects the reference backend.
 - Cleanup runs on normal return, Python exception, cancellation, and partial
   construction failure.
 
-* Wheel and native-library delivery
+* Wheel and runtime-library delivery
 
 Platform wheels bundle the qualified runtime v0 dynamic library and the
 out-of-line CFFI extension.  Loader paths are package-relative:
@@ -184,7 +184,7 @@ and library input and fails with a diagnostic when they are absent.
 * Compatibility policy
 
 =RuntimeGraphRuntime=, graph materialization, trace, builder, and public
-graph-domain values remain the Python-facing surface.  The native adapter is an
+graph-domain values remain the Python-facing surface.  The runtime adapter is an
 internal execution backend, not a revived public graph ABI.
 
 There is one production path: out-of-line CFFI API mode.  No =ctypes= alias,
@@ -208,12 +208,12 @@ reference configuration.
   partial construction.
 - Buffer strong-reference and memory-pressure qualification.
 - Crash/restart and checkpoint restore.
-- Long-run concurrent sessions with injected native and Python exceptions.
+- Long-run concurrent sessions with injected runtime and Python exceptions.
 
 ** Differential
 
 Run the same materialized graph through the explicit reference backend and the
-native backend.  After declared nondeterminism normalization, trace, receipt,
+runtime backend.  After declared nondeterminism normalization, trace, receipt,
 Bundle digest, disposition, and checkpoint identity must agree.
 
 ** Wheel
@@ -237,13 +237,13 @@ Bundle digest, disposition, and checkpoint identity must agree.
 * Exit criteria
 
 1. Production =RuntimeGraphRuntime= uses out-of-line CFFI by default and fails
-   closed when native startup cannot be proved.
+   closed when runtime startup cannot be proved.
 2. Pure Python execution requires explicit reference/test selection.
 3. No =ctypes= or retired graph ABI route remains.
-4. Wheels contain and load the qualified native library without Gerbil.
-5. Native and reference traces agree after declared normalization.
+4. Wheels contain and load the qualified runtime library without Gerbil.
+5. Runtime and reference traces agree after declared normalization.
 6. Lifecycle, fault, long-run, crash/restart, wheel, and performance gates pass.
-7. Receipts bind the wheel, native library, header projection, Bundle digest,
+7. Receipts bind the wheel, runtime library, header projection, Bundle digest,
    trace, and runtime disposition.
 8. Qualification reports =abi-v1-frozen? #f=.
 
@@ -257,11 +257,11 @@ Existing unrelated CLI/build/CI changes remain outside the feature commit.
 * 2026-10-03 Python / Scheme semantic foundation qualification
 
 The [[file:python-scheme-runtime-foundation.org][implemented foundation and qualification receipt]] supersedes the
-control-lane-only graph guard for qualified native programs. Scheme owns finite
+control-lane-only graph guard for qualified runtime programs. Scheme owns finite
 temporal solving, final candidate consistency and POO graph topology admission
 through the semantic AOT byte ABI. Python remains the production Runtime owner
 of scheduler, IO, reducers and storage. A real control session and semantic
-context are required before native program actions run.
+context are required before runtime program actions run.
 
 The linked closure matrix bounds this supplement to implemented operations,
 owned-result lifetime, artifact/package transport and the 48-call real-model
@@ -272,7 +272,7 @@ MRR Rust integration follows the Python/Scheme and exact-head qualification.
 
 * No-Prompt / real-time teaching correction
 
-The 48-call study used preset rules and supplied native solved answers. It is
+The 48-call study used preset rules and supplied runtime solved answers. It is
 withdrawn as acceptance evidence for the user's no-Prompt architecture. The
 existing contradiction gate rejects output but does not teach the model. ABI
 receipts remain scoped engineering evidence; model integration and real-time
@@ -280,7 +280,7 @@ teaching closure remain open, and MRR Rust admission remains deferred.
 
 The primary model acceptance contract is
 [[file:model-scheme-understanding-validation.org][Scheme understanding, reasoning and real computation validation]].
-Native correctness and output rejection alone cannot close this model gate.
+Runtime correctness and output rejection alone cannot close this model gate.
 
 * 2026-10-03 Direct prediction and current computation observation
 
@@ -297,7 +297,7 @@ This is bounded engineering evidence on the current Darwin host; exact-head
 cross-platform CI is tracked separately.
 
 The new 24-call study completes with zero model retries. Its frozen strict
-transport accepts no answers. Supplementary native verification after inert
+transport accepts no answers. Supplementary runtime verification after inert
 extraction observes initial high Reasoning 5/6 and both transfer arms 5/6.
 There is no observed transfer accuracy gain, and this post hoc analysis cannot
 replace predeclared model acceptance. Program generation, full POO composition,
@@ -309,8 +309,8 @@ admission stays deferred. See [[file:model-scheme-validation-record.org][executi
 The semantic ABI remains Version 1; version is explicit metadata, not a file or
 module suffix. Direct validation now declares compiler-derived ASCENT runtime
 project sources and core/types, with framework-source assumptions listed.
-Inert transport separates candidate completion from native semantic comparison;
-model text is never evaluated. Trusted native task loading and real dependency
+Inert transport separates candidate completion from runtime semantic comparison;
+model text is never evaluated. Trusted runtime task loading and real dependency
 progress must meet the unchanged five-second watchdog.
 
 See [[file:model-scheme-validation-record.org][the model validation record]].

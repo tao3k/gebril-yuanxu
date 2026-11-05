@@ -6,7 +6,8 @@
     requires: (.o Database: (.o module-id: 'database contract: ScopeContract))
     roles: (make-role-bindings)
     config: Config
-    scope-contract: (.cc ScopeContract source-inputs: SourceRows)
+    scope-contract: ScopeContract
+    application-contract: (.cc ApplicationContract source-inputs: SourceRows)
     exports: (.cc ScopePrototype config: config))
   features: (.o)
   scope: ((.get core link) (.o Database: (.o))))

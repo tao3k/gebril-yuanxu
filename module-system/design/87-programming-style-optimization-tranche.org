@@ -15,7 +15,7 @@ replacement for the style document and not an implementation plan for a
 runtime executor.
 
 The unit of optimization is one semantic object family at a time.  A family
-owns one domain fact, validates it once, supports POO-native extension, and
+owns one domain fact, validates it once, supports POO extension, and
 projects it only at a receipt or runtime boundary.  File length is evidence to
 investigate, not the definition of a module boundary.
 
@@ -40,7 +40,7 @@ and future community compositions.
 * Evidence Baseline
 
 The current style document has fourteen headings that already define the
-contract: POO-native public surfaces, functional composition, runtime
+contract: POO public surfaces, functional composition, runtime
 projection, closed kernels with declared extension slots, bounded macros,
 object-family generation, contracts, hot-path discipline, and focused
 scenarios.
@@ -138,7 +138,7 @@ workstation: it selects a Homebrew Gerbil C runtime against Nix SDK headers and
 fails before Scheme module validation.  For a narrow cache refresh, use
 =env -u SDKROOT gxpkg env gxc <owner>.ss=; this preserves the project build
 configuration while selecting a compatible SDK for the installed compiler.  A
-full native package compile separately stalls at =init-syntax~1.scm= and must
+full runtime package compile separately stalls at =init-syntax~1.scm= and must
 be repaired as a build-stage issue; it must not be hidden by reducing test
 input, loop iterations, or build concurrency.
 
@@ -146,7 +146,7 @@ Factor files only where the semantic owners differ, for example tool
 specification, catalog/index, policy grant, validation receipt, and runtime
 handoff.  A facade may re-export the public family.  Do not split a coherent
 family merely to reduce a line count, and do not retain a legacy public API
-when the POO-native public surface replaces it.
+when the POO public surface replaces it.
 
 Repeated symbolic lookups must use a family catalog or a specialized cache
 object.  A loop must not repeatedly construct cons-heavy temporary POO objects
@@ -190,16 +190,16 @@ own phase symbol and numeric =elapsedMs=.  Legacy fixture =observed*= fields
 remain static acceptance inputs.  Compile-time expansion is still a distinct
 build-stage metric and must not be fabricated as a runtime phase.
 
-* P3: Keep Macro Power Bounded and Native
+* P3: Keep Macro Power Bounded and Runtime
 
 Use =defrules= for fixed declarative shape, =defsyntax= with =syntax-case= for
 checked declarations, and =begin-syntax= metadata only when it removes real
 runtime work.  A macro may collect static slots, validate duplicate or missing
-facts, and generate POO-native constructors and functional helpers.
+facts, and generate POO constructors and functional helpers.
 
 It may not parse a fixed declaration language at runtime, compose private
 kernel hooks, launch worktrees, invoke runtime execution, or create a second
-public configuration language.  Native POO remains available after expansion:
+public configuration language.  POO remains available after expansion:
 users can extend a profile with =:extends=, apply named functional extensions,
 or contribute an existing POO object to a composition.
 
@@ -234,7 +234,7 @@ corresponding source shape, scenario, and gate agree.
 * Execution Order and Acceptance
 
 1. P0: extend the object-family declaration through one =model-core= family,
-   retaining POO-native API compatibility and adding focused tests.
+   retaining POO API compatibility and adding focused tests.
 2. P2 foundation: register a scenario-owned benchmark and RSS/time gate for
    that family before applying the mechanism elsewhere.
 3. P1: move the selected =tool-core= hot path to the same owner/projection
@@ -263,7 +263,7 @@ of the same evidence chain.  A passing compile alone is not acceptance.
 
 * Completion Condition
 
-This tranche is complete when one family proves the generated POO-native shape
+This tranche is complete when one family proves the generated POO shape
 under a real scenario gate, the adjacent tool projection boundary follows the
 same ownership rule, and the harness can reject the recurring anti-patterns
 that the change removed.

@@ -79,7 +79,7 @@ diagnostic identity and records the reference in the same existing evidence:
 
 All three construction paths were migrated directly: ordinary admission,
 responsibility-object admission, and missing-responsibility rejection. The
-native =.admit= generic and slot remain unchanged; direct slot calls also record
+runtime =.admit= generic and slot remain unchanged; direct slot calls also record
 the correct derived receiver. Nested responsibility evidence records its own
 descriptor, not just the root descriptor. A missing child row records the
 required Contract and remains rejected; it does not claim that a missing value
@@ -96,7 +96,7 @@ than serializing the live descriptor object. A wire report cannot reconstruct
 an in-process binding or be replayed as a validated receipt. Core's existing
 candidate/context consistency checks are not claimed to provide authentication.
 
-* Fixture cleanup and native verification
+* Fixture cleanup and runtime verification
 
 Removed: the isolated =produce-evidence= wrapper and the generated
 =fixture-binding.ss= implementation. Scheme preparation no longer extracts a
@@ -110,7 +110,7 @@ deliberately corrupt a reference or relabel a receipt; domain code does neither.
 | Core =t/admission-binding-test.ss= | 2 cases: direct/generic ordinary and derived admission, rejection, nested responsibility and missing-child references, nonportable wire projection |
 | Updated qualification =evidence-binding-test.ss= | 9 cases: same-name contracts, cached parent/final child, changed contexts, malformed reference, fresh refusal, preserved formula, authentication counterexample |
 | Existing public =t/declarative-metadata-test.ss= | 6 cases of invocation, specialization and failure compatibility |
-| Existing Core =t/core-test.ss= | 5 cases: Core consumers of native admission and object behavior |
+| Existing Core =t/core-test.ss= | 5 cases: Core consumers of runtime admission and object behavior |
 | Existing qualification =schema-test.ss= | 10 cases: Schema responsibilities, missing references, final child values and existing Core admission/snapshot consumers |
 
 All tests run serially through the existing heap-fenced =just test-file= recipe,
@@ -118,15 +118,15 @@ not a new runner. The source path overlays the actual modified Core =types.ss=;
 it does not use the earlier unchanged admission snapshot. The public test is
 registered in the existing Bazel declarations group; the Core producer test is
 registered in the existing Core test list. No full local build was run.
-All six suites passed (38 cases), plus the native preparation case. Each final
+All six suites passed (38 cases), plus the runtime preparation case. Each final
 run reported MODULE-OK, HARNESS-OK and final OK without ERROR CASE/CHECK/HARNESS
 or heap/stack overflow markers. Raw output remains in temporary artifacts.
 
 The first public test draft accidentally used identical lexical variable and
 POO slot names, producing a CyclicSlot refusal. Test locals were renamed so the
 objects contain the intended external values. This is a fixture correction,
-not a change to native lexical-slot semantics. A reading error in the initial
-Core test draft was also corrected before the final native gates.
+not a change to runtime lexical-slot semantics. A reading error in the initial
+Core test draft was also corrected before the final runtime gates.
 
 * What this does not establish
 

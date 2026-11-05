@@ -9,12 +9,12 @@ bootstrap capability catalog at each publication boundary. Import eligibility
 and actual dependency support were therefore conflated. A larger tool catalog
 made an unrelated declaration's guard larger, even without another side effect.
 
-The existing native context topology now projects two distinct facts:
+The existing runtime context topology now projects two distinct facts:
 
 - The complete catalog continues to authorize exact canonical tool contexts.
   No same-name foreign context, reload, escaping source or Module implementation
   gains permission from appearing in a dependency list.
-- Currentness checks cover the reader implementation's native transitive
+- Currentness checks cover the reader implementation's runtime transitive
   imports and actual tool import demands, together with the existing selected
   role, asset, package, init and directory observations.
 
@@ -70,7 +70,7 @@ support back before its final source check:
 #+end_src
 
 This is an internal evaluator call, not author configuration. The implementation
-unions native tool and admitted input observations by path, rejects inconsistent
+unions runtime tool and admitted input observations by path, rejects inconsistent
 expected bytes, publishes that ordinary source projection, and checks currentness
 again. The enclosing publication reader retains the requirements in its existing
 observation map. It never treats the callback return as admission evidence.
@@ -126,10 +126,10 @@ queried without building; a subsequent complete run passed at the original
 limits. This observation locates the refusal, not its daemon/network root cause.
 
 This remains a source-only qualification, excluding the concurrent compiled
-build-publication integration. The native import graph and observed data must
+build-publication integration. The runtime import graph and observed data must
 cover legitimate dependencies; arbitrary hidden IO does not acquire support
 merely by returning a POO object. The remaining 153 files are not proven
-removable. Cross-operation slicing, native compiler artifact identity and
+removable. Cross-operation slicing, runtime compiler artifact identity and
 concurrent mutation need their own coverage arguments.
 
 [[file:13-scale-and-model-correspondence.org][Scale tests and model correspondence]]

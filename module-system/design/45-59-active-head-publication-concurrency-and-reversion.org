@@ -142,7 +142,7 @@ the same conditional commit boundary.
   without deleting the known immutable generations.
 - [X] =reversionDoesNotEraseEffectHistory=: the conditional commit carries an
   authoritative receipt whose before/after effect histories are equal.
-- [ ] Refine proposals, intents, and active-head scopes through native
+- [ ] Refine proposals, intents, and active-head scopes through runtime
   =gerbil-poo= prototypes and runtime conditional-write adapters.
 - [ ] Replay the synchronized Lean and Typst claims through external AXLE.
 

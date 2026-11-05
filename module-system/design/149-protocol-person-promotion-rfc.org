@@ -71,7 +71,7 @@ Implemented in this slice:
 
 Scheme/POO candidate implemented in the current working tree:
 
-- POO-native =ProtocolSubject=, =Commitment=, =PromotionIntent=, current-world,
+- POO =ProtocolSubject=, =Commitment=, =PromotionIntent=, current-world,
   provenance, and decision-fact values in
   =src/policy/protocol-person-promotion.ss=;
 - a closed transparent =agentic-ai-lab-promotion-validation-receipt= with distinct
@@ -166,7 +166,7 @@ Canonical Organization Bundle.
 | Owner | Normative responsibility |
 |-
 | Organization Bundle | Canonical identities, roles, epochs, lineage, context, protocol state, and evidence roots. |
-| Scheme/POO control plane | POO-native authoring, functional composition, validation, =PromotionIntent= construction, obligation selection, and decision join. |
+| Scheme/POO control plane | POO authoring, functional composition, validation, =PromotionIntent= construction, obligation selection, and decision join. |
 | Cedar | Authorization decision over current principal, action, resource, context, policy, entities, and Authority epoch. |
 | Lean | Verification of declared promotion, epoch, amendment, temporal-role, and materialization invariants. |
 | Human Audit / quorum | Legitimacy for constitutional changes according to the old/current Authority epoch. |
@@ -384,7 +384,7 @@ agent turns.
 1. RFC and Lean foundation.
    - Land this RFC, PP-M01 through PP-M07, and the first proof owner.
    - Run the Lean build and Org lint.
-2. POO-native semantic slice.
+2. POO semantic slice.
    - Add extensible =ProtocolSubject=, =Commitment=, and =PromotionIntent=
      prototypes plus pure functional validation.
    - Keep closed receipts in =defstruct= values.

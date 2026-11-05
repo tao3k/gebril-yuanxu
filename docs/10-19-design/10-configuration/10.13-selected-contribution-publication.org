@@ -55,7 +55,7 @@ candidate's surviving business slots. This does not recover declarations already
 erased before publication or authenticate an anonymous .+ operand.
 
 The receiving domain Contract interprets the complete row list through its
-ordinary .contribution-obligations procedure slot. The public native slot Generic
+ordinary .contribution-obligations procedure slot. The public runtime slot Generic
 is declared once by Core:
 
 #+begin_src scheme
@@ -129,7 +129,7 @@ cannot reuse an earlier empty-policy approval. Mutation refuses the immutable
 snapshot; obtaining a fresh valid selection is different from silently refreshing
 an already checked publisher.
 
-* Native .admit composition without cloning the domain Contract
+* Runtime .admit composition without cloning the domain Contract
 
 The failed intermediate implementation derived a Contract and wrapped its
 .obligations with =>. That lost a runtime override already present on the source
@@ -146,7 +146,7 @@ then explicitly sequences domain obligations and optional platform obligations:
   (append local platform))
 #+end_src
 
-The optional Context protocol is itself a native slot Generic:
+The optional Context protocol is itself a runtime slot Generic:
 
 #+begin_src scheme
 (.defgeneric (yuanxu-context-contract-obligations context contract candidate)
@@ -168,7 +168,7 @@ requirements. Custom .admit implementations must preserve the Core producer's
 policy protocol to claim these semantics; arbitrary replacement of Core methods
 or malicious handler code is outside this qualification.
 
-Existing .publish still checks Context before admission, calls the native .admit
+Existing .publish still checks Context before admission, calls the runtime .admit
 protocol once, binds the returned evidence.candidate and checks final currentness.
 This protects the publication boundary before field evaluation as well as after
 policy evaluation. A refusal retains its supplied previous subject, not a newly
@@ -197,7 +197,7 @@ There is no caller-supplied batch or origin list and no caller wrapping of the
 Contract or Context. The test reads Context rows only to inspect provenance and
 inject negative faults. Such mutation is not ordinary configuration syntax.
 The four-segment payload path is unchanged; the final plan still computes server
-and client ports from the effective child config through native lexical slots.
+and client ports from the effective child config through runtime lexical slots.
 
 * Executable controls and retained development failures
 
@@ -215,7 +215,7 @@ inside the test.
 | Destructive Context list update | Reject substitution; private expected-list cells are not aliased |
 | Route removed after indexing | Reject metadata currentness rather than silently dropping a requirement |
 | Actual config.ss change | Reject stale prepared Module publication for an otherwise valid child |
-| 5433 and 5440 requirements | Native .admit refuses and retains BOTH values and owners in obligation evidence |
+| 5433 and 5440 requirements | Runtime .admit refuses and retains BOTH values and owners in obligation evidence |
 | Incoming rows, missing domain protocol | Refuse at .for-export |
 | Selected target admission misspelled | Refuse at index validation, not an empty bucket success |
 | Existing domain obligations | Remain effective alongside successful contribution obligations |
@@ -236,7 +236,7 @@ and receipts are not rewritten as if they had exercised production collection.
 
 * Validation and scope
 
-The final focused run uses the CURRENT Core source, the same pinned native
+The final focused run uses the CURRENT Core source, the same pinned runtime
 =gerbil-poo@26b4b58f14812e20e79d2d5d34bcdbb6f40d97f5= artifacts and the default
 host Gerbil runtime with isolated source/library paths. There is no frozen Core
 fallback and no dependency patch. Tests run SERIALly through the Core Justfile's

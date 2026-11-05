@@ -13,7 +13,7 @@ and Scheme examples. The default interface selects values, refines data and
 composes maintained capabilities through named functions. Extend publishes
 the particular prototype and behavior contract needed to define a new
 capability. An extension becomes a named value usable through the same default
-interface. Both surfaces preserve native POO identity and slot algebra.
+interface. Both surfaces preserve POO identity and slot algebra.
 
 Audit baseline: parent =main= at =7ab549d0= with existing unrelated working-tree
 changes; Core is a clean detached checkout at
@@ -30,7 +30,7 @@ surface, including support exports and facade reexports.
 The inventory's D designation means an operation or value is eligible behind a
 Functional facade. It does not require root users to import a Core leaf,
 construct a descriptor or read raw slots. Root config exposes domain options
-and capability selection; native construction and slot algebra belong in
+and capability selection; runtime construction and slot algebra belong in
 Extend documentation. Internal semantic ownership does not dictate which
 concepts ordinary configuration authors must learn.
 
@@ -42,17 +42,17 @@ for declarative data, not the semantic carrier adopted here. See its
 
 * Two categories of public configuration slot values
 
-The user-confirmed meaning of “POO types” is native POO objects/prototype
+The user-confirmed meaning of “POO types” is POO objects/prototype
 values, including Type and Contract descriptors, not only type descriptors.
 Every public configurable noun slot therefore resolves to one of:
 
 | Category | Examples | Composition |
 |----------+----------+-------------|
 | Ordinary inert value | number, boolean, string, symbol, inert list/vector/metadata | replacement, inherited default, named pure refinement |
-| Native POO value | Profile, Policy, Query, StageSpace, nested object, prototype, Type, Contract | the same operations plus native nested prototype refinement |
+| POO value | Profile, Policy, Query, StageSpace, nested object, prototype, Type, Contract | the same operations plus runtime nested prototype refinement |
 
 This is a surface contract over Scheme values, not a new tagged union or a
-second evaluator. A collection can contain ordinary values and native POO
+second evaluator. A collection can contain ordinary values and POO
 values if its owning Contract admits that shape. Collections do not smuggle
 anonymous procedures, mutable runtime handles or action ASTs into data slots.
 An alist may be inert metadata or a boundary receipt; it may not become an
@@ -66,7 +66,7 @@ admission methods belong to Extend's behavior protocol.
 
 ** Slot result versus slot implementation
 
-The two categories constrain the resolved public configuration value. Native
+The two categories constrain the resolved public configuration value. Runtime
 POO implements defaults and inherited refinements with computations. The
 function in =(items => append additions)= computes an inert slot result; it
 does not make =items= a user-configurable callback slot.
@@ -104,7 +104,7 @@ decision for each current owner and the interface that users should see.
 
 | Existing Core owner/API family | Default Functional surface | Extend or deeper surface |
 |-------------------------------+----------------------------+---------------------------|
-| Upstream =clan/poo/object= | product keyword settings and capability selection yielding POO values | native =.o= / =.def=, raw =.ref=, inheritance and slot refinement for facade/extension authors; mutation is R |
+| Upstream =clan/poo/object= | product keyword settings and capability selection yielding POO values | runtime =.o= / =.def=, raw =.ref=, inheritance and slot refinement for facade/extension authors; mutation is R |
 | =types= | supplied Types/Contracts; =yuanxu-type-classify=, =yuanxu-contract-admit= and evidence inspection | predicate Type/Contract construction, =.classify= / =.obligations= / =.admit= specialization |
 | =module-system/types= | inspect/use supplied Module Contracts | changing Module source-role and authoring policy |
 | =module-system/objects= | select an already admitted SemanticModule | =SemanticModule.=, =ModuleSourceRole.=, =ModuleAuthoringProfile.= and =make-semantic-module= authoring |
@@ -113,10 +113,10 @@ decision for each current owner and the interface that users should see.
 | =module-system/schema/slot-contracts= | use a supplied Contract and inspect its slot Types | =yuanxu-contract-value-type=, =yuanxu-contract-slot=, =yuanxu-object-contract= and new predicates |
 | =module-system/schema/interface= | use maintained admitted objects and supplied Types | schema/object/field/transformer authoring and explicit field-resolution; internal caches/indexes remain I |
 | =module-system/schema/validation= | product-owned validation of declared values | low-level validation helpers stay E; they are not a new root config vocabulary |
-| =module-system/projection/option-objects= | inspect effective native Slot policy | construct ModuleOptionSchema; candidates and diagnostic results are ordinary POO values |
-| =module-system/projection/option-validation= | whole-Record diagnostics and legacy row diagnostics | native Record owns checks; receipt grouping is presentation, not admission or another field declaration |
+| =module-system/projection/option-objects= | inspect effective runtime Slot policy | construct ModuleOptionSchema; candidates and diagnostic results are ordinary POO values |
+| =module-system/projection/option-validation= | whole-Record diagnostics and legacy row diagnostics | runtime Record owns checks; receipt grouping is presentation, not admission or another field declaration |
 | =module-system/source/objects= | inert SourceRef construction, equality, getters and receipt projection | extend the source prototype for a new source kind; construction does not discover/load |
-| =module-system/catalog/types= and =objects= | native Record values, pure add/find/resolve and inspection | Record/Slot refinement and ordinary instance extension; no filesystem discovery implicit in lookup |
+| =module-system/catalog/types= and =objects= | runtime Record values, pure add/find/resolve and inspection | Record/Slot refinement and ordinary instance extension; no filesystem discovery implicit in lookup |
 | =module-system/loader/load-path= | select maintained LoadPath/collection values | collection/LoadPath authoring; =locate= can invoke callbacks, so invocation is R |
 | =module-system/loader/objects= | select a maintained load plan and inspect resulting receipts | Backend callback construction is E; loading/forcing is R even when it returns a receipt |
 | =module-system/funs=, =graph/funs= | bounded phase/flag/dependency queries on admitted data | caller-supplied hook/accessor callbacks are E; closure helpers are not root graph syntax |
@@ -164,9 +164,9 @@ enforces the two-category public contract. Specific current gaps are:
    inspectable. Their representation does not become a public configurable slot.
 5. The broad CLOS facade includes declarations, lifecycle, mutation and MOP.
    Default product facades must expose owned domain operations, not reexport it.
-6. =yuanxu-settings= forwards arbitrary native slot forms rather than enforcing
+6. =yuanxu-settings= forwards arbitrary runtime slot forms rather than enforcing
    a bounded keyword/value surface. Plain options must remain the ordinary
-   interface; advanced native slot authoring belongs to Extend. This audit does
+   interface; advanced runtime slot authoring belongs to Extend. This audit does
    not implement that restriction.
 
 Any later implementation needs positive cases for both value categories;
@@ -189,23 +189,23 @@ checked at =e281ad2e33784cfb9951c684b6be78bd2f4b7fca=. These are three
 different evidence cuts. Timing the middle cut does not establish architectural
 alignment with the latest method/examples surface. The latest source was read
 in an isolated archive; the installed dependency and other sessions' trees were
-not replaced. Its object engine still contains native issued-read association,
+not replaced. Its object engine still contains runtime issued-read association,
 receiver protection, route validation and issuer-owned replay projection.
 Their presence is a source finding, not a consumer regression result at this REV.
 
 The production unit is the complete Gitea/PostgreSQL route:
-configuration -> effective domain values -> native value validation -> contextual
+configuration -> effective domain values -> runtime value validation -> contextual
 child/contribution admission -> source-bound publication -> effective plan.
 The workflow/doctor preview is a consumer of this route. It must not own another
 validation implementation. Counters and fixtures qualify a changed route;
 they are not the route to refactor.
 
-** Native mechanisms and the responsibilities they actually replace
+** Runtime mechanisms and the responsibilities they actually replace
 
 The current producer's [[https://github.com/tao3k/gerbil-poo/blob/e281ad2e33784cfb9951c684b6be78bd2f4b7fca/examples/declared-methods.ss][declared-methods example]]
 uses =.defgeneric= with =from: type= and =combination:=, ordinary
-=MethodDeclaration.= fragments and native standard/typed method preparation.
-Inherited fragments use native precedence and metadata invalidation. This is
+=MethodDeclaration.= fragments and runtime standard/typed method preparation.
+Inherited fragments use runtime precedence and metadata invalidation. This is
 the replacement vocabulary for repeated Core method assembly, forwarding
 closures and per-item effective-method preparation. It is not a reason to turn
 every pure domain function into an open Generic.
@@ -218,17 +218,17 @@ multiple dispatch. A blanket import rename or moving the same wrapper into a
 method would not remove duplicated responsibilities.
 
 The [[https://github.com/tao3k/gerbil-poo/blob/e281ad2e33784cfb9951c684b6be78bd2f4b7fca/examples/object-contracts.ss][object-contracts example]]
-defines native responsibilities once and strengthens relations with =refine=.
+defines runtime responsibilities once and strengthens relations with =refine=.
 The [[https://github.com/tao3k/gerbil-poo/blob/e281ad2e33784cfb9951c684b6be78bd2f4b7fca/examples/function-publication.ss][function-publication example]]
 uses =Fun= for nested callable contracts and Observation/FUN composition for
-the request-to-checked-value route. Native =checked-action= validates each
+the request-to-checked-value route. Runtime =checked-action= validates each
 actual input and passes its normalized result once to the consumer, preserving
 multiple values and the original exception. Core must not reproduce that value
 Type/Function kernel through classification wrappers.
 
 The [[https://github.com/tao3k/gerbil-poo/blob/e281ad2e33784cfb9951c684b6be78bd2f4b7fca/examples/contract-publication.ss][contract-publication example]]
 then binds the actual checked subject, descriptor and context to invocation.
-Core =admission/publication.ss= already calls native =metadata.bind-evidence=;
+Core =admission/publication.ss= already calls runtime =metadata.bind-evidence=;
 this is correct reuse and is retained. The producer's =bind-evidence= already
 owns its specialization behavior. Wrapping it in a second Core binding/cache
 abstraction would repeat the same work. Template/check reuse in
@@ -241,16 +241,16 @@ license caching context approval, currentness or a successful admission.
 =object-types/contracts.ss= still defines manual evidence-shape predicates,
 tagged-object constructors, accessor validation and a classification-centred
 Type layer. The shapes of =YuanxuClassificationEvidence= and
-=YuanxuValidationEvidence= should use native Record/ObjectContract declarations
+=YuanxuValidationEvidence= should use runtime Record/ObjectContract declarations
 and =refine= for their cross-field relations, rather than repeating slot-name,
 Boolean and list checks. The actual descriptor/candidate/context associations
 remain mandatory. Wire projections remain projections; they confer no authority.
 
-The larger decision is to separate native VALUE validation from Core CONTEXTUAL
-admission. Native Type/ObjectContract owns field selection, normalization,
+The larger decision is to separate runtime VALUE validation from Core CONTEXTUAL
+admission. Runtime Type/ObjectContract owns field selection, normalization,
 Function wrapping and value relations. Core owns selected-source association,
 contextual children, independent contributors and publication applicability.
-The reconstructed admission path should consume the actual native checked
+The reconstructed admission path should consume the actual runtime checked
 value, run those additional responsibilities, and produce one authoritative
 receipt. Keeping =.classify -> custom .element? -> custom .validate -> .admit=
 as parallel ways to repeat value validation would preserve the old architecture.
@@ -259,13 +259,13 @@ must be inventoried before changing this split: silently turning contextual
 admission into shape-only recognition would weaken those consumers.
 
 =admission/source.ss= currently composes =prepared-preflight= with a full
-=diagnose value-contract= before the inherited producer calls native
+=diagnose value-contract= before the inherited producer calls runtime
 =validate=. Gitea also explicitly stages envelope, PostgreSQL, client and plan
 diagnoses. This is a concrete duplication candidate, but deletion is conditional
-on native ordered normalization preserving refusal behavior: invalid PostgreSQL
+on runtime ordered normalization preserving refusal behavior: invalid PostgreSQL
 settings must refuse before forcing the derived Gitea port or plan. Compare
-native =prepared-validation= and diagnostic short-circuit ordering first.
-If a producer capability is missing, name that native Contract gap; do not add
+runtime =prepared-validation= and diagnostic short-circuit ordering first.
+If a producer capability is missing, name that Contract gap; do not add
 another Core field table or an alternative validator to hide it.
 
 The current producer source confirms an important limit: =object-shape-issues=
@@ -273,14 +273,14 @@ uses =append-map= over all effective field names, and =validate-object= first
 calls =diagnose-structure= over the candidate. It does not automatically infer
 that a derived Gitea getter depends on already valid PostgreSQL settings. Thus
 "replace the preflight with checked-action" is not yet a sound drop-in change.
-The native diagnostic combinators can express the required sequencing; Core
+The runtime diagnostic combinators can express the required sequencing; Core
 must not pretend that automatic dependency-ordered validation already exists.
-Also, native =validate= raises a Type error on refusal, whereas public Core
+Also, runtime =validate= raises a Type error on refusal, whereas public Core
 =.admit= returns contextual rejected evidence. Their refusal conversion must
 be defined at that ONE boundary, preserve the original cause/path, and avoid
 catching arbitrary effectful callback exceptions as ordinary shape failures.
 
-=admission/publication.ss= retains only platform duties around the native
+=admission/publication.ss= retains only platform duties around the runtime
 invocation: selected/build/source applicability, contribution completeness,
 exact checked-value association and effect-boundary checks. The return check
 cannot be demoted to an ordinary =after= method if failure/exception semantics
@@ -290,7 +290,7 @@ for its actual ordering semantics, not for shorter spelling.
 =object-family/read-projection.ss= and its =owned-read-*= callers require an
 ownership audit alongside that reconstruction. Distinguish hints used only to
 avoid temporary receipt/dispatch construction from protections required around
-open function bodies. Native method preparation, MOP dependency recording and
+open function bodies. Runtime method preparation, MOP dependency recording and
 invalidating caches should own the former where equivalent. Do not delete the
 latter merely because an upstream cache exists. No source label or user-supplied
 purity flag may decide whether an open Generic callback is observed.
@@ -298,15 +298,15 @@ purity flag may decide whether an open Generic callback is observed.
 In the role reader and linker, selection remains metadata-only. Shared method
 declarations/preparation belong to the effective role owner, demanded on use;
 ordinary configuration entries do not each need a new CLOS effective-method
-object. Later registrations and descriptor edits must still invalidate native
+object. Later registrations and descriptor edits must still invalidate runtime
 preparation. Ordinary functions remain the default when behavior has no open
-dispatch axis. Native derived receivers retain their own effective values after
+dispatch axis. Runtime derived receivers retain their own effective values after
 a parent was cached.
 
 ** Execution unit and evidence needed before removing old code
 
 Implement this as one production vertical cut, not unrelated helper cleanups:
-native domain Type/relations, method ownership and Functional value flow, then
+runtime domain Type/relations, method ownership and Functional value flow, then
 context/source admission, publication and preview consumers. Remove an old
 producer and migrate its consumers in that same unit; do not leave parallel
 public entrances or a new adapter over the previous implementation.
@@ -331,7 +331,7 @@ not the unfinished global export audit. Core now declares producer
 =e281ad2e33784cfb9951c684b6be78bd2f4b7fca=. The producer's standard library
 build completed in a separate GERBIL_PATH, using the installed unmodified
 Gerbil SDK and the upstream build entry's existing 180-second limit. Core's
-changed production modules were compiled with native std/make. The package
+changed production modules were compiled with runtime std/make. The package
 checkout used by other sessions was not reset or overwritten. Tests use the
 default bounded Just entry with that fixed producer library, not an eval-import
 compatibility runtime.
@@ -339,32 +339,32 @@ compatibility runtime.
 ** One value action, then contextual admission
 
 =YuanxuContract.= now prepares =checked-action value-contract values= on the
-effective descriptor. The prepared slot caches only native FUN composition;
+effective descriptor. The prepared slot caches only runtime FUN composition;
 every invocation with a value Type validates its current candidate. A descriptor
 without a value Type passes the same candidate directly to contextual analysis;
 the follow-up no longer demands its prepared identity action. Preparation stays
 outside the refusal handler so invalid Type declarations remain programming errors.
 
-Only invocation of that native value action is inside TypeError conversion.
+Only invocation of that runtime value action is inside TypeError conversion.
 A validator's typed refusal becomes rejected contextual evidence; non-TypeError
 failures propagate with their original identity. Contextual classifiers, child
 admissions, contribution obligations and later callbacks execute outside this
 handler. In particular, a TypeError thrown by a contextual obligation is NOT
 converted into a value-shape failure. Validation effects are never rolled back.
 
-Canonical native diagnostic objects are retained unchanged. The original
-condition is retained as =cause=. Native persistent rebinding derives a checked
+Canonical runtime diagnostic objects are retained unchanged. The original
+condition is retained as =cause=. Runtime persistent rebinding derives a checked
 root from the supplied root; rejection evidence retains that actual root when
-the native refusal reports it. A child validator's object cannot replace the
+the runtime refusal reports it. A child validator's object cannot replace the
 root merely because it appears in the exception. Noncanonical refusals produce
-a root =native-type-refused= diagnostic with the original cause, without
+a root =type-contract-refused= diagnostic with the original cause, without
 inventing a child-to-root field path or another field table. This does not
 claim a general path-recovery protocol for every arbitrary user validator.
 
-** Native method combination owns the source extent
+** Runtime method combination owns the source extent
 
 =SourceAdmissionContract.= uses =method-combination.prepare-standard= with
-native around and primary contributions. Preparation runs no admission body.
+runtime around and primary contributions. Preparation runs no admission body.
 The primary resolves the inherited admission on each call; the around method
 owns fresh source observations, the complete body/read replay and return-time
 collector certification. It does not place certification in an =after= method
@@ -375,24 +375,24 @@ The old =prepared-preflight= slot and its additional whole-value =diagnose=
 pass are removed from production. Gitea retains only the dependency guards:
 application envelope, configuration envelope, PostgreSQL value, then client
 value. Their short-circuit order protects dependent getters. The separate plan
-preflight is removed; native root validation checks the plan and runs the
+preflight is removed; runtime root validation checks the plan and runs the
 application relation after normalization. A typed value refusal does not invoke
 the replaceable contextual =admit-current= callback; local source checks and
 the independent final collected-source check still run before a result returns.
 
 Gitea's dependency preflight belongs to ApplicationContract, not to an extra
-policy field attached to its reusable native value Type. The effective
+policy field attached to its reusable runtime value Type. The effective
 descriptor supplies the same PostgreSQL and client Type objects to both the
 ordered guards and ObjectContract responsibilities. This avoids reconstructing
 the client Type solely for a second wrapper while retaining dependent-read
 short circuiting. Guard diagnosis is intentional; it is not a cached admission
-verdict or a substitute for the final native validation.
+verdict or a substitute for the final runtime validation.
 
-** Native evidence shape and existing publication
+** Runtime evidence shape and existing publication
 
 The three manual evidence shape/element predicates are removed. Classification
-and validation evidence use native Record/Slot declarations, concrete symbolic
-tags, Bool, diagnostic object lists and native descriptor membership. Candidate
+and validation evidence use runtime Record/Slot declarations, concrete symbolic
+tags, Bool, diagnostic object lists and runtime descriptor membership. Candidate
 and context are required opaque reference Slots: this envelope must not
 normalize or replace those referents, and it does not introduce an Any-valued
 configuration field. Validation's cross-field relations remain explicit, with
@@ -402,7 +402,7 @@ descriptor and context. These relations are not substituted by structural shape.
 Existing contextual evidence producers and wire projections retain their domain
 responsibilities; no second public producer or compatibility alias is added.
 The current =metadata.bind-evidence= / =metadata.publish= usage is retained,
-because it already owns the native invocation protocol. Domain configuration,
+because it already owns the runtime invocation protocol. Domain configuration,
 interface publication and ordinary user port/path overrides need no new syntax.
 The old source traversal/ownership consumers are not deleted speculatively:
 their open-body/currentness responsibilities remain separate from value typing.
@@ -423,7 +423,7 @@ Existing admission-binding, Function-composition, analysis-ownership, source
 admission, JSON configuration and relocated-package suites passed serially.
 The existing contract-diagnostics suite additionally asserts one final diagnosis,
 one normalization, a post-normalization refusal carrying port 5433 and the SAME
-native cause, no contextual effect after that refusal, and unchanged non-type
+runtime cause, no contextual effect after that refusal, and unchanged non-type
 and contextual exception identities. Product workflow/doctor's existing 16/32
 and real-publication cohort also passed through the new production modules.
 It passed again after the final dependency-guard move. That final product

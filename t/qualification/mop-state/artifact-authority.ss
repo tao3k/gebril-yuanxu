@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Isolated native-loader experiment. Expected issuance comes from a child
+;;; Isolated runtime-loader experiment. Expected issuance comes from a child
 ;;; compiler pipe retained in parent memory, never from writable sidecars.
 (import :clan/poo/object
         (only-in :std/misc/process run-process)
@@ -11,7 +11,7 @@
         "./artifact-closure")
 (export compile-authority install-authority! prepare-source-authority! deactivate-authority!
         authorize-request! load-owned! current-transfer-probe
-        authority-status authority-artifacts authority-private-pool reset-native-errors!)
+        authority-status authority-artifacts authority-private-pool reset-runtime-errors!)
 (extern namespace: #f __modules)
 (defstruct authority (artifacts pool issued inputs index loaded events) transparent: #f)
 (def active #f)
@@ -49,7 +49,7 @@
           "just" "compile-mop-store-boundary" artifact-root)
     coprocess: (lambda (process)
       ;; Forward only actual child output progress while retaining the complete
-      ;; issuance pipe. Buffering to EOF hid native compiler work from the
+      ;; issuance pipe. Buffering to EOF hid runtime compiler work from the
       ;; outer Harness idle guard; a timer would merely hide a real stall.
       (def text
         (call-with-output-string
@@ -99,7 +99,7 @@
                (equal? (file-digest (.get row emitted)) (.get row emitted-digest))
                (andmap (lambda (entry) (and (file-exists? (car entry))
                  (equal? (file-digest (car entry)) (cdr entry)))) (.get row metadata)))
-    (error "issued native artifact changed" name)))
+    (error "issued runtime artifact changed" name)))
 (def (authorize-request! name)
   (when active
    (let* ((state active) (row (hash-get (authority-index state) name)))
@@ -137,7 +137,7 @@
              (error "resident callback has no issuer association" name)))))
       ((let (path (__find-library-module name))
          (and path (string-prefix? (authority-artifacts state) path)))
-       (error "unissued native dependency" name))))))
+       (error "unissued runtime dependency" name))))))
 (def (load-owned! name path)
   (def state active)
   (def row (and state (hash-get (authority-index state) name)))
@@ -147,7 +147,7 @@
       (authorize-request! name)
       (def data (bytes path))
       (unless (equal? (digest data) (.get row digest))
-        (error "issued native bytes changed" name))
+        (error "issued runtime bytes changed" name))
       (def snapshot (path-expand
         (string-append (.get row digest) "/" (path-strip-directory path)) (authority-pool state)))
       (unless (file-exists? snapshot) (write-bytes snapshot data))
@@ -156,7 +156,7 @@
       (def checked-snapshot (file-digest snapshot))
       (event! state 'snapshot-check name (vector (.get row digest) checked-snapshot))
       (unless (equal? checked-snapshot (.get row digest))
-        (error "private native snapshot changed" name))
+        (error "private runtime snapshot changed" name))
       ;; This final fault seam demonstrates why private-pool authority is a
       ;; premise: artifact-tree changes cannot alter the already copied bytes.
       ((current-transfer-probe) 'consuming name path)
@@ -178,7 +178,7 @@
   (set! active state)
   (set-load-path! (cons (path-expand "lib" (authority-artifacts state)) (load-path)))
   (setenv "CORE_STORE_ROOT" (authority-pool state))
-  ;; Bootstrap the complete issued module through the native loader. Loading
+  ;; Bootstrap the complete issued module through the runtime loader. Loading
   ;; only ~0 bypasses the module initializer and is not a portable entrypoint.
   ;; Both units stay in the compiler-issued, private pool throughout activation.
   (def bootstrap (path-expand "bootstrap/lib" (authority-pool state)))
@@ -202,7 +202,7 @@
       result)
     (lambda () (set-load-path! previous))))
 (def (deactivate-authority!) (set! active #f))
-(def (reset-native-errors! state)
+(def (reset-runtime-errors! state)
   (for-each (lambda (entry)
     (when (hash-key? (authority-index state) (car entry))
       (let (value (hash-get __modules (car entry)))

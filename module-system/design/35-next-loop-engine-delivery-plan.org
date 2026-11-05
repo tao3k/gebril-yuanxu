@@ -12,18 +12,18 @@ loop-engine documents and defines the next implementation plan.
 
 It is a delivery plan, not a new design branch. The direction remains:
 
-- Scheme owns POO-native declarations, validation, projection, report-only
+- Scheme owns POO declarations, validation, projection, report-only
   receipts, presentation, and Marlin handoff manifests.
 - Marlin owns execution, scheduling, durable state, memory mutation, sandbox
   realization, connector calls, and conflict enforcement.
-- Public loop-engine configuration remains 100% POO-native under
+- Public loop-engine configuration remains 100% POO under
   =(use-module loop-engine :config ...)=.
 
 * 10.06.35.10 Document Audit
 
 The current documentation says three important things.
 
-1. =32-loop-engine-poo-native-config.org= establishes the public contract:
+1. =32-loop-engine-poo-config.org= establishes the public contract:
    loop-engine no longer accepts row DSL or compatibility alists. The user
    writes POO objects, Scheme validates slots, and runtime projection stays
    report-only.
@@ -40,14 +40,14 @@ The current documentation says three important things.
    those families into =loop-engine-runtime.ss=.
 
 The old =27-next-implementation-closure-plan.org= remains useful as a closure
-baseline, but it predates the loop-engine POO-native work. Its "next" language
+baseline, but it predates the loop-engine POO work. Its "next" language
 should no longer drive implementation priority by itself.
 
 * 10.06.35.20 Current Baseline
 
 Treat the following surfaces as the baseline for the next push:
 
-- POO-native loop-engine config is the only public loop-engine config shape.
+- POO loop-engine config is the only public loop-engine config shape.
 - Slot validation happens before intent projection.
 - Result-contract diagnostics remain report-only diagnostics when the object
   shape is structurally valid.
@@ -126,7 +126,7 @@ surfaces are:
 
 1. Add a delivery scenario fixture for the CI Sweeper / Dependency Sweeper /
    Daily Triage interaction. Start in =user-interface/custom/my-module= so the
-   public POO-native surface remains the source of truth.
+   public POO surface remains the source of truth.
 
 2. Strengthen runtime manifest tests around =loop-engine-discovery= and
    =receipt-contracts=. The test should prove Marlin can find the request shape

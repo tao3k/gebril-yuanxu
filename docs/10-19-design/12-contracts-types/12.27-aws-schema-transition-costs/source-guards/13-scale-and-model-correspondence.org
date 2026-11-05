@@ -6,12 +6,12 @@
 
 A claim that ten thousand Modules are supported needs more than a small AWS
 pass. Catalog discovery, demanded declarations, source checks, scope linking,
-test execution and native expansion have different costs and authorities.
+test execution and runtime expansion have different costs and authorities.
 The focused [[file:../../../../../t/module-loading-scale-test.ss][Scheme scale test]] keeps those boundaries explicit.
 
 | Control | 1000 | 10000 | What is actually exercised |
 |---------+------+-------+----------------------------|
-| Real filesystem catalog | 1000 directories | 10000 directories | Four source roles per directory; native directory namespace and publication reader |
+| Real filesystem catalog | 1000 directories | 10000 directories | Four source roles per directory; runtime directory namespace and publication reader |
 | Selected body reads | 54 | 54 | One selected Module, test discovery and a later currentness check |
 | Unselected body reads | 0 | 0 | Unselected roles contain expansion failures; no role body may be read |
 | Selected declaration callback calls | 1000 | 10000 | Production Core/Feature selection resolver; one shared dependency |
@@ -24,11 +24,11 @@ invalidates the old test-source snapshot even when the selected body is unchange
 The test uses the existing fixture macro and heap-fenced test entrypoint.
 
 The complete selected-Graph control uses POO publication fixtures, not ten
-thousand native macro expansions. Its counts validate the actual resolver's
+thousand runtime macro expansions. Its counts validate the actual resolver's
 one-read-per-declaration behavior, dependency-first order and scope laziness.
 The deep closure control validates the actual iterative DFS without relying on
 the host call stack. Neither test is a substitute for a ten-thousand-module
-native expansion or runtime execution benchmark.
+runtime expansion or runtime execution benchmark.
 
 Catalog metadata enumeration is still proportional to catalog size and is
 reported separately from body reads. Equal selected-body counts do not establish
@@ -51,7 +51,7 @@ Two additional matched controls fail the named invariants:
 
 The existing four controls retain eager sibling expansion, stale evidence,
 cleanup failure and substitution of a second Graph. Terminal states remain
-explicit. The pinned native Quint checker typechecks the seven scoped entries
+explicit. The pinned runtime Quint checker typechecks the seven scoped entries
 and their imports; the existing TLC backend checks the positive and six negative
 cases and emits the existing Scheme v1 receipt. No new runner is introduced.
 
@@ -63,15 +63,15 @@ catalog when roots and dependency edges are covered by that catalog. This is
 not a proof that every edge operation is constant time.
 
 [[file:../../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean][ImportCorrespondence]] keeps current input registration distinct from cached
-native context topology. Later registrations must appear in the next projection;
+runtime context topology. Later registrations must appear in the next projection;
 missing observations and changed source kinds/bytes remain refusals. The deferred
-Build regression exercises the corresponding native handoff.
+Build regression exercises the corresponding runtime handoff.
 
 * What remains a premise or an open capacity gate
 
 The finite Quint model does not enumerate ten thousand states as ten thousand
 Modules. Lean's size-independent laws and Scheme's explicit scale controls cover
-different claims. Native import/phase discovery completeness, source-to-model
+different claims. Runtime import/phase discovery completeness, source-to-model
 correspondence, hash-table costs, allocation and external mutation are not proved
 by a finite-model pass.
 Completed canonical SDK context topology is assumed stable when its structural
@@ -79,18 +79,18 @@ index is reused. The existing reader only releases completed wrapper code; it
 preserves imports and bindings. Arbitrary MOP mutation of those cached import
 edges is not certified by unchanged file bytes and is not covered by this gate.
 
-Further capacity work must include wide and deep native expansion, diamond
+Further capacity work must include wide and deep runtime expansion, diamond
 dependencies, many enabled Features, selection conflicts, source invalidation,
 and bounded concurrent execution. Work counts and peak memory must be recorded
 alongside time. An already loaded module, an unchanged value or a cache hit never
 replaces a required current-source check or grants execution authority.
 
 The architecture target is proportional work in the selected dependency closure
-and its genuine effect boundaries, while keeping catalog discovery and native
+and its genuine effect boundaries, while keeping catalog discovery and runtime
 execution explicit. It is not zero work for required dependencies or permission
 to reuse successful admission across an effect.
 
-The subsequent [[file:14-declaration-capacity.org][real source-declaration gate]] separates native expansion
+The subsequent [[file:14-declaration-capacity.org][real source-declaration gate]] separates runtime expansion
 from these catalog/resolver controls and retains the thousand/ten-thousand
 memory-policy failures. Those capacity gates have not passed.
 

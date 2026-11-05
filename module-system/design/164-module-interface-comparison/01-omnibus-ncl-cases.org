@@ -71,7 +71,7 @@ expressiveness.
 
 ** The corresponding POO authoring operation
 
-The following is a self-contained native-object illustration, not a shipped
+The following is a self-contained poo-object illustration, not a shipped
 SandboxModule or a claim that it emits a Seatbelt profile:
 
 #+begin_src scheme
@@ -95,7 +95,7 @@ SandboxModule or a claim that it emits a Seatbelt profile:
   network: =>.+ {enabled: #f mode: 'deny})
 #+end_src
 
-The useful property is that derived fields can retain native receiver-aware
+The useful property is that derived fields can retain runtime receiver-aware
 relationships after inheritance. The cost is equally visible: this example
 provides no domain contract, schema documentation, platform adaptation or
 Seatbelt projection. Omnibus already has a concrete consumer path. A POO object
@@ -196,7 +196,7 @@ in
 
 Here the timeout predicate is a real domain constraint, beyond a scalar type.
 This is a stronger configuration boundary than our current bounded use-module
-helper, which only checks object?. Native prototype identity and rich predicates
+helper, which only checks object?. Runtime prototype identity and rich predicates
 solve different problems; having the former does not imply having the latter.
 
 Now inspect the actual Seatbelt builder:

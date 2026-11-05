@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Explicit file output for a validated, frozen Bundle v1 image.
-(import (only-in :clan/poo/object .ref)
+(import (runtime: :clan/poo/object)
         :yuanxu/feature-system/bundle-v1-foreign-arena)
 (export write-feature-bundle-v1-image!)
 

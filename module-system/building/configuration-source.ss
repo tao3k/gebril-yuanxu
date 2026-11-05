@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Explicit build-tool evaluation of an observed role, not a Module Loader.
-(import (only-in :clan/poo/object .o .get)
+(import (runtime: :clan/poo/object)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-admit-current! call-with-module-source-read-cache
                  current-module-source-phase)
@@ -10,7 +10,7 @@
 (export yuanxu-configuration-source)
 (def (yuanxu-configuration-source path binding context-current! role-sources: (roles '()))
   (unless (and (symbol? binding) (eq? (module-source-type path) 'regular))
-    (error "configuration source requires a regular role and native binding" path binding))
+    (error "configuration source requires a regular role and runtime binding" path binding))
   ;; A single synchronous validation of this closure shares its context check.
   ;; A new POO receiver is allocated on EVERY independent currentness call.
   ;; Nothing is cached across role evaluation, file writes or external effects.
@@ -18,9 +18,9 @@
   (def evaluated-inputs '())
   (def (context!)
     (if (phase) (.get (phase) checked) (context-current!)))
-  ;; Preparing inert role/header observations has no native expansion or
+  ;; Preparing inert role/header observations has no runtime expansion or
   ;; initialization. Share this ONE source-only window, then close it before
-  ;; module-prepared-source-binding performs the native import below.
+  ;; module-prepared-source-binding performs the runtime import below.
   (let-values (((prepared related current!)
                 (call-with-module-source-read-cache
                   (lambda ()
@@ -46,7 +46,7 @@
                       (values prepared related current!))))))
     (let (effective (module-prepared-source-binding prepared binding related
                      source-inputs: (lambda (inputs) (set! evaluated-inputs inputs))))
-      ;; The reader checks prepared/related inputs AFTER native evaluation.
+      ;; The reader checks prepared/related inputs AFTER runtime evaluation.
       ;; Its remaining work only releases completed private expansion results
       ;; and deletes its private wrapper directory. No author code or Nix lies
       ;; between that return check and this inert source projection. Keep the

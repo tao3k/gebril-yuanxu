@@ -284,7 +284,7 @@ commit, receipt validation, authority selection, retention, and final safety.
 
 * POO boundary
 
-The Scheme interface remains the existing POO-native responsibility-transfer
+The Scheme interface remains the existing POO responsibility-transfer
 object and owner relations.  Registry publication is a runtime effect boundary
 behind that object.  This RFC introduces no public alist protocol, no second
 composition form, and no raw compute hook.

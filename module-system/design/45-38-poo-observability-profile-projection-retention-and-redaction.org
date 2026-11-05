@@ -14,7 +14,7 @@ projection, retention, redaction and export permission for semantic evidence.
 It does not control whether correctness evidence exists and it cannot alter:
 
 - canonical business values;
-- native POO composition or prototype precedence;
+- POO composition or prototype precedence;
 - slot-contract and priority decisions;
 - dependency topology;
 - fixed-point convergence;
@@ -37,7 +37,7 @@ Observability policy participates through the established Profile interface:
     production-observability))
 #+end_src
 
-=production-observability= is a native POO Profile.  It is not:
+=production-observability= is a POO Profile.  It is not:
 
 - a new configuration language;
 - a provider;
@@ -46,7 +46,7 @@ Observability policy participates through the established Profile interface:
 - an alist of logging options;
 - a command-style cache-debug interface.
 
-The Profile expands to ordinary native POO objects, contracts and policy
+The Profile expands to ordinary POO objects, contracts and policy
 composition.
 
 * Four-layer separation
@@ -354,7 +354,7 @@ Policy composition MUST fail closed or raise an authorized condition when:
 
 * Acceptance checklist
 
-- [X] Observability policy is an ordinary native POO Profile.
+- [X] Observability policy is an ordinary POO Profile.
 - [X] Correctness evidence is mandatory and independent of Profile selection.
 - [X] Business, kernel, policy, projection and operational receipts remain
   distinct.

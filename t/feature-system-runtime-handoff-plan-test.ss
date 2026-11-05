@@ -309,7 +309,7 @@
 
 (def feature-system-runtime-handoff-plan-test
   (test-suite "Feature runtime handoff planning"
-    (yuanxu-test-case "Bundle v1, Cedar and Evidence resolve as native POO references"
+    (yuanxu-test-case "Bundle v1, Cedar and Evidence resolve as POO references"
       (let ((resolved (.ref runtime-handoff-ready-plan 'resolved-handoffs)))
         (check +feature-runtime-c-bundle-version+ => 1)
         (check (.ref runtime-handoff-adapter-binding 'accepted?) => #t)
@@ -389,7 +389,7 @@
                     rejected-runtime-handoff-manifest-plan))
              ? values))
 
-    (yuanxu-test-case "1024 handoffs resolve through indexed native bindings"
+    (yuanxu-test-case "1024 handoffs resolve through indexed runtime bindings"
       (let* ((handoffs (runtime-handoff-stress-values 1024))
              (manifest
               (feature-runtime-handoff-manifest

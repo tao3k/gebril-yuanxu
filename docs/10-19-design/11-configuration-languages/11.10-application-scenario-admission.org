@@ -13,10 +13,10 @@ its Core export rename is pending. This example does not introduce an alias.
 * Scope and dependencies
 
 [[file:11.09-contract-directed-service-scenarios.org][Module 08]] defines the complete Web/API/Database Profile Contracts, endpoints,
-requirements, prototype defaults, native parent expansion and resolver. This
+requirements, prototype defaults, runtime parent expansion and resolver. This
 module fills the previously undefined ApplicationScenarioContract. Named helpers
 below are defined here, not placeholders for a future graph algorithm. They use
-existing native POO values and public Core admission. They are design code only.
+existing POO values and public Core admission. They are design code only.
 No new language, Loader, registry resolution or production source is introduced.
 
 Prerequisites from module 05: StringContract and no-obligations/closed-fields.
@@ -66,7 +66,7 @@ The planned declaration/publication adapter records the exact Contract associati
 from WebProfile @ WebProfileContract and preserves it in compatible derivatives.
 That adapter is not implemented. For a concrete three-family design reference,
 context.descriptors contains the three selected library descriptors and matching
-uses native prototype ancestry. Zero or multiple matches fail closed. This does
+uses runtime prototype ancestry. Zero or multiple matches fail closed. This does
 not choose the first matching parent or silently discard another requirement.
 
 #+begin_src scheme
@@ -220,7 +220,7 @@ resolution; a PostgreSQL endpoint cannot satisfy Web's HTTP requirement.
 (def AdmissionContext
   (.o descriptors: (list WebProfileContract APIProfileContract DatabaseProfileContract)))
 
-;; Public Core entry: expanded native Shop/ReleaseShop inherit ApplicationScenario.
+;; Public Core entry: expanded runtime Shop/ReleaseShop inherit ApplicationScenario.
 (def release-receipt
   (yuanxu-contract-admit ApplicationScenarioContract ReleaseShop AdmissionContext))
 #+end_src
@@ -235,7 +235,7 @@ implementation does not claim arbitrary meta-Contract substitutability.
 * Final-port changes and retained correlations
 
 Concrete design controls below assume the module 08 declarations have been lowered
-to their native proto parents with the exact descriptor associations retained.
+to their runtime proto parents with the exact descriptor associations retained.
 These are not newly executed tests or claims that Contract-parent syntax works.
 
 #+begin_src scheme
@@ -299,7 +299,7 @@ Before resource publication, the consumer must correlate receipt.candidate with
 the current Scenario/context, require profile-evidence keys to equal current
 selected keys, and correlate every receipt/endpoint to the final object identities
 and expected role set. Omitted/forged evidence, producer association and generation
-invalidation still require qualification; native .cc is not evidence authentication.
+invalidation still require qualification; runtime .cc is not evidence authentication.
 The code constructs the complete evidence set but has not been executed or proved.
 
 The [[file:../../../../docs/10-19-design/10.08-config-languages/scenarios/README.org][actual scenario-source corpus]] and [[file:../../../../docs/10-19-design/10.08-config-languages/10-source-scenario-research.org][source-to-design study]] supply pinned KCL,

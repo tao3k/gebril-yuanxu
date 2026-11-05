@@ -21,7 +21,7 @@
                   (check-equal? (file-exists? root) #f))))
 (def module-init-import-test
   (test-suite "Init import owns no eager Reader or build execution closure"
-    (yuanxu-test-fixture "native init import defers missing source and execution owners"
+    (yuanxu-test-fixture "runtime init import defers missing source and execution owners"
       (root Workspace)
       (def init (path-expand "init.ss" root))
       (call-with-output-file (path-expand "gerbil.pkg" root)
@@ -48,7 +48,7 @@
             yuanxu/module-system/building/artifacts
             yuanxu/observability/testing-script))
         (def tests (eval-syntax '(.get FixtureExports tests)))
-        (check-equal? (.slot? tests '.run) #t)
+        (check-equal? (.slot? tests '.run) #f)
         (check-equal? (.ref/cached tests 'execution) #f)
         (check-equal? (.ref/cached tests 'spec) #f)
         (create-directory (path-expand "modules" root))
@@ -84,9 +84,7 @@
           (def modules (eval-syntax '(.get FixtureExports modules)))
           (check-equal? (.all-slots modules) '(example))
           (check-equal? (eq? modules (eval-syntax '(.get FixtureExports modules))) #t)
-          (def example (.get modules example))
-          (check-equal? (.ref/cached example 'scope) #f)
-          (check-equal? (.ref/cached example 'tests) #f)
+          (check-equal? (.ref/cached modules 'example) #f)
           (for-each
             (lambda (key) (check-equal? (hash-ref counts key 0) 0))
             '(compiler-closure-requests compiler-closure-walks publication-start reader-declaration))
@@ -97,7 +95,7 @@
 
 (def qualified-init-import-test
   (test-suite "Source-qualified init exports"
-    (yuanxu-test-fixture "native package and module identities own distinct lazy entries"
+    (yuanxu-test-fixture "runtime package and module identities own distinct lazy entries"
       (root Workspace)
       (def left (string->symbol (symbol->string (gensym 'contribution-left-))))
       (def right (string->symbol (symbol->string (gensym 'contribution-right-))))

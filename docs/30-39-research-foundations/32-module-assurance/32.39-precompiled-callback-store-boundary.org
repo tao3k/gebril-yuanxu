@@ -4,7 +4,7 @@
 
 * Question and result
 
-[[file:32.40-compiler-artifacts-and-selected-closure.org][32.40]] follows this with compiler-issued artifact facts, native runtime import
+[[file:32.40-compiler-artifacts-and-selected-closure.org][32.40]] follows this with compiler-issued artifact facts, runtime import
 closure checks and old/replaced artifact controls before callback loading.
 
 [[file:32.38-compiled-store-boundary.org][32.38]] left an important counterexample: a function compiled before store
@@ -58,7 +58,7 @@ Both modules load through ordinary Gerbil imports. The callback module's
 generated body contains =before-store!= immediately before the primitive
 checked/unchecked store. Its reflection body calls the derived SDK
 =store-cut#__slot-set!__%=, whose primitive stores share that same policy.
-The native class identities are unchanged. This is the same isolation pass as
+The runtime class identities are unchanged. This is the same isolation pass as
 32.38, not a second callback-specific rewrite or callback dispatcher.
 
 The test's unlowered caller is itself a runtime-returned function:
@@ -78,14 +78,14 @@ The test's unlowered caller is itself a runtime-returned function:
 Returning both functions from POO slots prevents the result from being merely
 a source-level alias re-inlined into the processed consumer. The caller fixture
 only applies its function argument. It does not provide or activate protection;
-the native replay frame and the callee's compiled store own that behavior.
+the runtime replay frame and the callee's compiled store own that behavior.
 
 * Ownership, refusal and cache observations
 
 The existing 32.38 policy is unchanged: weak direct allocation ownership plus
-DFS over native dependents finds Parent, Hot, Cold, =.cc= Copy, =.+= Merged and
+DFS over runtime dependents finds Parent, Hot, Cold, =.cc= Copy, =.+= Merged and
 Direct. Unknown SlotSpec allocation is refused during replay. The preflight
-uses native =check-object-edit= for every discovered owner before storage.
+uses runtime =check-object-edit= for every discovered owner before storage.
 It does not scan or evaluate unselected configuration branches.
 
 Each callback runs the existing replace/force/restore control. The first
@@ -106,7 +106,7 @@ precompiled-inline          6         0         5432 5432 5432
 
 The unlowered negative callback still completes replacement/Cold evaluation/
 restoration and yields Parent=5432, Hot=5432, Cold=5440. It is an expected
-counterexample, not an accepted safe execution. Native nested-frame restoration,
+counterexample, not an accepted safe execution. Runtime nested-frame restoration,
 exception identity, operand evaluation once, unknown allocation refusal, unread
 carrier protection and ordinary default values remain covered: 12 compiler
 isolation cases pass in total.
@@ -149,7 +149,7 @@ The scoped family now checks ten expected outcomes, retaining both contribution
 requirements, child plan identity, Parent/Hot isolation and unused-branch
 laziness controls. The positive exploration exhausts 168 distinct states with
 zero states pending. The route enum models code coverage; it is not an automatic
-native-code purity or provenance certificate. Neither Lean nor Quint proves
+runtime-code purity or provenance certificate. Neither Lean nor Quint proves
 the emitted-code transformation complete or semantics-preserving for all SDKs.
 
 * Real admission control and evidence

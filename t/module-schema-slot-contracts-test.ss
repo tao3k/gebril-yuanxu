@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Contract: shared slot schemas and Contracts are native POO Type values.
+;;; Contract: shared slot schemas and Contracts are POO Type values.
 
 (import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test)
@@ -18,7 +18,7 @@
 
 (def module-schema-slot-contracts-test
   (test-suite "module-schema-slot-contracts-test"
-    (yuanxu-test-case "validates the native contract"
+    (yuanxu-test-case "validates the runtime contract"
       (eval '(import "./module-system/schema/slot-contracts.ss"))
       (eval '(import :clan/poo/object :clan/poo/mop))
       (contract-schema-eval
@@ -47,7 +47,7 @@
         (element? Type +contract-schema-fixture-contract+)
         (element? +contract-schema-fixture-contract+
                   (.o schema: "schema/v1"))))
- (error "contract schema should construct native Type and Contract values"))
+ (error "contract schema should construct Type and Contract values"))
 
 (let (row
       (contract-schema-eval
@@ -65,7 +65,7 @@
 (when
  (contract-schema-eval
   '(element? +contract-schema-fixture-contract+ (.o schema: 42)))
- (error "native Contract should reject invalid slot values"))
+ (error "Contract should reject invalid slot values"))
 
 (unless
  (equal?
@@ -74,4 +74,4 @@
      +contract-schema-fixture-slot+
      "schema/v1"))
   "schema/v1")
- (error "native slot gate should return valid values unchanged")))))
+ (error "runtime slot gate should return valid values unchanged")))))

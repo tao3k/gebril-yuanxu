@@ -26,7 +26,7 @@ sketch, not its historical validation receipts. Sources inspected:
   [[https://github.com/tao3k/gerbil-poo/blob/df6a9e50e4071c934665455160d1a8c493b9ce75/recursive-validation.ss][recursive-validation]], and declarative-metadata.
 - Core HEAD =7595bedcc5347c7add6b9d3b7b2713d6ddc8a42e= plus its current local
   changes: [[file:../../../types.ss][types.ss]], [[file:../../../admission/publication.ss][AdmissionPublication.]],
-  [[file:../../../modules/json-schema/contracts.ss][JsonSchema contracts]] and their native Scheme test sources.
+  [[file:../../../modules/json-schema/contracts.ss][JsonSchema contracts]] and their Scheme test sources.
 - Installed Gerbil SDK =1cfb032=, its original gerbil/core/contract.ss.
 - Core gerbil.pkg and the installed gerbil-poo checkout both still select
   =099b381588360a8a49fd772f666a1a00351366f5=. That checkout does not contain the
@@ -281,5 +281,5 @@ boundary. Do not implement another field walker, binding registry, recursive
 validator or Loader as a shortcut. First define one authoritative validation
 boundary and tests for raw-versus-checked subject, changed Contract/context,
 cached-parent/final-child behavior, failure preserving old state and unselected
-branch demand. Native source review, executable tests and Lean correspondence
+branch demand. Runtime source review, executable tests and Lean correspondence
 remain separate evidence levels.

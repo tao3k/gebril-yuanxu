@@ -293,7 +293,7 @@ It should immediately show the inspectable result:
 #+end_src
 
 Detailed loop configuration is not written as init-row flags. It belongs in a
-POO-native module config:
+POO module config:
 
 #+begin_src scheme
 (use-module loop-engine

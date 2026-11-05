@@ -2,9 +2,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads replay-slot-reads!
-                 slot-read-key slot-read-dependencies)
+                 slot-read-key slot-read-receiver slot-read-dependencies call-with-slot-read-observer)
         (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection
-                 owned-read-copy! owned-read-derived!)
+                 owned-read-copy! owned-read-derived! owned-read-leaf! owned-read-fields-present?
+                 current-owned-read-open-guard)
+        (only-in :clan/poo/prototype-map prototype-map)
         (only-in :clan/poo/validation-rebinding rebind-validation)
         (only-in :clan/poo/mop Type. define-type validate object-read-issued?)
         (only-in :yuanxu/module-system/types ModuleSourceRoleContract)
@@ -26,7 +28,112 @@
                (andmap original? (slot-read-dependencies read))))))
   (and (pair? reads) (andmap original? reads)))
 (def evidence-read-ownership-test
-  (test-suite "Native evidence read ownership"
+  (test-suite "Runtime evidence read ownership"
+    (yuanxu-test-case "owned capture merges original roots without redelivering inherited observers"
+      (def before (.o port: 5432))
+      (def child (.o port: 5433))
+      (def after (.o port: 5434))
+      (for-each (lambda (receiver) (.get receiver port)) (list before child after))
+      (def events '())
+      (defvalues (_value reads)
+        (%call-with-recorded-slot-reads
+          (lambda ()
+            (call-with-slot-read-observer
+              (lambda (read)
+                (when (eq? (slot-read-key read) 'port)
+                  (set! events (cons (slot-read-receiver read) events))))
+              (lambda ()
+                (.get before port)
+                (call-with-owned-read-projection '() (lambda () #t)
+                  (lambda () (.get child port) (.get child port)))
+                (.get after port))))))
+      (check-equal? (reverse events) (list before child child after))
+      (check-equal? (map slot-read-receiver
+                      (filter (lambda (read) (eq? (slot-read-key read) 'port)) reads))
+                    (list before child after))
+      (check-equal? (original-read-graph? reads) #t)
+      (replay-slot-reads! reads void))
+    (yuanxu-test-case "owned capture failure retains issued partial support and original exception"
+      (def child (.o port: 5432))
+      (.get child port)
+      (def failure (gensym 'owned-failure))
+      (defvalues (caught reads)
+        (%call-with-recorded-slot-reads
+          (lambda ()
+            (with-catch values
+              (lambda ()
+                (call-with-owned-read-projection '() (lambda () #t)
+                  (lambda () (.get child port) (raise failure))))))))
+      (check-equal? (eq? caught failure) #t)
+      (check-equal? (original-read-graph? reads) #t)
+      (check-equal? (map slot-read-receiver
+                      (filter (lambda (read) (eq? (slot-read-key read) 'port)) reads))
+                    (list child))
+      (replay-slot-reads! reads void))
+    (yuanxu-test-case "persistent declaration catalogs retain the open boundary without demanding descriptors"
+      (for-each
+        (lambda (policy)
+          (def opened 0)
+          (parameterize ((current-owned-read-open-guard (lambda () (set! opened (1+ opened)))))
+          (call-with-owned-read-projection '() (lambda () #t)
+            (lambda ()
+              (owned-read-leaf! (make-object declarations: (prototype-map '() policy: policy)))
+              (check-equal? opened 0)
+              (def descriptor (.o .type: (error "declaration inspection forced a descriptor")))
+              (owned-read-leaf! (make-object declarations:
+                (prototype-map (list (cons 'port descriptor)) policy: policy)))
+              (check-equal? opened 1)))
+          (call-with-owned-read-projection '() (lambda () #t)
+            (lambda ()
+              (def parent (make-object declarations:
+                (prototype-map (list (cons 'port (.o))) policy: policy)))
+              ;; A direct declaration must open the scope before a child or
+              ;; descriptor is prepared. No snapshot list is used as a flag.
+              (owned-read-derived! parent)
+              (check-equal? opened 2)))))
+        '(compact tree)))
+    (yuanxu-test-case "fresh owned inventory keeps open and exposed query boundaries"
+      (call-with-owned-read-projection '() (lambda () #t)
+        (lambda ()
+          (def candidate (owned-read-leaf!
+            (.o port: 5432 unused: (error "inventory forced an unused value"))))
+          (defvalues (present reads)
+            (%call-with-recorded-slot-reads
+              (lambda () (owned-read-fields-present? candidate '(port unused)))))
+          (check-equal? present #t)
+          (check-equal? (original-read-graph? reads) #t)
+          (check-equal? (and (member '(names) (map slot-read-key reads)) #t) #t)
+          (check-equal? (.ref/cached candidate 'unused) #f)
+          ;; Public names are mutable. Once exposed, even a corrupted cache
+          ;; cannot stand in for runtime presence on a subsequent check.
+          (def names (.all-slots candidate))
+          (set-car! names 'forged)
+          (defvalues (again fallback)
+            (%call-with-recorded-slot-reads
+              (lambda () (owned-read-fields-present? candidate '(port)))))
+          (check-equal? again #t)
+          (check-equal? (and (member '(presence port) (map slot-read-key fallback)) #t) #t)
+          (def other (owned-read-leaf!
+            (.o port: 5433 unused: (error "presence forced an unused value"))))
+          (def observed '())
+          (call-with-slot-read-observer
+            (lambda (read)
+              (when (eq? (slot-read-receiver read) other)
+                (set! observed (cons (slot-read-key read) observed))))
+            (lambda () (check-equal? (owned-read-fields-present? other '(port unused)) #t)))
+          (check-equal? (filter (lambda (key) (and (pair? key) (eq? (car key) 'presence)))
+                              (reverse observed))
+                        '((presence port) (presence unused)))
+          (check-equal? (member '(names) observed) #f)
+          (.put! other 'port 5440)
+          (.put! other 'port 5433)
+          (defvalues (restored restored-reads)
+            (%call-with-recorded-slot-reads
+              (lambda () (owned-read-fields-present? other '(port)))))
+          (check-equal? restored #t)
+          (check-equal? (and (member '(presence port) (map slot-read-key restored-reads)) #t) #t)
+          (check-equal? (member '(names) (map slot-read-key restored-reads)) #f)
+          (check-equal? (owned-read-fields-present? other '(missing)) #f))))
     (yuanxu-test-case "receipts retain actual candidate Contract Context and child identities"
       (def candidate (.o port: 443))
       (def context (.o generation: 'current))
@@ -157,10 +264,10 @@
               (.get checked port)))))
       (check-equal? (.get Root answer) 443)
       (check-equal? validations 1)
-      (yuanxu-debug-memory-snapshot 'native-validation-scratch-collected collect?: #t)
+      (yuanxu-debug-memory-snapshot 'runtime-validation-scratch-collected collect?: #t)
       (check-equal? (object? (hash-get witness 'checked)) #t)
       ;; Even an unread transitive parent field is part of the conservative
-      ;; native parent-generation guard; mutation-and-restore cannot renew it.
+      ;; runtime parent-generation guard; mutation-and-restore cannot renew it.
       (.put! base 'policy 'changed)
       (.put! base 'policy 'restored)
       (check-exception (.get Root answer) error?))
@@ -180,7 +287,7 @@
                 result)))))
       (check-equal? (original-read-graph? reads) #t)
       (check-exception (replay-slot-reads! reads (lambda (_receiver _key) (void))) error?))
-    (yuanxu-test-case "native checked receiver with a MOP ancestor keeps full support"
+    (yuanxu-test-case "runtime checked receiver with a MOP ancestor keeps full support"
       (def parent (.o port: 443))
       (object-protocol-set! parent (.o))
       (defvalues (_result reads)
@@ -193,7 +300,7 @@
                     (lambda (original receiver)
                       (owned-read-derived! receiver) original)))))))))
       (check-equal? (original-read-graph? reads) #t))
-    (yuanxu-test-case "normalized native checked receivers remain live original evidence"
+    (yuanxu-test-case "normalized runtime checked receivers remain live original evidence"
       (def candidate (.o port: 443))
       (def validations 0)
       (def Root
@@ -229,7 +336,7 @@
       (check-equal? (.get checked recommended-forms)
         (append (.get TypesSourceRole. recommended-forms) '(custom-form)))
       (check-equal? calls 1))
-    (yuanxu-test-case "late Contract name lookup keeps original identity and native invalidation"
+    (yuanxu-test-case "late Contract name lookup keeps original identity and runtime invalidation"
       (def original (.o identity: 'before))
       (def replacement (.o identity: 'same-name))
       (def candidate (.o port: 443))

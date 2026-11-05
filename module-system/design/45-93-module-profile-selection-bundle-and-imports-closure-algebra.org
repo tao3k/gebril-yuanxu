@@ -104,7 +104,7 @@ A Module does not own:
 ** Profile
 
 A Profile is an immutable POO semantic value exported by a Module or constructed
-through admitted native POO extension.
+through admitted POO extension.
 
 Every exported Profile has:
 
@@ -113,7 +113,7 @@ Every exported Profile has:
 - a dependency projection into the Module's ~imports~ graph;
 - capability requirements;
 - prototype lineage; and
-- native Profile semantics.
+- runtime Profile semantics.
 
 Profile selection never changes the Profile definition.
 
@@ -165,7 +165,7 @@ The CompositionRoot preserves:
 - effective capability requirements;
 - fixed-point and cycle evidence;
 - backend module-boundary projections; and
-- exactly one native root instantiation.
+- exactly one runtime root instantiation.
 
 * use-module contract
 
@@ -190,7 +190,7 @@ The second form creates an explicitly distinct Module instance identity.
 
 1. validates the optional ~as~ shape and identifiers;
 2. projects the selected Profile identities from the Module export surface;
-3. constructs a POO-native ProfileBundle;
+3. constructs a POO ProfileBundle;
 4. preserves ~imports~, identity, capability, revision, and provenance; and
 5. returns the bundle as an ordinary Scheme value.
 
@@ -225,7 +225,7 @@ It mixes Profile definition, extension, selection, and Module instantiation.
 
 Advanced authors instead:
 
-1. extend the Profile or Module through the verified native POO interface;
+1. extend the Profile or Module through the verified POO interface;
 2. publish the refined Profile under an explicit Module export identity; and
 3. select that exported Profile through ~use-module~.
 
@@ -293,7 +293,7 @@ evidence.
 
 ** Permutation independence
 
-This law applies to selection collection and imports closure identity.  Native
+This law applies to selection collection and imports closure identity.  Runtime
 Profile conflict semantics remain owned by the Profile composition strategy.
 
 ** Instance separation
@@ -399,7 +399,7 @@ projection checklists as implemented.
 | Local Lean closure | =accepted= | =lake build=: 108/108 jobs |
 | AXLE independent declaration check | =accepted= | Request =c738e2fa-88b0-47c1-9d13-27373ce4eec2=; Lean 4.31.0; 0 failed declarations, errors, or warnings |
 | AXLE preserved-import check | =blocked-verifier-import-boundary= | Request =24ec2383-397e-4ff0-935c-9fadc471be09= cannot resolve local module prefix =AgenticAILabProof= |
-| Module/ProfileBundle value layer | =partial-qualified= | Native package build: 261 targets; root suite: 243 files; indexed selection plus idempotent composition: 1,000 Profiles 24 ms, 5,000 Profiles 180 ms |
+| Module/ProfileBundle value layer | =partial-qualified= | Runtime package build: 261 targets; root suite: 243 files; indexed selection plus idempotent composition: 1,000 Profiles 24 ms, 5,000 Profiles 180 ms |
 
 The accepted AXLE request replaced the project import with =import Mathlib=
 and independently verified all 56 theorem declarations.  The preserved-import
@@ -572,7 +572,7 @@ That projection:
 * Macro governance
 
 ~use-module~ is admitted as a constrained macro because it projects one small
-closed syntax family directly to ordinary POO-native values.
+closed syntax family directly to ordinary POO values.
 
 Its grammar owns only:
 
@@ -598,7 +598,7 @@ It may not grow clauses for:
 Any repeated internal POO construction may use bounded declarative or
 procedural macros under
 [[file:44-current-project-programming-style.org][44]], provided expansion
-remains inspectable native POO and functional code.
+remains inspectable POO and functional code.
 
 * Current implementation gap
 
@@ -618,7 +618,7 @@ The target:
 - makes ~use-module~ independently value-producing;
 - places it directly inside ~(compose profiles ...)~;
 - selects exported Profiles without defining them;
-- produces a native POO ProfileBundle; and
+- produces a POO ProfileBundle; and
 - removes duplicate declaration and reference.
 
 No compatibility grammar is required.
@@ -650,7 +650,7 @@ Failures distinguish:
 - backend projection failure; and
 - package dependency failure.
 
-These are not collapsed into a generic macro error or native POO failure.
+These are not collapsed into a generic macro error or POO failure.
 
 * Relationship to user-composition
 
@@ -744,7 +744,7 @@ Implementation may begin only when:
   distinct POO object families;
 - [ ] ~use-module~ has only the two accepted public forms;
 - [ ] ordinary selection cannot define or extend Profiles;
-- [ ] advanced extension remains the native POO interface;
+- [ ] advanced extension remains the POO interface;
 - [ ] ProfileBundle is one admitted higher-order Profile operand;
 - [ ] fusion, idempotence, reachability, attenuation, and instance separation
   are specified and tested;

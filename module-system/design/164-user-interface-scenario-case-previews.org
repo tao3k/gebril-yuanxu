@@ -16,7 +16,7 @@ No implementation or runtime behavior is changed by this document.
 |----------------+----------------------------------|
 | maintained LangGraphScenario, CrewAIScenario, ToolCallingScenario | inherit one with .def and override desired configuration |
 | LangGraphModule, CrewAIModule, ToolCallingModule | explicitly use-module to bind the maintained default contribution |
-| maintained reusable Profiles | reuse or derive compatible native values; publish user-owned contributions through a Module |
+| maintained reusable Profiles | reuse or derive compatible runtime values; publish user-owned contributions through a Module |
 | domain composition/Profile Contracts | optionally initialize new typed values when maintained Scenarios are insufficient; constructor adaptation is proposed |
 
 The normal reading order is: choose a Scenario, derive a value, explicitly
@@ -60,7 +60,7 @@ The alias lg binds once inside its expression body, including nested
 object expressions capturing it. .+ returns the derived Module stored in
 MyGraphScenario.graph. The business values and routing-policy refine the inherited Profile and
 its existing policy object. Unchanged fields, previous instance refinements and
-native ancestry remain inherited. No raw constructor or prototype lookup is
+runtime ancestry remain inherited. No raw constructor or prototype lookup is
 needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
 remain configuration defaults, not executed runtime evidence.
 
@@ -93,7 +93,7 @@ The alias cr binds once inside its expression body, including nested
 object expressions capturing it. .+ returns the derived Module stored in
 MyCrewScenario.crew. The business values and scheduling-policy refine the inherited Profile and
 its existing policy object. Unchanged fields, previous instance refinements and
-native ancestry remain inherited. No raw constructor or prototype lookup is
+runtime ancestry remain inherited. No raw constructor or prototype lookup is
 needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
 remain configuration defaults, not executed runtime evidence.
 
@@ -126,15 +126,15 @@ The alias tc binds once inside its expression body, including nested
 object expressions capturing it. .+ returns the derived Module stored in
 MyToolScenario.tool. The business values and argument-validator refine the inherited Profile and
 its existing policy object. Unchanged fields, previous instance refinements and
-native ancestry remain inherited. No raw constructor or prototype lookup is
+runtime ancestry remain inherited. No raw constructor or prototype lookup is
 needed for this ordinary change. Inherited Scenario graph/stage/proof/handoff declarations
 remain configuration defaults, not executed runtime evidence.
 
-* Native graph/crew/tool composition into one Scenario
+* Runtime graph/crew/tool composition into one Scenario
 
 The [[file:164-bounded-domain-module-scope-examples.org][complete domain scope design]] also includes GraphConfig, CrewConfig and
 ToolConfig, each with one bounded Module binding, composed with the proposed
-shared MultiAgentScenario. native proto in one ordered parent list. Its complete
+shared MultiAgentScenario. runtime proto in one ordered parent list. Its complete
 ProductionScenario example separately refines all three without rebinding or
 reconstructing strategies. Root Contract/source/selection and cross-Module
 handoff obligations, final receiver reads and qualified projection are explicit. The
@@ -148,7 +148,7 @@ relationships fail admission rather than being guessed from parent ordering.
 Single-Module reads remain bounded; whole selected admission may demand all
 three. Prototype metadata linearization is distinguished from implementation
 loading. Combined Contract/proto/consumer wiring and latency guarantees remain
-proposed, built on existing native POO/Loader machinery. No implementation changed.
+proposed, built on existing POO/Loader machinery. No implementation changed.
 
 * Effective selected domain configuration
 
@@ -186,13 +186,13 @@ Module. Existing policy fields use =>.+; only genuinely new objects need its
 scoped prototype view.
 Maintained Scenarios hide internal assembly. Source-bound selection lists in
 internal lowering describe proposed owner defaults, not public component lists.
-The bounded body/native scope and alias/placement identity integration are not
+The bounded body/runtime scope and alias/placement identity integration are not
 implemented yet.
 
 For Funflow tasks, normal configuration should inherit result-protocol,
 runtime-mode and internal binding/identity defaults from the maintained task.
 Users configure business commands and relevant workflow policy. Changing a core
-mechanism uses its explicit native POO extension boundary and renewed admission.
+mechanism uses its explicit POO extension boundary and renewed admission.
 See [[file:164-profile-module-targeting-design.org][the task configuration and owner-extension boundary]] for the target example
 and the distinction from today's raw funflow-check prototype.
 
@@ -203,13 +203,13 @@ versus proposed capabilities and required consumers. Binding cannot force the
 entire catalog; object construction may demand its precise prototype owner;
 selected Contract admission must check all necessary facts before execution.
 Natural lazy behavior and bounded cold/warm cost need separate implementation
-receipts. Native static imports retain their own loading semantics.
+receipts. Runtime static imports retain their own loading semantics.
 
-* Canonical Funflow Scenario and bounded native Module scope
+* Canonical Funflow Scenario and bounded runtime Module scope
 
 The [[file:164-funflow-cicd-user-authoring-design.org][complete current CI/CD design]] shows the complete Scenario and full
 hygienic lowering: one bounded ff scope, inherited Gerbil/Rust values and new
-Check construction from ff.prototypes.check. Native .def is the Scenario
+Check construction from ff.prototypes.check. Runtime .def is the Scenario
 foundation; no public Case/config collector/manual import recipe is included.
 Binding range, source Contract, effective projection, default natural laziness
 and first-demand cost qualification are explicit. New grammar/scope wiring is
@@ -234,7 +234,7 @@ No user-interface implementation is changed.
 
 Profiles can be reused across Scenarios. Users or vertical-domain companies
 maintain reusable Scenario objects already carrying composition/defaults and
-CompositionContracts. Consumers instantiate and extend them with native .def.
+CompositionContracts. Consumers instantiate and extend them with .def.
 They do not call a second composition wrapper or repeat assembly in a separate
 public Case. Current user-composition already
 returns an internal Scenario Case with plan/admission and Session behavior;
@@ -311,7 +311,7 @@ Users may author their own Profiles, inherit maintained Profile/Scenario values,
 or initialize new values under upstream domain Contracts. Those intentions may
 be combined. The following domain examples compare two parent-normalization
 branches, not an exhaustive list of user intentions or mandatory steps. Direct
-Contract parent recognition is proposed; the native expansion still extracts
+Contract parent recognition is proposed; the runtime expansion still extracts
 its shared proto. Existing Scenario parents remain the actual parent object.
 
 ** Upstream default wiring
@@ -327,7 +327,7 @@ its shared proto. Existing Scenario parents remain the actual parent object.
 #+end_src
 
 LangGraphScenario, CrewAIScenario, ToolCallingScenario, CICDScenario and
-AuthoringScenario are proposed reusable native parent objects, not descriptor
+AuthoringScenario are proposed reusable runtime parent objects, not descriptor
 wrappers with a second proto lookup. Owners admit each parent against its
 CompositionContracts family and supply default Profiles/module configurations.
 The examples assume production, pipeline or authoring respectively is already
@@ -343,14 +343,14 @@ Parent precedence and source-preserving effective projection need qualification.
 ** Current domain scope lowering
 
 The [[file:164-bounded-domain-module-scope-examples.org][bounded domain scope examples]] supersede the old three-domain helper
-lowerings. Shared native binding/hygiene semantics follow the complete Funflow
+lowerings. Shared runtime binding/hygiene semantics follow the complete Funflow
 scope specification; concrete domain publication/consumer adapters remain
 proposed. Old fuel-only and unscoped forms are migration history only.
 
 ** Legacy workflow payloads are owner references, not user recipes
 
 The full source payload with repeated owner defaults is referenced rather than
-copied wholesale. The user-facing .def task layer and native slot bindings are
+copied wholesale. The user-facing .def task layer and runtime slot bindings are
 retained in the linked complete CI/CD design; only redundant body assignments
 are candidates for convergence.
 Consult the existing owner fixtures only when investigating implementation or
@@ -368,7 +368,7 @@ configuration. See [[file:164-profile-module-targeting-design.org][the default t
 minimal target user example. Qualification must compare against the linked
 source payloads, rather than instruct users to copy their internal construction.
 
-** Ordinary native headers on both paths
+** Ordinary runtime headers on both paths
 
 #+begin_src scheme
 ;; Header-level expansion; body refinements are shown per domain above.
@@ -378,7 +378,7 @@ source payloads, rather than instruct users to copy their internal construction.
   (.o (:: @ LangGraphScenario)))
 #+end_src
 
-These empty bodies isolate the native parent expression for comparison. The
+These empty bodies isolate the runtime parent expression for comparison. The
 corresponding user headers are (FreshLangGraphScenario @
 LangGraphCompositionContract) and (MyLangGraphScenario @ LangGraphScenario).
 They do not replace the complete configured declarations above. The same header rule holds
@@ -393,7 +393,7 @@ MyBuildVariant inherited from MaintainedBuildProfile, and FreshBuildProfile
 initialized via BuildProfileContract through MyChecksModule. It shows both
 fresh-contract and maintained-Scenario roots, then selects production from
 ReviewedTeamScenario, including all three exports plus final CI refinements.
-It retains complete user/native forms and identity/admission/evidence boundaries. All three can contribute to a user's
+It retains complete user/runtime forms and identity/admission/evidence boundaries. All three can contribute to a user's
 Scenario if its concrete responsibilities admit the values. Upstream provides
 Profiles and Scenarios as reusable objects as well as domain Contracts and
 composition families; no user must choose only one of these asset kinds.
@@ -425,8 +425,8 @@ All declarations/checks here are design examples, not executed admission receipt
 
 ** Configuration construction is not Session execution
 
-Native .def derives an object from a maintained Scenario. Responsibility-driven
-nested construction remains a proposed owned adapter and is not current native
+Runtime .def derives an object from a maintained Scenario. Responsibility-driven
+nested construction remains a proposed owned adapter and is not current runtime
 .def behavior. Contract admission then checks the actual effective object and
 its evidence. Selected Profile composition and plan/root projection are inert.
 Only an explicitly created fresh Session performs its owned lifecycle and
@@ -443,7 +443,7 @@ starts an executing Session. Existing Case/Session implementations are retained.
 #+end_src
 
 The owner projects those admitted derived contributions, including user business
-values and natively refined inherited policy objects. Existing source stage fuel,
+values and runtimely refined inherited policy objects. Existing source stage fuel,
 exit/proof/handoff data remain inherited defaults (8/6/5 respectively), not
 changed values or successful execution evidence. Never append original source
 Profiles after edits or re-read the catalog to restore stale policies. Preserve
@@ -454,10 +454,10 @@ helper must admit the configured funflow.pipeline and delegate to existing
 Funflow plan projection; a separate workflow-config attachment is superseded. It never treats config flags as a Core ProfileBundle without that
 owner projection. No Case execution gate is bypassed.
 
-Users can publish their own Scenario with reusable Profiles, an explicit native
+Users can publish their own Scenario with reusable Profiles, an explicit runtime
 base and compatible CompositionContracts: dynamic-name policy, default proto
 values, responsibilities and combination rules. Maintained Scenarios are reused
-by native extension as above. Composing already closed runtime roots requires
+by runtime extension as above. Composing already closed runtime roots requires
 separate identity/authority admission; Profile composition does not imply that
 arbitrary lifecycle objects can be mixed. No second Case authoring hierarchy is
 needed. Internal Case/Session semantics remain intact.
@@ -469,7 +469,7 @@ validate design form; linked fixtures remain migration reference inputs.
 Future executable checks must preserve multi-export identities; inherited graph,
 proof and handoff fields; effective stage changes after parent-cache evaluation;
 required constraints; all workflow commands/dependencies/retention; fresh evidence;
-and inert projection. Native .def derives configuration objects; existing
+and inert projection. Runtime .def derives configuration objects; existing
 user-composition is a Bundle-to-Case binding, not an additional object-construction
 entry. No new composition macro is proposed. No user-interface source, Case
 export, Scenario runtime

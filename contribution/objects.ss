@@ -4,7 +4,7 @@
 
 ;;; Boundary: pure POO contribution values and capability admission.
 ;;; No domain registry, discovery, verification authority, or activation.
-(import (only-in :clan/poo/object .o .ref .slot? object?)
+(import (runtime: :clan/poo/object)
         (only-in :std/list/list every append-map delete-duplicates/hash))
 (export contribution-contract-id Contribution. make-contribution
         contribution? contribution-diagnostics admit-contributions)

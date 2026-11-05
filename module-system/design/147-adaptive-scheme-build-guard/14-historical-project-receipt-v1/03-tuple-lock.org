@@ -40,7 +40,7 @@ The local Darwin convergence pass produced the following bounded evidence:
 |------+---------|
 | =just bazel-update= followed by =just lock-check= | passed |
 | =bazelisk query //...= | passed |
-| Native ABI fingerprint | =05391a946fd76212f5da97e041fd7b266d7c4d74= |
+| Runtime ABI fingerprint | =05391a946fd76212f5da97e041fd7b266d7c4d74= |
 | Shared Gerbil capability | 1/1 passed |
 | runtime-C acceptance | 8/8 passed; 11.802 seconds |
 | Bundle v1 acceptance | 5/5 passed; 4.285 seconds |
@@ -54,12 +54,12 @@ then obtained without weakening the guard:
 |------+-----------------------|
 | Cross-platform lock run | GitHub Actions =29767719602=: Linux seed 29 s; Darwin merge 31 s; Linux merged verification 15 s; lock SHA-256 =6331a93aeb3aaee6ea3de08e764adcde19d8ab1e8c3ecaa875465f30c974e25b= |
 | Final Agentic AI Lab head | =87fad150b3d671a30e26d09f987fd99ff90caf55= |
-| Linux native job | =10m14s=; all dependency, Scheme, receipt, runtime-C, Bundle, and producer-handoff gates passed |
+| Linux runtime job | =10m14s=; all dependency, Scheme, receipt, runtime-C, Bundle, and producer-handoff gates passed |
 | Linux Scheme phase | 237 s; receipt =status=ok= and =durationSeconds=233=; workers 4; runnable count 1; peak RSS 3,091,714,048 bytes; 3 compiled stages, 0 skipped |
-| macOS native job | =1m49s=; all applicable gates passed |
+| macOS runtime job | =1m49s=; all applicable gates passed |
 | macOS Scheme phase | 2 s action-cache materialization of the same-pin receipt; receipt =status=ok= and original =durationSeconds=215=; workers 3; runnable count 2; peak RSS 2,945,073,152 bytes; 3 compiled stages, 0 skipped |
 | Lean proof bridge | 41 s; passed |
-| Python runtime wheel | 42 s; producer handoffs, native runtime test, clean install, and wheel publication passed |
+| Python runtime wheel | 42 s; producer handoffs, runtime test, clean install, and wheel publication passed |
 | Workflow lint | GitHub Actions =29768066645=; passed |
 
 The ordinary final-head CI run is =29768065841=.  Its lock-refresh jobs were

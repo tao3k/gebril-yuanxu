@@ -146,7 +146,7 @@
      (runtime-owner "marlin-agent-core")
      (runtime-executed #f))))
 
-;;; POO-native check and pipeline objects stay shallow: Funflow owns the public
+;;; POO check and pipeline objects stay shallow: Funflow owns the public
 ;;; prototype surface, while sandbox profile refs and runtime descriptors remain
 ;;; unresolved until later module/object validation.
 ;; : (forall (a) (-> String Boolean a Void))

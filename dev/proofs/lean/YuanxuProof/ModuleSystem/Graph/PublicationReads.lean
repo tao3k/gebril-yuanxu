@@ -39,7 +39,7 @@ theorem dedup_preserves_currentness [BEq α] [LawfulBEq α]
   · intro current node demanded
     exact current node ((dedup_preserves_demands deps roots node).mp demanded)
 
--- Native correspondence premises remain: eq?-identity normalization,
+-- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,
 -- unchanged real observer delivery, and no nonlocal continuation escape.
 -- This does not prove SDK ownership, GC behavior or a memory byte bound.

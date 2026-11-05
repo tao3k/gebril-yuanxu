@@ -15,7 +15,7 @@
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-authoring-stage-test)
 
-(def (stale-native-dependency? failure)
+(def (stale-runtime-dependency? failure)
   (and (Error? failure) (string=? (Error-message failure) "stale slot dependency")))
 
 ;; Read original tokens without forcing any new slot. Structural bootstrap and
@@ -86,9 +86,9 @@
               (def graph (.get view selected-graph))
               (check-equal? (.get graph status) 'ready)
               (.call graph admit-current)
-              ;; Same value, new native revision. No forged evidence or custom
+              ;; Same value, new runtime revision. No forged evidence or custom
               ;; currentness closure substitutes for the real producer reads.
               (.put! ModuleAuthoringProfileContract 'value-contract previous)
-              (check-exception (.call graph admit-current) stale-native-dependency?)
-              (check-exception (.call view sources-current) stale-native-dependency?))))
+              (check-exception (.call graph admit-current) stale-runtime-dependency?)
+              (check-exception (.call view sources-current) stale-runtime-dependency?))))
         (lambda () (.put! ModuleAuthoringProfileContract 'value-contract previous))))))

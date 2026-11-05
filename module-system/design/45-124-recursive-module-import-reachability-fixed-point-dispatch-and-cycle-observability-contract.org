@@ -435,7 +435,7 @@ The ordinary composition surface remains:
 
 Recursive reachability is derived behind =use-module= and =compose profiles=.
 
-Advanced extension uses native upstream POO objects, prototypes, and admitted
+Advanced extension uses runtime upstream POO objects, prototypes, and admitted
 responsibility algebras.
 
 * Ownership

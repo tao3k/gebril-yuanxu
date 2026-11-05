@@ -2,10 +2,13 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Filesystem source preparation. No eval, compiler, dynamic import or runtime Loader.
-(import (only-in :clan/poo/object .o .ref .slot? object<-fun)
-        (only-in :std/list/list delete-duplicates/hash any)
+(import (runtime: :clan/poo/object)
+        (only-in :std/list/list delete-duplicates/hash any foldl)
+        (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
+        (only-in :clan/poo/slot-observation slot-read-observers-compatible?)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/admission
+        (only-in :yuanxu/module-system/source/observations module-source-object-policies)
         :yuanxu/module-system/source/init)
 (export module-directory-context)
 (defstruct directory-source (value current?) final: #t)
@@ -59,11 +62,17 @@
            ;; actual path kinds even when this snapshot is already present.
            (hash-put! directories directory value)
            value)))
+    (def (intent-root intent file)
+        (let (configured (.ref intent 'root))
+          (if (and (not (.ref intent 'root-explicit?)) (string=? configured "modules")
+                   (string=? (path-strip-directory
+                               (path-strip-trailing-directory-separator (path-directory file))) "modules"))
+            (path-directory file)
+            (path-expand configured (path-directory file)))))
     (let* ((input (path-expand path))
            (init-path
             (if (eq? (module-source-type input) 'regular)
-              (begin (unless (string=? (path-strip-directory input) "init.ss")
-                       (error "expected init.ss or a module directory" input)) input)
+              input
               (let* ((inside (path-expand "init.ss" input))
                      (beside (path-expand "../init.ss" input))
                      (inside-type (observe! module-source-type inside))
@@ -77,19 +86,11 @@
                  (inside-type inside)
                  (beside-type beside)
                  (else #f)))))
-           (intent-value (if init-path
-                     (module-init-intent
-                      (call-with-input-string (observe! module-source-read init-path) read-all) init-path)
-                     (.o mode: 'auto root: "." init-source: #f decisions: '())))
-           (root-path
-            (if init-path
-              ;; modules/init.ss defaults to itself; a root init.ss defaults to modules/.
-              (let (configured (.ref intent-value 'root))
-                (if (and (not (.ref intent-value 'root-explicit?)) (string=? configured "modules")
-                         (string=? (path-strip-directory
-                                   (path-strip-trailing-directory-separator (path-directory init-path))) "modules"))
-                  (path-directory init-path)
-                  (path-expand configured (path-directory init-path)))) input))
+           (_declared (unless init-path (error "module window requires a yuanxu! declaration" input)))
+           (intent-value
+             (module-init-intent
+               (call-with-input-string (observe! module-source-read init-path) read-all) init-path))
+           (root-path (intent-root intent-value init-path))
            (decisions (.ref intent-value 'decisions))
            (selected-values (map (lambda (row) (.ref row 'identity))
                                  (filter (lambda (row) (not (.ref row 'disabled?))) decisions)))
@@ -98,12 +99,21 @@
            (generation-value (symbol->string (gensym 'module-directory-))))
       (def windows (and (.slot? intent-value 'windows) (.ref intent-value 'windows)))
       ;; These are the parser's own inert objects, not evaluated user objects.
-      ;; Bind the complete location support, including nested decision flags.
-      ;; Native revisions also refuse mutation followed by restoration.
-      (def intent-current?
-        (module-source-object-policy
-          (append (list intent-value) decisions (or windows '())
-                  (map (lambda (row) (.ref row 'selection)) decisions))))
+      ;; Full currentness and per-candidate location share revision records
+      ;; for the same parser-owned objects, including nested decision flags.
+      ;; An open observer can change the objects between the original reads.
+      (defvalues (intent-current? policies)
+        (if (and (object-construction-current?)
+                 (not (current-module-source-observer))
+                 (slot-read-observers-compatible? '()))
+          (module-source-object-policies
+            (cons (cons intent-value (or windows '()))
+                  (map (lambda (row) (list row (.ref row 'selection))) decisions)))
+          (values
+            (module-source-object-policy
+              (append (list intent-value) decisions (or windows '())
+                      (map (lambda (row) (.ref row 'selection)) decisions)))
+            #f)))
       (def (window-root window)
         (path-expand (.ref window 'root) (path-directory init-path)))
       (def (row-window row)
@@ -113,27 +123,72 @@
         (let (window (row-window row)) (if window (window-root window) root-path)))
       (def source-owners (make-hash-table))
       (def decision-index (list->hash-table
-                             (map (lambda (row)
+                             (map (lambda (row current?)
                                     (cons (.ref row 'identity)
                                       (make-directory-decision row
-                                        (module-source-object-policy
-                                          (list row (.ref row 'selection)))))) decisions)))
+                                        (or current? (module-source-object-policy
+                                                       (list row (.ref row 'selection)))))))
+                                  decisions (if policies (cdr policies)
+                                              (map (lambda (_) #f) decisions)))))
       (def (decision-row id)
         (let (entry (hash-get decision-index id))
           (and entry (directory-decision-value entry))))
+      ;; A Profile is an opt-in discovery pass within its source window.
+      ;; Keep the resulting roots in the existing namespace projection.
+      (def profile-roots (make-hash-table-eq))
+      (def (profile-tag window)
+        (and (.slot? window 'profile) (.ref window 'profile)))
+      (def (interface-tags file)
+        (module-interface-tags file (module-source-read file)))
+      (def (select-profile window directory)
+        (def tag (profile-tag window))
+        (when tag
+          (let ((selected '()))
+            (let walk ((parent directory) (prefix ""))
+              (for-each
+                (lambda (name)
+                  (let* ((child (path-expand name parent))
+                         (id (string->symbol (string-append prefix name)))
+                         (node (snapshot child))
+                         (file (path-expand "interface.ss" child))
+                         (classified (and (.ref node 'interface?)
+                                          (observe! interface-tags file #f))))
+                    (if classified
+                      (when (and (not (decision-row id))
+                                 (memq tag classified))
+                        (set! selected (cons id selected)))
+                      (walk child (string-append prefix name "/")))))
+                (.ref (snapshot parent) 'child-names)))
+            (when (null? selected)
+              (error "Profile has no matching Module Interface" (.ref window 'profile) directory))
+            (hash-put! profile-roots window (reverse selected)))))
+      (when (any profile-tag (or windows (list intent-value)))
+        (module-source-measure-operation 'profile-interface-scan
+          (lambda ()
+            (for-each (lambda (window)
+                        (select-profile window (if windows (window-root window) root-path)))
+                      (or windows (list intent-value))))))
+      (def (roots-for window)
+        (or (hash-get profile-roots window) '()))
+      (let ((profile-selected (foldr append '() (map roots-for (or windows (list intent-value))))))
+        (unless (= (length profile-selected) (length (delete-duplicates/hash profile-selected)))
+          (error "profile owner occurs in multiple windows" init-path))
+        (set! selected-values (append selected-values profile-selected)))
       ;; Index declared ownership once. Locating an imported private owner walks
       ;; path ancestors, not the module list or another filesystem search tree.
       (for-each
        (lambda (row)
-         (unless (.ref row 'disabled?)
-           (let* ((id (.ref row 'identity))
-                  (declared (.ref row 'source-root))
-                  (directory (if declared (path-expand declared (path-directory init-path))
-                                 (path-expand (symbol->string id) (row-root row))))
-                  (key (path-strip-trailing-directory-separator (path-normalize directory))))
-             (when (hash-key? source-owners key)
-               (error "duplicate declared module source owner" id directory init-path))
-             (hash-put! source-owners key (.o identity: id root: key))))) decisions)
+         (let* ((id (.ref row 'identity))
+                (declared (.ref row 'source-root))
+                (directory (if declared (path-expand declared (path-directory init-path))
+                               (path-expand (symbol->string id) (row-root row))))
+                (key (path-strip-trailing-directory-separator (path-normalize directory))))
+           (when (hash-key? source-owners key)
+             (error "duplicate declared module source owner" id directory init-path))
+           ;; Keep denied declarations in this SAME index. Their directory must
+           ;; never become an ownerless library merely because Interface is absent.
+           (hash-put! source-owners key
+             (.o identity: id root: key disabled?: (.ref row 'disabled?))))) decisions)
       ;; An auto-window owner may be referenced by types before its publication
       ;; is demanded. Invert only the requested path; do not enumerate modules.
       (def auto-owner-roots
@@ -155,7 +210,6 @@
                        ;; an auto directory must never shadow their source.
                        (and (not (decision-row id)) id)))) auto-owner-roots)))
         (and (pair? identities)
-             (eq? (observe! module-source-type (path-expand "interface.ss" directory)) 'regular)
              (begin
                (when (pair? (cdr identities))
                  (error "ambiguous imported module owner" directory identities))
@@ -163,34 +217,74 @@
                ;; It registers ownership only after path/style admission.
                (locate-source (car identities))
                (hash-get source-owners directory))))
+      (def declared-window-roots
+        (if windows (map window-root windows) (list root-path)))
       (def (source-owner path)
         (let loop ((directory (path-strip-trailing-directory-separator
                                (path-directory (path-normalize path)))))
-          (or (hash-get source-owners directory)
-              (and (pair? auto-owner-roots) (auto-source-owner directory))
-              (let (parent (path-strip-trailing-directory-separator (path-directory directory)))
-                (and (not (equal? parent directory)) (loop parent))))))
+          (let (owner (hash-get source-owners directory))
+            (cond
+             (owner
+              (when (.ref owner 'disabled?)
+                (error "source import belongs to a disabled Module" path (.ref owner 'identity)))
+              owner)
+             (else
+              ;; One kind observation supplies BOTH auto eligibility and the
+              ;; explicit-window refusal. No second probe or boundary registry.
+              (let (kind (and (any (lambda (root) (inside? directory root)) declared-window-roots)
+                              (observe! module-source-type (path-expand "interface.ss" directory))))
+                (if kind
+                  (begin
+                    (unless (eq? kind 'regular)
+                      (error "Module interface is not a regular file" directory))
+                    (or (and (pair? auto-owner-roots) (auto-source-owner directory))
+                        (error "source import belongs to an unselected Module" path directory)))
+                  ;; Absence is observed too: creating Interface later makes
+                  ;; this ownerless classification stale. Never fall through
+                  ;; an actual closed boundary to a selected ancestor.
+                  (let (parent (path-strip-trailing-directory-separator (path-directory directory)))
+                    (and (not (equal? parent directory)) (loop parent))))))))))
+      ;; One immutable projection per declared window, not an admission cache.
+      ;; Currentness observes the yuanxu! declaration bytes.
+      (def (canonical path)
+        (path-strip-trailing-directory-separator (path-normalize path)))
+      (def (inside? path root)
+        (or (string=? (canonical path) (canonical root))
+            (string-prefix? (string-append (canonical root) "/") (canonical path))))
+      (def (declared-kernel root)
+        (def own (path-directory init-path))
+        (if (inside? root own) (path-normalize own)
+          (let* ((candidates (delete-duplicates/hash
+                              (list (path-expand "init.ss" root) (path-expand "../init.ss" root))))
+                 (origins
+                  (filter-map
+                    (lambda (file)
+                      (and (eq? (observe! module-source-type file) 'regular)
+                        (let* ((text (observe! module-source-read file))
+                               (intent (with-catch (lambda (_) #f)
+                                         (lambda () (module-init-intent
+                                                      (call-with-input-string text read-all) file)))))
+                          (and intent
+                            (let (roots
+                                   (if (.slot? intent 'windows)
+                                     (map (lambda (window) (path-expand (.ref window 'root) (path-directory file)))
+                                          (.ref intent 'windows))
+                                     (list (intent-root intent file))))
+                              (and (any (lambda (path) (string=? (canonical path) (canonical root))) roots)
+                                   (path-normalize (path-directory file)))))))) candidates)))
+            (when (and (pair? origins) (pair? (cdr origins)))
+              (error "ambiguous declared source window origin" root origins))
+            (if (pair? origins) (car origins) (path-normalize root)))))
+      (def kernel-roots
+        (list->hash-table
+          (map (lambda (root) (cons (canonical root) (declared-kernel root)))
+               (if windows (map window-root windows) (list root-path)))))
+      ;; A window prefix is not Module ownership. The indexed ancestor walk
+      ;; above refuses actual closed boundaries; #f denotes an ordinary library.
       (def source-tree
         (.o locate-owner: source-owner
-            contains-module-path?:
-            (lambda (file)
-              (and windows
-                   (any (lambda (window)
-                          (string-prefix?
-                            (string-append (path-strip-trailing-directory-separator
-                                             (path-normalize (window-root window))) "/")
-                            (path-normalize file))) windows)))
-            kernel-root:
-            (let* ((collection (path-strip-trailing-directory-separator (path-normalize root-path)))
-                   (parent (path-directory collection))
-                   (package (path-expand "gerbil.pkg" parent)))
-              ;; A nested init may explicitly select the package's modules/.
-              ;; Preserve that source authority rather than treating the init's
-              ;; own folder as the kernel. Do not infer an arbitrary parent.
-              (if (and (string=? (path-strip-directory collection) "modules")
-                       (eq? (observe! module-source-type package) 'regular))
-                (begin (observe! module-source-read package) (path-normalize parent))
-                (and init-path (path-normalize (path-directory init-path)))))))
+            within-window?:
+            (lambda (file) (any (lambda (root) (inside? file root)) declared-window-roots))))
       (def (locate-source* id)
         (source-parts id)
         (if (hash-key? sources id)
@@ -229,7 +323,7 @@
                  (unless (.ref leaf 'interface?) (error "module has no interface.ss" id child))
                  (unless (eq? (observe! module-source-type (path-expand "interface.ss" child)) 'regular)
                    (error "module interface is not a regular file" id child))
-                 ;; The native publication preparer owns role/authoring
+                 ;; The runtime publication preparer owns role/authoring
                  ;; admission before expansion. In that paired path locating
                  ;; an owner is only inert directory/init interpretation.
                  ;; Custom readers retain the original source admission here.
@@ -238,11 +332,12 @@
                     yuanxu-default-module-style-policy id child
                     (lambda (file) (observe! module-source-read file))))
                  (hash-put! source-owners (path-strip-trailing-directory-separator child)
-                            (.o identity: id root: child))
+                            (.o identity: id root: child disabled?: #f))
                  (let (value (make-yuanxu-module-source-ref
                               'local (path-expand "interface.ss" child)
                               (list (cons 'module-id id) (cons 'module-root child)
                                     (cons 'collection-root collection-root)
+                                    (cons 'kernel-root (hash-ref kernel-roots (canonical owner-root)))
                                     ;; Mount is organization, never publication identity.
                                     (cons 'namespace-mount
                                       (and windows
@@ -259,7 +354,7 @@
                      (make-directory-source value
                        (module-source-object-policy (list value) reject-protocols?: #f)))
                    value)))
-             ;; An explicit binding is authoritative. Never probe a local or SDK
+             ;; An explicit binding is authoritative. Never probe a local or Gerbil
              ;; fallback when it is absent, disabled, stale or malformed.
              (if origin
                (publish origin (path-directory (path-strip-trailing-directory-separator origin)))
@@ -297,34 +392,52 @@
                                     (intent-current?)
                                     (current-sources?)
                                     (andmap (lambda (entry) ((cdr entry))) observations)))))
-      (def (tree resolve directory prefix (window #f))
+      (def (tree resolve directory prefix (window #f) (branch-paths #f))
         (let* ((node (and (eq? (observe! module-source-type directory) 'directory) (snapshot directory)))
-               (declared (filter-map
-                           (lambda (id)
-                             (let (text (symbol->string id))
-                               (and (string-prefix? prefix text)
-                                    (car (string-split (substring text (string-length prefix) (string-length text)) #\/)))))
-                           (if window
-                             (map (cut .ref <> 'identity)
-                               (filter (lambda (row)
-                                         (and (not (.ref row 'disabled?))
-                                              (eq? (.ref row 'window) (.ref window 'mount)))) decisions))
-                             selected-values)))
+               ;; One immutable namespace generation, not another graph/cache.
+               ;; Split declarations once at the mount; children retain only
+               ;; their own suffixes rather than rescanning every selected id.
+               (paths (or branch-paths
+                          (map source-parts
+                            (if window
+                              (append
+                                (map (cut .ref <> 'identity)
+                                  (filter (lambda (row)
+                                            (and (not (.ref row 'disabled?))
+                                                 (eq? (.ref row 'window) (.ref window 'mount)))) decisions))
+                                (roots-for window))
+                              selected-values))))
+               (declared (filter-map (lambda (path) (and (pair? path) (car path))) paths))
+               (groups (foldl
+                         (lambda (path index)
+                           (if (null? path) index
+                             (let (key (string->symbol (car path)))
+                               (prototype-map-put index key
+                                 (cons (cdr path) (prototype-map-ref index key '()))))))
+                         (prototype-map '()) paths))
                (names (delete-duplicates/hash
-                        (append (if (and node (or (not window) (eq? (.ref window 'mode) 'auto)))
+                        (append (if (and node (not (profile-tag (or window intent-value)))
+                                         (or (not window) (eq? (.ref window 'mode) 'auto)))
                                   (.ref node 'child-names) '()) declared))))
+          ;; Actual inspected declaration rows; diagnostic observers are optional.
+          ;; No timer heartbeat, business resolution or persistent verdict.
+          (when (current-module-source-observer)
+            ((current-module-source-observer) 'namespace-declaration-rows (length paths)))
           (object<-fun
            (lambda (key)
              (let* ((text (symbol->string key)) (child (path-expand text directory))
                     (id (string->symbol (string-append prefix text)))
-                    (row (decision-row id)))
+                    (row (decision-row id))
+                    (children (reverse (prototype-map-ref groups key '()))))
+               (when (and (member '() children) (pair? (cdr children)))
+                 (error "module namespace has a leaf/branch collision" id))
                (when (and window row (not (eq? (.ref row 'window) (.ref window 'mount))))
                  (error "publication belongs to a different directory window"
                         id (.ref window 'mount) (.ref row 'window)))
                (if (and row (.ref row 'source-root)) (resolve id)
                  (let (child-node (and (eq? (observe! module-source-type child) 'directory) (snapshot child)))
                    (if (and child-node (.ref child-node 'interface?)) (resolve id)
-                     (tree resolve child (string-append (symbol->string id) "/") window))))))
+                     (tree resolve child (string-append (symbol->string id) "/") window children))))))
            keys: (map string->symbol names))))
       ;; Capture the root metadata now, never recursively enumerate every module.
       (snapshot root-path)
@@ -336,7 +449,9 @@
       ;; remains mandatory before Graph visibility and around open callbacks.
       (def location-inputs
         (filter-map (lambda (entry) (and (car entry) (cdr entry))) observations))
-      (def location-policy? (module-source-object-policy (cons intent-value (or windows '()))))
+      (def location-policy?
+        (if policies (car policies)
+          (module-source-object-policy (cons intent-value (or windows '())))))
       (def (candidate-location-current? requested-generation id)
         (with-catch (lambda (_exception) #f)
           (lambda ()

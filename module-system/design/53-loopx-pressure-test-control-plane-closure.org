@@ -15,7 +15,7 @@ application. =agentic-ai-lab= should absorb the invariant underneath it and expo
 better control-plane layer:
 
 #+begin_src text
-POO-native policy families
+POO policy families
   + functional strategy combinators
   + validated receipt/projection surfaces
   + high-performance runtime handoff ABI
@@ -162,7 +162,7 @@ Closure requirement:
 - keep runtime execution outside the strategy engine.
 
 *** 10.06.53.60.30 User Interface Gap
-The desired user interface is not a raw workflow DSL. It is a POO-native
+The desired user interface is not a raw workflow DSL. It is a POO
 authoring surface where a user can say:
 - this goal has these lanes;
 - this lane has these gates and capabilities;
@@ -212,21 +212,21 @@ Closure requirement:
 Marlin is the best real runtime-language integration case for =agentic-ai-lab=. The lesson is not that =agentic-ai-lab= should duplicate Marlin's runtime ABI. The lesson is that =agentic-ai-lab= must reduce pressure on that ABI by sending already-normalized strategy facts instead of forcing Marlin to reconstruct user intent from rich Scheme objects.
 
 Evidence from the current Marlin Rust side:
-- =GraphLoopStrategyRuntime= already distinguishes =StaticPolicy=, =NativeScheme=, and =NativeGerbil=. The native variants are typed C ABI adapters, not a license to expose raw Scheme internals.
-- =GraphPolicyProposal= carries schema, strategy identity, optional native ABI requirement, graph, input/output digests, and diagnostics. Rust validates this proposal before it compiles or executes a graph.
-- =GraphNativeAbiRequirement= and =GraphNativeAbiReadinessReceipt= make ABI id, version, required symbols, available symbols, missing symbols, and readiness status explicit.
+- =GraphLoopStrategyRuntime= already distinguishes =StaticPolicy=, =RuntimeScheme=, and =RuntimeGerbil=. The runtime variants are typed C ABI adapters, not a license to expose raw Scheme internals.
+- =GraphPolicyProposal= carries schema, strategy identity, optional runtime ABI requirement, graph, input/output digests, and diagnostics. Rust validates this proposal before it compiles or executes a graph.
+- =GraphRuntimeAbiRequirement= and =GraphRuntimeAbiReadinessReceipt= make ABI id, version, required symbols, available symbols, missing symbols, and readiness status explicit.
 - kernel tests require readiness to pass before producing an execution request; missing symbols produce diagnostics instead of late runtime failure.
 - =GraphLoopRunRequest= combines the executable graph request with policy profile, governance, stop policy, iteration budget, and evidence policy.
 - =LoopPolicyProfile= already names queue, continuation, tool-batch, model-route, evidence, failure, memory, human-gate, and self-evolution policy families.
 - =SessionRuntimeSnapshot= and =TokioRuntimePolicyReceipt= keep runtime concurrency details Rust-owned: worker threads, blocking threads, fanout join, blocking bridge, diagnostics, and shutdown timeout.
 - =marlin-gerbil-scheme= uses ABI id/version/status codes, borrowed UTF-8 descriptors, request/projection structs, one-time Scheme runtime initialization, typed projection receipts, and a safe Rust selector wrapper.
-- the native request path tracks conversion cost and supports epoch-owned backing for stable match keys, so repeated native calls can reuse graph/profile/root scalar backing and marshal only per-decision payload.
+- the runtime request path tracks conversion cost and supports epoch-owned backing for stable match keys, so repeated runtime calls can reuse graph/profile/root scalar backing and marshal only per-decision payload.
 
 Design implication:
 - =agentic-ai-lab= should project POO policy families into compact, Marlin-aligned policy packets: profile id, policy epoch, graph/profile/root ids, action kind, gates, capability/readiness requirements, evidence refs, watermarks, idempotency keys, lease refs, and conflict policy.
 - =agentic-ai-lab= should resolve rich POO inheritance, functional combinators, strategy eligibility, and user-facing diagnostics before handoff. Marlin should not need to know why a policy object inherited a slot or which downstream UI concept produced it.
 - ABI readiness must become a normal strategy gate. If readiness fails, =agentic-ai-lab= should emit =ask-owner=, =quiet-skip=, =self-repair=, or diagnostic receipts before runtime execution.
-- The C ABI remains the compiled native adapter and SDK target. The user interface remains POO-native policy families and functional strategy combinators.
+- The C ABI remains the compiled runtime adapter and SDK target. The user interface remains POO policy families and functional strategy combinators.
 *** 10.06.53.60.60 Validation Gap
 LoopX keeps many smoke tests because regressions strand automation. =agentic-ai-lab=
 should reduce the need for downstream smoke sprawl by validating shared
@@ -267,7 +267,7 @@ The runtime-facing interface branch of this work is specified in
 
 1. Define =work-lane-policy=, =monitor-policy=, =user-gate-policy=,
    =capability-gate-policy=, =claim-policy=, and =handoff-policy= as
-   POO-native families.
+   POO families.
 2. Define strategy combinators that consume those families and emit an
    inspectable decision receipt.
 3. Define a compact runtime action packet that can represent run, observe,

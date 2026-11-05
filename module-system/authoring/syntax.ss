@@ -8,7 +8,7 @@
 ;;; Intent: borrow Doom-style compactness without inventing an alist/record DSL.
 ;;; Parser policy should treat this file as syntax over the public POO API.
 
-(import (only-in :clan/poo/object .o)
+(import (runtime: :clan/poo/object)
         :yuanxu/object-family/role-syntax
         :yuanxu/module-system/catalog/values)
 

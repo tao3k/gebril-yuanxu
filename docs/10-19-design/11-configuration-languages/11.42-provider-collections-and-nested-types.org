@@ -182,15 +182,15 @@ Map min/max metadata is not applied by the code above: the admitted protocol sub
 must reject such unqualified selected bounds rather than silently drop them.
 Single/group default semantics, dynamic values, optional cty object extensions,
 unknown values, write-only fields and arbitrary expressions remain unqualified.
-Group mode is still explicitly unsupported. Native policy is not inferred from a
+Group mode is still explicitly unsupported. Runtime policy is not inferred from a
 label or an unsupported keyword's presence. The input view is a conservative
 literal-JSON validation route, not full OpenTofu coercion equivalence.
 
-* Concrete native POO residual checks
+* Concrete POO residual checks
 
 After Schema shape acceptance, this pure walker checks only semantic residuals.
 It is not a second JSON Schema evaluator. Arrays use the AWS projector's canonical
-list representation; objects are native POO values. Other JSON representations
+list representation; objects are POO values. Other JSON representations
 must be explicitly normalized at the wire boundary before using this walker.
 
 #+begin_src scheme
@@ -297,7 +297,7 @@ must be explicitly normalized at the wire boundary before using this walker.
       (jref block 'block_types '()))))
 #+end_src
 
-For a qualified literal string-set policy, an upstream native producer can compute
+For a qualified literal string-set policy, an upstream runtime producer can compute
 cty equality/cardinality without an engine round trip:
 
 #+begin_src scheme
@@ -326,7 +326,7 @@ config. The reference list algorithm is quadratic; any optimized indexed version
 must preserve equality and source identities under tests. No speed claim is made.
 
 normalization-receipts is NOT a user-maintained completed list. It is an immutable
-result view supplied by a qualified native normalizer or future engine adapter. Core must first admit
+result view supplied by a qualified runtime normalizer or future engine adapter. Core must first admit
 that context against the exact provider/schema/engine generation and frozen final
 wire snapshot. Matching path, eq? candidate identity and generation below do not
 by themselves authenticate a user-forged record. accepted? and normalized-count
@@ -409,7 +409,7 @@ read before structural admission. The final output Contract uses absolute provid
 resource/data/configuration paths, so nested sets are not lost when the root
 schema is assembled. Individual generated field descriptors remain structural;
 they do not advertise that custom provider semantics were independently proved.
-Native context-path/provenance adapters still need implementation for projecting
+Runtime context-path/provenance adapters still need implementation for projecting
 these paths back through AWS mappings to the user's config source.
 
 Ordinary configuration =.admit= uses the exported shape Contract, not the

@@ -48,7 +48,7 @@
         (check-equal? (resolve-yuanxu-module-source/default
                        catalog source 'not-found)
                       'not-found)))
-    (yuanxu-test-case "native Catalog validation rejects malformed entries without loading sources"
+    (yuanxu-test-case "runtime Catalog validation rejects malformed entries without loading sources"
       (check-equal? (element? ModuleCatalog (.o name: 17 entries: '())) #f)
       (check-equal? (element? ModuleCatalog (.o name: 'invalid entries: '(not-an-entry))) #f)
       (check-equal? (element? ModuleSourceBinding (.o source: #f module: (.o))) #f))

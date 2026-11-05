@@ -16,16 +16,16 @@ wiring. No historical runtime source or probe is rewritten by that correction.
 The code in this module is the target design. The implemented local publication
 has only check/pipeline prototypes and a fixed lexical Check list. The new
 Profile prototype, Contract exports, selected-checks and resolver are not yet
-implemented. Native POO, bounded use-module and object-refinement path syntax
+implemented. POO, bounded use-module and object-refinement path syntax
 are reused; ordinary dotted assignment below is the proposed bounded extension
 specified in module 11 and is not accepted by the current adapter. New domain
 names are objects/functions, not DSL
-forms. Bootstrap owners supply canonical Core/native bindings internally; no
+forms. Bootstrap owners supply canonical Core/runtime bindings internally; no
 manual import plumbing is required in a downstream configuration.
 
 Upstream retains the base defaults from config-prototypes.ss, with the proposed
 public-field rename to commands specified in module 01. The presentation below
-is the target native value model, not an exact extraction of the existing runtime
+is the target runtime value model, not an exact extraction of the existing runtime
 declarations and not a migration away from the private declaration macro. Runtime
 producers/consumers still use command-vector and are unchanged by this design:
 
@@ -63,7 +63,7 @@ producers/consumers still use command-vector and are unchanged by this design:
 #+end_src
 
 Empty base fields are construction defaults, not successful runnable Check
-admission. Upstream adds these native families and publishes the guarded
+admission. Upstream adds these runtime families and publishes the guarded
 Contracts from [[file:01-surface-and-schema.org][module 01]], with their concrete field declarations and policy in
 [[file:05-field-contracts-and-capabilities.org][module 05]]:
 
@@ -86,7 +86,7 @@ Contracts from [[file:01-surface-and-schema.org][module 01]], with their concret
       pipeline: FunflowPipelineContract
       profile: FunflowProfileContract)
 
-  ;; Native shared-slot capture; no profiles slot or aggregate parent here.
+  ;; Runtime shared-slot capture; no profiles slot or aggregate parent here.
   prototype-scope: (.o (source) (prototypes))
 
   profiles:
@@ -170,14 +170,14 @@ either exists in this repository or that configuration admission runs them.
         selected-checks: '(build test package)
         checks: (funflow-selected-checks effective-profile selected-checks)
         metadata: '((scenario . funflow-cicd)
-                    (authoring-style . gerbil-poo-native))))))
+                    (authoring-style . gerbil-poo))))))
 #+end_src
 
-The explicit self identifier effective-profile is the native .o receiver
-parameter. selected-checks is the Pipeline's native lexical slot binding.
-This preserves the native outer-receiver relationship; neither identifier is
+The explicit self identifier effective-profile is the .o receiver
+parameter. selected-checks is the Pipeline's runtime lexical slot binding.
+This preserves the runtime outer-receiver relationship; neither identifier is
 a new hook or a global variable. At the pure function boundary the effective
-Profile is passed explicitly, as required by the native lexical slot law.
+Profile is passed explicitly, as required by the runtime lexical slot law.
 
 The existing fixed-membership expression checks: (list build test package) is
 still the simplest implementation for a fixed recipe and has executed cache
@@ -185,11 +185,11 @@ controls. The proposed named-selection recipe generalizes membership so a new
 smoke Check can participate without changing this getter. Its named pure
 resolver has the following precise contract:
 
-1. Consume a native effective Profile and a proper unique list of slot symbols.
+1. Consume a runtime effective Profile and a proper unique list of slot symbols.
 2. Resolve exactly those slots on that receiver, in list order. Do not enumerate
    and force every available Check or every Profile in the module.
 3. Reject missing/non-Check targets with the qualified requested path; preserve
-   native object identity in the returned list. Do not copy Check objects.
+   runtime object identity in the returned list. Do not copy Check objects.
 4. Leave field admission and dependency/consumer capability validation to the
    named admission functions. Resolution alone is not successful admission.
 
@@ -251,9 +251,9 @@ them at every use site. The configuration is not globally runnable until the
 selected Scenario's sandbox references, cleanup actions and handoff capability
 are admitted too.
 
-* Specified native lowering: all assignments share inherited prefixes
+* Specified runtime lowering: all assignments share inherited prefixes
 
-The proposed assignments must lower to this native form. It is a specification,
+The proposed assignments must lower to this runtime form. It is a specification,
 not captured expansion from the existing adapter or another user task. Earlier
 object-level dotted =>.+ forms could express the same result with existing
 syntax. Supporting direct leaf assignment requires the bounded adapter extension
@@ -278,9 +278,9 @@ in [[file:11-direct-path-assignment-and-refinement.org][module 11]]; dynamic sel
 #+end_src
 
 Every shared prefix is refined once, so the package or Pipeline edit cannot
-erase the build/test edits. This is native nested .+ inheritance, not recursive
+erase the build/test edits. This is runtime nested .+ inheritance, not recursive
 NixOS definition merge. Lists at leaves are replaced by ordinary slot override;
-native => can express a deliberate functional transformation.
+runtime => can express a deliberate functional transformation.
 
 * Downstream layer two: add a Check from the same effective module scope
 
@@ -306,7 +306,7 @@ the actual scope boundary; changing existing attributes above needs none of it.
            durable-task-id: 'task/smoke)
 
         funflow.profiles.gerbil-scheme.package: =>.+
-         {compensation-refs: => append '(cleanup/release-metadata)}
+         {(compensation-refs => append '(cleanup/release-metadata))}
 
         funflow.profiles.gerbil-scheme.pipeline.selected-checks:
         '(build test package smoke)))))
@@ -320,11 +320,11 @@ language recipe. A later maintained command-Check subtype may supply a common
 decoder if the capability is actually shared and documented.
 
 The extra compensation reference is advanced policy configuration through the
-native functional => operator. It appends to the inherited list; it does not
+runtime functional => operator. It appends to the inherited list; it does not
 reconstruct package. Both cleanup references must resolve at capability
 admission. Changing a policy value does not implement a new executor mechanism.
 If a decoder, scheduling mechanism or new attribute is actually required, its
-native prototype/Contract/consumer extension must be published upstream first.
+runtime prototype/Contract/consumer extension must be published upstream first.
 
 The effective selected list is now build, test, package, smoke. Each object
 comes from ExtendedCI, including inherited-but-refined Checks. Omitting smoke
@@ -337,7 +337,7 @@ closure instead of silently loading/executing an undeclared dependency.
 This is a target planning-boundary example, not another downstream wrapper or
 a new public configuration form. The planning owner independently associates
 the canonical Funflow publication and recipe capability declaration. It must
-verify required source/reference evidence separately; the native calls below
+verify required source/reference evidence separately; the runtime calls below
 do not authenticate SourceRef or deploy cleanup actions.
 
 #+begin_src scheme
@@ -359,7 +359,7 @@ do not authenticate SourceRef or deploy cleanup actions.
     profile-contract-value selected-profile-value admission-context))
 #+end_src
 
-Profile preflight verifies the supplied occurrence/context. Inherited native
+Profile preflight verifies the supplied occurrence/context. Inherited runtime
 responsibilities then invoke Pipeline admission. Its preflight establishes
 valid membership before checks is forced; its obligations compare effective
 identities, admit the selected Check objects with qualified child contexts,
@@ -379,14 +379,14 @@ a selected smoke without package fails dependency closure after field admission.
 
 If ProjectCI's Pipeline/checks was cached before these descendants were created,
 the same occurrence checks still refer to ExtendedCI's effective Profile. Its
-Pipeline getter retains the native outer receiver. Resolving selected-checks
+Pipeline getter retains the runtime outer receiver. Resolving selected-checks
 therefore returns its refined build/test/package and new smoke objects. The
 parent's cached list is never an input to that computation. Assigning a saved
 parent list to the child's checks is the identity-mismatch counterexample.
-The [[file:04-selection-probe.org][existing probe]] validates this native receiver pattern, not the new domain
+The [[file:04-selection-probe.org][existing probe]] validates this runtime receiver pattern, not the new domain
 guards or graph/capability admission.
 
-* Hygiene and native scope expansion
+* Hygiene and runtime scope expansion
 
 The existing bounded declaration below does exactly this lowering:
 

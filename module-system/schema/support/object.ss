@@ -5,16 +5,8 @@
 
 ;;; Boundary: module object schema, slot defaults, and object catalog merge.
 
-(import :gerbil/core
-        (only-in :clan/poo/object
-                 .ref
-                 object?
-                 object-slots
-                 make-object
-                 $constant-slot-spec
-                 $constant-slot-spec?
-                 $constant-slot-spec-value
-                 $computed-slot-spec)
+(import (runtime: :gerbil/core)
+        (runtime: :clan/poo/object)
         :yuanxu/graph/interface
         :yuanxu/module-system/schema/support/contracts
         :yuanxu/module-system/schema/support/field-resolution)
@@ -71,7 +63,7 @@
         (fields-value fields)
         (metadata-value metadata))
     (make-object
-     ;; Native POO owns precedence and cycle rejection.  `inherits` is retained
+     ;; POO owns precedence and cycle rejection.  `inherits` is retained
      ;; as domain metadata, but it is also the actual prototype parent list.
      supers: inherits-value
      defaults: '((fields . ()))
@@ -250,7 +242,7 @@
           (hash-put! overrides identity field)
           (loop (cdr fields) next-new-identities))))))
 
-;;; Inherited field resolution builds a zero-field native POO child.  Parent
+;;; Inherited field resolution builds a zero-field POO child.  Parent
 ;;; precedence, duplicate ancestry, and inconsistent graphs therefore remain
 ;;; owned by gerbil-poo rather than a second local traversal.
 ;; : (-> [PooModuleObject] [PooModuleFieldContract])
@@ -264,7 +256,7 @@
       slots: (list (yuanxu-module-object-fields-slot '())))
      'fields)))
 
-;;; Field demand always follows the native lazy slot chain.  Leaf objects hit
+;;; Field demand always follows the runtime lazy slot chain.  Leaf objects hit
 ;;; the same protocol with the empty `fields` default as their recursion base.
 ;; : (-> PooModuleObject [PooModuleFieldContract])
 (def (yuanxu-module-object-resolved-fields object)

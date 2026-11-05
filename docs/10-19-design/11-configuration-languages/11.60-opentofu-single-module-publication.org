@@ -8,10 +8,10 @@
 
 Core modules/opentofu is the maintained publisher. interface.ss contains one
 OpenTofu Module declaration; it no longer flat-reexports implementation units.
-objects.ss owns the native OpenTofuScope. prototype, config.ss exports Config,
+objects.ss owns the runtime OpenTofuScope. prototype, config.ss exports Config,
 and the optional build.ss defines Build. The old exported package-contribution
 factory and the test-generated tools/opentofu shell are removed, with no aliases
-or compatibility facade. Native kernel tests import their precise algorithm or
+or compatibility facade. Runtime kernel tests import their precise algorithm or
 object owner; ordinary Module consumers use the admitted interface scope.
 
 #+begin_src scheme
@@ -24,7 +24,7 @@ object owner; ordinary Module consumers use the admitted interface scope.
 (.def OpenTofuProviderConfig provider-artifact: #f)
 #+end_src
 
-Config.source is a native Nix Source supplied by upstream package/configuration
+Config.source is a runtime Nix Source supplied by upstream package/configuration
 composition. It is not a directory string, per-Provider environment registry or
 another Provider selection list. The shipped default is deliberately unset.
 Config.artifact remains the existing optional package-produced collection input.
@@ -37,9 +37,9 @@ A team configuring its packaged module may supply, for example:
   attribute: "lib.providerArtifacts")
 #+end_src
 
-That is an example team-owned locked checkout, not a Core default. The native
+That is an example team-owned locked checkout, not a Core default. The runtime
 constructor comes from the Nix module's objects owner. Flake Sources retain
-native lock/source observations and never update the lock implicitly. Expression
+runtime lock/source observations and never update the lock implicitly. Expression
 Sources retain their expression observations and can refine their source-inputs
 upstream to include catalog/collector inputs. No extra Nix discovery process is
 introduced to guess those semantics.
@@ -66,19 +66,19 @@ Neither constructing the scope nor inspecting its shape reads Provider indexes.
   features: (.o))
 #+end_src
 
-OpenTofuScopeContract validates the native scope shape without activating modules
+OpenTofuScopeContract validates the runtime scope shape without activating modules
 or Build. OpenTofuConfigContract admits an optional artifact path and optional
-native Nix Source, using the existing Nix Contracts. Missing source is permitted
+runtime Nix Source, using the existing Nix Contracts. Missing source is permitted
 for scope inspection and direct use of injected artifacts; an actual consumer
 build rejects with =build-required: OpenTofu Config.source must supply a Nix Source=.
 Malformed Sources reject before Nix handoff. Generated configuration Contracts
 still own Provider fields; neither scope/config Contract replaces them.
 
-* Native Build receiver and selected dependency association
+* Runtime Build receiver and selected dependency association
 
-Build is a native .def object with module: OpenTofuScope. and the existing
+Build is a .def object with module: OpenTofuScope. and the existing
 external-package .prepare method. That method reads module.config, not a baked
-catalog parameter or an independently imported default scope. The outer native
+catalog parameter or an independently imported default scope. The outer runtime
 module slot retains receiver semantics for explicit upstream derivation.
 The role wrapper supplies the actual selected types/objects/config bindings;
 Build does not import its own objects through a second canonical identity.
@@ -87,7 +87,7 @@ Preparation takes the consumer root/publication supplied by the existing direct
 core.requires edge. It captures the final Config once, projects Provider demand,
 and combines consumer source observations with the upstream Nix Source's
 source-inputs. Flake arguments receive selection JSON; expression arguments
-receive the generated selection file path. Both use the same native .prepare
+receive the generated selection file path. Both use the same runtime .prepare
 handoff and currentness/admission boundary.
 
 Realization derives a new scope from module with the realized artifact in its
@@ -129,18 +129,18 @@ build.ss, Source setup, demand list or manual admission stage. These examples
 exercise structural configuration admission, not credentials/backend/Provider RPC
 plan or cloud deployment.
 
-* Migration and native authoring admission
+* Migration and runtime authoring admission
 
 Static Core compilation roots no longer compile declarative interface.ss as a
 flat functional facade. The selected graph supplies its generated compiler frame.
-Native tests previously importing that facade have migrated directly to the
+Runtime tests previously importing that facade have migrated directly to the
 bounded implementation owner. Stale generated facade/build-factory artifacts
 were removed from the local build cache; no source checkout was removed.
 
-The authoring gate now respects native .call: its literal method name lowers to
+The authoring gate now respects runtime .call: its literal method name lowers to
 (.get receiver method), while its receiver and argument expressions remain real
 references. Calling a different object's .prepare from a .prepare method is not
-an initializer self-reference. Positive native execution and receiver/argument
+an initializer self-reference. Positive runtime execution and receiver/argument
 negative controls cover this rule; no helper hides the valid call from admission.
 
 The Build evaluator now wraps the exact private-source closure already observed
@@ -152,7 +152,7 @@ role boundary. Publication source observations continue to guard helper changes.
 The positive control changes the maintained aws-hash.ss dependency after graph
 creation and requires the existing currentness boundary to reject it.
 
-Build-role preparation checks the publication closure before and after native
+Build-role preparation checks the publication closure before and after runtime
 wrapping. Local prepared inputs validate their own bytes/package identities;
 they do not recursively revalidate the entire selected graph for every entry.
 The graph currentness operation validates its selection, then all local guards.
@@ -161,14 +161,14 @@ persistent validity cache or any validity receipt surviving an external effect.
 Independent currentness calls and final publication checks remain mandatory.
 Prepared helper identity is retained only while exact source/header bytes,
 ancestor package observations (including absent closer gerbil.pkg files), and
-native package-cache contents still match. Unchanged bodies are not parsed again
+runtime package-cache contents still match. Unchanged bodies are not parsed again
 just to derive the same identity. This is metadata reuse under checked premises,
 not cached permission to use changed code.
 
 * Validation and remaining boundary
 
 The current integration control directly binds the maintained JSON Schema, Nix
-and OpenTofu directories through init source declarations. Upstream native POO
+and OpenTofu directories through init source declarations. Upstream POO
 publication derivation supplies the Source; no Core module directory is copied.
 The stricter authorization and source-tree boundary is documented in
 [[file:11.61-explicit-module-authorization-and-core-sources.org][60 Explicit Module Authorization and Core Sources]].
@@ -177,7 +177,7 @@ no early Source forcing/Nix process, and absence of Infrastructure/build.ss.
 There is no generated alternative publisher/factory in the test.
 
 AWS-only then newly added Null retain real locked package provenance, indexed
-Contracts, final native .admit, source/indirect Nix currentness, generated guards,
+Contracts, final runtime .admit, source/indirect Nix currentness, generated guards,
 parent Contract/cache isolation and awscc exclusion. The unconfigured-Source gate
 also checks standalone-builder laziness and rejection before Nix execution.
 Results below distinguish the final source snapshot from earlier failed controls.
@@ -218,7 +218,7 @@ Earlier failures remain distinct: a concurrent init.ss edit correctly invalidate
 one run; the first real-source closure exposed missing private-helper wrapping;
 unchanged-body reparsing exceeded the existing Case duration budget; an old
 compiled JSON Schema diagnostic owner failed a consumer regression. The final
-controls use the corrected closure, direct owners and rebuilt native libraries.
+controls use the corrected closure, direct owners and rebuilt runtime libraries.
 The source/header/package-cache negative controls still reject changed headers,
 changed packages and a newly introduced closer gerbil.pkg. Restoring the exact
 inputs admits the same identity again.

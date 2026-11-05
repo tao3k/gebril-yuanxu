@@ -1,0 +1,109 @@
+#+title: 20.18 Index Sites and Deferred Runtime Actions
+#+language: en
+#+filetags: :modules:loading:representation:assurance:
+
+* Production ownership change
+
+The qualified upstream base is gerbil-poo
+=ec5ab0a8f18210a3a66eb7d2e6b01d4fd763ef94=. The local cohort also includes
+the preceding unpublished issuance/construction changes. The release pin is
+not changed to pretend those changes have already been published.
+
+=module-system/building/interface.ss= no longer creates private expander
+contexts to import runtime factories, retains their process values in promises,
+or packs four artifact procedures into a positional list. Its linker, source
+projectors and artifact operations use upstream =io.module-action=. The test
+executor in =building/test-projection.ss= and the opt-in retention trace entry
+in =building/test-observation.ss= use the same mechanism. Each call
+passes the original arguments through an explicit canonical runtime binding.
+Actions are constructed at import but do not load their requested modules.
+Official Gerbil loading owns initialization, reload and initialization errors.
+No second loaded-module registry, source cache or admission verdict is created.
+
+Runtime expander import remains in deferred ROLE projection: syntax/lexical
+bindings are not interchangeable with runtime procedure entries. The testing
+support's lazy parameter lookup likewise remains a value lookup, not an action.
+These are separate responsibilities, not forwarding wrappers to delete blindly.
+
+* Demand-filled fixed access
+
+=source/selection.ss= uses runtime =make-slot-cache= and =.ref/inline= for the
+repeated =publication.core.requires= access. Sites use =eager?: #f=: preparing
+an offset cannot evaluate every optional Feature or business export. Runtime
+owner, revision and exact-layout guards own current cells; shared shape identity
+certifies an offset only. When observation requires the ordinary read route,
+that route remains authoritative. The Core collector never drops records.
+
+This does not replace the ordered vector-family domain model with canonical
+shape indexes. It replaces actual ordinary object Slot access, preserving the
+existing object representation and source/observation protocol.
+
+The prepared build's =admit-current= and =spec= reads use the same demand-filled
+sites. Every =current!= request invokes the retrieved checker AGAIN: caching
+its method value is not caching its acceptance result. A supported parent/child
+or revision change must miss the runtime receiver/layout guard. Observed reads
+still use the ordinary recording path.
+The two selection sites belong to the candidate call, and the two build sites
+belong to the init projection. No module-global access site roots the last
+publication or discarded build Graph. Shared runtime shapes remain library-owned;
+owner/value lifetimes remain candidate/init-owned.
+
+* Assurance allocation
+
+SysML =RuntimeEntryAndIndexReuse= assigns representation to the existing Lean
+=DemandMaterialization= model: =demand_represents=, =different_scope_rejected=
+and =reset_has_no_parent_cell=. These abstract laws do not prove the Gambit
+layout implementation or loader effects. Existing =ModuleDemand= QNT checks
+selection/preflight before materialization, fresh admission, both requirements
+and disabled/lazy branches. Its 14-case positive/negative family passes.
+No duplicate loader model or manual purity label is added. Actual entry loading,
+canonical symbols, callback import isolation and source refusal require Scheme
+controls through the existing Just/Harness entry.
+
+* Discovered upstream IO boundary defect
+
+The first runtime executor run completed its Case but was correctly rejected by
+the Harness for an undefined =macro-writeenv-style= warning. The upstream IO
+module imported a Gambit HOST MACRO as a runtime extern. The correction expands
+that accessor in =begin-foreign= against the installed Gambit header and exposes
+one namespaced runtime procedure, shared by both printer methods. This neither
+edits Gerbil/Gambit sources nor hard-codes a write-environment structure index.
+The original failed receipt is retained outside source control. An initial
+=define-runtime= formulation also failed compilation; the corrected source uses
+Gerbil's =extern namespace:= declaration and requires a fresh qualified build.
+
+* Measurement and acceptance boundary
+
+Local logs live outside Git. The runtime representation suite and executor
+import/source-refusal control pass. Final-source gates cover build graph,
+selected graph, opt-in retention observation, 16/32 retention and the real
+Gitea/PostgreSQL Scenario. Each gate requires MODULE-OK, HARNESS-OK and OK;
+the original warning-bearing run is not accepted as a pass.
+
+| Modules | Cold wall / CPU (ms) | Hot wall / CPU (ms) | Issued records | Covered body bytes |
+|---------+----------------------+--------------------+----------------+--------------------|
+|      16 | 6503.343 / 6408.589   | 71.873 / 71.797     |           4987 |            8290776 |
+|      32 | 4530.260 / 4430.051   | 145.795 / 145.481   |           8603 |           10949636 |
+
+Cold role expansions are 32/64; hot expansions remain zero. Physical reads are
+5409/10353 cold and 106/170 hot. Covered bytes are one identity-union traversal,
+not exclusive/dominator bytes or the VM's total memory. Relative to 20.17,
+records remain unchanged and covered size is essentially unchanged; no memory
+reduction is attributed to faster indexing. The first 16-module cold phase is
+slower than that earlier cohort. These observations do not establish a speedup
+or identify a causal loading/indexing cost without a paired equal-cohort study.
+
+The important semantic boundary is visible in runtime =.ref/inline=: while slot
+observation is active it delegates to ordinary =.ref=. We preserve that branch,
+including its records and authentication. A runtime layout hit outside that
+observation does not authorize suppression of later observed source checks.
+
+The initial qualification used installed compiled Core owners in a private library
+overlay. It did not establish an empty-library source bootstrap: =module-action=
+requires a loadable runtime target and must not accept a merely visible interpreted
+binding as initialization authority. [[file:20.19-source-bootstrap-and-cold-query.org][20.19]] records the subsequent real empty-output
+build, source-entry correction and query-stage attribution; its newer measurements
+do not replace the original failed and passing receipts above.
+A source audit or abstract proof is not a runtime or complete-CI pass.
+No heap/timeout increase, ten-thousand-module rerun or commit/push is authorized
+by this slice. Global capacity closure remains open.

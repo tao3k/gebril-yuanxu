@@ -118,7 +118,7 @@ flowchart LR
 - [X] =crossLayerProjectionRequiresExplicitContract=
 - [X] =sourcePinUpdateDoesNotActivateProfile=
 - [X] =profileCompositionIsExplicit=
-- [ ] Project explicit POO profiles through native =gerbil-poo=.
+- [ ] Project explicit POO profiles through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.ModuleSystem.Ownership=.  It imports
@@ -441,7 +441,7 @@ The implementation must distinguish at least:
 10. Import performs no live effect.
 11. Profile revision identity includes construction and contract identity.
 12. The public semantic subject remains =wendao-episteme=.
-13. Public extension remains POO-native.
+13. Public extension remains POO.
 
 * Implementation checklist
 
@@ -465,7 +465,7 @@ The implementation must distinguish at least:
       publication.
 - [ ] Prevent the projection from claiming child capabilities.
 - [ ] Keep future child-owned Gerbil package support as a separate contract.
-- [ ] Verify exact profile slots and native operations against =gerbil-poo=.
+- [ ] Verify exact profile slots and runtime operations against =gerbil-poo=.
 - [ ] Add tests proving composition resolves only lexical values.
 - [ ] Add tests proving submodule presence does not create a module import.
 - [ ] Add tests preventing import-time resource actions.

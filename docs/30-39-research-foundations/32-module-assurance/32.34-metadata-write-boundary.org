@@ -58,7 +58,7 @@ are additional alias paths that a future ownership boundary must account for.
 * Isolation experiment and retained negative result
 
 Executable owner: [[file:../../../t/mop-route-mutation-test.ss][mop-route-mutation-test.ss]]. It uses =yuanxu-test-case=,
-the real native observer/replay entry and actual SDK setters. Its small
+the real runtime observer/replay entry and actual SDK setters. Its small
 =change-and-restore= helper only owns temporary mutation cleanup. It does not
 authenticate, issue records, intercept writes or mark a callback pure.
 
@@ -67,7 +67,7 @@ authenticate, issue records, intercept writes or mark a callback pure.
 An =audit= slot is evaluated on Root. Its replay observer attempts =.put!= on
 that active receiver. =check-object-edit= rejects it with =object mutation
 during computation=. The old port, receiver revision and read currentness stay
-unchanged. This is an actual pre-write native guard, not a final comparison.
+unchanged. This is an actual pre-write runtime guard, not a final comparison.
 
 ** Raw route edits: accepted after restoration
 
@@ -94,7 +94,7 @@ followed by restoration. The temporary =ref= is actually invoked once per table:
 #+end_src
 
 Replay succeeds, =calls= is 2 and the receiver revision is unchanged. Both route
-endpoints and native currentness match. Sealing the POO receiver does not seal
+endpoints and runtime currentness match. Sealing the POO receiver does not seal
 the SDK structures reachable through its low-level MOP accessors. This test
 proves the bypass exists; it does not claim every raw write has a useful effect.
 Lock, class-layout, method-table, FFI and concurrent mutations are not exercised
@@ -113,7 +113,7 @@ and current. An unselected error-producing slot is never evaluated.
   observations gives the same answer. No endpoint-only policy can infer the
   unrecorded intermediate mutation from that projection.
 - =active_edit_refused_before_write=: the modeled active-receiver branch
-  rejects before changing revision, corresponding to the positive native case.
+  rejects before changing revision, corresponding to the positive runtime case.
 - =tracked_write_rejected= and =restoring_route_cannot_restore_generation=:
   if every relevant write strictly advances a non-resettable generation,
   restoration cannot recover the entry generation.
@@ -123,7 +123,7 @@ and current. An unselected error-producing slot is never evaluated.
   =raw_restore_retains_history= derive unchanged endpoints and two writes plus
   one callback invocation by executing write/invoke/restore transitions.
 - =accepted_keeps_both= preserves both requirements. Parent isolation and
-  laziness are checked by the native/consumer regressions and finite Quint
+  laziness are checked by the runtime/consumer regressions and finite Quint
   transitions, not claimed as Lean proofs of evaluator noninterference.
 
 The generation lemmas are explicitly CONDITIONAL design results. The current
@@ -135,7 +135,7 @@ closure environment; this experiment does not change its mint or authority.
 * Quint matched controls
 
 [[file:../../../dev/proofs/quint/RouteMutation.qnt][RouteMutation.qnt]] models edit, invocation and restoration as separate
-transitions. Its receiver revision remains unchanged, matching the raw native
+transitions. Its receiver revision remains unchanged, matching the raw runtime
 experiment. The normal positive model assumes a generation owned by a future
 write boundary. =endpoint= removes history checking; =untracked= leaves the
 generation unchanged despite writes. Both must produce a
@@ -158,7 +158,7 @@ miss remains absent from the receiver cache in the positive model.
 * What a production repair must own
 
 1. A receiver revision alone is insufficient. Either all selected metadata
-   route writes must pass a native write barrier, or writable aliases to that
+   route writes must pass a runtime write barrier, or writable aliases to that
    metadata must cease to be available across the protected callback boundary.
    Wrapping one public setter leaves generated and raw setters as bypasses.
    In particular, hooking =runtime.slot-set!= or even =unchecked-field-set!=

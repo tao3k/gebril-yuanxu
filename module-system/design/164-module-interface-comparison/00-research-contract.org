@@ -29,7 +29,7 @@ Nickel's contracts/merge metadata, Dhall's typed functions and NixOS's options?
 
 | Level | Compared systems | Question |
 |-------+------------------+----------|
-| Language | Nix, Nickel, Jsonnet, Dhall, Gerbil Scheme + native POO | What are the evaluation, typing, merge and abstraction rules? |
+| Language | Nix, Nickel, Jsonnet, Dhall, Gerbil Scheme + POO | What are the evaluation, typing, merge and abstraction rules? |
 | Framework | NixOS modules, HiveBus/POP consumers, Omnibus NCL interfaces, Agentic AI Lab | What conventions and schemas turn those rules into a usable interface? |
 | Product case | Omnibus sandbox/matrix; HiveBus host/export; Agentic AI Lab Funflow | What does the actual author write, and which output consumer exists? |
 
@@ -62,7 +62,7 @@ implemented feature, and an identity assertion is not provenance authentication.
 
 * Initial finding
 
-Our strongest demonstrated property is continuity: native objects are used for
+Our strongest demonstrated property is continuity: runtime objects are used for
 configuration, inheritance, prototype selection and final Pipeline relationships.
 That continuity is useful. It does not establish better validation, purity,
 termination, package reproducibility, discoverability, or large-catalog costs.

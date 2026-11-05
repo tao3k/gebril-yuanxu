@@ -16,9 +16,9 @@ doctor, and presentation data. Root user files do not own settings projection,
 object contracts, descriptor realization, package sync, loaders, or runtime
 execution.
 
-** 10.06.10.05 POO Native Functional Contract
+** 10.06.10.05 POO Runtime Functional Contract
 
-Agentic AI Lab's user interface must stay 100% POO-native and functional-first. The normal downstream path composes upstream POO objects, prototype rows, category/module/feature declarations, and hygienic functional helpers. It must not expose raw alist DSLs, record DSLs, ad hoc merge languages, or direct =(lambda (self super) ...)= compute hooks as the everyday extension surface.
+Agentic AI Lab's user interface must stay 100% POO and functional-first. The normal downstream path composes upstream POO objects, prototype rows, category/module/feature declarations, and hygienic functional helpers. It must not expose raw alist DSLs, record DSLs, ad hoc merge languages, or direct =(lambda (self super) ...)= compute hooks as the everyday extension surface.
 
 Funflow alignment exists to keep workflow authoring on the functional programming route: Gerbil Scheme owns pure flow composition, object metadata, strategy selection, and report-only validation; Rust/Marlin owns scheduling, subprocesses, Docker, CAS, durable state, and artifact realization. New user-facing APIs should therefore read as POO object extension plus functional flow composition, not as backend configuration scripts.
 
@@ -104,7 +104,7 @@ merge internals, or runtime adapters.
 - =runtime-owner = "marlin-agent-core"=.
 
 This mirrors Doom's inspectable user ergonomics without importing Doom's package
-manager surface. The implementation remains Gerbil-native and data-first.
+manager surface. The implementation remains Gerbil-runtime and data-first.
 
 * 10.06.10.04 Test Gate
 

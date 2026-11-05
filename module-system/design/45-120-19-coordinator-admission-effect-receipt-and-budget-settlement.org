@@ -24,7 +24,7 @@ effect outcome evidence and fails closed when the outcome is indeterminate.
 
 * Decision
 
-The coordinator produces two distinct authoritative POO-native receipts:
+The coordinator produces two distinct authoritative POO receipts:
 
 - =RecoveryDecisionReceipt= records admission;
 - =EffectReceipt= records the execution outcome.
@@ -147,7 +147,7 @@ When a receipt already exists, a repeated submission MUST:
 - avoid handler execution;
 - avoid an unrelated successor generation.
 
-An external provider MAY support a stronger provider-native idempotency key.
+An external provider MAY support a stronger provider-runtime idempotency key.
 That evidence refines the =EffectReceipt= but does not weaken coordinator
 admission rules.
 

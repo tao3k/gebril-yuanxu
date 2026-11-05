@@ -5,8 +5,8 @@
 
 ;;; Boundary: ordered field-contribution resolution for module object graphs.
 
-(import :gerbil/core
-        (only-in :clan/poo/object .o .ref)
+(import (runtime: :gerbil/core) (only-in :gerbil/core object? make-object)
+        (runtime: :clan/poo/object)
         :yuanxu/graph/interface
         :yuanxu/module-system/schema/support/contracts
         :yuanxu/module-system/schema/support/slot-policy)

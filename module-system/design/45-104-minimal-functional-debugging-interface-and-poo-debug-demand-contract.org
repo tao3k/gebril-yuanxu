@@ -121,7 +121,7 @@ functional route.
 
 * DebugDemand
 
-A DebugDemand is a native POO object that projects:
+A DebugDemand is a POO object that projects:
 
 - demand identity;
 - operation identity;
@@ -183,7 +183,7 @@ is not a missing argument interpreted by a macro.
 
 =query= is a POO inspection-query object.
 
-Advanced authors extend the query prototype with native POO operations and pure
+Advanced authors extend the query prototype with POO operations and pure
 functional combinators.
 
 A list of fields, keyword clauses, strings, or raw predicate lambda is not the
@@ -272,7 +272,7 @@ There is no canonical default simulation proposal.
 
 Advanced extension uses:
 
-- native POO prototypes;
+- POO prototypes;
 - object extension and composition;
 - named pure functional combinators;
 - typed capability requirement objects;
@@ -465,7 +465,7 @@ User-interface simplicity does not erase the authority boundary.
 
 The four public operations are functions, not macros.
 
-Functions and native POO objects remain the default abstractions.
+Functions and POO objects remain the default abstractions.
 
 A tooling-only macro may be admitted later only when it:
 
@@ -719,5 +719,5 @@ ordinary call syntax or introducing macro and clause proliferation.
 - [[file:44-current-project-programming-style.org][44 - Current Project Programming Style]]
 - [[file:45-51-live-evaluation-context-narrowing-and-resource-conservation.org][45-51 - Live Evaluation Context Narrowing and Resource Conservation]]
 - [[file:45-87-live-continuation-capabilities-continuable-conditions-and-portable-suspension-boundary.org][45-87 - Live Continuation Capabilities, Continuable Conditions, and Portable Suspension Boundary]]
-- [[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89 - POO-Native Control Condition, Decision, and Capability Algebra]]
+- [[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89 - POO-Runtime Control Condition, Decision, and Capability Algebra]]
 - [[file:45-103-precedence-conflict-debugging-inspection-explanation-simulation-and-continuable-recovery.org][45-103 - Precedence and Conflict Debugging, Inspection, Explanation, Simulation, and Continuable Recovery]]

@@ -25,10 +25,10 @@ import YuanxuProof.ModuleSystem.Schema.Association.Correspondence
 #print axioms YuanxuProof.ModuleSystem.Schema.Association.Traversal.successful_dfs_association_iff
 #print axioms YuanxuProof.ModuleSystem.Schema.Association.Projection.identity_iff
 #print axioms YuanxuProof.ModuleSystem.Schema.Association.Projection.list_identity_iff
-#print axioms YuanxuProof.ModuleSystem.Schema.Association.Projection.native_path_projects
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.Projection.runtime_path_projects
 #print axioms YuanxuProof.ModuleSystem.Schema.Association.Projection.projected_path_lifts
 #print axioms YuanxuProof.ModuleSystem.Schema.Association.Projection.path_iff
-#print axioms YuanxuProof.ModuleSystem.Schema.Association.Projection.dfs_native_path_iff
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.Projection.dfs_runtime_path_iff
 #print axioms YuanxuProof.ModuleSystem.Schema.Association.Projection.receipt_gate_iff
 #print axioms YuanxuProof.ModuleSystem.Schema.Association.Projection.accepted_receipt_correlated
 #print axioms YuanxuProof.ModuleSystem.Schema.Association.Projection.accepted_receipt_discharged

@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Bootstrap declarations only; importing prototypes must not import selection.
-(import (only-in :clan/poo/object .ref .slot? object? object<-alist))
+(import (runtime: :clan/poo/object))
 (export defpoo-module-config-prototype defpoo-module-config-kind-predicate)
 
 ;;; Prototype macros define named POO config objects from bounded slot rows.
@@ -11,7 +11,7 @@
 ;; | type ConfigBindingSyntax = Syntax
 ;; | type ConfigSlotRowsSyntax = Syntax
 ;; | type ConfigPrototypeSyntax = Syntax
-;; | contract: expands bounded literal slots through clan/poo's native object constructor
+;; | contract: expands bounded literal slots through clan/poo's runtime object constructor
 ;; | warning: keep object inheritance and merge policy outside this syntax helper
 ;; | doc m%
 ;;   Defines a module config prototype object.

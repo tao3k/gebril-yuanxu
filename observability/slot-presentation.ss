@@ -7,10 +7,7 @@
 ;;; evaluation through `.ref`; this module adds no second evaluator. Source
 ;;; declarations are metadata bound to prototype identity and checked before
 ;;; a detailed view is returned.
-(import (only-in :clan/poo/object
-                 .all-slots .o .ref .slot? object?
-                 $computed-slot-spec?
-                 object-%precedence-list object-defaults object-slots))
+(import (runtime: :clan/poo/object))
 
 (export yuanxu-slot-view
         yuanxu-slot-presentation)
@@ -75,7 +72,7 @@
     (reverse reversed)))
 
 ;;; The declaration lineage is not a claim that every ancestor contributed to
-;;; the returned value: native methods may replace or combine earlier values.
+;;; the returned value: runtime methods may replace or combine earlier values.
 ;;; All precedence members must be named, including non-declaring prototypes.
 (def (yuanxu-slot-view subject slot-name registry)
   (unless (and (object? subject) (symbol? slot-name)

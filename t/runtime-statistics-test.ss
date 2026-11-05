@@ -13,7 +13,7 @@
 
 (def runtime-statistics-test
   (test-suite "installed Gambit accounting semantics"
-    (yuanxu-test-case "native exec-stats reports accounting rather than constructor bytes"
+    (yuanxu-test-case "runtime exec-stats reports accounting rather than constructor bytes"
       (for-each
         (lambda (count)
           (let* ((stats (##exec-stats (lambda () (retained-pairs count))))

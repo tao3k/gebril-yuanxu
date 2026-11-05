@@ -3,8 +3,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 prelude: :gerbil/core
 (import (only-in :gerbil/expander core-import-module core-bind-root-syntax!
-                 expander-context-id))
-(export register-module-build-source! register-yuanxu-build-source!)
+                 expander-context-id core-resolve-library-module-path
+                 core-bound-module-prelude? syntax-local-e module-context?
+                 module-source-path prelude-context-path core-read-module/sexp
+                 core-library-package-plist core-library-package-path-prefix))
+(export register-module-build-source! register-yuanxu-build-source! module-build-source-path)
 
 (def (package-source-path root expected-package)
   (let* ((directory (path-normalize root))
@@ -19,13 +22,80 @@ prelude: :gerbil/core
 (def (register-module-build-source! root expected-package)
   (add-load-path! (package-source-path root expected-package)))
 
+;; The package owns this source declaration. Consumers never reconstruct it
+;; from the public language name or from a compiled artifact's filename.
+(def yuanxu-language-file "prelude.ss")
+
+(def (resolve-build-library library directory)
+  (let (previous (load-path))
+    (dynamic-wind
+      (lambda () (set-load-path! (list directory)))
+      (lambda ()
+        (with-catch
+          (lambda (exception)
+            (if (syntax-error? exception) #f (raise exception)))
+          (lambda () (core-resolve-library-module-path library))))
+      (lambda () (set-load-path! previous)))))
+
+(def (module-build-source-path context package-root)
+  ;; Package/build internals own source resolution, never configuration users
+  ;; or dependency traversal. Consume runtime bindings and package resolution;
+  ;; a public language name does not prescribe its source filename.
+  (def identity (expander-context-id context))
+  (def library (and (symbol? identity)
+                   (string->symbol (string-append ":" (symbol->string identity)))))
+  (def root (string-append (path-strip-trailing-directory-separator (path-normalize package-root)) "/"))
+  (def (owned-source? path)
+    (and (string? path) (string-prefix? root (path-normalize path))
+         (member (path-extension path) '(".ss" ".scm" ".sld"))))
+  (def bound-source
+    (and library (core-bound-module-prelude? library)
+      (let (bound (syntax-local-e library))
+        (if (module-context? bound) (module-source-path bound) (prelude-context-path bound)))))
+  (def source
+    (and library
+      (cond
+       ((owned-source? bound-source) bound-source)
+       ((let (properties (core-library-package-plist package-root))
+          (and (eq? (pgetq package: properties) 'yuanxu)
+               (eq? (pgetq prelude: properties) library)))
+        (path-expand yuanxu-language-file package-root))
+       (else
+        ;; Resolve within the declared package even when the runtime context
+        ;; came from the output library. Foreign prefixes have no candidate.
+        (let (prefix (core-library-package-path-prefix package-root))
+          (and (or (not prefix) (string-prefix? prefix (symbol->string identity)))
+               (resolve-build-library library package-root)))))))
+  (and (owned-source? source)
+    (let-values (((_prelude actual _namespace _body) (core-read-module/sexp source)))
+      (unless (eq? identity actual)
+        (error "compiler source identity mismatch" identity actual source))
+      source)))
+
 (def (register-yuanxu-build-source! root)
-  ;; The root library package and this single file have distinct identities.
-  ;; Bind the actual native module context, so the expander's bound-prelude
-  ;; branch can resolve the language before a compiled copy is installed.
-  (let* ((library (package-source-path root 'yuanxu))
-         (prelude (core-import-module (path-expand "prelude.ss" library))))
-    (unless (eq? (expander-context-id prelude) 'tao3k/yuanxu/prelude)
-      (error "build prelude identity mismatch" (expander-context-id prelude)))
-    (add-load-path! library)
-    (core-bind-root-syntax! ':tao3k/yuanxu/prelude prelude #t)))
+  (def library (package-source-path root 'yuanxu))
+  (def language ':tao3k/yuanxu/prelude)
+  (def source (path-expand yuanxu-language-file library))
+  (def output (path-expand "lib" (gerbil-path)))
+  ;; Gerbil resolves the language in Make's output library. On a clean checkout
+  ;; the package prefix cannot resolve the off-prefix source language by ID.
+  ;; The bootstrap has one local macro prerequisite. Apply Gerbil's timestamp
+  ;; rule before using either generated interface during entry expansion.
+  (def installed (resolve-build-library language output))
+  (def selected
+    (or (and installed
+             (not (file-newer? source installed))
+             (not (file-newer? (path-expand "gerbil.pkg" library) installed))
+             (let (syntax-interface
+                    (resolve-build-library ':yuanxu/module-system/selection/init-syntax output))
+               (and syntax-interface
+                    (not (file-newer?
+                           (path-expand "module-system/selection/init-syntax.ss" library)
+                           syntax-interface))))
+             installed)
+        source))
+  (def prelude (core-import-module selected))
+  (unless (eq? (expander-context-id prelude) 'tao3k/yuanxu/prelude)
+    (error "build prelude identity mismatch" (expander-context-id prelude)))
+  (add-load-path! library)
+  (core-bind-root-syntax! language prelude #t))

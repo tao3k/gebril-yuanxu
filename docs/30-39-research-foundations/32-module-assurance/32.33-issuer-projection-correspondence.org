@@ -7,20 +7,20 @@
 Follow-up: [[file:32.34-metadata-write-boundary.org][32.34]] audits the actual SDK metadata setters and tests restoration
 inside a sealed receiver's active computation. It retains the raw-write bypass
 as a negative result; a proposed monotonic write generation is not an existing
-native guarantee.
+runtime guarantee.
 
-[[file:32.32-issued-read-association.org][32.32]] established native issuance and metadata-route controls, but its
+[[file:32.32-issued-read-association.org][32.32]] established runtime issuance and metadata-route controls, but its
 =Read.birth= was a private semantic input. The separate =associated= lemmas did
 not derive that input from the actual Scheme issuer. A theorem over an assumed
 Birth does not establish that a runtime record owns that Birth.
 
 This follow-up constructs the symbolic association through allocation/mint
-transitions and independently checks real native association snapshots. It
+transitions and independently checks real runtime association snapshots. It
 changes no Loader, module selection, public configuration syntax or domain
 Contract. The new inspection entry belongs to the low-level MOP, not to ordinary
 Profile authoring. No user maintains an Evidence object or a purity flag.
 
-* Native read-only inspection
+* Runtime read-only inspection
 
 The actual private mint now creates a =case-lambda= birth closure. Its existing
 one-argument branch validates exactly the original captured fields. The new
@@ -89,13 +89,13 @@ both the registry key and the closure's captured record identity remain checked.
 - =Record=: current public fields and presented closure;
 - =readCache=: cache membership, separate from issuer authority.
 
-Neither the native result Boolean nor a =nativeCreated= flag populates these
+Neither the runtime result Boolean nor a =runtimeCreated= flag populates these
 stores. =mint= allocates fresh identities and updates the registry/environment
 pair together. =allocateRaw= consumes a fresh record identity without writing
 either association; public field edits likewise do not write the private store.
 =empty_frontier= and =mint_preserves_frontier= establish allocation separation.
 =raw_allocation_preserves_frontier= and
-=later_mint_does_not_sign_public_copy= cover public allocation followed by native
+=later_mint_does_not_sign_public_copy= cover public allocation followed by runtime
 allocation, so an old raw copy cannot acquire authority through identity reuse.
 
 =project= derives the legacy =IssuedRead.Read.birth= from registry lookup,
@@ -121,7 +121,7 @@ it does not synthesize or prove the Gitea/PostgreSQL domain rules.
 * Actual Scheme to Lean check
 
 [[file:../../../t/issuer-projection-test.ss][issuer-projection-test.ss]] obtains records through =.ref= / =.ref/cached=,
-then calls the native inspector. It maps actual live =eq?= identities to positive
+then calls the runtime inspector. It maps actual live =eq?= identities to positive
 handles, preserving list order and aliases; mutation revision remains a numeric
 value. Zero is reserved for absence in the JSON codec, not a user authority tag.
 The producer copy operation never executes the presented untrusted closure.
@@ -129,13 +129,13 @@ The producer copy operation never executes the presented untrusted closure.
 The Scheme test exports 12 observations: persistent read, transient miss,
 unsigned copy, replacement, restoration, callback closure restoration, borrowed
 closure, payload edit, callback before/after an effect, and revision before/after
-native edit-and-restore. It does not construct expected registry rows. It also
+runtime edit-and-restore. It does not construct expected registry rows. It also
 checks that altering an inspection copy leaves the original valid and that a
 read reconstructed from a copy has no issuer association.
 
 [[file:../../../dev/proofs/lean/IssuerProjectionCheck.lean][IssuerProjectionCheck.lean]] independently decodes the current record, actual
 registry result and actual captured environment. It computes =authenticate= and
-=project= before comparing them with the native result. It also compares native
+=project= before comparing them with the runtime result. It also compares runtime
 currentness with receiver revision/instance and the appropriate persistent-cache
 or transient-absence condition, checks that repeated observations preserve the
 original association, and requires the restored-effect and revision-ABA witnesses.
@@ -143,9 +143,9 @@ This currentness decoder covers the sampled ordinary-value/cache-miss routes;
 it is not a decoder for bootstrap, all query kinds or arbitrary malformed heaps.
 
 The wire checker rejects three intentionally damaged inputs with
-=native/projected issuance mismatch: persistent=: missing registry, substituted
+=runtime/projected issuance mismatch: persistent=: missing registry, substituted
 presented closure and changed public payload. These are codec negative controls,
-not additional native executions. A valid Scheme execution and an arbitrary
+not additional runtime executions. A valid Scheme execution and an arbitrary
 JSON file are not interchangeable evidence.
 
 Repeatable gates, using the normal default Gerbil runtime:
@@ -162,23 +162,23 @@ independent Lean checker. Generated observations and raw logs remain outside Git
 
 * What modification-and-restoration means
 
-The native test uses a real replay observer to replace the selected table's
+The runtime test uses a real replay observer to replace the selected table's
 =ref= method, call that method (incrementing an external counter), and restore
-the original in =dynamic-wind=. Native replay succeeds with current endpoints
+the original in =dynamic-wind=. Runtime replay succeeds with current endpoints
 and counter =1=. The inspector/projector agrees with that result. This is a
 POSITIVE runtime witness of the limitation, not a successful read-only proof.
 A closure replaced and restored entirely inside a callback likewise has matching
 endpoint identity; the untrusted replacement is not invoked by the kernel.
 
 In contrast, two supported =.put!= operations change a receiver value and restore
-it but advance revision. Issuance remains genuine, while native currentness and
+it but advance revision. Issuance remains genuine, while runtime currentness and
 replay refuse the old read. Raw writes without revision tracking do not inherit
 this guarantee.
 
 [[file:../../../dev/proofs/quint/IssuerProjection.qnt][IssuerProjection.qnt]] constructs parent and child associations through mint
 transitions, admits an unregistered self-consistent user closure as adversarial
 input, and models callback enter/effect/restore as separate steps. It does not
-start with a private Birth/native-origin Boolean. =NoCallbackEffects= is
+start with a private Birth/runtime-origin Boolean. =NoCallbackEffects= is
 intentionally outside positive =safety=: its matched normal-model wrapper must
 produce a counterexample. Deleting registry/payload checks, final validation,
 route guarding, miss separation, the second requirement, child ownership or
@@ -194,14 +194,14 @@ following, two independent port contributions and both child responsibilities.
 Explicit Gitea 5440, reuse of the parent plan and changed JSON source are refused.
 The parent retains its original cached plan identity/value. The new inspector
 is not inserted into this user flow; it is only an observation/proof interface.
-The old native read suite retains bootstrap, cold/hot/inline/cached lookup and
+The old runtime read suite retains bootstrap, cold/hot/inline/cached lookup and
 unselected-branch controls. No new Fixture family or Loader path is introduced.
 
 * Results and remaining premises
 
 | Gate | Accepted result |
 |------+-----------------|
-| Default-runtime native projection | 4 cases; 12 actual native observations; independent Lean decoding passes |
+| Default-runtime projection | 4 cases; 12 actual runtime observations; independent Lean decoding passes |
 | Existing issuer controls | 10 cases pass, including live/dead weak-GC controls |
 | Existing replay controls | 11 cases pass, including bootstrap, parent/child isolation and lazy branches |
 | Actual Gitea/PostgreSQL admission | 2 cases pass with both requirements, child obligations, currentness and stale-plan rejection |
@@ -232,14 +232,14 @@ checkout and lock both remain =6e6a706e14fa6f8199e4f36711440355b42ef335=.
 
 The remaining premises are now specific, rather than an opaque Birth:
 
-1. Native allocation provides fresh live object/procedure identity, and =eq?=
+1. Runtime allocation provides fresh live object/procedure identity, and =eq?=
    plus the selected-handle codec preserves it. The allocator/compiler is not
-   verified here. Public raw allocation and native mint are modeled separately.
+   verified here. Public raw allocation and runtime mint are modeled separately.
 2. The private weak table is written only by the audited mint; runtime primitive/class-layout or method-table
    rebinding, unsafe closure-environment mutation, FFI and arbitrary concurrent
    writes are outside the serial API boundary.
 3. The zero/one-argument branches share the lexical captures shown in Scheme.
-   Source review and native trace checks establish correspondence at the pinned
+   Source review and runtime trace checks establish correspondence at the pinned
    source cut; this is not a mechanically verified Scheme compiler or proof of
    all possible runtime traces.
 4. Weak-GC availability for live records remains a runtime control, not a Lean GC

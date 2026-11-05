@@ -8,9 +8,9 @@ open SemanticReads
 open TestAdmission
 
 def witnessReplayQuintDigest : String :=
-  "sha256:9b38bec4e849474ecb69a2ca83dfe1e8befaced440347de0cc65e2dc5b3032d1"
+  "sha256:d63443a9854613d63b9c63a1a3634def528bdcb6997d436936434bd2069e8e2c"
 
--- The native batch pins live receivers and resolves their original tokens
+-- The runtime batch pins live receivers and resolves their original tokens
 -- BEFORE replay. This equivalence is at one stable query epoch; arbitrary
 -- effectful validators are not proved interchangeable by this law.
 def WitnessGroupsCurrent (groups : List (List α)) (current : α → Prop) : Prop :=
@@ -34,7 +34,7 @@ theorem final_witness_mutation_refused (groups : List (List α))
   intro accepted
   exact stale ((live_witness_batch_exact_support groups current).mp accepted token covered)
 
--- n + 1 live receivers with the same suffix. Native DFS identity uniqueness
+-- n + 1 live receivers with the same suffix. Runtime DFS identity uniqueness
 -- gives the batched bound; this arithmetic does not prove SDK/GC behavior.
 theorem shared_witness_suffix_work (n own shared : Nat) :
     (n + 1) * (own + shared) =
@@ -42,7 +42,7 @@ theorem shared_witness_suffix_work (n own shared : Nat) :
   simp only [Nat.mul_add, Nat.add_mul, Nat.one_mul]
   omega
 
--- Factory enrollment and the first native generation are runtime premises,
+-- Factory enrollment and the first runtime generation are runtime premises,
 -- not a certificate inferred from a receiver's kind or prototype label.
 def ClosureCertified (known constructor unchanged : Prop) : Prop :=
   known ∧ constructor ∧ unchanged
@@ -57,8 +57,8 @@ theorem edited_generation_not_certified {known constructor unchanged : Prop}
   intro certified
   exact edited certified.2.2
 
--- The Core adapter owns the fresh receiver supplied by native rebind-validation,
--- not its borrowed ancestors. Their FIRST native revisions stay strong policy
+-- The Core adapter owns the fresh receiver supplied by runtime rebind-validation,
+-- not its borrowed ancestors. Their FIRST runtime revisions stay strong policy
 -- support even when the temporary receiver has been collected.
 def ParentSnapshotCurrent (parents : List α) (before now : α → Nat) : Prop :=
   ∀ parent, parent ∈ parents → before parent = now parent
@@ -119,7 +119,7 @@ theorem completed_frontier_covers_external [DecidableEq α]
       ext, path⟩
 
 -- GC/identity premise: a still-reachable semantic carrier remains weakly alive.
--- These are hypotheses about the native weak-value table, not a Lean GC model.
+-- These are hypotheses about the runtime weak-value table, not a Lean GC model.
 def Admitted (externalCurrent policyCurrent alive token originalCurrent : Prop) : Prop :=
   externalCurrent ∧ policyCurrent ∧ (¬ alive ∨ (token ∧ originalCurrent))
 

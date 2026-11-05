@@ -28,7 +28,7 @@ shared pure-read window, followed by fresh checks. The shared reader retains
 all observations already demanded within this source epoch, so a previously
 demanded dependency change can still invalidate the epoch.
 
-The focused native =t/module-testing-source-admission-test.ss= gate passed with
+The focused runtime =t/module-testing-source-admission-test.ss= gate passed with
 natural exit zero and MODULE-OK/HARNESS-OK/final OK at the locked
 =gerbil-poo ece6f609357ea918038090559ac051a8d9f3e52f= revision. It verifies:
 
@@ -42,7 +42,7 @@ natural exit zero and MODULE-OK/HARNESS-OK/final OK at the locked
   test projection and the original selection.
 
 The initial run failed on the fixture's noncanonical macOS temporary path;
-the expectation now uses the same native path normalization as SourceRef.
+the expectation now uses the same runtime path normalization as SourceRef.
 That failure was not a production admission failure. The successful gate does
 not establish a startup speedup or complete the AWS Schema-transition endpoint.
 The AWS endpoint no longer forces full root Graph identity just before running
@@ -59,7 +59,7 @@ is a separate boundary, not permission to cache across macro effects.
 
 The original =t/module-testing-test.ss= regression passed with natural exit zero,
 MODULE-OK, HARNESS-OK and final OK. This retains its package-effect source-mutation
-control, native fixture isolation/exception cleanup, test edits/additions and
+control, runtime fixture isolation/exception cleanup, test edits/additions and
 execution of the real JsonSchema, Funflow and AWS atomic suites.
 
 The traced =t/aws-context-publication-test.ss= endpoint remains failed. Its outer
@@ -84,18 +84,18 @@ this run did not reach them. The remaining full-Graph preparation/expansion and
 guard cost must be addressed on its own authority boundary, without widening
 the deadline, dropping currentness checks, or caching initializer effects.
 
-** Subsequent native import and deadline diagnosis
+** Subsequent runtime import and deadline diagnosis
 
 The follow-up qualification in
 [[file:../../../13-module-loading/13.15-import-and-source-guard-correspondence.org][Import and source-guard correspondence]]
-records actual SDK context identities, native import boundaries and refreshed
+records actual SDK context identities, runtime import boundaries and refreshed
 source registrations. With the unchanged Ops deadline, GNU timeout explicitly
 reported TERM followed by KILL in the run returning 137. This identifies that
 run's termination mechanism; it does not establish an OOM kill.
 
 One retained bounded run completed both Graphs and the second provider package,
 then returned Ops status 124 before refreshed publication completed. Thus the
-remaining endpoint failure spans native expansion, source checks and package
+remaining endpoint failure spans runtime expansion, source checks and package
 handoffs, rather than a Graph algorithm that never returns. Schema-transition
 acceptance remains incomplete; the linked record separates completed negative
 controls from assertions not reached before the deadline.

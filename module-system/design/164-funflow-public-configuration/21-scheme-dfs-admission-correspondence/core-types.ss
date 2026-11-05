@@ -297,7 +297,7 @@
        '.obligations obligations
        'sexp identity))
 
-;;; Object responsibility admission delegates every slot to its native Contract.
+;;; Object responsibility admission delegates every slot to its Contract.
 ;;; The map is a POO value; inherited map slots follow upstream precedence.
 (def (yuanxu-responsibility-evidence candidate context responsibilities slot)
   (if (.slot? candidate slot)
@@ -349,8 +349,8 @@
 (define-type (YuanxuResponsibilityContract. @ YuanxuContract. responsibilities)
   .admit: (cut yuanxu-object-admit @ <> <>))
 
-;;; Domain declarations inherit this native prototype-aware responsibility contract.
-(def (yuanxu-native-classify identity proto candidate context)
+;;; Domain declarations inherit this runtime prototype-aware responsibility contract.
+(def (poo-type-classify identity proto candidate context)
   (let (accepted?
         (and (object? candidate)
              (if (memq proto (compute-precedence-list! candidate)) #t #f)))
@@ -359,7 +359,7 @@
      (if accepted? '()
        (list (.o kind: 'prototype-mismatch type-identity: identity))) context)))
 
-;;; Invariant: native objects must prove prototype ancestry before slot obligations run.
+;;; Invariant: runtime objects must prove prototype ancestry before slot obligations run.
 (define-type (YuanxuObjectContract. @ YuanxuResponsibilityContract.
                                          identity proto)
-  .classify: (cut yuanxu-native-classify identity proto <> <>))
+  .classify: (cut poo-type-classify identity proto <> <>))

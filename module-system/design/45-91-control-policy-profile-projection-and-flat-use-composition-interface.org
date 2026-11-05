@@ -9,7 +9,7 @@
 
 Accepted architecture.
 
-This RFC freezes how the POO-native control-policy algebra in
+This RFC freezes how the POO control-policy algebra in
 [[file:45-90-poo-control-policy-composition-priority-conflict-and-veto-resolution.org][45-90]]
 enters the ordinary Profile composition interface.
 
@@ -22,10 +22,10 @@ This document owns:
 
 - the ordinary user surface for selecting Profiles that contribute control
   policies;
-- the higher-order Profile projection of POO-native policy objects;
+- the higher-order Profile projection of POO policy objects;
 - the distinction between policy presence and runtime authority;
 - the pure collection of policy contributions during Profile composition;
-- the preservation of the owning Profile's POO-native ~imports~ object;
+- the preservation of the owning Profile's POO ~imports~ object;
 - duplicate policy identity admission;
 - the advanced POO extension path; and
 - macro-governance constraints for this interface.
@@ -35,7 +35,7 @@ It does not own:
 - the condition, decision, or capability algebra;
 - policy priority resolution;
 - runtime continuation primitives;
-- native Profile fixed-point evaluation;
+- runtime Profile fixed-point evaluation;
 - package management;
 - a hidden policy registry; or
 - an additional composition language.
@@ -120,7 +120,7 @@ The author may:
 - refine a prepared control Profile; or
 - construct a new higher-order Profile that contributes the policy.
 
-The advanced interface is the native POO interface adopted through
+The advanced interface is the POO interface adopted through
 [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85]].
 It is not a second policy DSL.
 
@@ -227,9 +227,9 @@ $ "profile-result"("project"(p)) = "none" $
 - [X] Profile composition remains pure across planes.
 - [X] Runtime policy evaluation does not recompose Profiles.
 - [X] Policy receipts remain outside the Profile value domain.
-- [X] Projection erasure preserves the Profile and native POO outcome.
+- [X] Projection erasure preserves the Profile and POO outcome.
 - [X] Operand permutation preserves policy collection identity.
-- [X] Policy observation forces no additional native slot.
+- [X] Policy observation forces no additional runtime slot.
 - [X] Implementation admission requires the complete projection closure.
 - [X] A missing ~user-composition~ surface blocks implementation.
 - [X] A missing authority boundary blocks implementation.
@@ -237,7 +237,7 @@ $ "profile-result"("project"(p)) = "none" $
 
 These obligations are checked by
 =YuanxuProof.Modules.Funflow.ProfileProjection=.  They establish only the
-abstract POO-native projection, authority-separation, macro-boundary, and
+abstract POO projection, authority-separation, macro-boundary, and
 conservative-extension laws.  The original executable interface and admission
 checklists remain pending.
 
@@ -267,7 +267,7 @@ flowchart LR
   M -->|"does not inspect policy syntax"| C["Pure compose function"]
   C -->|"profiles strategy composes ordinary Profile operands"| P["Composed higher-order Profile"]
   P -->|"projects immutable policy contributions by stable identity"| S["POO ControlPolicy collection"]
-  P -->|"preserves native domain composition"| N["Native POO demand surface"]
+  P -->|"preserves runtime domain composition"| N["POO demand surface"]
   S -->|"is admitted only at explicit root instantiation"| A["Control-policy admission"]
   A -->|"runtime issues matching authority separately"| R["Policy resolver"]
   N -->|"a safe point emits one ControlCondition"| R
@@ -316,7 +316,7 @@ The Profile composition phase:
 
 1. admits every operand as a Profile or ProfileBundle;
 2. composes the Profile prototypes;
-3. preserves native Profile identity and capability constraints;
+3. preserves runtime Profile identity and capability constraints;
 4. collects pure policy contributions by stable policy identity;
 5. validates duplicate identities;
 6. constructs one immutable policy collection; and
@@ -340,7 +340,7 @@ A Profile cannot grant itself:
 
 Runtime authority is issued and validated at the explicit evaluator boundary
 under the identity and capability algebra in
-[[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89]].
+[[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89]].
 
 A policy whose required capability is unavailable remains visible as an
 inadmissible policy with an actionable receipt.  It must not disappear from the
@@ -371,7 +371,7 @@ A duplicate conflict is not resolved by:
 - last writer wins;
 - Profile operand position;
 - numeric DecisionPriority;
-- native slot precedence that erases a constraint; or
+- runtime slot precedence that erases a constraint; or
 - a macro expansion accident.
 
 DecisionPriority applies later to decision candidates for one observed
@@ -385,7 +385,7 @@ Such a Profile should:
 
 - have one clear semantic purpose;
 - expose a stable Profile identity;
-- contain POO-native policy objects;
+- contain POO policy objects;
 - declare capability requirements without embedding authority;
 - remain pure before root instantiation;
 - be composable as an ordinary Profile operand; and
@@ -410,7 +410,7 @@ The advanced path has four semantic steps:
 
 #+begin_src mermaid
 flowchart TD
-  B["Existing ControlPolicy prototype"] -->|"compose a POO-native evidence or attenuation refinement"| X["Refined policy prototype"]
+  B["Existing ControlPolicy prototype"] -->|"compose a POO evidence or attenuation refinement"| X["Refined policy prototype"]
   X -->|"instantiate through the verified gerbil-poo operation"| O["Immutable ControlPolicy object"]
   O -->|"project through one higher-order Profile"| P["Ordinary Profile operand"]
   P -->|"appears beside all other Profiles"| C["One compose profiles expression"]
@@ -457,7 +457,7 @@ functional composition.  It may not:
 - reinterpret arbitrary keyword blocks;
 - manufacture capabilities;
 - embed runtime conditionals; or
-- duplicate native POO composition.
+- duplicate POO composition.
 
 Detailed macro rules remain governed by
 [[file:44-current-project-programming-style.org][44: current project programming style]].
@@ -465,7 +465,7 @@ Detailed macro rules remain governed by
 * Imports and phases
 
 Policy dependencies follow the owning higher-order Profile through its
-POO-native ~imports~ object.
+POO ~imports~ object.
 
 ~imports~ is a first-class immutable POO object.  It represents a recursive
 module graph rather than one Gerbil import form or a flat list of source module
@@ -539,7 +539,7 @@ Errors must not collapse into:
 - a Scheme stack trace without object identity;
 - a silent missing policy;
 - an arbitrary last-writer result; or
-- a native POO failure fabricated by the control plane.
+- a POO failure fabricated by the control plane.
 
 * Conservative user-surface law
 
@@ -548,8 +548,8 @@ evaluation:
 
 - removing the user-interface projection yields the same composed Profile
   value;
-- erasing control receipts yields the same native POO result or failure;
-- policy observation forces no additional native slot;
+- erasing control receipts yields the same POO result or failure;
+- policy observation forces no additional runtime slot;
 - operand permutation does not change policy collection identity; and
 - no control object becomes a Profile result.
 
@@ -572,7 +572,7 @@ The full conservative-extension obligations remain owned by
 ** Higher-order Profile tests
 
 - [ ] Project one immutable ControlPolicy through a Profile.
-- [ ] Preserve policy identity, prototype lineage, POO-native ~imports~,
+- [ ] Preserve policy identity, prototype lineage, POO ~imports~,
   priority, and
   capability requirements.
 - [ ] Resolve recursive submodule imports by stable identity.
@@ -610,7 +610,7 @@ The full conservative-extension obligations remain owned by
 
 ** Advanced extension tests
 
-- [ ] Extend a ControlPolicy through the verified native POO interface.
+- [ ] Extend a ControlPolicy through the verified POO interface.
 - [ ] Attenuate authority without changing user composition syntax.
 - [ ] Contribute the refined policy through one higher-order Profile.
 - [ ] Prove that the resulting value is an ordinary Profile operand.
@@ -621,7 +621,7 @@ The full conservative-extension obligations remain owned by
 - [ ] Prove that Profile composition remains pure.
 - [ ] Prove that runtime policy evaluation does not recompose Profiles.
 - [ ] Prove that policy receipts do not enter the Profile value domain.
-- [ ] Prove erasure to native POO semantics for allowed completed execution.
+- [ ] Prove erasure to POO semantics for allowed completed execution.
 
 * Admission criteria
 
@@ -640,7 +640,7 @@ Implementation may begin only when:
 - [ ] duplicate policy identity semantics are deterministic;
 - [ ] Profile presence cannot issue runtime authority;
 - [ ] DecisionPriority remains separate from Profile composition;
-- [ ] the advanced interface is the verified native POO interface;
+- [ ] the advanced interface is the verified POO interface;
 - [ ] no executable example invents an unverified ~gerbil-poo~ call form;
 - [ ] no new public policy macro DSL exists;
 - [ ] all Mermaid edges match the implementation receipts; and
@@ -651,6 +651,6 @@ Implementation may begin only when:
 - [[file:44-current-project-programming-style.org][44: current project programming style]]
 - [[file:45-85-poof-proof-adoption-and-agentic-ai-lab-correspondence-obligations.org][45-85: POOF proof adoption and Agentic AI Lab correspondence obligations]]
 - [[file:45-86-poo-conservative-extension-criterion-and-cross-module-obligations.org][45-86: POO conservative-extension criterion]]
-- [[file:45-89-poo-native-control-condition-decision-and-capability-algebra.org][45-89: POO-native control object algebra]]
+- [[file:45-89-poo-control-condition-decision-and-capability-algebra.org][45-89: POO control object algebra]]
 - [[file:45-90-poo-control-policy-composition-priority-conflict-and-veto-resolution.org][45-90: control-policy resolution]]
 - [[file:45-93-module-profile-selection-bundle-and-imports-closure-algebra.org][45-93: Module selection, ProfileBundle, and imports closure algebra]]

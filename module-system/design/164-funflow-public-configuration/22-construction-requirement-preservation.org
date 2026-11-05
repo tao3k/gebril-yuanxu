@@ -1,22 +1,22 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Automatic Requirement Preservation at Native Object Construction
+#+title: Automatic Requirement Preservation at Runtime Object Construction
 #+date: [2026-10-15]
-#+property: STATUS proposed-native-construction-boundary-with-proved-reference-laws-no-module-adapter-no-loader
+#+property: STATUS proposed-runtime-construction-boundary-with-proved-reference-laws-no-module-adapter-no-loader
 
 * Decision: preserve construction provenance, not extra semantic parents
 
 Follow-up source audit: [[file:23-construction-entrypoint-audit.org][module 23]] supersedes the provisional post-allocation
 record-operands! design below with a single constructor-owned protocol. It adds
 the .cc/instance/Lens source-loss boundary, data-reconstruction exclusions,
-selected admission closure and the precise native cache/mutation limitations.
+selected admission closure and the precise runtime cache/mutation limitations.
 The code below remains the earlier proposal, not the current implementation or
 the preferred finalization design. The reference proofs remain applicable.
 
-Users continue to write native .def, multiple parents, .+ and =>.+. They do not
+Users continue to write .def, multiple parents, .+ and =>.+. They do not
 maintain a mandatory RHS Contract list. Automatic collection requires a NEW
-native construction integration; current MOP reflection alone cannot recover
+runtime construction integration; current MOP reflection alone cannot recover
 an operand whose identity has already been discarded.
 
 There are two separate relations:
@@ -25,14 +25,14 @@ There are two separate relations:
 - Private construction provenance owns non-droppable admission requirements.
 
 Do not insert the RHS object into object-supers to repair provenance. That would
-change native precedence and slot application. Do not encode requirements in a
+change runtime precedence and slot application. Do not encode requirements in a
 normal overridable slot: a downstream assignment could erase the obligation.
 Construction provenance is kernel-maintained metadata, not a new public DSL or
 a second configuration object. Modules, Profiles and Scenarios remain POO values.
 
 * Source finding and existing boundaries
 
-This review uses the same pinned native source as module 21:
+This review uses the same pinned runtime source as module 21:
 099b381588360a8a49fd772f666a1a00351366f5. The isolated source is
 /tmp/agenticailab-dfs-admit-20261015/clan/poo/object.ss. Its .+ definition at lines
 239--241 is:
@@ -45,18 +45,18 @@ This review uses the same pinned native source as module 21:
 #+end_src
 
 The same file's object/slot-spec rules lower =>.+ to => .+. .def lowers through
-.o and object construction. The native object :init! initializes supers, slot
+.o and object construction. The runtime object :init! initializes supers, slot
 storage and lazy caches. Neither it nor the reviewed MOP provides a complete
 operand-provenance callback for .+. A generic method declaration cannot intercept
 this ordinary function automatically. A lexical replacement of .+ in a user
 module also cannot capture calls already bound inside another module's macros.
 
 Therefore the following Scheme is a kernel-change DESIGN, not executable current
-API and not a claim that the existing 61 native assertions exercised a new hook.
+API and not a claim that the existing 61 runtime assertions exercised a new hook.
 
 * Minimal private construction design
 
-Each native object receives one non-reused construction token and a private,
+Each runtime object receives one non-reused construction token and a private,
 immutable provenance node. This private positional record deliberately is NOT
 a POO object: creating metadata must not recursively invoke object construction.
 The proposed object-construction accessor is private kernel storage, not .get.
@@ -73,7 +73,7 @@ The proposed object-construction accessor is private kernel storage, not .get.
         (map object-construction operands))))
   result)
 
-;; Proposed replacement BODY at the existing native .+ owner.
+;; Proposed replacement BODY at the existing runtime .+ owner.
 ;; make-object initializes its fresh node before this internal finalization.
 (def (.+ base override)
   (record-operands!
@@ -86,7 +86,7 @@ The proposed object-construction accessor is private kernel storage, not .get.
 Constructor requirements:
 
 1. :init! creates a fresh token and a node containing the provenance of ALL
-   flattened native parents. Fresh local objects with no parents get an empty
+   flattened runtime parents. Fresh local objects with no parents get an empty
    parent list, not an unknown marker.
 2. .+ replaces that provisional node with the SAME fresh token and both actual
    operand nodes, before returning/publishing the object. Both operand histories
@@ -99,7 +99,7 @@ Constructor requirements:
    Token allocation, authenticity and retention policy are kernel obligations.
 
 No extra raw self/super compute hook appears in ordinary configuration. Existing
-=>.+ continues to reach the native .+ owner when its slot is demanded. Its
+=>.+ continues to reach the runtime .+ owner when its slot is demanded. Its
 provenance is captured THEN, rather than by eagerly forcing the declaration.
 
 * Collect requirements against a sealed publication view
@@ -159,7 +159,7 @@ explicit authorized contract-consequence mechanism, not a slot assignment.
 
 #+begin_src scheme
 ;; Upstream Root/RightProvider carry associations once through publication.
-;; These declarations remain entirely native for the user.
+;; These declarations remain entirely runtime for the user.
 (.def (Release @ Root)
   build: =>.+ (.o value: 'release-build)
   smoke: (.o value: 'smoke)
@@ -171,7 +171,7 @@ explicit authorized contract-consequence mechanism, not a slot assignment.
 #+end_src
 
 The construction trace of Final retains Release, Root and RightProvider even
-though native .+ does not retain RightProvider itself in object-supers. It also
+though runtime .+ does not retain RightProvider itself in object-supers. It also
 retains requirements introduced on a previous RHS of RightProvider. All these
 requirements are checked against Final, not against formerly admitted parents.
 
@@ -226,11 +226,11 @@ theorem accepted_right_receipt (index : Nat → List Nat)
 
 Unlike the previous explicit rhs list, requirements index right recursively
 includes the ENTIRE modeled RHS history. Omission or a failed receipt contradicts
-successful admission by existing composition_accepts_iff. Native multi-parent
+successful admission by existing composition_accepts_iff. Runtime multi-parent
 construction requires a faithful fold of the metadata parent list into this
 reference trace; this correspondence is not proved here. Trace list order is
 not execution order. The reference list permits duplicates; deduplication must
-preserve membership and canonical identity in a future native correspondence.
+preserve membership and canonical identity in a future runtime correspondence.
 
 Validation: lake env lean on the new file passes, and the existing
 lake build YuanxuProof.ModuleSystem.Schema.Association target passes (46 jobs) with this file
@@ -238,7 +238,7 @@ included as a root. The two preservation lemmas
 use no axioms; accepted_right_receipt uses only the existing ordinary Lean
 axioms propext, Classical.choice and Quot.sound. No sorry or custom axiom was
 introduced. These three new reference laws do NOT extend module 21's historical
-native receipt or establish native hook coverage.
+runtime receipt or establish runtime hook coverage.
 
 * Remaining integration premises and refusal boundaries
 
@@ -256,5 +256,5 @@ native receipt or establish native hook coverage.
 
 The kernel construction integration, metadata protection/storage, publication
 index, selected-candidate closure adapter, mutation/version enforcement and
-native-to-trace correspondence are all PENDING. No module adapter, Loader,
+runtime-to-trace correspondence are all PENDING. No module adapter, Loader,
 runtime object kernel or dependency pin is changed by this design.

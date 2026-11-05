@@ -82,7 +82,7 @@
         (check (yuanxu-domain-case-instance-mix-count case-value) => 0)
         (check (yuanxu-domain-case-instance-overlay-count case-value) => 1)))
 
-    (yuanxu-test-case "computed POO slots retain native mix semantics"
+    (yuanxu-test-case "computed POO slots retain runtime mix semantics"
       (let* ((case-value
               (.ref (close-base (yuanxu-domain-case-cache)) 'domain-case))
              (computed-local-role

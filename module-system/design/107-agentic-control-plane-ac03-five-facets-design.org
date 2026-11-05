@@ -21,7 +21,7 @@ compatibility parser, missing-facet fallback, or last-writer-wins merge.
 
 * Typed facet contract
 
-Every facet is a POO-native object containing:
+Every facet is a POO object containing:
 
 | Slot | Meaning |
 |------+---------|

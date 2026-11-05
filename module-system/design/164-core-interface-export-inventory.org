@@ -9,7 +9,7 @@ Baseline Core SHA: =e85fd45303b208b23e5957fd316e7004994109a4=.
 D = default Functional; E = Extend; R = explicit runtime/host; M = controlled meta; I = internal.
 Classification is an API placement decision, not a blanket proof of purity.
 D means eligibility behind a Functional facade, not a requirement for root users to import Core leaves, construct descriptors or use raw slot readers.
-The ordinary product entry uses module selection and keyword settings; native construction/inheritance belong in Extend documentation.
+The ordinary product entry uses module selection and keyword settings; runtime construction/inheritance belong in Extend documentation.
 D operations require admitted values and the owning behavior contract; arbitrary POO callbacks can still have effects.
 Repeated facade/leaf exports are retained as occurrences. =(export #t)= is expanded to current top-level def bindings.
 Import reexports link to their owning file sections; tests/build/manifest declarations are excluded.
@@ -61,27 +61,27 @@ Source: [[file:../../graph/interface.ss][core/graph/interface.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =yuanxu-graph-operation-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-contribution-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-override= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-prepend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-node-extend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-node-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-contribution?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-contribution-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-contribution-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-apply-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-apply-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-resolve= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result-root= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result-changed-passes= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result-applied?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-kind= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-contribution-kind= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result-kind= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-override= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-append= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-prepend= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-remove= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-node-extend= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-node-remove= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-contribution= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-contribution?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-contribution-target= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-contribution-operations= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-apply-contribution= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-apply-contributions= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-resolve= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result-root= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result-changed-passes= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result-applied?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
 
 * core/graph/rooted.ss
 
@@ -89,14 +89,14 @@ Source: [[file:../../graph/rooted.ss][core/graph/rooted.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =yuanxu-graph-rooted= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-root-id= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-root-payload= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-root-children= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-root-ref= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-root-replace= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-root-transform= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-root-snapshot= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-rooted= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-root-id= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-root-payload= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-root-children= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-root-ref= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-root-replace= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-root-transform= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-root-snapshot= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
 
 * core/graph/apply.ss
 
@@ -104,15 +104,15 @@ Source: [[file:../../graph/apply.ss][core/graph/apply.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =yuanxu-graph-apply-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-local-operations?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-reverse-onto= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-flush-coalesced= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-coalesce-local-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-apply-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-apply-contributions/coalesced= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-apply-contributions= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-resolve= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-apply-operations= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-local-operations?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-reverse-onto= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-flush-coalesced= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-coalesce-local-contributions= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-apply-contribution= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-apply-contributions/coalesced= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-apply-contributions= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-resolve= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
 
 * core/graph/contribution.ss
 
@@ -120,35 +120,35 @@ Source: [[file:../../graph/contribution.ss][core/graph/contribution.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =yuanxu-graph-operation-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-contribution-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result-kind= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-kind?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-operation-action= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-operation-slot= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-operation-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-operation-node= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-operation-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-contribution= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-contribution?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-contribution-target= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-contribution-operations= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result-root= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result-changed-passes= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-result-applied?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-member?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-value-index= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-append-distinct= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-append-distinct/indexed= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-remove-elements= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-list-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-entry-key= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-entry-value= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-entry= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-alist-set= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-alist-ref/default= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-kind= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-contribution-kind= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result-kind= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-kind?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-operation-action= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-operation-slot= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-operation-value= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-operation-node= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-operation-target= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-contribution= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-contribution?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-contribution-target= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-contribution-operations= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result-root= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result-changed-passes= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-result-applied?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-member?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-value-index= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-append-distinct= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-append-distinct/indexed= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-remove-elements= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-list-value= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-entry-key= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-entry-value= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-entry= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-alist-set= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-alist-ref/default= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
 
 * core/graph/payload-operations.ss
 
@@ -156,15 +156,15 @@ Source: [[file:../../graph/payload-operations.ss][core/graph/payload-operations.
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =yuanxu-graph-slots-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-node-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-children-merge-one= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-children-merge= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-children-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-apply-slot-list-op= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-flush-node-extends= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-flush-slot-overrides= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-flush-pending= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-slots-merge= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-node-merge= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-children-merge-one= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-children-merge= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-children-remove= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-apply-slot-list-op= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-flush-node-extends= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-flush-slot-overrides= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-flush-pending= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
 
 * core/graph/operation.ss
 
@@ -172,26 +172,26 @@ Source: [[file:../../graph/operation.ss][core/graph/operation.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =yuanxu-graph-operation-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-override-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-append-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-prepend-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-remove-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-node-extend-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-node-remove-prototype= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-override= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-prepend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-node-extend= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-node-remove= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-apply-operation= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-operation-state= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-local-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-node-extend-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-slot-append-operation?= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-flush-slot-append= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
-| =yuanxu-graph-coalesce-slot-appends= | E | Shared Graph mechanism; ordinary configuration uses native POO slot algebra. |
+| =yuanxu-graph-operation-prototype= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-override-prototype= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-append-prototype= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-prepend-prototype= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-remove-prototype= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-node-extend-prototype= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-node-remove-prototype= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-override= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-append= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-prepend= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-remove= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-node-extend= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-node-remove= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-apply-operation= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-operation-state= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-local-operation?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-node-extend-operation?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-slot-append-operation?= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-flush-slot-append= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
+| =yuanxu-graph-coalesce-slot-appends= | E | Shared Graph mechanism; ordinary configuration uses POO slot algebra. |
 
 * core/module-system/catalog/objects.ss
 
@@ -199,9 +199,9 @@ Source: [[file:../catalog/objects.ss][core/module-system/catalog/objects.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =ModuleSourceBinding= | D/E | Native Record; construct with make-instance, inspect slots, refine the Type. |
+| =ModuleSourceBinding= | D/E | Runtime Record; construct with make-instance, inspect slots, refine the Type. |
 | =yuanxu-module-catalog-entry->alist= | D | Inert immutable construction, identity lookup or inspection; no source load. |
-| =ModuleCatalog= | D/E | Native Record of ordered entries; ordinary slot extension retains inherited fields. |
+| =ModuleCatalog= | D/E | Runtime Record of ordered entries; ordinary slot extension retains inherited fields. |
 | =yuanxu-module-catalog-source-refs= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-catalog-modules= | D | Inert immutable construction, identity lookup or inspection; no source load. |
 | =yuanxu-module-catalog-add= | D | Inert immutable construction, identity lookup or inspection; no source load. |
@@ -275,8 +275,8 @@ Source: [[file:../loader/types.ss][core/module-system/loader/types.ss]].
 |-----------------+---------+------------------|
 | =ModuleLoaderBackend= | D/E | Symbol identity/kind, checked Function and typed annotations. |
 | =LoaderMetadata= | D/E | Symbol-keyed scalar annotations; no arbitrary values. |
-| =LazyLoadPlan= | D/E | Native data Record; opaque Backend values are not recursively Function-normalized. |
-| =ModuleLoadReceipt= | D/E | Native defaults, scalar fields and message Type checks; not source authentication. |
+| =LazyLoadPlan= | D/E | Runtime data Record; opaque Backend values are not recursively Function-normalized. |
+| =ModuleLoadReceipt= | D/E | Runtime defaults, scalar fields and message Type checks; not source authentication. |
 
 * core/module-system/loader/objects.ss
 
@@ -284,10 +284,10 @@ Source: [[file:../loader/objects.ss][core/module-system/loader/objects.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =ModuleSourceBinding= | D/E | Same native Record exported by source/types and Catalog; construction never invokes a Loader. |
-| =ModuleLoaderBackend= | D/E | Native Record with checked Function; construction/admission do not invoke its callback. |
-| =LazyLoadPlan= | D/E | Native Record of source/backends/receipt; construction does not invoke backend load. |
-| =ModuleLoadReceipt= | D/E | Native Record defaults and field validation; source authentication remains publication-owned. |
+| =ModuleSourceBinding= | D/E | Same runtime Record exported by source/types and Catalog; construction never invokes a Loader. |
+| =ModuleLoaderBackend= | D/E | Runtime Record with checked Function; construction/admission do not invoke its callback. |
+| =LazyLoadPlan= | D/E | Runtime Record of source/backends/receipt; construction does not invoke backend load. |
+| =ModuleLoadReceipt= | D/E | Runtime Record defaults and field validation; source authentication remains publication-owned. |
 | =yuanxu-module-static-loader= | E | Loader Backend/plan/receipt authoring. |
 | =yuanxu-module-loader-backend-supports?= | D | Read existing plan/receipt/Backend descriptor; do not invoke returned callbacks as data. |
 | =yuanxu-lazy-load-source-receipt= | D | Constructs a deferred receipt without invoking a Loader. |
@@ -336,8 +336,8 @@ Source: [[file:../projection/option-objects.ss][core/module-system/projection/op
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =ModuleOptionSchema= | E | Native Record containing the original effective Slot and module identity. |
-| =yuanxu-module-option-schema-contract= | D | Project a native Record over the selected effective Slot. |
+| =ModuleOptionSchema= | E | Runtime Record containing the original effective Slot and module identity. |
+| =yuanxu-module-option-schema-contract= | D | Project a runtime Record over the selected effective Slot. |
 | =yuanxu-module-option-schema-rule= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-schema-value= | D | Inspect or validate supplied Interface-bound option values. |
 | =yuanxu-module-option-schema-metadata= | D | Inspect or validate supplied Interface-bound option values. |
@@ -366,19 +366,19 @@ Source: [[file:../schema/interface.ss][core/module-system/schema/interface.ss]].
 | =yuanxu-module-transformer-contract-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
 | =yuanxu-module-field-resolution-result-kind= | E | Low-level field/object/transformer authoring and explicit resolution. |
 | =yuanxu-module-objects-root-identity= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =YuanxuModuleAnyType= | D | Use supplied native Types on admitted values. |
-| =YuanxuModuleListType= | D | Use supplied native Types on admitted values. |
-| =YuanxuModuleMapType= | D | Use supplied native Types on admitted values. |
-| =YuanxuModuleAlistType= | D | Use supplied native Types on admitted values. |
-| =YuanxuModuleSymbolType= | D | Use supplied native Types on admitted values. |
-| =YuanxuModuleStringType= | D | Use supplied native Types on admitted values. |
-| =YuanxuModuleBooleanType= | D | Use supplied native Types on admitted values. |
-| =YuanxuModuleObjectType= | D | Use supplied native Types on admitted values. |
-| =YuanxuModuleNodeType= | D | Use supplied native Types on admitted values. |
+| =YuanxuModuleAnyType= | D | Use supplied Types on admitted values. |
+| =YuanxuModuleListType= | D | Use supplied Types on admitted values. |
+| =YuanxuModuleMapType= | D | Use supplied Types on admitted values. |
+| =YuanxuModuleAlistType= | D | Use supplied Types on admitted values. |
+| =YuanxuModuleSymbolType= | D | Use supplied Types on admitted values. |
+| =YuanxuModuleStringType= | D | Use supplied Types on admitted values. |
+| =YuanxuModuleBooleanType= | D | Use supplied Types on admitted values. |
+| =YuanxuModuleObjectType= | D | Use supplied Types on admitted values. |
+| =YuanxuModuleNodeType= | D | Use supplied Types on admitted values. |
 | =yuanxu-module-list-type= | E | Low-level field/object/transformer authoring and explicit resolution. |
-| =yuanxu-module-value-type?= | D | Use supplied native Types on admitted values. |
-| =yuanxu-module-value-type-kind= | D | Use supplied native Types on admitted values. |
-| =yuanxu-module-value-type-accepts?= | D | Use supplied native Types on admitted values. |
+| =yuanxu-module-value-type?= | D | Use supplied Types on admitted values. |
+| =yuanxu-module-value-type-kind= | D | Use supplied Types on admitted values. |
+| =yuanxu-module-value-type-accepts?= | D | Use supplied Types on admitted values. |
 | =yuanxu-module-field-contract= | E | Low-level field/object/transformer authoring and explicit resolution. |
 | =yuanxu-module-field-contract?= | E | Low-level field/object/transformer authoring and explicit resolution. |
 | =yuanxu-module-field-contract-identity= | E | Low-level field/object/transformer authoring and explicit resolution. |
@@ -447,23 +447,23 @@ Source: [[file:../schema/relations.ss][core/module-system/schema/relations.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =SemanticSymbol= | E | Publish native Module identities/import/profile/capability relations. |
-| =ModuleIdentityContract= | E | Publish native Module identities/import/profile/capability relations. |
-| =ModuleImportsContract= | E | Publish native Module identities/import/profile/capability relations. |
-| =ModuleProfilesContract= | E | Publish native Module identities/import/profile/capability relations. |
-| =ModuleCapabilitiesContract= | E | Publish native Module identities/import/profile/capability relations. |
-| =ImportContributionContract= | E | Publish native Module identities/import/profile/capability relations. |
-| =SemanticImports.= | E | Publish native Module identities/import/profile/capability relations. |
-| =SemanticProfiles.= | E | Publish native Module identities/import/profile/capability relations. |
-| =SemanticCapabilities.= | E | Publish native Module identities/import/profile/capability relations. |
-| =ModuleIdentity.= | E | Publish native Module identities/import/profile/capability relations. |
-| =ImportContribution.= | E | Publish native Module identities/import/profile/capability relations. |
-| =yuanxu-semantic-identity= | E | Publish native Module identities/import/profile/capability relations. |
-| =yuanxu-empty-imports= | E | Publish native Module identities/import/profile/capability relations. |
-| =yuanxu-empty-profiles= | E | Publish native Module identities/import/profile/capability relations. |
-| =yuanxu-empty-capabilities= | E | Publish native Module identities/import/profile/capability relations. |
-| =yuanxu-import-contribution= | E | Publish native Module identities/import/profile/capability relations. |
-| =yuanxu-module-imports= | E | Publish native Module identities/import/profile/capability relations. |
+| =SemanticSymbol= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =ModuleIdentityContract= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =ModuleImportsContract= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =ModuleProfilesContract= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =ModuleCapabilitiesContract= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =ImportContributionContract= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =SemanticImports.= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =SemanticProfiles.= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =SemanticCapabilities.= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =ModuleIdentity.= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =ImportContribution.= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =yuanxu-semantic-identity= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =yuanxu-empty-imports= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =yuanxu-empty-profiles= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =yuanxu-empty-capabilities= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =yuanxu-import-contribution= | E | Publish runtime Module identities/import/profile/capability relations. |
+| =yuanxu-module-imports= | E | Publish runtime Module identities/import/profile/capability relations. |
 
 * core/module-system/schema/slot-contracts.ss
 
@@ -682,7 +682,7 @@ Source: [[file:../source/types.ss][core/module-system/source/types.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =ModuleSourceBinding= | D/E | One source/Module pair Type shared by static Loader and ordered Catalog; native construction and slot access. |
+| =ModuleSourceBinding= | D/E | One source/Module pair Type shared by static Loader and ordered Catalog; runtime construction and slot access. |
 
 * core/module-system/source/objects.ss
 
@@ -728,10 +728,9 @@ Source: [[file:../../object-family/indexed.ss][core/object-family/indexed.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =poo-index-slots= | I | Indexed layout/lens/projection support; use domain accessors. |
-| =poo-indexed-family= | E | Maintainer family authoring lowers to native POO values. |
+| =poo-indexed-family= | E | Maintainer family authoring lowers to POO values. |
 | =poo-indexed-family-slot-index= | I | Indexed layout/lens/projection support; use domain accessors. |
-| =poo-indexed-family-object= | E | Maintainer family authoring lowers to native POO values. |
+| =poo-indexed-family-object= | E | Maintainer family authoring lowers to POO values. |
 | =poo-indexed-family-ref= | I | Indexed layout/lens/projection support; use domain accessors. |
 | =poo-indexed-family-named-slot-lens= | I | Indexed layout/lens/projection support; use domain accessors. |
 | =poo-indexed-family-slot-lens= | I | Indexed layout/lens/projection support; use domain accessors. |
@@ -754,7 +753,7 @@ Source: [[file:../../object-family/syntax.ss][core/object-family/syntax.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
-| =defpoo-object-family= | E | Maintainer family authoring lowers to native POO values. |
+| =defpoo-object-family= | E | Maintainer family authoring lowers to POO values. |
 
 * core/observability/debug.ss
 

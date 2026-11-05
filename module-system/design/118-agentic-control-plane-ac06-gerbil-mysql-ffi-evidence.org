@@ -19,12 +19,12 @@ Recorded from the local =.data/gerbil= and =.data/gerbil-mysql= checkouts on
 
 * Findings
 
-1. =MYSQL*= has a native release function, while =MYSQL_STMT*= is terminated by
+1. =MYSQL*= has a runtime release function, while =MYSQL_STMT*= is terminated by
    =mysql_stmt_close=.
 2. =MYSQL_RES*= and =MYSQL_FIELD*= are borrowed together and are terminated by
    =mysql_free_result= rather than individually freed.
 3. Public query and metadata paths close =MYSQL_RES*= in =finally= blocks.
-4. =MYSQL_BIND*= and primitive pointers use explicit native allocation/release.
+4. =MYSQL_BIND*= and primitive pointers use explicit runtime allocation/release.
 5. Gerbil =define-c-struct= distinguishes owning pointers, borrowed pointers,
    shallow pointers, arrays, string-member cleanup, and custom release.
 6. =char-string= paths rely on string conversion semantics and are unsuitable
@@ -39,7 +39,7 @@ Recorded from the local =.data/gerbil= and =.data/gerbil-mysql= checkouts on
 - One owning arena/resource handle releases the region; item slices are never
   individually freed.
 - Hot headers use offsets and lengths, never per-item pointers.
-- Production payload bytes remain native and avoid =char-string= conversion.
+- Production payload bytes remain runtime and avoid =char-string= conversion.
 - Scheme/Gerbil foreign objects are not stable public zero-copy buffers.
 - Authorization-covered arena bytes remain immutable until terminal
   acknowledgement.

@@ -29,11 +29,11 @@ The evidence supports two separate conclusions:
 
 - Barrier merging is real and useful, but it is a secondary gain.
 - The dominant cost remains expansion and import serialization followed by a
-  delayed flush of native compilation jobs.
+  delayed flush of runtime compilation jobs.
 
 The observed core increase from 1.733 to 1.989 is too small to indicate broad
 phase overlap.  Merging barriers shortens coordinator overhead, while the main
-pipeline still defers most native work until expansion has populated the
+pipeline still defers most runtime work until expansion has populated the
 pending queue.  The 3.25% streaming experiment confirms that ad hoc polling is
 not the missing order-of-magnitude optimization.  A single large session also
 raises memory pressure.  The local controller therefore bounds memory and

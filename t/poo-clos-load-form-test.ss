@@ -46,7 +46,7 @@
          (eq? (.ref error 'code) code))))
 
 (def poo-clos-load-form-test
-  (test-suite "POO-native CLOS two-phase load forms"
+  (test-suite "POO CLOS two-phase load forms"
     (yuanxu-test-case "saving slots allocates without initforms and closes a self cycle"
       (set! load-form-initform-count 0)
       (let (source (poo-clos-make-instance LoadFormEntity))

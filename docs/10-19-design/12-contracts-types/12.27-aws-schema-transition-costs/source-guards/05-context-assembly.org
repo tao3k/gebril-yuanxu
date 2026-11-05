@@ -13,7 +13,7 @@ coverage, Contract observations, prepared sources and the selected source epoch.
 
 Previously the base Context also ran that full procedure before returning to
 the binder. Between these two checks the platform only constructed its own
-Context object and retrieved its native obligation closure. The base Context
+Context object and retrieved its runtime obligation closure. The base Context
 has no user-supplied inheritance protocol and does not escape this assembly.
 No package operation, domain obligation or author getter lies in this gap.
 
@@ -30,7 +30,7 @@ Ordinary Context construction still checks before returning.
 
 ;; The existing binder consumes it and checks the complete derived Context.
 (def base (.get publication context))
-;; Construct native Context fields and obligation closures.
+;; Construct runtime Context fields and obligation closures.
 (def platform-obligations (.get context .contract-obligations))
 (current! context)                 ; includes base.admit-current
 (.cc publication context: context)
@@ -56,7 +56,7 @@ Lazy or effectful Schema getters still run outside the final check's read window
 - Managed artifact gates in the working checkout remain in place. No read
   window is extended through restoration, imports or package callbacks.
 
-* Native controls
+* Runtime controls
 
 The two assembly cases in
 [[file:../../../../../t/admission-publication-test.ss][admission-publication-test.ss]] use the real selected Graph,
@@ -127,7 +127,7 @@ cold Schema metadata; a warm-copy shortcut was therefore inapplicable. A
 cached-empty-request Graph guard candidate also left the AWS physical work
 unchanged and was removed. Neither diagnostic nor empty-request candidate is
 part of the retained implementation. The qualified change instead removes a
-specific intermediate check already subsumed by the enclosing native producer.
+specific intermediate check already subsumed by the enclosing runtime producer.
 
 Earlier diagnostic attempts failed on an invalid cached-slot fallback thunk
 and on the existing observation category bound. A first synthetic fixture also

@@ -7,7 +7,7 @@ open LeanPoo.Functional
 
 /-! `admission/contributions.ss:coverage!`: exact row identities, selected
 record/source/publication, owner/key, generation, path and resolved payload.
-References are native object identities, not equal-looking content/digests. -/
+References are runtime object identities, not equal-looking content/digests. -/
 structure Origin where
   record : Nat
   source : Nat

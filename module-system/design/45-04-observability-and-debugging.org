@@ -71,7 +71,7 @@ does not discover state by recursively realizing the object graph.
 
 * Bootstrap diagnostics
 
-Before the POO capability is ready, a bounded Gerbil-native buffer retains the
+Before the POO capability is ready, a bounded Gerbil-runtime buffer retains the
 fixed event schema.  After activation, events are projected into the existing
 Agentic AI Lab observability boundary.
 

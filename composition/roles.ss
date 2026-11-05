@@ -2,8 +2,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Shared native POO composition and constant-slot overlay algorithms.
-;;; Dynamic/self/super slots remain on the native .mix path. No product catalog.
+;;; Shared POO composition and constant-slot overlay algorithms.
+;;; Dynamic/self/super slots remain on the runtime .mix path. No product catalog.
 (import (only-in :clan/poo/object .o .@ .ref .mix .slot? object?
                  $constant-slot-spec object<-fun .all-slots object-slots
                  object-supers make-object $constant-slot-spec?))

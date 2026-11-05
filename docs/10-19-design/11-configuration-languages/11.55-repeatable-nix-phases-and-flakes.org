@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 11.55 Config Languages 54: Repeatable Nix Phase Controls and Flake Sources
 #+property: DOCUMENT_ID 11.55
-#+property: STATUS implemented-local-native-no-loader
+#+property: STATUS implemented-local-runtime-no-loader
 
 * Purpose and measurement correction
 
@@ -13,13 +13,13 @@ connect the product Loader.
 
 The single-run chapter 53 counter had an incomplete boundary: resolving the
 published OpenTofu scope occurred outside the timed build. That scope captured
-=.get publication artifact= on the base publication; native derivation gave the
+=.get publication artifact= on the base publication; runtime derivation gave the
 result object a different receiver-local cache. The expanded counter detected
 one additional instantiation and realization while resolving that scope.
 The old structured receipt is retained as history, not rewritten as a complete
 end-to-end process count.
 
-The repair uses native lexical slots on the FINAL derived receiver:
+The repair uses runtime lexical slots on the FINAL derived receiver:
 
 #+begin_src scheme
 (.+ publication
@@ -37,18 +37,18 @@ receiver. A positive observation must count scope resolution too. A future
 change that reinstates the base-publication reference must fail the phase
 process budgets; it must not be hidden by moving scope resolution after timing.
 
-* Two native Source prototypes
+* Two runtime Source prototypes
 
 Update: [[file:11.56-configuration-selected-flake-builds.org][chapter 55]] implements the automatic OpenTofu selected-graph
-FlakeSource adapter and string arguments through native =--apply=. The argument
+FlakeSource adapter and string arguments through runtime =--apply=. The argument
 restriction and expression-only adapter boundary below describe the earlier
 qualification, not the current implementation. Historical receipts are retained.
-Chapter 55 also corrects the lock flags: native Nix 2.34 requires
+Chapter 55 also corrects the lock flags: runtime Nix 2.34 requires
 =--no-update-lock-file= alone to reject in-memory lock changes; adding
 =--no-write-lock-file= weakened that rejection in the measured environment.
 
 =NixSource.= owns an expression plus string arguments; =NixFlakeSource.= inherits
-its native preparation/realization/cache protocol and specializes instantiation
+its runtime preparation/realization/cache protocol and specializes instantiation
 and serialized guard production. There is no mode switch in the Core graph and
 no replacement scheduler. The declarative Nix Module publishes both through
 =types.Source / types.FlakeSource= and =prototypes.Source /
@@ -62,7 +62,7 @@ prototypes.FlakeSource=. Source prototypes inherit the effective Module config.
 (def publication (.call ProviderArtifacts .build check-current!))
 #+end_src
 
-The native argv path evaluates one selected derivation:
+The runtime argv path evaluates one selected derivation:
 
 #+begin_example
 nix --extra-experimental-features 'nix-command flakes' eval --raw \
@@ -75,14 +75,14 @@ Flake output selection is not =--argstr=. The FlakeSource Contract rejects
 nonempty inherited arguments, embedded =#= fragments in the reference, and
 unsupported attribute-path syntax. The present attribute surface is an explicit
 unquoted dotted name; quoted attributes and multi-output installables are not
-claimed. CLI flags are owned by the native function, not interpolated into a
+claimed. CLI flags are owned by the runtime function, not interpolated into a
 shell command. Runtime evaluation neither writes nor updates a lock, and does
 not enable impure evaluation. Explicit package setup creates/updates the lock.
-This follows the native [[https://nix.dev/manual/nix/2.32/command-ref/new-cli/nix3-eval][Nix eval and lock options]], not a new config DSL.
+This follows the runtime [[https://nix.dev/manual/nix/2.32/command-ref/new-cli/nix3-eval][Nix eval and lock options]], not a new config DSL.
 
 Both prototypes return a candidate phase from =.prepare=. Core can materialize
 its entry before realization and final admission. Standalone =.build= retains an
-eager checked publication boundary. A native =.guard-form= method owns replay
+eager checked publication boundary. A runtime =.guard-form= method owns replay
 serialization for each Source prototype. Runtime and generated guards both
 perform a new instantiation when independently checking currentness; they do not
 reuse the initial derivation as evidence that dependencies are unchanged.
@@ -102,9 +102,9 @@ just test-opentofu-nix-rounds /private/tmp/nix-rounds /nix/store/REAL-opentofu-a
 #+end_src
 
 Output directories must be new; failures and partial runs are retained.
-=t/qualification/opentofu/opentofu-rounds.ss= uses the native POO declarations published by
+=t/qualification/opentofu/opentofu-rounds.ss= uses the POO declarations published by
 =ops/interface.ss= through the Core Loader and bounded use-module to orchestrate serial Just recipes and compute statistics.
-The former Python coordinator is removed. Native Scheme owns process/type budgets, configuration
+The former Python coordinator is removed. Runtime Scheme owns process/type budgets, configuration
 admission, field paths, source rejection and cache-identity assertions. Every
 round launches the existing heap-fenced =just test-file= entry in a fresh Gerbil
 process, retaining its timeout. No compatibility runtime is introduced.
@@ -159,7 +159,7 @@ Each flake round checks the same two effective resource configurations against
 real generated Provider Contracts, parent identity and namespace isolation,
 no implicit lock mutation, and rejection after an indirectly imported Nix file
 changes the selected derivation. The serialized flake guard is executed through
-the native expander too. Adding a previously unlocked input must fail; a failed
+the runtime expander too. Adding a previously unlocked input must fail; a failed
 evaluation must leave the lock bytes unchanged. Merely editing a relative input
 inside its parent tree need not require a lock rewrite, so that is not used as a
 false lock-failure expectation.
@@ -167,7 +167,7 @@ false lock-failure expectation.
 * Retained performance failure and scope of claims
 
 The first pure-flake fixture used all of Nixpkgs as a local =path:= input. It
-exceeded the existing native Case duration budget; a measured build alone took
+exceeded the existing runtime Case duration budget; a measured build alone took
 about 32 seconds. That failed route is retained, not converted to a pass by
 increasing a timeout or adding =--impure=. The final isolated publication control
 locks only the small tools required to link already-produced Schema artifacts.
@@ -185,7 +185,7 @@ prove arbitrary macro/IO dependency closure, or qualify a thousand-Provider flee
 
 The final uninterrupted serial group completed five expression rounds and five
 flake rounds: 300 expression assertions and 160 flake assertions. Four additional
-native phase/publication/configuration/build-graph regression gates passed.
+runtime phase/publication/configuration/build-graph regression gates passed.
 Source hashes stayed unchanged throughout the group. Raw logs and partial runs
 remain local; =t/fixtures/opentofu/nix-rounds-control.json= contains structured
 samples, hashes, provenance and acceptance boundaries.

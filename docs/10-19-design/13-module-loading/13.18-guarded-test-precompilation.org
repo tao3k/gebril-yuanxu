@@ -1,17 +1,28 @@
 #+title: 13.18 Guarded Test Precompilation and Harness Execution
 #+language: en
 #+date: [2026-10-22]
-#+property: STATUS implemented-focused-integration
+#+property: STATUS superseded
+
+* Current boundary
+
+The runtime precompilation/=.run= facade described below is retired. Ordinary
+=t/= inputs go directly to the installed Gerbil test tool; it owns directory
+and Suite discovery. =tests.compile=, =tests.run= and =tests.for-directory= are
+removed, along with the product batch driver. Build specifications and issuance
+remain at the independent native build entry. See
+[[file:13.28-managed-dependency-and-activation-policy.org][13.28]] for the current ownership boundary.
+The remaining sections record the superseded experiment, not supported APIs or
+qualification of the current implementation.
 
 * Scope and decision
 
 ** Official Harness publication, 2026-10-26
 
-A test declaration is a native Gerbil module exporting =TestSuite= values.
+A test declaration is a Gerbil module exporting =TestSuite= values.
 The installed =gerbil/tools/gxtest= prepares that module by examining its
 runtime exports whose names end in =-test=. A file list is the resulting
 Harness input projection; it must not become another maintained inventory of
-Suite declarations. A module may use native =export (import: ...)= to publish
+Suite declarations. A module may use runtime =export (import: ...)= to publish
 existing Suites without reconstructing Cases or invoking a second runner.
 
 The product Context/Temporal qualification now publishes this way. Its former
@@ -22,10 +33,10 @@ Gerbil lexical semantics.
 
 The init-owned =tests= object exposes =.compile= through the same execution
 owner as =.run=. Both enter =call-with-prepared-testing-script=, preserving the
-captured compiler association, source guard, native artifact issuance and
+captured compiler association, source guard, runtime artifact issuance and
 post-operation checks. =.compile= returns a prepared execution value without
 starting the Harness. =.run= independently authenticates currentness and uses
-the issued native outputs before invoking =gerbil test=. Returning that value
+the issued runtime outputs before invoking =gerbil test=. Returning that value
 does not cache an admission result.
 
 An explicit file demand may include auxiliary command inputs (for example,
@@ -37,7 +48,7 @@ Package-level implementation regressions can use =tests.for-directory= over
 their bounded =t/= tree. Discovery reads names and prunes excluded branches;
 leaf bytes are bound at first admission and checked again after execution.
 Module public behavior remains exported by the existing owner-confined
-=modules.<owner>.tests= projection. Both publish ordinary native file specs.
+=modules.<owner>.tests= projection. Both publish ordinary runtime file specs.
 
 The new split-phase and module-publication paths require their own executable
 qualification. Earlier compile counts or passing Harness logs below must not
@@ -47,13 +58,13 @@ The discovery regression must not execute the complete selected test group
 inside one Case. That demand compiled 54 production support units before the
 bounded inner run failed; it was integration work hidden inside a mechanics
 test. The complete group is retained as the external =test-selected-modules=
-gate. Native test values must be exported with the installed Harness's =-test=
+gate. Runtime test values must be exported with the installed Harness's =-test=
 suffix; an exported value named only =atomic= does not establish Case execution.
 The preparation control therefore checks both a module-load marker and an
 actual TestCase marker: neither may exist after =.compile=, and both must
 exist after =.run=.
 
-SDK-only progress and role-name utilities now explicitly use =:gerbil/core=.
+Gerbil-only progress and role-name utilities now explicitly use =:gerbil/core=.
 This changes import cost, not execution policy or wire format. The focused
 support-free run passed in 30.13 seconds, followed by 24.57 seconds in a fresh
 process; neither result qualifies the compiled-support path. That path first
@@ -67,7 +78,7 @@ library prefix changed the reported path to that new prefix but did not remove
 the identity refusal. Consequently stale bytes or a mixed prefix alone are
 not an established cause. The reader's exact context association still needs
 diagnosis; its identity check has not been weakened. The diagnostic now names
-the native context identity and path instead of reporting only a generic
+the runtime context identity and path instead of reporting only a generic
 publication failure.
 
 *** Context identity, not module-name uniqueness
@@ -78,7 +89,7 @@ the other the installed =.ssi= path. The previous bootstrap name index retained
 only one. Using that index as the complete context-membership predicate was
 incorrect even when no source bytes changed.
 
-=yuanxu-bootstrap-contexts= now accepts an optional native DFS visitor. Its
+=yuanxu-bootstrap-contexts= now accepts an optional runtime DFS visitor. Its
 existing name projection remains available for named lookups. The reader uses
 that visitor to retain every exact observed context in an identity table and
 builds its input/path indices from that table. Publication, configuration and
@@ -90,12 +101,12 @@ This repairs the implementation's correspondence premise rather than weakening
 it. The existing =ContextWalk= model distinguishes node identity from names;
 the existing =expanded_identities_unique= theorem in =SourceClosureWork.lean=
 assumes equality on those identities. Neither proves that a name projection is
-injective. The native publication oracle now collects exact contexts through
+injective. The runtime publication oracle now collects exact contexts through
 the same visitor and still compares full versus pruned traversal order. These
 models are not new proofs of the Scheme index or runtime execution. The
 compiled-support regression must pass independently.
 
-The focused native =module-context-walk-test.ss= subsequently passed all three
+The focused runtime =module-context-walk-test.ss= subsequently passed all three
 Cases through default =just test-file=, with =MODULE-OK=, =HARNESS-OK=, final
 =OK= and no error/overflow markers. Its new bootstrap Case checks one visit
 per exact context and coverage of the name projection. Existing Cases retain
@@ -105,7 +116,7 @@ seconds; the three Cases took 3.767, 0.080 and 1.117 seconds respectively.
 The demand had zero support units; remaining startup is not Case execution.
 
 The stronger preparation regression passed the former context-refusal point
-and reached native Make with 23 actual support units. It then failed the
+and reached runtime Make with 23 actual support units. It then failed the
 unchanged 120-second compilation budget (outer wall 152.60 seconds), before
 Harness execution. The failed record is retained locally. It does not prove
 the support-free poison-role Case, signed hot reuse, source-change refusals or
@@ -115,16 +126,16 @@ cold rebuild is warranted until the support compilation cost is attributed.
 *** Separate generic resources from service-publication support
 
 The 23-unit demand was traced through an overly broad Fixture import, not an
-intrinsic requirement of native Make. The preparation test imported only
+intrinsic requirement of runtime Make. The preparation test imported only
 =DirectoryFixture= and =write-source=, but their module also imported service
-linking and admission publication. Native imports consequently brought in JSON
+linking and admission publication. Runtime imports consequently brought in JSON
 Schema implementation units before a directory resource could be used.
 
 Directory ownership, dual-failure verification and =write-source= now have one
 definition in =t/qualification/testing/directory.ss=. Their bodies and cleanup
 semantics are moved unchanged. The service-publication Fixture imports that
 owner; it no longer re-exports generic directory bindings. Consumers import
-the owner directly. Private test support uses native relative file imports,
+the owner directly. Private test support uses runtime relative file imports,
 so a newly added source helper does not depend on an already-installed =.ssi=.
 There is no test package marker, forwarding wrapper, extra runtime or Builder.
 The Nix qualification's existing dependency traversal includes the new support
@@ -144,11 +155,11 @@ and compiler failure without Harness entry. Both runs contain =MODULE-OK=,
 
 | Observation | Cold | Fresh-process hot |
 |-------------+------+-------------------|
-| Outer native support units | 2 | 2 |
+| Outer runtime support units | 2 | 2 |
 | Outer modules compiled | 2 | 0 |
-| Outer native Make process | 48.375 s | 0 s |
+| Outer runtime Make process | 48.375 s | 0 s |
 | Outer preparation including issuance checks | 60.966 s | 3.889 s |
-| Native Harness process | 120.897 s | 48.446 s |
+| Runtime Harness process | 120.897 s | 48.446 s |
 | Whole default Just invocation | 290.03 s | 101.19 s |
 
 The hot row reports only the outer shared support. The integration Cases still
@@ -164,7 +175,7 @@ Their domain-specific regressions remain separately required; passing the
 generic preparation controls does not establish application admission results.
 
 The real =gitea-postgresql-publication-test.ss= then passed all eleven existing
-Cases with its completion receipt and native Harness markers. Its 22 genuine
+Cases with its completion receipt and runtime Harness markers. Its 22 genuine
 domain support units remained in the Make request and compiled in 66.481
 seconds; whole invocation wall time was 223.45 seconds. This is deliberately
 distinct from the two-unit generic preparation demand. Controls retained the
@@ -174,13 +185,13 @@ deep/source changes and omitted/substituted contribution rows. It is local
 consumer evidence, not complete CI or a scale-capacity result.
 
 The existing =service-publication-fixture-test.ss= also passed all ten Cases
-after migration, with native completion markers and no failure/overflow
+after migration, with runtime completion markers and no failure/overflow
 markers. Its checks retain inert declarations, independently acquired resources,
 real service cleanup, failed relocated preparation, dual-error identity,
 sibling isolation, repeated verification and interrupted verification recovery.
 The moved generic and retained service Fixture bodies were additionally checked
 byte-for-byte against their original definitions. Whole wall time was 168.89
-seconds, including a 48.889-second native Make process for 22 domain support
+seconds, including a 48.889-second runtime Make process for 22 domain support
 units. No resource budget or refusal assertion was relaxed.
 
 *** Empty support does not import compilation/signing
@@ -188,26 +199,26 @@ units. No resource budget or refusal assertion was relaxed.
 The next source audit found two eager imports even after graph selection was
 deferred: the test build accessor imported =building/build-projection= to
 discover an empty spec, and =TestingScript= statically imported artifact APIs.
-Native runtime module reuse cannot eliminate these imports in a new process.
+Runtime runtime module reuse cannot eliminate these imports in a new process.
 
 The existing owners now separate the phases:
 
-- =source/build.module-test-source-spec= discovers the demanded native import
+- =source/build.module-test-source-spec= discovers the demanded runtime import
   closure, retains source observations and returns a POO spec. No directory
   catalog or peer suites are scanned. The discovery body was moved from the
   build adapter; target-name validation is shared through =source/preparation=.
-- The init facade acquires that function through a private native promise.
+- The init facade acquires that function through a private runtime promise.
   Importing init still does not import =source/build= or construct its products.
 - An empty spec returns observed data and its currentness / lazy selected-graph
   guards, without a build publication. =tests.compile= remains a checked no-op.
 - Only nonempty support requests acquire =artifacts.test-build-projection=.
   That owner attaches the existing endpoint, =.compile= and =admit-artifacts=
-  through native prototype inheritance. Empty support is rejected by that
+  through runtime prototype inheritance. Empty support is rejected by that
   attachment function before publication construction.
 - =TestingScript= acquires the two existing artifact bindings only inside its
-  nonempty preparation branch. The promise retains native function identities,
+  nonempty preparation branch. The promise retains runtime function identities,
   never a guard result. Private expansion contexts first import =:gerbil/core=
-  so =only-in= and ordinary value syntax have native bindings.
+  so =only-in= and ordinary value syntax have runtime bindings.
 
 An import/initializer is not a pure observation window: discovery rechecks
 its source guard after the artifact producer returns. Compiler authority,
@@ -218,18 +229,18 @@ the user-facing =tests.compile= / =tests.run= interface is unchanged.
 
 The verification environment was rebuilt with local =gxpkg deps --install=
 at declared gerbil-poo =e281ad2e33784cfb9951c684b6be78bd2f4b7fca=, without
-changing the shared installation. In that same prefix, the minimal SDK control
+changing the shared installation. In that same prefix, the minimal Gerbil control
 passed before and after the change: whole wall 18.73 / 7.49 seconds; projection
-3.348 / 0.990 seconds; native Harness 1.086 / 1.130 seconds. This is one local
+3.348 / 0.990 seconds; runtime Harness 1.086 / 1.130 seconds. This is one local
 pair, not an independently repeated performance result.
 
 The preparation regression passed all three Cases (43.89-second whole wall).
-It observes the SDK's actual =list-modules=, requiring the artifact runtime to
+It observes the Gerbil's actual =list-modules=, requiring the artifact runtime to
 remain absent after spec inspection, =.compile= and =.run= for empty support.
 The nonempty Case supplies a positive module-presence control and retains cold
 compilation, hot/fresh receiver reuse, joint replacement refusal, source-change
 refusal and compiler failure without Harness entry. No hand-maintained module
-state table replaces the native loader. Import-only and real Scenario
+state table replaces the runtime loader. Import-only and real Scenario
 qualification remain separate gates.
 
 *** Delegate to public std/make; preserve compiled-library boundaries
@@ -241,7 +252,7 @@ completion waiting and worker scheduling. =std/build-script.defbuild-script=
 owns ordinary CLI dispatch. Core must not mirror those algorithms or reach
 into private =make-build=, =build?= or =dependency-timestamp= implementations.
 
-Native Make schedules the targets supplied in a spec; it does not select Core
+std/make schedules the targets supplied in a spec; it does not select Core
 Modules/Features or enumerate additional private test helpers for us. The
 remaining projection must therefore identify only the selected, owned targets
 and retain provenance. Byte/currentness admission and approved publication
@@ -255,27 +266,27 @@ The existing execution still calls the public entry directly:
 #+end_src
 
 The next audit found that the discovery import hook remained active *inside*
-compiled =.ssi= libraries. It could redirect their native dependencies to
-package source files, depending on prior SDK imports. This reconstructed
+compiled =.ssi= libraries. It could redirect their runtime dependencies to
+package source files, depending on prior Gerbil imports. This reconstructed
 library sources as test targets. The hook now delegates the complete compiled
-library import to the captured native importer, matching the existing reader
+library import to the captured runtime importer, matching the existing reader
 boundary. Explicit source files/private helpers retain their original input
-guards. The full native dependency graph is still visited and compiled
+guards. The full runtime dependency graph is still visited and compiled
 interfaces are still source observations; no discovered edges are filtered
 out to manufacture a smaller count.
 
 The Gitea/PostgreSQL request changed from 35 to two actual support modules.
-Native Make took 8.343 seconds and all eleven existing domain Cases passed
+std/make took 8.343 seconds and all eleven existing domain Cases passed
 (51.05-second whole invocation). The preparation controls passed again after
-this boundary change (29.41-second whole invocation), including actual SDK
+this boundary change (29.41-second whole invocation), including actual Gerbil
 module-presence controls, source refusal and publication replacement refusal.
 Those are local source-snapshot results, not full CI or scale qualification.
 
-*** Repeated native-entry benchmark
+*** Repeated runtime-entry benchmark
 
 The same source snapshot was exercised through the default
 =just test-file t/gitea-postgresql-publication-test.ss true= entry, with two
-native Make workers and the unchanged heap/watchdog limits. The local package
+runtime Make workers and the unchanged heap/watchdog limits. The local package
 environment uses the declared =gerbil-poo= revision
 =e281ad2e33784cfb9951c684b6be78bd2f4b7fca=. Changed Core owners were compiled
 into that private package prefix; unchanged Core dependencies come from the
@@ -297,12 +308,12 @@ currentness remains inside those spans. The whole warm invocation still takes
 41--45 seconds, including roughly 26 seconds in the eleven-Case integration
 Harness. Zero compilation closes the duplicate-compilation claim, not the
 remaining latency problem. The first publication is cold only with respect to
-these two support products: SDK/filesystem caches were not flushed. The earlier
+these two support products: Gerbil/filesystem caches were not flushed. The earlier
 35-target result is a diagnostic baseline, not a controlled multi-round speedup
 claim.
 
 The subsequent preparation regression also passed its three existing Cases:
-empty support does not load signing, nonempty support compiles through native
+empty support does not load signing, nonempty support compiles through runtime
 Make and reuses issued products, and preparation failure cannot start the
 Harness. It retained the source-edit and joint product/record replacement
 negative controls. Its outer support reused two targets with zero compilation;
@@ -333,10 +344,10 @@ additive attribution, summed over the eleven existing Cases:
 | Fixture body (including assertions/admission) | 1.156 | 0.973 |
 | Release | 0.217 | 0.138 |
 | Complete Case spans, including checkpoints | 20.867 | 19.870 |
-| Native Harness process | 27.181 | 26.122 |
+| Runtime Harness process | 27.181 | 26.122 |
 
 The 6.314/6.252-second difference between Harness duration and summed Case
-spans is a residual: VM/import/discovery, native harness setup/finish and
+spans is a residual: VM/import/discovery, runtime harness setup/finish and
 process/output handling. It is not a separately measured VM startup time.
 The first Case's process CPU observation includes pre-Case imports; it does
 not give a common wall-clock epoch for the parent and child processes.
@@ -357,12 +368,12 @@ artifact, not as a production optimization or a new caching protocol.
 
 The production change separates the existing trace-only retention function
 into =module-system/building/test-retention.ss=. The ordinary Profile imports
-neither that owner nor its CLOS/reflective dependencies. A private native
+neither that owner nor its CLOS/reflective dependencies. A private runtime
 promise imports only the function binding on explicit trace; each invocation
 still creates its own observations and restores them with the unchanged
 =dynamic-wind=. The moved function body is identical to the previous body.
 The existing =core-spec= installs this optional library without executing it.
-Ordinary native module-presence and explicit-trace positive controls verify
+Ordinary runtime module-presence and explicit-trace positive controls verify
 the boundary; this is more than a file split, but it has not demonstrated a
 lower whole-Harness latency.
 
@@ -373,13 +384,13 @@ lower whole-Harness latency.
 | Independent warm process 2 | 0 | 26.122 | 41.48 | 33.96 / 5.79 |
 
 The default =just test-file= path and the same pinned private package prefix
-were used, with observation enabled for these rows and two native Make
-workers. Cold means missing selected support products, not flushed system/SDK
+were used, with observation enabled for these rows and two runtime Make
+workers. Cold means missing selected support products, not flushed system/Gerbil
 caches. All eleven domain controls passed each time: final child values after
 parent caching, both independent requirements, malformed ports/typos,
 contextual child obligations, omitted/substituted contributions and source
 changes. The observation regression passed (10.70 seconds), including explicit
-trace, observer restoration and native read delivery; preparation controls
+trace, observer restoration and runtime read delivery; preparation controls
 passed (37.64 seconds), including no trace initialization on the ordinary path,
 source refusal and joint product/record replacement refusal.
 
@@ -410,7 +421,7 @@ receiver/retention tracing remains separately lazy. =export-entry= and
 | Boundary | Actual operation | Why the boundary remains |
 |----------+------------------+--------------------------|
 | export-entry | =admit-build-artifact-publication!=, including the demanded build Graph | Before export scopes may execute author code; artifact recovery is an effect |
-| selected-record | =selection .selected-record=, native linking, dependency/scope Contracts | Scope factories and validators are open calls |
+| selected-record | =selection .selected-record=, runtime linking, dependency/scope Contracts | Scope factories and validators are open calls |
 | publication-base | =module-admission-publication=, descriptor/value paths | Recheck after scope resolution; lazy export getters can run code |
 | bind-contributions | route index, guarded =collect=, Context assembly and final =current!= | Before/after exported payload getters, complete provenance and return certification |
 | contract-admit | direct or published Contract invocation | Fresh root admission, including contextual child obligations |
@@ -433,7 +444,7 @@ refusals; it must preserve their execution before cold handlers and at return.
 All original Context/compiler guards remain in the production implementation.
 
 The retained production change is narrower: when collectors are active,
-=module-source-admit-current!= uses the existing pure window's native identity
+=module-source-admit-current!= uses the existing pure window's runtime identity
 tables to avoid traversing the same requirement-list object twice for the same
 active collectors. Metadata-only checks without collectors keep their existing
 per-source index, rather than allocate an ineffective batch index. It shares
@@ -451,10 +462,10 @@ condition: bytes and input requirements remain stable, and callers end the
 window before writes or callbacks. It does not extend a window over a getter,
 obligation, package process or independent admission. An implementation using
 structural query keys was rejected because it rehashed source text; the final
-index uses native identity, as the existing expected-text index already does.
+index uses runtime identity, as the existing expected-text index already does.
 
 The existing six-Case source-observation suite now exercises this closed path
-under the native default Case/resource Profile, without installing or removing
+under the runtime default Case/resource Profile, without installing or removing
 a source observer. Its private operation counters prove two independent
 windows read twice, a repeated batch avoids another enumeration, and a nested
 collector still enrolls its requirements. Conflicting expectations reject;
@@ -475,7 +486,7 @@ one private input batch per file *within one fresh object construction*, and
 each located specification retains that batch. Previously it reboxed the same
 input row separately for every field. Specifications, locations and procedures
 remain distinct; parent/child constructions do not share a mutable snapshot
-registry. The existing SDK-expansion regression verifies distinct port/client
+registry. The existing Gerbil-expansion regression verifies distinct port/client
 specifications, one physical read, and no repeated per-source comparison when
 their actual macro-produced batches are enrolled together. This qualifies the
 producer/consumer association, rather than only a synthetic shared-list fixture.
@@ -486,7 +497,7 @@ Source was frozen for these runs. A fresh private =GERBIL_PATH= supplied an
 empty test-product/approval namespace; the same compiled dependency load path
 and pinned package sources were reused explicitly. No production cache or other
 session's package tree was cleaned. The default entry and resource limits were
-unchanged, with two native Make workers:
+unchanged, with two runtime Make workers:
 
 #+begin_src sh
 just test-file t/gitea-postgresql-publication-test.ss
@@ -498,13 +509,13 @@ just test-file t/gitea-postgresql-publication-test.ss
 | Independent warm process 1 | 39.73 | 30.48 | 5.90 |
 | Independent warm process 2 | 39.78 | 29.55 | 5.58 |
 
-The selected support contains two native modules (four =.o1= files including
+The selected support contains two runtime modules (four =.o1= files including
 their named runtime sections). A separate final observation run restored the
 same issuance with =compile-count=0= and =make-seconds=0=: whole wall/user/system
 41.87/33.70/5.52 seconds, Harness 27.666 seconds. All eleven domain Cases and
 all three completion markers passed in every run, with no harness or overflow
-failure. Cold here does not mean flushed SDK, filesystem or Store caches.
-The four native support outputs also retained their cold-run modification
+failure. Cold here does not mean flushed Gerbil, filesystem or Store caches.
+The four runtime support outputs also retained their cold-run modification
 times throughout both warm runs and the attributed run; none was rewritten.
 
 That final observation run attributes actual reads and complete source-check
@@ -529,7 +540,7 @@ callback boundaries and return certification were preserved. The retained
 optimization removes duplicate collector enumeration inside a pure window;
 it does not manufacture a physical-read reduction by skipping compiler policy.
 The source-observation controls passed after producer sharing (36.05 seconds),
-and native slot-origin controls passed (25.34 seconds). Earlier policy controls
+and runtime slot-origin controls passed (25.34 seconds). Earlier policy controls
 also passed (11.36 seconds); subsequent production changes affect private data
 sharing and collector indexing, not compiler/request dispatch.
 
@@ -537,17 +548,17 @@ There is no demonstrated whole-Harness speedup over the earlier 26-second
 receipt, and these samples are not a statistically controlled A/B latency claim.
 The remaining dominant work is cold selected-Graph/publication construction,
 not support compilation. Establishing a narrower callback-free metadata path
-requires actual native ownership/dispatch evidence; neither byte coverage nor
+requires actual runtime ownership/dispatch evidence; neither byte coverage nor
 a manual purity label suffices. Full CI and scale qualification were not run.
 
 **** Same-selection export-entry attribution
 
 The next qualification separates the existing =export-entry= bracket into
-=build-graph= (the actual native slot demand) and
+=build-graph= (the actual runtime slot demand) and
 =artifact-publication-current= (the unchanged artifact admission call).
 Only scalar observer events were added. In particular, =.ref/cached= is not
 used as a passive cold/hot probe: it can issue a transient miss and demand
-native metadata. No observer, dependency edge or policy call is suppressed.
+runtime metadata. No observer, dependency edge or policy call is suppressed.
 
 The existing first real service Case now calls =.for-export= a second time on
 the same selection, before its original publication assertions. It checks
@@ -635,7 +646,7 @@ independent of source equality and of the structural Graph cache.
 The 112.43-second default sample is retained, not discarded or rerun until a
 preferred number appears. Its wall-minus-process-CPU gap is 64.65 seconds;
 these measurements do not attribute that gap to GC, filesystem waiting or host
-scheduling. The same-source runs qualify native structural reuse and unchanged
+scheduling. The same-source runs qualify runtime structural reuse and unchanged
 refusal behavior, but do not prove that cold Graph construction or the complete
 Harness has become fast. No wider pure window, cached admission conclusion,
 new cache protocol or timeout change was introduced to improve these numbers.
@@ -687,20 +698,20 @@ The installed Gerbil source was inspected, without changing it:
   loading/error states, mutex/condition-variable coordination and reuse of an
   already loaded module. In this installed version reload is a separate
   =reload-module!= procedure; do not infer its signature from another release.
-- =gerbil/expander/module.ss=, =import-module= / =core-eval-module=: native
+- =gerbil/expander/module.ss=, =import-module= / =core-eval-module=: runtime
   expansion contexts and memoized module evaluation. Import also supplies
   lexical and macro-phase bindings; =load-module= alone does not.
-- =gerbil/runtime/init.ss=, =__eval-import=: native per-context import state
+- =gerbil/runtime/init.ss=, =__eval-import=: runtime per-context import state
   and evaluation coordination. Yuanxu must not implement another runtime
   ready/loading registry.
 
 The source version is the installed
-=0.19.20261009110849.1cfb032.patch618d76f9eb72= SDK. Current Yuanxu
-=reader.ss= already delegates imports to the captured native importer and
+=0.19.20261009110849.1cfb032.patch618d76f9eb72= Gerbil. Current Yuanxu
+=reader.ss= already delegates imports to the captured runtime importer and
 evaluation to =eval-syntax= / =eval-module=. The remaining cost is not evidence
 that Yuanxu wrote the whole runtime loader again. Its outer layer does create
 fresh private wrapper filenames/packages, expansion contexts and guarded
-dependency projections. Native caching is scoped to those actual identities;
+dependency projections. Runtime caching is scoped to those actual identities;
 replacing one call with =load-module= cannot merge distinct wrappers safely.
 
 The ownership target is therefore:
@@ -711,7 +722,7 @@ The ownership target is therefore:
 | Compilation and incremental outputs | public =std/make= |
 | Compiled runtime loading and loaded-state coordination | Gerbil loader |
 | Selected Module/Feature requirements and role injection | Yuanxu selection and hygienic role lowering |
-| Derived configuration values and receiver-local structural reuse | native POO |
+| Derived configuration values and receiver-local structural reuse | POO |
 | Source association, independent policy calls and final currentness | existing Core publication/admission protocol |
 
 Before changing the reader, compare its interpreted and compiled role paths.
@@ -719,7 +730,7 @@ Today =preparation.ss= emits deferred role bindings in
 =deferred-reader-forms=, but =compiler-forms= still imports its role list.
 Eagerly loading that compiled interface could initialize roles which the
 source reader leaves cold. This asymmetry is a concrete prerequisite for a
-native compiled-consumption refactor, rather than permission to load all roles
+runtime compiled-consumption refactor, rather than permission to load all roles
 or silently bypass the authoring/currentness checks. =load-module= loads and
 initializes code; it is not an inert metadata discovery API.
 
@@ -733,17 +744,17 @@ parent plan to a final child. No cache protocol or larger timeout was added.
 
 The implementation was integrated onto existing PR #19 at
 =7251473b3da157ddbcbbf4a41bc2b7e0ad0fbafc=. The twelve upstream commits were
-retained, including exact native-context ownership, selected compiler-source
+retained, including exact runtime-context ownership, selected compiler-source
 association, package compiler options and cross-Suite support sharing. Rebase
 reported the existing branch up to date after integration. Other working-tree
 changes were preserved in recoverable Git snapshots, not overwritten.
 
-The runtime-role projection now recognizes native POO =define-type= declarations.
+The runtime-role projection now recognizes POO =define-type= declarations.
 It does not interpret Type definitions as a metadata purity assertion: real
 role initialization and Contract admission still run at their existing demand
 and policy boundaries. Both source and compiled interfaces use
-=include-deferred-declaration= and native POO role slots. The source resolver
-keeps its admitted native contexts and source guards. The compiled resolver
+=include-deferred-declaration= and POO role slots. The source resolver
+keeps its admitted runtime contexts and source guards. The compiled resolver
 uses Gerbil's actual module identity and public APIs:
 
 #+begin_src scheme
@@ -756,16 +767,16 @@ uses Gerbil's actual module identity and public APIs:
 
 Import acquires lexical/export metadata. =load-module= owns compiled-code
 initialization and loaded-state coordination. In particular, a source context
-left by native Make is not evaluated again merely to obtain a role's values.
+left by runtime Make is not evaluated again merely to obtain a role's values.
 The helper has no loaded-state table, artifact cache or admission conclusion.
 The existing macro accepts the compiled resolver expression hygienically;
 its private bindings and original declaration locations remain under Gerbil's
 syntax machinery. Source forms requiring their actual macro/initialization
-phases keep those native phases; they are not relabeled as closed runtime data.
+phases keep those runtime phases; they are not relabeled as closed runtime data.
 
 Compiled interfaces carry =for-template= imports of the role files. This is
 Gerbil's existing phase-minus-one import, not another dependency manifest.
-It retains native Make dependency/timestamp edges without introducing a
+It retains runtime Make dependency/timestamp edges without introducing a
 phase-zero role initializer into interface loading. The compiler-input owner
 also recognizes the actual generated target path, so relative template imports
 pass the same selected-input admission and identity checks as original paths.
@@ -777,7 +788,7 @@ runtime loader.
 The public name is =std-make-spec=. The per-demand input declaration uses that
 same spelling; its optional value refines only actually selected support
 targets. The prepared package's internal grouped view is =std-make-specs=.
-There is no parallel public native-build vocabulary or compatibility alias.
+There is no parallel public runtime-build vocabulary or compatibility alias.
 The test-source owner retains package options and the actual compiler closure;
 the Suite's own currentness remains independently checked. A corrupt retained
 approval raises instead of silently invoking Make to repair or hide it.
@@ -787,10 +798,10 @@ invoke public =std/make= through the existing =.compile= issuance boundary,
 then import the produced =.ssi= and use public =load-module= in that same VM.
 No extra interpreter command, copied heap argument, consumer process or Builder
 is declared in the test. An unused role contains a failing initializer; Config
-appends to an initializer marker. Native loading leaves both cold until demand,
+appends to an initializer marker. Runtime loading leaves both cold until demand,
 Config records exactly one initialization, and repeated loads preserve its
 value. Editing Config source then refuses the old projection even though the
-already loaded value remains structurally cached. Native Type/Contract roles
+already loaded value remains structurally cached. Runtime Type/Contract roles
 are exercised, rather than only parser strings or an old predicate wrapper.
 
 The original materialized-interface Case also now compiles the real explicitly
@@ -804,10 +815,10 @@ The failed attempts are retained as local artifacts, never committed raw logs.
 The final observation pair used frozen implementation sources, the same two
 Make workers and the unchanged default =just test-file= resource limits. A fresh
 private Gerbil prefix supplied an empty support-product/approval namespace and
-reused the exact existing package dependencies; no SDK or shared cache was
+reused the exact existing package dependencies; no Gerbil or shared cache was
 deleted. Both invocations used the installed Gerbil and POO revision
 =e281ad2e33784cfb9951c684b6be78bd2f4b7fca=. The explicit library path keeps compiled
-dependencies first and includes this package's source root for normal native
+dependencies first and includes this package's source root for normal runtime
 symbol imports, matching Gerbil package initialization.
 
 | Same-source invocation | Wall / user / system (s) | Compile count | Preparation (s) | Harness (s) |
@@ -823,11 +834,11 @@ from a different snapshot. There is no demonstrated reduction of cold Graph
 source I/O or complete Harness latency. The structural/phase correction must
 not be advertised as closure of that remaining performance problem.
 
-Focused final controls additionally qualified native Type AOT demand and
+Focused final controls additionally qualified Type AOT demand and
 source-change refusal (20.78 s), package compiler declarations and cross-Suite
 sharing (43.07 s), and the production selected-Graph/std-make-spec adapter
 (29.55 s). The temporary validation prefix initially lacked the current package
-source search path; the native symbol-import failure was retained, then the
+source search path; the runtime symbol-import failure was retained, then the
 environment was corrected rather than adding a Loader special case. Source
 and artifact currentness, independent policy calls, both requirements and
 cached-parent/final-child isolation remain separate executable obligations.
@@ -840,14 +851,14 @@ these focused results.
 
 Removing =t/gerbil.pkg= remains the intended package architecture. The default
 test entry now exposes the actual package source root after compiled support
-and library paths. Official native symbol resolution can therefore locate
+and library paths. Official runtime symbol resolution can therefore locate
 =:yuanxu/t/...= and generated support without a nested package or a parallel
 resolver. Both source and compiled-role controls keep the same role inventory:
 the source-only control uses the existing guarded reader, while =std/make=
-qualifies compiler frames and the native compiled-role loader.
+qualifies compiler frames and the runtime compiled-role loader.
 
 Explicit =GERBIL_LOADPATH= overlays precede the host library fallback. The
-isolated source-tail gateway depends on that native lookup order: putting the
+isolated source-tail gateway depends on that runtime lookup order: putting the
 host first silently selects its dispatcher instead of the compiled isolation
 dispatcher. Its refusal controls exposed this ordering error in Linux CI;
 the repair changes lookup precedence, not the assertions or admission policy.
@@ -860,12 +871,12 @@ qualification boundary.
 Cold-source Fixtures preserve installed dependency namespaces, excluding Core's
 own namespaces. They do not replace every dependency artifact with a leaf
 symlink or choose copying rules by artifact suffix. Compiled interfaces are
-still real compiler inputs and remain covered by currentness checks; native
+still real compiler inputs and remain covered by currentness checks; runtime
 code identity and dependency layout are preserved without editing any product.
 
 The JSON Schema adapter now applies its Schema Type through the existing
 =value-contract= protocol instead of returning private backend diagnostics
-from a custom classifier. Native admission returns rejected evidence, while
+from a custom classifier. Runtime admission returns rejected evidence, while
 admitted Function invocations retain their TypeError boundary. Lexical
 =value-type= binding also keeps a derived Contract's effective Type independent
 of a previously cached parent. Ownership controls use real Contracts and POO
@@ -878,7 +889,7 @@ The root-source fallback was qualified without injecting a source root through
 the caller's =GERBIL_LOADPATH=: shared test inputs (59.75 s), deferred roles
 (29.36 s), demanded-role projection (30.89 s), the closed source tail (37.89 s)
 and root collection (24.16 s) completed with all Harness markers. Further
-controls passed native evidence ownership (8.92 s), optional-printer laziness
+controls passed runtime evidence ownership (8.92 s), optional-printer laziness
 (13.43 s), source-role projection (19.68 s), the final Schema/derived-Type
 bootstrap (16.58 s) and the module's own Schema tests (11.04 s).
 The composite source-build/compiled-import integration completed in 134.65 s;
@@ -891,8 +902,8 @@ The remaining cold Graph work was traced through =.for-export=, selected-Graph
 resolution, publication preparation and compiler-input admission. Source checks
 on opposite sides of a policy, initializer, import or independent admission are
 not duplicate approvals. They remain independent, including the return guard.
-The native POO Graph cache retains structural values and their read dependencies;
-native =std/make= decides compilation. Neither retains an admission conclusion.
+The POO Graph cache retains structural values and their read dependencies;
+runtime =std/make= decides compilation. Neither retains an admission conclusion.
 
 One smaller duplication is inside a prepared source's local byte/package guard:
 the positive package entry explicitly probes regular-file status, then its byte
@@ -925,7 +936,7 @@ call. Changing package metadata also refuses. This is a local probe reduction,
 not evidence that the large cold Graph source-read count has been solved.
 
 The resulting frozen-source pair used another fresh private support prefix,
-the same installed SDK/POO revision, two Make workers and the default bounded
+the same installed Gerbil/POO revision, two Make workers and the default bounded
 =just test-file t/gitea-postgresql-publication-test.ss true= entry. Both runs
 completed eleven real Cases with =MODULE-OK=, =HARNESS-OK= and final =OK=.
 
@@ -934,7 +945,7 @@ completed eleven real Cases with =MODULE-OK=, =HARNESS-OK= and final =OK=.
 | Fresh support namespace, fresh process | 49.13 / 41.99 / 6.81 | 2 | 9.996 | 26.870 | 16,972 |
 | Retained support, new process | 40.48 / 33.41 / 5.63 | 0 | 1.312 | 26.730 | 16,972 |
 
-The second run reports =reused=#t= and =make-seconds=0=. This confirms native
+The second run reports =reused=#t= and =make-seconds=0=. This confirms runtime
 Make hot reuse, independent fresh selection and the original rejection controls.
 The read totals sum the exclusive Graph-attribution rows across the eleven
 Cases; they are not a claim that one individual Graph performs 16,972 reads.
@@ -952,23 +963,23 @@ source edit, the unrelated artifact unchanged, and zero on the next hot call.
 Final focused controls before this local change also passed the real eleven-Case
 Gitea/PostgreSQL publication suite (36.92 s), publication admission (10.57 s),
 source observation (18.19 s), source/AOT publication (41.24 s), service Fixture
-publication (26.77 s), native build roles (19.24 s) and Contract diagnostics
+publication (26.77 s), runtime build roles (19.24 s) and Contract diagnostics
 (8.40 s). These gates do not replace complete CI or the scale qualification.
 
 This implements the =yuanxu.init.exports.tests= path in
-[[file:13.17-init-exports-and-sdk-consumers.org][13.17]]. The existing test execution owner consumes a demanded native Make
+[[file:13.17-init-exports-and-sdk-consumers.org][13.17]]. The existing test execution owner consumes a demanded runtime Make
 specification through Core's existing artifact-issuance boundary, then invokes
-the existing TestingScript/Ops/native Harness path. No Builder object, build
+the existing TestingScript/Ops/runtime Harness path. No Builder object, build
 command dispatcher, worker source file, dependency resolver or result cache is
 added. The executable owners are linked below; the qualification section distinguishes prior upstream controls from integration results.
 
 The parent process retains the SAME init publication, selection, demanded
 source and issuance authority throughout both phases. A compiler subprocess
-receives native Make data; it neither reloads init nor issues its own approval.
+receives runtime Make data; it neither reloads init nor issues its own approval.
 
 * Existing mechanisms and concrete adaptations
 
-** Native upstream baseline, checked 2026-10-22
+** Runtime upstream baseline, checked 2026-10-22
 
 The design baseline is gerbil-poo PR #13 at
 =096da65e0dfb57df397ee16c78f71643847ec46b=. Core previously pinned
@@ -977,38 +988,38 @@ recorded below passed, Core's =gerbil.pkg= was advanced to the tested revision.
 The Core adapter retains file-domain checks. The following
 fixed-revision sources define the ownership boundary:
 
-- [[https://github.com/tao3k/gerbil-poo/blob/096da65e0dfb57df397ee16c78f71643847ec46b/object.ss][object.ss]] owns receiver-local reads, native issuance, replay protection and
+- [[https://github.com/tao3k/gerbil-poo/blob/096da65e0dfb57df397ee16c78f71643847ec46b/object.ss][object.ss]] owns receiver-local reads, runtime issuance, replay protection and
   revision checks. Use public =replay-slot-reads!= / =reobserve-slot-reads!=;
   =call-with-issued-reads= and the record producer are private. Core must not
   synthesize records, copy their authority or implement another read registry.
 - [[https://github.com/tao3k/gerbil-poo/blob/096da65e0dfb57df397ee16c78f71643847ec46b/object-state.ss][object-state.ss]] owns weak dependent edges and transitive invalidation.
-  Parent/child cache separation is a native receiver property, not a Core
+  Parent/child cache separation is a runtime receiver property, not a Core
   product-label convention. Its mutation protocol assumes serialized use.
 - [[https://github.com/tao3k/gerbil-poo/blob/096da65e0dfb57df397ee16c78f71643847ec46b/construction-cache.ss][construction-cache.ss]] owns source-bound selective materialization. Refresh
   of the same immutable source reuses its lookup; changed code/base identity or
   dirty declared dependencies rebuilds the affected cone. Do not add a Core
-  freshness cache. This is not a substitute for native Make's file checks.
+  freshness cache. This is not a substitute for runtime Make's file checks.
 - [[https://github.com/tao3k/gerbil-poo/blob/096da65e0dfb57df397ee16c78f71643847ec46b/component-publication.ss][component-publication.ss]] owns independent publication heads and staged
   requests bound to their exact owner/expected head. Endpoints sharing mutable
   approval policy use the same =approval-domain=. Its =submit!= refuses stale
   installation; callback effects are not rolled back by that protocol.
-- [[https://github.com/tao3k/gerbil-poo/blob/096da65e0dfb57df397ee16c78f71643847ec46b/staged-publication.ss][staged-publication.ss]] supplies native construction/refresh, contract and
+- [[https://github.com/tao3k/gerbil-poo/blob/096da65e0dfb57df397ee16c78f71643847ec46b/staged-publication.ss][staged-publication.ss]] supplies runtime construction/refresh, contract and
   generic-family staging. [[https://github.com/tao3k/gerbil-poo/blob/096da65e0dfb57df397ee16c78f71643847ec46b/object-contract.ss][ObjectContract]] owns value shape and obligations;
   source-dependent admission and effect authorization remain consumers.
 
-Thus production and tests are independent native publication receivers over
-the same init selection, not two new Core isolation engines. Adopt native
+Thus production and tests are independent runtime publication receivers over
+the same init selection, not two new Core isolation engines. Adopt runtime
 construction/publication where their declared graph and immutable-source
 preconditions hold. The existing source projector must first establish that
 correspondence; passing a Core selected graph directly to =publication= is not
-valid, because that constructor requires an approved native =graph-cache=.
+valid, because that constructor requires an approved runtime =graph-cache=.
 No extra Builder is introduced, including a Core wrapper around the upstream
 construction module's internal Builder protocol.
 
 Core still owns compilation effects, output directories/digests, source-file
-currentness, staging cleanup, process handoff and Harness receipts. Native read
+currentness, staging cleanup, process handoff and Harness receipts. Runtime read
 issuance authenticates object observations; it does not authenticate compiler
-files. Native publication coordinates installation; it does not make a file
+files. Runtime publication coordinates installation; it does not make a file
 rename and external execution atomic. Those domain adapters remain necessary.
 
 ** Core integration points
@@ -1017,7 +1028,7 @@ rename and external execution atomic. Those domain adapters remain necessary.
 |-------+--------------------+---------------------|
 | =building/interface.ss= | One init selection; cached guarded test projections | Publish exports and attach the test build projection lazily |
 | =building/test-projection.ss= | Module/explicit-file source; existing execution factory | Associate that exact demand with its build projection |
-| =building/build-projection.ss= | Native spec, source inputs, identities, =.compile= | Accept an admitted narrow test demand without enumerating production entries |
+| =building/build-projection.ss= | Runtime spec, source inputs, identities, =.compile= | Accept an admitted narrow test demand without enumerating production entries |
 | =building/artifacts.ss= | Staging, completion, private issuance, revalidation | Distinguish product projections under one graph; require positive test issuance |
 | =observability/testing-script.ss= | Source Fixture, Ops command, Harness receipt gate | Prepare declared support before starting the unchanged Harness |
 | =ops/progress.ss= and =ops/func.ss= | Deadline, cancellation, process groups, logs | Reuse their existing mechanisms for the compilation phase |
@@ -1032,23 +1043,23 @@ Relevant current entrypoints are =yuanxu-project-source-spec=,
 For demanded compiled support, the test projection retains the exact
 selected-graph identity. An explicit support-free file demand does not select
 business Modules: its init declaration and source inputs are still checked,
-but no domain admission is inferred from running that file. The native lazy
+but no domain admission is inferred from running that file. The runtime lazy
 =selected-graph= slot acquires the original selection guard if demanded.
 The projection must not
 obtain =production-build.entries= and filter it afterwards: doing so would
 already prepare unrelated sources. Extend the existing source-spec producer
 with a =demand:= argument referring to the admitted test source. In that mode
-it uses the observed native import closure of those files, their owning package
+it uses the observed runtime import closure of those files, their owning package
 metadata and their required support sources. It does not create another graph.
 
 The producer must retain the following relationships:
 
 - The test file list, directory-query observations and source guards belong to
   the same init generation and final demand receiver.
-- The native support targets and their compiler identities/options come from
+- The runtime support targets and their compiler identities/options come from
   actual imports. Test files remain Harness inputs; they are not compiled as
   support merely because they were requested.
-- Input coverage includes the requested files, native compiler/macro/prelude
+- Input coverage includes the requested files, runtime compiler/macro/prelude
   dependencies and demanded role/assets observations. A new helper dependency
   must be discovered from current source, not hidden by an old helper SSI.
 - The guarded build projection composes the original test-source guard with
@@ -1064,17 +1075,17 @@ cannot distinguish production and tests sharing the same graph. Reusing it
 unchanged would overwrite or invalidate the wrong publication.
 
 The previously proposed nested graph/product-cell index is withdrawn as the
-isolation architecture. Use the independent native publication receivers and
+isolation architecture. Use the independent runtime publication receivers and
 expected-head binding described above. The term /product/ below denotes that
 receiver's admitted compilation projection, not another Core identity token.
 The existing artifact issuer associates file completion with that exact
-projection/publication generation. It must not reconstruct native ownership,
+projection/publication generation. It must not reconstruct runtime ownership,
 revision counters, read issuance or dependency invalidation in another table.
 
 The adapter binds the demanded projection, source epoch, compiler
-identities/options, observed inputs, toolchain and output domain to the native
+identities/options, observed inputs, toolchain and output domain to the runtime
 publication. A public =tests= symbol or caller-supplied pathname is insufficient.
-Repeated demands reuse native source-bound construction only under its checked
+Repeated demands reuse runtime source-bound construction only under its checked
 identity/dependency conditions, then revalidate the external file observations.
 No separate approval registry or signature format is introduced.
 
@@ -1095,14 +1106,14 @@ from a user-controlled trust flag.
 
 =yuanxu!= now exports one =yuanxu.init.exports= POO value. The existing namespace
 bindings remain lazy identifiers. The old flat build/test function exports are
-migrated directly, including the native build scripts and consumer tests.
+migrated directly, including the runtime build scripts and consumer tests.
 
 #+begin_src scheme
 (import :clan/poo/object (only-in "./init.ss" yuanxu.init.exports))
 (def tests (.get yuanxu.init.exports Modules example tests))
 ;; Optional inspection; no compiler process or business scope runs here.
-(def native-support ((.get tests std-make-spec)))
-;; Explicit execution: prepare support, issue completion, invoke native Harness.
+(def runtime-support ((.get tests std-make-spec)))
+;; Explicit execution: prepare support, issue completion, invoke runtime Harness.
 (.call tests .run)
 #+end_src
 
@@ -1123,40 +1134,40 @@ only that facade's demanded test imports. Both refer to the same selected graph.
 The implementation is maintained in:
 
 - [[file:../../../module-system/building/interface.ss][building/interface.ss]]: lazy =source= / =build= / =execution= slots with
-  native =(:: tests)= receiver binding and the PR's automatic declared-slot
+  runtime =(:: tests)= receiver binding and the PR's automatic declared-slot
   lexical binding. Do not repeat the slot inventory in the header. Factory
   inputs use =source-value= / =build-accessor= so the declared =source= / =build=
   slots cannot shadow them and create a self-reference. The execution
   Script receives a deferred accessor, not an eagerly demanded compiler graph.
-  Its native factory retains that accessor in the inherited =.run= closure;
+  Its runtime factory retains that accessor in the inherited =.run= closure;
   removing or replacing =Script.build= refuses instead of falling back to source-only execution.
-- [[file:../../../module-system/building/build-projection.ss][building/build-projection.ss]]: =demand:= projects the actual native
+- [[file:../../../module-system/building/build-projection.ss][building/build-projection.ss]]: =demand:= projects the actual runtime
   import/prelude graph with the existing identity-based =for-each-build-module=.
   Requested test files remain Harness inputs. Shared support is visited once;
   no production =entries= traversal or sibling catalog scan is performed.
-  Native package/header observations retain external selected owners' compiler
+  Runtime package/header observations retain external selected owners' compiler
   identities. Current source is imported in a private expander context, so a
   prior support SSI cannot hide a newly added helper import. Explicitly imported
   prebuilt SSI dependencies remain prebuilt inputs: their source is not invented
   or required to reappear, and they retain the existing trusted dependency baseline.
 - [[file:../../../module-system/building/artifacts.ss][building/artifacts.ss]]: each exact issuer receiver owns an upstream
-  =component-publication= head and immutable completion cell. Native
+  =component-publication= head and immutable completion cell. Runtime
   =stage=/=submit!= handles expected-head installation; a callback's result is
   also bound to the head that started it. Core's existing weak issuer index
-  retains those native owners, not another revision or lock implementation.
+  retains those runtime owners, not another revision or lock implementation.
   Production and test endpoints cannot consume each other's completion.
 - [[file:../../../observability/testing-script.ss][observability/testing-script.ss]]: preparation runs inside the existing
   source Fixture. It does not import artifact/publication machinery for
   standalone source-only Scripts; the demanded producer supplies its existing
   staging-directory parameter through =compile-output=. The existing Ops
   watchdog bounds discovery/preparation at
-  120 seconds; the compiler uses the same pre-import heap flags and native
+  120 seconds; the compiler uses the same pre-import heap flags and runtime
   =std/make=. An already frozen package/PATH pair launches =gxi= directly;
-  missing initialization still delegates to the SDK's =gerbil env=. Native Make
+  missing initialization still delegates to the Gerbil's =gerbil env=. std/make
   import and execution are separate =-e= forms. There is no separate Builder or generated worker source file.
 
-The compiler receives native Make data, =srcdir:= and the issuer-owned staging
-=libdir:=. Native Make alone schedules dependencies and decides whether current
+The compiler receives runtime Make data, =srcdir:= and the issuer-owned staging
+=libdir:=. std/make alone schedules dependencies and decides whether current
 outputs need recompilation. A successful exit is insufficient: the existing
 issuer checks selected dynamic/static outputs, source bytes and package
 metadata before installing completion. A nonempty support spec requires
@@ -1172,9 +1183,9 @@ init epoch; it is not silently incorporated under a cached approval.
 * Failure and currentness boundaries
 
 1. Source acquisition checks the original guarded test demand.
-2. Native expansion captures actual helper/package/compiler inputs without
+2. Runtime expansion captures actual helper/package/compiler inputs without
    running the test or business scope.
-3. =.compile= checks currentness before its callback and after native Make.
+3. =.compile= checks currentness before its callback and after runtime Make.
    Failed compilation leaves the endpoint =build-required=.
 4. Positive artifact/source admission precedes Harness launch.
 5. Fixture release rechecks issued artifacts after successful preparation and
@@ -1194,7 +1205,7 @@ The existing 2 GiB heap fence, 60-second idle and 600-second overall test
 limits remain unchanged. Preparation does not reset the outer test budget.
 No hot passing-verdict cache, cross-effect source-check cache, filesystem
 transaction or trusted cross-process disk-receipt adoption is introduced.
-Installed compiler/runtime and immutable native callback discipline remain
+Installed compiler/runtime and immutable runtime callback discipline remain
 qualification premises. Hostile external writes between final checks and
 execution require a stronger external boundary than this work provides.
 
@@ -1208,10 +1219,10 @@ cold preparation, warm output reuse, source refusal, and an actual failing C
 compiler that must not launch Harness. Modification times are compared as
 numeric time values, not by the identity of freshly allocated time objects.
 The inert module scope and injected =#error= C declaration are test fixtures;
-Make, compiler, native publication, issuer, Ops and Harness are production code.
+Make, compiler, runtime publication, issuer, Ops and Harness are production code.
 
 A first attempt to rebuild the broad existing Core qualification list hit its
-unchanged 120-second limit. That failure is retained. Focused native compilation
+unchanged 120-second limit. That failure is retained. Focused runtime compilation
 of the changed owners replaces repeated unrelated CLOS compilation for this
 local receipt; this is not a successful full-Core build or exact-head CI claim.
 
@@ -1228,15 +1239,15 @@ source refuses both execution and artifact admission. A valid Scheme helper
 containing =begin-foreign= / =c-declare= with an injected C =#error= fails the
 actual compiler, retains that diagnostic and leaves the Harness marker absent.
 
-The native owners are compiled with installed, unmodified Gerbil into an
+The runtime owners are compiled with installed, unmodified Gerbil into an
 owned incremental overlay, ahead of the exact PR library and the previously
 qualified Core library. This avoids using a partially rebuilt unrelated CLOS
 cohort from the failed broad qualification attempt. It is not a fresh all-Core
-build. Changed owners use the native =-O= compilation mode together with
+build. Changed owners use the runtime =-O= compilation mode together with
 matching SSI/SSXI/runtime outputs: mixing non-optimized replacements with
 previously optimized call edges is not an admissible qualification cohort.
 Host load averages were observed above 80; these wall times do not
-establish a performance comparison. Native Make still launches on each run;
+establish a performance comparison. std/make still launches on each run;
 the demonstrated warm reuse concerns its issued compiler products, not a
 cached test verdict or elimination of every process.
 
@@ -1244,11 +1255,11 @@ Retained failed integration attempts exposed a test-file parenthesis error,
 slot/parameter shadowing, invalid generated package metadata, stale optimized
 call-edge metadata in an intermediate qualification overlay, and comparison of
 newly allocated time objects instead of time values. The package fixture now
-uses an interned Symbol, as required by the native SDK package parser; it does
+uses an interned Symbol, as required by the runtime Gerbil package parser; it does
 not use an uninterned gensym or a string. These repairs did not weaken source
 currentness, compiler failures, Harness admission or budgets. A later guard
 fixture also caught declared-slot self-reference in the Script factory; its
-inputs were renamed instead of bypassing the native slot rules.
+inputs were renamed instead of bypassing the runtime slot rules.
 
 * Focused upstream qualification, 2026-10-22
 
@@ -1256,8 +1267,8 @@ The executable consumer control is =t/test-publication-upstream-test.ss=.
 It uses the PR's actual =publication= / =stage= / =submit!=,
 =component-group-builder= and construction-cache accessors. It introduces no
 Builder subtype, read registry, ownership token or alternative publication
-protocol. One approved native graph initializes two independent publication
-heads in the same native approval domain:
+protocol. One approved runtime graph initializes two independent publication
+heads in the same runtime approval domain:
 
 #+begin_src scheme
 (def domain (publication.approval-domain))
@@ -1275,12 +1286,12 @@ heads in the same native approval domain:
 
 The four completed Cases assert wrong-owner and stale-request diagnostics;
 unchanged production identity; zero evaluated groups and retained result
-identity on the warm publication; explicit native lexical binding for a child
+identity on the warm publication; explicit runtime lexical binding for a child
 reading its own port after the parent plan was cached; an untouched unselected
-slot; native revision-guard refusal before the admission callback; file-source
+slot; runtime revision-guard refusal before the admission callback; file-source
 currentness refusal; and retention of the exact original callback exception.
 That exception is a failure-injection control, not a claim to have executed a
-failing C compiler. The native selected graph is a small fixture; this is not
+failing C compiler. The runtime selected graph is a small fixture; this is not
 yet a Core test-product/file-issuance integration.
 
 The installed runtime is =Gerbil 1cfb032 on Gambit ea114fc=. PR sources and
@@ -1288,13 +1299,13 @@ compiled outputs are isolated under =/private/tmp/yuanxu-pr13-096da65e=;
 the existing Yuanxu compiled context is consumed read-only, with the exact PR
 library first on the load path. This qualifies runtime compatibility, not a
 fresh full-Core build or complete CI. The existing shared service Fixture was
-recompiled from current source with native =std/make= into the owned test
+recompiled from current source with runtime =std/make= into the owned test
 library. All project controls run serially through =just test-file=, retaining
 the 2 GiB fence, 60-second idle rejection and 600-second total limit.
 
 | Control | Recorded result |
 |---------+-----------------|
-| Native publication/cache consumer | Four Cases completed; MODULE-OK, HARNESS-OK, final OK |
+| Runtime publication/cache consumer | Four Cases completed; MODULE-OK, HARNESS-OK, final OK |
 | Existing =t/slot-read-replay-test.ss= | Sixteen Cases completed; MODULE-OK, HARNESS-OK, final OK |
 | Existing =t/gitea-postgresql-publication-test.ss= | Eleven Cases completed; MODULE-OK, HARNESS-OK, final OK |
 
@@ -1304,7 +1315,7 @@ ERROR CASE, ERROR CHECK, ERROR HARNESS, heap-overflow or stack-overflow marker.
 The real service regression retains both independently published requirements,
 default following after parent-plan caching, explicit port mismatch, stale plan
 refusal, source change rejection and lazy unselected exports. These are focused
-consumer receipts, not a formal proof of every native publication use.
+consumer receipts, not a formal proof of every runtime publication use.
 
 Retained failures/preparation observations: the initial shared package directory
 contained the old =core= namespace and could not supply the Yuanxu prelude;
@@ -1314,11 +1325,11 @@ The same gate passed after compiling its existing support Fixture.
 
 An oversized upstream =build.ss library= selection was stopped, retaining its
 exit-143 record; it includes examples/test support beyond this control's demand.
-An incremental native Make invocation subsequently returned zero even though
+An incremental runtime Make invocation subsequently returned zero even though
 eleven interrupted library targets lacked their dynamic =.o1= output. The
-installed SDK's =gxc-outputs= tests =.ssi= and static =.scm=, not that complete
+installed Gerbil's =gxc-outputs= tests =.ssi= and static =.scm=, not that complete
 runtime artifact set. Only incomplete temporary targets were discarded and
-rebuilt with the existing native Make mechanism before testing. This is why
+rebuilt with the existing runtime Make mechanism before testing. This is why
 Core's existing positive completion/file checks remain necessary: object
 publication approval and Make currentness alone do not certify compiler output.
 
@@ -1384,15 +1395,15 @@ HARNESS-OK, final OK and no error/overflow/undefined-binding markers.
 
 | Executable owner | Accepted control |
 |------------------+------------------|
-| =t/module-test-preparation-test.ss= | Two complete automatic preparation Cases, native compiler failure, warm output reuse, association removal and source refusal |
+| =t/module-test-preparation-test.ss= | Two complete automatic preparation Cases, runtime compiler failure, warm output reuse, association removal and source refusal |
 | =t/testing-script-test.ss= | Fourteen existing Script policy/Fixture/receipt/real child-launch Cases |
 | =t/module-init-import-test.ss= | Two import/enumeration laziness Cases with the new export object |
-| =t/module-windows-test.ss= | Four native multi-window, same-graph, source-binding and lazy execution Cases |
+| =t/module-windows-test.ss= | Four runtime multi-window, same-graph, source-binding and lazy execution Cases |
 | =t/ops-functional-test.ss= | Direct Core scope, pure preview and functional execution |
 | =t/ops-process-script-test.ss= | Ready-bound cancellation, descendant cleanup, original diagnostics, stderr separation and explicit execution |
-| =t/build-artifact-publication-test.ss= | Installed compiler, native publication, cross-process warm/joint/mismatch handoffs, parent isolation and failed-build refusal |
+| =t/build-artifact-publication-test.ss= | Installed compiler, runtime publication, cross-process warm/joint/mismatch handoffs, parent isolation and failed-build refusal |
 | =t/gitea-postgresql-publication-test.ss= | Eleven real domain/publication Cases; both requirements, final child values, source diagnostics and source-change refusal |
-| =t/slot-read-replay-test.ss= | Sixteen existing native issuance/cache replay/protection Cases |
+| =t/slot-read-replay-test.ss= | Sixteen existing runtime issuance/cache replay/protection Cases |
 
 The final Script, automatic-preparation, Gitea and read-replay receipts were
 repeated after the common Ops output/failure handling changes. The handoff
@@ -1410,7 +1421,7 @@ and refines that demand's existing execution object for the requested policy.
 It no longer constructs a separate source-only =TestingScript.=. This file
 selector accommodates Core-owned qualifications outside module =tests/=
 folders; module-local runnable tests remain published by their module view.
-Both routes use the same execution factory, native Make projection, =.compile=
+Both routes use the same execution factory, runtime Make projection, =.compile=
 issuer and Harness. There is no additional Builder or test assertion engine.
 
 The namespace slots on =yuanxu.init.exports= are generated from the declaration's
@@ -1453,12 +1464,12 @@ actions, not inferred from specification length or process exit status.
 
 | Phase | Cold | Hot, same demand/issuer |
 |-------+------+-------------------------|
-| Native test import projection | 0.897427 s | 0.000018 s |
+| Runtime test import projection | 0.897427 s | 0.000018 s |
 | Support entries retained in specification | 5 | 5 |
 | Compile/issuance boundary | 16.549456 s | 6.894978 s |
-| Native Make process, included above | 15.380116 s | 5.639538 s |
-| Actual native Make compilation actions | 5 | 0 |
-| Native Harness process | 30.067594 s | 26.869656 s |
+| std/make process, included above | 15.380116 s | 5.639538 s |
+| Actual runtime Make compilation actions | 5 | 0 |
+| Runtime Harness process | 30.067594 s | 26.869656 s |
 | Complete explicit run | 48.871623 s | 34.878916 s |
 | Business Cases admitted | 11 | 11 |
 
@@ -1476,11 +1487,11 @@ result.
 
 ** Where the hot time remains
 
-The cached import projection is no longer the substantial hot cost. Native
+The cached import projection is no longer the substantial hot cost. Runtime
 Make still starts once and performs its incremental decision even when it
 compiles zero units. Compile/issuance costs outside the Make process are about
 1.26 s in this hot observation; these include source/artifact checks, not a
-second native compile.
+second runtime compile.
 
 The cold Harness recorded 20.410 s across eleven Case spans, including 18.960 s
 to acquire their fixtures. The hot Harness recorded 21.277 s across those same
@@ -1491,7 +1502,7 @@ preparation metadata is a candidate for subsequent measurement and proof;
 source currentness around effects and before return remains independent.
 
 Observation is opt-in through the existing test policy. Projection time,
-retained support count, native Make time and compilation count are emitted by
+retained support count, runtime Make time and compilation count are emitted by
 the existing preparation owner. They do not add a process wrapper, compiler
 scheduler, synthetic progress or a new source-freshness cache. Existing 2 GiB
 heap fencing, 60 s idle / 600 s overall limits and the 120 s compilation boundary
@@ -1503,7 +1514,7 @@ remain unchanged. Raw transcripts remain local under
 A subsequent, independent =just test-file t/gitea-postgresql-publication-test.ss
 trace= invocation passed all eleven Cases but compiled five support units
 again: init import 1.380685 s, cumulative selection 5.727799 s, import projection
-0.900921 s, compile/issuance 15.992105 s (native Make 14.820376 s), Harness
+0.900921 s, compile/issuance 15.992105 s (runtime Make 14.820376 s), Harness
 28.348603 s and total execution-owner time 52.264032 s, plus the separate 2 s
 context probe. These wall times describe this one run only.
 
@@ -1511,7 +1522,7 @@ The test projection allocates its own output directory and issuance endpoint.
 A new process does not inherit the previous process's retained approval. Thus
 same-receiver warm reuse is verified, but cross-Just incremental publication
 is still a gap. Merely remembering a directory or accepting an existing .o1
-would weaken issuance. Any subsequent improvement must use the existing native
+would weaken issuance. Any subsequent improvement must use the existing runtime
 publication/artifact authority and currentness boundary, not another Builder
 or a disk-side assertion that compilation succeeded.
 
@@ -1530,13 +1541,13 @@ The architectural entry for further cache changes is now
 [[file:../../../dev/sysml/README.org][Development System Architecture and Verification Allocation]],
 with [[file:../../../dev/sysml/10-evaluation/10.01-efficient-caching.org][10.01 Efficient Caching]]
 allocating each property to existing QNT, Lean and Scheme owners. Recovery stays
-internal to native build publication; this does not add a public =restore*=
+internal to runtime build publication; this does not add a public =restore*=
 family or a new cache protocol. SysML documents ownership and requirements;
 runtime and formal evidence retain separate status.
 
 The subsequently observed new-process rebuild is resolved by the
-[[file:../../../dev/sysml/10-evaluation/10.01-efficient-caching.org::*Root-cause repair and native correspondence, 2026-10-22][root-relative Make layout repair]]. A nested package was emitted as an absolute
-=gxc:= target, so native Make's expected output paths differed from the compiler's
+[[file:../../../dev/sysml/10-evaluation/10.01-efficient-caching.org::*Root-cause repair and runtime correspondence, 2026-10-22][root-relative Make layout repair]]. A nested package was emitted as an absolute
+=gxc:= target, so runtime Make's expected output paths differed from the compiler's
 module-identity paths. The fix uses the existing root-prefix target projection
 and checks the physical source correspondence. Restoration and cache/admission
 protocols are unchanged. The existing preparation Fixture now includes an aligned
@@ -1562,10 +1573,10 @@ a compromised account or replacement of the trusted installation itself. A
 readable receipt in an arbitrary product directory is still not an issuer.
 Core does not acquire a Nix dependency to obtain this local development reuse.
 
-The existing native publication remains the in-process authority. Recovery
+The existing runtime publication remains the in-process authority. Recovery
 first matches the selected compiler identities, source observations and output
 directory; it then rebinds the process-local generation and submits through the
-same native publication owner. Its checks include the approved packet source,
+same runtime publication owner. Its checks include the approved packet source,
 original issuance-record digest, product digests and source currentness before
 return. Replacing a product and its local record together cannot replace the
 separate package-owned approval.
@@ -1573,7 +1584,7 @@ separate package-owned approval.
 ** Demand identity and diagnostic order
 
 The test artifact location is derived from the test domain, installed Gerbil
-version/home, native Make specification, compiler-affecting environment,
+version/home, runtime Make specification, compiler-affecting environment,
 compiler identities and exact selected source observations. No unselected
 module catalog or dependency directory is scanned. Changing selected source
 bytes or the bound compiler context selects a different product; an existing
@@ -1592,7 +1603,7 @@ different order received different artifact directories.
 ;; Published by the test projection, never by its production sibling:
 build-publication: (test-build-publication projection)
 
-;; Same existing native effect boundary:
+;; Same existing runtime effect boundary:
 .compile:
 (lambda (libdir action)
   (call-with-build-artifact-issuance projection libdir action))
@@ -1601,13 +1612,13 @@ build-publication: (test-build-publication projection)
 Before compiling, the existing boundary attempts recovery from the selected
 publication when no receiver-local issuance exists. Missing approval takes the
 normal fresh-output compilation path. Existing but invalid approval/products
-refuse; they are not silently adopted or repaired into authority. Native
+refuse; they are not silently adopted or repaired into authority. Runtime
 =std/make= still runs on a successful warm call and makes the incremental
 compilation decision. Harness execution and domain admission run again.
 
 A normal Gerbil =std/os/flock= lock serializes recovery, Make and retained
 completion for the selected test product. Its timeout stays within the existing
-120 s preparation boundary. Native publication still owns receiver-local
+120 s preparation boundary. Runtime publication still owns receiver-local
 stage/submit semantics; the file lock does not pretend to make external file
 changes or Harness effects atomic. A partially written approval fails closed.
 
@@ -1617,7 +1628,7 @@ artifact/reference paths. Warm completion leaves the existing approved handoff
 unchanged. Currentness checks do not carry approval across effects or cache a
 passing test verdict.
 
-** Native dependency alignment
+** Runtime dependency alignment
 
 GitHub PR #13 was checked at
 =ecaa8a6f51c746f974b2db4c220838647a82af3b= on the existing
@@ -1639,9 +1650,9 @@ installed-runtime/dependency context, produced:
 | Selected test import projection | 1.291486 s | 0.873787 s |
 | Retained support entries | 5 | 5 |
 | Compile/recovery/issuance boundary | 16.620804 s | 8.954177 s |
-| Native Make process, included above | 14.452965 s | 5.315419 s |
-| Actual native Make compilation actions | 5 | 0 |
-| Native Harness process | 31.059534 s | 25.927359 s |
+| std/make process, included above | 14.452965 s | 5.315419 s |
+| Actual runtime Make compilation actions | 5 | 0 |
+| Runtime Harness process | 31.059534 s | 25.927359 s |
 | Execution-owner total, excluding context probe | 56.578882 s | 42.778201 s |
 | Existing real Scenario Cases | 11 passed | 11 passed |
 
@@ -1681,7 +1692,7 @@ The final tail cleanup was recompiled and the independent-process pair rerun:
 |-------------------+--------------+------------------|
 | Actual compilation actions | 5 | 0 |
 | Compile/recovery/issuance | 17.532289 s | 17.059139 s |
-| Native Make, included above | 15.262190 s | 13.058109 s |
+| std/make, included above | 15.262190 s | 13.058109 s |
 | Harness | 30.871091 s | 25.733593 s |
 | Execution-owner total | 57.905505 s | 51.560393 s |
 | Real Scenario Cases | 11 passed | 11 passed |
@@ -1697,28 +1708,28 @@ unchanged test-publication/issuance and MOP paths respectively.
 
 * POO caching is the owner; MakeLayout is a bounded regression
 
-The current follow-up is [[file:../../../dev/sysml/10-evaluation/10.01-efficient-caching.org][the caching study]], including the actual native
+The current follow-up is [[file:../../../dev/sysml/10-evaluation/10.01-efficient-caching.org][the caching study]], including the actual runtime
 =publication.current -> graph-cache-ref -> group-closed -> closed-raw= path.
 The MakeLayout model explains output-path correspondence only; it does not
-replace the POO cache design. Receiver identity, native completion heads,
+replace the POO cache design. Receiver identity, runtime completion heads,
 dependency replay, approval recovery and external currentness have distinct
-owners and lifetimes. Diagnostic timing now distinguishes native completion
+owners and lifetimes. Diagnostic timing now distinguishes runtime completion
 lookup from the filesystem validation performed around a cache hit.
 
 Two bounded reductions use the existing owners: a file-source guard no longer
 invokes =selected!= and then immediately invokes its already-completed guard
 again; recovery reuses its privately decoded approved packet while rerunning
 all admission checks. No successful currentness result is cached across Make,
-package callbacks or Harness. Native stage/submit!, both port requirements,
+package callbacks or Harness. Runtime stage/submit!, both port requirements,
 parent/child isolation and the external approval root are unchanged. Formal
 decode/admission properties belong to =TestPublicationReuse=, independently
-of =TestMakeLayout=. Native MOP replay remains covered by its existing tests
+of =TestMakeLayout=. Runtime MOP replay remains covered by its existing tests
 and models; no new MOP optimization is claimed from a wrapper-level reduction.
 
-** Selection and native replay follow-up
+** Selection and runtime replay follow-up
 
 The caching study now separates new-VM linker import, directory construction,
-reader bootstrap, role expansion/evaluation, native replay and source guards.
+reader bootstrap, role expansion/evaluation, runtime replay and source guards.
 Trace mode makes twenty bounded warm demands requiring the same cached Graph;
 ordinary =just test-file= does not perform those extra probes. Measurement uses
 a functional owner-scoped scalar report, with no injectable hash callback or
@@ -1727,7 +1738,7 @@ source/slot observer added to the closed replay segment.
 The reader's private completed-publication guard retains preparation replay,
 admission replay and policy order. With no source observer it omits only the
 stable repeated preparation tail; with an observer it retains that tail even
-after self-removal. Original native roots/edges, signature checks, file/source
+after self-removal. Original runtime roots/edges, signature checks, file/source
 tails, final admission and Harness remain. This is a within-call reduction,
 not a currentness cache or a merged preflight. =SelectionReplay= owns its
 Lean/QNT correspondence; MakeLayout remains independent.
@@ -1742,7 +1753,7 @@ control retain that distinction; no additional currentness check was removed.
 
 * Forward owner discovery and role compilation boundary, 2026-10-23
 
-An auto-selected directory can be the target of a native type import before its
+An auto-selected directory can be the target of a runtime type import before its
 publication is demanded. The directory context now resolves only that requested
 path through its existing locator. Explicit decisions, including disabled
 Modules, retain authority. This does not enumerate or activate the auto window.
@@ -1755,7 +1766,7 @@ Directory organization is not a separate Gerbil package boundary. A nested
 =modules/gerbil.pkg= or =scenarios/gerbil.pkg= must not be required merely to
 select role-specific default bindings. The root package owns identity; the
 =yuanxu!= selection and existing source preparer own role lowering. Prepared
-reader forms already inject declaration bindings and role imports. Native
+reader forms already inject declaration bindings and role imports. Runtime
 Make entry points must consume corresponding prepared role inputs instead of
 requiring a directory package to repair bare source imports. This remaining
 build-path correspondence is not established by the focused window result.
@@ -1764,10 +1775,10 @@ The complete baseline run retained failures in both declaration scale suites,
 compiled namespace execution and the isolated source gateway. No timeout,
 memory budget, source confinement or unissued-output rejection was relaxed.
 
-The product's native build also demanded command-manifest and Agent data
+The product's runtime build also demanded command-manifest and Agent data
 constructors from unpublished implementation paths. Funflow now re-exports
 these existing pure functions through its maintained =func.ss= role. Its
-existing publication closure therefore includes their native libraries without
+existing publication closure therefore includes their runtime libraries without
 adding a separate retained build list. The two-case atomic suite passed through
 =just test-file ... true=: manifest projection is inert, and a cached parent Job
 still reads a child's command while its unused task remains cold. An earlier

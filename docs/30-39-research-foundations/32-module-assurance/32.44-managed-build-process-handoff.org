@@ -135,7 +135,7 @@ after validation; no timeout is widened and no Gerbil source is modified.
   =core-build-handoff-publication-decoder-01.log= accept those actual traces.
   =core-build-handoff-decoder-negative-01.log= rejects a copied trace whose
   joint-replacement refusal was changed to acceptance, with exit 1 and
-  =native Core handoff/Lean decision mismatch=.
+  =runtime Core handoff/Lean decision mismatch=.
 - =/private/tmp/core-build-handoff-lean-03.log=: full Core Lean target passes,
   183 jobs and 6247 audited declarations, standard Lean axioms only.
 - =/private/tmp/core-build-handoff-quint-07.log= and its =.ss= receipt qualify
@@ -145,7 +145,7 @@ after validation; no timeout is widened and no Gerbil source is modified.
 
 Retained failed attempts include worker block-definition syntax and command-line
 indexing errors (runs 01--03), and the destructive source-change control causing
-a subsequent native recompilation into an unissued =.o2= (run 05). That native
+a subsequent runtime recompilation into an unissued =.o2= (run 05). That runtime
 refusal was correct. The source-change control now runs AFTER warm checks rather
 than weakening generation checks or manipulating timestamps. Run 06 was
 interrupted and is not qualified.

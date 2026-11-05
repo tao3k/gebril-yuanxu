@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; POO-native ensure/reinitialize generic-function conformance.
+;;; POO ensure/reinitialize generic-function conformance.
 
 (import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
@@ -19,7 +19,7 @@
          (eq? (.ref error 'code) code))))
 
 (def poo-clos-generic-evolution-test
-  (test-suite "POO-native CLOS generic evolution"
+  (test-suite "POO CLOS generic evolution"
     (yuanxu-test-case "ensure creates an explicit dispatchable binding"
       (let (binding
             (poo-clos-ensure-generic-function

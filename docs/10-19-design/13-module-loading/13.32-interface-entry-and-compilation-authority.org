@@ -1,0 +1,259 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 13.32 Interface Configuration, Init Exports and POO Demand
+#+language: en
+#+date: [2026-11-03]
+#+property: STATUS contract-correction-focused-implementation
+
+* Corrected authority: Interface is loader configuration
+
+A managed Module's =interface.ss= is declarative configuration consumed by
+Yuanxu's Module System. It is not the application consumer's ordinary Gerbil
+library API. The canonical chain is:
+
+#+begin_example
+Interface configuration -> selection / publication admission -> init.exports
+    -> ordinary POO .get demand -> linked/admitted Module scope
+#+end_example
+
+The owning declaration publishes one POO namespace whose Module leaves are the
+configured public POO objects themselves. Downstream applications use that
+namespace; they do not import Interface/private roles or unwrap a scope facade.
+Lazy namespace slots retain demand and identity under existing source/Contract
+checks. The Prelude exposes this one declaration route. It does not introduce
+another loader or select/activate a Module merely because the language is imported.
+
+This corrects two withdrawn approaches in this implementation session: a
+handwritten Nix role-file =expected= list, and a consumer importing =Nix= directly
+from Interface / reaching into =core.exports=. The latter bypassed the link and
+scope protocol: lowering supplies a =core.link= callback, not that raw export
+slot as an application interface. The native probe's failure is retained locally;
+it is not evidence that consumers need another direct-import facade.
+
+The public lookup is simply native POO:
+
+#+begin_src scheme
+(.get (.get yuanxu-lab-consumer.init.exports Lab nix) config)
+;; Equivalent path notation:
+(.get yuanxu-lab-consumer.init.exports Lab nix config)
+#+end_src
+
+The briefly proposed =.getModule= helper and Application/module/scope wrapper
+examples were withdrawn as redundant. The existing source linker's default
+namespace already returns admitted scopes; init had injected a metadata/test
+facade that exposed an extra =scope= step. Init now reuses the default route.
+Tests remain on the independent =init.exports.tests= facade and its =.select=
+operation, not injected into business Module objects. Explicit Module leaf demand
+obtains the configured object; import and namespace enumeration remain cold.
+
+* Separate operations on the same configured objects
+
+| Operation | Meaning | Authority |
+|-----------+---------+-----------|
+| Read Interface configuration | Prepare/admit source identity, Module metadata, requirements and selected Features | Existing source reader and publisher |
+| Select and publish namespace | Resolve one selection generation and expose configured POO objects through qualified init.exports | Existing selection/linker; no separate role manifest |
+| Demand scope through .get | Link checked providers, construct/admit scope and preserve source/POO identity | Existing scope admission and POO slots |
+| Project compilation | Derive compiler inputs from the same selected configuration, role association and owner contributions | Existing build graph/preparer and native Gerbil expansion |
+| Execute build | Materialize admitted compiler inputs and run native Make in the downstream environment | Existing guarded Gerbil build adapter/product owner |
+
+A namespace/getter is not compilation or an operational effect. Scope
+construction can run the existing checked factories when explicitly demanded;
+it must not be confused with importing a native binding or with execution of
+an operational method. Neither metadata fit nor compilation grants effects.
+
+Gerbil imports, phase dependencies and SSI/native products are backend
+mechanisms supporting this route. Their dependency closure is necessary for
+compilation, but does not define a second consumer-facing Module access API.
+Ordinary Core/third-party library facades (for example built-in Ops) remain
+ordinary Gerbil libraries. A file named =interface.ss= alone does not make a
+library facade a selectable managed Module.
+
+* One Interface role association, no downstream source inventory
+
+The existing =module-publication-role-imports= supplies bounded present-role
+association. =yuanxu-prepare-module-publication= retains reader/compiler forms
+from that association and original observations. =module-build-graph= consumes
+the same admitted publication and source dependencies. Downstream callers do
+not repeat =types/objects/func/config= as installation roots or use private roles
+as a way around configured scope admission.
+
+For safely deferred role declarations, generated compiler forms preserve native
+=for-template= edges and role demand. Other declarations keep the guarded
+normal-import path. This does not establish universal role-level laziness for
+every compiled Interface; it preserves the existing implementation boundary.
+Default vocabulary may need compiled availability before a business slot is
+forced. Optional Features and the Build role retain selection/phase isolation.
+Extra library roots, native options, assets and external contributions remain
+owned by the selected publication, never recovered by a global package scan.
+
+The proposed required four-file source shell remains a separate migration.
+This correction does not fabricate empty files, rename func/funs or add role
+aliases. Existing ordinary helper libraries keep their own source classification.
+Unifying owner/phase enforcement for all managed imports is the outstanding
+13.28 work, not something a direct Interface import can bypass.
+
+* Formal correspondence and its limits
+
+[[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Building/InterfaceRoots.lean][InterfaceRoots]] models admitted Interface configuration references as
+selection roots. Its dependency function means the existing preparation / native
+compiler-input projection, not an application's direct =import Interface= graph.
+It reuses existing discovery to prove selected configuration ancestry and
+separate attribution of application/contribution roots. No private role vector
+is accepted from downstream. These pure laws do not prove scope admission or
+native compiler correctness.
+
+The direct POO exit reuses the existing =ManagedBinding= joined execution laws
+(especially =execution_success_is_complete_and_current= and
+=successful_return_is_callback_result=) and =DemandMaterialization='s receiver /
+reflection identity laws. Init no longer supplies =module-view:= to the existing
+linker, so its default =resolve-scope= branch is the public namespace exit.
+No new lookup/cache algorithm is modeled or implemented. Native cold-namespace,
+plain-get value and repeated-object identity controls establish the focused
+Scheme correspondence; the Lean laws retain their source/observation premises.
+
+[[file:13.29-prelude-ecosystem-and-selected-package-builds.org][13.29]], [[file:13.30-selected-package-build-refinement.org][13.30]] and [[file:13.31-native-prelude-staging-and-source-view.org][13.31]] retain the compilation ownership, source/phase
+and output correspondence requirements. SourceView input data is not a cached
+approval. Existing guarded role/source preparation, native imports/Make and
+artifact management remain the sole implementation route.
+
+* Native acceptance through POO demand
+
+The independent Lab consumer selects =Lab (nix)= with the existing literal
+window grammar. Its application imports its own init.exports, not Lab Interface
+or config roles. Native package-library closure of the single application entry
+includes the consumer init without a hand-maintained =main/init/roles= list.
+
+The test observes the projected compiler specification and actual cold compiler
+events, checking that the Gerbil consumes exactly that selection's projection and
+that an unrelated Lab business family is absent. This comparison establishes
+handoff correspondence; it is not promoted to an independent proof that Gerbil
+or the source reader discovered every possible input. Existing source admission,
+selected graph laws and native role/compiler regressions retain those duties.
+
+Fresh-process use checks that importing the application and enumerating its
+namespace leave the Module leaf cold. A plain POO lookup then obtains the actual
+configured object and its command; repeated lookup must retain object identity. Hot builds must have zero compiler
+events. Cleanup must remove selected native products, preserve unrelated files
+and leave another downstream environment usable and hot. Exact upstream source
+bytes include both package entry files and selected input observations.
+
+No internal-file =expected= list or direct-import Interface closure is an
+acceptance oracle. Earlier runs and their failures remain local: one incorrect
+fixture bypassed scope linking; another reached earlier build/use/cleanup stages
+but refused because a concurrent session changed upstream build-spec.ss. Neither
+counts as a complete POO-route acceptance receipt.
+
+* Current implementation scope
+
+The public =yuanxu!= binding remains in init-syntax and is reexported by the
+Prelude. Its native staged import delegates semantic expansion at declaration
+demand. Cross-package compiler entries are retained in one selected projection;
+the downstream view uses absent =#f= prefix, original include locations, native
+extra inputs, physical-output collision checks, stable descriptors and existing
+cleanup. Native advisory locking serializes view mutation/compilation without
+another loader, graph or approval cache.
+
+Symbol-based package source windows, minimal Lab default dependency installation
+and complete cross-package issued publication remain outside the completed
+scope. The qualified path uses actual Lab sources and a separately built Core
+runtime; it does not claim remote deps --install acceptance. Whole-Graph issuance
+keeps its existing foreign-owner refusal until all obligations are realized.
+
+The direct source projection also retains its explicit refusal of nonempty
+=other-projections=: generated resources or external build contributions require
+their dedicated consumer. This receipt exercises source-library targets and
+their projected compiler options; it does not establish native FFI/resource/
+external-target acceptance. These owner obligations must be realized or rejected,
+never silently dropped to make a selected source build pass.
+
+* Verification receipt (2026-11-03)
+
+The real Lab consumer completed the corrected POO-route qualification:
+
+#+begin_example
+LAB-CONSUMER-OK init.exports-poo-demand lazy-import stable-scope
+LAB-DOWNSTREAM selected-targets=10 hot=0 fresh-use=ok clean-isolation=ok upstream=unchanged
+MODULE-OK t/selected-package-downstream-test.ss
+HARNESS-OK ("t/selected-package-downstream-test.ss")
+OK
+#+end_example
+
+The ten targets are observed from this selection's native projection, not a
+maintained list of internal role names. This receipt covers cold compilation,
+fresh-process POO use, hot compilation, two downstream output environments,
+cleanup isolation and byte-for-byte upstream preservation. The runtime's Core
+and third-party prerequisites were provisioned separately. It does not cover
+remote package fetching or the outstanding installation/publication scope above.
+
+A subsequent complete downstream rerun also passed the explicit nested lookup
+identity assertion: =(.get (.get yuanxu-lab-consumer.init.exports Lab nix) config)=
+is =eq?= to the existing multi-slot path result. No getter adapter or intermediate
+scope object participates in that check.
+
+Eight focused gates passed: Prelude, init import, windows, build specification,
+source location, testing, testing isolation and deferred reader. Each completed
+with MODULE-OK, HARNESS-OK and final OK without harness/heap/stack error markers.
+The Lean build completed 216 jobs, with shape and axiom audits covering 8680
+declarations and only standard Lean axioms. These are model results under their
+stated premises, separate from the native downstream receipt.
+
+The complete =just test= entrypoint also passed in the private Core runtime:
+101 serial file gates plus three selected-module tests (104 MODULE-OK markers),
+with final HARNESS-OK/OK, ~phase=all-files-complete fileCount=101~ and no
+harness/heap/stack error markers. This is the repository entrypoint's roster,
+not a claim that every opt-in qualification or scale gate was executed.
+
+Reproduction uses the existing heap-fenced Just entrypoints from the Core root:
+
+#+begin_src sh
+just build-selected-package-runtime /absolute/private-runtime
+just test-thousand-package-builds /absolute/private-runtime
+#+end_src
+
+Provision the runtime's declared third-party prerequisites before the Core build;
+the actual Lab checkout must be the parent of Core, as in this repository.
+Raw logs remain local artifacts, not source-controlled receipts.
+
+* Clean and compiler-input source ownership
+
+Clean consumes the same admitted Interface-derived specification as compile.
+A generated source directory is a compiler route, not a new authority for the
+original library. The existing compiler-input association must therefore be
+installed before source-view and role-frame preparation, not just around Make.
+Preparation itself can invoke publication currentness callbacks that resolve a
+public library through the temporarily active generated directory.
+
+=call-with-module-compiler-inputs= owns the existing private index for this whole
+dynamic extent. It restores the caller's association after restoring the source
+route, including exceptional exits. =module-compiler-source-input= still checks
+the selected input's =admit-current= on every lookup. No suffix, directory name,
+or matching public symbol grants enrollment to an unselected source; no passing
+admission is stored. Interface, role inventories and native Make targets remain
+unchanged. Independent checks outside the extent resolve the original package.
+
+The regression in =t/module-build-role-test.ss= uses real prepared inputs from
+two packages, verifies the association from a role's preparation callback, then
+throws an identity-checked exception from the action and checks restoration.
+Existing cases reject changed source bytes and same-name unselected sources.
+The callback is a test probe; the product clean is the integration check.
+
+Lean's existing =Building.SourceView= laws cover identity and input/output
+association. Quint's =CompilerInputExtent= covers ordering and exceptional
+restoration; =CompilerInputExtentBroken= supplies the route-before-owner negative
+control. These models do not prove filesystem atomicity or callback purity.
+
+Reproduce through the maintained entries, with the configured package environment:
+
+#+begin_src sh
+just build-core
+just test-core-file t/module-build-role-test.ss
+gerbil clean
+just build
+just test-core-file t/gitea-postgresql-publication-test.ss
+just test-core-file t/gitea-json-configuration-test.ss
+just test-root
+#+end_src
+
+The default build rebuilds Core before the product. A product-only build after
+clean is not a substitute for that prerequisite chain. Keep execution logs in
+local/CI artifacts; a focused test result does not establish full regression.

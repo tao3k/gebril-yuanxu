@@ -8,7 +8,7 @@
 ;;; Descriptor realization stays in package-root modules.
 ;;; Intent: keep the downstream surface focused on Yuanxu module activation.
 
-(import (only-in :clan/poo/object .o .ref .slot?)
+(import (runtime: :clan/poo/object)
         (only-in :yuanxu/object-family/syntax
                  defpoo-object-family)
         :yuanxu/utilities/final-projection-syntax

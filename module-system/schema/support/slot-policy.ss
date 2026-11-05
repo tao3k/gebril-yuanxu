@@ -6,7 +6,7 @@
 ;;; Boundary: pure, ordered field-value policies. POO owns inheritance;
 ;;; explicit append/prepend/remove are value operations, not module merging.
 
-(import :gerbil/core)
+(import (runtime: :gerbil/core) (only-in :gerbil/core object? make-object))
 
 (export yuanxu-module-slot-apply-policy
         yuanxu-module-slot-value-index

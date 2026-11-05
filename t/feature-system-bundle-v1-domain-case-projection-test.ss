@@ -98,7 +98,7 @@
              => 'duplicate-runtime-bundle-handoff-owner)))
 
    (yuanxu-test-case
-    "rejected upstream and invalid epoch never reach a native receipt"
+    "rejected upstream and invalid epoch never reach a runtime receipt"
     (let ((upstream-rejected
            (feature-bundle-v1-project-domain-case 1 '()))
           (invalid-epoch

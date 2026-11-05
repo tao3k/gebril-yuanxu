@@ -22,7 +22,7 @@ The maintained surface is:
 - =just test= for the ordinary =//scheme:tests= acceptance suite;
 - =just test-runtime-c= and =just test-bundle-v1= for their ordinary suites;
 - =just test-runtime-c-sanitizers= and =just test-runtime-c-leaks= for explicit
-  native diagnostic gates;
+  runtime diagnostic gates;
 - =just test-performance= for the separately visible performance gate; and
 - =just check= as the dependency composition =query -> build -> test=.
 

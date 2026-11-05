@@ -137,7 +137,7 @@ $ forall k in cal(K),
 
 * POO and proof ownership
 
-The public Scheme surface remains POO-native.  It supplies the ordinary
+The public Scheme surface remains POO.  It supplies the ordinary
 responsibility-transfer object and the owner relations that bind contract,
 authority, acceptance, and observation evidence.  Identity classification is
 a proof invariant over those objects; it does not introduce a second user DSL

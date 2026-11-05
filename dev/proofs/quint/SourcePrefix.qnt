@@ -30,7 +30,7 @@ module SourcePrefixModel {
   action locate = {
     nondet changed = required.union(Set(-1)).oneOf()
     all { s.phase == 1,
-      // A certified native directory prefix cannot run a contributor callback.
+      // A certified runtime directory prefix cannot run a contributor callback.
       // A changed Context takes the open path BEFORE invoking its locator.
       s' = s.with("phase", 2).with("dirty",
         if (s.closed or changed == -1) s.dirty else s.dirty.union(Set(changed))) }

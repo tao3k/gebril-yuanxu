@@ -68,7 +68,7 @@ AdmittedRecovery
   -> EvaluationOutcome × SuccessorEvaluationContext
 #+end_example
 
-=RecoveryExecutionIntent= is a native POO prototype extension of the existing
+=RecoveryExecutionIntent= is a POO prototype extension of the existing
 =EffectIntent=.  It is not a parallel base type or a new effect protocol.
 
 The projection from admission to intent is pure and deterministic.
@@ -80,7 +80,7 @@ The control plane owns:
 - admission decisions;
 - immutable evaluation contexts;
 - budget reservations;
-- POO-native intent values;
+- POO intent values;
 - effect dependency topology;
 - policy and version preconditions;
 - expected receipt contracts.
@@ -412,7 +412,7 @@ stabilized graph.
 
 * Observability
 
-Every graph exposes POO-native inspection evidence for:
+Every graph exposes POO inspection evidence for:
 
 - current node and completed dependencies;
 - admission and handoff identities;
@@ -431,7 +431,7 @@ authority.
 Ordinary user composition sees recovery policies and outcomes, not runtime DAG
 construction.
 
-Advanced extensions use native =gerbil-poo= objects and prototype operations
+Advanced extensions use runtime =gerbil-poo= objects and prototype operations
 to specialize existing:
 
 - effect intents;
@@ -473,12 +473,12 @@ The system fails closed on:
 - [X] Every terminal branch reaches mandatory closure.
 - [X] Runtime receipts preserve admission, execution, and graph identity.
 - [X] Simulation and replay cannot publish into admitted cache namespaces.
-- [X] The advanced interface remains POO-native.
+- [X] The advanced interface remains POO.
 
 * Conformance checklist
 
 - [ ] ASP emits parser-owned RFC and implementation owners.
-- [ ] =RecoveryExecutionIntent= extends the existing native POO effect-intent
+- [ ] =RecoveryExecutionIntent= extends the existing POO effect-intent
   prototype.
 - [ ] Stabilization is pure and content-identified.
 - [ ] Runtime handoff rejects any graph or version drift.

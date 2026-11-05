@@ -9,7 +9,7 @@
 (export #t (import: "contracts.ss"))
 
 (import "contracts.ss"
-        (only-in :clan/poo/object .all-slots .ref object?)
+        (runtime: :clan/poo/object)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/list/list every)

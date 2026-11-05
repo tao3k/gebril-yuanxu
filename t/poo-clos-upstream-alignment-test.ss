@@ -13,7 +13,7 @@
         (prefix-in :clan/poo/multimethod multi.))
 (export poo-clos-upstream-alignment-test)
 
-;; This native generic preserves Gerbil's optional/keyword/rest grammar; it
+;; This runtime generic preserves Gerbil's optional/keyword/rest grammar; it
 ;; must not be lowered through the separate CLOS &optional/&key parser.
 (.defgeneric (forward-row receiver required (optional #f) label: (label #f) . rest)
   slot: .forward combination: (lambda (parts row) (list parts row)))
@@ -21,7 +21,7 @@
 
 (def poo-clos-upstream-alignment-test
   (test-suite "Public upstream mechanisms used by Core"
-    (yuanxu-test-case "native forwarding retains keyword false and a private rest spine"
+    (yuanxu-test-case "runtime forwarding retains keyword false and a private rest spine"
       (def receiver (.o .forward: 'parts))
       (def supplied (list 2 3 label: #f 'tail))
       (def result (apply forward-row receiver supplied))

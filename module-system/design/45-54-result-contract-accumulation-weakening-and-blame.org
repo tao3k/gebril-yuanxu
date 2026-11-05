@@ -98,7 +98,7 @@ flowchart LR
 - [X] Composition conflict and concrete value violation are distinct failures.
 - [X] Lean witness:
   =YuanxuProof.ModuleSystem.Schema.Contracts=.
-- [ ] A later implementation-refinement proof must bind native POO contract
+- [ ] A later implementation-refinement proof must bind POO contract
   identity, declared contract algebra, weakening authority, and blame receipts
   to this abstract model.
 

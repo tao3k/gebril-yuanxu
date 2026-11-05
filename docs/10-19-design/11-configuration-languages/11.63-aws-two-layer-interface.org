@@ -157,7 +157,7 @@ authoring work or protect a named release boundary.
 
 These must be tested with upstream evolution, not static snippets alone. The
 same baseline and same field/element types must be compared across languages.
-Provider-native fields, a higher-level recipe and a deployment platform are
+Provider-runtime fields, a higher-level recipe and a deployment platform are
 different comparison levels.
 
 * Reflection: improvements we must earn

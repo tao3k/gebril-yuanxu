@@ -10,7 +10,7 @@
         (only-in :yuanxu/ops/progress call-with-execution-progress
                  execution-progress-idle-milliseconds))
 (export testing-script-test)
-;; Synthetic wire receipts exercise policy, not native-harness qualification.
+;; Synthetic wire receipts exercise policy, not runtime-harness qualification.
 (def files '("fixture-test.ss"))
 (def valid-output "MODULE-OK fixture-test.ss\nHARNESS-OK (\"fixture-test.ss\")\nOK\n")
 (def (receipt text (status-value 0)) (.o status: status-value output: text))
@@ -34,7 +34,7 @@
           (check-equal? (execution-progress-idle-milliseconds state) 1)
           (set! now 20000)
           (def cleanup (make-compiler-progress-reader))
-          ;; Native clean removes real products between the hot and rebuild
+          ;; Runtime clean removes real products between the hot and rebuild
           ;; invocations. Its fresh count=1 is work, not an idle heartbeat.
           (cleanup "... remove lib/yuanxu/core-spec.ssi\n")
           (check-equal? (execution-progress-idle-milliseconds state) 0)
@@ -42,10 +42,26 @@
           (cleanup "clean completed\n")
           (check-equal? (execution-progress-idle-milliseconds state) 1))
         clock: (lambda () now)))
+    (test-case "completed native index sources advance work, diagnostics and skips do not"
+      (def now 0)
+      (call-with-execution-progress 60000 180000
+        (lambda (state)
+          (def reader (make-compiler-progress-reader))
+          (set! now 10000)
+          (reader "TAG modules/one/types.ss\n")
+          (check-equal? (execution-progress-idle-milliseconds state) 0)
+          (set! now 10001)
+          (reader "SKIP modules/two/types.ss\n")
+          (reader "... tagging packages\n")
+          (check-equal? (execution-progress-idle-milliseconds state) 1)
+          (set! now 10002)
+          (reader "TAG modules/two/types.ss\n")
+          (check-equal? (execution-progress-idle-milliseconds state) 0))
+        clock: (lambda () now)))
     (test-case "child VM follows the default two-GiB Case policy"
       (check-equal? (.get TestingScript. runtime-options)
                     '("-:max-heap=2097152K,debug=q")))
-    (test-case "completion must match the whole native harness and every input"
+    (test-case "completion must match the whole runtime harness and every input"
       (def result (receipt valid-output))
       (check-equal? (eq? (admit-testing-result result files) result) #t)
       (for-each
@@ -141,7 +157,7 @@
       (check-equal? (.get (.call Specialized .run) output) specialized-output)
       (check-equal? checks 2)
       (check-equal? admitted 1)
-      ;; The ordinary native harness still requires its exact module list.
+      ;; The ordinary runtime harness still requires its exact module list.
       (check-exception (admit-testing-result (receipt specialized-output) files) error?))
     (test-case "specialized receipt failure and final currentness failure both survive"
       (def checks 0)
@@ -181,6 +197,35 @@
       (.call Child .run)
       (check-equal? parent-calls 1)
       (check-equal? child-calls 1))
+    (test-case "file deadline includes source preparation before process launch"
+      (def launched? #f)
+      (.def (Slow @ TestingScript.)
+        source: (synthetic-source (lambda () (thread-sleep! 1)))
+        profile: =>.+ (.o max-duration-milliseconds: 50)
+        command: (begin (set! launched? #t) (list "printf" "%s" valid-output)))
+      (check-exception (.call Slow .run) error?)
+      (check-equal? launched? #f))
+    (test-case "deadline unwinds final admission and does not contaminate the next file"
+      (def checks 0)
+      (.def (Slow @ TestingScript.)
+        source: (synthetic-source (lambda () (set! checks (+ checks 1))))
+        profile: =>.+ (.o max-duration-milliseconds: 200)
+        command: (list "printf" "%s" valid-output)
+        .admit-result: (lambda (_result) (thread-sleep! 2)))
+      (check-exception (.call Slow .run) error?)
+      (check-equal? checks 2)
+      (.def (Next @ TestingScript.)
+        source: (synthetic-source)
+        command: (list "printf" "%s" valid-output))
+      (check-equal? (.get (.call Next .run) output) valid-output))
+    (test-case "file deadline cancels a child process and still checks sources"
+      (def checks 0)
+      (.def (Slow @ TestingScript.)
+        source: (synthetic-source (lambda () (set! checks (+ checks 1))))
+        profile: =>.+ (.o max-duration-milliseconds: 200)
+        command: '("sleep" "2"))
+      (check-exception (.call Slow .run) error?)
+      (check-equal? checks 2))
     (test-case "common process admission never accepts error markers or incomplete output"
       (for-each
         (lambda (text)
@@ -195,7 +240,7 @@
         .admit-result: (lambda (result) (set! called? #t) result))
       (check-exception (.call Unchecked .run) error?)
       (check-equal? called? #f))
-    (test-case "the installed gxi entry executes a real child harness exactly once"
+    (test-case "the atomic gxi entry executes the official harness in its own process"
       (call-with-temporary-directory "testing-launch-"
         (lambda (directory)
           (def counter (path-expand "executions" directory))
@@ -203,9 +248,14 @@
           (.def (Driver @ TestingScript.)
             source: (.o spec: (list file) source-root: (current-directory) admit-current: void)
             command: (list "gxi" "-:max-heap=2G,debug=q"
-                           "t/qualification/testing/run.ss" file
-                           "-:max-heap=2G,debug=q" "60" "false")
+                           "dev/test-file.ss" file)
             environment: (.o YUANXU_TEST_LAUNCH_COUNT: counter)
             profile: =>.+ (.o max-duration-milliseconds: 120000))
-          (.call Driver .run)
-          (check-equal? (call-with-input-file counter read-all-as-string) "launched\n"))))))
+          (def result (.call Driver .run))
+          (def processes (call-with-input-file counter read-all))
+          (check-equal? (length processes) 1)
+          (check-equal?
+            (and (pair? processes)
+                 (not (not (string-contains (.get result output)
+                   (string-append "test-entry pid=" (number->string (car processes)))))))
+            #t))))))

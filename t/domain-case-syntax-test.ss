@@ -78,7 +78,7 @@
 
 (def domain-case-syntax-test
   (test-suite "DomainCase hygienic authoring macros"
-    (yuanxu-test-case "binds POO-native component descriptors"
+    (yuanxu-test-case "binds POO component descriptors"
       (check-equal?
        (.ref syntax-parent-component 'component-id)
        'syntax-parent)

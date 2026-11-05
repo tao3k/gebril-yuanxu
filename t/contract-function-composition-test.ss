@@ -1,16 +1,16 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Same native composition as the pinned contract/function service examples.
+;;; Same runtime composition as the pinned contract/function service examples.
 (import :std/test
         (only-in :std/error Error?)
         :clan/poo/object
-        (only-in :clan/poo/mop Function element? validate TypeError?)
+        (only-in :clan/poo/mop Type. Function element? validate TypeError?)
         (only-in :clan/poo/number Integer)
-        (only-in :clan/poo/type Record)
-        (only-in :clan/poo/object-contract-flow checked-action)
+        (only-in :clan/poo/type Record String)
+        (only-in :clan/poo/object-contract checked-action)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         :yuanxu/module-system/schema/slot-contracts
-        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-contract-admit
+        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-contract-admit yuanxu-value-admit
                  yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/ops/func validate-script preview-script)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
@@ -29,7 +29,73 @@
     (list CallbackSlot OptionalSlot) '()))
 
 (def contract-function-composition-test
-  (test-suite "native Contract Function and FUN composition"
+  (test-suite "Contract Function and FUN composition"
+    (yuanxu-test-case "checked Function identity follows its issuer and signature support"
+      (def calls 0)
+      (def (target value) (set! calls (+ calls 1)) value)
+      (def policy (Function (list Integer) (list Integer)))
+      (def checked (validate policy target))
+      (check-equal? (eq? (validate policy checked) checked) #t)
+      (def other (Function (list Integer) (list Integer)))
+      (check-equal? (eq? (validate other checked) checked) #f)
+      (check-exception (checked "wrong argument") TypeError?)
+      (check-equal? calls 0)
+      ;; A slot edit changes the issued support, even if its contents agree.
+      (.put! policy 'inputs (list Integer))
+      (def renewed (validate policy checked))
+      (check-equal? (eq? renewed checked) #f)
+      (check-equal? (eq? (validate policy renewed) renewed) #t)
+      (.put! policy 'outputs (list String))
+      (def changed (validate policy renewed))
+      (check-equal? (eq? changed renewed) #f)
+      (check-exception (changed 7) TypeError?)
+      (check-equal? calls 1))
+    (yuanxu-test-case "named value admission runs policy on the normalized subject each time"
+      (def validations 0)
+      (def seen '())
+      (def descriptor
+        (.cc Type. identity: 'test/runtime-scope .element?: object?
+          .validate: (lambda (value)
+                       (set! validations (+ validations 1))
+                       (.cc value normalized: #t))))
+      (def context
+        (.o .contract-obligations:
+          (lambda (_descriptor checked)
+            (set! seen (cons checked seen))
+            '())))
+      (def original (.o port: 5432))
+      (def first (yuanxu-value-admit descriptor original context))
+      (def second (yuanxu-value-admit descriptor original context))
+      (check-equal? validations 2)
+      (check-equal? (yuanxu-validation-evidence-accepted? first) #t)
+      (check-equal? (eq? (cadr seen) (.get first candidate)) #t)
+      (check-equal? (eq? (car seen) (.get second candidate)) #t)
+      (check-equal? (.slot? original 'normalized) #f))
+    (yuanxu-test-case "named value refusal skips policy and rejects contextual adapters"
+      (def policies 0)
+      (def descriptor (.cc Integer identity: 'test/integer))
+      (def context
+        (.o .contract-obligations:
+          (lambda (_descriptor _checked) (set! policies (+ policies 1)) '())))
+      (check-equal? (yuanxu-validation-evidence-accepted?
+                      (yuanxu-value-admit descriptor "bad" context)) #f)
+      (check-equal? policies 0)
+      (check-exception
+        (yuanxu-value-admit (.cc YuanxuContract. identity: 'test/legacy) (.o) context)
+        error?))
+    (yuanxu-test-case "named value admission retains both requirements and fences descriptor mutation"
+      (def descriptor (.cc Type. identity: 'test/policy-scope .element?: object?))
+      (def requirements (list (.o kind: 'require-a) (.o kind: 'require-b)))
+      (def refused
+        (yuanxu-value-admit descriptor (.o)
+          (.o .contract-obligations: (lambda (_descriptor _checked) requirements))))
+      (check-equal? (yuanxu-validation-evidence-accepted? refused) #f)
+      (check-equal? (eq? (.get refused obligation-evidence) requirements) #t)
+      (check-exception
+        (yuanxu-value-admit descriptor (.o)
+          (.o .contract-obligations:
+            (lambda (_descriptor _checked) (.put! descriptor 'changed #t) '())))
+        error?))
     (yuanxu-test-case "slot validation retains the Function wrapper"
       (def checked (yuanxu-contract-check-slot! CallbackSlot identity))
       (check-equal? (checked 3) 3)
@@ -47,7 +113,7 @@
       (def child (.cc parent retry: (lambda (_) "bad result")))
       (check-exception ((.get (validate Callbacks child) retry) 3) TypeError?)
       (check-equal? (.slot? parent 'retry) #f))
-    (yuanxu-test-case "native child Slot refinements also update projected type facts"
+    (yuanxu-test-case "runtime child Slot refinements also update projected type facts"
       (.get Callbacks effective-slots)
       (def child
         (.cc Callbacks slots:

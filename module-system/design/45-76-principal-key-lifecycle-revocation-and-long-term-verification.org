@@ -110,7 +110,7 @@ flowchart LR
 - [X] =algorithmMigrationPreservesHistoricalSignature=
 - [X] =keyChangeCreatesNewBindingIdentity=
 - [X] =algorithmChangeCreatesNewBindingIdentity=
-- [ ] Project key and trust policy through native =gerbil-poo=.
+- [ ] Project key and trust policy through runtime =gerbil-poo=.
 - [ ] Replay the synchronized declarations through external AXLE verification.
 
 The Lean anchor is =YuanxuProof.Admission.KeyLifecycle=.  It imports RFC
@@ -149,7 +149,7 @@ key record.
 * POO semantic ownership
 
 Key and trust policy are represented by ordinary higher-order POO objects.
-Native prototype composition defines:
+Runtime prototype composition defines:
 
 - credential purpose;
 - binding scope;
@@ -162,7 +162,7 @@ Native prototype composition defines:
 - verification bundles;
 - trust-domain federation.
 
-The public extension interface remains POO-native. Key status, trust, rotation,
+The public extension interface remains POO. Key status, trust, rotation,
 and algorithm selection must not become unstructured macro tokens or mutable
 global registries.
 
@@ -458,7 +458,7 @@ The implementation must distinguish at least:
 12. Trust anchors remain purpose and domain scoped.
 13. Verification bundles declare exact witness and replay capability.
 14. Signature verification never grants live action authority.
-15. Public trust and key-policy extension remains POO-native.
+15. Public trust and key-policy extension remains POO.
 
 * Implementation checklist
 

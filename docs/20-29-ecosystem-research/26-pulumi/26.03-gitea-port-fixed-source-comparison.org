@@ -48,7 +48,7 @@ existing SDK behavior, not an alleged missing feature.
 A known local Scheme port equality check cannot demonstrate equivalent unknown,
 secret or resource-edge handling. The official manual warns against creating
 resources inside apply when their absence from preview would hide changes.
-Native lazy POO slots alone do not solve this; an external-value protocol and
+Runtime lazy POO slots alone do not solve this; an external-value protocol and
 appropriate admission phases remain our design obligations.
 
 * Four questions and what a fair comparison can claim
@@ -157,7 +157,7 @@ library could centralize equivalent domain checks.
 Reflection: our candidate difference is centralizing collection and binding of
 selected obligations before domain admission. Pulumi's existing engine plan is
 counterevidence against a broader exclusivity claim. Source-bound requirement
-coverage across native object derivation, external Output adaptation and the
+coverage across runtime object derivation, external Output adaptation and the
 relative authoring cost require distinct evidence. Responsibility comparison:
 [[file:../../30-39-research-foundations/32-module-assurance/32.02-maintainer-publication-comparison.org][32.02]]. The reported #20536 interaction is not fixed by either synchronous
 guard shown here; no related resolving PR was verified.

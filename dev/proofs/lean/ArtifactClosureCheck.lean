@@ -15,7 +15,7 @@ def checkArtifactRow (j : Json) : Except String (String × Bool) := do
   let loaded ← a[5]!.getBool?
   let accepted ← a[6]!.getBool?
   unless admit issued observed valid current loaded == accepted do
-    throw s!"native artifact/model mismatch: {label}"
+    throw s!"runtime artifact/model mismatch: {label}"
   return (label, accepted)
 
 def checkArtifactTrace (j : Json) : Except String Unit := do
@@ -28,7 +28,7 @@ def checkArtifactTrace (j : Json) : Except String Unit := do
   unless rows.map Prod.fst == expected do throw "artifact observation coverage mismatch"
   unless rows.map Prod.snd == [true, false, false, false, false, false, false, false,
                               false, false, true, false] do
-    throw "unexpected native artifact acceptance"
+    throw "unexpected runtime artifact acceptance"
 
 def main (args : List String) : IO UInt32 := do
   match args with
@@ -37,4 +37,4 @@ def main (args : List String) : IO UInt32 := do
     match Json.parse text >>= checkArtifactTrace with
     | .error message => IO.eprintln message; return 1
     | .ok _ => IO.println "ARTIFACT-CORRESPONDENCE-OK: 12 actual closure observations"; return 0
-  | _ => IO.eprintln "expected native artifact trace path"; return 2
+  | _ => IO.eprintln "expected runtime artifact trace path"; return 2

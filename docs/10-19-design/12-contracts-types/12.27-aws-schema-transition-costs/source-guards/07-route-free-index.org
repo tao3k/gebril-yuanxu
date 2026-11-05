@@ -33,7 +33,7 @@ necessary, nor remove a check merely because its current Nix command is read-onl
 Selected publication assembly calls selected-index before constructing its
 complete Context. The normal index reader guards sources before reading author
 contribution declarations. The AWS selection has no such declarations: its
-native Graph nodes, kinds, publications and Core values have already been
+runtime Graph nodes, kinds, publications and Core values have already been
 demanded by selection/build preparation and the publication entry.
 
 The private index constructor now inspects those existing values with the
@@ -83,7 +83,7 @@ An isolated candidate that left Context collection after that handler fails
 the new control: the handler runs once when it must not run at all.
 
 For zero incoming rows the binder now demands its existing base Context
-immediately after native index inspection. That Context's source-entry check
+immediately after runtime index inspection. That Context's source-entry check
 validates compiler AND request/configuration observations before cold Contract
 metadata/handlers. Its read window ends before Schema getters. The final full
 Context check still validates Graph, Schema, Contract revisions and contribution
@@ -100,10 +100,10 @@ original preparation, export traversal and final checks.
 ;; Build derived Context, then perform its unchanged complete return check.
 #+end_src
 
-* Native controls and qualification
+* Runtime controls and qualification
 
 The existing admission-publication suite covers actual source opens, cold route
-declarations, native revision invalidation and the late-export/cold-handler
+declarations, runtime revision invalidation and the late-export/cold-handler
 boundary. It retains Schema/request-input refusal and standalone Context guards.
 The unchanged one-file work assertion measures (before reads, all-phase opens):
 (2 4) for the candidate. Restoring the previous producer gives (2 5) and fails
@@ -113,7 +113,7 @@ publication suite also completes all ten cases, including inherited obligations,
 coverage/origin refusals, later routes and cached-parent/final-child checks. Both
 finish naturally with MODULE-OK, HARNESS-OK and final OK, without failure markers.
 
-Negative injectors are fixture getters, source changes or native object edits;
+Negative injectors are fixture getters, source changes or runtime object edits;
 they are not alternative publication or evidence implementations.
 
 An initial added test had an extra closing parenthesis and failed module reading.

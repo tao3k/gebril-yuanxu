@@ -10,10 +10,10 @@
 
 - Status :: Accepted design
 - Kind :: Normative composition-strategy protocol
-- Semantic core :: Native =gerbil-poo= objects and Agentic AI Lab evaluation
+- Semantic core :: Runtime =gerbil-poo= objects and Agentic AI Lab evaluation
 - Related modules :: =45-38-poo-observability-profile-projection-retention-and-redaction.org= and =45-48-compose-function-profiles-strategy-and-lazy-evaluator-boundary.org=
 
-This module divides the responsibilities of the first-class =profiles= POO strategy into three normative facets while preserving one higher-order POO object and one native object-extension path.
+This module divides the responsibilities of the first-class =profiles= POO strategy into three normative facets while preserving one higher-order POO object and one runtime object-extension path.
 
 * Core decision
 
@@ -23,7 +23,7 @@ This module divides the responsibilities of the first-class =profiles= POO strat
 
 The facets are semantic projections of one object. They are not three registries, three plugin systems, or three new object DSLs.
 
-Concrete slots and native operators must be selected only after verification against the real =gerbil-poo= interface.
+Concrete slots and runtime operators must be selected only after verification against the real =gerbil-poo= interface.
 
 * Typst formalization: pure construction and external live context
 
@@ -87,7 +87,7 @@ flowchart LR
 - [X] Lean witness:
   =YuanxuProof.Modules.Funflow.Strategy=.
 - [ ] A later implementation-refinement proof must show that the selected
-  native =gerbil-poo= slots project to these abstract fields.
+  runtime =gerbil-poo= slots project to these abstract fields.
 
 * Construction facet
 
@@ -333,7 +333,7 @@ If required proof material is unavailable under the new evidence projection, the
 
 * Facet extension
 
-An advanced strategy extends one POO strategy object through native prototype operations.
+An advanced strategy extends one POO strategy object through runtime prototype operations.
 
 Facet extension:
 

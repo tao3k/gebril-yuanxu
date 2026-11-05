@@ -4,10 +4,10 @@
 #+title: Export Contract Index and Derived Scenario Resolution: Concrete POO Design
 #+property: STATUS design-source-only-not-implemented-no-loader
 
-* Native-parent correction
+* Runtime-parent correction
 
 [[file:18-mop-derived-profile-association.org][Module 18]] supersedes the manual origin-record output and origin resolver in
-this module for native inheritance. object-supers already retains parent objects;
+this module for runtime inheritance. object-supers already retains parent objects;
 children need no separately generated declaration record. Keep the contribution
 indexes, requirements, method bundle and final admission entry bodies below.
 
@@ -174,7 +174,7 @@ provide their own methods/bundles. Protocol-identity matching is Core's existing
 bundle admission. Unsupported crossings refuse, rather than treating arbitrary
 objects as Funflow Pipelines. No new method below bypasses the Profile Contract.
 
-* Origin preservation: native user forms and explicit internal output
+* Origin preservation: runtime user forms and explicit internal output
 
 Users keep ordinary POO definitions. These forms do not require a public macro:
 
@@ -189,7 +189,7 @@ Users keep ordinary POO definitions. These forms do not require a public macro:
   composition: =>.+ (.o participants: '(application)))
 #+end_src
 
-The pending declaration/publication owner must retain native syntax bindings and
+The pending declaration/publication owner must retain runtime syntax bindings and
 emit association data alongside these objects. Its internal output has this
 concrete shape, rather than a hidden ProfilePublication object or candidate slot:
 
@@ -213,7 +213,7 @@ The value binding used to construct TeamCIProfile must be the same canonical
 export as the root origin's value, not a second factory call. Alias/import rename
 retains that binding's origin. A derived origin records the actual new value and
 its already-resolved parent origins; re-export adds the user's own package/revision
-association and keeps the derivation dependencies. Native inheritance is not
+association and keeps the derivation dependencies. Runtime inheritance is not
 proof of publication authority. The trusted origin recorder, not an editable
 parents slot inside a Profile, owns these records. Generated forms must retain
 hygienic bindings; scanning names or guessing @ parents from runtime shape is
@@ -329,7 +329,7 @@ first-demand bound follows from these bodies.
 
 * Final receiver and admission boundary remain mandatory
 
-A Profile's inherited Pipeline computes checks from its native effective-config
+A Profile's inherited Pipeline computes checks from its runtime effective-config
 and final selected-checks. The association resolver never substitutes the root
 export value for the derived candidate. Domain admission compares projected
 Checks pairwise by final object identity and order; a fixed parent list is
@@ -340,14 +340,14 @@ from that final config; an unselected smoke does not become a plan task.
 Any source revision, derivation, policy, Contract, selection or dependency change
 invalidates affected associations/evidence/projection. Exact membership in an
 admitted stable view is the assumption here, not SourceRef metadata equality.
-Native receiver/cache probe evidence does not validate these new functions.
+Runtime receiver/cache probe evidence does not validate these new functions.
 Configuration admission precedes pure candidate projection; admitted-preview
 additionally needs the actual consumer Contract, and publication/runtime remain
 explicit separate boundaries. No command, scheduler or Loader is invoked.
 
 * Existing versus proposed
 
-Existing declaration mechanisms: native .def/.o, inheritance and lexical slots;
+Existing declaration mechanisms: .def/.o, inheritance and lexical slots;
 Core CLOS prototype specializers, protocol identity, private defrules and deferred
 .defmethod-bundle registration; Core slot-generic .admit and responsibility
 traversal; contribution location, role checks and inert SourceRefs.
@@ -361,7 +361,7 @@ Different independently extensible protocol/interface integrations can add metho
 bundles. Multiple distinct Contract requirements still need explicit composition;
 method dispatch alone never discharges all of them.
 
-Before implementation: validate native expansion, no declaration-time method
+Before implementation: validate runtime expansion, no declaration-time method
 registration, alias/rename hygiene, identity across exports, child/re-export
 origins, spoofed metadata, revision/policy invalidation, multi-parent conflict,
 selected-only demand and both parent-cache controls. Only static documentation

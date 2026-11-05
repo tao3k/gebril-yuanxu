@@ -8,7 +8,7 @@
 
 This design records the Core Observability owner. Existing Diagnostic and
 Receipt APIs remain available to JSON Schema and feedback consumers. The new
-Contract-admission observation family is native POO, not an alist facade or a
+Contract-admission observation family is POO, not an alist facade or a
 second tracer.
 
 Generic observation Contracts, objects, debug tracing, and slot inspection
@@ -27,11 +27,11 @@ authorized recovery, Profile policy, or production telemetry.
 
 | File | Responsibility |
 |------+----------------|
-| =core/observability/types.ss= | Native responsibility Contracts. |
+| =core/observability/types.ss= | Runtime responsibility Contracts. |
 | =core/observability/funcs.ss= | Pure bounded admission explanation and aggregate projections. |
-| =core/observability/objects.ss= | Native observation construction and slot-dispatched =.explain= / =.summary=. |
+| =core/observability/objects.ss= | Runtime observation construction and slot-dispatched =.explain= / =.summary=. |
 | =src/authoring/source-authoring.ss= and =src/testing/source-admission.ss= | Agentic AI Lab source authoring and test-time admission adapters. |
-| =core/module-system/observability/diagnostics.ss= | Native POO Diagnostic and DoctorReport values plus source-neutral status aggregation. |
+| =core/module-system/observability/diagnostics.ss= | POO Diagnostic and DoctorReport values plus source-neutral status aggregation. |
 | =src/user-interface/module-diagnostics.ss= | Product Task/Flow/Option findings, Doctor decision, and final alist projections. |
 | =src/user-interface/doctor-presentation.ss= | Doctor projection over diagnostic and loader receipts. |
 | =src/building/build-config.ss= and =build-projection.ss= | Product build observation policy and ASP PackageSpec handoff. |
@@ -51,14 +51,14 @@ gerbil env gerbil interactive t/scenarios/observability-admission-demo.ss
 #+end_src
 
 The example creates a real SemanticModule, replaces its imports responsibility
-with an invalid symbol, evaluates the native Contract once, and then observes
+with an invalid symbol, evaluates the Contract once, and then observes
 the resulting admission evidence. Internal inspection identifies path
 =(imports)= with cause =prototype-mismatch=. The development renderer prints
 aggregate verdict/completeness/count facts through the upstream debug API.
 
 * Constructing observations
 
-Consumers explicitly supply native semantic identities, causal references, and
+Consumers explicitly supply runtime semantic identities, causal references, and
 provenance. An identity consists of namespace, name, and revision. The
 observation context contains identity, source, generation, causes, provenance,
 and a detail-inspection budget (default 256 visited receipts).
@@ -89,17 +89,17 @@ Identities and provenance supplied by a producer provide correlation, not
 cryptographic authentication or proof that a named causal predecessor exists.
 The framework does not grant read, simulation, recovery, or export authority.
 
-* Extension follows native POO
+* Extension follows POO
 
 The observation family derives from =YuanxuObservationContract=, not
 SemanticModule. =YuanxuAdmissionObservationContract= refines the evidence
-responsibility and preserves the base native ancestry.
+responsibility and preserves the base runtime ancestry.
 
 =yuanxu-observation-explain= and =yuanxu-observation-summary= are upstream
 =.defgeneric= slot projections. Their unary form projects a derived POO value;
 it does not call a zero-argument procedure stored inside that slot.
 
-Advanced authors refine the observation prototype using native =.o=, =.mix=,
+Advanced authors refine the observation prototype using runtime =.o=, =.mix=,
 and derived responsibilities. No central kind switch or event registry must
 change for a specialized explanation. Existing published observations are not
 mutated by any framework operation.
@@ -139,7 +139,7 @@ raises =YuanxuObservationProjectionError= before output and does not attach
 the source exception or its irritants.
 
 =trace?= traces the aggregate view's render method, not the live Module.
-For explicit local tracing of a non-sensitive native object, advanced users
+For explicit local tracing of a non-sensitive runtime object, advanced users
 can import upstream =:clan/poo/debug= and call =trace-poo= directly with a
 non-sensitive name. That operation creates a new receiver/cache and may print
 raw arguments and results. It is not a redaction boundary.
@@ -156,7 +156,7 @@ the trace printer.  Multiple values and the original exception are preserved
 unchanged at the caller boundary.
 
 For a lazy POO slot that may recursively re-enter before upstream caching can
-complete, use =yuanxu-debug-poo=.  It returns a distinct native POO receiver
+complete, use =yuanxu-debug-poo=.  It returns a distinct POO receiver
 whose inherited slots are computed through an admission guard.  Each active
 path element is a pair of explicit receiver and slot symbols, so equal slot
 names on different guarded objects are not cycles.  The guard rejects a
@@ -190,10 +190,10 @@ slots.
 The POO Build Observability extension validates the PackageSpec boundary before
 calling its projector.  Agentic AI Lab's ordinary package leaves =modules= and
 =public-entry-modules= bound to precise owner modules. The =gerbil.pkg=-pinned
-ASP Scheme Build API projects that native source catalog to =std/make=. There
+ASP Scheme Build API projects that runtime source catalog to =std/make=. There
 is no package-local aggregate Module System API to expand first.
 
-ASP Scheme owns the reusable PackageSpec versus native =defbuild-script= A/B
+ASP Scheme owns the reusable PackageSpec versus runtime =defbuild-script= A/B
 evidence through the same =std/make= executor.  Agentic AI Lab additionally guards
 its package declaration against reintroducing an aggregate public-entry
 closure; its observability qualification checks
@@ -203,10 +203,10 @@ the catalog handoff and projected target count.
 
 =debug.ss= also owns an explicit in-band memory observation slice:
 
-- =yuanxu-debug-memory-policy= constructs a validated native POO policy;
+- =yuanxu-debug-memory-policy= constructs a validated POO policy;
 - =yuanxu-debug-memory-snapshot= reuses ASP Gerbil Scheme's narrow
   =benchmark-memory-usage= library projection and converts its heap-size,
-  allocation, live, movable, and still counters into a native POO sample,
+  allocation, live, movable, and still counters into a POO sample,
   without loading =:std/debug/heap='s unrelated heap-walker machinery;
 - =yuanxu-debug-memory-receipt= is a pure comparison of policy and samples;
 - =yuanxu-debug-memory-checkpoint= and
@@ -218,13 +218,13 @@ the catalog handoff and projected target count.
 - only =yuanxu-debug-memory-receipt-sexp='s bounded phase, verdict, reason,
   heap, and live counters may enter the default DDT output path.
 
-Long operations add checkpoints at owner-named phases or use the native monitor
+Long operations add checkpoints at owner-named phases or use the runtime monitor
 when they cannot cooperatively return to a checkpoint.  The framework does not
 walk the live heap or retain observed subjects.  Optional collection is an
 explicit policy field and is disabled by default because collection changes
 the measured operation.
 
-The in-band framework cannot run before its own module has loaded. Native test
+The in-band framework cannot run before its own module has loaded. Runtime test
 programs therefore apply the selected ASP POO Testing profile to their current
 Gambit runtime before loading the suites. The root Justfile also gives its
 outer test launcher a 512 MiB Gambit startup ceiling, before the profile module
@@ -234,25 +234,25 @@ diagnostic for test children and pre-import failure; it is not the semantic
 diagnosis owner and does not replace phase receipts.
 
 Do not add a shell poller or shell test wrapper as the detector.  Shell cannot
-observe POO phase identity, native contracts, or the lazy slot read that
-triggers a cycle.  Memory diagnosis remains native Scheme in this framework;
+observe POO phase identity, runtime contracts, or the lazy slot read that
+triggers a cycle.  Memory diagnosis remains Scheme in this framework;
 the runtime test profile and existing external observer are independent layers.
 
 Contribution atomic tests and module tests enter through the compiled
 =lambda-episteme/testing-observer.ss= module.  It does not discover or execute
 tests itself: ASP projects the selected POO Testing Profiles and invokes the
-native =gerbil test= command.  The observer emits =native-test-process-start=,
+runtime =gerbil test= command.  The observer emits =runtime-test-process-start=,
 five-second =operation-heartbeat= receipts, a traced return or raise outcome,
-and =native-test-process-complete=.  This makes a pre-output import stall
+and =runtime-test-process-complete=.  This makes a pre-output import stall
 distinguishable from a running gxtest suite while retaining the same upstream
 test semantics and per-file memory Profile.
 
-The motivating failure was a native POO authoring cycle.  In an =.o= body,
+The motivating failure was a POO authoring cycle.  In an =.o= body,
 =policy: policy=, =before: before=, or =after: after= resolves the bare right
 hand identifier as a self slot.  It does not capture a same-named constructor
 parameter.  The generated getters recurse and allocate until heap exhaustion.
 Constructors must first bind differently named lexical values, for example
-=policy-value=, and use =policy: policy-value=.  The reader-native
+=policy-value=, and use =policy: policy-value=.  The reader-runtime
 =agentic-ai-lab-poo-slot-authoring-{datum,port,file}-observations= APIs inspect both
 =slot: initializer= and =(slot initializer)= spellings without expansion or
 evaluation. They reject the same slot identifier anywhere in its unquoted
@@ -263,7 +263,7 @@ realization; the memory receipt separately proves the runtime boundary.  The
 performance root is included because a cyclic fixture can otherwise turn a
 bounded scale gate into unbounded heap growth before its first receipt.
 
-Ordinary lexical bindings have a separate reader-native gate.  The
+Ordinary lexical bindings have a separate reader-runtime gate.  The
 =agentic-ai-lab-scheme-lexical-call-shadow-{datum,port,file}-observations= APIs find
 function formals named =values= whose body later uses =(values ...)= as a call
 head.  This catches the argument-shadowing defect that replaced Scheme's
@@ -292,13 +292,13 @@ projection value and runtime-executed boundary unchanged.
 just test
 #+end_src
 
-=//gerbil:observability_framework_test= registers the framework gate. Native
+=//gerbil:observability_framework_test= registers the framework gate. Runtime
 source tests with cached dependencies and source-blob identity checks do not
 substitute for a full pinned build, parser qualification, or full-suite run.
 
 The original six-suite command completed on 2026-09-08 with 174 checks and exit
 code 0. After the memory slice and root-cause repairs landed, one source-first
-native test run with the declarative 1 GiB POO memory profile passed the observability framework,
+runtime test run with the declarative 1 GiB POO memory profile passed the observability framework,
 module-system authoring observation, loop-engine capability and runtime
 manifest, session registry, and multi-agent session graph suites.  The runtime
 manifest case alone exercised 169 assertions.  The standalone demo produced:

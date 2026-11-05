@@ -1,6 +1,6 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Flow edges use ordinary native Function descriptors, not signature labels.
+;;; Flow edges use ordinary runtime Function descriptors, not signature labels.
 (import :clan/poo/object
         (only-in :clan/poo/mop Type Type. Function Function. Fun Any Bool validate element? raise-type-error)
         (only-in :clan/poo/type String Symbol List Pair Null Unit Sum OrFalse Record Exactly Union)
@@ -15,7 +15,7 @@
 
 
 ;; The interpreter carries one value on each edge. Higher-order values still
-;; have arbitrary native Function signatures inside that single value.
+;; have arbitrary runtime Function signatures inside that single value.
 (def OperationSignature
   (.cc Type. sexp: 'FunflowOperationSignature
     '.element?
@@ -29,15 +29,15 @@
 (def (operation-input signature) (car (.get (admit-operation-signature signature) inputs)))
 (def (operation-output signature) (car (.get (admit-operation-signature signature) outputs)))
 
-;; Native finite relations own supported structural subtyping. Opaque domain
+;; Runtime finite relations own supported structural subtyping. Opaque domain
 ;; Types compose by identity; an unsupported relation never becomes approval.
 (def (type-flows? actual expected)
   (or (eq? actual expected)
       (with-catch
         (lambda (cause)
           (if (and (type-refusal? cause) (eq? (type-refusal-kind cause) 'unsupported))
-            ;; The native catalog represents opaque Types by actual identity.
-            ;; In particular it proves an opaque source may flow to native Any;
+            ;; The runtime catalog represents opaque Types by actual identity.
+            ;; In particular it proves an opaque source may flow to runtime Any;
             ;; it does not infer inclusion between unrelated predicates.
             (let (directory (capture-type-catalog (.o Source: actual Target: expected) '(Source Target)))
               (subtype-expression? (cdr (assq 'Source directory))
@@ -48,7 +48,7 @@
   (unless (type-flows? actual expected)
     (error "incompatible Flow edge" actual expected)))
 (def (PairValue left right) (Pair left (Pair right Null)))
-;; An opaque domain descriptor enters the native finite relation through its
+;; An opaque domain descriptor enters the runtime finite relation through its
 ;; captured identity, never through a public symbol pretending to be a Type.
 (def failure-catalog
   (capture-type-catalog (.o Failure: ExecutionFailureType) '(Failure)))
@@ -57,7 +57,7 @@
   (.cc (Sum left: ExecutionFailureType right: result-type)
     sexp: (list 'Sum left: failure-expression right: (.get result-type sexp))))
 
-;; Boundary projection only: native catalog tokens keep their authority in
+;; Boundary projection only: runtime catalog tokens keep their authority in
 ;; memory. Reports carry the underlying descriptor's descriptive data instead.
 (def (type-description descriptor)
   (def work (type-work 8192))

@@ -25,7 +25,7 @@ module CandidatePublicationModel {
     s' = s.with("phase", if (allowed) 1 else 5).with("held", allowed)
       .with("enteredDirty", allowed and not(current(s.dirty, actual)))
   }
-  action nativeRoles = {
+  action runtimeRoles = {
     nondet changed = selected.union(Set(-1)).oneOf()
     all { s.phase == 1,
       // Node 4 is initializer-local scratch, not an enduring policy or
@@ -67,7 +67,7 @@ module CandidatePublicationModel {
   action terminate = all { s.phase < 5,
     s' = s.with("phase", 5).with("held", BUG == "cleanup").with("visible", false) }
   action terminal = all { s.phase == 5, s' = s }
-  action step = any {enter, nativeRoles, beforeAdmission, admission, commit, terminate, terminal}
+  action step = any {enter, runtimeRoles, beforeAdmission, admission, commit, terminate, terminal}
   val LocalEntry = not(s.enteredDirty)
   val OpenEntry = not(s.openDirty)
   val OpenReturn = not(s.returnedDirty)

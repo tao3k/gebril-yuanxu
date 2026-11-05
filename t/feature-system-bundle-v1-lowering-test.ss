@@ -49,7 +49,7 @@
       (check (feature-bundle-v1-compact-id=? zero one) => #f)))
 
    (yuanxu-test-case
-    "POO-native values lower into the frozen C layout"
+    "POO values lower into the frozen C layout"
     (let* ((component-b (sample-component 'agent-b 1))
            (component-a (sample-component 'agent-a 0))
            (input-components (list component-b component-a))
@@ -73,8 +73,8 @@
            (metadata (.ref descriptor 'metadata-bytes))
            (symbol-rows (.ref descriptor 'symbol-rows))
            (rows (.ref descriptor 'component-rows))
-           (native-edges (.ref descriptor 'edge-rows))
-           (native-evidence (.ref descriptor 'evidence-rows)))
+           (runtime-edges (.ref descriptor 'edge-rows))
+           (runtime-evidence (.ref descriptor 'evidence-rows)))
       (check (feature-bundle-v1-lowering-plan? plan) => #t)
       (check (.ref plan 'accepted?) => #t)
       (check (.ref plan 'status) => 'ready)
@@ -104,16 +104,16 @@
       (check (u8vector-length (.ref descriptor 'metadata-image)) => 14)
       (check (u8vector-length (.ref descriptor 'digest)) => 32)
       (check (length symbol-rows) => 2)
-      (check (feature-bundle-v1-native-symbol? (car symbol-rows)) => #t)
+      (check (feature-bundle-v1-runtime-symbol? (car symbol-rows)) => #t)
       (check (.ref (car symbol-rows) 'flags) => 0)
-      (check (feature-bundle-v1-native-component? (car rows)) => #t)
+      (check (feature-bundle-v1-runtime-component? (car rows)) => #t)
       (check (.ref (car rows) 'flags) => 1)
       (check (.ref (car rows) 'reserved0) => 0)
       (check (.ref (car rows) 'reserved1) => 0)
-      (check (feature-bundle-v1-native-edge? (car native-edges)) => #t)
-      (check (.ref (car native-edges) 'reserved0) => 0)
-      (check (feature-bundle-v1-native-evidence? (car native-evidence)) => #t)
-      (check (.ref (car native-evidence) 'reserved0) => 0)
+      (check (feature-bundle-v1-runtime-edge? (car runtime-edges)) => #t)
+      (check (.ref (car runtime-edges) 'reserved0) => 0)
+      (check (feature-bundle-v1-runtime-evidence? (car runtime-evidence)) => #t)
+      (check (.ref (car runtime-evidence) 'reserved0) => 0)
       (check (feature-bundle-v1-compact-id<?
               (.ref (car rows) 'component-id)
               (.ref (cadr rows) 'component-id))

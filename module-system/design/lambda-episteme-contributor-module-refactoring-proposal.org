@@ -10,7 +10,7 @@
 
 Agentic AI Lab is the core. Do not create another =yuanxu= package.
 =packages/lambda-episteme/= is the independently maintained contributor
-repository. Its modules contribute POO-native domain declarations, profiles,
+repository. Its modules contribute POO domain declarations, profiles,
 source assets and scenarios. They do not own a graph execution engine.
 
 The user clarified that Python is permissible at an appropriate execution or
@@ -49,7 +49,7 @@ flowchart LR
   R -->|"snapshot-bound query evidence"| A
 #+end_export
 
-- Agentic AI Lab owns generic source-contribution admission and native composition.
+- Agentic AI Lab owns generic source-contribution admission and runtime composition.
 - The child owns domain names, policies, source assets, examples and tests.
 - gerbil-parser owns the GQL parser and its syntax artifacts.
 - The selected execution adapter owns executing queries and returning evidence.
@@ -87,20 +87,20 @@ the precise Core owner for contribution values; no second composition
 language is introduced.
 
 A contribution binds identity, revision, semantic owner, compatible contract,
-open semantic facets, explicit requirements and a native profile value.
+open semantic facets, explicit requirements and a runtime profile value.
 Admission rejects invalid shapes, incompatible contracts, missing requirements
 and duplicate export identities. Successful source admission records
 =runtime-executed? #f=; it cannot be used as execution evidence.
 
 Agentic AI Lab's =modules/governance/= core owns the engine-neutral Profile and
 Source contracts.  Lambda Episteme child modules construct vertical domain
-Profiles containing native ontology and policy objects plus optional Source
+Profiles containing runtime ontology and policy objects plus optional Source
 references.  Sources do not read files at import time. Their language is open;
 GQL is one possible source language rather than an engine dependency.
 
 * Source modules implemented
 
-| Module | Native declaration | Optional GQL source |
+| Module | Runtime declaration | Optional GQL source |
 |--------+--------------------+---------------------|
 | Diataxis | Document-kind vocabulary and diagnostic policy | Document identity and kind projection |
 | ADR | Decision lifecycle and completeness-sensitive policy | Expired-reference witnesses |
@@ -137,7 +137,7 @@ This integration is outside the source-module implementation.
 
 * Graph governance design
 
-Preserve native GQL source, ordered projections, entity/edge identities,
+Preserve runtime GQL source, ordered projections, entity/edge identities,
 query identity, source revision, schema binding, parameters and snapshot.
 Do not translate old SQL mechanically or reconstruct a GQL interpreter in
 Scheme/Python. Do not use paths as graph identity.
@@ -154,7 +154,7 @@ implemented child query execution. No new test claims those obligations closed.
 
 * Source authority and legacy assets
 
-Native POO declarations now own the new source-module interface. Existing
+POO declarations now own the new source-module interface. Existing
 =policies/= TOML/SQL files, Python alignment tests and Wendao command recipes
 remain legacy assets. They are not executed by the new module tests and are
 not an automatic compatibility path.
@@ -167,7 +167,7 @@ do not create two independently editable definitions of one executable rule.
 * Test isolation
 
 1. Agentic AI Lab: =t/contribution-test.ss=, synthetic modules only; no child checkout.
-2. Child: =t/governance-test.ss=, native declarations and profile composition
+2. Child: =t/governance-test.ss=, runtime declarations and profile composition
    against an installed/compiled Agentic AI Lab interface; no query engine.
 3. Child optional syntax lane: =t/gql-source-test.ss=, gerbil-parser only.
 4. Application integration: separately bind graph schemas, execute queries and

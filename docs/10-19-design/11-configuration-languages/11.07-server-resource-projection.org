@@ -256,7 +256,7 @@ full Kubernetes label/image rules are not proved by this guard.
   preview: (server->plan effective-server namespace))
 #+end_src
 
-server and namespace in the computed slots are native outer lexical slot bindings,
+server and namespace in the computed slots are runtime outer lexical slot bindings,
 not extracted parent constants. A derived Scenario retains that computation;
 its own lazy slots therefore select its final server, even after a parent preview
 was forced. This must still be run as a receiver/cache control for this new domain.
@@ -273,4 +273,4 @@ Loader resolution, source authentication or arbitrary function sandbox is implie
 Known remaining verification: malformed receipts, lost/omitted nested Port
 evidence, default/view correspondence, parent-preview warmup then child overrides,
 unselected Scenario counters, mapping/schema checks and serialization excluding
-internal metadata. Existing Core/native tests do not qualify this new reference.
+internal metadata. Existing Core/runtime tests do not qualify this new reference.

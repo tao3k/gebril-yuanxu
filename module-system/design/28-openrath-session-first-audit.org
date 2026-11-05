@@ -47,7 +47,7 @@ Agentic AI Lab already has adjacent pieces:
 
 - a POO-backed functional flow category with =compose=, =identity=, =arr=,
   =map=, =bind=, =fanout=, =first=, and =second=;
-- sandbox profile objects with derivation-path metadata and POO-native slot
+- sandbox profile objects with derivation-path metadata and POO slot
   transforms such as ==>= and ==>.+=;
 - report-only user presentations that keep runtime ownership explicit and
   preserve =runtime-executed: #f=;
@@ -281,7 +281,7 @@ shape, finish reason, tool-call count, truncation flag, and runtime owner.
 Third, OpenRath's tool dispatch groups calls by =tool.resource_key(args)=. Calls
 with the same resource key are serialized; independent resource keys can run in
 parallel. This is a stronger design input than a generic =max-parallel= knob.
-Agentic AI Lab should model it as a POO-native resource/collision policy object under
+Agentic AI Lab should model it as a POO resource/collision policy object under
 =loop-engine=:
 
 - =resource-key=: symbolic or computed key description;
@@ -290,7 +290,7 @@ Agentic AI Lab should model it as a POO-native resource/collision policy object 
 - =sandbox-profile-ref=: runtime placement;
 - =receipt-contract=: report-only dispatch result contract.
 
-The immediate implementation implication is for the current POO-native
+The immediate implementation implication is for the current POO
 =loop-engine= surface: add resource/collision policy as an object extension
 rather than reintroducing row DSL flags. The user-facing shape should remain
 =use-module loop-engine :config (.def ...)=.
@@ -305,7 +305,7 @@ For Agentic AI Lab this means lineage should be an inert POO object family, not 
 
 Second, OpenRath's =Selector= is itself a workflow. Its =forward= asks =select_session= for an index and returns either the chosen workflow or an empty workflow. That makes selection a normal compositional step, not a special scheduler primitive.
 
-For Agentic AI Lab this maps to a POO-native =loop-engine-selector-policy= object. Scheme should describe candidate use cases, judge inputs, fallback policy, and the selected branch reference in receipts. Runtime scoring and model calls remain Marlin-owned.
+For Agentic AI Lab this maps to a POO =loop-engine-selector-policy= object. Scheme should describe candidate use cases, judge inputs, fallback policy, and the selected branch reference in receipts. Runtime scoring and model calls remain Marlin-owned.
 
 Third, OpenRath's tool layer puts collision semantics on the tool object. =FlowToolCall.resource_key= defaults to a global or safe key, while system tools refine that key for shell execution, code execution, and path-oriented file operations.
 
@@ -322,7 +322,7 @@ The second source pass adds runtime-owner evidence below the session, selector, 
 - =src/rath/flow/memory_inject.py:35-105= keeps recall injection behind a policy protocol. =DefaultRecallInjection= reads the last user message, dispatches a find op, converts hits to chunks, and degrades to no injected chunks on failure or unsupported results.
 - =src/rath/session/compress.py:32-164= and =src/rath/flow/compressor.py:14-36= model compression as a workflow transformation that creates a new session and records lineage, not as an in-place log mutation.
 
-For Agentic AI Lab, this is not a reason to implement backend lifecycle, locks, stores, or compression execution in Scheme. It is evidence for additional POO-native policy objects:
+For Agentic AI Lab, this is not a reason to implement backend lifecycle, locks, stores, or compression execution in Scheme. It is evidence for additional POO policy objects:
 
 - =loop-engine-capability-policy= for sandbox backend capability expectations.
 - =loop-engine-memory-policy= for recall, commit, store-scope, and ranking expectations.

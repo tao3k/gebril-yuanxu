@@ -20,11 +20,11 @@ This makes three gaps in [[file:09-consolidation-and-ecosystem-gaps.org][module 
 The [[file:13-independent-profiles-and-scenario-composition.org][independent Profile/Scenario case]] is the current configuration authority.
 No new command, public macro, field registry, Loader or runtime is implemented.
 
-The configuration, descriptor, diagnostic and preview are native POO values.
+The configuration, descriptor, diagnostic and preview are POO values.
 Named pure functions own their projections. The inspector does not become a
 second evaluator or writable configuration model. UI/JSON rendering is a final
 projection. Requirements below describe result slots, not a newly implemented
-API or another schema language. Owners publish metadata as ordinary native slots.
+API or another schema language. Owners publish metadata as ordinary runtime slots.
 
 * One user journey: discover, refine, add smoke, inspect, admit, publish
 
@@ -64,7 +64,7 @@ not the execution membership.
 
 ** Authoritative descriptor projection
 
-Project the effective Contract's responsibilities and native field metadata.
+Project the effective Contract's responsibilities and runtime field metadata.
 Resolve documented defaults through their owning prototype/Profile paths rather
 than copying executable defaults into a second table. Check fields are closed;
 Configured Funflow extension positions accept named Checks according to the owner policy.
@@ -81,7 +81,7 @@ An inspector must explain this distinction before suggesting a new object.
 | provenance | Source/revision and available declaration locations |
 | demand-state | Description-only, unevaluated, evaluated, or failed |
 | configuration-role | Value, derived output, existing-object extension, new-object position or core protocol extension |
-| configuration-guidance | Intent-specific native assignment/refinement advice, target owner and actual support status |
+| configuration-guidance | Intent-specific runtime assignment/refinement advice, target owner and actual support status |
 | prototype-owner-path | Module-scoped prototype origin when constructing a new domain object is appropriate; otherwise not applicable |
 
 These are proposed descriptor fields. Descriptions are owner metadata, not a
@@ -94,7 +94,7 @@ inspection; arbitrary computed metadata may need a separate explicit demand.
 
 Present four intent choices: assign a complete value, transform an inherited
 value, create a new object, or extend a core mechanism. A deep path is still an
-assignment, with implicit native intermediate inheritance. Do not first suggest
+assignment, with implicit runtime intermediate inheritance. Do not first suggest
 an object-extension operator simply because an ordinary field is nested.
 
 The [[file:11-direct-path-assignment-and-refinement.org][intent/disclosure rule]] governs advice. Configuration-role and guidance are
@@ -106,13 +106,13 @@ an independent writable-field registry that can drift from responsibilities.
 
 | Selected field/position | Discovery advice | Boundary shown to the user |
 |-------------------------+------------------+----------------------------|
-| build.commands | Assign the full command value; no extension operator needed | CommandsContract; proposed deep-path syntax, native ordinary assignment exists |
-| build.artifact-outputs | Assign to replace; native => append to retain and add | UniqueSymbolsContract; no automatic append |
+| build.commands | Assign the full command value; no extension operator needed | CommandsContract; proposed deep-path syntax, runtime ordinary assignment exists |
+| build.artifact-outputs | Assign to replace; runtime => append to retain and add | UniqueSymbolsContract; no automatic append |
 | pipeline.selected-checks | Assign the desired membership list | Selected-name and dependency admission; declaration alone does not select smoke |
 | pipeline.checks | Derived output; configure selected-checks and the named Checks | No ordinary editing suggestion; final effective-object identities must match |
 | Configured Funflow's named Check extension position | Create smoke from the current module's prototypes.check | Scoped origin, new-object fields and Check admission; arbitrary unknown fields remain errors |
 | An upstream-declared existing strategy | Use paths for ordinary field changes; =>.+ for explicit object extension | The strategy's own Contract and the current source-role policy |
-| An upstream-declared core protocol boundary | Use native method/Contract extension; Generic only where axes independently vary | Consumer support and explicit admission; not a callback in commands |
+| An upstream-declared core protocol boundary | Use runtime method/Contract extension; Generic only where axes independently vary | Consumer support and explicit admission; not a callback in commands |
 
 An existing strategy need not be exposed just because a normal field's getter
 uses it internally. Core rows apply only to boundaries actually declared by the
@@ -134,16 +134,16 @@ Illustrative field panel, not an implemented tool result:
 Field: build.commands
 Role: ordinary value
 To replace: assign the complete value
-To derive from the inherited value: native => with a pure transformation
+To derive from the inherited value: runtime => with a pure transformation
 Constraint: executable + arguments; no implicit shell
 Default source: maintained Gerbil Profile / build
-Syntax status: deep-path assignment proposed; native owning-slot assignment exists
+Syntax status: deep-path assignment proposed; runtime owning-slot assignment exists
 Demand: descriptions only; effective task values not evaluated
 #+end_example
 
 ** Interaction and typo rules
 
-The following panels are illustrative renderings of the proposed native result
+The following panels are illustrative renderings of the proposed runtime result
 objects, not output from an implemented CLI/editor or new passing test receipts.
 The public name is commands; its Contract supplies the representation rules.
 
@@ -158,7 +158,7 @@ artifact-outputs    unique artifact names
 dependency-refs     Check names within this effective Profile
 pipeline.checks     derived from effective Profile and selected-checks
 
-Configure: assign complete values; use native => only to transform old values
+Configure: assign complete values; use runtime => only to transform old values
 New Check: take its prototype from the current bounded module scope
 Deep-path assignment: proposed; current dotted adapter supports =>.+ only
 View: descriptions only; task values have not been evaluated
@@ -203,14 +203,14 @@ do not rewrite either field names or selected task names.
 
 * Conflict diagnosis: distinguish refinement from competing ownership
 
-Native precedence remains native lookup semantics. The domain boundary adds an
+Runtime precedence remains runtime lookup semantics. The domain boundary adds an
 explanation and admission policy for independently contributed business facts;
 it does not reinterpret =>.+ or reject ordinary explicit child overrides.
 
 | Contribution situation | Required result |
 |------------------------+-----------------|
 | User refines inherited build.artifact-outputs | Accept explicit replacement and show inherited/local contributions |
-| User appends via native functional refinement | Record the transformation and resulting order; do not call it replacement |
+| User appends via runtime functional refinement | Record the transformation and resulting order; do not call it replacement |
 | Two independent sources claim the same qualified smoke identity | Refuse ambiguous composition unless the owner relation explicitly resolves it |
 | Two modules each publish local build | Preserve qualified identities; a shared local spelling is not itself a conflict |
 | Different qualified tasks project to the same consumer key | Refuse the output collision before publication |
@@ -220,14 +220,14 @@ and Check name, correlated with source identity. Printed paths alone do not
 authenticate a source. A durable runtime identity also needs a specified consumer
 mapping; slash-concatenating local task names is not a substitute.
 
-The proposed native diagnostic contains code, qualified-path, stage, contributions
+The proposed runtime diagnostic contains code, qualified-path, stage, contributions
 and repair. Each contribution retains source/revision, location when available,
 original value or an explicitly unevaluated description, and operation kind.
 Repairs identify the exact ambiguity: separate identities or explicitly choose
 and refine an owner. Parent order must not silently choose business intent.
 Do not force conflicting arbitrary values merely to print a diagnostic.
 
-This requires retained contribution/provenance data before native lookup hides
+This requires retained contribution/provenance data before runtime lookup hides
 the losing definition. Existing source-ref identity checks and module 07's issue
 objects do not provide that history. No conflict collector is implemented here.
 Owner resolution is a relationship of ordinary POO values, not a proposed new
@@ -248,7 +248,7 @@ Publication: refused; parent order does not resolve business intent
 
 * Effective plan preview: show results and exactly what is established
 
-** Demand levels and native result slots
+** Demand levels and runtime result slots
 
 Description-only inspection lists metadata. Effective-value preview evaluates
 only requested selected configuration. Admitted preview additionally performs
@@ -327,7 +327,7 @@ Runtime-executed: false
 ** Parent cache, admission and publication
 
 The upstream getter remains checks: (funflow-selected-checks effective-config
-selected-checks). Its outer native receiver binding must refer to the effective
+selected-checks). Its outer runtime receiver binding must refer to the effective
 child Profile. Force the parent Pipeline first as a control; the child preview
 must still resolve its refined build and newly selected smoke. Pairwise current
 Check identities are validated. A fixed parent list must block admission, not
@@ -345,7 +345,7 @@ Publication: refused; previous admitted plan retained if one exists
 
 The successful child preview must show the release build command, release-build-log and smoke while the
 parent remains build/test/package with its original build. Check actual versus
-expected objects pairwise by native identity, in addition to membership/order;
+expected objects pairwise by runtime identity, in addition to membership/order;
 matching printed names or commands does not establish final-receiver identity.
 No scenario is marked admitted while using a stale parent's validation evidence.
 
@@ -368,7 +368,7 @@ Publication is separate from explicit runtime handoff and execution receipts.
 Borrow BAML's task/input/output focus and discover-before-run workflow. A future
 editor or CLI may render the same descriptor/diagnostic/preview objects; this
 revision defines neither a new command spelling nor an alternate evaluator.
-Keep ordinary CI edits in native paths, extension in native prototypes, and
+Keep ordinary CI edits in runtime paths, extension in runtime prototypes, and
 validation in the existing Contract boundary. A preview never implicitly runs
 smoke or activates all module methods, Profiles or external services.
 
@@ -377,7 +377,7 @@ smoke or activates all module methods, Profiles or external services.
 | Control | Required observation |
 |---------+----------------------|
 | Describe a known field | Owner metadata appears without unrelated Profile construction |
-| Ask how to configure a value | Show ordinary assignment first and native transformation only for inherited-value intent; label proposed syntax |
+| Ask how to configure a value | Show ordinary assignment first and runtime transformation only for inherited-value intent; label proposed syntax |
 | Ask how to change derived checks | Point to selection/named tasks; do not suggest a manually assembled checks list |
 | Ask how to add smoke | Show the current module's prototype origin and admission requirements without leaking a global alias |
 | Missing operation guidance | Show unavailable metadata; do not infer editability from the runtime value type |
@@ -393,7 +393,7 @@ smoke or activates all module methods, Profiles or external services.
 | Mutable/unsupported input view | No stale admitted preview or cache-proof shortcut |
 | Preview any case | No commands, cloud changes, sandbox execution or Loader activation |
 
-These are future acceptance cases, not new passing test receipts. Native slot
+These are future acceptance cases, not new passing test receipts. Runtime slot
 inheritance/path expansion and bounded scope support are reused; discovery
 projection, provenance retention, rich diagnostics, preview evidence and atomic
 consumer publication remain proposed adapters. No runtime or Loader change is

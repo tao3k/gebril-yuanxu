@@ -5,7 +5,7 @@ import LeanPoo.C4.ReachabilityInvariant
 import Std.Data.HashSet.Lemmas
 
 /-! DFS specialization of LeanPoo's pending/unseen-weight reachability argument.
-Unlike its BFS, dependencies precede pending siblings, matching native replay.
+Unlike its BFS, dependencies precede pending siblings, matching runtime replay.
 IDs project read-record reference identity, NEVER payload/slot/source equality.
 The graph is finite and fixed; callback graph growth is not certified here. -/
 namespace YuanxuProof.Admission.IdentityDFS
@@ -257,17 +257,17 @@ def finalOps (order : List Nat) (recorded current : Nat → Binding) : List Op :
   order.map (fun id => .token (toString id) (recorded id) (current id))
 
 theorem final_check_exact (order : List Nat) (recorded current : Nat → Binding) (world : World) :
-    firstIssue (finalOps order recorded current) world = none ↔
+    ReplayBoundary.firstIssue (finalOps order recorded current) world = none ↔
       ∀ id ∈ order, recorded id = current id := by
   induction order with
-  | nil => simp [finalOps, firstIssue]
+  | nil => simp [finalOps, ReplayBoundary.firstIssue]
   | cons id rest ih =>
-    simp only [finalOps, List.map_cons, firstIssue]
+    simp only [finalOps, List.map_cons, ReplayBoundary.firstIssue]
     by_cases same : recorded id = current id <;> simp [same, finalOps] at *
     · exact ih
 
 /-- A hash-key enumeration must contain exactly the seen identities. Its order
-is intentionally a parameter, since native hash enumeration is not canonical. -/
+is intentionally a parameter, since runtime hash enumeration is not canonical. -/
 theorem final_covers_discovery (order : List Nat)
     (enumeration : order.Perm (discover vertices edges roots).order)
     (recorded current : Nat → Binding) (world : World)

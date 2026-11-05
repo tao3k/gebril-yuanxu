@@ -4,8 +4,10 @@
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :yuanxu/object-types/ports Port)
         (only-in :yuanxu/admission/source SourceAdmissionContract.))
-(export ScopeContract)
-(define-type (ScopeContract @ SourceAdmissionContract.)
+(export ScopeContract ApplicationContract)
+(define-type (ScopeContract @ Object)
+  identity: 'module-demand/scope)
+(define-type (ApplicationContract @ SourceAdmissionContract.)
   identity: 'module-demand/scope
   value-contract: (.cc ObjectContract. responsibilities: (.o config: Object port: Port))
   .obligations:

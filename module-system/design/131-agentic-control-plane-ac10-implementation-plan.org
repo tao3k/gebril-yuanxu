@@ -17,19 +17,19 @@ committed only when its focused tests and artifact freshness gates pass.
 
 #+begin_src mermaid
 flowchart TD
-    S1["S1 POO-native assurance manifest"] --> S2["S2 Claim and TCB verifier"]
+    S1["S1 POO assurance manifest"] --> S2["S2 Claim and TCB verifier"]
     S2 --> S3["S3 Canonical vertical fixture"]
     S3 --> S4["S4 Cross-language evidence verifier"]
     S4 --> S5["S5 Fault and performance closure"]
     S5 --> S6["S6 AC-10 qualification receipt"]
 #+end_src
 
-* S1 — POO-native assurance manifest
+* S1 — POO assurance manifest
 
 Create the canonical manifest, claim, TCB, evidence-reference, gate-result, and
 ABI-decision object families.  Add deterministic normalization, digest identity,
 duplicate rejection, construction-order invariance, and incomplete-manifest
-tests.  Keep interchange serialization outside the native C ABI.
+tests.  Keep interchange serialization outside the runtime C ABI.
 
 Delivery result: complete.  The object family, canonical normalization,
 SHA-256 identity, construction-order invariance, completeness, duplicate, and
@@ -39,7 +39,7 @@ mutation gates are owned by =src/contract/release-assurance-manifest.ss= and
 interpreted large-=.o= slot composition observed during qualification.
 
 The focused Scheme owner is a Bazel-declared Gerbil test action.  ASP PR #3 and
-Gerbil =std/make= own the native build graph; =gerbil-bazel= owns sandboxing,
+Gerbil =std/make= own the runtime build graph; =gerbil-bazel= owns sandboxing,
 adaptive resource admission, process-tree observation, termination, and the
 =gerbil-bazel.resource-guard-receipt.v1= evidence.  Agentic AI Lab does not launch a
 second =gxi=, sample =ps= or =/proc=, or define another build guard receipt.
@@ -84,25 +84,25 @@ The receipt model supports focused development subsets and clean-build release
 evidence.  Release verification rejects checkout-only Python imports and
 requires the installed C and wheel consumers.
 
-Delivery result: complete.  The POO-native registry and pure verifier in
+Delivery result: complete.  The POO registry and pure verifier in
 =src/qualification/runner.ss= bind every upstream action receipt to its gate
 declaration digest, source revision, artifact, owner, and installed-consumer
 state.  It contains no process runner.  Release evidence requires the canonical
 Scheme fixture, both installed C consumers, production Python, an isolated
-wheel, Lean build, and native Lean FFI smoke.
+wheel, Lean build, and runtime Lean FFI smoke.
 
 * S5 — Fault and performance closure
 
 Complete crash, timeout, cancel, retry, restore, indeterminate, fork, truncation,
 TOCTOU, malformed-vector, sanitizer, leak, and absence audits.  Aggregate the
-full supported performance matrix from native and Python benchmark owners.
+full supported performance matrix from runtime and Python benchmark owners.
 Record unsupported dimensions and host identity explicitly.  Keep concrete
 budgets unfrozen until reproducible supported-host series exist.
 
-Delivery result: complete.  Release qualification now requires the full native
+Delivery result: complete.  Release qualification now requires the full runtime
 functional, sanitizer, and leak owners plus the complete Python proof/security
 suite.  =src/qualification/performance-matrix.ss= verifies the existing
-140-block native Cartesian receipt and both Strict/Batched proof baselines.
+140-block runtime Cartesian receipt and both Strict/Batched proof baselines.
 Restore performance and absolute latency budgets are explicit unsupported
 dimensions; neither is silently omitted or frozen from one host.
 
@@ -125,7 +125,7 @@ blocked on separate migration approval.
 
 - Stop if the runner becomes a semantic, policy, runtime, or theorem owner.
 - Stop if a public manifest API is a raw alist or record DSL.
-- Stop if JSON enters the native C ABI.
+- Stop if JSON enters the runtime C ABI.
 - Stop if L3 lacks isolation or independent-observation evidence.
 - Stop if L4 is inferred from artifact presence rather than a named checked claim.
 - Stop if installed-consumer gates are replaced by checkout imports.
@@ -135,7 +135,7 @@ blocked on separate migration approval.
 * Validation order
 
 Run manifest and verifier unit owners first, then the canonical vertical fixture,
-installed native/Python consumers, Lean linkage, fault/security suites,
+installed runtime/Python consumers, Lean linkage, fault/security suites,
 performance matrices, full AC regression, and repository hygiene.  Expensive
 clean builds, sanitizer/leak gates, and benchmarks run only after focused
 functional gates are green.

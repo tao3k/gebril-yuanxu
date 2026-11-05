@@ -25,7 +25,7 @@ runtime continuation handle.
 
 A continuation may be captured only at a named runtime recovery boundary.
 
-The boundary publishes a POO-native =ResumptionOption= while the raw
+The boundary publishes a POO =ResumptionOption= while the raw
 continuation remains in a coordinator-owned ephemeral handle registry.
 
 =ResumptionOption= is an independent =ObjectType= prototype family whose base
@@ -53,7 +53,7 @@ not the ordinary mechanism.
 flowchart LR
   Boundary["Named continuable-exception boundary"]
   Registry["Ephemeral continuation-handle registry"]
-  Option["POO-native ResumptionOption"]
+  Option["POO ResumptionOption"]
   Policy["POO recovery-policy dispatch"]
   Decision["ResumeDecision"]
   Admission["Accepted RecoveryDecisionReceipt"]
@@ -196,7 +196,7 @@ raw handles.  Telemetry receives only audience-safe projections.
 * Conformance checklist
 
 - [X] Continuations are captured only at named runtime recovery boundaries.
-- [X] =ResumptionOption= is POO-native authoritative evidence.
+- [X] =ResumptionOption= is POO authoritative evidence.
 - [X] Raw continuations remain in a coordinator-owned ephemeral registry.
 - [X] Option identity is the only semantic handle correlation key.
 - [X] One-shot resumption is the default.

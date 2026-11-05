@@ -3,7 +3,7 @@ import LeanPoo.Object.Memo
 
 /-! Partial open-method tables refine the locked LeanPoo CompiledPlan.
 Opaque handles record observed identity, not extensional function equality.
-Their correspondence to Scheme eq? remains a native implementation obligation.
+Their correspondence to Scheme eq? remains a runtime implementation obligation.
 No callbacks, value caches or admission conclusions are implemented here. -/
 namespace YuanxuProof.ModuleSystem.Loading.DemandMaterialization
 open LeanPoo

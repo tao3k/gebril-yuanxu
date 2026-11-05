@@ -19,7 +19,7 @@ module ClosedTailModel {
       foreignCalls: 0, refused: false,
       observer: Set("receiver","candidate","external","earlierFile","benign","cleanup").contains(mode), parentPort: 5432, configPort: 5433, planPort: 5433}}
   }
-  // Already established native ordering: source failure before stale-object fault.
+  // Already established runtime ordering: source failure before stale-object fault.
   action early = all {s.phase == 0,
     s' = s.with("phase",1)
       .with("external",if (s.mode == "bothBefore" or s.mode == "objectBefore") 1 else 0)

@@ -20,7 +20,7 @@ Builder, process runner, or cache protocol.
 
 =func.ss= implements pure validation, argument preparation, environment merging
 and preview. Only =run-script= samples the host environment and starts a process.
-=interface.ss= binds those same functions to the =Ops= object; Script's native
+=interface.ss= binds those same functions to the =Ops= object; Script's runtime
 =.run= delegates to =run-script=. The public object retains receiver-local
 configuration and the existing =OpsScopeContract=.
 
@@ -47,7 +47,7 @@ admission until its caller supplies a command.
 | func.ss | Pure preparation and the one explicit execution function |
 | objects.ss | Existing Script and SelectedPackages prototypes |
 | interface.ss | Built-in Ops object and functional slot bindings |
-| process-script.ss | Receiver-local defaults and native .run delegation |
+| process-script.ss | Receiver-local defaults and runtime .run delegation |
 | progress.ss | Existing process progress, cancellation and watchdog boundary |
 | selected-packages.ss | Selected external-package execution helper |
 
@@ -58,9 +58,9 @@ parent Script has been cached. Parent defaults remain unchanged. Contracts
 validate the final command and options immediately before execution; a preview
 is not authorization or an execution receipt.
 
-Configuration, environment and process-script validation use native Type/Record
+Configuration, environment and process-script validation use Type/Record
 descriptors. =validate-script= returns the checked script; preview and command
-preparation consume that result. The optional progress factory has a native
+preparation consume that result. The optional progress factory has a runtime
 Function signature: no arguments, one returned callback accepting a String and
 returning Any. Preview stores its checked wrapper without calling it. Execution
 uses that wrapper, so an invalid factory result or callback argument is refused
@@ -82,9 +82,9 @@ commands. TestingScript retains its current source checks, artifact issuance,
 120-second preparation cap, 60-second idle cap and 600-second test cap. Loading
 Ops does not load the test executor or run a build.
 
-The Core tests cover pure preview, function/native method equivalence, explicit
+The Core tests cover pure preview, function/runtime method equivalence, explicit
 execution, parent/child defaults, deadline diagnostics, cancellation and fixture
-cleanup. =ops/tests/atomic-test.ss= remains an ordinary native suite; its location
+cleanup. =ops/tests/atomic-test.ss= remains an ordinary runtime suite; its location
 does not make Ops a selectable Module. Services have separate lifecycle design
 in [[file:services.org][services.org]] and are not implemented by one-shot Script.
 
@@ -141,7 +141,7 @@ production protection result. The snapshot compiler now routes the package's
 named prelude and prepares the actual init and delayed TestingScript roots,
 not just the test body's static imports. The loader probe emits scalar lifecycle
 checkpoints around compilation, closure capture and bootstrap to locate the
-native crash. Production reader restrictions and all existing budgets remain
+runtime crash. Production reader restrictions and all existing budgets remain
 unchanged; successful qualification of these changes is still required.
 
 * Process output

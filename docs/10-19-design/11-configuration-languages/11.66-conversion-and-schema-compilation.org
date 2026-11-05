@@ -2,16 +2,16 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 #+title: 11.66 OpenTofu Generation 02: Conversion and Existing Core Schema Compilation
 #+property: DOCUMENT_ID 11.66
-#+property: STATUS native-scheme-design-not-executed
+#+property: STATUS runtime-scheme-design-not-executed
 
 * Internal wire representation and bounded converter
 
 The normalized extraction input uses symbol-key JSON-like alists, matching the
 existing Core source decoder. Generated JSON Schema is another private wire value,
-not a new user configuration DSL. Public scopes/Contracts remain native POO.
+not a new user configuration DSL. Public scopes/Contracts remain POO.
 The first code block below records the earlier bounded converter. Its rejection
 branches for set/tuple/nested_type are superseded by the complete collection design
-in [[file:11.42-provider-collections-and-nested-types.org][module 41]], which also retains required native semantic residuals.
+in [[file:11.42-provider-collections-and-nested-types.org][module 41]], which also retains required runtime semantic residuals.
 Neither version is an implemented or fully qualified provider converter.
 
 #+begin_src scheme
@@ -100,7 +100,7 @@ No generated scope may advertise full configuration admission on this subset.
 * Compilation into the existing Contract subsystem
 
 Within the prepared Schema capability scope, compile is bound to the EXISTING
-yuanxu-json-schema->contract-artifact. as-contract is the NEW native adapter
+yuanxu-json-schema->contract-artifact. as-contract is the NEW runtime adapter
 fully defined in module 38; it reuses normalized-node validation and returns a
 receipt-bearing YuanxuContract descriptor. It is not an installed facade method.
 The owning modules may use current private imports internally; consumers see only

@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Native loader SOURCE compiled before procedure capture; no SDK rebinding.
+;;; Runtime loader SOURCE compiled before procedure capture; no SDK rebinding.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :std/encoding/json write-json)
@@ -55,11 +55,11 @@
       (- (length (.get (authority-status state) events)) events-before)
       (- (length (.get (authority-status state) consumed)) before)) observations)))
 (def source-loader-authority-test
- (test-suite "Native-source loader call edges"
+ (test-suite "Runtime-source loader call edges"
   (yuanxu-test-case "saved compiled entry and reload retain admission"
     (prepare-source-authority! state)
     (yuanxu/t/qualification/mop-state/source-loader#set-load-path! (load-path))
-    ;; Capture the actual compiled native entry BEFORE first target loading.
+    ;; Capture the actual compiled runtime entry BEFORE first target loading.
     (def saved yuanxu/t/qualification/mop-state/source-loader#load-module)
     (check-equal? (eq? load-module old-sdk-entry) #t)
     (displayln "AUTHORITY-PHASE saved-entry-start") (force-output)

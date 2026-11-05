@@ -58,12 +58,12 @@ flowchart LR
 
 | Capability | Canonical owner and public route | Validation or publication evidence | Status |
 |------------+----------------------------------+------------------------------------+--------|
-| Bundle authoring and identity | POO-native =src/semantic/organization-bundle.ss= through its contract facade | Bundle, Kernel, five-facet, mutation, and canonical fixture scenarios | =retain= |
+| Bundle authoring and identity | POO =src/semantic/organization-bundle.ss= through its contract facade | Bundle, Kernel, five-facet, mutation, and canonical fixture scenarios | =retain= |
 | Runtime control projection | =src/contract/organization-bundle-runtime-v0.ss= | Scheme projection plus strict and installed C consumers | =retain= |
 | Runtime hot and bulk projection | =src/contract/organization-bundle-runtime-v0-batch.ss= and =src/contract/runtime-v0-abi-schema.ss= | 140-block matrix, sanitizer, leak, parity, and installed-consumer gates | =retain= |
-| Native runtime boundary | =bindings/runtime-c/include/agentic_ai_lab/runtime_v0.h= and =bindings/runtime-c/src/runtime_v0.c= | Bazel C suites and generated-contract parity | =relabel= |
-| Python production runtime | Out-of-line CFFI API mode under =packages/python-runtime/src/agentic_ai_lab_runtime/_native/= | Isolated wheel without Gerbil and Python production/conformance suites | =retain= |
-| Authorization and evidence | AuthorizedEffectToken, native evidence sink, and evidence-chain contract owners | Allow, deny, replay, revocation, substitution, fork, and truncation gates | =retain= |
+| Runtime runtime boundary | =bindings/runtime-c/include/agentic_ai_lab/runtime_v0.h= and =bindings/runtime-c/src/runtime_v0.c= | Bazel C suites and generated-contract parity | =relabel= |
+| Python production runtime | Out-of-line CFFI API mode under =packages/python-runtime/src/agentic_ai_lab_runtime/_runtime/= | Isolated wheel without Gerbil and Python production/conformance suites | =retain= |
+| Authorization and evidence | AuthorizedEffectToken, runtime evidence sink, and evidence-chain contract owners | Allow, deny, replay, revocation, substitution, fork, and truncation gates | =retain= |
 | Proof projection and theorem identity | =src/proof/proof-case-projection.ss=, generated ProofCaseVector v1, and locked Lean package | Four-way differential, Lean build, FFI smoke, mutation, and stale-proof rejection | =retain= |
 | Release assurance | =src/contract/release-assurance-manifest.ss=, claim verifier, and =src/qualification/release-assurance.ss= | AC-10 twelve-gate revision-bound manifest | =publish-after-approval= |
 
@@ -72,7 +72,7 @@ flowchart LR
 | Capability being retired | Retirement owner or candidate | Replacement | Required deletion evidence | Status |
 |--------------------------+-------------------------------+-------------+----------------------------+--------|
 | AC-04 semantic shadow comparison | =src/semantic/organization-bundle-shadow.ss=, its contract facade, and =t/scenarios/organization-bundle-shadow-test.ss= | Canonical Bundle plus AC-10 cross-boundary fixture | No public export or consumer; shadow owner/test absent; qualification still passes | =remove-after-approval= |
-| Agent-sandbox alist authoring helpers | Four exports in =modules/agent-sandbox/alist.ss=; zero parser-visible consumers or facade re-exports | Named POO-native helpers in =modules/sandbox-core/profile-support/authoring.ss= | Fresh consumer audit; remove module/exports; old-symbol absence gate; sandbox profile suites | =remove-after-approval= |
+| Agent-sandbox alist authoring helpers | Four exports in =modules/agent-sandbox/alist.ss=; zero parser-visible consumers or facade re-exports | Named POO helpers in =modules/sandbox-core/profile-support/authoring.ss= | Fresh consumer audit; remove module/exports; old-symbol absence gate; sandbox profile suites | =remove-after-approval= |
 | Other raw-record, alist serialization, and =.def= occurrences | No competing public authoring owner proven | Retain internal representations and POO implementation syntax | A future candidate requires exact public export and consumer evidence | =retain= |
 | Python =ctypes= production hot path | No parser-visible import/call/test owner under =packages/python-runtime= | Out-of-line CFFI API mode | AST import/dynamic-import guard over =src/= and =tests/=; README absence; isolated wheel and full Python gates | =absence-guarded= |
 | Runtime graph or ABI compatibility aliases | No parser-visible owner, consumer, wrapper, or installed graph symbol | Installed =runtime_v0.h= and ProofCaseVector v1 routes | Shared-library exported-symbol allowlist plus graph/compat/legacy denylist and installed consumers | =absence-guarded= |
@@ -81,7 +81,7 @@ flowchart LR
 
 Internal =object<-alist= construction, alist serialization at explicit contract
 boundaries, and POO implementation use of =.def= are not retired merely by name.
-Only a public authoring route that competes with the accepted POO-native surface
+Only a public authoring route that competes with the accepted POO surface
 is eligible for removal.  The exact-owner audit must distinguish those cases.
 
 ** Authoring audit receipt
@@ -90,7 +90,7 @@ The parser-owned audit resolves exactly four competitive public alist exports,
 all owned by =modules/agent-sandbox/alist.ss= and currently reporting zero
 parser-visible consumers and zero facade re-exports:
 
-| Retired export candidate | Canonical POO-native replacement |
+| Retired export candidate | Canonical POO replacement |
 |--------------------------+----------------------------------|
 | =agent-sandbox-option= | =agentic-ai-lab-sandbox-profile-object-row-slot= and =agentic-ai-lab-sandbox-profile-object-row-value/default= |
 | =agent-sandbox-alist-ref= | =agentic-ai-lab-sandbox-profile-object-row-value= and =agentic-ai-lab-sandbox-profile-object-row-field= |
@@ -121,7 +121,7 @@ claim.
 | Surface | Cutover action | Gate | Current state |
 |---------+----------------+------+---------------|
 | =gerbil.pkg= and public Scheme facades | Publish only the canonical semantic and contract closure | Clean release build plus public export exact-set check | =audit= |
-| Python =pyproject.toml=, wheel, and bundled native library | Record supported Bundle/ABI versions and CFFI ownership | Isolated wheel, no-Gerbil runtime, and native negotiation gates | =publish-after-approval= |
+| Python =pyproject.toml=, wheel, and bundled runtime library | Record supported Bundle/ABI versions and CFFI ownership | Isolated wheel, no-Gerbil runtime, and runtime negotiation gates | =publish-after-approval= |
 | Runtime C headers and libraries | Publish explicit pre-v1 or approved v1 identity; never imply freeze | Installed C consumer, sanitizer, leak, performance, symbol set | =publish-after-approval= |
 | Proof vector, Lean environment, and proof package metadata | Publish exact schema, theorem-set, and import-environment identities | Generated freshness, Lean build, Python/C/Scheme differential | =publish-after-approval= |
 | Benchmark and qualification receipts | Bind source revision, environment, schemas, and declared unsupported claims | AC-10 manifest verification | =publish-after-approval= |

@@ -6,9 +6,12 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/error Error? Error-message)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :clan/poo/object .get .o .+)
+        (only-in :clan/poo/object .get .o .+ .cc .call)
+        (only-in :gerbil/expander core-import-module module-context-path)
+        (only-in :yuanxu/module-system/building/products current-build-source-directory
+                 current-build-output-directory)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/module-system/source/admission module-source-read call-with-module-source-callback)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
 (export module-build-spec-test)
 (def root (getenv "CORE_QUALIFICATION_ROOT" #f))
@@ -35,10 +38,14 @@
                 (def checks 0)
                 (def graph-current? #t)
                 ;; Empty selected Graph protocol; ordinary retained files are
-                ;; real native sources. This fixture never compiles or issues.
+                ;; real runtime sources. This fixture never compiles or issues.
                 (def graph
                   (.o entries: '() compiler-inputs: '() other-projections: '()
                       selected-graph: #f
+                      .with-compiler-source-reads: (lambda (entries action) (action entries))
+                      .with-compiler-source-import:
+                      (lambda (_entry _input _importer _target _identity action)
+                        (call-with-module-source-callback action))
                       compiler-current:
                       (lambda ()
                         (set! checks (+ checks 1))
@@ -57,6 +64,26 @@
                 ((.get projection admit-current))
                 (check-equal? (- checks previous) 1)
                 (check-equal? (length (.get projection spec)) width)
+                (check-equal? (.call projection .make-groups #t) '())
+                (check-equal? (.call projection .admit-spec (.get projection spec)) (.get projection spec))
+                ;; A well-shaped native target still cannot be substituted for
+                ;; the init-owned merge; structural typing alone is insufficient.
+                (check-exception (.call projection .admit-spec (cons "not-selected" (.get projection spec))) Error?)
+                ;; Merging the native specs must not relocate ordinary library
+                ;; inputs or give them a generated role source identity.
+                ((.get projection .with-compiler-inputs)
+                  (lambda ()
+                    (check-equal? (current-build-source-directory) #f)
+                    (check-equal?
+                      (module-context-path (core-import-module (path-expand "owned0.ss" temporary)))
+                      (path-normalize (path-expand "owned0.ss" temporary)))))
+                ;; The parent's method is already cached. A derived receiver
+                ;; cannot use it to run with a substituted final native spec.
+                (def entered? #f)
+                (def substituted (.cc projection 'spec (cons "not-selected" (.get projection spec))))
+                (check-exception (.call substituted .with-compiler-inputs
+                                   (lambda () (set! entered? #t))) Error?)
+                (check-equal? entered? #f)
                 (write-source (path-expand "owned0.ss" temporary) "(export #t)\n;; changed source\n")
                 (check-exception ((.get projection admit-current)) Error?)
                 (write-source (path-expand "owned0.ss" temporary) "(export #t)\n")
@@ -93,7 +120,7 @@
             (check-equal? (eq? (.get artifact build-graph) selected) #t)
             (check-equal? (.get artifact source-root) root)
             (check-equal? (file-exists? (path-expand ".gerbil/module-build" root)) #f)
-            (check-equal? (length (filter (lambda (row) (equal? (cadr row) overlap-name))
+            (check-equal? (length (filter (lambda (row) (equal? (if (string? row) row (cadr row)) overlap-name))
                                         (.get artifact spec))) 1)
             (check-equal? (rejects? "conflicting retained compiler options"
                             (lambda () (project (list (append overlap-spec '("-debug")))))) #t)
@@ -124,15 +151,30 @@
               (write-source (path-expand "gerbil.pkg" foreign) "(package: other)\n")
               (write-source build "(export #t)")
               (write-source (path-expand "owned.ss" foreign) "(export #t)")
-              (def dependency-projection (project '("owned") foreign build))
-              (check-equal? (.get dependency-projection spec) '((gxc: "owned")))
-              (check-equal? (.get dependency-projection compiler-identities) '(other/owned))
-              (check-equal? (eq? (.get dependency-projection build-graph) selected) #t)
-              ((.get dependency-projection admit-current))
+              (def consumer-projection (project '("owned") foreign build))
+              (check-equal? (and (member '(gxc: "other/owned") (.get consumer-projection spec)) #t) #t)
+              (check-equal? (and (member 'other/owned (.get consumer-projection compiler-identities)) #t) #t)
+              (for-each (lambda (entry)
+                          (check-equal? (and (memq (.get entry compiler-identity)
+                                             (.get consumer-projection compiler-identities)) #t) #t)
+                          (check-equal? (memq (.get entry compiler-identity)
+                                            (.get consumer-projection dependency-identities)) #f))
+                        (.get selected entries))
+              ;; A cross-package selected source view is owned by this consumer,
+              ;; never by the prerequisite runtime used to execute the test.
+              (parameterize ((current-build-output-directory (path-expand "lib" foreign)))
+                ((.get consumer-projection .with-compiler-inputs)
+                  (lambda ()
+                    (check-equal? (string? (current-build-source-directory)) #t)
+                    (check-equal?
+                      (module-context-path (core-import-module (path-expand "owned.ss" foreign)))
+                      (path-normalize (path-expand "owned.ss" foreign))))))
+              (check-equal? (eq? (.get consumer-projection build-graph) selected) #t)
+              ((.get consumer-projection admit-current))
               (def invoked? #f)
               (check-equal? (rejects? "requires all package owners"
                               (lambda ()
-                                ((.get dependency-projection .compile) temporary
+                                ((.get consumer-projection .compile) temporary
                                   (lambda () (set! invoked? #t))))) #t)
               (check-equal? invoked? #f)
               ;; A foreign dependency remains observed after target partitioning.
@@ -141,7 +183,7 @@
                 (dynamic-wind
                   (lambda () (write-source dependency (string-append original "\n;; stale dependency\n")))
                   (lambda () (check-equal? (rejects? "stale"
-                                            (.get dependency-projection admit-current)) #t))
+                                            (.get consumer-projection admit-current)) #t))
                   (lambda () (write-source dependency original))))
               ;; Same declared compiler identity with different physical bytes is
               ;; not a deduplication opportunity.

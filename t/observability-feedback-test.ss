@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Contract: native POO observability Type/Contract scenario tests.
+;;; Contract: POO observability Type/Contract scenario tests.
 
 (export observability-feedback-test)
 
@@ -55,7 +55,7 @@
 
 (def observability-feedback-test
   (test-suite
-   "native POO observability Type and Contract"
+   "POO observability Type and Contract"
 
    (yuanxu-test-case "constructs a prototype-derived diagnostic and evidence"
      (let (diagnostic (observability-sandbox-diagnostic 'error))

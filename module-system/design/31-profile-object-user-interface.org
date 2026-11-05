@@ -249,7 +249,7 @@ Task profiles extend by naming the parent after =@=:
 #+end_src
 
 ** 10.06.31.80 Resulting =profiles/cicd.ss=
-CI/CD profiles keep the same POO-native shape:
+CI/CD profiles keep the same POO shape:
 
 #+begin_src scheme
 (def check-metadata
@@ -380,7 +380,7 @@ the observability request as check metadata:
     pipeline-name: 'poo-authoring-gate
     checks: (list funflow/profile-authoring funflow/readiness)
     metadata: '((scenario . poo-authoring-gate)
-                (authoring-style . gerbil-poo-native))))
+                (authoring-style . gerbil-poo))))
 #+end_src
 
 The observation and summary output is plain alist data by design. It remains

@@ -24,10 +24,10 @@ theorem dependency_occurrences_not_deduplicated :
 theorem dependency_order_not_canonicalized :
     dependencyMatches [1, 1, 2] (dependencySnapshot [1, 2, 1]) = false := by decide
 
-def quintSourceDigest : String := "sha256:3437ee23f52802c5a24afd28b7c53fde13e744bf469b0f206131d996c4b9f504"
+def quintSourceDigest : String := "sha256:7be762a016d4d7e5a05925d6f589a98e50c9f057fbfc2c06e5a6a80a92c00fbd"
 
 -- Pointer handles are an injective projection of live eq? identities. Neither
--- a public birth flag nor a successful native decision constructs this store.
+-- a public birth flag nor a successful runtime decision constructs this store.
 structure Frozen where
   owner : Nat
   payload : Payload
@@ -61,7 +61,7 @@ def authenticate (s : Store) (r : Record) : Bool :=
     | some frozen => r.token == frozen.owner && r.payload == frozen.payload &&
                      r.keyShape == frozen.keyShape
 
--- One opaque native closure captures the payload once. A false request is
+-- One opaque runtime closure captures the payload once. A false request is
 -- inspection; actual RTD-checked records use the authentication branch.
 -- The inspector returns copies in Scheme, not a reference to mutable metadata.
 def closureRequest (frozen : Frozen) (candidate : Option Record) : Frozen ⊕ Bool :=
@@ -135,14 +135,14 @@ def mint (s : Store) (payload : Payload) (shape : List Nat) (persistent : Bool) 
     readCache := if persistent then r.token :: s.readCache else s.readCache }
   (next, r)
 
-theorem native_mint_constructs_association (s : Store) (p : Payload) (shape : List Nat) (cache : Bool) :
+theorem runtime_mint_constructs_association (s : Store) (p : Payload) (shape : List Nat) (cache : Bool) :
     authenticate (mint s p shape cache).1 (mint s p shape cache).2 = true := by
   simp [mint, authenticate, put]
 
 theorem mint_projects_without_birth_premise (s : Store) (p : Payload) (shape : List Nat) (cache : Bool) :
     IssuedRead.issued (project (mint s p shape cache).1 (mint s p shape cache).2) = true := by
   rw [projection_agrees_with_verifier]
-  exact native_mint_constructs_association s p shape cache
+  exact runtime_mint_constructs_association s p shape cache
 
 theorem transient_cache_unchanged (s : Store) (p : Payload) (shape : List Nat) :
     (mint s p shape false).1.readCache = s.readCache := rfl
@@ -191,7 +191,7 @@ theorem mint_keeps_parent_authentication (s : Store) (parent : Record)
     simp [authenticate, mint, put, distinct, original, different]
 
 -- SDK public construction consumes a fresh record identity, but never writes
--- the private registry. Later native allocation must not reuse that identity.
+-- the private registry. Later runtime allocation must not reuse that identity.
 def allocateRaw (s : Store) (p : Payload) (shape : List Nat) (presented : Option Nat) : Store × Record :=
   ({s with nextRecord := s.nextRecord + 1}, ⟨s.nextRecord, presented, p, shape⟩)
 

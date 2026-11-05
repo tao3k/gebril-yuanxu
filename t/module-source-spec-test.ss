@@ -97,7 +97,7 @@
               (change-source (path-expand (car control) root)
                 (lambda ()
                   (check-equal? (rejects? (cdr control) (lambda () (run "spec"))) #t)
-                  ;; Guarded SDK invocation rejects before native compilation.
+                  ;; Guarded SDK invocation rejects before runtime compilation.
                   (check-equal? (rejects? (cdr control) (lambda () (run "compile"))) #t))))
             '(("build.ss" . "stale selected build input")
               ("core-spec.ss" . "stale prepared build source")

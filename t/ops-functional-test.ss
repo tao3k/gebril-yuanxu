@@ -52,7 +52,7 @@
             (.def (Command @ (.get ops prototypes Script)) command: '("true"))
             ;; No host environment is sampled by the default preview.
             (check-equal? (.all-slots (.get (preview Command) environment)) '())))))
-    (yuanxu-test-case "function and native method share execution, failures, logs and timeout"
+    (yuanxu-test-case "function and runtime method share execution, failures, logs and timeout"
       (use-module Ops as ops
         (with-slots (run) ops
           (call-with-temporary-directory "ops-functional-run"

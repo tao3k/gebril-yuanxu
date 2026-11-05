@@ -1,11 +1,156 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import YuanxuProof.Admission.ReadRetention
 import Init.Data.List.Perm
+import LeanPoo.Prototype.SlotSpec
+import LeanPoo.Prototype.Representation
 
 namespace YuanxuProof.ModuleSystem.Loading.PayloadSharing
 
-def thunkConstructionDigest : String := "sha256:800d1aa25d86f6922e2682ac005c8b2dffd9be8fac461d12ca65532c6e7d4c8e"
-def projectionObjectDigest : String := "sha256:0c28298e1047e17b9fc67c5489f4f3d48ce07a79f93adc8e00ef101893737ced"
+-- Diagnostic retention projection, not admission and not a collector model.
+-- A weak-key value is conditional on independent key liveness; the installed
+-- collector correspondence must be established before using this as a heap bound.
+inductive TablePolicy where
+  | strong | weakKeys | weakValues | weakBoth
+  deriving DecidableEq
+
+def tableValueRetained (policy : TablePolicy) (keyLive : Bool) : Bool :=
+  match policy with
+  | .strong => true
+  | .weakKeys => keyLive
+  | .weakValues | .weakBoth => false
+
+theorem weakKeyValueRequiresKey (live : Bool) :
+    tableValueRetained .weakKeys live = true ↔ live = true := by rfl
+
+theorem weakValueDoesNotRootValue (live : Bool) :
+    tableValueRetained .weakValues live = false ∧
+    tableValueRetained .weakBoth live = false := by exact ⟨rfl, rfl⟩
+
+theorem keyLivenessMonotone (policy : TablePolicy) (before after : Bool)
+    (growth : before = true → after = true)
+    (retained : tableValueRetained policy before = true) :
+    tableValueRetained policy after = true := by
+  cases policy <;> simp_all [tableValueRetained]
+
+-- The false inference under investigation: a table with weak keys can still
+-- keep a value alive. Its container count alone says nothing about entry size.
+theorem weakKeyIsNotWeakValue :
+    tableValueRetained .weakKeys true ≠ tableValueRetained .weakValues true := by decide
+
+-- A runtime inventory replaces queries, never a successful Type verdict.
+-- Complete, unexposed inventory is a Scheme/MOP correspondence obligation.
+theorem inventoryPresenceEquivalent (names required : List Nat)
+    (present : Nat → Bool)
+    (complete : ∀ name, present name = names.contains name) :
+    required.all present = required.all (fun name => names.contains name) := by
+  have same : present = fun name => names.contains name := funext complete
+  rw [same]
+
+def guardedInventory (eligible : Bool) (inventory ordinary : Unit → Bool) : Bool :=
+  if eligible then inventory () else ordinary ()
+
+theorem unownedOrOpenKeepsOrdinary (inventory ordinary : Unit → Bool) :
+    guardedInventory false inventory ordinary = ordinary () := rfl
+
+-- Every accepted field inventory must still pass the actual value predicate.
+-- This is a shape optimization, not an admission or normalization cache.
+theorem inventoryDoesNotAdmitRejectedValue (fields : Bool) :
+    (fields && false) = false := by simp
+
+-- Internal Core descriptors vary only these three VALUE fields. Persistent
+-- runtime Storage.put owns the representation; no receiver cache is shared.
+def coreDescriptor {Value : Type}
+    (base : LeanPoo.Prototype.Representation.Storage Value)
+    (id owner required : Value) :=
+  ((base.put "feature-id" id).put "owner-module-id" owner).put "requires" required
+
+theorem coreDescriptorIdentity {Value : Type}
+    (base : LeanPoo.Prototype.Representation.Storage Value) (id owner required : Value) :
+    LeanPoo.Prototype.Representation.first (coreDescriptor base id owner required).entries "feature-id" = some id := by
+  unfold coreDescriptor
+  rw [LeanPoo.Prototype.Representation.storage_put_frame _ "requires" "feature-id" required (by decide),
+      LeanPoo.Prototype.Representation.storage_put_frame _ "owner-module-id" "feature-id" owner (by decide),
+      LeanPoo.Prototype.Representation.storage_first_put]
+
+theorem coreDescriptorDefaults {Value : Type}
+    (base : LeanPoo.Prototype.Representation.Storage Value) (id owner required : Value)
+    (name : String) (notId : name ≠ "feature-id")
+    (notOwner : name ≠ "owner-module-id") (notRequired : name ≠ "requires") :
+    LeanPoo.Prototype.Representation.first (coreDescriptor base id owner required).entries name =
+      LeanPoo.Prototype.Representation.first base.entries name := by
+  simp only [coreDescriptor,
+    LeanPoo.Prototype.Representation.storage_put_frame _ _ _ _ notRequired,
+    LeanPoo.Prototype.Representation.storage_put_frame _ _ _ _ notOwner,
+    LeanPoo.Prototype.Representation.storage_put_frame _ _ _ _ notId]
+
+theorem coreDescriptorOwner {Value : Type}
+    (base : LeanPoo.Prototype.Representation.Storage Value) (id owner required : Value) :
+    LeanPoo.Prototype.Representation.first (coreDescriptor base id owner required).entries "owner-module-id" = some owner := by
+  unfold coreDescriptor
+  rw [LeanPoo.Prototype.Representation.storage_put_frame _ "requires" "owner-module-id" required (by decide),
+      LeanPoo.Prototype.Representation.storage_first_put]
+
+theorem coreDescriptorRequirements {Value : Type}
+    (base : LeanPoo.Prototype.Representation.Storage Value) (id owner required : Value) :
+    LeanPoo.Prototype.Representation.first (coreDescriptor base id owner required).entries "requires" = some required := by
+  exact LeanPoo.Prototype.Representation.storage_first_put _ _ _
+
+-- Constructor arguments are evaluated Scheme values, not arbitrary slot
+-- expressions. Only this closed case may use runtime lexical constant slots.
+theorem constructorValueMethod {Receiver Value : Type} (value : Value) :
+    (LeanPoo.Prototype.SlotSpec.self (fun (_ : Receiver) => value)).toMethod =
+      (LeanPoo.Prototype.SlotSpec.constant value).toMethod := rfl
+
+theorem constructorValueInComposition {Receiver Value : Type}
+    (value : Value) (outer : LeanPoo.Prototype.Method Receiver Value)
+    (receiver : Receiver) (inherited : LeanPoo.Prototype.Next Value) :
+    LeanPoo.Prototype.Method.compose outer
+      (LeanPoo.Prototype.SlotSpec.self (fun (_ : Receiver) => value)).toMethod receiver inherited =
+    LeanPoo.Prototype.Method.compose outer
+      (LeanPoo.Prototype.SlotSpec.constant value).toMethod receiver inherited := rfl
+
+-- Runtime persistent snapshots already own their entry pairs. An internal
+-- consumer can share that snapshot rather than round-trip through reflection.
+-- This is ordered observation equality, NOT proof of raw-setter safety.
+theorem snapshotReflectionRoundtrip {Value : Type}
+    (source : LeanPoo.Prototype.Representation.Storage Value) :
+    (LeanPoo.Prototype.Representation.packWith false source.entries).entries = source.entries := by
+  exact LeanPoo.Prototype.Representation.entries_packWith false source.entries
+
+-- Runtime object/init can select bounded compact storage for newly declared
+-- methods/defaults without changing any ordered SlotSpec VALUE identity.
+-- Bare prototype-map retains its explicit tree policy; this is constructor
+-- lowering, not inference that arbitrary closures are pure.
+theorem constructorStorageObservations {Value : Type}
+    (methods defaults : List (String × Value)) :
+    ((LeanPoo.Prototype.Representation.packWith true methods).entries,
+     (LeanPoo.Prototype.Representation.packWith true defaults).entries) =
+    ((LeanPoo.Prototype.Representation.packWith false methods).entries,
+     (LeanPoo.Prototype.Representation.packWith false defaults).entries) := by
+  simp
+
+-- Upstream ae190d1 collects private rows without exporting intermediate public
+-- snapshots. Prove the ENTIRE ordered carrier before any first-name policy:
+-- duplicate occurrences and payload identities are not quotiented away here.
+-- Vector/RBTree fold correspondence and final owned-pair capture remain runtime
+-- obligations, checked by the upstream multi-root catalog controls.
+theorem privateCatalogFoldOrder {Value : Type} (roots : List (List Value)) :
+    roots.foldr (fun entries rest => entries.foldr List.cons rest) [] = roots.flatten := by
+  have rows (entries rest : List Value) :
+      entries.foldr List.cons rest = entries ++ rest := by
+    induction entries with
+    | nil => rfl
+    | cons entry tail ih => simp [List.foldr, ih]
+  induction roots with
+  | nil => rfl
+  | cons entries tail ih =>
+    change entries.foldr List.cons
+      (tail.foldr (fun entries rest => entries.foldr List.cons rest) []) = entries ++ tail.flatten
+    rw [rows, ih]
+
+def thunkConstructionDigest : String := "sha256:892e2ba2a76188b126fca8286be57c90fc17a2dfb81e2fd575464b322e0ee46c"
+def projectionObjectDigest : String := "sha256:1c4fcd96e8e120cdbfc3036008170ea161e0a0380cc747b913e74ae63b91d7cc"
+def projectionObservationDigest : String := "sha256:a75b5bcbfed24fab11756a4f87ffa8b77fd394f04f8fc2da02a9f3d71dc4c800"
 
 -- Identifiers denote binding identity, not spelling or a user purity label.
 def inject (original : Nat → Option Nat) (fresh binding : Nat) (name : Nat) : Option Nat :=
@@ -15,10 +160,10 @@ theorem originalBindingUnchanged (original : Nat → Option Nat) (fresh binding 
     (different : name ≠ fresh) : inject original fresh binding name = original name := by
   simp [inject, different]
 
-theorem helperUsesCanonicalBinding (original : Nat → Option Nat) (fresh native : Nat) :
-    inject original fresh native fresh = some native := by simp [inject]
+theorem helperUsesCanonicalBinding (original : Nat → Option Nat) (fresh runtime : Nat) :
+    inject original fresh runtime fresh = some runtime := by simp [inject]
 
--- Import projection changes a local binding index, never the native context,
+-- Import projection changes a local binding index, never the runtime context,
 -- ordered reads or adjacency lists. Context/source authentication remains live.
 structure Support where
   context : Nat
@@ -42,7 +187,7 @@ theorem originalEdges (reader : Reader) (alias record : Nat) :
 theorem observerOrder (reader : Reader) (alias : Nat) :
     (projectBindings reader alias).support.observations = reader.support.observations := rfl
 
-theorem sameNativeContext (reader : Reader) (alias : Nat) :
+theorem sameRuntimeContext (reader : Reader) (alias : Nat) :
     (projectBindings reader alias).support.context = reader.support.context := rfl
 
 -- Logical immutable snapshots may share storage ONLY for the entire ordered
@@ -74,7 +219,7 @@ theorem changedSourceRefused (issued a b : Bool) :
 theorem separateFramesRemainSeparate (parent child : Nat) (different : parent ≠ child) :
     parent ≠ child := different
 
--- Native slot-read checker compares the receiver's current instance identity.
+-- Runtime slot-read checker compares the receiver's current instance identity.
 -- A shared shape is structural metadata; cells and callback environments remain
 -- receiver-owned. This model does not assert that Scheme lists are immutable.
 structure ReceiverState where
@@ -154,7 +299,7 @@ theorem distinctEnvironmentRetained (seen : List Nat) (left right : Nat) :
     by_cases same : right = left <;> simp_all [account]
 
 -- Count the union without allocating a second copy of the larger support.
--- Native identity-table enumeration must be duplicate-free; the runtime
+-- Runtime identity-table enumeration must be duplicate-free; the runtime
 -- correspondence is explicit, not a theorem about GC dominator ownership.
 theorem partitionLength (xs : List Nat) (p : Nat → Bool) :
     (xs.filter p).length + (xs.filter (fun x => !(p x))).length = xs.length := by
@@ -237,7 +382,7 @@ theorem warmAndColdCoverOriginal (cold warm : List Nat) (identity : Nat) :
 
 -- Mutating, dropping or reordering public parents is accepted iff the original
 -- identity sequence is restored; revision/currentness remain separate checks.
--- An effective thunk is already observable through exported native metadata.
+-- An effective thunk is already observable through exported runtime metadata.
 -- This is an observation theorem, not a claim that function identity is data.
 def delayEntry (table : Nat → Option Nat) (slot : Nat) : Nat → Option Nat :=
   fun key => if key = slot then none else table key
@@ -260,5 +405,140 @@ theorem unobservedThunkProjectionPreserved (table : Nat → Option Nat)
   apply otherThunkIdentityPreserved
   intro same
   exact hidden (same ▸ member)
+
+-- Apply ONLY after runtime identity deduplication. The classifier denotes an
+-- observed support (for example, the actual language-context graph), not a
+-- guessed exclusive owner. Opaque VM/code/table bodies remain unmeasured.
+theorem weightedSupportPartition (identities : List Nat) (shared : Nat → Bool)
+    (bodyBytes : Nat → Nat) :
+    ((identities.filter shared).map bodyBytes).sum +
+      ((identities.filter (fun id => !(shared id))).map bodyBytes).sum =
+      (identities.map bodyBytes).sum := by
+  induction identities with
+  | nil => simp
+  | cons id rest ih =>
+    cases h : shared id <;> simp_all <;> omega
+
+-- Core observes catalog emptiness and the first source-bearing declaration.
+-- Reuse LeanPoo's storage refinement instead of a second representation model.
+-- Runtime count/index correspondence and unforced inspection are runtime gates.
+theorem catalogInspectionPreserved {Value : Type} (compact : Bool)
+    (entries : List (String × Value)) (name : String) :
+    (LeanPoo.Prototype.Representation.packWith compact entries).entries.isEmpty =
+        entries.isEmpty ∧
+      LeanPoo.Prototype.Representation.first
+          (LeanPoo.Prototype.Representation.packWith compact entries).entries name =
+        LeanPoo.Prototype.Representation.first entries name := by
+  simp
+
+-- Point lookup replaces an owned reflection list, not the source payload or
+-- its presence. In particular, a present false declaration is still a barrier.
+theorem metadataPresencePreserved {Value : Type} (compact : Bool)
+    (entries : List (String × Value)) (name : String) :
+    (LeanPoo.Prototype.Representation.first
+      (LeanPoo.Prototype.Representation.packWith compact entries).entries name).isSome =
+      (LeanPoo.Prototype.Representation.first entries name).isSome := by simp
+
+theorem falseMetadataIsPresent (name : String) (tail : List (String × Bool)) :
+    LeanPoo.Prototype.Representation.first ((name, false) :: tail) name = some false ∧
+    (LeanPoo.Prototype.Representation.first ((name, false) :: tail) name).isSome = true := by
+  simp [LeanPoo.Prototype.Representation.first]
+
+-- Runtime compile-slot-specs may discard a prior chain only for these actual
+-- constructors. A computed method remains open, regardless of its last value.
+-- This is extensional SlotSpec semantics; runtime tests still own capture time,
+-- invalid-input refusal, hook order and observable Scheme procedure identity.
+def superIndependent {Self Value : Type}
+    (spec : LeanPoo.Prototype.SlotSpec Self Value) : Prop :=
+  match spec with
+  | .computed _ => False
+  | _ => True
+
+-- The runtime names observer owns a copied spine, not another symbol order.
+-- Record identity/revision/instance/observation and final issuer authentication
+-- are separate conjuncts; value equivalence cannot establish any of them.
+theorem copiedNamesPreserveProjection {Name Value : Type}
+    (names : List Name) (project : Name → Value) :
+    (names.map id).map project = names.map project := by simp
+
+theorem namesEqualityDoesNotSupplyObservation (sameNames : Bool) :
+    (sameNames && false) = false := by simp
+
+theorem independentSpecificationDropsPrior {Self Value : Type}
+    (spec : LeanPoo.Prototype.SlotSpec Self Value)
+    (prior : LeanPoo.Prototype.Method Self Value)
+    (independent : superIndependent spec) :
+    LeanPoo.Prototype.Method.compose spec.toMethod prior = spec.toMethod := by
+  cases spec with
+  | constant _ => rfl
+  | thunk _ => rfl
+  | self _ => rfl
+  | computed _ => exact False.elim independent
+
+-- Nat denotes the actual byte-object identity, not string contents. An
+-- identical private write can be omitted; a different identity still writes.
+-- This proves lookup only. It does not establish diagnostic iteration order.
+theorem identicalToolWritePreservesLookup
+    (source : LeanPoo.Prototype.Representation.Storage Nat)
+    (name queried : String) (value : Nat)
+    (same : LeanPoo.Prototype.Representation.first source.entries name = some value) :
+    LeanPoo.Prototype.Representation.first (source.put name value).entries queried =
+      LeanPoo.Prototype.Representation.first source.entries queried := by
+  by_cases equal : queried = name
+  · subst queried
+    rw [LeanPoo.Prototype.Representation.storage_first_put, same]
+  · exact LeanPoo.Prototype.Representation.storage_put_frame source name queried value equal
+
+def firstSourceDifference (rows : List (String × Nat))
+    (current : String → Nat) : Option String :=
+  (rows.find? (fun row => row.2 != current row.1)).map Prod.fst
+
+-- A runtime experiment exposed exactly this missing implication: changing hash
+-- table identity changed iteration order even for equal maps. Value proofs
+-- cannot authorize a change to the first error or callback schedule.
+theorem equalLookupCanChangeFirstDiagnostic :
+    (∀ name : String,
+      LeanPoo.Prototype.Representation.first [("a", 1), ("b", 2)] name =
+        LeanPoo.Prototype.Representation.first [("b", 2), ("a", 1)] name) ∧
+    firstSourceDifference [("a", 1), ("b", 2)] (fun _ => 0) ≠
+      firstSourceDifference [("b", 2), ("a", 1)] (fun _ => 0) := by
+  constructor
+  · intro name
+    by_cases a : name = "a"
+    · subst name
+      decide
+    · by_cases b : name = "b"
+      · subst name
+        decide
+      · simp [LeanPoo.Prototype.Representation.first, eq_comm, a, b]
+  · decide
+
+-- The new analysis protocol returns typed diagnostics, not per-datum admission
+-- objects. Each Except is the projection of an actual fresh Type validation.
+-- This model does not claim equivalence with arbitrary old receipt callbacks.
+def collectDiagnostics {Error Diagnostic : Type} :
+    List (Except Error (List Diagnostic)) → Except Error (List Diagnostic)
+  | [] => .ok []
+  | .error error :: _ => .error error
+  | .ok issues :: tail => (collectDiagnostics tail).map (issues ++ ·)
+
+theorem typedAnalysisPreservesOrder {Error Diagnostic : Type}
+    (rows : List (List Diagnostic)) :
+    collectDiagnostics (Error := Error) (rows.map Except.ok) = .ok rows.flatten := by
+  induction rows with
+  | nil => rfl
+  | cons issues tail ih => simp [collectDiagnostics, ih, Except.map, List.flatten]
+
+theorem analysisRefusalStopsAggregation {Error Diagnostic : Type}
+    (error : Error) (tail : List (Except Error (List Diagnostic))) :
+    collectDiagnostics (.error error :: tail) = .error error := rfl
+
+theorem successfulPrefixCannotHideRefusal {Error Diagnostic : Type}
+    (before : List (List Diagnostic)) (error : Error)
+    (tail : List (Except Error (List Diagnostic))) :
+    collectDiagnostics (before.map Except.ok ++ .error error :: tail) = .error error := by
+  induction before with
+  | nil => rfl
+  | cons issues rest ih => simp [collectDiagnostics, ih, Except.map]
 
 end YuanxuProof.ModuleSystem.Loading.PayloadSharing

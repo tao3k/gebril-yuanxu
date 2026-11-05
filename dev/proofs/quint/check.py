@@ -14,11 +14,18 @@ import tempfile
 import time
 
 if __package__:
-    from .native import QuintCLI
+    from .cli import QuintCLI
 else:
-    from native import QuintCLI
+    from cli import QuintCLI
 
 CASES = [
+    ("RoleFunction", "safety", False),
+    ("RoleFunction_revision", "ClosedRoute", True),
+    ("RoleFunction_observer", "ClosedRoute", True),
+    ("RoleFunction_origin", "ClosedRoute", True),
+    ("RoleFunction_memo", "ValidExecution", True),
+    ("RoleFunction_eagerCarrier", "NoUnusedCarrier", True),
+    ("RoleFunction", "RejectAll", True),
     ("IncrementalRoles", "safety", False),
     ("IncrementalRoles_edge", "Invalidation", True),
     ("IncrementalRoles_compile", "Compilation", True),
@@ -56,6 +63,7 @@ CASES = [
     ("TestMakeLayout_absolute", "NoWork", True),
     ("TestMakeLayout_skipSource", "Current", True),
     ("TestMakeLayout", "RejectAll", True),
+    ("BuildTargetExecution", "safety", False),
     ("TestPublicationReuse", "safety", False),
     ("TestPublicationReuse_memoAdmission", "Fresh", True),
     ("TestPublicationReuse_packet", "Bound", True),
@@ -63,6 +71,7 @@ CASES = [
     ("RootCollection", "safety", False),
     ("RootCollection_suppress", "ObserverOrder", True),
     ("RootCollection_observerOrder", "ObserverOrder", True),
+    ("RootCollection_redeliver", "ObserverOrder", True),
     ("RootCollection_reverse", "FirstDiagnostic", True),
     ("RootCollection_receiver", "IdentityOrder", True),
     ("RootCollection_copy", "IdentityOrder", True),
@@ -244,7 +253,7 @@ CASES = [
     ('CheckerOrigin_dropB', 'BothRequirements', True),
     ('CheckerOrigin_parent', 'FinalPlan', True),
     ('CheckerOrigin_acceptance', 'RejectAll', True),
-    ("NativeSemanticQuery", "safety", False),
+    ("RuntimeSemanticQuery", "safety", False),
     ("GraphOperations_none", "safety", False),
     ("GraphOperations_reverseOrder", "OrderedPayload", True),
     ("GraphOperations_wrongTarget", "PathIdentity", True),
@@ -268,6 +277,33 @@ CASES = [
     ("SourceClosureWork_wideGuard", "GuardScope", True),
     ("SourceClosureWork_leak", "Cleanup", True),
     ("SourceClosureWork_acceptance", "RejectAll", True),
+    ("SourceClosureWork_index", "safety", False),
+    ("SourceClosureWork_indexReplace", "Coverage", True),
+    ("SourceClosureWork_indexDrop", "Coverage", True),
+    ("SourceClosureWork_indexApproval", "Current", True),
+    ("SourceClosureWork_alias", "safety", False),
+    ("SourceClosureWork_aliasReceiver", "Identity", True),
+    ("SourceClosureWork_aliasWrong", "Identity", True),
+    ("SourceClosureWork_aliasShadow", "Eligibility", True),
+    ("SourceClosureWork_forward", "safety", False),
+    ("SourceClosureWork_forwardDrop", "Trace", True),
+    ("SourceClosureWork_forwardDuplicate", "Trace", True),
+    ("SourceClosureWork_forwardObserver", "Eligibility", True),
+    ("SourceClosureWork_forwardReuse", "Current", True),
+    ("ReplayCheckpoint", "safety", False),
+    ("ReplayCheckpoint_skipEntry", "safety", True),
+    ("ReplayCheckpoint_skipExit", "safety", True),
+    ("ReplayCheckpoint_unprotected", "safety", True),
+    ("ReplayCheckpoint_swallow", "safety", True),
+    ("ToolOrigin", "safety", False),
+    ("ToolOrigin_skipBinding", "safety", True),
+    ("ToolOrigin_skipSource", "safety", True),
+    ("ToolOrigin_skipBuild", "safety", True),
+    ("ToolOrigin_overCapture", "safety", True),
+    ("ToolOrigin_skipReturn", "safety", True),
+    ("ToolOrigin_liveObserver", "safety", True),
+    ("ToolOrigin_unownedAlias", "safety", True),
+    ("ToolOrigin_skipAssociation", "safety", True),
     ("SourcePrefix", "safety", False),
     ("SourcePrefix_open", "EntryCurrent", True),
     ("SourcePrefix_scope", "EntryCurrent", True),
@@ -312,6 +348,8 @@ CASES = [
     ("CompilerEnrollment_reuseApproval", "FreshDemand", True),
     ("CompilerEnrollment_dropEnrollment", "Complete", True),
     ("CompilerEnrollment_acceptance", "RejectAll", True),
+    ("CompilerExtentOwned", "safety", False),
+    ("CompilerExtentRouteFirst", "RouteHasOwner", True),
     ("AuthoringStage", "safety", False),
     ("AuthoringStage_skipAdmission", "BoundaryChecked", True),
     ("AuthoringStage_oldContract", "ValidAdmission", True),
@@ -381,6 +419,12 @@ CASES = [
     ("OwnedReads_construction", "ConstructorOnly", True),
     ("OwnedReads_generation", "GenerationStable", True),
     ("OwnedReads_parentDuring", "GenerationStable", True),
+    ("WindowOwnership", "safety", False),
+    ("WindowOwnership_prefix", "safety", True),
+    ("WindowOwnership_skipBoundary", "safety", True),
+    ("WindowOwnership_escapeKernel", "safety", True),
+    ("WindowOwnership_staleBoundary", "safety", True),
+    ("WindowOwnership_disabledAbsent", "safety", True),
     ("SourceWindows", "safety", False),
     ("SourceWindows_cross", "CurrentEvidence", True),
     ("SourceWindows_omit", "CompleteRequirements", True),
@@ -510,7 +554,7 @@ COUNTS = re.compile(rb"([\d,]+) states generated, ([\d,]+) distinct states.*?([\
 
 
 def typecheck_entries(quint, sources):
-    """Fresh native CLI stages per entry, sharing only the Node runtime."""
+    """Fresh runtime CLI stages per entry, sharing only the Node runtime."""
     with QuintCLI(quint, "typecheck") as runtime:
         for source in sources:
             source = str(source.resolve())
@@ -544,11 +588,11 @@ def main():
     parser.add_argument("--receipt", type=Path, required=True)
     parser.add_argument("--case-prefix", help="Qualify an explicitly scoped subset; default is the complete catalog")
     parser.add_argument("--producer-source", type=Path,
-                        help="Bind native gerbil-poo source owners for replay/incremental correspondence")
+                        help="Bind gerbil-poo source owners for replay/incremental correspondence")
     parser.add_argument("--shard-count", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--typecheck-scope", choices=("all", "selected"), default="all",
-                        help="Keep all-source checking by default; selected checks each named case and its native imports")
+                        help="Keep all-source checking by default; selected checks each named case and its runtime imports")
     args = parser.parse_args()
     if args.shard_count < 1 or not 0 <= args.shard_index < args.shard_count:
         parser.error("shard index must be within the positive shard count")
@@ -566,11 +610,11 @@ def main():
             parser.error("producer-source requires replay, incremental or thunk-construction correspondence cases")
         args.producer_source = args.producer_source.resolve()
         producer_bound = [args.producer_source / name for name in
-                          ("gerbil.pkg", "object.ss", "object-state.ss", "slot-observation.ss",
+                          ("gerbil.pkg", "object.ss", "object/observation.scm", "object-state.ss", "slot-observation.ss",
                            "read-route.ss", "slot-layout.ss", "prototype-map.ss",
-                           "support/object-syntax.ss", "inheritance-hooks.ss", "t/issued-read-test.ss")]
+                           "support/object-syntax.ss", "mop.ss", "t/objects/issued-read-test.ss")]
         if not all(p.is_file() for p in producer_bound):
-            parser.error("producer-source must contain the complete selected native source owners")
+            parser.error("producer-source must contain the complete selected runtime source owners")
     args.receipt.unlink(missing_ok=True)
     version = subprocess.check_output([args.quint, "--version"], text=True, timeout=5).strip()
     if version != "0.33.0":
@@ -612,7 +656,7 @@ def main():
                   core / "t/module-retention-census-test.ss",
                   core / "module-system/building/test-observation.ss",
                   core / "t/qualification/module-scale/fixture.ss",
-                  core / "t/qualification/module-scale/worker-test.ss",
+                  core / "t/qualification/module-scale/workloads.ss",
                   core / "poo-clos/objects.ss", core / "poo-clos/dispatch.ss"])
     payload_lean = core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/PayloadSharing.lean"
     bound.extend([payload_lean, core / "poo-clos/objects.ss", core / "poo-clos/dispatch.ss",
@@ -654,17 +698,32 @@ def main():
     topology_digest = "sha256:" + hashlib.sha256((models / "SelectionReplayTopology.qnt").read_bytes()).hexdigest()
     if f'topologySourceDigest : String := "{topology_digest}"' not in selection_lean.read_text():
         raise AssertionError("Lean retains a stale replay topology Quint source binding")
-    declared_poo = re.search(r'github\.com/tao3k/gerbil-poo@([0-9a-f]{40})',
+    declared_poo = re.search(r'github\.com/tao3k/gerbil-poo@([0-9a-f]{40}|v\d+(?:\.\d+)+)"',
                              (core / "gerbil.pkg").read_text())
-    if not declared_poo or f'declaredPooRevision : String := "{declared_poo[1]}"' not in selection_lean.read_text():
-        raise AssertionError("Replay proof correspondence retains a stale gerbil-poo revision")
+    if not declared_poo:
+        raise AssertionError("Core must pin gerbil-poo in gerbil.pkg")
+    # Package management owns revisions; proofs do not duplicate them. For a
+    # Git source, resolve the declared reference with Git and authenticate the
+    # supplied checkout. Archives retain the existing exact-source digest gate.
+    if producer_bound and (args.producer_source / ".git").exists():
+        git = ["git", "-C", str(args.producer_source), "rev-parse", "--verify"]
+        expected = subprocess.check_output(git + [declared_poo[1] + "^{commit}"],
+                                           text=True, timeout=5).strip()
+        actual = subprocess.check_output(git + ["HEAD^{commit}"], text=True, timeout=5).strip()
+        if actual != expected:
+            raise AssertionError("Producer checkout differs from Core's declared package reference")
     if producer_bound:
         producer_digest = "sha256:" + hashlib.sha256((args.producer_source / "object.ss").read_bytes()).hexdigest()
         proof_owner = payload_lean if args.case_prefix.startswith("ThunkConstruction") else selection_lean
         if f'projectionObjectDigest : String := "{producer_digest}"' not in proof_owner.read_text():
-            raise AssertionError("Selected projection proof retains a stale native object source binding")
+            raise AssertionError("Selected projection proof retains a stale runtime object source binding")
+        observation_digest = "sha256:" + hashlib.sha256(
+            (args.producer_source / "object/observation.scm").read_bytes()).hexdigest()
+        if f'projectionObservationDigest : String := "{observation_digest}"' not in proof_owner.read_text():
+            raise AssertionError("Selected projection proof retains a stale issued-read source binding")
     selection_bound = [selection_lean, core / "module-system/source/reader.ss",
-                       core / "module-system/source/admission.ss", core / "module-system/source/link.ss",
+                       core / "module-system/source/admission.ss",
+                       core / "module-system/source/observations.ss", core / "module-system/source/link.ss",
                        core / "module-system/source/publication.ss", core / "t/module-publication-test.ss",
                        core / "t/reader-root-collection-test.ss", core / "t/slot-read-replay-test.ss",
                        core / "t/runtime-statistics-test.ss", core / "t/module-source-cost-test.ss"]
@@ -673,7 +732,7 @@ def main():
                   core / "module-system/building/artifacts.ss",
                   core / "observability/testing-script.ss", core / "t/module-test-preparation-test.ss",
                   core / "module-system/building/interface.ss", core / "module-system/building/test-projection.ss",
-                  core / "module-system/building/source-closure.ss", core / "t/qualification/testing/run.ss",
+                  core / "module-system/building/source-closure.ss", core / "dev/test-file.ss",
                   core / "t/gitea-postgresql-publication-test.ss", core / "admission/source.ss",
                   core / "scenarios/gitea-postgresql/types.ss",
                   core / "scenarios/gitea-postgresql/gitea/types.ss",
@@ -713,6 +772,7 @@ def main():
         raise AssertionError("Lean retains a stale SourceWindows Quint source binding")
     bound.extend([window_lean, core / "admission/source.ss",
                   core / "admission/contributions.ss", core / "module-system/source/admission.ss",
+                  core / "module-system/source/observations.ss",
                   core / "dev/proofs/lean/YuanxuProof/Admission/Source.lean",
                   core / "dev/proofs/lean/lakefile.lean", core / "dev/proofs/lean/lake-manifest.json",
                   core / "dev/proofs/lean/lean-toolchain", core / "gerbil.pkg",
@@ -955,11 +1015,12 @@ def main():
         raise AssertionError("Lean retains a stale WitnessReplay Quint source binding")
     bound.extend([core / "poo-clos/classes.ss", core / "observability/memory.ss",
                   core / "t/testing-script-test.ss",
-                  core / "t/qualification/module-scale/worker-test.ss"])
+                  core / "t/qualification/module-scale/workloads.ss"])
     bound.extend([core / "t/module-candidate-stage-test.ss",
                   core / "t/module-candidate-metadata-test.ss",
                   core / "object-family/read-projection.ss"])
     bound.append(core / "t/module-reader-effect-support-test.ss")
+    bound.extend([core / "dev/just/checks.just", core / "dev/just/testing.just", core / "gerbil.pkg"])
     bound.extend([work_lean, core / "module-system/graph/funs.ss", core / "t/module-closure-work-test.ss",
                   core / "t/module-context-walk-test.ss"])
     bound.extend([admission_lean, core / "module-system/building/test-projection.ss",
@@ -971,13 +1032,17 @@ def main():
                   core / "t/module-testing-source-admission-test.ss",
                   core / "t/module-loading-scale-test.ss",
                   core / "t/qualification/module-scale/fixture.ss",
-                  core / "t/qualification/module-scale/worker-test.ss",
+                  core / "t/qualification/module-scale/workloads.ss",
                   core / "t/module-declaration-calibration-test.ss",
                   core / "t/module-declaration-retention-test.ss",
                   core / "t/module-dependency-continuation-test.ss",
                   core / "t/evidence-read-ownership-test.ss",
                   core / "t/evidence-witness-replay-test.ss",
                   core / "t/module-declaration-1000-test.ss",
+                  core / "t/module-runtime-attribution-1000-test.ss",
+                  core / "t/module-eval-once-1000-test.ss",
+                  core / "t/module-business-eval-once-1000-test.ss",
+                  core / "t/module-session-metadata-index-test.ss",
                   core / "t/module-declaration-10000-test.ss",
                   core / "module-system/building/test-observation.ss",
                   core / "t/module-test-observation-test.ss",
@@ -1028,8 +1093,8 @@ def main():
                   core / "t/qualification/module-publication/controls.ss",
                   core / "ops/interface.ss", core / "core-spec.ss", core / "init.ss"])
     bound.extend([Path(__file__).resolve(), Path(__file__).with_name("backend.py").resolve(),
-                  Path(__file__).with_name("native-cli.cjs").resolve(),
-                  Path(__file__).with_name("native.py").resolve(),
+                  Path(__file__).with_name("quint-cli.cjs").resolve(),
+                  Path(__file__).with_name("cli.py").resolve(),
                   Path(__file__).with_name("test_typecheck.py").resolve()])
     sources = digests()
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
@@ -1045,7 +1110,7 @@ def main():
     # afresh per entry. Only Node startup is shared; each entry keeps its 5s limit.
     typecheck_entries(args.quint, typecheck_sources)
     print("QUINT-TYPECHECK-OK", flush=True)
-    print(f"QUINT-TYPECHECK-SCOPE {args.typecheck_scope} {len(typecheck_sources)} entries (including native imports)", flush=True)
+    print(f"QUINT-TYPECHECK-SCOPE {args.typecheck_scope} {len(typecheck_sources)} entries (including runtime imports)", flush=True)
     results = []
     if __package__:
         from .backend import backend_session

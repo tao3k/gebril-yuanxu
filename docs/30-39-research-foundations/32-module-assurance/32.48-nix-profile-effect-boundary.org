@@ -11,7 +11,7 @@ profile switch or remote provider effect joins that database transaction.
 [[file:32.47-conditional-build-publication.org][32.47]] qualified a serial in-memory owner, not an external transaction. This
 step exercises maintained Core publication, Nix Source and Ops process execution
 against a real temporary Nix profile. No simulated revision owner is involved in
-the native profile operations.
+the runtime profile operations.
 
 The present boundaries can preserve an admitted immutable snapshot across new
 client processes. They do not provide one operation combining an application
@@ -43,16 +43,16 @@ Scheme-side request-only and Rust handoff stubs do not establish an implemented
 conditional-head transaction. This audit does not infer the behavior of some
 external runtime implementation from a Scheme request shape.
 
-The checked native binary identifies itself as =Nix 2.34.4+1=. The official
+The checked runtime binary identifies itself as =Nix 2.34.4+1=. The official
 [[https://nix.dev/manual/nix/2.34/command-ref/nix-env/set.html][2.34-series --set manual]] documents its selection operation, and
 [[https://nix.dev/manual/nix/2.34/command-ref/files/profiles.html][profile layout documentation]] explains the persistent generation links. Those
-online pages currently identify 2.34.9, not the exact tested patch build. Native
+online pages currently identify 2.34.9, not the exact tested patch build. Runtime
 results below are evidence for the installed binary; the manual is supporting
 documentation, not an exact-build source audit or proof of internal locking.
 The attempted exact-tag source retrieval was unavailable and is not counted as
 reviewed source. No whole-platform installation was performed.
 
-* Native experiment: real publication to immutable release
+* Runtime experiment: real publication to immutable release
 
 [[file:../../../t/nix-profile-effect-boundary-test.ss][nix-profile-effect-boundary-test.ss]] uses the real Gitea/PostgreSQL publication
 created by the existing =ServicesFixture=. The fixture owns only temporary role
@@ -95,7 +95,7 @@ The actual effects are ordinary existing Ops calls:
 (.call (profile-command profile "--set" new-artifact) .run)
 #+end_src
 
-Every =.run= starts and waits for a separate native process. A later
+Every =.run= starts and waits for a separate runtime process. A later
 =--list-generations= process observes generation 2. An independent, heap-fenced
 Gerbil reader starts through the Justfile, reads =profile/plan.json= and reports
 =(5433 5433)=. It inherits neither the parent POO plan nor the issuer registry.
@@ -111,7 +111,7 @@ The retained old request is then executed:
 #+end_src
 
 There is no expected revision or fence operand to reject here. This is not a
-forged Core issuance token: the tested native interface has no such token. It is
+forged Core issuance token: the tested runtime interface has no such token. It is
 an intentionally stale saved command with write permission to this temporary
 profile. Core admission does not grant or revoke that operating-system write
 permission. Nix profile locking/atomic link replacement, even where provided,
@@ -163,10 +163,10 @@ replacement without an expected-revision operand. Its properties include:
 - =child_switch_preserves_parent=: the independent retained parent projection remains.
 
 The numeric model counter is not Nix's actual generation number or an extracted
-native fence. The model does not prove Nix locking, crash recovery, GC retention
-or filesystem protection. Its source digest is bound to the QNT input. Native
+runtime fence. The model does not prove Nix locking, crash recovery, GC retention
+or filesystem protection. Its source digest is bound to the QNT input. Runtime
 assertions and the formal projection remain separate evidence; there is no new
-automatic native-trace extraction theorem.
+automatic runtime-trace extraction theorem.
 
 [[file:../../../dev/proofs/quint/NixProfileEffect.qnt][NixProfileEffect.qnt]] separates workflow preparation, another writer/source
 change, a fresh client and the actual unconditional effect. Bounded runs use
@@ -240,7 +240,7 @@ arbitrary nonzero exit status. Raw logs remain local, outside source control.
 
 Early failures are retained: run 01 could not access the Nix daemon in the
 restricted sandbox; run 02 completed real build/profile effects before exposing
-an incorrect HashTable assumption about native JSON WAList values; run 03 found
+an incorrect HashTable assumption about runtime JSON WAList values; run 03 found
 the required =waref= default parameter missing; run 04 exposed the reader's
 stderr warning being mixed into its exact stdout protocol. The final reader uses
 the maintained Ops stderr separation rather than weakening the output assertion.
