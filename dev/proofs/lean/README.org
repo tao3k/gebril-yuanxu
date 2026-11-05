@@ -13,10 +13,12 @@ tracking: the raw restoration counterexample is preserved, not discharged by
 an assumed purity annotation or a generated Birth.
 
 One =YuanxuProof= Lake library owns all Core models and their axiom audit.
-LeanPoo is a dependency, not another local proof implementation. The dependency
-is pinned at =6e6a706e14fa6f8199e4f36711440355b42ef335=, using Lean 4.34.0. The parent Lean consumer uses the same toolchain.
-Its Cedar pin is the upstream Lean-4.34 upgrade commit
-=acb0db7daa838249d894d2af64c850e1c9bf0d7d=; Batteries is v4.34.0.
+LeanPoo is a dependency, not another local proof implementation. Its fixed Git
+revision is declared in =lakefile.lean= and resolved by Lake into
+=lake-manifest.json=. Use =lake update LeanPoo= after changing that declaration;
+do not edit dependency checkouts or manufacture manifest entries. The project
+uses Lean 4.34.0. =just proofs-lean= retains its existing 120-second local limit;
+the CI Lake build keeps its independently declared deadline.
 
 * Organization follows source ownership
 
