@@ -5,10 +5,11 @@
         (only-in "../service-publication/fixtures.ss" ServicesFixture)
         (only-in :yuanxu/module-system/building/artifacts call-with-build-artifact-issuance
                  run-build-artifact-process)
+        (only-in :yuanxu/observability/testing-script TestingScript.)
         "./projection")
 (export main)
 ;; Standard Gerbil launchers share this argument surface; issuance stays process-local.
-(def (main producer-root)
+(def (main producer-root (worker-command #f))
 (def services (.call ServicesFixture .prepare (.o root: producer-root)))
 (def prefix (cadr (call-with-input-file (path-expand "gerbil.pkg" producer-root) read)))
 (def probe-identity (string->symbol (string-append (symbol->string prefix) "/probe")))
@@ -21,4 +22,8 @@
   (find (cut string-prefix? ".yuanxu-build-issuance-" <>)
         (directory-files (list path: lib ignore-hidden: #f))) lib))
 (display (run-build-artifact-process projection lib
-  (list "just" "build-publication-worker" producer-root lib (symbol->string probe-identity) "persist" record))))
+  (append (or worker-command '("gerbil")) (.get TestingScript. runtime-options)
+    (if worker-command '("worker")
+      '("interactive" "t/qualification/build-publication/worker.ss"))
+    (list
+          producer-root lib (symbol->string probe-identity) "persist" record)))))

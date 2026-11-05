@@ -12,7 +12,6 @@
           accept-build-artifact-handoff! call-with-build-artifact-issuance admit-build-artifacts!
           build-artifact-handoff)
         (only-in :yuanxu/ops/progress call-with-execution-progress execution-progress!)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
         "./projection" "./store")
 (export main)
 (def (report-result prefix value)
@@ -35,15 +34,10 @@
 (def (main . raw-arguments)
   (call-with-execution-progress 60000 600000
     (lambda (_frame)
-      (def completed-queries 0)
-      (def previous (current-module-source-observer))
-      (parameterize
-        ((current-module-source-observer
-          (lambda (key amount)
-            (when (and (pair? key) (eq? (car key) 'package-process-end))
-              (set! completed-queries (+ completed-queries 1))
-              (execution-progress! 'completed-package-checks completed-queries))
-            (when previous (previous key amount)))))
+      ;; Liveness is not a source-observation callback. Preserve any observer
+      ;; explicitly installed by a caller; ordinary restart qualification must
+      ;; not turn every source guard into an open callback boundary.
+      (def completed-publications 0)
         (def args (worker-arguments raw-arguments))
         (def root (car args))
         (def lib (cadr args))
@@ -52,7 +46,9 @@
         (def approved? (string-prefix? "approved-" requested-mode))
         (def mode (if approved? (substring requested-mode 9 (string-length requested-mode)) requested-mode))
         (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
+        (execution-progress! 'worker-stages 1)
         (def projection (probe-projection selection root probe-identity))
+        (execution-progress! 'worker-stages 2)
         (when (equal? mode "persist")
           (displayln "CORE-STORE-ROOT " (publish-store! projection lib))
           (exit 0))
@@ -118,6 +114,8 @@
                        (= (length (.get publication context contributions)) 2))
             (error "worker publication lost service invariants"))
           (set! last-accepted (.get receipt accepted?))
+          (set! completed-publications (+ completed-publications 1))
+          (execution-progress! 'completed-publications completed-publications)
           next)
         (publish!)
         (publish!)
@@ -216,4 +214,4 @@
            (displayln "HANDOFF-JOINT-REFUSED")))
           (else (error "unknown worker control" mode)))
         (report-result "STORE-RESULT " last-accepted)
-))))
+)))
