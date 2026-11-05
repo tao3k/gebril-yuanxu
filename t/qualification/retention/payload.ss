@@ -10,6 +10,7 @@
         (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :gerbil/expander expander-context? expander-context-id expander-context-table)
         (only-in :gerbil/runtime/mop type-field-list)
+        (only-in :gerbil/runtime/table raw-table? &raw-table-table &raw-table-count)
         (only-in :gerbil/runtime/interface interface-instance? interface-instance-object)
         (rename-in (only-in :gerbil/runtime/gambit table?) (table? gambit-table?)))
 (export report-retained-reads)
@@ -145,23 +146,27 @@
       (when (##structure? value)
         (hash-put! table-layouts (##type-id (##structure-type value))
           (type-field-list (##structure-type value))))
-      (let* ((backing (if (gc-wrapper? value)
-                        (##structure-ref value 1 (##structure-type value) #f)
-                        (record-field value 'gcht)))
-             (flags (if (gc-wrapper? value)
-                      ;; _gambit#.scm documents the object-vector flags at 1.
-                      (##unchecked-structure-ref backing 1 #f #f)
-                      (record-field value 'flags)))
+      (let* ((raw? (raw-table? value))
+             (backing (cond (raw? (&raw-table-table value))
+                            ((gc-wrapper? value)
+                             (##structure-ref value 1 (##structure-type value) #f))
+                            (else (record-field value 'gcht))))
+             (flags (cond (raw? 0)
+                          ((gc-wrapper? value)
+                           ;; _gambit#.scm documents object-vector flags at 1.
+                           (##unchecked-structure-ref backing 1 #f #f))
+                          (else (record-field value 'flags))))
              (policy (if (fixnum? flags)
                        (case (bitwise-and flags 3)
                          ((0) 'strong) ((1) 'weak-keys)
                          ((2) 'weak-values) ((3) 'weak-both)) 'unknown)))
         (hash-update! table-policies policy 1+ 0)
-        ;; Installed _gambit#.scm:671 defines count at slot 2 of BOTH
-        ;; representations' gcht. Read storage metadata only: hash iteration
-        ;; can rehash and would cross the observer's read-only boundary.
+        ;; Gerbil owns its raw count accessor. Installed _gambit#.scm:671
+        ;; defines count at slot 2 for the other two representations' gcht.
+        ;; Hash iteration could rehash and cross the read-only boundary.
         (when backing
-          (let (count (##unchecked-structure-ref backing 2 #f #f))
+          (let (count (if raw? (&raw-table-count value)
+                         (##unchecked-structure-ref backing 2 #f #f)))
             (unless (and (fixnum? count) (>= count 0))
               (error "unqualified GC table count layout" count))
             (hash-update! table-entries policy (cut + <> count) 0)))
@@ -174,10 +179,15 @@
       ((or (begin (set! stage 'object) (object? value))
            (begin (set! stage 'expander) (expander-context? value))
            (begin (set! stage 'class) (class-type? value))
+           (raw-table? value)
            (begin (set! stage 'table) (gambit-table? value))
            (##continuation? value) (gc-wrapper? value))
        (unless (hash-key? frontiers value)
-         (when (or (gambit-table? value) (gc-wrapper? value)) (table! value))
+         ;; Native Gerbil tables are not Gambit tables. Their backing vector
+         ;; contains VM sentinel cells, not ordinary Scheme payload arguments.
+         ;; Account through the runtime's read-only accessors without walking
+         ;; storage cells, hashing, rehashing or invoking interface methods.
+         (when (or (raw-table? value) (gambit-table? value) (gc-wrapper? value)) (table! value))
          (when (expander-context? value)
            (hash-put! contexts value (expander-context-id value))
            (set! context-bindings (+ context-bindings (hash-length (expander-context-table value)))))

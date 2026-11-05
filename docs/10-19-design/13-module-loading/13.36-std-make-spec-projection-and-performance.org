@@ -358,6 +358,14 @@ The compiler-context confinement test additionally requires its existing
 =CORE_QUALIFICATION_ROOT= qualification input. These focused gates do not
 replace the independent scale or full CI gates.
 
+The structural retention census treats Gerbil raw tables and Gambit tables as
+distinct runtime representations. Gerbil's =raw-table?=, =&raw-table-table=
+and =&raw-table-count= identify and inspect its storage without hashing,
+iteration or interface callbacks. Native storage sentinel cells are not Scheme
+payload arguments for recursive traversal. This affects the census frontier,
+not the issued-read dependency graph. Reproduce through the unchanged twelve
+admission samples in =just test-file t/read-retention-cost-test.ss=.
+
 ** Paired native entry control
 
 Use the JsonSchema-only bootstrap fixture and retain its ordinary library
