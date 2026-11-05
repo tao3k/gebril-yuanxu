@@ -201,7 +201,10 @@
                   environment: (.o GERBIL_PATH: editor-state GAMBOPT: runtime-environment
                     GERBIL_LOADPATH: inherited GERBIL_TAGS_FORMAT: "invalid-format"))))
             (check-equal? (zero? (.get failed status)) #f)
-            (check-equal? (and (string-contains (.get failed output) "unknown TAGS index format") #t) #t)
+            (check-equal?
+              (if (string-contains (.get failed output) "unknown TAGS index format")
+                #t (.get failed output))
+              #t)
             (check-equal? (call-with-input-file tags read-all-as-string) previous-index)
             (check-equal? (filter (cut string-prefix? ".TAGS-" <>) (directory-files editor-root)) '()))
           (displayln "PACKAGE catalog=1000 tag=v0.1.0 install-compile=0 selected=2 targets=11 hot=0 clean-isolation=ok source=unchanged tags=complete"))))))

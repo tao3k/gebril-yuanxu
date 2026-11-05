@@ -7,7 +7,7 @@
         (only-in :clan/poo/mop Type. Bool)
         (only-in :clan/poo/type Enum Tuple)
         (only-in :clan/poo/testing/type check-property report-diagnostics)
-        (prefix-in :clan/property-testing/test pbt.)
+        (prefix-in :clan/poo/testing/property/test pbt.)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-receiver slot-read-key)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
@@ -80,9 +80,11 @@
                       (check-equal? (valid-outcome? (vector state #f)) #t)
                       (check-equal? (valid-outcome? (vector state #t)) #t))
                     '(missing empty file))
-          (pbt.check-property
-            (check-property domain valid-outcome? seed: 3305 cases: 32 size: 4 shrink-budget: 32)
-            diagnostics: report-diagnostics))))
+          (let* ((report (check-property domain valid-outcome?
+                           seed: 3305 cases: 32 size: 4 shrink-budget: 32))
+                 (execution (.get report execution)))
+            (pbt.require-passed execution
+              refusal: (and (not execution) (report-diagnostics report)))))))
     (yuanxu-test-case "only an absent contribution may fall through to another source collection"
       (with-module
         (lambda (root)
@@ -114,9 +116,11 @@
           (for-each (lambda (state) (check-equal? (valid-outcome? state) #t))
                     '(absent missing empty file valid))
           (check-exception (yuanxu-module-source-collection-locate contribution '(custom . ../valid)) error?)
-          (pbt.check-property
-            (check-property domain valid-outcome? seed: 3306 cases: 32 size: 4 shrink-budget: 32)
-            diagnostics: report-diagnostics))))
+          (let* ((report (check-property domain valid-outcome?
+                           seed: 3306 cases: 32 size: 4 shrink-budget: 32))
+                 (execution (.get report execution)))
+            (pbt.require-passed execution
+              refusal: (and (not execution) (report-diagnostics report)))))))
     (yuanxu-test-case "collected replay starts fresh and shares only its own pure reads"
       (with-module
         (lambda (root)

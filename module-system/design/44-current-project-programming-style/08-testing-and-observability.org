@@ -203,6 +203,21 @@ Funflow qualification sources execute. Product OpenTofu operational-round tests
 belong in the product repository, alongside their actual producer, rather than
 importing a removed OpenTofu directory from the Core library.
 
+** Pinned POO property reports and native test ownership
+
+For gerbil-poo =d06ee2f118cdd9eb46597dd2bd4b4c71f6652fca=, the standard
+property-test integration is =:clan/poo/testing/property/test=. A Type-generated
+report is a POO value; its =execution= slot holds the native kernel report.
+Pass that kernel report to =require-passed=. If Type/generator preparation did
+not produce an execution, pass its diagnostics through the native =refusal:=
+argument. A diagnostic status is never substituted for a current kernel report.
+The kernel retains its source/currentness checks and diagnostic failure rules.
+
+The existing CI discovery partition assigns all =module-*-10000-test.ss= files
+to the scale owner. This changes scheduling only: the union of groups must
+equal the complete direct =t/*-test.ss= discovery set, with one owner per file.
+Keep every Case, heap fence and deadline unchanged.
+
 The pinned Quint backend resolves its distribution relative to =QUINT_HOME=,
 with the same default as the installed Quint CLI. The source cut binds the
 current testing-script controls instead of a deleted execution-progress test;

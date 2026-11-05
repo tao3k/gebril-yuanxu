@@ -169,7 +169,7 @@ test-files group="all":
     for file in t/*-test.ss; do
       case "$file" in
         t/package-*|t/prelude-*|t/core-build-*|t/module-build-*|t/module-bootstrap-*|t/runtime-publication-identity-*) owner=bootstrap ;;
-        t/module-declaration-1000-test.ss|t/module-declaration-10000-test.ss|t/module-declaration-retention-test.ss|t/module-loading-scale-test.ss) owner=scale ;;
+        t/module-declaration-1000-test.ss|t/module-*-10000-test.ss|t/module-declaration-retention-test.ss|t/module-loading-scale-test.ss) owner=scale ;;
         t/module-*|t/feature-system-*) owner=modules ;;
         t/json-schema-*|t/source-*|t/contract-*|t/admission-*|t/contribution-*|t/configuration-*) owner=contracts ;;
         t/poo-*|t/object-*|t/issued-*|t/path-*|t/evidence-*|t/issuer-*) owner=objects ;;
