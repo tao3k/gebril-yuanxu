@@ -42,7 +42,8 @@
   (for-each
     (lambda (entry target)
       (cond
-       ((eq? entry language) (set! language-target target))
+       ((eq? (.ref entry 'compiler-identity) (.ref language 'compiler-identity))
+        (set! language-target target))
        ((hash-key? prerequisites (.ref entry 'compiler-identity)) (set! before (cons target before)))
        (else (set! after (cons target after)))))
     entries targets)
@@ -53,6 +54,9 @@
     (path-strip-trailing-directory-separator
       (path-directory (symbol->string (.ref language 'compiler-identity)))))
   (def spec (list language-target))
+  (unless language-target
+    (error "package language is absent from admitted Make targets"
+           (.ref language 'compiler-identity)))
   (append (ordinary before) (list (.o prefix spec)) (ordinary after)))
 
 (def (collect-build-entries selected kept retained)

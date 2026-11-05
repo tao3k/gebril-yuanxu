@@ -23,15 +23,25 @@ prelude: :gerbil/core
 (def (package-source-path root expected-package)
   (let* ((directory (path-normalize root))
          (metadata (path-expand "gerbil.pkg" directory))
-         (properties (call-with-input-file metadata read))
+         (properties (core-library-package-plist directory #t))
          (package (and (list? properties) (memq 'package: properties))))
     (unless (and package (pair? (cdr package))
                  (eq? (cadr package) expected-package))
       (error "build source package identity mismatch" metadata expected-package))
     directory))
 
-(def (register-module-build-source! root expected-package)
-  (add-load-path! (package-source-path root expected-package)))
+(def (register-module-build-source! root expected-package prelude: (expected-prelude #f))
+  (def directory (package-source-path root expected-package))
+  (def identity (package-prelude-identity directory))
+  ;; Verify before changing the expander or its search path. An off-prefix
+  ;; language is owned by the package's source header and gerbil.pkg together.
+  (when (and expected-prelude (not (eq? expected-prelude identity)))
+    (error "build source prelude identity mismatch" directory expected-prelude identity))
+  (when identity
+    (let (context (core-import-module (path-expand "prelude.ss" directory)))
+      (core-bind-root-syntax!
+        (string->symbol (string-append ":" (symbol->string identity))) context #t)))
+  (add-load-path! directory))
 
 ;; The package owns this source declaration. Consumers never reconstruct it
 ;; from the public language name or from a compiled artifact's filename.

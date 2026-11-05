@@ -42,7 +42,7 @@ test-file path observe="false":
       trace) options=(-D yuanxu-module-test-observation,yuanxu-module-test-trace) ;;
       *) echo 'observe must be false, true, or trace' >&2; exit 64 ;;
     esac
-    GERBIL_LOADPATH="$test_lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:${GERBIL_PATH:-$PWD/.gerbil}/lib:$PWD" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" "${launcher[@]}" {{ gerbil_test_runtime_options }} dev/test-file.ss "${options[@]}" "{{ path }}"
+    GERBIL_LOADPATH="$test_lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:${GERBIL_PATH:-$PWD/.gerbil}/lib:$PWD" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" "${launcher[@]}" {{ gerbil_test_runtime_options }} dev/test-file.ss ${options[@]+"${options[@]}"} "{{ path }}"
 
 test-build-publication directory file="t/build-artifact-publication-test.ss":
     #!/usr/bin/env bash

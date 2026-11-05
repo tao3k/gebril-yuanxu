@@ -1,58 +1,17 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Qualification only: authenticate the selected lookup route, not issuance.
+;;; Exercise the producer's route guard; do not duplicate its storage model.
 (import :clan/poo/object
-        (prefix-in (only-in :gerbil/runtime/mop object-class slot-ref) runtime.)
-        (only-in :gerbil/runtime/table &raw-table-hash &raw-table-test &raw-table-lock)
-        (only-in :clan/poo/mop make-slot-read slot-read-receiver slot-read-key))
+        (rename-in (only-in :clan/poo/read-route require-read-route!)
+                   (require-read-route! producer-require-read-route!))
+        (only-in :clan/poo/slot-observation slot-read-receiver slot-read-key))
 (export require-read-route! guarded-current?)
-(defstruct route (wrapper ref backend hash test) final: #t)
-(def record-class (runtime.object-class (make-slot-read #f #f 0 #f #f '() values)))
-(def (capture-route table)
-  (def backend (runtime.slot-ref table 'object))
-  (make-route (runtime.object-class table) (runtime.slot-ref table 'ref)
-    (runtime.object-class backend) (&raw-table-hash backend) (&raw-table-test backend)))
-;; Captured from the same factories the installed producer actually uses.
-;; Runtime rebinding/FFI and hostile mutation of these private baselines remain
-;; outside this sequential qualification. No user purity declaration is consumed.
-(def read-route (capture-route (make-hash-table)))
-(def instance-route (capture-route (make-hash-table-symbolic)))
-(def (require-table-route! table expected)
-  (unless (eq? (runtime.object-class table) (route-wrapper expected))
-    (error "foreign metadata wrapper"))
-  (unless (eq? (runtime.slot-ref table 'ref) (route-ref expected))
-    (error "changed metadata ref"))
-  (let (backend (runtime.slot-ref table 'object))
-    (unless (eq? (runtime.object-class backend) (route-backend expected))
-      (error "foreign metadata backend"))
-    (unless (and (eq? (&raw-table-hash backend) (route-hash expected))
-                 (eq? (&raw-table-test backend) (route-test expected))
-                 (not (&raw-table-lock backend)))
-      (error "changed metadata hash/test"))))
-(def (supported-key? key)
-  (or (symbol? key)
-      (and (pair? key)
-        (case (car key)
-          ((preparation names) (null? (cdr key)))
-          ((bootstrap cache-miss presence)
-           (and (pair? (cdr key)) (symbol? (cadr key)) (null? (cddr key))))
-          (else #f)))))
+
 (def (require-read-route! read)
-  (unless (eq? (runtime.object-class read) record-class) (error "foreign slot-read type"))
-  (unless (eq? (runtime.slot-ref read 'current?) object-read-current?)
-    (error "foreign slot-read checker"))
   (def receiver (slot-read-receiver read))
-  (def key (slot-read-key read))
-  (unless (and (object? receiver) (supported-key? key)) (error "unsupported metadata key"))
-  ;; Do not instantiate a receiver or call a POO getter to inspect its metadata.
-  ;; Bootstrap's fixed anchor comparison does not use either table.
-  (unless (and (pair? key) (eq? (car key) 'bootstrap))
-    (when (object-%reads receiver)
-      (require-table-route! (object-%reads receiver) read-route))
-    (when (object-%instance receiver)
-      (require-table-route! (object-%instance receiver) instance-route)))
+  (producer-require-read-route! (slot-read-key read)
+    (object-%reads receiver) (object-%instance receiver))
   #t)
+
 (def (guarded-current? read)
   (require-read-route! read)
-  ;; No extension callback is accepted between the route check and this fixed
-  ;; runtime call. This is not a replacement for production replay-slot-reads!.
   (object-read-current? read))

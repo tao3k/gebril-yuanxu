@@ -3,15 +3,20 @@
 (import :gerbil/compiler (only-in :std/misc/ports read-all-as-string))
 (def root (path-expand (getenv "CORE_SOURCE_TAIL_ROOT")))
 (def core (path-expand (getenv "CORE_SOURCE_TAIL_CORE")))
-(def relative "module-system/source/admission.ss")
+(def relative "module-system/source/observations.ss")
 (def path (path-expand (string-append "source/yuanxu/" relative) root))
 (def text (call-with-input-file path read-all-as-string))
+(def measurement-prefix
+  "(def (observe-source kind (amount 1))\n  (when (and (symbol? kind) (current-module-source-operation-times))\n    (hash-update! (current-module-source-operation-times) (list 'source kind)\n      (cut + <> amount) 0))\n")
 (def unrestricted
-  "(def (observe-source kind (amount 1))\n  (when (current-module-source-observer)\n    ((current-module-source-observer) kind amount)))")
+  (string-append measurement-prefix
+    "  (when (current-module-source-observer)\n    ((current-module-source-observer) kind amount)))"))
 (def return-only
-  "(def (observe-source kind (amount 1))\n  (when (current-module-source-observer)\n    (when (eq? (current-module-source-phase) 'return-currentness)\n      (error \"opaque source observer in return tail\"))\n    ((current-module-source-observer) kind amount)))")
+  (string-append measurement-prefix
+    "  (when (current-module-source-observer)\n    (when (eq? (current-module-source-phase) 'return-currentness)\n      (error \"opaque source observer in return tail\"))\n    ((current-module-source-observer) kind amount)))"))
 (def segment
-  "(def (observe-source kind (amount 1))\n  (when (current-module-source-observer)\n    (when (memq (current-module-source-phase) '(slot-replay return-currentness))\n      (error \"opaque source observer in return tail\"))\n    ((current-module-source-observer) kind amount)))")
+  (string-append measurement-prefix
+    "  (when (current-module-source-observer)\n    (when (memq (current-module-source-phase) '(slot-replay return-currentness))\n      (error \"opaque source observer in return tail\"))\n    ((current-module-source-observer) kind amount)))"))
 (def policy (getenv "CORE_SOURCE_TAIL_POLICY" "segment"))
 (def candidate
   (cond ((string=? policy "segment") segment)

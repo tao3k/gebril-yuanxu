@@ -78,7 +78,7 @@
           (write-product root "build.ss")
           (write-product root "owned.ss")
           (call-with-output-file (path-expand "gerbil.pkg" root)
-            (cut display "(package: yuanxu)\n" <>))
+            (cut display "(package: yuanxu prelude: :tao3k/yuanxu/prelude)\n" <>))
           (call-with-output-file (path-expand "prelude.ss" root)
             (cut display "package: tao3k/yuanxu\n(import :no-such-clean-import/module)\n" <>))
           (def graph (.o entries: '() compiler-inputs: '()

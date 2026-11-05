@@ -1,7 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module-specific adapter of the existing Case policy, never a runner.
 (import (runtime: :clan/poo/object)
-        (only-in :std/source this-source-file)
         (only-in :yuanxu/module-system/source/deferred-declaration module-entry-action)
         (only-in :yuanxu/observability/testing-case
                  yuanxu-default-testing-case-profile
@@ -15,18 +14,9 @@
 
 ;; Stable owner/role labels distinguish many modules' func.ss and types.ss.
 ;; This is only formatting of an observed path: no scan, import or slot read.
-(def observation-source-root
-  ;; Diagnostic labels only need lexical parent directories. A compiled
-  ;; module may outlive its source sandbox; formatting must not stat or reopen
-  ;; that deleted tree, and cannot authenticate any observed source.
-  (let* ((building (path-directory (this-source-file)))
-         (module-system
-           (path-directory (path-strip-trailing-directory-separator building))))
-    (path-directory (path-strip-trailing-directory-separator module-system))))
-(def (source-label path)
-  (if (string-prefix? observation-source-root path)
-    (substring path (string-length observation-source-root) (string-length path))
-    (path-strip-directory path)))
+;; Preserve the observed path. Formatting cannot invent package ownership or
+;; assume the depth of this adapter's source directory.
+(def source-label identity)
 
 (def (module-test-observer previous trace?)
   ;; Report completed work through the existing scalar Ops channel. Merely
@@ -88,13 +78,8 @@
           (admission reader-admission-microseconds reader-admission-cpu-microseconds)
           (projection reader-projection-microseconds reader-projection-cpu-microseconds)))))
   (def (read-owner path)
-    (let (parts (string-split (source-label path) #\/))
-      (cond
-        ((string-contains path "/clan/poo/") "gerbil-poo")
-        ((and (member (car parts) '("modules" "module-system" "scenarios" "t"))
-              (pair? (cdr parts)))
-         (string-append (car parts) "/" (cadr parts)))
-        (else (car parts)))))
+    ;; This is an observation bucket, not a claim about a Module's owner.
+    (path-directory path))
   (def (record-read phase path amount)
     (set! physical-reads (+ physical-reads amount))
       (let* ((effect (if (pair? effects) (car effects) '(outside-effect . source)))

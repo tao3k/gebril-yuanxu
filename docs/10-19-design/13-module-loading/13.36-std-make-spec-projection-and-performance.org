@@ -272,6 +272,56 @@ closure still require production implementation and matched measurements.
 
 * Isolating the Make expression from its producers
 
+** Package-owned language and CI acceptance
+
+The build-source registrar verifies the declared package and its optional
+language before changing Gerbil's search path. Gerbil reads the package
+metadata and source header; the registrar binds that actual language context
+with =core-bind-root-syntax!=. It does not derive a source filename from a
+public namespace. A mismatched expected language must leave the search path
+unchanged.
+
+Public-library collection must include that same package-owned language even
+when its explicit runtime namespace differs from the ordinary package prefix.
+The confined source path, prepared compiler identity and source currentness
+remain mandatory. Naming metadata does not approve changed bytes. Make batches
+partition the already admitted targets by compiler identity; the language target
+must be present before either build or clean is dispatched. The output lock and
+the same complete specification remain in force for clean.
+
+The executable controls are =just test-file t/package-owned-prelude-test.ss=
+and =just test-file t/build-product-recovery-test.ss=. They cover foreign
+languages, wrong package/language declarations, changed language sources,
+prefix-correct deletion and preservation of unrelated outputs. CI also runs
+the normal prelude test on macOS's system Bash: an absent optional test flag
+must expand to zero arguments under =set -u=, not abort before the Harness.
+
+Lean dependency acquisition remains exclusively Lake's responsibility. The
+published LeanPoo revision is declared in =dev/proofs/lean/lakefile.lean= and
+locked by =lake update LeanPoo=. A successful incremental local proof build,
+the CI proof job and cold Scheme build/clean timing are separate acceptance
+results. None substitutes for another.
+
+Function wrapper identity is likewise an upstream runtime obligation. Repeating
+=validate= with the same issuer may preserve =eq?= only when its signature and
+native read support remain current; changed support requires fresh validation.
+Keep that regression when qualifying a dependency upgrade. Do not replace it
+with equality of example return values or a linker-owned wrapper cache.
+
+Compiler catalog membership uses the actual captured Gerbil Context, its module
+identity and its path. A namespace prefix or an implementation file's parent
+directories cannot establish ownership. Observe actual source Contexts and
+source roots explicitly declared by their consumer; an installed compiled
+Context does not implicitly authorize a checkout alias. Diagnostic buckets
+retain the observed directory and do not infer a package root.
+
+The temporary gerbil-poo pin =d06ee2f118cdd9eb46597dd2bd4b4c71f6652fca=
+contains the Function identity implementation and its upstream regression.
+Return to a release tag when a release contains this behavior, retaining the
+same strict identity and invalidation controls.
+
+** Paired native entry control
+
 Use the JsonSchema-only bootstrap fixture and retain its ordinary library
 roots. Capture the complete Make list from =build.ss spec=. In the bounded
 fixture, 38 selected rows and six retained rows yield 42 distinct targets.

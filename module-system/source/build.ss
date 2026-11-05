@@ -10,6 +10,7 @@
                  current-expander-path current-expander-marks current-expander-phi
                  current-import-expander-phi current-export-expander-phi raise-syntax-error)
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module package-library-spec/source-context)
+        (only-in :yuanxu/module-system/building/source-package package-prelude-identity)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/string/path path-absolute? path-default-extension)
@@ -192,6 +193,11 @@
             (unless (symbol? package) (error "public library entries require a runtime package identity" owner))
             ;; Confine before expansion, including every unresolved path part.
             (def prefix (string-append (symbol->string package) "/"))
+            (def language (package-prelude-identity package-root))
+            (def (owned? identity)
+              (and (symbol? identity)
+                   (or (eq? identity language)
+                       (string-prefix? prefix (symbol->string identity)))))
             (for-each
               (lambda (entry)
                 (def path (confined-build-path package-root entry))
@@ -201,9 +207,8 @@
               entries)
             (def (admit-context context)
               (def identity (expander-context-id context))
-              (when (and (symbol? identity) (string-prefix? prefix (symbol->string identity)))
-                (let* ((relative (substring (symbol->string identity) (string-length prefix)
-                                            (string-length (symbol->string identity))))
+              (when (owned? identity)
+                (let* ((relative (build-target-name identity (symbol->string package) language))
                        (path (confined-build-path package-root relative))
                        (actual (module-context-path context)))
                   (unless (and (string? actual) (equal? path (path-normalize actual)))
@@ -216,13 +221,11 @@
             (def (declared-source-context context)
               (let ((identity (expander-context-id context))
                     (actual (module-context-path context)))
-                (if (and (symbol? identity) (string? actual)
-                         (string=? (path-extension actual) ".ssi")
-                         (string-prefix? prefix (symbol->string identity)))
+                (if (and (owned? identity) (string? actual)
+                         (string=? (path-extension actual) ".ssi"))
                   ;; A compiled dependency may be this consumer's hot product.
                   ;; Expand the confined source before traversing its imports.
-                  (let* ((relative (substring (symbol->string identity) (string-length prefix)
-                                             (string-length (symbol->string identity))))
+                  (let* ((relative (build-target-name identity (symbol->string package) language))
                          (path (confined-build-path package-root relative))
                          (source (core-import-module path)))
                     (unless (eq? identity (expander-context-id source))
@@ -544,7 +547,8 @@
 (def (retained-build-entries specs root package-prefix selected capture: (capture #f))
   (unless (and (list? specs) (or (null? specs) (and (string? root) (path-absolute? root))))
     (error "retained build entries require a source root" root))
-  (let ((seen (make-hash-table-eq)) (selected-by-path (make-hash-table)))
+  (let ((seen (make-hash-table-eq)) (selected-by-path (make-hash-table))
+        (language (and (pair? specs) (package-prelude-identity root))))
     ;; Resolve each selected path once. Retained libraries overlap the Module
     ;; projection; a scan per library repeated both POO reads and normalization.
     (for-each
@@ -578,7 +582,7 @@
                                  ;; replay to every file (including every read of its fields).
                                  (yuanxu-prepare-module-retained-source path void capture: capture)))
          (def compiler-identity (.ref input 'compiler-identity))
-         (unless (equal? name (build-target-name compiler-identity package-prefix))
+         (unless (equal? name (build-target-name compiler-identity package-prefix language))
            (error "retained source path and compiler identity disagree" name compiler-identity))
          (when (hash-key? seen compiler-identity)
            (error "duplicate retained compiler target" compiler-identity))

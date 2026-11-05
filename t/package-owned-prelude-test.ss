@@ -57,7 +57,7 @@
                 (lambda (port) (display (cdr row) port))))
             '(("objects.ss" . "(export)\n")
               ("config.ss" . "(export)\n")
-              ("types.ss" . "(import :clan/poo/object (only-in :yuanxu/object-types/contracts yuanxu-predicate-contract))\n(def Scope (yuanxu-predicate-contract 'test/scope object? (lambda (_v _c) '())))\n(export Scope)\n")
+              ("types.ss" . "(import :clan/poo/object (only-in :clan/poo/type Record))\n(def Scope (.cc (Record) identity: 'test/scope))\n(export Scope)\n")
               ("build.ss" . "(import :clan/poo/object)\n(def Build (.o kind: 'module/build roots: '() library-roots: '(\"consumer\")))\n(export Build)\n")
               ("interface.ss" . "(.def Example identity: 'example features: (.o) core: (.o requires: (.o) scope-contract: Scope exports: (.o) projections: (list Build)))\n")))
           (def projection

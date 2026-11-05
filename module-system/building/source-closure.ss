@@ -8,13 +8,11 @@
                  module-context? module-context-import module-context-path module-context-export
                  core-context-prelude prelude-context? prelude-context-import
                  prelude-context-path __module-registry
-                 core-library-package-path-prefix core-library-package-plist
                  module-import? module-import-source module-export? module-export-context
                  import-set? import-set-source)
-        (only-in :std/source this-source-file)
-        (only-in "./source-package.ss" module-build-source-path))
+        (only-in "./source-package.ss" module-build-source-path package-prelude-identity))
 (export yuanxu-bootstrap-spec for-each-build-module build-module-dependencies yuanxu-bootstrap-contexts
-        yuanxu-library-identity? package-library-spec package-library-spec/source-context
+        package-library-spec package-library-spec/source-context
         call-with-build-expansion-accounting
         call-with-build-stage)
 
@@ -78,6 +76,7 @@
 
 (def (library-spec root package entries admit-context excluded source-context)
   (def prefix (string-append (symbol->string package) "/"))
+  (def language (package-prelude-identity root))
   (def seen (make-hash-table-eq))
   (def paths (make-hash-table))
   (def targets '())
@@ -89,8 +88,9 @@
     (admit-context context)
     (let* ((identity (expander-context-id context))
            (name (and (symbol? identity) (symbol->string identity))))
-      (when (and name (string-prefix? prefix name))
-        (let (relative (substring name (string-length prefix) (string-length name)))
+      (when (and name (or (eq? identity language) (string-prefix? prefix name)))
+        (let (relative (if (eq? identity language) "prelude"
+                          (substring name (string-length prefix) (string-length name))))
           (unless (or (member relative excluded) (hash-key? paths relative))
             (hash-put! paths relative #t)
             (set! targets (cons relative targets)))))))
@@ -272,17 +272,6 @@
             seen))
         bootstrap-roots roots)))
   ids)
-(def library-source-root (path-normalize (path-expand "../.." (path-directory (this-source-file)))))
-(def (configured-language-identity root)
-  (let* ((language (pgetq prelude: (core-library-package-plist root)))
-         (name (and (symbol? language) (symbol->string language))))
-    (and name (string-prefix? ":" name)
-         (string->symbol (substring name 1 (string-length name))))))
-(def (yuanxu-library-identity? identity)
-  (and (symbol? identity)
-       (or (let (prefix (core-library-package-path-prefix library-source-root))
-             (and prefix (string-prefix? prefix (symbol->string identity))))
-           (eq? identity (configured-language-identity library-source-root)))))
 (def (yuanxu-bootstrap-spec core-root)
   (using (core-root :~ string?)
     (let* ((root (string-append (path-strip-trailing-directory-separator (path-normalize core-root)) "/")) (seen (make-hash-table)) (rows '())

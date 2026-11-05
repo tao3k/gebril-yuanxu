@@ -654,10 +654,12 @@
     (run (current-build-source-directory) #f)
     (call-with-temporary-directory "yuanxu-compiler-roles" (cut run <> #t))))
 
-(def (build-target-name identity package-prefix)
+(def (build-target-name identity package-prefix
+                        (language (and (equal? package-prefix "yuanxu")
+                                       'tao3k/yuanxu/prelude)))
   ;; One root-owned language file has an explicit runtime package identity.
   ;; Callers still verify its actual source path and prepared identity.
-  (if (and (equal? package-prefix "yuanxu") (eq? identity 'tao3k/yuanxu/prelude))
+  (if (and language (eq? identity language))
     "prelude"
     (let ((name (symbol->string identity))
           (prefix (if (string-empty? package-prefix) "" (string-append package-prefix "/"))))

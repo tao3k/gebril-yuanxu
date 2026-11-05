@@ -2,8 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Capture native compiler contexts and authenticate their source support.
-(import (only-in :std/source this-source-file)
-        (only-in :gerbil/expander core-resolve-library-module-path core-library-package-path-prefix
+(import (only-in :gerbil/expander core-resolve-library-module-path core-library-package-path-prefix
                  expander-context-id module-context-path module-context? __module-registry)
         (only-in :clan/poo/object .ref)
         (only-in :clan/poo/read-route require-read-route!)
@@ -13,19 +12,12 @@
         :yuanxu/module-system/source/preparation
         :yuanxu/module-system/source/admission
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module
-                 yuanxu-bootstrap-contexts yuanxu-library-identity? call-with-build-stage)
+                 yuanxu-bootstrap-contexts call-with-build-stage)
         (only-in :yuanxu/module-system/building/source-package module-build-source-path))
-(export compiler-core-root public-dependency-input admit-compiler-inputs!
+(export public-dependency-input admit-compiler-inputs!
         compiler-tool-inputs compiler-tool-input record-source-observations!
         captured-tool-context? module-compiler-tools)
 
-;; Keep the compile anchor lexical: an installed Gerbil may outlive its compiler
-;; sandbox. The existing bootstrap source projection checks file presence before
-;; guarding source; compiled contexts retain their runtime Gerbil trust boundary.
-(def compiler-core-root
-  (let* ((source-directory (path-directory (this-source-file)))
-         (module-directory (path-directory (path-strip-trailing-directory-separator source-directory))))
-    (path-directory (path-strip-trailing-directory-separator module-directory))))
 ;; One canonical-library check for publication and configuration readers. This
 ;; prepares observations, never imports, expands or initializes the dependency.
 (def (public-dependency-input path (prepared #f) (report-refusal? #f)
@@ -44,8 +36,9 @@
                       (yuanxu-prepare-module-tool-source path void capture: capture)))))
          (identity (and input (.ref input 'compiler-identity)))
          (selected (and input (module-compiler-source-input path)))
-         (external? (and (symbol? identity)
-                         (not (yuanxu-library-identity? identity))))
+         ;; Gerbil resolves the actual public binding. Namespace spelling is
+         ;; neither source ownership nor permission to reuse a compiler context.
+         (external? (symbol? identity))
          (selected? (and external? selected (eq? identity (.ref selected 'compiler-identity))))
          (resolved
           (if selected? path
@@ -227,12 +220,10 @@
           (let* ((id (expander-context-id context))
                  (artifact-path (module-context-path context))
                  (source? (and (string? artifact-path) (string=? (path-extension artifact-path) ".ss")))
-                 (path (if source?
-                         artifact-path
-                         ;; Optional source aliases grant no execution source
-                         ;; dependency. A damaged checkout cannot replace SSI.
-                         (with-catch (lambda (_) #f)
-                           (lambda () (module-build-source-path context compiler-core-root))))))
+                 ;; Observe Gerbil's actual source context. Source aliases for
+                 ;; compiled contexts require the caller's declared source-root
+                 ;; in inputs-for; never reconstruct a vanished compiler tree.
+                 (path (and source? artifact-path)))
             ;; The captured runtime Gerbil closure also contains gerbil-poo and
             ;; other source libraries. Guard those actual inputs in the SAME
             ;; dependency index, rather than importing them again as unknown
@@ -244,11 +235,10 @@
             (when (and (symbol? id)
                        (string? path) (string=? (path-extension path) ".ss"))
               (index-tool-path! path context)
-              (when source?
               (let (input (compiler-tool-input context path))
                 (unless (eq? id (.ref input 'compiler-identity))
                   (error "compiler tool source identity mismatch" id path))
-                (hash-put! tool-inputs context input))))))
+                (hash-put! tool-inputs context input)))))
         (hash-keys compiler-contexts))))))
   (call-with-build-stage 'compiler-tool-sources capture-tool-sources!)
   ;; Exact runtime origin wins over a compiled context's source projection.

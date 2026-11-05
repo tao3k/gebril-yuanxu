@@ -4,18 +4,20 @@
 
 * Current dependency ownership
 
-Core pins Scheme through =gerbil.pkg= using the official release =v0.1.2=.
-The tag resolves to =a84e76c1b1a61de2db52e38ba8d1d8c8671ec601=; it is the
-PR 13 squash release, not a descendant of every PR branch commit. Source and
-runtime controls must qualify the release rather than infer equivalence from
-Git ancestry. This change does not grant a passing qualification receipt.
+Core pins Scheme through =gerbil.pkg=. It temporarily selects the published
+PR 15 commit =d06ee2f118cdd9eb46597dd2bd4b4c71f6652fca= for checked Function
+identity and live signature support. Return to a release tag after that
+implementation is released. The previous =v0.1.2= tag resolves to
+=a84e76c1b1a61de2db52e38ba8d1d8c8671ec601= and does not include this change.
+Source and runtime controls qualify the exact selected producer; neither Git
+ancestry nor a pin change grants a passing qualification receipt.
 
 LeanPoo remains Lake-owned: =lakefile.lean= declares it and =lake-manifest.json=
 locks it. Theorem files do not duplicate the Scheme or Lean dependency version.
 The existing source-correspondence gate reads Core's declared reference and
 uses Git to check an explicitly supplied checkout; it neither installs nor
 resolves a second dependency graph. Producer source digests remain independent
-correspondence checks. The release moves issued-read construction and replay
+correspondence checks. Release =v0.1.2= moved issued-read construction and replay
 into =object/observation.scm=, included by =object.ss=. The existing projection
 gate binds both owners: checking the facade alone would miss a changed replay
 implementation. Its finite traversal, original record identities, per-visit

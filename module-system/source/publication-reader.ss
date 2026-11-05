@@ -17,8 +17,7 @@
         (only-in :yuanxu/module-system/source/deferred-declaration
                  current-module-role-resolver module-role-values)
         :yuanxu/module-system/source/objects
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module
-                 yuanxu-library-identity?)
+        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :yuanxu/module-system/building/source-package module-build-source-path))
 (import :yuanxu/module-system/source/reader-support
         :yuanxu/module-system/source/reader-evaluation
@@ -364,8 +363,8 @@
                              (let ((file (module-context-path child))
                                    (identity (expander-context-id child)))
                                (cond
-                                ((and (symbol? identity)
-                                      (yuanxu-library-identity? identity))
+                                ((captured-tool-context?
+                                   (reader-session-compiler-contexts session) child)
                                  (tool-context child #f))
                                 ((and (string? file) (string=? (path-extension file) ".ss"))
                                  (unless (reader-prepare-public-dependency session (path-normalize file))
@@ -434,11 +433,9 @@
                   ;; source demand and its fresh original input guards.
                   (owned-path
                     (and (not (hash-key? (reader-session-tool-contexts session) identity))
-                         (if (and (string? artifact-path)
-                                  (string=? (path-extension artifact-path) ".ss"))
-                           artifact-path
-                           (module-source-measure-operation 'reader-source-resolution
-                             (lambda () (module-build-source-path context compiler-core-root))))))
+                         (and (string? artifact-path)
+                              (string=? (path-extension artifact-path) ".ss")
+                              artifact-path)))
                   (owner (and source-tree owned-path
                               ((.ref source-tree 'locate-owner) owned-path))))
              ;; Symbol and exact source-path imports share the same

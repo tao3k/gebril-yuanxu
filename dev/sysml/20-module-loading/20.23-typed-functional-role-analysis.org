@@ -188,7 +188,7 @@ execution model or a heap bound.
 * Qualification and capacity status
 
 The dependency authority is the formal release pin in =core/gerbil.pkg=
-(currently =v0.1.2=), with the corresponding Lake dependency owned by the proof
+(see [[file:20.29-published-issuer-and-core-alignment.org][20.29]] for the current qualified producer), with the corresponding Lake dependency owned by the proof
 project. No development overlay replaces that runtime for this refinement.
 Gerbil compiler sources and the release dependency pin are unchanged. =gerbil build=
 prepares the changed production dependency closure; focused tests use the

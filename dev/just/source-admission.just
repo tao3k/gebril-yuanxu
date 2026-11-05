@@ -20,7 +20,7 @@ test-source-tail-policy directory:
     export CORE_SOURCE_TAIL_POLICY="${CORE_SOURCE_TAIL_POLICY:-segment}"
     export CORE_SOURCE_TAIL_ROOT="{{ directory }}"
     export CORE_SOURCE_TAIL_CORE="$(pwd)/"
-    test -f "$CORE_SOURCE_TAIL_ROOT/lib/yuanxu/module-system/source/admission.o1"
+    test -f "$CORE_SOURCE_TAIL_ROOT/lib/yuanxu/module-system/source/observations.o1"
     export GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib"
     env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/refine-tail-policy.ss
     if [[ "$CORE_SOURCE_TAIL_POLICY" == unrestricted ]]; then
