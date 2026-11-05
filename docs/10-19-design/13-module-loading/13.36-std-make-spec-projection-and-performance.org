@@ -351,6 +351,13 @@ a sequencing barrier after =set!=. The native clean regression checks the
 off-prefix language output, ordinary output, unrelated retained output, output
 lock and source-change rejection. No second clean manifest is introduced.
 
+For full-identity cross-package targets, native =std/build-script= normalizes
+its prefix-free =srcdir= even during clean. Under the existing output lock,
+Building supplies the existing output-owned directory empty if absent. It does
+not populate role frames or source copies. The regression now runs native
+=defbuild-script= itself and checks that this directory remains empty, rather
+than bypassing the native directory precondition with a direct =make-clean=.
+
 Reproduce with the existing =just test-file= entry for
 =t/module-json-schema-publication-test.ss=, =t/mop-state-snapshot-test.ss=,
 =t/mop-snapshot-lifetime-test.ss= and =t/build-product-recovery-test.ss=.

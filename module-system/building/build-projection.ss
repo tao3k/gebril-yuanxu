@@ -258,9 +258,13 @@
                   (artifact-files (.ref projection 'compiler-identities) libdir #f)
                   ;; Unified Make targets need the same prefix-free directory.
                   (if foreign?
-                    (parameterize ((current-build-source-directory
-                                     (selected-output-source-directory libdir)))
-                      (action))
+                    (let (directory (selected-output-source-directory libdir))
+                      ;; std/build-script normalizes srcdir even for clean.
+                      ;; Supply its empty output-owned directory, not role
+                      ;; frames, source copies or another target manifest.
+                      (create-directory* directory)
+                      (parameterize ((current-build-source-directory directory))
+                        (action)))
                     (action)))))))
         .compile: (lambda (libdir action)
                     (publication-current!)

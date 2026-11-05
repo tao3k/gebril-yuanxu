@@ -3,6 +3,8 @@
 (import :std/test
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/make make-clean)
+        (rename-in (only-in :std/build-script defbuild-script)
+                   (defbuild-script gerbil-defbuild-script))
         (only-in :yuanxu/module-system/building/products
                  build-output-directory current-build-output-directory current-build-source-directory)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
@@ -64,12 +66,16 @@
             (.call projection .with-clean-outputs
               (lambda ()
                 (def directory (current-build-source-directory))
-                (check-equal? (file-exists? directory) #f)
-                (make-clean (.get projection spec) srcdir: directory libdir: libdir))))
+                (check-equal? (directory-files (list path: directory ignore-hidden: 'dot-and-dot-dot)) '())
+                (def (this-source-file) (path-expand "build.ss" directory))
+                (gerbil-defbuild-script (.get projection spec) libdir: libdir)
+                (main "clean"))))
           (check-equal? (file-exists? (path-expand "clean-producer/unit.ssi" libdir)) #f)
           (check-equal? (file-exists? (path-expand "unrelated/unit.ssi" libdir)) #t)
           (check-equal? compiler-state-reads 0)
-          (check-equal? (file-exists? (path-expand ".yuanxu-source" libdir)) #f))))
+          (check-equal?
+            (directory-files (list path: (path-expand ".yuanxu-source" libdir) ignore-hidden: 'dot-and-dot-dot))
+            '()))))
     (test-case "clean partitions the admitted targets by prefix without expanding the language"
       (call-with-temporary-directory "clean-target-prefix"
         (lambda (root)
