@@ -49,10 +49,8 @@ jobs:
       - name: Build Yuanxu
         run: GERBIL_BUILD_VERBOSE=1 gerbil build
       - name: Reject build input context regressions
-        run: |
-          just test-build-input-context-mutations "$RUNNER_TEMP/build-input-context"
-          just test-file t/module-publication-test.ss
-          just test-file t/module-testing-source-admission-test.ss
+        # The modules partition runs the publication and source-admission suites.
+        run: just test-build-input-context-mutations "$RUNNER_TEMP/build-input-context"
       - name: Retain build input context mutation evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
