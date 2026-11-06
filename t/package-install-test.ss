@@ -195,20 +195,23 @@
             (pkg editor-state editor-consumer "retag")
             (check-equal? (file-exists? tags) #t)
             (def previous-index (call-with-input-file tags read-all-as-string))
-            ;; Exercise a real native tool failure without forwarding its
-            ;; expected diagnostic into the enclosing test harness transcript.
-            (def failed
+            (def (invalid-format command directory)
               (run-script
                 (.cc (.get Ops prototypes Script)
-                  command: '("gerbil" "pkg" "retag")
-                  directory: editor-consumer timeout: 180 idle-timeout: 60
+                  command: command directory: directory timeout: 180 idle-timeout: 60
                   check-status: #f progress: make-compiler-progress-reader
                   environment: (.o GERBIL_PATH: editor-state GAMBOPT: runtime-environment
                     GERBIL_LOADPATH: inherited GERBIL_TAGS_FORMAT: "invalid-format"))))
+            ;; Some Gerbil releases report the child failure without relaying
+            ;; gxtags stderr. Check the native diagnostic at its own boundary.
+            (def failed (invalid-format '("gerbil" "pkg" "retag") editor-consumer))
             (check-equal? (zero? (.get failed status)) #f)
+            (check-equal? (call-with-input-file tags read-all-as-string) previous-index)
+            (def diagnostic (invalid-format '("gxtags" "qualification.invalid") editor-root))
+            (check-equal? (zero? (.get diagnostic status)) #f)
             (check-equal?
-              (if (string-contains (.get failed output) "unknown TAGS index format")
-                #t (.get failed output))
+              (if (string-contains (.get diagnostic output) "unknown TAGS index format")
+                #t (.get diagnostic output))
               #t)
             (check-equal? (call-with-input-file tags read-all-as-string) previous-index)
             (check-equal? (filter (cut string-prefix? ".TAGS-" <>) (directory-files editor-root)) '()))
