@@ -1,5 +1,9 @@
 name: Set up Gerbil prerequisites
 description: Activate the immutable gerbil-bazel release and required tools.
+outputs:
+  archive-sha256:
+    description: Verified digest of the selected Gerbil release archive.
+    value: ${{ steps.install-release.outputs.archive-sha256 }}
 runs:
   using: composite
   steps:
@@ -40,6 +44,7 @@ runs:
         just --version
         test "$(just --version)" = 'just 1.56.0'
     - name: Install immutable Gerbil release
+      id: install-release
       shell: bash
       run: |
         set -euo pipefail
@@ -69,9 +74,10 @@ runs:
         archive="$tag.tar.gz"
         download="${RUNNER_TEMP:?}/$archive"
         mkdir -p "$release_root"
-        curl --fail --location --retry 3 --output "$download" \
+        curl --fail --location --retry 3 --retry-all-errors --output "$download" \
           "https://github.com/tao3k/gerbil-bazel/releases/download/$tag/$archive"
         echo "$sha256  $download" | shasum -a 256 --check
+        echo "archive-sha256=$sha256" >> "$GITHUB_OUTPUT"
         tar -xzf "$download" -C "$release_root" --strip-components=1
 
         jq -e --arg revision "$revision" --arg os "$release_os" --arg arch "$release_arch" \

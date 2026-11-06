@@ -20,6 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - uses: ./.github/actions/setup-gerbil
+        id: gerbil
       - name: Select runtime compiler capacity
         shell: bash
         run: |
@@ -41,8 +42,9 @@ jobs:
           path: |
             .gerbil/pkg
             .gerbil/lib/clan
+            .gerbil/lib/static/clan__poo*.scm
             .gerbil/bin
-          key: yuanxu-gerbil-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gerbil.pkg', '.github/actions/setup-gerbil/action.yml') }}
+          key: yuanxu-gerbil-v3-${{ runner.os }}-${{ runner.arch }}-${{ steps.gerbil.outputs.archive-sha256 }}-${{ hashFiles('gerbil.pkg') }}
       - name: Install pinned dependencies
         run: |
           echo "BUILD-WORKERS $GERBIL_BUILD_CORES"
@@ -55,6 +57,7 @@ jobs:
           path: |
             .gerbil/pkg
             .gerbil/lib/clan
+            .gerbil/lib/static/clan__poo*.scm
             .gerbil/bin
           key: ${{ steps.restore-dependencies.outputs.cache-primary-key }}
       - name: Check Yuanxu package namespace
