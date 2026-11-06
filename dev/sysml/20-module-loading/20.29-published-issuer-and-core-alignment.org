@@ -5,7 +5,7 @@
 * Current dependency ownership
 
 Core pins Scheme through =gerbil.pkg=. It temporarily selects the published
-PR 15 commit =1f4b1720d80c3cca1daf64775cd7abfe63bebd0d= for checked Function
+PR 15 commit =c7954f1d5a5f5b954c91f6f0e1223aa92b38dc3a= for checked Function
 identity and live signature support. Return to a release tag after that
 implementation is released. The previous =v0.1.2= tag resolves to
 =a84e76c1b1a61de2db52e38ba8d1d8c8671ec601= and does not include this change.
