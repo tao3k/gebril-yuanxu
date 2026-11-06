@@ -157,16 +157,20 @@ expand a branch on access, not every module at startup. Source lookup validates
 =types.ss=, =objects.ss=, =config.ss= and =interface.ss= as regular files and records
 their contents for the selected module; it does not execute them. This new source
 adapter enforces the target four-role shell without changing legacy collection
-admission. A published module directory is a namespace leaf; nested implementation
-directories inside it are private, not additional module namespace branches.
+admission. A published Module directory is a namespace leaf. The shared
+Collection can also locate an Interface inside that owner. A selected
+=features/<name>= leaf contributes to its owner without creating another
+public scope path.
 Symlink entries and case-colliding directory names are refused conservatively.
 
 Selected modules automatically include their declared Core dependency closure.
 This does not globally select every module under a category named core. A denied
 required owner fails before its publication is read. The error retains the
 requester chain; the denying init path and negative decision remain in context.
-Features are retained intent only: activation, Feature dependency validation and
-unknown Feature diagnostics still require the Feature integration boundary.
+Feature decisions resolve on the same selected graph. The Feature System checks
+selection requirements and conflicts. Module Collection owns source discovery,
+and the linker admits the final scope against the Core and selected Feature
+Contracts. Build projects the collected Interface through Gerbil's imports.
 
 Each preparation has a fresh generation and its own runtime slot cache. Before
 publication, =admit-current= checks observed immediate directory names, observed

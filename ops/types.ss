@@ -42,15 +42,20 @@
                  (and (.get value timeout) #t)))))))
 (def (execution-options? value) (element? OpsConfigContract value))
 (def ProcessScriptFields
-  (.cc OpsConfigContract slots:
-    (.cc (.get OpsConfigContract slots)
-         command: (.get (Record command: (list (List String))) slots command))))
+  (let (fields (Record command: (list (List String))
+                       timeout-program: (list (OrFalse String) optional: #t)))
+    (.cc OpsConfigContract slots:
+      (.cc (.get OpsConfigContract slots)
+           command: (.get fields slots command)
+           timeout-program: (.get fields slots timeout-program)))))
 (def ProcessScriptContract
   (.o inherit: (list ProcessScriptFields)
     (.element? (inherited)
       (lambda (value)
         (and ((inherited) value) (pair? (.get value command))
-             (not (string-empty? (car (.get value command)))))))))
+             (not (string-empty? (car (.get value command))))
+             (let (program (and (.slot? value 'timeout-program) (.get value timeout-program)))
+               (or (not program) (string-prefix? "/" program))))))))
 (def (ops-scope? scope)
   (and (object? scope)
        (every (cut .slot? scope <>) '(config types prototypes validate prepare-command merge-environment preview run))

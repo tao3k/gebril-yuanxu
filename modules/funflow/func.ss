@@ -17,8 +17,9 @@
         (only-in :yuanxu/ops/types ProcessResultContract)
         (only-in "control-plane/signatures.ss" Fun Function Record String Symbol List validate)
         (only-in "control-plane/runtime-protocol.ss" AdapterResult)
-        (only-in "control-plane/flow.ss" flow-compose external-flow flow-map)
-        (only-in "control-plane/task.ss" execution-request-name execution-request-request execution-request-input)
+        (only-in "control-plane/flow.ss" flow-compose)
+        (only-in "control-plane/task.ss" execution-request-name execution-request-request execution-request-input
+                 make-external-task make-pure-task)
         (only-in "control-plane/runtime-adapter.ss" make-runtime-adapter)
         (only-in "control-plane/runtime-protocol.ss" make-adapter-result adapter-result-value)
         (only-in "control-plane/strategy.ss" make-local-eager-strategy)
@@ -84,16 +85,20 @@
            '() (.all-slots (.get job tasks)))))
 (def (job-flow job projection workspace)
   (def Results (job-results-type job))
-  (flow-compose (.get job name)
-		(map (lambda (name)
-		       (flow-map (string->symbol (string-append (symbol->string name) "/result"))
-				 (external-flow name 'ops
-						(.cc (admit-task (.get job tasks) name) 'directory workspace)
-						(Fun AdapterResult <- Results))
-				 (Fun Results <- AdapterResult)
-				 adapter-result-value))
-		     (.get projection order))
-		(Fun Results <- Results)))
+  (def submit-signature (Fun AdapterResult <- Results))
+  (def result-signature (Fun Results <- AdapterResult))
+  ;; The ordered route is already known. Construct its native Tasks directly
+  ;; and validate the whole route once, with the same typed effect/result edges.
+  (def steps
+    (apply append
+      (map (lambda (name)
+             (def script (.cc (admit-task (.get job tasks) name) 'directory workspace))
+             (def result-name
+               (string->symbol (string-append (symbol->string name) "/result-map")))
+             (list (make-external-task name 'ops script submit-signature)
+                   (make-pure-task result-name result-signature adapter-result-value)))
+           (.get projection order))))
+  (flow-compose (.get job name) steps (Fun Results <- Results)))
 (def (unsupported-ops-operation _value)
   (error "Job Ops interpreter does not provide fetch or Store operations"))
 (def (run-job job workspace)

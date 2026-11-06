@@ -26,7 +26,8 @@
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module build-module-dependencies)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/admission)
-(export build-target-name module-source-package-prefix yuanxu-prepare-module-publication yuanxu-write-module-publication
+(export build-target-name module-source-package-prefix module-source-package-info
+        yuanxu-prepare-module-publication yuanxu-write-module-publication
         yuanxu-prepare-module-build-source yuanxu-prepare-module-tool-source
         yuanxu-prepare-module-retained-source
         yuanxu-prepare-module-private-source call-with-module-compiler-inputs module-compiler-source-input
@@ -149,6 +150,17 @@
   ;; Observe the runtime reader's ancestor lookup, not a second package resolver.
   ;; Negative entries matter when a closer gerbil.pkg is added later.
   (package-directory-snapshot (path-directory path)))
+(def (module-source-package-info directory)
+  (def entries (package-directory-snapshot directory))
+  (unless (package-snapshot-current? entries)
+    (error "Gerbil package inputs changed" directory))
+  (let find-owner ((remaining entries))
+    (and (pair? remaining)
+         (let (entry (car remaining))
+           (if (package-source-text entry)
+             (list (path-directory (package-source-path entry))
+                   (package-source-cached entry) (package-source-text entry))
+             (find-owner (cdr remaining)))))))
 (def (module-source-package-prefix directory)
   ;; Reuse Gerbil's ancestor/package namespace and the existing source snapshot.
   ;; No Module is imported or evaluated, and no directory is enumerated.

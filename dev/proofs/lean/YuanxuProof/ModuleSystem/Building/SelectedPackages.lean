@@ -123,6 +123,14 @@ theorem downstream_outputs_do_not_change_source (left right root parts : List St
       resolveAddress right lookup (.package repository parts) := by
   simp [resolveAddress, found]
 
+
+/-- A single imported init binding cannot certify two distinct leaf owners.
+Scheme resolution still obtains each leaf's owner from the selected Interface. -/
+theorem init_import_cannot_certify_distinct_leaves (first second : ScopedModuleId)
+    (distinct : first ≠ second) (inferred : Option ScopedModuleId)
+    (firstMatch : inferred = some first) (secondMatch : inferred = some second) : False :=
+  distinct (Option.some.inj (firstMatch.symm.trans secondMatch))
+
 inductive Input where
   | source (owner : Nat) (entry : Inputs.Entry) (observations : List (String × String))
   | external (observations : List (String × String))

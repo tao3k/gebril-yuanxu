@@ -68,8 +68,8 @@ There are no =init.Modules= / =init.modules= compatibility aliases.
 
 #+begin_src scheme
 (import (only-in "./init.ss" yuanxu.init.exports))
-(.all-slots (.get yuanxu.init.exports Modules)) ; enumerate without Module demand
-(.get yuanxu.init.exports Modules json-schema) ; demand the configured POO object
+(.all-slots (.get yuanxu.init.exports modules Modules)) ; enumerate without Module demand
+(.get yuanxu.init.exports modules Modules json-schema) ; demand the configured POO object
 (def Tests (.call (.get yuanxu.init.exports tests) .select '(json-schema)))
 (.call Tests .run)
 #+end_src
@@ -94,7 +94,7 @@ not roll back effects already performed by an explicit operation. See
 [[file:../docs/10-19-design/13-module-loading/13.32-interface-entry-and-compilation-authority.org][Interface configuration and POO demand]].
 
 #+begin_src scheme
-(def Modules (.get yuanxu.init.exports Modules))
+(def Modules (.get yuanxu.init.exports modules Modules))
 (.slot? Modules 'json-schema)
 (.all-slots (.get Modules json-schema)) ; actual configured public POO scope
 (.call (.call (.get yuanxu.init.exports tests) .select '(json-schema)) .run)

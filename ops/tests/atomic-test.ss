@@ -42,6 +42,25 @@
     (test-case "a successful command has no watchdog diagnostic noise"
       (.def (Script @ ProcessScript.) command: '("printf" "ok") timeout: 2)
       (check-equal? (.get (.call Script .run) output) "ok"))
+    (test-case "a supervised exchange transfers raw bytes and waits for exit"
+      (.def (Script @ ProcessScript.) command: '("cat") timeout: 2)
+      (def bytes '#u8(0 255 1))
+      (def result
+        (.call Script .with-process
+          (lambda (port)
+            (write-subu8vector bytes 0 3 port)
+            (force-output port)
+            (def received (make-u8vector 3))
+            (check-equal? (read-subu8vector received 0 3 port) 3)
+            (check-equal? received bytes)
+            'complete)))
+      (check-equal? result 'complete)
+      (check-exception
+        (.call (.cc Script command: '("false")) .with-process (lambda (_port) 'unpublished))
+        (lambda (exception)
+          (and (Error? exception)
+               (string=? (Error-message exception) "Ops script failed")
+               (equal? (Error-irritants exception) '(1 #f ""))))))
     (test-case "deadline refusal retains the watchdog's own signal evidence and releases the fixture"
       (def released? #f)
       (.def Fixture .acquire: (lambda () 'resource)

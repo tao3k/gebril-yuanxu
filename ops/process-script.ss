@@ -18,4 +18,5 @@
   log: (.get config log)
   check-status: (.get config check-status)
   .run: (validate (Function (list ProcessResultContract) '() rest: String)
-          (lambda arguments (run-script script arguments))))
+          (lambda arguments (run-script script arguments)))
+  .with-process: (lambda (exchange) (call-with-script-coprocess script exchange)))

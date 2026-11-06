@@ -4,7 +4,7 @@
 ;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
 (import (only-in :std/list/list delete-duplicates/hash foldl)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
-        (only-in :clan/poo/slot-observation without-observation)
+        (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
         (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
         (runtime: :clan/poo/object)
         :yuanxu/module-system/source/objects
@@ -17,7 +17,8 @@
         :yuanxu/module-system/source/directory
         :yuanxu/module-system/source/reader
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?))
-(export yuanxu-load-modules module-namespace-project)
+(export yuanxu-load-modules module-namespace-project call-with-linked-prepared-guards
+        linked-configuration-guard-active?)
 
 ;; Closed, branch-local projection of an admitted POO capability. Bindings are
 ;; ordinary POO metadata: exposed slot -> source slot symbol. The permitted
@@ -65,13 +66,28 @@
 (def export-publication
   (module-binding-action "yuanxu/admission/publication" 'selected-export-publication))
 (def build-graph-producer
-  (module-binding-action "yuanxu/module-system/source/build" 'module-build-graph))
+  (module-binding-action "yuanxu/module-system/source/build" 'module-build-graph/linked))
+;; Only this linker constructs a batch capability. Build receives its
+;; selected-Graph identity, never an author-supplied execution callback.
+(defstruct linked-prepared-guards (selection check) final: #t)
+;; Scope authority for the closed request half, revoked on exit. The
+;; ordinary request check and every external effect stay outside this scope.
+(def linked-configuration-guard (make-parameter #f))
+(def (linked-configuration-guard-active? guard)
+  (and (linked-configuration-guard) (eq? guard (linked-configuration-guard))))
+(def (call-with-linked-prepared-guards support selection inputs checks input-state (closed #f) (fallback #f))
+  (unless (and (linked-prepared-guards? support)
+               (eq? selection (linked-prepared-guards-selection support)))
+    (error "prepared source guards belong to a different selected Graph"))
+  ((linked-prepared-guards-check support) inputs checks input-state closed fallback))
 ;; Private admission carrier, not another namespace or semantic Graph. The
 ;; dependency list is the final receiver's already demanded symbol projection.
 (defstruct linked-publication
   (source value evidence dependencies metadata-current metadata-entry metadata-tail metadata-roots)
   final: #t)
 (defstruct linked-preparation (value metadata) final: #t)
+(defstruct linked-selection (graph guard state) final: #t)
+(defstruct protected-source-frame (roots current?) final: #t)
 ;; A realized scope remains inspectable as a complete package value. Bind its
 ;; direct POO overrides onto the selected source scope, retaining that source's
 ;; prototypes and exact Contract declarations instead of importing another
@@ -235,12 +251,16 @@
         (prepared (or source-prepared (make-hash-table)))
         (publications (or source-publications (make-hash-table)))
         (graphs (make-hash-table))
+        (init-selection #f)
         (active (make-hash-table))
         (failed? #f)
         (generation-value (.ref context-value 'generation)))
     (def paired-context-current?
       (and read-located (module-source-object-policy (list context-value))))
     (def selection-tail (make-parameter #f))
+    (def protected-preparations (make-parameter #f))
+    (def (source-current?)
+      ((.ref context-value 'current?) generation-value))
     (def (prepared-input-state input)
       (or (and input-metadata-state (input-metadata-state input))
           (and (object? input) (object-%instance input) (object-%precedence-list input)
@@ -249,7 +269,7 @@
                  (entry (and (symbol? id) (hash-get prepared id))))
             (and entry (eq? input (linked-preparation-value entry))
                  (linked-preparation-metadata entry))))))
-    (def (with-source-metadata entries inputs action (input-state prepared-input-state))
+    (def (with-source-metadata entries inputs action (input-state prepared-input-state) (protect? #f) (fallback action))
       ;; Only native compiler metadata is passed by source/build. Callback,
       ;; observer, custom Context and realized-package routes keep fresh guards.
       (def closed?
@@ -278,20 +298,69 @@
                           ;; native issued DAG; do not reconstruct token bundles.
                           (let (roots (.ref/cached metadata-index 'roots (lambda () #f)))
                             (and roots
-                              (let ((receivers (make-table test: eq?)) (safe? #t))
-                                (for-each (lambda (input) (table-set! receivers input #t))
-                                          (append entries inputs))
-                                (module-source-measure-operation 'compiler-metadata-preflight
-                                  (lambda ()
-                                    (replay-slot-reads! roots
-                                      (lambda (receiver key)
-                                        (when (and (pair? key) (eq? (car key) 'cache-miss)
-                                                   (table-ref receivers receiver #f))
-                                          (set! safe? #f))))))
-                                safe?))))))))))
+                              (module-source-measure-operation 'compiler-metadata-preflight
+                                (lambda ()
+                                  (let (misses
+                                         (if protect?
+                                           (.get metadata-index cache-miss-receivers)
+                                           (metadata-cache-miss-receivers roots)))
+                                    (and (not (ormap (lambda (entry) (table-ref misses entry #f)) entries))
+                                         (not (ormap (lambda (input) (table-ref misses input #f)) inputs)))))))))))))))
       (module-source-measure-operation
-        (if closed? 'compiler-source-shared 'compiler-source-independent)
-        (lambda () (if closed? (call-with-module-source-read-cache action) (action)))))
+        (if protect? (if closed? 'prepared-batch-closed 'prepared-batch-open)
+          (if closed? 'compiler-source-shared 'compiler-source-independent))
+        (lambda ()
+          (cond
+           ((not closed?) (fallback))
+           ((not protect?) (call-with-module-source-read-cache action))
+           (else
+            (defvalues (_complete? _rows roots) (metadata-topology))
+            (def entered? #f)
+            (with-catch
+              (lambda (cause) (if entered? (raise cause) (fallback)))
+              (lambda ()
+                (module-source-measure-replay roots
+                  (lambda ()
+                    (set! entered? #t)
+                    ;; Give this protected, callback-free frame its own key
+                    ;; in the existing source query window. Independent frames
+                    ;; must always run their own paired Reader/directory guard.
+                    (let (frame (make-protected-source-frame roots
+                                  (lambda () (source-current?))))
+                      (parameterize ((protected-preparations frame))
+                        (call-with-module-source-read-cache action))))))))))))
+    (def (with-prepared-guards graph selection inputs checks input-state closed fallback)
+      (def (check-selected!) ((.ref graph 'admit-current)))
+      (def (check-inputs!) (for-each (lambda (guard) (guard)) checks))
+      ;; Verify the original linker-owned guard before permitting it in the
+      ;; same fixed window. An override keeps the independent guard sequence.
+      (def (original-guard?)
+        (and selection (eq? graph (linked-selection-graph selection))
+             (let (state (linked-selection-state selection))
+               (and state (object-construction-current?) (state)
+                    (without-observation
+                      (lambda ()
+                        (eq? (linked-selection-guard selection)
+                             (.ref/cached graph 'admit-current (lambda () #f)))))))))
+      (cond
+       (closed
+        (if (and (not (current-module-source-observer))
+                 (owned-read-function-scope?) (original-guard?))
+          (with-source-metadata (list graph) inputs
+            (lambda ()
+              (parameterize ((linked-configuration-guard (linked-selection-guard selection)))
+                (closed (lambda () (check-selected!) (check-inputs!)))))
+            input-state #t fallback)
+          (fallback)))
+       ((or (%slot-read-active?) (current-module-source-observer))
+        (check-selected!)
+        (module-source-measure-operation 'prepared-batch-observed check-inputs!))
+       ((original-guard?)
+        (with-source-metadata (list graph) inputs
+          (lambda () (check-selected!) (check-inputs!)) input-state #t))
+       (else
+        (check-selected!)
+        (with-source-metadata '() inputs check-inputs! input-state #t))))
     (def (candidate-location-current! id)
       ;; This closure belongs to the runtime paired directory factory. Share
       ;; only a pure filesystem window, ending BEFORE any reader/MOP callback.
@@ -305,11 +374,19 @@
     ;; Graph. Preserve its identity and resolver result at this handoff; every
     ;; public use below still performs a fresh source/package boundary check.
     (when original-graph
-      (hash-put! graphs (.ref context-value 'selected) (.ref original-graph 'selected-graph)))
+      (hash-put! graphs (.ref context-value 'selected)
+        (make-linked-selection (.ref original-graph 'selected-graph) #f #f)))
     ;; The existing table inserts each immutable publication once. A normal
     ;; POO slot indexes its topology; cardinality changes invalidate that slot,
     ;; never authenticate live sources. The shared table may grow via another
     ;; realization, so inspect its ACTUAL cardinality on every boundary.
+    (def (metadata-cache-miss-receivers roots)
+      (let (receivers (make-table test: eq?))
+        (replay-slot-reads! roots
+          (lambda (receiver key)
+            (when (and (pair? key) (eq? (car key) 'cache-miss))
+              (table-set! receivers receiver #t))))
+        receivers))
     (def metadata-index
       (and (object-construction-current?)
         (.o (:: index [])
@@ -328,7 +405,11 @@
           roots:
           (foldr append '()
             (map (lambda (record) (or (linked-publication-metadata-roots record) '()))
-                 (.get index rows))))))
+                 (.get index rows)))
+          ;; Route only: a protected invocation still authenticates all
+          ;; ORIGINAL reads, holds the receivers and rechecks on return.
+          ;; Unprotected callers authenticate independently before proceeding.
+          cache-miss-receivers: (metadata-cache-miss-receivers (.get index roots)))))
     (def (metadata-topology)
       ;; Private derived bookkeeping is not a semantic dependency of the
       ;; selected Graph. Its payload contains the SAME original issued reads;
@@ -368,11 +449,17 @@
           ;; Establish all metadata BEFORE any checkpoint can mark a source
           ;; owner refused. Checkpoint failures then keep their original cause;
           ;; never rerun them under an already changed refusal flag.
-          (replay!))))
+          (let (frame (protected-preparations))
+            (if (and frame (eq? roots (protected-source-frame-roots frame)))
+              (module-source-measure-operation 'prepared-batch-checkpoint checkpoints!)
+              (replay!))))))
     (def (check-current!)
-      (unless ((.ref context-value 'current?) generation-value)
-        (set! failed? #t)
-        (error "stale module scope generation" generation-value))
+      (let (frame (protected-preparations))
+        (unless (if frame
+                    (module-source-observe (protected-source-frame-current? frame))
+                    (source-current?))
+          (set! failed? #t)
+          (error "stale module scope generation" generation-value)))
       ;; The realized narrow guard is source-only. Full package effects
       ;; remain outside this boundary in the public/package guards.
       (when realization ((.ref realization 'sources-current)))
@@ -581,42 +668,50 @@
               (error "module dependency projection requires symbol identities" id))
             (current! 'dependency-projection-after)
             ids))))
-    (def (resolve-selection-graph roots)
+    (def (resolve-linked-selection roots)
       (with-catch
        (lambda (exception) (set! failed? #t) (raise exception))
        (lambda ()
          (current! 'graph-before)
-         (if (hash-key? graphs roots) (hash-ref graphs roots)
-           (let (graph (parameterize ((selection-tail (box #f)))
-                        (select-module-graph
-                         context-value roots
-                         (lambda (id) (linked-publication-value (publication-for id)))
-                         (lambda ()
-                           ;; Closed call-site labels only; attribution never
-                           ;; changes source-window or query-reuse identity.
-                           (current!
-                             (case (current-module-source-phase)
-                               ((build-entry) 'graph-current/build-entry)
-                               ((build-current) 'graph-current/build-current)
-                               ((build-finalize) 'graph-current/build-finalize)
-                               ((build-external-before) 'graph-current/build-external-before)
-                               ((build-external-after) 'graph-current/build-external-after)
-                               ((build-admit-before) 'graph-current/build-admit-before)
-                               ((build-admit-after) 'graph-current/build-admit-after)
-                               ((configuration-current) 'graph-current/configuration-reader)
-                               ((configuration-public) 'graph-current/configuration-public)
-                               ((configuration-pre-bootstrap) 'graph-current/configuration-pre-bootstrap)
-                               (else 'graph-current))))
-                         (and paired-context-current? (paired-context-current?)
-                              (module-publication-contract-current?)
-                           (lambda (id)
-                             (let (entry (publication-for id))
-                               (values (linked-publication-value entry)
-                                       (dependencies-for entry id))))))))
-             ;; select-module-graph owns its final check after author slots.
-             ;; Only this private index insertion follows, with no new effect.
-             (hash-put! graphs roots graph)
-             graph)))))
+         (or (hash-get graphs roots)
+             (let ()
+               ;; These labels attribute checks without changing their identity.
+               (def (graph-current!)
+                 (current!
+                   (case (current-module-source-phase)
+                     ((build-entry) 'graph-current/build-entry)
+                     ((build-current) 'graph-current/build-current)
+                     ((build-finalize) 'graph-current/build-finalize)
+                     ((build-external-before) 'graph-current/build-external-before)
+                     ((build-external-after) 'graph-current/build-external-after)
+                     ((build-admit-before) 'graph-current/build-admit-before)
+                     ((build-admit-after) 'graph-current/build-admit-after)
+                     ((configuration-current) 'graph-current/configuration-reader)
+                     ((configuration-public) 'graph-current/configuration-public)
+                     ((configuration-pre-bootstrap) 'graph-current/configuration-pre-bootstrap)
+                     (else 'graph-current))))
+               (def intact? (object-construction-current?))
+               (def graph
+                 (parameterize ((selection-tail (box #f)))
+                   (select-module-graph
+                     context-value roots
+                     (lambda (id) (linked-publication-value (publication-for id)))
+                     graph-current!
+                     (and paired-context-current? (paired-context-current?)
+                          (module-publication-contract-current?)
+                       (lambda (id)
+                         (let (entry (publication-for id))
+                           (values (linked-publication-value entry)
+                                   (dependencies-for entry id))))))))
+               ;; Only private bookkeeping follows selection's final check.
+               (def selection
+                 (make-linked-selection graph graph-current!
+                   (and intact? (object-construction-current?)
+                        (module-source-object-policy (list graph)))))
+               (hash-put! graphs roots selection)
+               selection)))))
+    (def (resolve-selection-graph roots)
+      (linked-selection-graph (resolve-linked-selection roots)))
     (def (link id path graph)
       (eligible! id path)
       (cond
@@ -734,7 +829,7 @@
                     (feature-contracts (cdr feature-result))
                     (effective-scope-contract
                      (module-feature-scope-contract (.ref baseline 'scope-contract)
-                       feature-contracts context-value feature-check-stage))
+                       feature-contracts context-value feature-check-stage id))
                     (scope-value
                      (if (.slot? baseline 'admissions)
                        (observe-link-stage (list 'scope-publication-binding id)
@@ -774,10 +869,10 @@
        (lambda (exception) (set! failed? #t) (raise exception))
        (lambda ()
          (def roots (.ref context-value 'selected))
-         (def selected-graph (hash-get graphs roots))
+         (def selected (hash-get graphs roots))
          (def graph
            (cond
-            ((and selected-graph (memq id roots)) selected-graph)
+            ((and selected (memq id roots)) (linked-selection-graph selected))
             ((and (not realization) candidate-read paired-context-current?
                   (paired-context-current?) (object-construction-current?)
                   (not (current-module-source-observer)) (owned-read-function-scope?)
@@ -832,6 +927,11 @@
            value))))
     ;; Slot caching belongs to this immutable generation. Consumers must call
     ;; admit-current before publishing/using a Graph; cached slots are not live IO.
+    (def (build-selected graph selection)
+      (build-graph-producer
+        (list graph prepare with-source-metadata prepared-input-state
+          (make-linked-prepared-guards graph
+            (cut with-prepared-guards graph selection <> <> <> <> <>)))))
     (def selection-value
       (.o self: result generation: generation-value
         context: context-value
@@ -850,8 +950,8 @@
           ;; Private Graph/member lookups precede link's fresh eligibility
           ;; guard. New roots still require the resolver's full admission.
           (let* ((roots (.ref context-value 'selected))
-                 (graph (if (hash-key? graphs roots) (hash-ref graphs roots)
-                          (resolve-selection-graph roots))))
+                 (graph (linked-selection-graph
+                          (or (hash-get graphs roots) (resolve-linked-selection roots)))))
             (unless (memq owner (.ref graph 'module-order))
               (error "admission owner is outside selected Graph" owner))
             (link owner '() graph)))
@@ -877,16 +977,21 @@
                                (.ref context-value 'selected)) resolve-scope)))
         ;; This immutable snapshot has exactly the init roots. Auto namespace
         ;; reads admit an additional bounded demand; they do not rewrite init.
-        build-graph: (or original-graph
-                        (build-graph-producer (list selected-graph prepare with-source-metadata prepared-input-state)))
+        build-graph:
+        (or original-graph
+            (let (graph selected-graph)
+              (build-selected graph init-selection)))
         .build-graph-for:
         (lambda (roots)
-          (build-graph-producer
-            (list (resolve-selection-graph
-                    (if (.slot? context-value 'resolve-root)
-                      (map (.ref context-value 'resolve-root) roots) roots))
-                  prepare with-source-metadata prepared-input-state)))
-        selected-graph: (resolve-selection-graph (.ref context-value 'selected))
+          (def selection
+            (resolve-linked-selection
+              (if (.slot? context-value 'resolve-root)
+                (map (.ref context-value 'resolve-root) roots) roots)))
+          (build-selected (linked-selection-graph selection) selection))
+        selected-graph:
+        (let (selection (resolve-linked-selection (.ref context-value 'selected)))
+          (set! init-selection selection)
+          (linked-selection-graph selection))
         selected-records: (begin (resolve-selection-graph (.ref context-value 'selected))
                                  (map resolve (.ref context-value 'selected)))
         dependency-order:

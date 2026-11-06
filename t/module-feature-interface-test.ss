@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Real Interface declarations, not an application-owned Feature selector.
 (import (only-in :std/test test-suite check-equal? check-exception)
+        (only-in :std/list/list find)
         (only-in :clan/poo/object .o .get .call)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
@@ -122,6 +123,29 @@
           (check-equal? (eq? (car (.get parent-graph feature-contributions components)) component) #t)
           (check-equal? (.get parent-graph feature-order) '(custom/example/memory))
           (check-equal? (file-exists? (path-expand "effect-entered" root)) #f))))
+    (yuanxu-test-case "collection binds an optional facade to the selected Feature"
+      (with-feature-interface-source
+        (lambda (root module-root)
+          (def facade (path-expand "features/memory/interface.ss" module-root))
+          (create-directory* (path-directory facade))
+          (def pending (feature-view root "pending.ss" '(+memory)))
+          (def original (.get pending selected-graph))
+          (check-equal? (.get (find (lambda (node) (eq? (.get node kind) 'feature))
+                                   (.get original nodes)) interface) #f)
+          (write-file (path-expand "value.ss" (path-directory facade)) "(def present? #t) (export present?)")
+          (write-file facade "(import \"./value.ss\") (export (import: \"./value.ss\"))")
+          (check-exception ((.get original admit-current)) error?)
+          (def enabled (feature-view root "with-facade.ss" '(+memory)))
+          (def withdrawn (feature-view root "without-facade.ss" '(-memory)))
+          (def build (.get enabled build-graph))
+          (def (facade-entry graph)
+            (find (lambda (entry) (equal? (.get entry path) (path-normalize facade)))
+                  (.get graph entries)))
+          (def entry (facade-entry build))
+          (check-equal? (.get entry owner) 'custom/example)
+          (check-equal? (.get entry contributor) 'custom/example/memory)
+          (check-equal? (facade-entry (.get withdrawn build-graph)) #f)
+          (check-equal? (file-exists? (path-expand "scope-entered" root)) #f))))
     (yuanxu-test-case "Interface requirements, conflicts, cycles and unknown names refuse before scopes"
       (with-feature-interface-source
         (lambda (root _module-root)

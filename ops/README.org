@@ -19,10 +19,15 @@ Builder, process runner, or cache protocol.
 * Functional first, objects when useful
 
 =func.ss= implements pure validation, argument preparation, environment merging
-and preview. Only =run-script= samples the host environment and starts a process.
+and preview. The execution functions sample the host environment at handoff.
 =interface.ss= binds those same functions to the =Ops= object; Script's runtime
 =.run= delegates to =run-script=. The public object retains receiver-local
 configuration and the existing =OpsScopeContract=.
+
+For a binary exchange, call =(.call Script .with-process exchange)= on the
+same ProcessScript prototype. Ops hands the callback the child's port and
+returns its value after the child exits successfully. This uses the same
+watchdog and leaves stderr separate from the protocol stream.
 
 #+begin_src scheme
 (import (only-in :yuanxu/ops/interface Ops)
@@ -70,6 +75,10 @@ contract; ordinary value validation does not allocate an empty admission receipt
 Literal argv goes to =std/misc/process#run-process= without implicit shell
 interpretation. Environment overrides are POO string fields. Timeout uses the
 existing owned process group and retains GNU timeout's signal diagnostic.
+A package that ships GNU timeout may bind its absolute executable path in the
+Script's optional =timeout-program= field. An unspecified field uses the
+ordinary =timeout= lookup on PATH. Both forms use the same timeout arguments
+and cancellation boundary.
 Cancellation terminates owned descendants; it never signals a PID merely read
 from an arbitrary file. A configured log streams output to that operation's
 file. Otherwise the result retains captured output, including partial output

@@ -45,14 +45,17 @@
 ;; Feature Contracts are additional obligations on the SAME Core-normalized
 ;; receiver. A Feature supplies defaults/transformations through REFINE, not a
 ;; discarded normalization output. All native validation obligations still run.
-(def (check-module-feature-contracts! scope core contracts context stage)
+(def (check-module-feature-contracts! scope core contracts context stage owner)
   (for-each
     (lambda (entry)
       (stage 'feature-admission (car entry)
         (lambda ()
           (call-with-scope-protection scope scope
             (lambda ()
-              (admit-module-value! (cdr entry) scope context)
+              (with-catch
+                (lambda (cause)
+                  (error "Module Feature Contract rejected scope" owner (car entry) cause))
+                (lambda () (admit-module-value! (cdr entry) scope context)))
               (unless (element? (cdr entry) scope)
                 (error "Module Feature Contract requires refinement of the final scope" (car entry))))))))
     contracts)
@@ -66,7 +69,7 @@
 
 ;; Retain the native Type on the linked record: a consumer's later dependency
 ;; refinement must satisfy the same Feature obligations, not just Core's shape.
-(define-type (ModuleFeatureScopeContract. @ Type. provider obligations context stage)
+(define-type (ModuleFeatureScopeContract. @ Type. provider obligations context stage owner)
   identity: (.ref provider 'identity)
   .element?:
   (lambda (scope)
@@ -75,10 +78,10 @@
   .validate:
   (lambda (candidate)
     (def scope (validate provider candidate))
-    (check-module-feature-contracts! scope provider obligations context stage)
+    (check-module-feature-contracts! scope provider obligations context stage owner)
     scope))
 
-(def (module-feature-scope-contract baseline contributions scope-context run-stage)
+(def (module-feature-scope-contract baseline contributions scope-context run-stage owner)
   (if (null? contributions) baseline
     (.cc ModuleFeatureScopeContract.
-      provider: baseline obligations: contributions context: scope-context stage: run-stage)))
+      provider: baseline obligations: contributions context: scope-context stage: run-stage owner: owner)))

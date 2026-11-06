@@ -28,6 +28,7 @@
         yuanxu-module-source-collection-validate!
         yuanxu-module-source-collection-interfaces
         yuanxu-module-source-collection-role-entrypoints
+        yuanxu-module-source-collection-optional-entrypoint
         yuanxu-module-load-path-prototype
         make-yuanxu-module-load-path
         extend-yuanxu-module-load-path
@@ -43,6 +44,21 @@
 
 (def (nonempty-string? value)
   (and (string? value) (> (string-length value) 0)))
+
+;; The directory context supplies its normal observation boundary, so missing
+;; components and path kinds remain part of the admitted selection.
+(def (yuanxu-module-source-collection-optional-entrypoint root owner contributor parts observe-kind)
+  (unless (and (pair? parts) (every module-source-name? parts))
+    (error "invalid Module entrypoint components" owner contributor parts))
+  (let walk ((parent root) (remaining parts))
+    (def path (path-expand (car remaining) parent))
+    (def kind (observe-kind path))
+    (def directory? (pair? (cdr remaining)))
+    (and kind
+         (begin
+           (unless (eq? kind (if directory? 'directory 'regular))
+             (error "invalid Module entrypoint path" owner contributor path))
+           (if directory? (walk path (cdr remaining)) path)))))
 
 (def (yuanxu-directory-module-source-collection? value)
   (and (yuanxu-module-source-collection? value)

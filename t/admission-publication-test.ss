@@ -15,7 +15,8 @@
         (only-in :yuanxu/module-system/source/build module-build-graph)
         (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
         (only-in :yuanxu/module-system/source/admission module-source-read module-source-admit-current!)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+                 call-with-module-source-read-cache)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-file)
         (only-in :yuanxu/modules/json-schema/json-schema-receipt
@@ -321,6 +322,26 @@
               (check-equal? handlers (if (<= refuse-at 1) 0 1))
               (check-equal? schemas (if (or (not schema?) (<= refuse-at 1)) 0 1)))))
         '(#t #t #t #t #f #f #f #f) '(0 1 2 3 0 1 2 3)))
+    (yuanxu-test-case "a request callback cannot leave the selected Graph current on stale bytes"
+      (with-inputs
+        (lambda (source schema)
+          (def selection (assembly-selection source schema))
+          (def requests 0)
+          (def guarded
+            (.cc (.get selection build-graph)
+              external-packages:
+              (list (.o admit-current:
+                        (lambda ()
+                          (set! requests (+ requests 1))
+                          (write-file source "; selected source v2\n"))))))
+          (def failure
+            (with-catch values
+              (lambda ()
+                (call-with-module-source-read-cache
+                  (lambda () (.call guarded admit-current))))))
+          (check-equal? requests 1)
+          (check-equal? (Error? failure) #t)
+          (check-equal? (Error-message failure) "assembly source changed"))))
     (yuanxu-test-case "intermediate source collection checks request inputs before cold Schema getters"
       (with-inputs
         (lambda (source schema)

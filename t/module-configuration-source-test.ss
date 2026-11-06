@@ -4,16 +4,41 @@
 (import :std/test
         (only-in :gerbil/expander core-resolve-library-module-path)
         (only-in :std/io/tempfile call-with-temporary-directory)
+        (only-in :std/error Error? Error-message)
         (only-in :clan/poo/object .get)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  module-source-read module-source-admit-current!)
-        (only-in :yuanxu/module-system/building/configuration-source yuanxu-configuration-source))
+        (only-in :yuanxu/module-system/building/configuration-source
+                 yuanxu-configuration-source configuration-request-current/owned))
 (export module-configuration-source-test)
 (def (write-source path text)
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
 (def module-configuration-source-test
   (test-suite "Observed runtime configuration roles"
+    (yuanxu-test-case "a package request guard remains bound to its original Context and procedure"
+      (call-with-temporary-directory "configuration-request-authority"
+        (lambda (root)
+          (def config (path-expand "config.ss" root))
+          (def dependency (path-expand "provider.nix" root))
+          (write-source (path-expand "gerbil.pkg" root) "(package: configuration-request-control)")
+          (write-source config "(def Config 'ready) (export Config)")
+          (write-source dependency "before")
+          (def (context!) (void))
+          (def input (yuanxu-configuration-source config 'Config context! package-request?: #t))
+          (defvalues (admit check)
+            ((.get input .request-check) (list (cons dependency (module-source-read dependency)))))
+          (def closed (configuration-request-current/owned check context! admit))
+          (check-equal? (procedure? closed) #t)
+          (check-equal? (configuration-request-current/owned check void admit) #f)
+          (check-equal? (configuration-request-current/owned check context! void) #f)
+          (check-exception (closed)
+            (lambda (cause)
+              (and (Error? cause)
+                   (equal? (Error-message cause) "configuration source check requires the paired Graph guard"))))
+          (admit)
+          (write-source dependency "after")
+          (check-exception (admit) Error?))))
     (yuanxu-test-case "reader return owns the final check, not a duplicate after private cleanup"
       (call-with-temporary-directory "configuration-return-guard"
         (lambda (root)

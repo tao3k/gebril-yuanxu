@@ -5,6 +5,7 @@
 (import (runtime: :clan/poo/object)
         (only-in :std/list/list delete-duplicates/hash any foldl)
         (only-in :yuanxu/module-system/source/preparation module-source-package-prefix)
+        (only-in :yuanxu/module-system/source/collection yuanxu-module-source-collection-optional-entrypoint)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
         (only-in :clan/poo/slot-observation slot-read-observers-compatible?)
         :yuanxu/module-system/source/objects
@@ -611,6 +612,11 @@
           (feature-decisions?)
           denied-modules: denied-values intent: scoped-intent init-source: init-path source-root: root-path
           locate: (lambda (id) (locate-source (resolve-request-root id)))
+          collect-entrypoint:
+          (lambda (owner contributor parts)
+            (def root (path-directory (yuanxu-module-source-ref-value (locate-source owner))))
+            (yuanxu-module-source-collection-optional-entrypoint root owner contributor parts
+              (lambda (path) (observe! module-source-type path))))
           resolve-module-id: resolve-reference resolve-root: resolve-request-root current?: current-source? candidate-current?: candidate-location-current?
           eligible?: (lambda (id)
                        (let (row (decision-row id))

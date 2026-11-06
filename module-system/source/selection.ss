@@ -214,8 +214,11 @@
                            (error "unknown init feature" owner-id name origin (.ref context 'generation)))
                          (let (id (feature-node-id owner-id name))
                            (if enabled?
-                             (let (descriptor-value (feature-descriptor-for owner-id name))
-                               (hash-put! nodes id (.o kind: 'feature identity: id owner: owner-id
+                             (let* ((descriptor-value (feature-descriptor-for owner-id name))
+                                    (interface (and (.slot? context 'collect-entrypoint)
+                                                    ((.ref context 'collect-entrypoint)
+                                                     owner-id id (list "features" (symbol->string name) "interface.ss")))))
+                               (hash-put! nodes id (.o kind: 'feature identity: id owner: owner-id interface
                                                       descriptor: descriptor-value))
                                (feature-selection
                                 (.+ descriptor-value

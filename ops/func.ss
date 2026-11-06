@@ -9,7 +9,8 @@
         (only-in :std/os/signal kill SIGKILL)
         (only-in :std/os/error os-error? OSError-errno ESRCH)
         (only-in :std/misc/ports read-all-as-string))
-(export validate-script prepare-script-command merge-script-environment preview-script run-script)
+(export validate-script prepare-script-command merge-script-environment preview-script
+        run-script call-with-script-coprocess)
 
 ;; Pure APIs: explicit inert inputs, no environment lookup, clock, files or spawn.
 (def (validate-script script)
@@ -24,7 +25,7 @@
       ;; Preserve the watchdog's own signal report in failed Ops output. A 137
       ;; alone cannot distinguish deadline escalation from another SIGKILL.
       ;; Batch jobs need descendant signaling, not terminal foreground mode.
-      (append (list "timeout" "--verbose" "--signal=TERM" "--kill-after=5s"
+      (append (list (or (and (.slot? script 'timeout-program) (.get script timeout-program)) "timeout") "--verbose" "--signal=TERM" "--kill-after=5s"
                     (string-append (number->string (.get script timeout)) "s")) argv)
       argv)))
 (def (merge-script-environment inherited overrides)
@@ -46,7 +47,7 @@
         log: (.get script log) check-status: (.get script check-status)
         stderr-redirection: stderr-value)))
 
-;; Runtime adaptation is private. Ambient state is sampled only by run-script.
+;; Runtime adaptation is private. Sample ambient state only during execution.
 (def (process-environment value)
   (map (lambda (key) (string-append (symbol->string key) "=" (.ref value key)))
        (list-sort (lambda (a b) (string<? (symbol->string a) (symbol->string b)))
@@ -59,24 +60,34 @@
   (if (zero? (bitwise-and wait-status #xff))
     (arithmetic-shift wait-status -8)
     (+ 128 (bitwise-and wait-status #x7f))))
-(def (execute-script prepared forward)
+(def (execute-script prepared environment forward exchange)
   (let* ((started (real-time)) (exit-status #f)
          (captured-output
           (run-process (.get prepared argv)
             directory: (.get prepared directory)
-            environment: (process-environment (.get prepared environment))
-            stdin-redirection: #f stderr-redirection: (.get prepared stderr-redirection)
+            environment: environment
+            stdin-redirection: (and exchange #t) stderr-redirection: (.get prepared stderr-redirection)
             check-status: (lambda (code _settings) (set! exit-status code))
             coprocess: (lambda (process)
                         (def completed? #f)
                         (dynamic-wind void
                           (lambda ()
                             (begin0
-                              (if (.get prepared log)
+                              (cond
+                               (exchange
+                                (begin0 (exchange process)
+                                  (close-output-port process)
+                                  (unless (zero? (read-subu8vector (make-u8vector 1) 0 1 process))
+                                    (error "unexpected Ops output after process exchange"))
+                                  ;; EOF can precede process exit. Wait while
+                                  ;; unwind still owns process-group cancellation.
+                                  (process-status process)))
+                               ((.get prepared log)
                                 (call-with-output-file (list path: (.get prepared log) truncate: #t)
                                   (lambda (port)
                                     (copy-process-output process port
-                                      (and (.get prepared progress) ((.get prepared progress))) forward)))
+                                      (and (.get prepared progress) ((.get prepared progress))) forward))))
+                               (else
                                 (call-with-output-string
                                   (lambda (port)
                                     (with-catch
@@ -88,7 +99,7 @@
                                         (raise failure))
                                       (lambda ()
                                         (copy-process-output process port
-                                          (and (.get prepared progress) ((.get prepared progress))) forward))))))
+                                          (and (.get prepared progress) ((.get prepared progress))) forward)))))))
                               (set! completed? #t)))
                           (lambda ()
                             ;; std/run-process closes and waits on unwind; it
@@ -118,18 +129,35 @@
         (newline diagnostics)
         (force-output diagnostics))
       (error "Ops script failed" (process-exit-code exit-status)
-             (.get prepared log) captured-output))
-    (.o status: (process-exit-code exit-status) wait-status: exit-status seconds: elapsed-value
-        output: captured-output log: (.get prepared log))))
+             (.get prepared log) (if exchange "" captured-output)))
+    (if exchange captured-output
+      (.o status: (process-exit-code exit-status) wait-status: exit-status seconds: elapsed-value
+          output: captured-output log: (.get prepared log)))))
 (def (run-script script (arguments '()) stderr-redirection: (stderr-value #t)
                 output-port: (forward #f))
   (unless (or (not forward) (output-port? forward))
     (error "Ops forwarding requires an output port"))
+  (run-owned-script script arguments stderr-value forward #f))
+
+(def (call-with-script-coprocess script exchange)
+  (unless (procedure? exchange)
+    (error "Ops exchange requires a procedure"))
+  (run-owned-script script '() #f #f exchange))
+
+(def (run-owned-script script arguments stderr-value forward exchange)
   ;; Validation precedes ambient sampling. The same preparation feeds execution.
   (let* ((prepared (preview-script script arguments stderr-redirection: stderr-value))
-         (environment-value
-          (merge-script-environment (inherited-process-environment) (.get prepared environment))))
-    (let (execute (lambda () (execute-script (.cc prepared 'environment environment-value) forward)))
+         (overrides (.get prepared environment))
+         ;; Without overrides, let std/run-process inherit the environment.
+         ;; An explicit environment is only needed for a real overlay.
+         (environment
+          (and (pair? (.all-slots overrides))
+               (process-environment
+                 (merge-script-environment (inherited-process-environment) overrides)))))
+    (when (and exchange (or (.get prepared log) (.get prepared progress)
+                            (not (.get prepared timeout)) (not (.get prepared check-status))))
+      (error "Ops exchange requires a supervised, checked process with a separate stdout stream"))
+    (let (execute (lambda () (execute-script prepared environment forward exchange)))
       (call-with-execution-cancellation
         (lambda ()
           (if (.get prepared idle-timeout)

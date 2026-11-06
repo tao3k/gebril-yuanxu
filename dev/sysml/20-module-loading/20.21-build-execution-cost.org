@@ -35,6 +35,108 @@ when it queues no compilation. =module-id= can import the same target again.
 Those are runtime operations; the Core input hook's checks before/after runtime
 import are not replaceable by a saved successful admission.
 
+* Weaver hot-build attribution
+
+The public =weaver-module-selection-baseline-2026-11-06= tag identifies the
+38-target Weaver build, with 13 Lab targets. The following fresh-process runs
+reuse its installed prerequisites and output products. Verbosity 2 uses the
+existing scalar counters without installing a source observer. The direct
+script is an attribution control for the package command's process boundary.
+Every row has zero compile events and a normal exit.
+
+| Command | Before Yuanxu main | Yuanxu main | After Yuanxu main | Total wall seconds |
+|---------+--------------------+-------------+-------------------+--------------------|
+| =gerbil build= | 3.20 | 7.69 | 4.48 | 15.37 |
+| =./build.ss compile= | 1.84 | 8.22 | 3.81 | 13.87 |
+| =./build.ss compile= | 1.94 | 7.22 | 3.59 | 12.75 |
+| =gerbil build= | 2.99 | 7.21 | 4.30 | 14.50 |
+
+The child markers include epoch timestamps, so the outer portions compare
+the same wall clock. A post-main process sample finds the main thread in
+Gambit =___cleanup_dyn_module= → =dlclose= → macOS =dyld= unload processing
+for all 182 samples. The sample includes debugger notification overhead.
+Use the unsampled rows for exit duration. Native shutdown and Scheme
+currentness have separate owners and separate costs.
+
+A separate specification-entry sample finds 351 of 365 main-thread samples
+in =___dynamic_load= and =dlopen=. The debugger perturbs that sample too.
+In a separate dynamic-image trace, the reference child loaded 339 =.o1=
+images before the specification and another 291 during it. Those are native
+image loads, not business scopes or compiler jobs. Gerbil's package tool
+imports its HTTP library; an init window only needs its checkout location.
+
+** Deferred Interface import control
+
+An isolated candidate admitted an explicit import of the exact =.def= binding
+already supplied by the wrapper. Other imports, re-exports and callbacks
+retained their existing path. All three rows below use the same disposable
+prefix. Each arm first regenerates products affected by its changed compiler
+inputs, then measures the zero-compilation run. The two arm switches each
+recompiled the three Weaver Interface targets, so their times are excluded.
+
+| Hot arm | Total wall s | User + system s | Specification s | Native Make s | Reader evaluations | POO replay visits |
+|---------+--------------+-----------------+-----------------+---------------+--------------------+-------------------|
+| Reference | 13.45 | 13.34 | 4.63 | 1.72 | 35 | 306571 |
+| Candidate | 14.10 | 13.86 | 4.92 | 1.73 | 20 | 366839 |
+| Reference restored | 15.93 | 14.57 | 6.78 | 1.77 | 35 | 306571 |
+
+The candidate reduces interpreter evaluations but still expands the private
+import closure. Native role-import time was 3.08 s versus 3.02 s in the first
+reference, and replay visits increased by 60268. The wall and CPU result falls
+inside reference variation, so the candidate is discarded. Role-import spans
+are inclusive of nested imports and checks. Build-current checks occupy about
+0.4 s in these runs and must not absorb the inclusive role-import time.
+
+The build-side optimization boundary is the native Context traversal reached
+from a selected Interface. A proposed shortcut must preserve the actual
+phase-specific import graph and ordered source obligations and must retain
+independent checks on both sides of expansion and author callbacks. Prove
+support preservation against the existing =SourceClosureWork= model and
+compare native Context visits, POO replay visits and end-to-end time together.
+The Gambit/dyld shutdown cost is a separate runtime investigation. Keep the
+ordinary package CLI and its natural exit in acceptance.
+
+** Resolve the native package location through its public binding
+
+The source window asks Gerbil for =pkg-root-dir= via the existing
+=module-binding-action=. The native export still owns location and any
+initialization required by the binding. There is no reconstructed package
+layout, saved procedure or approval. =Inputs.narrowed_import_edge= and
+=Inputs.narrowed_binding_identity= cover the native import projection under
+its binding observations. The downstream tests exercise actual Gerbil
+resolution rather than treating those theorems as runtime evidence.
+
+Using the same disposable installed prefix, both candidate invocations and
+all three reference invocations had zero compiler jobs. The reference wall
+times were 18.18, 16.93 and 15.68 s. The candidate took 12.00 and 12.62 s.
+Process-tree CPU was 15.44–16.25 s for the reference and 11.83–12.33 s for the
+candidate. Specification wall time fell from 5.48–6.64 s to 3.98–4.35 s,
+and main CPU from 7.48–8.58 s to 6.02–6.39 s. Both arms evaluated 35 reader
+bodies and visited 306571 replay nodes per run. In the paired image traces,
+startup still loaded 339 =.o1= images. Specification loads fell from 291 to
+184. This measures the installed hot path and holds the currentness
+work constant. It is separate from the effect of the discarded Interface
+candidate.
+
+The unchanged public cohort reran its A/B gate in 48.19 s under the original
+120 s aggregate limit, using the already installed environment. Both isolated
+outputs covered the same 38 targets, hot B compiled zero targets, and cleaning
+A preserved B. The independent runtime first =.get= built one scope and the
+repeat built none. The runtime confirmed Governance, Cedar and Gateway and
+reported its own products. This rerun is separate from the fresh-install
+baseline and is not a candidate speedup.
+
+The binding candidate passes the Weaver A/B gate in 55.36 s with the same
+38 targets and one first-read scope. Core's publication, test source
+admission, package resolution and window suites pass. The input-context
+gate rejects all four injected faults and passes the original implementation
+before and after injection. Lab's first 120 s attempt expires after the
+specification consumes 70.45 s wall and 7.08 s CPU. Its two local windows do
+not call =pkg-root-dir=. The same 120 s gate then passes in 68.15 s, with
+5.91 s specification wall, 45 targets, zero hot compiler jobs, B-owned
+runtime products and clean isolation. The initial timeout remains a failed
+receipt and the wall/CPU gap remains unattributed.
+
 * Measurements and their limits
 
 Temporary build-entry probes were removed after measurement; the original

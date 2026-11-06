@@ -104,6 +104,15 @@ application-owned import resolver. Existing =requires= names only Feature IDs;
 the mapping of optional contributors to additional Module requirements remains
 an integration obligation, not an already supported new field or syntax.
 
+** Selected Feature facade
+
+The Module System collects the optional =features/<feature>/interface.ss=
+only for a selected Feature. Its observed absence is part of the selection.
+Build projects the facade through Gerbil's normal import closure, recording the
+Module owner and Feature contributor. Withdrawal removes exclusive targets and
+keeps targets also reached by retained roots. Projection does not construct
+business scopes. The same collected targets flow to build and clean.
+
 * Composition, downstream override and withdrawal
 
 The following is an algebra illustration using existing POO operators, not a

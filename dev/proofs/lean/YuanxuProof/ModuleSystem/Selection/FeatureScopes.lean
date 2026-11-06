@@ -52,4 +52,26 @@ theorem conflicting_contributions_refuse {Scope Contract : Type}
   intro ok
   exact conflict final ⟨ok.2 a first, ok.2 b second⟩
 
+/-- `closure` denotes Gerbil's import closure for each selected Feature facade.
+Build input admission and compiler identity deduplication are separate. -/
+def compilerTargets {Feature Target : Type} (core : List Target)
+    (closure : Feature → List Target) (selected : List Feature) : List Target :=
+  core ++ selected.flatMap closure
+
+theorem compiler_target_support {Feature Target : Type} (core : List Target)
+    (closure : Feature → List Target) (selected : List Feature) (target : Target) :
+    target ∈ compilerTargets core closure selected ↔
+      target ∈ core ∨ ∃ feature ∈ selected, target ∈ closure feature := by
+  simp [compilerTargets, List.mem_flatMap]
+
+theorem withdrawal_removes_exclusive_target {Feature Target : Type}
+    (core : List Target) (closure : Feature → List Target) (retained : List Feature)
+    (target : Target) (notCore : target ∉ core)
+    (notRetained : ∀ feature ∈ retained, target ∉ closure feature) :
+    target ∉ compilerTargets core closure retained := by
+  intro present
+  rcases (compiler_target_support core closure retained target).mp present with common | ⟨feature, member, support⟩
+  · exact notCore common
+  · exact notRetained feature member support
+
 end YuanxuProof.ModuleSystem.Selection.FeatureScopes

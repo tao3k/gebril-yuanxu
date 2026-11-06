@@ -21,6 +21,20 @@ package YuanxuSelectedPackageBuilds {
                bridge while retaining independent effect/currentness checks. */
     }
 
+    requirement def SelectedFeatureInterfaceRoots {
+        doc /* Module and Feature leaves share the source Collection. A selected
+               Feature contributes its collected Gerbil facade
+               features/<name>/interface.ss relative to its owner.
+               Collection observes each path component, including absence.
+               Build uses the existing admitted package closure and records
+               the Module owner and Feature contributor. Feature Contracts
+               constrain scope admission on the same selected Graph. Compile
+               and clean acquire no business scope. Withdrawal in a new
+               selection removes exclusive targets and retains shared imports.
+               FeatureScopes.compiler_target_support and
+               withdrawal_removes_exclusive_target model target membership. */
+    }
+
     part def SourceOwner {
         attribute publicationIdentity : String;
         attribute sourcePackage : String;

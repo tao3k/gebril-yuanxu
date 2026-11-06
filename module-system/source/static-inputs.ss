@@ -26,7 +26,7 @@
     (lambda () (native-path-text pointer))
     (lambda () (foreign-release! pointer))))
 
-;; Native namespace encoding determines the producer's static product role.
+;; Gerbil's Module ID encoding determines the producer's static product role.
 ;; The imported interface supplies its actual library root, not a disk catalog.
 (def (native-static-input identity path)
   (def relative (module-id->path-string identity))

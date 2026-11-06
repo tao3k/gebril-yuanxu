@@ -2745,6 +2745,19 @@ A checkpoint exception is preserved. Failed preflight follows the original
 split path for its refusal diagnostic and cannot turn into acceptance.
 Arbitrary user code is never executed in this protected checkpoint.
 
+The selected Build Graph and its prepared inputs can enter one such frame
+when the linker owns the exact selection receiver and the cached guard is
+still the original linker procedure. The guard runs first, followed by each
+prepared-input guard in its existing order. A replacement guard, an open
+observer, or unsupported receiver state keeps the independent route. Every
+effect boundary starts fresh, and the native replay still authenticates the
+issued records at frame exit.
+
+Within that frame, the paired Reader and directory check is one observation
+in the existing source window. Each frame has its own query identity even
+when several frames share an enclosing source window. The publication
+checkpoints still run in order against the original issued roots.
+
 The indexed publication check previously authenticated the same metadata both
 before and after a fixed batch. It now uses one protected operation. The
 compatible observer-free publication tail replays the original preparation

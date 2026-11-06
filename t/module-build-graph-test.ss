@@ -2,6 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/test test-suite check-equal? check-exception)
+        (only-in :std/error Error? Error-message)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :std/make make)
         (only-in :std/list/list find)
@@ -19,6 +20,7 @@
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-read current-module-source-observer
                  call-with-module-source-read-cache module-source-admit-current!)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/source/link call-with-linked-prepared-guards)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
         (only-in :yuanxu/module-system/building/interface yuanxu-init-build call-with-init-build-spec)
         (only-in "../core-spec.ss" core-spec)
@@ -85,6 +87,20 @@
   (map (lambda (entry) (.get entry compiler-identity)) (.get graph entries)))
 (def module-build-graph-test
   (test-suite "Selected Core and Feature compiler input Graph"
+    (yuanxu-test-case "only the linker can supply prepared guard support"
+      (def called? #f)
+      (def selection (.o))
+      (def (forged . _arguments) (set! called? #t))
+      (for-each
+        (lambda (value)
+          (check-exception
+            (call-with-linked-prepared-guards value selection '() '() void)
+            (lambda (failure)
+              (and (Error? failure)
+                   (equal? (Error-message failure)
+                     "prepared source guards belong to a different selected Graph")))))
+        (list forged (.o selection: selection check: forged)))
+      (check-equal? called? #f))
     (yuanxu-test-case "library inventory does not compile the init selection owner"
       (check-equal? (member "init" core-spec) #f)
       (check-equal? (member "build" core-spec) #f)
