@@ -296,6 +296,7 @@ file. Both platforms must come from the same revision, workflow run and
 attempt. Each row contains the group verdict, full dispatch, actual worker
 exit, startup, Harness and post-Harness interval for both platforms. An
 unobserved phase is =#f=.
+Phase totals include the number of files with an unobserved interval.
 The dispatch time includes the observed cost of failed or interrupted workers.
 
 * Specialized qualifications

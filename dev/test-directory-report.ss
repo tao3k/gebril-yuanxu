@@ -262,6 +262,15 @@
            (length (filter (lambda (row) (not (zero? (cadr row)))) rows))])
   (newline))
 
+(def (write-platform-totals platform rows)
+  (def (phase index)
+    (def observed (filter-map (cut list-ref <> index) rows))
+    [(apply + observed) (- (length rows) (length observed))])
+  (display "TEST-TIMING-TOTAL ")
+  (write [platform 'dispatch-ms (apply + (map caddr rows))
+          'startup (phase 4) 'harness (phase 5) 'after-harness (phase 6)])
+  (newline))
+
 (def (compare-reports linux macos (group "all"))
   (defvalues (linux-cohort linux-rows) (read-audited-report linux group))
   (defvalues (macos-cohort macos-rows) (read-audited-report macos group))
@@ -275,6 +284,9 @@
   (display "TEST-TIMING-COHORT ")
   (write [group linux-cohort macos-cohort (length linux-rows)])
   (newline)
+  (displayln "TEST-TIMING-PHASE-TOTALS (observed-ms missing-files)")
+  (write-platform-totals "Linux" linux-rows)
+  (write-platform-totals "macOS" macos-rows)
   (displayln "TEST-TIMING-FIELDS (group-status dispatch-ms worker-exit-status startup-ms harness-ms after-harness-ms)")
   (for-each
     (lambda (linux-row macos-row)
