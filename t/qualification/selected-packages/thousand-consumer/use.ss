@@ -2,6 +2,9 @@
 (import :yuanxu-thousand-consumer/main :yuanxu-thousand-consumer/init
         (only-in :clan/poo/object .get .all-slots/sort .ref/cached .call .put!)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer))
+(def selected-owners
+  '(yuanxu-thousand-library/modules/module-0/interface
+    yuanxu-thousand-library/modules/module-1/interface))
 (def factories (make-hash-table-eq))
 (def declarations 0)
 (def (observe key amount)
@@ -21,12 +24,12 @@
 (def initial (parameterize ((current-module-source-observer observe)) (selected-plan)))
 (unless (equal? initial '(5432)) (error "wrong selected value"))
 (unless (and (= declarations 2) (= (hash-length factories) 2)
-             (= (hash-ref factories 'module-0) 1) (= (hash-ref factories 'module-1) 1))
+             (andmap (lambda (owner) (eqv? (hash-get factories owner) 1)) selected-owners))
   (error "first business demand differs from the selected closure" declarations (hash->list factories)))
 (def graph
   (parameterize ((current-module-source-observer observe))
     (.get yuanxu-thousand-consumer.init.exports tests selected-graph)))
-(unless (equal? (.get graph module-order) '(module-0 module-1))
+(unless (equal? (.get graph module-order) selected-owners)
   (error "test projection differs from the business closure"))
 (def leaf (.get window module-1))
 (unless (and (eq? leaf (.get window module-1)) (eq? initial (selected-plan)))
