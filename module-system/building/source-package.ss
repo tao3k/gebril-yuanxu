@@ -21,11 +21,13 @@ prelude: :gerbil/core
   (def previous (load-path))
   (def (canonical path)
     (path-strip-trailing-directory-separator (path-normalize (path-expand path))))
-  (def destination (canonical output))
-  (def (output? path) (string=? destination (canonical path)))
+  ;; A projection can guard the native runtime order without adding a
+  ;; compiler output directory. Only Make dispatch needs that fallback.
+  (def destination (and output (canonical output)))
+  (def (output? path) (and destination (string=? destination (canonical path))))
   (def inputs (append (filter (lambda (path) (not (output? path))) previous)
                      (filter output? previous)))
-  (unless (ormap output? inputs)
+  (when (and destination (not (ormap output? inputs)))
     (set! inputs (append inputs (list output))))
   ;; A declared checkout owns its compiler sources even when an ordinary
   ;; prerequisite contains compiled copies. Gerbil still resolves identities

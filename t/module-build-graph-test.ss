@@ -60,6 +60,8 @@
      (lambda () (test root prefix))
      (lambda () (clear-temporary-file! root)))))
 (def (build-contribution . root-values) (.o kind: 'module/build roots: root-values))
+(def (fixture-module-id prefix name)
+  (string->symbol (string-append prefix "/modules/" name "/interface")))
 (def (optional name paths (dependencies '()))
   (feature-descriptor
    (.o feature-id: (string->symbol (string-append "app/web/" (symbol->string name)))
@@ -187,7 +189,7 @@
          (check-equal? calls 1))))
     (yuanxu-test-case "configuration admission precedes publication binding"
       (with-source
-       (lambda (root _prefix)
+       (lambda (root prefix)
          (write-file (path-expand "init.ss" root)
            "(yuanxu! :load-modules \"./modules\" mode: explicit :app (web))")
          (def settings-type (.cc ObjectContract. 'responsibilities (.o message: String)))
@@ -224,7 +226,7 @@
          (check-equal? bindings 0)
          (def accepted (.get (select (.o message: "ok")) modules modules app web))
          (check-equal? (.get accepted config message) "ok")
-         (check-equal? (.get accepted value owner) 'app/web)
+         (check-equal? (.get accepted value owner) (fixture-module-id prefix "app/web"))
          (check-equal? (.get accepted value admission) 'Value)
          (check-equal? (.get accepted value package-current) #f)
          (check-equal? bindings 1)
@@ -236,7 +238,8 @@
          (check-equal? bindings 2))))
     (yuanxu-test-case "direct package scope is confined to its selected publication"
       (with-source
-       (lambda (root _prefix)
+       (lambda (root prefix)
+         (def web-id (fixture-module-id prefix "app/web"))
          (write-file (path-expand "init.ss" root)
            "(yuanxu! :load-modules \"./modules\" mode: explicit :app (web) :core (schema))")
          ;; Probe the handoff, not Nix realization. The product service gate
@@ -252,14 +255,16 @@
            (yuanxu-load-modules (path-expand "init.ss" root)
              read-publication:
              (lambda (source)
-               (let (id (cdr (assq 'module-id (yuanxu-module-source-ref-metadata source))))
-                 (.o identity: id features: (.o)
+               (let* ((metadata (yuanxu-module-source-ref-metadata source))
+                      (owner (cdr (assq 'module-id metadata)))
+                      (declaration (assq 'declaration-id metadata)))
+                 (.o identity: (if declaration (cdr declaration) owner) features: (.o)
                    core: (.o requires: (.o) scope-contract: Scope
-                           projections: (if (eq? id 'app/web) projection-values '())
+                           projections: (if (eq? owner web-id) projection-values '())
                            link: (lambda (_dependencies) (.o greeting: 'source retained: #t))))))))
          (def view (select (list (projection 'web-package))))
          (def graph (.get view build-graph))
-         (check-equal? (.get (car (.get graph external-packages)) scope-owner) 'app/web)
+         (check-equal? (.get (car (.get graph external-packages)) scope-owner) web-id)
          (def current? #t)
          (def (current!) (unless current? (error "stale package probe")))
          (def package-parent (.o greeting: 'package-parent retained: #f))

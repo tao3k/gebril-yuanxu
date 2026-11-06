@@ -340,7 +340,11 @@
         (yuanxu-test-observe 'bound-source-reuses (hash-ref costs '(calls reader-bound-source-reuse) 0))
         (yuanxu-test-observe 'native-source-resolutions (hash-ref costs '(calls reader-source-resolution) 0))
         (check-equal? (.get view selected-graph module-order)
-                      '(json-schema funflow services/postgresql services/gitea applications/gitea-postgresql))
+                      '(yuanxu/modules/json-schema/interface
+                        yuanxu/modules/funflow/interface
+                        yuanxu/scenarios/gitea-postgresql/postgresql/interface
+                        yuanxu/scenarios/gitea-postgresql/gitea/interface
+                        yuanxu/scenarios/gitea-postgresql/interface))
         (check-equal? (> (length (.get graph entries)) 15) #t)
         (check-equal? (yuanxu-validation-evidence-accepted?
                        (yuanxu-contract-admit contract (.o value: "pass") #f)) #t)
