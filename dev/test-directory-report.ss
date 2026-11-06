@@ -75,8 +75,12 @@
   (def harness-line #f)
   (def terminal? #f)
   (def phase #f)
+  (def failure #f)
+  (def last-progress #f)
   (def (observe line)
-    (cond ((and (not entry) (string-prefix? "test-entry pid=" line))
+    (def progress? (string-prefix? "@yuanxu-progress " line))
+    (cond (progress? (set! last-progress line))
+          ((and (not entry) (string-prefix? "test-entry pid=" line))
            (set! entry (elapsed-milliseconds started)))
           ((string-prefix? "TEST-HARNESS-RESULT " line)
            (set! returned (elapsed-milliseconds started)))
@@ -86,7 +90,19 @@
           ((or (string-prefix? "declaration-stage " line)
                (string-prefix? "runtime-capacity-start " line)
                (string-prefix? "runtime-phase-incomplete " line))
-           (set! phase line))))
+           (set! phase line))
+          ((and (not failure)
+                (or (string-prefix? "ERROR CASE " line)
+                    (string-prefix? "ERROR CHECK " line)
+                    (string-prefix? "ERROR HARNESS " line)
+                    (string-contains line "Heap overflow")
+                    (string-contains line "Stack overflow")))
+           (set! failure line)))
+    ;; Ops still writes every line to the worker transcript. Only the CI
+    ;; presentation omits machine frames.
+    (unless progress?
+      (display line)
+      (force-output)))
   (displayln "TEST-START " file)
   (force-output)
   (def result
@@ -94,8 +110,7 @@
       (.cc ProcessScript.
         command: (list "just" "test-discovered-file" file)
         environment: (.o YUANXU_TEST_REPORT_DIR: directory)
-        log: raw check-status: #f progress: (lambda () observe))
-      '() output-port: (current-output-port)))
+        log: raw check-status: #f progress: (lambda () observe))))
   (def wall (elapsed-milliseconds started))
   (def status (.get result status))
   ;; A successful subprocess must also return a unique native Harness result.
@@ -106,7 +121,7 @@
     (match evidence
       (['test-harness-result [path] 'passed 0 _ _]
        (and (expected-harness-file? file path)
-            terminal? entry returned
+            terminal? entry returned (not failure)
             (equal? module-line (string-append "MODULE-OK " path "\n"))
             (equal? harness-line
                     (string-append "HARNESS-OK " (object->string [path]) "\n"))))
@@ -118,9 +133,24 @@
   (call-with-output-file (path-expand "dispatch.ss" directory)
     (lambda (port) (write row port) (newline port)))
   (display "TEST-DISPATCH-RESULT ") (write row) (newline) (force-output)
-  (when (and (zero? status) (not verified?))
-    (displayln "TEST-REPORT-FAIL missing successful Gerbil Harness receipt " file))
+  (unless (and (zero? status) verified?)
+    (display "TEST-REPORT-FAIL ")
+    (write [file status (or failure (if (zero? status) 'missing-harness-verdict 'worker-nonzero))
+            (or (last-harness-progress directory) last-progress)])
+    (newline))
   (values (if (and (zero? status) (not verified?)) 1 status) wall))
+
+(def (last-harness-progress directory)
+  (match (filter (lambda (name) (string-suffix? ".progress" name)) (directory-files directory))
+    ([progress]
+     (call-with-input-file (path-expand progress directory)
+       (lambda (port)
+         (let loop ((latest #f))
+           (let (line (read-line port))
+             (cond ((eof-object? line) latest)
+                   ((string-prefix? "@yuanxu-progress " line) (loop line))
+                   (else (loop latest))))))))
+    (else #f)))
 
 (def (expected-harness-file? discovered actual)
   (case (string->symbol discovered)
