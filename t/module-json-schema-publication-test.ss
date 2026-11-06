@@ -28,7 +28,11 @@
                         '((type . "object") (required . ("port"))
                           (properties . ((port . ((type . "integer") (minimum . 1)))))))))
         (check-equal? (.get view selected-graph module-order)
-                      '(json-schema funflow services/postgresql services/gitea applications/gitea-postgresql))
+                      '(yuanxu/modules/json-schema/interface
+                        yuanxu/modules/funflow/interface
+                        yuanxu/scenarios/gitea-postgresql/postgresql/interface
+                        yuanxu/scenarios/gitea-postgresql/gitea/interface
+                        yuanxu/scenarios/gitea-postgresql/interface))
         (check-equal? (> (length (.get graph entries)) 15) #t)
         (def valid (.o port: 80))
         (check-equal? (eq? (validate contract valid) valid) #t)

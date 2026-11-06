@@ -24,7 +24,8 @@
 (def ScopeContract
   (.cc Type. identity: 'qualification/scope .element?: object?))
 (def (read-publication source)
-  (def owner (cdr (assq 'module-id (.get source metadata))))
+  (def metadata (.get source metadata))
+  (def owner (cdr (or (assq 'declaration-id metadata) (assq 'module-id metadata))))
   (unless (memq owner '(json-schema funflow team/json-schema))
     (error "unselected publication must stay cold"))
   (.o identity: owner features: (.o)

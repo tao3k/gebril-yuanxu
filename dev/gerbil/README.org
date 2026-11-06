@@ -97,6 +97,17 @@ scope cache cold, then checks the independently declared two-owner consumer
 closure. Native editor bindings and the logical Module window have separate
 owners. The complete acceptance requires BOTH, with unchanged source syntax.
 
+* Specification projection and compiler dispatch
+
+Reading =init.exports.std-make-spec= preserves Gerbil's native runtime search
+order. Explicit package windows still supply their declared source roots.
+The projection checks and restores the path across its callbacks. Only Make
+dispatch moves its output directory behind the admitted compiler inputs.
+The installed Contract identity test holds an existing receipt across source
+init projection and checks that both its Contract and prototype retain
+identity. The mutation gate separately checks the compiler input order,
+restoration, and refusal of path changes during compilation.
+
 * Core cold-build acceptance
 
 Use a new output environment with an empty =GERBIL_PATH/lib= and the

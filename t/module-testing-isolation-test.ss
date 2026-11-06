@@ -57,7 +57,11 @@
       (check-equal? (eq? (.get flow-tests selected-graph) (.get selected selected-graph)) #t)
       (check-equal? (.ref/cached unused 'integration) #f)
       (check-equal? (.get selected selected-graph module-order)
-                    '(json-schema funflow services/postgresql services/gitea applications/gitea-postgresql))
+                    '(yuanxu/modules/json-schema/interface
+                      yuanxu/modules/funflow/interface
+                      yuanxu/scenarios/gitea-postgresql/postgresql/interface
+                      yuanxu/scenarios/gitea-postgresql/gitea/interface
+                      yuanxu/scenarios/gitea-postgresql/interface))
       (check-equal? (.ref/cached selected 'execution) #f)
       (yuanxu-test-checkpoint 'selection-verified)
       (check-equal? (.ref/cached all 'spec) #f)

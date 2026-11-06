@@ -87,9 +87,8 @@
                     ((current-module-source-observer) (list 'compiler-source-import-start path) 1)
                     ((current-module-source-observer) (list 'compiler-source-import-end path) 1))
                   '("modules/nix/func.ss" "modules/funflow/func.ss"))))))
-        (check-equal? (and (string-contains labels "modules/nix/func.ss") #t) #t)
-        (check-equal? (and (string-contains labels "modules/funflow/func.ss") #t) #t)
-        (check-equal? (string-contains labels (path-normalize root)) #f)
+        (check-equal? (and (string-contains labels (path-expand "modules/nix/func.ss" root)) #t) #t)
+        (check-equal? (and (string-contains labels (path-expand "modules/funflow/func.ss" root)) #t) #t)
       ((current-module-source-observer) 'check-seconds 0.000002)
       (check-equal? (yuanxu-test-observe 'check-microseconds 0) 2)
       ;; Closed timing categories use existing scalar Case counters, and do
@@ -216,6 +215,9 @@
               (check-equal? (yuanxu-test-observe 'file-reads 0) 0))))
         (check-equal? (eq? previous (current-module-source-observer)) #t)))
     (test-case "physical reads retain owner, phase and effect-boundary attribution"
+      (def root (path-normalize (path-expand ".." (path-directory (this-source-file)))))
+      (def funflow (path-expand "modules/funflow/types.ss" root))
+      (def json-schema (path-expand "modules/json-schema/objects.ss" root))
       (def output
         (call-with-output-string
           (lambda (port)
@@ -223,19 +225,18 @@
               (.call Observed .run Observed "physical read attribution"
                 (lambda ()
                   (def observer (current-module-source-observer))
-                  (def root (path-normalize (path-expand ".." (path-directory (this-source-file)))))
                   (observer '(package-stage-start inputs-current) 1)
                   (observer '(publication-guard-start declaration-after) 1)
-                  (observer (list 'file-read 'publication-current
-                              (path-expand "modules/funflow/types.ss" root)) 3)
+                  (observer (list 'file-read 'publication-current funflow) 3)
                   (observer '(publication-guard-end declaration-after) 1)
                   (observer '(package-stage-end inputs-current) 1)
-                  (observer (list 'file-read 'compiler-import
-                              (path-expand "modules/json-schema/objects.ss" root)) 2)))))))
+                  (observer (list 'file-read 'compiler-import json-schema) 2)))))))
       (check-equal? (and (string-contains output
-        "phase=publication-current boundary=declaration-after owner=\"modules/funflow\" reads=3") #t) #t)
+        (string-append "phase=publication-current boundary=declaration-after owner="
+          (object->string (path-directory funflow)) " reads=3")) #t) #t)
       (check-equal? (and (string-contains output
-        "phase=compiler-import boundary=outside-guard owner=\"modules/json-schema\" reads=2") #t) #t)
+        (string-append "phase=compiler-import boundary=outside-guard owner="
+          (object->string (path-directory json-schema)) " reads=2")) #t) #t)
       (check-equal? (and (string-contains output
         "source-effect kind=package-stage-start boundary=inputs-current reads=3") #t) #t)
       (check-equal? (and (string-contains output

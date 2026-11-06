@@ -315,7 +315,7 @@ source roots explicitly declared by their consumer; an installed compiled
 Context does not implicitly authorize a checkout alias. Diagnostic buckets
 retain the observed directory and do not infer a package root.
 
-The temporary gerbil-poo pin =d06ee2f118cdd9eb46597dd2bd4b4c71f6652fca=
+The temporary gerbil-poo pin =1f4b1720d80c3cca1daf64775cd7abfe63bebd0d=
 contains the Function identity implementation and its upstream regression.
 Return to a release tag when a release contains this behavior, retaining the
 same strict identity and invalidation controls.

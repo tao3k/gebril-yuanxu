@@ -222,7 +222,7 @@
     (unless prepared (error "init std-make-spec must prepare the source context first"))
     ((.ref/inline prepared source-current-site)))
   (def (current!)
-    (with-input-context (build-output-directory) check-prepared!))
+    (with-input-context #f check-prepared!))
   (def (compiler-source-roots)
     ;; Only the bound init declaration can name native checkout inputs.
     (init-compiler-roots (list declaration init-file)))
@@ -240,7 +240,9 @@
         action)
       refuse-input-context!))
   (def (build-spec roots)
-    (with-input-context (build-output-directory)
+    ;; Looking up the spec must preserve native runtime bindings. The
+    ;; compiler output fallback belongs to run-spec, after projection.
+    (with-input-context #f
       (lambda () (build-spec/in-input-context roots))))
   (def (build-spec/in-input-context roots)
     (def consumer (current-build-spec-consumer))
