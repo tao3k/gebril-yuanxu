@@ -4,7 +4,7 @@
 ;;; Read-only lowering of the bounded init declaration, never eval/import.
 (import (runtime: :clan/poo/object)
         (only-in :std/list/list any)
-        (only-in :yuanxu/module-system/source/deferred-declaration module-entry-action)
+        (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)
         (only-in :yuanxu/module-system/source/role-forms
                  init-name? parse-module-init module-init-export-name module-interface-form?)
         (only-in :yuanxu/module-system/selection/objects yuanxu-user-module-selection))
@@ -14,9 +14,9 @@
 
 ;; Native Gerbil owns checkout placement and pinning. A source window names a
 ;; dependency already installed/linked by that manager; it never installs one.
+;; Resolve the public location binding and let Gerbil initialize its owner.
 (def native-package-root
-  (module-entry-action 'yuanxu/module-system/source/init "gerbil/tools/gxpkg"
-    'gerbil/tools/gxpkg#pkg-root-dir))
+  (module-binding-action "gerbil/tools/gxpkg" 'pkg-root-dir))
 (def (native-package-checkout package)
   (and package (path-expand package (native-package-root '()))))
 (def (module-init-source-root intent source-path)

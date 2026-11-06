@@ -177,6 +177,9 @@ package YuanxuSelectedPackageBuilds {
                root must not suppress Gerbil's source lookup within that root.
                Retain an in-root bound source; otherwise use the existing native
                package lookup and validate the actual source header identity.
+               A package window resolves the native pkg-root-dir public binding.
+               Gerbil owns checkout layout and binding initialization. The
+               lookup grants neither package installation nor compiler approval.
                Cold, hot and clean projections retain this same source set,
                including ordinary package libraries imported by selected roles.
                A nested gerbil.pkg compiler prefix is not the complete source

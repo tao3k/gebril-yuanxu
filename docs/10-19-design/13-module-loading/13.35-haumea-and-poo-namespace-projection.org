@@ -3290,8 +3290,10 @@ gate; the investigation is tracked at
 
 Package source windows may now declare an installed/linked native repository
 with =package:= and a confined relative source path. Resolution calls Gerbil's
-existing =pkg-root-dir=; it neither fetches a dependency nor scans package
-metadata to discover Modules. Tags and Interface configuration still define
+existing =pkg-root-dir= through the native public binding. Gerbil retains
+ownership of that binding's initialization and checkout layout. The window
+resolver neither fetches a dependency nor scans package metadata to discover
+Modules. Tags and Interface configuration still define
 Module selection. =SourceAddress= proves anchoring and absence of a local
 fallback in the bounded model. The grammar/window tests and real Weaver
 same-leaf, different-root build/runtime gate exercise the corresponding Scheme
