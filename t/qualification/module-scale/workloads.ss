@@ -53,7 +53,8 @@
           (displayln "DECLARATION-MEMORY completed=" completed-declarations
                      " heap=" (f64vector-ref stats 15)
                      " live=" (f64vector-ref stats 17)
-                     " allocated=" (f64vector-ref stats 7))
+                     " native-vm-account=" (f64vector-ref stats 7)
+                     " vm-account-qualified?=false")
           (force-output))))
     (when (eq? category 'candidate-open-boundary)
       ;; Scalar-only failure attribution: constructing a typed receipt here
@@ -61,7 +62,8 @@
       (let (stats (##process-statistics))
         (displayln "DECLARATION-REFUSAL heap=" (f64vector-ref stats 15)
                    " live=" (f64vector-ref stats 17)
-                   " allocated=" (f64vector-ref stats 7))
+                   " native-vm-account=" (f64vector-ref stats 7)
+                   " vm-account-qualified?=false")
         (force-output))
       (error "closed runtime declaration crossed an unexpected open boundary" (cdr key)))
     (when (memq category '(publication-start publication-discovered candidate-local-guard candidate-open-guard
@@ -69,10 +71,12 @@
                           compiler-source-import-start publication-guard-run file-read))
       (hash-update! counts category (cut + <> amount) 0))
     (when previous (previous key amount)))
-  (yuanxu-test-checkpoint 'runtime-graph-start)
   (def graph
-    (parameterize ((current-module-source-observer observe))
-      (.get FixtureExports tests selected-graph)))
+    (measure-runtime count 'runtime-graph-start
+      (lambda ()
+        (parameterize ((current-module-source-observer observe))
+          (.get FixtureExports tests selected-graph)))
+      observer: 'present))
   (yuanxu-test-checkpoint 'runtime-graph-ready)
   (check-equal? source-prefix (path-normalize (path-directory (.get graph init-source))))
   (yuanxu-write-observation-line! "declaration-source-reads modules=%s counts=%s"
@@ -122,7 +126,7 @@
       (call-with-output-file (list path: path truncate: #t) (cut display original <>))))
 )
 
-(def (measure-runtime count phase action)
+(def (measure-runtime count phase action observer: (observer 'absent))
   ;; Print actual phase entry, independently of detailed Profile emission.
   ;; These are actual work boundaries, never timer-generated progress.
   (yuanxu-write-observation-line! "runtime-capacity-start modules=%s phase=%s" count phase)
@@ -137,8 +141,8 @@
           (lambda (failure) (set! failed? #t) (set! cause failure))
           (lambda () (set! value (action)))))))
   (yuanxu-write-observation-line!
-    "runtime-capacity modules=%s observer=absent phase=%s metrics=%s native-vm-account=%s vm-account-qualified?=false"
-    count phase (filter (lambda (entry) (not (memq (car entry) '(result bytes-allocated)))) stats)
+    "runtime-capacity modules=%s observer=%s phase=%s metrics=%s native-vm-account=%s vm-account-qualified?=false"
+    count observer phase (filter (lambda (entry) (not (memq (car entry) '(result bytes-allocated)))) stats)
     (cdr (assq 'bytes-allocated stats)))
   (when failed?
     (yuanxu-write-observation-line! "runtime-phase-incomplete modules=%s phase=%s" count phase)
