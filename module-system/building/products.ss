@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Make output inventory/completion only; no publication or signing authority.
 (import (only-in :std/string/path path-force-extension)
+        (only-in "./program-products.ss" program-path program-identity?)
         (only-in :std/os/flock open-output-file/lock)
         (only-in :std/os/device device-close)
         (only-in :yuanxu/module-system/source/observations module-source-type module-source-measure-operation))
@@ -116,14 +117,14 @@
     (or (hash-key? names stem)
         (let (separator (string-rindex stem #\~))
           (and separator (selected-stem? (substring stem 0 separator) names))))))
-(def (artifact-files identities libdir (complete? #t))
+(def (artifact-files identities libdir (complete? #t) (programs '()))
   ;; Index selected names, then visit each selected directory ONCE per check.
   ;; Runtime named runtime sections (name~Type~0) belong to that selected unit.
   (def directories (make-hash-table))
   (for-each (lambda (identity)
     (def base (path-expand (symbol->string identity) libdir))
     (def directory (path-directory base))
-    (when (and complete?
+    (when (and complete? (not (program-identity? identity programs))
                (not (and (file-exists? (string-append base ".ssi"))
                          (file-exists? (string-append base ".o1")))))
       (error "build-required: selected compiler output is missing" identity))
@@ -149,8 +150,17 @@
         (error "selected compiler identities share a static output" identity))
       (hash-put! static-owners path identity)
       (let (type (module-source-type path))
-        (when (or complete? type)
+        (when (or type (and complete? (not (program-identity? identity programs))))
           (unless (eq? type 'regular)
             (error "build-required: selected compiler static output is missing" identity))
           (set! files (cons path files))))) identities)
+  (for-each
+    (lambda (program)
+      (def path (program-path program libdir))
+      (def type (module-source-type path))
+      (when (or type complete?)
+        (unless (and (eq? type 'regular)
+                     (not (zero? (bitwise-and (file-info-mode (file-info path #f)) #o111))))
+          (error "build-required: selected program is missing or not executable" path))
+        (set! files (cons path files)))) programs)
   (list-sort string<? files))

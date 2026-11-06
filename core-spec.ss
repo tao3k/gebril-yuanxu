@@ -174,6 +174,7 @@
     "module-system/source/selection"
     "module-system/building/package"
     "module-system/building/products"
+    "module-system/building/program-products"
     "module-system/building/artifacts"
     "module-system/source/build"
     "module-system/source/link"

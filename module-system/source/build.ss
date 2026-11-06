@@ -11,6 +11,8 @@
                  current-import-expander-phi current-export-expander-phi raise-syntax-error)
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module package-library-spec/source-context)
         (only-in :yuanxu/module-system/building/source-package package-prelude-identity)
+        (only-in :yuanxu/module-system/building/program-products make-target-spec program-targets)
+        (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/string/path path-absolute? path-default-extension)
@@ -558,7 +560,7 @@
 
 ;; Discover only the demanded import closure. Never project production entries,
 ;; evaluate business scopes or scan peer suites to obtain test support.
-(def (retained-build-entries specs root package-prefix selected capture: (capture #f))
+(def (retained-build-entries specs root package-prefix selected capture: (capture #f) programs?: (programs? #f))
   (unless (and (list? specs) (or (null? specs) (and (string? root) (path-absolute? root))))
     (error "retained build entries require a source root" root))
   (let ((seen (make-hash-table-eq)) (selected-by-path (make-hash-table))
@@ -571,15 +573,24 @@
       selected)
     (map
      (lambda (spec)
-       (let* ((parts (if (string? spec) (list spec)
-                        (if (and (pair? spec) (eq? (car spec) 'gxc:)) (cdr spec)
+       (let* ((make-kind (if (pair? spec) (car spec) 'gxc:))
+              (parts (if (string? spec) (list spec)
+                        (if (and (pair? spec)
+                                 (or (eq? make-kind 'gxc:)
+                                     (and programs? (eq? make-kind 'exe:)))) (cdr spec)
                             (error "retained entry must be a Scheme target" spec))))
               (name (and (pair? parts) (car parts)))
-              (options (and (pair? parts) (cdr parts))))
+              (raw-options (and (pair? parts) (cdr parts)))
+              (program? (eq? make-kind 'exe:))
+              (bin-name (and program? (pair? raw-options) (eq? (car raw-options) bin:)
+                             (pair? (cdr raw-options)) (cadr raw-options)))
+              (options (if bin-name (cddr raw-options) raw-options)))
          (unless (and (string? name) (list? options) (andmap string? options)
                       (andmap module-source-name? (string-split name #\/))
                       (not (string-suffix? ".ss" name)))
            (error "invalid retained Scheme target" spec))
+         (when (and program? (not (and (string? bin-name) (module-source-name? bin-name))))
+           (error "retained program requires one safe bin name" spec))
          ;; Check every unresolved component; normalization must not hide links.
          (def path
            (path-normalize
@@ -606,7 +617,10 @@
          (def kind 'source)
          (def owner 'build)
          (def contributor 'retained)
-         (or old (.o kind path input options compiler-identity owner contributor)))) specs)))
+         (or old
+             (if program?
+               (.o kind path input options compiler-identity owner contributor make-kind bin-name)
+               (.o kind path input options compiler-identity owner contributor))))) specs)))
 ;; This is compiler-input analysis, not module loading. Read package/prelude
 ;; metadata and expand the COMPLETE body with Gerbil, including generated and
 ;; phase-shifted imports. The private context is never installed in the loader,
@@ -646,7 +660,10 @@
   (def entries '())
   (def support-contexts '())
   (def compiler-observations (.ref entry 'source-inputs))
-  (def compiler-targets (retained-build-entries retained root package-prefix '()))
+  (def compiler-targets (retained-build-entries retained root package-prefix '() programs?: #t))
+  (def targets-by-identity (make-hash-table-eq))
+  (def static-inputs-api
+    (module-binding-action "yuanxu/module-system/source/static-inputs" 'module-static-compiler-inputs))
   (def (input! path)
     (def normalized (path-normalize path))
     (def input
@@ -660,12 +677,17 @@
   (for-each
     (lambda (target)
       (def input (input! (.get target path)))
+      (hash-put! targets-by-identity (.get target compiler-identity) target)
       (set! compiler-observations
         (append (.ref input 'source-inputs) compiler-observations)))
     compiler-targets)
   (def (std-make-spec entry)
-    (def target (find (lambda (candidate) (eq? (.get candidate compiler-identity) (car entry))) compiler-targets))
-    `(gxc: ,(cdr entry) ,@(if target (.get target options) '())))
+    (def target (hash-get targets-by-identity (car entry)))
+    (if target (make-target-spec target (cdr entry)) `(gxc: ,(cdr entry))))
+  (def (external-observations path)
+    (if (equal? (path-extension path) ".ss")
+      (.ref (input! path) 'source-inputs)
+      (list (cons path (module-source-read path)))))
   ;; Derive each demanded package from the runtime header/package snapshot.
   ;; External selected owners keep their own identities; no catalog is scanned.
   (def packages (list (cons root package-prefix)))
@@ -711,7 +733,11 @@
                   (unless (and (equal? (path-normalize path) (path-normalize expected))
                                (eq? id (.ref input 'compiler-identity)))
                     (error "test dependency does not match current package source" id path expected))
-                  (unless (member (path-normalize expected) files)
+                  ;; A Harness input is normally interpreted. If the same
+                  ;; owner explicitly declares it as a library, honor that
+                  ;; target when it is in this demand's compiler closure.
+                  (when (or (hash-key? targets-by-identity id)
+                            (not (member (path-normalize expected) files)))
                     ;; std/make resolves BOTH sources and expected products
                     ;; from this projection's root/prefix. A nested gerbil.pkg
                     ;; may identify the source without changing that Make root.
@@ -726,18 +752,20 @@
                         (cons (cons id make-target) entries))
                       (set! support-contexts (cons context support-contexts)))))
                 ;; Observe actual external interfaces, never their entire catalog.
-                (set! observations (cons (cons path (module-source-read path)) observations))))))
+                (set! observations (append (external-observations path) observations))))))
           seen)) files))
-  ;; A Suite is interpreted by the harness, not compiled into its support
-  ;; library. Bind products to the actual compiler dependency closure instead
-  ;; of the requesting Suite's bytes. Walk runtime contexts, rather than simply
-  ;; removing Suite paths: a Suite imported by support (including for-syntax)
-  ;; IS a compiler input and must still invalidate those products.
+  ;; Bind products to the compiler closure of the admitted libraries. A Suite
+  ;; participates only if it is a declared target or an actual compiler input
+  ;; (including for-syntax imports); its role as a Harness input is separate.
+  (def programs
+    (program-targets (filter (lambda (target) (assq (.get target compiler-identity) entries)) compiler-targets)))
+  (def compiler-contexts '())
   (let (seen (make-hash-table-eq))
     (for-each
       (lambda (context)
         (for-each-build-module context
           (lambda (dependency)
+            (when (pair? programs) (set! compiler-contexts (cons dependency compiler-contexts)))
             (def path (module-context-path dependency))
             (when (string? path)
               (let (input (hash-get prepared (path-normalize path)))
@@ -746,11 +774,16 @@
                     (append (.ref input 'source-inputs) compiler-observations))
                   (when (eq? (module-source-type path) 'regular)
                     (set! compiler-observations
-                      (cons (cons path (module-source-read path)) compiler-observations)))))))
+                      (append (external-observations path) compiler-observations)))))))
           seen))
       support-contexts))
-  (def inputs (unique-build-inputs observations))
-  (def compiler-inputs (unique-build-inputs compiler-observations))
+  (def identities (map car (reverse entries)))
+  (def borrowed-static
+    (if (pair? programs) (static-inputs-api (list compiler-contexts identities)) '()))
+  (def static-guards (map (lambda (input) (.get input admit-current)) borrowed-static))
+  (def static-observations (map (lambda (input) (cons (.get input path) (.get input contents))) borrowed-static))
+  (def inputs (unique-build-inputs (append static-observations observations)))
+  (def compiler-inputs (unique-build-inputs (append static-observations compiler-observations)))
   (def (selected-graph!)
     ;; The init owner supplies a runtime thunk. Merely projecting an empty
     ;; support spec must not evaluate every selected Module declaration.
@@ -761,6 +794,7 @@
   (def (current!)
     ;; This source-only guard does not acquire the production build graph.
     ((.ref demand 'admit-current))
+    (for-each (lambda (check!) (check!)) static-guards)
     (call-with-module-source-read-cache
       (lambda ()
         (hash-for-each (lambda (_path input) ((.ref input 'admit-current))) prepared)
@@ -768,7 +802,8 @@
   (current!)
   (def source
     (.o selected-graph: (selected-graph!) demand-source: demand
-        compiler-identities: (map car (reverse entries)) source-inputs: compiler-inputs
+        compiler-identities: identities source-inputs: compiler-inputs
+        program-targets: programs static-inputs: borrowed-static
         source-root: root spec: (map std-make-spec (reverse entries))
         admit-current: current!))
   ;; No products means no compiler/signing authority. Keep the same source and

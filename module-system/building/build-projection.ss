@@ -86,6 +86,8 @@
 (def (project-selected-source-spec source retained root entry-source)
   (when (current-module-build-phase?)
     (error "Module build phase cannot recursively project the root specification"))
+  (when (ormap (lambda (target) (and (pair? target) (eq? (car target) exe:))) retained)
+    (error "native programs require an explicit init-owned test demand"))
   (unless (and (string? root) (path-absolute? root)
                (string? entry-source) (path-absolute? entry-source))
     (error "build projection requires absolute source and entry roots"))

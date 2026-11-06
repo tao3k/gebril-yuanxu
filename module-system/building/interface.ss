@@ -8,6 +8,7 @@
                  require-build-products! repair-build-products! clean-build-artifacts!)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
+        (only-in :yuanxu/module-system/building/program-products projection-program-targets)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :yuanxu/module-system/source/deferred-declaration module-entry-action module-binding-action)
@@ -123,8 +124,7 @@
               (if (.slot? source-value 'std-make-spec)
                 (.get source-value std-make-spec) '())))
             std-make-spec: (lambda ()
-                             ((.get build admit-current))
-                             (.get build spec))
+                             (test-build-spec (.get tests build)))
             .for-files: file-tests
             .select: (lambda ((next-owners #f)) (test-source next-owners suite)))))
     (if suite executable
@@ -184,6 +184,29 @@
     (source-tests (.cc (call-with-module-source-callback
                          (lambda () (test-file-source (list files inputs))))
                     std-make-spec: std-make-spec)))
+  (def (test-build-spec build)
+    ((.get build admit-current))
+    (def spec (.get build spec))
+    (def consumer (current-build-spec-consumer))
+    (when (and consumer (pair? (projection-program-targets build)))
+      ((cdr consumer) spec
+        (lambda (dispatch args _libdir)
+          (cond
+           ((or (null? args) (equal? (car args) "compile"))
+            (def publication (.get (.get build build-graph) build-publication))
+            (if (.call publication .available?)
+              ((.get build admit-artifacts))
+              (.call build .compile (.get build output-directory)
+                (lambda ()
+                  (def output ((.get build compile-output)))
+                  (call-with-build-input-path output
+                    (lambda ()
+                      (.call build .with-static-inputs
+                        (lambda () (dispatch spec args #f output)))))))))
+           ((equal? (car args) "spec") (dispatch spec args))
+           (else (error "test program build requires Gerbil compile or spec" args)))
+          ((.get build admit-current)))))
+    spec)
   (def (source-tests file-source)
     ;; An explicit runtime file test does not select business Modules. Keep its
     ;; init owner current without evaluating declarations/roles; if a Graph is

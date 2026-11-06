@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Core-owned runtime build completion; never intercept Gerbil loading.
 (import (only-in :gerbil/compiler/base execute-pending-compile-jobs!)
+        (only-in "./program-products.ss" program-path program-identity? projection-program-targets)
         (only-in "./products.ss" artifact-files clean-build-artifacts! repair-build-products! require-build-products!
                  current-build-output-directory)
         (runtime: :clan/poo/object)
@@ -239,8 +240,8 @@
   (unless (eq? (module-source-type path) 'regular)
     (error "compiled artifact is missing, non-regular or a symlink" path))
   (hex-encode (sha256 (call-with-input-file path read-all-as-u8vector))))
-(def (observed-files identities libdir)
-  (map (lambda (path) (cons path (digest-file path))) (artifact-files identities libdir)))
+(def (observed-files identities libdir programs)
+  (map (lambda (path) (cons path (digest-file path))) (artifact-files identities libdir #t programs)))
 (def (invalidate-build-artifacts! graph)
   (retain-issued-state! graph 'build-required))
 (def (retain-inputs inputs)
@@ -264,7 +265,7 @@
     (create-directory* (path-directory target))
     (when (and (module-source-type target) (not (eq? (module-source-type target) 'regular)))
       (error "compiler output target is not a regular file" target))
-    (call-with-output-file (list path: target truncate: #t)
+    (call-with-output-file (list path: target truncate: #t permissions: (bitwise-and (file-info-mode info) #o777))
       (lambda (port) (write-subu8vector data 0 (u8vector-length data) port)))
     (file-last-access-and-modification-times-set! target
       (file-info-last-access-time info) (file-info-last-modification-time info))
@@ -307,7 +308,8 @@
       (module-source-admit-current! (issued-build-inputs state) "Core compiled source changed")
       (unless (equal? (digest-file (issued-build-record state)) (issued-build-record-digest state))
         (error "Core build issuance record changed" (issued-build-record state)))
-      (unless (equal? (observed-files (issued-build-identities state) (issued-build-libdir state))
+      (unless (equal? (observed-files (issued-build-identities state) (issued-build-libdir state)
+                                     (projection-program-targets graph))
                       (issued-build-files state))
         (error "Core compiled artifacts changed"))
       (module-source-admit-current! (issued-build-inputs state) "Core compiled source changed")
@@ -433,13 +435,14 @@
          (with-catch (lambda (_failure) #f)
            (lambda () (admit-build-artifacts! graph) #t))))
   (def expected (invalidate-build-artifacts! graph))
+  (def programs (projection-program-targets projection))
   (def (complete output)
    (parameterize ((current-build-output-directory output))
     (call-with-values action
     (lambda results
       ((.get projection admit-current))
       (def identities (.get projection compiler-identities))
-      (def produced (observed-files identities output))
+      (def produced (observed-files identities output programs))
       ;; This adapter owns ordinary runtime gxc .o1 outputs. A later generation
       ;; cannot be blessed just because it was already beside a fresh .o1.
       ;; Preserve it and require an explicit clean/rebuild; never delete another
@@ -448,7 +451,7 @@
         (error "build-required: unissued runtime object generation; clean selected outputs"
           (map car (filter (lambda (row) (not (ordinary-object-generation? (car row)))) produced))))
       (def files (if reusable? produced (publish-products produced output libdir)))
-      (def published (observed-files identities libdir))
+      (def published (observed-files identities libdir programs))
       (unless (equal? files published)
         (error "build-required: selected outputs outside completed build; clean selected outputs"
                (list 'missing (filter (lambda (row) (not (assoc (car row) published))) files))
@@ -488,10 +491,17 @@
   (unless (pair? (.get source spec))
     (error "empty test support has no build publication"))
   (def current! (.get source admit-current))
+  (def programs (projection-program-targets source))
   (def (selected-graph!) (.get source selected-graph))
   (def publication (delay (test-build-publication projection)))
   (def endpoint
-    (.o selected-graph: (selected-graph!) generation: (.ref (selected-graph!) 'generation)
+    (.o selected-graph: (selected-graph!)
+        ;; An explicit file program is signed against its own source demand.
+        ;; The publication key already binds its exact compiler inputs and spec.
+        generation: (if (pair? programs)
+                       (path-strip-directory (.get (force publication) artifact))
+                       (.ref (selected-graph!) 'generation))
+        program-targets: programs
         build-publication: (force publication)
         compiler-current: (lambda () (current!) (.call (force publication) .current))))
   (def projection
@@ -499,6 +509,12 @@
         build-graph: endpoint
         output-directory: (.get (force publication) artifact)
         compile-output: current-build-output-directory
+        .with-static-inputs: (lambda (action) (call-with-static-compiler-inputs projection action))
+        .program: (lambda (identity)
+                    (def program (program-identity? identity programs))
+                    (unless program (error "native program is outside this admitted build" identity))
+                    ((.get projection admit-artifacts))
+                    (program-path program (.get projection output-directory)))
         .compile: (lambda (libdir action) (call-with-build-artifact-issuance projection libdir action))
         admit-artifacts: (lambda () (current!) (require-build-artifacts! endpoint) (current!))))
   projection)

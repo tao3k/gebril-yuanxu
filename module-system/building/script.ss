@@ -36,6 +36,13 @@
                    (origin #'(this-source-file macro))
                    ((option ...) (map (lambda (_) (genident 'option))
                                       (syntax->list #'(key ...)))))
+      (with-syntax (((program-option ...)
+                     (let loop ((keys (syntax->list #'(key ...)))
+                                (bindings (syntax->list #'(option ...))))
+                       (cond ((null? keys) '())
+                             ((memq (stx-e (car keys)) '(libdir: bindir:))
+                              (loop (cddr keys) (cddr bindings)))
+                             (else (cons (car bindings) (loop (cdr keys) (cdr bindings))))))))
        #'(def (entry . args)
            (let ((entry-source origin)
                  (option key) ...)
@@ -45,7 +52,7 @@
                             (current-build-module-roots roots))
               (call-with-init-build-spec
                (lambda () build-spec)
-               (lambda (value arguments (package-prefix #f))
+               (lambda (value arguments (package-prefix #f) (program-output #f))
                  ;; A unified view has full compiler identities and no package
                  ;; metadata. Native std/make treats even prefix: "" as present
                  ;; and prepends a slash; it cannot name these products exactly.
@@ -61,11 +68,17 @@
                      (if directory
                        (path-expand (path-strip-directory entry-source) directory)
                        entry-source)))
-                 (if package-prefix
+                 (cond
+                  (program-output
+                   (gerbil.defbuild-script value libdir: program-output
+                     bindir: (path-expand "bin" program-output) program-option ...)
+                   (apply main arguments))
+                  (package-prefix
                    (let ()
                      (gerbil.defbuild-script value prefix: package-prefix option ...)
-                     (apply main arguments))
+                     (apply main arguments)))
+                  (else
                    (let ()
                      (gerbil.defbuild-script value option ...)
-                     (apply main arguments))))
-               native-args (pgetq libdir: options) entry-source))))))))
+                     (apply main arguments)))))
+               native-args (pgetq libdir: options) entry-source)))))))))

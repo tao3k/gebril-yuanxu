@@ -29,13 +29,15 @@
             "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
           (def source "(export answer) (def answer 42)\n")
           (put root "probe.ss" source)
+          (put root "unrelated.ss" "(export spare) (def spare #t)\n")
           (def tests (prepared-package-tests root))
           (def files (list (path-expand "probe.ss" root)))
           (def interpreted (.get (.call tests .for-files files) build))
           (check-equal? (.get interpreted spec) '())
           (def library
-            (.get (.call tests .for-files files '() '((gxc: "probe"))) build))
-          (check-equal? (.get library spec) '((gxc: "probe")))
+            (.get (.call tests .for-files files '()
+                    '((gxc: "probe" "-O") (gxc: "unrelated"))) build))
+          (check-equal? (.get library spec) '((gxc: "probe" "-O")))
           ((.get library admit-current))
           (dynamic-wind void
             (lambda ()
