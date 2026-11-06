@@ -68,13 +68,16 @@
                 "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
               (def exports (import-fixture-init! (path-expand "init.ss" root)))
               (def before (load-path))
-              (assert 'changed-compiler-input-refused
-                (rejects? "source projection changed its compiler input context"
-                  (lambda () ((.get exports std-make-spec) '()))))
-              (check-equal? (load-path) before)
-              (assert 'refused-input-evidence-not-reused
-                (rejects? "build input context was refused"
-                  (lambda () ((.get exports std-make-spec) '())))))))
+              ;; This fixture owns its output. The installed Core remains a
+              ;; compiler prerequisite across independently checked Cases.
+              (parameterize ((current-build-output-directory (path-expand "lib" root)))
+                (assert 'changed-compiler-input-refused
+                  (rejects? "source projection changed its compiler input context"
+                    (lambda () ((.get exports std-make-spec) '()))))
+                (check-equal? (load-path) before)
+                (assert 'refused-input-evidence-not-reused
+                  (rejects? "build input context was refused"
+                    (lambda () ((.get exports std-make-spec) '()))))))))
         (list
           "(def Build (begin (set-load-path! (cons \"/invalid-build-input-context\" (load-path))) (.o kind: 'module/build roots: '())))"
           "(def Build (begin (set-load-path! (cons \"/invalid-build-input-context\" (load-path))) (error \"author failure after mutation\")))")))
