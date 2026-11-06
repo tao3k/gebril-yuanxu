@@ -12,11 +12,11 @@
   (quotient (* (- (current-jiffy) started) 1000) (jiffies-per-second)))
 
 (def (main action . arguments)
-  (if (equal? action "--audit")
-    (apply audit-report arguments)
-    (begin
-      (unless (null? arguments) (error "unexpected test group arguments" arguments))
-      (report-group action))))
+  (cond ((equal? action "--audit") (apply audit-report arguments))
+        ((equal? action "--compare") (apply compare-reports arguments))
+        (else
+         (unless (null? arguments) (error "unexpected test group arguments" arguments))
+         (report-group action))))
 
 (def (discovered-files group)
   (filter (lambda (line) (not (string-empty? line)))
@@ -98,14 +98,10 @@
       '() output-port: (current-output-port)))
   (def wall (elapsed-milliseconds started))
   (def status (.get result status))
-  (def harness
-    (filter (lambda (name) (string-suffix? ".ss" name)) (directory-files directory)))
   ;; A successful subprocess must also return a unique native Harness result.
   ;; The exact Harness argv is recorded by the child, including snapshot paths
   ;; and the existing AOT facade aliases.
-  (def evidence
-    (and (pair? harness) (null? (cdr harness))
-         (call-with-input-file (path-expand (car harness) directory) read)))
+  (def evidence (read-harness-receipt directory))
   (def verified?
     (match evidence
       (['test-harness-result [path] 'passed 0 _ _]
@@ -143,6 +139,14 @@
       (unless (eof-object? (read port)) (error "multiple report records" path))
       value)))
 
+(def (read-harness-receipt directory)
+  (def receipts
+    (filter (lambda (name) (and (string-suffix? ".ss" name)
+                                (not (equal? name "dispatch.ss"))))
+            (directory-files directory)))
+  (and (pair? receipts) (null? (cdr receipts))
+       (read-receipt (path-expand (car receipts) directory))))
+
 (def (audit-dispatch directory)
   (def path (path-expand "dispatch.ss" directory))
   (match (read-receipt path)
@@ -156,14 +160,25 @@
                       (and entry (exact-integer? returned) (<= entry returned wall)))
                   (file-exists? (path-expand "worker.log" directory)))
        (error "invalid worker timing or missing transcript" path))
+     (unless (equal? evidence (read-harness-receipt directory))
+       (error "dispatch does not match the retained Harness receipt" path))
      (when verified?
        (unless (match evidence
-                 (['test-harness-result [actual] 'passed 0 _ progress]
-                  (and entry returned (expected-harness-file? file actual)
-                       (file-exists? (path-expand (path-strip-directory progress) directory))))
+                 (['test-harness-result [actual] 'passed 0 _ _]
+                  (and entry returned (expected-harness-file? file actual)))
                  (else #f))
          (error "verified dispatch has no matching Harness evidence" path)))
-     [file (if (and (zero? status) (not verified?)) 1 status) wall])
+     (def effective-status (if (and (zero? status) (not verified?)) 1 status))
+     (def harness-ms
+       (match evidence
+         (['test-harness-result [_] _ _ (? exact-integer? elapsed) (? string? progress)]
+          (unless (and (<= 0 elapsed wall)
+                       (file-exists? (path-expand (path-strip-directory progress) directory)))
+            (error "invalid Harness elapsed time or missing progress transcript" path))
+          elapsed)
+         (#f #f)
+         (else (error "malformed Harness evidence" path))))
+     [file effective-status wall status entry harness-ms (and returned (- wall returned))])
     (else (error "malformed dispatch receipt" path))))
 
 (def (audit-group directory)
@@ -184,13 +199,13 @@
      (unless (and (list? cohort) (= (length cohort) 5)
                   (andmap (lambda (field) (or (not field) (string? field))) cohort)
                   (pair? expected) (equal? expected (read-receipt (path-expand "expected-files.ss" report)))
-                  (equal? expected (map car rows)) (equal? (order rows) (order actual))
+                  (equal? expected (map car rows)) (equal? (order rows) (order (map (cut take <> 3) actual)))
                   (>= elapsed (apply + (map caddr rows))))
        (error "incomplete or inconsistent test group coverage" group report))
-     (values cohort rows))
+     (values cohort actual))
     (else (error "malformed test group receipt" report))))
 
-(def (audit-report root (group "all"))
+(def (read-audited-report root group)
   (def folders
     (if (or (file-exists? (path-expand "group.ss" root))
             (file-exists? (path-expand "test-report/group.ss" root)))
@@ -205,9 +220,35 @@
       (set! cohort identity)
       (set! rows (append results rows)))
     folders)
-  (unless (and (pair? rows) (equal? (list-sort string<? (map car rows)) (discovered-files group)))
+  (def ordered (list-sort (lambda (left right) (string<? (car left) (car right))) rows))
+  (unless (and (pair? ordered) (equal? (map car ordered) (discovered-files group)))
     (error "incomplete or duplicate coverage across test groups" root group))
+  (values cohort ordered))
+
+(def (audit-report root (group "all"))
+  (defvalues (cohort rows) (read-audited-report root group))
   (display "TEST-REPORT-AUDIT ")
   (write [group cohort (length rows)
            (length (filter (lambda (row) (not (zero? (cadr row)))) rows))])
   (newline))
+
+(def (compare-reports linux macos (group "all"))
+  (defvalues (linux-cohort linux-rows) (read-audited-report linux group))
+  (defvalues (macos-cohort macos-rows) (read-audited-report macos group))
+  (unless (match [linux-cohort macos-cohort]
+            ([[sha run attempt "Linux" linux-arch] [other-sha other-run other-attempt "macOS" macos-arch]]
+             (and (andmap (lambda (value) (and (string? value) (not (string-empty? value))))
+                          [sha run attempt linux-arch macos-arch])
+                  (equal? [sha run attempt] [other-sha other-run other-attempt])))
+            (else #f))
+    (error "platform reports must be Linux and macOS from the same CI execution" linux-cohort macos-cohort))
+  (display "TEST-TIMING-COHORT ")
+  (write [group linux-cohort macos-cohort (length linux-rows)])
+  (newline)
+  (displayln "TEST-TIMING-FIELDS (group-status dispatch-ms worker-exit-status startup-ms harness-ms after-harness-ms)")
+  (for-each
+    (lambda (linux-row macos-row)
+      (display "TEST-TIMING ")
+      (write [(car linux-row) (cdr linux-row) (cdr macos-row)])
+      (newline))
+    linux-rows macos-rows))

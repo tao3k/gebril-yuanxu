@@ -223,3 +223,6 @@ test-directory group="all":
 
 test-report-audit directory group="all":
     GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --audit "{{ directory }}" "{{ group }}"
+
+test-report-compare linux macos group="all":
+    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --compare "{{ linux }}" "{{ macos }}" "{{ group }}"

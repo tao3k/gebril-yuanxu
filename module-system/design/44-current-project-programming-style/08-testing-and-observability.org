@@ -288,6 +288,13 @@ architecture. A complete report can contain failed tests. An absent worker
 result, duplicate file, inconsistent timing or mixed run cannot supply
 scheduling weights. Supplying a group name audits only that group.
 
+Use =just test-report-compare LINUX MACOS= to join the two audited reports by
+file. Both platforms must come from the same revision, workflow run and
+attempt. Each row contains the group verdict, full dispatch, actual worker
+exit, startup, Harness and post-Harness interval for both platforms. An
+unobserved phase is =#f=.
+The dispatch time includes the observed cost of failed or interrupted workers.
+
 * Specialized qualifications
 
 Use =TestingScript.= only when a qualification actually requires an independent
