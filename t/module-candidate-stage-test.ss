@@ -2,7 +2,9 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file core-source-root)
+        (only-in :std/error Error? Error-message)
+        (only-in :gerbil/expander core-import-module module-context-path)
+        (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file)
         (only-in :yuanxu/modules/funflow/control-plane/task TaskContract)
         (only-in :yuanxu/modules/funflow/control-plane/flow FlowContract)
         (only-in :yuanxu/modules/funflow/scenario Scenario)
@@ -35,7 +37,7 @@
 
 (def module-candidate-stage-test
   (test-suite "Unpublished candidate operations and complete Graph boundaries"
-    (yuanxu-test-case "Core functional definitions keep canonical identity and fresh source support"
+    (yuanxu-test-case "Core functional definitions retain their admitted compiler context"
       (with-other-source
         (lambda (root first _other)
           (write-file (path-expand "init.ss" root)
@@ -56,19 +58,18 @@
           (check-equal? (eq? (.get scope task-contract) TaskContract) #t)
           (check-equal? (eq? (.get scope flow-contract) FlowContract) #t)
           (check-equal? (eq? (.get scope scenario-type) Scenario) #t)
-          ;; Eligibility is not approval. The actual imported library remains
-          ;; in the reader's return-time source footprint, not in a copied Type.
-          (def reads 0)
-          (def task-source (path-normalize
-                            (path-expand "modules/funflow/control-plane/task.ss" core-source-root)))
-          (parameterize ((current-module-source-observer
-                          (lambda (key amount)
-                            (when (and (pair? key) (eq? (car key) 'file-read)
-                                       (equal? (caddr key) task-source))
-                              (set! reads (+ reads amount))))))
-            ((.get view admit-current)))
-          (check-equal? (> reads 0) #t)
-          (check-equal? (.ref/cached (.get view modules custom) 'other) #f))))
+          (check-equal? (.ref/cached (.get view modules custom) 'other) #f)
+          (def tool (core-import-module ':yuanxu/modules/funflow/control-plane/task))
+          (def origin (module-context-path tool))
+          ((.get view admit-current))
+          (dynamic-wind
+            (lambda () (slot-set! tool 'path (string-append origin ".changed")))
+            (lambda ()
+              (check-exception ((.get view admit-current))
+                (lambda (failure)
+                  (and (Error? failure)
+                       (string-contains (Error-message failure) "compiler tool context changed")))))
+            (lambda () (slot-set! tool 'path origin))))))
     (yuanxu-test-case "Gerbil enrollment follows first closure discovery, not repeated imports"
       (with-other-source
         (lambda (_root _first _other) (void))
