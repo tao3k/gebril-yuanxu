@@ -7,9 +7,18 @@ prelude: :gerbil/core
         module-role-file module-publication-role-imports
         module-regular-role-file? module-init-export-name module-interface-form?)
 
-;; A public Gerbil library can re-export the source modules it already imports.
-;; A Yuanxu Interface still declares its publication with exactly one .def.
+;; A Gerbil facade re-exports directly imported files within its directory.
+;; A Yuanxu Interface declares its publication with exactly one .def.
 (def (module-interface-form? form forms)
+  (def (imported-file? file)
+    (and (string? file) (string=? (path-extension file) ".ss")
+         (andmap (lambda (part) (not (member part '("" "." ".."))))
+                 (string-split file #\/))
+         (not (string=? file "interface.ss"))
+         (ormap (lambda (input)
+                  (and (list? input) (pair? input) (eq? (car input) 'import)
+                       (member file (cdr input))))
+                forms)))
   (and (pair? form) (list? form)
        (case (car form)
          ((import .def) #t)
@@ -17,17 +26,8 @@ prelude: :gerbil/core
           (and (pair? (cdr form))
                (andmap
                  (lambda (spec)
-                   (and (pair? spec) (eq? (car spec) 'import:)
-                        (pair? (cdr spec)) (null? (cddr spec))
-                        (let (file (cadr spec))
-                          (and (string? file)
-                               (string=? (path-strip-directory file) file)
-                               (string=? (path-extension file) ".ss")
-                               (not (string=? file "interface.ss"))
-                               (ormap (lambda (input)
-                                        (and (pair? input) (list? input) (eq? (car input) 'import)
-                                             (member file (cdr input))))
-                                      forms)))))
+                   (and (list? spec) (pair? spec) (eq? (car spec) 'import:)
+                        (pair? (cdr spec)) (andmap imported-file? (cdr spec))))
                  (cdr form))))
          (else #f))))
 

@@ -90,14 +90,14 @@
     (yuanxu-test-case "native package windows are confined declarations, not installation requests"
       (def intent
         (module-init-intent
-          '((yuanxu! :load-modules "modules" package: "github.com/tao3k/agentic-ai-lab"
+          '((yuanxu! :load-modules "modules" package: "github.com/example/module-provider"
                      mode: explicit rename: Lab (governance))) #f))
-      (check-equal? (.get (car (.get intent windows)) package) "github.com/tao3k/agentic-ai-lab")
+      (check-equal? (.get (car (.get intent windows)) package) "github.com/example/module-provider")
       (for-each
         (lambda (source)
           (check-exception
             (module-init-intent
-              `((yuanxu! source: ,source package: "github.com/tao3k/agentic-ai-lab" mode: explicit)) #f)
+              `((yuanxu! source: ,source package: "github.com/example/module-provider" mode: explicit)) #f)
             error?))
         '("../modules" "/modules" "modules/../private" "modules\\private"))
       (for-each
@@ -274,8 +274,11 @@
         '((import :clan/poo/object) (def Shared (.o value: 42)) (export Shared)))
       ;; Native library facades do not acquire Module ownership merely from
       ;; this conventional filename. Their bytes still belong to currentness.
+      (write-forms (path-expand "modules/library/nested/value.ss" root)
+        '((export nested) (def nested 42)))
       (write-forms (path-expand "modules/library/interface.ss" root)
-        '((import "shared.ss") (export (import: "shared.ss"))))
+        '((import "shared.ss" "nested/value.ss")
+          (export (import: "shared.ss" "nested/value.ss"))))
       (def library (path-normalize (path-expand "modules/library/shared.ss" root)))
       (for-each
         (lambda (directory)
