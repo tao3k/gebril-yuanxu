@@ -65,7 +65,7 @@ check-test-groups:
     trap 'rm -rf "$scratch"' EXIT
     just test-files all > "$scratch/all"
     test -s "$scratch/all"
-    for group in bootstrap modules scale contracts objects scenarios runtime; do
+    for group in modules runtime contracts bootstrap dense-declarations dense-selection dense-values; do
       just test-files "$group" > "$scratch/$group"
       test -s "$scratch/$group"
       cat "$scratch/$group" >> "$scratch/groups"

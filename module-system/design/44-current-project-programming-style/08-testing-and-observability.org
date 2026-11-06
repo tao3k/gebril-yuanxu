@@ -303,6 +303,17 @@ unobserved phase is =#f=.
 Phase totals include the number of files with an unobserved interval.
 The dispatch time includes the observed cost of failed or interrupted workers.
 
+The [[https://github.com/tao3k/gebril-yuanxu/actions/runs/42220936509][unchanged-partition baseline]] covered 216 distinct files on each platform.
+Three dense ten-thousand-owner tests each consumed 186–195 seconds across
+the platforms, including their existing timeout verdicts. Give each its own
+required job. Keep seven jobs overall, combine the shorter policy and object
+groups, and move four longer files across the existing general groups.
+Summing baseline dispatch costs projects the longest group at 649 seconds on
+Linux and 1,217 seconds on macOS, compared with 1,160 and 1,706 seconds in the
+baseline. These projections exclude queue time, setup and the independently
+run published TestSuites. Use the next CI run to measure actual completion
+times, including the macOS queue waves.
+
 * Specialized qualifications
 
 Use =TestingScript.= only when a qualification actually requires an independent

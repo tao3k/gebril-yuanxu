@@ -168,18 +168,23 @@ test-files group="all":
     set -euo pipefail
     export LC_ALL=C
     case "{{ group }}" in
-      all|bootstrap|modules|scale|contracts|objects|scenarios|runtime) ;;
+      all|bootstrap|modules|contracts|runtime|dense-declarations|dense-selection|dense-values) ;;
       *) echo 'unknown test group' >&2; exit 64 ;;
     esac
     shopt -s nullglob
     for file in t/*-test.ss; do
       case "$file" in
+        t/module-declaration-10000-test.ss) owner=dense-declarations ;;
+        t/module-runtime-selection-10000-test.ss) owner=dense-selection ;;
+        t/module-runtime-values-10000-test.ss) owner=dense-values ;;
+        t/module-runtime-values-1000-test.ss|t/module-runtime-attribution-1000-test.ss) owner=bootstrap ;;
+        t/module-runtime-selection-1000-test.ss) owner=runtime ;;
+        t/thousand-package-downstream-test.ss|t/module-declaration-1000-test.ss|t/module-business-sparse-10000-test.ss|t/module-declaration-retention-test.ss|t/module-loading-scale-test.ss) owner=contracts ;;
         t/package-*|t/prelude-*|t/core-build-*|t/module-build-*|t/module-bootstrap-*|t/runtime-publication-identity-*) owner=bootstrap ;;
-        t/module-declaration-1000-test.ss|t/module-*-10000-test.ss|t/module-declaration-retention-test.ss|t/module-loading-scale-test.ss) owner=scale ;;
         t/module-*|t/feature-system-*) owner=modules ;;
         t/json-schema-*|t/source-*|t/contract-*|t/admission-*|t/contribution-*|t/configuration-*) owner=contracts ;;
-        t/poo-*|t/object-*|t/issued-*|t/path-*|t/evidence-*|t/issuer-*) owner=objects ;;
-        t/aws-*|t/gitea-*|t/nix-*|t/ops-*) owner=scenarios ;;
+        t/poo-*|t/object-*|t/issued-*|t/path-*|t/evidence-*|t/issuer-*) owner=contracts ;;
+        t/aws-*|t/gitea-*|t/nix-*|t/ops-*) owner=contracts ;;
         *) owner=runtime ;;
       esac
       if [[ "{{ group }}" == all || "{{ group }}" == "$owner" ]]; then printf '%s\n' "$file"; fi

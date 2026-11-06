@@ -90,7 +90,7 @@ jobs:
       fail-fast: false
       max-parallel: 8
       matrix:
-        group: [bootstrap, modules, scale, contracts, objects, scenarios, runtime]
+        group: [modules, runtime, contracts, bootstrap, dense-declarations, dense-selection, dense-values]
     env:
       GERBIL_PATH: ${{ github.workspace }}/.gerbil
     steps:
