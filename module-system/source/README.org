@@ -57,6 +57,12 @@ runtime contexts; source checks and test verdicts are never cached.
 
 * Reader ownership
 
+The evaluation observer enrolls a generated wrapper under its Gerbil path
+and canonical alias while its directory exists. It matches later expansion
+events against that registration. A foreign runtime context can remain
+loaded after its reader removes the temporary directory. A later reader
+delegates that context to Gerbil and only releases bodies it enrolled itself.
+
 | Module | Responsibility |
 |--------+----------------|
 | =reader.ss= | Assemble the public POO reader and candidate recording operations |

@@ -3,7 +3,7 @@
 ;;; Platform-owned admission context over existing selected/build Graph guards.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop define-type Type element?)
-        (only-in :yuanxu/module-system/source/build unique-build-inputs)
+        (only-in :yuanxu/module-system/source/build unique-build-inputs module-build-admit-context!)
         (only-in :yuanxu/module-system/building/artifacts admit-build-artifacts!
           admit-build-artifact-publication! build-artifact-publication-current)
         (only-in :yuanxu/admission/contributions bind-publication-contributions)
@@ -184,13 +184,7 @@
       ;; or Nix in this synchronous observation window.
       (call-with-module-source-read-cache
         (lambda ()
-          ((.get build-graph admit-current))
-          (unless (and (eq? selected (.get build-graph selected-graph))
-                       (equal? generation (.get selected generation)))
-            (error "admission belongs to a different selected Graph"))
-          (module-source-admit-current! sources "admission source input changed")
-          (module-source-admit-current! schemas "admission Schema input changed")
-          ((.get build-graph admit-current))
+          (module-build-admit-context! build-graph selected generation sources schemas)
           (admit-build-artifacts! build-graph))))
     ;; Only the private .for-export assembly defers this check to its
     ;; enclosing contribution binder, which admits the complete Context before

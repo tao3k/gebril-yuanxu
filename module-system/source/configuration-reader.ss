@@ -57,7 +57,7 @@
           (hash-put! wrappers (path-normalize path) (cons input shared))
           (let (wrapper (path-expand (string-append (symbol->string (gensym 'role-)) ".ss") directory))
             (hash-put! wrappers (path-normalize path) wrapper)
-            (hash-put! owned (path-normalize wrapper) #t)
+            (register-reader-wrapper! owned wrapper #t)
             (call-with-output-file wrapper
               (lambda (port)
                 (write 'package: port) (display " " port)

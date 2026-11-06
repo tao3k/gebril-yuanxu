@@ -238,6 +238,32 @@ theorem checkpoint_preserves_failure (after : Bool) (cause : String) :
 theorem protected_replay_reduces_authentication_work (visits : Nat) :
     2 * visits ≤ 4 * visits := by omega
 
+private def splitContextChecks
+    (authenticate first midpoint second : Except String Unit) : Except String Unit := do
+  authenticate
+  first
+  authenticate
+  midpoint
+  authenticate
+  second
+  authenticate
+
+private def joinedContextChecks
+    (authenticate first midpoint second : Except String Unit) : Except String Unit := do
+  authenticate
+  first
+  midpoint
+  second
+  authenticate
+
+-- The native protected frame must keep authentication stable throughout.
+-- Both Graph checks and the source/Schema midpoint retain their order.
+theorem stable_context_authentication_preserves_first_failure
+    (authenticate first midpoint second : Except String Unit) :
+    splitContextChecks authenticate first midpoint second =
+      joinedContextChecks authenticate first midpoint second := by
+  cases authenticate <;> cases first <;> cases midpoint <;> cases second <;> rfl
+
 /-- Only the original private source preparation for the captured context can
 extend its path index. A same-name context or unowned checkout grants no alias. -/
 def ownedToolAlias (captured associated owned current : Bool) : Bool :=

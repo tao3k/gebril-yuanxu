@@ -36,7 +36,7 @@
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
         (only-in :yuanxu/module-system/building/package write-selected-package))
 (export module-test-source-spec module-build-graph module-build-graph/linked unique-build-inputs retained-build-entries BuildContributionContract ExternalPackageContributionContract BuildSpecContract
-        BuildPublicationContract)
+        BuildPublicationContract module-build-admit-context!)
 (define-type (BuildPublicationContract @ Type.)
   identity: 'module/build-publication
   .element?: (lambda (value)
@@ -99,6 +99,46 @@
            (error "inconsistent build input snapshots" (car entry)))
          (begin (hash-put! seen (car entry) (cdr entry)) (set! result (cons entry result))))) observations)
     (reverse result)))
+;; Only the Build Graph constructor issues this carrier. It retains no
+;; currentness result. A derived graph or a replacement guard cannot use it.
+(defstruct build-context-frame (owner guard check) final: #t)
+
+(def (check-context-inputs! graph selected generation sources schemas (cached #f))
+  (unless (if cached
+            (and (eq? selected (cached graph 'selected-graph))
+                 (equal? generation (cached selected 'generation)))
+            (and (eq? selected (.ref graph 'selected-graph))
+                 (equal? generation (.ref selected 'generation))))
+    (error "admission belongs to a different selected Graph"))
+  (module-source-admit-current! sources "admission source input changed")
+  (module-source-admit-current! schemas "admission Schema input changed"))
+
+(def (module-build-admit-context! graph selected generation sources schemas)
+  (def (ordinary!)
+    ((.ref graph 'admit-current))
+    (check-context-inputs! graph selected generation sources schemas)
+    ((.ref graph 'admit-current)))
+  (def frame
+    (and (not (or (current-module-source-observer) (%slot-read-active?)))
+         (object-construction-current?) (owned-read-function-scope?)
+         (with-catch (lambda (_unsupported) #f)
+           (lambda ()
+             (without-observation
+               (lambda ()
+                 (and (object? graph) (object-%instance graph) (object-%precedence-list graph)
+                      (not (object-protocol graph))
+                      (begin
+                        (require-read-route! 'admission-context #f (object-%instance graph))
+                        (let (value (.ref/cached graph '%admission-frame (lambda () #f)))
+                          (and (build-context-frame? value)
+                               (eq? graph (build-context-frame-owner value))
+                               (eq? (build-context-frame-guard value)
+                                    (.ref/cached graph 'admit-current (lambda () #f)))
+                               value))))))))))
+  (if frame
+    ((build-context-frame-check frame) selected generation sources schemas ordinary!)
+    (ordinary!)))
+
 (def (module-build-graph selected-value prepare-publication (source-window #f) (source-state #f))
   (module-build-graph/linked selected-value prepare-publication source-window source-state #f))
 (def (module-build-graph/linked selected-value prepare-publication source-window source-state support)
@@ -494,6 +534,88 @@
               (if (null? segment)
                 (begin (action (list (car rest))) (loop (cdr rest)))
                 (begin (run segment) (loop (list-tail rest (length segment))))))))))
+    (def (admit-graph! graph (midpoint #f) (midpoint-ready? #f) (fallback #f))
+      (def (ordinary!)
+        (current! 'build-admit-before)
+        ;; Observe the actual getter/callback boundary, not a reconstructed
+        ;; request tree. Position is diagnostic only; do not read identity
+        ;; slots here and contaminate a surrounding admission's MOP reads.
+        (let loop ((requests (.ref graph 'external-packages)) (position 0))
+          (unless (null? requests)
+            ;; Request getters, observers and admission procedures may
+            ;; change source inputs. The Graph tail must read fresh bytes.
+            (call-with-module-source-callback
+              (lambda ()
+                (let ((observer (current-module-source-observer))
+                      (name (list 'build-request position)))
+                  (def (admit-request!) ((.ref (car requests) 'admit-current)))
+                  (if observer
+                    (dynamic-wind
+                      (lambda () (observer (list 'admission-stage-start name) 1))
+                      admit-request!
+                      (lambda () (observer (list 'admission-stage-end name) 1)))
+                    (admit-request!)))))
+            (loop (cdr requests) (+ position 1))))
+        (current! 'build-admit-after))
+      (def (native-checks (midpoint-ready? #f))
+        (and support (eq? graph owned-graph) graph-policy (graph-policy)
+             (object-construction-current?) (owned-read-function-scope?)
+             (not (or (current-module-source-observer) (%slot-read-active?)))
+             (with-catch (lambda (_unsupported) #f)
+               (lambda ()
+                 (without-observation
+                   (lambda ()
+                     ;; Never demand a cold getter or an open request to
+                     ;; discover whether its closed half can be used.
+                     (let/cc unavailable
+                       (def (cached receiver key)
+                         (unless (and (object? receiver) (object-%instance receiver)
+                                      (object-%precedence-list receiver) (not (object-protocol receiver)))
+                           (unavailable #f))
+                         (require-read-route! 'configuration-request #f (object-%instance receiver))
+                         (.ref/cached receiver key (lambda () (unavailable #f))))
+                       (when midpoint-ready? (midpoint-ready? cached unavailable))
+                       (def requests (cached graph 'external-packages))
+                       (and (pair? requests)
+                            (let (context (cached selected-value 'admit-current))
+                              (map (lambda (request)
+                                     (or (configuration-request-current/owned
+                                           (cached request '%configuration-check)
+                                           context (cached request 'admit-current))
+                                         (unavailable #f)))
+                                   requests))))))))))
+      (def native (native-checks midpoint-ready?))
+      (def (check-request! check!)
+        (module-source-measure-operation 'native-configuration-request
+          (lambda ()
+            (parameterize ((current-module-source-phase 'build-admit-before)) (check!))
+            (for-each (lambda (admit!) (admit!)) native)
+            (parameterize ((current-module-source-phase 'build-admit-after)) (check!)))))
+      (def (fallback!) (if fallback (fallback) (ordinary!)))
+      (if native
+        (call-with-linked-prepared-guards support selected-value check-inputs checks bound-input-state
+          (lambda (check!)
+            (check-request! check!)
+            (when midpoint
+              ;; Both checks still run in order. Share the native replay
+              ;; protection only around the fixed Context source obligations.
+              (midpoint)
+              (check-request! check!)))
+          fallback!)
+        (fallback!)))
+    (def (context-frame graph)
+      (make-build-context-frame graph (.ref graph 'admit-current)
+        (lambda (selected generation sources schemas fallback)
+          (def (ready? cached unavailable)
+            (unless (and (eq? selected (cached graph 'selected-graph))
+                         (equal? generation (cached selected 'generation)))
+              (unavailable #f)))
+          (def (cached receiver key)
+            (.ref/cached receiver key
+              (lambda () (error "admission graph changed within the source check" key))))
+          (admit-graph! graph
+            (lambda () (check-context-inputs! graph selected generation sources schemas cached))
+            ready? fallback))))
     (let ((init-inputs
            ;; Finalization only reads the init source. Share the existing pure
            ;; window for its two Graph checks; close it before any consumer can
@@ -550,67 +672,13 @@
           .with-compiler-source-reads: with-compiler-source-reads
           .with-compiler-source-import: with-compiler-source-import
           .source-input-state: bound-input-state
-          admit-current:
-          (lambda ()
-            (def (ordinary!)
-              (current! 'build-admit-before)
-              ;; Observe the actual getter/callback boundary, not a reconstructed
-              ;; request tree. Position is diagnostic only; do not read identity
-              ;; slots here and contaminate a surrounding admission's MOP reads.
-              (let loop ((requests external-packages) (position 0))
-                (unless (null? requests)
-                  ;; Request getters, observers and admission procedures may
-                  ;; change source inputs. The Graph tail must read fresh bytes.
-                  (call-with-module-source-callback
-                    (lambda ()
-                      (let ((observer (current-module-source-observer))
-                            (name (list 'build-request position)))
-                        (def (admit-request!) ((.ref (car requests) 'admit-current)))
-                        (if observer
-                          (dynamic-wind
-                            (lambda () (observer (list 'admission-stage-start name) 1))
-                            admit-request!
-                            (lambda () (observer (list 'admission-stage-end name) 1)))
-                          (admit-request!)))))
-                  (loop (cdr requests) (+ position 1))))
-              (current! 'build-admit-after))
-            (def native
-              (and support (eq? graph owned-graph) graph-policy (graph-policy)
-                   (object-construction-current?) (owned-read-function-scope?)
-                   (not (or (current-module-source-observer) (%slot-read-active?)))
-                   (with-catch (lambda (_unsupported) #f)
-                     (lambda ()
-                       (without-observation
-                         (lambda ()
-                           ;; Never demand a cold getter or an open request to
-                           ;; discover whether its closed half can be used.
-                           (let/cc unavailable
-                             (def (cached receiver key)
-                               (unless (and (object? receiver) (object-%instance receiver)
-                                            (object-%precedence-list receiver) (not (object-protocol receiver)))
-                                 (unavailable #f))
-                               (require-read-route! 'configuration-request #f (object-%instance receiver))
-                               (.ref/cached receiver key (lambda () (unavailable #f))))
-                             (def requests (cached graph 'external-packages))
-                             (and (pair? requests)
-                                  (let (context (cached selected-value 'admit-current))
-                                    (map (lambda (request)
-                                           (or (configuration-request-current/owned
-                                                 (cached request '%configuration-check)
-                                                 context (cached request 'admit-current))
-                                               (unavailable #f)))
-                                         requests))))))))))
-            (if native
-              (call-with-linked-prepared-guards support selected-value check-inputs checks bound-input-state
-                (lambda (check!)
-                  (module-source-measure-operation 'native-configuration-request
-                    (lambda ()
-                      (parameterize ((current-module-source-phase 'build-admit-before)) (check!))
-                      (for-each (lambda (admit!) (admit!)) native)
-                      (parameterize ((current-module-source-phase 'build-admit-after)) (check!)))))
-                ordinary!)
-              (ordinary!)))))
+          admit-current: (lambda () (admit-graph! graph))
+          %admission-frame: (and (eq? graph owned-graph) (context-frame graph))))
       (set! owned-graph value)
+      (when (and support graph-construction-intact? (object-construction-current?))
+        ;; Publish the closed continuation without demanding any package or
+        ;; Context input. Later callers only inspect these warm slots.
+        (without-observation (lambda () (.ref value '%admission-frame))))
       (set! graph-policy
         (and graph-construction-intact? (object-construction-current?)
              (module-source-object-policy (list value))))

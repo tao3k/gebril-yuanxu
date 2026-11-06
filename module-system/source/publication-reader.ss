@@ -103,7 +103,7 @@
                (write 'namespace: port) (display " " port)
                (write (string-append prefix "/" (path-strip-extension name)) port) (newline port)
                (for-each (lambda (form) (write form port) (newline port)) forms)))
-           (hash-put! artifacts (path-normalize target) path)
+           (register-reader-wrapper! artifacts target path)
            (hash-put! wrappers path target) target))
        (def (record-input! input)
          (let (path (.ref input 'path))

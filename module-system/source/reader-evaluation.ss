@@ -9,8 +9,16 @@
         (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  module-source-measure-operation module-source-type)
         (only-in :gerbil/runtime/loader list-modules))
-(export reader-evaluation-observers observe-reader-work release-reader-expansions!
+(export register-reader-wrapper! reader-evaluation-observers observe-reader-work release-reader-expansions!
         remove-reader-tree reader-body)
+
+(def (register-reader-wrapper! owned path origin)
+  ;; Record the native spelling and its canonical alias while the wrapper's
+  ;; directory is live. A later reader can see a foreign, completed context
+  ;; whose temporary directory has already been removed.
+  (def canonical (path-normalize path))
+  (hash-put! owned canonical origin)
+  (unless (equal? path canonical) (hash-put! owned path origin)))
 
 (def (reader-evaluation-observers owned completed
                                   (initialize (lambda (_context action) (action))))
@@ -45,22 +53,22 @@
             (list 'reader-declaration
               (cons 'bindings (hash-length (expander-context-table context)))
               (cons 'imports (length (module-context-import context)))) 1)))))
-  (def (owned-body? context form)
+  (def (owned-body-origin context form)
     (and (module-context? context) (zero? (current-expander-phi))
          (eq? form (module-context-code context))
          (string? (module-context-path context))
-         (hash-key? owned (path-normalize (module-context-path context)))))
+         (hash-get owned (module-context-path context))))
   (def (compile form)
     (let* ((context (current-expander-context))
-           (owned? (owned-body? context form)))
-      (when owned? (body-event 'reader-body-expanded context))
+           (origin (owned-body-origin context form)))
+      (when origin (body-event 'reader-body-expanded context))
       (let (program
-              (if (not owned?) (gerbil-compile form)
+              (if (not origin) (gerbil-compile form)
                 (observe-reader-work 'reader-compile-start 'reader-compile-end
                   (lambda () (gerbil-compile form)))))
-        (when (and (pair? program) owned?)
+        (when (and (pair? program) origin)
           (body-event 'reader-body-compiled context)
-          (hash-put! pending program (cons context form)))
+          (hash-put! pending program (list context form origin)))
         program)))
   (def (evaluate program)
     (let (entry (hash-get pending program))
@@ -70,7 +78,7 @@
             (observe-reader-work 'reader-eval-start 'reader-eval-end
               (lambda ()
                 (def context (car entry))
-                (def origin (hash-get owned (path-normalize (module-context-path context))))
+                (def origin (caddr entry))
                 (def label (if (string? origin) origin (module-context-path context)))
                 (module-source-measure-operation (list 'reader-initialization label)
                   (lambda ()
@@ -81,7 +89,7 @@
         (lambda results
           (when entry
             (hash-remove! pending program)
-            (hash-put! completed (car entry) (cdr entry))
+            (hash-put! completed (car entry) (cadr entry))
             (body-event 'reader-body-evaluated (car entry)))
           (apply values results)))))
   (values compile evaluate))
