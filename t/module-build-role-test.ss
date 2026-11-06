@@ -7,7 +7,7 @@
         (only-in :std/text/pregexp pregexp-match)
         (only-in :std/make make)
         (only-in :gerbil/runtime/loader load-path set-load-path! add-load-path! load-module)
-        (only-in :gerbil/expander core-import-module import-module eval-syntax module-context-path expander-context-id
+        (only-in :gerbil/expander core-read-module core-import-module import-module eval-syntax module-context-path expander-context-id
                  current-expander-context current-expander-module-import make-top-context __module-pkg-cache)
         (only-in :yuanxu/module-system/building/products current-build-source-directory)
         (only-in :yuanxu/module-system/source/preparation yuanxu-write-module-publication
@@ -463,7 +463,13 @@
                                   (current-build-source-directory)))
                 ;; The timestamp input holds metadata only, never a source
                 ;; include or another library body under a new compiler path.
-                (check-equal? (eof-object? (call-with-input-file descriptor read)) #t)
+                (call-with-input-file descriptor
+                  (lambda (port)
+                    (check-equal? (read port) 'package:)
+                    (check-equal? (read port) "canonical-library-input")
+                    (check-equal? (eof-object? (read port)) #t)))
+                (let-values (((_prelude id _namespace _body) (core-read-module descriptor)))
+                  (check-equal? id (.get input compiler-identity)))
                 (def imported (import-module descriptor))
                 (check-equal? (eq? imported original) #t)
                 (check-equal? (module-context-path imported) (path-normalize source))

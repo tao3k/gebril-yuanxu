@@ -775,8 +775,16 @@
             ;; Ordinary libraries retain only the EXISTING Make input stamp.
             ;; Their source is neither copied as a module nor included/expanded
             ;; here. The native importer above receives their original path.
-            (when (hash-key? roles (path-normalize (.ref entry 'path)))
-              (for-each (lambda (form) (write-source-datum form out) (newline out)) (.ref input 'compiler-forms))))))
+            (if (hash-key? roles (path-normalize (.ref entry 'path)))
+              (for-each (lambda (form) (write-source-datum form out) (newline out))
+                        (.ref input 'compiler-forms))
+              ;; Make reads target identity before asking the importer to expand
+              ;; the original library. Publish its package in the native header.
+              (begin
+                (display "package: " out)
+                (write-source-datum
+                  (path-strip-trailing-directory-separator (path-directory name)) out)
+                (newline out))))))
       (unless (and (module-source-type target) (equal? (module-source-read target) content))
         ;; A crash after invalidation cannot reuse the previous native marker.
         (call-with-module-source-callback
