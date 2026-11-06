@@ -152,6 +152,123 @@ public consumers.  Keep build wall time, macro-expansion time and runtime test
 time distinct.  A focused green result does not qualify independent closure;
 the completion report names exactly which gate ran and which remains blocked.
 
+* CI qualification design
+
+This section specifies a migration of the existing Just and Gerbil test
+entrypoints. The evidence model comes first, followed by reporting and then
+scheduling. Each stage has a separate acceptance criterion.
+
+** What the current job measures
+
+=test-directory= runs each discovered file in its group serially through
+=test-discovered-file=. Each ordinary file starts a fresh Gerbil process
+through =test-file=. The default 2 GiB fence applies to each Gambit heap.
+Process RSS and runner memory are separate quantities. A group wall clock
+covers the serial execution of several different tests and includes worker
+startup, fixture work, teardown and process exit. The workflow records runner
+queueing, dependency builds and artifact restoration in separate steps.
+
+The [[https://github.com/tao3k/gebril-yuanxu/actions/runs/42211203860/job/127874282928][Ubuntu scale job for commit 5c3c5c2]] spent about 11 minutes 35 seconds in
+=test-directory=. Six files ran. Three reached their 180-second Case limit.
+The two cases that measured a cold 10,000-name namespace completed its
+construction and enumeration in 0.66–0.68 seconds. Their subsequent phases
+were interrupted. The same group emitted 616 progress frames. Keep this
+failure as the baseline for the redesign.
+
+On the same commit, the other five completed Ubuntu group steps took
+35 seconds to 4 minutes 43 seconds. In the
+[[https://github.com/tao3k/gebril-yuanxu/actions/runs/42177448916/job/127763169292][preceding Ubuntu modules job for commit 6e6535d]], five 1,000-module
+workers accounted for about 14 minutes 53 seconds from worker entry to
+the Harness marker. These spans identify the long tail in that job.
+Capture launch and exit directly before using them as full worker costs.
+
+** Workload and evidence contract
+
+Vary catalog size, requested roots and graph shape independently. Record
+the expected closure in the workload and the actual reached closure in the
+result. Record selection mode and cold or warm state alongside them. Use
+existing Fixtures and the production =yuanxu!=, Interface and =.get= path.
+Give each question a separate row in the qualification report.
+
+| Workload | Demand | Required evidence |
+|-
+| Directory discovery | Enumerate a real 10,000-module catalog | Names and identity agree, zero scopes, no unselected body reads |
+| Sparse first business read | One explicit root in that catalog, with a known provider | First native =.get= returns the expected value, exact owner-qualified admission and scope counts, unrelated initializers stay cold |
+| Dense declaration capacity | Explicitly select all 10,000 owners | Complete graph, exact-once declarations, provider order, zero business scopes |
+| Hot read and change | Reuse the same receiver, then change one dependency | Hot read preserves value identity, stale evidence is rejected, affected values recompute, unrelated values remain identical |
+| Selected compilation | Build the selected closure through the existing Make specification | Cold target set, downstream-owned outputs, zero hot compilation, independent clean |
+
+Add the sparse business read beside the current directory control. Preserve the
+existing dense first-scope, dense graph and observer-driven diagnostics as
+independent controls. The sparse fixture keeps the catalog large while its
+explicit roots and dependency graph stay small. Qualify phase attribution with
+callback-free counters. Use an independent ordinary first =.get= sample for
+latency and preserve owner-qualified scope counts in the attribution sample.
+Open source observers and detailed allocation accounting belong to diagnostic
+runs. Report their timing under that configuration. A comparison uses the same
+fixture, closure, entrypoint, Gerbil and POO revisions, runner class, limits and
+instrumentation. Report wall time and user/system CPU separately. Report GC
+time within its enclosing span and peak or retained memory with its measurement
+method. Timeouts carry the elapsed bound and the last completed phase.
+
+** Execution liveness and human-readable results
+
+=@yuanxu-progress [execution, sequence]= is the Ops liveness protocol. An
+accepted increasing counter can advance the sequence. Fixture writes,
+checkpoints, compiler work and declaration completions can contribute to it.
+The sequence has no common domain unit or denominator. The existing producer
+rate-limits the relay to at most one frame per second. Idle and total limits
+keep their existing meaning even while a producer keeps advancing.
+
+Preserve the raw transcript and the original relay to every supervising
+process. At the terminal CI presentation boundary, summarize protocol frames
+instead of printing each one. Show a file start, named phase boundaries for
+long cases, and one terminal row per file. The row includes the exact
+discovered file, wall time from launch through exit, exit status, Harness
+verdict, and the last phase and failure reason on refusal. Preserve the last
+progress frame and source diagnostic in the failure detail. Display an
+explicit completed/expected count only when the named phase owns both values.
+A compact group summary reports file totals and the longest worker spans.
+
+Keep bootstrap, fixture creation, admission, scope/value work, teardown and
+process exit attributable where the existing boundaries permit. An unmeasured
+interval remains unmeasured. The presentation step must preserve the worker
+exit status and the full Harness validation. A pass requires natural success,
+the expected =MODULE-OK= and =HARNESS-OK= identities, final =OK= and no failure
+marker. Qualify the presentation with a nonzero exit, exit zero with a Harness
+error, a missing terminal marker and a real idle or total expiry. Each keeps
+its failure verdict in both views.
+
+** Scheduling and rollout
+
+First collect per-file timing and outcome rows for a complete run of the
+unchanged partition on each platform. Match all expected files to exactly one
+terminal result. Check that all known failures still fail. Use these receipts
+to separate worker startup and duplicated support preparation from long test
+bodies. A change to the presentation alone has no speedup claim.
+
+Then isolate long capacity files in explicitly named jobs and balance the
+remaining groups using measured per-file duration on each platform. Schedule
+by estimated total work, with a stable path order for ties. Compare the
+longest required job, total runner time, queue time and per-file timings.
+Include timed-out workers in scheduling estimates at their observed cost.
+Retain the disjoint and complete discovery check. Keep existing limits,
+negative controls, same-head artifact ownership and serial workers inside a
+runner until an aggregate memory bound is enforced. A long job still
+participates in the required result after it moves.
+
+Implement the presentation in the current Just/CI entrypoint. Implement the
+sparse workload in the existing scale fixtures and validate it before changing
+job membership. Keep dense-capacity failures visible throughout the migration.
+
+The first reporting increment runs inside the existing Scheme Harness
+adapter. Its =harness-ms= covers the adapter's invocation of Gerbil and ends
+when the Harness returns. It does not include the caller's process launch or
+exit. The opt-in CI receipt keeps the native Harness status and its machine
+progress stream. A supervised child continues to use the Ops relay. An
+interrupted process may leave progress without a terminal receipt. Use the
+outer job result and the original transcript to classify that run.
+
 * Specialized qualifications
 
 Use =TestingScript.= only when a qualification actually requires an independent

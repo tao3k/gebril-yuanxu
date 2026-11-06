@@ -3,11 +3,37 @@
 (import :std/test :clan/poo/object
         (only-in :yuanxu/ops/process-script ProcessScript.)
         (only-in :yuanxu/ops/func prepare-script-command)
+        (only-in :yuanxu/ops/progress current-execution-progress-port call-with-execution-progress
+                 execution-progress! execution-progress-status progress-record)
         (only-in :yuanxu/observability/testing-fixture call-with-yuanxu-fixture)
         (only-in :std/error Error? Error-message Error-irritants))
 (export ops-watchdog-test)
 (def ops-watchdog-test
   (test-suite "Ops watchdog diagnostics and cleanup"
+    (test-case "a separate report port retains the original watchdog frame"
+      (def clock 0)
+      (def report (open-output-string))
+      (def console (open-output-string))
+      (parameterize ((current-execution-progress-port report)
+                     (current-error-port console))
+        (call-with-execution-progress 2000 6000
+          (lambda (state)
+            (set! clock 1000)
+            (check-equal? (execution-progress! 'source-written 1) #t)
+            (set! clock 1500)
+            (check-equal? (execution-progress! 'source-written 1) #f)
+            (set! clock 3000)
+            (check-equal? (execution-progress-status state) 'idle))
+          clock: (lambda () clock)))
+      (check-equal? (get-output-string console) "")
+      (def record
+        (call-with-input-string (get-output-string report)
+          (lambda (port)
+            (check-equal? (read-line port) "")
+            (def frame (progress-record (read-line port) "@yuanxu-progress "))
+            (check-equal? (eof-object? (read-line port)) #t)
+            frame)))
+      (check-equal? (vector-ref record 1) 1))
     (test-case "prepared command retains the configured deadline and signal policy"
       (.def (Script @ ProcessScript.) command: '("printf" "ok") timeout: 2)
       (check-equal? (prepare-script-command Script)

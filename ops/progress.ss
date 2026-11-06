@@ -10,6 +10,7 @@ prelude: :gerbil/core
         (only-in :std/os/signal-handler add-signal-handler! remove-signal-handler!))
 (export execution-idle-seconds execution-total-seconds
         current-execution-progress call-with-execution-progress
+        current-execution-progress-port
         execution-progress! execution-progress-status execution-progress-idle-milliseconds
         execution-progress-limit
         call-with-execution-watchdog call-with-execution-cancellation
@@ -68,6 +69,7 @@ prelude: :gerbil/core
 (def execution-total-seconds 600)
 (defstruct execution-progress (started last idle total counters sequence emitted scope clock))
 (def current-execution-progress (make-parameter '()))
+(def current-execution-progress-port (make-parameter #f))
 (def (milliseconds)
   (quotient (* (current-jiffy) 1000) (jiffies-per-second)))
 
@@ -125,7 +127,9 @@ prelude: :gerbil/core
                        (write-json port (vector (execution-progress-scope state)
                                                 (execution-progress-sequence state)))
                        (newline port))))
-          (display line (current-error-port)) (force-output (current-error-port))))))
+          (let (port (or (current-execution-progress-port) (current-error-port)))
+            (display line port)
+            (force-output port))))))
   advanced?)
 
 ;; Ops and the Case memory sampler share this state. Ops needs a sampler only

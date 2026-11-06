@@ -107,18 +107,21 @@ jobs:
           path: ${{ runner.temp }}
       - name: Restore same-head artifacts
         run: tar -xzf "$RUNNER_TEMP/yuanxu-package.tar.gz"
-      - name: Run complete group with serial 2 GiB workers
+      - name: Run serial Gerbil tests and report each file
         env:
           # Keep the original per-worker diagnostic logs as CI artifacts even
           # when the parent reaches its unchanged execution deadline.
           TMPDIR: ${{ runner.temp }}
+          YUANXU_TEST_REPORT_DIR: ${{ runner.temp }}/test-report
         run: just test-directory '${{ matrix.group }}'
-      - name: Retain native declaration diagnostics
+      - name: Retain test reports and declaration diagnostics
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: yuanxu-declaration-${{ inputs.os }}-${{ matrix.group }}-${{ github.sha }}
-          path: ${{ runner.temp }}/declaration-scale-observation-*
+          path: |
+            ${{ runner.temp }}/test-report/
+            ${{ runner.temp }}/declaration-scale-observation-*
           if-no-files-found: ignore
       - name: Run published module TestSuites outside mechanism Cases
         if: matrix.group == 'modules'

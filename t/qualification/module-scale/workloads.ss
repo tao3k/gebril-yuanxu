@@ -10,7 +10,8 @@
                  call-with-module-source-operation-measurement)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads))
 (export verify-declaration-scale verify-runtime-scale verify-runtime-selection verify-runtime-attribution
-        verify-module-eval-once verify-business-eval-once)
+        verify-module-eval-once verify-business-eval-once
+        verify-sparse-business-eval verify-sparse-business-attribution)
 
 (def (verify-declaration-scale FixtureExports SelectedCount source-root)
   (def count (length (.all-slots (.get FixtureExports modules))))
@@ -296,3 +297,48 @@
   (yuanxu-write-observation-line!
     "business-eval-complete modules=%s declarations=%s demanded=module-1 provider=module-0 unrelated=cold"
     count (length (.get graph module-order))))
+
+(def (check-sparse-business-result exports count value)
+  (check-equal? value '(5432))
+  (def modules (.get exports modules))
+  (def names (.all-slots modules))
+  (check-equal? (length names) count)
+  (check-equal? (.get exports tests selected-graph module-order) '(module-0 module-1))
+  (for-each (lambda (id)
+              (unless (memq id '(module-0 module-1))
+                (check-equal? (.ref/cached modules id) #f)))
+            names))
+
+(def (verify-sparse-business-eval exports count _source-root)
+  (check-equal? (current-module-source-observer) #f)
+  (check-equal? (.ref/cached exports 'modules) #f)
+  (def value (measure-runtime count 'sparse-business-cold
+               (lambda () (.get exports modules module-1 plan))))
+  (check-sparse-business-result exports count value)
+  (yuanxu-write-observation-line! "sparse-business-ok catalog=%s roots=1 closure=2" count))
+
+(def (verify-sparse-business-attribution exports count _source-root)
+  (check-equal? (current-module-source-observer) #f)
+  (measure-runtime count 'sparse-directory
+    (lambda () (check-equal? (length (.all-slots (.get exports modules))) count)))
+  (def (measured phase action)
+    (measure-runtime count phase
+      (lambda ()
+        (call-with-values
+          (lambda () (call-with-module-source-operation-measurement action accounting?: #f))
+          cons))))
+  (def (calls measured key) (hash-ref (cdr measured) (list 'calls key) 0))
+  (def (admissions measured)
+    (+ (calls measured 'candidate-read) (calls measured 'publication-read)))
+  (def graph (measured 'sparse-admission (lambda () (.get exports tests selected-graph))))
+  (check-equal? (.get (car graph) module-order) '(module-0 module-1))
+  (check-equal? (admissions graph) 2)
+  (check-equal? (calls graph 'scope-factory) 0)
+  (def scope (measured 'sparse-scope-value (lambda () (.get exports modules module-1 plan))))
+  (check-equal? (admissions scope) 0)
+  (check-equal? (calls scope 'scope-factory) 2)
+  (check-equal? (calls scope '(scope-factory module-0)) 1)
+  (check-equal? (calls scope '(scope-factory module-1)) 1)
+  (check-sparse-business-result exports count (car scope))
+  (yuanxu-write-observation-line!
+    "sparse-attribution-ok catalog=%s roots=1 admissions=2 scopes=2 owners=module-0,module-1" count))

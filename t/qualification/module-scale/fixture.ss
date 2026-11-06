@@ -12,6 +12,7 @@
         (only-in :yuanxu/observability/testing-case
                  yuanxu-test-checkpoint yuanxu-selected-testing-case-profile))
 (export DeclarationFixture RuntimeValueFixture RuntimeSelectionFixture RuntimeAttributionFixture ModuleEvalOnceFixture BusinessEvalOnceFixture
+        SparseBusinessEvalFixture SparseBusinessAttributionFixture
         declaration-scale-case declaration-scale-profile)
 (def (declaration-scale-profile count)
   (let (profile (.cc (yuanxu-selected-testing-case-profile)
@@ -37,15 +38,19 @@
   runtime-values?: #f
   poison-unselected?: #f
   profile-selection?: #f
+  sparse-selection?: #f
   .verify: verify-declaration-scale
   .acquire:
   (lambda ()
     (def fixture-root (path-normalize (make-temporary-file-name "declaration-scale-")))
     (def writes 0)
+    (def started (real-time))
     (def (write-fixture-source path forms)
       (write-forms path forms)
       (set! writes (1+ writes))
       (execution-progress! (list 'fixture-source-written fixture-root) writes))
+    (displayln "declaration-stage start=fixture-materialization")
+    (force-output)
     (create-directory fixture-root)
     (with-catch
       (lambda (failure) (clear-temporary-file! fixture-root) (raise failure))
@@ -56,11 +61,15 @@
         (write-fixture-source (path-expand "gerbil.pkg" fixture-root)
           (list (list 'package: (string->symbol (symbol->string (gensym 'declaration-scale-))))))
         (write-fixture-source (path-expand "init.ss" fixture-root)
-          (if profile-selection?
-            '((import :yuanxu/module-system/selection/init-syntax)
-              (yuanxu! source: "./modules" mode: auto profile: security))
-            `((import :yuanxu/module-system/selection/init-syntax)
-              (yuanxu! source: "./modules" mode: explicit ,@(map list ids)))))
+          (cond (profile-selection?
+                 '((import :yuanxu/module-system/selection/init-syntax)
+                   (yuanxu! source: "./modules" mode: auto profile: security)))
+                (sparse-selection?
+                 '((import :yuanxu/module-system/selection/init-syntax)
+                   (yuanxu! source: "./modules" mode: auto (module-1))))
+                (else
+                 `((import :yuanxu/module-system/selection/init-syntax)
+                   (yuanxu! source: "./modules" mode: explicit ,@(map list ids))))))
         (for-each
           (lambda (id)
             (def directory (path-expand (symbol->string id) (path-expand "modules" fixture-root)))
@@ -105,6 +114,8 @@
                                         '(.o (:: @ Scope.) config: Config)
                                         '(error "declaration discovery forced a business scope")))
                   features: (.o unused: (error "unselected Feature forced")))))) ids)
+        (displayln "declaration-stage end=fixture-materialization seconds=" (- (real-time) started))
+        (force-output)
         (yuanxu-write-observation-line! "declaration-scale-artifact modules=%s root=%s" size fixture-root)
         (when (and runtime-values? poison-unselected?)
           (yuanxu-write-observation-line!
@@ -136,6 +147,11 @@
   ;; Keep the declaration count and the existing initializer/definition count.
   poison-unselected?: #t
   .verify: verify-business-eval-once)
+(.def (SparseBusinessEvalFixture @ BusinessEvalOnceFixture)
+  sparse-selection?: #t
+  .verify: verify-sparse-business-eval)
+(.def (SparseBusinessAttributionFixture @ SparseBusinessEvalFixture)
+  .verify: verify-sparse-business-attribution)
 
 ;; Internal test declaration: no runner, execution policy or module list is copied.
 (defrules declaration-scale-case ()
