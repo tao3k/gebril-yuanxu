@@ -15,6 +15,7 @@
 (export module-prepared-source-binding)
 
 (def (module-prepared-source-binding prepared binding (related '())
+                                    context-current!: (context-current! void)
                                     role-imports?: (role-imports? #f)
                                     shared-contexts: (shared-contexts #f)
                                     shared-inputs: (shared-inputs #f)
@@ -35,6 +36,7 @@
       (if compiler-tools (apply values compiler-tools) (module-compiler-tools)))
     (def (current!)
       (parameterize ((current-module-source-phase 'configuration-current))
+        (context-current!)
         (call-with-module-source-read-cache
           (lambda ()
             (module-source-admit-current! (hash->list tool-observations) "compiler tool source changed")

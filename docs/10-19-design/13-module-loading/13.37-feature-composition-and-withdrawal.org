@@ -229,6 +229,13 @@ for this migration. Run the existing Just/Harness acceptance entrypoints; preser
 their budgets, observer controls and exact diagnostics. Report actual construction,
 admission and effect counts separately; no additional Runner or cache protocol.
 
+An independent downstream build uses the revisions installed by
+=gerbil pkg deps --install= from the declared package dependencies. Gerbil
+owns the installed manifests and reads them to generate the downstream's
+=manifest.ss= before entering =build.ss=. The Lab test can share that installed
+package set across isolated output directories. Core acceptance and CI apply to
+the Core revision before consumers update their dependency declarations.
+
 * Executable Interface selection boundary
 
 [[file:../../../t/module-feature-interface-test.ss][The Interface regression suite]] writes actual

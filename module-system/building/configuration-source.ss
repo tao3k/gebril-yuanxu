@@ -5,46 +5,39 @@
 (import (runtime: :clan/poo/object)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-admit-current! call-with-module-source-read-cache
-                 current-module-source-phase)
+                 call-with-module-source-callback current-module-source-phase)
         (only-in :yuanxu/module-system/source/reader module-prepared-source-binding))
 (export yuanxu-configuration-source)
 (def (yuanxu-configuration-source path binding context-current! role-sources: (roles '()))
   (unless (and (symbol? binding) (eq? (module-source-type path) 'regular))
     (error "configuration source requires a regular role and runtime binding" path binding))
-  ;; A single synchronous validation of this closure shares its context check.
-  ;; A new POO receiver is allocated on EVERY independent currentness call.
-  ;; Nothing is cached across role evaluation, file writes or external effects.
-  (def phase (make-parameter #f))
   (def evaluated-inputs '())
-  (def (context!)
-    (if (phase) (.get (phase) checked) (context-current!)))
-  ;; Preparing inert role/header observations has no runtime expansion or
-  ;; initialization. Share this ONE source-only window, then close it before
-  ;; module-prepared-source-binding performs the runtime import below.
-  (let-values (((prepared related current!)
-                (call-with-module-source-read-cache
-                  (lambda ()
-                    (let-values (((prepared related)
-                                  (parameterize ((phase (.o checked: (context-current!))))
-                                    (values
-                                      (yuanxu-prepare-module-build-source path context!)
-                                      (map (lambda (file) (yuanxu-prepare-module-build-source file context!))
-                                        (filter (lambda (file) (and (not (equal? path file))
-                                                    (not (member (path-strip-directory file) '("interface.ss" "build.ss"))))) roles))))))
-                      (def (current! (site 'configuration-public))
-                        (parameterize ((current-module-source-phase site))
-                          (call-with-module-source-read-cache
-                            (lambda ()
-                              (parameterize ((phase (.o checked: (context-current!))))
-                                (module-source-admit-current! evaluated-inputs)
-                                ((.get prepared admit-current))
-                                (for-each (lambda (input) ((.get input admit-current))) related))))))
-                      ;; Only inert header/role observations precede this check.
-                      ;; Reuse the preparation's bytes, then END this window
-                      ;; before the reader can import/initialize bootstrap tools.
-                      (current! 'configuration-pre-bootstrap)
-                      (values prepared related current!))))))
+  ;; Configuration owns one context check per boundary. The role inputs carry
+  ;; their own source checks; attaching the context callback to each input
+  ;; would replay it on both sides of every role check.
+  (def (admit-context!)
+    (call-with-module-source-callback context-current!))
+  (def (prepare!)
+    (call-with-module-source-read-cache
+      (lambda ()
+        (values
+          (yuanxu-prepare-module-build-source path void)
+          (map (lambda (file) (yuanxu-prepare-module-build-source file void))
+            (filter (lambda (file) (and (not (equal? path file))
+                                        (not (member (path-strip-directory file) '("interface.ss" "build.ss")))))
+              roles))))))
+  (let-values (((prepared related) (prepare!)))
+    (def (current! (phase 'configuration-public))
+      (parameterize ((current-module-source-phase phase))
+        (admit-context!)
+        (call-with-module-source-read-cache
+          (lambda ()
+            (module-source-admit-current! evaluated-inputs)
+            ((.get prepared admit-current))
+            (for-each (lambda (input) ((.get input admit-current))) related)))))
+    (current! 'configuration-pre-bootstrap)
     (let (effective (module-prepared-source-binding prepared binding related
+                     context-current!: admit-context!
                      source-inputs: (lambda (inputs) (set! evaluated-inputs inputs))))
       ;; The reader checks prepared/related inputs AFTER runtime evaluation.
       ;; Its remaining work only releases completed private expansion results
