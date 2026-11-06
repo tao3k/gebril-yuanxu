@@ -12,6 +12,8 @@ jobs:
     name: Build and bootstrap
     runs-on: ${{ inputs.os }}
     timeout-minutes: 120
+    outputs:
+      package-ready: ${{ steps.upload-package.outcome }}
     env:
       GERBIL_PATH: ${{ github.workspace }}/.gerbil
       GERBIL_BUILD_CORES: '2'
@@ -30,7 +32,8 @@ jobs:
           fi
           echo "GERBIL_BUILD_CORES=$workers" >> "$GITHUB_ENV"
           echo "BUILD-WORKERS $workers"
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        id: restore-dependencies
         # Only the pinned POO dependency namespace crosses CI runs. Archiving
         # lib itself would recursively include test approvals; a negative
         # top-level glob does not remove descendants of an archived directory.
@@ -44,23 +47,20 @@ jobs:
         run: |
           echo "BUILD-WORKERS $GERBIL_BUILD_CORES"
           GERBIL_BUILD_VERBOSE=1 gerbil deps --install
+      # Publish the exact dependency cohort after its native install succeeds.
+      # A later Core failure should not require another cold dependency build.
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        if: steps.restore-dependencies.outputs.cache-hit != 'true'
+        with:
+          path: |
+            .gerbil/pkg
+            .gerbil/lib/clan
+            .gerbil/bin
+          key: ${{ steps.restore-dependencies.outputs.cache-primary-key }}
       - name: Check Yuanxu package namespace
         run: just check-package-namespace
       - name: Build Yuanxu
         run: GERBIL_BUILD_VERBOSE=1 gerbil build
-      - name: Reject build input context regressions
-        # The modules partition runs the publication and source-admission suites.
-        run: just test-build-input-context-mutations "$RUNNER_TEMP/build-input-context"
-      - name: Retain build input context mutation evidence
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: yuanxu-build-input-context-${{ inputs.os }}-${{ github.sha }}
-          path: |
-            ${{ runner.temp }}/build-input-context/**/receipt.json
-            ${{ runner.temp }}/build-input-context/**/*.log
-          if-no-files-found: ignore
-          retention-days: 7
       # Profile roots, namespace windows, the downstream package and the public prelude
       # run in the required test partition, with one receipt per file.
       - name: Check complete disjoint test partition
@@ -74,14 +74,33 @@ jobs:
           --exclude=.gerbil/lib/.yuanxu-test-publications
           -czf "$RUNNER_TEMP/yuanxu-package.tar.gz" .gerbil
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        id: upload-package
         with:
           name: yuanxu-package-${{ inputs.os }}-${{ github.sha }}
           path: ${{ runner.temp }}/yuanxu-package.tar.gz
           retention-days: 2
           if-no-files-found: error
+          # The tarball is already compressed.
+          compression-level: 0
+      - name: Reject build input context regressions
+        # The modules partition runs the publication and source-admission suites.
+        run: just test-build-input-context-mutations "$RUNNER_TEMP/build-input-context"
+      - name: Retain build input context mutation evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: yuanxu-build-input-context-${{ inputs.os }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/build-input-context/**/receipt.json
+            ${{ runner.temp }}/build-input-context/**/*.log
+          if-no-files-found: ignore
+          retention-days: 7
   tests:
     name: Test ${{ matrix.group }}
     needs: build
+    # The mutation verdict still fails bootstrap. Its result is independent
+    # of whether the same-head package can run the ordinary test partition.
+    if: ${{ !cancelled() && needs.build.outputs.package-ready == 'success' }}
     runs-on: ${{ inputs.os }}
     timeout-minutes: 120
     strategy:
