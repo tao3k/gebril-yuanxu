@@ -161,6 +161,7 @@
     (test-case "directory leaf and branch conflict refuses before resolver"
       (call-with-temporary-directory "namespace-conflict-"
         (lambda (root)
+          (write-source (path-expand "gerbil.pkg" root) "(package: namespace-conflict)\n")
           (write-source (path-expand "init.ss" root)
             "(yuanxu! :load-modules \"./modules\" mode: explicit rename: Lab (fleet) :fleet (child))")
           (write-source (path-expand "modules/fleet/interface.ss" root) "((unforced publication")

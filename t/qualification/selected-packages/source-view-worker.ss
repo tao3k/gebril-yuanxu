@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
         (only-in :std/make make)
+        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :yuanxu/module-system/source/preparation
                  yuanxu-prepare-module-retained-source call-with-module-compiler-inputs)
@@ -39,6 +40,10 @@
           (call-with-module-compiler-inputs entries
             (lambda ()
               (repair-build-products! identities lib)
-              (make spec srcdir: (current-build-source-directory) prefix: #f
-                    libdir: lib bindir: (path-expand "bin" root) parallelize: 1 optimize: #f)
+              (def make-source (current-build-source-directory))
+              (call-with-build-input-path lib
+                (lambda ()
+                  (make spec srcdir: make-source prefix: #f
+                        libdir: lib bindir: (path-expand "bin" root) parallelize: 1 optimize: #f))
+                make-source: make-source)
               (require-build-products! identities lib)) unified?: #t))))))
