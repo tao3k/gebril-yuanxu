@@ -2,101 +2,105 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: POO 核心约束下的 Gerbil 宏治理
-#+subtitle: 公共宏准入、展开闭包与组合语义权力边界
+#+title: POO-Constrained Gerbil Macro Governance
+#+subtitle: Public macro admission, expansion closure, and ownership of composition semantics
 #+startup: overview
 
-* RFC 状态
+* RFC status
 
-- 状态 :: 讨论中
-- 性质 :: 规范性设计模块
-- 上位原则 :: Gerbil 宏治理必须由 POO 核心约束
-- POO 实现 :: =github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead=
+- Status :: Under discussion
+- Category :: Normative design module
+- Governing principle :: The POO core constrains Gerbil macro governance
+- POO implementation :: =github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead=
 
-本模块定义宏能够做什么，而不是定义另一套组合语言。POO 对象、原型和原生操作拥有语义权力；宏只在普通函数和 POO 对象无法表达必要的卫生绑定、表面语法或阶段语义时获得准入。
+POO objects, prototypes, and native operations own composition semantics.
+Admit macros only when ordinary functions and POO objects cannot express the
+necessary hygienic bindings, surface syntax, or phase semantics.
 
-* 宪法级原则
+* Governing principles
 
 #+begin_quote
-宏只能提供 POO 语义的卫生语法投影，不能成为 POO 之外的另一套语义来源。
+A macro may provide a hygienic syntactic projection of POO semantics. POO
+remains the semantic authority.
 #+end_quote
 
-默认抽象顺序是：
+Use the following abstractions in order.
 
 #+begin_src text
-普通函数
-→ gerbil-poo 对象与原型
-→ 函数式组合器
-→ 经准入审查的宏
+Ordinary functions
+→ gerbil-poo objects and prototypes
+→ Functional combinators
+→ Macros approved through admission review
 #+end_src
 
-“写起来更短”或“为初学者隐藏对象模型”不能单独构成宏准入理由。
+Shorter syntax and hiding the object model from beginners are insufficient
+grounds for admitting a macro.
 
-* 三个权力平面
+* Authority across the planes
 
 #+begin_src mermaid
 flowchart LR
-    U["用户组合表达式"] -->|"提供表面语法"| M["Gerbil 宏平面"]
-    M -->|"卫生绑定与静态 provenance"| P["普通 POO 值"]
-    P -->|"原生对象操作"| S["gerbil-poo 语义平面"]
-    S -->|"组合图与求值需求"| F["Agentic AI Lab 求值平面"]
-    F -->|"结果与因果关系"| E["Evidence 平面"]
-    S -->|"限定宏可投影的语义"| M
-    E -->|"要求调用点与展开来源可解释"| M
+    U["User composition expression"] -->|"Provides surface syntax"| M["Gerbil macro plane"]
+    M -->|"Hygienic binding and static provenance"| P["Ordinary POO values"]
+    P -->|"Native object operations"| S["gerbil-poo semantic plane"]
+    S -->|"Composition graph and evaluation demand"| F["Agentic AI Lab evaluation plane"]
+    F -->|"Results and causality"| E["Evidence plane"]
+    S -->|"Bounds the semantics a macro can project"| M
+    E -->|"Requires traceable call sites and expansion origins"| M
 #+end_src
 
-宏平面不拥有运行时 authority。POO 语义平面拥有对象、原型、slot、mix、priority、identity、imports、capability 和 fixed-point 的解释权。Evidence 平面证明表面语法展开成了哪些普通 POO 值以及使用了哪些原生操作。
+Runtime authority stays with the runtime owner. The POO semantic plane
+interprets objects, prototypes, slots, mix, priority, identity, imports,
+capabilities, and fixed points. The Evidence plane identifies the ordinary
+POO values and native operations produced by expansion.
 
-* 宏准入契约
+* Public macro admission contract
 
-一个公共宏只有同时满足以下条件才可准入：
+A public macro must satisfy all of these requirements.
 
-1. 普通函数、POO 对象和函数式组合器无法表达所需的卫生绑定、源码语法或阶段语义。
-2. 展开结果完全归约为普通函数调用和原生 POO 值。
-3. 展开结果不要求宏私有的中间语言、解释器或运行时分派。
-4. 宏不隐藏求值顺序、依赖、capability、authority 或副作用。
-5. 展开来源和错误能够投影回用户调用点。
-6. 存在与手写 POO 表达的规范等价验证。
-7. 公共宏不生成新的公共宏，不形成宏塔。
-8. 宏属于小型、封闭、经过 RFC 审查的公共宏表面。
+1. Ordinary functions, POO objects, and functional combinators cannot express
+   the required hygienic binding, source syntax, or phase semantics.
+2. Expansion reduces entirely to ordinary function calls and native POO values.
+3. The result works through ordinary evaluation without a macro-private
+   intermediate language, interpreter, or runtime dispatch.
+4. Evaluation order, dependencies, capabilities, authority, and side effects
+   remain explicit.
+5. Expansion provenance and errors map back to the user's call site.
+6. Tests verify canonical equivalence with handwritten POO expressions.
+7. The macro expands directly to the runtime form without generating further
+   public macros or a macro tower.
+8. The macro belongs to the small, closed public surface reviewed through RFCs.
 
-内部生成宏可以消除重复的 POO 对象族、contract projection 或 manifest 声明，但不得泄漏为用户扩展协议。
+Internal generation can remove duplication in POO object families, contract
+projections, or manifest declarations. Its syntax remains private.
 
-* POO 语义禁区
+* Semantics reserved for POO and the runtime
 
-宏不得自行实现或发明：
+Ordinary POO objects, prototypes, operators, or functional combinators must own
+merge, override, priority, fixed-point evaluation, cycle handling, identity,
+imports, and capabilities. Use explicit declarations for identity and
+dependencies. Keep Profile composition in native values, with no macro-owned
+registry, private object types, or runtime feature dispatch based on syntactic
+branches. Native =gerbil-poo= operations own field composition. Runtime owners
+grant authority, leases, continuations, and resumption explicitly.
 
-- merge、override 或 priority 规则；
-- fixed-point 求值或循环依赖处理；
-- identity、imports 或 capability 的隐藏推导；
-- Profile registry 或宏私有对象类型；
-- 基于语法分支的运行时 feature dispatch；
-- 绕过 =gerbil-poo= 原生操作的字段拼接；
-- runtime authority、lease、continuation 或 resumption 的隐式授予。
-
-这些能力必须首先作为普通 POO 对象、原型、操作符或函数式组合器存在。
-
-* 当前公共接口裁决
+* Current public interface decisions
 
 ** =user-composition=
 
-=user-composition= 是当前获得准入理由的公共宏，因为它负责：
+The proposal admits =user-composition= as a public macro for four duties.
 
-- 建立声明名称的卫生绑定；
-- 捕获静态 source provenance；
-- 检查自身的参数数量和表面语法；
-- 将语法错误投影到调用位置。
+- Create a hygienic binding for the declaration name.
+- Capture static source provenance.
+- Check argument count and surface syntax.
+- Map syntax errors to the call site.
 
-它不得：
+Its scope ends at the outer declaration. Ordinary evaluation owns the
+=compose= Profile operands, Profile demand, mix, priority, fixed points, and
+capabilities. Registry ownership and runtime authorization stay outside
+expansion. The resulting representation works through ordinary POO evaluation.
 
-- 解析 =compose= 内部的 Profile operands；
-- 在编译期强制求值 Profile；
-- 执行 mix、priority、fixed-point 或 capability 语义；
-- 建立全局 registry；
-- 授予运行时 authority；
-- 生成只有自身能够继续解释的表示。
-
-下面仅描述概念性展开，不承诺具体实现名称：
+The examples show the intended expansion shape. Binding names are illustrative.
 
 #+begin_src scheme
 (user-composition my-system
@@ -105,7 +109,7 @@ flowchart LR
     production))
 #+end_src
 
-概念上归约为：
+Conceptually, this expands to the following form.
 
 #+begin_src scheme
 (def my-system
@@ -116,11 +120,14 @@ flowchart LR
       production)))
 #+end_src
 
-=make-user-composition= 必须是普通函数或 POO 构造操作。语法失败属于宏展开；POO 语义失败属于普通组合求值及其结构化 evidence。
+=make-user-composition= must be an ordinary function or POO construction
+operation. Macro expansion reports syntax errors. Ordinary composition
+evaluation reports POO semantic failures with structured evidence.
 
 ** =compose=
 
-=compose= 是普通高阶函数，不是宏。它接收一个第一等 POO composition-strategy 对象以及普通 operands：
+=compose= is a higher-order function that accepts a first-class POO
+composition-strategy object and ordinary operands.
 
 #+begin_src scheme
 (compose profiles
@@ -129,9 +136,11 @@ flowchart LR
   production)
 #+end_src
 
-=profiles= 是 POO strategy 对象，不是宏关键字、类型标签或封闭枚举。=compose= 不得通过 =case=、名称比较或隐藏 registry 识别它，只能使用 strategy 对象公开的 POO 能力。
+=profiles= is a POO strategy object. =compose= uses the object's public POO
+capabilities and keeps dispatch open to new prototypes. Recognition by =case=,
+name comparisons, or a hidden registry would close that extension surface.
 
-高级 strategy 通过 POO 原型扩展产生，不通过新宏产生：
+Extend the strategy through a POO prototype.
 
 #+begin_src scheme
 (def audited-profiles
@@ -143,58 +152,62 @@ flowchart LR
   production)
 #+end_src
 
-这里的 =.mix= 只表示必须采用 =gerbil-poo= 的真实原生对象操作；最终接口以已验证的 =gerbil-poo= 原语为准。
+=.mix= illustrates the requirement to use native =gerbil-poo= object
+operations. The final interface must use the verified native primitives.
 
-* 展开闭包
+* Expansion closure
 
-宏展开后的结果必须：
+The expanded result must satisfy these properties.
 
-- 可由普通函数接收；
-- 可参与原生 POO 操作；
-- 可作为 Profile operand 继续组合；
-- 可由高级用户直接扩展；
-- 可在不重新依赖原宏的情况下检查、求值和解释；
-- 保留调用点、展开身份和 POO semantic identity 之间的 provenance。
+- Ordinary functions can accept it.
+- Native POO operations can consume it.
+- Further composition can use it as a Profile operand.
+- Advanced users can extend it directly.
+- Inspection, evaluation, and interpretation work independently of the
+  original macro.
+- Provenance connects the call site, expansion identity, and POO semantic
+  identity.
 
 #+begin_src mermaid
 flowchart LR
-    A["公共宏调用"] -->|"一次公共语法边界"| B["普通函数与 POO 值"]
-    B -->|"不需要宏私有解释器"| C["gerbil-poo 原生组合"]
-    C -->|"保持对象闭包"| D["可继续扩展的 POO 结果"]
-    A -->|"记录调用点与展开来源"| E["Expansion evidence"]
-    E -->|"关联而不改变业务语义"| D
+    A["Public macro call"] -->|"One public syntax boundary"| B["Ordinary functions and POO values"]
+    B -->|"Ordinary evaluation"| C["Native gerbil-poo composition"]
+    C -->|"Preserves object closure"| D["Extensible POO result"]
+    A -->|"Records call site and expansion origin"| E["Expansion evidence"]
+    E -->|"Links to the same business semantics"| D
 #+end_src
 
-* 结构性预算
+* Structural budget
 
-宏预算采用结构限制，而不是任意数量上限：
+Review macros against these structural limits.
 
-- 公共宏清单封闭并接受 RFC 审查；
-- 一个公共宏只建立一层公共语法边界；
-- 公共宏不得生成公共宏；
-- 内部宏不得成为用户扩展协议；
-- 编译期展开必须确定，不读取网络、可变环境或动态 registry；
-- 每个公共宏必须保留可查看的规范展开；
-- 每个公共宏必须证明函数与 POO 路径不足以承担其职责。
+- Keep the public macro list closed and subject additions to RFC review.
+- Give each public macro one public syntax boundary.
+- Keep public macro generation outside that boundary.
+- Keep internal macros private to their implementation.
+- Make expansion deterministic and independent of network access, mutable
+  environment state, and dynamic registries.
+- Retain an inspectable canonical expansion for every public macro.
+- Require evidence that functions and POO alone cannot meet each macro's duties.
 
 * Implementation checklist
 
-- [ ] 将公共宏准入检查加入架构评审模板。
-- [ ] 为 =user-composition= 定义规范展开和 source-provenance evidence。
-- [ ] 验证 =compose= 可以实现为接收 strategy POO 对象的普通函数。
-- [ ] 以 =gerbil-poo= 真实原生操作验证 strategy 原型扩展形式。
-- [ ] 建立宏展开与手写 POO 表达的规范等价测试。
-- [ ] 建立宏调用点错误投影和阶段依赖检查。
-- [ ] 检查公共表面不存在宏生成宏和宏私有运行时。
-- [ ] 将旧的领域便利宏提案改写为函数或 POO 对象接口。
+- [ ] Add public macro admission checks to the architecture review template.
+- [ ] Define canonical expansion and source-provenance evidence for =user-composition=.
+- [ ] Verify that =compose= can be an ordinary function accepting a strategy POO object.
+- [ ] Validate strategy prototype extension with native =gerbil-poo= operations.
+- [ ] Test canonical equivalence of macro expansion and handwritten POO.
+- [ ] Check call-site error projection and phase dependencies.
+- [ ] Verify that the public surface excludes macro generation and private runtimes.
+- [ ] Rewrite earlier domain convenience macro proposals as function or POO interfaces.
 
-* 非目标
+* Scope exclusions
 
-- 不复制 Doom Emacs、Centaur Emacs 或其他系统的表面语法。
-- 不为每个领域创建一个便利宏。
-- 不建立新的配置 DSL。
-- 不建立兼容性迁移或废弃策略；这是全新架构。
-- 不重新实现 =gerbil-poo= 已有的 POO 语义。
+The design uses existing =gerbil-poo= semantics and its own reviewed surface.
+Keep syntax borrowing from Doom Emacs, Centaur Emacs, and other systems outside
+the RFC. Domain convenience belongs in functions and POO interfaces. The new
+architecture does not require a separate configuration DSL or a compatibility
+migration and deprecation policy.
 
 * Guestbook authoring application (English, 2026-10-16)
 

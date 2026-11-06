@@ -161,13 +161,14 @@ owner.
 
 ** G0 case contracts
 
-本节细化 =G0 minimum release matrix=，但不授权任何实现。矩阵中的
-“pure” 与 “live” 不是两套判定器：
+This section specifies the case contracts for the =G0 minimum release matrix=.
+Its authority is limited to design. Both case types use one decision function.
 
-- pure case 只验证 Agentic AI Lab 拥有的纯决策函数；
-- live case 只让隔离 Gerbil loader 产生 =ModuleImportObservation=；
-- 最终 decision 只能由纯决策函数结合 requirement、既有 receipts 与
-  observation 产生。
+- A pure case verifies the pure decision function owned by Agentic AI Lab.
+- A live case uses an isolated Gerbil loader solely to produce a
+  =ModuleImportObservation=.
+- The pure decision function produces the final decision from the requirement,
+  existing receipts, and the observation.
 
 #+begin_src mermaid
 flowchart LR

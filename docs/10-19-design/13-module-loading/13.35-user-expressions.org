@@ -1,37 +1,42 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-#+title: 13.35 用户入口：加载窗口、Interface 与 POO 叶子
-#+language: zh-CN
+#+title: 13.35 User Expressions for Loading Windows, Interfaces, and POO Leaves
+#+language: en
 
-* 用户先看到什么
+* Accessing a module
 
-模块作者在 =init.ss= 中声明加载窗口；消费者通过其 =init.exports= 和原生
-=.get= 取值。默认命名空间名为 =modules=，显式重命名时使用声明的名称。
+Module authors declare loading windows in =init.ss=. Consumers read values
+from =init.exports= with native =.get=. The default namespace is =modules=.
+An explicit rename uses the declared namespace name.
 
 #+begin_src scheme
-;; init.ss：这个 package 的声明；package 使用 Yuanxu Prelude。
+;; init.ss declares this package, which uses the Yuanxu prelude.
 (yuanxu! source: "./modules" mode: explicit (builder))
 
-;; 消费者：app 是该 package 的实际 package 名。
+;; The consumer uses the actual Gerbil package name, app.
 (def builder (.get app.init.exports modules builder))
 (.get builder config)
-;; 也可以一步取到所需值。
+;; A single lookup can retrieve the value directly.
 (.get app.init.exports modules builder config)
 #+end_src
 
-=source:= 是声明拥有的源码窗口，不是另一个包安装接口。跨包时，消费者声明的
-窗口必须对应原生 Gerbil 安装/链接提供的真实源码；当前入口不支持虚构的
-=from-package:= 或自动查找全局模块。不要把不存在的语法写成已实现能力。
+=source:= identifies the source window owned by the declaration. Across
+packages, the consumer's window must point to actual source supplied by a
+native Gerbil installation or link. The supported entry point accepts declared
+windows. =from-package:= and automatic global module lookup are unsupported.
 
-业务代码没有目录遍历、loader、=.getModule= 或额外的 Tree/Leaf 包装。
-命名空间的成员来自 =yuanxu!= 窗口，Interface 是对应 owner 的加载配置。
-=gerbil.pkg= 负责 Gerbil 的包、依赖和语言元数据，不负责登记 Yuanxu 模块成员；
-不应为了编辑器索引额外增加 =modules/gerbil.pkg= 或改变配置文件的导出。
+Business code reads the namespace with native =.get=. It needs no directory
+traversal, custom loader, =.getModule=, or Tree/Leaf wrapper. The =yuanxu!=
+window determines namespace membership, and each owner's Interface defines
+its loading configuration. =gerbil.pkg= provides Gerbil package, dependency,
+and language metadata. Editor indexing can use the existing package metadata
+and exports without adding a =modules/gerbil.pkg= file.
 
-* Interface 配置什么
+* Interface configuration
 
-以下形状沿用现有角色契约；=ScopeContract=、=Scope.= 和 =Config= 分别由
-=types.ss=、=objects.ss= 和 =config.ss= 提供。Interface 保持声明形式：
+The declaration follows the existing role contracts. =types.ss= provides
+=ScopeContract=, =objects.ss= provides =Scope.=, and =config.ss= provides
+=Config=.
 
 #+begin_src scheme
 (.def Module
@@ -42,15 +47,18 @@
   features: (.o))
 #+end_src
 
-=requires= 声明依赖，=exports= 定义按需构造的公开 scope；构造 scope 时使用
-所需依赖和对应合约。它不是要求下游把该 package 中的所有业务实现编译一次。
-所选 owner 的编译声明进入原生 build projection，产物归消费者的构建环境。
-命名空间反射和业务 scope 构造是不同操作；目前全量声明首次准入的延迟仍待优化。
+=requires= declares dependencies. =exports= defines the public scope, which is
+constructed on demand using the required dependencies and contracts. Native
+build projection uses compilation declarations from selected owners and places
+outputs in the consumer's build environment. Compilation is limited to the
+selected build targets. Namespace reflection and business scope construction
+are separate operations. Initial admission of the full declaration set remains
+a performance target.
 
-* 叶子就是普通 POO 值
+* POO values at namespace leaves
 
-下面的原生表达式有一份可执行源码，位于
-[[file:../../../t/qualification/namespace/leaf-values.ss][leaf-values.ss]]，由现有叶子表达式测试验证。
+The existing leaf expression test verifies these native expressions against the
+executable source. [[file:../../../t/qualification/namespace/leaf-values.ss][leaf-values.ss]]
 
 #+begin_src scheme
 (.def Build
@@ -64,22 +72,23 @@
 (.get Debug argv) ; ("gerbil" "build" "--debug")
 #+end_src
 
-=argv= 中的 =executable=、=flags= 是 POO 的词法槽引用，使用最终对象作为
-receiver。继承公式在 =Debug= 中读取的是 =Debug.flags=，即使父对象的
-=argv= 已经求值，父缓存也不会把子对象锁成父值。日常写法无需手写 =self=。
+=executable= and =flags= in =argv= are lexical POO slot references. They use
+the final object as the receiver. In =Debug=, the inherited formula reads
+=Debug.flags= even when the parent's =argv= is already cached. Ordinary slot
+references infer the receiver without an explicit =self=.
 
-* self、sup、super 各自属于哪里
+* Receiver and inheritance bindings
 
-| 写法 | 含义 |
-|------+------|
-| =(.def (Explicit leaf Build) ...)= | =leaf= 命名最终对象，=Build= 是父原型 |
-| =(.o self: leaf ...)= | =.o= 的关键字写法，命名同一个 receiver |
-| =(flags (sup) expression)= | 在这个槽内将继承计算命名为 =sup= |
-| =super: inherited= | 给各槽内的继承计算指定名字；每个槽对应自己的计算 |
-| Haumea 的 =super= | 包含目录的可见视图；不是 POO 继承关系 |
-| 普通函数里的参数 | Scheme 词法绑定；显式传值，不按参数名字注入目录对象 |
+| Form | Meaning |
+|------+---------|
+| =(.def (Explicit leaf Build) ...)= | =leaf= names the final object and =Build= supplies the parent prototype |
+| =(.o self: leaf ...)= | The keyword form names the same receiver in =.o= |
+| =(flags (sup) expression)= | =sup= names the inherited computation for this slot |
+| =super: inherited= | =inherited= names each slot's own inherited computation |
+| Haumea =super= | The visible view of the containing directory |
+| Parameters in ordinary functions | Lexical Scheme bindings supplied by the caller |
 
-显式 receiver 的写法仍然是普通 POO：
+An explicit receiver uses ordinary POO syntax.
 
 #+begin_src scheme
 (.def (Explicit leaf Build)
@@ -87,7 +96,8 @@ receiver。继承公式在 =Debug= 中读取的是 =Debug.flags=，即使父对�
   argv: (cons (.get leaf executable) (.get leaf flags)))
 #+end_src
 
-复杂条件继承时才需要手写 =sup=。下面与前面的 =Debug= 有同样的结果：
+Use an explicit =sup= binding for more involved conditional inheritance. The
+following forms produce the same flags as =Debug= above.
 
 #+begin_src scheme
 (.def (Inherited @ Build)
@@ -98,23 +108,32 @@ receiver。继承公式在 =Debug= 中读取的是 =Debug.flags=，即使父对�
       flags: (append (inherited) '("--debug"))))
 #+end_src
 
-=sup= 是作者选择的局部名字，不是保留关键字。=(sup)= 继续当前槽的原生 C4
-继承计算，祖先公式仍获得最终 receiver。它不是可对任意字段取值的父对象，
-也不是父目录；未调用的继承计算保持惰性。需要重复使用其结果时显式 =let= 一次。
-需要目录或另一个模块时，通过已声明的命名空间/依赖取值并显式传入。
+The author chooses the local name =sup=. Calling =(sup)= continues native C4
+evaluation for the current slot. The ancestor formula still receives the final
+receiver. The binding represents the inherited computation for that slot and
+stays lazy until invoked. Bind its result once with =let= when you need to use
+it repeatedly. Read directory or module values through the declared namespace
+or dependency and pass them explicitly.
 
-=.def= 在名称列表里声明 receiver/父原型；=.o= 支持关键字选项前缀。
-不要把 =.o= 的 =self:=、=super:= 选项移到 =.def= 的槽定义里；那可能变成
-普通槽或未绑定引用。优先使用上面的普通 =.def= 和每槽继承变换。
+=.def= declares the receiver and parent prototype in its name list. =.o=
+accepts keyword options before the slot definitions. Putting the =.o= options
+=self:= or =super:= inside a =.def= slot body can create an ordinary slot or
+an unbound reference. Prefer the ordinary =.def= and per-slot transformations
+shown above.
 
-普通配置用直接赋值；继承值变换用 =(flags => append ...)=；继承对象内的
-局部调整用 =config: =>.+ (.o ...)=。关键字简写只消费一个变换表达式，
-带额外实参时不要写 =flags: => append '(...)=。
+Use direct assignment for ordinary configuration, =(flags => append ...)= for
+inherited value transformations, and =config: =>.+ (.o ...)= for local changes
+inside an inherited object. The keyword shorthand consumes one transformation
+expression. Use the parenthesized form when supplying additional arguments to
+=append=.
 
-* 三种索引不要混为一谈
+* Source revisions, editor tags, and namespace indexes
 
-Gerbil 的 Git Tag/REV 是源码版本；编辑器 =TAGS= 是符号跳转文件；Yuanxu
-的 POO 命名空间索引由加载窗口产生。编辑器索引不赋予模块加载或执行权限。
-Interface/Config 作为窗口内的角色配置，不会因为被索引就变成原生公共库。
-正常安装仍使用唯一的 =gerbil pkg deps --install=，保留原生 TAGS；没有
-=--no-tags= 用户选项，也不要求为了它把 REV 改成 Git Tag。
+Gerbil Git tags and REVs identify source versions. Editor =TAGS= files support
+symbol navigation. Yuanxu builds its POO namespace index from loading windows.
+Editor indexing grants neither module loading nor execution authority.
+Interface and Config retain their window-local role ownership when indexed.
+
+The standard =gerbil pkg deps --install= entry point preserves native =TAGS=
+generation. The user-facing command has no =--no-tags= option and accepts the
+existing REV without conversion to a Git tag.

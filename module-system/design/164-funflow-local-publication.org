@@ -1,29 +1,33 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Funflow 本地原生发布：完整默认对象、作用域与路径细化
+#+title: Funflow Local Publication with Complete Defaults, Scopes, and Path Refinements
 #+date: [2026-10-15]
 #+property: STATUS local-runtime-publication-implemented-loader-not-connected
 
-* 实现前的比较与本次边界
+* Interface comparison and implementation scope
 
 The later [[file:164-funflow-public-configuration-contract-design.org][public-configuration redesign]] specifies a separate target schema
 and selected-Check policy. This document remains the actual local implementation
 record: its fixed Check membership and current defaults are not silently changed
 by that design.
 
-先完成 [[file:164-module-interface-comparison.org][上游维护/下游两层接口比较]]，再按其本地发布决定实现。
-本次不经过 module-owner-export，不调用 Loader，不生成来源认证证据。
-采用已有有界 use-module 与路径槽，不新增配置 DSL。
+The local publication follows the decision from the comparison of upstream
+maintenance and downstream authoring. It uses bounded =use-module= and the
+existing path slots. This path bypasses =module-owner-export= and Loader,
+issues no source authentication evidence, and uses the existing configuration
+syntax. [[file:164-module-interface-comparison.org][Upstream and downstream interface comparison]]
 
-模块默认入口 interface.ss 已重导出本地值。精确的 runtime-scope owner 可供
-bootstrap 和聚焦测试使用；它不是另一个模块身份或另一套语义。
+The default module =interface.ss= re-exports the local value. Bootstrap and
+focused tests may import the precise =runtime-scope= owner. Both paths refer
+to the same module identity and semantics.
 
-* 实际模块作用域
+* Implemented module scope
 
-下面为实际实现。静态导入原型 owner 与工厂定义不等于惰性加载文件；惰性边界
-是原生 getter 的求值/对象构造。完整产品 interface 仍有既有静态依赖，不能据此
-声称已解决数千模块的源文件加载问题。
+Static imports bring in prototype owners and factory definitions. Evaluation of
+native getters and construction of their objects are lazy. The full product
+interface still has its existing static dependencies. This implementation
+provides no scale result for source loading across thousands of modules.
 
 #+begin_src scheme
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
@@ -66,16 +70,20 @@ bootstrap 和聚焦测试使用；它不是另一个模块身份或另一套语�
     (make-yuanxu-module-local-source "modules/funflow")))
 #+end_src
 
-prototype-scope 的 =(source) (prototypes)= 是原生 shared-slot capture：在这个
-视图被请求时，捕获外层有效模块的来源句柄与原型视图值，避免内层同名槽遮蔽。
-它不继承完整 Module，不含 profiles。它与完整 Scope 是两个原生对象，但持有
-同一来源句柄和同一原型视图。它不是安全沙箱，允许扩展对象不等于允许伪造认证。
+=(source) (prototypes)= in =prototype-scope= captures shared POO slots.
+Demanding this view captures the source handle and prototype view from the
+effective outer module and avoids shadowing by same-named inner slots. The
+view excludes =profiles= and has no full Module parent. It and the full Scope
+are distinct native objects that share one source handle and prototype view.
+Object extension grants no authentication authority or sandbox isolation.
 
-* 完整上游 Profile 工厂
+* Complete upstream Profile factory
 
-工厂仅依赖 Core bounded scope 与 POO，不反向导入 runtime-scope。它是内部纯
-构造入口，用户不需要调用，也没有新增的过程值配置槽。Profile/Check/Pipeline
-仍是原生对象；来源身份由所属作用域保留，未给每个对象伪造独立的加载证据。
+The factory depends on Core's bounded scope and POO. It provides an internal,
+pure constructor and keeps =runtime-scope= downstream of its imports. User
+configuration remains data, with no new procedure-valued slot. Profile, Check,
+and Pipeline remain native objects. The owning scope retains their source
+identity without minting separate loading evidence for each object.
 
 #+begin_src scheme
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
@@ -136,15 +144,19 @@ prototype-scope 的 =(source) (prototypes)= 是原生 shared-slot capture：在�
                     (authoring-style . gerbil-poo))))))
 #+end_src
 
-原始 build/test/package 的全部 31 个显式属性和 Pipeline 配置保留。
-package 的默认命令原本就与 test 相同，未暗中改写。
-checks 用外层槽词法绑定，不捕获已缓存的父列表，也不需要用户提取和回填。
+The factory preserves all 31 explicit attributes of the original build, test,
+and package Checks, along with the Pipeline configuration. The package Check
+retains the same default command as the test Check. =checks= uses lexical
+bindings from the outer slots. Each receiver can resolve its own values even
+with the parent's list cached, and the caller need not extract or reinsert
+the list.
 
-* 可用的完整下游本地对象示例
+* Complete local downstream example
 
-这个本地对象示例不依赖尚未发布的 CICDScenario 或完整 CompositionContract。
-将来领域 Scenario 可以提供同样的默认绑定；普通用户届时只需继承再细化。
-此例不改变现有 user-root source-role 准入策略。
+This example uses the available local objects. A future domain Scenario can
+supply the same defaults for users to inherit and refine when CICDScenario
+and the complete CompositionContract are available. The existing user-root
+source-role admission policy still applies.
 
 #+begin_src scheme
 (import :yuanxu/object-syntax/path-slots
@@ -172,62 +184,81 @@ checks 用外层槽词法绑定，不捕获已缓存的父列表，也不需要�
   {pipeline-name: 'release-ci})
 #+end_src
 
-作用域声明是一个卫生 let，source 值求值一次并保持对象身份，不执行源码发现。
-Funflow 与 funflow: 使用不同名字；不改变原生词法作用域或静默查找全局注册表。
-路径共享前缀合并为一次 funflow/profiles/gerbil-scheme 原生 =>.+，四个叶方法
-同时保留。完整原生展开与 [[file:164-funflow-cicd-user-authoring-design.org][主设计文档]]相同。
+The scope declaration expands to a hygienic =let= that evaluates the source
+once, preserves object identity, and performs no source discovery. =Funflow=
+and =funflow:= have distinct names. Native lexical scope controls lookup.
+The shared path prefix lowers to a single native
+=funflow/profiles/gerbil-scheme= refinement with ==>.+=, retaining all four
+leaf methods. [[file:164-funflow-cicd-user-authoring-design.org][Complete native expansion]]
 
-* 按需顺序与自引用边界
+* Demand order and self-reference
 
-| 访问 | 本地求值 | 不隐含的工作 |
-|------+----------+--------------|
-| import runtime-scope | 静态原型、工厂定义、SourceRef 元数据及根对象 | 没有构造 Gerbil Profile，没有运行命令；也不声称文件没有被导入 |
-| bounded use-module | 检查 object?，绑定同一个原生 Scope | 不遍历 source/prototypes/profiles |
-| prototypes.check | 原型视图及既有 Check 原型 | 不访问 profiles，不调用 Profile 工厂 |
-| profiles | 惰性目录对象 | 不构造 gerbil-scheme Profile |
-| profiles.gerbil-scheme | prototype-only 视图与 Profile 对象 | 不构造 build/test/package/Pipeline，不枚举其他 Profiles |
-| gerbil-scheme.build | 这个 Check 与必需原型 | 其他 Check 不求值 |
-| pipeline.pipeline-name | Pipeline 与必需原型 | checks 尚未强制 |
-| pipeline.checks | 有效外层 Profile 的三个 Check | 不执行命令；普通属性仍按需求值 |
-| 现有 list adapter | 读取所需字段，纯投影到现有 check-map | 不等于来源准入、计划执行或运行 Session |
+| Access | Local evaluation | Work kept outside this access |
+|--------+------------------+------------------------------|
+| import runtime-scope | Static prototypes, factory definitions, SourceRef metadata, and the root object | Gerbil Profile construction and command execution. Static files are imported. |
+| bounded use-module | Check =object?= and bind the same native Scope | Traversal of source, prototypes, and profiles |
+| prototypes.check | Prototype view and existing Check prototype | Profiles and the Profile factory |
+| profiles | Lazy directory object | Construction of the =gerbil-scheme= Profile |
+| profiles.gerbil-scheme | Prototype-only view and Profile object | Construction of build, test, package, and Pipeline or enumeration of other Profiles |
+| gerbil-scheme.build | This Check and its required prototype | Evaluation of other Checks |
+| pipeline.pipeline-name | Pipeline and its required prototype | Evaluation of =checks= |
+| pipeline.checks | Three Checks from the effective outer Profile | Command execution. Ordinary attributes still evaluate on demand. |
+| Existing list adapter | Read requested fields and project them into the existing check-map | Source admission, plan execution, and Session execution |
 
-上游工厂只接收 prototype-scope；从该视图请求 profiles 会立即按原生缺槽语义
-失败，不能沿该路径再次请求自身。失败后完整 Module 仍能正常发布 Profile。
-这是默认依赖图的结构性边界。用户在任意自定义 getter 中制造递归，仍需要后续
-通用诊断；本次没有实现 Loader 循环检测、并发加载或失败重试状态机。
+The upstream factory receives only =prototype-scope=. Requesting =profiles=
+from that view fails with the native missing-slot diagnostic, closing that
+self-reference path. The full Module can still publish the Profile after the
+failure. This structural boundary applies to the default dependency graph.
+Recursion in arbitrary custom getters still needs general diagnostics. Loader
+cycle detection, concurrent loading, and retry handling remain future work.
 
-* 本地验证与剩余边界
+* Local verification and scope
 
-[[file:../../../t/funflow-runtime-publication-test.ss][八项实际发布测试]]使用真正的 Funflow 原型和工厂，覆盖原型/Profile 分离、未强制
-Check/Pipeline、同一来源句柄、prototype-only 自引用失败、完整默认值、父缓存
-后四项细化的最终值与 eq? 身份、warm/父/兄弟隔离，以及既有列表适配器实际读取
-修改后产物和补偿引用。Profile 也可以不依赖 Scenario 独立继承复用。
+Eight tests exercise the real Funflow prototypes and factory. They verify
+prototype/Profile separation, deferred Check and Pipeline construction, source
+handle identity, failure of prototype-only self-reference, complete defaults,
+final values and =eq?= identity after four refinements on a warm parent, and
+warm, parent, and sibling isolation. They also verify that the existing list
+adapter reads refined artifacts and compensation references. A Profile can
+be inherited and reused independently of a Scenario.
+[[file:../../../t/funflow-runtime-publication-test.ss][Local publication tests]]
 
-[[file:../../profile-composition/module-prototype-syntax.ss][原型静态声明宏]]从混合 selection 的 authoring helper 中分离；原 owner 重导出相同
-绑定，Funflow bootstrap 直接依赖精确新 owner。没有复制宏或增加求值器。
-既有原型声明及 direct/downstream/error Pipeline 四项回归覆盖原消费者。
+The static prototype declaration macro now has its own owner, separate from
+the authoring helper that also contains selection. The previous owner
+re-exports the same binding and Funflow bootstrap imports the precise owner
+directly. Four existing prototype and direct, downstream, and error Pipeline
+regressions cover existing consumers.
+[[file:../../profile-composition/module-prototype-syntax.ss][Prototype declaration macro]]
 
-源码测试使用固定 gerbil-poo 099b381588360a8a49fd772f666a1a00351366f5 与当前工作树，
-不是已发布包、runtime AOT 或远程 CI 结果。来源 SourceRef 是元数据：没有认证、
-revision/currentness 检查、领域 Contract 全面准入、模块目录索引或 Loader 接入。
-module-owner-export/Generic provider 的完整桥接仍为后续方案，不参与这条本地路径。
+These are worktree source tests using pinned gerbil-poo
+=099b381588360a8a49fd772f666a1a00351366f5=. SourceRef supplies metadata for
+local publication. Authentication, revision and currentness checks, full
+domain Contract admission, directory indexing, and Loader integration remain
+outside this path. The full =module-owner-export= and Generic provider bridge
+remains future work. Published-package, runtime AOT, and remote CI
+qualification are separate.
 
-** 本次验证记录
+** Verification record
 
-| 独立本地源码 lane | 通过案例数 |
-|------------------+------------|
-| Funflow 本地原生发布 | 8 |
-| 既有 prototype/direct/downstream/error 回归 | 4 |
-| 公共 interface 与原生导出身份 | 3 |
-| Core bounded scope/path/Bundle 回归 | 24 |
-| Core CLOS 声明与方法包回归 | 56 |
-| 合计 | 95 |
+| Independent local source lane | Passed cases |
+|-------------------------------+--------------|
+| Funflow local publication | 8 |
+| Existing prototype, direct, downstream, and error regressions | 4 |
+| Public Interface and native export identity | 3 |
+| Core bounded scope, path, and Bundle regressions | 24 |
+| Core CLOS declarations and method bundle regressions | 56 |
+| Total | 95 |
 
-同进程合并 public interface 与其他产品源码套件的尝试触发既有
-YuanxuDebugMemoryAnomaly；失败日志保留于临时验证目录。公共套件独立进程的三项
-测试通过；其余四项产品回归也单独运行。不修改内存策略、不增大阈值、不将失败
-写成通过。这说明源码测试进程组成会影响该守卫，尚无规模性能/内存优势结论。
+Running the public Interface suite in the same process as other product source
+suites triggered the existing =YuanxuDebugMemoryAnomaly=. The failure logs
+remain in the temporary qualification directory. The three public suite tests
+passed in a separate process. The four other product regressions also ran
+separately. The existing memory policy and thresholds applied throughout.
+These runs show that source test process composition affects the guard.
+Performance and memory behavior at scale remain unqualified.
 
-新增及修改模块、公共 interface 和测试通过 gxc -S；这仅验证 Scheme/SSI 源编译，
-不是 runtime C/AOT 链接。文档中的 Scheme 块经过 reader 检查，未据此声称完整
-source-owner/Contract/Loader 方案可执行。
+New and modified modules, the public Interface, and tests passed =gxc -S=.
+That gate checks Scheme and SSI source compilation. Runtime C and AOT linking
+require separate qualification. The document's Scheme blocks passed reader
+checks. The full source-owner, Contract, and Loader proposal remains outside
+that evidence.
