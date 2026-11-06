@@ -2,9 +2,15 @@
 #
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Yuanxu
+#+title: Yuanxu · 垣序
 
 * Yuanxu: Model · Compose · Evolve
+
+Yuanxu is the romanization of 垣序. The first character, 垣 (yuán), evokes
+the Three Enclosures of traditional Chinese astronomy. Each enclosure groups
+stars within a region of the sky. The second character, 序 (xù), means order.
+The name reflects how Yuanxu models systems as objects with boundaries and
+gives their relationships, composition, and evolution an explicit order.
 
 The repository is [[https://github.com/tao3k/gebril-yuanxu][tao3k/gebril-yuanxu]]. The root [[file:gerbil.pkg][gerbil.pkg]] owns the
 single =yuanxu= Gerbil package. Library modules use =:yuanxu/...=;
