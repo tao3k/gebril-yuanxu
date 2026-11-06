@@ -2,6 +2,25 @@
 package YuanxuSelectedPackageBuilds {
     private import ScalarValues::*;
 
+    requirement def RootQualifiedOwnerIdentity {
+        doc /* A leaf declaration name is relative to its Gerbil module
+               namespace. Agentic AI Lab Governance and Weaver Governance
+               have different complete native module identities. Mount aliases,
+               checkout paths and downstream output paths are not identities.
+               Resolve local requirements in the declaring owner's root; an
+               explicit foreign requirement retains its complete module ID.
+               Never repair a flat short-name index by renaming user Modules
+               or falling back to a same-named leaf in another root.
+               SelectedPackages.ScopedModuleId proves the bounded model laws.
+               Scheme carries native keys through mounted source indexes,
+               publication/prepared-input admission, Core/Feature edges and the
+               shared build/test resolver. A declaration label is not an owner
+               certificate; actual Gerbil source identity must match. Metadata
+               inspection without a reader has no runtime admission authority.
+               Native fixtures and Weaver's actual A/B consumer verify the
+               bridge while retaining independent effect/currentness checks. */
+    }
+
     part def SourceOwner {
         attribute publicationIdentity : String;
         attribute sourcePackage : String;
@@ -501,6 +520,47 @@ package YuanxuSelectedPackageBuilds {
                construction. Each admitted row produces a native lazy slot
                bound to its source target. The resulting POO object owns its
                slot index; the permit hash is discarded. */
+    }
+
+    requirement def ProfileTagSelection {
+        doc /* A profiled Interface declares a nonempty literal set of distinct
+               capability categories. Categories group owners independently of
+               implementation names. A profile name matches that same tag within
+               the declared source window. Runtime demand, production Make and
+               test discovery share the selected Graph and declared dependencies.
+               Testing consumes the selected file list against downstream products.
+               Tag metadata cannot evaluate business scopes or widen source authority.
+               Same-category roots are combined across declared windows; an
+               auxiliary window without matches remains dependency-eligible.
+               Empty tags and categories with no matches across their windows
+               are refused. Relative cross-package window paths grant only the
+               explicitly declared source authority. Public library roots belong
+               to the selected owner: relative roots use its nearest native
+               package, native library identities use its declared kernel.
+               Installed contexts cannot infer new source targets from optional
+               checkouts. Explicit library roots keep cold/hot/clean inventories
+               equal; Profile test defaults follow the same dependency closure. */
+    }
+
+    requirement def CompilerInputContext {
+        doc /* The init-owned build projection establishes its native Gerbil
+               input context using the invocation's actual output directory.
+               Preserve prerequisite order, keep outputs as native fallback,
+               and restore the caller path on every exit.
+               Declared package windows supply source checkouts ahead of
+               ordinary prerequisites. An installed copy cannot hide an
+               imported source from its declared package kernel. Actual
+               imports enter the selected source closure with canonical
+               identity and currentness guards.
+               Reject a mutated
+               context and refuse reuse of prepared evidence in that init build
+               epoch. std/make owns output inventory and timestamp checks.
+               Runtime and selected tests prefer downstream products. No new
+               resolver, loader or approval cache is introduced.
+               Qualification correlates caller/child wall timestamps and CPU
+               separately, retains natural-exit admission, and keeps detailed
+               per-file diagnostics out of ordinary scalar acceptance without
+               skipping initializer work or any independent effect guard. */
     }
 
     requirement def PackageEditorIndexIsolation {

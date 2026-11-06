@@ -13,6 +13,12 @@ universally proved requirements.
 
 * Per-model inspection
 
+[[file:YuanxuProof/ModuleSystem/Selection/FeatureScopes.lean][Selection/FeatureScopes]] corresponds to the ordered refinement fold and final
+Contract list in =module-system/source/feature-scopes.ss=. Its structural laws do
+not assert callback purity, MOP write interception or extraction completeness.
+Those runtime obligations and the reused QNT owners are allocated in
+[[file:../../sysml/20-module-loading/20.35-feature-scope-composition.org][20.35 Feature Scope Composition]].
+
 The demand-materialization refinement is reviewed in
 [[file:../../sysml/20-module-loading/20.14-partial-method-table-refinement.org][20.14]].
 =ModuleSystem/Loading/DemandMaterialization.lean= reuses locked LeanPoo
@@ -320,11 +326,12 @@ full-catalog runtime gate cannot be replaced by a small consumer selection.
 13.35 native editor-index refinement: =NamespaceProjection.packageInstallTrace=
 models the required editor suffix after unchanged native dependency/build
 effects. Its two theorems establish only that trace split. SysML
-=PackageEditorIndexIsolation=, =dev/gerbil/gxpkg-tags.patch= and
-=t/package-install-test.ss= bind the native tool correspondence;
+=PackageEditorIndexIsolation= and =t/package-install-test.ss= bind the native
+tool correspondence; there is no local package-manager patch.
 native fetching/tag/manifest/default-build behavior, default and explicit TAGS,
-and fixed-budget selected compilation remain executable obligations. A candidate
-tool overlay does not establish adoption by an installed Gerbil distribution.
+and fixed-budget selected compilation remain executable obligations. Normal
+native installation uses its documented concurrency setting. Historical native
+candidate measurements do not establish installed-tool acceptance.
 
 13.35 declaration-origin refinement: =NamespaceProjection.WindowOrigin= and
 =declaredKernel= model source ownership from a matching declared window, with
@@ -349,6 +356,59 @@ dropped-support and retained-approval negative controls retain their required
 counterexamples. Append-only support, stable observation windows and opaque
 callback invalidation remain premises; this is not a source-currentness cache
 across independent calls or a performance theorem.
+
+SysML =ProfileTagSelection= supplies the admitted roots to the existing
+=SelectedPackages= closure and environment-isolation laws. Literal, nonempty,
+distinct capability tags are a Scheme reader obligation exercised by
+=module-profile-tags-test.ss=. Lab's =yuanxu-governance-downstream-test.ss=
+checks the real tag-selected namespace, native Make products and selected
+test execution against one Graph. =SelectedPackages.categoryRoots= projects
+category metadata across windows. =dependency_only_window_keeps_roots= and
+=dependency_only_window_keeps_projection= prove that a nonmatching auxiliary
+window adds no roots and preserves the ordinary dependency projection for
+fixed admitted dependencies and eligible owners. Lab's
+=yuanxu-deployment-downstream-test.ss= exercises the corresponding OpenTofu,
+Nix, JsonSchema and Funflow cross-package Graph. Empty-category rejection and
+relative path resolution remain Scheme boundary obligations. The Lean laws assume admitted roots and
+do not prove the Gerbil tag reader or native compiler.
+
+Public =library-roots= identities use the selected owner's declared package
+kernel and the existing confined native library projection. Relative string
+roots retain their nearest-package interpretation. Native header identity,
+source currentness and identical cold/hot/clean target inventories are bridge
+obligations exercised by =module-build-role-test.ss= and Lab's deployment gate.
+The =SelectedPackages= source-preservation laws assume those admitted source
+entries; they do not infer source ownership from an optional checkout of an
+installed prerequisite. Compiler-tool source authentication remains independent
+of whether that tool contributes a source target.
+
+SysML =CompilerInputContext= maps to =Building.Inputs.compilerLookup=,
+=compilerLookupWithSource=, =consumerLookup= and =compilerPath=. The laws prove prerequisite priority is
+stable across output presence, runtime prefers selected products, path
+partition retains every directory, and currentness failure remains a failure.
+The declared source laws give an admitted checkout priority over an installed
+copy. Ordinary prerequisites retain priority over output when there is no
+declared source candidate. Scheme
+obtains checkout roots from the bound init declaration and native package
+lookup, then admits only actual imported source contexts.
+=refused_epoch_never_reuses_prepared= models the init build's private refusal
+latch. Native path canonicalization, dynamic-wind restoration (including an
+author exception after path mutation), and lookup
+correspondence are Scheme obligations in =build-input-context-test.ss= and
+=module-build-role-test.ss=. Lab's deployment gate deliberately supplies
+output-first paths and checks real tool paths and loaded B runtime products;
+it does not substitute altered environment flags for the projection contract.
+The existing CI build runs =dev/build_input_context_mutations.py= through its
+Just recipe: native variants must compile and then fail these Scheme bridge
+assertions; timeouts and unrelated failures are refused. Baseline and restored
+native workers must pass. This checks executable refinement sensitivity, not
+an additional Lean latency theorem.
+The coarse CPU/wall and cross-process clock records do not issue source
+approval. Scalar mode omits per-file timing rows while still executing each
+initializer and its independent guards. The existing Inputs/SourceClosureWork
+laws retain their source/effect meaning; diagnostics are not a proof of a
+120-second native deadline. The real downstream and native process gates
+must verify natural exit separately from successful Harness output.
 
 The executable refinement is =t/thousand-package-downstream-test.ss= with
 =dev/thousand_package_fixture.py= and the =thousand-consumer= qualification
@@ -670,3 +730,34 @@ the index check. =vector_shape_route_retains_index_refusal= covers
 its error. Neither theorem removes a live validation or grants a
 persistent approval. The CPU probe did not qualify the candidate for
 the production route.
+
+* Root-qualified Module identity and package source windows
+
+=Building.SelectedPackages.ScopedModuleId= models a native namespace root
+and an owner-relative declaration name. Its separation, local/absolute
+resolution, alias identity, missing-local refusal and independent-root update
+theorems constrain the existing POO indexes. Mounted runtime roots now carry
+complete native keys through =source/directory.ss=, =source/link.ss=,
+=source/selection.ss=, prepared inputs and the shared build/test projections.
+=native_owner_admission_binds_actual_identity= additionally requires Gerbil's
+actual source identity; a copied declaration label cannot transfer ownership.
+=module-windows-test.ss= supplies same-leaf, explicit-edge, missing-local,
+duplicate-native-root and forged-owner controls. Original effect/currentness
+checks remain independent. Actual Gerbil identity derivation is a bridge
+obligation, checked by the native sources and fixtures rather than proved by
+string concatenation. Real Weaver acceptance belongs to Weaver's tests.
+
+=native_record_preserves_default_structural_admission= models removal only of
+an outer always-successful classifier with no obligations. Weaver directly
+uses native Record Types, with the same field/Function normalization and error
+behavior; no compatibility object or old interface remains. This theorem does
+not justify dropping a custom classifier, normalization or obligation.
+
+=SelectedPackages.SourceAddress= models a native package checkout lookup plus
+a confined source path. Scheme =source/role-forms.ss= admits the literal
+=package:= declaration and confines the relative root; =source/init.ss=
+resolves it through native Gerbil =pkg-root-dir=; =source/directory.ss=
+retains ordinary source/currentness guards. =t/module-windows-test.ss=
+checks grammar confinement and ordinary library-facade classification.
+Native checkout pinning, source/package identity and filesystem observations
+remain bridge obligations, not consequences of list concatenation in Lean.

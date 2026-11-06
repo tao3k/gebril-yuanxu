@@ -4,12 +4,14 @@
         (only-in :std/source this-source-file)
         (only-in :std/list/list any)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
+        (only-in :gerbil/expander current-expander-context make-top-context eval-syntax core-read-module/sexp)
         (only-in :gerbil/runtime/loader load-path set-load-path! add-load-path!)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/module-system/source/init module-init-intent)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :yuanxu/module-system/source/admission current-module-source-observer admit-module-publication!)
+        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref
+                 yuanxu-module-source-ref-value yuanxu-module-source-ref-metadata)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules module-namespace-project))
 (export module-windows-test)
 (.def Workspace
@@ -26,8 +28,10 @@
   '(yuanxu!
      :load-modules "./modules" mode: explicit rename: Modules (engine)
      :load-modules "./scenarios" mode: explicit rename: "Scenarios" (release)))
-(def (fixture! root)
-  (def package (string->symbol (symbol->string (gensym 'windows-))))
+(def (fixture-owner root path)
+  (let-values (((_prelude identity _namespace _body)
+                 (core-read-module/sexp (path-expand path root)))) identity))
+(def (fixture! root (package (string->symbol (symbol->string (gensym 'windows-)))))
   (write-forms (path-expand "gerbil.pkg" root) `((package: ,package)))
   (for-each
     (lambda (row)
@@ -42,7 +46,7 @@
       (write-forms (path-expand "interface.ss" directory)
         `((.def Published identity: ',id
             core: (.o requires: ,(if (eq? id 'release)
-                                  '(.o Engine: (.o module-id: 'engine contract: Scope)) '(.o))
+                                  `(.o Engine: (.o module-id: ',(fixture-owner root "modules/engine/interface.ss") contract: Scope)) '(.o))
                       scope-contract: Scope
                       exports: ,(if (eq? id 'release) '(.o value: (.get Engine value)) '(.o value: 42)))
             features: (.o))))
@@ -77,14 +81,31 @@
            :load-modules "b" mode: explicit rename: x)
           (:load-modules "a" mode: explicit rename: A
            :load-modules "./a/" mode: explicit rename: B)
-          (:load-modules "a" mode: explicit (same)
-           :load-modules "b" mode: explicit (same))
           (:load-modules "a" mode: explicit rename: tests)
           (:load-modules "../outside" mode: auto)
           (:load-modules "a" mode: explicit (module) rename: Late)))
       (def intent (module-init-intent (list declaration) #f))
       (check-equal? (map (cut .ref <> 'mount) (.get intent windows)) '(Modules Scenarios))
       (check-equal? (map (cut .ref <> 'identity) (.get intent decisions)) '(engine release)))
+    (yuanxu-test-case "native package windows are confined declarations, not installation requests"
+      (def intent
+        (module-init-intent
+          '((yuanxu! :load-modules "modules" package: "github.com/tao3k/agentic-ai-lab"
+                     mode: explicit rename: Lab (governance))) #f))
+      (check-equal? (.get (car (.get intent windows)) package) "github.com/tao3k/agentic-ai-lab")
+      (for-each
+        (lambda (source)
+          (check-exception
+            (module-init-intent
+              `((yuanxu! source: ,source package: "github.com/tao3k/agentic-ai-lab" mode: explicit)) #f)
+            error?))
+        '("../modules" "/modules" "modules/../private" "modules\\private"))
+      (for-each
+        (lambda (package)
+          (check-exception
+            (module-init-intent `((yuanxu! source: "modules" package: ,package mode: explicit)) #f)
+            error?))
+        '("../owner/repository" "github.com/owner/repository@tag" "/owner/repository")))
     (yuanxu-test-fixture "mounted scopes share identity and cross-window requirements; bombs remain cold"
       (root Workspace)
       (fixture! root)
@@ -96,16 +117,47 @@
         (def view (yuanxu-load-modules (path-expand "init.ss" root)))
         (check-equal? (.all-slots/sort (.get view modules)) '(Modules Scenarios))
         (check-equal? (.slot? (.get view modules Modules) 'bomb) #f)
-        (check-equal? (.get view selected-graph module-order) '(engine release))
+        (check-equal? (.get view selected-graph module-order)
+          (list (fixture-owner root "modules/engine/interface.ss")
+                (fixture-owner root "scenarios/release/interface.ss")))
         (check-equal? (.get view modules Scenarios release value) 42)
         (check-equal? (eq? (.get view modules Modules engine)
                          (.get view modules Modules engine)) #t)
         (check-equal? (any (cut string-contains <> "/bomb/") reads) #f)
         (write-forms (path-expand "scenarios/release/config.ss" root) '((def Config (.o changed: #t))))
         (check-exception (.call view admit-current) error?)))
+    (yuanxu-test-fixture "local dependency resolves the explicitly mounted source"
+      (root Workspace)
+      (fixture! root)
+      (write-forms (path-expand "modules/engine/interface.ss" root)
+        '((.def Published identity: 'engine
+            core: (.o requires: (.o Release: (.o module-id: 'release contract: Scope))
+                      scope-contract: Scope
+                      exports: (.o value: (.get Release value)))
+            features: (.o))))
+      (write-forms (path-expand "scenarios/release/interface.ss" root)
+        '((.def Published identity: 'release
+            core: (.o requires: (.o) scope-contract: Scope exports: (.o value: 42))
+            features: (.o))))
+      (def init (path-expand "init.ss" root))
+      (write-forms init
+        '((yuanxu! :load-modules "./modules" mode: explicit rename: Modules
+                   (engine) (release @ "./scenarios/release"))))
+      (def view (yuanxu-load-modules init))
+      (check-equal? (.get view modules Modules engine value) 42)
+      (check-equal? (.get view selected-graph module-order)
+        (list (fixture-owner root "scenarios/release/interface.ss")
+              (fixture-owner root "modules/engine/interface.ss"))))
     (yuanxu-test-fixture "public branches share a real Interface scope and keep siblings cold"
       (root Workspace)
       (fixture! root)
+      (def (bind-reference value)
+        (cond ((not (pair? value)) value)
+              ((and (eq? (car value) 'module-id:) (pair? (cdr value))
+                    (equal? (cadr value) '(quote engine)))
+               (cons 'module-id: (cons `(quote ,(fixture-owner root "modules/engine/interface.ss"))
+                                      (bind-reference (cddr value)))))
+              (else (cons (bind-reference (car value)) (bind-reference (cdr value))))))
       (def example
         (path-expand "qualification/namespace/release"
                      (path-directory (this-source-file))))
@@ -113,7 +165,9 @@
         (lambda (name)
           (def target (path-expand (string-append "scenarios/release/" name) root))
           (delete-file target)
-          (copy-file (path-expand name example) target))
+          (if (equal? name "interface.ss")
+            (write-forms target (map bind-reference (call-with-input-file (path-expand name example) read-all)))
+            (copy-file (path-expand name example) target)))
         '("interface.ss" "objects.ss"))
       (def spare (path-expand "scenarios/spare" root))
       (create-directory spare)
@@ -218,6 +272,10 @@
       (fixture! root)
       (write-forms (path-expand "modules/library/shared.ss" root)
         '((import :clan/poo/object) (def Shared (.o value: 42)) (export Shared)))
+      ;; Native library facades do not acquire Module ownership merely from
+      ;; this conventional filename. Their bytes still belong to currentness.
+      (write-forms (path-expand "modules/library/interface.ss" root)
+        '((import "shared.ss") (export (import: "shared.ss"))))
       (def library (path-normalize (path-expand "modules/library/shared.ss" root)))
       (for-each
         (lambda (directory)
@@ -280,24 +338,78 @@
         '((import (only-in "hidden/library.ss" Shared)) (export Shared)))
       (check-exception (.get (yuanxu-load-modules (path-expand "init.ss" nested)) build-graph) error?)
       (check-equal? (file-exists? marker) #f))
-    (yuanxu-test-fixture "auto mounts locate on demand and reject a shared publication identity"
+    (yuanxu-test-fixture "same leaf names in native roots keep separate scopes and exact owner keys"
+      (root Workspace)
+      (fixture! root)
+      (def second (path-expand "scenarios/engine" root))
+      (create-directory second)
+      (for-each (lambda (role) (copy-file (path-expand (string-append "modules/engine/" role) root)
+                                        (path-expand role second)))
+                '("types.ss" "objects.ss" "config.ss"))
+      (write-forms (path-expand "interface.ss" second)
+        '((.def Engine identity: 'engine
+            core: (.o requires: (.o) scope-contract: Scope exports: (.o value: 77))
+            features: (.o))))
+      (write-forms (path-expand "init.ss" root)
+        '((yuanxu! :load-modules "./modules" mode: explicit rename: Modules (engine)
+                    :load-modules "./scenarios" mode: explicit rename: Scenarios (engine))))
+      (def view (yuanxu-load-modules (path-expand "init.ss" root)))
+      (def left (.get view modules Modules engine))
+      (def right (.get view modules Scenarios engine))
+      (check-equal? (.get left value) 42)
+      (check-equal? (.get right value) 77)
+      (check-equal? (eq? left right) #f)
+      (check-equal? (eq? left (.get view modules Modules engine)) #t)
+      ;; A copied declaration label cannot transfer authority to another root.
+      (def left-record (.call view .selected-record (fixture-owner root "modules/engine/interface.ss")))
+      (def left-source (.get left-record source))
+      (def right-id (fixture-owner root "scenarios/engine/interface.ss"))
+      (def forged
+        (make-yuanxu-module-source-ref 'local (yuanxu-module-source-ref-value left-source)
+          (cons (cons 'module-id right-id)
+                (filter (lambda (row) (not (eq? (car row) 'module-id)))
+                        (yuanxu-module-source-ref-metadata left-source)))))
+      (check-exception
+        (admit-module-publication! forged right-id (.get left-record publication) (.get view context))
+        (message-is "root-qualified publication differs from native source identity"))
+      (check-equal? (.get view selected-graph module-order)
+                    (list (fixture-owner root "modules/engine/interface.ss")
+                          (fixture-owner root "scenarios/engine/interface.ss")))
+      (check-exception (.call view .build-graph-for '(engine))
+        (message-is "unqualified module root requires one native owner")))
+    (yuanxu-test-fixture "a mounted local requirement follows its declared source location"
       (root Workspace)
       (fixture! root)
       (write-forms (path-expand "init.ss" root)
-        '((yuanxu! :load-modules "./modules" mode: auto rename: Modules
-                    :load-modules "./scenarios" mode: explicit rename: Scenarios (release))))
+        '((yuanxu! :load-modules "./scenarios" mode: explicit rename: Scenarios
+                    (engine @ "./modules/engine") (release))))
+      (write-forms (path-expand "scenarios/release/interface.ss" root)
+        '((.def Published identity: 'release
+            core: (.o requires: (.o Engine: (.o module-id: 'engine contract: Scope))
+                      scope-contract: Scope exports: (.o value: (.get Engine value)))
+            features: (.o))))
       (def view (yuanxu-load-modules (path-expand "init.ss" root)))
-      (check-equal? (.get view modules Modules engine value) 42)
-      ;; A different mount cannot disambiguate the same logical publication id.
-      (create-directory* (path-expand "scenarios/engine" root))
-      (write-forms (path-expand "scenarios/engine/interface.ss" root) '((error "must not evaluate")))
+      (check-equal? (.get view selected-graph module-order)
+                    (list (fixture-owner root "modules/engine/interface.ss")
+                          (fixture-owner root "scenarios/release/interface.ss")))
+      (check-equal? (.get view modules Scenarios engine value) 42)
+      (check-equal? (.get view modules Scenarios release value) 42))
+    (yuanxu-test-fixture "two auto checkouts cannot claim the same complete native root"
+      (root Workspace)
+      (fixture! (path-expand "left" root) 'same-native-root)
+      (fixture! (path-expand "right" root) 'same-native-root)
       (write-forms (path-expand "init.ss" root)
-        '((yuanxu! :load-modules "./modules" mode: explicit rename: Modules (engine)
-                    :load-modules "./scenarios" mode: auto rename: Scenarios)))
-      (check-exception (.get (yuanxu-load-modules (path-expand "init.ss" root)) modules Scenarios engine)
-        (message-is "publication belongs to a different directory window"))
-      (write-forms (path-expand "init.ss" root)
-        '((yuanxu! :load-modules "./modules" mode: auto rename: Modules
-                    :load-modules "./scenarios" mode: auto rename: Scenarios)))
-      (check-exception (.get (yuanxu-load-modules (path-expand "init.ss" root)) modules Modules engine)
-        (message-is "ambiguous publication identity across directory windows")))))
+        '((yuanxu! :load-modules "./left/modules" mode: auto rename: Left
+                    :load-modules "./right/modules" mode: auto rename: Right)))
+      (check-exception (yuanxu-load-modules (path-expand "init.ss" root))
+        (message-is "native root identity has multiple source owners")))
+    (yuanxu-test-fixture "a local requirement never falls back to another native root"
+      (root Workspace)
+      (fixture! root)
+      (write-forms (path-expand "scenarios/release/interface.ss" root)
+        '((.def Published identity: 'release
+            core: (.o requires: (.o Engine: (.o module-id: 'engine contract: Scope))
+                      scope-contract: Scope exports: (.o value: (.get Engine value)))
+            features: (.o))))
+      (check-exception (.get (yuanxu-load-modules (path-expand "init.ss" root)) selected-graph)
+        error?))))

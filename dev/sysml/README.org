@@ -28,6 +28,10 @@ owner and cross references; it is not copied into several models. Existing QNT
 and Lean paths remain stable. This index allocates their responsibilities and
 does not relocate or duplicate them.
 
+[[file:20-module-loading/20.35-feature-scope-composition.org][20.35 Feature Scope Composition]] maps Interface declarations to final receiver
+composition, native write fencing and independent Feature obligations. It reuses
+the existing QNT callback/isolation controls and assigns structural laws to Lean.
+
 * One formal owner per question
 
 | Question | Primary owner | Reuse instead of duplication |

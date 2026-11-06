@@ -9,7 +9,8 @@
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :yuanxu/module-system/source/admission module-source-type)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules))
-(export write-file remove-tree with-publication-source domain-entry-count gerbil-import-value exception-message PublicLibraryFixture core-source-root)
+(export write-file remove-tree with-publication-source publication-feature-view
+        domain-entry-count gerbil-import-value exception-message PublicLibraryFixture core-source-root)
 (def core-source-root (path-expand "../../.." (path-directory (this-source-file))))
 
 (def (write-file path text)
@@ -17,6 +18,14 @@
   (call-with-output-file (list path: path truncate: #t) (lambda (port) (display text port))))
 
 (def remove-tree clear-temporary-file!)
+
+(def (publication-feature-view root name flags)
+  (def path (path-expand name root))
+  (write-file path
+    (call-with-output-string
+      (lambda (port)
+        (write `(yuanxu! mode: explicit :custom (example ,@flags)) port))))
+  (yuanxu-load-modules path))
 
 (def publication-roles
   (.o

@@ -42,6 +42,11 @@
 This track owns source discovery, init selection, selected Module/Feature Graphs,
 compiler input projection and the eventual runtime loading boundary.
 
+- [[file:13.37-feature-composition-and-withdrawal.org][Feature composition and withdrawal]] connects selection to ordered scope
+  refinements and retained native Types, defines withdrawal from an unchanged
+  base and records resource boundaries. Core integration and source regressions
+  are distinguished from the remaining Agentic Context consumer migration.
+
 - [[file:13.13-root-directory-windows.org][Root directory windows]] selects Modules and Scenarios from one init,
   lowers mounted read-only bindings through the existing hygienic macro and
   shares the selected Graph across compilation and independently demanded tests.

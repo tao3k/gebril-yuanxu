@@ -4,16 +4,46 @@
 ;;; Read-only lowering of the bounded init declaration, never eval/import.
 (import (runtime: :clan/poo/object)
         (only-in :std/list/list any)
+        (only-in :yuanxu/module-system/source/deferred-declaration module-entry-action)
         (only-in :yuanxu/module-system/source/role-forms
                  init-name? parse-module-init module-init-export-name module-interface-form?)
         (only-in :yuanxu/module-system/selection/objects yuanxu-user-module-selection))
-(export module-init-intent module-init-export-name module-interface-tags)
+(export module-init-intent module-init-export-name module-interface-tags module-init-source-root
+        module-init-compiler-source-roots
+        module-interface-declaration?)
+
+;; Native Gerbil owns checkout placement and pinning. A source window names a
+;; dependency already installed/linked by that manager; it never installs one.
+(def native-package-root
+  (module-entry-action 'yuanxu/module-system/source/init "gerbil/tools/gxpkg"
+    'gerbil/tools/gxpkg#pkg-root-dir))
+(def (native-package-checkout package)
+  (and package (path-expand package (native-package-root '()))))
+(def (module-init-source-root intent source-path)
+  (def package (and (.slot? intent 'package) (.ref intent 'package)))
+  (path-expand (.ref intent 'root)
+    (or (native-package-checkout package) (path-directory source-path))))
+
+(def (module-init-compiler-source-roots declaration source-path)
+  (let-values (((windows _) (parse-module-init (list declaration) source-path)))
+    (filter-map (lambda (window)
+                  (with ([_ _ _ _ _ _ package] window)
+                    (native-package-checkout package)))
+                windows)))
+
+;; A filename is not a Module declaration. Native public library facades can
+;; also be named interface.ss; they remain ordinary compiler import edges.
+(def (module-interface-declaration? path text)
+  (def forms (call-with-input-string text read-all))
+  (unless (and (pair? forms) (andmap (cut module-interface-form? <> forms) forms))
+    (error "invalid Interface configuration or library facade" path))
+  (any (lambda (form) (eq? (car form) '.def)) forms))
 
 ;; A declaration belongs to its runtime module identity, not its prelude, Git
 ;; remote or the caller's filesystem spelling. init.ss is a convention, not a
 ;; restriction on where yuanxu! may declare a directory window.
 (def (valid-tags? tags)
-  (and (list? tags) (andmap init-name? tags)
+  (and (pair? tags) (list? tags) (andmap init-name? tags)
        (let loop ((remaining tags))
          (or (null? remaining)
              (and (not (memq (car remaining) (cdr remaining))) (loop (cdr remaining)))))))
@@ -53,8 +83,8 @@
           selection: (.+ (yuanxu-user-module-selection group module flags)
                           (.o enabled?: (not disabled?))))))
   (def (intent window)
-    (with ([mode root mount profile root-explicit? rows] window)
-      (.o mode root mount profile root-explicit? init-source: source-path
+    (with ([mode root mount profile root-explicit? rows package] window)
+      (.o mode root mount profile root-explicit? package init-source: source-path
           decisions: (map decision rows))))
   (let-values (((windows mounted?) (parse-module-init forms source-path)))
     (def intents (map intent windows))

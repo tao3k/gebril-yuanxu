@@ -6,6 +6,59 @@
 
 * Import ownership
 
+** Build input context is an init projection invariant
+
+The init-owned =std-make-spec= establishes =call-with-build-input-path= around
+source projection and Make dispatch. Prerequisites retain their order. The
+invocation's output directory is the native fallback, including when an
+explicit output is absent from the caller's path. A generated compiler source
+view goes before prerequisites within the same guarded boundary. A =package:=
+window contributes its native checkout from the bound init declaration ahead
+of ordinary prerequisites, so
+installed copies cannot hide selected source dependencies. The source
+reader still admits each reached library through its native identity and
+source guards. Native Make separately owns its output
+directory and hot/currentness checks. Restore the caller's exact path on every
+exit. If a callback changes the input path, reject the prepared result and
+latch refusal for this init build epoch, including when the callback throws
+after mutation. Restore before reporting refusal. A retry cannot use old prepared
+evidence. Native compilation failures after admission retain the existing
+recovery contract.
+
+Gerbil Make prepends its own source directory. Each native compile dispatch
+admits that exact path transition and restores the compiler path before the
+next source check. A different resulting path refuses the init epoch.
+
+Do not repair this invariant by changing downstream =GERBIL_LOADPATH= flags,
+warming business scopes, bypassing canonical Context checks, or increasing a
+watchdog. =build-input-context-test.ss= covers input order, output fallback,
+nesting, multiple values and exception restoration. =module-build-role-test.ss=
+covers an author initializer that mutates the path and a later evidence-reuse
+attempt, including mutation followed by an author exception. These suites and
+the source-admission control run in the existing default =just test= list.
+Real package acceptance stays in the owning product's tests.
+
+The existing CI platform build also runs
+=just test-build-input-context-mutations <artifact-dir>=. It compiles isolated
+native variants with output-first lookup, reversed prerequisites, omitted
+restoration and accepted input mutation. Each must fail the corresponding
+order/admission assertion with a nonzero exit; compilation failure, timeout
+and heap/stack exhaustion do not qualify. Correct-code suites pass before and
+after the variants, and the checkout source digest must remain unchanged.
+Keep the receipt and raw logs in local/CI artifacts, never source control.
+
+The Lab deployment gate deliberately passes an output-first environment to
+every action. It checks stable compiler prerequisite Context paths, zero
+business scopes during source projection, and native B product initialization
+in an independent qualification harness. First =.get= and selected owner suites
+execute in that process without warming scopes in the parent.
+Lab's runtime CI invokes the deployment file separately through its 240-second
+aggregate =just test-file= gate, validates its complete receipt, and retains its
+output. Its action and idle limits are 120 and 60 seconds, respectively.
+The broad runtime unit batch cannot substitute its longer aggregate deadline.
+
+** Source and native imports
+
 Managed Module consumers use the owning =init.exports= namespace and ordinary
 POO =.get= demand. =modules/<name>/interface.ss= is the Module System's loading
 configuration, not a second native-import application API. Ordinary library
@@ -61,6 +114,20 @@ around every physical source read is qualification instrumentation, not an
 ordinary build latency measurement. Keep actual authentication, replay visitors
 and source observers intact in both modes, and never report a partial recovery
 as a zero-compilation hot build.
+
+Build verbosity 2 retains aggregate work counters and stage clocks. Per-file
+=reader-initialization= and =reader-initializer-body= attribution belongs to
+explicit detailed accounting (=#t= or =stages=, build verbosity 3); scalar
+acceptance must not allocate/emit those rows. This removes diagnostic work,
+never the actual initializer or any entry/return guard. Owner-qualified
+=scope-factory= counters remain active in scalar mode.
+
+Cross-process attribution uses the init build's =epoch= timestamps together
+with the caller's spawn, return-line receipt and completed-operation timestamps.
+=real-time= origins are process-local: subtracting a child's timestamp from a
+parent's elapsed duration cannot establish a shutdown delay. Report CPU clocks
+separately. A native timing wrapper is a diagnostic only; final acceptance keeps
+the original CLI, watchdogs, natural exit and all selected-product assertions.
 
 Compiler entries whose fields are immutable lexical values use runtime lexical
 slot shorthand, such as =(.o kind path input options owner contributor)=.

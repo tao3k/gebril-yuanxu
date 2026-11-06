@@ -56,8 +56,33 @@
   (let (text (symbol->string flag))
     (values (string->symbol (substring text 1 (string-length text)))
             (char=? (string-ref text 0) #\+))))
+(def (module-feature-index descriptors)
+  ;; One derived POO slot index per selected graph, not a per-Module full scan.
+  (def owners (make-hash-table-eq))
+  (def order '())
+  (for-each
+    (lambda (descriptor)
+      (def owner (.ref descriptor 'owner-module-id))
+      (unless (hash-key? owners owner) (set! order (cons owner order)))
+      (hash-put! owners owner (cons descriptor (or (hash-get owners owner) '()))))
+    descriptors)
+  (object<-alist
+    (map (lambda (owner) (cons owner (reverse (hash-ref owners owner)))) (reverse order))))
+
 (def (select-module-graph context root-values read-publication current!
                           (read-dependencies #f))
+  (def (module-key owner required)
+    (if (.slot? context 'resolve-module-id)
+      ((.ref context 'resolve-module-id) owner required) required))
+  (def (feature-key owner required)
+    (if (not (.slot? context 'resolve-module-id)) required
+      (let* ((text (symbol->string required)) (separator (string-rindex text #\/)))
+        (unless separator (error "Feature dependency requires an owner and name" required))
+        (let* ((owner-name (string->symbol (substring text 0 separator)))
+               (declared (.ref (publication-for owner) 'identity))
+               (target (if (eq? owner-name declared) owner (module-key owner owner-name))))
+          (string->symbol (string-append (symbol->string target)
+                            (substring text separator (string-length text))))))))
   ;; Candidate-owned sites cannot retain its last publication in a global root.
   ;; Runtime shared shapes remain reusable; optional payloads stay demand-filled.
   (def publication-core-site (make-slot-cache 'core))
@@ -92,7 +117,8 @@
                               core-requires-site))
                         (map (lambda (alias) (.ref (.ref requirements alias) 'module-id))
                              (.all-slots requirements)))))
-               (map (lambda (required)
+               (map (lambda (reference)
+                      (def required (module-key id reference))
                       (when (hash-get denied-index required)
                         (error "required module disabled" id required origin (.ref context 'generation)))
                       (when (and explicit? (not (hash-get selected-index required)))
@@ -121,13 +147,28 @@
       (let (features (.ref (publication-for owner-id) 'features))
         (unless (.slot? features name)
           (error "unknown init feature" owner-id name origin (.ref context 'generation)))
-        (let* ((descriptor-value (.ref features name)) (id (feature-node-id owner-id name)))
+        (let* ((declared (.ref features name))
+               (owner (.ref (publication-for owner-id) 'identity))
+               (descriptor-value
+                 ;; Interface authors declare native POO values. This owner
+                 ;; supplies existing Feature metadata; it does not force the
+                 ;; refinement, Contract or component payload while selecting.
+                 ;; Explicit descriptors retain their identities and are checked
+                 ;; below, including forged owner/identity refusal.
+                 (if (and (object? declared) (not (.slot? declared 'kind)))
+                   (.mix declared
+                     (feature-descriptor
+                       (.o feature-id: (feature-node-id owner name) owner-module-id: owner)))
+                   declared))
+               (id (feature-node-id owner-id name)))
           (unless (and (object? descriptor-value)
                        (andmap (cut .slot? descriptor-value <>)
                                '(kind feature-id owner-module-id requires optional-requires conflicts))
                        (eq? (.ref descriptor-value 'kind) 'feature-descriptor)
-                       (eq? (.ref descriptor-value 'feature-id) id)
-                       (eq? (.ref descriptor-value 'owner-module-id) owner-id)
+                       (eq? (.ref descriptor-value 'feature-id)
+                            (feature-node-id (.ref (publication-for owner-id) 'identity) name))
+                       (eq? (.ref descriptor-value 'owner-module-id)
+                            (.ref (publication-for owner-id) 'identity))
                        (andmap (lambda (slot)
                                  (let (ids (.ref descriptor-value slot))
                                    (and (list? ids) (andmap symbol? ids))))
@@ -140,7 +181,11 @@
                 (when (memv #\: (string->list (symbol->string required)))
                   (error "Feature dependency cannot name Module Core" id required origin)))
               (.ref descriptor-value slot))) '(requires optional-requires conflicts))
-          descriptor-value)))
+          (if (eq? id (.ref descriptor-value 'feature-id)) descriptor-value
+            (.cc descriptor-value 'feature-id id 'owner-module-id owner-id
+              'requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'requires))
+              'optional-requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'optional-requires))
+              'conflicts (map (cut feature-key owner-id <>) (.ref descriptor-value 'conflicts)))))))
     (let* ((core-selections
             (map (lambda (id)
                    (let* ((key (core-node-id id))
@@ -148,7 +193,7 @@
                             (.ref/inline (publication-for id) publication-core-site)
                             core-requires-site))
                           (required (map (lambda (alias)
-                                           (core-node-id (.ref (.ref requirements alias) 'module-id)))
+                                           (core-node-id (module-key id (.ref (.ref requirements alias) 'module-id))))
                                          (.all-slots requirements)))
                           (descriptor-value (core-feature-descriptor key id required)))
                      (hash-put! nodes key (.o kind: 'module-core identity: id owner: id
@@ -202,9 +247,11 @@
         ;; on the strength of an earlier source check.
         (current!)
         (.o admit-current: current! status: 'ready generation: (.ref context 'generation) init-source: origin
+            resolve-module-id: module-key
             roots: root-values decisions: decision-values denied-modules: (.ref context 'denied-modules)
             denied-features: negative
             nodes: ordered
+            features-by-owner: (module-feature-index feature-descriptors)
             module-order: (map (cut .ref <> 'identity)
                                (filter (lambda (node) (eq? (.ref node 'kind) 'module-core)) ordered))
             feature-order: (map (cut .ref <> 'identity)

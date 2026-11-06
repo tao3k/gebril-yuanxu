@@ -22,6 +22,7 @@
 (import (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :yuanxu/module-system/building/artifacts current-build-output-directory))
 (export module-build-role-test)
+(import (only-in "./qualification/module-init/fixture.ss" import-fixture-init!))
 (def (assert name value)
   (unless value (error "assertion failed" name))
   (displayln "ASSERT-OK " name) (force-output))
@@ -57,6 +58,26 @@
     owner))
 (def module-build-role-test
   (test-suite "module-build-role-test"
+    (yuanxu-test-case "init build refuses a changed input context and cannot reuse its prepared evidence"
+      (for-each
+        (lambda (build)
+          (call-with-temporary-directory "build-context-epoch-"
+            (lambda (root)
+              (fixture root build)
+              (write-source (path-expand "init.ss" root)
+                "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
+              (def exports (import-fixture-init! (path-expand "init.ss" root)))
+              (def before (load-path))
+              (assert 'changed-compiler-input-refused
+                (rejects? "source projection changed its compiler input context"
+                  (lambda () ((.get exports std-make-spec) '()))))
+              (check-equal? (load-path) before)
+              (assert 'refused-input-evidence-not-reused
+                (rejects? "build input context was refused"
+                  (lambda () ((.get exports std-make-spec) '())))))))
+        (list
+          "(def Build (begin (set-load-path! (cons \"/invalid-build-input-context\" (load-path))) (.o kind: 'module/build roots: '())))"
+          "(def Build (begin (set-load-path! (cons \"/invalid-build-input-context\" (load-path))) (error \"author failure after mutation\")))")))
     (yuanxu-test-case "native preparation derives read-only eligibility from the official package cache"
       (call-with-temporary-directory "compiler-source-origin-"
         (lambda (root)
@@ -718,6 +739,26 @@
           (call-with-output-file (list path: (path-expand "service.ss" owner) append: #t)
             (cut display "\n;; changed actual imported source\n" <>))
           (check-exception ((.get graph compiler-current)) error?))))
+    (yuanxu-test-case "native public library identities stay inside the declared owner kernel"
+      (call-with-temporary-directory "module-public-library-identity"
+        (lambda (root)
+          (def owner (fixture root "(def Build (.o kind: 'module/build roots: '()))"))
+          (def package (cadr (call-with-input-string
+                              (module-source-read (path-expand "gerbil.pkg" root)) read)))
+          (def public-id (string-append (symbol->string package) "/public"))
+          (write-source (path-expand "build.ss" owner)
+            (string-append "(def Build (.o kind: 'module/build roots: '() library-roots: '(" public-id ")))"))
+          (write-source (path-expand "kernel-helper.ss" root)
+            "(error \"native public library runtime must not execute\") (def answer 42) (export answer)")
+          (write-source (path-expand "public.ss" root)
+            "(import ./kernel-helper) (export (import: ./kernel-helper))")
+          (add-load-path! root)
+          (def graph (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph))
+          (def paths (map (lambda (entry) (path-normalize (.get entry path))) (.get graph entries)))
+          (assert 'native-public-root-enrolled (member (path-normalize (path-expand "public.ss" root)) paths))
+          (assert 'native-public-helper-enrolled (member (path-normalize (path-expand "kernel-helper.ss" root)) paths))
+          (write-source (path-expand "kernel-helper.ss" root) "(def answer 43) (export answer)")
+          (check-exception ((.get graph compiler-current)) error?))))
     (yuanxu-test-case "Module public entries reject package escapes and missing sources"
       (for-each
         (lambda (entry)
@@ -728,7 +769,7 @@
                 (object->string entry) ")))"))
               (def view (yuanxu-load-modules (path-expand "init.ss" root)))
               (check-exception (.get view build-graph) error?))))
-        '("../escape.ss" "missing.ss")))
+        '("../escape.ss" "missing.ss" foreign/public)))
     (yuanxu-test-case "Module public entries reject symlinks, foreign identities and malformed domains"
       (for-each
         (lambda (kind)

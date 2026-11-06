@@ -143,6 +143,7 @@
     "module-system/authoring/admission"
     "module-system/source/publication"
     "module-system/source/admission"
+    "module-system/source/feature-scopes"
     ;; Executable Test demands load this compiled native capability lazily.
     "module-system/source/static-inputs"
     "configuration/slot-origin"

@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Shared source-role and publication admission. No expansion or activation.
 (import (only-in :clan/poo/type Record)
+        (only-in :gerbil/expander core-read-module/sexp)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/mop Type element? validate)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer slot-read-receiver slot-read-key)
@@ -296,8 +297,20 @@
          ;; The public value Contract may return a different checked receiver.
          ;; Owner checks must describe THAT subject, not the pre-check input.
          (checked (.ref evidence 'candidate))
-         (owner (assq 'module-id (yuanxu-module-source-ref-metadata source))))
-    (unless (and (eq? expected-id (.ref checked 'identity))
+         (metadata (yuanxu-module-source-ref-metadata source))
+         (owner (assq 'module-id metadata))
+         (declaration (assq 'declaration-id metadata)))
+    ;; A relative declaration label is never an alias certificate. Bind the
+    ;; complete key to Gerbil's actual source identity before admitting it.
+    (when declaration
+      (unless (eq? (yuanxu-module-source-ref-kind source) 'local)
+        (error "root-qualified publication requires a local native source" expected-id))
+      (let-values (((_prelude native-id _namespace _body)
+                     (core-read-module/sexp (yuanxu-module-source-ref-value source))))
+        (unless (eq? expected-id native-id)
+          (error "root-qualified publication differs from native source identity" expected-id native-id))))
+    (unless (and (or (not declaration) owner)
+                 (eq? (if declaration (cdr declaration) expected-id) (.ref checked 'identity))
                  (or (not owner) (eq? expected-id (cdr owner))))
       (error "publication source owner mismatch" expected-id source))
     evidence))

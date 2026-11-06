@@ -44,6 +44,11 @@ test-file path observe="false":
     esac
     GERBIL_LOADPATH="$test_lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:${GERBIL_PATH:-$PWD/.gerbil}/lib:$PWD" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" "${launcher[@]}" {{ gerbil_test_runtime_options }} dev/test-file.ss ${options[@]+"${options[@]}"} "{{ path }}"
 
+# Fault injection uses fresh native module overlays and the same test-file gates.
+# Compilation is preparation; each test retains its existing heap/watchdog fence.
+test-build-input-context-mutations artifacts:
+    {{ gerbil_compiler_environment }} python3 dev/build_input_context_mutations.py "{{ artifacts }}" --runtime-options="{{ gerbil_test_runtime_options }}"
+
 test-build-publication directory file="t/build-artifact-publication-test.ss":
     #!/usr/bin/env bash
     set -euo pipefail
@@ -63,6 +68,7 @@ test:
     set -euo pipefail
     files=(t/qualification/observability/raw-allocation-test.ss t/module-case-profile-test.ss t/module-test-executor-import-test.ss t/funflow-function-types-test.ss t/contract-function-composition-test.ss t/functional-flow-kernel-test.ss t/functional-flow-kleisli-test.ss t/core-test.ss t/admission-binding-test.ss t/admission-publication-test.ss t/admission-checked-publication-test.ss t/source-admission-test.ss t/contract-analysis-test.ss t/root-child-admission-test.ss t/root-child-effect-test.ss t/source-observation-test.ss t/path-slots-test.ss t/slot-origin-test.ss t/module-scope-syntax-test.ss t/feature-system*-test.ss t/domain-case*-test.ss t/utilities-functional-test.ss t/composition-roles-test.ss t/poo-clos-*-test.ss t/graph-*-test.ss t/contribution-*-test.ss t/service-publication-fixture-test.ss t/gitea-postgresql-publication-test.ss t/gitea-postgresql-relocation-test.ss t/gitea-json-configuration-test.ss t/module-schema-*-test.ss t/module-option-objects-test.ss t/module-interface-test.ss t/module-graph-test.ss t/module-source-test.ss t/module-authoring-test.ss t/module-scope-link-test.ss t/module-directory-test.ss t/module-explicit-sources-test.ss t/module-source-admission-test.ss t/module-declaration-value-test.ss t/module-deferred-projection-test.ss t/module-role-context-test.ss t/module-publication-test.ss t/module-selected-graph-test.ss t/module-build-graph-test.ss t/module-build-artifact-clean-test.ss t/module-configuration-source-test.ss t/module-configuration-build-test.ss t/ops-module-publication-test.ss t/ops-functional-test.ss t/ops-process-script-test.ss t/module-json-schema-publication-test.ss t/module-bootstrap-test.ss t/module-selection-test.ss t/module-load-path-test.ss t/module-context-test.ss t/module-loader-backend-test.ss t/module-loader-publication-test.ss t/module-catalog-test.ss t/module-diagnostics-test.ss t/semantic-module-test.ss t/profile-composition-test.ss t/observability-*-test.ss t/slot-presentation-test.ss)
     files+=(t/namespace-projection-test.ss t/namespace-leaf-expression-test.ss t/module-source-package-resolution-test.ss t/package-install-test.ss t/module-session-metadata-index-test.ss t/module-windows-test.ss t/module-testing-isolation-test.ss t/module-test-preparation-test.ss)
+    files+=(t/build-input-context-test.ss t/module-build-role-test.ss t/module-testing-source-admission-test.ss)
     for file in "${files[@]}"; do just test-file "$file"; done
     just test-selected-modules
     echo "[yuanxu-testing] phase=all-files-complete fileCount=${#files[@]}"

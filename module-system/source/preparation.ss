@@ -6,6 +6,7 @@
                  build-output-directory current-build-source-directory current-build-compiler-options
                  invalidate-build-products! artifact-files
                  call-with-selected-output-lock selected-output-source-directory)
+        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
         (only-in :clan/poo/object .o .ref .ref/cached .slot? object? object-protocol
                  object-%instance object-%precedence-list object-construction-current?)
         (only-in :clan/poo/slot-observation without-observation)
@@ -18,14 +19,14 @@
         (only-in :yuanxu/module-system/source/module-prelude)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :gerbil/expander current-expander-module-import expander-context-id syntax-e
-                 core-read-module/sexp core-library-package-plist __module-pkg-cache syntax->datum
+                 core-read-module/sexp core-read-module-package core-library-package-plist __module-pkg-cache syntax->datum
                  core-resolve-library-module-path
                  module-context? module-context-path prelude-context? prelude-context-path)
         (only-in :gerbil/expander/module __module-registry)
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module build-module-dependencies)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/admission)
-(export build-target-name yuanxu-prepare-module-publication yuanxu-write-module-publication
+(export build-target-name module-source-package-prefix yuanxu-prepare-module-publication yuanxu-write-module-publication
         yuanxu-prepare-module-build-source yuanxu-prepare-module-tool-source
         yuanxu-prepare-module-retained-source
         yuanxu-prepare-module-private-source call-with-module-compiler-inputs module-compiler-source-input
@@ -148,6 +149,17 @@
   ;; Observe the runtime reader's ancestor lookup, not a second package resolver.
   ;; Negative entries matter when a closer gerbil.pkg is added later.
   (package-directory-snapshot (path-directory path)))
+(def (module-source-package-prefix directory)
+  ;; Reuse Gerbil's ancestor/package namespace and the existing source snapshot.
+  ;; No Module is imported or evaluated, and no directory is enumerated.
+  (def path (path-expand "interface.ss" directory))
+  (def snapshot (package-source-snapshot path))
+  (let-values (((_prelude _namespace package) (core-read-module-package path #f #f)))
+    (unless (and (string? package) (> (string-length package) 0))
+      (error "module source root has no native package namespace" directory))
+    (unless (package-snapshot-current? snapshot)
+      (error "module source root package identity changed" directory))
+    (string-append package "/")))
 (def (package-directory-snapshot directory)
   ;; This is immutable preparation data. Only an enclosing source observation
   ;; window may share it. The open observer route retains each original read.
@@ -233,13 +245,14 @@
                (eq? (yuanxu-module-source-ref-kind source-value) 'local))
     (error "publication preparation requires a selected local SourceRef" source-value))
   (let* ((owner (source-metadata source-value 'module-id))
+         (declared-owner (or (source-metadata source-value 'declaration-id) owner))
          (root (or (source-metadata source-value 'module-root) (source-metadata source-value 'module-tree-root)))
          (path (yuanxu-module-source-ref-value source-value))
          (texts (make-hash-table)))
     (unless (and (symbol? owner) (string? root) (string? path)
                  (string=? (path-expand path) (path-expand "interface.ss" root)))
       (error "publication source owner/root/entrypoint association is missing" source-value))
-    ((.ref policy 'validate) policy owner root
+    ((.ref policy 'validate) policy declared-owner root
      (lambda (file)
        (let (text (module-source-read file))
          (hash-put! texts file text) text)))
@@ -254,6 +267,9 @@
              (suffix "/interface")
              (imports (module-publication-role-imports root (cut hash-key? texts <>)))
              (roles (map (lambda (name) (string->symbol (path-strip-extension (path-strip-directory name)))) imports)))
+        (when (and (source-metadata source-value 'declaration-id)
+                   (not (eq? owner (cadr compiler-info))))
+          (error "selected native module identity differs from its source" owner (cadr compiler-info) path))
         (unless (and (symbol? name) (string-suffix? suffix id-text))
           (error "invalid Module binding or runtime compiler identity" path name compiler-info))
         (def (check-source!)
@@ -514,7 +530,10 @@
 ;; parameter. Redirect only the selected prepared inputs, preserving their runtime
 ;; identity and original included syntax. Make still owns original source targets
 ;; and dependency/product timestamps; generated frames are not new build targets.
-(def (call-with-module-compiler-inputs entries action unified?: (unified? #f) source-reads: (source-reads for-each-batch) source-state: (source-state #f) source-owner: (source-owner #f) source-import: (source-import compiler-import/independent))
+(def (call-with-module-compiler-inputs entries action unified?: (unified? #f)
+         source-reads: (source-reads for-each-batch) source-state: (source-state #f)
+         source-owner: (source-owner #f) source-import: (source-import compiler-import/independent)
+         refuse-input-context: (refuse-input-context #f))
   ;; Own the association before a source route or role preparation can invoke
   ;; a currentness callback. Restoring this parameter also restores nested owners.
   (def selected-sources (make-hash-table))
@@ -529,7 +548,8 @@
                    (make-compiler-input (.ref entry 'input) source-state source-owner entry))) entries)))
   (parameterize ((compiler-source-inputs selected-sources))
     (let (roles (compiler-role-paths entries))
-      (if unified? (call-with-selected-source-view entries roles action source-reads source-import)
+      (if unified? (call-with-selected-source-view entries roles action source-reads source-import
+                     refuse-input-context)
         (call-with-role-compiler-inputs entries roles action source-reads source-import)))))
 (def (for-each-batch entries action) (action entries))
 (def (compiler-import/independent _entry _input _importer _target _identity action)
@@ -672,14 +692,16 @@
 
 ;; The downstream output environment owns this materialization. Stable source
 ;; contents are reused; every invocation still admits original source snapshots.
-(def (call-with-selected-source-view entries roles action source-reads source-import)
+(def (call-with-selected-source-view entries roles action source-reads source-import refuse-input-context)
   (def libdir (build-output-directory))
   (call-with-selected-output-lock libdir
     (lambda ()
       (module-source-measure-operation 'compiler-view-extent
         (lambda ()
-          (call-with-selected-source-view/locked entries roles action source-reads source-import libdir))))))
-(def (call-with-selected-source-view/locked entries roles action source-reads source-import libdir)
+          (call-with-selected-source-view/locked entries roles action source-reads source-import
+            libdir refuse-input-context))))))
+(def (call-with-selected-source-view/locked entries roles action source-reads source-import libdir
+                                       refuse-input-context)
   (def identities (map (lambda (entry) (.ref entry 'compiler-identity)) entries))
   (artifact-files identities libdir #f)
   (def view (selected-output-source-directory libdir))
@@ -764,10 +786,9 @@
             (call-with-output-file (list path: target truncate: #t) (lambda (out) (display content out))))))
       (module-source-measure-operation 'compiler-view-after
         (lambda () ((.ref input 'admit-current))))) batch)))
-  (def previous (load-path))
-  (dynamic-wind
-    (lambda () (add-load-path! view libdir))
-    (lambda ()
-      (parameterize ((current-build-source-directory view))
-        (call-with-role-compiler-inputs entries roles action source-reads source-import)))
-    (lambda () (set-load-path! previous))))
+  (def (compile)
+    (parameterize ((current-build-source-directory view))
+      (call-with-role-compiler-inputs entries roles action source-reads source-import)))
+  (if refuse-input-context
+    (call-with-build-input-path libdir compile refuse-input-context source-roots: (list view))
+    (call-with-build-input-path libdir compile source-roots: (list view))))

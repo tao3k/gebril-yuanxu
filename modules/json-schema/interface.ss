@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (.def JsonSchema
   identity: 'json-schema
+  tags: '(schema validation)
   core:
   (.o requires: (.o)
       scope-contract: JsonSchemaScopeContract

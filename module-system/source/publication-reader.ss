@@ -103,7 +103,7 @@
                (write 'namespace: port) (display " " port)
                (write (string-append prefix "/" (path-strip-extension name)) port) (newline port)
                (for-each (lambda (form) (write form port) (newline port)) forms)))
-           (hash-put! artifacts (path-normalize target) #t)
+           (hash-put! artifacts (path-normalize target) path)
            (hash-put! wrappers path target) target))
        (def (record-input! input)
          (let (path (.ref input 'path))
@@ -192,7 +192,6 @@
                             (and prefix
                                  (string-prefix? prefix
                                    (symbol->string (.ref input 'compiler-identity))))))
-                 (record-input! input)
                  ;; An explicit owner may be a different checkout from this
                  ;; interpreter's compile anchor. Bind its verified input to
                  ;; the SAME captured native Context, never re-evaluate tools
@@ -205,6 +204,14 @@
                      (error "owned compiler source has competing native contexts" path))
                    (when (and previous (not (eq? previous native)))
                      (error "owned compiler source has competing native aliases" path))
+                   ;; An installed compiler Context remains a prerequisite even
+                   ;; when its optional checkout is inside a selected package.
+                   ;; Keep the source/currentness and canonical-context checks;
+                   ;; only actual native SOURCE contexts contribute targets.
+                   (let (origin (module-context-path native))
+                     (when (and (string? origin)
+                                (member (path-extension origin) '(".ss" ".scm" ".sld")))
+                       (record-input! input)))
                    (hash-put! (reader-session-tool-paths session) path native))))
          (parameterize ((current-module-source-phase 'compiler-import))
            (call-with-module-source-read-cache
@@ -226,6 +233,11 @@
                  (reader-add-input-guard! session input)
                  (record-input! input)
                  (write-wrapper path (reader-body (.ref input 'compiler-forms)) (.ref input 'compiler-identity))))))
+       (def (library-kernel path)
+         (or (and kernel-root (within? kernel-root path)
+                  (or source-tree (not tree) (not (within? tree path)))
+                  kernel-root)
+             (and source-tree ((.ref source-tree 'package-kernel) path))))
        (def (shared-context original-path owner-root reload? (shared? #t))
          (let* ((path (path-normalize original-path))
                 (retained
@@ -235,8 +247,8 @@
                          (lambda (input-path)
                            (let (owner ((.ref source-tree 'locate-owner) input-path))
                              (if owner (list (.ref owner 'identity) (.ref owner 'root))
-                               (and kernel-root (within? kernel-root input-path)
-                                    (list 'library kernel-root)))))
+                               (let (kernel (library-kernel input-path))
+                                 (and kernel (list 'library kernel))))))
                          (lambda (path child)
                            (let (existing (hash-get (reader-session-kernel-contexts session) path))
                              (or (not existing) (eq? existing child))))
@@ -297,8 +309,8 @@
                               (let (owner ((.ref source-tree 'locate-owner) path))
                                 (hash-put! (reader-session-kernel-owners session) context
                                   (if owner (list (.ref owner 'identity) (.ref owner 'root))
-                                    (and kernel-root (within? kernel-root path)
-                                         (list 'library kernel-root))))))
+                                    (let (kernel (library-kernel path))
+                                      (and kernel (list 'library kernel)))))))
                             context))
                         (lambda () (when shared? (set! kernel-depth (- kernel-depth 1)))))))))
            (call-with-module-source-read-cache
@@ -343,16 +355,18 @@
             ;; unselected/disabled Interface owners. An ownerless library
             ;; may therefore use the SAME package-kernel route across window
             ;; prefixes too. Bare SourceRefs retain their original boundary.
-            ((and kernel-root (within? kernel-root path)
-                  (or source-tree (not tree) (not (within? tree path))))
-             ;; The window admits Modules, not private ownership of these
-             ;; ownerless libraries. Preserve their native public-name
-             ;; binding, including the original compiler association bridge.
-             (when (and source-tree ((.ref source-tree 'within-window?) path))
-               (unless (reader-prepare-public-dependency session path)
-                 (public-dependency-input path #f #t)
-                 (error "public source identity changed" path)))
-             (shared-context original-path kernel-root reload?))
+            ((library-kernel path)
+             => (lambda (kernel)
+                  ;; Only an actual import can bring an ownerless library into
+                  ;; the selected graph. Retain its canonical binding and guards
+                  ;; when the library belongs to another declared package.
+                  (when (and source-tree
+                             (or (not (equal? kernel kernel-root))
+                                 ((.ref source-tree 'within-window?) path)))
+                    (unless (reader-prepare-public-dependency session path)
+                      (public-dependency-input path #f #t)
+                      (error "public source identity changed" path)))
+                  (shared-context original-path kernel reload?)))
             (else
              ;; Public dependencies may expand a relative source import
              ;; before an Gerbil expander context has been cached. Reuse the canonical
@@ -468,13 +482,19 @@
               (owner (source-context owned-path reload?))
               (else
                (let (source
-                     (or (and package-root (module-build-source-path context package-root))
+                     (and owned-path
+                      (or (and package-root (module-build-source-path context package-root))
                          ;; A nested native package does not exhaust the
                          ;; source Context's already admitted kernel. This
                          ;; is declared authority, not an ancestor search or
                          ;; permission to rebuild installed prerequisites.
                          (and kernel-root (not (equal? kernel-root package-root))
-                              (module-build-source-path context kernel-root))))
+                              (module-build-source-path context kernel-root))
+                         (let (kernel (and source-tree
+                                           ((.ref source-tree 'package-kernel) owned-path)))
+                           (and kernel (not (equal? kernel package-root))
+                                (not (equal? kernel kernel-root))
+                                (module-build-source-path context kernel))))))
                  (if source (source-context source reload?) context))))))))
        (def (resolve-role role names)
          (reader-current! session 'role-entry)

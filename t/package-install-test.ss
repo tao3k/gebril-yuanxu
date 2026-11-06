@@ -36,6 +36,7 @@
       (def source (.get yuanxu.init.exports tests source))
       (def command-root (.get source source-root))
       (def inherited (string-join (load-path) ":"))
+      (def build-cores (getenv "GERBIL_BUILD_CORES"))
       ;; Propagate the existing Case heap policy before any child imports.
       (def runtime-option (car (.get TestingScript. runtime-options)))
       (def runtime-environment
@@ -73,7 +74,10 @@
             (execution-progress! 'package-actions actions)
             output)
           (def (pkg state directory . arguments)
-            (invoke (append '("gerbil" "pkg") arguments) directory state))
+            ;; Use the native concurrency setting at the command boundary.
+            ;; No local tagger override or package-manager patch participates.
+            (invoke (append (list "env" (string-append "GERBIL_BUILD_CORES=" build-cores)
+                                  "gerbil" "pkg") arguments) directory state))
           (def (ordinary state directory operation)
             (invoke (if (equal? operation "use") '("gxi" "use.ss")
                         (list "./build.ss" operation)) directory state))
@@ -104,6 +108,7 @@
           (git temporary "clone" "-q" "--branch" "v0.1.0" consumer managed-consumer)
           ;; Exercise the user's native command, including its real TAGS index.
           (def install-started (real-time))
+          (displayln "INSTALL-CORES " build-cores) (force-output)
           (def install-output (pkg installed managed-consumer "deps" "--install"))
           (displayln "INSTALL-WITH-TAGS seconds=" (- (real-time) install-started))
           (check-equal? (compile-events install-output) '())

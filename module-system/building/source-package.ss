@@ -6,8 +6,52 @@ prelude: :gerbil/core
                  expander-context-id core-resolve-library-module-path
                  core-bound-module-prelude? syntax-local-e module-context?
                  module-source-path prelude-context-path core-read-module/sexp
-                 core-library-package-plist core-library-package-path-prefix))
-(export package-prelude-identity register-module-build-source! register-yuanxu-build-source! module-build-source-path)
+                 core-library-package-plist core-library-package-path-prefix)
+        (only-in :std/list/list delete-duplicates/hash))
+(export package-prelude-identity register-module-build-source! register-yuanxu-build-source! module-build-source-path
+        call-with-build-input-path)
+
+;; The init-owned source projection chooses its compiler inputs. std/make owns
+;; the output directory separately; runtime consumers retain their normal path.
+;; This is a native Gerbil dynamic extent, not another resolver or module cache.
+(def (call-with-build-input-path output action
+                                 (refuse (lambda () (error "source projection changed its compiler input context")))
+                                 source-roots: (source-roots '())
+                                 make-source: (make-source #f))
+  (def previous (load-path))
+  (def (canonical path)
+    (path-strip-trailing-directory-separator (path-normalize (path-expand path))))
+  (def destination (canonical output))
+  (def (output? path) (string=? destination (canonical path)))
+  (def inputs (append (filter (lambda (path) (not (output? path))) previous)
+                     (filter output? previous)))
+  (unless (ormap output? inputs)
+    (set! inputs (append inputs (list output))))
+  ;; A declared checkout owns its compiler sources even when an ordinary
+  ;; prerequisite contains compiled copies. Gerbil still resolves identities
+  ;; and paths. Keep the caller's prerequisite order and output fallback.
+  (unless (null? source-roots)
+    (let* ((sources (filter (lambda (path) (not (output? path)))
+                            (delete-duplicates/hash source-roots key: canonical from-end?: #t)))
+           (source-origins (map canonical sources)))
+      (set! inputs (append sources (filter (lambda (path)
+                                            (not (member (canonical path) source-origins)))
+                                          inputs)))))
+  (def input-origins (map canonical inputs))
+  (dynamic-wind
+    (lambda () (set-load-path! inputs))
+    action
+    (lambda ()
+      (def actual (map canonical (load-path)))
+      ;; Gerbil make prepends srcdir once. Accept only that native transition
+      ;; during dispatch and restore it before returning to source guards.
+      (def unchanged?
+        (or (equal? input-origins actual)
+            (and make-source (equal? (cons (canonical make-source) input-origins) actual))))
+      (set-load-path! previous)
+      ;; An author failure cannot hide an input mutation and leave a prepared
+      ;; result reusable. Restore first, then refuse on every kind of exit.
+      (unless unchanged? (refuse)))))
 
 (def (package-prelude-identity root)
   ;; Gerbil owns package/header resolution. Only the root's actual prelude file

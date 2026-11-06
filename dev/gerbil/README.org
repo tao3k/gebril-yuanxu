@@ -96,3 +96,24 @@ index. The consumer use process reflects that actual window and requires every
 scope cache cold, then checks the independently declared two-owner consumer
 closure. Native editor bindings and the logical Module window have separate
 owners. The complete acceptance requires BOTH, with unchanged source syntax.
+
+* Core cold-build acceptance
+
+Use a new output environment with an empty =GERBIL_PATH/lib= and the
+declared compiler prerequisites installed. From the Core checkout, run:
+
+#+begin_src sh
+timeout --signal=TERM --kill-after=5s 120s just build
+#+end_src
+
+The 120-second budget covers the full native build. A natural exit and the
+ordinary Make output checks qualify the run. A continuation using partial
+products records recovery separately. Inspect the active compiler workers
+and their targets when a build exceeds its budget.
+
+The measured cold build exited in 112.84 seconds and compiled 274 distinct
+targets. Native Make accounted for 94.42 seconds. The final dynamic sections
+of =preparation=, =artifacts=, and =test-retention= appeared between 93 and
+100 seconds on the build process clock. The =publication-reader= and =link=
+sections completed later. The preceding 60-second sample still showed active
+Gambit and C compiler jobs.

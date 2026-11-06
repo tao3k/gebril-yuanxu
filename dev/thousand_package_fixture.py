@@ -47,7 +47,8 @@ def generate(root: Path, profile: bool = False) -> None:
               if number > 1 else "(def Config (.o port: 5432))\n")
         requires = "(.o)" if number == 0 else "(.o Shared: (.o module-id: 'module-0 contract: ScopeContract))"
         build = " projections: (list Build)" if number == 1 else ""
-        tags = (" tags: '(security)" if number == 1 else " tags: '(other)") if profile else ""
+        # Interface categories remain explicit even for consumers selecting IDs.
+        tags = " tags: '(security)" if number == 1 else " tags: '(other)"
         write(owner / "interface.ss", f"""(.def Module identity: 'module-{number}{tags}
   core: (.o requires: {requires} scope-contract: ScopeContract
     exports: (.o (:: @ Scope.) config: Config){build})

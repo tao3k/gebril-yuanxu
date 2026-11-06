@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Test-source admission over the existing selection; Graph admission is lazy.
 (import (runtime: :clan/poo/object)
-        (only-in :std/list/list delete-duplicates/hash)
+        (only-in :std/list/list delete-duplicates/hash any)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
         (only-in :yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-name? module-source-admit-current!
@@ -33,9 +33,11 @@
 (def (module-test-projection selection (owners #f) (suite #f))
   (unless (memq suite '(#f integration qualification)) (error "unknown module test suite" suite))
   (def context (.ref selection 'context))
-  ;; Test discovery is not configuration composition. Follow the init roots,
-  ;; not the resolver's complete dependency order. Auto namespace leaves can
-  ;; make a bounded explicit demand through the existing eligibility policy.
+  (when (and owners (.slot? context 'resolve-root) (list? owners) (andmap symbol? owners))
+    (set! owners (map (.ref context 'resolve-root) owners)))
+  ;; Ordinary test discovery follows init roots without composing a Graph.
+  ;; Profile defaults below instead use the product's shared dependency closure.
+  ;; Auto leaves may make bounded explicit demands through the same policy.
   (def order (.ref context 'selected))
   (def (eligible? owner)
     (and (not (memq owner (.ref context 'denied-modules)))
@@ -46,7 +48,18 @@
                    (= (length owners) (length (delete-duplicates/hash owners from-end?: #t)))
                    (andmap eligible? owners)))
     (error "test owners must be distinct eligible members of the selection" owners order))
-  (def selected-owners (if owners owners order))
+  (def profiled?
+    (and (.slot? context 'intent)
+         (let (intent (.ref context 'intent))
+           (any (lambda (window) (and (.slot? window 'profile) (.ref window 'profile)))
+                (if (.slot? intent 'windows) (.ref intent 'windows) (list intent))))))
+  ;; A category selects a dependency-closed product, shared with native Make.
+  ;; Ordinary explicit test discovery remains narrow (and Graph-lazy); an
+  ;; explicitly requested owner list remains bounded by the eligibility check.
+  (def selected-owners
+    (cond (owners owners)
+          (profiled? (.ref (.ref selection 'selected-graph) 'module-order))
+          (else order)))
   ;; Reuse the selection's publication/source cache, including the reader's
   ;; Gerbil-observed private and compiler dependencies. Do not resolve a second
   ;; Graph or link a business scope. A test owner still needs valid sources;
@@ -80,11 +93,12 @@
      (let* ((source ((.ref context 'locate) owner))
             (metadata (yuanxu-module-source-ref-metadata source))
             (mount (assq 'namespace-mount metadata))
+            (declaration (assq 'declaration-id metadata))
             (qualification-name
               (string-append
                 (if (and mount (cdr mount))
                   (string-append (symbol->string (cdr mount)) "/") "")
-                (symbol->string owner)))
+                (symbol->string (if declaration (cdr declaration) owner))))
             (root (or (assq 'module-root metadata) (assq 'module-tree-root metadata))))
        (unless root (error "module tests require an admitted local module root" owner))
        (when qualification-root

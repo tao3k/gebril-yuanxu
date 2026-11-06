@@ -627,6 +627,19 @@ def main():
                 core / "module-system/source/collection.ss", core / "t/module-source-admission-test.ss",
                 core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Source/Collections.lean"])
     bound.extend(sorted((core / "modules/funflow/control-plane").glob("*.ss")))
+    if any(case[0].startswith("IncrementalRoles") for case in selected_cases):
+        # The reused temporal controls also qualify Feature scope integration.
+        # Bind the actual consumers, not only the pre-existing abstract model.
+        bound.extend(core / path for path in (
+            "module-system/source/selection.ss",
+            "module-system/source/feature-scopes.ss",
+            "module-system/source/publication.ss",
+            "module-system/source/link.ss",
+            "t/module-feature-interface-test.ss",
+            "t/module-feature-scope-test.ss",
+            "dev/proofs/lean/YuanxuProof/ModuleSystem/Selection/FeatureScopes.lean",
+            "dev/sysml/20-module-loading/20.35-feature-scope-composition.org",
+        ))
     bound.extend([core / "modules/funflow/types.ss", core / "modules/funflow/objects.ss",
                   core / "modules/funflow/func.ss", core / "modules/funflow/store.ss",
                   core / "t/funflow-function-types-test.ss",

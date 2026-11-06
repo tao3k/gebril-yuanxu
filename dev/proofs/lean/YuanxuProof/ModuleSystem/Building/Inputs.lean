@@ -196,6 +196,84 @@ theorem context_reuse_keeps_rejection (use : ContextUse) (check : Unit → Excep
     reuseContext use use check = .error message := by
   simp [reuseContext, stale, Except.map]
 
+/-- Source projection uses the admitted native prerequisites first. Runtime
+execution uses the selected products first. Make's output inventory is a
+separate argument; changing lookup order never changes the selected targets. -/
+def compilerLookup (prerequisite product : Option ContextUse) : Option ContextUse :=
+  prerequisite.orElse fun _ => product
+
+def consumerLookup (prerequisite product : Option ContextUse) : Option ContextUse :=
+  product.orElse fun _ => prerequisite
+
+theorem compiler_context_stable_across_build (input : ContextUse)
+    (cold hot : Option ContextUse) :
+    compilerLookup (some input) cold = compilerLookup (some input) hot := by rfl
+
+theorem consumer_uses_selected_product (input : Option ContextUse) (product : ContextUse) :
+    consumerLookup input (some product) = some product := by rfl
+
+theorem absent_prerequisite_keeps_native_fallback (product : Option ContextUse) :
+    compilerLookup none product = product := by rfl
+
+theorem compiler_lookup_keeps_currentness_failure (input : ContextUse)
+    (product : Option ContextUse) (check : Unit → Except String Unit)
+    (message : String) (stale : check () = .error message) :
+    reuseContext input ((compilerLookup (some input) product).getD input) check = .error message := by
+  exact context_reuse_keeps_rejection input check message stale
+
+/-- Existing products remain available as fallback; only their position moves.
+The relative prerequisite order is preserved by the first filter. -/
+def compilerPath (output : Nat) (paths : List Nat) : List Nat :=
+  paths.filter (fun path => path != output) ++ paths.filter (fun path => path == output)
+
+theorem compiler_path_membership (output path : Nat) (paths : List Nat) :
+    path ∈ compilerPath output paths ↔ path ∈ paths := by
+  by_cases same : path = output <;> simp [compilerPath, same]
+
+def reuseBuildSpec (refused : Bool) (prepared : Option α) : Except String (Option α) :=
+  if refused then .error "input context refused" else .ok prepared
+
+theorem refused_epoch_never_reuses_prepared (prepared : Option α) :
+    reuseBuildSpec true prepared = .error "input context refused" := by rfl
+
+#guard compilerPath 9 [9, 1, 2, 9] == [1, 2, 9, 9]
+
+/-- An explicit Make output may be absent from the runtime path. It still
+belongs at the end of the compiler path. -/
+def compilerPathWithFallback (output : Nat) (paths : List Nat) : List Nat :=
+  compilerPath output paths ++ (if output ∈ paths then [] else [output])
+
+theorem compiler_path_contains_output (output : Nat) (paths : List Nat) :
+    output ∈ compilerPathWithFallback output paths := by
+  by_cases present : output ∈ paths <;>
+    simp [compilerPathWithFallback, present, compiler_path_membership]
+
+#guard compilerPathWithFallback 9 [1, 2] == [1, 2, 9]
+#guard compilerPathWithFallback 9 [9, 1, 2] == [1, 2, 9]
+
+/-- A declared native checkout takes priority over an installed copy and
+the consumer output. The candidate is eligible only after native identity
+and owner admission, which are checked by the source reader. -/
+def compilerLookupWithSource (prerequisite source product : Option ContextUse) :
+    Option ContextUse :=
+  source.orElse fun _ => prerequisite.orElse fun _ => product
+
+theorem declared_compiler_source_precedes_installed_copy (source : ContextUse)
+    (prerequisite product : Option ContextUse) :
+    compilerLookupWithSource prerequisite (some source) product = some source := rfl
+
+theorem missing_compiler_source_preserves_prerequisite (input : ContextUse)
+    (product : Option ContextUse) :
+    compilerLookupWithSource (some input) none product = some input := rfl
+
+theorem compiler_source_is_stable_across_output (source : ContextUse)
+    (prerequisite cold hot : Option ContextUse) :
+    compilerLookupWithSource prerequisite (some source) cold =
+      compilerLookupWithSource prerequisite (some source) hot := rfl
+
+theorem missing_compiler_source_preserves_output (product : Option ContextUse) :
+    compilerLookupWithSource none none product = product := rfl
+
 /-- Gerbil's single-directory resolver skips a registered package directory
 when its prefix differs. Bound preludes and the package's language entry are
 resolved before reaching that directory search. -/

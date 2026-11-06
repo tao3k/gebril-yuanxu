@@ -45,6 +45,10 @@
   (check-equal? (string-contains output "... execute compile job ") #f)
   ;; Accounting must be active for absence to count as a work assertion.
   (check-equal? (and (string-contains output "(BUILD-ACCOUNT (calls build-current)") #t) #t)
+  ;; Normal build verbosity keeps admission/work counters, without detailed
+  ;; per-file initializer timing. All native clean/identity checks below remain.
+  (check-equal? (string-contains output "(BUILD-ACCOUNT (reader-initialization ") #f)
+  (check-equal? (string-contains output "(BUILD-ACCOUNT (calls (reader-initializer-body ") #f)
   (check-equal?
     (string-contains output "BUILD-BOOTSTRAP-ROOT :yuanxu/admission/publication") #f)
   (for-each

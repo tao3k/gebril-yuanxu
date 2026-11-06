@@ -10,6 +10,7 @@
         (only-in :clan/poo/mop Type Type. Bool Object define-type element?)
         (only-in :clan/poo/type Record Symbol List))
 (export ModulePublicationContract ModuleScopeContextContract ContributionRouteContract ModuleInterfaceViewContract
+        ModuleFeatureRefinementContract
         module-publication? module-scope-context? requirement-option
         module-publication-contract-current? module-publication-dependency-projection)
 (def (has-slots? value names)
@@ -30,6 +31,9 @@
           refine: [Callable optional: #t]
           publish?: [Bool optional: #t]
           view: [InterfaceView optional: #t]))
+(define-type ModuleFeatureRefinementContract
+  (.cc (Record refine: [Callable optional: #t] contract: [ScopeType optional: #t])
+       identity: 'module/feature-refinement))
 (def (requirement-option requirement key)
   (and (.slot? requirement key) (.ref requirement key)))
 (define-type (Requirement @ Type.)

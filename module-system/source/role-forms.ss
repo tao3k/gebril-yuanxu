@@ -75,6 +75,7 @@ prelude: :gerbil/core
 (def (parse-init-window body source-path (window? #f))
   (def mount-value #f)
   (def profile-value #f)
+  (def package-value #f)
   (def seen (make-hash-table-eq))
   (let parse ((tail body) (mode-value 'explicit) (root-value "modules")
               (group #f) (rows '()) (options '()))
@@ -85,10 +86,19 @@ prelude: :gerbil/core
       (when profile-value
         (unless (and (eq? mode-value 'auto) (memq 'source: options))
           (error "profile selection requires source and auto mode" source-path)))
+      (when package-value
+        (unless (and (not (char=? (string-ref root-value 0) #\/))
+                     (andmap (lambda (part)
+                               (and (> (string-length part) 0)
+                                    (not (member part '("." "..")))
+                                    (not (string-index part #\\))
+                                    (not (string-index part #\:))))
+                             (string-split root-value #\/)))
+          (error "package window requires a confined relative source" root-value)))
       [mode-value root-value mount-value profile-value
-       (and (memq 'source: options) #t) (reverse rows)])
+       (and (memq 'source: options) #t) (reverse rows) package-value])
      ((not (pair? tail)) (error "improper init declaration" source-path))
-     ((memq (car tail) '(mode: source: rename: profile:))
+     ((memq (car tail) '(mode: source: rename: profile: package:))
       (unless (and (pair? (cdr tail)) (not group) (null? rows) (not (memq (car tail) options)))
         (error "duplicate or misplaced init option" (car tail) source-path))
       (let ((key (car tail)) (value (cadr tail)))
@@ -96,6 +106,16 @@ prelude: :gerbil/core
           ((mode:) (unless (memq value '(auto explicit)) (error "invalid init mode" value)))
           ((source:) (unless (and (string? value) (> (string-length value) 0))
                        (error "invalid init source" value)))
+          ((package:)
+           (unless (and (string? value)
+                        (= (length (string-split value #\/)) 3)
+                        (andmap (lambda (part)
+                                  (and (> (string-length part) 0)
+                                       (init-name? (string->symbol part))
+                                       (not (string-index part #\@))))
+                                (string-split value #\/)))
+             (error "package window requires a native repository identity without a tag" value))
+           (set! package-value value))
           ((profile:)
            (unless (init-name? value) (error "profile: requires a literal name" value))
            (set! profile-value value))
@@ -168,16 +188,18 @@ prelude: :gerbil/core
     ([':load-modules (? string? root) . tail]
      (let split ((rest tail) (clauses '()))
        (if (or (null? rest) (eq? (car rest) ':load-modules))
-         (with ([mode directory mount profile explicit? decisions]
+         (with ([mode directory mount profile explicit? decisions package]
                 (parse-init-window (cons* 'source: root (reverse clauses)) source-path #t))
            (def name (or mount (string->symbol (path-strip-directory
                                   (path-strip-trailing-directory-separator (path-expand root))))))
-           (unless (and (> (string-length root) 0) (not (member ".." (string-split root #\/))))
+           ;; The declared window is the boundary. Like source: in a single
+           ;; window, a relative path may reach a separate package checkout.
+           (unless (> (string-length root) 0)
              (error "invalid directory window source" root))
            (unless (and (init-name? name)
                         (not (memq name '(build-spec build-current! test-spec test-current! tests))))
              (error "invalid or reserved directory mount" name))
-           (cons [mode directory name profile explicit? decisions]
+           (cons [mode directory name profile explicit? decisions package]
                  (parse-init-windows rest source-path)))
          (split (cdr rest) (cons (car rest) clauses)))))
     (_ (error "directory window requires a literal source path" source-path))))
@@ -195,25 +217,22 @@ prelude: :gerbil/core
           (names (make-hash-table)) (roots (make-hash-table)) (ids (make-hash-table-eq)))
       (for-each
         (lambda (window)
-         (with ([_ directory name _ _ decisions] window)
+         (with ([_ directory name _ _ decisions package] window)
           (def key (string-downcase (symbol->string name)))
-          (def root (path-strip-trailing-directory-separator
+          (def root (cons package (path-strip-trailing-directory-separator
                       (path-expand directory
-                        (if source-path (path-directory source-path) (current-directory)))))
+                        (if source-path (path-directory source-path) (current-directory))))))
           (when (hash-key? names key) (error "duplicate directory mount" name))
           (when (hash-key? roots root) (error "duplicate directory window source" root))
           (hash-put! names key #t)
           (hash-put! roots root #t)
-          (for-each
-            (lambda (row)
-              (def id (car row))
-              (when (hash-key? ids id) (error "publication identity occurs in multiple windows" id))
-              (hash-put! ids id #t))
-            decisions))) windows)
+          ;; parse-init-window already rejects repeated names within a root.
+          ;; Distinct roots are routed by native owner identity at discovery.
+          )) windows)
       (values windows #t))))
 
 (def (module-init-mounts forms)
   (let-values (((windows mounted?) (parse-module-init forms #f)))
     (if mounted?
-      (map (lambda (window) (with ([_ _ mount _ _ _] window) mount)) windows)
+      (map (lambda (window) (with ([_ _ mount _ _ _ _] window) mount)) windows)
       '(#f))))

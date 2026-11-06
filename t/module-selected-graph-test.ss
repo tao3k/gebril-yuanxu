@@ -247,9 +247,13 @@
                   (let (v (view (.o) `((yuanxu! mode: explicit :app (web ,flag)))))
                     (check-exception (.get v selected-graph) error?))) '(+typo -typo)))
     (yuanxu-test-case "publication owner identity cannot be forged by a Feature"
-      (let (v (view (.o early: (.+ (descriptor 'early) (.o owner-module-id: 'other/module)))
-                    '((yuanxu! mode: explicit :app (web +early)))))
-        (check-exception (.get v selected-graph) error?)))
+      (for-each
+        (lambda (feature)
+          (let (v (view (.o early: feature) '((yuanxu! mode: explicit :app (web +early)))))
+            (check-exception (.get v selected-graph) error?)))
+        (list (.+ (descriptor 'early) (.o owner-module-id: 'other/module))
+              (.o owner-module-id: 'other/module)
+              (.o feature-id: 'other/module/early))))
     (yuanxu-test-case "Feature cycles and mandatory Core cycles use the existing resolver"
       (let (v (view (.o early: (descriptor 'early '(app/web/late))
                         late: (descriptor 'late '(app/web/early)))

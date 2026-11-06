@@ -152,15 +152,19 @@
   (yuanxu-test-case "tool eligibility does not enlarge the declaration dependency closure"
       (with-publication-source
        (lambda (_root module-root source _view)
+         (def projection-context
+           (core-import-module ':yuanxu/module-system/building/build-projection))
          (def projection
-           (path-normalize (module-build-source-path
-             (core-import-module ':yuanxu/module-system/building/build-projection) core-source-root)))
+           (path-normalize (module-build-source-path projection-context core-source-root)))
+         (def projection-source?
+           (string=? (path-extension (module-context-path projection-context)) ".ss"))
          (def dependencies (make-hash-table))
          (for-each-build-module
-           (core-import-module ':yuanxu/module-system/building/build-projection)
+           projection-context
            (lambda (context)
-             (let (path (module-build-source-path context core-source-root))
-               (when path (hash-put! dependencies (path-normalize path) #t)))))
+             (let (path (module-context-path context))
+               (when (and (string? path) (string=? (path-extension path) ".ss"))
+                 (hash-put! dependencies (path-normalize path) #t)))))
          (def (observed-paths reader)
            (def paths (make-hash-table))
            (parameterize ((current-module-source-observer
@@ -175,7 +179,8 @@
          (.call reader read source)
          (check-equal? (hash-key? (observed-paths reader) projection) #f)
          ;; Changing a role requires a fresh reader. Its actual import must
-         ;; register the entire runtime transitive closure, not only the root.
+         ;; register source contexts in the demanded native closure. An SSI
+         ;; retains native identity checks, not authority over its checkout.
          (write-file (path-expand "build.ss" module-root)
            "(import (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)) (.def Build function: yuanxu-project-source-spec)")
          (write-file (path-expand "interface.ss" module-root)
@@ -189,13 +194,15 @@
            (parameterize ((current-module-build-phase? #t))
              (procedure? (.get published core configuration-build function))) #t)
          (def paths (observed-paths demanded))
-         (check-equal? (hash-key? paths projection) #t)
-         ;; Compare the entire real runtime dependency closure, rather than a
-         ;; former compiler-bootstrap helper no longer imported by this owner.
-         (for-each (lambda (entry) (check-equal? (hash-key? paths (car entry)) #t))
-                   (hash->list dependencies))
+         (check-equal? (hash-key? paths projection) projection-source?)
+         (check-equal? (eq? (core-import-module ':yuanxu/module-system/building/build-projection)
+                            projection-context) #t)
+         ;; Derive source support from actual runtime contexts. Mapping an SSI
+         ;; back to SS describes a possible build input, not an imported source.
+         (check-equal? (filter (lambda (path) (not (hash-key? paths path)))
+                              (hash-keys dependencies)) '())
          ;; A topology hit still requires fresh byte reads on a later check.
-         (check-equal? (hash-key? (observed-paths demanded) projection) #t)
+         (check-equal? (hash-key? (observed-paths demanded) projection) projection-source?)
          (write-file (path-expand "config.ss" module-root)
            "(def Greeting \"changed after demand\") (export Greeting)")
          (check-exception (.call demanded admit-current)

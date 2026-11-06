@@ -12,6 +12,7 @@
         :yuanxu/module-system/source/admission
         (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)
         :yuanxu/module-system/source/selection
+        :yuanxu/module-system/source/feature-scopes
         :yuanxu/module-system/source/preparation
         :yuanxu/module-system/source/directory
         :yuanxu/module-system/source/reader
@@ -89,7 +90,11 @@
     (when current! (call-with-module-source-fresh-reads current!)))
   (def (invoke)
     (check!)
-    (let (value (module-source-measure-operation (if (pair? stage) (car stage) stage) thunk))
+    (let (value (module-source-measure-operation (if (pair? stage) (car stage) stage)
+                 (lambda ()
+                   ;; Keep owner-qualified counts in the existing private
+                   ;; accounting table, without installing an open observer.
+                   (if (pair? stage) (module-source-measure-operation stage thunk) (thunk)))))
       (check!)
       value))
   (let (observer (current-module-source-observer))
@@ -612,7 +617,7 @@
              ;; Only this private index insertion follows, with no new effect.
              (hash-put! graphs roots graph)
              graph)))))
-    (def (link id path)
+    (def (link id path graph)
       (eligible! id path)
       (cond
        ((hash-key? active id) (error "module dependency cycle" (reverse (cons id path))))
@@ -636,13 +641,16 @@
                                  (observe-supported-link-stage (list name id alias) action current!
                                    (lambda (check!) (set! checks (cons check! checks)))))
                                (let* ((requirement (.ref requirements alias))
-                                    (base-record (link (.ref requirement 'module-id) (cons id path)))
+                                    (required-id (if (.slot? context-value 'resolve-module-id)
+                                                   ((.ref context-value 'resolve-module-id) id (.ref requirement 'module-id))
+                                                   (.ref requirement 'module-id)))
+                                    (base-record (link required-id (cons id path) graph))
                                     (interface?
                                      (requirement-option requirement 'view))
                                     (upstream (.ref base-record (if interface? 'interface 'scope)))
                                     (package-scope
                                      (if interface? upstream
-                                       (dependency-scope id alias (.ref requirement 'module-id) upstream)))
+                                       (dependency-scope id alias required-id upstream)))
                                     (refine (requirement-option requirement 'refine))
                                     (refined
                                      (if refine
@@ -650,12 +658,7 @@
                                          (lambda ()
                                            ;; Same runtime write fence used when a method
                                            ;; declaration specializes an existing receiver.
-                                           (instantiate-object! package-scope)
-                                           (parameterize
-                                               ((active-object-constructions
-                                                 (cons package-scope
-                                                       (cons upstream (active-object-constructions)))))
-                                             (refine package-scope))))
+                                           (refine-module-scope package-scope upstream refine)))
                                        package-scope))
                                     (provider-evidence
                                      (cond
@@ -669,7 +672,7 @@
                                        (edge-stage 'requirement-provider-admission
                                          (lambda ()
                                            (admit-module-value!
-                                             (.ref (.ref (.ref base-record 'publication) 'core) 'scope-contract)
+                                             (.ref base-record 'scope-contract)
                                              refined context-value))))))
                                     (effective-scope (.ref provider-evidence 'candidate))
                                     (contract (requirement-option requirement 'contract))
@@ -704,35 +707,63 @@
                                (and (requirement-option requirement 'publish?)
                                     (cons alias (.ref bindings alias)))))
                            (.all-slots requirements)))))
-                    (construction-current! void)
+                    (construction-checks '())
+                    (retain-construction!
+                     (lambda (check!) (set! construction-checks (cons check! construction-checks))))
+                    (feature-stage
+                     (lambda (name feature action)
+                       (observe-supported-link-stage (list name id feature) action current!
+                         retain-construction!)))
+                    (feature-check-stage
+                     (lambda (name feature action)
+                       ;; The invoking admission owns candidate reads. Never
+                       ;; enroll a consumer's candidate into provider support.
+                       (observe-link-stage (list name id feature) action current!)))
+                    (feature-index (.ref graph 'features-by-owner))
+                    (features (if (.slot? feature-index id) (.ref feature-index id) '()))
                     (unbound-scope
                      (observe-supported-link-stage (list 'scope-factory id)
                        (lambda () (realized-scope id ((.ref baseline 'link) bindings)))
                        current!
-                       (lambda (check!) (set! construction-current! check!))))
+                       retain-construction!))
+                    (feature-result
+                     (call-with-values
+                       (lambda () (compose-module-features unbound-scope features feature-stage))
+                       cons))
+                    (composed-scope (car feature-result))
+                    (feature-contracts (cdr feature-result))
+                    (effective-scope-contract
+                     (module-feature-scope-contract (.ref baseline 'scope-contract)
+                       feature-contracts context-value feature-check-stage))
                     (scope-value
                      (if (.slot? baseline 'admissions)
                        (observe-link-stage (list 'scope-publication-binding id)
-                         (lambda () (bind-exports unbound-scope baseline id selection-value))
+                         (lambda () (bind-exports composed-scope baseline id selection-value))
                          current!)
-                       unbound-scope))
+                       composed-scope))
                     (scope-evidence-value
-                     (observe-link-stage (list 'scope-admission id)
-                       (lambda ()
-                         (admit-module-value! (.ref baseline 'scope-contract) scope-value context-value))
-                       current!))
+                     (let (admit (lambda ()
+                                  (admit-module-value! effective-scope-contract scope-value context-value)))
+                       (if (null? feature-contracts)
+                         (observe-link-stage (list 'scope-admission id) admit current!)
+                         (observe-supported-link-stage (list 'scope-admission id) admit current!
+                           retain-construction!))))
+                    (_feature-tail
+                     (unless (null? features)
+                       (for-each (lambda (check!) (check!)) (reverse construction-checks))))
                     (record
                      (let ((admit-construction-current
                             (lambda ()
                               (current! 'scope-construction-current-before)
-                              (construction-current!)
+                              (for-each (lambda (check!) (check!)) (reverse construction-checks))
                               (current! 'scope-construction-current-after)))
                            (identity id) (generation generation-value) (source source-value)
                            (publication publication-value) (publication-evidence publication-evidence-value)
                            (dependency-records records) (scope (.ref scope-evidence-value 'candidate))
+                           (scope-contract effective-scope-contract)
                            (scope-evidence scope-evidence-value))
                        (.o identity generation source publication publication-evidence
-                           dependency-records scope scope-evidence interface
+                           dependency-records scope scope-contract scope-evidence interface
                            admit-construction-current))))
                (current! 'scope-linked)
                (hash-put! cache id record)
@@ -749,8 +780,8 @@
            ;; An existing Graph needs no traversal here: only this private
            ;; lookup precedes link's fresh eligibility/source guard. A new
            ;; demand still runs the full resolver and its post-author guard.
-           (unless (hash-key? graphs demand) (resolve-selection-graph demand)))
-         (link id '()))))
+           (link id '() (if (hash-key? graphs demand) (hash-ref graphs demand)
+                         (resolve-selection-graph demand)))))))
     (def (prepare id)
       (with-catch
        (lambda (exception) (set! failed? #t) (raise exception))
@@ -817,7 +848,7 @@
                           (resolve-selection-graph roots))))
             (unless (memq owner (.ref graph 'module-order))
               (error "admission owner is outside selected Graph" owner))
-            (link owner '())))
+            (link owner '() graph)))
         .with-packages:
         (lambda (package-result)
           (unless (eq? (.ref package-result 'build-graph) build-graph)
@@ -845,7 +876,10 @@
         .build-graph-for:
         (lambda (roots)
           (build-graph-producer
-            (list (resolve-selection-graph roots) prepare with-source-metadata prepared-input-state)))
+            (list (resolve-selection-graph
+                    (if (.slot? context-value 'resolve-root)
+                      (map (.ref context-value 'resolve-root) roots) roots))
+                  prepare with-source-metadata prepared-input-state)))
         selected-graph: (resolve-selection-graph (.ref context-value 'selected))
         selected-records: (begin (resolve-selection-graph (.ref context-value 'selected))
                                  (map resolve (.ref context-value 'selected)))

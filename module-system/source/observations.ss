@@ -115,7 +115,15 @@
     (values value times)))
 (def (module-source-measure-operation name action)
   (let (times (current-module-source-operation-times))
-    (if (not times) (action)
+    (if (or (not times)
+            ;; Scalar acceptance retains aggregate work and owner scope counts.
+            ;; Per-file initializer attribution belongs to explicit detailed
+            ;; accounting; its clocks/table rows/output are diagnostic work.
+            ;; The actual initializer and its guards still run exactly once.
+            (and (not (current-module-source-operation-accounting?))
+                 (pair? name)
+                 (memq (car name) '(reader-initialization reader-initializer-body))))
+      (action)
       (begin
         (hash-update! times (list 'calls name) (cut + <> 1) 0)
         ;; Attribute bounded stages, not each leaf read/query. In particular
@@ -134,12 +142,14 @@
           (measure-source-operation times name action))))))
 (def (measure-source-operation times name action)
   (if (if (eq? (current-module-source-operation-accounting?) 'stages)
-              (memq name '(profile-interface-scan reader-bootstrap reader-preparation-start reader-interface-start
+              (or (and (pair? name) (memq (car name) '(reader-initialization reader-initializer-body)))
+                  (memq name '(build-main build-specification build-dispatch std-make build-current
+                           profile-interface-scan reader-bootstrap reader-preparation-start reader-interface-start
                            reader-admission-start reader-current metadata-replay
                            reader-tool-inputs reader-private-closure reader-private-prepare
                            reader-native-import reader-role-import reader-source-resolution
                            reader-compile-start reader-eval-start
-                           source-authoring source-direction source-import-policy source-parse))
+                           source-authoring source-direction source-import-policy source-parse)))
               (and (current-module-source-operation-accounting?)
                  (memq name '(metadata-replay selection-current selected-graph reader-current source-read
                         build-projection build-current std-make

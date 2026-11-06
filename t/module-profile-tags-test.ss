@@ -1,5 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object "./qualification/module-scale/fixture.ss"
+        (only-in :std/io/tempfile call-with-temporary-directory)
+        (only-in :yuanxu/module-system/source/directory module-directory-context)
         (only-in :yuanxu/module-system/source/init module-interface-tags module-init-intent)
         (only-in :yuanxu/module-system/source/admission call-with-module-source-operation-measurement
                  current-module-source-observer)
@@ -84,6 +86,7 @@
       (check-equal? (module-interface-tags "interface.ss" "(export)") #f)
       (check-exception (module-interface-tags "interface.ss" "(.def X tags: (error \"not evaluated\"))") error?)
       (check-exception (module-interface-tags "interface.ss" "(.def X tags: '(security security))") error?)
+      (check-exception (module-interface-tags "interface.ss" "(.def X tags: '())") error?)
       (check-exception (module-interface-tags "interface.ss" "(.def X identity: 'x)") error?))
     (test-case "named Profile carries its source window and literal selector"
       (def intent
@@ -96,4 +99,33 @@
       (check-exception
         (module-init-intent '((yuanxu! mode: auto profile: security)) #f)
         error?))
+    (test-case "category roots span windows while dependency-only windows may be empty"
+      (call-with-temporary-directory "profile-windows-"
+        (lambda (root)
+          (def (write-source name text)
+            (def path (path-expand name root))
+            (create-directory* (path-directory path))
+            (call-with-output-file path (cut display text <>)))
+          (write-source "lab/tofu/interface.ss" "(.def Tofu tags: '(deployment))")
+          (write-source "core/flow/interface.ss" "(.def Flow tags: '(workflow))")
+          (def (declaration core-tag)
+            (write-source "consumer/init.ss"
+              (string-append
+                "(yuanxu! :load-modules \"../lab\" rename: Lab mode: auto profile: deployment"
+                " :load-modules \"../core\" rename: Core mode: auto profile: " core-tag ")")))
+          (declaration "deployment")
+          ;; Exercise inert directory policy; real role admission is covered by
+          ;; the scale case and Lab's cross-package OpenTofu consumer.
+          (def context (module-directory-context (path-expand "consumer/init.ss" root) #f
+                         publication-prepares-source?: #t))
+          (check-equal? (.get context selected) '(tofu))
+          (check-equal? (.call context eligible? 'flow) #t)
+          (check-equal? (.call context eligible? 'tofu) #t)
+          ;; Inert tag selection needs no package marker and cannot grant the
+          ;; native publication/compilation authority of a paired reader.
+          (check-exception
+            (.call context read-publication (.call context locate 'tofu)) error?)
+          ;; A miss for a DIFFERENT category cannot hide behind deployment's hit.
+          (declaration "missing")
+          (check-exception (module-directory-context (path-expand "consumer/init.ss" root) #f) error?))))
     (declaration-scale-case "Profile roots are shared by scope, build and tests" 1000 ProfileSelectionFixture)))

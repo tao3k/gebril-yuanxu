@@ -64,7 +64,7 @@
        (list? (.ref value 'roots)) (andmap build-root? (.ref value 'roots))
        (or (not (.slot? value 'library-roots))
            (and (list? (.ref value 'library-roots))
-                (andmap string? (.ref value 'library-roots))))))
+                (andmap (lambda (root) (or (string? root) (symbol? root))) (.ref value 'library-roots))))))
 (define-type (BuildContributionContract @ Type.)
   identity: 'module/build-contribution .element?: build-contribution?)
 (define-type (ExternalPackageContributionContract @ Type.)
@@ -181,15 +181,28 @@
     (def (add-library! publication projection owner contributor)
       (when (and (.slot? projection 'library-roots)
                  (pair? (.ref projection 'library-roots)))
-        (let* ((metadata (find (lambda (row)
-                                (and (cdr row) (string=? (path-strip-directory (car row)) "gerbil.pkg")))
-                              (.ref publication 'source-inputs)))
-               (package-root (and metadata (path-normalize (path-directory (car metadata))))))
+        (for-each
+         (lambda (entry)
+          ;; Strings retain the original nearest-package-relative spelling.
+          ;; A native library identity explicitly contributes a public root
+          ;; in this owner's already declared package kernel, never a new window.
+          (let* ((metadata
+                   (if (symbol? entry)
+                     (let* ((source (.ref publication 'source))
+                            (kernel (assq 'kernel-root (yuanxu-module-source-ref-metadata source))))
+                       (unless kernel (error "public library identity requires a declared package kernel" owner entry))
+                       (let (path (path-expand "gerbil.pkg" (cdr kernel)))
+                         (cons path (module-source-read path))))
+                     (find (lambda (row)
+                             (and (cdr row) (string=? (path-strip-directory (car row)) "gerbil.pkg")))
+                           (.ref publication 'source-inputs))))
+                 (package-root (and metadata (path-normalize (path-directory (car metadata))))))
           (unless package-root (error "public library entries require runtime package metadata" owner))
           (let* ((properties (call-with-input-string (cdr metadata) read))
                  (field (and (list? properties) (memq 'package: properties)))
                  (package (and field (pair? (cdr field)) (cadr field)))
-                 (entries (.ref projection 'library-roots)))
+                 (entries (list (if (symbol? entry)
+                                  (build-target-name entry (symbol->string package)) entry))))
             (unless (symbol? package) (error "public library entries require a runtime package identity" owner))
             ;; Confine before expansion, including every unresolved path part.
             (def prefix (string-append (symbol->string package) "/"))
@@ -234,7 +247,8 @@
                   context)))
             (package-library-spec/source-context package-root package
               (map (cut path-default-extension <> ".ss") entries)
-              admit-context declared-source-context)))))
+              admit-context declared-source-context))))
+         (.ref projection 'library-roots))))
     (def (add-package! owner contributor projection (provider #f))
       (admit-module-value! ExternalPackageContributionContract projection selected-value)
       (let* ((publication (owner-preparation owner))
@@ -274,7 +288,7 @@
       (for-each
        (lambda (alias)
          (let* ((requirement (.ref requirements alias))
-                (provider (.ref requirement 'module-id))
+                (provider ((.ref selected-value 'resolve-module-id) owner (.ref requirement 'module-id)))
                 (baseline (hash-ref cores provider)))
            (when (and (not (requirement-option requirement 'view)) (.slot? baseline 'configuration-build))
              (set! package-demands

@@ -3,6 +3,7 @@
 ;;; Declarative Core publication; role imports are produced by the module system.
 (.def Funflow
   identity: 'funflow
+  tags: '(workflow)
   core:
   (.o requires: (.o)
       scope-contract: FunflowScopeContract

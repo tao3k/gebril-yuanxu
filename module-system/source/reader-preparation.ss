@@ -109,7 +109,7 @@
     (cons (yuanxu-module-source-ref-kind source)
                 (cons (path-normalize (yuanxu-module-source-ref-value source))
                   (map (lambda (name) (assq name metadata))
-                       '(module-id module-root module-tree-root))))))
+                       '(module-id declaration-id module-root module-tree-root))))))
 (def (reader-prepare-publication session source)
   (let* ((key (reader-preparation-key session source))
          (previous (hash-get (reader-session-preparations session) key)))
@@ -133,7 +133,7 @@
   ;; changing source bytes. Recheck the actual policy before using syntax.
   (let* ((source (.ref prepared 'source))
          (metadata (yuanxu-module-source-ref-metadata source))
-         (owner (cdr (assq 'module-id metadata)))
+         (owner (cdr (or (assq 'declaration-id metadata) (assq 'module-id metadata))))
          (root (cdr (or (assq 'module-root metadata) (assq 'module-tree-root metadata))))
          (policy yuanxu-default-module-style-policy))
     (when (current-module-source-observer)

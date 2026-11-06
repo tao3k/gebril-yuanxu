@@ -48,6 +48,26 @@ jobs:
         run: just check-package-namespace
       - name: Build Yuanxu
         run: GERBIL_BUILD_VERBOSE=1 gerbil build
+      - name: Reject build input context regressions
+        run: |
+          just test-build-input-context-mutations "$RUNNER_TEMP/build-input-context"
+          just test-file t/module-publication-test.ss
+          just test-file t/module-testing-source-admission-test.ss
+      - name: Retain build input context mutation evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: yuanxu-build-input-context-${{ inputs.os }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/build-input-context/**/receipt.json
+            ${{ runner.temp }}/build-input-context/**/*.log
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Qualify Profile roots and selected native package closure
+        run: |
+          just test-file t/module-profile-tags-test.ss
+          just test-file t/module-windows-test.ss
+          just test-file t/thousand-package-downstream-test.ss
       - name: Test public Yuanxu prelude
         run: just test-yuanxu-prelude
       - name: Check complete disjoint test partition

@@ -234,7 +234,7 @@
         ;; Ordinary package Make and issued compilation share role lowering,
         ;; not authority. A package build does not mint publication approval.
         .with-compiler-inputs:
-        (lambda (action)
+        (lambda (action (refuse-input-context #f))
           ;; Reject derived specs before a graph's state callback can run.
           (require-spec-identity! (.ref projection 'spec))
           (def source-state (compiler-source-state))
@@ -244,7 +244,8 @@
                 (call-with-module-compiler-inputs entries action unified?: foreign?
                       source-reads: (.ref graph '.with-compiler-source-reads)
                       source-import: (.ref graph '.with-compiler-source-import)
-                      source-state: source-state source-owner: graph))))
+                      source-state: source-state source-owner: graph
+                      refuse-input-context: refuse-input-context))))
           (if foreign? (compile-inputs)
             (call-with-selected-output-lock (build-output-directory) compile-inputs)))
         .with-clean-outputs:

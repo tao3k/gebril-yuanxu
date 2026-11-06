@@ -3,9 +3,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module System init projections. Infrastructure, not a selected module.
 (import (only-in :yuanxu/module-system/building/products build-output-directory
-                 current-build-output-directory current-build-compiler-options current-build-module-roots
+                 current-build-output-directory current-build-source-directory
+                 current-build-compiler-options current-build-module-roots
                  require-build-products! repair-build-products! clean-build-artifacts!)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
+        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :yuanxu/module-system/source/deferred-declaration module-entry-action module-binding-action)
@@ -29,24 +31,32 @@
   (def verbosity (string->number (getenv "GERBIL_BUILD_VERBOSE" "0")))
   (if (and verbosity (>= verbosity 2))
     (begin
-      (displayln "BUILD-STAGE main enter at=" (real-time)) (force-output)
+      ;; real-time has a process-local origin. The wall clock correlates this
+      ;; existing span with the caller's spawn/return without blaming their
+      ;; different clock origins on process shutdown. CPU is Gambit's clock.
+      (displayln "BUILD-STAGE main enter at=" (real-time)
+                 " epoch=" (time->seconds (current-time)) " cpu=" (cpu-time))
+      (force-output)
       (let-values (((results times)
                     (call-with-module-source-operation-measurement
                       ;; Build timing needs phase clocks and work counters,
                       ;; not VM/GC sampling around every physical file read.
                       ;; Detailed accounting remains an explicit qualification
                       ;; mode of the same existing measurement API.
-                      (lambda () (call-with-values run list)) accounting?: #f)))
+                      (lambda () (call-with-values run list)) accounting?: (if (>= verbosity 3) 'stages #f))))
         (hash-for-each
           (lambda (key value) (write (list 'BUILD-ACCOUNT key value)) (newline)) times)
-        (displayln "BUILD-STAGE main return at=" (real-time)) (force-output)
+        (displayln "BUILD-STAGE main return at=" (real-time)
+                   " epoch=" (time->seconds (current-time)) " cpu=" (cpu-time))
+        (force-output)
         (apply values results)))
     (run)))
 (def (consume-init-build-spec prepare dispatch args libdir entry-source)
   (def produced #f)
   (def consume #f)
   (def spec
-    (parameterize ((current-build-spec-consumer
+    (parameterize ((current-build-output-directory (build-output-directory libdir))
+                  (current-build-spec-consumer
                     (cons entry-source
                       (lambda (value owner)
                         (when (and produced (not (eq? produced value)))
@@ -75,6 +85,8 @@
     'gerbil/tools/gxtags#make-tags))
 (def build-projector
   (module-binding-action "yuanxu/module-system/building/build-projection" 'yuanxu-project-source-spec))
+(def init-compiler-roots
+  (module-binding-action "yuanxu/module-system/source/init" 'module-init-compiler-source-roots))
 ;; Source discovery is demanded separately from compilation/signing.
 (def test-source-projector
   (module-binding-action "yuanxu/module-system/source/build" 'module-test-source-spec))
@@ -91,7 +103,11 @@
   (def source-current-site (make-slot-cache 'admit-current))
   (def source-spec-site (make-slot-cache 'spec))
   (def init-file (path-expand source))
+  ;; The parser permits package: only in the declaration's top-level window
+  ;; options. Local windows need no package resolver or second path extent.
+  (def package-windows? (memq 'package: declaration))
   (def prepared #f)
+  (def input-context-refused? #f)
   (def retained #f)
   (def selection #f)
   (def tests (make-hash-table))
@@ -138,10 +154,11 @@
     (module-source-measure-operation 'selection-current (.get selection admit-current))
     selection)
   (def (test-current!)
-    (unless selection (error "init tests must select their source context first"))
+    ;; A native test build can request currentness before demanding its spec.
+    ;; Select here so the first request authenticates the same source context.
     (call-with-module-source-read-cache
       (lambda ()
-        ((.get selection admit-current))
+        (selected!)
         (hash-for-each (lambda (_owners projection) ((.get projection admit-current))) tests))))
   (def (test-source (owners #f) (suite #f))
     (def view (selected!))
@@ -201,10 +218,31 @@
         spec: (test-spec)
         admit-current: test-current!
         .select: test-source)))
-  (def (current!)
+  (def (check-prepared!)
     (unless prepared (error "init std-make-spec must prepare the source context first"))
     ((.ref/inline prepared source-current-site)))
+  (def (current!)
+    (with-input-context (build-output-directory) check-prepared!))
+  (def (compiler-source-roots)
+    ;; Only the bound init declaration can name native checkout inputs.
+    (init-compiler-roots (list declaration init-file)))
+  (def (refuse-input-context!)
+    (set! input-context-refused? #t)
+    (error "source projection changed its compiler input context; use a fresh init context"))
+  (def (with-input-context output action)
+    (when input-context-refused?
+      (error "build input context was refused; use a fresh init context"))
+    (call-with-build-input-path output
+      (if package-windows?
+        (lambda ()
+          (call-with-build-input-path output action refuse-input-context!
+            source-roots: (compiler-source-roots)))
+        action)
+      refuse-input-context!))
   (def (build-spec roots)
+    (with-input-context (build-output-directory)
+      (lambda () (build-spec/in-input-context roots))))
+  (def (build-spec/in-input-context roots)
     (def consumer (current-build-spec-consumer))
     (def entry-source (or (and consumer (car consumer))
                           (and prepared (cadr retained))
@@ -221,7 +259,7 @@
                 (lambda ()
                   (build-projector (list (selected!) roots root entry-source)))))))
         (set! retained request)))
-    (call-with-build-stage 'spec-current current!)
+    (call-with-build-stage 'spec-current check-prepared!)
     (def value (.ref/inline prepared source-spec-site))
     (.call prepared .admit-spec value)
     (when consumer
@@ -244,20 +282,27 @@
                    (current-build-compiler-options
                      (append (current-build-compiler-options) (if (pair? args) (cdr args) '()))))
       (module-source-measure-operation 'build-dispatch
-        (lambda () (run-spec/current spec package-main args libdir)))))
+        (lambda ()
+          (with-input-context (or libdir (build-output-directory))
+            (lambda () (run-spec/current spec package-main args libdir)))))))
   (def (run-spec/current spec package-main args libdir)
     (.call prepared .admit-spec spec)
+    (def compile? (or (null? args) (equal? (car args) "compile")))
+    (def (invoke targets (prefix #f))
+      (def (run)
+        (if prefix (package-main targets args prefix) (package-main targets args)))
+      (if compile?
+        (call-with-build-input-path libdir run refuse-input-context!
+          make-source: (or (current-build-source-directory) (path-directory (cadr retained))))
+        (run)))
     (def (dispatch (groups '()))
       (if (pair? groups)
         (for-each
           (lambda (group)
-            (let (prefix (.get group prefix))
-              (if prefix
-                (package-main (.get group spec) args prefix)
-                (package-main (.get group spec) args)))) groups)
-        (package-main spec args)))
+            (invoke (.get group spec) (.get group prefix))) groups)
+        (invoke spec)))
     (cond
-      ((or (null? args) (equal? (car args) "compile"))
+      (compile?
        ;; Ordinary Gerbil compilation cannot grant publication approval. Explicit
        ;; projection .compile retains the separate artifact issuance boundary.
        (let ((identities (.get prepared compiler-identities))
@@ -282,7 +327,8 @@
                                (lambda () (dispatch groups)))))
                    (module-source-measure-operation 'build-product-require
                      (lambda () (require-build-products! identities libdir)))
-                   (.call prepared .admit-spec spec))))))))
+                   (.call prepared .admit-spec spec)))
+               refuse-input-context!)))))
       ((equal? (car args) "tags")
        (unless (= (length args) 2)
          (error "tags requires an explicit output file"))
@@ -297,10 +343,11 @@
          (when (null? inputs) (error "no selected sources for editor tags"))
          (dynamic-wind void
            (lambda ()
-             (current!)
+             (check-prepared!)
              (.call prepared .with-compiler-inputs
-               (lambda () (write-native-tags (list inputs temporary))))
-             (current!)
+               (lambda () (write-native-tags (list inputs temporary)))
+               refuse-input-context!)
+             (check-prepared!)
              (move-file temporary output))
            (lambda () (clear-temporary-file! temporary)))))
       ((equal? (car args) "clean")

@@ -7,7 +7,8 @@
                  module-context-code module-context-path expander-context-table
                  module-context-import)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer
-                 module-source-measure-operation module-source-type))
+                 module-source-measure-operation module-source-type)
+        (only-in :gerbil/runtime/loader list-modules))
 (export reader-evaluation-observers observe-reader-work release-reader-expansions!
         remove-reader-tree reader-body)
 
@@ -20,6 +21,14 @@
   (def gerbil-compile (current-expander-compile))
   (def gerbil-eval (current-expander-eval))
   (def pending (make-hash-table-eq))
+  (def (evaluate-body program label)
+    (def verbosity (string->number (getenv "GERBIL_BUILD_VERBOSE" "0")))
+    (if (not (and verbosity (>= verbosity 4))) (gerbil-eval program)
+      (let (before (list->hash-table (map (lambda (row) (cons (car row) #t)) (list-modules))))
+        (begin0 (gerbil-eval program)
+          (write (list 'READER-NATIVE-LOAD label
+                   (filter (lambda (row) (not (hash-key? before (car row)))) (list-modules))))
+          (newline) (force-output)))))
   (def (body-event stage context)
     (let (observer (current-module-source-observer))
       (when observer
@@ -59,7 +68,16 @@
         (lambda ()
           (if (not entry) (gerbil-eval program)
             (observe-reader-work 'reader-eval-start 'reader-eval-end
-              (lambda () (initialize (car entry) (lambda () (gerbil-eval program)))))))
+              (lambda ()
+                (def context (car entry))
+                (def origin (hash-get owned (path-normalize (module-context-path context))))
+                (def label (if (string? origin) origin (module-context-path context)))
+                (module-source-measure-operation (list 'reader-initialization label)
+                  (lambda ()
+                    (initialize context
+                      (lambda ()
+                        (module-source-measure-operation (list 'reader-initializer-body label)
+                          (lambda () (evaluate-body program label)))))))))))
         (lambda results
           (when entry
             (hash-remove! pending program)

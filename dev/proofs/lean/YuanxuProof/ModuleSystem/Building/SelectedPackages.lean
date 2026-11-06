@@ -11,6 +11,118 @@ namespace YuanxuProof.ModuleSystem.Building.SelectedPackages
 open YuanxuProof.ModuleSystem.Graph.TestAdmission
 open YuanxuProof.Admission.Source
 
+/-- Root denotes Gerbil's declared module namespace, not a mount alias or an
+absolute checkout/output path. Names are owner-relative declarations. -/
+structure ScopedModuleId where
+  root : Nat
+  name : Nat
+  deriving Repr, DecidableEq
+
+inductive ModuleReference where
+  | local (name : Nat)
+  | absolute (id : ScopedModuleId)
+  deriving Repr, DecidableEq
+
+def resolveModule (owner : ScopedModuleId) : ModuleReference → ScopedModuleId
+  | .local name => ⟨owner.root, name⟩
+  | .absolute id => id
+
+theorem same_name_in_distinct_roots_is_distinct (left right name : Nat)
+    (distinct : left ≠ right) :
+    (ScopedModuleId.mk left name) ≠ ⟨right, name⟩ := by
+  intro equal
+  exact distinct (congrArg ScopedModuleId.root equal)
+
+theorem local_dependency_keeps_owner_root (owner : ScopedModuleId) (name : Nat) :
+    (resolveModule owner (.local name)).root = owner.root := rfl
+
+/-- Declaration labels are not namespace certificates. `actual` comes from
+Gerbil source/header admission, an explicit implementation bridge obligation. -/
+def nativeOwnerAdmitted (expected actual metadata : ScopedModuleId)
+    (declared published : Nat) : Bool :=
+  decide (expected = actual) && decide (expected = metadata) && decide (declared = published)
+
+theorem native_owner_admission_binds_actual_identity
+    (expected actual metadata : ScopedModuleId) (declared published : Nat)
+    (accepted : nativeOwnerAdmitted expected actual metadata declared published = true) :
+    expected = actual ∧ expected = metadata ∧ declared = published := by
+  simpa [nativeOwnerAdmitted, Bool.and_eq_true, and_assoc] using accepted
+
+theorem explicit_dependency_keeps_complete_id (owner target : ScopedModuleId) :
+    resolveModule owner (.absolute target) = target := rfl
+
+/-- The downstream adapter may remove only an outer always-successful
+classifier with no obligations. The native Record normalizer and its exact
+success/error result are retained. This does not authorize dropping callbacks
+or obligations from a non-default Contract. -/
+def defaultStructuralAdmission (normalize : α → Except ε α) (candidate : α) : Except ε α :=
+  match normalize candidate with
+  | .error failure => .error failure
+  | .ok checked => .ok checked
+
+theorem native_record_preserves_default_structural_admission
+    (normalize : α → Except ε α) (candidate : α) :
+    defaultStructuralAdmission normalize candidate = normalize candidate := by
+  unfold defaultStructuralAdmission
+  cases normalize candidate <;> rfl
+
+/-- This models native POO slot lookup, not another scope store implementation.
+Mount aliases route to complete IDs before touching those slots. -/
+def projectedScope (slots : ScopedModuleId → Option Nat) (mount : Nat → Nat)
+    (branch name : Nat) : Option Nat := slots ⟨mount branch, name⟩
+
+theorem aliases_preserve_scope_identity (slots : ScopedModuleId → Option Nat)
+    (mount : Nat → Nat) (left right name : Nat) (sameRoot : mount left = mount right) :
+    projectedScope slots mount left name = projectedScope slots mount right name := by
+  simp [projectedScope, sameRoot]
+
+theorem missing_local_module_has_no_foreign_fallback
+    (slots : ScopedModuleId → Option Nat) (owner : ScopedModuleId) (name : Nat)
+    (missing : slots ⟨owner.root, name⟩ = none) :
+    slots (resolveModule owner (.local name)) = none := by
+  simpa [resolveModule] using missing
+
+theorem independent_root_update_preserves_scope
+    (slots : ScopedModuleId → Option Nat) (changed demanded : ScopedModuleId)
+    (value : Option Nat) (differentRoots : changed.root ≠ demanded.root) :
+    (fun id => if id = changed then value else slots id) demanded = slots demanded := by
+  have different : demanded ≠ changed := by
+    intro equal
+    exact differentRoots (congrArg ScopedModuleId.root equal.symm)
+  simp [different]
+
+/-- A package window names a native package checkout, never the producer's
+application init or its installed output directory. Grammar confinement and
+native checkout lookup are explicit Scheme correspondence obligations. -/
+inductive SourceAddress where
+  | relative (parts : List String)
+  | package (repository : String) (parts : List String)
+  deriving Repr, DecidableEq
+
+def resolveAddress (localRoot : List String)
+    (nativeCheckout : String → Option (List String)) : SourceAddress → Option (List String)
+  | .relative parts => some (localRoot ++ parts)
+  | .package repository parts => (nativeCheckout repository).map (· ++ parts)
+
+theorem package_window_uses_native_checkout (localRoot root parts : List String)
+    (lookup : String → Option (List String)) (repository : String)
+    (found : lookup repository = some root) :
+    resolveAddress localRoot lookup (.package repository parts) = some (root ++ parts) := by
+  simp [resolveAddress, found]
+
+theorem missing_package_has_no_local_fallback (localRoot parts : List String)
+    (lookup : String → Option (List String)) (repository : String)
+    (missing : lookup repository = none) :
+    resolveAddress localRoot lookup (.package repository parts) = none := by
+  simp [resolveAddress, missing]
+
+theorem downstream_outputs_do_not_change_source (left right root parts : List String)
+    (lookup : String → Option (List String)) (repository : String)
+    (found : lookup repository = some root) :
+    resolveAddress left lookup (.package repository parts) =
+      resolveAddress right lookup (.package repository parts) := by
+  simp [resolveAddress, found]
+
 inductive Input where
   | source (owner : Nat) (entry : Inputs.Entry) (observations : List (String × String))
   | external (observations : List (String × String))
@@ -63,6 +175,31 @@ def prepare (dependencies : Nat → List Nat) (roots owners : List Nat)
     .error .undeclaredOrMissing
   else if !(consistent (targets describe state.seen)) then .error .compilerConflict
   else .ok state.seen
+
+/-- Tags select roots across all declared source windows, independently of the
+dependency graph. A window without matching roots still contributes eligible
+owners; it cannot implicitly turn every owner into a selected root. -/
+def categoryRoots (tag : Nat) (windows : List (List (Nat × List Nat))) : List Nat :=
+  windows.flatMap fun rows => (rows.filter fun row => row.2.contains tag).map Prod.fst
+
+theorem dependency_only_window_keeps_roots (tag : Nat)
+    (windows : List (List (Nat × List Nat))) (auxiliary : List (Nat × List Nat))
+    (noMatches : auxiliary.filter (fun row => row.2.contains tag) = []) :
+    categoryRoots tag (windows ++ [auxiliary]) = categoryRoots tag windows := by
+  simp only [categoryRoots, List.flatMap_append, List.flatMap_cons,
+    List.flatMap_nil, noMatches, List.map_nil, List.append_nil]
+
+/-- The ordinary dependency closure remains authoritative for all consumers.
+Auxiliary-window tags neither drop dependency nodes nor add compile roots. -/
+theorem dependency_only_window_keeps_projection (tag : Nat)
+    (windows : List (List (Nat × List Nat))) (auxiliary : List (Nat × List Nat))
+    (noMatches : auxiliary.filter (fun row => row.2.contains tag) = [])
+    (dependencies : Nat → List Nat) (owners : List Nat) (describe : Nat → Input) (fuel : Nat) :
+    prepare dependencies (categoryRoots tag (windows ++ [auxiliary])) owners describe fuel =
+      prepare dependencies (categoryRoots tag windows) owners describe fuel := by
+  rw [dependency_only_window_keeps_roots tag windows auxiliary noMatches]
+
+#guard categoryRoots 7 [[(0, [7])], [(1, [9]), (2, [10]), (3, [11])]] == [0]
 
 theorem successful_projection (dependencies : Nat → List Nat) (roots owners : List Nat)
     (describe : Nat → Input) (fuel : Nat) (nodes : List Nat)
@@ -305,6 +442,14 @@ theorem clean_unowned_product (store : Store) (environment : Nat)
 /- Executable controls are model examples, not runtime/downstream receipts. -/
 def exampleEntry (identity : String) : Inputs.Entry :=
   ⟨"/upstream/" ++ identity ++ ".ss", identity, "source", [], ["body"]⟩
+
+/-- One deployment root reaches owners in both packages despite their distinct
+categories. The dependency-only window contributes no extra roots. -/
+example : prepare (fun n => if n = 0 then [1, 2, 3] else [])
+    (categoryRoots 7 [[(0, [7]), (1, [9])], [(2, [10]), (3, [11])]])
+    [10, 20]
+    (fun n => .source (if n < 2 then 10 else 20) (exampleEntry (toString n)) [])
+    12 = .ok [3, 2, 1, 0] := by rfl
 
 def exampleDeps : Nat → List Nat
   | 0 => [1, 2]
