@@ -127,7 +127,7 @@ verify-mop-store-boundary-runtime directory:
     export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/.gerbil}"
     export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$GERBIL_PATH/lib"
     just test-file t/artifact-closure-test.ss
-    just test-file t/mop-store-boundary-driver-test.ss
+    just test-file t/qualification/mop-state/store-boundary-driver.ss
     shasum -a 256 -c "$CORE_STORE_ROOT/callback-artifacts.sha256"
     shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
     shasum -a 256 -c "$CORE_STORE_ROOT/sdk-inputs.sha256"
@@ -191,15 +191,15 @@ test-discovered-file path:
     #!/usr/bin/env bash
     set -euo pipefail
     case "{{ path }}" in
-      t/artifact-closure-test.ss|t/mop-store-boundary-test.ss|t/mop-store-boundary-driver-test.ss)
+      t/artifact-closure-test.ss|t/mop-store-boundary-test.ss)
         fixture=$(mktemp -d)
         trap 'rm -rf "$fixture"' EXIT
         just compile-mop-store-boundary "$fixture"
         if [[ "{{ path }}" == t/artifact-closure-test.ss ]]; then
           CORE_STORE_ROOT="$fixture" GERBIL_LOADPATH="$fixture/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" just test-file "{{ path }}"
         else
-          printf 'AOT-SUITE %s facade=t/mop-store-boundary-driver-test.ss\n' "{{ path }}"
-          CORE_STORE_ROOT="$fixture" GERBIL_LOADPATH="$fixture/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" just test-file t/mop-store-boundary-driver-test.ss
+          printf 'AOT-SUITE %s facade=t/qualification/mop-state/store-boundary-driver.ss\n' "{{ path }}"
+          CORE_STORE_ROOT="$fixture" GERBIL_LOADPATH="$fixture/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" just test-file t/qualification/mop-state/store-boundary-driver.ss
         fi
         shasum -a 256 -c "$fixture/callback-artifacts.sha256"
         shasum -a 256 -c "$fixture/inputs.sha256"

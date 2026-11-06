@@ -36,7 +36,7 @@ compile-mop-store-boundary directory:
     mkdir -p "$CORE_STORE_ROOT/lib"
     export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/.gerbil}"
     export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$GERBIL_PATH/lib"
-    shasum -a 256 t/qualification/mop-state/compile-store-boundary.ss t/qualification/mop-state/store-policy.ss t/qualification/mop-state/unlowered-store.ss t/qualification/mop-state/precompiled-stores.ss t/mop-store-boundary-test.ss t/mop-store-boundary-driver-test.ss "$GERBIL_PATH/lib/clan/poo/object~0.scm" > "$CORE_STORE_ROOT/inputs.sha256"
+    shasum -a 256 t/qualification/mop-state/compile-store-boundary.ss t/qualification/mop-state/store-policy.ss t/qualification/mop-state/unlowered-store.ss t/qualification/mop-state/precompiled-stores.ss t/mop-store-boundary-test.ss t/qualification/mop-state/store-boundary-driver.ss "$GERBIL_PATH/lib/clan/poo/object~0.scm" > "$CORE_STORE_ROOT/inputs.sha256"
     env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/compile-store-boundary.ss
     just build-mop-store-boundary-runtime "$CORE_STORE_ROOT"
 

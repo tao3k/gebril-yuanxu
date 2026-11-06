@@ -918,7 +918,7 @@ def main():
     if f'quintSourceDigest : String := "{store_digest}"' not in store_lean.read_text():
         raise AssertionError("Lean retains a stale StoreLowering Quint source binding")
     bound.extend([store_lean, core / "dev/proofs/lean/StoreLoweringCheck.lean",
-                  core / "t/mop-store-boundary-test.ss", core / "t/mop-store-boundary-driver-test.ss",
+                  core / "t/mop-store-boundary-test.ss", core / "t/qualification/mop-state/store-boundary-driver.ss",
                   core / "t/qualification/mop-state/store-policy.ss",
                   core / "t/qualification/mop-state/compile-store-boundary.ss",
                   core / "t/qualification/mop-state/precompiled-stores.ss",

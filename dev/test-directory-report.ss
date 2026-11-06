@@ -129,7 +129,7 @@
 (def (expected-harness-file? discovered actual)
   (case (string->symbol discovered)
     ((t/mop-store-boundary-test.ss)
-     (equal? actual "t/mop-store-boundary-driver-test.ss"))
+     (equal? actual "t/qualification/mop-state/store-boundary-driver.ss"))
     ((t/source-admission-gateway-test.ss)
      (and (string-prefix? "/" actual)
           (string-suffix? (string-append "/source/yuanxu/" discovered) actual)))
