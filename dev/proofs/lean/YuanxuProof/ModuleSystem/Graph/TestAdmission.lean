@@ -73,6 +73,35 @@ inductive Demanded (dependencies : Node → List Node) (roots : List Node) : Nod
   | dependency (parent child : Node) : Demanded dependencies roots parent →
       child ∈ dependencies parent → Demanded dependencies roots child
 
+/-- Ordinary scope demand uses its own root. Full certification still uses the
+entire selection. An effective Feature decision retains the full graph. -/
+def scopeRoots (roots : List Node) (target : Node) (hasFeatureDecisions : Bool) :
+    List Node :=
+  if hasFeatureDecisions then roots else [target]
+
+theorem plain_scope_demand_is_within_full_selection
+    (dependencies : Node → List Node) (roots : List Node) (target node : Node)
+    (selected : target ∈ roots)
+    (reached : Demanded dependencies (scopeRoots roots target false) node) :
+    Demanded dependencies roots node := by
+  change Demanded dependencies [target] node at reached
+  induction reached with
+  | root node member =>
+    have equal : node = target := by simpa using member
+    exact .root node (equal ▸ selected)
+  | dependency parent child _ edge admitted =>
+    exact .dependency parent child admitted edge
+
+theorem feature_scope_demand_preserves_full_selection (roots : List Node) (target : Node) :
+    scopeRoots roots target true = roots := rfl
+
+theorem plain_scope_demand_is_within_auto_extension
+    (dependencies : Node → List Node) (roots : List Node) (target node : Node)
+    (reached : Demanded dependencies (scopeRoots roots target false) node) :
+    Demanded dependencies (roots ++ [target]) node :=
+  plain_scope_demand_is_within_full_selection dependencies (roots ++ [target])
+    target node (by simp) reached
+
 theorem every_discovered_node_is_demanded [DecidableEq Node]
     (dependencies : Node → List Node) (roots : List Node) (fuel : Nat) :
     ∀ node ∈ (discover dependencies fuel ⟨[], roots⟩).seen,

@@ -88,11 +88,12 @@ package YuanxuModuleLoading {
                init selection or Script/Process construction. Independent build
                owns support issuance; module APIs and Cases own domain checks.
                The benchmark must not explicitly force complete graph admission
-               before a value. Current production resolve still includes all
-               init-selected roots; report that dependency if first scope blocks.
+               before a value. Plain directory scope resolution starts at the
+               requested owner. Signed Feature decisions, custom Contexts
+               and realized package bindings retain their existing graph route.
                A cold export slot does not prove no internal graph was built.
-               Removing the all-roots prerequisite requires complete independent
-               contribution/feature support proof; do not drop it for a timing.
+               Use owner-qualified counters to assert every reached scope and
+               every declaration admitted by the plain demand.
                It asserts no source observer is installed; it must not silently
                clear a caller's observer. Measure Graph demand separately from
                scope activation, value-cache access, independent admission,
@@ -173,7 +174,10 @@ package YuanxuModuleLoading {
             (declaredDependenciesAdmitted and sourceOwnersBound) }
         doc /* Runtime-projected facts, not user policy switches. Lazy business
                access cannot hide disabled, undeclared or cyclic requirements.
-               Source-to-model correspondence remains a separate obligation. */
+               For a plain directory scope, the admitted dependencies are
+               those reached from the requested owner. Explicit complete
+               Graph requests and selections with Feature decisions retain
+               the full selection. */
     }
     requirement def NoPrematureBusinessActivation {
         attribute businessRoleInitialized : Boolean;

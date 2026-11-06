@@ -73,6 +73,14 @@ the existing graph solver. Disabled features remain explicit decisions; they
 are not deleted from the index. Requirement edges, source/build inputs,
 runtime ordering and actual field-read edges remain different relations.
 
+On the maintained directory path, an ordinary scope request with no signed
+Feature decisions admits the requested owner and its requirement closure.
+An explicit selected Graph still certifies every init root. Feature decisions,
+custom Contexts and open observers keep the complete admission route.
+=TestAdmission.plain_scope_demand_is_within_full_selection= relates the
+demanded closure to the full selection for a selected target. The two
+requests share the existing resolver and its independent currentness checks.
+
 The observable rejection boundary must be explicit:
 
 | Invalid input | Required refusal boundary |

@@ -155,7 +155,17 @@
   (measure-runtime count 'first-namespace
     (lambda () (check-equal? (length (.all-slots (.get FixtureExports modules))) count)))
   (check-equal? (.ref/cached (.get FixtureExports modules) 'module-1) #f)
-  (def target (measure-runtime count 'first-scope (lambda () (.get FixtureExports modules module-1))))
+  (def target
+    (measure-runtime count 'first-scope
+      (lambda ()
+        (defvalues (scope times)
+          (call-with-module-source-operation-measurement
+            (lambda () (.get FixtureExports modules module-1)) accounting?: #f))
+        (check-equal? (hash-ref times '(calls candidate-read) 0) 2)
+        (check-equal? (hash-ref times '(calls (scope-factory module-0)) 0) 1)
+        (check-equal? (hash-ref times '(calls (scope-factory module-1)) 0) 1)
+        (check-equal? (hash-ref times '(calls scope-factory) 0) 2)
+        scope)))
   (def unrelated (.get FixtureExports modules module-2))
   (def untouched (.get unrelated plan))
   (def old-reads '())

@@ -773,15 +773,21 @@
       (with-catch
        (lambda (exception) (set! failed? #t) (raise exception))
        (lambda ()
-         ;; Auto discovery adds only this demand root; selected init roots still
-         ;; participate in the same admission, conflict and ordering policy.
-         (let* ((roots (.ref context-value 'selected))
-                (demand (if (memq id roots) roots (append roots (list id)))))
-           ;; An existing Graph needs no traversal here: only this private
-           ;; lookup precedes link's fresh eligibility/source guard. A new
-           ;; demand still runs the full resolver and its post-author guard.
-           (link id '() (if (hash-key? graphs demand) (hash-ref graphs demand)
-                         (resolve-selection-graph demand)))))))
+         (def roots (.ref context-value 'selected))
+         (def selected-graph (hash-get graphs roots))
+         (def graph
+           (cond
+            ((and selected-graph (memq id roots)) selected-graph)
+            ((and (not realization) candidate-read paired-context-current?
+                  (paired-context-current?) (object-construction-current?)
+                  (not (current-module-source-observer)) (owned-read-function-scope?)
+                  (not (.ref context-value 'feature-decisions?)))
+             ;; The same resolver authenticates the requested owner and every
+             ;; requirement. A scope demand does not certify other roots.
+             (resolve-selection-graph (list id)))
+            (else
+             (resolve-selection-graph (if (memq id roots) roots (append roots (list id)))))))
+         (link id '() graph))))
     (def (prepare id)
       (with-catch
        (lambda (exception) (set! failed? #t) (raise exception))

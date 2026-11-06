@@ -167,6 +167,10 @@
         (set! denied-values (map (cut .ref <> 'identity)
                                 (filter (cut .ref <> 'disabled?) decisions))))
       (def scoped-intent (if qualified-owners? (.cc intent-value 'decisions decisions) intent-value))
+      ;; The parser has already resolved the signed decisions. Any Feature
+      ;; choice retains full selection before linking a business scope.
+      (def feature-decisions?
+        (ormap (lambda (row) (pair? (.ref (.ref row 'selection) 'selection-flags))) decisions))
       (defvalues (key-intact? key-policies)
         (if qualified-owners?
           (module-source-object-policies
@@ -604,6 +608,7 @@
                    (andmap (lambda (check) (check)) location-inputs)
                    (or (not entry) ((directory-source-current? entry))))))))
       (.o generation: generation-value module-ids: selected-values selected: selected-values
+          (feature-decisions?)
           denied-modules: denied-values intent: scoped-intent init-source: init-path source-root: root-path
           locate: (lambda (id) (locate-source (resolve-request-root id)))
           resolve-module-id: resolve-reference resolve-root: resolve-request-root current?: current-source? candidate-current?: candidate-location-current?
