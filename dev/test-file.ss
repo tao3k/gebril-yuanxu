@@ -30,34 +30,16 @@
                  directory))
   (def progress-file (string-append stem ".progress"))
   (def receipt-file (string-append stem ".ss"))
-  (def started (current-jiffy))
-  (def failed? #f)
-  (def cause #f)
-  (def status
-    (dynamic-wind
-      ;; The CI report is owned by this Harness invocation. Any subprocess
-      ;; supervised by Ops still relays machine frames on its ordinary port.
-      (lambda () (setenv "YUANXU_TEST_REPORT_DIR" ""))
-      (lambda ()
-        (call-with-output-file progress-file
-          (lambda (port)
-            (parameterize ((current-execution-progress-port port))
-              (with-catch
-                (lambda (exception) (set! failed? #t) (set! cause exception) #f)
-                run)))))
-      (lambda () (setenv "YUANXU_TEST_REPORT_DIR" directory))))
-  (def elapsed-ms
-    (quotient (* (- (current-jiffy) started) 1000) (jiffies-per-second)))
-  (def verdict (cond (failed? 'exception) ((eqv? status 0) 'passed) (else 'failed)))
-  (with-catch
-    (lambda (failure) (unless failed? (raise failure)))
+  ;; The CLI can exit the process itself. Record its exact argv before entering;
+  ;; the supervising process owns completion, clocks and exit status.
+  (dynamic-wind
+    (lambda () (setenv "YUANXU_TEST_REPORT_DIR" ""))
     (lambda ()
-      (call-with-output-file receipt-file
+      (call-with-output-file progress-file
         (lambda (port)
-          (write (list 'test-harness-result arguments verdict status elapsed-ms progress-file) port)
-          (newline port)))
-      (display "TEST-HARNESS-RESULT ")
-      (write (list arguments verdict 'harness-status status 'harness-ms elapsed-ms))
-      (newline)
-      (force-output)))
-  (if failed? (raise cause) status))
+          (call-with-output-file receipt-file
+            (lambda (receipt)
+              (write (list 'test-harness-start arguments progress-file) receipt)
+              (newline receipt)))
+          (parameterize ((current-execution-progress-port port)) (run)))))
+    (lambda () (setenv "YUANXU_TEST_REPORT_DIR" directory))))

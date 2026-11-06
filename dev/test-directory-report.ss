@@ -70,6 +70,7 @@
   (def raw (path-expand "worker.log" directory))
   (def started (current-jiffy))
   (def entry #f)
+  (def harness-start #f)
   (def returned #f)
   (def module-line #f)
   (def harness-line #f)
@@ -82,11 +83,13 @@
     (cond (progress? (set! last-progress line))
           ((and (not entry) (string-prefix? "test-entry pid=" line))
            (set! entry (elapsed-milliseconds started)))
-          ((string-prefix? "TEST-HARNESS-RESULT " line)
-           (set! returned (elapsed-milliseconds started)))
+          ((and (not harness-start) (string-prefix? "HARNESS " line))
+           (set! harness-start (elapsed-milliseconds started)))
           ((string-prefix? "MODULE-OK " line) (set! module-line line))
           ((string-prefix? "HARNESS-OK " line) (set! harness-line line))
-          ((and harness-line (equal? line "OK\n")) (set! terminal? #t))
+          ((and harness-line (equal? line "OK\n"))
+           (set! terminal? #t)
+           (set! returned (elapsed-milliseconds started)))
           ((or (string-prefix? "declaration-stage " line)
                (string-prefix? "runtime-capacity-start " line)
                (string-prefix? "runtime-phase-incomplete " line))
@@ -98,6 +101,8 @@
                     (string-contains line "Heap overflow")
                     (string-contains line "Stack overflow")))
            (set! failure line)))
+    (when (string-prefix? "ERROR HARNESS " line)
+      (set! returned (elapsed-milliseconds started)))
     ;; Ops still writes every line to the worker transcript. Only the CI
     ;; presentation omits machine frames.
     (unless progress?
@@ -113,10 +118,17 @@
         log: raw check-status: #f progress: (lambda () observe))))
   (def wall (elapsed-milliseconds started))
   (def status (.get result status))
-  ;; A successful subprocess must also return a unique native Harness result.
-  ;; The exact Harness argv is recorded by the child, including snapshot paths
-  ;; and the existing AOT facade aliases.
-  (def evidence (read-harness-receipt directory))
+  ;; Native gxtest may exit directly. Match its output and wait status to
+  ;; the unique argv receipt written by the child before entering the CLI.
+  (def evidence
+    (match (read-harness-receipt directory)
+      (['test-harness-start paths (? string? progress)]
+       (and harness-start returned
+            (file-exists? (path-expand (path-strip-directory progress) directory))
+            ['test-harness-result paths
+             (if (and (zero? status) terminal? (not failure)) 'passed 'failed)
+             status (- returned harness-start) progress]))
+      (else #f)))
   (def verified?
     (match evidence
       (['test-harness-result [path] 'passed 0 _ _]
@@ -190,8 +202,6 @@
                       (and entry (exact-integer? returned) (<= entry returned wall)))
                   (file-exists? (path-expand "worker.log" directory)))
        (error "invalid worker timing or missing transcript" path))
-     (unless (equal? evidence (read-harness-receipt directory))
-       (error "dispatch does not match the retained Harness receipt" path))
      (when verified?
        (unless (match evidence
                  (['test-harness-result [actual] 'passed 0 _ _]
@@ -201,10 +211,14 @@
      (def effective-status (if (and (zero? status) (not verified?)) 1 status))
      (def harness-ms
        (match evidence
-         (['test-harness-result [_] _ _ (? exact-integer? elapsed) (? string? progress)]
-          (unless (and (<= 0 elapsed wall)
+         (['test-harness-result paths verdict native-status (? exact-integer? elapsed) (? string? progress)]
+          (unless (and returned (<= 0 elapsed (- returned entry))
+                       (eqv? status native-status)
+                       (memq verdict '(passed failed))
+                       (equal? ['test-harness-start paths progress]
+                               (read-harness-receipt directory))
                        (file-exists? (path-expand (path-strip-directory progress) directory)))
-            (error "invalid Harness elapsed time or missing progress transcript" path))
+            (error "dispatch does not match the retained Harness receipt" path))
           elapsed)
          (#f #f)
          (else (error "malformed Harness evidence" path))))
