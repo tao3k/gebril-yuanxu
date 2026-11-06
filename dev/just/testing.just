@@ -220,3 +220,6 @@ test-discovered-file path:
 
 test-directory group="all":
     GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss "{{ group }}"
+
+test-report-audit directory group="all":
+    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --audit "{{ directory }}" "{{ group }}"

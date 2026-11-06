@@ -279,6 +279,15 @@ same clock. Startup includes any file-specific preparation; the interval
 after the Harness result can include artifact checks and process exit.
 CI queue and package preparation are separate workflow observations.
 
+Use =just test-report-audit DIRECTORY= from the tested checkout before deriving
+platform scheduling weights. Supply one directory containing that platform's
+extracted group artifacts. The Scheme audit reconciles discovered files,
+group outcomes and individual worker receipts, checks transcripts and clock
+ordering, and compares the tested commit, workflow run, attempt, OS and
+architecture. A complete report can contain failed tests. An absent worker
+result, duplicate file, inconsistent timing or mixed run cannot supply
+scheduling weights. Supplying a group name audits only that group.
+
 * Specialized qualifications
 
 Use =TestingScript.= only when a qualification actually requires an independent
