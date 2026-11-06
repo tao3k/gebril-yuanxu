@@ -179,7 +179,9 @@
   (check-equal? (.ref/cached target 'unselected) #f)
   (check-equal? (.ref/cached unrelated 'unselected) #f)
   (check-equal? (.ref/cached (.get FixtureExports modules) 'module-3) #f)
-  (def demand (.get (.call (.get FixtureExports tests) .select '(module-1)) source))
+  (def demand
+    (measure-runtime count 'select-currentness-demand
+      (lambda () (.get (.call (.get FixtureExports tests) .select '(module-1)) source))))
   (check-equal? (.ref/cached demand 'selected-graph) #f)
   ;; Hot value access is not admission. Independently authenticate sources
   ;; after the edit; never report a cache hit as a fresh admission verdict.
