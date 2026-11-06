@@ -20,13 +20,6 @@
   (with-catch
     (lambda (cause) (if (unbound-global-exception? cause) #f (raise cause)))
     (lambda () (procedure? (eval 'yuanxu/module-system/source/build#module-build-graph)))))
-(def (cached-path value path)
-  ;; Read existing runtime cells only. A missing/cold edge is an absent witness;
-  ;; do not initialize it merely to manufacture a retaining path.
-  (cond ((null? path) value)
-        ((and (object? value) (object-%instance value))
-         (cached-path (hash-get (object-%instance value) (car path)) (cdr path)))
-        (else #f)))
 (def (read-identities roots)
   (def identities (make-hash-table-eq))
   (let walk ((pending roots))
@@ -176,10 +169,12 @@
        (set! replay-starts (cdr replay-starts))))
     (when previous (previous key amount)))
   (def (query-and-authenticate)
-    (let* ((source (query-stage 'source (lambda () (.get (.call (.get fixture exports tests) .select '(module-0)) source))))
-           (graph (query-stage 'graph (lambda () (.get source selected-graph)))))
-      (query-stage 'authenticate (lambda () ((.get graph admit-current))))
-      graph))
+    (def source
+      (query-stage 'source (lambda () (.get (.call (.get fixture exports tests) .select '(module-0)) source))))
+    (def graph (query-stage 'graph (lambda () (.get source selected-graph))))
+    (hash-put! lifetime 'source source)
+    (query-stage 'authenticate (lambda () ((.get graph admit-current))))
+    graph)
   (def graph (phase 'cold query-and-authenticate))
   (def cold-expansions body-expansions)
   (check-equal? (eq? graph (phase 'hot query-and-authenticate)) #t)
@@ -201,12 +196,12 @@
     ;; support. Old sources have been removed: this is liveness, never admission.
     ;; Actual issuer records come from existing caches; do not rebuild a bundle.
     (let ()
-      (def (root namespace)
-        (let* ((source (cached-path namespace '(module-0 tests source)))
+      (def (root cohort)
+        (let* ((source (hash-get cohort 'source))
                (reads (and (object? source) (object-%reads source))))
           (and reads (hash-get reads 'selected-graph))))
-      (def current (root (hash-get lifetime 'namespace)))
-      (def prior (root (hash-get earlier 'namespace)))
+      (def current (root lifetime))
+      (def prior (root earlier))
       (check-equal? (and current prior #t) #t)
       (check-equal? (eq? current prior) #f)
       (report-retained-reads (list size 'current-source-root) (read-identities (list current)))
@@ -231,11 +226,11 @@
           (and (hash-get earlier 'graph) #t) " publication-live="
           (and (hash-get earlier 'publication) #t)
           " namespace-live=" (and (hash-get earlier 'namespace) #t)
-          " namespace-cached-graph="
-          (and (hash-get earlier 'graph)
-            (eq? (hash-get earlier 'graph)
-              (cached-path (hash-get earlier 'namespace)
-                '(module-0 tests source selected-graph)))))
+          " selection-cached-graph="
+          (let* ((source (hash-get earlier 'source))
+                 (fields (and source (object-%instance source))))
+            (and fields (hash-get earlier 'graph)
+              (eq? (hash-get earlier 'graph) (hash-get fields 'selected-graph)))))
         ;; Runtime import liveness does not approve deleted source. Refusing the
         ;; old entry must not poison the next independent entry's admission.
         (check-exception ((.get (hash-get earlier 'graph) admit-current))
