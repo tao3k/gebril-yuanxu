@@ -278,6 +278,10 @@ before the per-file Just dispatch and ends after the worker exits.
 same clock. Startup includes any file-specific preparation; the interval
 after the Harness result can include artifact checks and process exit.
 CI queue and package preparation are separate workflow observations.
+Profile roots, namespace windows, the thousand-owner downstream package and
+the public prelude have one required execution per platform in the test
+partition. Build input mutation controls and their publication and
+source-admission checks retain their separate build-phase execution.
 Published Module TestSuites retain their independent integration phase and
 Harness receipt. A completed mechanism test with a failure still permits
 that phase to run against the restored same-head package.

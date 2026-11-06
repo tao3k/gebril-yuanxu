@@ -63,13 +63,8 @@ jobs:
             ${{ runner.temp }}/build-input-context/**/*.log
           if-no-files-found: ignore
           retention-days: 7
-      - name: Qualify Profile roots and selected native package closure
-        run: |
-          just test-file t/module-profile-tags-test.ss
-          just test-file t/module-windows-test.ss
-          just test-file t/thousand-package-downstream-test.ss
-      - name: Test public Yuanxu prelude
-        run: just test-yuanxu-prelude
+      # Profile roots, namespace windows, the downstream package and the public prelude
+      # run in the required test partition, with one receipt per file.
       - name: Check complete disjoint test partition
         run: just check-test-groups
       - name: Preserve dependency and library tree
