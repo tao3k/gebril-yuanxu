@@ -106,6 +106,7 @@ jobs:
           name: yuanxu-package-${{ inputs.os }}-${{ github.sha }}
           path: ${{ runner.temp }}
       - name: Restore same-head artifacts
+        id: restore-package
         run: tar -xzf "$RUNNER_TEMP/yuanxu-package.tar.gz"
       - name: Run serial Gerbil tests and report each file
         env:
@@ -114,6 +115,12 @@ jobs:
           TMPDIR: ${{ runner.temp }}
           YUANXU_TEST_REPORT_DIR: ${{ runner.temp }}/test-report
         run: just test-directory '${{ matrix.group }}'
+      - name: Run published module TestSuites outside mechanism Cases
+        if: ${{ !cancelled() && steps.restore-package.outcome == 'success' && matrix.group == 'modules' }}
+        env:
+          TMPDIR: ${{ runner.temp }}
+          YUANXU_TEST_REPORT_DIR: ${{ runner.temp }}/published-module-suites
+        run: just test-selected-modules
       - name: Retain test reports and declaration diagnostics
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -121,8 +128,6 @@ jobs:
           name: yuanxu-declaration-${{ inputs.os }}-${{ matrix.group }}-${{ github.sha }}
           path: |
             ${{ runner.temp }}/test-report/
+            ${{ runner.temp }}/published-module-suites/
             ${{ runner.temp }}/declaration-scale-observation-*
           if-no-files-found: ignore
-      - name: Run published module TestSuites outside mechanism Cases
-        if: matrix.group == 'modules'
-        run: just test-selected-modules

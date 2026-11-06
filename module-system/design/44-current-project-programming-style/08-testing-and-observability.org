@@ -278,6 +278,9 @@ before the per-file Just dispatch and ends after the worker exits.
 same clock. Startup includes any file-specific preparation; the interval
 after the Harness result can include artifact checks and process exit.
 CI queue and package preparation are separate workflow observations.
+Published Module TestSuites retain their independent integration phase and
+Harness receipt. A completed mechanism test with a failure still permits
+that phase to run against the restored same-head package.
 
 Use =just test-report-audit DIRECTORY= from the tested checkout before deriving
 platform scheduling weights. Supply one directory containing that platform's
