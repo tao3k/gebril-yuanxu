@@ -3,7 +3,7 @@
 (import :std/test :clan/poo/object
         (only-in :yuanxu/ops/process-script ProcessScript.)
         (only-in :yuanxu/ops/func prepare-script-command)
-        (only-in :yuanxu/ops/progress current-execution-progress-port call-with-execution-progress
+        (only-in :yuanxu/ops/progress current-execution-progress current-execution-progress-port call-with-execution-progress
                  execution-progress! execution-progress-status progress-record)
         (only-in :yuanxu/observability/testing-fixture call-with-yuanxu-fixture)
         (only-in :std/error Error? Error-message Error-irritants))
@@ -14,7 +14,8 @@
       (def clock 0)
       (def report (open-output-string))
       (def console (open-output-string))
-      (parameterize ((current-execution-progress-port report)
+      (parameterize ((current-execution-progress '())
+                     (current-execution-progress-port report)
                      (current-error-port console))
         (call-with-execution-progress 2000 6000
           (lambda (state)

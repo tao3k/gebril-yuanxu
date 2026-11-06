@@ -219,23 +219,4 @@ test-discovered-file path:
     esac
 
 test-directory group="all":
-    #!/usr/bin/env bash
-    set -euo pipefail
-    export LC_ALL=C
-    manifest=$(just test-files "{{ group }}")
-    files=()
-    while IFS= read -r file; do [[ -z "$file" ]] || files+=("$file"); done <<< "$manifest"
-    test "${#files[@]}" -gt 0
-    printf '[yuanxu-testing] phase=test-directory-manifest fileCount=%s\n' "${#files[@]}"
-    printf '%s\n' "${files[@]}"
-    failed=()
-    for file in "${files[@]}"; do
-      if ! just test-discovered-file "$file"; then
-        failed+=("$file")
-      fi
-    done
-    if (( ${#failed[@]} )); then
-      printf 'FAILED-TEST %s\n' "${failed[@]}" >&2
-      exit 1
-    fi
-    printf '[yuanxu-testing] phase=test-directory-complete fileCount=%s\n' "${#files[@]}"
+    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss "{{ group }}"

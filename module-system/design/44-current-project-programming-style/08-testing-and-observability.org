@@ -269,6 +269,16 @@ progress stream. A supervised child continues to use the Ops relay. An
 interrupted process may leave progress without a terminal receipt. Use the
 outer job result and the original transcript to classify that run.
 
+The group increment keeps Just's discovery and per-file preparation
+routes. One Scheme invocation uses the existing Ops process operation for
+each file in order. It stores the expected file list, the complete worker
+transcript, and the actual exit and wait status. Its =dispatch-ms= begins
+before the per-file Just dispatch and ends after the worker exits.
+=entry-ms= and =harness-return-ms= locate observed child markers on that
+same clock. Startup includes any file-specific preparation; the interval
+after the Harness result can include artifact checks and process exit.
+CI queue and package preparation are separate workflow observations.
+
 * Specialized qualifications
 
 Use =TestingScript.= only when a qualification actually requires an independent
