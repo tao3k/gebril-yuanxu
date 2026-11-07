@@ -21,12 +21,18 @@
         reader-prepare-publication reader-check-preparation-policy!
         reader-prepare-public-dependency reader-for-each-kernel-context reader-transfer-context)
 
-(def (reader-enroll-candidate! session guard)
-  (when ((reader-session-candidate session))
-    (set! (candidate-support-guards ((reader-session-candidate session)))
-      (cons (if (source-preparation? guard) guard
-                (make-source-preparation #f #f #f #f guard #f #f))
-            (candidate-support-guards ((reader-session-candidate session)))))))
+(def (reader-enroll-candidate! session guard (input #f))
+  (let (candidate ((reader-session-candidate session)))
+    (when candidate
+      (let* ((origin (and input (hash-get (reader-session-kernel-inputs session) input)))
+             (checker (and origin (source-preparation-checker origin)))
+             (entry (if (source-preparation? guard) guard
+                        ;; Preserve the enrolled procedure even if the origin
+                        ;; registry later updates its invocation.
+                        (make-source-preparation #f checker #f #f guard #f
+                          (and checker (eq? checker guard) (source-preparation-ready? origin))))))
+        (set! (candidate-support-guards candidate)
+          (cons entry (candidate-support-guards candidate)))))))
 (def (reader-capture-input session value checker path ready? state (kind 'origin))
   (def origin (capture-source-preparation value checker path ready? state))
   (if (eq? kind 'origin)

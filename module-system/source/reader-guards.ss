@@ -8,7 +8,7 @@
         :yuanxu/module-system/source/reader-support
         (only-in :yuanxu/module-system/source/compiler-tools captured-tool-context?))
 (export reader-check-tool-contexts! reader-check-current! reader-check-current/closed!
-        reader-current! reader-full-current! reader-open-boundary!)
+        reader-current! reader-full-current! reader-open-boundary! reader-fixed-candidate-guards?)
 
 (def (reader-check-tool-contexts! session)
   (module-source-measure-operation 'reader-native-identity
@@ -41,7 +41,18 @@
   (let* ((scope ((reader-session-candidate session)))
          (local? (and scope (not (candidate-support-open? scope)))))
     (reader-check-current! session (if local? (candidate-support-guards scope) (reader-session-guards session)) (inputs))))
-(def (reader-current! session (replay-site #f))
+(def (reader-fixed-candidate-guards? candidate)
+  (and (not (candidate-support-open? candidate))
+       (with-catch (lambda (_changed) #f)
+         (lambda ()
+           (andmap
+             (lambda (guard)
+               (let (ready? (source-preparation-ready? guard))
+                 (and ready? (source-preparation-checker guard)
+                      (eq? (source-preparation-checker guard) (source-preparation-invoke guard))
+                      (ready?))))
+             (candidate-support-guards candidate))))))
+(def (reader-current! session (replay-site #f) (metadata? #t))
   (when (reader-session-refused? session) (error "build publication reader was refused"))
   ;; Only a private, unpublished candidate may use operation support.
   ;; Public reader uses and open callbacks retain the whole observed epoch.
@@ -54,7 +65,7 @@
           'candidate-open-guard 'candidate-local-guard) 1))
     ;; Metadata replay belongs to this SAME observed guard interval.
     ;; Keep it inside the existing brackets, not in an unattributed gap.
-    (when ((reader-session-candidate session))
+    (when (and metadata? ((reader-session-candidate session)))
       (module-source-measure-operation
         (list 'reader-candidate-replay-site (or replay-site (current-module-source-phase)))
         (candidate-support-metadata-current ((reader-session-candidate session)))))

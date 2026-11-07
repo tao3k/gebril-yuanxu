@@ -337,4 +337,52 @@ theorem interface_datum_read_preserves_owner_and_refusals
     cases binding forms with
     | error => rfl
     | ok owner => cases nativeIdentity owner <;> rfl
+
+-- This models the same closed interval, with live replay inputs. The first
+-- read set predates declaration admission; the second is what admission read.
+def candidateReturnInOrder {Failure : Type}
+    (prepared source admitted : Except Failure Unit) : Except Failure Unit := do
+  prepared
+  source
+  admitted
+
+def candidateReturnWithPreflight {Failure : Type}
+    (prepared source admitted : Except Failure Unit) : Except Failure Unit :=
+  match (do prepared; admitted) with
+  | .ok () => source
+  | .error refused =>
+    match candidateReturnInOrder prepared source admitted with
+    | .ok () => .error refused
+    | .error original => .error original
+
+theorem candidate_return_union_preserves_first_refusal {Failure : Type}
+    (prepared source admitted : Except Failure Unit) :
+    candidateReturnWithPreflight prepared source admitted =
+      candidateReturnInOrder prepared source admitted := by
+  cases prepared with
+  | error => rfl
+  | ok value =>
+    cases value
+    cases source with
+    | error => cases admitted <;> rfl
+    | ok value => cases value; cases admitted <;> rfl
+
+theorem candidate_return_cannot_report_admission_before_source :
+    (do (.error "stale admission" : Except String Unit)
+        (.error "changed source" : Except String Unit)) ≠
+      candidateReturnInOrder (.ok ()) (.error "changed source")
+        (.error "stale admission") := by
+  intro same
+  exact (by decide : "stale admission" ≠ "changed source") (Except.error.inj same)
+
+-- If input changed before fallback, its successful recheck never approves
+-- the original speculative refusal.
+theorem candidate_return_retry_cannot_grant_success {Failure : Type} (refused : Failure) :
+    (match (.ok () : Except Failure Unit) with
+     | .ok () => .error refused
+     | .error original => .error original) = (.error refused : Except Failure Unit) := rfl
+
+theorem candidate_return_checks_after_checkpoint {Failure : Type} (stale : Failure) :
+    replayCheckpoint (.ok ()) (.ok ()) (.error stale : Except Failure Unit) =
+      .error stale := rfl
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

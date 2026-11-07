@@ -112,6 +112,10 @@
                         (lambda (source value)
                           (require-publication-policy! policy-current?)
                           (unless (module-publication-contract-current?) (reader-open-boundary! session))
+                          (def fused-return? #f)
+                          (def (check-admitted! (metadata? #t))
+                            (parameterize ((current-module-source-phase 'candidate-admitted))
+                              (reader-current! session #f metadata?)))
                           ;; Keep the interpreter's original observation bundle,
                           ;; but issue admission support from this fixed producer
                           ;; boundary, after role initialization has completed.
@@ -122,14 +126,21 @@
                                   (lambda ()
                                     (admit-module-publication! source expected-id value context-value))))
                               (def checked (.ref evidence 'candidate))
-                              (parameterize ((current-module-source-phase 'candidate-admitted)) (reader-current! session))
+                              (set! fused-return?
+                                (and fused-entry? (not (current-module-source-observer))
+                                     (object-construction-current?) (owned-read-function-scope?)
+                                     (reader-fixed-candidate-guards? scope)))
+                              (unless fused-return? (check-admitted!))
                               (list source checked evidence))
                             (lambda (results admission-current! roots)
-                              (def observed (make-hash-table-eq))
-                              (for-each (lambda (read) (hash-put! observed read #t)) roots)
-                              (def ids
-                                (module-publication-dependency-projection (cadar results)
-                                  (lambda (read) (hash-key? observed read))))
+                              (def ids #f)
+                              (def (project-dependencies!)
+                                (def observed (make-hash-table-eq))
+                                (for-each (lambda (read) (hash-put! observed read #t)) roots)
+                                (set! ids
+                                  (module-publication-dependency-projection (cadar results)
+                                    (lambda (read) (hash-key? observed read)))))
+                              (unless fused-return? (project-dependencies!))
                               ;; POO keys its replay topology by the actual
                               ;; root spine. Pass one ordered, immutable list
                               ;; to both consumers. Each still checks freshness.
@@ -137,15 +148,41 @@
                               (def guard
                                 (publication-metadata-current policy-current? preparation-current! admission-current! location-current!
                                   joined-roots))
-                              (module-source-measure-operation 'reader-candidate-return-replay guard)
+                              (def entry! (publication-metadata-entry policy-current? location-current!))
+                              (def tail! (publication-metadata-tail policy-current?))
+                              (module-source-measure-operation 'reader-candidate-return-replay
+                                (if fused-return?
+                                  (lambda ()
+                                    (def entered? #f)
+                                    (def completed? #f)
+                                    (entry!)
+                                    (with-catch
+                                      (lambda (cause)
+                                        ;; A union refusal may precede a source
+                                        ;; refusal that originally came first.
+                                        (unless entered?
+                                          (check-admitted!)
+                                          (project-dependencies!))
+                                        (when (or (not entered?) completed?) (guard))
+                                        (raise cause))
+                                      (lambda ()
+                                        (module-source-measure-operation 'reader-candidate-fused-return-replay
+                                          (lambda ()
+                                            (module-source-measure-replay joined-roots
+                                              (lambda ()
+                                                (set! entered? #t)
+                                                (tail!)
+                                                (check-admitted! #f)
+                                                (project-dependencies!)
+                                                (entry!)
+                                                (set! completed? #t)))))))
+                                    (tail!))
+                                  guard))
                               ;; Fixed source-only checkpoints and ORIGINAL
                               ;; issued roots for the linker's POO topology
                               ;; slot. No successful check or purity flag.
                               (list (append (car results)
-                                      (list ids guard
-                                        (publication-metadata-entry policy-current? location-current!)
-                                        (publication-metadata-tail policy-current?)
-                                        joined-roots)))))) prepared))
+                                      (list ids guard entry! tail! joined-roots)))))) prepared))
                     )))))))
       admit-current: (cut reader-full-current! session <...>)
       read-only-current?: (cut reader-source-state-current? session <...>)

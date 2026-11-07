@@ -112,7 +112,7 @@
              ;; Runtime imports recurse before returning: a role need not
              ;; remain the head of input-values when its context arrives.
              (hash-put! input-paths path input)
-             (reader-enroll-candidate! session (.ref input 'admit-current))
+             (reader-enroll-candidate! session (.ref input 'admit-current) input)
              (set! input-values (cons input input-values)))))
        (def (record-data! file text)
          (def relative
@@ -542,7 +542,7 @@
               (unless (hash-key? (reader-session-kernel-contexts session) (path-normalize path))
                 (source-wrapper (path-normalize path) root)))
             (if deferred-roles '() (.ref prepared 'role-sources)))
-          (reader-enroll-candidate! session (.ref prepared 'admit-current))
+          (reader-enroll-candidate! session (.ref prepared 'admit-current) prepared)
           (parameterize ((current-module-source-phase 'declaration-inputs)) (reader-current! session))
           (let (wrapper (module-source-measure-operation 'reader-wrapper-write
                            (lambda ()

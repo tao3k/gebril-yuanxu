@@ -73,6 +73,14 @@ package YuanxuModuleLoading {
                and source observers preserve separate reads. Release the
                datums before retaining the prepared declaration. */
     }
+    part def CandidateReturn {
+        ref part support : RuntimeReadSupport;
+        doc /* A fixed directory and source check may run inside the
+               native protection of preparation and admission roots.
+               A refused preflight restores the original preparation,
+               source, admission order. Open callbacks keep their own
+               checkpoints. Every successful return rechecks live roots. */
+    }
     part def StockAuthoringRun {
         ref part support : RuntimeReadSupport;
         doc /* Share authentication only within an established closed run

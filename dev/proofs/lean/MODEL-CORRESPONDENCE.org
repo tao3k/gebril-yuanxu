@@ -444,6 +444,13 @@ the deferred role classifier. The native identity, effect and currentness
 boundaries remain separate in =source/preparation.ss=. Observed or custom
 reader operations retain both datum reads.
 
+=PublicationReads.candidate_return_union_preserves_first_refusal= requires
+the original check order when joined preparation and admission preflight
+fails. =candidate_return_cannot_report_admission_before_source= covers a
+simultaneous source and admission refusal. The Scheme path uses the native
+protected replay and preserves post-checkpoint failure and the independent
+checks around Gerbil expansion and author callbacks.
+
 The installed 13.35 session refinement keeps fixed checkpoints and original read
 roots in the private linked-publication carrier, indexes append-only membership
 using an ordinary POO derived slot, and reauthenticates the complete native union

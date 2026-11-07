@@ -327,3 +327,15 @@ observers and custom readtables retain separate reads. The native compiler
 still resolves identity, reads and expands the owner source, and checks
 currentness after effects. The retained preparation owns the source text
 and projections. The temporary datum tree is released before retention.
+
+** Candidate return
+
+After the Publication Contract returns, a closed directory candidate can
+authenticate preparation and admission roots in one native protected replay.
+The source and location checks execute inside that protection. The fixed
+source check is identified by the exact checker issued at input preparation
+and the already-resolved native package state. Opaque guards and observed
+operations retain the original order. A rejected union preflight runs the
+original sequence to recover the first refusal. Successful fallback cannot
+approve a refused preflight. The open Gerbil and Contract checkpoints remain
+separate.
