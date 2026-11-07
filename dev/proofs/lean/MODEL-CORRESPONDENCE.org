@@ -640,6 +640,13 @@ POO can reuse its native topology on a matching spine, while each guard
 still authenticates current reads and source observations. A Link batch
 may build a different root list for its wider support.
 
+=SelectionReplay.native_decoded_ranges_keep_eof_and_faults= relates two
+comparators over the same port transcript. The large-file guard passes the
+same count for the live buffer and the expected substring, so a bounded
+case-sensitive prefix test is equality of those ranges. The Scheme read
+loop still consumes a later fault after a mismatch and checks the final
+length at EOF. Neither the read policy nor its effect boundaries change.
+
 Within one issued symbolic vector read,
 =vector_fusion_preserves_result= relates the split and fused queries when
 the authenticated offset and cells agree.

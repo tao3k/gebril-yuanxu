@@ -15,6 +15,7 @@
         :yuanxu/module-system/source/collection
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/admission
+        (only-in :yuanxu/module-system/source/observations module-source-text-guard)
         :yuanxu/module-system/interface)
 (export module-source-admission-test)
 (def ScopeContract
@@ -241,7 +242,21 @@
                     '("aλ" "aλ\nb!" "aλ\nc" ""))
           (write-role root "types" "")
           (check-exception (module-source-admit-current! (list (cons file text))) error?)
-          (module-source-admit-current! (list (cons file ""))))))
+          (module-source-admit-current! (list (cons file "")))
+          (def prefix (make-string 8192 #\λ))
+          (def suffix (make-string 32768 #\a))
+          (def large (string-append prefix "猫" suffix "\n"))
+          (def current? (module-source-text-guard file large))
+          (parameterize ((current-module-source-observer #f))
+            (write-role root "types" large)
+            (check-equal? (current?) #t)
+            (for-each
+              (lambda (changed)
+                (write-role root "types" changed)
+                (check-equal? (current?) #f))
+              (list (string-append prefix "犬" suffix "\n")
+                    (string-append prefix "猫" suffix)
+                    (string-append large "λ")))))))
     (yuanxu-test-case "nested pure guards reuse reads but independent validation observes changes"
       (with-module
        (lambda (root)

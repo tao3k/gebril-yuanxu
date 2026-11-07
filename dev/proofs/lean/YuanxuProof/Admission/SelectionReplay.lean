@@ -81,6 +81,40 @@ theorem residual_reconstruction (wall cpu : Int) :
 -- GC CPU is already part of process CPU; adding it again double-counts.
 theorem gc_is_not_extra_cpu (work gc : Nat) : (work + gc) + gc = work + 2 * gc := by omega
 
+-- Successful reads supply decoded ranges. A mismatched range still consumes
+-- the rest of the port transcript, where a later decoder or I/O fault can win.
+def equalDecodedChars : List Char → List Char → Bool
+  | [], [] => true
+  | a :: as, b :: bs => (a == b) && equalDecodedChars as bs
+  | _, _ => false
+
+theorem equalDecodedChars_eq (left right : List Char) :
+    equalDecodedChars left right = (left == right) := by
+  induction left generalizing right with
+  | nil => cases right <;> rfl
+  | cons a rest ih =>
+    cases right with
+    | nil => rfl
+    | cons b tail => simp [equalDecodedChars, ih]
+
+def checkDecodedRanges (equalRange : List Char → List Char → Bool) (eofAtExpectedLength : Bool) :
+    Bool → List (Except Nat (List Char × List Char)) → Except Nat Bool
+  | same, [] => .ok (same && eofAtExpectedLength)
+  | _, .error failure :: _ => .error failure
+  | same, .ok (read, expected) :: rest =>
+    checkDecodedRanges equalRange eofAtExpectedLength (same && equalRange read expected) rest
+
+theorem native_decoded_ranges_keep_eof_and_faults (same eofAtExpectedLength : Bool)
+    (ranges : List (Except Nat (List Char × List Char))) :
+    checkDecodedRanges equalDecodedChars eofAtExpectedLength same ranges =
+      checkDecodedRanges (fun left right => left == right) eofAtExpectedLength same ranges := by
+  have equal : equalDecodedChars = (fun left right => left == right) :=
+    funext (fun left => funext (equalDecodedChars_eq left))
+  rw [equal]
+
+example : checkDecodedRanges equalDecodedChars false true
+    [.ok (['a'], ['b']), .error 4] = .error 4 := rfl
+
 theorem single_lookup_saves_hits (hits misses : Nat) :
     2 * hits + misses = (hits + misses) + hits := by omega
 theorem cached_false_is_a_value {Name Fault : Type} [DecidableEq Name]

@@ -1630,6 +1630,24 @@ diagnostic order when that interval is open.
 
 *** Six native candidate replay sites
 
+The large-file location guard compares equal-length decoded character ranges
+through Gambit's bounded =string-prefix?=. Both the exact character count at
+EOF and later decoder or I/O errors still determine the result. The retained
+input, buffer, port, observation window and independent caller checks remain
+the same. =SelectionReplay.native_decoded_ranges_keep_eof_and_faults= covers
+the range substitution over the original read transcript, and the source
+admission test exercises the large guard with Unicode, a changed character
+after the first range, and both shorter and longer input.
+
+A single process ran the two compiled loops in interleaved blocks, with
+480 fresh reads per lane of the same 138,988-character explicit Init. The
+original loop took 223 ms CPU and 232 ms wall. The native range operation
+took 220 ms CPU and 230 ms wall. This isolates the comparison substitution
+and does not establish a capacity improvement. In the separate 1,000-owner
+runtime graph, five checkpoints already account for 64,940,000 characters
+of repeated Init reads. They still need their own boundary analysis before
+any source observation can be shared.
+
 The current POO implementation indexes replay topology by a weak, identity
 keyed root spine. A warm hit checks the root signature and token issuance.
 The replay then checks the actual native read route, receiver revision,

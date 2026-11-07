@@ -356,12 +356,6 @@
         (call-with-input-file path
           (lambda (port)
             (def buffer (make-string capacity))
-            (def (matches-chunk? offset count)
-              (let compare ((index 0))
-                (or (##fx= index count)
-                    (and (##char=? (##string-ref buffer index)
-                                   (##string-ref expected (##fx+ offset index)))
-                         (compare (##fx+ index 1))))))
             (let read-next ((offset 0) (matching? #t))
               (let (count (read-substring buffer 0 capacity port))
                 (if (zero? count)
@@ -371,7 +365,7 @@
                     ;; decoder failure still wins over a mismatching prefix.
                     (read-next end
                       (and matching? (<= end length)
-                           (matches-chunk? offset count))))))))))))
+                           (string-prefix? buffer expected 0 count offset end))))))))))))
   (record-physical-source-read! characters)
   matches?)
 

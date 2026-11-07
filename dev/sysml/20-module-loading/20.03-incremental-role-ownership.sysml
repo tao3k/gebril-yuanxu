@@ -37,6 +37,11 @@ package YuanxuIncrementalRoles {
                Lean checks support sufficiency; Quint checks transition order
                and the stale result admitted by file-only reuse. */
     }
+    part def DecodedSourceRange {
+        doc /* Compare the two live decoded ranges by character. Keep reading
+               through EOF after a mismatch so a later port fault is preserved.
+               Each independent source boundary still reads its own input. */
+    }
     part def BoundedWorker {
         ref part owner : IncrementalOwner;
         doc /* Future scheduling allocation only. Do not copy the graph, inherit
