@@ -283,6 +283,18 @@ package YuanxuPayloadOwnership {
                CLI/source-entry and compiled-library probes are separate cohorts;
                never infer a production regression by mixing their counters. */
     }
+    requirement def PrivateWrapperImportCustody {
+        doc /* Compare a fixed wrapper binding by resolved identifier and
+               expansion phase, with local and explicit imports taking
+               precedence over the weak prelude. Verify the owner's direct
+               imports and observable checks independently of binding
+               resolution. A shared-prelude experiment
+               removed three direct imports without a consistent CPU win.
+               Retain the installed reader's native imports and its effect
+               boundaries. The opt-in thousand-owner diagnostic attributes
+               CPU and wall time with no source observer. Ordinary capacity
+               uses its original measurement and watchdog. */
+    }
     requirement def ExplicitImportProjection {
         doc /* A fixed-prelude Core library owner may retain a runtime:
                POO dependency and resolve ordinary POO bindings from the package

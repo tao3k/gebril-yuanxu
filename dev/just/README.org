@@ -15,7 +15,7 @@ command names.  They do not create another module loader or test language.
 
 * Shared test agreement
 
-=just test-file PATH [false|true|trace]= delegates to
+=just test-file PATH [false|true|trace|stages]= delegates to
 [[file:../test-file.ss][the atomic adapter to the installed Gerbil test tool]].
 It passes official CLI arguments directly to =:gerbil/tools/gxtest:main= in
 this same VM. The tool owns =std/test= discovery, module setup/cleanup,
@@ -33,6 +33,8 @@ inferred from a generic test-launch receipt.
 Just retains the pre-import heap fence and finite outer watchdog. Case macros
 retain their independent memory, idle and duration policies. Observation uses
 the official =-D= feature channel; it does not launch selection probes.
+=just measure-thousand-eval-stages PREFIX= selects the separate =stages=
+feature for native CPU and wall accounting without a source observer.
 Explicit tests of Ops/process APIs remain integration tests of those APIs,
 not the execution mechanism for ordinary tests.
 

@@ -143,7 +143,11 @@
 (.def (RuntimeSelectionFixture @ RuntimeValueFixture)
   .verify: verify-runtime-selection)
 (.def (RuntimeAttributionFixture @ RuntimeValueFixture)
-  .verify: verify-runtime-attribution)
+  .verify: (cond-expand
+             (yuanxu-module-test-stage-accounting
+              (lambda (exports count source-root)
+                (verify-runtime-attribution exports count source-root accounting?: 'stages)))
+             (else verify-runtime-attribution)))
 (.def (ModuleEvalOnceFixture @ RuntimeValueFixture)
   .verify: verify-module-eval-once)
 (.def (BusinessEvalOnceFixture @ RuntimeValueFixture)

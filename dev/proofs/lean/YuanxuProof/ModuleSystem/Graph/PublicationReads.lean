@@ -671,4 +671,44 @@ theorem unchanged_dispatch_delivery_auth_is_redundant
   subst delivery
   cases entry <;> cases selected <;> rfl
 
+/-- Gerbil resolves a wrapper name through its local bindings, explicit
+imports, then its weak prelude. The key includes the expansion phase. -/
+def wrapperBinding {Key Binding : Type}
+    (localBinding explicit prelude : Key → Option Binding) (key : Key) : Option Binding :=
+  (localBinding key).orElse fun _ => (explicit key).orElse fun _ => prelude key
+
+theorem shared_wrapper_bindings_preserve_resolution
+    (localBinding explicit prelude sharedPrelude : Key → Option Binding)
+    (used : List Key)
+    (exact : ∀ key ∈ used, (explicit key).orElse (fun _ => prelude key) = sharedPrelude key) :
+    used.map (wrapperBinding localBinding explicit prelude) =
+      used.map (wrapperBinding localBinding (fun _ => none) sharedPrelude) := by
+  apply List.map_congr_left
+  intro key member
+  unfold wrapperBinding
+  rw [show ((fun _ : Key => none) key : Option Binding).orElse
+    (fun _ => sharedPrelude key) = sharedPrelude key from rfl]
+  rw [exact key member]
+
+-- A phase-zero match alone is insufficient, even for a single identifier.
+theorem same_phase_zero_binding_can_hide_phase_one_change :
+    ([0, 1] : List Nat).map (wrapperBinding (fun _ => none)
+      (fun _ => some 2) (fun _ => none)) ≠
+    [0, 1].map (wrapperBinding (fun _ => none) (fun _ => none)
+      (fun phase => if phase = 0 then some 2 else some 3)) := by decide
+
+-- An explicit author import can beat a weak prelude. Closed classification
+-- must establish the actual binding route before changing wrapper assembly.
+theorem weak_prelude_cannot_override_explicit_import :
+    wrapperBinding (Key := Nat) (fun _ => none) (fun _ => some 3) (fun _ => some 2) 0 =
+      some 3 := rfl
+
+-- Binding equivalence is separate from native import custody. Moving an
+-- import into a shared prelude can leave the name intact while removing the
+-- original per-owner edge, which an import guard can observe.
+theorem same_wrapper_binding_does_not_preserve_owner_import :
+    wrapperBinding (Key := Nat) (fun _ => none) (fun _ => some 2) (fun _ => none) 0 =
+      wrapperBinding (Key := Nat) (fun _ => none) (fun _ => none) (fun _ => some 2) 0 ∧
+    ([2] : List Nat) ≠ [] := by decide
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

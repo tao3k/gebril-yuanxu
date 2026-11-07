@@ -1720,6 +1720,56 @@ and 96.878 CPU seconds, without returning a business value. The per-site
 attribution came from the separate 64-owner run. No completed thousand
 scope or replay speedup is inferred from the timeout.
 
+*** Fixed imports and the private Gerbil wrapper
+
+The exact local 4,257-owner partial capacity receipt records 31.750 seconds
+inside native wrapper expansion and 0.620 seconds in Interface rewriting.
+Replacing the syntax rewrite cannot remove the rest of the native expansion
+span. Both measurements are inclusive.
+
+The native expansion probe used the same prepared Interface and unique
+wrapper Contexts. One lane kept the ordinary explicit imports. The second
+placed their fixed bindings in one Gerbil prelude. The sampled resolved
+binding IDs matched at phases zero through two. Direct wrapper imports
+changed from three to zero. Each lane expanded two interleaved 240-owner
+blocks after warmup. The explicit lane took 2.190 seconds user CPU and
+2.368 seconds wall. The prelude lane took 2.173 seconds user CPU and
+2.320 seconds wall. The ordering of the faster lane reversed between
+blocks. This probe covers native expansion with the same source and no
+business scope evaluation.
+
+The reader uses explicit imports so each wrapper carries its own import
+edges. Compare those edges separately from resolved binding IDs.
+=PublicationReads.shared_wrapper_bindings_preserve_resolution= states the
+lookup premise, including phase and local precedence.
+=PublicationReads.same_wrapper_binding_does_not_preserve_owner_import=
+separates that premise from native import custody.
+=just measure-thousand-eval-stages PREFIX= uses the existing thousand-owner
+fixture and native stage accounting with no source observer. Its detailed
+CPU counters are opt-in. The required CI case keeps its existing mode.
+
+The first detailed run returned the selected Graph and the business value.
+Declaration admission took 39.279 seconds wall and 38.289 seconds CPU.
+These nested spans must not be added to obtain the total.
+
+| Native stage within declaration admission | Calls | Wall s | CPU s |
+|-------------------------------------------+-------+--------+-------|
+| Preparation                               |  1000 |  7.079 | 7.041 |
+| Wrapper write                             |  1000 |  0.282 | 0.216 |
+| Wrapper expansion                         |  1000 |  6.451 | 6.425 |
+| Interface source read inside expansion    |  1000 |  0.089 | 0.089 |
+| Interface rewrite inside expansion        |  1000 |  0.067 | 0.067 |
+| Publication value admission               |  1000 |  8.207 | 7.949 |
+| Admission evidence check                  |  1000 |  0.188 | 0.187 |
+| Native POO metadata replay                |  6004 | 14.000 | 13.927 |
+
+Replay counted 5,958,069 native preflight visits. The separate Graph
+currentness phase took 0.503 seconds wall and 0.501 seconds CPU. Scope
+demand after admission took 7.328 seconds wall and 7.316 seconds CPU.
+The default wall-only case passed in a separate process with 34.965 seconds
+in declaration admission. Use the detailed run for stage attribution and
+the default case for ordinary qualification.
+
 *** Retained read frontier
 
 The directory factory issues the private candidate location guard. At the

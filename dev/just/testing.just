@@ -14,9 +14,9 @@ test-thousand-package-builds directory:
 measure-thousand-business-eval directory:
     GERBIL_PATH="{{ directory }}" GERBIL_LOADPATH="{{ directory }}/lib" just test-file t/module-business-eval-once-1000-test.ss
 
-# Independent diagnostic probes, with wall-only operation instrumentation.
+# Independent diagnostic probes, with native CPU/wall accounting per stage.
 measure-thousand-eval-stages directory:
-    GERBIL_PATH="{{ directory }}" GERBIL_LOADPATH="{{ directory }}/lib" just test-file t/module-runtime-attribution-1000-test.ss
+    GERBIL_PATH="{{ directory }}" GERBIL_LOADPATH="{{ directory }}/lib" just test-file t/module-runtime-attribution-1000-test.ss stages
 
 test-file path observe="false":
     #!/usr/bin/env bash
@@ -40,7 +40,8 @@ test-file path observe="false":
       false) ;;
       true) options=(-D yuanxu-module-test-observation) ;;
       trace) options=(-D yuanxu-module-test-observation,yuanxu-module-test-trace) ;;
-      *) echo 'observe must be false, true, or trace' >&2; exit 64 ;;
+      stages) options=(-D yuanxu-module-test-stage-accounting) ;;
+      *) echo 'observe must be false, true, trace, or stages' >&2; exit 64 ;;
     esac
     GERBIL_LOADPATH="$test_lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:${GERBIL_PATH:-$PWD/.gerbil}/lib:$PWD" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" "${launcher[@]}" {{ gerbil_test_runtime_options }} dev/test-file.ss ${options[@]+"${options[@]}"} "{{ path }}"
 
