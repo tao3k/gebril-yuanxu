@@ -15,7 +15,7 @@
         :yuanxu/module-system/source/feature-scopes
         :yuanxu/module-system/source/preparation
         :yuanxu/module-system/source/directory
-        :yuanxu/module-system/source/reader
+        (only-in :yuanxu/module-system/source/reader-support call-with-publication-reads)
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?))
 (export yuanxu-load-modules module-namespace-project call-with-linked-prepared-guards
         linked-configuration-guard-active?)
@@ -69,6 +69,12 @@
   (module-binding-action "yuanxu/module-system/source/build" 'module-build-graph/linked))
 (def build-package-source-inspector
   (module-binding-action "yuanxu/module-system/source/build" 'module-build-package-source-inspector))
+(def publication-reader-producer
+  (module-binding-action "yuanxu/module-system/source/reader" 'module-publication-reader))
+(def (make-publication-reader)
+  ;; The linker can enumerate or use a supplied reader without importing
+  ;; the native Reader. reader-ref owns its independent entry and return.
+  (publication-reader-producer '()))
 ;; Only this linker constructs a batch capability. Build receives its
 ;; selected-Graph identity, never an author-supplied execution callback.
 (defstruct linked-prepared-guards (selection check) final: #t)
@@ -190,7 +196,7 @@
      keys: names)))
 (def (yuanxu-load-modules source read-publication: (publication-reader #f)
                            module-view: (module-view #f))
-  (load-module-source source publication-reader module-view module-publication-reader))
+  (load-module-source source publication-reader module-view make-publication-reader))
 (def (load-module-source source publication-reader module-view reader-maker)
   (when (current-module-build-phase?)
     (error "Module build phase cannot reload the root module selection"))
@@ -239,7 +245,7 @@
              ;; admission. Only native role contexts are offered by the reader;
              ;; its transfer checks the new graph's actual source authority.
              (load-module-source source #f module-view
-               (if reader (lambda () ((.ref reader '.fork))) module-publication-reader))))))
+               (if reader (lambda () ((.ref reader '.fork))) make-publication-reader))))))
      (link-module-context
        (if (string? source) (module-directory-context source publication-reader) source)
        #f #f module-view)))

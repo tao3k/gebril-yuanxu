@@ -21,6 +21,12 @@
                   (check-equal? (file-exists? root) #f))))
 (def module-init-import-test
   (test-suite "Init import owns no eager Reader or build execution closure"
+    (test-case "native linker import leaves the Reader outside its import closure"
+      (def contexts '())
+      (for-each-build-module (core-import-module ':yuanxu/module-system/source/link)
+        (lambda (context) (set! contexts (cons (expander-context-id context) contexts))))
+      (check-equal? (and (memq 'yuanxu/module-system/source/reader contexts) #t) #f)
+      (check-equal? (and (memq 'yuanxu/module-system/source/reader-session contexts) #t) #f))
     (yuanxu-test-fixture "runtime init import defers missing source and execution owners"
       (root Workspace)
       (def init (path-expand "init.ss" root))
