@@ -6,6 +6,9 @@
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .+ .get .ref .slot? .ref/cached .all-slots/sort)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/module-system/source/observations
+                 module-source-text-guard module-source-read module-source-observe
+                 call-with-module-source-read-cache current-module-source-observer)
         (only-in :clan/poo/mop Type.)
         :yuanxu/feature-system/model
         :yuanxu/module-system/source/objects
@@ -262,6 +265,43 @@
          (write-source init (string-append prefix selection))
          (def view (yuanxu-load-modules init read-publication: (fixture-reader void)))
          ((.get view admit-current))
+         (cond-expand
+          (yuanxu-module-test-observation
+           (let ()
+             (check-equal? (current-module-source-observer) #f)
+             (def path (path-expand "large-selection.ss" root))
+             (write-source path
+               (call-with-output-string
+                 (lambda (port)
+                   (display "(yuanxu! mode: explicit" port)
+                   (for-each (lambda (index)
+                               (display " (module-" port)
+                               (display index port)
+                               (display ")" port))
+                             (iota 10000))
+                   (display ")\n" port))))
+             (def expected (module-source-read path))
+             (def (whole) (equal? expected (module-source-observe module-source-read path)))
+             (def chunks (module-source-text-guard path expected))
+             (def iterations (iota 120))
+             (for-each
+               (lambda (lane)
+                 (def action (if (eq? lane 'whole) whole chunks))
+                 (def accepted? #f)
+                 (def stats
+                   (##exec-stats
+                     (lambda ()
+                       (set! accepted?
+                         (andmap (lambda (_) (call-with-module-source-read-cache action))
+                                 iterations)))))
+                 (check-equal? accepted? #t)
+                 (write (list 'selection-text-cost lane (string-length expected) (length iterations)
+                           (filter (lambda (metric)
+                                     (memq (car metric) '(real-time user-time sys-time gc-user-time gc-sys-time)))
+                                   stats)))
+                 (newline) (force-output))
+               '(whole chunks whole chunks))))
+          (else (void)))
          ;; Keep the same size, directory, and decoded selection.
          (string-set! prefix 8191 #\語)
          (write-source init (string-append prefix selection))
