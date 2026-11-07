@@ -711,4 +711,29 @@ theorem same_wrapper_binding_does_not_preserve_owner_import :
       wrapperBinding (Key := Nat) (fun _ => none) (fun _ => none) (fun _ => some 2) 0 ∧
     ([2] : List Nat) ≠ [] := by decide
 
+/-- Cleanup of an exact native registry alias compares the installed Context.
+The caller must separately establish that the alias is private and no longer
+demanded. Key spelling alone does not establish that ownership. -/
+def retireWrapperAlias [DecidableEq Key] [DecidableEq Context]
+    (registry : Key → Option Context) (ownedKey : Key) (ownedContext : Context) :
+    Key → Option Context :=
+  fun key => if key = ownedKey ∧ registry key = some ownedContext then none else registry key
+
+theorem retire_wrapper_alias_preserves_other_bindings
+    [DecidableEq Key] [DecidableEq Context]
+    (registry : Key → Option Context) (ownedKey key : Key) (ownedContext : Context)
+    (other : key ≠ ownedKey) :
+    retireWrapperAlias registry ownedKey ownedContext key = registry key := by
+  simp [retireWrapperAlias, other]
+
+theorem retire_wrapper_alias_preserves_replacement
+    [DecidableEq Key] [DecidableEq Context]
+    (registry : Key → Option Context) (key : Key) (ownedContext : Context)
+    (replacement : registry key ≠ some ownedContext) :
+    retireWrapperAlias registry key ownedContext key = registry key := by
+  simp [retireWrapperAlias, replacement]
+
+theorem retiring_a_live_wrapper_alias_changes_resolution :
+    retireWrapperAlias (fun _ : Nat => some (5 : Nat)) 2 5 2 ≠ some 5 := by decide
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

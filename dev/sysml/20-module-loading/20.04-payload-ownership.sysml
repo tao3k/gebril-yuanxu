@@ -258,6 +258,17 @@ package YuanxuPayloadOwnership {
                boundaries. Lean PublicationReads.flatten_root_segments
                preserves the ordered signed input and the first refusal. */
     }
+    requirement def CompletedWrapperRetentionEvidence {
+        doc /* Measure the signed read frontier separately from native
+               Gerbil registry aliases. Classify a temporary authoring
+               Interface by its real producer and check incoming signed
+               edges before considering a retention projection. A registry
+               retirement requires private ownership, absence of future
+               demand, and an exact Context comparison that preserves a
+               replacement. The current reader retains both native paths.
+               The 64-owner census and 256-owner heap probe bound these
+               candidates independently of the full capacity gate. */
+    }
     requirement def PreludeDependencyRepresentation {
         doc /* Keep Gerbil Core as a complete runtime import-set; filter the two
                POO constructor exports at the export boundary. Verify every public

@@ -1829,6 +1829,27 @@ original traversal. =leaked_leaf_can_change_refusal= rejects using a leaf's
 shape alone as permission to discard it. The actual producer still needs
 to establish non-escape. Until then Scheme retains every original root.
 
+The 64-owner census on the current reader measured 58,624 preparation
+visits and 25,931 admission visits when traversed independently. The paired
+frontier had 74,955 visits, including 1,026 signed identities present in every
+owner's traversal. The owner-local authoring Interface accounted for seven
+records per owner. One was dependency-free, and no external read in this
+sample had a signed edge to those seven records. Even a proved projection of
+all 448 records would remove only 0.60% of the paired traversal. A census of
+edges alone cannot certify non-escape through an author callback.
+
+A separate 256-owner probe removed 512 native path and identity aliases
+for completed, export-free Interface wrappers after building the selected
+Graph. Two collected baseline samples were 273,744,000 and 273,780,448
+live bytes. The post-removal sample was 273,780,448 live bytes. Independent
+Graph currentness and the first business scope still returned. This
+measures registry custody in that fixture. It supplies neither a useful
+live-heap saving nor a general proof that a future native lookup cannot
+demand an alias. =PublicationReads.retire_wrapper_alias_preserves_replacement=
+specifies exact Context comparison, and
+=PublicationReads.retiring_a_live_wrapper_alias_changes_resolution=
+requires independent lifetime evidence before retirement.
+
 *** Native replay topology and live checks
 
 The probe instruments the existing generated Gambit Scheme for
