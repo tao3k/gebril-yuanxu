@@ -5,7 +5,7 @@
 
 ;;; Standard CLOS instance allocation, initialization, and slot access.
 
-(import (only-in :clan/poo/object .o .ref .slot? .put! object?)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop element?)
         (only-in :std/hash/misc hash-ref/default)
         (only-in :std/list/list filter find)
@@ -432,7 +432,7 @@
 ;;   | contract: defaults and validates initargs before allocating an instance
 ;;     whose local slots begin unbound, then performs shared initialization.
 ;;   | doc m%
-;;   | result: the initialized identity-bearing native POO instance.
+;;   | result: the initialized identity-bearing POO instance.
 (def (%poo-clos-make-instance class-value . supplied-initargs)
   (let (current-value (poo-clos-resolve-class class-value))
     (unless (initialization-argument-list? supplied-initargs)
@@ -468,7 +468,7 @@
    (lambda (_frame new-value instance-value)
      (poo-clos-set-slot-value! instance-value slot-name new-value))))
 
-;;; Standard lifecycle entry points are ordinary POO-native generic functions.
+;;; Standard lifecycle entry points are ordinary POO generic functions.
 ;;; The primary methods below own the default kernel behavior; callers may add
 ;;; class-specialized methods through the exported generic objects without
 ;;; installing raw class-owned procedure hooks.

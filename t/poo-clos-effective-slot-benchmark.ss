@@ -7,7 +7,7 @@
 
 (import (only-in :clan/poo/object .ref)
         (only-in :gerbil/runtime/gambit current-jiffy jiffies-per-second)
-        :core/poo-clos/interface)
+        :yuanxu/poo-clos/interface)
 
 (def +ancestors+ 8)
 (def +slots-per-class+ 48)

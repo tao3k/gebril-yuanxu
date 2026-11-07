@@ -1,0 +1,27 @@
+#+title: 10.03 Cross-platform Outcome Boundaries
+#+language: en
+#+property: DOCUMENT_ID 10.03
+#+property: STATUS proposed-architecture-not-runtime-evidence
+
+* Issues and Engineering Limitations
+
+References: [[file:../../20-29-ecosystem-research/23-terraform/23.04-schema-plan-and-execution.org][Terraform planning/effects study]] and [[file:../../20-29-ecosystem-research/27-crossplane/27.03-issues-and-observations.org][Crossplane issue records]].
+Marks: DESIGN-INFERENCE; NOT-RUNTIME-VALIDATED. The distinctions below are review
+requirements. They do not establish that Core or another platform enforces every
+transition, and do not convert configuration admission into execution authority.
+
+* Required outcomes
+
+| State | Meaning in our proposed architecture | Does not imply |
+|-------+--------------------------------------+-----------------|
+| Source-current | Observed configuration/package inputs still match | Remote cloud matches the desired plan |
+| Config-admitted | Selected final object satisfies local Contracts | Provider plan or action authorization |
+| Provider-planned | Backend accepted/planned against identified inputs | Human/policy approval or readiness |
+| Approved | Identified actor/policy permits that specific plan | Any later changed plan is permitted |
+| Executed | Requested operation has a recorded outcome | Whole application is converged |
+| Ready/converged | Domain/controller observations meet a stated condition | Permanent absence of drift |
+
+Onwards: before implementing Services or cloud automation, define who produces
+each observation, its expiry/invalidation, failure propagation and recovery after
+partial completion. Do not put those mechanisms into a convenience init macro.
+

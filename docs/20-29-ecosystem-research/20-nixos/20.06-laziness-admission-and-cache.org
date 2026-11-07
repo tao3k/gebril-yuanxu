@@ -1,0 +1,96 @@
+#+title: 20.06 NixOS Laziness: Demand, Presence, Validation and Instance Reuse
+#+language: en
+#+property: DOCUMENT_ID 20.06
+#+date: [2026-10-17]
+#+property: STATUS source-and-upstream-test-inspection-not-a-benchmark
+
+* Sources
+
+Pinned source baseline: [[file:20.04-discovery-and-dependency-injection.org][discovery study]]. Read
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/types.nix][mkOptionType, attrsOf and lazyAttrsOf]],
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/tests/modules.sh#L380][the official conditional/laziness tests]], and
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/doc/module-system/module-system.chapter.md#L72][the extendModules performance discussion]].
+
+* Laziness changes what questions are cheap
+
+The type implementation keeps root checks shallow because checking children can
+force recursive dependencies. attrsOf can remove conditionally absent members;
+lazyAttrsOf defers values with different presence behavior. The upstream tests
+explicitly exercise this distinction, including an element type's emptyValue.
+These tests were inspected, not executed here.
+
+An analyst-written illustration is:
+
+#+begin_src nix
+{ lib, ... }: {
+  options.endpoints = lib.mkOption {
+    type = lib.types.lazyAttrsOf lib.types.int;
+    default = {};
+  };
+  config.endpoints.redis = lib.mkIf false 6379;
+}
+#+end_src
+
+For this int example a key-presence test can succeed while demanding the value
+fails. Do not generalize that exact failure to every element type: an emptyValue
+can change the result. NixOS deliberately chooses a tradeoff, rather than making
+all discovery and validation uniformly lazy.
+
+* Implications for Contract-driven field discovery
+
+Our interface needs separate answers for declared field, authored field, selected
+contribution, effective present value and admitted value. A Contract member can
+exist without its default being forced. A disabled Module should remain visible
+as a decision, not disappear into a missing-slot result. A spelling check should
+inspect authored keys and declared closed regions without evaluating every field.
+
+Full admission of selected objects may need to force every required child and
+cross-object relationship. Calling that process completely lazy would be false.
+The boundary is bounded demand: unselected objects stay cold, while an admitted
+plan cannot omit required checks merely to improve a timing result.
+
+* Parent and child are distinct effective configurations
+
+The manual explains that extendModules shares little evaluated computation with
+its predecessor when arguments may differ. Evaluating only the final result can
+be cheap; evaluating both complete fixpoints has different costs. This is not a
+universal claim about Nix store reuse or our POO slot cache.
+
+For Guestbook, forcing a parent's Service resources before changing the child
+port must not authorize the old resource list as the child's preview. A retained
+template/prototype is reusable; a receiver-dependent result needs the effective
+instance, relevant input revision and consumer/Contract context. This is our
+proposed cache-admission boundary, not a property proved by the NixOS manual.
+
+| Change | Minimum affected demand in our proposed design | Must remain isolated |
+|--------+----------------------------------------------+----------------------|
+| Frontend image | Workload projection and relevant image checks | Other unrelated service instances |
+| Service port | Service resource and connection correspondence | Parent's already constructed result |
+| Shared selector label | Workload/Service selector correspondence | Unselected services |
+| Contract/provider revision | Results admitted under that authority | Independently versioned authorities |
+
+Precise dependency tracking is still required before claiming minimal
+invalidation. A conservative instance-wide recomputation can be correct but
+slower; claiming slot-level invalidation without recording read dependencies
+would be unjustified. Arbitrary Scheme effects or untracked external reads
+cannot safely enter a reusable pure configuration cache.
+
+* Issues and Engineering Limitations
+
+[[file:20.07-issues-and-evidence.org][NX-03]] is a historical evaluation-cost report, not our benchmark. NX-04
+concerns validation being less forced than users expected. The source's warning
+about shallow checking is evidence that strict admission and deferred evaluation
+need distinct entrypoints, not evidence that runtime type systems are useless.
+
+* Reflection and conclusion
+
+The target is inspectable demand and correctly scoped reuse, not maximal delay.
+We need counters for catalogue reads, publication loads, demanded slots, Contract
+compilations, external processes and selected artifact builds. Moving work to
+first preview is not eliminating it. Compare discovery-only, first selected
+preview, warm preview and changed-child preview separately.
+
+Falsifier: field discovery starts an unused provider, a child reuses a parent's
+resource receipt, or admission publishes before required relations are checked.
+None of these has been ruled out for the proposed generic framework by this study.
+

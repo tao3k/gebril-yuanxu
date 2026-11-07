@@ -1,0 +1,137 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Cedar lifecycle join closure
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Cedar lifecycle join closure
+
+** Lifecycle join requirement
+
+An authority-bound capability grant is not yet a lifecycle-bound grant.  Before
+=use-composition= may consume it, one authority-validated lifecycle binding MUST
+join the exact grant to the existing Cedar authorization lifecycle evidence.
+The join binds:
+
+- decision identity and commitment;
+- accountability identity and responsibility-scope digest;
+- active fence token;
+- policy snapshot identity and evidence root;
+- credential identity and credential generation;
+- current authority identity and runtime epoch.
+
+These fields are internal evidence coordinates.  They do not add syntax to the
+public =use-composition= macro or permit profiles to mint grants.
+
+** Parallel-model observation and counterexample
+
+The proof audit found three related but distinct type owners:
+
+- =CedarDualEngineAuthorization.AuthorizationSubject=, used by the real grant
+  closure;
+- =CedarAuthorizationSubjectBridgeModel.AuthorizationSubject=, an independent
+  numeric proof model;
+- =AuthorizationLifecycleEvidence=, which owns policy epoch, fence, credential,
+  authority-path, and separation-of-duty semantics.
+
+Their theorems cannot be conjoined by structural similarity.  No prior theorem
+proved that one admitted composition grant denoted the same lifecycle decision.
+The counterexample =legacyJoinAcceptsLifecycleUnboundGrant= keeps authority
+=17= and epoch =11= equal while replaying different decision, commitment,
+fence, policy-evidence, and credential identities.
+
+#+begin_export typst
+$
+  J_(closed)(q, g, b, e) :=
+    G_(closed)(q, g)
+    and A_(lifecycle).validate(b.receipt) = b.binding
+    and A_(lifecycle).accepted(b.binding)
+    and b.grant = g
+    and E_(closed)(e)
+    and e.authority = q.context.authority
+    and e.epoch = q.generation = q.subject.epoch
+    and b.decision = e.decision
+    and b.commitment = e.commitment
+    and b.fence = e.fence
+    and b.policy-root = e.policy-root
+    and b.credential = e.credential
+$
+#+end_export
+
+#+begin_export mermaid
+flowchart LR
+    Q["use-composition capability request"] -->|"exact subject + profile + generation"| G["Closed capability grant"]
+    G -->|"artifact"| A["Lifecycle grant AcceptanceAuthority"]
+    A -->|"validated exact binding"| B["Authority-bound lifecycle grant node"]
+    L["AuthorizationLifecycleEvidence.Closed"] -->|"allow + current policy epoch + credential + SoD"| J{"Lifecycle join"}
+    B -->|"decision + commitment + fence + policy root + credential"| J
+    G -->|"authority + runtime generation + policy snapshot"| J
+    J -->|"accepted: every coordinate equal"| U["Composition admission"]
+    B -.->|"rejected: old decision or commitment"| X["Typed lifecycle mismatch"]
+    B -.->|"rejected: stale fence or credential"| X
+    B -.->|"rejected: different policy evidence root"| X
+#+end_export
+
+** Lifecycle join decision
+
+- =CompositionCedarLifecycleJoinClosed= is the only formal bridge from the
+  capability-grant closure into =AuthorizationLifecycleEvidence.Closed=.
+- The lifecycle model remains owned by its existing module.  Composition
+  imports and joins it; it does not copy credential, policy-epoch,
+  authority-path, or separation-of-duty semantics.
+- The join uses a second generic =AcceptanceAuthority= because the lifecycle
+  receipt artifact and its binding are a different evidence type from the
+  policy-digest bridge receipt.
+- Structural similarity between the independent Cedar proof models is not
+  evidence and MUST NOT be used as an implicit coercion.
+- The parent owns the admission join.  A =wendao-episteme= profile contributes
+  requests only and cannot provide or validate lifecycle grants.
+
+** Lifecycle join verification checklist
+
+- [X] Lean counterexample: authority and epoch equality alone accept a binding
+  with different decision, commitment, fence, policy root, and credential.
+- [X] Lean theorem: closed join rejects decision-identity replay.
+- [X] Lean theorem: closed join rejects commitment replay.
+- [X] Lean theorem: closed join rejects active-fence replay.
+- [X] Lean theorem: closed join rejects policy-evidence-root replay.
+- [X] Lean theorem: closed join rejects credential replay.
+- [X] Lean theorem: closed join exposes current authority, epoch, and fence.
+- [X] Real Lean closure reuses =AuthorizationLifecycleEvidence.Closed= and
+  generic =AcceptanceAuthority/AuthorityBoundNode=.
+- [ ] POO Scheme runtime materializes and validates the lifecycle grant
+  receipt before capability slots become usable.
+
+** Lifecycle join Lean and AXLE receipt
+
+- Pure lifecycle-join model:
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarLifecycleJoinModel=
+  returned exit =0= for =2= jobs with zero warnings.
+- Real lifecycle join:
+  =cd packages/proofs/lean && lake build AgenticAILabProof.Enterprise.UseCompositionCedarLifecycleJoinClosure=
+  returned exit =0= for =120= jobs with zero warnings.
+- AXLE verified all seven public roots in
+  =UseCompositionCedarLifecycleJoinModel.lean=: =55= declarations, =16=
+  source declarations, =16= environment declarations, zero proof-base
+  declarations, and zero failures.  The result was =status: accepted= and
+  =verification.okay: true= with no Lean diagnostics.
+- AXLE closure digest:
+  =sha256:389a46bd08fec30ea936267ac0f19406ca9e18333c47f2038a7be744af0c7e88=.
+- AXLE exact bundle digest:
+  =sha256:94b42eec2d81afef5e807a203bc4c3b3d250e62ae8d0889d0dbc296814c74cbe=.
+- AXLE canonical source digest:
+  =sha256:14223ae103dea314cf17f92d01574fddd4d0eb6d632059ee930f504b8bf1fcd3=.
+- AXLE independent bundle digest:
+  =sha256:1cce4ba321672ef9f1c8cce65af95b27af32f78e4e6f7072f002cfeeb359d8e9=.
+- The combined AXLE owner, canonical, theorem-to-sorry, and proof phases stayed
+  below the fixed =40 s= operation deadline; the slowest phase was owner
+  extraction at =22532 ms=.
+- Enterprise aggregate returned exit =0= for =501= jobs; full Lean returned
+  exit =0= for =573= jobs.  Both emitted only the pre-existing
+  =AgentRedTeamProofRegressionClosure.lean:194= unnecessary-=simpa= warning.
+- RFC45-07 Orgize Org/Typst/Mermaid lint, =git diff --check=, and
+  =git diff --cached --check= returned exit =0=.
+

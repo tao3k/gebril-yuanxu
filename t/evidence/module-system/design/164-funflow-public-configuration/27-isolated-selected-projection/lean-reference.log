@@ -1,0 +1,11 @@
+'PooFlowProfileAssociationProof.SelectedResponsibilities.discovery_exact' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.SelectedResponsibilities.selected_receipt_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'PooFlowProfileAssociationProof.SelectedResponsibilities.missing_selected_refused' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'PooFlowProfileAssociationProof.SelectedResponsibilities.unselected_not_discovered' depends on axioms: [propext]
+'PooFlowProfileAssociationProof.SelectedResponsibilities.accepted_candidate_is_final' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]

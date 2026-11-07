@@ -3,10 +3,9 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; POO-native CLOS classes and direct/effective slot projection.
+;;; POO CLOS classes and direct/effective slot projection.
 
-(import (only-in :clan/poo/object
-                 .o .ref .put! .slot? compute-precedence-list!)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop element?)
         (only-in :std/hash/misc hash-ref/default hash-remove!)
         (only-in :std/list/list delete-duplicates/hash)
@@ -15,8 +14,7 @@
 
 (export ClosDirectSlotDefinition ClosEffectiveSlotDefinition ClosClass
         poo-clos-standard-object-class poo-clos-direct-slot-definition
-        poo-clos-class poo-clos-class-precedence-list
-        poo-clos-class-precedence-position
+        poo-clos-class
         poo-clos-find-class poo-clos-set-find-class! poo-clos-resolve-class
         poo-clos-class-effective-slots poo-clos-find-effective-slot
         poo-clos-class-subclass? poo-clos-class-specializer
@@ -198,7 +196,7 @@
              (class-direct-superclasses class-value)))
     (instance-prototype-value class-value superclass-prototypes)))
 
-;;; Native POO is the sole precedence owner. Every class generation owns one
+;;; POO is the sole precedence owner. Every class generation owns one
 ;;; instance prototype, and each prototype points back to that exact class
 ;;; metaobject. Projecting upstream C4 preserves identity without a second
 ;;; class graph or linearization algorithm.
@@ -219,7 +217,7 @@
       (compute-precedence-list! prototype)))))
 
 ;; Each owner index retains its first direct declaration for a slot name.  The
-;; outer list stays in native C4 order, so option inheritance follows POO.
+;; outer list stays in runtime C4 order, so option inheritance follows POO.
 ;; : (-> [ClosClass] Procedure [Pair])
 (def (class-direct-slot-indexes precedence direct-slots-for)
   (map
@@ -343,7 +341,7 @@
 ;;   : (-> Symbol [ClosClass] [ClosDirectSlotDefinition] [Pair] Natural
 ;;        (Maybe Procedure) (Maybe Procedure)
 ;;        (Maybe Procedure) (Maybe Procedure) ClosClass)
-;;   | contract: validates and finalizes one native-POO class generation before
+;;   | contract: validates and finalizes one runtime-POO class generation before
 ;;     registering its direct dependency edges.
 ;;   | doc m%
 ;;       `%poo-clos-make-class-generation` is the checked internal constructor.
@@ -356,7 +354,7 @@
 ;;       ```
 ;;
 ;;       result: a complete class generation whose class and slot precedence
-;;       are projected from its native POO prototype C4.
+;;       are projected from its POO prototype C4.
 ;;     %
 (def (%poo-clos-make-class-generation
       identity-value superclass-values direct-slot-values
@@ -383,7 +381,11 @@
   (unless (or (not different-handler-value)
               (procedure? different-handler-value))
     (clos-fail 'invalid-different-class-update-handler class: identity-value))
-  (let (candidate
+  ;; Mutable storage belongs to this class identity. Allocating it inside a
+  ;; computed slot recreates it when unrelated class metadata invalidates the
+  ;; receiver cache (for example when registering a direct subclass).
+  (let* ((class-storage-value (make-hash-table-eq))
+         (candidate
         (.o (:: self ClosClass.)
             identity: identity-value
             direct-superclasses: superclass-values
@@ -397,7 +399,7 @@
             redefinition-update-handler: redefinition-handler-value
             different-class-update-handler: different-handler-value
             documentation: #f metaclass: 'standard-class
-            class-storage: (make-hash-table-eq)
+            class-storage: class-storage-value
             instance-prototype: (make-instance-prototype self)
             class-precedence-list:
             (compute-class-precedence-list
@@ -406,7 +408,7 @@
             (poo-clos-position-index/identity
              (.ref self 'class-precedence-list))
             effective-slots: '()
-            effective-slot-index: (make-hash-table-eq)))
+            effective-slot-index: (make-hash-table-eq))))
     (let (class-value
           (initialize-direct-class-slots!
            (refresh-effective-slots!
@@ -425,7 +427,7 @@
 ;; : (-> ClosClass [ClosClass] Procedure Procedure POOObject)
 (def (%poo-clos-project-class-redefinition
       class-value superclasses prototype-for direct-slots-for)
-  ;; Project against a fresh native POO prototype before touching the live
+  ;; Project against a fresh POO prototype before touching the live
   ;; class or either parent's dependency edge.
   (let* ((prototype-value
           (instance-prototype-value
@@ -499,7 +501,7 @@
       (initialize-direct-class-slots! class-value))))
 
 ;;; The root class contributes no slots; all ordinary classes with an omitted
-;;; superclass list inherit from this exact class and native POO prototype.
+;;; superclass list inherit from this exact class and POO prototype.
 (def poo-clos-standard-object-class
   (%poo-clos-make-class-generation
    'standard-object '() '() '() 0 #f #f #f #f))
@@ -514,7 +516,7 @@
 ;;         default-initargs: [Pair] slot-missing-handler: (Maybe Procedure)
 ;;         slot-unbound-handler: (Maybe Procedure) ClosClass)
 ;;   | contract: creates one finalized class generation whose instance
-;;     prototype is the single native POO inheritance and precedence owner.
+;;     prototype is the single POO inheritance and precedence owner.
 ;;   | doc m%
 ;;   | result: a POO class metaobject with lazy effective slots.
 (def (poo-clos-class
@@ -541,19 +543,6 @@
     (.put! class-value 'metaclass metaclass-value)
     (hash-put! poo-clos-class-registry identity-value class-value)
     class-value))
-
-;; : (-> ClosClass [ClosClass])
-(def (poo-clos-class-precedence-list class-value)
-  (unless (element? ClosClass class-value) (clos-fail 'invalid-class))
-  (.ref class-value 'class-precedence-list))
-
-;; : (-> ClosClass ClosClass (Maybe Natural))
-(def (poo-clos-class-precedence-position class-value target-value)
-  (unless (and (element? ClosClass class-value)
-               (element? ClosClass target-value))
-    (clos-fail 'invalid-class))
-  (hash-get (.ref class-value 'class-precedence-index)
-            target-value))
 
 ;; : (-> ClosClass [ClosEffectiveSlotDefinition])
 (def (poo-clos-class-effective-slots class-value)

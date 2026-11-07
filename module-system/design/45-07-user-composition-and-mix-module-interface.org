@@ -1,0 +1,43 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Mix/Profile RFC — User Composition And Mix Module Interface
+#+status: draft
+#+parent: 45-mix-profile-recursive-composition-and-recoverable-control.org
+#+depends_on: 45-05-lineage-and-cycle-detection.org 45-06-gerbil-poo-api-alignment.org
+
+* Current implementation boundary
+
+The composition-binding macro in the public composition chapter is historical.
+Current code uses native =def= and =.new Scenario= from
+=:yuanxu/modules/funflow/scenario=. Its Record Contract and private plan
+projection share one owner. No compatibility macro or Workflow facade
+is published. The module-authoring and evidence arguments below retain
+their stated premises; they do not establish the removed syntax as an API.
+See [[file:../../dev/sysml/20-module-loading/20.30-test-discovery-and-domain-demand.org][the current ownership and assurance boundary]].
+
+* Status correction
+
+Historical draft.  Its public =use-composition= clause grammar is superseded by
+RFC 45-92, RFC 45-95 and RFC 164.  Current code must use runtime noun slots
+for object-level algebra and a thin root binding over already composed Profile
+values; no compatibility surface is implied.
+
+* Normative responsibility
+
+This module exclusively owns the public composition shape and the internal
+higher-order Mix module POO shape.
+
+* Design modules
+
+- [[file:45-07/01-public-composition.org][Public composition and lexical bindings]]
+- [[file:45-07/02-operands-and-cases.org][Composition operands and Profile cases]]
+- [[file:45-07/03-profile-authoring.org][Profile authoring and expansion]]
+- [[file:45-07/04-order-and-identity.org][Boundary order and identity]]
+- [[file:45-07/05-mix-topology.org][Mix structure and dependency topology]]
+- [[file:45-07/05a-module-representation.org][Internal POO shapes and module syntax]]
+- [[file:45-07/06-syntax-assurance.org][Syntax assurance and projection proofs]]
+- [[file:45-07/07-lean-proof-closure.org][Lean proof closure for public syntax]]
+- [[file:45-07/08-cedar.org][Cedar authority and lifecycle proofs]]
+- [[file:45-07/09-publication.org][Published dependency edges and retained identity]]

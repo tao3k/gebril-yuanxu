@@ -3,9 +3,9 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; POO-native CLOS instance state and generation migration values.
+;;; POO CLOS instance state and generation migration values.
 
-(import (only-in :clan/poo/object .o .ref .put! .slot? object?)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop element?)
         (only-in :std/hash/misc hash-ref/default)
         (only-in :std/list/list filter find foldl)

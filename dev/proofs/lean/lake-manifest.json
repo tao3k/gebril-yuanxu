@@ -1,0 +1,16 @@
+{"version": "1.2.0",
+ "packagesDir": ".lake/packages",
+ "packages":
+ [{"url": "https://github.com/tao3k/lean-poo.git",
+   "type": "git",
+   "subDir": null,
+   "scope": "",
+   "rev": "da273cdc75c9d65409e3d4979a6e9856c384809f",
+   "name": "LeanPoo",
+   "manifestFile": "lake-manifest.json",
+   "inputRev": "da273cdc75c9d65409e3d4979a6e9856c384809f",
+   "inherited": false,
+   "configFile": "lakefile.toml"}],
+ "name": "YuanxuProof",
+ "lakeDir": ".lake",
+ "fixedToolchain": false}

@@ -1,0 +1,12 @@
+{
+  "source": "26-selected-responsibility-discovery.org",
+  "source_sha256": "bf2cbe332be7853fefdce6c68fcc7fee3cc80a613f02ecf458cda68ff8941ce1",
+  "scheme_blocks": [
+    2,
+    3,
+    4,
+    5
+  ],
+  "extracted_sha256": "a074cc2b8ed52eabe4bc4bd4286e103941c789e92f43ece57bbd4fe431c84206",
+  "verbatim": true
+}

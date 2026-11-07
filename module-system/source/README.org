@@ -1,0 +1,214 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Executable source preparation boundary
+
+* Module entry and local files
+
+Gerbil owns module identity, lexical imports and exports, expansion phases,
+and runtime loading. Yuanxu uses POO for module selection, the publication
+contract, role assembly and source admission. It collects Make targets from
+the admitted dependencies while Gerbil and =std/make= own compilation.
+
+The demand-driven namespace selects an Interface by owner. It does not
+define the Interface's compiler import closure. See
+[[file:../../docs/10-19-design/13-module-loading/13.35-haumea-and-poo-namespace-projection.org][the Haumea comparison]]
+for the namespace and receiver boundary.
+
+A =requires= entry names the provider with =module-id=. Its optional
+=refine= function derives an edge-local value from the selected provider
+scope, including any package specialization. The linker runs this function
+between independent source checks. A changed scope is admitted by the
+provider's publication contract before any additional consumer =contract=.
+The linked record retains the checked dependency value. This value is not
+another compiler target and does not replace the provider's selected scope.
+
+=interface.ss= is the module publication entry. The role wrapper requires
+=types.ss=, =objects.ss= and =config.ss= and supplies =func.ss= when present.
+A present =build.ss= is a deferred build role. Directory discovery does not
+execute these files.
+
+Additional Scheme files use ordinary Gerbil imports relative to the importing
+file. Import an optional =contracts.ss= or another helper from the role that
+uses it, or directly from =interface.ss= when the publication needs its binding.
+The Nix =func.ss=
+imports =./progress.ss=, and the selected compiler graph follows that edge.
+No separate build contribution is needed for that helper. An unconditional
+import belongs to the importing role's expansion phase. An optional feature
+must keep its effectful imports behind its own selected demand.
+
+Building collects the selected Interface's guarded role inputs and actual
+import dependencies into the native =std-make-spec=. It keeps the original
+input identities and target order. The package build entry consumes that
+spec through =defbuild-script=.
+
+* Closed role values
+
+The deferred value projection uses runtime exports. The runtime expander resolves
+optional implicit =Config= after the role body; the projection cannot invent
+that binding. Syntax definitions and phase initializers remain owned by the
+existing guarded runtime role reader. Both paths preserve source-currentness
+checks. Private imports expand through the confined Gerbil importer before
+publication to enroll their source support, while ordinary role values remain
+demand-driven. A declaration without private imports can have
+no role inputs before a getter is demanded; a hot getter retains its original
+guarded inputs. Fresh publications recheck their source and use the reader-owned
+runtime contexts; source checks and test verdicts are never cached.
+
+* Reader ownership
+
+The evaluation observer enrolls a generated wrapper under its Gerbil path
+and canonical alias while its directory exists. It matches later expansion
+events against that registration. A foreign runtime context can remain
+loaded after its reader removes the temporary directory. A later reader
+delegates that context to Gerbil and only releases bodies it enrolled itself.
+
+| Module | Responsibility |
+|--------+----------------|
+| =reader.ss= | Assemble the public POO reader and candidate recording operations |
+| =reader-session.ss= | Own one generation's source associations, counters and stable checker procedures |
+| =reader-preparation.ss= | Prepare source inputs and transfer compatible native role contexts |
+| =reader-guards.ss= | Run policy, metadata and source checks at operation boundaries |
+| =publication-reader.ss= | Read one Interface with confined imports and demand-driven role values |
+| =configuration-reader.ss= | Evaluate an explicit Build or configuration binding |
+| =compiler-tools.ss= | Capture native compiler contexts and their observed source support |
+| =reader-evaluation.ss= | Observe runtime evaluation and release completed interpreter bodies |
+| =reader-support.ss= | Carry preparation identity and ordered native read support |
+
+The implementation modules share the same reader session and source indexes.
+Checker procedures retain their per-reader identities, including the existing
+pure-query keys and active owned-read handler. =reader.ss= reexports the original
+configuration and publication-read bindings through its existing public API.
+
+The dependency direction is support/evaluation and compiler tools, then session,
+preparation and guards, then publication reading and the public reader. No helper
+imports the public reader back. Publication import routing shares one operation's
+native expander extent; it does not allocate a second session or duplicate the
+source indexes. Each boundary still authenticates its actual support.
+
+The publication Fixture materializes ordinary Scheme role forms and owns their
+temporary files and cleanup. Cases refine those forms through POO values.
+File mutation Cases exercise actual reader/expander and provenance boundaries;
+pure value and eligibility Cases do not require filesystem fixtures.
+
+* Test boundaries
+
+| Suite | Input and boundary | Temporary source files |
+|-------+--------------------+------------------------|
+| =t/module-declaration-value-test.ss= | Runtime declaration values, POO inheritance, checked dependencies, Graph normalization and source-constructor revisions | None |
+| =t/module-deferred-projection-test.ss= | Source text as parser input data | None |
+| =t/module-deferred-reader-test.ss= | Real role expansion, lexical bindings and initializer laziness | Required |
+| =t/module-role-context-test.ss= | Symbolic imports share role values; fresh epochs refuse old source authority | Required |
+| =t/module-publication-test.ss= | Runtime imports, preparation and refusal after source mutation | Required |
+
+Value Cases construct publications and source capabilities directly in Scheme.
+They do not use the source Fixture. In integration Cases the actual import,
+mutation and assertion stay visible in the Case. The shared Fixture only creates
+a temporary package with its role files, supplies a source view, and cleans up;
+it does not hide validation, import or mutation scenarios. Contract Function and
+functional composition Cases likewise stay in memory unless they explicitly
+qualify a runtime import or source-currentness boundary.
+
+* Entry and selection
+
+The public =:yuanxu/module-system/interface= entry now accepts either the existing
+runtime source context, an exact =init.ss= path, or a module directory. It does
+not import or execute source files. A normalized publication reader is still an
+explicit capability, not an installed runtime Loader. For example:
+
+#+begin_src scheme
+;; repository/init.ss; parsed as declaration data
+(yuanxu! mode: explicit source: "./modules"
+  :custom (guestbook -smoke)
+  :unused (experimental disable: #t))
+
+;; Preparation succeeds without an executable publication provider.
+(def sources (yuanxu-load-modules "./init.ss"))
+;; A platform can supply an admitted source/publication adapter explicitly.
+(def selected (yuanxu-load-modules "./init.ss"
+                read-publication: read-normalized-publication))
+(.get selected modules custom guestbook)
+((.get selected admit-current)) ; required before publishing a derived plan
+#+end_src
+
+=read-normalized-publication= above is a caller-supplied protocol implementation,
+not a new function provided by this change. Without that capability, executable
+scope demand fails explicitly. Existing runtime source contexts remain supported.
+
+A directory without init uses automatic, on-demand eligibility. A directory named
+=modules= can use its own =init.ss= or the adjacent repository init. If both exist,
+pass the exact authoritative init path; implicit precedence is refused. Relative
+=source:= paths resolve against that init file. Without an explicit source option,
+repository init defaults to =modules/=; =modules/init.ss= defaults to its directory.
+
+=init.ss= is read, never evaluated. One bounded =yuanxu!= form plus compiler
+=import/export= scaffolding is accepted. The reader lowers categorized rows through
+the existing runtime selection constructor; it does not create another Feature
+resolver. =disable: #f= remains an explicit decision distinct from absence;
+negative feature symbols remain in the runtime selection flags. Duplicate module
+rows, conflicting feature signs, nonboolean disable and computed forms fail.
+Nested feature declarations, external =@= roots, named Profile init forms and
+arbitrary source computation are not supported by this filesystem adapter yet;
+the legacy short compiler form retains its existing surface. The =mode:/source:=
+compiler form and filesystem reader share the same pure lowering and produce
+runtime intent. The compiler form exports only the source-qualified =<owner>.init.exports=
+binding. Runtime module identity determines =owner=; the compiler no longer
+publishes a separate =yuanxu-module-init= value;
+it performs no filesystem discovery during expansion or declaration evaluation.
+
+* Demand and source lifetime
+
+Only immediate directory metadata is enumerated. Runtime lazy namespace slots
+expand a branch on access, not every module at startup. Source lookup validates
+=types.ss=, =objects.ss=, =config.ss= and =interface.ss= as regular files and records
+their contents for the selected module; it does not execute them. This new source
+adapter enforces the target four-role shell without changing legacy collection
+admission. A published Module directory is a namespace leaf. The shared
+Collection can also locate an Interface inside that owner. A selected
+=features/<name>= leaf contributes to its owner without creating another
+public scope path.
+Symlink entries and case-colliding directory names are refused conservatively.
+
+Selected modules automatically include their declared Core dependency closure.
+This does not globally select every module under a category named core. A denied
+required owner fails before its publication is read. The error retains the
+requester chain; the denying init path and negative decision remain in context.
+Feature decisions resolve on the same selected graph. The Feature System checks
+selection requirements and conflicts. Module Collection owns source discovery,
+and the linker admits the final scope against the Core and selected Feature
+Contracts. Build projects the collected Interface through Gerbil's imports.
+
+Each preparation has a fresh generation and its own runtime slot cache. Before
+publication, =admit-current= checks observed immediate directory names, observed
+role contents, the chosen init contents and probed negative init lookups. An
+unvisited subtree's implementation is neither read nor authenticated. Cached
+slots are immutable snapshots, never live filesystem access. Additional provider
+inputs, transitive compiler dependencies and atomic filesystem authenticity must
+be qualified by the eventual publication adapter; these observations alone do
+not eliminate TOCTOU races or establish a content-addressed global cache.
+
+In auto mode the namespace expresses eligibility, not an eager selected build.
+=selected-records= and =dependency-order= concern declared roots and their demanded
+closure. Merely enumerating namespace keys must not become a build-all operation.
+A future selected build consumer must bind its explicit demand and source
+currentness before producing executable entries.
+
+* Focused controls
+
+=t/module-directory-test.ss= exercises directory-only auto discovery, root and
+module-local init, declaration provenance, negative decisions, required Core
+closure, stale source refusal, and cold unselected implementation files. The
+publication bodies in this test are explicit fixtures; no runtime Loader is
+connected. =t/module-scope-link-test.ss= retains the runtime scope Contract, cycle,
+owner identity and generation controls. These are correctness controls, not
+startup-time or thousand-module performance measurements.
+
+=t/module-role-context-test.ss= provides a narrow runtime entry for shared role
+identity and source-admission controls. It moves the private/public alias and
+fresh-source-epoch cases out of the large publication suite, and checks both
+public-name redirection and changed bytes against the exact public-dependency
+refusal. The protected callback remains unentered, and exact source/name
+restoration admits again. Run =just test-file t/module-role-context-test.ss true=
+with the existing heap and external qualification deadline. These are fixture
+correctness controls, not historical Agentic attribution, cold-build timing
+repair, or a replacement for the complete publication suite.

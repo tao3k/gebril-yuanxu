@@ -1,0 +1,7 @@
+*** ERROR IN gx#core-expand-import%__% -- 
+*** ERROR IN ?
+--- Syntax Error: cannot find library module
+--- Context: 
+ at expand
+ at object
+... form:   :support/base

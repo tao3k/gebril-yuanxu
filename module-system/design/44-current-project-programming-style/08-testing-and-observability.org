@@ -1,0 +1,390 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Programming Style 08 - Testing And Observability
+
+* Testing surface
+
+Tests use Gerbil's runtime =gerbil test= / =gxtest= lifecycle.  Agentic AI Lab extends
+the ASP Testing Policy through POO slots; it does not create a second
+test runner.  Per-test memory, performance, debug and trace Profiles are
+declarative values selected by the Testing Interface.
+
+Ordinary test execution must not construct a Script or Process object. Export
+standard =std/test= Suites/Cases and let the installed tool own discovery,
+module setup/cleanup, assertions and the Harness verdict. The atomic =gxi=
+adapter calls that same tool in its current VM; it must not select init,
+compile/sign support or start a nested Harness. Explicit tests of process APIs
+may exercise those APIs, but do not define the ordinary test execution path.
+Support compilation belongs to the independent build entry and its existing
+=std/make= specification and issuance boundary. Source currentness, contribution
+completeness and plan applicability remain actual module API obligations,
+verified by their domain Cases, not inferred from a generic launch receipt.
+
+ASP is optional development tooling. Its product pin and policy composition
+belong to =dev/gerbil.pkg= and =dev/testing-api.ss=. The product library build
+uses Core's runtime source closure and build projection; neither Core nor the
+production testing facade imports the ASP policy interface. Development policy
+trigger/repair tests opt into that dependency explicitly.
+
+Default =just= tests retain a bounded heap so an agent-authored infinite loop
+or leak fails locally.  Build memory and test-runtime memory are different
+concerns: parallel compilation may use available machine resources, while each
+test execution must retain its declared safety envelope.
+
+New Core unit cases use =yuanxu-test-case= from
+=:yuanxu/observability/testing-case=; product tests may use their own public
+testing facade without making Core depend on it.
+This hygienic declaration expands to runtime =std/test=; it adds the inherited
+POO Case Profile without changing =gxtest= assertions or reporting.  A Case
+that needs a different budget uses =yuanxu-test-case/with= and a POO
+object extending =yuanxu-testing-case-profile-prototype=.  Do not encode a
+second test runner or duplicate the Testing Interface's managed-heap default.
+The Case monitor may interrupt a non-returning runtime harness thread and report its span;
+its heap counters are process-wide, not a thread-local heap quota.  Runtime
+=test-case= declarations that have not migrated still receive the worker-level
+managed-heap cap, but not Case-span observation.
+For a retained-allocation risk, a Case may opt into
+=collect-before-sample?= on its memory-policy slot.  This collects before
+each periodic sample so live-growth limits can stop a real allocation before
+the worker's hard heap cap; it is intentionally not the default because each
+collection has a cost.  The isolated observability suite verifies a bounded
+retained-allocation rejection and a subsequent successful Case.  Its receipt
+proves process-wide live growth during the Case span; it does not attribute
+every byte to that Case alone.
+
+* Test ownership
+
+=gxc= names the Gerbil compiler. =gerbil build= is the official build command;
+=std/make= schedules its dependencies and compiler jobs. =gerbil test= owns
+test discovery and execution through =std/test=. Macro expansion belongs to
+the Gerbil expander, while threads, GC and dynamic loading belong to the Gambit
+runtime. Use these concrete owner names in code, documentation and diagnostics.
+
+Core mechanism qualifications (reader/packager internals, MOP metadata copying,
+source-currentness controls and destructive temporary-tree relocation) belong
+in =core/t/=. A real Module or Scenario used as a fixture does not transfer
+ownership of that Core mechanism test into the Module's =tests/= directory.
+
+=modules/<name>/tests/= and =scenarios/<name>/tests/= exercise that owner's
+public configuration, Contracts and behavior. Use the existing declarative
+=yuanxu-test-case= or resource-owning =yuanxu-test-fixture= macros, which
+lower to the runtime std/test lifecycle. Testing macros are the declaration
+surface; a module's tests are not restricted to macro-expansion assertions.
+Core imports these macros from =:yuanxu/observability/testing-case= and
+=:yuanxu/observability/testing-fixture=, without depending on a product facade.
+There is no parallel module test runner or repeated implementation test list.
+
+Shared Fixtures own preparation, cleanup and reusable fault injection. Atomic
+Cases own distinct public behavior; they must not each rebuild the same support
+library or repeat the runtime compiler's cold/hot/currentness tests. Runtime
+=std/make= owns incremental support compilation in the test build phase,
+through the existing root build entry, separate from production targets.
+Testing owns execution and reporting, not a parallel Builder. A test build
+must not initialize unrequested production selection or activate its scopes.
+Reuse existing consumer Cases to qualify
+that wiring rather than introducing another compiler qualification suite.
+
+The existing =init.exports.tests.std-make-spec= can be consumed directly by a
+standard =defbuild-script= entry. =std/make= schedules the =gxc= compiler. TestingScript
+only admits an already issued support publication; missing approval requires
+=gerbil build=, and corrupt products/approvals are rejected rather than repaired
+at test execution time. Native CLI policy may use the existing guarded file
+source without associating another Builder: =gerbil test= owns Suite discovery,
+registration and assertions. Its compiled library path precedes source fallback.
+
+Compiler qualifications use versioned Gerbil packages prepared by the Just build
+phase. Only a compiler-qualification Fixture may invoke official =gerbil build=
+inside a Case to prove a real injected compiler failure. This test-only effect
+is not available to business code or TestingScript. Restore mutated source and
+product/record bytes even when the refusal check throws. Never install fake
+compiler/interpreter executables or private Harness dispatchers.
+
+Module qualification support consumes the existing
+=init.exports.tests.qualification.std-make-spec= through the same standard
+build entry. Prepare shared support once per complete queue or CI group, then
+run every file through its original resource and receipt gate. Installed
+libraries precede source fallback, so preparation and execution derive the
+same support closure. Empty support has no products or issuer. Reusing a signed
+publication still verifies its original source inputs and product digests.
+
+A cached support library does not cache a test verdict. Report support discovery
+and preparation, harness startup, and Case execution separately. A hot atomic
+Case should exercise its behavior with minimal setup; a source-relocation or
+multi-module publication qualification must be identified as integration work,
+not used to justify slow atomic tests. Investigate repeated source expansion or
+dependency discovery before adding more independent test processes.
+
+An existing support publication may bypass another Make invocation only after
+its original approval, complete compiler inputs and runtime output digests have
+been admitted. Missing approval requires the runtime compiler; invalid approval
+or changed products require rejection. Both paths retain source checks at the
+Harness entry and return boundaries. Qualify reuse through the real runtime
+entrypoints, product timestamps and independent assertions.
+
+* Observability
+
+Property tests use native =:clan/poo/testing/type= generators and
+=:clan/poo/testing/property/test= assertions inside the existing native Suites
+or Fixtures. A report is data until the standard assertion admits its passed
+status. Preserve seed, bounded trials/shrinking, coverage and original failures.
+Do not silently accept unsupported Types, clone away generator prototype
+identity, or start PBT while importing production modules. Ordinary test
+discovery executes declared properties; domain relationships still need named
+properties rather than being inferred from arbitrary object fields.
+
+Observability reports first-event latency, active phase, elapsed time, memory
+and final receipt without becoming execution authority.  A timeout must show
+which admitted owner or Provider is active.  Tests may refine the observability
+Profile for a module, but may not insert ad hoc =display= calls as the only
+diagnostic contract.
+
+Parallel batch heartbeats and per-batch debug-call dumps are off by default:
+they repeat across workers without identifying a Case.  A targeted debugging
+Profile may set =heartbeat-enabled?= or =trace-enabled?=; normal runs retain
+the runtime batch start, completion and failure phases.
+
+* Evidence order
+
+Compile changed modules directly, run atomic tests, then affected scenarios and
+public consumers.  Keep build wall time, macro-expansion time and runtime test
+time distinct.  A focused green result does not qualify independent closure;
+the completion report names exactly which gate ran and which remains blocked.
+
+* CI qualification design
+
+This section specifies a migration of the existing Just and Gerbil test
+entrypoints. The evidence model comes first, followed by reporting and then
+scheduling. Each stage has a separate acceptance criterion.
+
+** What the current job measures
+
+=test-directory= runs each discovered file in its group serially through
+=test-discovered-file=. Each ordinary file starts a fresh Gerbil process
+through =test-file=. The default 2 GiB fence applies to each Gambit heap.
+Process RSS and runner memory are separate quantities. A group wall clock
+covers the serial execution of several different tests and includes worker
+startup, fixture work, teardown and process exit. The workflow records runner
+queueing, dependency builds and artifact restoration in separate steps.
+
+The [[https://github.com/tao3k/gebril-yuanxu/actions/runs/42211203860/job/127874282928][Ubuntu scale job for commit 5c3c5c2]] spent about 11 minutes 35 seconds in
+=test-directory=. Six files ran. Three reached their 180-second Case limit.
+The two cases that measured a cold 10,000-name namespace completed its
+construction and enumeration in 0.66–0.68 seconds. Their subsequent phases
+were interrupted. The same group emitted 616 progress frames. Keep this
+failure as the baseline for the redesign.
+
+On the same commit, the other five completed Ubuntu group steps took
+35 seconds to 4 minutes 43 seconds. In the
+[[https://github.com/tao3k/gebril-yuanxu/actions/runs/42177448916/job/127763169292][preceding Ubuntu modules job for commit 6e6535d]], five 1,000-module
+workers accounted for about 14 minutes 53 seconds from worker entry to
+the Harness marker. These spans identify the long tail in that job.
+Capture launch and exit directly before using them as full worker costs.
+
+** Workload and evidence contract
+
+Vary catalog size, requested roots and graph shape independently. Record
+the expected closure in the workload and the actual reached closure in the
+result. Record selection mode and cold or warm state alongside them. Use
+existing Fixtures and the production =yuanxu!=, Interface and =.get= path.
+Give each question a separate row in the qualification report.
+
+| Workload | Demand | Required evidence |
+|-
+| Directory discovery | Enumerate a real 10,000-module catalog | Names and identity agree, zero scopes, no unselected body reads |
+| Sparse first business read | One explicit root in that catalog, with a known provider | First native =.get= returns the expected value, exact owner-qualified admission and scope counts, unrelated initializers stay cold |
+| Dense declaration capacity | Explicitly select all 10,000 owners | Complete graph, exact-once declarations, provider order, zero business scopes |
+| Hot read and change | Reuse the same receiver, then change one dependency | Hot read preserves value identity, stale evidence is rejected, affected values recompute, unrelated values remain identical |
+| Selected compilation | Build the selected closure through the existing Make specification | Cold target set, downstream-owned outputs, zero hot compilation, independent clean |
+
+Add the sparse business read beside the current directory control. Preserve the
+existing dense first-scope, dense graph and observer-driven diagnostics as
+independent controls. The sparse fixture keeps the catalog large while its
+explicit roots and dependency graph stay small. Qualify phase attribution with
+callback-free counters. Use an independent ordinary first =.get= sample for
+latency and preserve owner-qualified scope counts in the attribution sample.
+Open source observers and detailed allocation accounting belong to diagnostic
+runs. Report their timing under that configuration. A comparison uses the same
+fixture, closure, entrypoint, Gerbil and POO revisions, runner class, limits and
+instrumentation. Report wall time and user/system CPU separately. Report GC
+time within its enclosing span and peak or retained memory with its measurement
+method. Timeouts carry the elapsed bound and the last completed phase.
+
+** Execution liveness and human-readable results
+
+=@yuanxu-progress [execution, sequence]= is the Ops liveness protocol. An
+accepted increasing counter can advance the sequence. Fixture writes,
+checkpoints, compiler work and declaration completions can contribute to it.
+The sequence has no common domain unit or denominator. The existing producer
+rate-limits the relay to at most one frame per second. Idle and total limits
+keep their existing meaning even while a producer keeps advancing.
+
+Preserve the raw transcript and the original relay to every supervising
+process. At the terminal CI presentation boundary, summarize protocol frames
+instead of printing each one. Show a file start, named phase boundaries for
+long cases, and one terminal row per file. The row includes the exact
+discovered file, wall time from launch through exit, exit status, Harness
+verdict, and the last phase and failure reason on refusal. Preserve the last
+progress frame and source diagnostic in the failure detail. Display an
+explicit completed/expected count only when the named phase owns both values.
+A compact group summary reports file totals and the longest worker spans.
+
+Keep bootstrap, fixture creation, admission, scope/value work, teardown and
+process exit attributable where the existing boundaries permit. An unmeasured
+interval remains unmeasured. The presentation step must preserve the worker
+exit status and the full Harness validation. A pass requires natural success,
+the expected =MODULE-OK= and =HARNESS-OK= identities, final =OK= and no failure
+marker. Qualify the presentation with a nonzero exit, exit zero with a Harness
+error, a missing terminal marker and a real idle or total expiry. Each keeps
+its failure verdict in both views.
+
+** Scheduling and rollout
+
+First collect per-file timing and outcome rows for a complete run of the
+unchanged partition on each platform. Match all expected files to exactly one
+terminal result. Check that all known failures still fail. Use these receipts
+to separate worker startup and duplicated support preparation from long test
+bodies. A change to the presentation alone has no speedup claim.
+
+Then isolate long capacity files in explicitly named jobs and balance the
+remaining groups using measured per-file duration on each platform. Schedule
+by estimated total work, with a stable path order for ties. Compare the
+longest required job, total runner time, queue time and per-file timings.
+Include timed-out workers in scheduling estimates at their observed cost.
+Retain the disjoint and complete discovery check. Keep existing limits,
+negative controls, same-head artifact ownership and serial workers inside a
+runner until an aggregate memory bound is enforced. A long job still
+participates in the required result after it moves.
+
+Implement the presentation in the current Just/CI entrypoint. Implement the
+sparse workload in the existing scale fixtures and validate it before changing
+job membership. Keep dense-capacity failures visible throughout the migration.
+
+The first reporting increment runs inside the existing Scheme Harness
+adapter. Its =harness-ms= covers the adapter's invocation of Gerbil and ends
+when the Harness returns. It does not include the caller's process launch or
+exit. The opt-in CI receipt keeps the native Harness status and its machine
+progress stream. A supervised child continues to use the Ops relay. An
+interrupted process may leave progress without a terminal receipt. Use the
+outer job result and the original transcript to classify that run.
+
+The group increment keeps Just's discovery and per-file preparation
+routes. One Scheme invocation uses the existing Ops process operation for
+each file in order. It stores the expected file list, the complete worker
+transcript, and the actual exit and wait status. Its =dispatch-ms= begins
+before the per-file Just dispatch and ends after the worker exits.
+=entry-ms= and =harness-return-ms= locate observed child markers on that
+same clock. Startup includes any file-specific preparation; the interval
+after the Harness result can include artifact checks and process exit.
+CI queue and package preparation are separate workflow observations.
+Profile roots, namespace windows, the thousand-owner downstream package and
+the public prelude have one required execution per platform in the test
+partition. Build input mutation controls and their publication and
+source-admission checks retain their separate build-phase execution.
+Published Module TestSuites retain their independent integration phase and
+Harness receipt. A completed mechanism test with a failure still permits
+that phase to run against the restored same-head package.
+
+Use =just test-report-audit DIRECTORY= from the tested checkout before deriving
+platform scheduling weights. Supply one directory containing that platform's
+extracted group artifacts. The Scheme audit reconciles discovered files,
+group outcomes and individual worker receipts, checks transcripts and clock
+ordering, and compares the tested commit, workflow run, attempt, OS and
+architecture. A complete report can contain failed tests. An absent worker
+result, duplicate file, inconsistent timing or mixed run cannot supply
+scheduling weights. Supplying a group name audits only that group.
+
+Use =just test-report-compare LINUX MACOS= to join the two audited reports by
+file. Both platforms must come from the same revision, workflow run and
+attempt. Each row contains the group verdict, full dispatch, actual worker
+exit, startup, Harness and post-Harness interval for both platforms. An
+unobserved phase is =#f=.
+Phase totals include the number of files with an unobserved interval.
+The dispatch time includes the observed cost of failed or interrupted workers.
+
+The [[https://github.com/tao3k/gebril-yuanxu/actions/runs/42220936509][unchanged-partition baseline]] covered 216 distinct files on each platform.
+Three dense ten-thousand-owner tests each consumed 186–195 seconds across
+the platforms, including their existing timeout verdicts. Give each its own
+required job. Keep seven jobs overall, combine the shorter Contracts, Objects
+and Scenarios groups, and move four longer files across the general groups.
+Summing baseline dispatch costs projects the longest group at 649 seconds on
+Linux and 1,217 seconds on macOS, compared with 1,160 and 1,706 seconds in the
+baseline. These projections exclude queue time, setup and the independently
+run published TestSuites. Use the next CI run to measure actual completion
+times, including the macOS queue waves.
+The Gerbil POO =v0.1.3= release and the previous PR pin resolve to the same
+Git tree =aa5c56a7dd6869ccc9cfc14cb3b097d3e83711cc=. Measure package preparation
+separately because the release pin has its own CI dependency cache key.
+
+* Specialized qualifications
+
+Use =TestingScript.= only when a qualification actually requires an independent
+external process. Ordinary Suites go directly to the installed test tool.
+Never add support compilation or another Harness to a Case. Refine receipt slots
+(=case-count=, =required-lines=, and, for an existing custom aggregator, an exact
+=harness= line).  Keep domain assertions in the suite or its named receipt
+function.  The inherited =.run= owns Ops execution and the source Fixture;
+a specialized =.admit-result= cannot suppress its common failure gate.
+
+Non-Gerbil executable qualifications use Ops and the same Fixture ownership
+rules; they must retain their own result protocol.  A Rust summary, a build
+receipt and a Gerbil =HARNESS-OK= are different kinds of evidence.
+Keep exact old deadlines, failure diagnostics and input-currentness controls
+when migrating a shell entrypoint.  Test the gate and its failure controls
+before treating its underlying domain qualification as passed.
+
+* Source-only bootstrap progress
+
+The Module bootstrap fixture forwards the actual child transcript through
+=run-script= while retaining the same captured output for assertions. Its
+progress reader relays only runtime =std/make= compilation and scheduling rows,
+and existing worker progress records. A 60-second idle frame owns that relay;
+forwarding arbitrary text alone does not advance the Harness progress protocol.
+The 60-second child deadline and the outer test budgets remain unchanged.
+
+The nested Harness result must name the exact normalized absolute source file,
+in addition to its =HARNESS-OK= and final =OK=. A relative-path substring is not
+a valid substitute for the runtime module identity. Compiler progress is not a
+successful test result, and a completed compilation cannot waive Harness failure.
+
+** Current-head CI recovery (2026-10-23)
+
+The default test preparation and the cold bootstrap fixture share
+=make-compiler-progress-reader=. It forwards only actual =std/make= compile,
+invoke and compiler-job rows into the existing Ops progress frame. Preparation
+also streams the captured compiler output to the enclosing owner. Its existing
+120-second preparation limit, 60-second idle limit and final artifact admission
+remain unchanged; neither elapsed time nor a timer produces progress.
+
+Checkpoint wall/CPU accounting is held in two private scalar totals, reported by
+=test-case-timing=. It must not consume the unchanged 64 domain observation
+categories. The full-category regression remains unchanged. An overflow reports
+both the attempted key and the already occupied categories.
+
+Core init selects JsonSchema, Ops and Funflow. Discovery/isolation regressions
+use those real owners and retain an unforced Ops scope while JsonSchema and
+Funflow qualification sources execute. Product OpenTofu operational-round tests
+belong in the product repository, alongside their actual producer, rather than
+importing a removed OpenTofu directory from the Core library.
+
+** Pinned POO property reports and native test ownership
+
+For gerbil-poo =c7954f1d5a5f5b954c91f6f0e1223aa92b38dc3a=, the standard
+property-test integration is =:clan/poo/testing/property/test=. A Type-generated
+report is a POO value; its =execution= slot holds the native kernel report.
+Pass that kernel report to =require-passed=. If Type/generator preparation did
+not produce an execution, pass its diagnostics through the native =refusal:=
+argument. A diagnostic status is never substituted for a current kernel report.
+The kernel retains its source/currentness checks and diagnostic failure rules.
+
+The existing CI discovery partition assigns all =module-*-10000-test.ss= files
+to the scale owner. This changes scheduling only: the union of groups must
+equal the complete direct =t/*-test.ss= discovery set, with one owner per file.
+Keep every Case, heap fence and deadline unchanged.
+
+The pinned Quint backend resolves its distribution relative to =QUINT_HOME=,
+with the same default as the installed Quint CLI. The source cut binds the
+current testing-script controls instead of a deleted execution-progress test;
+this is an executable-input correction, not a new theorem or a replacement for
+the finite model's positive/negative checks.

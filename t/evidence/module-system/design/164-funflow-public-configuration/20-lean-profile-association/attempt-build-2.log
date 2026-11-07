@@ -1,0 +1,30 @@
+✖ [39/41] Building PooFlowProfileAssociationProof.Model (1.3s)
+trace: .> LEAN_PATH=/Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/packages/LeanPoo/.lake/build/lib/lean:/Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean /Users/guangtao/.elan/toolchains/leanprover--lean4---v4.34.0/bin/lean /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/PooFlowProfileAssociationProof/Model.lean -o /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean/PooFlowProfileAssociationProof/Model.olean -i /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean/PooFlowProfileAssociationProof/Model.ilean -c /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/ir/PooFlowProfileAssociationProof/Model.c --setup /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/ir/PooFlowProfileAssociationProof/Model.setup.json --json
+error: PooFlowProfileAssociationProof/Model.lean:115:61: unsolved goals
+mandatory retained : List Nat
+right : Nat
+required : right ∈ mandatory
+missing : ¬right ∈ retained
+fails : ¬(mandatory.all fun requirement => retained.contains requirement) = true
+⊢ (if false = true then Except.ok () else Except.error mandatory) = Except.error mandatory
+warning: PooFlowProfileAssociationProof/Model.lean:120:37: This simp argument is unused:
+  ↓reduceIte
+
+Hint: Omit it from the simp argument list.
+  [apply] simp only [requirementGate, fails]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: PooFlowProfileAssociationProof/Model.lean:214:0: 'PooFlowProfileAssociationProof.association_complete' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:215:0: 'PooFlowProfileAssociationProof.derived_root_preserved' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:216:0: 'PooFlowProfileAssociationProof.right_requirement_preserved_or_refused' depends on axioms: [propext,
+ sorryAx,
+ Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:217:0: 'PooFlowProfileAssociationProof.accepted_right_requirement_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:218:0: 'PooFlowProfileAssociationProof.cached_checks_are_final' does not depend on any axioms
+info: PooFlowProfileAssociationProof/Model.lean:219:0: 'PooFlowProfileAssociationProof.parent_cache_misses_for_child' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Model.lean:220:0: 'PooFlowProfileAssociationProof.stale_parent_value_refused' depends on axioms: [propext]
+Some required targets logged failures:
+- PooFlowProfileAssociationProof.Model
+error: build failed

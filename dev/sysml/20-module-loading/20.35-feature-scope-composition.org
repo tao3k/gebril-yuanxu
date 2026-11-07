@@ -1,0 +1,79 @@
+#+title: 20.35 Feature Scope Composition And Final Obligations
+#+language: en
+
+* Owned flow and source correspondence
+
+=source/selection.ss= resolves the existing Feature graph and exposes a lazy
+=features-by-owner= POO index, derived from the same ordered descriptors. Index
+preparation is once per graph; a Module lookup does not rescan all selected nodes.
+This does not replace native slot/index caches or cache admission results.
+
+=source/link.ss= passes that selected graph through the existing dependency
+walk. Core construction produces the base. =source/feature-scopes.ss= applies
+only that owner's ordered =refine= functions. The existing native MOP construction
+frame protects both the current scope and its base from writes. Dependency-edge
+refinement uses the same function; there is no second write-fence implementation.
+
+Core admission normalizes the assembled receiver. Every selected Feature's
+=contract= validates that same final receiver, retaining its native obligations;
+its returned wrapper is not substituted for the receiver. The receiver must also
+be a member of that Type. Feature defaults and transformations therefore belong
+in =refine=. Core membership is checked after Feature obligations as well.
+No arbitrary manifest component is reinterpreted as a scope prototype.
+
+The linked record retains a native composite Type for subsequent provider
+admission. Its callbacks use source guards without retaining candidate reads in
+the provider's original construction support. The invoking supported admission
+owns those reads. This prevents a consumer's candidate mutation from invalidating
+an otherwise unchanged provider; it does not cache either admission conclusion.
+
+Each Feature declaration, refinement and Contract call uses the existing supported
+link stage. Source and issued-read support join the Core factory's support and
+are checked before return and by the retained construction-current entry. Open
+callbacks keep independent entry/tail currentness. Native public write guards
+are the runtime boundary; this is not protection against arbitrary foreign memory
+writes or a modified Gerbil runtime.
+
+Disabling a Feature creates a new selection and composes from Core again, never
+from the previously extended scope. Code modules remain under Gerbil import/load
+ownership; neither selection nor withdrawal unloads code or tears down resources.
+
+* Formal owners
+
+- Lean owns =Selection/FeatureScopes.lean=: resolver-order folding, empty-selection
+  identity and all retained obligations on one final candidate. The withdrawal
+  law explicitly models reconstruction from base; it does not prove Scheme
+  immutability or arbitrary callback purity. =Selection/Requirements= retains
+  the declared-origin law; =Admission/BoundaryComposition= owns callback guards.
+- QNT reuses =IncrementalRoles=, including its =dropB=, =approval=, =parent= and
+  =observer= counterexamples. These are temporal controls for lost requirements,
+  source changes and parent isolation, not a duplicate model of POO precedence.
+  They do not prove the new Scheme extraction or memory complexity.
+  The existing scoped receipt binds the four production consumers, their two
+  test suites, this allocation and the Lean structural owner. Producer-source
+  qualification additionally requires the existing upstream projection bindings
+  to match; a stale producer binding is a separate refusal, not a model pass.
+- Scheme owns the correspondence through =t/module-feature-scope-test.ss= and
+  =t/module-feature-interface-test.ss=. They read actual Interface source roles,
+  execute production linking, and retain failure/currentness controls.
+
+The Core library target list includes =source/feature-scopes= exactly once.
+Selected build/clean target ownership is unchanged; the change does not introduce
+a Runtime loader, a builder, a second manifest or a cache protocol.
+
+* Reproduction and acceptance limits
+
+#+begin_src sh
+cd dev/proofs/lean
+timeout 120s lake build YuanxuProof.ModuleSystem.Selection.FeatureScopes
+cd ../../..
+python3 dev/proofs/quint/check.py --case-prefix IncrementalRoles \
+  --typecheck-scope selected --receipt /tmp/feature-scope-quint.scm
+just test-file t/module-feature-scope-test.ss
+just test-file t/module-feature-interface-test.ss
+#+end_src
+
+Installed compiler, dependency revision and production artifacts must form one
+cohort. A focused library compile is not full package build acceptance. A failed
+selected-graph/source-owner gate must remain a failure, not be counted as a
+Feature rejection. Whole-suite and product migration remain separate gates.

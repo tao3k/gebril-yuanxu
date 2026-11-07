@@ -1,0 +1,132 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Authority-issued replica-summary provenance
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Authority-issued replica-summary provenance
+
+** Replica provenance requirement
+
+Content-aware replica knowledge MUST retain the durable recovery authority and
+the proof that this authority issued the exact recovery evidence.  Position
+validity and descriptor disposition are necessary but do not establish
+issuance.
+
+An n-way summary origin MUST identify the complete authority-issued recovery
+event, not only its committed position.  Two authorities or two recovery
+receipts at the same position represent distinct accountability obligations and
+MUST remain separately representable after every join.
+
+** Valid-but-unissued replica counterexample
+
+The previous knowledge record stored =positionRecoveryValid= but did not store
+=authorityIssuedContentAwareRegistryTrustRootRecovery=.  Because Lean structures
+have public constructors, the presence of one trusted helper constructor did
+not prevent another caller from assembling all fields directly.
+
+=validityOnlyReplicaKnowledgePermitsUnissuedRecovery= constructs a weak
+knowledge value from a valid recovery interval while pairing it with an
+authority whose =issued= predicate rejects every recovery evidence.  The exact
+unissued evidence is nevertheless present in the weak knowledge object.
+
+** Authority-provenance Typst model
+
+#+begin_export typst
+$
+  "IssuedOrigin"(o) :=
+    (o."authority", o."evidence", o."authority-issued-proof")
+
+  "ProvenanceSummary"(s) :=
+    (s."minimum-position", s."issued-origins", s."dispositions")
+
+  "JoinProvenance"(l, r)."issued-origins" :=
+    l."issued-origins" union r."issued-origins"
+
+  forall o in "JoinProvenance"(l, r)."issued-origins":
+    "issued"(o."authority", o."evidence")
+    and "DispositionAtJoin"(o, "JoinProvenance"(l, r))
+$
+#+end_export
+
+** Authority-provenance Mermaid closure
+
+#+begin_src mermaid
+flowchart LR
+  A["Durable recovery authority"]
+  E["Exact content-aware recovery evidence"]
+  I["Authority-issued proof"]
+  O["Authority-issued recovery origin"]
+  S["Provenance-preserving summary"]
+  J["N-way provenance join"]
+  X["Valid but unissued knowledge rejected"]
+
+  A -->|"issues exact receipt"| I
+  E -->|"same receipt identity"| I
+  I -->|"authority + evidence + proof"| O
+  O -->|"singleton origin"| S
+  S -->|"union complete origins"| J
+  J -->|"status: issuance retained"| O
+  E -.->|"validity alone"| X
+#+end_src
+
+** Authority-provenance decision
+
+- Preserve =ValidityOnlyContentAwareReplicaRegistryCheckpointKnowledge= as the
+  weak model and explicit unissued-evidence counterexample owner.
+- Strengthen =ContentAwareReplicaRegistryCheckpointKnowledge= with the exact
+  =recoveryAuthority= and =authorityIssued= proof.  Its public constructor can no
+  longer create safe knowledge from validity alone.
+- Define =AuthorityIssuedReplicaRecoveryOrigin= as the dependent tuple of
+  authority, recovery evidence, and exact acceptance proof.
+- Define =AuthorityProvenanceReplicaRegistryCheckpointSummary= over complete
+  issued origins rather than =Nat= positions.  The summary still carries origin
+  coverage and descriptor dispositions.
+- Join provenance summaries by maximum position and union of complete issued
+  origins.  Preserve origin and descriptor obligations and prove position/origin
+  associative, commutative, and idempotent observation laws.
+- Keep the earlier Nat-origin summary as the weaker content-only mathematical
+  layer.  Enterprise admission consumes the authority-provenance summary.
+
+** Authority-provenance checklist
+
+- [X] Demonstrate that position validity can coexist with an authority that did
+  not issue the recovery evidence.
+- [X] Bind safe replica knowledge to the exact recovery authority and issuance
+  proof.
+- [X] Represent each origin as authority, evidence, and accepted proof.
+- [X] Preserve distinct same-position origins as distinct provenance values.
+- [X] Construct the singleton provenance summary from issued replica knowledge.
+- [X] Preserve every issued origin and descriptor disposition through join.
+- [X] Prove provenance-summary position and origin associativity.
+- [X] Prove provenance-summary position and origin commutativity.
+- [X] Prove provenance-summary position and origin idempotence.
+
+** Authority-provenance Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  for 10 jobs with no warning or error.
+- The first standard AXLE invocation ended during owner-source extraction with
+  =ContentLengthError= after receiving 605882 of 1445999 expected bytes; it did
+  not enter theorem verification.  An unchanged retry completed normally and
+  accepted all 35 roots and 127 declarations through the exact five-source
+  envelope: 74 source declarations, 74 environment declarations, 0 proof-base
+  declarations/imports, no failed declaration, and no Lean diagnostic.  Closure
+  digest:
+  =sha256:8582e5b5a1d359323f2df95e626b5d0e7706afb8a56397cfc80517870d3e8667=;
+  bundle digest:
+  =sha256:e64916ea05d34fdb17931dd1d2ac26d0a1c0c8d7d568bc3cb68ebb5dd21f5051=;
+  canonical source digest:
+  =sha256:1bcc303a26206efea0e235879848f1ebef679134880cde175613c1b0d1a37032=;
+  independent bundle digest:
+  =sha256:9341d4eda8cca57c465086f3fe683eb0ee92461db24eb4beaa2c2bba4454945c=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
+  build= exited 0 for 587 jobs.  Both reported only the existing
+  =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
+- =asp org lint= accepted this RFC with =[ok] orgize lint=.
+- =git diff --check= and =git diff --cached --check= both exited 0.
+

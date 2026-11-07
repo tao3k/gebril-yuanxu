@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Shared Object Types and Contracts
+#+language: en
+
+- [[file:contracts.ss][contracts.ss]] owns Yuanxu classification, contextual Contract admission, and evidence-bearing object responsibilities.
+- [[file:ports.ss][ports.ss]] owns service endpoint Port (exact integer 1..65535). Ephemeral bind port zero needs an explicit separate policy.
+- [[file:facts.ss][facts.ss]] projects slot Contracts into type facts and Lean-facing receipts.
+
+Domain modules reference these shared descriptors. Service connection rules,
+independent requirements, provenance, and plan applicability remain with the
+domain Scenario; a scalar Port Type cannot establish those relationships.

@@ -1,0 +1,415 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 13.29 Prelude Ecosystem and Selected Cross-Package Builds
+#+language: en
+#+date: [2026-11-03]
+#+property: STATUS proposed-contract-unimplemented
+#+filetags: :design:prelude:ecosystem:modules:building:ownership:
+
+* Decision, scope and evidence boundary
+
+Implementation follow-up: [[file:13.32-interface-entry-and-compilation-authority.org][13.32]] records the delivered local-source subset,
+the corrected native POO consumer contract and its verification receipts.
+The proposal-stage status and observations below are retained as design history;
+they do not describe the current implementation status of every subfeature.
+
+Yuanxu should let a downstream package select Modules from independently
+published source libraries and compile only the required source closure into
+its own build environment. Each selected owner declares its compilation
+contributions. Original Gerbil compiler identities, source provenance and
+currentness survive this handoff. Installing a repository containing 1,000
+Modules must not by itself select or compile all 1,000.
+
+The existing Yuanxu Prelude should become the consistent language entry for
+this public protocol. It exposes the bounded declaration surface and ordinary
+POO vocabulary; the existing Module System owns selection and projection, and
+native Gerbil owns module resolution, expansion and compilation. Third-party
+libraries participate through the same protocol as Yuanxu and Agentic AI Lab.
+
+Status: a proposed contract and implementation plan, grounded in source
+inspection. No new API, runtime implementation, benchmark, formal proof or
+passing cross-package build is claimed. Proposed syntax below is illustrative
+and requires the existing public-macro review. This chapter does not authorize
+compiler changes, another scheduler, a package manager, a source expander or a
+cache of successful admission decisions.
+
+The first formal-reference implementation is tracked separately in
+[[file:13.30-selected-package-build-refinement.org][13.30]], with SysML allocation, Lean laws and explicit native bridge gates.
+Its pure verification does not change the native status stated here.
+
+[[file:13.31-native-prelude-staging-and-source-view.org][13.31]] further refines native declaration staging, physical-output collisions
+and incremental input/product association; stable wrapper timestamps alone
+are not sufficient for its reuse contract.
+
+This extends [[file:13.16-yuanxu-package-and-prelude.org][13.16]],
+[[file:13.19-source-qualified-init-exports.org][13.19]] and
+[[file:13.20-init-owned-role-compilation.org][13.20]]. It complements
+[[file:13.28-managed-dependency-and-activation-policy.org][13.28]]: runtime
+business-scope activation and installation-time compilation are separate
+obligations. Loading laziness is not a substitute for selecting build targets.
+The bootstrap constraints in 13.16 remain in force until the proposed phase
+split is implemented and qualified; this document does not silently change
+the current Prelude's import closure.
+
+* Observed native Gerbil and Yuanxu mechanisms
+
+The inspected Homebrew Gerbil installation is Gerbil =1cfb032= with package suffix
+=patch618d76f9eb72=, installed as
+=gerbil-scheme@0.19/0.19.20261009110849.1cfb032.patch618d76f9eb72=.
+These are source observations, not execution receipts. Recheck the actual Gerbil
+and source revisions when qualifying an implementation.
+
+| Source owner | Observed behavior | Boundary relevant here |
+|--------------+-------------------+------------------------|
+| Gerbil =tools/gxpkg.ss:pkg-install=, =pkg-deps-manage= | Dependency installation fetches packages, installs dependencies and invokes package compilation | =deps --install= is not a source-only fetch operation; root dependencies incur their own default builds |
+| Gerbil =expander/module.ss:core-resolve-library-module-path= | Searches each load-path entry for SSI, then source, with package-prefix handling | A checkout can provide uncompiled source; load-path order can also select an older installed interface |
+| Gerbil =core-import-module= / =core-eval-module= | Expands a module and retains delayed module evaluation; phase dependencies can evaluate during expansion | Source resolution, expansion, evaluation and native compilation are distinct |
+| Gerbil =std/make.ss:make-build= | Schedules targets supplied in the spec; imports determine dependency waits and freshness | An imported source does not automatically become another compiler target |
+| Gerbil =source-path= / =library-path= | Uses one source directory and prefix per Make invocation | Removing Yuanxu's foreign-entry filter alone cannot make cross-package source/output paths correct |
+| Gerbil =spec-extra-inputs= | Supports =extra-inputs:= for compiler inputs | Original source and asset changes can participate in native Make invalidation |
+| Yuanxu [[file:../../../prelude.ss][prelude.ss]] | Reexports Gerbil and POO; deliberately bootstraps independently of Module System | It does not currently expose =yuanxu!= |
+| [[file:../../../module-system/selection/init-syntax.ss][selection/init-syntax.ss]] | Publishes one source-qualified POO exports value with a shared selection | Current windows require literal directory strings; package-source windows are proposed |
+| [[file:../../../module-system/source/selection.ss][source/selection.ss]] | Rejects disabled dependencies and requirements absent from explicit selection | Explicit selection does not silently add undeclared Modules |
+| [[file:../../../module-system/loader/load-path.ss][loader/load-path.ss]] and [[file:../../../module-system/source/collection.ss][source/collection.ss]] | Provide POO source collections and ordered location | Reuse this protocol instead of inventing a second module catalog |
+| [[file:../../../module-system/source/build.ss][source/build.ss]] | Collects selected roles, publications, source dependencies, assets and owner projections; admits build/library and external contributions | External realization is separate; not every contribution is an ordinary Gerbil target |
+| [[file:../../../module-system/building/build-projection.ss][building/build-projection.ss]] | Observes foreign inputs but emits current-package compiler entries, with one special Prelude identity | Full selected-Graph publication refuses incomplete package ownership |
+| [[file:../../../module-system/source/preparation.ss][source/preparation.ss]] | Produces compiler forms and temporary role frames, preserving original syntax and identities | Existing interception is not yet a complete multi-package compilation layout |
+| [[file:../../../module-system/building/interface.ss][building/interface.ss]] | Exports a retained-roots-to-spec function and delegates Gerbil build dispatch under guards | Keep one init-owned projection and explicit execution boundary |
+
+The package-filter refusal is intentional existing behavior, also represented
+in [[file:../../../t/module-build-spec-test.ss][module-build-spec-test.ss]]. It must not simply be removed or reinterpreted
+as successful cross-package compilation.
+
+* Four ownership contracts
+
+| Owner | Authority and obligations | Does not acquire |
+|-------+---------------------------+------------------|
+| Module / selected Feature | Declares public roots, additional compiler options, resources and external contributions | Control of another owner's declaration or the consumer's package cache |
+| Source package | Supplies pinned source, actual package metadata, source locations and currentness support | Ownership of downstream output directories |
+| Gerbil compiler identity | Determines import/binding identity and expected product names | Authority inferred from a matching namespace spelling |
+| Downstream build environment | Owns selection, generated compiler inputs, library products and their cleanup | Permission to rewrite an upstream checkout, default init or unrelated products |
+
+Nested =gerbil.pkg= boundaries and the distinct Prelude identity are real
+compiler metadata. A repository path, Module identity, namespace mount and
+Gerbil package prefix are not interchangeable.
+
+** Owner compilation declaration
+
+Continue using the admitted POO =module/build= contribution and Module role
+inventory. Roots are additional required entry points, not a recursive file
+inventory. Public library roots close over actual imports. A Module does not
+repeat every internal helper as a separate public root.
+
+FFI options and native support belong to the declaring owner and target.
+Resources have owner-relative confined paths and observed bytes. Selected
+Features contribute only when selected. Ordinary Gerbil libraries can enter
+through owner library roots or actual imports without becoming artificial
+Yuanxu Modules. Package bootstrap libraries remain explicitly package-owned.
+
+The current build contract accepts strings / =gxc:= forms with string options
+and optional =library-roots=. Rich native Make metadata such as =extra-inputs:=
+must be lowered internally or admitted through an explicitly reviewed POO
+contract extension; it is not already accepted by that public contract.
+
+Equal compiler identities deduplicate only when source association, prepared
+forms and options agree. Different revisions, conflicting options or paths
+must produce an actionable conflict, not last-writer-wins behavior. Two owners
+may share an input while retaining independent provenance and obligations.
+
+** Cross-package projection
+
+Let =D= be the downstream declaration and =G= its single admitted selected
+Graph. Let =R= contain selected owner entry points and explicitly retained
+downstream roots. Use Gerbil's complete expansion/import graph to obtain
+=C = closure(R)=, including preludes, phase-shifted and generated imports.
+
+The target set =T= contains exactly those sources in =C= whose compilation
+responsibility belongs to the declared source collections, plus required
+owner-declared compiler targets. Installed Gerbil and package prerequisites remain
+external dependencies with their actual identities and input checks. Resource
+and non-Gerbil contribution closures are accounted separately, not disguised
+as Scheme compiler targets.
+
+The implementation must establish closure completeness: every needed input
+is either a target, an admitted external prerequisite or a separately realized
+contribution. A missing input is an error; it must not trigger arbitrary source
+discovery or an implicit network/package installation. A warm SSI must not
+mask a selected source revision. Prefer exact admitted source associations
+within the existing compiler-input extent; do not globally rewrite load-path
+or private Gerbil registries.
+
+Preserve explicit dependency decisions. Selecting OpenTofu requires explicitly
+declaring its current Nix, JsonSchema and Funflow requirements. Names can be
+located in different source windows while resolution still uses the same
+Graph. No undeclared provider becomes eligible merely because it exists in a
+package checkout.
+
+The projection is POO compiler data with owner/source association and guards.
+Constructing it, importing a library or reading exports never starts compilation,
+package installation, provider realization or an operational Script. Execution
+uses the existing build/Ops handoff. Pure closure algorithms stay functional;
+effects stay behind those explicit boundaries.
+
+** Downstream products and publication
+
+Products retain original Gerbil compiler identities while being installed into
+the downstream environment's =libdir=. Generated source views and intermediates
+also belong to that environment. Shared upstream package checkouts are read-only
+inputs to this operation. Two consumers' selections and cleans cannot affect
+each other's products, an upstream default init, or unrelated dirty files.
+
+Bind output ownership to selection generation, source/package revisions,
+compiler identities, prepared input footprint, options, toolchain and output
+environment. A Git revision is provenance, not proof that a dirty working tree
+matches that revision. Existing byte/package/source checks remain mandatory.
+Two incompatible versions using one compiler identity require isolated output
+and runtime environments or a conflict; mounts cannot provide runtime version
+isolation by renaming slots.
+
+Keep ordinary compilation separate from issued publication authority. Existing
+artifact admission, source guards and before/after effect checks must cover
+the complete cross-package target scope before full Graph publication is
+possible. Partial package success does not certify the remainder. Cleanup and
+failed builds cannot leave products that are accepted as a completed Graph.
+Do not advertise atomic installation unless native failure/recovery controls
+establish that property through the existing publication mechanism.
+
+* Prelude as an ecosystem entry
+
+** One language facade, existing semantic owners
+
+Keep the sole public language identity =:tao3k/yuanxu/prelude=. Its ordinary
+surface should expose the reviewed =yuanxu!= declaration and POO composition
+vocabulary so adopters do not repeat Module System bootstrap imports. It does
+not import a user's init, choose a module library, activate scopes or compile
+anything. The declaration's enclosing Gerbil module still owns its qualified
+exports and selection lifetime.
+
+The Prelude is optional. A consumer using =:gerbil/core= or another compatible
+prelude can explicitly import the same public declaration binding. Both routes
+must expose identical effective binding/phase semantics and use the same
+selection/projection implementation. No compatibility loader, alternate macro
+family, public loading strategy selector or second Prelude alias is introduced.
+Preserve existing POO constructor precedence, hygiene and weak export behavior.
+
+** Bootstrap and phase obligations
+
+An eager reexport of today's =init-syntax= is not an implementation plan: its
+transitive helpers and building infrastructure can depend back on the Prelude.
+First audit the real dependency/phase graph. Extract only the necessary public
+syntax binding into a bootstrap-safe owner using native Gerbil phase imports;
+defer linking to the existing implementation until explicit declaration demand.
+Keep compiler tools, source scanning and publication execution outside that
+base closure. The exact split remains unimplemented and must pass source-only
+bootstrap and binding-identity controls before changing =prelude.ss=.
+
+Use the existing declaration macro, not another public DSL. Bounded hygienic
+syntax lowers into POO source/selection values and ordinary functional code.
+No arbitrary =eval= of source selectors, copied source parser or user-facing
+raw alist/record configuration is allowed. If the safe split cannot preserve
+native phase semantics, retain explicit imports until it can; do not patch
+Gerbil or silently broaden the Prelude to solve a bootstrap cycle.
+
+** Package publication and downstream declaration
+
+A third-party package publishes a small ordinary Gerbil entry containing an
+admitted POO source collection, independently of its default selected init.
+The entry is part of its bootstrap build. It locates sources through declared
+Gerbil package/build-environment associations and checks origin/identity;
+consumers never reconstruct cache paths. Installed SSI alone does not locate
+a relocatable source checkout: source package availability and relocation are
+an explicit adapter obligation, including linked development checkouts.
+
+Proposed surface, not executable current syntax:
+
+#+begin_src scheme
+;; gerbil.pkg selects :tao3k/yuanxu/prelude as the language.
+;; The symbol-source form and library entry names below require implementation.
+(yuanxu!
+  :load-modules :agentic-ai-lab/module-library
+  mode: explicit rename: Lab
+  (nix)
+  :services
+  (opentofu)
+  :load-modules :yuanxu/module-library
+  mode: explicit rename: Yuanxu
+  (json-schema)
+  (funflow))
+#+end_src
+
+Extend the existing source position to accept a public library reference that
+publishes the source-collection protocol; keep literal-directory windows for
+local development. Naming of the entry/binding and reference lowering requires
+API review. Do not embed user cache paths or add arbitrary computed selectors.
+The downstream =build.ss= continues consuming its own qualified exports through
+=defbuild-script=, rather than importing the Lab's chosen init or calling each
+upstream default build script.
+
+** Community interoperability and evolution
+
+| Consideration | Contract / forward design requirement |
+|---------------+---------------------------------------|
+| Independent authors | Publish ordinary Gerbil packages, POO Modules/Features and the same source-collection/build protocols; no official-only loader privileges |
+| Naming and collisions | Preserve compiler/package and publication identities; diagnose conflicting providers across collections; never treat a namespace as authenticated origin |
+| Versions | Lock package revisions with Gerbil's existing dependency mechanism; version source-collection/contribution protocols explicitly when semantics change; reject unsupported required capabilities |
+| Compatibility | Distinguish Prelude syntax version, POO publication protocol, compiler artifacts and platform ABI; a shared name or readable SSI does not prove compatibility |
+| Extension | Extend through ordinary POO prototypes, Contracts and functional helpers; new public macros require review, not one DSL per contributor |
+| Discoverability | Metadata may describe exports, supported targets and required tools without importing implementations or probing all FFI libraries |
+| Trust | A collection reference does not sandbox Gerbil macros or builds; package/source admission and explicit effect boundaries remain necessary; do not claim safe execution of arbitrary community packages |
+| Reproducibility | Record selected closure, source stamps, tools/options and platform; offline builds fail clearly on missing pinned inputs; no fetch hidden behind slot demand |
+| Development | Linked/dirty sources remain usable with exact observations; switching a checkout or origin invalidates the old generation |
+| Portability | Owner-declared target/platform requirements fail when selected and unsupported; unrelated platform-specific Modules do not obstruct a consumer |
+| Evolution | Experimental contributions can mature through protocol conformance and native consumer qualification; deprecation must name the affected contract and consumer migration |
+| Distribution | Search indexes, registries, signing infrastructure and binary distribution are future services, not a prerequisite or replacement for this protocol |
+
+Package dependencies still have Gerbil's install semantics. A root =depend:=
+entry is installed and its default build runs, even if a business Module later
+remains unselected. Keep unconditional bootstrap dependencies small. Truly
+optional third-party prerequisites need an explicit preparation/install stage
+or independently installable package boundaries. This design does not invent
+optional dependency syntax or auto-install them during selection.
+
+* Native build realization: proposed source-view route
+
+Removing foreign-entry filtering is insufficient. The candidate implementation
+extends the existing prepared compiler-input materialization into a downstream
+build directory, indexed by full compiler identity. One =std/make= invocation
+with an absent prefix (=#f=, no view-root package-prefix fallback; see 13.31)
+can then schedule the complete source target set and place
+products under their original identities in the downstream library directory.
+Original admitted files remain the authoritative source inputs.
+
+This is an internal generated compiler-input layout, not a second import graph,
+public source alias scheme or newly expanded language. Reuse existing
+=compiler-forms= and import associations; preserve original include locations,
+relative imports, custom preludes and phase behavior. Generated frames must
+correspond exactly to admitted source and output identities. Extend existing
+input indexing, conflict checks and guards rather than adding parallel ones.
+
+For incremental builds, stable generated contents must not acquire a new
+timestamp on every invocation. Original files, metadata and relevant resources
+must participate through native Make inputs and currentness checks. Merely
+preserving wrapper bytes is insufficient if included sources have changed.
+Conversely, creating fresh temporary target files on every build would force
+recompilation. Generated-file reuse stores compiler input data, never passing
+admission results. Clean/recovery must remain environment-owned.
+
+Do not independently compile prefix groups and assume it preserves dependency
+ordering. A file DAG can induce a cyclic package grouping; all relevant targets
+need native dependency completion semantics. Validate this with an acyclic
+cross-package file graph that has dependencies in both package directions.
+Actual expansion cycles retain Gerbil's native rejection behavior.
+
+The source-view route is a candidate, not a proven relocation or performance
+result. If native binding, timestamp or output correspondence fails, revise the
+internal adapter and retain the current refusal. Do not weaken provenance,
+accept stale SSI, duplicate expansion or modify the Gerbil to force a pass.
+
+External package contributions continue through their existing prepared request
+and explicit realization boundaries. A source view cannot turn provider effects
+into pure Make targets. Full publication remains blocked until those declared
+obligations are accounted for, with source checks at each effect boundary.
+
+* Agentic AI Lab migration and implementation order
+
+The current consumer [[file:../../../../init.ss][init.ss]] uses =mode: auto= for its Modules;
+[[file:../../../../build-spec.ss][build-spec.ss]] retains a broad public-root list and unconditional FFI targets.
+These source observations do not establish current build success or cost.
+
+1. Establish the bootstrap-safe Prelude declaration binding and POO library
+   publication protocol. Qualify explicit-import and Prelude routes together.
+2. Extend existing windows to locate package source collections while retaining
+   one selection generation, explicit requirements and source admission.
+3. Complete owner compilation declarations. Transfer public roots, native
+   options, resources and external contributions before removing global roots.
+4. Extend the existing build projection/materialization to retain all admitted
+   package targets and output ownership. Preserve current foreign-publication
+   refusal until complete-scope controls pass.
+5. Give Lab a minimal bootstrap build and an explicit complete development /
+   qualification selection. Keep one protocol and Gerbil build dispatcher; do not use
+   ambient feature flags to mutate upstream defaults for each consumer.
+6. Qualify independent downstream packages and fresh environments before claiming
+   community interoperability or thousand-Module selective-build capacity.
+
+* Acceptance through the installed Gerbil
+
+** Evidence and execution rules
+
+Extend existing conformance/test owners instead of creating another harness.
+Run Scheme tests serially through =just test-file <path>= and the complete gate
+through =just test=. A required new launcher must have a Just recipe with
+=gerbil_test_runtime_options= and a timeout before importing Scheme modules.
+Do not invoke raw =gxi=, =gxtest= or =gerbil test= as project test substitutes.
+Preserve existing budgets, assertions and negative controls.
+
+Relevant existing owners include =t/prelude-test.ss=,
+=t/module-init-import-test.ss=, =t/module-windows-test.ss=,
+=t/module-build-spec-test.ss=, =t/module-build-role-test.ss=,
+=t/module-build-process-test.ss=, =t/module-build-source-package-test.ss= and
+=t/module-source-location-test.ss=. Add cross-package Cases to these owners;
+any new integration scenario uses the same bounded native launcher.
+
+Each focused receipt requires =MODULE-OK=, =HARNESS-OK= and final =OK=, with no
+=ERROR CASE=, =ERROR CHECK=, =ERROR HARNESS=, =Heap overflow= or =Stack overflow=.
+Exit zero alone is insufficient. Native build children must finish naturally
+within their established gates; forced termination is a failed receipt.
+
+Record exact Yuanxu, consumer, dependency and Gerbil revisions, dirty source
+footprint, platform, commands, limits, load-path / output environment and
+compiled identities. Cold cases use isolated package environments with real
+installed prerequisites, excluding previous target products and accidental
+ambient overlays. Never rewrite another session's package state. Keep raw
+logs and native artifacts outside Git; commit executable gates and structured
+summaries only.
+
+** Required native controls
+
+| Control | Positive requirement | Negative / discrimination requirement |
+|---------+----------------------+---------------------------------------|
+| Prelude bootstrap | Source-only build and installed/fresh-process declaration use the same binding via Prelude and explicit import | No cycle, ambient installed Yuanxu masking, implicit init, scope execution or new process on Prelude import |
+| Binding and phase identity | POO constructors, custom preludes, macro +1/+2 imports and generated imports retain native bindings and source ranges | Reject substitutions, phase loss and double evaluation; test actual binding identity |
+| Package source windows | Two independent community packages and Lab resolve pinned collections in one downstream Graph | Reject unsupported protocol, missing source, stale link, ambiguous identity and origin mismatch |
+| Selection | Explicitly declared requirements and selected Features contribute exactly once | Disabled / undeclared dependency still fails; do not activate an unrelated scope to obtain build metadata |
+| Cold source compilation | All selected cross-package roles and ordinary libraries produce expected SSI/native products in the downstream environment | No prebuilt target SSI; a wrong-revision installed interface cannot hide missing compilation |
+| File dependency order | Both-direction package edges with an acyclic file graph build through one native target graph | Actual expansion cycles reject; prefix ordering must not conceal missing targets |
+| Native options / resources | Selected FFI options and assets reach only their owning targets and receipts | Missing selected tools/assets fail; unselected foreign-platform FFI or tools remain unnecessary |
+| External contributions | Explicit realization and final admission account for every selected request | Missing, failed or stale realization cannot issue complete Graph publication |
+| Incremental behavior | Fresh-process hot build reuses unchanged products; selected source, metadata and asset changes invalidate the correct closure | Unrelated implementation changes do not cause unrelated compilation; wrapper recreation cannot fake a useful hot build |
+| Consumer isolation | Two output environments build different selections/revisions, import in fresh processes and clean independently | Upstream checkout, other consumer products and unrelated files remain unchanged |
+| Conflicts | Identical shared inputs deduplicate while retaining provenance | Same identity with incompatible source/options/ABI fails before accepted publication; mount aliases do not resolve version conflicts |
+| Failure and recovery | Source changes at compiler/return boundaries refuse; partial products are repaired/cleaned under existing rules | Inject failures after early output and before final admission; later runs cannot accept an incomplete cohort |
+| Relocation / offline | Qualified source/build environment relocation and offline builds use declared available inputs | Missing source association or locked prerequisite fails clearly without hidden network access |
+| Ecosystem reuse | Third-party authors use the same publication/selection contracts without Lab-specific wrappers | No privileged official registry or business-owned loader reconstruction is required |
+
+** Scale and performance obligations
+
+Construct a 1,000-Module source library, select a small known closure and record
+actual compiler identities, root/target counts, metadata visits, first compiler
+event, wall time and peak process-tree memory. Include an unselected module
+with a broken implementation and an unavailable optional native dependency.
+Its implementation must not be expanded, compiled or required by that selection.
+Necessary directory metadata discovery is measured separately; this design
+does not assert zero metadata work or constant-time discovery.
+
+Compare matched small/large inventories and cold/hot conditions with identical
+selected semantics, toolchain and limits. Closure correctness is exact; timing
+and memory thresholds require an established baseline and explicit acceptance
+budget before a performance claim. Do not lower concurrency or relax limits
+to hide a regression. A finite model, source-shape check or spec-only pass does
+not establish native thousand-Module capacity.
+
+** Completion criteria
+
+Delivery requires the Prelude/source-collection interface, owner declarations,
+complete cross-package compiler projection, downstream product ownership and
+the native controls above together. Existing package-local builds and issued
+publication negative controls must continue to pass. Consumer cold installation
+must traverse native Gerbil dependency installation and ordinary =build.ss=
+dispatch with no manual preload or hand-compiled modules.
+
+Any Lean/Quint work should state selection completeness, input/output identity,
+ownership noninterference and publication scope with explicit filesystem and
+compiler assumptions. Such proofs complement native controls; they do not
+authenticate a checkout, prove Gerbil's compiler correct or replace end-to-end
+consumer acceptance. Until those gates complete, report this capability as
+proposed / partially implemented with the exact remaining boundary.

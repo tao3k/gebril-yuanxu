@@ -1,0 +1,196 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 13.30 Selected Package Build Refinement and Scheme Entry Gate
+#+language: en
+#+date: [2026-11-03]
+#+property: STATUS formal-reference-in-progress-native-unimplemented
+
+* Allocation and scope
+
+Implementation follow-up: [[file:13.32-interface-entry-and-compilation-authority.org][13.32]] supersedes the stage-local statements below
+that production Scheme is unchanged. It distinguishes the delivered subset,
+native receipts and remaining package installation/publication obligations.
+
+The subsequent [[file:13.31-native-prelude-staging-and-source-view.org][13.31 refinement]] chooses native staged syntax for the declaration
+handoff and adds physical-output, timestamp and interrupted-preparation controls.
+Its mechanism probe and remaining native obligations are recorded separately.
+
+Refines [[file:13.29-prelude-ecosystem-and-selected-package-builds.org][13.29]] through
+[[file:../../../dev/sysml/20-module-loading/20.05-selected-package-builds.sysml][SysML ownership requirements]], this Org correspondence and the existing Lean
+project. SysML allocates responsibilities; Org states algorithms, assumptions
+and native gates; Lean checks the pure reference. There is no SysML-to-Scheme
+generator or claim of automatic SysML-to-Lean semantic translation.
+
+This is the first implementation stage requested before Scheme changes. Runtime
+Prelude, package-window and cross-package compiler code remain unchanged while
+the bridge obligations below are unresolved. A passing reference is not native
+consumer acceptance. Existing Gerbil and LeanPoo pins, resource budgets, Graphs,
+loader and publication owners remain in place.
+
+* Executable reference and reuse
+
+[[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Building/SelectedPackages.lean][SelectedPackages]] reuses =Graph.TestAdmission.discover= and its completed
+closure theorem; it does not create another discovery algorithm. The reference
+performs the following deterministic steps:
+
+1. Discover the root dependency closure using the supplied Gerbil-observed edges.
+2. Refuse unfinished discovery rather than returning a truncated successful plan.
+3. Classify every reached input as an owner-declared source, installed external
+   prerequisite or owner-declared external request. Missing inputs refuse.
+4. Check source/request owner eligibility and compiler identity consistency.
+5. Return the complete reached node list; derive compiler entries only from its
+   source classification, preserving original paths, options and prepared forms.
+
+The finite fuel argument models a bounded analysis and its explicit refusal.
+It does not prescribe a new native timeout or weaken existing budgets. A
+completed reference traversal supports exactness; termination within a native
+budget and import extraction completeness still need execution evidence.
+
+The reference separately models publication with =Admission.Source.admitSources=
+on the complete input footprint and an enumerated realized-request set. The
+set records completion observations, not authorization supplied by a caller;
+the native bridge must obtain them from the existing realization/issuer owner.
+No boolean field is accepted as a proof of arbitrary external effect success.
+Product stores are keyed by environment and unchanged compiler identity.
+
+=admitBuild= joins successful structural preparation with those publication
+observations. A refused or unfinished plan cannot publish even if a fabricated
+empty footprint passes its local source checks. The joined theorem
+=admitted_build_contains_foreign_source= retains each demanded source regardless
+of package, its successful plan and final source checks together. This does not
+mint native product issuance or assert atomic external execution.
+
+[[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Building/PreludeEntry.lean][PreludeEntry]] checks a finite list of concrete eager dependency edges with
+phase-qualified endpoints and a decreasing natural-number rank. Every nonempty
+eager path decreases rank, so accepted edges cannot form an eager cycle. A
+separate terminal-binding comparison checks original owner/path, exported name,
+phase and native binding reference for explicit-import versus Prelude access.
+The same declaration interpreter is used only after that complete comparison.
+
+Deferred implementation demand is not an eager edge. Merely relabeling an eager
+import as deferred is invalid: native phase extraction must demonstrate the
+boundary. Current =init-syntax= still imports source/init and building helpers;
+reexporting it eagerly from today's Prelude is not established safe by this
+model. No transparent forwarding macro with a different terminal identity is
+silently accepted as identical to the original declaration binding.
+
+* Requirement-to-theorem correspondence
+
+| SysML requirement | Lean theorem(s) | Remaining native correspondence |
+|-------------------+-----------------+---------------------------------|
+| ExactSelectedClosure | =successful_closure_exact=, =successful_target_iff=, =unreachable_source_not_compiled=, =foreign_source_preserved= | Gerbil expansion supplies all dependency edges, including phases/generated imports; input classification is complete |
+| OwnerDeclaration | =source_owner_declared=, =successful_projection=, =successful_targets_compatible= | Source collections bind actual declared owners; selected Features and ordinary library roots have complete contributions |
+| DownstreamProductOwnership | =install_identity_preserved=, =install_other_environment=, =clean_other_environment=, =clean_unowned_product= | Environment IDs correspond to nonaliasing canonical directories; native output paths match identities and cleanup has confined scope |
+| CompletePublication | =publication_sources_current=, =missing_realization_refused=, =refused_plan_cannot_publish=, =admitted_build_contains_foreign_source= | Observations include every compiler/resource/tool input; realization observations are authentic; existing issuer covers all products |
+| PreludeEntry | =eager_path_descends=, =eager_cycle_refused=, =admitted_binding_exact=, =phase_substitution_refused=, =reference_substitution_refused=, =one_declaration_interpreter= | Gerbil supplies actual eager phase graph, terminal references, weak/strong binding precedence and hygienic expansion |
+| NativeHandoff | Reuses =Building.Inputs= conflict laws and existing source admission; no Make theorem claimed | Original/prepared/generated paths, product names and std/make timestamp behavior correspond on cold/hot builds |
+
+Input paths and prepared forms are observed data, not a filesystem authority
+certificate. An arbitrary source could satisfy the pure data checks. Existing
+source admission must establish canonical origin, confinement, package/prelude
+identity and currentness before those observations enter the reference.
+
+* Executable discriminating controls
+
+The Lean examples contain a Lab source, a community helper and an installed Gerbil
+input. They require exactly two source targets, refuse an incomplete traversal,
+an undeclared owner, a missing reachable input and a conflicting compiler
+identity. Stale final source observations and an unrealized external request
+refuse publication. Unreachable nodes are excluded by the general closure law,
+not by a hand-written list of accepted targets. These are model controls, not a
+real Lab build or a native downstream receipt.
+
+The Prelude examples admit a concrete ranked split and reject a dependency
+back into the implementation. Phase-substituted declaration bindings refuse.
+The rank checker is sufficient for the proposed bootstrap split, not a proof
+that every valid Gerbil module graph must admit this exact rank assignment.
+
+* Scheme entry gate and concrete downstream acceptance
+
+Before changing production Scheme, finish the phase/binding allocation and the
+compiler-input/output layout as an explicit refinement design. The native
+controls below then qualify that implementation; they cannot logically be
+required to pass before any implementation exists. Keep unresolved design
+choices separate from those later runtime results, and do not interpret passing
+Lean as completion of either:
+
+| Design decision still to establish | Required concrete allocation |
+|-----------------------------------+------------------------------|
+| Bootstrap-safe declaration owner | One terminal =yuanxu!= syntax binding with an eager graph independent of the semantic implementation; ordinary reexport through Prelude and explicit import |
+| Explicit declaration handoff | A native Gerbil phase/import call at declaration demand, preserving the caller's lexical Context and qualified export identity; no private registry or caught-import fallback |
+| Source-collection publication | One reviewed POO binding and source-reference protocol for pinned/linked packages, with origin/relocation checks |
+| Prepared source view | Complete full-identity target layout plus original-source associations and native Make extra inputs; retain relative-source syntax origin |
+| Output installation | Existing artifact/issuer owner accounts for the entire selected cohort in the consumer environment; no package-prefix-only completion claim |
+
+After those allocations are concrete, Scheme implementation and native controls
+must establish the following:
+
+- [ ] Extract the proposed base/syntax/Prelude/implementation eager graph from
+  actual Gerbil expander contexts, including phase shifts. Demonstrate source-only bootstrap
+  and terminal-binding equality without an installed Yuanxu masking the result.
+- [ ] Define the existing source collection's package publication binding and
+  prove its origin/relocation admission by native controls. Choose one public
+  spelling only after the bootstrap and protocol boundary is concrete.
+- [ ] Bind source ownership, compiler inputs, contribution requests and retained
+  application roots to the same existing selected Graph/generation.
+- [ ] Establish one native Make graph's source/product correspondence for all
+  selected packages. Verify relative imports, custom prelude, nested package
+  metadata, shared inputs, conflicts and generated syntax locations.
+- [ ] Establish fresh-process hot reuse with unchanged generated frames, native
+  extra-inputs and changed original files/resources. No passing-verdict cache.
+- [ ] Extend complete-Graph publication scope without removing its foreign-owner
+  refusal until every selected output/contribution is accounted for.
+
+The first real consumer should be an independent downstream Gerbil package
+depending on the pinned Yuanxu and Agentic AI Lab source packages. Its own
+=gerbil.pkg= selects Yuanxu's Prelude; its own declaration explicitly selects
+Lab Nix and the required supporting Modules/Features for the chosen scenario.
+Its application imports an actual selected public binding and checks its value
+in a fresh process. Its =build.ss= consumes its own qualified exports through
+the existing Gerbil build adapter. No manual preload, raw Scheme test launcher,
+upstream-init rewrite or direct compiler invocation is acceptable.
+
+Use the smallest real Lab Module with a complete owner build declaration first;
+Nix is a candidate, not an already qualified fixture. Add the OpenTofu plus
+Nix/JsonSchema/Funflow combination when its external contribution prerequisites
+are explicitly prepared. Exercise a second community package so the implementation
+cannot special-case Lab. Record exact selected compiler identities and verify
+that an unrelated Lab Module's compiler/native outputs are absent.
+
+Run the same downstream package in two private output environments with different
+selections. Compare upstream source bytes and other environment products before
+and after each compile/clean. A linked checkout containing unrelated dirty work
+must remain untouched. Install all prerequisites through native Gerbil's declared
+package mechanism; isolate target products/ambient overlays for a true cold case.
+The bootstrap-minimization of Lab itself is a distinct prerequisite for claiming
+that =deps --install= also avoids its current broad default build.
+
+The native integration must use the existing heap-fenced Just test launcher and
+its unchanged timeout/idle/heap limits. Require =MODULE-OK=, =HARNESS-OK= and
+final =OK= without harness/error/overflow markers. Preserve earlier failures.
+Keep raw logs outside Git. Execute complete consumer cold/hot, isolation and
+publication negative controls before claiming the Scheme implementation complete.
+
+* Proof and verification receipt
+
+The new files are included in the existing YuanxuProof aggregate and its
+declaration-shape / axiom audit. Verification uses the unchanged Lean toolchain
+and Lake dependency pin. Individual model checks and aggregate checks must be
+reported separately from runtime gates. SysML is an ownership specification;
+no SysML parser/typechecker result is implied by a passing Lean build.
+
+Initial verification on 2026-11-03 used Lean 4.34.0 and the unchanged Lake
+dependency configuration. Both individual models passed. The first aggregate
+run completed 214 jobs and audited 8,502 declarations with only the existing
+standard Lean axioms, before the additional joined =admitBuild= laws. The final
+aggregate rerun after those laws also completed 214 jobs and audited 8,513
+declarations. Both runs passed =CORE-MODEL-SHAPE-AUDIT-OK= and
+=CORE-AXIOM-AUDIT-OK= with standard Lean axioms only. Dependency replay emitted
+existing linter warnings; no warning policy or proof gate was relaxed. The final
+raw log is a local artifact at
+=/private/tmp/yuanxu-selected-packages-lean-20261103.log=, not a committed log.
+
+Native Gerbil, real downstream, timing/memory, thousand-Module selection and
+complete ecosystem qualification remain unexecuted at this formal-reference
+stage. The unresolved Scheme entry checklist is intentional and must not be
+cleared using the pure model's successful examples.

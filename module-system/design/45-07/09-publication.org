@@ -1,0 +1,213 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Published dependency edges and retained identity
+#+language: en
+
+[[file:../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Published dependency edges
+
+POO Record descriptors declare the publication and route fields. Publication
+admission checks those shapes on the original receivers, preserving their
+source-bound reads. Requirements remain an open set of symbolic aliases.
+Optional edge fields can be omitted, with publication disabled by default.
+The relation between =view= and =refine= belongs to the requirement Type.
+
+A requirement resolves against the selected Module ID. A =refine:= function
+derives a receiver for that edge. The linker protects the upstream receiver
+and the package-specialized receiver against writes through the POO mutation
+boundary during refinement. The provider's scope Type validates the derived
+receiver before any extra consumer Type. Source guards bracket each open
+callback. Independent mutable objects captured by the function are outside
+this receiver protection.
+
+=publish?: #t= exposes that checked binding under the owner's Interface
+=requires= view. A consumer declares
+=view: 'interface= on its requirement and reads only the owner's published
+aliases. That edge carries neither its own refinement nor a configuration
+build demand. Build collection still walks the selected Module IDs, so a
+refined receiver has no separate compiler target.
+
+A selected graph owns its linked records for one source generation. A
+source revision invalidates use of that generation. Local refresh of a
+published edge across generations still needs an implementation that
+preserves that rejection boundary and unrelated receiver identities.
+
+** Source revision and retained identity
+
+Each dependency record now has the canonical selected =provider=, the
+effective =scope= injected into the consumer, and separate
+=provider-evidence= and =requirement-evidence=. A derived edge no longer
+copies the provider's selected record with a substituted scope. This keeps
+the producer's identity and the candidate's admission authority distinct.
+
+An edge records its refinement and admission callbacks through the existing
+issued-read and source-observation collectors. Its currentness check replays
+those observations in callback order, between independent selection guards.
+The capture excludes the surrounding selection guards, whose support remains
+owned by the selection. The provider's scope construction now uses the
+same capture. Its =admit-construction-current= checks construction support
+within the owning selection. Scope admission and a successor selection's
+authority remain separate. The linker constructs the unbound scope before
+it invokes =.bind-publication=. The hook receives a lazy resolver for its
+one export and the package guard. The resolver belongs to that selection,
+and each successor binds its own resolver after configuration admission.
+Construction-read replay alone cannot transfer a bound export.
+
+The linker's =cache= stores selected records, including their generation and
+context-bound admission evidence. The reader's candidate guard combines source
+location, preparation and issued admission reads. A successful per-file check
+would establish only one part of this support. The scope factory and the
+provider and consumer checks may observe other receivers or close over
+context. Retaining the old record would also retain its old authority.
+
+A successor selection must resolve each demanded alias against its own source
+authority. Retention requires the same resolution and complete current support
+for the specific payload. POO receiver-level invalidation can preserve
+unaffected values once that support is available. Publication must still run
+the new selection's admission and its post-callback source check. Open scope
+factories require a fresh evaluation when completeness cannot be established.
+The build projection remains keyed by compiler identity.
+
+=IncrementalRoles.lean= separates payload locality from fresh admission.
+=SourceRevisionReuse.qnt= checks the finite revision transition and demonstrates
+the stale result from reuse by file alone. The current Scheme linker retains
+the generation-wide refusal until it can distinguish transferable POO payloads
+from the source and admission evidence owned by a selection.
+
+The =core.exports= lowering permits arbitrary Scheme expressions. An
+unchanged declaration, the same factory procedure, and successful issued
+read replay can coexist with a changed result. For example, a factory can
+read a captured Scheme cell without a POO read or a source observation.
+The linker test exercises that case with the real scope construction guard.
+A reuse route needs a construction representation whose inputs are enforced
+by the runtime. The existing guard alone only certifies recorded support.
+
+** Native role-context handoff
+
+The source-backed selection's =.refresh= creates a new directory context,
+publication index and admission cache. Its reader may request an already
+initialized Gerbil role context from the predecessor. It does not copy the
+predecessor's linked records, admission evidence or directory guards.
+
+=source/role-context.ss= owns the transfer algorithm. The reader supplies
+Gerbil's actual import traversal and its recorded source associations. Every
+private input is resolved through the receiving source tree: Module ID and
+owner root must agree, and the input's byte/package checks must pass. Disabled
+owners remain refusals. Changed inputs use ordinary fresh preparation.
+Canonical compiler imports use the receiving reader's existing captured
+context identity and compiler-source checks, not a filename exemption.
+The receiving reader preflights all private context bindings after source
+guards run and before installing any of them. If a visited path already has a
+different native context, transfer declines the whole batch and ordinary source
+resolution continues with the receiving reader's bindings.
+
+This reuses native module initialization, not arbitrary =core.link= results.
+A named POO value exported by a role can keep identity across generations;
+an Interface expression which constructs a new object still runs again.
+JsonSchema publishes a named configured scope from its config role. The
+linker calls the Interface constructor and both applicable Types afresh, and
+rebinds publication hooks to the new selection. A hidden mutable Scheme
+capture never becomes a cached construction by this mechanism.
+
+The correspondence uses =IncrementalRoles.constrainedRoleConstruction= for
+exact resolved input identity and =freshEdgeAdmission= for separate authority.
+=ResolvedRoleReuse= owns transition ordering and the unsafe bytes-only control.
+These models do not certify arbitrary initializer effects or concurrent
+filesystem mutation. The Scheme consumer gate is:
+
+#+begin_src sh
+just build-core
+just test-file t/opentofu-publication-test.ss
+just test-core-file t/module-scope-link-test.ss
+#+end_src
+
+The product gate edits Review in the same process and checks JsonSchema scope
+and hot procedure identity, new admission evidence, actual link-stage counts,
+source import counts and single build collection. These are acceptance
+assertions; implementation presence alone is not a passing result.
+
+The current pinned runtime exposes a further boundary: =Function.validate=
+uses =wrap-function= to allocate a fresh checking procedure on each call.
+=Record= rebinding then returns a fresh normalized receiver when those fields
+change identity. Therefore stable role construction does not imply stable
+admitted receiver or procedure identity. The real consumer assertion rejects
+the unpatched release. It requires the normalized candidate and fresh admission
+evidence from the receiving graph.
+=normalizationAllocationNotIdentity= makes that missing implication explicit:
+equal payloads with different allocation identities are not equal handles.
+The pure construction theorem alone is not a proof of native =eq?=.
+
+** Checked role publication
+
+The stable value should be a checked receiver owned by role initialization.
+Construct and normalize it through the native Type at that boundary, then
+submit the checked receiver to ordinary admission in each selected graph.
+Receiver-bound Record validation already returns its input when all normalized
+fields retain identity. It is therefore insufficient to deduplicate repeated
+wrapping of the raw procedure. Revalidating the already checked Function
+under the same effective policy must return that checked procedure itself.
+
+The native Function design must establish wrapper provenance and authenticate
+its effective policy before retaining it. The policy includes the issuing Type,
+its ordered effective signatures, and the validation support those signatures
+observe. A different Type, changed support, or an unauthenticated procedure
+must take the ordinary checked construction path. Retaining a procedure must
+preserve argument and result validation on every invocation and cannot collapse
+wrappers contributed by distinct Contracts. Type admission, dependency
+obligations, publication binding and currentness still run in the receiving
+graph. The linker has no authority to recognize or intern wrappers.
+
+The native acceptance case is a checked Record containing a Function.
+Revalidation under unchanged support must preserve both identities. A changed
+signature and a distinct Function Contract must exercise the ordinary checking
+path. Rejected arguments must leave the target uncalled, and a bad result must
+still be rejected. Once those controls pass, publish a role-owned checked
+JsonSchema receiver and run the existing strict product gate. The raw-to-checked
+allocation is allowed to change identity. The stronger cross-generation promise
+applies to the already checked receiver and its procedure under unchanged
+support, with separately acquired evidence in every generation.
+
+The native implementation records provenance only for issued wrappers.
+Validation reads the current signature policy and checks the original native
+read support before returning the same procedure. If the same issuer's policy
+has changed, it constructs a new wrapper around that issuer's original target.
+A different issuer wraps the supplied procedure, preserving both Contracts.
+
+JsonSchema stores its checked methods as explicit assignments on the configured
+role instance. Record validation carries those assignments into its temporary
+receiver for field checking. Prototype refinement still uses the underlying
+method definitions. The module pin and the qualified local runtime remain
+separate until the native change is available in a release.
+
+The strict OpenTofu/JsonSchema/Review gate passed using the pinned source plus
+the local native patch. Construction, admitted receiver and hot procedure all
+retained identity. Review and JsonSchema received fresh admission evidence.
+The edited source, disabled provider and missing build source controls all ran
+under the existing 120-second test limit. The full Core rebuild attempt reached
+its separate 300-second limit. This result qualifies the product route with
+the patched runtime and does not qualify a released pin.
+
+** Full Core rebuild with the same native patch
+
+A fresh output prefix contained only the already built patched gerbil-poo
+dependency and its package metadata. Core completed in 283.87 seconds under
+the existing 300-second limit. Bootstrap and graph preparation reached Make
+at 111.43 seconds. Make took 168.29 seconds and scheduled 262 distinct compile
+targets and 563 distinct backend jobs. The earlier timeout likewise had no
+duplicate target or backend job in its recorded prefix.
+
+The reader deferred 814 redundant tool-input checks during the private owner
+projection. It still checked the exact input after enrollment and before
+exposing the compiler context. Open observers and unqualified metadata kept
+the original early check. The measured run separates this reduction in check
+count from the cost of bootstrap and necessary native compilation. It does not
+establish a wall-clock speedup against the earlier incomplete build.
+
+The strict product gate then used those newly generated Core products with
+the same patched dependency. Its first attempt reached refresh and exhausted
+the existing 120-second limit and termination grace. The repeat completed in
+53.72 seconds with all three identity assertions true, new admission evidence
+for both roles and the source, disablement and missing-build refusals intact.

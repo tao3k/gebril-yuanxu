@@ -1,0 +1,130 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Authority-provenance recovered-head floor
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Authority-provenance recovered-head floor
+
+** Covered-origin floor requirement
+
+An authority-provenance summary that claims to cover a recovery origin MUST
+place its =minimumPosition= at or after both that origin's committed position
+and its authority-validated recovered position.  A committed-position bound
+alone proves that descriptor obligations have a legal starting point; it does
+not prove that the summary includes the recovered head already accepted by the
+origin's recovery authority.
+
+Every provenance-preserving join MUST retain this recovered-head floor for each
+left and right origin.  Consequently the N-way join cannot regress beneath any
+covered origin's validated recovery while still claiming that origin as
+covered.
+
+** Commit-bound summary counterexample
+
+=commitBoundProvenanceSummaryPermitsRecoveredHeadRegression= retains the old
+summary shape as an explicit weak contract.  Given an authority-issued origin
+with =committedPosition < recoveredPosition= and an empty committed registry,
+it constructs a summary that covers the origin while setting
+=minimumPosition = committedPosition=.  All old fields close, yet the summary
+minimum remains below the validated recovered head.
+
+The counterexample proves that authority identity and committed descriptor
+disposition do not imply recovered-head coverage.
+
+** Recovered-head floor Typst model
+
+#+begin_export typst
+$
+  "CoveredOrigin"(s, o) implies
+    o."committedPosition" <= s."minimumPosition"
+    and o."recoveredPosition" <= s."minimumPosition"
+
+  "Join"(l, r)."minimumPosition" :=
+    max(l."minimumPosition", r."minimumPosition")
+
+  "CoveredOrigin"("Join"(l, r), o) implies
+    o."recoveredPosition" <= "Join"(l, r)."minimumPosition"
+$
+#+end_export
+
+** Recovered-head floor Mermaid closure
+
+#+begin_src mermaid
+flowchart LR
+  O["Authority-issued recovery origin<br/>committed c, recovered r"]
+  W["Commit-bound weak summary<br/>minimum = c"]
+  X["Recovered-head regression<br/>minimum less than r"]
+  S["Authority-provenance summary<br/>minimum at least r"]
+  L["Left provenance summary"]
+  R["Right provenance summary"]
+  J["Joined summary<br/>minimum = max(left, right)"]
+  A["Interval admission witness"]
+
+  O -->|"old status: only c covered"| W
+  W -->|"permits"| X
+  O -->|"required status: r covered"| S
+  X -.->|"rejected by recoveredHeadCovered"| S
+  L -->|"preserve every left recovered head"| J
+  R -->|"preserve every right recovered head"| J
+  S -->|"recovered-only descriptor"| A
+  J -->|"N-way provenance remains bounded"| A
+#+end_src
+
+** Recovered-head floor decision
+
+- Preserve =CommitBoundAuthorityProvenanceReplicaRegistryCheckpointSummary= as
+  the named weak counterexample owner.
+- Strengthen the existing v1
+  =AuthorityProvenanceReplicaRegistryCheckpointSummary= with
+  =recoveredHeadCovered=.  Do not introduce a parallel v2 summary.
+- Make =authorityProvenanceReplicaSummaryOfRecovery= prove the recovered bound
+  by its exact =positionMatchesRecovery= equality.
+- Make =joinAuthorityProvenanceReplicaRegistryCheckpointSummary= propagate the
+  left or right recovered bound through the corresponding =Nat.max= branch.
+- Prove a covered summary cannot be below an origin's recovered head, and expose
+  explicit left/right join theorems for N-way composition.
+- Derive recovered-only descriptor admission from any covered origin and the
+  summary minimum.  The summary's recovered-head floor and the governed
+  lineage's successor obligations are therefore available together.
+
+** Recovered-head floor checklist
+
+- [X] Preserve the commit-only summary shape as an explicit weak contract.
+- [X] Construct a covered origin whose weak summary minimum is below its
+  recovered position.
+- [X] Require every strong summary to cover each origin's recovered head.
+- [X] Prove singleton recovery summaries satisfy the recovered-head floor.
+- [X] Prove join preserves the floor for left and right origins.
+- [X] Prove recovered-head regression contradicts the strong summary.
+- [X] Project interval admission provenance from a covered summary origin.
+- [X] Reverify the 45-root replica AXLE envelope.
+- [X] Reverify enterprise/full Lean aggregates and Org/diff gates.
+
+** Recovered-head floor Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  for 10 jobs in 2.3 seconds with no warning or error.
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI accepted the exact
+  five-source replica-join envelope with 45 roots and 164 declarations: 95
+  source and 95 environment declarations, no proof-base declaration/import,
+  failed declaration, or Lean diagnostic.  Closure digest:
+  =sha256:3b690850794ddfc6a4ad7ffb651e3d37d9b67ed3791e30a9ed2acfa5ef285ba0=;
+  bundle digest:
+  =sha256:e57031e6b667d11becdeb6fc57f9c4bfe82bb3957b29a3191f57ef3a9bb38951=;
+  canonical source digest:
+  =sha256:3b3c06db36db4700e534da0d1012e3a43dd7a4c610e8efce4b90781a530a423f=;
+  independent bundle digest:
+  =sha256:7121ce67b4b2d7a08233eacfd5fba8ab3c02edbf072c46eff68d9611f4cd1e5f=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs in 7.8 seconds;
+  =lake build= exited 0 for 587 jobs in 6.2 seconds.  Both reported only the
+  existing =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa=
+  warning and no error.
+- =asp org lint= accepted this RFC with =[ok] orgize lint=, including the
+  embedded Typst and Mermaid blocks.  =git diff --check= and
+  =git diff --cached --check= both exited 0.
+

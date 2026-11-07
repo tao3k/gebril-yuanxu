@@ -1,0 +1,142 @@
+#+title: 10.04 Designing the Module System: Interfaces, Context and Contributions
+#+language: en
+#+property: DOCUMENT_ID 10.04
+#+date: [2026-10-17]
+#+property: STATUS research-synthesis-no-syntax-or-implementation-freeze
+
+* Object of design
+
+The [[file:10.05-guestbook-context-and-contribution-design.org][Guestbook design study]] applies the five improvements to a single case and
+compares dependency-scoped lexical instantiation with a universal args tree.
+The [[file:10.06-human-agent-module-authoring.org][Human-Agent study]] makes assisted module creation and review an explicit
+design goal. These refine the proposals below; neither adds an implementation.
+
+We are designing a Module System implemented with Scheme and POO. Language
+expressiveness is one enabling mechanism. The unit of success is an independently
+maintained module that ordinary users can configure, combine, inspect and upgrade
+without learning its private implementation or hand-linking execution phases.
+
+Platform evidence belongs to independent dossiers: [[file:../../20-29-ecosystem-research/23-terraform/23.01-index.org][Terraform]],
+[[file:../../20-29-ecosystem-research/20-nixos/20.02-official-service-module.org][official NixOS modules]], [[file:../../20-29-ecosystem-research/21-devenv/21.01-index.org][devenv]] and [[file:../../20-29-ecosystem-research/22-flox/22.01-index.org][Flox]]. The first has a deeper pinned source
+trace; the latter three are focused source/document studies, not completed runtime
+comparisons. Do not flatten their differing semantics into a feature leaderboard.
+
+* What the real ecosystems make us account for
+
+| Evidence owner | Mechanism worth studying | Requirement for our design |
+|----------------+-------------------------+----------------------------|
+| Terraform AWS module | Input/output dependency inversion | Stable interface requirements, not private-resource lookup |
+| NixOS PostgreSQL | Options, migrations, state-sensitive defaults, system contributions | Discoverability and compatibility are maintained public responsibilities |
+| devenv PostgreSQL | Service config, client environment, readiness and shutdown | Export final connection values; keep runtime lifecycle distinct |
+| Flox manifest | Section-specific merging, explicit included updates, merged view | Explain replacement/refinement and show the effective result |
+
+These are summaries of the linked owners, not extra claims about measured
+performance or arbitrary ecosystem scale.
+
+* Unified context: three views with one authority
+
+The selected graph can own multiple views without giving every phase every value:
+
+1. Selection view: known source identities, enabled/disabled decisions and allowed
+   features. It cannot require evaluating the configuration whose graph it selects.
+2. Interface view: admitted dependency scopes and delayed public values. A module
+   instance gets the dependencies it requires, with namespace mounts as views.
+3. Contribution view: effective configuration and selected build/plan inputs, each
+   retaining its owner and source. Runtime execution still requires an explicit
+   boundary; interface loading cannot start Ops or service processes.
+
+These are conceptual responsibilities, not a proposed three-object public syntax.
+The root init owns composition choices. A module never reloads that root. Package
+availability, discovery, selection, linking, forcing, building and running remain
+separate events even if one high-level API orchestrates a permitted sequence.
+
+* Dependency semantics before automatic discovery
+
+An EC2 instance requiring a VPC interface, a value reading its subnet ID, and an
+operation waiting for network completion are different relations. The same applies
+to Guestbook: publishing a Redis interface, deriving its Service port and waiting
+for readiness cannot be represented by one undifferentiated edge.
+
+Free-reference extraction can help identify direct lexical demands. It cannot
+soundly determine every dependency of arbitrary higher-order Scheme functions.
+Deferred references must not automatically become eager link edges. Dynamic
+lookups need an explicit restriction or observed-demand policy, with diagnostics.
+Rejecting a selection cycle does not settle value recursion or controller loops.
+
+* Contribution semantics and Contracts
+
+Ordinary assignment should remain ordinary assignment. A deep path update must
+retain untouched intermediate objects; transformations based on inherited values
+must declare that intent. Neither behavior decides every multi-author conflict.
+Document scalar disagreement, ordered list transforms, structured identity updates,
+deletion, defaults and incompatible Contract requirements separately.
+
+Contracts carry field/relationship requirements; option discovery also needs
+documentation, defaults, source locations, deprecation and supported extension
+intent. Reuse Contract/Schema data where possible without pretending a predicate
+alone provides that complete UX. Authored closed fields and open dependency
+interfaces need distinct policies, as the Terraform object-conversion evidence shows.
+
+Module code should contain reusable features and publication. Profiles package
+reusable configurations; Scenarios select/connect Profiles. Role directories
+clarify ownership but do not substitute for interface and instantiation semantics.
+
+* Scale and invalidation
+
+At thousands of publications, avoid enumerating every Profile combination in
+advance. Resolve selected combinations and demanded interfaces; index publications
+without forcing their values. A metadata index is not a license to eagerly compile
+all provider Contracts. Measure discovery, first selected load, first admission,
+warm reuse, invalidation and execution independently.
+
+Cache reuse must bind the effective instance/context and relevant source/Contract
+identities. A parent resource preview must never certify its refined child. Changing
+an exported port can invalidate dependants without invalidating unrelated language
+Profiles. Changing the dependency set, removing a module and upgrading a renderer
+are essential controls. Exact dependency recording is itself a cost to measure.
+
+* Issues and Engineering Limitations
+
+| Reference owner | Marks | Consequence to test |
+|-----------------+-------+---------------------|
+| [[file:../../20-29-ecosystem-research/23-terraform/23.05-issues-and-user-costs.org][TF-01]] | MAINTAINER-EXPLAINED; NOT-REPRODUCED | Broad dependency barriers can propagate unknowns |
+| [[file:../../20-29-ecosystem-research/23-terraform/23.05-issues-and-user-costs.org][TF-02]] | OPEN-ENHANCEMENT; NOT-REPRODUCED | Openness must not silently defeat typo checks |
+| [[file:../../20-29-ecosystem-research/20-nixos/20.02-official-service-module.org][NX-01/02]] | ISSUE-REPORTED / SOURCE-WARNING | Selection phase and global context need boundaries |
+| [[file:../../20-29-ecosystem-research/21-devenv/21.02-composition-and-postgres.org][DV-01]] | HISTORICAL-CLOSED; NOT-REPRODUCED | Well-typed default changes can break consumers |
+| [[file:../../20-29-ecosystem-research/22-flox/22.01-index.org][FX-01/02]] | DOCUMENTED-SEMANTICS; NOT-REPRODUCED | Removal and lifecycle edge meanings need explicit policy |
+
+This synthesis owns the response, not duplicate issue status. Follow each owner
+for source URLs, versions, dates and evidence qualifications.
+
+* Reflection: why build this, and what would count as improvement?
+
+The purpose is to reduce knowledge maintained in several places while allowing
+enterprise-specific extension. POO can preserve useful defaults and functions
+can express transformations without a growing patch DSL. Bounded hygienic macros
+can project the protocol into role files. Those are possible implementation
+advantages, not substitutes for designing the protocol.
+
+We would have failed if users must understand provenance records to change an IP,
+if contributors repeatedly declare the same exports/requirements, or if a unified
+namespace hides dependency coupling until runtime. We would also fail by removing
+all abstraction: complex domain consumers genuinely need reusable contracted
+objects and deliberate behavior refinement.
+
+* Conclusion and Onwards
+
+Before choosing syntax, answer these architectural questions with matched cases:
+
+1. Can the same AWS network Profile feed two independently configured Scenarios
+   without alias or cache collisions, while keeping source and Contract identity?
+2. Can changing Guestbook's Redis port update clients and resources from final
+   values, with a precise error when a required connection is missing?
+3. Can disabling a required source explain the dependant chain before loading or
+   executing it, while unrelated branches remain unforced?
+4. Can a preview explain the winning definition, discarded/default values and
+   deferred provider checks without exposing internal bookkeeping?
+5. Can we maintain migration and extension guarantees across module upgrades,
+   rather than relying on access to every implementation slot?
+
+These answers require targeted implementation and runtime evidence later. The
+current task changes research documents only and freezes no new public syntax.
+

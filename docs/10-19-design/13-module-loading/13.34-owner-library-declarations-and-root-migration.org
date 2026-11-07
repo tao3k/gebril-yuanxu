@@ -1,0 +1,137 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.34 Owner Library Declarations and Retained Root Migration
+#+language: en
+#+date: [2026-11-03]
+#+property: STATUS owner-library-native-gate-verified
+
+* Owner contract through existing Build roles
+
+[[file:13.33-selected-input-retry-and-incremental-acceptance.org][13.33]] closes selected-input lifecycle controls. This increment moves the
+first real Lab public library declaration into its managed owner using the
+existing Build role and BuildContributionContract. It adds no public macro,
+loader or build registry. Consumer lookup remains native POO through init.exports.
+
+Nix declares its public =nix/progress.ss= library relative to its native
+=agentic-ai-lab/modules= package. Its Interface declares
+=projections: (list Build)=. Its optional =build.ss= supplies a POO contribution:
+
+#+begin_src scheme
+(def Build
+  (.o kind: 'module/build roots: '()
+      library-roots: '("nix/progress.ss")))
+#+end_src
+
+=roots= contains only additional owner-relative Scheme targets with any native
+options; it is not a repetition of the default role vector. =library-roots=
+names package-relative public libraries; the existing package metadata/source
+association and native expansion determine their identity and dependency
+closure. These two existing path bases must remain distinct.
+
+The selected graph consumes Build only in the build-publication phase. Source
+bytes for that role join currentness even when the role is not itself a native
+library target. Runtime import, namespace enumeration and ordinary business
+scope access must not import or demand Build. A public library shared with
+another owner is deduplicated under existing identity/option compatibility
+checks; the first entry's attribution is not exclusive intellectual ownership.
+
+* One-root migration, with coverage evidence
+
+Remove only =modules/nix/interface.ss= from Lab's retained public-root vector:
+selected Nix already supplies this configuration/compiler entry, its default
+roles and the declared public library. The default Lab init
+currently auto-selects its maintained Modules; that behavior is unchanged.
+Independent downstream selection must derive the public library from Nix and
+native imports without reading Lab's default init or retained build specification.
+
+The Nix native target set is expected to remain unchanged: its role imports
+already require this library. This migration establishes declaration
+authority, not a compiler-count improvement. The native gate derives the complete
+target list from projection and compares actual compilation with that list.
+It must also observe the Build role in graph inputs, attribute the library entry
+to Nix, and verify that the metadata-only Build role is not a compiled target.
+A separate downstream selecting Nix as disabled must compile no Lab targets.
+
+No other retained root is removed in this increment. In particular the three
+special native targets audited in 13.33 retain their existing declarations.
+Their ordinary library facades do not yet establish managed compilation owners.
+For C headers and similar resources, an include option alone does not establish
+byte/currentness coverage. A migration must retain or introduce explicit observed
+input association before claiming complete FFI ownership. This increment does
+not add a partial resource protocol or claim native FFI acceptance.
+
+The first native probe rejected a =nix-contracts.ss= library root: Nix's nearest
+native package metadata belongs to =agentic-ai-lab/modules=, while that contract
+library belongs to the enclosing =agentic-ai-lab= package. Keep that refusal,
+not an implicit ancestor search or =../= escape. The parent-package retained
+contract root remains present and Nix still obtains it through native imports.
+Future cross-package public roots require explicit admitted package/source
+association; this increment does not infer one from directory ancestry.
+
+* SysML, Lean and Scheme correspondence
+
+SysML OwnerPublicLibraryMigration allocates declaration, path-base and phase
+responsibilities. InterfaceRoots extends its existing root algebra with the
+selected owners' contribution roots. Every demanded compiler node must descend
+from an Interface or contribution of a selected owner. Existing discovery and
+SelectedPackages eligibility/compatibility laws remain the plan authority.
+
+These are pure ancestry laws. Scheme must establish the owner mapping, Build
+phase guard, admitted paths, original package/source identity and actual compiler
+inputs. Native tests retain the fresh-process POO use, cold/hot builds, downstream
+output ownership, cleanup isolation and upstream byte checks from 13.32.
+
+The expanded native gate reports completed, checked downstream operations as
+real progress through the existing execution-progress protocol. Spec, owner
+inspection, hot builds and use can legitimately finish without compiler events.
+Only a zero-status result without error markers advances the operation count;
+there is no heartbeat while a child runs. The existing 60-second idle,
+180-second child and 600-second file limits remain unchanged. Earlier idle
+failures and the separate direct native compile are diagnostic evidence, not
+successful full-gate receipts.
+
+* Native and proof receipt (2026-11-03)
+
+The expanded real Lab downstream gate passed in the previously built isolated
+Core runtime, with fresh selected target output environments:
+
+#+begin_example
+LAB-OWNER public-root=nix/progress owner=nix build-role=observed metadata-only=ok
+LAB-DOWNSTREAM selected-targets=10 hot=0 fresh-use=ok clean-isolation=ok upstream=unchanged owner-library=ok disabled-lab-targets=0
+MODULE-OK t/selected-package-downstream-test.ss
+HARNESS-OK ("t/selected-package-downstream-test.ss")
+OK
+#+end_example
+
+The process exited zero, with no case/check/harness, heap/stack overflow or
+unexpected error markers. The test observes the actual Build source in graph
+inputs and the public entry's Nix owner, then compiles exactly the projected
+target set. The independent disabled consumer uses a separate source directory
+and output environment without modifying either selected consumer environment.
+Both selected environment use and upstream byte preservation still pass after
+that disabled build. This is native source/build selection and product evidence,
+not a source-code text assertion about the retained-root vector alone.
+
+Lean completed 216 jobs and audited 8690 declarations, with shape checks and
+standard Lean axioms only. The audited list includes contribution origin and
+complete selected Interface-plus-contribution ancestry. These proofs retain the
+native path/phase/input premises stated above.
+
+The existing focused =module-build-role-test.ss= and root-owned
+=production-build-boundary-test.ss= also passed through their heap-fenced Just
+entrypoints, with MODULE-OK, HARNESS-OK and final OK and no failure/overflow
+markers. The Build-role gate retains runtime/build phase isolation, native
+library option inheritance, source currentness and recursive-root refusal.
+No full Core/root suite or complete default Lab build is claimed for this cohort.
+
+The original product-specific receipt above is historical. Product integration
+is now product-owned. Reproduce the independent Core downstream gate with its
+declared native prerequisites already provisioned:
+
+#+begin_src sh
+just test-thousand-package-builds /absolute/private-runtime
+#+end_src
+
+This is not remote deps --install, minimal default installation, full Lab
+default-build qualification, all-root migration or cross-owner issued
+publication acceptance. Raw diagnostic/qualification logs remain local.

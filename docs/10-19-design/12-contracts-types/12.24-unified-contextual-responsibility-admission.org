@@ -1,0 +1,139 @@
+#+title: 12.24 Unified Checked-Value and Contextual Responsibility Admission
+#+property: DOCUMENT_ID 12.24
+#+language: en
+#+property: STATUS implemented-with-focused-source-tests-no-loader-or-push
+
+* One producer, separate responsibilities
+
+This implements the producer convergence identified in
+[[file:12.23-contract-mainline-resumption.org][the resumed Contract audit]]. [[file:../../../types.ss][Core types.ss]] now owns one admission producer.
+The separate yuanxu-object-admit implementation and intermediate
+YuanxuResponsibilityContract. are removed, without forwarding definitions.
+The existing exported prototype-aware Contract directly inherits YuanxuContract.
+Its domain consumers keep their actual prototype/Contract declarations; there
+is no new alias or wrapper for those consumers to adopt.
+
+Public ObjectContract. remains the field checker and normalizer. Core's
+responsibilities slot is a map of contextual child admission Contracts, not a
+second field Schema. An empty map is the default on YuanxuContract. Ordinary
+field Types belong in its public value-contract. Only fields with additional
+contextual requirements need child Core Contracts and child evidence.
+
+The maintained dependency declaration remains gerbil-poo =26b4b58=; this change
+does not claim an update to a newer remote revision or modify the public library.
+
+* Admission order and returned value
+
+The shared producer performs the following sequence:
+
+1. Call public validate on value-contract once, when present. Retain its returned
+   checked object, which may differ from the input object.
+2. Classify that checked object. Refusal keeps child responsibilities cold.
+3. Admit each declared contextual child from the checked object's effective
+   slots, using the same Context. Preserve every child receipt, including refusal
+   and missing-responsibility receipts, with its actual descriptor reference.
+4. If the children accept, run the descriptor's own obligations and the existing
+   Context obligation dispatch. A root or child Context refusal rejects the root.
+5. Produce the existing validation evidence with checked candidate, actual
+   admission-contract and Context. Attach responsibility-evidence to that same
+   receipt; only rejected children enter root failures/diagnostics.
+
+Publication still uses [[file:../../../admission/publication.ss][AdmissionPublication.]] and public bind-evidence. There is
+no validate-then-validate wrapper around the producer. Existing refusal preserves
+the previous published value. Actual descriptor binding, rather than equality
+of diagnostic labels, determines which Contract admitted a candidate.
+
+The no-repeat claim is precise: the producer invokes a node's declared public
+value-contract once per admission. It does not eliminate public ObjectContract's
+necessary structural/final diagnostics, cache arbitrary validation effects or
+deduplicate repeated requirements authored by a domain. Do not declare the same
+field value check both in a public root Schema and as a second child normalization
+policy. Use a child Core Contract for the additional contextual requirement.
+
+* A checked child cannot be detached from its parent
+
+Normalization belongs to the public value-contract before contextual admission.
+The child evidence candidate must be the exact value obtained from the checked
+parent slot. If child admission independently replaces that value, Core raises
+a TypeError with contextual-child-replaced and the responsibility name.
+
+This refuses a previously unsafe case: publishing a parent that still contains
+the original child while its receipt describes a separate normalized child.
+It neither patches the parent behind the public validator nor validates the
+whole parent again. A domain requiring child normalization puts it in the
+public root ObjectContract responsibilities; the subsequent contextual child
+admission inspects the resulting value. Arbitrary custom .admit methods remain
+responsible for their semantics and are not authenticated by this mechanism.
+
+* Concrete regression: public normalization and a cached parent
+
+[[file:../../../t/admission-binding-test.ss][The binding suite]] uses the real public ObjectContract and Type protocol:
+
+#+begin_src scheme
+;; From the test: Parent is a maintained object; its resource is forced first.
+(.def (Parent @ proto name)
+  name: "parent" resource: name)
+(def parent-cached (.get Parent resource))
+(.def (raw @ Parent) name: "raw")
+
+;; Name is a counted public Type whose .validate returns "checked".
+;; Normalize calls this ObjectContract's public .validate and retains its result.
+(def fields
+  (.cc ObjectContract.
+    required-prototype: proto
+    responsibilities: (.o name: Name resource: String)))
+
+;; Contextual policy is maintained independently of the public field Type.
+(def descriptor
+  (.cc YuanxuObjectContract.
+    identity: 'test/checked-root proto: proto value-contract: Normalize
+    responsibilities: (.o name: leaf)))
+(def evidence (.call descriptor .admit raw context))
+#+end_src
+
+This is a shortened excerpt from an executable regression, not a new authoring
+DSL or a standalone file with undefined dependencies. Full fixture definitions,
+including Name, Normalize, leaf and context, are in the linked test source.
+
+The root validator and Name field validator each execute once. The parent cache
+remains "parent", raw.resource is "raw", and the checked resource is "checked".
+The root candidate and classification candidate are the returned checked object.
+The child receipt carries "checked", the exact leaf descriptor and the same
+Context. Context dispatch runs for both accepted child and root descriptors.
+Separate controls reject at either level, preserve child refusal evidence and
+reject detached child normalization. Existing missing-child evidence remains.
+
+* Focused evidence and limits
+
+The changed source is exercised through the existing heap-fenced =just test-file=
+entrypoint. Tests run serially using the existing isolated source namespace,
+original Standard Library and current Core source. Passing means natural exit 0,
+MODULE-OK, HARNESS-OK and final OK without error/heap/stack markers; an earlier
+partial or failed run is not counted as a pass.
+
+| Suite | Purpose |
+|-------+---------|
+| t/admission-binding-test.ss | Five cases: exact descriptors, missing children, counted public normalization, root/child Context refusal and detached-child refusal. |
+| t/core-test.ss | Existing prototype-aware Core consumers and their independent Core regressions. |
+| t/module-json-schema-publication-test.ss | Real selected JsonSchema publication, scope Contract and public module consumers. |
+| t/admission-publication-test.ss | Existing platform Context/publication and refusal regression. |
+| t/admission-checked-publication-test.ss | Seven completion-checked cases: checked receiver, parent cache, actual references, replay/source/Schema refusal and preservation of the previous value. |
+
+All five listed suites passed with the required completion markers and natural
+exit 0. The binding suite was rerun after its final public-field/context-only
+separation assertion; publication and module consumers passed with the final
+producer, including the detached-child refusal guard. =git diff --check= passed.
+
+These are source-level focused controls, not a full build, provider realization,
+AWS deployment, runtime Loader qualification or a new Lean proof. Finite declared
+contextual responsibilities are traversed; arbitrary cyclic Contract graphs do
+not acquire automatic termination from this change. Public recursive machinery
+and a justified graph-to-validation mapping remain separate integration work.
+
+Initial test edits failed on an incomplete form and an incorrectly specified
+Context method arity; the slot method takes contract and candidate because the
+receiver is already dispatched. An intermediate implementation also incorrectly
+required classifier diagnostic identity to equal descriptor identity, breaking
+existing publication controls. That additional requirement was removed; actual
+Contract reference binding is preserved. These failures are not successful gates.
+Raw execution output is not stored in source control.

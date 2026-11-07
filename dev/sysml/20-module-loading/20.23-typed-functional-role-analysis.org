@@ -1,0 +1,247 @@
+#+title: 20.23 Typed Functional Role Analysis
+#+language: en
+#+filetags: :modules:construction:contracts:functional:retention:
+
+* Problem and construction boundary
+
+The last capacity result remains a failed 10000-declaration Case: the 600-second
+limit ended the run after the 3100 checkpoint. No startup-only explanation or
+larger heap establishes capacity. Build execution is measured separately.
+
+The old authoring batch constructed and validated an admission object for each
+datum, immediately projected its diagnostics, then constructed and validated an
+aggregate object. Its reading region correctly retained the original reads of
+these objects. The fix must avoid unnecessary construction, not delete records
+from an already-issued dependency graph.
+
+This change makes diagnostic analysis the result of the existing extensible
+Generic. POO admission objects remain the public admission result; they
+are created where a caller actually requests admission.
+
+* One protocol, two kinds of public demand
+
+=module-system/authoring/admission.ss= now declares:
+
+#+begin_src scheme
+(def YuanxuModuleAuthoringDiagnostics (List YuanxuModuleAuthoringDiagnostic))
+
+(.defgeneric module-authoring-analyze (executor role interface datum)
+  (protocol ModuleAuthoringAnalysisProtocol))
+
+(.defmethod-bundle ModuleAuthoringCoreMethods
+  ModuleAuthoringAnalysisProtocol
+  (authoring-method ModuleSourceRole. yuanxu-module-authoring-diagnostics/common)
+  (authoring-method ConfigSourceRole. yuanxu-module-authoring-diagnostics/config))
+#+end_src
+
+The internal =authoring-method= remains a =defrules= lowering to ordinary
+=.defmethod=. It owns the real body and direct Function entry together. Default
+methods return diagnostics instead of calling an admission-object wrapper.
+Neither a contributor tag nor a cached admission result selects the Function
+route: existing live declaration/observer checks and per-row applicability stay
+in place. Changed/open methods still use the open Generic path.
+
+=yuanxu-module-authoring-analyze-datum= resolves the current executor/role,
+invokes that crossing, and applies =validate YuanxuModuleAuthoringDiagnostics=
+to EVERY result. A contributed non-list or malformed diagnostic is rejected.
+
+Public demand determines construction:
+
+The private =with-authoring-analysis= resolves executor/role once and passes
+the actual role together with checked diagnostics to its consumer. A contributed
+method may rebind the Profile while running; single admission must still describe
+the role dispatched for that datum. This avoids both repeated lookup and an
+incorrect association with the replacement role. The runtime rebinding control
+exercises the real method registration and mutation path.
+
+| Entry | Per-datum work | Admission objects constructed |
+|-------+----------------+--------------------------------|
+| analyze-datum | Generic/Function analysis and result Type validation | zero |
+| admit-datum | typed analysis | one |
+| admit-datums | typed analysis for each datum in order | one aggregate |
+| admit-port | the same typed analysis through the existing streaming reader | one aggregate |
+
+The three =admit-= entry signatures and their final POO result shape remain.
+Batch and port consume the same diagnostic lists; the order-preserving map/fold
+and existing streaming helper are retained. No receipt pool, dynamic strategy
+parameter, environment input, Builder or approval cache is introduced.
+
+* Explicit extension-contract migration
+
+This is a directed protocol change, not a claim that arbitrary old receipt
+callbacks can be erased without changing their meaning:
+
+- =ModuleAuthoringAdmissionProtocol/Generic= are replaced by
+  =ModuleAuthoringAnalysisProtocol/Generic=; there are no compatibility aliases.
+- A method bundle returns typed diagnostic lists, rather than a POO admission
+  object. =call-next-method= combines diagnostic contributions in normal method
+  order. The product's clinical contribution is migrated to =.defgeneric=,
+  =.defmethod-bundle= and =.defmethod=, removing its manual specializer/lambda
+  declarations and its extra receipt wrapper.
+- A requirement intended to reject each datum belongs in the analysis method
+  (which has executor, role, interface and datum) or in the typed analysis result
+  contract. It must not remain hidden in an aggregate-receipt shape predicate.
+- =YuanxuModuleAuthoringAdmission= still checks every actually constructed
+  admission object, including explicit single-datum demands. On a batch it
+  checks the aggregate once. Tests separately exercise per-datum refusal and
+  aggregate shape validation, making the ownership change visible.
+
+Ordinary Module declarations, config values and Scenario admission callers do
+not need another registry or another internal policy setting.
+
+* Proof allocation and limits
+
+** Closed Function profile selection
+
+The former Function branch still called
+=poo-clos-compute-applicable-methods= for every datum. That public query validates
+the Generic descriptor, builds distance rows and sorts them. The default source
+analysis has only two maintained primary methods with equal executor/interface
+prototype axes and an equal universal datum axis. Only role C4 distance differs.
+
+The production reader now issues two private Function profiles by calling that
+same public Generic query at initialization, on the real Config and Module role
+prototypes. Each profile retains the actual selected Method object. On a real
+datum, existing live MOP/observer authentication must still succeed; native C4
+checks executor/interface membership and selects the first indexed role parent.
+Profile declaration order and public identity labels do not decide specificity.
+No argument receiver, invocation value, acceptance result or new cache is saved.
+
+Changed registrations, modified policy payloads, open hooks, cold/unknown
+arguments and POO object datums retain ordinary Generic dispatch. The original
+issued metadata is still reobserved, and body/primary capture remains before the
+open ownership guard. Diagnostic output Type validation still runs per datum.
+This does not authorize removing either metadata authentication pass: the
+eligibility probe and original-record delivery have different error boundaries.
+
+=Queries.firstProfile_ordered_reference= and =firstProfile_least_position= prove
+the ordered/minimum-position lookup law; =profile_search_bounded_by_c4_depth=
+bounds visited C4 entries. The catalog has two identity keys, so each entry has
+bounded lookup work. These laws do not prove general CLOS qualifiers or infer a
+closed method set from a role name. The actual issued default-method snapshot,
+native prototype identity/order and equal non-role specializers are source
+correspondence conditions, checked by runtime controls. Existing RoleFunction
+Quint controls retain ownership of revision/observer/origin fallback and fresh
+per-datum checks; no second transition model is introduced.
+
+The maintained authoring test compares this route against the actual Generic
+on extra-parent, reversed-parent, shared-parent diamond and derived-chain roles.
+The pinned POO release's generators, property runner, shrinking/replay and
+=require-passed= own the seeded property check inside ordinary std/test. Late
+registration, contributed qualifiers, malformed results and Profile rebinding
+remain in the same consumer suite. The dispatch-work test separately measures
+original read support and preserves the open-observer delivery controls.
+
+The work reduction is removal of repeated generic-descriptor traversal and
+rank-vector/sort preparation on the closed route. A latency or capacity gain
+still needs the complete selected-graph consumer: unchanged retained read counts
+are expected because dependencies are not removed. Attribute fresh source
+authentication, compiler work and scheduling separately before claiming an
+end-to-end improvement.
+
+Reproduce through the existing Core entries (from the product checkout):
+
+#+begin_src sh
+just build-core
+just test-core-file t/module-authoring-test.ss
+just test-core-file t/module-authoring-dispatch-work-test.ss
+just test-core-file t/authoring-retention-test.ss
+just test-core-file t/module-incremental-cache-test.ss
+just test-core-file t/gitea-postgresql-publication-test.ss
+just test-core-file t/module-declaration-calibration-test.ss
+#+end_src
+
+The authoring property uses seed 19, 16 trials and the upstream shrink/replay
+protocol; its actual Generic invocation is the oracle. The calibration worker's
+=runtime-graph-start/ready= checkpoints isolate selected declaration work from
+Fixture, Harness and compilation. Keep their CPU/wall measurements and source
+counts as local artifacts. A single earlier control is not an isolated repeated
+benchmark, and unchanged authentication work may dominate the removed query.
+Do not call that evidence a thousand/ten-thousand capacity qualification.
+
+** Existing assurance owners
+
+SysML =TypedFunctionalAnalysis= assigns the obligations:
+
+- Lean =typedAnalysisPreservesOrder= establishes the concatenation order of
+  successful typed diagnostic results. =analysisRefusalStopsAggregation= and
+  =successfulPrefixCannotHideRefusal= establish propagation of a Type failure.
+  These are projections of typed results, not proofs of arbitrary Scheme code.
+- Existing RoleFunction QNT gates own route selection, revision/observer
+  fallback and its existing per-row invocation checks. They do not establish
+  that a result can be validated before it is produced. Actual result validation
+  occurs after analysis and before aggregation; Lean and runtime controls own
+  that result boundary. Existing ReadRetention gates continue to own source
+  freshness, both requirements, receiver isolation and unselected demand.
+- Runtime tests own dynamic registration, contributed qualifiers, malformed
+  result rejection, actual Type call counts and original read-owner identities.
+  A closed three-datum batch observes exactly one admission receiver and no
+  effective-method/invocation-frame carriers. Open observer tests retain their
+  per-datum carrier checks; no callback is suppressed.
+
+LeanPoo ContractConsequence retains the same value family when deriving proof
+consequences. It cannot, by itself, justify this construction/API change. The
+new result-flow proof and runtime controls are required; no runtime approval is
+reused through that theorem. SysML records allocation, not a parser-qualified
+execution model or a heap bound.
+
+* Qualification and capacity status
+
+The dependency authority is the formal release pin in =core/gerbil.pkg=
+(see [[file:20.29-published-issuer-and-core-alignment.org][20.29]] for the current qualified producer), with the corresponding Lake dependency owned by the proof
+project. No development overlay replaces that runtime for this refinement.
+Gerbil compiler sources and the release dependency pin are unchanged. =gerbil build=
+prepares the changed production dependency closure; focused tests use the
+existing =just test-file= entry with its original resource/watchdog policy.
+
+The first Lean attempt used the reserved identifier =prefix=; its corrected
+build passed. Existing authoring and dispatch controls passed, including the
+one-admission-owner assertion. RoleFunction QNT passed its six existing gates
+with the expected counterexamples. Local qualification artifacts live under
+=/private/tmp/yuanxu-entry-local-20261026/functional-analysis-*=.
+
+The existing 256-declaration Case and eleven real Gitea/PostgreSQL publication
+controls passed. The product's real authoring-consumer and Module User Interface
+suites also passed through their default entries. The authoring suite's first
+run caught a CyclicSlot in the migrated clinical
+example: =role:= shadowed the method parameter =role=. The corrected example
+captures the module value with runtime lexical shorthand and uses a distinct
+=role-name= binding. The negative run remains an artifact; no cycle or Type
+check was disabled.
+
+Both 256 runs used the same fixed producer and the existing fixture grammar,
+with fresh generated package/path identities. These are single-run diagnostic
+comparisons, not repeated identical-path qualification or exclusive ownership:
+
+| Measurement | Before | Initial typed analysis | Final paired-role source |
+|-------------+--------+------------------------+--------------------------|
+| Graph-ready elapsed seconds from Case entry | 35.534 | 36.870 | 33.975 |
+| Graph-ready CPU seconds from Case entry | 35.379 | 36.050 | 33.858 |
+| Held Graph live bytes after explicit GC | 294115128 | 273299816 | 273696592 |
+| Replay visits | 3606272 | 3386624 | 3386624 |
+| Role-body expansions | 512 | 512 | 512 |
+| Candidate local guards | 1536 | 1536 | 1536 |
+| Physical source reads | 79339 | 79339 | 79339 |
+| Source comparisons | 85412 | 85412 | 85412 |
+
+The final observed live-byte difference is 20418536 bytes; it is not a dominator
+measurement. The structural control establishes avoided receipt construction
+without merging original read identities. The initial cold run did not become
+faster. The final run is faster than that sample and the original baseline, but
+these individual runs do not establish a repeatable speedup. The final source-guard
+CPU span is 8.562 seconds and replay CPU span 4.806 seconds; these spans overlap
+and cannot be added as exclusive costs. Allocation accounting became invalid
+in all runs and is excluded. Build preparation is
+outside these loading spans.
+
+The unchanged expansion and source-check counts identify the remaining work:
+this change removes temporary analysis receipts, not the per-Module role/runtime
+context construction or repeated independent source authentication. The next
+attribution must follow those production spans, preserving checks across opaque
+callbacks. The full declaration Case still requires real Type preflight; making
+it a names-only query would change what it verifies.
+
+These measurements are not a substitute for the existing 10000-module Case.
+Capacity remains OPEN until that same Case
+completes under its original acceptance policy. No unsupported speedup,
+full-CI result, commit or push is claimed.

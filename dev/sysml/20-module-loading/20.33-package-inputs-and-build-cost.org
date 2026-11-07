@@ -1,0 +1,227 @@
+#+title: 20.33 Package Inputs, Native Build Cost and Remaining Capacity Failure
+#+language: en
+#+filetags: :make:modules:performance:assurance:
+
+* Fixed submitted baseline
+
+Core PR 19 at =838264394185d6d74470889cbcc84cdbf2874e9e= passed Linux build,
+bootstrap, objects, modules, contracts, Scenarios and runtime. Lean and all
+eight Quint shards passed. It did not pass the full platform gate:
+
+- macOS bootstrap's cold compile terminated at 63.314 s under the unchanged
+  60-second child limit, after a 23.795-second spec command.
+- Linux declaration capacity workers for 1,000 and 10,000 modules exceeded
+  their unchanged 180-second envelopes. No heap or deadline was increased.
+
+The already uploaded 256-module artifact completed Graph construction in
+67.502 s wall / 67.120 s CPU. It reports 79,338 source reads outside the native
+Types import boundary, 1,542 at that boundary and 512 expanded/evaluated role
+bodies. These are Linux receipts, not a comparison to a local 12-core build.
+The raw allocation vector field is invalid as an allocation estimate and is
+not used. No known-failing ten-thousand-module Case was rerun locally.
+
+* Build and loading remain separate
+
+An exact-source local zero-compile build sample attributed 5.303 s to source
+projection and 6.561 s to the native Make dispatch region. A later finer sample
+shows that temporary-role catalog restoration is small (0.083 s), while native
+imports and role imports are substantial. These are nested regions and must
+not be added. The later sample regressed in wall time, so it is retained rather
+than treated as a speedup. Entry loading is outside these inner timers.
+
+Those detailed samples used the FULL Core inventory. They do not decompose the
+14.295-second warm command in the 41-target source-only bootstrap Fixture.
+Detailed source accounting also adds per-read statistics and native replay
+visitor work; it is not an uninstrumented wall-time baseline. Do not compare
+those cohorts or infer a production speedup from their difference.
+
+Production uses the existing invocation-local operation measurement facility
+to distinguish =build-projection=, =build-current=, =native-make=,
+=compiler-make=, =compiler-native-import=, =compiler-role-import= and
+=compiler-role-restore=. Measurement stores scalar timings only. It is not an
+observer, a build verdict or a new source cache. Temporary profiling scripts
+are local diagnostics, not committed build/test entrypoints.
+
+* Correct ownership of package language inputs
+
+Target naming previously called =package-prelude-identity= for each target.
+That function uses native package resolution and =core-read-module/sexp=:
+each call rereads and parses the package's language source.
+
+The production projection now resolves the package language alongside its
+package prefix, once for that projection/package row. The existing test package
+association carries both values; no second index or registry is introduced.
+The target naming function is pure:
+
+#+begin_src scheme
+(build-target-name compiler-identity package-prefix language-identity)
+#+end_src
+
+It accepts the actual resolved input, performs no file I/O, and contains no
+Yuanxu-specific fallback identity. The outer projection still confirms source
+paths and compiler identities and retains the complete native source/package
+observations. This removes repeated metadata extraction, not source
+authentication. No std/make dependency, compiler callback or publication guard
+is removed, and a new projection resolves its own inputs afresh.
+
+Test source import routing is a different boundary: an arbitrary native import
+can invoke callbacks or change metadata before the next import. It therefore
+retains the existing live package/header lookup when choosing the import path.
+Holding the pure target-mapping input must not freeze that routing decision.
+
+* Assurance allocation and limits
+
+SysML assigns package/header extraction to the projection owner, target naming
+to the pure mapping, and currentness to the existing compiler/publication
+boundaries. Lean's existing TestMakeLayout owner adds
+=resolved_language_preserves_targets=: holding the same observed language
+preserves every target. Its equality premise must come from actual native
+package/source observation; the theorem does not establish filesystem purity.
+=resolved_language_does_not_approve_changed_source= preserves the existing
+source-applicability refusal. This is structural reasoning, so no duplicate
+Quint model is added. Existing temporal publication models remain responsible
+for source changes, callback boundaries, requirements and parent isolation.
+
+The package-owned-prelude regression now mutates the real language source after
+projecting its compiler identities and requires =admit-current= to refuse it.
+Wrong expected language registration and foreign namespace refusal remain.
+Native role-lifetime, compiler-input currentness and real Gitea/PostgreSQL
+tests remain the consumers of the same production code.
+
+* Source-only launcher and executed qualification
+
+The Fixture already materializes a complete installed external dependency
+closure under its explicit GERBIL_PATH, excluding Core libraries and the Core
+language. Gerbil's installed =tools/env.ss= makes local-package setup a no-op
+when GERBIL_PATH is supplied. Its =gxpkg env= still loads the package tool and
+invokes another runtime. Gerbil's normal script dispatch in =gerbil/main.ss=
+already delegates a Scheme filename to gxi-main. The Fixture now uses
+=gerbil build.ss <action>= directly, keeping the exact source root, environment
+exclusions, package checks, target assertions and independent input worker.
+Ordinary package builds and Module selection are unchanged.
+
+The final default bootstrap Case passed with 12 detected workers and the same
+41 targets: spec 11.640 s, cold compile 27.304 s, zero-compile hot command
+10.294 s, clean 9.172 s, new-process rebuild 21.866 s, final clean 8.427 s.
+The 60-second child, 180-second outer and 2 GiB limits were retained. It also
+passed the source/package negative controls and unchanged prelude products.
+
+Separate low-cost samples of the SAME source-only Fixture avoid the detailed
+read-accounting observer. Three zero-compile processes measured 9.72, 9.21 and
+9.18 s. Their entry-ready clocks were 4.111, 4.010 and 3.989 s; source projection
+2.798, 2.703 and 2.685 s; complete main 3.754, 3.646 and 3.662 s. Main includes
+projection; the difference is under one second. These samples deliberately
+have no compiled Core tool closure, so fresh source/tool import remains a real
+startup cost. Native POO caches do not survive process exit, and installed
+product consumers are a different qualification boundary.
+
+An alternating launcher comparison then encountered host load 72 on 12 cores.
+Environment-launch wall/CPU-total samples were 31.14/15.21, 50.35/14.03 and
+14.38/13.44 s; direct-script samples were 53.56/12.22, 20.82/11.96 and
+13.02/11.54 s. All compiled zero targets. The large wall/CPU gaps invalidate
+a wall-time speedup claim. Results are retained and no further unstable samples
+are requested; removing the redundant launcher is justified by native control
+flow and the complete bounded regression, not a selected favorable wall time.
+
+Package-owned language, build Graph and role compilation suites passed, along
+with the real eleven-case Gitea/PostgreSQL Scenario. Final test-input and Scenario
+consumers passed again after preserving live import routing. Lean TestMakeLayout
+built successfully (117 jobs). The initial new negative test exposed a missing
+explicit std/misc/ports import; that failure was preserved and the import fixed.
+
+This refactor addresses repeated build/test input resolution. It does not claim
+to close the declaration-capacity failure. That failure still needs production
+attribution of the actual role analysis and required source boundaries. Product
+dependency promotion remains gated on the full Core CI result.
+
+* Native Suite ownership after the submitted CI run
+
+At =9582bbb9b2b850c193ea2e4d5be1cd9fd3df469d=, both platform build jobs,
+all non-scale Linux shards, all non-bootstrap/non-scale macOS shards, Lean
+and every Quint shard passed. macOS bootstrap and both scale shards failed.
+This is not a green platform receipt and does not authorize product promotion.
+
+The macOS bootstrap failure was an ownership problem: six independently bounded
+commands took 164.126 seconds before the test started a second Harness inside
+the first test file. The enclosing native file deadline was 180 seconds.
+Each compile stayed within its original 60-second command limit. Extending the
+outer deadline would conceal the nested execution boundary.
+
+The existing source-package Suite now owns its source-only snapshot through
+official =test-setup!= / =test-cleanup!= and the existing =selection-fixture=.
+Its two actual Cases always execute, replacing the old environment-gated empty
+Suite. The process Suite retains all six build operations and all output,
+hot-zero-compile, clean, currentness and unselected-output assertions. Its
+removed Case only launched the other Suite and rechecked Harness markers.
+There is no new Fixture class, Builder or test runner.
+
+The source-package file retains the previous inner worker's 60-second deadline;
+the process file retains 180 seconds and each child still retains 60 seconds
+and 2 GiB. =just test-bootstrap= schedules both existing files serially through
+the same native entrypoint. CI's existing disjoint bootstrap shard owns them
+once; the duplicate invocation in the build job is removed. Partition checking
+still covers all 196 test files in seven disjoint groups.
+
+The default local qualification passed both Suites with all native success
+markers and no failure markers. Its unchanged 41-target lifecycle measured
+8.407 seconds spec, 20.630 cold compile, 9.540 zero-compile hot command,
+8.537 clean, 21.259 rebuild and 9.485 final clean. These are another same-source
+sample, not a controlled causal speedup claim. Source-package Cases still
+reject wrong package identity and a changed actual registration source.
+
+Scale remains a separate failed receipt. The observer-cost diagnostic at 32
+modules measured 5.116 seconds with the observer and 4.804 without it; it does
+not support blaming the dominant capacity cost on the external observer.
+Native read identities, callbacks and source checks remain intact. Temporary
+diagnostic Suites and raw sampling logs are not release or test inventory.
+
+* Actual reader stage attribution, not a capacity pass
+
+A temporary 32-declaration diagnostic used the same maintained
+=DeclarationFixture=, real =yuanxu!= entry and real =tests.selected-graph=.
+It preserved native observer delivery and checked that business scope stayed
+cold. It recorded only scalar stage clocks and file-read counts; the temporary
+Suite is not part of committed test discovery. Total Graph demand was 5.408 s
+wall, 4.789 s user and 0.608 s system. Inclusive regions were:
+
+| Existing production region | Calls | Seconds |
+|----------------------------+-------+---------|
+| reader preparation         |    32 |   0.473 |
+| reader location            |    32 |   0.055 |
+| interface import/expansion |    32 |   2.217 |
+| publication admission      |    32 |   0.563 |
+| native compilation callback |    64 |   0.013 |
+| native evaluation callback |    64 |   0.007 |
+| publication guard          |   194 |   1.142 |
+| metadata replay            |   512 |   1.002 |
+
+These regions nest and must not be summed. Interface import/expansion is the
+actual =eval-syntax (import wrapper)= region in =source/reader.ss=, not the
+separately measured native compile callback. Thus neither a compiler-only
+optimization nor the number of expanded roles explains the full elapsed cost.
+The =publication-current= phase performed 9,012 file reads, while compiler
+imports performed 486 and initial compiler support performed 99. Counts are
+demands, not unique files or independent obligations.
+
+Source inspection also rejects another tempting but incorrect attribution:
+the installed Gerbil's =core-library-package-path-prefix= uses
+=core-library-package-plist= and its native =__module-pkg-cache=. Repeating
+that query is not evidence of repeatedly parsing gerbil.pkg. No replacement
+package registry or prefix cache is justified by this observation.
+
+The real eleven-case Gitea/PostgreSQL publication regression passed again after
+the Suite ownership change, retaining both requirements, parent/child plan
+identity, source-change refusal and unused-branch laziness. The new submitted
+CI is still a separate acceptance receipt. This attribution does not establish
+a safe broader source window, permit skipping Generic/carrier validation, or
+prove the ten-thousand-module budget. Those remain production design work.
+
+The ordinary full Core =just build= was measured independently in the same
+qualified Gerbil environment after this investigation: zero compiler commands,
+20.85 seconds wall, 17.38 user and 3.09 system. A second independent default
+invocation also compiled zero targets: 20.29 wall, 17.21 user and 2.96 system.
+This is not the 41-target
+source-only Fixture. The small wall/CPU difference does not support attributing
+this particular full-build cost to host scheduling. Its startup, projection,
+Make/currentness and signing costs still need same-cohort attribution; the
+bootstrap receipt must not be presented as a full-build speedup.

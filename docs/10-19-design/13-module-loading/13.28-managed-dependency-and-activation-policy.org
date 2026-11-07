@@ -1,0 +1,775 @@
+#+title: 13.28 Managed Dependency Binding and Activation Policy
+#+language: en
+#+filetags: :design:modules:dependencies:policy:laziness:
+
+* Decision and status
+
+Yuanxu owns managed module selection, dependency binding, role activation and
+the admission policy governing those transitions. Agentic AI Lab is a downstream
+package and application of this mechanism. It supplies business modules and
+domain Contracts; it must not reproduce loader factories or choose an internal
+loading strategy for each business branch.
+
+Status: design, grounded in the current source below. No implementation,
+machine-checked refinement or passing complete regression is asserted here.
+Keep the dependency pinned by =gerbil.pkg=; Lake alone owns Lean dependencies.
+Do not change Gerbil's compiler or replace its package manager/runtime loader.
+
+* Current source correspondence
+
+| Existing owner | Established behavior | Remaining boundary |
+|----------------+----------------------+--------------------|
+| =source/selection.ss:select-module-graph= | Uses publication requirements; rejects disabled or undeclared explicit requirements | Selection must remain metadata-only as activation becomes narrower |
+| =source/link.ss:link= | Resolves canonical provider records, admits requirement Contracts and passes checked candidates to =core.link= | Currently links every requirement while acquiring an owner's scope |
+| =source/reader.ss:check-preparation-policy!= | Calls the existing style policy; rechecks source currentness after policy code | Policy must bind native import observations to selected owners, roles and phases |
+| =authoring/import-policy.ss= | Detects configured aggregate facade imports from datums without executing them | A spelling list does not establish complete binding ownership or conditional demand |
+| =source/role-forms.ss= and role wrappers | Own role inventories and generated lexical surroundings | Inject declared dependencies without forcing every business scope |
+| =source/deferred-declaration.ss= | Centralizes source/compiled initialization distinctions and binding actions | These internals must remain inside Yuanxu's managed binding path |
+| =building/interface.ss= | Publishes build and test views from the init owner | Neither ordinary scope access nor discovery may start build/test effects |
+
+The current linker constructs dependency =records= with an ordinary =map= whose
+body calls =link= and =admit-module-value!= for each requirement. Its =bindings=
+then contain normalized candidates. This is an eager dependency-scope boundary,
+even when the downstream POO export object itself contains lazy slots. Moving
+an import behind a function in an application does not repair this boundary.
+
+* Distinct graphs and authorities
+
+** Profiles are mounted modules, not another loading protocol
+
+The implemented entry is =selection/init-syntax.ss:yuanxu!=. A Profile uses
+the same role wrappers, selection, dependency admission and source currentness
+as any other module. =rename:= changes the access namespace, not the module's
+identity, Type or dependency semantics. The former =yuanxu! Profile Registry
+(profile ...)= and =(extends ...)= alternatives are rejected at expansion;
+there is no compatibility branch in this macro.
+
+The downstream Agentic AI Lab now selects its real sandbox configuration as:
+
+#+begin_src scheme
+(yuanxu!
+  :load-modules "./core/modules" mode: explicit rename: Core
+  (json-schema)
+  (funflow)
+  :load-modules "./modules" mode: auto
+  :load-modules "./scenarios" mode: explicit rename: scenarios
+  (null)
+  (aws-validation)
+  (aws)
+  :load-modules "./profiles" mode: explicit rename: Profiles
+  (sandbox))
+#+end_src
+
+=profiles/sandbox/{types,objects,config,interface}.ss= is an ordinary managed
+module. Its Config contains inert backend choices, resource values and network
+policy. Its interface publishes the reusable domain prototype once:
+
+#+begin_src scheme
+(.def (Sandbox @ [] config)
+  identity: 'sandbox
+  config: Config
+  core: (.o requires: (.o)
+            scope-contract: SandboxProfilesScopeContract
+            exports: (.cc SandboxProfiles. 'config config))
+  features: (.o))
+#+end_src
+
+The domain library owns =SandboxProfile.=, normalization and preview. A
+SandboxProfile is still a typed business value; it is not a second module
+selector. Normalization uses native =(validate Contract (.mix config defaults))=
+(or validates the identical defaults directly), preserving the configured
+object's ancestry. Applying =.+ defaults config= when Config already inherits
+Defaults can introduce inconsistent duplicate parents; it is not a substitute
+for native prototype linearization. Users write ordinary Config values or
+native inheritance and functional slot refinement, without a Profile registry.
+
+Reproduce with =just test-file t/sandbox-profile-module-test.ss= in the product,
+and =just test-file t/module-windows-test.ss= in Core. The focused cases exercise
+renamed selection, unselected bombs, native refinement, official loaded-module
+reuse, inert preview and changed-source rejection after caching the parent
+preview. Old admitted values remain snapshots; a fresh selection reads changed
+Config. The dependency regression excludes the retired configuration UI,
+loop-engine and memory Config, while retaining the durable-policy data leaf
+actually required by sandbox policy. No dependency edge is removed merely to
+make an import-count assertion pass.
+
+The downstream workflow configuration dispatcher, Profile/Registry declaration
+macros, fragment =load!= and RootProfile projection have been removed. Their
+consumers use the common module protocol for acquisition and existing domain
+functions for business values. The aggregate configuration and profile-config
+facades no longer reexport a second entrypoint. Pure domain Contracts and
+receipt projections remain distinct from module selection.
+
+The repository root =init.ss= also selects the user library with existing
+literal source rows, for example =(langgraph @
+"./user-interface/profiles/langgraph")= in its =Profiles= window. There is no
+nested =user-interface/init.ss=. This preserves the existing package/source
+authority instead of broadening confinement to make a nested root work.
+
+The user Profile modules have real defaults in =config.ss=, a native Record
+scope Contract in =types.ss=, a =Profile.= prototype in =objects.ss= and one
+declarative =interface.ss=. The prototype reads its bound final Config; it does
+not reuse an already projected parent. A consumer acquires the domain value as:
+
+#+begin_src scheme
+(import (only-in :agentic-ai-lab/init agentic-ai-lab.init.exports))
+(def graph-profile
+  (.get agentic-ai-lab.init.exports Profiles langgraph profile))
+#+end_src
+
+=13.32= is the current authority: Interface is configuration, and the namespace
+leaf is the admitted POO object itself. The superseded module-view facade and
+its extra =scope= step are not a consumer API. Tests remain on
+=init.exports.tests=. The Developer Scenario uses the same publication
+protocol. Its backend intent rows are domain preview inputs,
+not the root's selected module graph and not activation authority.
+
+Sandbox normalization and preview functions belong to =func.ss=; default
+recipes belong to =config.ss=. Function consumers import the function owner,
+rather than retaining a config reexport as a compatibility layer. This is a
+semantic ownership decision, not a restriction on POO value dependencies.
+Static =import= edges and runtime =.get= demand are distinct: the existing E007
+check concerns imports. Functions can receive configured POO objects and read
+their final slots through =.get=; file ordering does not prohibit that demand.
+
+Focused migration checks are not evidence that product-wide native test
+discovery fits its unchanged heap, that the complete regression passes, or that
+the capacity gate passes. The full inventory must qualify before a complete
+claim. Existing build currentness must also succeed independently; diagnostics
+retain the original preparation/resolution refusal without repeating a check
+or accepting an additional dependency. No scheduler, loader or cache protocol
+is introduced here.
+
+** Package, selection and execution authority
+
+1. Gerbil package dependencies make libraries available. Installation grants
+   neither application selection nor permission to initialize a business role.
+2. Declared module requirements determine mandatory availability, disable
+   refusal and module dependency cycles. Validate this complete graph before
+   exposing a selected view; laziness must not hide an invalid required edge.
+3. Native import/binding observations identify the actual defining owner,
+   phase and source. They are checked against admitted SourceRefs and role
+   inventories, not guessed from namespace strings or first export names.
+4. Actual POO reads determine demanded exports and value dependencies. Preserve
+   original issued records and observation order; do not replace this graph
+   with a manually maintained Requirements or activation list.
+5. Build and execution contributions remain separate views of the selection.
+   A configuration read is not authority to compile, run Ops or deploy.
+
+Use the existing selected-record identity and source association across renamed
+windows. A path or leaf module name is useful diagnostic data, not sufficient
+authority. Data/service relationships are not automatically module-import
+cycles; retain the existing distinction between module ordering and domain
+connection validation.
+
+* Phase protocol
+
+| Phase | Permitted work | Work that must remain deferred |
+|-------+----------------+--------------------------------|
+| Discovery | Directory/package identity, SourceRefs and role locations | Role evaluation, business prototypes and processes |
+| Declaration preflight | Interface metadata and necessary Type descriptors | Config, Objects, Func bodies and domain instances |
+| Selection | Complete requirement closure, decisions, cycles and ownership checks | Constructing all provider scopes |
+| Binding | Hygienic handles associated with admitted providers and requirement Contracts | Forcing every alias merely to install names |
+| Demand | Construct the requested provider view; retain checked candidate identity and read support | Unrelated exports and providers |
+| Domain admission/preview | Validate final configuration, all applicable obligations, source currentness and plan identity | Treating cached structure as an admission result |
+| Explicit effect | Existing build, Ops or deployment handoff with its own authority | Implicit execution while loading or inspecting |
+
+Types needed to validate a public interface are legitimate preflight demands.
+They must not be confused with business instances. Ordinary configuration data
+and native POO prototypes remain valid authoring forms; the restriction concerns
+when their roles are activated and where effects are permitted.
+
+* Binding and admission design
+
+Keep =core.requires= as the single dependency declaration, including its alias,
+provider identity and Contract. Do not add a second lazy/export/factory manifest.
+The wrapper derives lexical access from those admitted declarations and the
+provider's published interface. The application supplies no module filename,
+runtime identifier or =module-action= call.
+
+Replace the linker's eager assembly boundary with demanded provider views using
+ordinary POO slots and the current generation's selected records. A native slot
+may retain construction/normalization data. It may not retain an authorization
+that substitutes for a fresh public admission. Contract application must return
+the candidate actually used by the consumer, preserving child obligations and
+normalization identity rather than validating one object and binding another.
+
+Contract normalization is itself a potential forcing boundary. An ObjectContract
+that reads every field, or a cross-field obligation requiring the full provider,
+can legitimately enlarge the demand. A lazy alias container cannot make that
+work disappear. Metadata preflight must not invoke domain obligations. Narrow
+value admission is permitted only where native Type/Contract metadata establishes
+the complete applicable projection; an opaque Contract retains full admission.
+Never publish an accepted scope before its required checks complete, drop a child
+obligation, or add a user “pure/lazy” flag to manufacture that proof.
+
+Installing aliases must not force them. An expansion into =let= bindings that
+reads every provider scope would merely move the eager boundary. Reuse the
+existing hygienic wrapper and POO access semantics; inspect its real expansion
+before choosing an internal representation. Do not introduce getter interception
+or another public syntax to conceal eager work.
+
+The owner of a scope, the owner of a dependency requirement and the provider's
+source record remain distinct. Package realization may refine an admitted
+provider scope through the existing =dependency-scope= path; it must not borrow
+a consumer's scope or erase the baseline publication association.
+
+Root domain admission still collects both Gitea and PostgreSQL requirements and
+checks the final receiver and plan. Narrow demand is not permission to omit an
+applicable obligation. A parent cached plan cannot authorize a child with a new
+port, source generation or configuration. Callbacks retain their before/after
+checks and public return retains currentness. No verdict crosses effects.
+
+* Policy enforcement and diagnostics
+
+Extend the existing authoring policy and reader/linker checks; do not add a
+parallel policy parser, loader registry or cache protocol. Source observations
+are data. A policy callback is author code and retains the reader's independent
+post-callback source check.
+
+| Finding | Decision | Evidence required |
+|---------+----------+-------------------|
+| Managed provider outside declared requirements | Reject | Consumer record, actual provider owner and missing requirement edge |
+| Required provider disabled or absent under explicit selection | Reject | Existing decision and complete dependency path |
+| Business role initialized during metadata-only selection | Reject at managed activation boundary | Current phase, role owner and initiating demand |
+| Business code reconstructs the managed loader | Reject under the inherited managed-role policy | Resolved loader capability and source site; account for aliases/reexports |
+| Broad facade expands unrelated business owners | Diagnose; reject when it violates the phase/requirement boundary | Actual owner closure, not the word “interface” |
+| Duplicate syntactic import or redundant reachability | Diagnose when established | Same canonical binding/phase and source sites |
+| Shared provider or two independent requirements | Preserve | Distinct obligations and original read support |
+
+An unobserved branch is not proof that a declared dependency is unused. Do not
+delete an edge or suppress a callback to improve a redundancy count. Imports
+of standard/type libraries remain a separate classification; do not ban ordinary
+Scheme helpers or require users to redeclare all of Gerbil's package metadata.
+
+Diagnostics need the consumer package/module/role, source range, defining
+provider, selected generation, phase, alias/export path and violated rule. For
+the Lab's Sandbox case, show the path through the aggregate configuration
+facade into the AI adapter. Explain whether the dependency is required, merely
+reachable, or actually initialized. Do not blame std/make for runtime import
+initialization or call aggregate test time module-load latency.
+
+Downstream policy may strengthen domain restrictions through existing POO
+authoring Profiles. It cannot weaken Core's mandatory ownership, selection,
+phase, source or publication checks. Core built-ins, including Ops, retain their
+existing package-owned authority; applications must not add repeated init entries
+or grant themselves built-in status with a user flag.
+
+* Agentic AI Lab migration case
+
+The candidate change adding =module-action= to
+=modules/ai-agentic-context/selection-adapter.ss= was withdrawn. Keeping a
+private application loader would perpetuate the missing Core boundary.
+
+Migrate the shared selection facade to consume declared provider scopes through
+Yuanxu. AI decoration belongs to the selected AI provider's behavior or declared
+contribution, not an unconditional application-wide adapter. Reuse native method
+composition where extension is open; plain functional routing remains sufficient
+where no open dispatch is needed. Neither route may make users select an internal
+Function/Generic/loading strategy.
+
+First establish dependency ownership for the aggregate facade and its helpers.
+Changing the file's directory or replacing one import is not a proof of ownership.
+Scope injection into helpers must follow the existing admitted role closure;
+it must not bypass that closure by importing business implementation files.
+
+* Integrated delivery unit
+
+The delivery unit is the complete selected-declaration to admitted-scope flow,
+not one theorem, one counter or one helper. The reference algorithm in
+=ManagedBinding.execute= threads the ordered checked dependency prefix through
+LeanPoo's existing =Validation.traverseState=. It resolves and checks every
+declared requirement before construction, retains each original source stamp,
+constructs from the checked bindings, normalizes once in that flow and certifies
+the final candidate before return. Failure stops the suffix. Successful result
+theorem =execution_success_is_complete_and_current= joins complete ordered
+requirements with final source currentness; it does not replace either fact
+with a cached successful decision.
+
+The list-based reference is a correctness oracle, not a proposed runtime cache
+or a claim of efficient prefix copying. Production keeps its existing POO
+records, issuer-owned dependency graph and native value/layout caches. Its
+fresh authentication work is accounted independently from structural reuse.
+The earlier final-only materializer is retained solely as the executable
+comparison that exposes source restoration between separate callbacks.
+
+The production =source/link.ss:observe-link-stage= now accepts the existing
+=current!= guard for requirement admission, scope construction and scope
+admission. This is one internal phase boundary, not another publication API:
+
+1. An independent source-read window checks entry.
+2. The callback runs exactly once.
+3. A successful callback gets an independent exit check before the next stage.
+4. A callback failure escapes without a new stale check masking its cause.
+5. With an observer, start/end deliveries remain at their existing positions;
+   fresh checks also separate those deliveries from the body and its return.
+
+No observation is suppressed, no successful admission is cached, and business
+callback guards are not added to the metadata-only selection path. A source
+change inside one callback that is fully restored before that callback exits
+still has the previously stated native revision/external-effect premises.
+The stage guard is not a sandbox or an atomic external-file snapshot.
+
+The joined acceptance surface is:
+
+| Responsibility | Implementation / model | Existing acceptance owner |
+|----------------+------------------------+---------------------------|
+| Ordered metadata selection without scope activation | =selection.ss=, =scope-tree= / =directory.ss:tree=; =SourceClosureWork.Frames= | =module-scope-link-test.ss= and real declaration Cases |
+| Complete dependency requirements and normalized bindings | =link.ss:link=; =ManagedBinding.execute= | strict requirement refusal and independent two-party conflict controls |
+| Independent callback/source boundaries | guarded =observe-link-stage=; =ManagedBinding.Boundary= | restoring-factory, restoring-requirement and observer-entry controls in =module-scope-link-test.ss= |
+| Original failure identity | stage callback and integrated first-failure traversal | factory-refusal identity control and Lean first-failure laws |
+| Final configuration / plan association | =SourceAdmissionContract.= and Scenario domain Contracts | =gitea-postgresql-publication-test.ss= |
+| Native cache and inheritance identity | existing POO receiver/revision/read graph | parent-plan, child-port, contextual obligation and stale-source controls |
+| Macro and Type boundary | existing declaration lowering and role wrappers | =module-declaration-value-test.ss= |
+
+The callback restoration controls use in-memory Context predicates to expose
+ordering in the real linker; they are not filesystem authenticity evidence.
+The maintained Gitea/PostgreSQL Scenario supplies real module/source and domain
+consumer coverage. Neither test substitutes for the unchanged 1,000/10,000
+capacity Case or qualifies the still-open complete import-owner policy.
+
+Do not close this unit based on isolated Lean success. Require the unchanged
+native Core build, the joined focused production consumers, full Lake audit,
+and the relevant existing Quint family, retaining the negative-control result.
+Keep logs as local/CI artifacts. Performance closure additionally needs separate
+selection, first demand, hot read and changed-value measurements under the
+existing heap/watchdog budgets; a semantic fix alone is not a speedup claim.
+
+* Assurance allocation and executable acceptance
+
+** Proof-before-implementation gate
+
+The initial namespace-index proof covers ordered metadata grouping only. It is
+not approval for changing dependency admission or the complete loading protocol.
+Further Scheme activation changes are blocked on the corresponding Lean
+refinement. The indexed-namespace focused controls now distinguish complete
+selected-declaration admission from one demanded business scope. This qualifies
+that behavior, not a speedup for the separate directory namespace or scale Case.
+
+=ManagedBinding.lean= now uses LeanPoo's =Validation.traverseState= rather than
+another validation engine. Its checked model separates pending metadata handles
+from actual scope admission, preserves requirement order and callback failures,
+retains the returned normalized candidate and checks original source stamps at
+return. Executable counterexamples show that dropping an unread requirement can
+accept a conflicting port policy. Therefore a lazy dependency object alone is
+not a sound replacement for the existing full-scope admission boundary.
+
+Complete graph admission, native SourceRef/MOP extraction, callback-internal
+support and macro/loader phase enforcement remain open correspondence
+obligations. The integrated reference and production stage guards close the
+named outer callback boundaries; their final check alone is not evidence that
+every nested callback was preceded by a complete check.
+
+** Source authentication at callback boundaries
+
+=ManagedBinding.Boundary= makes the missing condition executable in Lean. Its
+support is the root handle plus already resolved requirement stamps, including
+separate requirements for the same provider. These stamps are observations,
+not caller-issued approval tokens. The boundary rejects a stale entry without
+calling the action; successful return requires current support on both sides.
+If the action itself fails, its original cause and resulting state are retained.
+The model invokes an action once and never caches its successful admission.
+
+End-observer delivery also runs while a failing stage unwinds. A second failure
+must not replace the first one: =Boundary.finishObserved= separates body-only,
+observer-only and dual failure. =observer_cannot_mask_body= retains both causes
+in body/end order; the other laws preserve each single cause and successful
+body result. The Scheme =observe-link-stage= keeps the two actual exception
+objects in its existing Error irritants, together with the stage. A separate
+Boolean tracks failure, because even =#f= can be raised. There is no new public
+receipt, exception registry, or admission result cache.
+
+The source control in =t/module-scope-link-test.ss= first demonstrates the
+unfixed end observer replacing a factory exception, then exercises the fixed
+producer through =yuanxu-load-modules=. It checks both causes by =eq?=, exact
+stage and delivery counts, raised =#f=, and an observer-only failure. Existing
+source-mutation and requirement-order controls remain. Build the changed Core
+library with =just build= before running =just test-file
+t/module-scope-link-test.ss=; an old imported binary is not evidence that the
+edited producer has been exercised.
+
+This failure algebra covers completed ordinary exception deliveries, not
+arbitrary continuation re-entry or exception formatting effects. Other reader
+observation finalizers require their own correspondence audit; this change
+does not assert that every =dynamic-wind= in Core preserves dual failures.
+Quint's existing =ReaderEffectSupport= family owns effect/support/cleanup trace
+controls; the algebraic cause projection stays in Lean instead of duplicating
+it in another state model. Actual exception identity and unwinding are Scheme
+runtime controls. The default no-observer stage path is unchanged.
+
+The final-only materializer has an executable negative example: a constructor
+changes the observed PostgreSQL revision from 9 to 10; the next normalizer
+restores 9. Final endpoint checking accepts. Checking successful constructor
+exit rejects before that next callback is allowed to restore the source. This
+is an external-observation example, not an assertion that a monotone native MOP
+revision can be decremented. Change-and-restore entirely inside one callback
+still needs native write protection, monotone revision evidence or an external
+conditional-use boundary. Endpoint checks alone cannot prove its absence.
+
+| Actual source entry | Authority or effect | Consequence for sharing |
+|---------------------+---------------------+-------------------------|
+| =source/link.ss:check-current!= | Context currentness, realization sources, all retained publication metadata guards | Its cost includes the whole currently retained publication support |
+| =source/reader.ss:open-boundary!= | Escalates a private candidate to the observed epoch before an opaque boundary | Candidate-local support cannot silently replace this full support |
+| =source/reader.ss:publication-metadata-current= | Ordered preparation/admission replay and policy checks | Preserve first diagnostic and observer-triggered suffix checks |
+| =source/admission.ss:call-with-module-source-read-cache= | Invocation-local reuse of physical observations | Must end before expansion, initialization, writes and independent admission |
+| =source/admission.ss:call-with-module-source-fresh-reads= | Clears an inherited observation window for an independent boundary | A caller's hot bytes cannot authenticate a later independent demand |
+| =admission/source.ss:source-contract-admit= | Preflight, inherited obligations, diagnostic locators, replaceable context =admit-current=, own source tail | The context callback is not a pure inspector; its source bytes cannot be carried into the final collector check |
+| =admission/source.ss:call-with-source-slot-reads= | Prechecks actual field demands and replays original issued roots with fresh reads | Existing nested source collection must remain complete; this is not evidence that an arbitrary callback only touches previously read fields |
+| =source/link.ss:link= | Requirement Contracts, scope factory, scope Contract, final =scope-linked= guard | Returning only after a final check is not by itself proof that every nested callback had complete entry/exit protection |
+
+The table is a source audit, not a claim that a production callback gap has
+already been demonstrated. Nested Contract/MOP protection must be traced before
+declaring either a gap or redundant checking. =Boundary= currently proves the
+necessary known-support law; it does not derive complete external support from
+a callback, establish read-only observers, or authorize narrowing a full guard.
+Reuse =SourceClosureWork.universally_sound_guard_iff_coverage= for that obligation:
+for arbitrary revisions, narrowing is universally sound exactly when required
+support is covered. Names, import owners and a successful earlier run do not
+establish that coverage.
+
+Keep the formal duties separate. Lean checks the boundary laws and the concrete
+restore counterexample. The existing Quint =SourceClosureWork= family checks
+bounded shared/cyclic support, dropped edges, open-effect reuse, guard scope and
+cleanup. Its nine-case qualification includes expected failing mutants; their
+counterexamples are required evidence, not failures to suppress. It does not
+model every callback interleaving or establish a native memory bound.
+
+Reproduce through the existing entries, without a new proof runner:
+
+#+begin_src sh
+just proofs-lean
+python3 dev/proofs/quint/check.py --case-prefix SourceClosureWork \
+  --typecheck-scope selected --receipt /tmp/yuanxu-source-work.ss
+#+end_src
+
+No Scheme callback or authentication boundary is removed by this proof slice.
+The next source-correspondence obligation is to establish the full known-support
+frame at each real nested call, then classify its fixed issuer-owned topology
+separately from the authentication that must still run on every invocation.
+
+** Algorithm and capacity obligations
+
+The proof target is a better loading algorithm, not just a proof that the current
+implementation returns a logically valid result. Bind these operations to real
+source sites: source metadata decoding; indexed graph discovery; Type preparation;
+native slot demand; normalization; support sealing; replay authentication; source
+checks; and publication. Count constructions and retained payload owners as well
+as lookups. A small lookup count cannot establish a small transitive closure.
+
+The real scale worker explicitly retains complete publication selection and
+Type preflight, checks that Config/Objects and unused Features remain cold, and
+checks source invalidation. Its existing 2N interface/Types expansions and 6N
+local guards are workload facts, not a license to ignore their inner costs.
+Do not replace this Case with directory enumeration or an arithmetic benchmark.
+
+Reuse =Graph/SourceClosureWork.lean=: its prefix-guard model already proves a
+quadratic term. A replacement must refine the actual support/effect boundaries;
+changing a numeric formula to linear work proves no source-level improvement.
+Closed metadata may share prepared topology and immutable language/specification
+structure through POO. Unknown hooks retain their independent authentication
+boundaries. Every observed dependency edge and callback occurrence remains.
+
+Distinguish index mechanisms. Native slot layout sites cache offsets guarded by
+receiver/revision/layout and do not cache authorization. The release's ordered
+prototype map has bounded compact scans and balanced-tree lookup; it is not an
+unconditional constant-time hash table. Native secondary table indexes have
+their own source versions, projections and checked update semantics. Use them
+where actual correlated queries justify them, not as a new universal registry.
+
+For 1,000 and 10,000 modules, separately establish discovery, selected metadata,
+first scope demand, hot reads and a changed-value evaluation. Prove structural
+work bounds against the chosen index operations and unique payload ownership.
+Then calibrate allocation/retention weights with the installed runtime and
+qualify the unchanged CI workload. Lean alone cannot establish 2 GiB or a wall
+deadline without those representation and primitive-cost premises. Build work
+remains independently measured. No capacity rerun precedes this closure.
+
+SysML owns the phases, authorities and allowed transitions. Reuse
+=20.01-demanded-module-lifecycle.sysml=; do not create an unrelated Loader model.
+Lean/LeanPoo own structural projection, scope/candidate identity, complete
+obligations and parent/child isolation. Existing =DemandMaterialization=,
+=MetadataProjection= and =IncrementalRoles= are the starting points; any new
+refinement must name its real source correspondence and remaining assumptions.
+Quint owns order-sensitive selection/demand/disable/change/effect traces through
+the existing =ModuleDemand= family. It must not repeat Lean's structural proof.
+The full Lake build accepts the initial =ManagedBinding= proof slice and the
+ordered namespace grouping proof, including the project's model-shape and axiom
+audits. These do not establish complete source correspondence. No new passing
+Quint result is claimed here.
+
+** Actual traversal algorithm, not a substitute benchmark
+
+The production =module-system/graph/funs.ss:module-closure= already has a hash
+membership table and a stack of sibling-list frames. A first visit records the
+identity before pushing its dependency list. A repeated identity consumes its
+occurrence without expanding dependencies again. An exhausted frame is removed.
+This preserves depth-first order without copying the entire pending suffix.
+Selection uses this function; the cost of its =inline-imports= callback still
+includes real declaration reading, Type preparation and publication guards.
+It is not a unit-cost lookup just because DFS invokes it once per identity.
+
+The =Frames= section of =Graph/SourceClosureWork.lean= now models these exact
+frame shapes. It proves that consuming a nonempty frame refines the existing
+ordered worklist step; removing an empty frame is a semantic stutter. Its
+balance invariant is:
+
+#+begin_src text
+exhaustedFrames + remainingFrames = expandedIdentities + 1
+#+end_src
+
+The one initial frame holds roots. Every first expansion adds one dependency
+frame; duplicate visits add none. Thus exhausted-frame work is bounded by
+expanded identities plus one. Combined with the existing worklist accounting,
+this identifies structural queue/edge and frame costs separately. The current
+proof is a local representation refinement and frame bound, not a complete
+Scheme execution, hash-table implementation or liveness proof. The Lean list
+of visited identities specifies membership/order; it is not proposed as the
+runtime lookup implementation. Do not derive constant-time lookup from it.
+
+There are also two distinct namespace paths. =source/link.ss:scope-tree= is a
+fallback. =source/directory.ss= supplies a =namespace= callback which builds
+=object<-fun= trees when directory windows are present or auto mode is active;
+legacy explicit selection can still fall back. Its =tree= currently filters
+declared rows at each demanded directory node. Ordered grouping in the fallback
+does not prove that this separate path has stopped repeated scanning, nor that
+either path dominates the declaration-scale worker. Establish the executed
+path before assigning a measured gain to an index change.
+
+** Efficiency contract for the algorithm
+
+Let V and E count selected metadata identities and declared edges; D counts
+actually demanded business receivers; A is the reverse-reachable set of changed
+receiver owners in the actual read graph. For authentication boundary b, S(b)
+is its complete observed support, including source bytes and callback records.
+These are derived runtime sets, not user-maintained manifests.
+
+| Operation | Structural objective | Required qualification |
+|-----------+----------------------+------------------------|
+| Select metadata | One first expansion per identity; process every edge occurrence and frame | Real index equality, declaration/Contract callback cost, complete required edges |
+| Demand a scope | Construct reached scopes and obligations, reuse native receiver-local slot cells | Requirement admission order; opaque whole-scope Contracts may force more than one export |
+| Read a hot slot | Reuse its value/layout and issuer-owned prepared dependency topology | Fresh authentication of S(b); a cache hit does not imply constant-time admission |
+| Change one value | Invalidate A and evaluate demanded affected receivers | Complete actual-read registration; receiver granularity, not slot-minimality |
+| Return a plan | Retain final normalized receiver and plan association | Independent checks across effects and final currentness remain mandatory |
+| Retain a graph | Count unique strongly reachable payloads plus necessary edges | Shared objects charged once; closure environments and weak/strong roots measured separately |
+
+Total work must account for index operations, role/Type construction, allocation
+and the sum of authentication work over all required boundaries. In particular,
+if every opaque callback can affect the entire selected graph, complete support
+checks can remain quadratic. POO caching alone cannot justify removing that
+term. Closing it requires a source-derived support/effect boundary or a different
+semantic phase; it cannot be authorized by a manual purity flag. Do not promise
+O(V+E) for complete publication while only proving that bound for traversal.
+
+For incremental evaluation, reuse =IncrementalRoles.actualReadInvalidates= and
+=unrelatedRetained= rather than inventing another cache. Their assumptions
+include complete dependency extraction and an invalidation set containing only
+affected owners. A global Contract or shared provider can legitimately make A
+large. The performance claim is proportionality to the actual affected region,
+not a promise that every single-value edit affects exactly one slot.
+
+SysML owns these workload and phase boundaries; Lean owns frame refinement,
+ordered obligations and incremental correspondence. Existing Quint controls
+=SourceClosureWork_drop=, =_repeat=, =_reuse= and =_wideGuard= respectively
+exercise dropped edges, repeated expansion, reuse across an effect and checks
+outside the support. They remain bounded trace counterexamples, not a proof of
+asymptotic complexity or measured memory. No duplicate frame-count model is
+needed in Quint.
+
+Before another complete regression, focused controls must establish:
+
+- an unselected provider with a failing initializer remains untouched;
+- declared metadata dependencies are checked without business construction;
+- first access constructs the requested scope, subsequent reads use native
+  structure reuse, and independent public admission still checks currentness;
+- disabled, undeclared and cyclic requirements reject before effects;
+- aliases, reexports and duplicate leaf names retain actual source ownership;
+- constructor hooks, procedure identity, observer order and nested failure
+  restoration retain their native semantics;
+- a child changing a port follows final configuration; explicit mismatch,
+  two-party conflict, changed source and a stale plan remain rejected;
+- build and Ops remain inert until their explicit existing entrypoints.
+
+Use existing =init.exports.tests= and official std/test. Record first demand,
+hot read, changed-value evaluation and build work separately. Keep the declared
+heap, idle and total budgets. A full batch with reproducible idle failures is
+failure evidence, not a benchmark or reason to keep rerunning it.
+
+* Capacity and trust limits
+
+** Integrated source-level refinements
+
+The closed role-analysis route no longer re-enters the general Generic query
+for every datum. Its Function profiles are derived from the actual declared
+methods and selected by native C4 identity/order after fresh policy checks.
+Changed/open state retains full Generic dispatch and every result retains Type
+validation. The source/proof/runtime correspondence belongs to
+[[file:../../../dev/sysml/20-module-loading/20.23-typed-functional-role-analysis.org][Typed Functional Role Analysis]],
+not a second Loader strategy or user-visible execution flag.
+
+Incremental correspondence controls now use =with-slot-dependencies= rather
+than an observer-side collector. See
+[[file:../../../dev/sysml/20-module-loading/20.03-retention-and-incremental-roles.org][Retention and Incremental Roles]]
+for captured-closure enrollment, affected-owner equivalence and historical-edge
+limits. Production automatic Loader enrollment is still subject to its existing
+complete-CI gate. Value mutation, filesystem source changes and native Make
+compilation remain separate workloads and authorities.
+
+These refinements preserve the original issued dependency support. Removing
+Generic preparation alone does not establish an end-to-end CPU or capacity
+gain. Qualify complete graph selection separately from Scope activation and
+Harness/compilation, retaining actual source-read and authentication counts.
+
+** Remaining capacity and execution premises
+
+*** One official Harness; distinct capacity workloads
+
+=t/qualification/module-scale/fixture.ss= now publishes an ordinary POO
+=.verify= assertion function and lazy =exports=/=modules= resource slots.
+=declaration-scale-case= maps it into the EXISTING =std/test= Case. The generated
+module tree contains the four real role files and its real =yuanxu!= init;
+there is no generated worker suite, second =.run=, compiler/signing pass or
+nested =gerbil test= process inside a capacity Case. Explicit execution API
+tests retain their separate end-to-end purpose. The normal Just entry remains
+the heap-fenced controller for the official framework, not another assertion
+engine. Scale Cases explicitly retain the 180-second ceiling; test preparation,
+Harness startup and Fixture file generation are not module evaluation times.
+
+The atomic adapter is =dev/test-file.ss=. It invokes the installed
+=:gerbil/tools/gxtest:main= in the current heap-fenced VM, with official CLI
+arguments. It never imports init, constructs a Script/Process, compiles support
+or starts another Harness. Build specifications and issuance belong to the
+independent build phase. Domain source authentication remains an obligation of
+the actual module/publication APIs and their Cases; a generic test-launch
+receipt cannot establish it. Standard Suite facades export existing Suites and
+must not execute them or manufacture completion records at import time.
+
+The test projection publishes source inputs and =std-make-spec=; it does not
+publish a =.run= or =.compile= scheduler. No runtime binding to =std/make:make=
+is needed. The native =defbuild-script= consumer in =build.ss= owns Make
+dispatch; artifact issuance encloses that existing build action, rather than
+starting another one. The installed =:gerbil/tools/gxtest= imports Suites and
+executes the Harness; it does not run =build.ss=. Thus =gerbil build= and
+=gerbil test= retain separate responsibilities. A deferred module-binding
+action is an in-process binding lookup, not by itself a process launch; its
+removal here eliminates duplicate scheduling responsibility. The former runtime test compiler, module execution factory and their
+=.run=/=.compile= facade have been removed. Metadata tests assert their
+absence. Standard module Suites are passed to the installed tool directly;
+standalone Script qualifications retain only explicit external-process checks.
+Ordinary =t/= tests use the installed tool's default directory discovery. No
+product-side test driver discovers or loops over those files; explicit module
+selection, recursive directories and specialized qualification inputs are
+distinct requests. Native discovery defines their inventory, so earlier custom
+recursive/exclusion counts are not evidence for this entry.
+
+The assertion functions live together in =workloads.ss=; no Runner or Builder
+is introduced. Three workloads must remain distinguishable:
+
+| Workload | Existing entry | What is actually demanded |
+|----------+----------------+---------------------------|
+| Observed qualification | =module-declaration-1000-test.ss= / =module-declaration-10000-test.ss= | Complete declaration graph with the original source-event assertions |
+| Ordinary complete admission | =module-runtime-selection-1000-test.ss= / =module-runtime-selection-10000-test.ss= | Complete declaration graph without a source observer; business scopes remain cold |
+| Ordinary values | =module-runtime-values-1000-test.ss= / =module-runtime-values-10000-test.ss= | A real thousand/ten-thousand-name namespace; demanded provider/consumer scopes, hot value and one Config receiver edit |
+
+The ordinary value workload does NOT claim that all business scopes were
+activated or all declarations admitted. It checks original issued-read refusal
+after the edit, exact recomputation count, unrelated cached identity, cold
+unselected values/scopes, and an independent narrow source-currentness call.
+The cold =selected-graph= export check is only a projection-slot observation:
+it cannot establish that the resolver has not built that graph internally.
+Current =source/link.ss:resolve= explicitly resolves all init-selected roots
+before linking even one requested scope. Therefore a value-only benchmark can
+still stop inside complete declaration admission. It must report that phase and
+leave hot/incremental results unavailable when initial demand never returns.
+Do not narrow those roots just to improve a number: independent selected
+contributions and feature requirements must remain complete. Any removal of
+that prerequisite needs the metadata/support correspondence and omission
+counterexamples checked first. Use the published Just test-file
+entry for each file. Raw measurements and failed transcripts stay in local/CI
+artifacts; this Org contains the design and reproducible entries only.
+
+*** Context membership construction
+
+The old =module-scope-context?= tail searched the complete namespace with
+=memq= for each selected identity. The producer now builds a private native
+eq-hash index once in that invocation when the already validated fields remain
+warm, native precedence is prepared, the receiver has no protocol and the
+actual read-observer/precheck state is compatible. Unknown/open routes retain
+their original per-element reads and callback order. No contributor flag or
+cached admission result selects this branch.
+
+=MetadataProjection.SelectionIndex.lookup_exact= proves lookup equivalence;
+=selected_membership_exact= and =first_missing_unchanged= preserve the predicate
+and ordered missing-identity result. The native control captures the original
+issued records without installing an observer; an open-observer control retains
+all original deliveries. Native PBT compares both routes, including absent and
+duplicate selections, and a same-spelling uninterned-symbol control rejects
+identity substitution. This removes the repeated list scans; it does not prove
+constant-time hash primitives, native metadata extraction in arbitrary unsafe
+reflection, an end-to-end CPU gain or capacity within the heap/deadline.
+
+*** Source authentication: support, effects and query keys
+
+The existing scale worker now attributes physical reads by authentication phase
+and source ownership. Ownership comes from the actual Graph's =init-source=
+directory; its agreement with the worker's source root is asserted. The worker
+retains only bounded phase/family counters, forwards the original observer at
+the original point, and never retains another path/record graph. Its output is
+an execution artifact, not an authorization or a substitute for currentness.
+
+The worker explicitly installs =current-module-source-observer=. This is a
+semantically open execution mode, not a zero-cost counter: =current!= keeps the
+eager snapshot route, and =publication-metadata-current= retains the observed
+preparation tail. Thus its physical-read counts describe the observed
+qualification workload, not an unobserved application's minimum work. Keep
+those assertions and their budgets; do not remove observers to make the same
+Case pass. A normal-runtime comparison must separately state observer state,
+use the same sources in a fresh native receiver/context, and report first
+Graph demand, first scope, hot reads and affected-value reevaluation apart.
+An already cached Graph or a whole Harness duration cannot stand in for any
+of those measurements. Existing private scalar operation measurement does not
+install the source observer; it is the appropriate owner for normal-route
+timing attribution, without a purity flag or a second caching protocol.
+
+Do not infer redundant authentication from a repeated compiler-tool path.
+The same path may be checked on both sides of an opaque callback. A pure byte
+window ends at such a boundary; a later window must read again. Within a window,
+physical bytes may be shared while every independent requirement and nested
+collector still enrolls. =SourceWindows.check_exact= and
+=conflicting_requirements_rejected= establish this distinction for a stable
+world and complete observations; they do not establish that Scheme callbacks
+are read-only.
+
+The reader's private append-only tool table permits the existing closed query
+to use its owner procedure and cardinality. The open-observer route deliberately
+materializes its snapshot before query delivery and uses the actual values.
+Do not substitute path/cardinality/text length for those values, move snapshot
+materialization across callbacks, or swallow a hit callback's original error.
+The official [[https://gambitscheme.org/4.9.8/manual/][Gambit hash documentation]]
+specifies equality compatibility for =equal?-hash=; it is not evidence of the
+installed implementation's traversal cost. A custom hash or snapshot cache is
+not justified merely by seeing source strings in a key.
+
+Reproduce through =just test-file t/module-source-cost-test.ss= and
+=just test-file t/module-declaration-calibration-test.ss= from Core, then the
+existing Gitea/PostgreSQL regression. The first covers equal-sized distinct
+snapshot inputs, observer failure identity, nested enrollment and fresh return
+checks. The second attributes real declaration work while preserving the
+existing local-guard, deferred-role and stale-source controls. Neither is a
+replacement for the thousand-module runtime Case or evidence that capacity is
+closed. Build preparation and Harness time remain separate from Graph demand.
+
+*** Capacity target
+
+Selection should prepare its metadata graph in O(V+E) structural work and retain
+O(V+E) associations. Demand should construct only reached business scopes and
+exports. Reuse issuer-owned topology and native POO caches; every required
+authentication and source/effect boundary remains fresh. These are algorithmic
+targets, not a measured latency guarantee or a bound on arbitrary domain code.
+
+This is an enforceable engineering boundary for managed module entrypoints,
+not a sandbox for arbitrary Scheme. Imported macros can execute during expansion;
+checking expanded output afterward cannot undo those effects. Macro governance
+and trusted compiler/package boundaries remain explicit prerequisites. Unsafe
+reflection, dynamically fabricated eval and direct foreign effects require
+separate trust/execution controls. A source warning alone cannot establish
+that arbitrary code is pure or that a module is safe to execute.

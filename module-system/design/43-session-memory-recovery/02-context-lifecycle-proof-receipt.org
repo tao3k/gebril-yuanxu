@@ -1,0 +1,132 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.02 Context Lifecycle Proof Receipt
+:PROPERTIES:
+:ID: agentic-ai-lab-context-lifecycle-proof-receipt-20261014
+:STATUS: historical-local-proof-case-pass-runtime-open
+:DATE: 2026-10-14
+:DESIGN: agentic-ai-lab-agent-context-lifecycle
+:END:
+
+* Qualification boundary
+
+This is the earlier proof-only input cut. Scheme semantics have since moved
+to Modules/ai-agentic-context. The identities/results below remain historical evidence,
+not verification of the current module or the new real ORG consumer.
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns the generic lifecycle. [[file:../../../../packages/lambda-aitia/docs/rfcs/0015-memory-ownership-and-consumer-boundary.org][AITIA RFC 0015]] is only an SDLC
+consumer. These checks execute a new parent-owned proof Case, not the previous
+=MemoryReuse= slice. No runtime implementation, installed dependency pin,
+provider, binding, old Rust Memory or automation is changed or enabled.
+
+The worktree baseline is Agentic AI Lab =main@7ab549d060c98b9a0997f6f1879da3d0eec4b07d=.
+The tested proof additions are uncommitted working-tree content identified
+below, not evidence that this baseline commit contains the new model.
+
+* Executed gates
+
+The [[file:../../../../packages/proofs/context-lifecycle/README.org][reproduction entry]] runs the three gates serially and verifies input
+identities before/after. It exited zero with =CONTEXT-PROOF-PASS= and
+=runtime-conformance=not-claimed=.
+
+| Gate | Actual local result | Resource boundary |
+|------+---------------------+-------------------|
+| Quint 0.33.0 / TLC through Apalache 0.62.1 | 15 checks passed; safe graph exhausted | 60s total / 12s silence per invocation, 1 worker, 512MiB heap |
+| Lean 4.34.0 / pinned LeanPOO | library build passed, 14 jobs; 13 laws / 13 guards | existing 120s total |
+| ASCENT Scheme DSL through installed package | 23 controls passed in real Scheme | existing parent 120s total / 5s output deadline, 1GiB heap |
+
+The safe Quint check generated 30,549 states, found 5,257 distinct states and
+left zero queued states. Each positive-state witness below deliberately checks
+the negation of a reachable state. Its checker exit 1 and actual counterexample
+are expected evidence, not a failed positive model. Unsafe mutation controls
+also require exit 1, a violated invariant and a concrete trace. Syntax errors,
+timeouts or incomplete safe exploration cannot qualify as those counterexamples.
+
+| Check | Role | Distinct states at completion/counterexample |
+|-------+------+---------------------------------------------|
+| safe | All six safety properties, queue exhausted | 5257 |
+| formed | Formation reachable | 3 |
+| read-only | Repeated reads without actual use reachable | 33 |
+| successful-use | Scoped successful-use consolidation reachable | 138 |
+| attributed-failure | Failure-pattern retention with counterexample reachable | 151 |
+| stable-old | Reviewed stable constraint retained after elapsed time | 265 |
+| reopened-history | Reopening without history loss reachable | 266 |
+| revision | Revision with preserved counterexample reachable | 66 |
+| read-as-use | Unsafe read-count admission refused | 327 |
+| environment-ignored | Unsafe stale environmental assessment refused | 55 |
+| universal-decay | Unsafe age-only suppression of stable constraint refused | 91 |
+| counterexample-loss | Unsafe loss of defeater refused | 51 |
+| history-loss | Unsafe loss of consolidation history refused | 269 |
+| source-ignored | Unsafe stale source assessment refused | 55 |
+| old-use-on-new-source | Unsafe reuse of old-cut use basis refused | 422 |
+
+LeanPOO's executable =pending= guards verify: an elapsed-time-only patch
+does not reopen a time-independent constraint; environment/source patches do;
+an added relation requires checking. Functional =Patch.then= preserves sequential
+composition. The dependency-completeness and frame premises are explicit, not
+a proof that a runtime discovers every dependency.
+
+The three printed Lean axiom audits report standard Lean dependencies:
+=impactedObligationReopens= uses =propext, Classical.choice, Quot.sound=;
+=stableOutsideTimeFootprint= uses =propext, Quot.sound=;
+=revisionsCompose= uses =propext=. No new axiom or admitted =sorry= is introduced.
+
+ASCENT controls exercise unadmitted formation refusal, read/use separation,
+selection distinct from eligibility, transient time drift, stable age retention,
+environment drift, preservation of failed outcomes/defeaters, source revision,
+old selection refusal, incomplete challenge coverage and relation retraction.
+The facts declaring actual use/review/source admission are test premises; the
+engine does not verify outcome truth or authenticate those facts.
+
+* Corrections observed during verification
+
+The initial model failed after =Assess -> Time -> Challenge -> Revise=: an old
+assessment marker made the stable-time property require an already reviewed
+state after revision. Revision now clears the assessment stamp while keeping
+history and counterexamples. This earlier failure is not a current-head result.
+
+Correspondence review then found that actual-use evidence also needed source
+and environment binding. =useSource/useEnv= and =oldUseCannotSupplyBasis= now
+refuse automatic old-cut admission; the mutation control exercises that refusal.
+
+The initial Scheme invocation accidentally passed =-e= to the fixture's =main=;
+the corrected invocation relies on the normal script entry. A second fixture
+failure required the ASCENT session to run before source replacement. The
+fixture now follows the existing session protocol; no library was changed.
+
+* Input identities
+
+SHA-256 values refer to raw file content, not host-local paths. The verifier
+checked these inputs and 6,373 compiled Scheme load-input files before/after;
+all identities were unchanged during the successful execution.
+
+| Repository-relative input | SHA-256 |
+|---------------------------+---------|
+| packages/proofs/context-lifecycle/ContextLifecycle.qnt | 1acb82ae629e00291ce8d723ea186838b672570c2c38b130202eea2cb17d6e46 |
+| packages/proofs/context-lifecycle/relations.ss | d8396b72c54095bd93742328f774a29e5877c5514b30a1e3a770eb8f4b250864 |
+| packages/proofs/context-lifecycle/check_quint.py | 0e052031212264579f0cc70029a2435903ed06b5ff4556c418291ac1d36e47d3 |
+| packages/proofs/context-lifecycle/verify.py | 77e9dac69db3eaa8344c1895ce9de71af3b3b030b50f392a3b4ea81a00fb8e01 |
+| packages/proofs/context-lifecycle/tlc-config.json | 080c5753f5321f32cd29cc140144a2d659b3dc6b7b1950c23a2ad59e981764b1 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean | a06a1b7163f74a1d7bec466f453c13708658b90391ba8bc7e005b4337b8ba3a9 |
+| packages/proofs/lean-poo/lakefile.lean | 456ca8fe8477d3fac1970f626cedf0a74df5a3c7dda7b739fb673750afef44aa |
+| packages/proofs/lean-poo/lake-manifest.json | a1201108b02524eebc7a8bc053943b316cd4ff283ffbfe7b80a7c92eaec6d88a |
+| packages/proofs/lean-poo/lean-toolchain | 8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632 |
+| scripts/temporal/run_with_progress.py | 07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611 |
+
+Compiled Scheme inventory aggregate SHA-256:
+=9d275d011e5c75c09df0bad254297af417e2047d3321d3027e9606676be9472f=.
+The selected ASCENT source checkout reports
+=f53a9a3954685111c751140090dfd95e3d081717=; compiled-content identity is recorded
+separately and does not prove its build derivation from that source revision.
+LeanPOO's existing lock and checkout agree at
+=71609603d45bead8eec6375471991a4f76dbb430=; no dependency update was made.
+
+* Remaining obligations
+
+This verifies the bounded projection and its reviewed cross-language Cases.
+It does not prove a cross-language bisimulation, current runtime correspondence,
+ORG source extraction for this new lifecycle, Human review interaction,
+Governance authorization, provider retention/deletion, compression fidelity,
+value estimation or measured Agent benefit. Prior ORG/Contract reuse receipts
+remain historical application-slice evidence; they are not rebound to this
+lifecycle by a link. No remote CI, commit or push is claimed.

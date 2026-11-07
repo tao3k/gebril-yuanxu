@@ -24,6 +24,7 @@
         clos-generic-declaration-ir-name clos-generic-declaration-ir-lambda-list
         clos-generic-declaration-ir-argument-precedence-order
         clos-generic-declaration-ir-method-combination
+        clos-generic-declaration-ir-protocol
         clos-generic-declaration-ir-documentation
         clos-generic-declaration-ir-generic-function-class
         clos-generic-declaration-ir-method-class
@@ -83,7 +84,7 @@
 ;;; Generic IRs separate lambda-list shape from dispatch precedence and
 ;;; method-combination selection.
 (defclass clos-generic-declaration-ir
-  (name lambda-list argument-precedence-order method-combination documentation
+  (name lambda-list argument-precedence-order method-combination protocol documentation
         generic-function-class method-class declarations methods source))
 ;;; A generic's method-combination reference retains its hygienic descriptor
 ;;; name separately from the option forms supplied to that combination type.
@@ -109,7 +110,7 @@
 ;;; computed without reparsing source forms.
 (defclass clos-lambda-declaration-ir
   (required optional rest keys allow-other-keys aux source))
-;;; Required parameter IRs distinguish universal, class, and eql dispatch.
+;;; Required parameter IRs distinguish universal, class, prototype, and eql dispatch.
 (defclass clos-parameter-declaration-ir (variable kind target source))
 ;;; Optional parameter IRs preserve default and supplied-p ownership.
 (defclass clos-optional-declaration-ir (variable initform supplied source))
@@ -176,7 +177,7 @@
         (hash-put! seen name #t)
         (loop (cdr rest)))))))
 
-;;; Required method parameters alone may carry class or eql specializers;
+;;; Required method parameters alone may carry class, prototype, or eql specializers;
 ;;; generic declarations retain unspecialized identifiers.
 ;; : (-> Syntax (values Syntax Symbol (Maybe Syntax)))
 (def (parse-required-parameter source specialized?)
@@ -185,20 +186,29 @@
     (values source 'any #f))
    (specialized?
     (let (items (clos-syntax-list
-                 source "specialized parameter must be (variable class)"))
+                 source "specialized parameter must be (variable specializer)"))
       (unless (= (length items) 2)
         (clos-syntax-error 'poo-clos-invalid-specializer
                            "specialized parameter expects two forms" source))
       (let ((variable (clos-identifier
                        (car items) "parameter must be an identifier"))
             (specializer (cadr items)))
-        (let (specializer-items
-              (and (pair? (syntax-e specializer))
-                   (syntax->list specializer)))
-          (if (and specializer-items
-                   (= (length specializer-items) 2)
-                   (clos-literal=? (car specializer-items) #'eql))
-            (values variable 'eql (cadr specializer-items))
+        (let (kind
+              (syntax-case specializer ()
+                ((head . _)
+                 (cond
+                  ((clos-literal=? #'head #'prototype) 'prototype)
+                  ((clos-literal=? #'head #'eql) 'eql)
+                  (else #f)))
+                (_ #f)))
+          (if kind
+            (let (items (syntax->list specializer))
+              (unless (and (list? items) (= (length items) 2))
+                (clos-syntax-error
+                 'poo-clos-invalid-specializer
+                 "prototype/eql specializer expects exactly one target"
+                 specializer))
+              (values variable kind (cadr items)))
             (values variable 'class specializer))))))
    (else
     (clos-syntax-error 'poo-clos-invalid-generic-lambda-list
@@ -460,6 +470,7 @@
                  'argument-precedence-order)
                 ((and head (clos-literal=? head #'method-combination))
                  'method-combination)
+                ((and head (clos-literal=? head #'protocol)) 'protocol)
                 ((and head (clos-literal=? head #'documentation))
                  'documentation)
                 ((and head (clos-literal=? head #'generic-function-class))
@@ -514,23 +525,29 @@
             (parse-inline-generic-method name option))))
    options))
 
-;; : (-> [Syntax] (values (Maybe Syntax) (Maybe Syntax) (Maybe Syntax) [Syntax]))
+;; : (-> [Syntax] (values (Maybe Syntax) (Maybe Syntax) (Maybe Syntax) (Maybe Syntax) [Syntax]))
 (def (parse-generic-metadata options)
-  (let loop ((rest options) (documentation #f) (generic-class #f)
+  (let loop ((rest options) (protocol #f) (documentation #f) (generic-class #f)
              (method-class #f) (declarations '()))
     (if (null? rest)
-      (values documentation generic-class method-class
+      (values protocol documentation generic-class method-class
               (reverse declarations))
       (let* ((option (car rest))
              (items (syntax->list option))
              (head (car items))
              (arguments (cdr items)))
         (cond
+         ((clos-literal=? head #'protocol)
+          (unless (and (list? arguments) (= (length arguments) 1))
+            (clos-syntax-error 'poo-clos-invalid-generic-option
+                               "protocol expects one expression" option))
+          (loop (cdr rest) (car arguments) documentation generic-class method-class
+                declarations))
          ((clos-literal=? head #'documentation)
           (unless (= (length arguments) 1)
             (clos-syntax-error 'poo-clos-invalid-generic-option
                                "documentation expects one expression" option))
-          (loop (cdr rest) (car arguments) generic-class method-class
+          (loop (cdr rest) protocol (car arguments) generic-class method-class
                 declarations))
          ((clos-literal=? head #'generic-function-class)
           (unless (and (= (length arguments) 1)
@@ -538,20 +555,20 @@
             (clos-syntax-error 'poo-clos-invalid-generic-option
                                "generic-function-class expects one class name"
                                option))
-          (loop (cdr rest) documentation (car arguments) method-class
+          (loop (cdr rest) protocol documentation (car arguments) method-class
                 declarations))
          ((clos-literal=? head #'method-class)
           (unless (and (= (length arguments) 1)
                        (identifier? (car arguments)))
             (clos-syntax-error 'poo-clos-invalid-generic-option
                                "method-class expects one class name" option))
-          (loop (cdr rest) documentation generic-class (car arguments)
+          (loop (cdr rest) protocol documentation generic-class (car arguments)
                 declarations))
          ((clos-literal=? head #'declare)
-          (loop (cdr rest) documentation generic-class method-class
+          (loop (cdr rest) protocol documentation generic-class method-class
                 (foldl cons declarations arguments)))
          (else
-          (loop (cdr rest) documentation generic-class method-class
+          (loop (cdr rest) protocol documentation generic-class method-class
                 declarations)))))))
 
 ;;; Generic IR construction joins independently validated lambda-list, APO, and
@@ -562,7 +579,7 @@
                       "generic function name must be an identifier or (setf name)")
   (validate-generic-options options source)
   (let (lambda-ir (parse-clos-lambda-list lambda-list #f))
-    (let-values (((documentation generic-class method-class declarations)
+    (let-values (((protocol documentation generic-class method-class declarations)
                   (parse-generic-metadata options)))
       (clos-generic-declaration-ir
        name: name lambda-list: lambda-ir
@@ -570,6 +587,7 @@
        (parse-argument-precedence-order
         (clos-lambda-declaration-ir-required lambda-ir) options)
        method-combination: (parse-method-combination options)
+       protocol: protocol
        documentation: documentation generic-function-class: generic-class
        method-class: method-class declarations: declarations
        methods: (parse-inline-generic-methods name options)

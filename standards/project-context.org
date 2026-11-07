@@ -1,0 +1,43 @@
+#+title: Project Context Standard
+#+language: en
+#+property: STATUS draft-not-full-prj-conformance
+
+* Reference and scope
+
+Reference: [[https://github.com/tao3k/prj-spec/blob/6c23946d6a38456d6aa8b9190eb0f2af6ac9dab4/PRJ_SPEC.md][PRJ Base Directory Specification v0.1]], inspected at
+revision =6c23946d6a38456d6aa8b9190eb0f2af6ac9dab4=.
+Its README labels the specification unstable. It standardizes directories,
+not POO methods or =.run=. The operation standard is a separate Core decision.
+
+* Project context rules
+
+- An explicitly supplied source/init file identifies declaration ownership.
+  Relative source paths resolve against that file, never a later process cwd.
+- Project-tool discovery should honor =PRJ_ROOT= before fallback heuristics;
+  an explicitly selected source must not silently change package identity.
+- PRJ configuration discovery honors =PRJ_CONFIG_HOME=, then the PRJ-defined
+  fallback to =PRJ_ROOT/.config=. This does not move an explicitly named
+  =init.ss= or require another copy of that declaration.
+- Cache placement follows the PRJ rules when that resolver is implemented:
+  explicit =PRJ_CACHE_HOME=, otherwise the project-ID/XDG route, otherwise
+  =PRJ_ROOT/.cache=. These are storage locations, not proof of cache validity.
+- A cache key must retain source generation, relevant input identities and
+  implementation/Schema versions. Sharing =PRJ_ID= across checkouts alone is
+  insufficient for reusing an admitted value or execution result.
+- Runtime directories belong to the execution boundary. Temporary test
+  directories belong to their fixtures and must be released after body failure.
+- Documentation records reproducible relative inputs, not machine-specific
+  absolute paths. Runtime-resolved absolute paths remain necessary identities.
+
+* Current implementation boundary
+
+Init source ownership, test source-root association, guarded input snapshots
+and fixture cleanup reuse existing Core mechanisms. This change does not add
+a complete PRJ environment resolver, relocate user files or claim compatibility
+with every PRJ variable. PRJ's project-ID length expression and UUID example
+need an explicit interpretation before implementing a validator; this draft
+does not silently choose one.
+
+The API gain is stable project context across build and test consumers. The
+remaining cost is explicit policy for environment precedence and cache reuse;
+directory naming alone cannot settle these questions.

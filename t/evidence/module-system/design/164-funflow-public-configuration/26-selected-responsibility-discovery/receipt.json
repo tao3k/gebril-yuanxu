@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-15",
+  "scope": "design-and-reference-proof-no-module-adapter-no-loader",
+  "lean": {
+    "command": "lake build PooFlowProfileAssociationProof",
+    "exit": 0,
+    "jobs": 48,
+    "new_theorems": 5,
+    "new_controls": 2,
+    "source_sha256": "765971bde96a46b93d21bb5469fe3598f3c6b46749f7842d89d60c03291c97dd",
+    "log_sha256": "1a670673447b80ea86de6998d12a81e2bcdda29df049dc25ed0e31cb585ebabe"
+  },
+  "scheme": {
+    "scope": "reader-only-not-expanded-compiled-or-executed",
+    "forms": 11,
+    "design_blocks_sha256": "89bb0dce0c74f4dce71f44e27ef9bbf9b216133966d2a9e856c9378344336580",
+    "reader_log_sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e"
+  },
+  "public_core_types_sha256": "cff7774aa8e6a6daaeae866984fb8a5ec291fe2045a326f846b6e1f4f22a325f",
+  "automatic_projection_implemented": false,
+  "dependency_discovery_completeness_proved": false
+}

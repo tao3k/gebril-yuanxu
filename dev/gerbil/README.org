@@ -1,0 +1,130 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: Native Gerbil package TAGS repair
+
+Normal =gerbil pkg deps --install= must retain automatic editor indexing.
+The earlier =--no-tags= candidate was rejected and removed. Editor =TAGS= is
+not a Git Tag or revision; no new version-selection constraint is introduced.
+
+=gxpkg-tags.patch= changes only native =src/tools/gxpkg.ss=. Reference:
+Gerbil =1cfb032= as shipped by Homebrew
+=0.19.20261009110849.1cfb032.patch618d76f9eb72=; unpatched file SHA-256:
+=e4ca5232e0d4192f6a646831ebe6cef176da2e688f03d911df72660e0c1ec297=.
+Verify this identity before applying the patch. System files are unchanged by
+qualification in a private tool environment.
+
+* Actual fault and repair
+
+Native =pkg-retag= used =run-process= with its default captured stdout and
+=read-all-as-string= coprocess, then discarded that returned string. All source
+index completion events were hidden until the subprocess finished. The
+existing compiler progress reader also did not recognize native =TAG= events.
+A busy indexer could therefore appear idle to the unchanged 60-second watchdog.
+
+The repair invokes Gerbil's existing =gerbil tags= entry, with =coprocess: void=
+and =stdout-redirection: #f=, matching native build/fetch process streaming.
+This entry also fixes the observed pinned-tool discrepancy where standalone
+=gxtags= skipped a tiny source while =gerbil tags= indexed its exported symbol.
+Index generation and errors remain owned by the native tool. Its import/module
+and export resolution are unchanged. No scanner, loader or cache is added.
+
+Only completed native =TAG <source>= events advance the existing work counter;
+ordinary output, skip/failure messages and elapsed time do not. Liveness is not
+acceptance: the actual index must contain all 1000 =ScopeContract= and all 1000 =Scope.= native public bindings in the generated source catalog. Native indexing must
+not compile or initialize those business owners.
+
+* Bounded native expansion lifetime
+
+The corrected full-language catalog exposed heap overflow near owner 790 in one
+native tagger process at the unchanged 2 GiB fence. Directory filenames are
+small; the retained native module syntax is not. The native package tool now
+partitions its same ordered source traversal into serial groups of 256 files,
+using the existing =gerbil tags -a -o= protocol. Each process releases its native
+expander graph on exit. There is no new loader, scanner, persistent registry or
+cache; only the native tool owns source expansion and export resolution.
+
+All groups belong to the SAME outer 180-second command/60-second idle window;
+there is no per-group budget reset or heap increase. A same-directory temporary
+index is renamed into =TAGS= only after all native tool calls succeed. A failing
+group leaves the old index intact. Input partition/order and pending width are
+modeled by =NamespaceProjection.IndexBatches= and its two theorems; native source
+identity, phase behavior, index contents and resource capacity remain executable
+obligations. Separate invocations use Gerbil's existing native phase/import
+contexts; no application Module objects are transported between them.
+
+* Reproduce the private native candidate
+
+Copy pinned =gxpkg.ss= and unchanged sibling =env.ss= into =<candidate>/src=;
+create =src/gerbil.pkg= containing =(package: gerbil/tools)= and create
+=<candidate>/lib=. Apply the patch to the copied native file, or apply it to a
+native source checkout before copying. From an independent Yuanxu checkout:
+
+#+begin_src sh
+just compile-package-tool <candidate>
+GERBIL_LOADPATH=<candidate>/lib:<prerequisite>/lib \
+  GERBIL_PATH=<prerequisite> \
+  just test-file t/package-install-test.ss
+#+end_src
+
+The real =gerbil pkg= driver imports =gerbil/tools/gxpkg= through native Gerbil
+resolution. Qualification uses the normal =deps --install= command, the complete
+1000-owner physical package and its real native index. It checks pinned source,
+zero default owner compilation, exactly 11 downstream targets for two owners,
+zero hot compilations and original scope identity/currentness. All selected
+artifact families are removed from A; B's full SHA-256 snapshot remains equal;
+none are written into the installation environment. Explicit retag is checked
+with a separate tiny native package. All heap, 180-second child and 60-second
+idle limits remain unchanged. Require all three harness success markers and
+no failure markers. A candidate pass does not deploy the system distribution.
+
+There is one integration test over the normal native CLI. The earlier separate
+CLI-suite wrapper and API/install-action switches were removed. Only the outer
+=just test-file= supplies the repository-required timeout and pre-import heap
+fence; Scheme tests invoke the existing Gerbil CLI directly.
+
+* Loading-window authority
+
+A Yuanxu Interface is loading configuration in a =yuanxu!= source window.
+It is not made into a standalone native library by adding =modules/gerbil.pkg=.
+The attempted fixture language/Config-export change was withdrawn. Native
+editor TAGS records native Gerbil exported bindings; a private Config or an
+Interface declaration is not automatically such an export. Indexing must not
+manufacture native exports or infer Module membership from package metadata.
+
+The producer's real =yuanxu!= declaration supplies its 1000-slot logical Module
+index. The consumer use process reflects that actual window and requires every
+scope cache cold, then checks the independently declared two-owner consumer
+closure. Native editor bindings and the logical Module window have separate
+owners. The complete acceptance requires BOTH, with unchanged source syntax.
+
+* Specification projection and compiler dispatch
+
+Reading =init.exports.std-make-spec= preserves Gerbil's native runtime search
+order. Explicit package windows still supply their declared source roots.
+The projection checks and restores the path across its callbacks. Only Make
+dispatch moves its output directory behind the admitted compiler inputs.
+The installed Contract identity test holds an existing receipt across source
+init projection and checks that both its Contract and prototype retain
+identity. The mutation gate separately checks the compiler input order,
+restoration, and refusal of path changes during compilation.
+
+* Core cold-build acceptance
+
+Use a new output environment with an empty =GERBIL_PATH/lib= and the
+declared compiler prerequisites installed. From the Core checkout, run:
+
+#+begin_src sh
+timeout --signal=TERM --kill-after=5s 120s just build
+#+end_src
+
+The 120-second budget covers the full native build. A natural exit and the
+ordinary Make output checks qualify the run. A continuation using partial
+products records recovery separately. Inspect the active compiler workers
+and their targets when a build exceeds its budget.
+
+The measured cold build exited in 112.84 seconds and compiled 274 distinct
+targets. Native Make accounted for 94.42 seconds. The final dynamic sections
+of =preparation=, =artifacts=, and =test-retention= appeared between 93 and
+100 seconds on the build process clock. The =publication-reader= and =link=
+sections completed later. The preceding 60-second sample still showed active
+Gambit and C compiler jobs.

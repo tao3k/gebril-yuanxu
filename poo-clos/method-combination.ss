@@ -3,12 +3,12 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Qualifier grouping and operator policy for POO-native method combinations.
+;;; Qualifier grouping and operator policy for POO method combinations.
 ;;;
 ;;; This leaf is pure with the exception of typed admission failures.  Method
 ;;; invocation and effective-method ownership remain in dispatch.ss.
 
-(import (only-in :clan/poo/object .ref)
+(import (runtime: :clan/poo/object)
         (only-in :std/list/list find)
         "types.ss" "objects.ss")
 

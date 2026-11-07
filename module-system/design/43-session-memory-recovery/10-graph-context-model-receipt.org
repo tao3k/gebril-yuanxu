@@ -1,0 +1,165 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 10.06.43.10 Graph Context Model Verification
+:PROPERTIES:
+:ID: agentic-ai-lab-graph-context-model-verification-20261014
+:STATUS: historical-joint-model-consumer-pass-org-graph-correspondence-open
+:DATE: 2026-10-14
+:END:
+
+* Scope
+
+[[file:09-graph-context-research.org][Research hypotheses]] now have executable consumers, not only natural-language
+claims. These consume LeanPOO v0.1.1, peeled commit
+=d8adf138948c854e7564234bc046387b4a5ee63b=, through the parent Lake lock.
+No second linearizer, new evaluator, runtime storage or binding is introduced.
+
+The Scheme Module still owns ORG capture/projection, collection composition,
+Session selection and evidence admission. Its collection composition is not
+the complete inheritance/override graph protocol. This receipt does not claim
+an ORG-to-C4 simulation theorem or deployed Context orchestration.
+
+* Actual Lean consumer
+
+[[file:../../../../packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GraphContext.lean][GraphContext.lean]] imports the actual C3 cache-coherence theorem, C4
+VerifiedOrder and Object.Memo/Prototype APIs. Five universal consumer laws:
+
+- Complete C3 cached/reference outcomes agree for the same finite graph/roots.
+- Two C4 certificates for the same graph/root have identical outputs.
+- Successful C4 output contains no duplicate ancestor names.
+- Output membership corresponds to the graph's actual ancestry relation.
+- The verified wrapper preserves the checked resolver's exact success/error.
+
+Eight executable guards use those library implementations: shared Project
+diamond, conflicting parent orders, missing parent, duplicate node, exact
+self-cycle diagnostic, local override/final-self dependency, persistent
+revision and child-first order not being a shared prompt prefix.
+
+The override control observes base/branch constraints =2/9= and derived
+values =3/10=. It retains the original object but disproves the unconditional
+claim that an untouched computed declaration must retain its value. The
+revision control retains old =2= while the revised object reads =5=.
+
+=timeout 120s lake build AgenticAILabContextLifecycleProof= passed with 74 build
+jobs. All current Context roots together contain 31 declared laws and 35
+guards; five laws and eight guards belong to this new consumer. Audited new
+laws use only Lean's existing =propext=, =Classical.choice= and =Quot.sound=.
+No new axiom, sorry, disabled linter or widened deadline is added. Upstream
+unused-simp warnings remain visible.
+
+Initial compilation failed because =Except= had no =BEq= instance for the
+guards; controls now inspect actual success values and exact error payloads.
+No semantic expectation was weakened. The initial Quint type check rejected
+scalar =exclude= arguments; the corrected calls explicitly subtract singleton
+sets.
+
+* Finite Quint instance
+
+[[file:../../../../packages/proofs/context-lifecycle/GraphContext.qnt][GraphContext.qnt]] has two sibling roots with shared Project revisions,
+recorded parent cuts, local override, explicit rebase, review stamps, retained
+derivation history and independent grant/revocation transitions. It is a finite
+protocol abstraction, not a resolver or a proof of Host-private grant issuance.
+Revise does not rewrite recorded old parent cuts; rebase is explicit.
+
+| Control | Generated / distinct | Expected result |
+|---------+----------------------+-----------------|
+| Safe freshness, provenance, isolated authority and revocation | 4775 / 1366 | Full finite state space passes |
+| One overridden sibling with another retained | 22 / 18 | Reachability counterexample found |
+| Base revision reopens review and retains old history | 8 / 8 | Reachability counterexample found |
+| Review exists without any grant | 9 / 9 | Reachability counterexample found |
+| Fault: revise while retaining stale review | 42 / 34 | Freshness counterexample found |
+| Fault: copy a grant to the other consumer | 143 / 90 | Authority isolation counterexample found |
+| Fault: replay after revocation | 22 / 18 | Revocation counterexample found |
+
+The first dedicated run passed all 28 Cases, including 21 previous controls.
+The driver requires exit 0 and complete exploration for safe Cases; deliberate
+negative Cases require exit 1, actual TLC invariant violation and a trace.
+Source Git blobs were stable across that run. Limits remain 60s total / 12s
+silence per invocation, one worker and 512MiB; Lean remains 120s.
+
+* Existing Module regression and remaining seam
+
+Current Scheme packages independently reran 90 actual ORG/Session/Assurance/
+Governance controls and 23 ASCENT controls, both passing. They still consume
+Modules, not a copy of the Scheme relation/admission implementation. Those
+controls qualify the previous Module semantics; they are not new graph
+inheritance controls or a cache experiment. The D2 source in chapter 09
+rendered successfully with the installed D2 tool.
+
+The full joint verifier completed with exit 0: 28 Quint Cases, the three Lean
+Context roots, 23 ASCENT controls and 90 ORG controls passed. All 37 declared
+local inputs, 30837 compiled Scheme inputs and the executable were stable
+before/after. The compiled pool aggregate is
+=afe5ecb9de146ff3142b6a075bc5e3ae06f944b2b3cf12326e056ce43a2fd903=;
+the executable is
+=8becf9154b39e78a64724a1dac1c4d691b78a8cdf16029acbb0c89d6ac1849da=.
+This qualifies one local combined gate, not upstream CI or runtime redesign.
+Scheme execution retains 120s total, the existing 5s progress watchdog and
+1GiB heap. No temporary SDK, storage/bindings execution or delivery is used.
+
+* Source identities at the joint gate
+
+| Repository-relative input | SHA256 |
+|---------------------------+--------|
+| packages/proofs/context-lifecycle/ContextLifecycle.qnt | 1acb82ae629e00291ce8d723ea186838b672570c2c38b130202eea2cb17d6e46 |
+| packages/proofs/context-lifecycle/ContextComposition.qnt | 18917b00885b0cedf4a50e0359553edf2f613af1624eac3a9d110ec8ca6a9503 |
+| packages/proofs/context-lifecycle/GraphContext.qnt | cd6353cb8204494b637765bd121583861a8e37bf2a24f2036efeb68d41e45195 |
+| packages/proofs/context-lifecycle/relations.ss | 81feee5206c0f8f667c86865fc7aa3ed9726b5873a297482ebd1b753e44b3b3f |
+| packages/proofs/context-lifecycle/check_quint.py | f8bdb03dcf26f85983233de2b72f6f0cd4fc75d4cacd1b5e362f31fb6c5fe7a0 |
+| packages/proofs/context-lifecycle/verify.py | 652e235a031811cfba16d724edfc7e6b9a026e3092e8379d14618e4c818ee231 |
+| packages/proofs/context-lifecycle/tlc-config.json | 080c5753f5321f32cd29cc140144a2d659b3dc6b7b1950c23a2ad59e981764b1 |
+| packages/proofs/lean-poo/lakefile.lean | fe343463a1294ffd4abe7c841390c7f2f4c569c60b8503e91c747b720d9a403f |
+| packages/proofs/lean-poo/lake-manifest.json | 56538fae427d7c81fc6ae7812e3c12c43a9232af15eb6129a4f0b1a9a35f09fc |
+| packages/proofs/lean-poo/lean-toolchain | 8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean | 2814d15e106b066ebc32fda370b94648d8ea6b39338e2bf72c0cd3dd56ad536b |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/FunctionalComposition.lean | 434aa485fedcb059cd928b69a724b4befba1bcc76662f290461d345bbe232793 |
+| packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GraphContext.lean | ae9a12e947a85801c628559728727687742ebc9bd885e65b0868cc4d135a6785 |
+| scripts/temporal/run_with_progress.py | 07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611 |
+| gerbil.pkg | b0d65d51ed0690021c9b3d96a72298a4b38a69309d51db51e9e1c00ff089c3e2 |
+| modules/ai-agentic-context/admission.ss | 08114f145c31b7fa97f8a8b72010ccfbafbf6e515d25bc7d366a1e871a0c493e |
+| modules/ai-agentic-context/consumers.ss | 88d71cc956f189299d185a127c505c96382b1edc6bd50bb359b2b066eed09b32 |
+| modules/ai-agentic-context/contracts.ss | b262609280ef8865afc478ca74e2e9821c64cafeead97b4e6dbc3fcc1d4cc072 |
+| modules/ai-agentic-context/funs.ss | e8f954fe78172af4bb1271bfca6f47bc876cbaefd6754a71373b8ae866a6d1c9 |
+| modules/ai-agentic-context/interface.ss | 5ff841b8071b903bd542f795aafd2343efc81d27164a7d418d94164c11c68fca |
+| modules/ai-agentic-context/objects.ss | c68c1256ea302d75cae17f4d3fd9489836517829000237baec4f22f4caf6c19d |
+| modules/ai-agentic-context/reasoning.ss | 3a9c844fba1fd2724260e85a2d638fbb9198521af2fd9282bf201f4ce9c26312 |
+| modules/ai-agentic-context/source.ss | 56c0a64f92d2b113d43b708f484e247116d3181bfd843a0e055a3c8a44dd1ad3 |
+| packages/proofs/context-lifecycle/org-context.ss | a69cacd52b1f0cc95eb34847facf5e02d0abfbeb0cdb4afd04dc6b446cb9b629 |
+| packages/proofs/context-lifecycle/context-source.org | b11cfcb19cec1efcfa85b44b233ed4447ceb75c8cc4e83b2504354bbd49e18a1 |
+| packages/proofs/context-lifecycle/admission-controls.ss | ae170d3640481e19a8edf722263371af6bae9a7f50f76e5f2b77c3db92a3c150 |
+| packages/lambda-aitia/modules/assurance/context-consumer.ss | a38f4537be4e70c8c364e8e326139307596acd253f1a81178b8aa65072a92453 |
+| packages/lambda-aitia/t/formal/lifecycle-fixture.ss | 6b67f705ba963c484ad049724d238d06d383f4663f4a44a83c6bd3a9478cd8bd |
+| core/contribution/verification.ss | e190bcb2d426f9d730d172facd417011b669c0c647e15b7db3056bf0b5b8456c |
+| modules/governance/types.ss | 633dd24e50ea80662d7a26e15d98f9419e3e79a867a4b5c2328009191548c5b1 |
+| modules/governance/objects.ss | c81773a19f1248f081a80c39a00618908cd71e8ffaf785d4f787b6893368cba7 |
+| packages/lambda-aitia/modules/assurance/types.ss | fd9df8e1e53365b20dc77cd92a297bfaee3a0957067247c6fb58deead4379db7 |
+| packages/lambda-aitia/modules/assurance/objects.ss | e5a2dfcf5dec17ae9c5e13a68749425af8c1f7cb1275bed3247e3bd2b84b6a02 |
+| packages/lambda-aitia/modules/assurance/funs.ss | 91e0f08035617a83052457aed57cfdcf1f51a810d85e45dfde579dd334eef826 |
+| packages/lambda-aitia/modules/assurance/evidence-admission.ss | f1d9eb576d95ed4c2a4990f83851afde5c014eefb21a8ee56f9726fd5a0a7d31 |
+| packages/lambda-aitia/modules/assurance/host.ss | abfb782fe8ae3c081d6e59a64a5324d5118c379f9ec7e7b56b7e17eda929f660 |
+| packages/lambda-aitia/modules/assurance/effect-host.ss | a274a81d4cc6331a8d5dfc9e56b3eb40a44b797a557f99731b8f55597152d569 |
+
+ORG-to-prototype origin correspondence, C4 suffix-bearing Context policy,
+transitive dynamic graph revision and prompt serialization/physical KV
+measurements remain open. No old receipt is rebound to this source cut.
+
+* Reproduction
+
+Use the existing parent Lean package and the current installed Scheme packages:
+
+#+begin_src sh
+cd packages/proofs/lean-poo
+timeout 120s lake build AgenticAILabContextLifecycleProof
+#+end_src
+
+From the repository root:
+
+#+begin_src sh
+CONTEXT_ASCENT_GERBIL_PATH="$ASCENT_PACKAGE_PATH" \
+  CONTEXT_SCHEME_PACKAGE_PATH="$POO_SCHEME_PACKAGE_PATH" \
+  python3 packages/proofs/context-lifecycle/verify.py
+#+end_src
+
+Selectors name installed package roots supplied by the caller. No local
+absolute path or temporary SDK is part of this document's reproduction contract.

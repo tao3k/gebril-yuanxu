@@ -1,0 +1,122 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.31 Controlled Human Decision Source Replacement
+:PROPERTIES:
+:ID: agentic-ai-lab-context-controlled-human-source-change
+:STATUS: module-protocol-local-joint-pass-remote-durable-open
+:DATE: 2026-10-15
+:END:
+
+* Independent replacement authority
+
+An issued Human source and the recovery authority's binding to it are different
+objects. Retiring a source disables its decisions, but cannot authorize its
+own replacement. [[file:../../../../modules/ai-agentic-context/installation.ss][Modules installation]] now admits a separately preconfigured
+=source-change:= authority when constructing the recovery authority. That exact
+authority must share its Governance Profile; it cannot be attached after failure.
+Without this DI, replacement fails closed rather than permitting reinitialization.
+
+The source-change authority has an independent actual Core verifier and explicit
+host approval operation. [[file:../../../../packages/lambda-aitia/modules/assurance/context-consumer.ss][The Assurance adapter]] checks real evidence/grant before
+and after the configured administrative decision. That decision must authenticate
+the operator proof and bind the recovery authority, expected generation and
+exact target source. It is not a grant derived from the retiring Human source,
+an agent's actor label, a same-name source or ordinary business permission.
+The local Case uses an exact configured operator-proof object and subject; a
+deployed remote operator authentication service is not claimed.
+
+Host-selected source registration remains a trust premise. Another registered
+source may be legitimate in its own context, but equal display names do not make
+it the currently designated source. Copied sources, approvals, proposals and
+Core receipts cannot substitute private issued referents. A no-op replacement
+cannot refresh validity or lower the decision cut.
+
+* Binding and retirement protocol
+
+| Subject | Capture and rule |
+|---------+------------------|
+| Source-change proposal | Recovery authority, expected binding generation, old source/epoch, successor source/epoch, payload and administrative approval |
+| Source-change authorization | Actual Core receipt for that issued proposal, bounded by its publication interval |
+| Source binding | Exact successor source, incremented binding generation and publication-time issuance cut |
+| Recovery proposal | Captured source-binding generation, in addition to its root/install/Human subjects |
+
+Authorization and commit require current Governance, the preconfigured replacement
+authority, exact old binding, captured old source epoch and a live successor at
+the captured successor epoch. Administrative approval is checked again before
+publication and predicates are rechecked after callbacks. A source retiring
+between preparation and commit invalidates the captured permit; a new proposal
+and approval can be made after retirement. Retired targets cannot be rebound.
+
+Publication uses the existing installation -> Human lock order. Under both
+locks it checks old/new source epochs, samples the target's current issuance
+cursor, replaces the binding and increments its generation. Old permits and
+competing proposals cannot publish another replacement from the captured generation.
+Source retirement, recovery publication and binding replacement therefore use
+compatible local serialization boundaries. No distributed transaction is claimed.
+
+The replaced source is not globally retired by this operation. Other recovery
+authorities may share it. A live-source switch and a switch following explicit
+retirement are both supported, but neither revives a retired source object.
+
+* Fresh decisions after publication
+
+Binding a target must not adopt its already issued decisions. A decision is
+eligible for the binding only if its private issuance serial is strictly after
+the cursor sampled at publication. This excludes decisions minted while the
+change was awaiting approval. A new source binding is not an implicit batch
+acceptance of its existing evidence or authorization objects.
+
+Every recovery proposal also captures the binding generation. Rotation makes
+old proposals and Core authorizations stale even if a live source later returns
+in A -> B -> A. The returning source's cut advances to exclude decisions issued
+before its rebind, while its actual global lifetime and other consumers remain
+unchanged. Fresh decisions still require authenticated events, current scopes,
+business approval and real Assurance premises.
+
+These axes remain distinct: source lifetime epoch, binding generation, decision
+issuance serial/cut, controller installation generation, source configuration
+epoch and Session registry generation. Equal numeric values or equal names do
+not identify the same authority. Private issued referents and signed snapshots
+bind the actual subjects.
+
+* Obligations and Query boundary
+
+=org-context-recovery-evaluate= reports current binding/eligibility, completion
+and reopened obligations for an owned recovery proposal. It never returns an
+authorization or an execution permit. Source retirement, changed binding or
+an excluded old decision can reopen a pending owned obligation. A foreign
+proposal does not become this authority's obligation; an already completed
+recovery is not reopened merely because its pending-use predicates are consumed.
+
+A successful source change does not complete a pending controller recovery,
+bootstrap a source, renew a review or issue effect authority. A fresh decision,
+fresh proposal and fresh recovery authorization are still required. Historical
+Project Context is retained. Completed installations are not uninstalled by
+binding replacement; explicit root revocation retains that responsibility.
+
+=org-context-recovery-source-state= is trusted host DI inspection of the issued
+source referent, binding generation and copied cut; it is not a protected client
+Query or a wire disclosure contract. Low-level source-current checks do not
+stand in for recovery admission: the latter always reads its private binding
+generation/cut, irrespective of caller-supplied diagnostic values. Query/GQL
+disclosure and least-authority projection to untrusted clients remain separate.
+
+* Evidence allocation and limits
+
+Quint checks a finite three-source/two-change projection, independent approval,
+retirement/captured-permit freshness, old authorizations, prebinding decisions
+and retained knowledge. Re-preparation replaces the abstract pending receipt;
+Scheme retains distinct concrete proposals and refuses old receipts by identity.
+Quint does not establish arbitrary ABA histories or remote source authentication.
+LeanPOO Focus proves conditional arbitrary-generation succession, old proposal
+refusal and issuance-cut separation; source identifiers represent issued identities,
+not display names. Scheme consumes real ORG-derived Context and actual Module,
+Core, Governance and Assurance objects, including live switches and four binding
+generations with an actual ABA return.
+
+ASCENT continues relational inference over admitted facts, not source registration,
+administrative authorization or binding publication. Its existing gate is a
+regression; no new source-change rule set is claimed. This local protocol does
+not implement durable source history, remote identity transport, multi-process
+CAS, protected disclosure, storage executors, bindings or a replacement Memory.
+[[file:32-human-source-change-verification.org][10.06.43.32]] records executable results and input identities.

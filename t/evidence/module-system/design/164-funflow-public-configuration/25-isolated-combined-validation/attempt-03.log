@@ -1,0 +1,7 @@
+*** ERROR IN gx#core-expand-import%__% -- 
+*** ERROR IN "docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/25-isolated-combined-validation/probe.ss"@5.18-5.29
+--- Syntax Error: cannot find library module
+--- Context: 
+ at expand
+ at top
+... form:   :std/srfi/1

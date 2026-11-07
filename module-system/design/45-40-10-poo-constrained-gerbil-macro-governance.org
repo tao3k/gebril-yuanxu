@@ -1,0 +1,247 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: POO-Constrained Gerbil Macro Governance
+#+subtitle: Public macro admission, expansion closure, and ownership of composition semantics
+#+startup: overview
+
+* RFC status
+
+- Status :: Under discussion
+- Category :: Normative design module
+- Governing principle :: The POO core constrains Gerbil macro governance
+- POO implementation :: =github.com/mighty-gerbils/gerbil-poo@1c3225637525400341a09e958296962c10184ead=
+
+POO objects, prototypes, and native operations own composition semantics.
+Admit macros only when ordinary functions and POO objects cannot express the
+necessary hygienic bindings, surface syntax, or phase semantics.
+
+* Governing principles
+
+#+begin_quote
+A macro may provide a hygienic syntactic projection of POO semantics. POO
+remains the semantic authority.
+#+end_quote
+
+Use the following abstractions in order.
+
+#+begin_src text
+Ordinary functions
+→ gerbil-poo objects and prototypes
+→ Functional combinators
+→ Macros approved through admission review
+#+end_src
+
+Shorter syntax and hiding the object model from beginners are insufficient
+grounds for admitting a macro.
+
+* Authority across the planes
+
+#+begin_src mermaid
+flowchart LR
+    U["User composition expression"] -->|"Provides surface syntax"| M["Gerbil macro plane"]
+    M -->|"Hygienic binding and static provenance"| P["Ordinary POO values"]
+    P -->|"Native object operations"| S["gerbil-poo semantic plane"]
+    S -->|"Composition graph and evaluation demand"| F["Agentic AI Lab evaluation plane"]
+    F -->|"Results and causality"| E["Evidence plane"]
+    S -->|"Bounds the semantics a macro can project"| M
+    E -->|"Requires traceable call sites and expansion origins"| M
+#+end_src
+
+Runtime authority stays with the runtime owner. The POO semantic plane
+interprets objects, prototypes, slots, mix, priority, identity, imports,
+capabilities, and fixed points. The Evidence plane identifies the ordinary
+POO values and native operations produced by expansion.
+
+* Public macro admission contract
+
+A public macro must satisfy all of these requirements.
+
+1. Ordinary functions, POO objects, and functional combinators cannot express
+   the required hygienic binding, source syntax, or phase semantics.
+2. Expansion reduces entirely to ordinary function calls and native POO values.
+3. The result works through ordinary evaluation without a macro-private
+   intermediate language, interpreter, or runtime dispatch.
+4. Evaluation order, dependencies, capabilities, authority, and side effects
+   remain explicit.
+5. Expansion provenance and errors map back to the user's call site.
+6. Tests verify canonical equivalence with handwritten POO expressions.
+7. The macro expands directly to the runtime form without generating further
+   public macros or a macro tower.
+8. The macro belongs to the small, closed public surface reviewed through RFCs.
+
+Internal generation can remove duplication in POO object families, contract
+projections, or manifest declarations. Its syntax remains private.
+
+* Semantics reserved for POO and the runtime
+
+Ordinary POO objects, prototypes, operators, or functional combinators must own
+merge, override, priority, fixed-point evaluation, cycle handling, identity,
+imports, and capabilities. Use explicit declarations for identity and
+dependencies. Keep Profile composition in native values, with no macro-owned
+registry, private object types, or runtime feature dispatch based on syntactic
+branches. Native =gerbil-poo= operations own field composition. Runtime owners
+grant authority, leases, continuations, and resumption explicitly.
+
+* Current public interface decisions
+
+** =user-composition=
+
+The proposal admits =user-composition= as a public macro for four duties.
+
+- Create a hygienic binding for the declaration name.
+- Capture static source provenance.
+- Check argument count and surface syntax.
+- Map syntax errors to the call site.
+
+Its scope ends at the outer declaration. Ordinary evaluation owns the
+=compose= Profile operands, Profile demand, mix, priority, fixed points, and
+capabilities. Registry ownership and runtime authorization stay outside
+expansion. The resulting representation works through ordinary POO evaluation.
+
+The examples show the intended expansion shape. Binding names are illustrative.
+
+#+begin_src scheme
+(user-composition my-system
+  (compose profiles
+    wendao-episteme
+    production))
+#+end_src
+
+Conceptually, this expands to the following form.
+
+#+begin_src scheme
+(def my-system
+  (make-user-composition
+    (source-provenance ...)
+    (compose profiles
+      wendao-episteme
+      production)))
+#+end_src
+
+=make-user-composition= must be an ordinary function or POO construction
+operation. Macro expansion reports syntax errors. Ordinary composition
+evaluation reports POO semantic failures with structured evidence.
+
+** =compose=
+
+=compose= is a higher-order function that accepts a first-class POO
+composition-strategy object and ordinary operands.
+
+#+begin_src scheme
+(compose profiles
+  base
+  wendao-episteme
+  production)
+#+end_src
+
+=profiles= is a POO strategy object. =compose= uses the object's public POO
+capabilities and keeps dispatch open to new prototypes. Recognition by =case=,
+name comparisons, or a hidden registry would close that extension surface.
+
+Extend the strategy through a POO prototype.
+
+#+begin_src scheme
+(def audited-profiles
+  (.mix profiles audit-policy))
+
+(compose audited-profiles
+  base
+  wendao-episteme
+  production)
+#+end_src
+
+=.mix= illustrates the requirement to use native =gerbil-poo= object
+operations. The final interface must use the verified native primitives.
+
+* Expansion closure
+
+The expanded result must satisfy these properties.
+
+- Ordinary functions can accept it.
+- Native POO operations can consume it.
+- Further composition can use it as a Profile operand.
+- Advanced users can extend it directly.
+- Inspection, evaluation, and interpretation work independently of the
+  original macro.
+- Provenance connects the call site, expansion identity, and POO semantic
+  identity.
+
+#+begin_src mermaid
+flowchart LR
+    A["Public macro call"] -->|"One public syntax boundary"| B["Ordinary functions and POO values"]
+    B -->|"Ordinary evaluation"| C["Native gerbil-poo composition"]
+    C -->|"Preserves object closure"| D["Extensible POO result"]
+    A -->|"Records call site and expansion origin"| E["Expansion evidence"]
+    E -->|"Links to the same business semantics"| D
+#+end_src
+
+* Structural budget
+
+Review macros against these structural limits.
+
+- Keep the public macro list closed and subject additions to RFC review.
+- Give each public macro one public syntax boundary.
+- Keep public macro generation outside that boundary.
+- Keep internal macros private to their implementation.
+- Make expansion deterministic and independent of network access, mutable
+  environment state, and dynamic registries.
+- Retain an inspectable canonical expansion for every public macro.
+- Require evidence that functions and POO alone cannot meet each macro's duties.
+
+* Implementation checklist
+
+- [ ] Add public macro admission checks to the architecture review template.
+- [ ] Define canonical expansion and source-provenance evidence for =user-composition=.
+- [ ] Verify that =compose= can be an ordinary function accepting a strategy POO object.
+- [ ] Validate strategy prototype extension with native =gerbil-poo= operations.
+- [ ] Test canonical equivalence of macro expansion and handwritten POO.
+- [ ] Check call-site error projection and phase dependencies.
+- [ ] Verify that the public surface excludes macro generation and private runtimes.
+- [ ] Rewrite earlier domain convenience macro proposals as function or POO interfaces.
+
+* Scope exclusions
+
+The design uses existing =gerbil-poo= semantics and its own reviewed surface.
+Keep syntax borrowing from Doom Emacs, Centaur Emacs, and other systems outside
+the RFC. Domain convenience belongs in functions and POO interfaces. The new
+architecture does not require a separate configuration DSL or a compatibility
+migration and deprecation policy.
+
+* Guestbook authoring application (English, 2026-10-16)
+
+The [[file:../../docs/10-19-design/11-configuration-languages/11.26-schema-discovery-source-lowering-and-macro-governance.org][Schema discovery/source-preserving lowering design]] applies this governance
+to the current .def/path-slot surface. It does not revive the earlier
+user-composition/compose proposal as a required user API. Current Guestbook
+publication and Scenario inheritance remain ordinary runtime declarations.
+
+Macro governance is an explicit owning design module, not an informal preference.
+Before widening the reviewed surface, require one owner, declared phase imports,
+bounded static syntax, runtime normal-form expansion, original source-span retention,
+single evaluation and work/generated-form budgets. Use internal defrules or
+procedural lowering where those satisfy the need; no public macro tower or new
+runtime configuration evaluator. Source/publication records remain private data,
+not extra slots in Schema-validated user objects.
+
+The user-facing acceptance target is a small correct edit and an actionable
+field/source diagnostic. Runtime equivalence and receiver controls remain separate
+maintainer gates. Macros may remove structural boilerplate, but semantic validation,
+Module loading, source discovery and effect authority stay with Contract,
+Module and runtime owners. This addition is design-only; it implements no macro
+governance runtime, direct path assignment or Loader adapter.
+
+* Guestbook admission evidence gate (English, design-only)
+
+The [[file:../../docs/10-19-design/11-configuration-languages/11.27-guestbook-macro-admission-and-minimal-controls.org][minimal Guestbook qualification plan]] is the required design gate for widening
+path assignment/source publication. Before implementation, identify the owner,
+phase imports, runtime normal form, source/private-publication boundary, actual
+budget policy and typed failure behavior. Acceptance needs shared-prefix merge,
+original source/hygiene, no duplicate evaluation and Schema-revision synchronization
+controls, including negative and manual runtime comparisons. Existing controls for
+dotted =>.+ do not qualify the proposed direct assignment surface automatically.
+
+The field catalog remains the normalized Schema artifact. Test-only source rows
+and counters must not become public configuration fields or user-facing evidence
+requirements. No unqualified KCL superiority or runtime completion follows from
+this plan. It introduces no implementation, new macro or Loader connection.

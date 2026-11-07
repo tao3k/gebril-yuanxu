@@ -1,0 +1,312 @@
+#+title: 20.27 Build Baseline and Prelude Boundaries
+#+language: en
+#+filetags: :build:prelude:measurement:reflection:
+
+* Workload and source identity
+
+These are Core library builds, not module-loading capacity measurements.
+The default Justfile resolves =GERBIL_BUILD_CORES= to 12 on this host. Each
+build retains the build script's original 300-second fence; heap settings and
+source/receiver/authentication controls are unchanged. No dependency pin,
+compiler source, Builder or approval cache is introduced.
+
+Official =gerbil clean= delegates to the current package's =build.ss clean=.
+It invalidates owned artifacts before runtime cleanup. Dependencies remain in
+their separate library roots. Source fingerprints were captured before each
+cold/hot pair and verified after both runs. =GERBIL_BUILD_VERBOSE=2= enables
+existing invocation-local source accounting through the standard Just entry;
+it does not install a source observer or change a successful check's lifetime.
+
+The producer remains the qualified gerbil-poo =22e83da= development cohort with
+the three retained protection deltas, as described in 20.26. The installed
+Gerbil/Gambit compiler and runtime were not changed.
+
+* Measured builds
+
+Pair A includes the empty explicit prelude import in =build.ss=. Pair B removes
+only that import. Each pair is internally source-identical; the two pairs are
+different source cohorts and must not be merged into one speedup claim.
+
+| Pair | Run | Whole wall s | User / system CPU s | Source compile tasks |
+|------+-----+--------------+---------------------+----------------------|
+| A | cold | 187.23 | 272.24 / 95.10 | 256 |
+| A | hot | 88.40 | 21.34 / 3.77 | 0 |
+| B | cold | 60.71 | 254.49 / 80.08 | 256 |
+| B | hot | 19.57 | 16.24 / 2.30 | 0 |
+
+All four builds completed normally under the unchanged fence. Whole-command
+CPU is process-tree accounting; nested phase samples below are the build VM's
+own accounting. Their CPU fields must not be added together.
+
+| Hot envelope | A wall s | B wall s | Interpretation |
+|--------------+----------+----------+----------------|
+| Library-spec discovery | 4.684 | .853 | runtime import closure, before main |
+| Compiler projection | 23.273 | 5.675 | includes selected Graph preparation |
+| Selected Graph, nested | 19.574 | 4.808 | includes bootstrap and actual admission |
+| Reader bootstrap, nested | 5.395 | 1.215 | runtime tool/context preparation |
+| std/make dispatch | 20.275 | 4.395 | dependency/timestamp work, zero compilation |
+| Four compiler-current checks, nested | .517 | .285 | independent guards retained |
+| Product repair / require | .023 / .017 | .020 / .014 | completeness, not signing |
+| Main | 44.493 | 10.390 | inclusive projection and dispatch |
+
+Pair A's projection used 6.612 s CPU but 23.273 s wall; Make used 5.922 s CPU
+but 20.275 s wall. Their GC wall observations were 4.893 / 3.698 s, versus
+1.257 / .937 s of GC CPU. Pair B's corresponding GC wall observations were
+.946 / .744 s and GC CPU about .936 / .743 s. This demonstrates a substantial
+elapsed/CPU discrepancy in A, including during GC. It does not identify a
+unique scheduler, file, daemon or collector cause. Later host load readings
+are contextual observations, not contemporaneous causal attribution.
+
+Neither 29.79 s from the preceding single hot run nor B's 19.57 s establishes a
+stable latency bound. Retain the slower measurements. Cold compiler CPU remains
+substantial in both pairs; a small entry change cannot explain all wall-time
+variation. Ordinary build does not request =call-with-build-artifact-issuance=;
+the explicit projection =.compile= retains that separate publication boundary.
+
+* Official language mechanism and our boundary
+
+The [[https://gerbil.scheme.org/guide/intro.html#prelude-modules-and-custom-languages][official language guide]]
+defines a prelude as an ordinary module supplying initial bindings. A package
+chooses it with =gerbil.pkg prelude:=; a module can override that directive.
+The [[https://gerbil.scheme.org/tutorials/languages.html][custom-language tutorial]]
+explicitly imports core when reexporting core language bindings: implicit
+prelude bindings are weak. The ordinary Gerbil importer owns resolution and
+initialization. Library users need not adopt a dependency's language prelude.
+
+Yuanxu follows these declarations: package =yuanxu= selects
+=:tao3k/yuanxu/prelude=; the language file declares =prelude: :gerbil/core=
+to avoid self-hosting recursion and reexports the intended core/POO bindings.
+Its separate =package: tao3k/yuanxu= file directive is legal runtime metadata,
+not a requirement for another physical =lang/= directory.
+
+The empty =(only-in "./prelude.ss")= in the build script neither supplied
+bindings nor reexported the language. It is removed. The successful clean
+bootstrap in pair B checks that it is not a necessary language initializer.
+No prelude target was removed from =core-spec=, and runtime Make still tracks
+the language artifact under its actual module identity.
+
+* Package-owned language resolution
+
+=source-closure.ss= reads =core-context-prelude= and runtime import/export
+contexts to project source dependencies; it does not parse a second language
+or execute the prelude initializer for discovery. Language selection belongs
+to package metadata and runtime binding/import resolution. Consumers do not
+supply language source paths, extra manifests or prelude registration rules.
+
+The first-export owner shortcut has been replaced with the existing runtime
+module-context-to-prelude association. An empty export list or a first export
+reexported from another module is not evidence of language ownership. Source
+lookup consumes =core-resolve-library-module-path= under the package source
+root, or the actual module already bound by the package's bootstrap. The
+existing =source-package.ss= owns this =module-build-source-path= operation;
+the reader and closure traversal consume it without their own filename maps.
+It no longer converts a public identity or compiled basename into a guessed =.ss=
+filename. Source identity is still checked before enrollment; runtime resolution
+does not constitute source-currentness approval.
+
+The installed =gxpkg pkg-manifest!= records package/dependency versions, not a
+complete source-to-artifact mapping. Do not describe that manifest as such a
+mapping. The existing package bootstrap remains responsible for binding the
+language before its compiled artifact exists. That is an internal build
+responsibility, not an instruction for downstream users to handle preludes.
+Dependency discovery must not repeat package registration: doing so changes
+the global load path and syntax bindings while merely requesting a closure.
+The package owner declares its own language source file once and shares that
+declaration between bootstrap and source lookup. Runtime =gerbil.pkg= metadata
+selects its language identity; the closure does not reconstruct the filename.
+This package-local source declaration is not a generic runtime source-map API.
+
+The installed runtime =load-path= API is process state, not a parameter. The
+package source lookup temporarily restricts it and restores it with
+=dynamic-wind= on success or failure, without importing or evaluating modules
+inside that interval. This uses the existing serial compiler/build boundary;
+it is not a claim of thread-local or concurrent package resolution. A future
+parallel resolver must establish that boundary explicitly before sharing the
+process-wide runtime setting. No concurrent resolution guarantee is inferred
+from POO receiver-local caches.
+
+** Production-chain audit
+
+The first audit covers =module-system/building=, =source= and =loader=, not
+every repository subsystem. It found 53 references to filesystem/path or
+runtime load/resolve operations; these are not 53 defects.
+
+Removed or replaced:
+
+- Conditional =gerbil.pkg= existence followed by silent registration skipping.
+  The redundant registration during dependency discovery itself is removed.
+- =file-exists?= before reading an already resolved, owned compiler source.
+  A deleted declared source now raises its runtime read error instead of
+  disappearing from the authenticated source closure.
+- The reader's two module-ID-prefix-to-=.ss= reconstructions, including its
+  inferred package prefix. It consumes package-owned runtime source resolution
+  before passing the result through the existing guarded =source-context=.
+- The first-export prelude-owner shortcut. Runtime context association owns
+  that fact independently of which symbols a language exports.
+
+Retained intentionally:
+
+- Selected artifact completeness and issuance checks: a missing output must
+  produce =build-required=, not reuse an incomplete publication.
+- Temporary-directory ownership and cleanup: removing these conditions can
+  delete a directory owned by another invocation.
+- Role admission rejecting =init.ss= inside a Module: this checks the Module
+  organization Contract rather than trying to resolve a package language.
+- Independent source-currentness checks across callbacks and before return.
+
+Still requiring a separately justified change:
+
+- The two collection absence cases are resolved below. Optional search misses
+  and demanded directory enumeration no longer share one empty-list fallback.
+- Source/compiled role handling still includes wrapper lifecycle and runtime
+  artifact classification. Establish which runtime consumer owns each operation
+  before removing such classification.
+
+No source-currentness result or admission conclusion is cached by this audit.
+
+The final audit slice passes default =just build= and serial default
+=just test-file= runs for =package-identity-test.ss= (four Cases),
+=gitea-postgresql-publication-test.ss= (eleven Cases), and
+=module-explicit-sources-test.ss= (four Cases). All three emit =MODULE-OK=,
+=HARNESS-OK= and final =OK= without error, overflow or skip markers. Controls
+include a differently named language file with no exports and a failing runtime
+initializer, deleted declared source rejection, load-path restoration, parent
+cache isolation, contribution requirements, source changes, disabled dependency
+rejection and missing explicit origin rejection without local fallback.
+
+Failures remain local evidence: editing the compiler source during an earlier
+build caused its existing currentness guard to refuse that build; path-string
+expectations initially failed on canonical versus =t/../= and macOS
+=/var/=/=/private/var/= spellings. Tests now compare normalized paths, not
+changed source fingerprints. An experimental registration during discovery
+failed the real Scenario's repository-backed Case; the other ten Cases ran.
+That registration is removed, and the final eleven-Case regression passes.
+These are local qualification results, not a new remote CI or scale claim.
+
+** Demanded collections and optional search misses
+
+The collection constructor remains inert. It neither reads a directory nor
+imports, initializes or installs a package. Once its interfaces are requested,
+runtime =directory-files= owns directory enumeration: a missing or non-directory
+root raises a runtime filesystem error with its actual path. An existing empty
+directory is a valid empty collection. Exclusions do not authorize ignoring a
+missing collection root; they exclude children of an existing collection.
+
+An ordered contribution search has a different boundary. A nonexistent
+=packages/<candidate>= is a search miss and permits the next collection. If
+that candidate exists, its =modules/= directory and actual role admission are
+authoritative. Missing, malformed or empty publication contents refuse that
+lookup rather than falling through to another package with the same identity.
+The existing source-key predicate now applies before either local or
+contribution path construction, rejecting traversal such as =../valid= before
+filesystem access. There is no new source-location registry or fetch fallback.
+
+| Demand | Result |
+|--------+--------|
+| Construct unavailable collection | Inert object; no directory access |
+| Enumerate missing/non-directory collection | Runtime filesystem refusal |
+| Enumerate existing empty collection | Empty list |
+| Probe absent contribution candidate | Search miss; next collection permitted |
+| Probe existing contribution with missing/file modules root | Refusal; next collection untouched |
+| Probe existing contribution without Module exports | Refusal with package identity and source path |
+| Resolve valid contribution | Actual admitted SourceRefs; next collection untouched |
+| All optional probes miss, but a Module was selected | Existing selection boundary rejects missing-module-source |
+| Disabled or unselected Module | Existing init selection filters prevent its lookup/role activation |
+
+The current =yuanxu!= directory linker and the older ordered collection
+consumer are distinct callers, not two new loading mechanisms. The product's
+=agentic-ai-lab-module-selection-source-refs= already raises
+=missing-module-source= after a complete ordered miss. Its explicit source
+branch remains authoritative. Neither collection projection replaces Gerbil
+package installation, import resolution, runtime =load-module=, or runtime Make.
+
+*** Runtime PBT and version boundary
+
+PR #13 was checked at =8e0787dafecb0b38c1b46dcc2d867b6a451dbcad=.
+Its =testing/core/build.ss= independently builds the standard
+=clan/property-testing/{generator,property,model,replay,test}= modules.
+The latest independent kernel was built into a private prefix through that
+official build script using the installed Gerbil, without changing compiler
+source or the qualified object-runtime prefix.
+
+=module-source-admission-test.ss= adds two bounded properties over runtime
+=Enum=, =Tuple= and =Bool= Types, using the POO =testing/type.check-property=
+bridge and =property-testing/test.check-property= standard TestSuite assertion.
+The latter retains status, cause, seed and shrink diagnostics instead of merely
+checking a boolean or hiding exceptions behind a custom runner. Seeds 3305 and
+3306 each request 32 trials, size 4 and shrink budget 32. Deterministic rows
+also check every directory state and all five contribution states, so random
+coverage is not substituted for the finite boundary controls. A fallback
+SourceRef/collection is a test witness counting lookup calls; actual collection
+enumeration, role admission and SourceRef generation use production code.
+
+The existing qualified POO runtime and its three protection deltas are retained.
+The second run selects the actual =8e0787d= independent PBT kernel ahead of that
+runtime's library path. This is a component qualification, not acceptance of
+the latest POO object runtime or a dependency-pin upgrade. The newer typed
+PBT bridge's =PropertyConfiguration= and FUN changes are not claimed tested
+by selecting only the independent kernel.
+
+Final validation of this collection slice: default =just build= passes.
+Serial default =just test-file= passes the 18-Case source-admission suite
+(including the two 32-trial properties), the eleven-Case real Gitea/PostgreSQL
+publication suite, and the four-Case explicit-source suite. The source-admission
+suite passes both in the prior qualified environment and with the actual
+=8e0787d= independent PBT kernel; the final Scenario and explicit-source runs
+use the latter overlay. Every final log contains =MODULE-OK=, =HARNESS-OK= and
+final =OK= with no error, overflow or skip markers. Explicit controls confirm
+disabled-required refusal before source reads, unselected scope exclusion,
+physical source ownership, changed-source refusal and missing-origin refusal
+without local fallback. Initial test edits had a parenthesis error and imported
+=Bool= from =type= instead of its actual =mop= owner; both failed runs are
+retained locally and corrected, without weakening the assertions or limits.
+
+Fixed role filenames such as =types.ss= and =interface.ss= remain projections
+of the existing Module organization Contract. They are not reconstructed from
+arbitrary package or namespace prefixes. This slice removes the ambiguous
+absence fallbacks and reuses source-key admission; it does not claim a full
+repository-wide removal of every legacy source helper, remote CI acceptance,
+or a ten-thousand-module performance result. No commit or push was made.
+
+The installed compiler's =find-runtime-module-deps= includes preludes but
+filters/adjusts phase imports and deduplicates by module identity. Our source
+authentication traversal must retain compiler-phase inputs and distinguish
+actual source/compiled contexts. Substituting that runtime-only projection or
+reimporting an owner while inside a closed source-check segment would change
+the authority/effect boundary. No runtime-only replacement or additional
+registry is introduced. Dependency discovery reads the runtime association;
+package source resolution remains outside the authentication-only segment.
+
+* Reflection and assurance
+
+The supported simplification is removal of a demonstrated redundant import,
+not removal of checks or a second prelude resolver. Independent currentness
+before/after compiler effects, the actual normalized subject, both contribution
+requirements and receiver-local cache identities remain unchanged.
+
+Reuse SysML =BuildExecutionAccounting=, Lean =SourceWindows= and
+=CoreBuildHandoff=, and their existing Quint counterexamples. They constrain
+window/authority reuse; they do not prove OS scheduling, GC liveness, source
+macro purity or first-export ownership for every possible custom prelude.
+Runtime prelude-phase, real Gitea/PostgreSQL and build-graph regressions remain
+separate executable evidence. No ten-thousand-module gate is rerun or claimed.
+
+Those three default =just test-file= gates passed with =MODULE-OK=,
+=HARNESS-OK=, final =OK= and no error/overflow/skip markers. The prelude test
+exercises syntax phases +1/+2 and normal POO construction/refinement; the real
+Scenario completed eleven Cases. Existing CoreBuildHandoff Quint qualification
+passed eight cases, including its expected broken-model counterexamples. The
+selected CoreBuildHandoff/SourceWindows Lean build passed 114 jobs. These results
+do not prove arbitrary prelude effects redundant or validate the remaining
+first-export shortcut for every custom language.
+
+A final uninstrumented default =just build= (verbosity 1, automatic 12 workers)
+also completed normally with zero compilation: 20.35 s wall / 16.76 s user /
+2.28 s system. It emitted no accounting rows. This is separate from pair B's
+verbosity-2 hot run, not a replacement for its source/flags-matched comparison.
+The remaining projection and runtime Make costs are measured, not eliminated;
+no claim that the empty import accounts for the full prior elapsed gap is made.
+One final fingerprint command was accidentally invoked from the product root
+against Core-relative paths and failed; that output is preserved. Repeating the
+same check from its owning Core directory passed. It is not a build failure or
+evidence that changing expected fingerprints was necessary.

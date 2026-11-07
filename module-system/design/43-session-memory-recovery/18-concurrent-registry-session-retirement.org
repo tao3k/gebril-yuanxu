@@ -1,0 +1,133 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.18 Concurrent Registry and Session Retirement
+:PROPERTIES:
+:ID: agentic-ai-lab-context-concurrent-registry-retirement
+:STATUS: local-concurrency-retirement-joint-pass-external-integration-open
+:END:
+
+[[file:19-concurrent-registry-verification.org][10.06.43.19]] records the final source-stable joint run: 61 Quint Cases,
+56 Lean theorems/56 guards, 23 ASCENT checks, 90 historical ORG regressions
+and 95 fresh Scheme checks. It binds all 71 local source inputs and the
+compiled package pool, without qualifying external integration or performance.
+
+* Owner and linearization
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns Context; [[file:16-live-registry-generation.org][10.06.43.16]] introduced issued generations.
+This extension removes the check/publish race and adds a controlled Session
+source. Semantics remain in =Modules/ai-agentic-context=. Proofs only creates
+Cases and consumes Module operations. RFC 0015 is an SDLC consumer.
+
+Proposals are POO values containing the captured issued collection,
+composition and Session slices. =org-context-consumer-proposal= validates and
+records exact issuance. =org-context-consumer-commit!= compares that captured
+collection against the owner's current generation and publishes in the same
+mutex critical section. Two same-generation proposals can have at most one
+winner. Copies, reused proposals and stale generations return false without
+changing the current set. =org-context-consumer-replace!= uses this protocol.
+Successful publication advances the integer generation; failed CAS does not.
+
+All issuer reads, collection/Query issuance, CAS publication and Session sync
+share one process-local mutex. No provider callback or executor is called by
+the issuer while holding it. This is a coarse-grained local correctness
+boundary, not measured high-performance or distributed concurrency.
+
+* External Session source and retirement ingress
+
+=org-context-session-authority= creates an exact issued source handle from
+real Session objects. The ordinary consumer-set constructor can bind that
+handle through =authority:= DI. A copied source handle is not issued authority.
+Session objects alone are report data, not source credentials. A registry
+without this DI remains locally managed; it does not claim external retirement
+coverage. It is not a fallback for an externally managed Session. Source-owner
+admission/authentication and enforcing designated-source DI across all runtime
+Session entry points are separate policy/integration boundaries, not closed
+by the proof fixture. Constructors do not establish principal credentials.
+
+=org-context-session-sync!= accepts a source handle, expected source revision
+and an active Session collection. It compares revision and permits only a
+subset of the previously active IDs. Retirement cannot be undone by an old
+full snapshot, even with a current expected revision. Reactivation is not
+part of this ingress; it needs a distinct, reviewed incarnation protocol.
+Every accepted sync advances the source revision and all attached collection
+generations atomically, filtering retired Sessions. Rejected sync changes
+neither source revision nor current collections. Snapshots return detached
+data, never the private source state.
+
+=org-context-consumer-latest= retrieves a registry's current issued collection
+from a historical handle. Retrieval is not fresh Query or review authority.
+Source revision is also checked by collection currency: a partial publication
+failure cannot make an old source cut current. Durable recovery after such a
+failure is not implemented. Context composition and independent target
+acceptance are not deleted when producer membership is retired.
+The independent target acceptance fixture is not authorization for a retired
+Session to resume consumption: knowledge retention and live Session access
+are different obligations. No Project storage or disclosure operation runs.
+
+The Quint model distinguishes announced external retirement from locally
+observed synchronization. No consumer can know an undelivered remote event.
+This implementation supplies the local ingress, not a Codex/Cloud/orchestrator
+event adapter, remote event authentication or a durable event journal.
+
+* Query, review and callback race
+
+Query membership is resolved before issuance, not deferred into a lazy slot.
+Old collections and Queries are refused after CAS or observed retirement.
+Review still binds registry/generation, complete ORG cut and domain subject.
+Surviving Sessions in an updated shared collection also need fresh review.
+
+Configured support/permission/review callbacks can yield to replacement or
+retirement. Module admission now checks current generation again after those
+callbacks. A stale operation returns no candidate/admission and reopens the
+obligation. Review issuance also checks again before returning its seal.
+The final currency check is the local admission linearization point; returned
+results are observations at that point, not irrevocable grants. Protected
+effects still need their separate final authority check. ASCENT only consumes
+the reevaluated observation projection; raw relations cannot mint authority.
+
+* Evidence roles and positive/negative Cases
+
+| Owner | Responsibility | Limit |
+|-------+----------------+-------|
+| Quint | Enumerate two competing proposals, retirement ordering and stale replay faults | Finite state protocol, not private issuance or transport |
+| LeanPOO | Conditional CAS, successor-generation, stale-source, retirement and retention laws | Assumes the Module's atomic linearization; not a mutex implementation proof |
+| Scheme Modules | Actual critical section, exact issued handles, real ORG Contract and sealed review checks | Local process and selected threads; not all runtime schedules |
+| ASCENT | Recomputed support/review/permission observations | No grant, source credential or effect delivery |
+
+Focused Quint passed ten Cases: safe, two proposals prepared, one winner,
+observed retirement, injected stale commit/source, old Query/review, callback
+retirement and Project erasure. Safe exploration generated 329 states,
+found 124 distinct states and exhausted its queue. Reachability witnesses
+found 6/7/13 distinct states. Six faults found 37/32/78/47/35/32 distinct states
+with checked failure exits and actual counterexamples.
+
+LeanPOO v0.1.1 supplies the existing Focus-based Registry update. Seven new
+theorems/six guards build with the other Context roots: 78 jobs, 56 laws/56
+guards, no sorry or added axiom. These laws are conditional, not a complete
+cross-language refinement. Scheme controls use two actual Gerbil threads
+whose proposals were prepared before either commit, plus real ORG Elements,
+Contract, Core seals and Assurance/Governance objects. They do not implement
+an alternate admission predicate or assume a synthetic successful grant.
+
+The first Scheme replay rejected =retired-session-cannot-query=: lazy slot
+selection had postponed membership validation until after issuance. Moving
+that validation into Modules before issuance repaired the actual gap.
+Initial compilation also found an unavailable duplicate-list helper/import;
+the existing bounded duplicate-ID traversal avoided a new dependency.
+Failed runs are not qualified receipts. Timeout, idle watchdog and heap
+limits are unchanged.
+
+* Worktree comparison and open obligations
+
+The useful engineering requirement is not simply to reproduce a Worktree
+manager. [[file:12-git-project-context-model.org][Git specialization]] already separates resource/source isolation,
+Context composition and Session consumption. A Worktree boundary does not
+by itself establish knowledge visibility, evidence freshness or authority.
+The additional obligations here are traceable subjects, CAS, observed
+retirement and independent Project retention. Comparative quality, performance
+and cache-hit advantages over existing systems remain hypotheses, not results.
+
+Remote source adapters, principal admission, Session reincarnation, durable
+source/registry identity, recovery, per-owner lock scalability and full unified
+Query/GQL result adaptation remain open. Storage executors, bindings, old
+Memory, effect delivery and verification limits are unchanged.

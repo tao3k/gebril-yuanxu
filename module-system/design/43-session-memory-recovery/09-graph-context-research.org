@@ -1,0 +1,158 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 10.06.43.09 Graph Context Composition and Falsification
+:PROPERTIES:
+:ID: agentic-ai-lab-graph-context-composition-research
+:STATUS: research-design-new-models-and-measurements-open
+:DATE: 2026-10-14
+:END:
+
+* Core and evidence boundary
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns the design. LeanPOO C3/C4 defines the proposed composition
+foundation; ORG Elements/Contract carries addressable content, constraints and
+source relationships. Lifecycle is evolution of these compositions, not an
+alternative store/session identity model. Session collections consume and
+contribute multiple Graph Contexts. Aitia RFC 0015 remains an SDLC consumer.
+
+[[file:11-context-query-boundary.org][Query boundary]] separates the unified Query interface, current GQL language
+and ORG Elements content window from C3/C4 composition. Query selection is
+not iteration along a linearized prototype order. ORG tree, inheritance,
+evidence and revision relations retain distinct roles.
+
+This chapter is a research specification, not a new executable model receipt.
+[[file:08-leanpoo-v011-consumer-receipt.org][The v0.1.1 consumer receipt]] qualifies its declared previous laws and controls,
+not the graph-to-ORG correspondence, histories or KV performance proposed here.
+No runtime, storage executor, binding or old Memory implementation changes.
+
+* Three orders, not one
+
+1. Composition precedence orders declarations for a particular root and graph
+   revision. C3 and C4 are distinct upstream semantics, not interchangeable
+   names; C4 adds parent-order/suffix metadata that requires explicit mapping.
+2. Revision provenance records which exact parent revisions a derivation used,
+   its local increments, producer and observation. Precedence is not a clock.
+3. Prompt serialization orders an authorized selected view into tokens.
+   Resolution order alone does not prescribe this presentation order.
+
+A Project supplies shared graph roots, not one globally flattened prompt.
+Session/task Contexts extend and combine these roots. Worktrees associate code
+cuts with consumers; a Context override need not create a Git branch. Context
+composition edges do not replace event, evidence or causal relations. Only the
+declared inheritance subgraph is subject to linearization requirements; other
+relations may contain cycles without making inheritance cycles acceptable.
+
+Each proposed derivation records qualified ORG Element identities, exact source
+and Contract cuts, ordered parents and C4 metadata, local declarations,
+overridden origins, selected root and consumer scope. A timestamp or Summary
+cannot substitute for those bindings. New compositions retain old revisions;
+shared content is not inherited authorization.
+
+* Topology view
+
+This D2 example describes typed relationships, not slot resolution or an
+executable authorization decision. Ten Sessions and a hundred Worktrees are
+a possible workload, not measured scale or an obligatory ingestion plan.
+
+#+begin_src d2
+direction: right
+project: Project Graph Context @ r1
+domain: Domain Graph Context @ d1
+session_a: Session A Context @ a1
+session_b: Session B Context @ b1
+task: Task Context @ t1
+worktree: Worktree code cut
+project -> session_a: inherits
+project -> session_b: inherits
+domain -> session_a: ordered composition input
+session_a -> task: extends / local override
+worktree -> task: code-cut association (not inheritance)
+#+end_src
+
+* Hypotheses and adverse controls
+
+| ID | Conditional claim | Refutation or required adverse control |
+|----+-------------------+----------------------------------------|
+| GC01 | Accepted composition resolves a root deterministically for an unchanged graph cut | Conflicting parent orders, duplicate names, missing parents and inheritance cycles must retain diagnostics, not silently pick a route |
+| GC02 | Persistent local override preserves an independently retained sibling/base object | Shared mutable host state or changed final-self dependencies can defeat a naive frame claim; distinguish untouched declarations from unchanged computed values |
+| GC03 | An ORG-bound derivation retains the actual origins of selected and shadowed declarations | Identical local IDs across documents, source replacement and stale Contract projection must not fabricate origin continuity |
+| GC04 | Relevant base/Contract revisions reopen affected admission obligations without erasing history | Test transitive dependency changes, irrelevant changes, revoked permission and a replayed old grant separately; a blanket reopen flag is not a durable history |
+| GC05 | Stable authorized presentation can preserve a common token prefix across selected extensions | Resolution is child-first: emitting it directly may prepend overrides and destroy the prefix; reordering may change interpretation or expose forbidden content |
+| GC06 | Prefix-preserving presentation improves useful reuse under the chosen serving regime | Cold caches, eviction, model/template changes, divergent selection and decoding-dominated workloads can remove benefits; report failures and quality costs |
+
+GC02 is deliberately weaker than claiming every unmodified slot has an
+unchanged value. Open recursion means a computed slot can observe a changed
+final self. A stronger frame theorem needs explicit dependency/noninterference
+premises. GC05 must preserve effective override meaning, source identity and
+current disclosure policy, not merely maximize common bytes.
+
+* Formal responsibilities and reuse
+
+| Owner | Proposed obligation | Existing foothold / remaining gap |
+|-------+---------------------+-----------------------------------|
+| LeanPOO | Algebra, successful precedence, exact errors and conditional persistence laws | v0.1.1 C3 cached/reference equality and C4 VerifiedOrder contracts exist; ORG mapping and Context-specific frame premises remain open |
+| Quint | Finite sequences of derive, compose, override, revise, select and revoke | Explore interleavings, stale cuts and reopening; do not reimplement or claim universal C3/C4 correctness from bounded traces |
+| ASCENT | Source-bound dependency, affected-root and conflicting-support relations | Derive candidates and missing obligations, not a grant or mathematical proof of arbitrary Agent reasoning |
+| Scheme Modules | POO declarations, ORG projection and consumer interpretation | Modules remain the semantic owner; Proofs consume them and the upstream library, not a second Context evaluator |
+| Query / GQL | Unified bounded Query interface and its currently selected language | ORG Elements is the Context content window; C3/C4 is not a retrieval language; Context adapter correspondence remains open |
+| ORG Contract | Required identities, cuts, relationship roles and evidence-status structure | Structural validation alone cannot authenticate assertions or settle a research hypothesis |
+| D2 | Architecture view of these identified objects and typed edges | Diagram readability is not a linearization certificate or temporal proof |
+
+At the inspected v0.1.1 cut, upstream ~C3.linearizeMany_eq_uncached~ compares
+complete results for finite graphs/root lists; ~linearizeMany_derivation~
+retains successful graph derivations. ~C4.linearizeVerified~ returns a
+~VerifiedOrder~ for its exact graph/root. Its ~nodup~, ~head~, ~covers~,
+~local_order~, ~ancestor_order~ and ~ancestor_suffix~ laws provide reusable
+conditions. These are library facts, not evidence that current ORG Context
+values already instantiate their premises. Failed graphs must remain failures.
+
+* Literature: support and limits
+
+- [[https://fare.tunes.org/files/cs/poof.pdf][Prototypes: Object-Orientation, Functionally]] develops functional prototype
+  increments, open recursion and composition. It motivates Context extensions;
+  it does not establish Agent Context quality or prompt/cache performance.
+- [[https://opendylan.org/_static/c3-linearization.pdf][A Monotonic Superclass Linearization for Dylan]] supplies the historical C3
+  foundation. [[https://arxiv.org/abs/2401.12740][Controlling the C3 super class linearization algorithm]]
+  (2024 arXiv; journal reference 2022) supplies important negative results and
+  conditional construction. An arbitrary precedence graph is not a promise
+  of successful C3 resolution; its alternate construction is not silently
+  substituted for the project's C4 semantics.
+- [[https://arxiv.org/abs/2312.07104][SGLang]] provides a systems precedent for token-prefix KV reuse across
+  structured calls. It does not prove semantic Context reuse implies a physical
+  cache hit, nor qualify the proposed ORG/C3/C4 integration.
+- [[https://arxiv.org/abs/2411.19379][Marconi]] studies hybrid-model prefix-cache admission and eviction. It
+  motivates separating useful saved computation from a raw hit count.
+- [[https://arxiv.org/abs/2609.33477v1][SuffixReplay, September 2026 preprint]] studies approximate state
+  reconstruction for hybrid models. Only its abstract was screened here;
+  numerical results are not adopted. Full-method review and reproduction are
+  open. Approximate replay needs a quality gate distinct from exact reuse.
+
+No retrieved paper directly validates this combined architecture. Papers supply
+semantics, mechanisms and adverse cases; Context-specific claims require their
+own proofs, actual Module correspondence and measurements.
+
+* Falsification and measurement protocol
+
+An ORG research claim should name premises, a candidate falsifier, a proof or
+model obligation, observed counterexamples and current status. This is not
+reasoning backwards from a desired conclusion: reverse investigation asks
+what must hold for the claim to be true and tries to break those conditions.
+Retain unsuccessful/refused compositions and alternate hypotheses; do not
+force Agent exploration into a prescribed action chain.
+
+The proposed cache comparison holds model/tokenizer/template, task set,
+authorization, quality criteria and resource budget constant. Compare copied
+Context, resolved-view serialization and prefix-oriented serialization; record
+actual token common-prefix length, reused-token fraction, physical cache
+residency, eviction, prefill/TTFT, end-to-end latency and composition/review
+cost. Count cold runs, refusals, failed quality gates and incomplete runs.
+Do not report a reused semantic receipt as a KV hit or a hit as a net saving.
+
+Executable consumer sources now exist in [[file:../../../../packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GraphContext.lean][GraphContext.lean]] and
+[[file:../../../../packages/proofs/context-lifecycle/GraphContext.qnt][GraphContext.qnt]]. The Lean consumer uses the upstream C3/C4 algorithms and
+object evaluator directly; the finite Quint model does not duplicate them.
+Results belong to a separate receipt, not this research statement. Real
+ORG-to-prototype simulation and cache experiments remain open. Existing
+lifecycle/receipt laws remain valid for their original inputs; they are not
+renamed as complete Graph Context verification.

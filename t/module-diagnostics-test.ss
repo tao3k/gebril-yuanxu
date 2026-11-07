@@ -5,38 +5,38 @@
 
 (import (only-in :std/test test-suite check-equal?)
         (only-in :clan/poo/object object?)
-        (only-in :core/observability/testing-case poo-flow-test-case)
-        :core/module-system/observability/diagnostics)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        :yuanxu/module-system/observability/diagnostics)
 
 (export module-diagnostics-test)
 
 (def module-diagnostics-test
   (test-suite "Core Module diagnostic values"
-    (poo-flow-test-case "POO values preserve facts without product coupling"
+    (yuanxu-test-case "POO values preserve facts without product coupling"
       (let* ((diagnostic
-              (make-poo-flow-module-diagnostic
+              (make-yuanxu-module-diagnostic
                'warning 'duplicate 'module '((name . example))))
              (report
-              (make-poo-flow-module-doctor-report
+              (make-yuanxu-module-doctor-report
                '(example) 'warning (list diagnostic))))
         (check-equal? (object? diagnostic) #t)
-        (check-equal? (poo-flow-module-diagnostic? diagnostic) #t)
-        (check-equal? (poo-flow-module-diagnostic-code diagnostic) 'duplicate)
-        (check-equal? (poo-flow-module-doctor-report? report) #t)
-        (check-equal? (poo-flow-module-doctor-report-modules report)
+        (check-equal? (yuanxu-module-diagnostic? diagnostic) #t)
+        (check-equal? (yuanxu-module-diagnostic-code diagnostic) 'duplicate)
+        (check-equal? (yuanxu-module-doctor-report? report) #t)
+        (check-equal? (yuanxu-module-doctor-report-modules report)
                       '(example))
-        (check-equal? (poo-flow-module-doctor-ok? report) #f)))
-    (poo-flow-test-case "status scans warnings and detects a late error"
+        (check-equal? (yuanxu-module-doctor-ok? report) #f)))
+    (yuanxu-test-case "status scans warnings and detects a late error"
       (let* ((warnings
               (map (lambda (index)
-                     (make-poo-flow-module-diagnostic
+                     (make-yuanxu-module-diagnostic
                       'warning 'notice index '()))
                    (iota 1000)))
              (error-fact
-              (make-poo-flow-module-diagnostic
+              (make-yuanxu-module-diagnostic
                'error 'invalid 'module '())))
-        (check-equal? (poo-flow-module-diagnostics-status '()) 'ok)
-        (check-equal? (poo-flow-module-diagnostics-status warnings) 'warning)
-        (check-equal? (poo-flow-module-diagnostics-status
+        (check-equal? (yuanxu-module-diagnostics-status '()) 'ok)
+        (check-equal? (yuanxu-module-diagnostics-status warnings) 'warning)
+        (check-equal? (yuanxu-module-diagnostics-status
                        (append warnings (list error-fact)))
                       'error)))))

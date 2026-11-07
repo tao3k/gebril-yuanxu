@@ -1,0 +1,45 @@
+{
+  "scope": "native-combination-and-test-local-selected-closure-no-module-adapter-no-loader",
+  "pinned_POO_revision": "099b381588360a8a49fd772f666a1a00351366f5",
+  "source_hashes": {
+    "clan/poo/object.ss": "13f43a877db90d9a2aa0df10d7f92be41aecb4be476a63906bbf91b6f6bdf056",
+    "clan/poo/mop.ss": "0483d555553e4b5f3432a7316cac9e92aee03c75166fcad90ee80c3148a10b7c",
+    "clan/poo/brace.ss": "691f7e79a66857e8a0200fc8aaa55427c111b9ca302ae6a1a606d2b5b78cd2c2",
+    "clan/poo/support/base.ss": "2781a40293d491985c887731a883d31f0aa606077bd10800c6af2d9e2c47919d",
+    "clan/poo/support/debug.ss": "62dd618f41274e01f411c1798f053bd76177f09bded6aad04025bf6ea33722d1",
+    "clan/poo/support/io.ss": "ad93ebc7323316b45fc636aad5d2afc139e8ee2b630f0ac5de9e57fd05de79f0",
+    "clan/poo/support/json.ss": "9b494596021fc98222871bd37136f6b6c4323d07c452754af9978c9340d53fb0",
+    "clan/poo/support/list.ss": "d517f2bc9e5c42bf92cdcb55e07c96245e7c70200a1363072d0a893b62007fb0",
+    "clan/poo/support/option.ss": "1bd5bc2ea9d08d6ace32be2717aae35cd34049c78ba48c6bc0fc953f19b0252e",
+    "clan/poo/support/rationaldict.ss": "b6ab6d204dfdd307de71f1f9f6ee64c4900b59b6d42726884565b8b95b9163b3",
+    "clan/poo/support/repr.ss": "8361f55e574bd1fa6fe7e521565b88ba864cbf5c12abb576ed2ac6bace41e423",
+    "clan/poo/support/syntax.ss": "e4ff4e2b9d7e1d33eb7251bf5237d1c213f9de7bbcc8bdf18800b8380b05e4de",
+    "clan/poo/support/testing.ss": "7c4d0e40c0dae42dba7c17b60d32c0cdaf3dbc4cd0538e1fae3a3cfe928f33c2",
+    "clan/poo/gerbil.pkg": "a153a696e8c62c0a0de62c737d851ab5fdf652c5810a9f6da144fc020b84d946",
+    "core/types.ss": "cff7774aa8e6a6daaeae866984fb8a5ec291fe2045a326f846b6e1f4f22a325f",
+    "core/gerbil.pkg": "5e5541f136d0dd400a7b83cbc58f7d127ca2c84eab58efd78d54d0eadac0b3d3"
+  },
+  "archive_sha256": "5cafed5170c4ade18a1cce3898149f92b236aabba11c80020359f19531084597",
+  "lock_receipt_sha256": "356f240fbdaec91e2c226cd70de4e16fa69f252ce8d3bbf1c80447436db14070",
+  "probe_sha256": "420005f955605c9753e59af896b53a424c4dbd604cda78d00a23a4e34b3607a5",
+  "runner_sha256": "d112cfaa0d6667af5399df307500bdd843410bd339e85ef41312752614f7c6e1",
+  "repo_head": "7ab549d060c98b9a0997f6f1879da3d0eec4b07d",
+  "core_head": "e85fd45303b208b23e5957fd316e7004994109a4",
+  "interpreter": "/opt/homebrew/Cellar/gerbil-scheme@0.19/0.19.20261009110849.1cfb032.patch618d76f9eb72/bin/gxi",
+  "version": "Gerbil 1cfb032 on Gambit ea114fc",
+  "environment": {
+    "GERBIL_PATH": "/private/tmp/pooflow-combined-x088f0m8/home",
+    "GERBIL_LOADPATH": "/private/tmp/pooflow-combined-x088f0m8"
+  },
+  "command": [
+    "/opt/homebrew/bin/gxi",
+    "/Users/guangtao/ghq/github.com/tao3k/poo-flow/docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/25-isolated-combined-validation/probe.ss"
+  ],
+  "timeout_seconds": 60,
+  "timed_out": false,
+  "exit": 0,
+  "elapsed_seconds": 2.126,
+  "log_sha256": "ee047563e92f563d50d3c14252e23bd6b0a2b785f49535cc420ef41a0e465e9e",
+  "native_construction_capture_implemented": false,
+  "dependency_discovery_completeness_proved": false
+}

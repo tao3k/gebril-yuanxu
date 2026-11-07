@@ -1,0 +1,317 @@
+#+title: 20.25 Upstream Snapshot Integration
+#+language: en
+#+filetags: :modules:upstream:reflection:currentness:
+
+* Runtime scope Types: direct migration, not a compatibility route
+
+Module publication, dependency scopes, scope contexts and Build publication
+descriptors now use named runtime =Type.= / =Record= descriptors. The former
+=yuanxu-predicate-contract= wrappers are removed from these production owners
+and their scope fixtures. Product Nix/OpenTofu scope consumers migrate with the
+Core boundary. A contextual descriptor is rejected at this value boundary;
+there is no fallback to its classification/admission methods.
+
+#+begin_src scheme
+(define-type (GiteaScopeContract @ Type.)
+  identity: 'gitea/scope
+  .element?: (o?/slots '(config document application types policy)))
+;; Record/ObjectContract descriptors retain their runtime child constraints.
+(def JsonSchemaScopeContract (.cc ScopeFields identity: 'json-schema/scope))
+#+end_src
+
+The executable Gitea declaration lives in
+=scenarios/gitea-postgresql/gitea/types.ss=. No second field table is introduced
+here. The value producer calls runtime =validate=
+once, then runs platform policy against that exact normalized subject. Runtime
+Type failures retain their cause/diagnostic projection. Descriptor revision
+changes during successful validation/policy are rejected. Each independent
+call validates again; neither approvals nor policy outcomes are cached.
+
+Actual contextual domain Contracts remain contextual: Gitea Application
+admission, child responsibilities, both port requirements, source observations
+and plan identity are not replaced by a shape predicate. The demand-projection
+fixture now names its application admission separately from its runtime scope
+Type, rather than treating the two protocols as interchangeable.
+
+SysML =NamedValueScopeAdmission= owns this separation. Lean
+=scopeAdmissionExactSubject=, =scopeValueRefusalStopsPolicy= and
+=scopePolicyRetainsBothRequirements= prove the pure value/policy composition;
+the selected Lean Schema.Contracts target passed 44 build jobs. These theorems
+do not prove callback purity or source currentness. Existing Quint callback /
+read-ownership models and runtime source controls own those obligations.
+
+The migration preserves real Type preflight during selection. It does not
+claim metadata-only publication, remove dependency edges, skip observers, or
+weaken return-time source authentication. Runtime regression and scale results
+must be recorded separately; eliminating adapter construction alone is not
+evidence that the ten-thousand-module gate is closed.
+
+** Focused executable evidence for the scope migration
+
+The default Core =gerbil build= passed using the same qualified runtime cohort.
+Serial default =just test-file= gates passed for Contract/Function
+composition, module declaration values, publication, demand projection,
+root-owned contract analysis, real Gitea/PostgreSQL publication (11 Cases),
+and source observation (6 Cases). Each log has =MODULE-OK=, =HARNESS-OK= and
+final =OK= without error/overflow markers. This is focused validation, not
+full CI acceptance. No commit or push was made.
+
+The demand projection control observed zero metadata-phase role expansions,
+seven activated-role expansions, one issued hot root observation and 395
+replay visits. Its cached parent port stayed 5432; child admission returned
+5433. These are executable identity/laziness controls, not scale timings.
+
+Existing ReadRetention Quint qualification passed all seven cases, including
+the expected broken-model counterexamples for receiver/miss coverage and cached
+approval. The first sandboxed attempt could not bind localhost; the same
+bounds passed after allowing the existing local backend port. An earlier
+invocation incorrectly supplied =--producer-source= to ReadRetention and was
+rejected by argument validation before any model ran. Neither failed attempt
+is counted as model acceptance. The source-bound producer correspondence and
+Scheme consumer tests remain distinct from this temporal model.
+
+** Retention control and product consumers
+
+The unchanged default 256-module retention Case passed after the migration:
+512 role bodies, 78,315 actual source reads, 3,379,721 replay visits and
+270,949,440 retained bytes. The preceding a3 cohort sample recorded 79,339
+reads, 3,386,624 visits and 273,755,144 retained bytes. The retained-byte
+reduction is only 2,805,704 bytes (about 1%); this does not close the dominant
+receiver/specification retention problem.
+
+Runtime-Graph start-to-ready was 32.974 s wall / 32.801 s CPU, compared with
+67.155 s wall / 43.638 s CPU in the preceding sample. These are one-shot
+different-source measurements, not a controlled throughput claim. Allocation
+currentness was false in the worker; zero reported allocation is not evidence
+of zero allocation. Build/preparation time is separate from Graph construction.
+The 2 GiB budget and all worker assertions were unchanged; no ten-thousand
+run was attempted.
+
+The first product Nix-publication launch refused during publication admission:
+Null/AWS Scenario scopes still carried the old contextual wrapper. They now
+publish their existing runtime projection Types directly, retaining contextual
+Contracts only for actual resource admission. The same default product
+Nix-publication gate then passed with all Harness markers. The failed launch
+is retained in local artifacts; this was a missed consumer migration, not a
+reason to accept the legacy protocol.
+
+The product OpenTofu-publication gate also passed after updating its old
+exception expectation to the existing contextual admission result protocol:
+invalid =source= must return refused evidence, retain the runtime =TypeError=
+cause and original candidate, and report the =(source)= diagnostic path. The
+initial assertion failure is preserved. This changes the consumer assertion,
+not the validator or the negative input; acceptance is still forbidden.
+
+The AWS Scenario's own atomic suite also passed through the default product
+test entry. It directly diagnoses the published runtime interface Type, keeps
+interface payloads cold, and requires refused evidence with the original runtime
+cause and =(resource)= / =stale-resource= diagnostic for both a parent-cached
+resource and an independently copied resource. No legacy scope adapter is
+needed to retain those contextual domain refusal controls.
+
+* Initial source cohort: 9d5d9d0
+
+Upstream base is gerbil-poo PR 13 commit
+=9d5d9d0ed36969f8b85d74b6c4d2e58079a4c3d5=. The validation checkout retains
+the already-qualified local deltas in =object.ss=, =slot-observation.ss= and
+=io.ss=: 43 insertions and 15 deletions relative to that upstream base. The
+three-way integration was clean. The original working changes were preserved;
+no branch, commit, push or compiler-source modification was made.
+
+The integrated =object.ss= SHA-256 is
+=21d5d53eef1f0e4dddb13d22bd2e1d38b5fa7b1ef2f52e2bd2a3c72bb03c14f1=.
+SelectionReplay and PayloadSharing bind this actual producer source, rather than
+claiming that a bare upstream commit contains the local APIs.
+
+The Core dependency declaration remains =e281ad2=. It must not be changed to
+bare =9d5d9d0= while Core still requires unpublished runtime protection APIs such
+as =object-construction-current?= and dynamic observer inspection. Integration
+qualification is distinct from publishing a reproducible dependency revision.
+No locally overlaid API may be hidden behind an inaccurate dependency pin.
+
+* Changes that matter to the production path
+
+Upstream =13d01ad= captures a receiver revision around declared-slot read/write
+validation. A validator that changes shared metadata cannot return a stale
+success or install a proposed value afterward. Its ordinary validation refusal
+still precedes the revision refusal.
+
+Upstream =89febc8= separates public and hook-provided C3 snapshots from the
+private canonical spine. Mutating an inspection result cannot change cached
+inheritance membership. A hook that changes the checked order still refuses;
+accepted hook snapshots cannot later mutate canonical membership.
+
+Core's source precheck and slot-origin walk previously called the public C3
+query solely for preparation, then discarded its result. With the new ownership
+rule this makes an unnecessary snapshot on each warm call. Both callers now
+inspect the EXISTING runtime precedence cache first:
+
+#+begin_src scheme
+(unless (object-%precedence-list receiver)
+  (compute-precedence-list! receiver))
+#+end_src
+
+This is a read-only runtime metadata demand, not another cache. Cold/invalidated
+receivers still call the same public preparation entry and run the same C3 hook
+and refusal path. Warm runtime construction already returns its cached spine
+without invoking hooks; these two Core callers do not need to export a copy.
+The canonical spine is neither returned to a user nor mutated by this change.
+There is no change to source authentication windows or admission results.
+
+* Allocation of assurance work
+
+SysML =PublicPrecedenceSnapshotBoundary= owns the source-to-model boundary.
+Reuse LeanPoo =lookupOr_present= and =lookupOr_missing= for the cached/cold
+branches; do not create another cache model. The runtime =cond= and the Core
+presence test provide the concrete correspondence obligation. Runtime tests
+must cover invalidation and hook refusal; the abstract lookup law alone cannot
+prove Scheme hook purity or protect arbitrary low-level mutation.
+
+Existing RoleFunction and ReadRetention Quint gates own observer/registration
+changes, independent authentication, receiver separation and both requirements.
+SelectionReplay additionally binds the actual runtime source owners. Its stale
+test-owner path was migrated from =t/issued-read-test.ss= to the upstream
+=t/objects/issued-read-test.ss=; no hand-maintained substitute test was added.
+
+* Initial build and validation evidence: 9d5d9d0
+
+All raw logs remain local under
+=/private/tmp/yuanxu-entry-local-20261026/upgrade-9d5d9d0-*=.
+
+| Upstream runtime gate | Result |
+|----------------------+--------|
+| Main package build through official just build | passed, 219.05 seconds |
+| Shared startup benchmark build | passed, 8.65 seconds |
+| Whole test-package preparation within just build | timed out at its unchanged 300-second fence; exit 124 |
+| declaration-index-test | 18 Cases, MODULE-OK / HARNESS-OK / OK |
+| inheritance-hooks-test | 19 Cases, MODULE-OK / HARNESS-OK / OK |
+| issued-read-test | 17 Cases, MODULE-OK / HARNESS-OK / OK |
+| slot-observation-test | 22 Cases, MODULE-OK / HARNESS-OK / OK |
+
+The first runtime build attempt failed before compilation because the selected
+Nix pkg-config wrapper could not discover the installed Homebrew OpenSSL. A
+session-local standard PKG_CONFIG_PATH supplied its real .pc directory. No
+project-specific environment interface or dependency download was introduced.
+Both the dependency-discovery failure and the later full preparation timeout
+are retained. Focused tests do not erase the incomplete full upstream build.
+
+Core and formal validation on the final source:
+
+| Gate | Result |
+|------+--------|
+| Default runtime Core build | passed; 219 compile units after runtime dependency changes |
+| Default Core hot build, new process | passed; zero compile units; real/user/sys 17.94/15.66/2.10 seconds |
+| module-authoring-dispatch-work-test | 9 Cases, MODULE-OK / HARNESS-OK / OK |
+| gitea-postgresql-publication-test | 11 Cases, MODULE-OK / HARNESS-OK / OK |
+| source-observation-test | 6 Cases, MODULE-OK / HARNESS-OK / OK |
+| slot-read-replay-test | 16 Cases, MODULE-OK / HARNESS-OK / OK |
+| Existing 256-declaration Case | parent and worker MODULE-OK / HARNESS-OK / OK |
+| Product module-authoring-contract-test | MODULE-OK / HARNESS-OK / OK |
+| Product module-system-user-interface-test | MODULE-OK / HARNESS-OK / OK |
+| Lean SelectionReplay + PayloadSharing | passed, 114 jobs |
+| Source-bound SelectionReplay Quint | all 11 matched positive/negative gates passed |
+| RoleFunction Quint | all 6 matched gates passed |
+| ReadRetention Quint | all 7 matched gates passed |
+
+The first new C3 control incorrectly expected runtime =.put!= to clear C3.
+Its actual failure is retained in the =core-dispatch-assignment-assumption-failed=
+log. The corrected control edits the runtime source SlotSpec with =.putslot!=,
+then requires cold materialization and the exact invalid-hook refusal message.
+It also checks repeated warm access, canonical identity stability and public
+snapshot separation. This is a correction of the test's operation/expectation,
+not a change that makes runtime assignments invalidate more state.
+
+The 256-declaration worker reports graph-ready elapsed/CPU 36.912/35.686 seconds,
+and retained live bytes 273756440 after GC. Source reads remain exactly 79339,
+with 512 expanded bodies and 3386624 replay visits. The preceding attribution
+run recorded 41.607/36.767 seconds and 273751424 live bytes. These are one-shot
+different-source cohorts, not an ABBA benchmark: no robust speedup, source-read
+reduction or meaningful retained-memory improvement is claimed. Build time is
+outside both loading measurements.
+
+These results are not remote CI or a 10000-module capacity pass. The existing
+loading Case retains its original budget and has not been rerun here. The
+large-module design is not closed by eliminating discarded C3 snapshots; its
+remaining role expansion, source checks and retained payload still need the
+previously specified production-path analysis before another capacity run.
+
+* Fixed follow-up cohort: a3f197f
+
+The final upstream query found three commits published during validation. This
+iteration fixes the follow-up base at
+=a3f197f609adb9e297dbadb0d1d9235735172136=; the preceding results remain attributed
+to 9d5d9d0. Integration again leaves exactly the same three local files and
+43-insertion/15-deletion delta. The object-source digest is unchanged;
+=prototype-map.ss= now has SHA-256
+=00414c1b2eed62699f7186e8bb9b0e77b39ae02ec6695287e20da94c8d8bb23b=.
+
+The local delta includes observer-state inspection, constructor identity guards,
+issued-read checking, compact constructor storage and the IO write-environment
+access bridge for the installed Gerbil. It is not a claim that all these changes
+are already in upstream a3f197f. The Core release dependency remains unchanged.
+
+=ae190d1= changes multi-root =prototype-map-merge-first= to collect private
+vector/RBTree entries into one temporary spine, instead of exporting public
+snapshots and copying their appended spines. Standard ordered deduplication and
+the final owned-pair capture remain. This is automatically exercised by ordinary
+POO construction in Core; no Core mirror map or caching protocol is introduced.
+
+=PayloadSharing.privateCatalogFoldOrder= proves equality of the complete ordered
+list carrier before first-name policy, including duplicate occurrences. It does
+not prove runtime vector/tree iteration or physical procedure identity; the new
+upstream tests cover both representations, duplicate priority, uninterned symbol
+identity, false values, procedure identity, public-pair isolation and revisions.
+The first Lean attempt failed because simplification changed the induction
+hypothesis's expression; the explicit ordered rewrite then compiled. Both logs
+remain outside source control. No additional Quint fold model was introduced.
+
+=acf4ed6= and =a3f197f= improve property-generator random checkpoints and observer
+list ownership. These observers belong to property generation, not Core's source
+observer. They do not establish purity of source callbacks or permit joining
+source authentication windows. Their runtime property suite is checked separately.
+
+| Fixed follow-up gate | Result |
+|----------------------+--------|
+| Official upstream just build-core | passed within unchanged 300 seconds; real 148.07 seconds |
+| declaration-index-test | 20 Cases, MODULE-OK / HARNESS-OK / OK |
+| inheritance-hooks-test | 19 Cases, MODULE-OK / HARNESS-OK / OK |
+| issued-read-test | 17 Cases, MODULE-OK / HARNESS-OK / OK |
+| slot-observation-test | 22 Cases, MODULE-OK / HARNESS-OK / OK |
+| property-testing-test | 43 Cases, MODULE-OK / HARNESS-OK / OK |
+| Lean PayloadSharing, including privateCatalogFoldOrder | passed, 105 jobs |
+| Default Core build against this cohort | passed within the unchanged 600-second fence |
+| Default Core hot build, new process | zero compile units; real/user/sys 18.45/15.98/2.30 seconds |
+| Core dispatch / Gitea / source observation / replay | 9 / 11 / 6 / 16 Cases, all MODULE-OK / HARNESS-OK / OK |
+| Existing 256-declaration Case | parent and worker MODULE-OK / HARNESS-OK / OK |
+| Product authoring Contract | MODULE-OK / HARNESS-OK / OK |
+| Product user interface | initial default launch hit the unchanged idle fence; observed launch and subsequent default hot launch passed |
+| Source-bound SelectionReplay / RoleFunction / ReadRetention Quint | 11 / 6 / 7 matched gates passed in the isolated final run |
+
+The earlier whole-test-package preparation timeout remains open. The existing
+official =build-core= target qualifies the library phase, not that whole gate;
+the test manifest was not shortened and its timeout was not raised.
+
+The first follow-up Quint attempt passed typechecking but failed its pinned
+Apalache gRPC readiness handshake before checking a model. After the Scheme/build
+workload ended, the same controls passed independently, with identical startup
+and verification deadlines. This does not establish host load as the cause of
+the earlier handshake failure; the failed receipt is not a model counterexample.
+
+The product user-interface failure reports an Ops idle budget error after its
+last progress record, without enough phase data to attribute the original stall.
+The existing observed entry reported projection 1.729 seconds, already-approved
+compilation reuse with zero compile units, preparation 1.289 seconds and
+currentness 0.305 seconds. All 11 observed Cases took 22--65 ms. A subsequent
+default entry also passed. Neither run proves the original stall fixed or proves
+that it occurred in compilation. Preserve the first failure and keep cold-launch
+attribution open; no timeout, progress rule or production behavior was changed
+to make this pass.
+
+The fixed follow-up loading sample reached graph-ready at elapsed/CPU
+67.209/43.692 seconds, with 273755144 retained live bytes. It still performs 512
+body expansions, 79339 physical source reads and 3386624 replay visits. This
+sample is slower than the preceding 9d5d9d0 sample in BOTH elapsed time and CPU;
+it provides no speedup evidence. A changed source cohort, absent controlled
+alternation and invalid allocation accounting do not identify the cause as code,
+GC or host scheduling. Do not turn the successful correctness qualification into
+a claim of performance closure or use it to authorize another 10000-module run.

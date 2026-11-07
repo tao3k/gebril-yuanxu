@@ -1,0 +1,139 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 13.35 User Expressions for Loading Windows, Interfaces, and POO Leaves
+#+language: en
+
+* Accessing a module
+
+Module authors declare loading windows in =init.ss=. Consumers read values
+from =init.exports= with native =.get=. The default namespace is =modules=.
+An explicit rename uses the declared namespace name.
+
+#+begin_src scheme
+;; init.ss declares this package, which uses the Yuanxu prelude.
+(yuanxu! source: "./modules" mode: explicit (builder))
+
+;; The consumer uses the actual Gerbil package name, app.
+(def builder (.get app.init.exports modules builder))
+(.get builder config)
+;; A single lookup can retrieve the value directly.
+(.get app.init.exports modules builder config)
+#+end_src
+
+=source:= identifies the source window owned by the declaration. Across
+packages, the consumer's window must point to actual source supplied by a
+native Gerbil installation or link. The supported entry point accepts declared
+windows. =from-package:= and automatic global module lookup are unsupported.
+
+Business code reads the namespace with native =.get=. It needs no directory
+traversal, custom loader, =.getModule=, or Tree/Leaf wrapper. The =yuanxu!=
+window determines namespace membership, and each owner's Interface defines
+its loading configuration. =gerbil.pkg= provides Gerbil package, dependency,
+and language metadata. Editor indexing can use the existing package metadata
+and exports without adding a =modules/gerbil.pkg= file.
+
+* Interface configuration
+
+The declaration follows the existing role contracts. =types.ss= provides
+=ScopeContract=, =objects.ss= provides =Scope.=, and =config.ss= provides
+=Config=.
+
+#+begin_src scheme
+(.def Module
+  identity: 'builder
+  core: (.o requires: (.o)
+            scope-contract: ScopeContract
+            exports: (.o (:: @ Scope.) config: Config))
+  features: (.o))
+#+end_src
+
+=requires= declares dependencies. =exports= defines the public scope, which is
+constructed on demand using the required dependencies and contracts. Native
+build projection uses compilation declarations from selected owners and places
+outputs in the consumer's build environment. Compilation is limited to the
+selected build targets. Namespace reflection and business scope construction
+are separate operations. Initial admission of the full declaration set remains
+a performance target.
+
+* POO values at namespace leaves
+
+The existing leaf expression test verifies these native expressions against the
+executable source. [[file:../../../t/qualification/namespace/leaf-values.ss][leaf-values.ss]]
+
+#+begin_src scheme
+(.def Build
+  executable: "gerbil"
+  flags: '("build")
+  argv: (cons executable flags))
+
+(.def (Debug @ Build)
+  (flags => append '("--debug")))
+
+(.get Debug argv) ; ("gerbil" "build" "--debug")
+#+end_src
+
+=executable= and =flags= in =argv= are lexical POO slot references. They use
+the final object as the receiver. In =Debug=, the inherited formula reads
+=Debug.flags= even when the parent's =argv= is already cached. Ordinary slot
+references infer the receiver without an explicit =self=.
+
+* Receiver and inheritance bindings
+
+| Form | Meaning |
+|------+---------|
+| =(.def (Explicit leaf Build) ...)= | =leaf= names the final object and =Build= supplies the parent prototype |
+| =(.o self: leaf ...)= | The keyword form names the same receiver in =.o= |
+| =(flags (sup) expression)= | =sup= names the inherited computation for this slot |
+| =super: inherited= | =inherited= names each slot's own inherited computation |
+| Haumea =super= | The visible view of the containing directory |
+| Parameters in ordinary functions | Lexical Scheme bindings supplied by the caller |
+
+An explicit receiver uses ordinary POO syntax.
+
+#+begin_src scheme
+(.def (Explicit leaf Build)
+  executable: "gxi"
+  argv: (cons (.get leaf executable) (.get leaf flags)))
+#+end_src
+
+Use an explicit =sup= binding for more involved conditional inheritance. The
+following forms produce the same flags as =Debug= above.
+
+#+begin_src scheme
+(.def (Inherited @ Build)
+  (flags (sup) (append (sup) '("--debug"))))
+
+(def NamedSuper
+  (.o inherit: (list Build) super: inherited
+      flags: (append (inherited) '("--debug"))))
+#+end_src
+
+The author chooses the local name =sup=. Calling =(sup)= continues native C4
+evaluation for the current slot. The ancestor formula still receives the final
+receiver. The binding represents the inherited computation for that slot and
+stays lazy until invoked. Bind its result once with =let= when you need to use
+it repeatedly. Read directory or module values through the declared namespace
+or dependency and pass them explicitly.
+
+=.def= declares the receiver and parent prototype in its name list. =.o=
+accepts keyword options before the slot definitions. Putting the =.o= options
+=self:= or =super:= inside a =.def= slot body can create an ordinary slot or
+an unbound reference. Prefer the ordinary =.def= and per-slot transformations
+shown above.
+
+Use direct assignment for ordinary configuration, =(flags => append ...)= for
+inherited value transformations, and =config: =>.+ (.o ...)= for local changes
+inside an inherited object. The keyword shorthand consumes one transformation
+expression. Use the parenthesized form when supplying additional arguments to
+=append=.
+
+* Source revisions, editor tags, and namespace indexes
+
+Gerbil Git tags and REVs identify source versions. Editor =TAGS= files support
+symbol navigation. Yuanxu builds its POO namespace index from loading windows.
+Editor indexing grants neither module loading nor execution authority.
+Interface and Config retain their window-local role ownership when indexed.
+
+The standard =gerbil pkg deps --install= entry point preserves native =TAGS=
+generation. The user-facing command has no =--no-tags= option and accepts the
+existing REV without conversion to a Git tag.

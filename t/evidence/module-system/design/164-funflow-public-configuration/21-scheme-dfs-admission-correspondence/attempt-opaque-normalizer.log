@@ -1,0 +1,169 @@
+ℹ [39/45] Replayed PooFlowProfileAssociationProof.Model
+info: PooFlowProfileAssociationProof/Model.lean:218:0: 'PooFlowProfileAssociationProof.association_complete' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:219:0: 'PooFlowProfileAssociationProof.derived_root_preserved' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:220:0: 'PooFlowProfileAssociationProof.right_requirement_preserved_or_refused' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:221:0: 'PooFlowProfileAssociationProof.accepted_right_requirement_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:222:0: 'PooFlowProfileAssociationProof.cached_checks_are_final' does not depend on any axioms
+info: PooFlowProfileAssociationProof/Model.lean:223:0: 'PooFlowProfileAssociationProof.parent_cache_misses_for_child' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Model.lean:224:0: 'PooFlowProfileAssociationProof.stale_parent_value_refused' depends on axioms: [propext]
+ℹ [40/45] Replayed PooFlowProfileAssociationProof.DFS
+info: PooFlowProfileAssociationProof/DFS.lean:144:0: 'PooFlowProfileAssociationProof.DFS.visit_spec' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/DFS.lean:145:0: 'PooFlowProfileAssociationProof.DFS.success_membership_iff' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/DFS.lean:146:0: 'PooFlowProfileAssociationProof.DFS.successful_dfs_association_iff' depends on axioms: [propext, Quot.sound]
+ℹ [41/45] Replayed PooFlowProfileAssociationProof.Projection
+info: PooFlowProfileAssociationProof/Projection.lean:161:0: 'PooFlowProfileAssociationProof.Projection.dfs_native_path_iff' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Projection.lean:162:0: 'PooFlowProfileAssociationProof.Projection.list_identity_iff' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Projection.lean:163:0: 'PooFlowProfileAssociationProof.Projection.accepted_receipt_correlated' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Projection.lean:164:0: 'PooFlowProfileAssociationProof.Projection.accepted_receipt_discharged' depends on axioms: [propext]
+ℹ [42/45] Replayed PooFlowProfileAssociationProof.Bridge
+info: PooFlowProfileAssociationProof/Bridge.lean:57:0: 'PooFlowProfileAssociationProof.Bridge.inherited_root_receipt_final' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PooFlowProfileAssociationProof/Bridge.lean:58:0: 'PooFlowProfileAssociationProof.Bridge.rhs_requirement_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+✖ [44/45] Building PooFlowProfileAssociationProof.NativeFixtures (2.8s)
+trace: .> LEAN_PATH=/Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/packages/LeanPoo/.lake/build/lib/lean:/Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean /Users/guangtao/.elan/toolchains/leanprover--lean4---v4.34.0/bin/lean /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/PooFlowProfileAssociationProof/NativeFixtures.lean -o /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean/PooFlowProfileAssociationProof/NativeFixtures.olean -i /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean/PooFlowProfileAssociationProof/NativeFixtures.ilean -c /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/ir/PooFlowProfileAssociationProof/NativeFixtures.c --setup /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/ir/PooFlowProfileAssociationProof/NativeFixtures.setup.json --json
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:31:117: Tactic `decide` failed for proposition
+  (match DFS.visit graph0 4 0 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots0)) == canonical [2, 3]) =
+    true
+because its `Decidable` instance
+  instDecidableEqBool
+    (match DFS.visit graph0 4 0 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots0)) == canonical [2, 3])
+    true
+did not reduce to `isTrue` or `isFalse`.
+
+After unfolding the instances `decidable_of_decidable_of_iff`, `instDecidableEqBool`, `instDecidableEqNat`, `Bool.decEq`, `List.instDecidableMemOfLawfulBEq`, and `Nat.decEq`, reduction got stuck at the `Decidable` instance
+  match
+    match DFS.visit graph0 4 0 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots0)) == canonical [2, 3],
+    true with
+  | false, false => isTrue ⋯
+  | false, true => isFalse ⋯
+  | true, false => isFalse ⋯
+  | true, true => isTrue ⋯
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:53:120: Tactic `decide` failed for proposition
+  (match DFS.visit graph1 6 13 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots1)) == canonical [5, 2, 3]) =
+    true
+because its `Decidable` instance
+  instDecidableEqBool
+    (match DFS.visit graph1 6 13 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots1)) == canonical [5, 2, 3])
+    true
+did not reduce to `isTrue` or `isFalse`.
+
+After unfolding the instances `decidable_of_decidable_of_iff`, `instDecidableEqBool`, `instDecidableEqNat`, `Bool.decEq`, `List.instDecidableMemOfLawfulBEq`, and `Nat.decEq`, reduction got stuck at the `Decidable` instance
+  match
+    match DFS.visit graph1 6 13 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots1)) == canonical [5, 2, 3],
+    true with
+  | false, false => isTrue ⋯
+  | false, true => isFalse ⋯
+  | true, false => isFalse ⋯
+  | true, true => isTrue ⋯
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:75:117: Tactic `decide` failed for proposition
+  (match DFS.visit graph2 6 19 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots2)) == canonical [2, 3]) =
+    true
+because its `Decidable` instance
+  instDecidableEqBool
+    (match DFS.visit graph2 6 19 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots2)) == canonical [2, 3])
+    true
+did not reduce to `isTrue` or `isFalse`.
+
+After unfolding the instances `decidable_of_decidable_of_iff`, `instDecidableEqBool`, `instDecidableEqNat`, `Bool.decEq`, `List.instDecidableMemOfLawfulBEq`, and `Nat.decEq`, reduction got stuck at the `Decidable` instance
+  match
+    match DFS.visit graph2 6 19 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots2)) == canonical [2, 3],
+    true with
+  | false, false => isTrue ⋯
+  | false, true => isFalse ⋯
+  | true, false => isFalse ⋯
+  | true, true => isTrue ⋯
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:95:117: Tactic `decide` failed for proposition
+  (match DFS.visit graph3 4 26 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots3)) == canonical [2, 3]) =
+    true
+because its `Decidable` instance
+  instDecidableEqBool
+    (match DFS.visit graph3 4 26 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots3)) == canonical [2, 3])
+    true
+did not reduce to `isTrue` or `isFalse`.
+
+After unfolding the instances `decidable_of_decidable_of_iff`, `instDecidableEqBool`, `instDecidableEqNat`, `Bool.decEq`, `List.instDecidableMemOfLawfulBEq`, and `Nat.decEq`, reduction got stuck at the `Decidable` instance
+  match
+    match DFS.visit graph3 4 26 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots3)) == canonical [2, 3],
+    true with
+  | false, false => isTrue ⋯
+  | false, true => isFalse ⋯
+  | true, false => isFalse ⋯
+  | true, true => isTrue ⋯
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:116:117: Tactic `decide` failed for proposition
+  (match DFS.visit graph4 5 31 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots4)) == canonical [2, 3]) =
+    true
+because its `Decidable` instance
+  instDecidableEqBool
+    (match DFS.visit graph4 5 31 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots4)) == canonical [2, 3])
+    true
+did not reduce to `isTrue` or `isFalse`.
+
+After unfolding the instances `decidable_of_decidable_of_iff`, `instDecidableEqBool`, `instDecidableEqNat`, `Bool.decEq`, `List.instDecidableMemOfLawfulBEq`, and `Nat.decEq`, reduction got stuck at the `Decidable` instance
+  match
+    match DFS.visit graph4 5 31 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots4)) == canonical [2, 3],
+    true with
+  | false, false => isTrue ⋯
+  | false, true => isFalse ⋯
+  | true, false => isFalse ⋯
+  | true, true => isTrue ⋯
+error: PooFlowProfileAssociationProof/NativeFixtures.lean:137:117: Tactic `decide` failed for proposition
+  (match DFS.visit graph5 5 41 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots5)) == canonical [2, 3]) =
+    true
+because its `Decidable` instance
+  instDecidableEqBool
+    (match DFS.visit graph5 5 41 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots5)) == canonical [2, 3])
+    true
+did not reduce to `isTrue` or `isFalse`.
+
+After unfolding the instances `decidable_of_decidable_of_iff`, `instDecidableEqBool`, `instDecidableEqNat`, `Bool.decEq`, `List.instDecidableMemOfLawfulBEq`, and `Nat.decEq`, reduction got stuck at the `Decidable` instance
+  match
+    match DFS.visit graph5 5 41 [] [] with
+    | Except.error a => false
+    | Except.ok done => canonical (List.map Anchor.contract (DFS.dfsAssociations done roots5)) == canonical [2, 3],
+    true with
+  | false, false => isTrue ⋯
+  | false, true => isFalse ⋯
+  | true, false => isFalse ⋯
+  | true, true => isTrue ⋯
+Some required targets logged failures:
+- PooFlowProfileAssociationProof.NativeFixtures
+error: build failed

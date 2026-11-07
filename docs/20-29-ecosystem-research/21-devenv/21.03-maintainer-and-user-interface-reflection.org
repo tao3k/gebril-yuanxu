@@ -1,0 +1,70 @@
+#+title: 21.03 devenv: Maintainer Responsibilities Behind the Small User Interface
+#+language: en
+#+property: DOCUMENT_ID 21.03
+#+property: STATUS analysis-of-existing-service-study-no-new-execution
+
+* Question and evidence owner
+
+What lets an ordinary user configure a service without implementing the service?
+[[file:21.02-composition-and-postgres.org][The PostgreSQL/composition study]] owns the actual source references, consumer,
+DV-01/02 records and evidence limits. This article interprets those observations;
+it does not refresh issue status or report a service run.
+
+* Keep three forms of reuse distinct
+
+| Form | What it changes | What it does not establish |
+|------+-----------------+----------------------------|
+| Imported environment/module configuration | Effective environment contributions | Runtime readiness or migration ordering |
+| Package overlay | Package implementation or package-set value | Correct application configuration |
+| Service configuration | Public values consumed by maintained process integration | Successful connection from every dependent client |
+
+For our system, Module publication, Profile reuse and Scenario relationships
+need corresponding owners. A Profile can provide useful defaults without being
+embedded in one Scenario. A Scenario combines selected Profiles and relationships;
+inheritance order is not an execution order.
+
+* Guestbook: follow a default change through the consumer
+
+If a maintained Redis Profile changes a connection endpoint, a user who only
+changes the frontend image must still receive a compatible final connection.
+The module should derive the frontend connection from the selected Redis export,
+not copy an endpoint into every user configuration. A user may deliberately
+replace that connection; the final Scenario must then check compatibility.
+
+The PostgreSQL PGHOST report demonstrates the kind of risk, not a proof that
+this Guestbook design fixes it. Accepted scalar types do not establish a live
+socket, readiness or image compatibility. A parent resource cache is likewise
+not authority for the child's changed configuration.
+
+* Issues and Engineering Limitations
+
+DV-01 is a historical closed user report; no versioned fix or local reproduction
+is established by this study. DV-02 distinguishes configuration availability from
+runtime relationships. See the [[file:21.02-composition-and-postgres.org][full records]] for dates and source scope.
+
+Our proposed system adds its own risks: arbitrary configuration functions can
+hide expensive work or effects; automatic field construction can conceal merge
+policy; automatic dependency binding can accidentally broaden a build closure.
+Those are our responsibilities, not defects attributed to devenv.
+
+* Reflection and measurable design gates
+
+- Ordinary author: change image, port or labels as values. Gate: no process,
+  admission receipt or package bookkeeping appears in that configuration.
+- Profile maintainer: refine an inherited value only when preserving it matters.
+  Gate: an upstream default change has an explained effect on every consumer.
+- Scenario maintainer: publish connection and readiness relationships explicitly.
+  Gate: configuration preview is possible without starting services, while a
+  failed connection cannot be reported as ready merely because admission passed.
+- Framework maintainer: own compatibility and effective-value provenance. Gate:
+  force the parent preview first, change the child endpoint, then reject a parent
+  candidate/receipt presented as the child's result.
+
+* Conclusion and Onwards
+
+The useful lesson is maintained integration, not merely concise Nix syntax.
+Our proposed gain is reusable functional/object extension with inspectable final
+relationships. We still owe real service qualification, compatibility tests and
+bounded demand measurements. Agent-assisted authoring reduces writing cost; it
+does not supply these guarantees.
+

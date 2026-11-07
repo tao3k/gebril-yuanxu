@@ -1,0 +1,150 @@
+#+title: 20.16 Factory Receipt Inventory and Strong Capture Reduction
+#+language: en
+#+filetags: :modules:retention:contracts:
+
+* Concrete retaining path
+
+The 16/32 census identifies 221/429 authoring admission receivers. Each datum
+passes the real =YuanxuModuleAuthoringAdmission= Type validator. The previous
+predicate made six =.slot?= queries before reading the required values:
+
+#+begin_src scheme
+(andmap (cut .slot? value <>)
+        '(kind module role accepted? diagnostics runtime-executed?))
+#+end_src
+
+This produces more than scalar Boolean allocations. Runtime =.slot?= calls
+=object-read-query= and issues a record for =(presence name)=. That record
+strongly captures the original receiver and instance; those own the runtime
+read table, specifications and bound slot closures. The private birth closure
+also preserves the signed instance, value and ordered dependencies. All are
+required for that query's authentication. Deleting records afterward would
+discard real observations and is not the repair.
+
+The string-path probe further observes read -> instance -> runtime symbolic
+table -> cached closure captures -> source bytes. The largest individual
+captured byte strings are shared compiler-source observations, not independent
+copies per module. =source-inputs= read VALUES identify baseline byte strings
+by actual identity. Unknown capture contents are never printed. First-discovery
+paths are bounded witnesses, not GC dominator or exclusive ownership proofs.
+The probe separates receiver metadata roots from read roots; it must not label
+the former with the last visited read's identity.
+Only the final twelve path edges are retained in a long witness; an omitted
+prefix is not a claim that the displayed suffix begins at a GC root.
+
+* Production change
+
+=object-family/read-projection.ss:owned-read-fields-present?= reuses the
+existing call-local factory ownership and the producer's =.all-slots= query.
+=module-system/authoring/admission.ss= enrolls the actual newly constructed
+receipt through the existing derived-receiver path. No kind name or contributor
+flag grants eligibility.
+
+#+begin_src scheme
+;; The SAME Type validator still runs for every datum.
+(validate YuanxuModuleAuthoringAdmission
+  (if (owned-read-function-scope?) (owned-read-derived! candidate) candidate))
+
+;; Inside its existing predicate; all subsequent VALUE checks remain intact.
+(owned-read-fields-present? value
+  '(kind module role accepted? diagnostics runtime-executed?))
+#+end_src
+
+The one-inventory route requires actual current-region ownership, the original
+receiver revision, an unopened region, compatible live observers/prechecks,
+and no already exposed names cache. Derived enrollment checks actual parent
+protocols/declarations. Unknown callbacks, contributed values, mutations and
+exposed inventories retain ordinary per-field queries. This includes a public
+names list that has been modified in place. No successful verdict is retained.
+
+Every performed query still uses runtime issuance, recording and delivery.
+Its original edges are retained. Value reads and Type validation still run in
+their original order; the controlled route makes fewer structural queries.
+Arbitrary observers retain the original presence-query sequence. The source
+precheck stays installed on every actual read, with independent admission and
+currentness-before-return boundaries unchanged.
+
+* Assurance ownership and limits
+
+SysML =OwnedReceiptInventory= in [[file:20.04-payload-ownership.sysml][20.04]] allocates inventory/presence
+equivalence to Lean. =PayloadSharing.inventoryPresenceEquivalent= proves the
+finite field check under complete inventory; =unownedOrOpenKeepsOrdinary=
+preserves fallback, and =inventoryDoesNotAdmitRejectedValue= keeps shape and
+value acceptance separate. Completeness of the actual fresh runtime inventory
+is a source/runtime correspondence obligation, not proved by defining a Boolean
+model. Existing RoleFunction QNT owns live-scope fallback, revision changes and
+per-datum checks. Existing ReadRetention owns both requirements, parent/child
+isolation, source changes and laziness. No duplicate QNT graph is added.
+
+Runtime controls exercise original issuance, exposed/mutated names, receiver
+revision changes, missing fields, arbitrary observer query order and an
+unselected throwing field. Real authoring dispatch and Gitea/PostgreSQL remain
+consumer controls; these are not replaced by an isolated synthetic admission.
+
+The latest queried producer is =8f505524021bac71a8ed1fac0826c7691ba5377a=.
+Relative to the previously qualified =63100a3= it changes only the package
+build entry's heap scope and CI documentation. The MOP source owners are
+unchanged. The existing unpublished runtime constructor/snapshot/observation
+changes remain in the separate qualification cohort; Core's published pin is
+unchanged. No Gerbil compiler source is modified.
+
+* Bounded production result
+
+| Modules | Original records before / after | Covered body bytes before / after |
+|---------+---------------------------------+----------------------------------|
+| 16 | 6,330 / 5,227 | 8,714,844 / 8,386,696 |
+| 32 | 11,274 / 9,131 | 11,812,064 / 11,166,732 |
+
+At 32 modules this removes construction of 2,143 structural query records and
+645,332 covered body bytes (about 630 KiB). The 16->32 covered-body increment
+falls from 3,097,220 to 2,780,036 bytes, about 10.2 percent. This is a change in
+the producer's query program, not identity merging, edge filtering or callback
+suppression. All datums still receive Type validation.
+
+The ancestor inventory also makes its existing reverse-dependency table visible
+to this diagnostic. Its additional weak-key table/entries must not be described
+as newly allocated leaks or compared with the old frontier as if both were full
+heap root enumerations. Table capacity remains unmeasured.
+
+The paired runs keep 32/64 cold role expansions, zero additional hot expansions,
+5,409/10,353 cold source reads and 106/170 hot source reads. Whole-VM post-GC
+live bytes decrease in the bounded samples, but are not exclusive savings.
+Wall times are single-run observations, not an isolated performance theorem.
+The two-GiB ten-thousand-module architecture is still open; this repairs a
+measured growth source without claiming it closes the entire budget.
+
+* Build ownership clarification
+
+=core/build.ss= is the Core repository root build consumer. It combines the
+library inventory with =init.exports.std-make-spec= while keeping their owners
+separate. =core/yuanxu/build.ss= was an orphan that selected ="prelude"= in a
+directory containing no =prelude.ss= and had no caller. It is deleted.
+Root =prelude.ss= already declares =tao3k/yuanxu/prelude= and is owned once by
+=core-spec.ss=. Runtime source bootstrap remains in
+=register-yuanxu-build-source!=; no second build entry is necessary.
+
+* Qualification and outstanding boundary
+
+The final evidence-ownership suite passes after checking ordered external
+presence deliveries and mutate/restore fallback on the same owned receiver.
+The authoring dispatch suite, real Gitea/PostgreSQL publication (eleven Cases),
+selected build-graph suite and final 16/32 census all pass through the existing
+heap-fenced =just test-file=. Each has MODULE-OK, HARNESS-OK and final OK, with
+no failure/overflow or skipped-Case marker. Lean's scoped build passes 105 jobs;
+the existing RoleFunction and ReadRetention QNT families pass five and seven
+positive/negative gates respectively.
+
+The final census reports the same 5,227/9,131 original-record counts and
+8,386,696/11,166,732 covered body bytes. Its cold wall/CPU observations are
+3,453.882/3,255.903 ms and 4,508.461/4,401.075 ms; hot observations are
+72.685/72.334 ms and 197.235/195.134 ms. Another production-identical run with
+the earlier diagnostic serializer observed 149.947 ms hot at 32 modules.
+Diagnostic traversal allocates between cold and hot queries. These samples
+therefore establish memory/query reduction, not a speedup or an isolated hot
+CPU regression diagnosis. No performance threshold is widened.
+
+The remaining read/receiver and specification payload is still substantial.
+This slice removes a demonstrated source of repeated structural-query
+construction; it does not authorize pooling receiver identity or mutable
+captures. No new Core cache protocol or admission memo was added, no
+ten-thousand-module run occurred, and nothing was committed or pushed.

@@ -1,0 +1,92 @@
+#+title: 20.32 Test Publication through Native Make and Harness
+#+language: en
+#+filetags: :testing:make:publication:currentness:
+
+* Ownership and phase boundary
+
+The selected init publication already owns tests, their support source and
+=std-make-spec=. Its explicit =.compile= action now consumes that same spec
+through the existing Core =defbuild-script= adapter and Gerbil's native
+=std/build-script= and =std/make=. The existing build-publication boundary
+checks source currentness and signs actual products before returning. The
+execution object's =.compile= then independently admits those products.
+Harness execution follows preparation; a Case does not recursively start Make.
+
+#+begin_src scheme
+(def (compile-test-publication tests)
+  (unless (null? (.get tests build spec))
+    (let ()
+      (defbuild-script ((.get tests std-make-spec))
+        srcdir: (.get tests source source-root))
+      (main "compile")))
+  (.call (.get tests execution) .compile))
+#+end_src
+
+The init-owned facade resolves this implementation through native
+=module-action= only on a nonempty explicit compilation demand. Constructing
+the action loads nothing. Empty support retains the existing execution check
+without loading the build implementation. No temporary driver, second Builder,
+new cache format or public restore operation is introduced.
+
+The product test entry selects its demand once, calls its =.compile= and then
+uses that demand's execution object for the official Harness. Calling the
+execution object's compile guard alone was insufficient: it correctly returned
+=build-required= but never invoked the existing preparation owner. The failed
+product run is retained locally rather than counted as successful preparation.
+
+* Reuse and refusal
+
+The existing Test publication retains source/options identities, native Make
+outputs, product signatures and support-subset transfer. Hot reuse still
+authenticates current inputs and actual products. Neither a timestamp nor a
+successful previous Harness run is an admission verdict for a new demand.
+Stale source, missing products and jointly replaced products/records continue
+through the existing refusal path; they are not silently repaired as a cache hit.
+
+The Just entry passes its existing heap/debug settings through Gambit's
+standard =GAMBOPT= before imports, so compiler children inherit the same
+envelope. The pre-import CLI fence and original watchdogs remain in place.
+No new environment variable or relaxed memory/time allowance is required.
+
+* Assurance allocation and executed gates
+
+SysML owns the selection/preparation/Harness phase allocation. Existing Lean
+=TestMakeLayout= and =TestPublicationReuse= own the structural publication
+relations; both compiled successfully (118 jobs). Existing Quint test-publication
+reuse models passed four positive/negative controls. They do not prove arbitrary
+compiler or contributor code, and no duplicate temporal model is added here.
+
+Three Core native suites passed through the default Just entry: test preparation,
+init test input and the real Gitea/PostgreSQL publication Scenario. They retain
+source/product tampering controls, native option identity, parent-cache isolation
+and the two independent requirements. All completed with MODULE-OK,
+HARNESS-OK and final OK; logs remain local artifacts.
+
+A fresh product package prefix retained installed native/Core namespaces but
+contained neither test products nor a prior test-publication approval directory.
+The ordinary =just test-file t/module-authoring-contract-test.ss= automatically
+compiled exactly two support modules, then passed the real Harness. A second
+Just process using the same inputs passed with zero compiled support modules.
+This is cross-process compile reuse, not a claim of zero currentness work or a
+wall-time speedup. The independent explicit =build-test= CLI uses the same
+publication action rather than the execution guard alone.
+
+The final-source default bootstrap gate also passed with 12 detected workers:
+spec 10.570 s, cold compile 30.143 s, zero-compile hot command 14.295 s,
+clean 11.528 s, new-process rebuild 26.955 s and final clean 20.173 s.
+Source-package assertions passed in the same run. The 60-second child and
+180-second outer deadlines were unchanged. These are local command timings,
+not an attribution of all remaining wall time or evidence of a macOS CI pass.
+
+* Remaining work
+
+Core's unconditional preparation of four qualification packages remains a
+separate bottleneck. Their dependency ownership must be represented once by
+the actual test publication before pruning preparation; opaque paths used by
+future Cases cannot be inferred soundly from import syntax. This change does
+not remove those packages or narrow the suite.
+
+Module-loading capacity, cold role analysis and build preparation are measured
+separately. The original scale gate and macOS bootstrap failures remain open
+until the exact submitted revision passes remote CI. A successful focused
+consumer does not certify the ten-thousand-module budget.

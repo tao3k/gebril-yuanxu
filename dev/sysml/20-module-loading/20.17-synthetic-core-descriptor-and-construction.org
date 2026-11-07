@@ -1,0 +1,206 @@
+#+title: 20.17 Synthetic Core Descriptors and Runtime Construction Identity
+#+language: en
+#+filetags: :modules:retention:construction:assurance:
+
+* Next measured strong path
+
+The 9,131-record baseline is further classified by each anonymous receiver's
+actual direct Slot names. This is post-operation reflection, not another
+semantic field table. The largest anonymous presence group has exactly
+=feature-id=, =owner-module-id= and =requires=: 416 presence records at 32
+modules, thirteen per mandatory Core node.
+
+=module-system/source/selection.ss= constructed one temporary Feature spec for
+every mandatory Core. The existing Feature publisher queried that spec's
+required and optional fields, copied its lists and produced a complete flat
+descriptor. Each presence/value/preparation record retained the original
+temporary receiver, instance, specifications and closures. The next repair
+therefore targets this producer, rather than collapsing signed read identities.
+
+* Shared value, distinct receivers
+
+The existing =feature-descriptor= publisher creates one complete private default
+descriptor. Core selection uses runtime =.cc= to replace only =feature-id=,
+=owner-module-id= and =requires=. Dependency lists still receive a fresh spine.
+All fourteen descriptor fields are compared against the ordinary publisher in
+the runtime control. Default values are not duplicated in a new schema table.
+Real user Feature descriptors continue through their existing producer.
+
+The clone shares runtime persistent specification structure. It does not
+inherit the private template receiver or copy evaluated value cells. Per-owner
+thunks and instances remain distinct; supported edits retain runtime invalidation
+semantics. This is the existing runtime carbon-copy contract, not a new claim of
+isolation against arbitrary raw reflective writes into shared SlotSpec objects.
+
+The signed support is collected from the COMPLETE flat descriptor, after the
+input spec has been copied. That input is not a live prototype of the output.
+No recorded edges are filtered. If module initialization itself runs inside an
+outer recording frame, its original creation reads remain naturally observed
+there; they are not forcibly inserted into every later descriptor use.
+
+* Reuse the actual MOP boundary
+
+gerbil-poo already checked runtime Object and object-state =:init!= identities
+inside =call-with-issued-reads=. That exact query is lifted to
+=object-construction-current?=. Replay retains the original query closure
+privately. Core captures the query before constructing its defaults; it does
+not maintain its own method-identity table or label a callback pure.
+
+The template is only established when its IMPORT-time constructor identities
+and live observer scope qualify. A changed initializer or unknown callback at
+import cannot mint a template that later becomes trusted merely because the
+metadata is restored. At EVERY use Core rechecks live scope and constructor
+identity, then authenticates/delivers the template's original runtime reads.
+Unknown observation or an open constructor keeps the ordinary per-node spec
+and its original queries/effects. Constructor exceptions are not swallowed.
+
+No admission verdict, successful source check or mutable traversal seen-set is
+cached. The reusable objects are POO metadata values and runtime issued records.
+This is a synchronous boundary under the existing trusted-runtime assumptions;
+it is not a lock against external source edits, concurrent reflection or unsafe
+runtime namespace replacement. Final source currentness remains independent.
+
+* SysML, Lean and QNT allocation
+
+=SyntheticCoreDescriptor= in [[file:20.04-payload-ownership.sysml][20.04]] allocates runtime persistent-write
+refinement to Lean. =PayloadSharing.coreDescriptorIdentity=,
+=coreDescriptorOwner= and =coreDescriptorRequirements= prove the three updated
+fields using LeanPoo Representation's actual =storage_first_put= and
+=storage_put_frame=. =coreDescriptorDefaults= preserves every other field.
+These are storage/value laws, not compiler or collector proofs.
+
+The EXISTING RoleFunction QNT model gains an immutable origin condition and
+one negative variant, =RoleFunction_origin=. Restored current metadata with a
+bad import origin must keep the ordinary path. Removing origin eligibility
+produces a counterexample. The family now has six gates; it does not duplicate
+the ReadRetention graph model. Existing ReadRetention's seven gates retain
+both requirements, receiver isolation, source changes and unselected laziness.
+
+Runtime mapping uses the actual runtime constructor query, both runtime initializer
+replacement controls, public selected-graph calls, arbitrary observation and
+the entire production selection module body evaluated through Gerbil's runtime
+=module/import= in a separate lexical namespace. The origin control restores
+the initializer before invoking the new namespace's exported selector and
+confirms that ordinary spec construction remains. This is a runtime module
+initialization control, not a production Loader integration claim.
+
+* Bounded result on the current cohort
+
+Source base: gerbil-poo =c192fc2c7c9712845aac801e820b6b619f8fd5df= plus the
+preserved local representation/observation changes and runtime constructor-query
+refactor. Qualification uses the installed Gerbil compiler with separate local
+outputs. Neither the Core dependency pin nor remote branches were updated.
+The new runtime query is still an unpublished coordinated dependency change;
+the declared release dependency alone does not yet provide it.
+
+| Modules | Original records before / after | Covered body bytes before / after |
+|---------+---------------------------------+----------------------------------|
+| 16 | 5,227 / 4,987 | 8,385,456 / 8,290,696 |
+| 32 | 9,131 / 8,603 | 11,165,492 / 10,949,556 |
+
+At 32 modules, 528 record constructions and 215,936 covered bytes (about
+211 KiB) are avoided. The covered 16->32 increment falls from 2,780,036 to
+2,658,860 bytes. The first cold Case additionally observes initialization reads;
+the later Case reuses the already loaded library. These are original identities
+and bounded reachability measurements, not exclusive heap/dominator claims.
+
+Cold role expansions remain 32/64 and hot expansions remain zero. Physical
+source reads remain 5,409/10,353 cold and 106/170 hot. Final cold wall/CPU
+samples are 3,210.238/3,160.863 ms and 4,232.712/4,217.619 ms; hot samples
+are 71.031/70.860 ms and 136.381/136.160 ms. Host/GC variation prevents an
+isolated speedup claim from these samples.
+
+Runtime issuance completes all seventeen Cases. Public selected-graph,
+authoring, real Gitea/PostgreSQL publication (eleven Cases), 16/32 census and
+product performance-contract suites pass through heap-fenced =just test-file=.
+All required success markers are present and no error/overflow marker is
+accepted. Lean's scoped build passes 105 jobs. QNT's six origin/route gates and
+seven retention gates pass, including expected negative counterexamples.
+
+* Remove duplicated stages and dead forwarding
+
+The ordinary Core and product Interface constructors previously obtained an
+already admitted default authoring Profile and then passed it to the shared
+constructor for a second admission. They now supply the existing raw default
+factory; the shared constructor owns ONE complete admission. Explicitly supplied,
+already checked Profiles still receive a fresh admission. The test counts distinct
+actual runtime root evidence receivers, rather than treating getter deliveries as
+procedure-call counts. Public standalone checked Profile construction is retained.
+
+Removed after caller/export checks:
+
+- Core's =poo-index-slots= forwarding alias; its sole live caller directly uses
+  the maintained position-index algorithm.
+- Three unexported, uncalled performance-support forwarding functions.
+- A redundant direct =funcs.ss= import from the object-family facade.
+
+These cleanups are maintenance changes, not credited as the measured memory
+reduction. Active indexed-family/projection functions have real consumers and
+are not deleted merely because their names resemble runtime slot-layout APIs.
+No compatibility shim, new Builder, cache protocol, increased timeout/heap,
+ten-thousand-module rerun, commit or push is introduced. The overall capacity
+design remains open.
+
+* Latest upstream: shared indexes and deferred IO entries
+
+Source inspection on 2026-10-28 uses gerbil-poo
+=ec5ab0a8f18210a3a66eb7d2e6b01d4fd763ef94= on the existing
+=feat/positive-closure-costs= branch. This is a newer source audit, not a
+qualification of that revision with Core's coordinated unpublished changes.
+The preceding measurements use the explicitly recorded c192fc2 cohort.
+
+** Reuse representation authority, not another index cache
+
+Upstream =slot-layout.ss= keeps canonical ordered names and an identity hash
+index in a shared shape; cells remain receiver-local. Its =previous:= hint
+requires equal cardinality and every symbolic identity before shape reuse.
+The access cache binds owner, revision and exact layout. Shared shape identity
+permits offset reuse, never reuse of another receiver's values or admission.
+These are the mechanisms to use for stable internal POO field access.
+
+Core already uses =make-slot-cache= and =.ref/inline= for selected authoring
+method fields. Expand that use only after measuring the remaining hot access
+sites. It does not remove read records or their strong receiver references by
+itself. Do not attribute the preceding 528-record reduction to faster hashing.
+
+The existing =object-family/indexed.ss= is a separate ordered value-vector
+family: duplicate names use the first positional index. Runtime shapes
+canonicalize names and represent object Slots. Replacing the former index
+with a canonical shape index without changing its consumers would select the
+wrong vector cells. Delete that layer only through an end-to-end consumer
+migration to ordinary runtime objects, not by swapping its hash function.
+
+** Use module-action at runtime entry boundaries
+
+Upstream =io.ss= implements =module-action= with standard =load-module=,
+explicit canonical runtime binding resolution on EVERY invocation and tail
+=apply=. Constructing the action copies the module path but does not discover
+or initialize the requested module. Successful reloads remain visible; runtime
+initialization failures, business errors and multiple values remain intact.
+The representation-service example composes entries through existing
+Observation/FUN operations rather than another loader registry.
+
+For Core, the applicable replacement boundary is a deferred executable entry
+after existing source/publication admission. The action itself does NOT check
+source currentness, artifact issuance or package approval. Those checks must
+remain around actual use, including a new invocation after source changes.
+Do not retain the resolved business procedure across calls.
+
+=module-import-role-values= in =source/deferred-declaration.ss= also needs
+runtime expander context and lexical binding resolution. =module-action= does
+not replace =import-module= or project syntax exports; it accepts an explicit
+runtime identifier and does not infer export aliases. Keep that distinction
+when migrating runnable consumers. Do not force every role through a generic
+IO action merely because its loading is delayed.
+
+SysML ownership remains: Lean checks representation/update laws; existing QNT
+families check demand, revisions and transition ordering; runtime controls must
+check no load on action construction, repeated invocation, failed initialization,
+reload visibility and currentness around use. No parallel cache, manual purity
+label or second module registry is justified by these APIs. Runtime integration
+and cold/hot qualification of this newer cohort remain pending.
+
+References (fixed revision):
+- [[https://github.com/tao3k/gerbil-poo/blob/ec5ab0a8f18210a3a66eb7d2e6b01d4fd763ef94/slot-layout.ss][Shared shape and receiver-local access cache]]
+- [[https://github.com/tao3k/gerbil-poo/blob/ec5ab0a8f18210a3a66eb7d2e6b01d4fd763ef94/io.ss][module-action implementation]]
+- [[https://github.com/tao3k/gerbil-poo/blob/ec5ab0a8f18210a3a66eb7d2e6b01d4fd763ef94/examples/representation-service.ss][Composed deferred runtime entries]]

@@ -1,0 +1,122 @@
+#+title: 20.19 Empty-Library Bootstrap and Cold Query Attribution
+#+language: en
+#+filetags: :modules:bootstrap:loading:measurement:assurance:
+
+* Failure before correction
+
+The Core output library starts empty. Only declared non-Core dependencies are
+available; neither =yuanxu/*= nor =tao3k/yuanxu/*= is supplied by an older Core
+library. Running the existing =gerbil build= entry failed at
+=module-linker=: =module-action= reported =module not found= for
+=yuanxu/module-system/interface=. A source-visible procedure is not a loadable
+compiled module. No source signature, timeout or loader error rule was relaxed.
+
+Two preparation errors are retained separately from this production defect.
+Combining dependency overlays by filename mixed generations of one module and
+selected an older IO binary. Preserving each search directory's priority fixed
+that cohort. Symlinked dependency metadata was then rejected by the existing
+regular-file source rule; dependency-only regular copies fixed that preparation.
+Directory priority and original timestamps are preserved for byte-identical
+copied dependencies. Before restoring copy timestamps, 8,557 artifacts were
+compared with their originals and zero content mismatches were found. No Core
+product timestamp or fingerprint was edited to bypass a Make/currentness check.
+These failures do not justify a cache fallback or changing fingerprints.
+
+* One existing phase owner, two official initialization mechanisms
+
+=module-system/source/deferred-declaration.ss= already owns source/runtime
+projection boundaries. Its internal =module-entry-action= inspects the runtime
+creating context: exact owner identity, module context and a source =.ss= path.
+Only that actual source-evaluation route uses official =eval-syntax/import=.
+It resolves the canonical binding AFTER initialization on every invocation.
+The private closure retains immutable identifiers, not the creating context.
+
+Compiled creation and unrelated callers use upstream =io.module-action=.
+There is no catch-and-fallback on =module not found=, user source/compiled flag,
+retained business procedure or second initialized-module registry. Source imports
+use the standard Core importer in a fresh lexical context; publication importers
+cannot capture built-in factories. Dynamic parameters restore on exceptions.
+Both mechanisms preserve runtime initialization errors and tail =apply= results.
+Source and artifact currentness remain at their existing build/admission owners.
+
+This context test is an interpreter/compiler correspondence under the trusted
+Gerbil context machinery, not an authentication proof against arbitrary runtime
+metadata mutation. It does not promise automatic source reload within one epoch.
+Changed source still requires rejection and a new source session.
+
+* Empty output and incremental result
+
+The unchanged Core =build.ss= consumes library and init-selected specifications
+through =std/make=. The real empty-output build passes: 256 source compile lines
+and 549 runtime compile jobs, with no duplicate source compile lines. These counts
+are different units; runtime fragments are not extra module declarations.
+No private Builder, prerequisite script or hand-maintained bootstrap target list
+is added. The same-output hot build passes with zero compilation (21.03 seconds
+wall, 17.16 user, 3.75 system in the first recorded run). After regular-copy
+qualification, the final hot run also compiles zero sources: 43.63 seconds wall,
+22.72 user and 5.59 system. Both results are retained; the faster run is not
+selected as a stable benchmark. Zero compilation does not mean zero startup,
+source expansion or currentness work. The final run's wall/CPU gap alone does
+not identify the waiting cause.
+
+The entry test, selected build/signing checks, deferred role projection, source
+package registration/currentness control and Gitea/PostgreSQL run through the
+existing =just test-file= and Harness. Source package mutation is confined to a
+relocated source snapshot; the active checkout is not modified by that control.
+All runtime receipts require MODULE-OK, HARNESS-OK and final OK with no failure,
+skip, overflow or undefined-binding marker.
+
+* Why the first sixteen-module query is expensive
+
+The existing census now uses installed Gambit's =##exec-stats= around the whole
+query and three sequential envelopes. It retains only scalar stage diagnostics
+and the original read records; it installs no new observer. Output occurs after
+the measured operation. Signed VM allocation accounts can be negative and are
+not claimed as physical allocation or exclusive retained bytes.
+
+An initial accounted run was 8.406 seconds wall / 6.346 CPU at 16 modules,
+including 0.571 GC wall. It cannot be explained solely by GC or scheduling.
+The later stage-attributed run of the same production code was:
+
+| Modules | Cold wall / CPU | Hot wall / CPU | Issued records | Cold / hot role expansion |
+|---------+-----------------+----------------+----------------+---------------------------|
+|      16 | 5.656 / 5.615 s | .0689 / .0688 s |           4985 |                    32 / 0 |
+|      32 | 4.108 / 4.059 s | .1451 / .1450 s |           8600 |                    64 / 0 |
+
+The first 16-module envelopes are sequential: source acquisition 3.704 seconds,
+Graph read 1.890 seconds, final independent authentication .062 seconds. Existing
+fixture spans place .083 seconds in init import and 2.607 seconds in the FIRST
+module-namespace demand. The runtime linker entry and namespace initialization
+are therefore the next major cold boundary; directory context itself accounts
+for only .0012 seconds. The next 32-module Case shares initialized libraries:
+its namespace demand is .0025 seconds and source acquisition .195 seconds.
+This is a concrete one-time/case-order distinction, not evidence that a 32-module
+Graph is inherently cheaper than a 16-module Graph.
+
+Reader bootstrap (.857 s), candidate reads (1.703 s) and interface reads (.797 s)
+overlap inside those envelopes; they must not be added to an invented total.
+In the 16-module cold phase GC wall is .314 seconds and minor faults total
+148,773, with zero major faults. Those counters locate memory/page pressure but
+do not by themselves prove a disk-I/O bottleneck. The first namespace entry's
+module loading versus prototype initialization still needs a narrower runtime
+attribution before another production optimization is justified.
+
+The hot envelopes spend essentially all their time in independent authentication;
+source and Graph getters are microseconds. Removing that authentication or
+prewarming outside the reported cold interval would change the guarantee or
+hide the cost. Neither is performed. No performance speedup is certified from
+these unpaired, differently initialized cohorts.
+
+* Assurance and remaining boundary
+
+SysML =SourceBootstrapEntry= allocates phase/demand transitions to the existing
+ModuleDemand QNT family and interpreter/loader correspondence to actual Scheme
+controls. Lean's existing receiver/layout representation laws remain applicable;
+they do not prove Gerbil's module initialization. No duplicate finite model or
+handwritten purity classification is introduced.
+
+Runtime issuance identity, dependency edges, observers, parent-cache isolation,
+both domain requirements and currentness-before-return checks remain unchanged.
+No admission conclusion is cached. The 2 GiB and existing watchdog budgets are
+unchanged; no ten-thousand-module run, compiler-source change, commit or push is
+part of this qualification. Full remote CI and capacity closure remain separate.

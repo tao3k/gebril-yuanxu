@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-16",
+  "scope": "executed-doc-owned-selected-projection-fixture-no-production-adapter-no-loader",
+  "native": {
+    "exit": 0,
+    "assertions": 41,
+    "receipt_sha256": "5bf232f61817d7efc2f797cb964f859ce8f7097c3c96234dacceef103718582c",
+    "log_sha256": "c74d0aadc64a6f0cf433be35a38ed3bd66cd4e13bac24961ebbd7ef39d5966e7",
+    "extraction_sha256": "a431b3ec6ab9a34e7d2ab4dbc3e46e5b81b078fa83c42417bab08d092d86232a",
+    "source_hashes_verified": true,
+    "hand_supplied_completion_list": false
+  },
+  "lean_reference": {
+    "command": "lake env lean PooFlowProfileAssociationProof/SelectedResponsibilities.lean",
+    "exit": 0,
+    "source_sha256": "765971bde96a46b93d21bb5469fe3598f3c6b46749f7842d89d60c03291c97dd",
+    "log_sha256": "5720cb88ebc9182e208de4308d7aa06bba263b68e6c99500a1713c239dd46532",
+    "named_theorems": 5,
+    "controls": 2
+  },
+  "new_transcript_projected_to_lean": false,
+  "production_module_adapter_changed": false,
+  "loader_called": false,
+  "native_construction_capture_implemented": false,
+  "remaining_premises": [
+    "universal-native-projection-and-identity-correspondence",
+    "arbitrary-depth-dynamic-demand-discovery",
+    "custom-contract-evidence-and-source-policy-trust",
+    "immutable-generation-enforcement-and-mutation-invalidation",
+    "qualified-plan-publication-and-runtime-boundaries"
+  ]
+}

@@ -1,0 +1,154 @@
+#+title: Development System Architecture and Verification Allocation
+
+* System entry
+
+[[file:../../docs/10-19-design/13-module-loading/13.28-managed-dependency-and-activation-policy.org][13.28 Managed Dependency Binding and Activation Policy]] owns the design for
+Core-controlled dependency injection and phase admission. Agentic AI Lab is a
+downstream consumer, not another loader owner. The existing area-20 lifecycle
+model allocates this work; no new independent Loader model is introduced.
+
+[[file:00-development-assurance.sysml][00 Development Assurance]] defines the
+responsibilities of architectural modeling, temporal analysis, proof, runtime
+correspondence and measurement. It is a textual SysML v2 design, not a new
+build graph. The existing runtime selected graph and Just entrypoints execute work.
+SysML parsing/semantic validation is not yet qualified in this repository.
+
+* Classification
+
+| Area | System responsibility | Current workstream |
+|------+-----------------------+--------------------|
+| 00 | Cross-cutting assurance ownership and traceability | [[file:00-development-assurance.sysml][Development system]] |
+| 10 | Evaluation, receiver identity, dependencies and caching | [[file:10-evaluation/10.01-efficient-caching.org][10.01 Efficient Caching]] |
+| 20 | Module selection, package/build phases and demand boundaries | [[file:20-module-loading/20.01-demanded-module-lifecycle.org][20.01 Demand-Driven Module Loading]] |
+| 30 | Contracts, provenance, admission and publication | Reserved classification; current proofs remain dev/proofs |
+| 40 | Explicit execution, effects and resource lifecycle | Reserved classification; current implementation remains ops/testing |
+
+Only populated areas get directories. A concern spanning areas has one primary
+owner and cross references; it is not copied into several models. Existing QNT
+and Lean paths remain stable. This index allocates their responsibilities and
+does not relocate or duplicate them.
+
+[[file:20-module-loading/20.35-feature-scope-composition.org][20.35 Feature Scope Composition]] maps Interface declarations to final receiver
+composition, native write fencing and independent Feature obligations. It reuses
+the existing QNT callback/isolation controls and assigns structural laws to Lean.
+
+* One formal owner per question
+
+| Question | Primary owner | Reuse instead of duplication |
+|----------+---------------+------------------------------|
+| Which immutable structures may share storage without changing lookup, identities or ordered edges? | Lean / LeanPoo | =PayloadSharing.lean=; no matching QNT copy |
+| Can callbacks, invalidation, recovery or event ordering admit a stale value? | QNT | Existing =IssuedRootForwarding=, =ReadRetention= and =IncrementalRoles= transitions |
+| Does the actual MOP preserve the modeled relation? | Scheme consumer regression | Existing Just/Harness controls |
+| What is retained or allocated? | Bounded runtime measurement | GC accounts plus classified identity-union census |
+
+SysML allocates these claims and assumptions; it does not prove them. A
+workstream may have only a Lean owner or only a QNT owner. Shared premises
+are linked, not reimplemented. The duplicate =PayloadSharing= QNT family
+and its runner/digest bindings have been removed; historical receipts remain
+historical, not current qualification requirements.
+
+[[file:20-module-loading/20.15-strong-weak-and-shared-retention.org][20.15 Strong, Weak and Shared Retention]] distinguishes installed Gerbil
+compiler/runtime structures from receiver-owned payloads. Its structural
+projection is Lean-owned; the existing QNT admission traces remain the
+temporal owner. A weak container is not an exclusive-retention measurement.
+[[file:20-module-loading/20.16-factory-receipt-inventory.org][20.16 Factory Receipt Inventory]] follows the concrete retaining path to
+production structural-query reduction, with runtime observer fallback intact.
+[[file:20-module-loading/20.17-synthetic-core-descriptor-and-construction.org][20.17 Synthetic Core Descriptors]] reuses runtime persistent defaults and
+the issuer's constructor-identity query, including import-origin refusal.
+[[file:20-module-loading/20.18-index-and-module-actions.org][20.18 Index And Runtime Actions]] removes private runtime factory
+import promises and uses demand-filled runtime access sites.
+[[file:20-module-loading/20.19-source-bootstrap-and-cold-query.org][20.19 Source Bootstrap And Cold Query]] checks an empty Core library through
+the existing build entry and distinguishes first namespace initialization from
+Graph construction and independent authentication.
+[[file:20-module-loading/20.20-namespace-loading-and-factory-boundaries.org][20.20 Namespace Loading And Factories]] separates binding factories from
+runtime entry initialization and preserves demand-bound build activation.
+[[file:20-module-loading/20.21-build-execution-cost.org][20.21 Build Execution Cost]] separately attributes the Core package build,
+runtime Make, source checks and product checks; namespace timing is not used as
+a build timing substitute.
+[[file:20-module-loading/20.22-root-lifetime-and-runtime-catalog-lookup.org][20.22 Entry Root Lifetime]] records the actual cached namespace-to-Graph
+path after Fixture release, runtime global-entry ownership, latest-producer
+qualification and the source-attribution point-lookup refactor. It does not
+equate a retained imported entry with duplicated private payload or discharge
+the existing 10000-module performance Case.
+[[file:20-module-loading/20.23-typed-functional-role-analysis.org][20.23 Typed Functional Role Analysis]] separates per-datum typed diagnostics
+from actual admission-object construction, and records the extension-contract
+migration and the source/runtime/formal correspondence obligations.
+[[file:20-module-loading/20.24-role-and-source-boundaries.org][20.24 Role And Source Boundaries]] attributes all 79339 physical reads and
+separates actual role expansion from inert parsing. It allocates callback-window
+proofs to the existing Lean/Quint owners without claiming scale acceptance.
+[[file:20-module-loading/20.25-upstream-snapshot-integration.org][20.25 Upstream Snapshot Integration]] records the exact upstream/local source
+cohort, public C3 ownership migration and separate build/consumer qualification.
+
+This allocation is not a ban on cross-tool refinement. If Lean must establish
+an unbounded property of a transition abstraction, name that additional theorem
+and its correspondence explicitly; copying the same finite assertion into two
+tools is not that refinement.
+
+The evaluation workstream includes [[file:10-evaluation/10.02-runtime-accounting.org][10.02 Installed Runtime Accounting]],
+which separates runtime VM accounts from physical allocation and records the
+matched source-window lookup control under the same SysML ownership model.
+[[file:10-evaluation/10.03-replay-structure-ownership.org][10.03 Replay Structure Ownership]]
+separates runtime cached values from traversal-local work and fresh authentication.
+[[file:10-evaluation/10.04-declared-revision-replay.org][10.04 Declared Revision Replay]]
+qualifies that boundary against the declared dependency and its issuer projection.
+[[file:10-evaluation/10.05-issued-traversal-projection.org][10.05 Issued Traversal Projection]]
+implements the producer-owned structure and qualifies reuse without caching admission.
+[[file:10-evaluation/10.06-issued-record-storage.org][10.06 Issued Record Storage]] separates duplicated issuer closure storage
+from original read identities, dependency edges and mandatory fresh checks.
+
+[[file:20-module-loading/20.02-metadata-projection-correspondence.org][20.02 Metadata Projection Correspondence]]
+qualifies the closed source boundary with LeanPoo, QNT and actual role wrappers
+before production Loader changes.
+
+* Required trace for each workstream
+
+| Question | Required artifact | What it cannot establish alone |
+|----------+-------------------+--------------------------------|
+| What is the system boundary? | SysML structure, actions and requirements | Executable correctness |
+| What sequence must fail? | Existing QNT owner and matched negative trace | Unbounded correctness or filesystem trust |
+| What property is preserved? | Lean statement, premises and Scheme projection | Runtime behavior without correspondence |
+| Does current code implement it? | Source entry + focused Just regression | Untested executions |
+| Is it more efficient? | Same workload, cold/hot action and time counts | Stable speedup from a single run |
+
+Every row has an evidence status: design, modeled, machine-checked or runtime
+observed. Status is per property, not a blanket badge for an entire workstream.
+Model files do not carry trusted currentness results into runtime.
+
+- [[file:20-module-loading/20.03-retention-and-incremental-roles.org][20.03 Retention and Incremental Roles]] — retained owners, distinct dependency relations, runtime cache limits and bounded scheduling.
+
+- [[file:20-module-loading/20.04-generic-payload-and-binding-retention.org][20.04 Generic Payload and Private Binding Retention]] — canonical binding projection and call-owned payload limits.
+- [[file:20-module-loading/20.05-receiver-instance-and-callback-retention.org][20.05 Receiver Instance and Callback Retention]] — runtime anchor ownership, cache-only census and bounded qualification status.
+- [[file:20-module-loading/20.06-indirect-environments-and-specification-trees.org][20.06 Indirect Environments and Specification Trees]] — identity-union accounting, indirect captures and sharing exclusions.
+- [[file:20-module-loading/20.07-fixture-preparation-and-std-make.org][20.07 Fixture Preparation and std/make]] — cold-generation work, runtime target reuse, currentness and host-contaminated timing.
+
+[[file:20-module-loading/20.08-owner-shell-retention.org][20.08 Owner Shell Retention]] deepens receiver/SDK frontiers without charging shared nodes twice.
+[[file:20-module-loading/20.09-fixture-compiler-budget.org][20.09 Fixture Runtime Compiler Budget]] separates source authentication, runtime compile work and wall/CPU residuals.
+
+[[file:20-module-loading/20.10-issuer-parent-snapshot.org][20.10 Receiver Captures and Issuer Parent Snapshots]] distinguishes shared SDK graphs,
+observable thunk identities and removable issuer-private wrapper allocations.
+
+[[file:20-module-loading/20.11-thunk-demand-and-capture-retention.org][20.11 Receiver Thunk Demand]] separates cached values, shared function identities
+and already-observable construction hooks before considering further laziness.
+
+[[file:20-module-loading/20.12-thunk-construction-observation-boundary.org][20.12 Thunk Construction Observation Boundary]] assigns construction order/identity
+to QNT, observation projection laws to Lean, and actual MOP behavior to Scheme.
+
+[[file:20-module-loading/20.13-poof-semantics-and-materialization-correspondence.org][20.13 POOF Semantics and Demand Materialization Correspondence]] maps the paper,
+locked LeanPoo declarations and current runtime entries before any interception
+choice. Lean owns representation/identity laws; existing QNT owns observable
+construction schedules, with no duplicate prototype or fixed-point model.
+
+[[file:20-module-loading/20.14-partial-method-table-refinement.org][20.14 Partial Method Table Refinement]] reuses the locked CompiledPlan theorem
+for partial/full open-method correspondence and proves stable installed handles.
+Actual first reflection and lexical parent/child behavior use the existing runtime
+consumer suite; no parallel QNT semantics or runtime interceptor is introduced.
+
+[[file:20-module-loading/20.28-full-runtime-and-public-contract-owners.org][20.28 Full Runtime and Public Contract Owners]] records complete upstream-runtime
+integration, retained issuer protections, direct public-owner migration and
+the distinction between a qualified source tree and a publishable dependency pin.
+
+[[file:20-module-loading/20.29-published-issuer-and-core-alignment.org][20.29 Published Issuer Protections and Core Alignment]] records the exact
+published dependency, consumer/proof gates and timestamp-driven rebuild failure.
+
+[[file:20-module-loading/20.30-test-discovery-and-domain-demand.org][20.30 Test Discovery and Domain Demand]] separates official test discovery,
+typed workflow construction, independent admission and cached pure projections.

@@ -1,0 +1,53 @@
+ℹ [39/41] Built PooFlowProfileAssociationProof.Model (1.6s)
+info: PooFlowProfileAssociationProof/Model.lean:218:0: 'PooFlowProfileAssociationProof.association_complete' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:219:0: 'PooFlowProfileAssociationProof.derived_root_preserved' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:220:0: 'PooFlowProfileAssociationProof.right_requirement_preserved_or_refused' depends on axioms: [propext, Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:221:0: 'PooFlowProfileAssociationProof.accepted_right_requirement_checked' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+info: PooFlowProfileAssociationProof/Model.lean:222:0: 'PooFlowProfileAssociationProof.cached_checks_are_final' does not depend on any axioms
+info: PooFlowProfileAssociationProof/Model.lean:223:0: 'PooFlowProfileAssociationProof.parent_cache_misses_for_child' depends on axioms: [propext]
+info: PooFlowProfileAssociationProof/Model.lean:224:0: 'PooFlowProfileAssociationProof.stale_parent_value_refused' depends on axioms: [propext]
+✖ [40/41] Building PooFlowProfileAssociationProof.Checks (614ms)
+trace: .> LEAN_PATH=/Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/packages/LeanPoo/.lake/build/lib/lean:/Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean /Users/guangtao/.elan/toolchains/leanprover--lean4---v4.34.0/bin/lean /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/PooFlowProfileAssociationProof/Checks.lean -o /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean/PooFlowProfileAssociationProof/Checks.olean -i /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/lib/lean/PooFlowProfileAssociationProof/Checks.ilean -c /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/ir/PooFlowProfileAssociationProof/Checks.c --setup /Users/guangtao/ghq/github.com/tao3k/poo-flow/packages/proofs/lean-poo/.lake/build/ir/PooFlowProfileAssociationProof/Checks.setup.json --json
+error: PooFlowProfileAssociationProof/Checks.lean:28:8: Application type mismatch: The argument
+  right ∈ associations graph 2 5 roots
+has type
+  Prop
+but is expected to have type
+  Bool
+in the application
+  !right ∈ associations graph 2 5 roots
+error: PooFlowProfileAssociationProof/Checks.lean:28:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/Checks.lean:32:7: failed to synthesize instance of type class
+  BEq (Except (List Nat) Unit)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/Checks.lean:32:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/Checks.lean:33:7: failed to synthesize instance of type class
+  BEq (Except (List Nat) Unit)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/Checks.lean:33:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/Checks.lean:35:7: failed to synthesize instance of type class
+  BEq (Except (List Nat) Unit)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/Checks.lean:35:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/Checks.lean:36:7: failed to synthesize instance of type class
+  BEq (Except (List Nat) Unit)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/Checks.lean:36:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/Checks.lean:37:7: failed to synthesize instance of type class
+  BEq (Except (List Nat) Unit)
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PooFlowProfileAssociationProof/Checks.lean:37:0: cannot evaluate code because 'sorryAx' uses 'sorry' and/or contains errors
+error: PooFlowProfileAssociationProof/Checks.lean:64:53: failed to synthesize
+  Decidable ¬right ∈ associations graph 2 5 roots
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+Some required targets logged failures:
+- PooFlowProfileAssociationProof.Checks
+error: build failed

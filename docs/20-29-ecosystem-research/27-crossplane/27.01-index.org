@@ -1,0 +1,35 @@
+#+title: 27.01 Crossplane: Independent Research Map
+#+language: en
+#+property: DOCUMENT_ID 27.01
+#+date: [2026-10-17]
+#+property: STATUS primary-source-notes-case-reproduction-pending
+
+* Research scope
+
+Research Composite Resources, Composition Functions, controller observations, desired-state accumulation, readiness and function revisions. This is a reconciliation architecture, not an invocation of a one-shot process.
+
+This dossier is the owner of Crossplane-specific observations and conclusions.
+See [[file:../../30-39-research-foundations/30-method/30.01-evidence-protocol.org][the evidence protocol]] for claim classes and completion criteria.
+No platform command, deployment or issue reproduction is claimed here.
+
+* Research modules
+
+- [[file:27.02-composition-and-evaluation.org][Composition Functions and evaluation boundaries]] owns the primary mechanism notes.
+- [[file:27.03-issues-and-observations.org][Issue evidence and user observations]] owns report dates, scope, status and interpretation.
+- [[file:27.04-case-reflection-and-onwards.org][Guestbook case, Reflection and Onwards]] owns the proposed matched case, unanswered questions and qualification work.
+
+* Issues and Engineering Limitations
+
+[[file:27.03-issues-and-observations.org][The dedicated issue register]] retains original sources, versions where known,
+upstream states and NOT-REPRODUCED status. Do not turn a historical closed report
+into a claim of a current defect. This dossier's case remains unexecuted.
+
+* Conclusion and evidence boundary
+
+Initial primary-source reading is preserved in the modules above. No independent
+Guestbook deployment, issue reproduction or performance comparison has been run.
+The separate documents expose those gaps; they do not establish completion.
+
+Return to the [[file:../README.org][research library]] or the
+[[file:../../../module-system/design/08-infrastructure-platforms-and-design-gates.org][cross-platform synthesis]].
+

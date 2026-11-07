@@ -5,7 +5,7 @@
 
 ;;; Separately admitted, read-only MOP-EXTENDED capability profile.
 
-(import (only-in :clan/poo/object .o .ref)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop element?)
         "types.ss" "objects.ss")
 
@@ -19,7 +19,7 @@
 ;; poo-clos-mop-extended-profile
 ;;   : (-> ClosMopProfile)
 ;;   | contract: returns the closed portable extension inventory without
-;;     registering new metaclasses or changing native POO dispatch.
+;;     registering new metaclasses or changing POO dispatch.
 ;;   | doc m%
 ;;       `poo-clos-mop-extended-profile` separates de facto MOP capabilities
 ;;       from the POO CLOS core profile.
@@ -55,7 +55,7 @@
          update-instance-for-different-class slot-missing slot-unbound)
        sealed?: #t
        documentation:
-       "Portable read-only MOP subset; native POO owns C4 and metaobject identity")
+       "Portable read-only MOP subset; POO owns C4 and metaobject identity")
    'invalid-mop-profile))
 
 ;; : (-> ClosMopProfile Symbol Boolean)

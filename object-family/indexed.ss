@@ -5,19 +5,15 @@
 
 ;;; Reusable indexed POO family layout for large, stable object families.
 
-(import (only-in :clan/poo/object .o .ref)
+(import (runtime: :clan/poo/object)
         "funcs.ss")
 
 (export #t)
 
-;; : (-> (Listof Symbol) HashTable)
-(def (poo-index-slots slot-names)
-  (poo-object-family-position-index slot-names))
-
 ;; : (-> Symbol Symbol (Listof Symbol) POOObject)
 (def (poo-indexed-family family-name source-tag slot-names)
   (let* ((slot-vector-value (list->vector slot-names))
-         (slot-index-value (poo-index-slots slot-names))
+         (slot-index-value (poo-object-family-position-index slot-names))
          (slot-count-value (vector-length slot-vector-value)))
     (.o (kind 'poo-indexed-family)
         (name family-name)

@@ -1,0 +1,20 @@
+import YuanxuProof.ModuleSystem.Schema.Association.Semantics
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.ancestors_sound
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.ancestors_complete
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.association_sound
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.association_complete
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.derived_root_preserved
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.shared_root_keeps_both
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.plus_keeps_left
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.plus_omits_right
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.gate_accepts_iff
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.accepted_keeps_right_requirement
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.missing_right_requirement_refused
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.right_requirement_preserved_or_refused
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.composition_accepts_iff
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.accepted_right_requirement_checked
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.cached_checks_are_final
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.parent_cache_misses_for_child
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.cached_value_passes_final_gate
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.stale_parent_value_refused
+#print axioms YuanxuProof.ModuleSystem.Schema.Association.consequence_keeps_factories

@@ -1,0 +1,21 @@
+*** ERROR IN gx#core-apply-expander__% -- 
+*** ERROR IN "docs/10-19-design/10.06-poo-module-system/164-funflow-public-configuration/25-isolated-combined-validation/probe.ss"@138.6-145.58
+--- Syntax Error: Bad syntax; invalid match target
+--- Context: 
+ at expand
+ at top
+... form:   (~let let*-values
+                  ((names (.get candidate pipeline selected-checks))
+                   (checks (map (lambda (name) (.ref candidate name)) names))
+                   (if (every (lambda (child)
+                                (receipt-ok?
+                                 CheckPolicyContract
+                                 child
+                                 context
+                                 (poo-flow-contract-admit
+                                  CheckPolicyContract
+                                  child
+                                  context)))
+                              checks)
+                       '()
+                       (list (.o kind: 'selected-child-refused)))))
