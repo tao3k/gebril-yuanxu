@@ -4,10 +4,13 @@
 ;;; Operational consumer of Core's selected external-package contributions.
 ;;; It does not compile Module sources or generate a defbuild-script.
 (import :clan/poo/object
+        (only-in :clan/poo/slot-observation %slot-read-active?)
         (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
-        (only-in :yuanxu/module-system/source/build unique-build-inputs)
+        (only-in :yuanxu/module-system/source/build unique-build-inputs
+                 module-build-package-inputs-current! module-build-package-source-check
+                 module-build-package-source-procedure)
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-name?
-                 module-source-read module-source-admit-current! call-with-module-source-read-cache
+                 module-source-read module-source-admit-current!
                  module-source-operation-resume
                  current-module-source-observer))
 (export SelectedPackages.)
@@ -62,11 +65,7 @@
                         (cons (path-expand (car row) destination) (cdr row)))
                       (.get request input-files)))) requests)))
     (def (inputs-current!)
-      (call-with-module-source-read-cache
-        (lambda ()
-          (.call graph-value admit-current)
-          (module-source-admit-current! observed)
-          (module-source-admit-current! inputs))))
+      (module-build-package-inputs-current! graph-value observed inputs))
     (for-each (lambda (row) (write-input! (car row) (cdr row))) inputs)
     (package-stage 'inputs-current inputs-current!)
     (let* ((results
@@ -90,9 +89,9 @@
                  ,@(foldr append '() (map (cut .get <> guard-forms) values))
                  #t))))))
            (entry-observation (list (cons entry-path script))))
-      (def (sources-current!)
-        (inputs-current!)
-        (module-source-admit-current! entry-observation))
+      (def source-check
+        (module-build-package-source-check graph-value observed inputs entry-observation))
+      (def sources-current! (module-build-package-source-procedure source-check))
       (def (current!)
         (sources-current!)
         ;; May realize or evaluate Nix. Never share a source-read cache across it.
@@ -123,9 +122,18 @@
       ;; every package identity and source is rechecked AFTER those validators.
       ;; Do not precheck and then treat a cached value receipt as currentness.
       (package-stage 'publication-current current!)
-      (.o build-graph: graph-value packages: (object<-alist results)
-          guard-entry: entry-path sources-current: sources-current!
-          admit-current: current!))))
+      (def ordinary-construction? (object-construction-current?))
+      (let (result
+             (.o build-graph: graph-value packages: (object<-alist results)
+                 guard-entry: entry-path sources-current: sources-current!
+                 %package-source-check: source-check admit-current: current!))
+        ;; Warm only the native constants. An observer or an open construction
+        ;; hook keeps the old lazy getter sequence at the linker boundary.
+        (when (and ordinary-construction? (object-construction-current?)
+                   (not (or (current-module-source-observer) (%slot-read-active?))))
+          (.get result %package-source-check)
+          (.get result sources-current))
+        result))))
 (.def (SelectedPackages. @ [])
   selection: #f
   directory: #f

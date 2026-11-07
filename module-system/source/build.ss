@@ -36,7 +36,9 @@
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
         (only-in :yuanxu/module-system/building/package write-selected-package))
 (export module-test-source-spec module-build-graph module-build-graph/linked unique-build-inputs retained-build-entries BuildContributionContract ExternalPackageContributionContract BuildSpecContract
-        BuildPublicationContract module-build-admit-context!)
+        BuildPublicationContract module-build-admit-context!
+        module-build-package-inputs-current! module-build-package-source-check
+        module-build-package-source-procedure module-build-package-source-inspector)
 (define-type (BuildPublicationContract @ Type.)
   identity: 'module/build-publication
   .element?: (lambda (value)
@@ -113,31 +115,69 @@
   (module-source-admit-current! sources "admission source input changed")
   (module-source-admit-current! schemas "admission Schema input changed"))
 
+(def (current-build-context-frame graph)
+  (and (not (or (current-module-source-observer) (%slot-read-active?)))
+       (object-construction-current?) (owned-read-function-scope?)
+       (with-catch (lambda (_unsupported) #f)
+         (lambda ()
+           (without-observation
+             (lambda ()
+               (and (object? graph) (object-%instance graph) (object-%precedence-list graph)
+                    (not (object-protocol graph))
+                    (begin
+                      (require-read-route! 'admission-context #f (object-%instance graph))
+                      (let (value (.ref/cached graph '%admission-frame (lambda () #f)))
+                        (and (build-context-frame? value)
+                             (eq? graph (build-context-frame-owner value))
+                             (eq? (build-context-frame-guard value)
+                                  (.ref/cached graph 'admit-current (lambda () #f)))
+                             value))))))))))
+
 (def (module-build-admit-context! graph selected generation sources schemas)
   (def (ordinary!)
     ((.ref graph 'admit-current))
     (check-context-inputs! graph selected generation sources schemas)
     ((.ref graph 'admit-current)))
-  (def frame
+  (def frame (current-build-context-frame graph))
+  (if frame
+    ((build-context-frame-check frame) selected generation sources schemas ordinary!)
+    (ordinary!)))
+
+;; The producer supplies source rows. The guard body is owned here, so a
+;; caller cannot enroll a replacement procedure as a native source check.
+(defstruct build-package-source-check (graph invoke) final: #t)
+(def (module-build-package-inputs-current! graph observed inputs)
+  (call-with-module-source-read-cache
+    (lambda ()
+      (.call graph admit-current)
+      (module-source-admit-current! observed)
+      (module-source-admit-current! inputs))))
+(def (module-build-package-source-check graph observed inputs entry)
+  (def (invoke)
+    (module-build-package-inputs-current! graph observed inputs)
+    (module-source-admit-current! entry))
+  (make-build-package-source-check graph invoke))
+(def (module-build-package-source-procedure check)
+  (build-package-source-check-invoke check))
+(def (module-build-package-source-inspector)
+  (lambda (result graph)
     (and (not (or (current-module-source-observer) (%slot-read-active?)))
-         (object-construction-current?) (owned-read-function-scope?)
+         (owned-read-function-scope?)
          (with-catch (lambda (_unsupported) #f)
            (lambda ()
              (without-observation
                (lambda ()
-                 (and (object? graph) (object-%instance graph) (object-%precedence-list graph)
-                      (not (object-protocol graph))
+                 (and (object? result) (object-%instance result)
+                      (object-%precedence-list result) (not (object-protocol result))
                       (begin
-                        (require-read-route! 'admission-context #f (object-%instance graph))
-                        (let (value (.ref/cached graph '%admission-frame (lambda () #f)))
-                          (and (build-context-frame? value)
-                               (eq? graph (build-context-frame-owner value))
-                               (eq? (build-context-frame-guard value)
-                                    (.ref/cached graph 'admit-current (lambda () #f)))
-                               value))))))))))
-  (if frame
-    ((build-context-frame-check frame) selected generation sources schemas ordinary!)
-    (ordinary!)))
+                        (require-read-route! 'package-sources #f (object-%instance result))
+                        (let ((check (.ref/cached result '%package-source-check (lambda () #f)))
+                              (invoke (.ref/cached result 'sources-current (lambda () #f)))
+                              (frame (current-build-context-frame graph)))
+                          (and frame (build-package-source-check? check)
+                               (eq? graph (build-package-source-check-graph check))
+                               (eq? invoke (build-package-source-check-invoke check))
+                               invoke)))))))))))
 
 (def (module-build-graph selected-value prepare-publication (source-window #f) (source-state #f))
   (module-build-graph/linked selected-value prepare-publication source-window source-state #f))

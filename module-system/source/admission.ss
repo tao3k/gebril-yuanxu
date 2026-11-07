@@ -29,7 +29,7 @@
         module-source-type module-source-read module-source-name? module-source-admit-current!
         module-compiler-interface-source
         call-with-module-source-read-cache call-with-module-source-fresh-reads
-        call-with-module-source-callback
+        call-with-module-source-callback module-source-window-preserved?
         call-with-collected-module-sources
         module-source-observe current-module-source-observer current-module-source-phase
         current-module-process-trace-budget

@@ -10,7 +10,7 @@
         module-source-type module-source-read module-source-name? module-source-admit-current!
         module-compiler-interface-source
         call-with-module-source-read-cache call-with-module-source-fresh-reads
-        call-with-module-source-callback
+        call-with-module-source-callback module-source-window-preserved?
         call-with-collected-module-sources
         module-source-observe current-module-source-observer current-module-source-phase
         current-module-process-trace-budget
@@ -247,6 +247,10 @@
 ;; observations only inside that boundary; every read requires regular-file
 ;; status. No cache survives an effect or an independent currentness call.
 (def source-read-cache (make-parameter #f))
+(def (module-source-window-preserved? action)
+  (let (window (source-read-cache))
+    (action)
+    (and window (eq? window (source-read-cache)))))
 ;; A private absence identity; #f is a valid cached observation. This is only
 ;; the existing runtime table's default value, not another cache or verdict.
 (def missing-source-query (gensym 'missing-source-query))

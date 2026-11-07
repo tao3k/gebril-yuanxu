@@ -67,6 +67,8 @@
   (module-binding-action "yuanxu/admission/publication" 'selected-export-publication))
 (def build-graph-producer
   (module-binding-action "yuanxu/module-system/source/build" 'module-build-graph/linked))
+(def build-package-source-inspector
+  (module-binding-action "yuanxu/module-system/source/build" 'module-build-package-source-inspector))
 ;; Only this linker constructs a batch capability. Build receives its
 ;; selected-Graph identity, never an author-supplied execution callback.
 (defstruct linked-prepared-guards (selection check) final: #t)
@@ -259,6 +261,8 @@
       (and read-located (module-source-object-policy (list context-value))))
     (def selection-tail (make-parameter #f))
     (def protected-preparations (make-parameter #f))
+    (def package-source-inspector
+      (and realization original-graph (build-package-source-inspector '())))
     (def (source-current?)
       ((.ref context-value 'current?) generation-value))
     (def (prepared-input-state input)
@@ -474,17 +478,23 @@
         (check-publications!)))
     (def (check-current!)
       (check-source-current!)
-      (if realization
-        (begin
-          ;; A package view may replace the source guard, including its getter.
-          ;; Neither that callback nor the return check may inherit old bytes.
-          (call-with-module-source-callback
-            (lambda () ((.ref realization 'sources-current))))
+      (cond
+       ((not realization) (check-publications-current!))
+       (else
+        (def owned
+          (and package-source-inspector (package-source-inspector realization original-graph)))
+        (if (if owned
+                (module-source-window-preserved? owned)
+                (begin
+                  ;; The getter and callback may both replace selected bytes.
+                  (call-with-module-source-callback
+                    (lambda () ((.ref realization 'sources-current))))
+                  #f))
+          (check-publications-current!)
           (call-with-module-source-read-cache
             (lambda ()
               (check-source-current!)
-              (check-publications-current!))))
-        (check-publications-current!)))
+              (check-publications-current!)))))))
     (def (current! (origin 'link-current))
       (when failed? (error "module scope session was refused" generation-value))
       (module-source-measure-operation 'link-current
