@@ -24,6 +24,45 @@ theorem shadowed_role_alias_keeps_outer {Value : Type} (roles shadowed : List Na
     roleAliasLookup roles shadowed role outer name = outer name := by
   simp [roleAliasLookup, hidden]
 
+-- Stock syntax supplies a conservative inventory of identifiers it can read.
+-- Open syntax can acquire bindings during expansion, so it retains all aliases.
+def neededRoleAliases (roles : List Nat) (uses : Option (List Nat)) : List Nat :=
+  match uses with
+  | none => roles
+  | some names => roles.filter (fun name => decide (name ∈ names))
+
+theorem stock_role_alias_inventory_exact {Value : Type}
+    (roles shadows names : List Nat) (role outer : Nat → Value) (name : Nat)
+    (used : name ∈ names) :
+    roleAliasLookup (neededRoleAliases roles (some names)) shadows role outer name =
+      roleAliasLookup roles shadows role outer name := by
+  simp [roleAliasLookup, neededRoleAliases, used]
+
+theorem open_expansion_retains_every_alias (roles : List Nat) :
+    neededRoleAliases roles none = roles := rfl
+
+theorem stock_inventory_preserves_owner_resolution {Owner Value : Type}
+    (roles shadows names : List Nat) (role outer : Owner → Nat → Value)
+    (owner : Owner) (name : Nat) (used : name ∈ names) :
+    roleAliasLookup (neededRoleAliases roles (some names)) shadows
+        (role owner) (outer owner) name =
+      roleAliasLookup roles shadows (role owner) (outer owner) name :=
+  stock_role_alias_inventory_exact roles shadows names (role owner) (outer owner) name used
+
+def admitOwnerExpansion {Value : Type} (before : Bool) (expand : Unit → Value × Bool) :
+    Option Value :=
+  if before then
+    let (value, after) := expand ()
+    if after then some value else none
+  else none
+
+theorem expanded_owner_needs_fresh_return_check {Value : Type}
+    (before : Bool) (expand : Unit → Value × Bool) (value : Value)
+    (admitted : admitOwnerExpansion before expand = some value) :
+    before = true ∧ (expand ()).2 = true := by
+  cases before <;> cases expanded : expand () with
+  | mk result after => cases after <;> simp_all [admitOwnerExpansion]
+
 inductive RoleSlotRecipe (Name : Type) where
   | role (name : Name) (exports : List Name)
   | alias (role name : Name)

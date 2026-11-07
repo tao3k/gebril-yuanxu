@@ -39,6 +39,7 @@
   poison-unselected?: #f
   profile-selection?: #f
   sparse-selection?: #f
+  open-role-payloads?: #f
   .verify: verify-declaration-scale
   .acquire:
   (lambda ()
@@ -49,6 +50,8 @@
       (write-forms path forms)
       (set! writes (1+ writes))
       (execution-progress! (list 'fixture-source-written fixture-root) writes))
+    (def (payload expression)
+      (if open-role-payloads? `(let () ,expression) expression))
     (displayln "declaration-stage start=fixture-materialization")
     (force-output)
     (create-directory fixture-root)
@@ -110,10 +113,11 @@
                   core: (.o requires: ,(if (eq? id 'module-0) '(.o)
                                            '(.o Shared: (.o module-id: 'module-0 contract: ScopeContract)))
                             scope-contract: ScopeContract
-                            exports: ,(if runtime-values?
-                                        '(.o (:: @ Scope.) config: Config)
-                                        '(error "declaration discovery forced a business scope")))
-                  features: (.o unused: (error "unselected Feature forced")))))) ids)
+                            exports: ,(payload
+                                        (if runtime-values?
+                                          '(.o (:: @ Scope.) config: Config)
+                                          '(error "declaration discovery forced a business scope"))))
+                  features: (.o unused: ,(payload '(error "unselected Feature forced"))))))) ids)
         (displayln "declaration-stage end=fixture-materialization seconds=" (- (real-time) started))
         (force-output)
         (yuanxu-write-observation-line! "declaration-scale-artifact modules=%s root=%s" size fixture-root)

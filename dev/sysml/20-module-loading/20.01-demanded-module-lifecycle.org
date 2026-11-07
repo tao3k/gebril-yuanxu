@@ -65,6 +65,35 @@ cannot be justified by choosing convenient per-module constants in the model.
 | Declare | Source-associated runtime Module metadata | Full types/objects/config expansion on the closed path |
 | Publication preflight | Runtime scope/dependency Type descriptors | Config, Objects, Func, export-body execution or domain acceptance |
 | Demand scope | Existing POO lazy role slots and dependency scopes actually needed | Unselected modules or unrelated branches |
+
+** Lexical support in deferred Interface payloads
+
+The deferred wrapper can limit a payload's role alias bindings to a
+conservative inventory of the identifiers the payload may read. Literal
+values need no aliases. Explicit identifiers retain their existing hygienic
+lookup and shadowing. For any payload whose expansion can introduce an
+unaccounted binding, Gerbil still expands the full visible alias group.
+The payload itself stays in the owning native Context. Role receivers,
+delayed values, per-owner admission, and the checks before and after
+expansion and author effects retain their existing boundaries.
+
+=SourceClosureWork.stock_role_alias_inventory_exact= proves lookup equality
+on the admitted inventory. =open_expansion_retains_every_alias= and
+=expanded_owner_needs_fresh_return_check= cover the open route and the
+independent return check.
+
+In the same macOS Gerbil process, the 64-owner attribution fixture compares
+stock payloads with equivalent payloads wrapped in open Gerbil syntax. Both
+admit all declarations and construct the same requested business scope.
+
+| Payloads | Positive-phase compile calls | Positive-phase eval calls | Wrapper CPU (s) | Wrapper elapsed (s) |
+|----------+------------------------------+---------------------------+-----------------+---------------------|
+| Stock    |                         4082 |                      4082 |            3.27 |                6.77 |
+| Open     |                         4594 |                      4594 |            3.98 |                9.73 |
+
+This comparison uses a compiled module overlay on the pinned toolchain
+and existing Core build. The bounded fixture identifies the saved expansion
+work. The full-source build and platform capacity receipts are separate.
 | Admit | Final receiver Contracts, all contributors, original read support | A reusable successful approval |
 | Publish/build/run | Phase-specific admitted values and existing issuance/effect boundaries | A metadata-only declaration treated as deployable |
 

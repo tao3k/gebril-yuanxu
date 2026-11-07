@@ -203,6 +203,62 @@
          (syntax-case object ()
            ((head . fields)
             (with-syntax ((fields (map-fields #'fields transform))) (syntax/loc object (head . fields))))))
+       (def (known-role-uses value context aliases shadowed)
+         ;; Only these fixed Gerbil forms cannot introduce an unlisted alias.
+         ;; Leave the original expressions in Gerbil's expander. In particular
+         ;; do not scan a macro invocation or an unknown identifier transformer.
+         (def (stock-head? identifier native shadows)
+           (and (identifier? identifier)
+                (not (memq (stx-e identifier) shadows))
+                (not (memq (stx-e identifier) aliases))
+                (free-identifier=? (syntax-local-rewrap identifier) native)))
+         (def (stock-fields fields parents shadows)
+           (def entries (syntax->list fields))
+           (def (field-names rest)
+             (match rest
+               ([] '())
+               ([(? keyword? key) value . tail]
+                (and (not (memq key '(self: super: inherit: bind: bind-these:)))
+                     (not (memq value '(? => =>.+)))
+                     (let (names (field-names tail))
+                       (and names (cons (string->symbol (keyword->string key)) names)))))
+               (else #f)))
+           (let (slots (field-names (map stx-e entries)))
+             (and slots
+                  (let loop ((rest entries) (uses parents))
+                    (cond ((not uses) #f)
+                          ((null? rest) uses)
+                          (else
+                           (let (next (walk (cadr rest) (append slots shadows)))
+                             (loop (cddr rest) (and next (append next uses))))))))))
+         (def (walk expression shadows)
+           (cond
+            ((identifier? expression)
+             (let (name (stx-e expression))
+               (and (memq name aliases)
+                    (bound-identifier=? expression (datum->syntax context name))
+                    (list name))))
+            ((let (literal (stx-e expression))
+               (or (boolean? literal) (number? literal) (string? literal) (char? literal)))
+             '())
+            (else
+             (syntax-case expression ()
+               ((head datum)
+                (stock-head? #'head (quote-syntax quote) shadows)
+                '())
+               ((head message)
+                (and (string? (stx-e #'message))
+                     (stock-head? #'head (quote-syntax error) shadows))
+                '())
+               ((head (:: self parent) field ...)
+                (and (eq? (stx-e #'::) '::) (eq? (stx-e #'self) '@)
+                     (stock-head? #'head (quote-syntax .o) shadows))
+                (stock-fields #'(field ...) (walk #'parent shadows) (cons '@ shadows)))
+               ((head field ...)
+                (stock-head? #'head (quote-syntax .o) shadows)
+                (stock-fields #'(field ...) '() shadows))
+               (_ #f)))))
+         (walk value shadowed))
        (def (wrap value receiver (shadowed '()))
          (def context (if (identifier? value) value
                          (if (stx-pair? value) (stx-car value) (stx-car (car forms)))))
@@ -216,13 +272,17 @@
                 (not (memq (stx-e value) shadowed))
                 (ormap (lambda (name)
                          (bound-identifier=? value (datum->syntax context (stx-e name)))) names)))
-         (with-syntax ((receiver receiver) (private private) (value value)
-                       ((alias ...) (map (lambda (name) (datum->syntax context (stx-e name)))
-                         (filter (lambda (name) (not (memq (stx-e name) shadowed))) names))))
-           (if direct?
-             (syntax/loc #'value (.get (.get receiver private) value))
-             (syntax/loc #'value
-               (with-slots (alias ...) (.get receiver private) value)))))
+         (if direct?
+           (with-syntax ((receiver receiver) (private private) (value value))
+             (syntax/loc #'value (.get (.get receiver private) value)))
+           (let* ((visible (filter (lambda (name) (not (memq (stx-e name) shadowed))) names))
+                  (uses (known-role-uses value context (map stx-e visible) shadowed))
+                  (needed (if uses (filter (lambda (name) (memq (stx-e name) uses)) visible) visible)))
+             (if (null? needed) value
+               (with-syntax ((receiver receiver) (private private) (value value)
+                             ((alias ...) (map (lambda (name) (datum->syntax context (stx-e name))) needed)))
+                 (syntax/loc #'value
+                   (with-slots (alias ...) (.get receiver private) value)))))))
        (def (wrap-requires value receiver (shadowed '()))
          (map-object value
            (lambda (_alias spec)
