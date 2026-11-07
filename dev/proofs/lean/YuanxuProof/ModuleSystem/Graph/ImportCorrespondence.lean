@@ -93,6 +93,32 @@ theorem source_chunk_check_preserves_decode_result [DecidableEq α]
 
 example : checkSourceChunks [1] [.ok [2], .error "decoder"] = .error "decoder" := rfl
 
+-- The directory view and its supplied reader have no interpreter demand.
+-- A native demand owns the same independent checks around actual loading.
+def nativeReaderDemand {World Reader Failure : Type}
+    (needed : Bool) (check : World → Except Failure Unit)
+    (load : World → Except Failure (Reader × World)) (world : World) :
+    Except Failure (Option Reader × World) :=
+  if needed then do
+    check world
+    let (reader, after) ← load world
+    check after
+    pure (some reader, after)
+  else .ok (none, world)
+
+theorem namespace_does_not_demand_native_reader
+    (check : World → Except Failure Unit) (load : World → Except Failure (Reader × World))
+    (world : World) :
+    nativeReaderDemand false check load world = .ok (none, world) := rfl
+
+theorem native_reader_load_checks_actual_return_state
+    (check : World → Except Failure Unit) (load : World → Except Failure (Reader × World))
+    (before after : World) (reader : Reader) (reason : Failure)
+    (entered : check before = .ok ()) (loaded : load before = .ok (reader, after))
+    (denied : check after = .error reason) :
+    nativeReaderDemand true check load before = .error reason := by
+  simp [nativeReaderDemand, Bind.bind, Except.bind, entered, loaded, denied]
+
 -- Context order is supplied by the completed runtime traversal. Resolve the
 -- CURRENT input registry during consumption; no per-root transitive list or
 -- previously projected registration is required to preserve this result.
