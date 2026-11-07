@@ -3,6 +3,7 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :gerbil/expander core-import-module current-expander-context
                  make-top-context core-bind-root-syntax!)
+        (only-in :yuanxu/module-system/source/init module-init-compiler-source-roots)
         (only-in :yuanxu/module-system/building/source-package module-build-source-path))
 (export module-source-package-resolution-test)
 (def (write-source path text)
@@ -40,4 +41,19 @@
             (check-equal? (load-path) before)
             (write-source (path-expand "value.ss" selected) "package: impostor\n(def value 2)\n")
             (check-exception (module-build-source-path context selected) error?)
-            (check-equal? (load-path) before)))))))
+            (check-equal? (load-path) before)))))
+    (test-case "reading a package window leaves the Gerbil prefix untouched"
+      (call-with-temporary-directory "package-window-resolution-"
+        (lambda (root)
+          (def prior (getenv "GERBIL_PATH" #f))
+          (dynamic-wind
+            (lambda () (setenv "GERBIL_PATH" root))
+            (lambda ()
+              (check-equal?
+                (module-init-compiler-source-roots
+                  '(yuanxu! source: "modules" package: "github.com/example/provider"
+                            mode: explicit)
+                  (path-expand "init.ss" root))
+                (list (path-expand "pkg/github.com/example/provider" root)))
+              (check-equal? (directory-files root) '()))
+            (lambda () (setenv "GERBIL_PATH" prior))))))))
