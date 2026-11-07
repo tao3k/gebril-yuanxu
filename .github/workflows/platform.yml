@@ -9,19 +9,17 @@ permissions:
   contents: read
 jobs:
   build:
-    name: Build and bootstrap
+    name: Build and test
     runs-on: ${{ inputs.os }}
     timeout-minutes: 120
-    outputs:
-      package-ready: ${{ steps.upload-package.outcome }}
     env:
       GERBIL_PATH: ${{ github.workspace }}/.gerbil
-      GERBIL_BUILD_CORES: '2'
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - uses: ./.github/actions/setup-gerbil
         id: gerbil
       - name: Select runtime compiler capacity
+        id: workers
         shell: bash
         run: |
           # Dependency compilation is serial; use the actual runner allocation.
@@ -31,7 +29,7 @@ jobs:
           else
             workers=$(getconf _NPROCESSORS_ONLN)
           fi
-          echo "GERBIL_BUILD_CORES=$workers" >> "$GITHUB_ENV"
+          echo "count=$workers" >> "$GITHUB_OUTPUT"
           echo "BUILD-WORKERS $workers"
       - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         id: restore-dependencies
@@ -46,6 +44,8 @@ jobs:
             .gerbil/bin
           key: yuanxu-gerbil-v3-${{ runner.os }}-${{ runner.arch }}-${{ steps.gerbil.outputs.archive-sha256 }}-${{ hashFiles('gerbil.pkg') }}
       - name: Install pinned dependencies
+        env:
+          GERBIL_BUILD_CORES: ${{ steps.workers.outputs.count }}
         run: |
           echo "BUILD-WORKERS $GERBIL_BUILD_CORES"
           GERBIL_BUILD_VERBOSE=1 gerbil deps --install
@@ -63,86 +63,36 @@ jobs:
       - name: Check Yuanxu package namespace
         run: just check-package-namespace
       - name: Build Yuanxu
-        run: GERBIL_BUILD_VERBOSE=1 gerbil build
-      # Profile roots, namespace windows, the downstream package and the public prelude
-      # run in the required test partition, with one receipt per file.
-      - name: Check complete disjoint test partition
-        run: just check-test-groups
-      - name: Preserve dependency and library tree
-        # Test products are local to the checkout whose runtime Make timestamps
-        # produced them. A shard's fresh checkout must issue its own test build;
-        # do not restore either half of an earlier test product/approval pair.
-        run: >-
-          tar --exclude=.gerbil/test-lib
-          --exclude=.gerbil/lib/.yuanxu-test-publications
-          -czf "$RUNNER_TEMP/yuanxu-package.tar.gz" .gerbil
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        id: upload-package
-        with:
-          name: yuanxu-package-${{ inputs.os }}-${{ github.sha }}
-          path: ${{ runner.temp }}/yuanxu-package.tar.gz
-          retention-days: 2
-          if-no-files-found: error
-          # The tarball is already compressed.
-          compression-level: 0
-      - name: Reject build input context regressions
-        # The modules partition runs the publication and source-admission suites.
-        run: just test-build-input-context-mutations "$RUNNER_TEMP/build-input-context"
-      - name: Retain build input context mutation evidence
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: yuanxu-build-input-context-${{ inputs.os }}-${{ github.sha }}
-          path: |
-            ${{ runner.temp }}/build-input-context/**/receipt.json
-            ${{ runner.temp }}/build-input-context/**/*.log
-          if-no-files-found: ignore
-          retention-days: 7
-  tests:
-    name: Test ${{ matrix.group }}
-    needs: build
-    # The mutation verdict still fails bootstrap. Its result is independent
-    # of whether the same-head package can run the ordinary test partition.
-    if: ${{ !cancelled() && needs.build.outputs.package-ready == 'success' }}
-    runs-on: ${{ inputs.os }}
-    timeout-minutes: 120
-    strategy:
-      fail-fast: false
-      max-parallel: 8
-      matrix:
-        group: [modules, runtime, contracts, bootstrap, dense-declarations, dense-selection, dense-values]
-    env:
-      GERBIL_PATH: ${{ github.workspace }}/.gerbil
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      - uses: ./.github/actions/setup-gerbil
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-        with:
-          name: yuanxu-package-${{ inputs.os }}-${{ github.sha }}
-          path: ${{ runner.temp }}
-      - name: Restore same-head artifacts
-        id: restore-package
-        run: tar -xzf "$RUNNER_TEMP/yuanxu-package.tar.gz"
-      - name: Run serial Gerbil tests and report each file
+        id: build-core
         env:
-          # Keep the original per-worker diagnostic logs as CI artifacts even
-          # when the parent reaches its unchanged execution deadline.
+          GERBIL_BUILD_CORES: ${{ steps.workers.outputs.count }}
+        run: GERBIL_BUILD_VERBOSE=1 gerbil build
+      - name: Reject build input context regressions
+        env:
+          GERBIL_BUILD_CORES: ${{ steps.workers.outputs.count }}
+        run: just test-build-input-context-mutations "$RUNNER_TEMP/build-input-context"
+      - name: Run serial Gerbil tests and report each file
+        if: ${{ !cancelled() && steps.build-core.outcome == 'success' }}
+        env:
           TMPDIR: ${{ runner.temp }}
           YUANXU_TEST_REPORT_DIR: ${{ runner.temp }}/test-report
-        run: just test-directory '${{ matrix.group }}'
+        run: just test-platform
       - name: Run published module TestSuites outside mechanism Cases
-        if: ${{ !cancelled() && steps.restore-package.outcome == 'success' && matrix.group == 'modules' }}
+        if: ${{ !cancelled() && steps.build-core.outcome == 'success' }}
         env:
           TMPDIR: ${{ runner.temp }}
           YUANXU_TEST_REPORT_DIR: ${{ runner.temp }}/published-module-suites
         run: just test-selected-modules
-      - name: Retain test reports and declaration diagnostics
+      - name: Retain test and mutation evidence
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@043fb46d1a93c77aae456e7c1c64a875d1fc6a0a
         with:
-          name: yuanxu-declaration-${{ inputs.os }}-${{ matrix.group }}-${{ github.sha }}
+          name: yuanxu-qualification-${{ inputs.os }}-${{ github.sha }}
           path: |
             ${{ runner.temp }}/test-report/
             ${{ runner.temp }}/published-module-suites/
             ${{ runner.temp }}/declaration-scale-observation-*
+            ${{ runner.temp }}/build-input-context/**/receipt.json
+            ${{ runner.temp }}/build-input-context/**/*.log
           if-no-files-found: ignore
+          retention-days: 7

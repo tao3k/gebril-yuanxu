@@ -58,19 +58,4 @@ check-source-loader trace:
     cd dev/proofs/lean && timeout 120s lake env lean --run SourceLoaderCheck.lean "{{ trace }}"
 
 check-test-groups:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    export LC_ALL=C
-    scratch=$(mktemp -d)
-    trap 'rm -rf "$scratch"' EXIT
-    just test-files all > "$scratch/all"
-    test -s "$scratch/all"
-    for group in modules runtime contracts bootstrap dense-declarations dense-selection dense-values; do
-      just test-files "$group" > "$scratch/$group"
-      test -s "$scratch/$group"
-      cat "$scratch/$group" >> "$scratch/groups"
-      printf 'TEST-GROUP %s files=%s\n' "$group" "$(wc -l < "$scratch/$group")"
-    done
-    sort "$scratch/groups" > "$scratch/sorted"
-    cmp "$scratch/all" "$scratch/sorted"
-    printf 'TEST-GROUPS-OK\n'
+    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --check-partition

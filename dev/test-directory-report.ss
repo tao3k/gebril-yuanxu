@@ -1,9 +1,12 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Observe the existing Just dispatch; Gerbil owns the Harness and verdict.
+;;; Scheme owns serial dispatch and receipts; Gerbil owns the Harness and verdict.
 (import (only-in :clan/poo/object .o .cc .get)
+        (only-in :std/crypto/digest sha256)
+        (only-in :std/encoding/hex hex-encode)
+        (only-in :std/encoding/json json->string)
         (only-in :std/io/tempfile make-temporary-file-name current-temporary-directory)
         (only-in :std/list/list delete-duplicates/hash take)
-        (only-in :std/misc/process run-process)
+        (only-in :std/misc/ports read-all-as-string read-all-as-u8vector)
         (only-in :yuanxu/ops/func run-script)
         (only-in :yuanxu/ops/process-script ProcessScript.))
 (export main)
@@ -14,23 +17,74 @@
 (def (main action . arguments)
   (cond ((equal? action "--audit") (apply audit-report arguments))
         ((equal? action "--compare") (apply compare-reports arguments))
-        (else
-         (unless (null? arguments) (error "unexpected test group arguments" arguments))
-         (report-group action))))
+        ((equal? action "--list") (for-each displayln (apply discovered-files arguments)))
+        ((equal? action "--check-partition") (check-partition))
+        ((equal? action "--platform") (apply report-platform arguments))
+        ((equal? action "--mutate-build-input") (apply verify-build-input-mutations arguments))
+        (else (unless (apply report-group action arguments) (exit 1)))))
+
+(def test-groups
+  '("dense-declarations" "dense-selection" "dense-values" "modules" "runtime" "contracts" "bootstrap"))
+(def (group-owner file)
+  (case (string->symbol file)
+    ((module-declaration-10000-test.ss) "dense-declarations")
+    ((module-runtime-selection-10000-test.ss) "dense-selection")
+    ((module-runtime-values-10000-test.ss) "dense-values")
+    ((module-runtime-values-1000-test.ss module-runtime-attribution-1000-test.ss) "bootstrap")
+    ((module-runtime-selection-1000-test.ss) "runtime")
+    ((thousand-package-downstream-test.ss module-declaration-1000-test.ss
+      module-business-sparse-10000-test.ss module-declaration-retention-test.ss
+      module-loading-scale-test.ss) "contracts")
+    (else
+     (cond ((ormap (cut string-prefix? <> file)
+                   '("package-" "prelude-" "core-build-" "module-build-" "module-bootstrap-"
+                     "runtime-publication-identity-")) "bootstrap")
+           ((ormap (cut string-prefix? <> file) '("module-" "feature-system-")) "modules")
+           ((ormap (cut string-prefix? <> file)
+                   '("json-schema-" "source-" "contract-" "admission-" "contribution-"
+                     "configuration-" "poo-" "object-" "issued-" "path-" "evidence-"
+                     "issuer-" "aws-" "gitea-" "nix-" "ops-")) "contracts")
+           (else "runtime")))))
 
 (def (discovered-files group)
-  (filter (lambda (line) (not (string-empty? line)))
-    (string-split (run-process (list "just" "test-files" group)) #\newline)))
+  (unless (or (equal? group "all") (member group test-groups))
+    (error "unknown test group" group))
+  (filter-map (lambda (file)
+                (and (string-suffix? "-test.ss" file)
+                     (or (equal? group "all") (equal? group (group-owner file)))
+                     (string-append "t/" file)))
+              (list-sort string<? (directory-files "t"))))
 
-(def (report-group group)
-  ;; Just retains the discovery partition and the per-file preparation routes.
-  ;; One Scheme observer owns the group, with one worker alive at a time.
+(def (check-partition)
+  (def groups (map discovered-files test-groups))
+  (unless (and (andmap pair? groups)
+               (equal? (discovered-files "all")
+                       (list-sort string<? (apply append groups))))
+    (error "missing or duplicated test group coverage"))
+  (for-each (lambda (group files) (displayln "TEST-GROUP " group " files=" (length files)))
+            test-groups groups)
+  (displayln "TEST-GROUPS-OK"))
+
+(def (report-root)
+  (let (report (getenv "YUANXU_TEST_REPORT_DIR" ""))
+    (if (string-empty? report) (make-temporary-file-name "yuanxu-test-report-") report)))
+(def (report-platform runtime-options)
+  (check-partition)
+  (def root (report-root))
+  (def passed? #t)
+  (for-each (lambda (group)
+              (unless (report-group group runtime-options (path-expand group root))
+                (set! passed? #f)))
+            test-groups)
+  (audit-report root)
+  (unless passed? (exit 1)))
+
+(def (report-group group runtime-options (report (report-root)))
+  ;; One worker at a time with the original per-file budgets and receipt.
   (def started (current-jiffy))
   (def files (discovered-files group))
   (unless (and (pair? files) (= (length files) (length (delete-duplicates/hash files))))
     (error "missing or duplicated files in the discovered test group" group))
-  (def report (getenv "YUANXU_TEST_REPORT_DIR" ""))
-  (when (string-empty? report) (set! report (make-temporary-file-name "yuanxu-test-report-")))
   (create-directory* report)
   (call-with-output-file (path-expand "expected-files.ss" report)
     (lambda (port) (write files port) (newline port)))
@@ -38,7 +92,7 @@
   (def outcomes '())
   (for-each
     (lambda (file)
-      (defvalues (status wall) (report-dispatched-file report file))
+      (defvalues (status wall) (report-dispatched-file report file runtime-options))
       (set! outcomes (cons [file status wall] outcomes)))
     files)
   (def failed (map car (filter (lambda (row) (not (zero? (cadr row)))) (reverse outcomes))))
@@ -58,11 +112,20 @@
     (take slowest (min 5 (length slowest))))
   (for-each (lambda (file) (displayln "FAILED-TEST " file)) failed)
   (audit-report report group)
-  (unless (null? failed) (exit 1)))
+  (let (summary (getenv "GITHUB_STEP_SUMMARY" #f))
+    (when summary
+      (call-with-output-file (list path: summary append: #t)
+        (lambda (port)
+          (display (string-append "### Gerbil tests · " group "\n\n"
+                                  (number->string (length files)) " files, "
+                                  (number->string (length failed)) " failed.\n\n") port)
+          (for-each (lambda (file) (display (string-append "- `" file "`\n") port)) failed)
+          (newline port)))))
+  (null? failed))
 
 ;; Measure the existing dispatch, including any special preparation selected
 ;; by Just. Assertions and Harness verdicts stay with the original worker.
-(def (report-dispatched-file report file)
+(def (report-dispatched-file report file runtime-options)
   (def directory
     (parameterize ((current-temporary-directory report))
       (make-temporary-file-name "dispatch-")))
@@ -110,11 +173,17 @@
       (force-output)))
   (displayln "TEST-START " file)
   (force-output)
+  (def prepared?
+    (member file '("t/artifact-closure-test.ss" "t/mop-store-boundary-test.ss"
+                   "t/source-admission-gateway-test.ss" "t/artifact-authority-test.ss"
+                   "t/source-loader-authority-test.ss")))
   (def result
     (run-script
       (.cc ProcessScript.
-        command: (list "just" "test-discovered-file" file)
-        environment: (.o YUANXU_TEST_REPORT_DIR: directory)
+        command: (if prepared? (list "just" "test-discovered-file" file)
+                   (native-test-command runtime-options file))
+        environment: (if prepared? (.o YUANXU_TEST_REPORT_DIR: directory)
+                       (.cc (native-test-environment) 'YUANXU_TEST_REPORT_DIR directory))
         log: raw check-status: #f progress: (lambda () observe))))
   (def wall (elapsed-milliseconds started))
   (def status (.get result status))
@@ -151,6 +220,20 @@
             (or (last-harness-progress directory) last-progress)])
     (newline))
   (values (if (and (zero? status) (not verified?)) 1 status) wall))
+
+(def (native-test-command runtime-options file)
+  (list "env" "-u" "SDKROOT" "timeout" "--signal=TERM" "--kill-after=5s"
+        "600s" "gxi" runtime-options "dev/test-file.ss" file))
+
+(def (native-test-environment (overlay #f))
+  (def prefix (getenv "GERBIL_PATH"))
+  (def search (getenv "GERBIL_LOADPATH" ""))
+  (.o GERBIL_LOADPATH:
+      (string-join
+        (filter (lambda (path) (and path (not (string-empty? path))))
+          (list (path-expand "test-lib" prefix) overlay search
+                (path-expand "lib" prefix) (current-directory))) ":")
+      PATH: (string-append (path-expand "bin" prefix) ":" (getenv "PATH"))))
 
 (def (last-harness-progress directory)
   (match (filter (lambda (name) (string-suffix? ".progress" name)) (directory-files directory))
@@ -250,10 +333,11 @@
     (else (error "malformed test group receipt" report))))
 
 (def (read-audited-report root group)
+  (def nested (path-expand "test-report" root))
+  (def report (if (file-exists? nested) nested root))
   (def folders
-    (if (or (file-exists? (path-expand "group.ss" root))
-            (file-exists? (path-expand "test-report/group.ss" root)))
-      [root] (map (cut path-expand <> root) (directory-files root))))
+    (if (file-exists? (path-expand "group.ss" report))
+      [report] (map (cut path-expand <> report) (directory-files report))))
   (def cohort #f)
   (def rows '())
   (for-each
@@ -308,3 +392,99 @@
       (write [(car linux-row) (cdr linux-row) (cdr macos-row)])
       (newline))
     linux-rows macos-rows))
+
+(def input-order-test "t/build-input-context-test.ss")
+(def input-admission-test "t/module-build-role-test.ss")
+(def input-partition
+  "(def inputs (append (filter (lambda (path) (not (output? path))) previous)\n                     (filter output? previous)))")
+(def build-input-mutations
+  [["output-first" input-partition
+    "(def inputs (append (filter output? previous)\n                     (filter (lambda (path) (not (output? path))) previous)))"
+    input-order-test "ERROR CHECK (load-path)"]
+   ["reversed-prerequisites" input-partition
+    "(def inputs (append (reverse (filter (lambda (path) (not (output? path))) previous))\n                     (filter output? previous)))"
+    input-order-test "ERROR CHECK (load-path)"]
+   ["missing-restoration" "(set-load-path! previous)" "(void)"
+    input-order-test "ERROR CHECK (load-path)"]
+   ["accepted-input-mutation" "(unless unchanged? (refuse))" "(void)"
+    input-admission-test "--- irritants: changed-compiler-input-refused"]])
+
+(def (verify-build-input-mutations directory runtime-options)
+  (def source "module-system/building/source-package.ss")
+  (def (source-bytes file) (call-with-input-file file read-all-as-u8vector))
+  (def original (source-bytes source))
+  (def text (utf8->string original))
+  (create-directory* directory)
+  (def report
+    (parameterize ((current-temporary-directory (path-expand directory)))
+      (make-temporary-file-name "build-input-context-")))
+  (create-directory report)
+  (displayln "BUILD-INPUT-CONTEXT-ARTIFACTS " report) (force-output)
+  (def receipt (make-hash-table))
+  (hash-put! receipt "source_sha256" (hex-encode (sha256 original)))
+  (def runs '())
+  (def (invoke label command (environment (.o)))
+    (def log (path-expand (string-append label ".log") report))
+    (def result (run-script (.cc ProcessScript. command: command environment: environment
+                                log: log check-status: #f)))
+    (def status (.get result status))
+    (set! runs (cons (list->hash-table [(cons "label" label) (cons "exit" status)]) runs))
+    (values status (call-with-input-file log read-all-as-string)))
+  (def (positive label file)
+    (defvalues (status output) (invoke label (native-test-command runtime-options file) (native-test-environment)))
+    (unless (and (zero? status)
+                 (string-contains output "MODULE-OK ") (string-contains output "HARNESS-OK ")
+                 (member "OK" (string-split output #\newline))
+                 (not (ormap (lambda (marker) (string-contains output marker))
+                             '("ERROR CASE" "ERROR CHECK" "ERROR HARNESS" "Heap overflow" "Stack overflow"))))
+      (error "correct implementation failed" label report))
+    (displayln "BUILD-INPUT-CONTEXT-PASS " label) (force-output))
+  (def (mutate row)
+    (match row ([name old replacement file expected]
+      (def offset (string-contains text old))
+      (def end (and offset (+ offset (string-length old))))
+      (unless (and end (or (equal? name "missing-restoration")
+                          (not (string-contains (substring text end (string-length text)) old))))
+        (error "mutation anchor changed" name))
+      (def root (path-expand name report))
+      (def path (path-expand "source-package.ss" root))
+      (def library (path-expand "lib" root))
+      (create-directory* library)
+      (call-with-output-file path
+        (lambda (port)
+          (display "package: yuanxu/module-system/building\n" port)
+          (display (substring text 0 offset) port)
+          (display replacement port)
+          (display (substring text end (string-length text)) port)))
+      (def variant (list->hash-table [(cons "source_sha256" (hex-encode (sha256 (source-bytes path))))
+                                     (cons "test" file)]))
+      (hash-put! receipt name variant)
+      (defvalues (compiled _)
+        (invoke (string-append name "-compile")
+          (list "timeout" "--signal=TERM" "--kill-after=5s" "120s" "gxc"
+                runtime-options "-O" "-d" library path)))
+      (unless (zero? compiled) (error "mutation did not compile" name report))
+      (defvalues (status output)
+        (invoke name (native-test-command runtime-options file) (native-test-environment library)))
+      (unless (and (= status 42) (string-contains output expected)
+                   (not (string-contains output "Heap overflow"))
+                   (not (string-contains output "Stack overflow")))
+        (error "mutation survived or failed for the wrong reason" name status report))
+      (hash-put! variant "rejected" #t)
+      (displayln "BUILD-INPUT-CONTEXT-REJECTED " name " exit=" status) (force-output))))
+  (dynamic-wind void
+    (lambda ()
+      (positive "before-order" input-order-test)
+      (positive "before-admission" input-admission-test)
+      (for-each mutate build-input-mutations)
+      (positive "after-order" input-order-test)
+      (positive "after-admission" input-admission-test)
+      (hash-put! receipt "ok" #t))
+    (lambda ()
+      (def unchanged? (equal? original (source-bytes source)))
+      (hash-put! receipt "source_unchanged" unchanged?)
+      (hash-put! receipt "runs" (list->vector (reverse runs)))
+      (call-with-output-file (path-expand "receipt.json" report)
+        (lambda (port) (display (json->string receipt) port) (newline port)))
+      (unless unchanged? (error "checkout source changed during mutation qualification"))))
+  (displayln "BUILD-INPUT-CONTEXT-MUTATIONS-OK mutations=4 source-unchanged=true"))

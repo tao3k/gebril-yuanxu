@@ -388,3 +388,25 @@ with the same default as the installed Quint CLI. The source cut binds the
 current testing-script controls instead of a deleted execution-progress test;
 this is an executable-input correction, not a new theorem or a replacement for
 the finite model's positive/negative checks.
+
+* Shared Scheme entrypoint for local and platform tests
+
+Each platform installs pinned dependencies and runs =gerbil build= once.
+CI and =just test= share the Scheme dispatcher. It checks complete and
+disjoint discovery, then executes a fresh heap-fenced native Gerbil Test
+Harness per file. Capacity groups run first. A worker failure is retained
+in its report and later groups still execute. File-specific native
+compilation and published module suites keep their execution boundaries.
+The platform summary lists completed groups and their failed files.
+
+Scheme compiles each build-input mutant in a private overlay and requires
+the expected diagnostic and native Harness exit status. It runs positive
+controls before and after the faults and records the original source hash,
+the mutant hashes and their actual worker outcomes. Build products stay in
+the platform job that created them.
+
+Record runner time and elapsed time separately. The preceding
+[[https://github.com/tao3k/gebril-yuanxu/actions/runs/42373146993][PR run]]
+spent about 41 Ubuntu minutes and 67 macOS minutes in its seven test
+groups. The shared job removes repeated setup and artifact handling.
+Serial scheduling can extend platform elapsed time.
