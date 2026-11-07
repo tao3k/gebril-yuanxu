@@ -72,11 +72,20 @@
       (hash-update! counts category (cut + <> amount) 0))
     (when previous (previous key amount)))
   (def graph
-    (measure-runtime count 'runtime-graph-start
+    (with-catch
+      (lambda (failure)
+        ;; Counters already belong to this observed run. Emit only their
+        ;; bounded summaries once the failed graph has unwound.
+        (yuanxu-write-observation-line!
+          "declaration-source-incomplete modules=%s completed=%s events=%s reads=%s"
+          count completed-declarations (hash->list counts) (hash->list source-reads))
+        (raise failure))
       (lambda ()
-        (parameterize ((current-module-source-observer observe))
-          (.get FixtureExports tests selected-graph)))
-      observer: 'present))
+        (measure-runtime count 'runtime-graph-start
+          (lambda ()
+            (parameterize ((current-module-source-observer observe))
+              (.get FixtureExports tests selected-graph)))
+          observer: 'present))))
   (yuanxu-test-checkpoint 'runtime-graph-ready)
   (check-equal? source-prefix (path-normalize (path-directory (.get graph init-source))))
   (yuanxu-write-observation-line! "declaration-source-reads modules=%s counts=%s"
@@ -208,14 +217,8 @@
   (measure-runtime count 'first-namespace
     (lambda () (check-equal? (length (.all-slots (.get FixtureExports modules))) count)))
   (def graph
-    (measure-runtime count 'first-graph
-      (lambda ()
-        (defvalues (value times)
-          (call-with-module-source-operation-measurement
-            (lambda () (.get FixtureExports tests selected-graph))))
-        (yuanxu-write-observation-line!
-          "runtime-source-work modules=%s metrics=%s" count (hash->list times))
-        value)))
+    (measure-runtime-source count 'first-graph
+      (lambda () (.get FixtureExports tests selected-graph)) #t))
   (check-equal? (length (.get graph module-order)) count)
   (check-equal? (.ref/cached (.get FixtureExports modules) 'module-1) #f)
   (check-equal? (eq? graph (.get FixtureExports tests selected-graph)) #t)
