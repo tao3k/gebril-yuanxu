@@ -350,6 +350,8 @@ CASES = [
     ("CompilerEnrollment_acceptance", "RejectAll", True),
     ("CompilerExtentOwned", "safety", False),
     ("CompilerExtentRouteFirst", "RouteHasOwner", True),
+    ("CompilerProgress", "safety", False),
+    ("CompilerProgress_repeat", "safety", True),
     ("AuthoringStage", "safety", False),
     ("AuthoringStage_skipAdmission", "BoundaryChecked", True),
     ("AuthoringStage_oldContract", "ValidAdmission", True),

@@ -23,6 +23,8 @@
         (only-in :yuanxu/module-system/source/link call-with-linked-prepared-guards)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
         (only-in :yuanxu/module-system/building/interface yuanxu-init-build call-with-init-build-spec)
+        (only-in :yuanxu/ops/progress call-with-execution-progress
+                 execution-progress-idle-milliseconds execution-progress-status)
         (only-in "../core-spec.ss" core-spec)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
 (export module-build-graph-test)
@@ -165,14 +167,24 @@
            'forwarded)
          ;; The declarative SDK adapter obtains the same owner from the spec
          ;; expression, with no user-maintained dispatcher or public registry.
-         (check-equal?
-           (call-with-init-build-spec (cut spec '()) receive '("spec") (path-expand "lib" root))
-           'forwarded)
-         (check-equal? calls 1)
-         (check-exception
-           (call-with-init-build-spec
-             (lambda () (map identity (spec '()))) receive '("spec") (path-expand "lib" root))
-           error?)
+         (def now 0)
+         (call-with-execution-progress 60000 120000
+           (lambda (progress)
+             (check-equal?
+               (call-with-init-build-spec
+                 (lambda () (begin0 (spec '()) (set! now 30000)))
+                 receive '("spec") (path-expand "lib" root))
+               'forwarded)
+             (check-equal? (execution-progress-idle-milliseconds progress) 0)
+             (check-exception
+               (call-with-init-build-spec
+                 (lambda () (begin0 (map identity (spec '())) (set! now 40000)))
+                 receive '("spec") (path-expand "lib" root))
+               error?)
+             (check-equal? (execution-progress-idle-milliseconds progress) 10000)
+             (set! now 120000)
+             (check-equal? (execution-progress-status progress) 'total))
+           clock: (lambda () now))
          (check-equal? calls 1)
          ;; A runtime package callback returns no publication authority. The
          ;; explicit projection .compile must reject missing compiler outputs.

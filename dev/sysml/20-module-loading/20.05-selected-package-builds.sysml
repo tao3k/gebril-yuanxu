@@ -470,6 +470,15 @@ package YuanxuSelectedPackageBuilds {
                elapsed time. Completion requires natural exit and all closure,
                currentness and cross-environment isolation assertions. */
     }
+    requirement def BuildSpecificationProgress {
+        doc /* Building emits one Ops progress event after successful
+               specification preparation and the owner check. It carries no
+               compile result or admission evidence. The Memory gate keeps
+               its 120-second aggregate and action limits and 60-second idle
+               limit. Lean Ops.ProcessScript checks the producer's observation;
+               Quint CompilerProgress checks replay and deadline ordering.
+               The native test observes dispatch and owner refusal. */
+    }
     requirement def ClosedAuthoringSupportForwarding {
         doc /* Research candidate, removed after native EVAL showed no gain.
                Default authoring Function policy and event delivery currently

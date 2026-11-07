@@ -9,6 +9,8 @@
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
         (only-in :yuanxu/module-system/building/program-products projection-program-targets)
+        (only-in :yuanxu/ops/progress current-execution-progress
+                 call-with-execution-progress execution-progress!)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :yuanxu/module-system/source/deferred-declaration module-entry-action module-binding-action)
@@ -24,13 +26,14 @@
 ;; cached approval. The producer retains its projection and all source checks.
 (def current-build-spec-consumer (make-parameter #f))
 (def (call-with-init-build-spec prepare dispatch args libdir (entry-source #f))
+  (def verbosity (string->number (getenv "GERBIL_BUILD_VERBOSE" "0")))
+  (def report? (and verbosity (>= verbosity 2)))
   (def (run)
     (module-source-measure-operation 'build-main
-      (lambda () (consume-init-build-spec prepare dispatch args libdir entry-source))))
+      (lambda () (consume-init-build-spec prepare dispatch args libdir entry-source report?))))
   ;; Reuse the runtime build verbosity and existing invocation-local accounting.
   ;; No source observer, approval cache or alternative build entry is installed.
-  (def verbosity (string->number (getenv "GERBIL_BUILD_VERBOSE" "0")))
-  (if (and verbosity (>= verbosity 2))
+  (if report?
     (begin
       ;; real-time has a process-local origin. The wall clock correlates this
       ;; existing span with the caller's spawn/return without blaming their
@@ -52,29 +55,41 @@
         (force-output)
         (apply values results)))
     (run)))
-(def (consume-init-build-spec prepare dispatch args libdir entry-source)
+(def (consume-init-build-spec prepare dispatch args libdir entry-source report?)
   (def produced #f)
   (def consume #f)
-  (def spec
-    (parameterize ((current-build-output-directory (build-output-directory libdir))
-                  (current-build-spec-consumer
-                    (cons entry-source
-                      (lambda (value owner)
-                        (when (and produced (not (eq? produced value)))
-                          (error "runtime build must consume one init-owned specification"))
-                        (set! produced value)
-                        (set! consume owner)))))
-      (module-source-measure-operation 'build-specification
-        (lambda () (call-with-build-stage 'build-specification prepare)))))
-  (if consume
-    (begin
-      (unless (eq? spec produced)
+  (def (prepare-spec)
+    (def value
+      (parameterize ((current-build-output-directory (build-output-directory libdir))
+                    (current-build-spec-consumer
+                      (cons entry-source
+                        (lambda (value owner)
+                          (when (and produced (not (eq? produced value)))
+                            (error "runtime build must consume one init-owned specification"))
+                          (set! produced value)
+                          (set! consume owner)))))
+        (module-source-measure-operation 'build-specification
+          (lambda () (call-with-build-stage 'build-specification prepare)))))
+    (if consume
+      (unless (eq? value produced)
         (error "runtime build specification lost its init owner"))
-      (consume dispatch args libdir))
-    (begin
       (when (current-build-module-roots)
-        (error "--modules requires an init-owned build specification"))
-      (dispatch spec args))))
+        (error "--modules requires an init-owned build specification")))
+    value)
+  (def progress (current-execution-progress))
+  (def (prepare-with-progress)
+    ;; A standalone build reports one completed stage. Preparation keeps its
+    ;; previous progress extent, including any enclosing in-process owner.
+    (def value (parameterize ((current-execution-progress progress)) (prepare-spec)))
+    (execution-progress! (gensym 'build-specification) 1)
+    value)
+  (def spec
+    (cond ((pair? progress) (prepare-with-progress))
+          (report? (call-with-execution-progress #f #f (lambda (_) (prepare-with-progress))))
+          (else (prepare-spec))))
+  (if consume
+    (consume dispatch args libdir)
+    (dispatch spec args)))
 
 ;; Factories import their public binding through Gerbil. Actual artifact effects
 ;; retain whole runtime entry initialization. Both are inert at construction and

@@ -100,6 +100,20 @@ theorem noncallable_factory_result_refused :
 theorem factory_source_error_preserved :
     previewProgress (fun _ => .error .source) () = .error .source := rfl
 
+/-- A successful preparation with matching ownership emits count one. The
+receipt is progress only and carries no compilation result or authority. -/
+def specificationCheckpoint (prepared ownerMatches : Bool) : Nat :=
+  if prepared && ownerMatches then 1 else 0
+
+theorem checkpoint_requires_preparation_and_owner (prepared ownerMatches : Bool) :
+    specificationCheckpoint prepared ownerMatches = 1 ↔
+      prepared = true ∧ ownerMatches = true := by
+  cases prepared <;> cases ownerMatches <;> decide
+
+theorem checkpoint_replay_does_not_advance (prepared ownerMatches : Bool) :
+    ¬ specificationCheckpoint prepared ownerMatches <
+      specificationCheckpoint prepared ownerMatches := Nat.lt_irrefl _
+
 #guard match checkedProgress (fun line => .ok (.text line)) (.text "line") with
   | .ok value => decide (value = .text "line")
   | .error _ => false
