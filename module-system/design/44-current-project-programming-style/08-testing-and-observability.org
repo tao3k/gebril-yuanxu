@@ -410,3 +410,21 @@ Record runner time and elapsed time separately. The preceding
 spent about 41 Ubuntu minutes and 67 macOS minutes in its seven test
 groups. The shared job removes repeated setup and artifact handling.
 Serial scheduling can extend platform elapsed time.
+
+** Qualification identity
+
+CI and local qualification enter =just build= with an explicit Gerbil
+prefix. After native Gerbil exits successfully, the recipe records the
+clean source revision only if it still matches the build's initial
+revision. The Scheme test report records that build source alongside
+the actual checkout, package declaration digest, installed POO revision,
+Gerbil and Gambit versions, release manifest digest, resolved Core
+interface path, loader path and worker settings. =just test-qualification=
+shows these inputs before a run.
+
+CI refuses a report if the checked-out revision, the build revision
+and its workflow revision disagree or if its resolved Core interface
+comes from outside the installed prefix. Platform comparison requires
+the same source, declared and installed dependency inputs, and test
+budgets. The OS-specific toolchain artifact and available compiler
+cores remain visible on each report.

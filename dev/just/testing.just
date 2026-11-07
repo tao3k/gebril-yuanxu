@@ -199,6 +199,9 @@ test-directory group="all":
 test-platform:
     GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --platform '{{ gerbil_test_runtime_options }}'
 
+test-qualification:
+    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --qualification '{{ gerbil_test_runtime_options }}'
+
 test-report-audit directory group="all":
     GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --audit "{{ directory }}" "{{ group }}"
 

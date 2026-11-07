@@ -1,7 +1,21 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 build:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    prefix="${GERBIL_PATH:-}"
+    source=""
+    if [[ -n "$prefix" ]]; then
+        rm -f -- "$prefix/test-build-source"
+        if [[ -z "$(git status --porcelain --untracked-files=normal 2>/dev/null)" ]]; then
+            source="$(git rev-parse HEAD 2>/dev/null || true)"
+        fi
+    fi
     GERBIL_BUILD_VERBOSE="${GERBIL_BUILD_VERBOSE:-1}" env -u SDKROOT gerbil build
+    if [[ -n "$source" && "$source" == "$(git rev-parse HEAD)" &&
+          -z "$(git status --porcelain --untracked-files=normal)" ]]; then
+        printf '%s\n' "$source" > "$prefix/test-build-source"
+    fi
 
 # Native source-only Core build in an explicit private output environment.
 # Keep the ordinary build.ss dispatcher and its existing 300-second budget.

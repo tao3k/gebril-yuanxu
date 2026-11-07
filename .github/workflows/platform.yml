@@ -66,7 +66,7 @@ jobs:
         id: build-core
         env:
           GERBIL_BUILD_CORES: ${{ steps.workers.outputs.count }}
-        run: GERBIL_BUILD_VERBOSE=1 gerbil build
+        run: GERBIL_BUILD_VERBOSE=1 just build
       - name: Reject build input context regressions
         env:
           GERBIL_BUILD_CORES: ${{ steps.workers.outputs.count }}

@@ -1,6 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Scheme owns serial dispatch and receipts; Gerbil owns the Harness and verdict.
 (import (only-in :clan/poo/object .o .cc .get)
+        (only-in :gerbil/expander core-import-module module-context-path)
+        (only-in :gerbil/runtime/loader load-path)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/encoding/json json->string)
@@ -8,6 +10,7 @@
         (only-in :std/list/list delete-duplicates/hash take)
         (only-in :std/misc/ports read-all-as-string read-all-as-u8vector)
         (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/ops/progress execution-idle-seconds)
         (only-in :yuanxu/ops/process-script ProcessScript.))
 (export main)
 
@@ -19,6 +22,7 @@
         ((equal? action "--compare") (apply compare-reports arguments))
         ((equal? action "--list") (for-each displayln (apply discovered-files arguments)))
         ((equal? action "--check-partition") (check-partition))
+        ((equal? action "--qualification") (write (apply qualification-cohort arguments)) (newline))
         ((equal? action "--platform") (apply report-platform arguments))
         ((equal? action "--mutate-build-input") (apply verify-build-input-mutations arguments))
         (else (unless (apply report-group action arguments) (exit 1)))))
@@ -68,24 +72,76 @@
 (def (report-root)
   (let (report (getenv "YUANXU_TEST_REPORT_DIR" ""))
     (if (string-empty? report) (make-temporary-file-name "yuanxu-test-report-") report)))
+
+(def (qualification-cohort runtime-options)
+  (def (git-output args)
+    (def result
+      (run-script (.cc ProcessScript. command: (cons "git" args) check-status: #f)))
+    (and (zero? (.get result status)) (.get result output)))
+  (def (digest-file path)
+    (and (file-exists? path)
+         (hex-encode (sha256 (call-with-input-file path read-all-as-u8vector)))))
+  (def source (git-output '("rev-parse" "HEAD")))
+  (def changes (git-output '("status" "--porcelain" "--untracked-files=normal")))
+  (def source-id (and source (car (string-split source #\newline))))
+  (def clean? (and changes (string-empty? changes)))
+  (def prefix (getenv "GERBIL_PATH"))
+  (def build-record (path-expand "test-build-source" prefix))
+  (def build-source (and (file-exists? build-record) (call-with-input-file build-record read-line)))
+  (def checkout (path-expand "pkg/github.com/tao3k/gerbil-poo" prefix))
+  (def poo (and (file-exists? checkout) (git-output ["-C" checkout "rev-parse" "HEAD"])))
+  (def core-origin (module-context-path (core-import-module ':yuanxu/ops/func)))
+  (def release
+    (digest-file (path-expand "../gerbil-toolchain-release.json" (gerbil-home))))
+  (when (equal? (getenv "GITHUB_ACTIONS" "") "true")
+    (unless (and clean? source-id (equal? source-id build-source)
+                 (equal? source-id (getenv "GITHUB_SHA" #f))
+                 poo release (string? core-origin)
+                 (string-prefix? (string-append
+                                   (path-strip-trailing-directory-separator
+                                     (path-normalize (path-expand "lib" prefix))) "/")
+                                 (path-normalize core-origin)))
+      (error "CI qualification requires its checked-out source and installed runtime cohort"
+             source-id build-source clean? core-origin)))
+  (list 'test-qualification
+        (cons 'source source-id) (cons 'build-source build-source) (cons 'clean? clean?)
+        (cons 'package-declaration (digest-file "gerbil.pkg"))
+        (cons 'gerbil (gerbil-version-string))
+        (cons 'gambit (system-version-string))
+        (cons 'release-manifest release)
+        (cons 'poo (and poo (car (string-split poo #\newline))))
+        (cons 'core-origin core-origin)
+        (cons 'load-path (load-path))
+        (cons 'runtime-options runtime-options)
+        (cons 'build-cores (getenv "GERBIL_BUILD_CORES" #f))
+        (cons 'idle-seconds execution-idle-seconds)
+        (cons 'worker-seconds test-worker-seconds)))
+
+(def test-worker-seconds 600)
+
 (def (report-platform runtime-options)
   (check-partition)
   (def root (report-root))
+  (def cohort (qualification-cohort runtime-options))
   (def passed? #t)
   (for-each (lambda (group)
-              (unless (report-group group runtime-options (path-expand group root))
+              (unless (report-group group runtime-options (path-expand group root) cohort)
                 (set! passed? #f)))
             test-groups)
   (audit-report root)
   (unless passed? (exit 1)))
 
-(def (report-group group runtime-options (report (report-root)))
+(def (report-group group runtime-options (report (report-root))
+                   (qualification (qualification-cohort runtime-options)))
   ;; One worker at a time with the original per-file budgets and receipt.
   (def started (current-jiffy))
   (def files (discovered-files group))
   (unless (and (pair? files) (= (length files) (length (delete-duplicates/hash files))))
     (error "missing or duplicated files in the discovered test group" group))
   (create-directory* report)
+  (call-with-output-file (path-expand "qualification.ss" report)
+    (lambda (port) (write qualification port) (newline port)))
+  (display "TEST-QUALIFICATION ") (write qualification) (newline)
   (call-with-output-file (path-expand "expected-files.ss" report)
     (lambda (port) (write files port) (newline port)))
   (displayln "TEST-REPORT " report)
@@ -223,7 +279,8 @@
 
 (def (native-test-command runtime-options file)
   (list "env" "-u" "SDKROOT" "timeout" "--signal=TERM" "--kill-after=5s"
-        "600s" "gxi" runtime-options "dev/test-file.ss" file))
+        (string-append (number->string test-worker-seconds) "s")
+        "gxi" runtime-options "dev/test-file.ss" file))
 
 (def (native-test-environment (overlay #f))
   (def prefix (getenv "GERBIL_PATH"))
@@ -315,6 +372,7 @@
   (match (read-receipt (path-expand "group.ss" report))
     (['test-group-result (? string? group) (? exact-integer? elapsed) cohort rows]
      (def expected (discovered-files group))
+     (def qualification (read-receipt (path-expand "qualification.ss" report)))
      (def actual
        (filter-map
          (lambda (name)
@@ -324,12 +382,13 @@
      (def (order rows)
        (list-sort (lambda (left right) (string<? (car left) (car right))) rows))
      (unless (and (list? cohort) (= (length cohort) 5)
+                  (pair? qualification) (eq? (car qualification) 'test-qualification)
                   (andmap (lambda (field) (or (not field) (string? field))) cohort)
                   (pair? expected) (equal? expected (read-receipt (path-expand "expected-files.ss" report)))
                   (equal? expected (map car rows)) (equal? (order rows) (order (map (cut take <> 3) actual)))
                   (>= elapsed (apply + (map caddr rows))))
        (error "incomplete or inconsistent test group coverage" group report))
-     (values cohort actual))
+     (values cohort actual qualification))
     (else (error "malformed test group receipt" report))))
 
 (def (read-audited-report root group)
@@ -339,22 +398,24 @@
     (if (file-exists? (path-expand "group.ss" report))
       [report] (map (cut path-expand <> report) (directory-files report))))
   (def cohort #f)
+  (def qualification #f)
   (def rows '())
   (for-each
     (lambda (folder)
-      (defvalues (identity results) (audit-group folder))
-      (when (and cohort (not (equal? identity cohort)))
+      (defvalues (identity results environment) (audit-group folder))
+      (when (and cohort (not (and (equal? identity cohort) (equal? environment qualification))))
         (error "test reports mix CI runs, revisions, or platforms" folder))
       (set! cohort identity)
+      (set! qualification environment)
       (set! rows (append results rows)))
     folders)
   (def ordered (list-sort (lambda (left right) (string<? (car left) (car right))) rows))
   (unless (and (pair? ordered) (equal? (map car ordered) (discovered-files group)))
     (error "incomplete or duplicate coverage across test groups" root group))
-  (values cohort ordered))
+  (values cohort ordered qualification))
 
 (def (audit-report root (group "all"))
-  (defvalues (cohort rows) (read-audited-report root group))
+  (defvalues (cohort rows _qualification) (read-audited-report root group))
   (display "TEST-REPORT-AUDIT ")
   (write [group cohort (length rows)
            (length (filter (lambda (row) (not (zero? (cadr row)))) rows))])
@@ -370,8 +431,14 @@
   (newline))
 
 (def (compare-reports linux macos (group "all"))
-  (defvalues (linux-cohort linux-rows) (read-audited-report linux group))
-  (defvalues (macos-cohort macos-rows) (read-audited-report macos group))
+  (defvalues (linux-cohort linux-rows linux-qualification) (read-audited-report linux group))
+  (defvalues (macos-cohort macos-rows macos-qualification) (read-audited-report macos group))
+  (unless (andmap (lambda (key)
+                    (let (left (assq key (cdr linux-qualification)))
+                      (and left (cdr left) (equal? left (assq key (cdr macos-qualification))))))
+                  '(source build-source clean? package-declaration gerbil poo
+                    runtime-options idle-seconds worker-seconds))
+    (error "platform reports have different source or test qualification inputs"))
   (unless (match [linux-cohort macos-cohort]
             ([[sha run attempt "Linux" linux-arch] [other-sha other-run other-attempt "macOS" macos-arch]]
              (and (andmap (lambda (value) (and (string? value) (not (string-empty? value))))
