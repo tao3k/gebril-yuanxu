@@ -78,7 +78,14 @@
       (test-case "exact tool bytes remain guarded after Graph construction"
         (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                (graph (.get view build-graph)))
-          (check-equal? (and (member 'json-schema (.get graph selected-graph module-order)) #t) #t)
+          (check-equal?
+            (and (member 'yuanxu/modules/json-schema/interface
+                         (.get graph selected-graph module-order)) #t)
+            #t)
+          (check-equal?
+            (assoc (path-expand "module-system/source/declaration.ss" root)
+                   (.get graph compiler-inputs))
+            #f)
           (with-change "module-system/source/declaration.ss"
             (lambda (text) (string-append text "\n;; changed tool source\n"))
             (lambda ()

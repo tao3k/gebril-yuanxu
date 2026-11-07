@@ -204,14 +204,18 @@
                      (error "owned compiler source has competing native contexts" path))
                    (when (and previous (not (eq? previous native)))
                      (error "owned compiler source has competing native aliases" path))
-                   ;; An installed compiler Context remains a prerequisite even
-                   ;; when its optional checkout is inside a selected package.
-                   ;; Keep the source/currentness and canonical-context checks;
-                   ;; only actual native SOURCE contexts contribute targets.
+                   ;; Keep an authenticated owner source in the currentness
+                   ;; guard even when its runtime Context is an installed
+                   ;; prerequisite. Only source Contexts contribute targets.
                    (let (origin (module-context-path native))
-                     (when (and (string? origin)
-                                (member (path-extension origin) '(".ss" ".scm" ".sld")))
-                       (record-input! input)))
+                     (if (and (string? origin)
+                              (member (path-extension origin) '(".ss" ".scm" ".sld")))
+                       (record-input! input)
+                       (let ((rows (.ref input 'source-inputs))
+                             (candidate ((reader-session-candidate session))))
+                         (record-source-observations! (reader-session-tool-observations session) rows)
+                         (when candidate
+                           (record-source-observations! (candidate-support-tools candidate) rows)))))
                    (hash-put! (reader-session-tool-paths session) path native))))
          (parameterize ((current-module-source-phase 'compiler-import))
            (call-with-module-source-read-cache

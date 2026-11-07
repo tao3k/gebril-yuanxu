@@ -12,7 +12,7 @@
         :yuanxu/module-system/source/preparation
         :yuanxu/module-system/source/admission
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module
-                 yuanxu-bootstrap-contexts call-with-build-stage)
+                 yuanxu-reader-contexts call-with-build-stage)
         (only-in :yuanxu/module-system/building/source-package module-build-source-path))
 (export public-dependency-input admit-compiler-inputs!
         compiler-tool-inputs compiler-tool-input record-source-observations!
@@ -139,7 +139,7 @@
 (def (module-compiler-tools)
   (def compiler-contexts (make-hash-table-eq))
   (def tool-contexts
-    (yuanxu-bootstrap-contexts
+    (yuanxu-reader-contexts
       (lambda (context)
         (let (path (module-context-path context))
           (hash-put! compiler-contexts context

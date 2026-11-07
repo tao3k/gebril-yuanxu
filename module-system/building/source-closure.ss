@@ -11,7 +11,8 @@
                  module-import? module-import-source module-export? module-export-context
                  import-set? import-set-source)
         (only-in "./source-package.ss" module-build-source-path package-prelude-identity))
-(export yuanxu-bootstrap-spec for-each-build-module build-module-dependencies yuanxu-bootstrap-contexts
+(export yuanxu-bootstrap-spec for-each-build-module build-module-dependencies
+        yuanxu-bootstrap-contexts yuanxu-reader-contexts
         package-library-spec package-library-spec/source-context
         call-with-build-expansion-accounting
         call-with-build-stage)
@@ -191,51 +192,41 @@
                      (when (and (eq? registered prelude) (module-context? context))
                        (found context))) __module-registry)
                  (error "prelude has no runtime module association" (expander-context-id prelude))))))))
-;; Closed Core tools: build projection and ordinary data construction. Published
-;; Modules remain selected dependencies, never implicit bootstrap capabilities.
-(def bootstrap-roots '(:yuanxu/module-system/building/build-projection
-                      ;; The reader emits these two fixed role languages. They
-                      ;; are compiler dependencies, not selected business roles.
-                      ;; Empty only-in imports do not survive Gerbil's compiled
-                      ;; import graph, so root their actual native contexts here.
-                      :yuanxu/module-system/source/module-prelude
-                      :yuanxu/module-system/source/config-prelude
-                      ;; The Gerbil consumer is part of the compiler trust closure.
-                      :yuanxu/module-system/building/script
-                      :yuanxu/module-system/building/configuration-source
-                      ;; Shared graph values/algorithms are kernel data APIs.
-                      ;; Selected Ops/Funflow sources use this same closure;
-                      ;; no Module scope or runtime activation is granted here.
-                      :yuanxu/graph/types-core
-                      :yuanxu/graph/algorithms
-                      ;; Task/Flow Contracts are shared functional kernel
-                      ;; definitions. Module descriptors must use their actual
-                      ;; runtime instances, not private re-evaluated copies.
-                      ;; This library imports no runner or Module scope. Only
-                      ;; actual imports enroll its source support in the reader.
-                      :yuanxu/modules/funflow/control-plane/flow
-                      ;; The workflow value crosses the same library/Module
-                      ;; boundary; its Record family must not be cloned.
-                      :yuanxu/modules/funflow/scenario
-                      ;; Bounded declaration syntax constructs ordinary POO
-                      ;; defaults; it does not import selection or activation.
-                      :yuanxu/profile-composition/module-prototype-syntax
-                      ;; Public artifact/IR identity is shared with Core admission.
-                      ;; These are library definitions, not a linked Module scope.
-                      :yuanxu/modules/json-schema/json-schema-receipt
-                      ;; Validation results and diagnostics cross the same public
-                      ;; boundary; their runtime record identities must also agree.
-                      :yuanxu/modules/json-schema/json-schema-validate
-                      ;; Source-bound contracts are ordinary Core definitions
-                      ;; used by relocated publications, not a Module scope.
-                      :yuanxu/admission/source
-                      :yuanxu/configuration/diagnostics
-                      ;; Shared field Types belong to the same authenticated
-                      ;; library closure as Contracts, including relocated roles.
-                      :yuanxu/object-types/ports))
+;; Empty only-in imports do not survive Gerbil's compiled graph. The reader
+;; emits these role languages, so both paths retain their actual Contexts.
+(def role-language-roots '(:yuanxu/module-system/source/module-prelude
+                           :yuanxu/module-system/source/config-prelude))
+;; Published Modules remain selected dependencies. These shared library roots
+;; keep their native value identities in both the reader and source bootstrap.
+(def shared-library-roots
+  '(:yuanxu/graph/types-core
+    :yuanxu/graph/algorithms
+    ;; Task/Flow and Scenario Record identities cross the library/Module
+    ;; boundary. Only actual imports enroll their source support.
+    :yuanxu/modules/funflow/control-plane/flow
+    :yuanxu/modules/funflow/scenario
+    :yuanxu/profile-composition/module-prototype-syntax
+    ;; Schema results, diagnostics, and field Types cross admission.
+    :yuanxu/modules/json-schema/json-schema-receipt
+    :yuanxu/modules/json-schema/json-schema-validate
+    :yuanxu/admission/source
+    :yuanxu/configuration/diagnostics
+    :yuanxu/object-types/ports))
+(def bootstrap-roots
+  (append '(:yuanxu/module-system/building/build-projection)
+          role-language-roots
+          '(:yuanxu/module-system/building/script
+            :yuanxu/module-system/building/configuration-source)
+          shared-library-roots))
+(def reader-roots
+  (append '(:yuanxu/module-system/source/reader) role-language-roots shared-library-roots))
 ;; Flow imports role-syntax. The reader and diagnostics import configuration/json.
 ;; Their native dependency edges supply both Contexts to the same catalog walk.
 (def (yuanxu-bootstrap-contexts (observe-context void))
+  (collect-bootstrap-contexts bootstrap-roots observe-context))
+(def (yuanxu-reader-contexts observe-context)
+  (collect-bootstrap-contexts reader-roots observe-context))
+(def (collect-bootstrap-contexts root-names observe-context)
   ;; Finish runtime imports before sharing DFS state. No observation window or
   ;; successful source check crosses a macro/initializer boundary here.
   (def verbosity (string->number (getenv "GERBIL_BUILD_VERBOSE" "0")))
@@ -253,7 +244,7 @@
         context)))
   (def roots
     (call-with-build-stage 'compiler-tool-imports
-      (lambda () (map import-root bootstrap-roots))))
+      (lambda () (map import-root root-names))))
   (def ids (make-hash-table))
   (def seen (make-hash-table-eq))
   (call-with-build-stage 'compiler-tool-catalog
@@ -270,7 +261,7 @@
               (observe-context context)
               (hash-put! ids (expander-context-id context) context))
             seen))
-        bootstrap-roots roots)))
+        root-names roots)))
   ids)
 (def (yuanxu-bootstrap-spec core-root)
   (using (core-root :~ string?)
