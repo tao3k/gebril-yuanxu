@@ -119,12 +119,12 @@
     (test-case "watchdog diagnostics wait for the interrupted read scope to unwind"
       (def reads 0)
       (def seen #f)
-      (def swallow? #f)
+      (def on-stop raise)
       (def (interrupted-body)
         (with-catch
           (lambda (failure)
             (set! seen failure)
-            (if swallow? 'ignored (raise failure)))
+            (on-stop failure))
           (lambda ()
             (call-with-slot-read-observer
               (lambda (_read)
@@ -158,12 +158,19 @@
                      heap-limit-bytes: (.ref +core-case-profile+ 'heap-limit-bytes)
                      live-growth-limit-bytes: (.ref +core-case-profile+ 'live-growth-limit-bytes)
                      sample-interval-milliseconds: 1) 5)) #t)
-      (set! swallow? #t)
+      (set! on-stop (lambda (_failure) 'ignored))
       (check-equal?
         (YuanxuDebugMemoryAnomaly?
           (stopped (yuanxu-debug-memory-policy 'test/swallowed
                      heap-limit-bytes: 0 live-growth-limit-bytes: 0
                      sample-interval-milliseconds: 1) 1000)) #t)
+      (set! on-stop (lambda (_failure) (error "nested guard replaced the stop")))
+      (check-equal?
+        (YuanxuDebugDurationAnomaly?
+          (stopped (yuanxu-debug-memory-policy 'test/replaced
+                     heap-limit-bytes: (.ref +core-case-profile+ 'heap-limit-bytes)
+                     live-growth-limit-bytes: (.ref +core-case-profile+ 'live-growth-limit-bytes)
+                     sample-interval-milliseconds: 1) 5)) #t)
       (check-equal? reads 0))
     (yuanxu-test-case/with +core-case-profile+
       "Case profile extends Core memory and duration slots"

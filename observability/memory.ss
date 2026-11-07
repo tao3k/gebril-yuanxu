@@ -406,12 +406,16 @@
                    (duration-receipt phase policy-label (car data) (cadr data) (caddr data))))))))))
     (def (run-operation)
       (with-catch
-        (lambda (failure) (render-stop!) (raise failure))
+        (lambda (failure)
+          (render-stop!)
+          ;; A nested guard may translate the interruption into a source
+          ;; refusal. The recorded stop still owns the Case outcome.
+          (raise (if stopped (case-stop-failure stopped) failure)))
         (lambda ()
           (def value (thunk))
           ;; A body cannot turn a claimed fail-closed stop into acceptance by
           ;; swallowing its exception. Keep that same condition and origin.
-          (when stopped (render-stop!) (raise (case-stop-failure stopped)))
+          (when stopped (raise (case-stop-failure stopped)))
           value)))
     (let (watchdog (make-thread watch))
       (thread-start! watchdog)

@@ -39,6 +39,14 @@ they must not be added to their parent spans. The old log has no successful
 Make receipt or descendant CPU total, so it does not justify assigning all
 remaining time to the compiler or to host scheduling.
 
+Once the Case watchdog records a stop, that original typed exception
+owns the Case outcome even if a nested guard translates the interruption
+to another failure. Ordinary source failures retain their original cause
+when the watchdog recorded no stop. Diagnostics are constructed after
+the interrupted read scope unwinds. The existing Core regression covers
+both a swallowed stop and a replacement exception, and
+=ProcessScript.claimed_stop_survives_replacement= models the precedence.
+
 * Concrete scheduling defect and runtime repair
 
 =prepare-testing-script= overrode =GERBIL_BUILD_CORES= with the literal =1=.
