@@ -24,7 +24,7 @@
         ((equal? action "--check-partition") (check-partition))
         ((equal? action "--qualification")
          (match arguments
-           ([runtime-options] (write (qualification-cohort runtime-options #t)) (newline))
+           ([runtime-options] (write (qualification-cohort runtime-options)) (newline))
            (else (error "qualification requires the test runtime options" arguments))))
         ((equal? action "--platform") (apply report-platform arguments))
         ((equal? action "--mutate-build-input") (apply verify-build-input-mutations arguments))
@@ -90,7 +90,7 @@
        (qualification-field cohort 'poo)
        (qualification-field cohort 'release-manifest)))
 
-(def (qualification-cohort runtime-options (required? #f))
+(def (qualification-cohort runtime-options)
   (def (command-output command)
     (def result
       (run-script (.cc ProcessScript. command: command check-status: #f)))
@@ -126,6 +126,8 @@
           (cons 'load-path (load-path))
           (cons 'runtime-options runtime-options)
           (cons 'build-cores (getenv "GERBIL_BUILD_CORES" #f))
+          (cons 'gerbil-gcc (getenv "GERBIL_GCC" #f))
+          (cons 'compiler-path (getenv "COMPILER_PATH" #f))
           (cons 'idle-seconds execution-idle-seconds)
           (cons 'worker-seconds test-worker-seconds)))
   (def ci? (equal? (getenv "GITHUB_ACTIONS" "") "true"))
@@ -134,13 +136,12 @@
                      (path-normalize (path-expand "lib" prefix))) "/"))
   (def (installed-origin? origin)
     (and (string? origin) (string-prefix? lib-root (path-normalize origin))))
-  (when (or required? ci?)
-    (unless (and (qualification-build-matches? cohort)
-                 (or (not ci?) (equal? source-id (getenv "GITHUB_SHA" #f)))
-                 (installed-origin? core-origin)
-                 (installed-origin? poo-origin))
-      (error "qualification requires a clean checkout and its matching installed build"
-             cohort)))
+  (unless (and (qualification-build-matches? cohort)
+               (or (not ci?) (equal? source-id (getenv "GITHUB_SHA" #f)))
+               (installed-origin? core-origin)
+               (installed-origin? poo-origin))
+    (error "qualification requires a clean checkout and its matching installed build"
+           cohort))
   cohort)
 
 (def test-worker-seconds 600)

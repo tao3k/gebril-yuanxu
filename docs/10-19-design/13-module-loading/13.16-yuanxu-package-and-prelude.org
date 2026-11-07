@@ -356,8 +356,10 @@ package dependencies. Set an explicit =GERBIL_PATH= for both build and test
 and use the same load-path policy as the job.
 
 For a local qualification build, use =just build=, then
-=just test-qualification=. The preflight checks the checkout against the
-installed build and reports the Gerbil, Gambit, Just and POO versions. Run
+=just test-qualification= to inspect the inputs. Both platform and individual
+group runs require the same clean-checkout and installed-build preflight.
+The receipt reports Gerbil, Gambit, Just and POO versions, compiler routing and
+the build worker count. Run
 =just test-platform= for the complete platform suite, or use
 =just test-directory dense-declarations= and =just test-directory dense-selection=
 to reproduce those individual gates. The focused =just test-file= path remains

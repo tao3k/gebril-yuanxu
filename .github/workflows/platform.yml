@@ -19,7 +19,6 @@ jobs:
       - uses: ./.github/actions/setup-gerbil
         id: gerbil
       - name: Select runtime compiler capacity
-        id: workers
         shell: bash
         run: |
           # Dependency compilation is serial; use the actual runner allocation.
@@ -29,7 +28,7 @@ jobs:
           else
             workers=$(getconf _NPROCESSORS_ONLN)
           fi
-          echo "count=$workers" >> "$GITHUB_OUTPUT"
+          echo "GERBIL_BUILD_CORES=$workers" >> "$GITHUB_ENV"
           echo "BUILD-WORKERS $workers"
       - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         id: restore-dependencies
@@ -44,8 +43,6 @@ jobs:
             .gerbil/bin
           key: yuanxu-gerbil-v3-${{ runner.os }}-${{ runner.arch }}-${{ steps.gerbil.outputs.archive-sha256 }}-${{ hashFiles('gerbil.pkg') }}
       - name: Install pinned dependencies
-        env:
-          GERBIL_BUILD_CORES: ${{ steps.workers.outputs.count }}
         run: |
           echo "BUILD-WORKERS $GERBIL_BUILD_CORES"
           GERBIL_BUILD_VERBOSE=1 gerbil deps --install
@@ -64,12 +61,8 @@ jobs:
         run: just check-package-namespace
       - name: Build Yuanxu
         id: build-core
-        env:
-          GERBIL_BUILD_CORES: ${{ steps.workers.outputs.count }}
         run: GERBIL_BUILD_VERBOSE=1 just build
       - name: Reject build input context regressions
-        env:
-          GERBIL_BUILD_CORES: ${{ steps.workers.outputs.count }}
         run: just test-build-input-context-mutations "$RUNNER_TEMP/build-input-context"
       - name: Run serial Gerbil tests and report each file
         if: ${{ !cancelled() && steps.build-core.outcome == 'success' }}

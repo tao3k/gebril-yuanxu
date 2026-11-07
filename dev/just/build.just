@@ -11,7 +11,7 @@ build:
             source="$(git rev-parse HEAD 2>/dev/null || true)"
         fi
     fi
-    GERBIL_BUILD_VERBOSE="${GERBIL_BUILD_VERBOSE:-1}" env -u SDKROOT gerbil build
+    GERBIL_BUILD_VERBOSE="${GERBIL_BUILD_VERBOSE:-1}" {{ gerbil_compiler_environment }} gerbil build
     if [[ -n "$source" && "$source" == "$(git rev-parse HEAD)" &&
           -z "$(git status --porcelain --untracked-files=normal)" ]]; then
         printf '%s\n' "$source" > "$prefix/test-build-source"
