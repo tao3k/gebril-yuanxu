@@ -7,9 +7,9 @@
 (import (only-in :std/list/list fold filter-map)
         (runtime: :clan/poo/object)
         :yuanxu/composition/roles
-        :yuanxu/module-system/feature-system/capability-model
-        :yuanxu/module-system/feature-system/policy-strategy-binding
-        :yuanxu/module-system/feature-system/domain-case/interface
+        :yuanxu/module-system/feature/capability-model
+        :yuanxu/module-system/feature/policy-strategy-binding
+        :yuanxu/module-system/feature/domain-case/interface
         :yuanxu/utilities/functional)
 
 (export +feature-adapter-capability-catalog-kind+

@@ -253,7 +253,7 @@ until their concrete Function descriptors and consumer tests exist.
 | [[file:../../../graph/operation.ss][GraphOperation]].apply | GraphRoot -> GraphRoot; retain receiver dispatch and runtime prototype extension |
 | GraphOperation.stage | OperationState -> OperationState; validate the actual existing batched-state representation |
 | [[file:../../../profile-composition/profile-bundle.ss][ProfileCompositionStrategy]].compose | [ProfileBundle] -> ProfileBundle |
-| [[file:../../../module-system/feature-system/domain-case/contracts.ss][CaseSlotContract]].validator | SlotValue -> Bool with that slot's domain; migrate label-only type-id to a real Type plus diagnostic identity |
+| [[file:../../../module-system/feature/domain-case/contracts.ss][CaseSlotContract]].validator | SlotValue -> Bool with that slot's domain; migrate label-only type-id to a real Type plus diagnostic identity |
 | CaseTypeContract.predicate | CaseInstance -> Bool; Type predicate owns membership |
 | CaseMethodContract.validator | MethodContext -> Bool; distinguish this from a slot-value validator |
 | CaseMethodContract.compatibility-witness | CandidateContract, InheritedContract -> Bool; identity/refinement claims need actual domain relation |

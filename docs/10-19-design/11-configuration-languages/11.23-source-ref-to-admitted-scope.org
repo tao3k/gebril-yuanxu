@@ -548,7 +548,7 @@ namespace container or require user reassembly of child scopes/evidence.
 
 Module System owns baseline closure/linking. Feature System owns GuestbookSmoke's
 optional descriptor, requirements, adapter binding and contributions. Existing
-[[file:../../../module-system/feature-system/resolver.ss][resolver]], [[file:../../../module-system/feature-system/composition.ss][composition]] and [[file:../../../module-system/feature-system/adapter-projection-binding.ss][capability binding]] are reused. The facade maps -smoke
+[[file:../../../module-system/feature/resolver.ss][resolver]], [[file:../../../module-system/feature/composition.ss][composition]] and [[file:../../../module-system/feature/adapter-projection-binding.ss][capability binding]] are reused. The facade maps -smoke
 to its qualified identity once and retains the false/source decision. A hard
 request for it fails rather than re-enabling it. Module Core does not become a
 Feature, and technology names do not decide optionality.

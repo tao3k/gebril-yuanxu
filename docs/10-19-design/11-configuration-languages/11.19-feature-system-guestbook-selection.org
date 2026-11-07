@@ -175,7 +175,7 @@ The following is the complete bounded logical module graph for this case:
 framework bootstrap:
   core/module-system.core
     -> core/contracts.core -> external POO/MOP runtime
-    -> core/module-system/feature-system -> external POO/MOP runtime
+    -> core/module-system/feature -> external POO/MOP runtime
 
 Guestbook preview:
   custom/guestbook.core
@@ -195,7 +195,7 @@ retained negative intent:
   guestbook/smoke false
 #+end_example
 
-core/module-system/feature-system here is the module implementing the existing Feature System,
+core/module-system/feature here is the module implementing the existing Feature System,
 not a Feature descriptor that replaces Module System. Source catalogs may locate
 it differently; publication adapters preserve exact owner/source identity. This
 figure is a logical dependency model, not verified per-file build closure.

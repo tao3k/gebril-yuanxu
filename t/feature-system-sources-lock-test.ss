@@ -7,7 +7,7 @@
          (only-in :clan/poo/object .o .ref)
         (only-in :std/error Error?)
         (only-in :std/test check-equal? check-exception test-suite)
-        :yuanxu/module-system/feature-system/interface)
+        :yuanxu/module-system/feature/interface)
 
 (export feature-system-sources-lock-test)
 

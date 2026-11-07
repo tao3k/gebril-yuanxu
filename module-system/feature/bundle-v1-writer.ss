@@ -4,7 +4,7 @@
 
 ;;; Explicit file output for a validated, frozen Bundle v1 image.
 (import (runtime: :clan/poo/object)
-        :yuanxu/module-system/feature-system/bundle-v1-foreign-arena)
+        :yuanxu/module-system/feature/bundle-v1-foreign-arena)
 (export write-feature-bundle-v1-image!)
 
 ;; : (-> String U8Vector Unit)

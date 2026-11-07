@@ -17,7 +17,7 @@ imports to copy into current code.
 This audit uses Core worktree 06fe336bc671 and product revision 921152c088d1 after the
 migration, not removed product src paths or a historical gitlink. It records source
 inspection, not a fresh test execution. Core owns JSON Schema under
-[[file:../../../modules/json-schema/interface.ss][modules/json-schema]], [[file:../../../module-system/feature-system/interface.ss][Feature System]], Module graph primitives and
+[[file:../../../modules/json-schema/interface.ss][modules/json-schema]], [[file:../../../module-system/feature/interface.ss][Feature System]], Module graph primitives and
 [[file:../../../module-system/design/README.org][shared module design]]. Agentic AI Lab owns root init/source conventions, actual
 business modules and resource-provider adapters. No Core -> product runtime import
 is proposed. Consumer file links outside this checkout are workspace references.
@@ -182,7 +182,7 @@ The following uses current Core APIs. GuestbookSmoke is the proposed optional
 contribution explicitly defined here, not an existing product feature:
 
 #+begin_src scheme
-(import :yuanxu/module-system/feature-system/interface)
+(import :yuanxu/module-system/feature/interface)
 
 (def SmokePreviewRequirement
   (feature-adapter-requirement

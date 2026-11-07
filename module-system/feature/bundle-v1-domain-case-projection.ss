@@ -21,9 +21,9 @@
         (only-in :std/list/list iota)
         (runtime: :clan/poo/object)
         :yuanxu/utilities/functional
-        :yuanxu/module-system/feature-system/domain-case/interface
-        :yuanxu/module-system/feature-system/bundle-v1-lowering
-        :yuanxu/module-system/feature-system/runtime-handoff-plan)
+        :yuanxu/module-system/feature/domain-case/interface
+        :yuanxu/module-system/feature/bundle-v1-lowering
+        :yuanxu/module-system/feature/runtime-handoff-plan)
 
 (def +feature-bundle-v1-domain-case-projection-kind+
   'yuanxu.feature-bundle-v1-domain-case-projection.v1)

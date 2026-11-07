@@ -9,7 +9,7 @@
          :std/test
         :clan/poo/object
         :yuanxu/utilities/functional
-        :yuanxu/module-system/feature-system/interface
+        :yuanxu/module-system/feature/interface
         "./fixtures/bundle-v1-domain-case-projection.ss")
 
 (def ready-runtime-handoff-plan

@@ -11,7 +11,7 @@
                  module-source-text-guard module-source-read module-source-observe
                  call-with-module-source-read-cache current-module-source-observer)
         (only-in :clan/poo/mop Type.)
-        :yuanxu/module-system/feature-system/model
+        :yuanxu/module-system/feature/model
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/init
         "./qualification/module-directory/init.ss"
