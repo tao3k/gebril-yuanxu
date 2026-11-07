@@ -24,8 +24,8 @@ directory windows; =rename:= changes their access namespace, not their authority
   selections, dependency/conflict resolution and deterministic order. Its
   synthetic Core nodes are private ordering inputs, not user-selectable Features.
   Negative decisions check names without forcing contribution payloads.
-- [[file:../../../module-system/feature-system/resolver.ss][resolver.ss]] owns required/optional/conflicting edges and cycle detection.
-- [[file:../../../module-system/feature-system/composition.ss][composition.ss]] collects the existing manifest contribution categories in
+- [[file:../../../module-system/feature/resolver.ss][resolver.ss]] owns required/optional/conflicting edges and cycle detection.
+- [[file:../../../module-system/feature/composition.ss][composition.ss]] collects the existing manifest contribution categories in
   resolver order, preserving each declaration's order with linear accumulation.
   This is an ordered plan, not proof of final Module scope composition.
 - [[file:../../../module-system/source/link.ss][link.ss]] constructs the Core scope, applies that owner's ordered Feature

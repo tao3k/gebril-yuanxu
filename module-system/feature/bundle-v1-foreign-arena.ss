@@ -7,7 +7,7 @@
 (import (only-in :std/list/list fold)
         (runtime: :clan/poo/object)
         :yuanxu/utilities/functional
-        :yuanxu/module-system/feature-system/bundle-v1-lowering)
+        :yuanxu/module-system/feature/bundle-v1-lowering)
 
 (export +feature-bundle-v1-foreign-arena-image-kind+
         +feature-bundle-v1-foreign-arena-diagnostic-kind+

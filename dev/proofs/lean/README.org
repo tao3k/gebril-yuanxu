@@ -38,7 +38,7 @@ subject rather than a project-wide slogan or an unrelated inheritance algorithm.
 | =ModuleSystem/Building/= | =module-system/source/build.ss= and =building/=; observed inputs, compiler collisions and phase-bound Build |
 | =ModuleSystem/Authoring/= | =module-system/authoring/=; structural query-source checks |
 | =ModuleSystem/Imports.lean= | Default and explicit module instance identity |
-| =FeatureSystem/DomainCase/= | =module-system/feature-system/domain-case/=; indexed resolution |
+| =FeatureSystem/DomainCase/= | =module-system/feature/domain-case/=; indexed resolution |
 | =Graph/= | =graph/=; ordered operations on the shared node/edge representation |
 | =Modules/Funflow/= | =modules/funflow/=; control transitions, context, finite causal cuts, certified conclusion revision and one-shot continuations |
 | =Admission/= | =admission/=; source admission, concrete governance/quorum checks, capability attenuation and portable payload shape |

@@ -12,8 +12,8 @@
                  test-suite)
         :clan/poo/object
         :yuanxu/object-family/role-syntax
-        :yuanxu/module-system/feature-system/domain-case/interface
-        :yuanxu/module-system/feature-system/domain-case/syntax)
+        :yuanxu/module-system/feature/domain-case/interface
+        :yuanxu/module-system/feature/domain-case/syntax)
 
 (export domain-case-syntax-test)
 

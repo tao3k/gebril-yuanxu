@@ -7,9 +7,9 @@
 (import (only-in :std/list/list map filter-map)
         (runtime: :clan/poo/object)
         :yuanxu/composition/roles
-        :yuanxu/module-system/feature-system/capability-model
-        :yuanxu/module-system/feature-system/composition
-        :yuanxu/module-system/feature-system/domain-case/interface
+        :yuanxu/module-system/feature/capability-model
+        :yuanxu/module-system/feature/composition
+        :yuanxu/module-system/feature/domain-case/interface
         :yuanxu/utilities/functional)
 
 (export feature-domain-case-assembly

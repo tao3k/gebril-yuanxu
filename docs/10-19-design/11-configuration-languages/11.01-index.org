@@ -49,7 +49,7 @@ This chapter is owned by yuanxu. It contains configuration expression,
 contract/default views, runtime inheritance/refinement, module source organization,
 publication/selection, and design reasoning from ecosystem comparisons. The
 [[file:../../../module-system/design/README.org][Module System protocol documents]] and
-[[file:../../../module-system/feature-system/design/README.org][Feature System migration design]] own shared mechanism boundaries.
+[[file:../../../module-system/feature/design/README.org][Feature System migration design]] own shared mechanism boundaries.
 
 Agentic AI Lab retains runnable/source-backed business cases and its product adapters.
 Examples here may cite that consumer, but no such citation creates a Core runtime

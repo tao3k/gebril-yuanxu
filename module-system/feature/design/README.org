@@ -8,7 +8,7 @@
 * Shared mechanism and product adapter
 
 The Feature System implementation is owned by Core, not the product's former
-module-system/feature-system. Public declarations remain POO objects and the existing
+module-system/feature. Public declarations remain POO objects and the existing
 bounded defrules forms. No compatibility modules or parallel implementation remain.
 
 | Owner | Contents |

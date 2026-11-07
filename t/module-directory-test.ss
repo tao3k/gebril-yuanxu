@@ -6,7 +6,7 @@
         (only-in :clan/poo/object .o .+ .get .ref .slot? .ref/cached .all-slots/sort)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/mop Type.)
-        :yuanxu/module-system/feature-system/model
+        :yuanxu/module-system/feature/model
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/init
         "./qualification/module-directory/init.ss"

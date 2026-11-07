@@ -7,8 +7,8 @@
          :std/test
         :clan/poo/object
         :yuanxu/composition/roles
-        :yuanxu/module-system/feature-system/interface
-        :yuanxu/module-system/feature-system/domain-case/interface
+        :yuanxu/module-system/feature/interface
+        :yuanxu/module-system/feature/domain-case/interface
         :yuanxu/utilities/functional)
 
 (export feature-system-policy-strategy-binding-test)

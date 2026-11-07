@@ -12,8 +12,8 @@
                  make-hash-table-eq)
         (runtime: :clan/poo/object)
         :yuanxu/composition/roles
-        :yuanxu/module-system/feature-system/model
-        :yuanxu/module-system/feature-system/resolver
+        :yuanxu/module-system/feature/model
+        :yuanxu/module-system/feature/resolver
         :yuanxu/utilities/functional)
 
 (export feature-manifest
