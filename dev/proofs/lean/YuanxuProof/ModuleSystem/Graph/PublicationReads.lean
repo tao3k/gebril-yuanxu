@@ -214,6 +214,59 @@ theorem source_only_preserves_open_receipt
 example : joinedDispatch (Result := Nat) false true true (.ok 1) ≠
     splitDispatch true false true true (.ok 1) "changed" := by decide
 
+/-- Only the expander's closed stock projection in a private interpreter
+wrapper may deliver directly. An open or compiled declaration uses its binding. -/
+def directDelivery (privateWrapper stock : Bool) : Bool := privateWrapper && stock
+
+structure WrapperDelivery (Owner Payload : Type) where
+  owner : Owner
+  payload : Payload
+
+def acceptWrapperDelivery [DecidableEq Owner] (expected : Owner)
+    (pending : Option (WrapperDelivery Owner Payload)) (offered : WrapperDelivery Owner Payload) :
+    Option (WrapperDelivery Owner Payload) :=
+  if offered.owner = expected ∧ pending.isNone then some offered else none
+
+theorem wrapper_delivery_is_exact [DecidableEq Owner] (owner : Owner) (payload : Payload) :
+    acceptWrapperDelivery owner none ⟨owner, payload⟩ = some ⟨owner, payload⟩ := by
+  simp [acceptWrapperDelivery]
+
+theorem foreign_wrapper_cannot_deliver [DecidableEq Owner]
+    (expected : Owner) (offered : WrapperDelivery Owner Payload) (foreign : offered.owner ≠ expected) :
+    acceptWrapperDelivery expected none offered = none := by
+  simp [acceptWrapperDelivery, foreign]
+
+theorem repeated_wrapper_cannot_deliver [DecidableEq Owner]
+    (owner : Owner) (old offered : WrapperDelivery Owner Payload) :
+    acceptWrapperDelivery owner (some old) offered = none := by
+  simp [acceptWrapperDelivery]
+
+def readDeliveredPublication {Failure Payload Result : Type}
+    (before native after : Except Failure Unit) (payload : Except Failure Payload)
+    (admit : Payload → Except Failure Result) : Except Failure Result := do
+  before
+  native
+  let value ← payload
+  after
+  admit value
+
+/-- The same payload moves from its native initializer into the reader.
+The external observer still sees the same refusal order. -/
+theorem closed_delivery_preserves_checks [DecidableEq Owner]
+    (owner : Owner) (value : Payload) (missing : Failure)
+    (before native after : Except Failure Unit) (admit : Payload → Except Failure Result) :
+    readDeliveredPublication before native after
+        (match acceptWrapperDelivery owner none ⟨owner, value⟩ with
+        | some delivery => .ok delivery.payload
+        | none => .error missing) admit =
+      readDeliveredPublication before native after (.ok value) admit := by
+  rw [wrapper_delivery_is_exact]
+
+theorem no_direct_delivery_for_open_or_compiled (privateWrapper stock : Bool)
+    (openOrCompiled : privateWrapper = false ∨ stock = false) :
+    directDelivery privateWrapper stock = false := by
+  rcases openOrCompiled with h | h <;> simp [directDelivery, h]
+
 -- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,
 -- unchanged real observer delivery, and no nonlocal continuation escape.

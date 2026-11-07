@@ -227,6 +227,18 @@ package YuanxuPayloadOwnership {
                the concrete correspondence. Existing SourceWindows/CoreBuildHandoff
                QNT retain temporal refusal ownership; add no duplicate model. */
     }
+    requirement def ClosedInterpreterPublicationDelivery {
+        doc /* Only a private interpreter wrapper whose Gerbil expansion proves
+               the stock declaration grammar may deliver its original POO
+               value directly to its Reader. Bind delivery to the exact native
+               Context, accept it once and leave the native promise with void.
+               Keep the lexical role resolver and all owner guards. Compiled
+               and open declarations retain the native export and lookup.
+               Checks before expansion, after evaluation and during admission
+               keep their original order and refusal. Lean PublicationReads
+               proves delivery identity and refusal order. Runtime verification
+               owns the closure grammar and Gerbil result correspondence. */
+    }
     requirement def PreludeDependencyRepresentation {
         doc /* Keep Gerbil Core as a complete runtime import-set; filter the two
                POO constructor exports at the export boundary. Verify every public

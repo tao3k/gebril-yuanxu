@@ -16,7 +16,8 @@
         :yuanxu/module-system/source/preparation
         (only-in :yuanxu/module-system/source/declaration current-module-build-resolver)
         (only-in :yuanxu/module-system/source/deferred-declaration
-                 current-module-role-resolver module-role-values)
+                 current-module-role-resolver module-role-values
+                 wrapper-delivery? wrapper-delivery-value)
         :yuanxu/module-system/source/objects
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :yuanxu/module-system/building/source-package module-build-source-path))
@@ -79,6 +80,9 @@
             (wrappers (make-hash-table)) (artifacts (make-hash-table))
             (completed (make-hash-table-eq))
             (input-values '()) (input-paths (make-hash-table)) (gerbil-import (current-expander-module-import)))
+       (def interface-wrapper #f)
+       (def interface-context #f)
+       (def delivered #f)
        (defvalues (compile evaluate)
          (reader-evaluation-observers artifacts completed
            (lambda (context action)
@@ -88,7 +92,14 @@
                    (lambda (results reads-current! _roots)
                      (hash-put! (reader-session-kernel-initializers session) context
                        (lambda () (reads-current!) (sources-current!)))
-                     results)))))))
+                     (if (and (pair? results) (null? (cdr results)) (wrapper-delivery? (car results)))
+                       (begin
+                         (unless (and (eq? context interface-context) (not delivered))
+                           (error "unexpected private Interface delivery" (module-context-path context)))
+                         (set! delivered (car results))
+                         ;; Gerbil's initializer promise must not retain the delivered value.
+                         (list (void)))
+                       results))))))))
        (def (write-wrapper path forms runtime-identity)
          (let* ((name (string-append (number->string (hash-length wrappers)) "-" (path-strip-directory path)))
                 (target (path-expand name directory)))
@@ -446,7 +457,10 @@
          (cond
           ((and resolved (hash-key? artifacts resolved))
            (module-source-measure-operation 'reader-wrapper-expansion
-             (lambda () (gerbil-import path reload?))))
+             (lambda ()
+               (def context (gerbil-import path reload?))
+               (when (equal? resolved interface-wrapper) (set! interface-context context))
+               context)))
           ((and resolved (string=? (path-extension resolved) ".ss"))
            (source-context resolved reload?))
           (else
@@ -563,9 +577,12 @@
               ;; Public-only delayed roles retain their existing cold path.
               (for-each (lambda (path) (source-context path #f))
                         (.ref prepared 'deferred-import-sources))
+              (set! interface-wrapper (path-normalize wrapper))
               (observe-reader-work 'reader-interface-start 'reader-interface-end
                 (lambda () (eval-syntax `(import ,wrapper))))
-              (let (value (eval-syntax (.ref prepared 'binding)))
+              (let (value (if delivered (wrapper-delivery-value delivered)
+                              (eval-syntax (.ref prepared 'binding))))
+                (set! delivered #f)
                 (parameterize ((current-module-source-phase 'declaration-after)) (reader-current! session))
                 (def result (if consume (consume source-value value) value))
                 ;; A deferred Build resolver shares this outer interpreter
@@ -612,4 +629,8 @@
                 ;; header/guard object for the very same observed source.
                 (hash-put! (reader-session-dependencies session) interface-path (reverse input-values))
                 result))))
-        (lambda () (remove-reader-tree directory)))))))
+        (lambda ()
+          (set! delivered #f)
+          (set! interface-context #f)
+          (set! interface-wrapper #f)
+          (remove-reader-tree directory)))))))

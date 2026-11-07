@@ -1,6 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Integration boundary: actual runtime role expansion and initializer laziness.
 (import :std/test :clan/poo/object
+        (only-in :gerbil/expander eval-module module-context? module-context-path module-context-export)
+        (only-in :gerbil/expander/module __module-registry)
         (only-in :std/error Error? Error-message)
         (only-in :yuanxu/t/qualification/module-scale/fixture DeclarationFixture RuntimeValueFixture)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
@@ -16,6 +18,29 @@
   (path-expand name (path-expand "modules/module-0" (.get fixture root))))
 (def module-deferred-reader-test
   (test-suite "Guarded declaration selection and runtime delayed role values"
+    (test-case "a closed private wrapper delivers its value without retaining an export"
+      (with-publication-source
+        (lambda (_root _module-root source _view)
+          (def previous (make-hash-table-eq))
+          (hash-for-each (lambda (_ context) (hash-put! previous context #t)) __module-registry)
+          (def publication (.call (module-publication-reader) read source))
+          (def owners (make-hash-table-eq))
+          (hash-for-each
+            (lambda (_ context)
+              (when (and (not (hash-key? previous context)) (module-context? context)
+                         (let (path (module-context-path context))
+                           (and (string? path) (string-contains path "/publication-reader-")
+                                (string-suffix? "-interface.ss" path))))
+                (hash-put! owners context #t)))
+            __module-registry)
+          (check-equal? (hash-length owners) 1)
+          (def native-context (car (hash-keys owners)))
+          (check-equal? (module-context-export native-context) '())
+          (check-equal? (void? (eval-module native-context)) #t)
+          (check-equal? (.get publication identity) 'custom/example)
+          (def scope ((.get publication core link) (.o)))
+          (check-equal? (.get scope greeting) "hello")
+          (check-equal? (.get scope retained) 'upstream))))
     (test-case "private role imports are observed before their values are demanded"
       (with-publication-source
         (lambda (_root module-root source _view)

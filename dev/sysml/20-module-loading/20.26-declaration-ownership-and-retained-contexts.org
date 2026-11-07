@@ -225,3 +225,29 @@ authentication on return. The measured visit count describes completed
 preflight. Source observers retain their existing before/after callbacks
 and counting path. =PublicationReads.read_only_checkpoint_preserves_both_refusals=
 states the boundary for an effect-free visitor.
+
+** Private interpreter result lifetime
+
+With the 64-owner directory fixture, retaining the admitted Module values
+while releasing eight Reader tables and guard lists freed about 0.33 MB.
+After dropping the result rows in a separate terminal probe, releasing the
+64 generated role-loader globals alone had no measurable effect. Releasing
+the 64 private Interface globals then freed 11.46 MB. That amount includes
+the reachable values and closures. Neither probe changes a live Reader or
+establishes an exclusive byte cost per object.
+
+The native wrapper still expands and evaluates the owner's declaration.
+When the stock expander proves every value reference comes from a bound
+role alias or the fixed grammar, no declaration can refer back to its
+generated Interface export. This permits the evaluator to deliver the
+same POO value to the Reader once, with the exact originating Context.
+The lazy role resolver is lexical. The temporary module promise retains
+void after the handoff, and the Reader consumes its local result before
+the independent post-evaluation check. Open and compiled declarations
+continue to use their regular Gerbil binding and export.
+
+=PublicationReads.wrapper_delivery_is_exact=, =foreign_wrapper_cannot_deliver=,
+=repeated_wrapper_cannot_deliver= and =closed_delivery_preserves_checks=
+state the result and refusal contract. They assume the owner and payload
+produced by native expansion. The Scheme tests check that concrete
+correspondence and the existing source and effect checks.

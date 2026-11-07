@@ -18,8 +18,10 @@
                     (only-in :yuanxu/module-system/source/observations
                              module-source-measure-operation)))
 (export module-deferred-role-exports include-deferred-declaration module-role-values module-import-role-values
-        current-module-role-resolver module-entry-action module-binding-action deferred-role-values)
+        current-module-role-resolver module-entry-action module-binding-action deferred-role-values
+        wrapper-delivery? wrapper-delivery-value)
 (def current-module-role-resolver (make-parameter #f))
+(defstruct wrapper-delivery (value) final: #t)
 
 ;; Runtime source evaluation and compiled runtime loading have different
 ;; initialization authorities. Inspect the actual creating owner, not a user
@@ -326,7 +328,7 @@
        (def (role-values)
          (with-syntax ((constructor constructor) (loader loader))
            #'(constructor loader '((role exports ...) ...))))
-       (def (stock-publication form)
+       (def (stock-publication form direct?)
          ;; A fully known frame requires no synthesized lexical slot
          ;; transformers. All unknown source still uses declaration .def.
          (call/cc
@@ -410,8 +412,13 @@
                                      ((core) core-body)
                                      (else (known (wrap (cdr row) role-receiver root-names #t)))))) root-rows)
                       root-self))
-                  (with-syntax ((body root-body))
-                    (syntax/loc form (begin (def binding body) (export binding))))))
+                  (with-syntax ((body root-body) (loader loader)
+                                (deliver (quote-syntax make-wrapper-delivery))
+                                (resolve (quote-syntax current-module-role-resolver)))
+                    (if direct?
+                      (syntax/loc form
+                        (deliver (let (loader (resolve)) body)))
+                      (syntax/loc form (begin (def binding body) (export binding)))))))
                (_ (open #f))))))
        (def (wrap-core core root-shadows)
          ;; Keep fields as a runtime syntax list; append one private lazy slot.
@@ -464,13 +471,16 @@
                   ((identity:) value)
                   (else (wrap value core-reference shadows)))))))
               (syntax/loc form (head name . slots)))))))
+       (def private? (and (eq? (stx-e #'resolver) #f) (pair? forms) (null? (cdr forms))))
+       (def direct #f)
        (def definitions
          (module-source-measure-operation 'reader-interface-rewrite
            (lambda ()
              (map (lambda (form)
-                    (let (stock (stock-publication form))
+                    (let (stock (stock-publication form private?))
                       (if stock
-                        (module-source-measure-operation 'reader-shared-frame (lambda () stock))
+                        (module-source-measure-operation 'reader-shared-frame
+                          (lambda () (set! direct private?) stock))
                         (rewrite form)))) forms))))
        (with-syntax ((loader loader)
                      ;; The reader supplies the owner through the existing
@@ -481,5 +491,5 @@
          (syntax-local-rewrap
            (stx-wrap-source
              (core-cons 'begin
-               (cons #'(def loader (resolver)) definitions))
+               (if direct definitions (cons #'(def loader (resolver)) definitions)))
              (stx-source input))))))))
