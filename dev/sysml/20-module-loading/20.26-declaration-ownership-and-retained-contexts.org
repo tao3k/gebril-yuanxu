@@ -287,9 +287,9 @@ Six interleaved measurements repeated that exact root 256 times per lane.
 Visitor replay with a fresh spine took 0.489 and 0.610 seconds wall time.
 The validation-only primitive with a fresh spine took 0.591 and 0.614.
 With one stable spine it took 0.382 and 0.383. Changing the visitor alone
-does not establish a speedup. The maintained policy's native slot supplies
-the stable spine, and the reader compares its token to the one actually
-observed this time. POO's original topology index owns reuse, and POO
+does not establish a speedup. The maintained policy's native slot holds a
+closure over the private stable spine. It compares its token to the one
+actually observed this time. POO's original topology index owns reuse, and POO
 validates the complete record graph on every invocation.
 
 =PublicationReads.profile_checkpoint_preserves_issued_order= and

@@ -241,8 +241,8 @@ package YuanxuPayloadOwnership {
     }
     requirement def StockAuthoringProfileCheckpoint {
         doc /* Read the maintained Profile on every owner invocation. Its
-               native slot may retain the one-root replay spine for the
-               signed record it observed. Select that spine only when the
+               native slot may retain a closure over the private one-root
+               replay spine for the signed record. Select it only when the
                newly observed record is identical and the caller has no
                open slot observer. POO freshly authenticates its full
                traversal and return. Open or changed receivers preserve

@@ -104,21 +104,28 @@
       (lambda () (.ref policy '%authoring-interface))))
   (values value (reverse reads)))
 
+(def (make-authoring-interface-checkpoint policy)
+  (defvalues (_value roots) (read-authoring-interface policy))
+  (lambda (observed)
+    (and (pair? roots) (null? (cdr roots)) (eq? observed (car roots))
+         (begin
+           (module-source-measure-operation 'source-authoring-profile-checkpoint
+             (lambda () (call-with-current-slot-reads roots void)))
+           #t))))
+
 (def (admit-authoring-interface policy)
   (defvalues (value reads) (read-authoring-interface policy))
   (unless (pair? reads) (error "unissued source authoring Interface"))
   ;; Retain a spine for POO's existing topology lookup. The actual Profile
   ;; read above still delivers the original token in every invocation.
-  (def roots
+  (def checkpoint
     (and (null? (cdr reads)) (owned-read-function-scope?)
          (object-construction-current?)
          ;; The real getter ran before this lookup and may have opened the policy.
          (module-source-style-policy-current?)
          (without-observation
-           (lambda () (.ref policy '%authoring-interface-roots)))))
-  (if (and (pair? roots) (null? (cdr roots)) (eq? (car reads) (car roots)))
-    (module-source-measure-operation 'source-authoring-profile-checkpoint
-      (lambda () (call-with-current-slot-reads roots void)))
+           (lambda () (.ref policy '%authoring-interface-checkpoint)))))
+  (unless (and checkpoint (module-source-style-policy-current?) (checkpoint (car reads)))
     (replay-slot-reads! reads (lambda (_receiver _key) (void))))
   value)
 
@@ -237,8 +244,7 @@
       validate: yuanxu-module-source-admit!))
 (def yuanxu-default-module-style-policy
   (.o (:: policy yuanxu-module-style-policy-prototype)
-      (%authoring-interface-roots
-        (let-values (((_value roots) (read-authoring-interface policy))) roots))))
+      (%authoring-interface-checkpoint (make-authoring-interface-checkpoint policy))))
 
 ;; Capture the maintained policy BEFORE exposing it for extension. Include its
 ;; actual Profile children; changing a role need not edit the containing slot.

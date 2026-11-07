@@ -208,7 +208,7 @@
           (call-with-slot-read-observer
             (lambda (read)
               (when (and (eq? (slot-read-receiver read) yuanxu-default-module-style-policy)
-                         (memq (slot-read-key read) '(%authoring-interface %authoring-interface-roots)))
+                         (memq (slot-read-key read) '(%authoring-interface %authoring-interface-checkpoint)))
                 (set! observed (cons (slot-read-key read) observed))))
             (lambda () (check-exception (collection-source root) error?)))
           (check-equal? observed '(%authoring-interface))
