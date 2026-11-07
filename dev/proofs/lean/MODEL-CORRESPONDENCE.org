@@ -811,3 +811,21 @@ success 4.158 s before the supervisor returned. The harness checked the
 46 selected targets, zero business scopes during specification, the
 unchanged B hashes and prerequisites, B-product use and zero hot
 compiler events.
+
+=shared_role_slot_preserves_resolver_and_self= relates the generated
+role formula to the shared native constructor. The role slot calls its
+own owner resolver. Its aliases select the actual POO self, including a
+derived receiver's overrides. The ordinary wrapper keeps the compiler's
+lexical bindings and the existing independent effect guards. Runtime
+observations separate wrapper materialization, native wrapper expansion,
+Interface reads and rewriting, native compile and eval, admission and
+metadata replay. Nested timing intervals are inclusive.
+
+The source-gateway qualification uses the actual expanded Gerbil import
+and prelude edges. =reverse_index_reaches_exactly_affected= relates that
+complete reverse relation to the changed Context's consumers. The Scheme
+qualification checks the mutated file's actual Context path, retains the
+three explicit compile roots and checks the coverage of the affected
+source owners. An incomplete prelude mapping selects the full import
+walk. The native compiler and existing source-tail test retain their
+original budgets.

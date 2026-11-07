@@ -54,6 +54,12 @@ package YuanxuModuleLoading {
                independent entry and return guards. The next run reads
                the post-effect state. */
     }
+    part def DeferredRoleSlot {
+        doc /* Native slot construction shares one implementation.
+               The role captures its own owner resolver.
+               Each alias reads the current POO receiver and role value.
+               The Gerbil wrapper and effect guards remain owner-specific. */
+    }
     part def LoadingWork {
         attribute expandedIdentities : Integer;
         attribute processedEdgeOccurrences : Integer;
