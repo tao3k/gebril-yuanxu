@@ -389,6 +389,9 @@ package YuanxuSelectedPackageBuilds {
                replay authenticates the original complete DAG before them and
                again on successful return, holding the same receiver protection
                through the checkpoint. No semantic observations are re-delivered.
+               The issuer exposes only its distinct-record count to checkpoint
+               accounting; accounting never receives a mutable traversal or
+               receiver set and never selects a different execution path.
                It executes every original checkpoint once; checkpoint failure
                propagates without retry. Preflight failure restores the original
                split diagnostic and cannot become approval. Observers, custom

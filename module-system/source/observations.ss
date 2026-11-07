@@ -205,24 +205,11 @@
           ;; its receivers during work, and authenticates again on return.
           ;; This fixed checkpoint is validation, not another semantic read.
           ;; Suppress native re-delivery; filesystem collectors remain active.
-          (let ((ran? #f) (visits 0))
-            (def (once)
-              (unless ran?
-                (set! ran? #t)
-                (module-source-measure-operation 'metadata-checkpoints checkpoint)))
-            (dynamic-wind void
-              (lambda ()
-                (without-observation
-                  (lambda ()
-                    (reobserve-slot-reads! reads
-                      (lambda ()
-                        (when times (set! visits (+ visits 1)))
-                        (once)))
-                    ;; Empty support still executes its fixed checkpoints.
-                    (once))))
-              (lambda ()
-                (when times
-                  (hash-update! times '(visits metadata-replay) (cut + <> visits) 0)))))
+          (call-with-current-slot-reads reads
+            (lambda (visits)
+              (when times
+                (hash-update! times '(visits metadata-replay) (cut + <> visits) 0))
+              (module-source-measure-operation 'metadata-checkpoints checkpoint)))
         (if (not times)
           (replay-slot-reads! reads (lambda (_receiver _key) (void)))
           (let (visits 0)

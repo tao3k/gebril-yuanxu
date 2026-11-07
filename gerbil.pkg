@@ -6,4 +6,5 @@
 (package: yuanxu
  prelude: :tao3k/yuanxu/prelude
  depend:
- ("github.com/tao3k/gerbil-poo@v0.1.3"))
+ ;; Protected read checkpoints; return to a release tag containing this API.
+ ("github.com/tao3k/gerbil-poo@cd4de644385a591b879e3de5795418b5b7e9d767"))
