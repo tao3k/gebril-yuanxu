@@ -1156,6 +1156,29 @@ Record validation took about 41--42 ms per batch in both lanes. This isolates
 receipt representation from owner admission. The Reader's stage accounting
 separates =reader-value-admission= from =reader-admission-evidence=.
 
+*** Native value admission and the deferred Type role
+
+On the real thousand-owner selection fixture, a temporary scoped
+measurement inside the native admission path reported the following
+inclusive times for 1,000 calls. Each original check ran in its original
+order. The probe did not install a source observer or demand business scopes.
+
+| Operation | Wall s | CPU s |
+|-----------+--------+-------|
+| Named Type descriptor check | 0.011 | 0.010 |
+| Native validation of the published value | 7.388 | 7.378 |
+| Context obligation lookup | 0.002 | 0.002 |
+| Receipt construction | 0.010 | 0.009 |
+
+The publication shape demands the actual Scope Type. On this fixture the
+native Type check includes the delayed =types.ss= role, with roughly 1.96 s
+of metadata replay at each of its entry and return boundaries. Those two
+intervals are inside the 7.388 s row. A role can execute Gerbil code, so the
+two boundaries must independently authenticate. The measurements identify
+where to investigate replay work within each boundary. They do not justify
+sharing a freshness verdict across the role or replacing its runtime Type
+with a shape inferred from source. The temporary timing edits were removed.
+
 ** Package workflow acceptance remains distinct
 
 The earlier real-product harness copied a third consumer package's files and
