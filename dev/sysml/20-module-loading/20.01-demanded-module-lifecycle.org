@@ -342,6 +342,19 @@ GC, and the projected capture released it. This is evidence for that
 capture's reachability. Runtime release still needs the actual producer's
 non-escape and effect checks.
 
+In the 96-preparation cohort, removing the same isolated receiver from each
+authenticated capture reclaimed about 677 KB. The retained growth in the
+observed dense run was about 300 KB per completed owner, so this receiver
+accounts for only a small fraction in the measured cohorts.
+
+A separate terminal probe kept 128 evaluated Module values live while
+removing only their temporary wrapper entries from Gerbil's expander
+registry. Live heap did not fall. After dropping the probe's references,
+the original Gerbil globals still held all 128 values. Clearing those probe
+globals reclaimed about 4.76 MB. This measures a possible post-owner
+lifetime cost. The dense graph itself still needs its Module values, and
+the runtime continues to use Gerbil's original registry and bindings.
+
 ** Candidate return
 
 After the Publication Contract returns, a closed directory candidate can
