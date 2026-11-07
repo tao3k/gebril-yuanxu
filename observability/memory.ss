@@ -4,6 +4,7 @@
 ;;; optional typed printers and slot tracing. No separate runner or sampler.
 (import (runtime: :clan/poo/object)
         (only-in :yuanxu/ops/progress current-execution-progress execution-progress-status
+                 current-execution-progress-check
                  execution-progress-idle-milliseconds execution-progress-limit)
         (only-in :clan/poo/mop validate)
         :gerbil/runtime/gambit
@@ -333,6 +334,11 @@
          (policy-label (.ref policy 'label))
          (fail-closed? (.ref policy 'fail-closed?)))
     (def stopped #f)
+    (def enclosing-progress-check (current-execution-progress-check))
+    (def (check-progress!)
+      (when enclosing-progress-check (enclosing-progress-check))
+      (when (and stopped (eq? owner (current-thread)))
+        (raise (case-stop-failure stopped))))
     (def rendered? #f)
     (def (stop! kind data)
       (def failure
@@ -412,7 +418,9 @@
           ;; refusal. The recorded stop still owns the Case outcome.
           (raise (if stopped (case-stop-failure stopped) failure)))
         (lambda ()
-          (def value (thunk))
+          (def value
+            (parameterize ((current-execution-progress-check check-progress!))
+              (thunk)))
           ;; A body cannot turn a claimed fail-closed stop into acceptance by
           ;; swallowing its exception. Keep that same condition and origin.
           (when stopped (raise (case-stop-failure stopped)))

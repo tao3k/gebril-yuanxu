@@ -1706,6 +1706,17 @@ spans. Overlapping rows must not be added.
 Replay had 25,642 attempts and 24,306,667 visits. The partial totals follow
 the real work up to refusal and do not qualify a completed graph.
 
+The observed Case on the same local commit recorded its duration refusal at
+180.002 seconds and returned from the Harness at about 339.5 seconds, after
+5,085 completed declarations. The Case had preserved the original failure
+at return, but a caught asynchronous interruption allowed work to continue
+in the meantime. The watchdog now attaches its existing stop to progress
+on the same owner thread. The next genuine progress report raises the
+original condition before updating the relay. Its typed diagnostic is still
+rendered after unwind. =ProcessScript.caught_stop_refuses_progress_without_advancing=
+models this refusal, and =core-test= catches the interrupt and attempts one
+more report to exercise the runtime boundary.
+
 The next representation change must distinguish an original dependency
 from a locally owned scratch leaf. The original local check covers the
 entire capture. =RootCollection.private_leaf_removal_keeps_external_reach=

@@ -164,6 +164,9 @@ package YuanxuModuleLoading {
                clear a caller's observer. Measure Graph demand separately from
                scope activation, value-cache access, independent admission,
                source preparation, compilation and Harness startup.
+               A claimed Case stop must refuse the next genuine progress
+               report on its owner before the relay changes. A local catch
+               cannot replace the original rejection or extend the work.
                Change a real module's Config receiver, retain/replay original
                issued reads, and demand the getter again through native
                with-slot-dependencies. Assert exact computation counts and an

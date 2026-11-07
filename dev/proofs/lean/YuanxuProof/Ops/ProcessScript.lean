@@ -131,6 +131,21 @@ theorem claimed_stop_survives_replacement {Failure Value : Type}
 theorem ordinary_failure_keeps_its_cause {Failure Value : Type} (failure : Failure) :
     finishCase (Value := Value) none (.error failure) = .error failure := rfl
 
+-- A handler can catch an interrupt and resume doing work. The next genuine
+-- progress boundary on the Case owner must refuse before advancing the relay.
+def progressAfterCaseStop {Failure : Type} (stop : Option Failure)
+    (counter next : Nat) : Except Failure Unit × Nat :=
+  match stop with
+  | some original => (.error original, counter)
+  | none => (.ok (), max counter next)
+
+theorem caught_stop_refuses_progress_without_advancing {Failure : Type}
+    (original : Failure) (counter next : Nat) :
+    progressAfterCaseStop (some original) counter next = (.error original, counter) := rfl
+
+theorem unstopped_progress_uses_existing_count (counter next : Nat) :
+    progressAfterCaseStop (Failure := Unit) none counter next = (.ok (), max counter next) := rfl
+
 #guard match checkedProgress (fun line => .ok (.text line)) (.text "line") with
   | .ok value => decide (value = .text "line")
   | .error _ => false

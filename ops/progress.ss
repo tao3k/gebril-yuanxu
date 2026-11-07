@@ -10,7 +10,7 @@ prelude: :gerbil/core
         (only-in :std/os/signal-handler add-signal-handler! remove-signal-handler!))
 (export execution-idle-seconds execution-total-seconds
         current-execution-progress call-with-execution-progress
-        current-execution-progress-port
+        current-execution-progress-port current-execution-progress-check
         execution-progress! execution-progress-status execution-progress-idle-milliseconds
         execution-progress-limit
         call-with-execution-watchdog call-with-execution-cancellation make-execution-child
@@ -113,7 +113,12 @@ prelude: :gerbil/core
           ((and (execution-progress-idle state)
                 (>= (- now (execution-progress-last state)) (execution-progress-idle state))) 'idle)
           (else #f))))
+(def current-execution-progress-check (make-parameter #f))
 (def (execution-progress! key count)
+  ;; A Case can have an authoritative stop even when an inner speculative
+  ;; operation caught its interrupt. Reject before advancing any progress.
+  (let (check! (current-execution-progress-check))
+    (when check! (check!)))
   (unless (and (exact-integer? count) (>= count 0))
     (error "execution progress requires a natural count"))
   (def advanced? #f)

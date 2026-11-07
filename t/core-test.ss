@@ -9,6 +9,7 @@
         (only-in :yuanxu/object-types/ports Port valid-port?)
         (only-in :clan/poo/mop define-type element?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
+        (only-in :yuanxu/ops/progress execution-progress!)
         (only-in :yuanxu/observability/memory
                  call-with-yuanxu-debug-memory-case-watchdog
                  yuanxu-debug-memory-policy YuanxuDebugDurationAnomaly?
@@ -164,6 +165,18 @@
           (stopped (yuanxu-debug-memory-policy 'test/swallowed
                      heap-limit-bytes: 0 live-growth-limit-bytes: 0
                      sample-interval-milliseconds: 1) 1000)) #t)
+      (def continued? #f)
+      (set! on-stop
+        (lambda (_failure)
+          (execution-progress! 'after-swallowed-stop 1)
+          (set! continued? #t)))
+      (check-equal?
+        (YuanxuDebugDurationAnomaly?
+          (stopped (yuanxu-debug-memory-policy 'test/continued
+                     heap-limit-bytes: (.ref +core-case-profile+ 'heap-limit-bytes)
+                     live-growth-limit-bytes: (.ref +core-case-profile+ 'live-growth-limit-bytes)
+                     sample-interval-milliseconds: 1) 5)) #t)
+      (check-equal? continued? #f)
       (set! on-stop (lambda (_failure) (error "nested guard replaced the stop")))
       (check-equal?
         (YuanxuDebugDurationAnomaly?
