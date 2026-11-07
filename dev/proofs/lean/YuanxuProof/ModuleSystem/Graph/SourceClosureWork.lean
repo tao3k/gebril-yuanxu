@@ -88,6 +88,50 @@ theorem shared_role_slot_preserves_resolver_and_self
     sharedRoleSlot load read owner recipe self = ownerSlotRecipe load read owner recipe self := by
   cases recipe <;> rfl
 
+-- A shared object frame can reuse the native constructor and leave each
+-- field's delayed evaluation to its owner and actual POO receiver.
+abbrev FieldBody (Owner Receiver Failure Value : Type) :=
+  Owner → Receiver → Except Failure Value
+
+def bindStockFields {Key Owner Receiver Failure Value : Type}
+    (owner : Owner) (fields : List (Key × FieldBody Owner Receiver Failure Value)) :
+    List (Key × (Receiver → Except Failure Value)) :=
+  fields.map (fun (key, body) => (key, body owner))
+
+theorem shared_frame_preserves_names_and_order
+    {Key Owner Receiver Failure Value : Type}
+    (owner : Owner) (fields : List (Key × FieldBody Owner Receiver Failure Value)) :
+    (bindStockFields owner fields).map Prod.fst = fields.map Prod.fst := by
+  simp [bindStockFields, List.map_map, Function.comp_def]
+
+theorem shared_frame_forces_only_the_same_field
+    {Key Owner Receiver Failure Value : Type} [DecidableEq Key]
+    (owner : Owner) (fields : List (Key × FieldBody Owner Receiver Failure Value))
+    (key : Key) (receiver : Receiver) :
+    ((bindStockFields owner fields).lookup key).map (fun compute => compute receiver) =
+      (fields.lookup key).map (fun compute => compute owner receiver) := by
+  induction fields with
+  | nil => rfl
+  | cons field rest ih =>
+    rcases field with ⟨name, body⟩
+    cases equal : (key == name) <;> simpa [bindStockFields, List.lookup, equal] using ih
+
+-- Core.link reads every declared dependency in order before the export body
+-- runs, even if an export does not read an alias. Keep that failure boundary.
+def stockLink {Key Failure Value Output : Type} (aliases : List Key)
+    (read : Key → Except Failure Value) (exportBody : List Value → Except Failure Output) :
+    Except Failure Output := do
+  let values ← aliases.mapM read
+  exportBody values
+
+theorem stock_link_refuses_first_unavailable_dependency
+    {Key Failure Value Output : Type} (name : Key) (rest : List Key)
+    (read : Key → Except Failure Value) (exportBody : List Value → Except Failure Output)
+    (cause : Failure) (unavailable : read name = .error cause) :
+    stockLink (name :: rest) read exportBody = .error cause := by
+  simp only [stockLink, List.mapM_cons, unavailable]
+  rfl
+
 example : sharedRoleSlot (fun owner _ _ => owner) (fun self slot => self + slot)
     (0 : Nat) (.alias 1 2) 7 = 10 := rfl
 
