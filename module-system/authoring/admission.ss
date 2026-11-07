@@ -12,7 +12,7 @@
                  slot-read-receiver slot-read-value without-observation)
         (only-in :clan/poo/mop Type. define-type element? validate)
         (only-in :clan/poo/type List)
-        (only-in :std/list/list any filter-map find)
+        (only-in :std/list/list any delete-duplicates/hash filter-map find)
         (only-in :yuanxu/utilities/algorithms
                  yuanxu-read-datums/append-map
                  yuanxu-scheme-datum-find)
@@ -447,6 +447,21 @@
     unique-roots?: #t))
 (def default-method-payloads
   (map (lambda (read) (cons read (copy-policy-payload (slot-read-value read)))) default-method-reads))
+(def default-method-trace
+  ;; Ask POO for its original ordered deliveries once. The trace contains
+  ;; no chosen method or approval, and the receiver projection is only
+  ;; topology. The native guard still authenticates every signed record.
+  (without-observation
+    (lambda ()
+      (with-catch (lambda (_unsupported) #f)
+        (lambda ()
+          (defvalues (_ reads)
+            (%call-with-recorded-slot-reads
+              (lambda () (reobserve-slot-reads! default-method-reads))))
+          (and (pair? reads)
+               (cons reads
+                     (delete-duplicates/hash (map slot-read-receiver reads)
+                       table: (make-hash-table-eq) from-end?: #t))))))))
 (def (plain-dispatch-argument? value)
   ;; Inspect only warm runtime metadata. No cold getter or logical class bridge
   ;; may open a callback before ordinary Generic fallback owns that operation.
@@ -498,25 +513,26 @@
       method)))
 (def (plain-method-trace? reads)
   (andmap (lambda (read) (plain-dispatch-argument? (slot-read-receiver read))) reads))
-(def (observe-default-method! executor role interface (trace #f))
+(def (observe-default-method! executor role interface (source? #f))
   (def (deliver!) (reobserve-default-method! executor role interface))
-  (def (reuse! reads)
+  (def (reuse! trace)
     (def selected #f)
     (with-catch
       (lambda (cause)
-        ;; Retain the ordinary diagnostic after selection, even when retry
-        ;; succeeds. A pre-selection miss leaves ordinary replay in charge.
-        (and selected (begin (deliver!) (raise cause))))
+        ;; A pre-selection miss can still take ordinary dispatch. After
+        ;; selection, preserve the protected return's original refusal.
+        (if selected (raise cause) #f))
       (lambda ()
         (call-with-current-slot-reads default-method-reads
           (lambda (_visits)
-            (when (plain-method-trace? reads)
+            (when (andmap plain-dispatch-argument? (cdr trace))
               (set! selected (current-default-method executor role interface)))))))
     ;; Forward only after native return authentication. The real method,
     ;; role reads and result Type all run in the original caller scope.
-    (when selected (%record-slot-reads! reads))
+    (when selected (%record-slot-reads! (car trace)))
     selected)
-  (or (and trace (unbox trace) (object-construction-current?) (reuse! (unbox trace)))
+  (or (and source? default-method-trace (object-construction-current?)
+           (reuse! default-method-trace))
       (let ()
         (defvalues (method reads)
           (with-catch
@@ -527,7 +543,6 @@
         (cond
          ((not method) #f)
          ((plain-method-trace? reads)
-          (when trace (set-box! trace reads))
           (%record-slot-reads! reads)
           method)
          (else (deliver!))))))
@@ -537,14 +552,14 @@
   ;; share the first guard and its return check in the enclosing dynamic scope.
   ((current-authoring-carrier-demand))
   (poo-clos-call ModuleAuthoringAnalysisGeneric executor role interface datum))
-(def (authoring-call executor role interface datum (trace #f))
+(def (authoring-call executor role interface datum (source? #f))
   (cond
    ((and (owned-read-function-scope?)
          (andmap plain-dispatch-argument? (list executor role interface))
          ;; Universal logical-class dispatch on object data may run a getter.
          ;; Source datums are inert pairs/scalars; object data stays Generic.
          (not (object? datum))
-         (observe-default-method! executor role interface trace))
+         (observe-default-method! executor role interface source?))
     => (lambda (method)
          (let ((body (.ref/inline method authoring-body-site))
                (primary (.ref/inline method authoring-primary-site)))
@@ -577,7 +592,7 @@
 
 ;; Resolve the actual arguments once. A contributed method may rebind the
 ;; Profile; admission must describe the role dispatched for THIS datum.
-(def (with-authoring-analysis interface role-name datum consume (trace #f))
+(def (with-authoring-analysis interface role-name datum consume (source? #f))
   (let* ((authoring (yuanxu-module-interface-authoring interface))
          (executor (.ref authoring 'executor))
          (role (yuanxu-module-authoring-role interface role-name)))
@@ -585,7 +600,7 @@
       (lambda ()
         (consume role
           (validate YuanxuModuleAuthoringDiagnostics
-            (authoring-call executor role interface datum trace)))))))
+            (authoring-call executor role interface datum source?)))))))
 
 ;; One typed functional result per datum, through the SAME extensible Generic.
 (def (yuanxu-module-authoring-analyze-datum interface role-name datum)
@@ -597,11 +612,11 @@
   (with-authoring-analysis interface role-name datum
     (cut yuanxu-module-authoring-admission interface <> <>)))
 
-(def (authoring-datum-diagnostics interface role-name datums (trace #f))
+(def (authoring-datum-diagnostics interface role-name datums (source? #f))
   (foldr append '()
          (map (lambda (datum)
                 (with-authoring-analysis interface role-name datum
-                  (lambda (_role diagnostics) diagnostics) trace))
+                  (lambda (_role diagnostics) diagnostics) source?))
               datums)))
 
 ;; : (-> PooModuleInterface Symbol [SchemeDatum] PooModuleAuthoringAdmission)
@@ -642,10 +657,9 @@
 
 (def (yuanxu-module-authoring-source-admit interface role-name datums)
   (def role (yuanxu-module-authoring-role interface role-name))
-  ;; Retain only the original ordered method trace for this source role.
-  ;; Each datum resolves its own live arguments and checks freshness anew.
-  (def trace (and (pair? datums) (pair? (cdr datums)) (box #f)))
-  (def diagnostics (authoring-datum-diagnostics interface role-name datums trace))
+  ;; Each datum resolves its own live arguments and authenticates the
+  ;; maintained method support before using its original delivery trace.
+  (def diagnostics (authoring-datum-diagnostics interface role-name datums #t))
   ;; Source admission consumes only a refusal diagnostic. All datum and
   ;; diagnostic Type work has completed before the stock receipt decision.
   (if (and (null? diagnostics) (stock-empty-authoring-receipt? interface role))

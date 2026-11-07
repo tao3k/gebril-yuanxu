@@ -324,3 +324,27 @@ matched comparison over 180 four-datum groups preserved the exact 708 and
 per-datum capture and 0.286--0.314 s with the role-local trace. Config CPU
 was 0.411--0.415 s and 0.289--0.317 s, respectively. The full thousand-owner
 run is a separate measurement and does not establish end-to-end speedup.
+
+** Fixed native trace for source dispatch
+
+The maintained method producer now takes the original native delivery
+sequence once and projects its distinct receivers. Source datums authenticate
+the whole issued traversal at native entry and return. Inside the protected
+call they check the live receiver eligibility, mutable policy payload and
+the actual executor, role and Interface. The original ordered records flow
+to the caller after authentication. The role getter, method body and result
+Type keep their independent effects. An incompatible entry uses ordinary
+dispatch. A protected refusal after method selection propagates directly.
+
+=PublicationReads.fixed_dispatch_trace_keeps_owner_and_refusal= models the
+ordered record and owner obligation.
+=dispatch_receiver_membership_suffices= covers the distinct receiver check.
+=fixed_trace_still_refuses_at_an_independent_effect= keeps a later refusal.
+
+The same-process probe compared the original per-role capture with this
+fixed trace across Types, Config, Objects and Interface. Each lane used
+640 role visits and 2,560 datum selections per block. The native projection
+preserved all 158 ordered signed records, with 22 distinct receivers.
+Original CPU was 0.962–0.988 seconds and fixed CPU was 0.835–0.843 seconds.
+Wall was 0.963–0.988 seconds and 0.836–0.843 seconds, respectively. This
+isolates method selection and original record delivery from datum execution.

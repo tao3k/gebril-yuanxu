@@ -736,4 +736,24 @@ theorem retire_wrapper_alias_preserves_replacement
 theorem retiring_a_live_wrapper_alias_changes_resolution :
     retireWrapperAlias (fun _ : Nat => some (5 : Nat)) 2 5 2 ≠ some 5 := by decide
 
+/-- A fixed dispatch may retain native read identities and receiver topology.
+Each actual owner still has its own selection and independent authentication. -/
+theorem fixed_dispatch_trace_keeps_owner_and_refusal
+    (entry exit : Except Failure Unit) (ownerSelection : Except Failure Method)
+    (fixed observed : List Read) (sameNativeTrace : fixed = observed) :
+    dispatchWithOriginalTrace entry ownerSelection exit fixed =
+      dispatchWithOriginalTrace entry ownerSelection exit observed :=
+  transparent_dispatch_keeps_fresh_authentication entry exit ownerSelection fixed observed sameNativeTrace
+
+theorem dispatch_receiver_membership_suffices [BEq Receiver] [LawfulBEq Receiver]
+    (receivers : List Receiver) (live : Receiver → Bool) :
+    receivers.eraseDups.all live = receivers.all live := by
+  apply Bool.eq_iff_iff.mpr
+  simp [List.all_eq_true]
+
+theorem fixed_trace_still_refuses_at_an_independent_effect
+    (fixed : List Read) (oldOwner : Method) (failure : Failure) :
+    dispatchWithOriginalTrace (.ok ()) (.ok oldOwner) (.error failure) fixed =
+      .error failure := rfl
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

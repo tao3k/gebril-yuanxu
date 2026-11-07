@@ -2,6 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Actual dispatch work and admission-boundary controls; no cache or runner.
 (import (only-in :clan/poo/type Record)
+        (only-in :std/list/list find)
         :std/test
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/object .o .get .ref .cc .put! compute-precedence-list! object-protocol-set!
@@ -317,11 +318,23 @@
             (yuanxu-module-authoring-admit-datums interface 'objects
               '((def First 1) (def Second 2))))))
       (check-equal? (yuanxu-module-authoring-admission-accepted? result) #t)
-      (check-equal?
-        (ormap (lambda (read)
-                 (and (eq? (slot-read-receiver read) ModuleAuthoringAnalysisGeneric)
-                      (eq? (slot-read-key read) 'methods))) reads) #t)
+      (def (methods-read? read)
+        (and (eq? (slot-read-receiver read) ModuleAuthoringAnalysisGeneric)
+             (eq? (slot-read-key read) 'methods)))
+      (def published-read (find methods-read? reads))
+      (check-equal? (and published-read #t) #t)
+      (defvalues (source-result source-reads)
+        (%call-with-recorded-slot-reads
+          (lambda ()
+            (call-with-values
+              (lambda ()
+                (yuanxu-module-authoring-source-admit interface 'objects
+                  '((def First 1) (def Second 2))))
+              list))))
+      (check-equal? source-result '(#t #f))
+      (check-equal? (eq? published-read (find methods-read? source-reads)) #t)
       (replay-slot-reads! reads void)
+      (replay-slot-reads! source-reads void)
       (def methods (.get ModuleAuthoringAnalysisGeneric methods))
       ;; Source policy capture cannot become approval across a later revision,
       ;; even when the exact original method list is restored.
@@ -330,6 +343,7 @@
         (lambda () (check-exception (replay-slot-reads! reads void) error?))
         (lambda () (.put! ModuleAuthoringAnalysisGeneric 'methods methods)))
       (check-exception (replay-slot-reads! reads void) error?)
+      (check-exception (replay-slot-reads! source-reads void) error?)
       ;; Restored live declarations still work via ordinary Generic fallback.
       (check-equal? (yuanxu-module-authoring-admission-accepted?
         (yuanxu-module-authoring-admit-datums interface 'objects '((def Restored 1)))) #t))
