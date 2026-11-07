@@ -88,6 +88,7 @@
        (qualification-field cohort 'package-declaration)
        (qualification-field cohort 'just)
        (qualification-field cohort 'poo)
+       (qualification-field cohort 'compiler-version)
        (qualification-field cohort 'release-manifest)))
 
 (def (qualification-cohort runtime-options)
@@ -103,11 +104,31 @@
   (def source-id (and source (car (string-split source #\newline))))
   (def clean? (and changes (string-empty? changes)))
   (def prefix (getenv "GERBIL_PATH"))
+  (def test-lib (path-expand "test-lib" prefix))
+  (def installed-lib (path-normalize (path-expand "lib" prefix)))
+  ;; Focused tests and fault injection can supply overlays. The platform
+  ;; worker prepends test-lib, so checking only this reporter's loaded
+  ;; modules would otherwise approve a worker running a different build.
+  (def extra-load-path
+    (filter (lambda (entry) (not (string-empty? entry)))
+            (string-split (getenv "GERBIL_LOADPATH" "") #\:)))
+  (def (normalize-directory entry)
+    (path-strip-trailing-directory-separator (path-normalize entry)))
+  (when (or (file-exists? test-lib)
+            (ormap (lambda (entry)
+                     (not (equal? (normalize-directory entry)
+                                  (normalize-directory installed-lib))))
+                   extra-load-path))
+    (error "platform qualification requires the installed build without test overlays"
+           test-lib extra-load-path))
   (def build-record (path-expand "test-build-source" prefix))
   (def build-source (and (file-exists? build-record) (call-with-input-file build-record read-line)))
   (def checkout (path-expand "pkg/github.com/tao3k/gerbil-poo" prefix))
   (def poo (and (file-exists? checkout) (command-output ["git" "-C" checkout "rev-parse" "HEAD"])))
   (def just-version (command-output '("just" "--version")))
+  (def gcc (getenv "GERBIL_GCC" "gcc"))
+  (def compiler-version (command-output [gcc "--version"]))
+  (def host (command-output '("uname" "-srm")))
   (def core-origin (module-context-path (core-import-module ':yuanxu/ops/func)))
   (def poo-origin (module-context-path (core-import-module ':clan/poo/object)))
   (def release
@@ -126,14 +147,17 @@
           (cons 'load-path (load-path))
           (cons 'runtime-options runtime-options)
           (cons 'build-cores (getenv "GERBIL_BUILD_CORES" #f))
-          (cons 'gerbil-gcc (getenv "GERBIL_GCC" #f))
+          (cons 'gerbil-gcc gcc)
+          (cons 'compiler-version (and compiler-version
+                                        (car (string-split compiler-version #\newline))))
+          (cons 'host (and host (car (string-split host #\newline))))
+          (cons 'runner-image (getenv "ImageOS" #f))
+          (cons 'runner-image-version (getenv "ImageVersion" #f))
           (cons 'compiler-path (getenv "COMPILER_PATH" #f))
           (cons 'idle-seconds execution-idle-seconds)
           (cons 'worker-seconds test-worker-seconds)))
   (def ci? (equal? (getenv "GITHUB_ACTIONS" "") "true"))
-  (def lib-root
-    (string-append (path-strip-trailing-directory-separator
-                     (path-normalize (path-expand "lib" prefix))) "/"))
+  (def lib-root (string-append (normalize-directory installed-lib) "/"))
   (def (installed-origin? origin)
     (and (string? origin) (string-prefix? lib-root (path-normalize origin))))
   (unless (and (qualification-build-matches? cohort)

@@ -358,8 +358,12 @@ and use the same load-path policy as the job.
 For a local qualification build, use =just build=, then
 =just test-qualification= to inspect the inputs. Both platform and individual
 group runs require the same clean-checkout and installed-build preflight.
-The receipt reports Gerbil, Gambit, Just and POO versions, compiler routing and
-the build worker count. Run
+The receipt reports Gerbil, Gambit, Just and POO versions, the configured C
+compiler and its version, compiler routing, the build worker count, the host
+kernel and architecture, and the runner image when supplied by the host.
+Qualification refuses a =test-lib= overlay or an explicit =GERBIL_LOADPATH=
+entry outside the installed library directory. Focused and fault-injection
+tests retain their fixture overlays. Run
 =just test-platform= for the complete platform suite, or use
 =just test-directory dense-declarations= and =just test-directory dense-selection=
 to reproduce those individual gates. The focused =just test-file= path remains
