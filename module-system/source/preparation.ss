@@ -143,6 +143,8 @@
           (and classify-role?
                (module-source-measure-operation 'reader-role-prelude
                  (lambda () (default-role-prelude? prelude)))))))
+(def (source-prelude-path prelude)
+  (and (string? prelude) (string=? (path-extension prelude) ".ss") prelude))
 ;; Captured from the official expander lookup at preparation, never a second
 ;; package resolver/cache. Public source-inputs remain path/byte pairs.
 (defstruct package-source (path text expected cached) final: #t)
@@ -278,9 +280,8 @@
              (package-sources (package-source-snapshot path))
              (compiler-info (module-compiler-identity path))
              (prelude-inputs
-              (let (prelude (car compiler-info))
-                (if (and (string? prelude) (string=? (path-extension prelude) ".ss"))
-                  (list (cons prelude (module-source-read prelude))) '())))
+              (let (prelude (source-prelude-path (car compiler-info)))
+                (if prelude (list (cons prelude (module-source-read prelude))) '())))
              (id-text (symbol->string (cadr compiler-info)))
              (suffix "/interface")
              (imports (module-publication-role-imports root (cut hash-key? texts <>)))
@@ -802,12 +803,27 @@
       (def previous (and kind (module-source-read target)))
       (when (and previous (not (string-prefix? ";; yuanxu-input " previous)))
         (error "unowned source in selected compiler view" target))
-      ;; A local producer leaves an unrecorded native marker under Make's
-      ;; existing freshness policy. Absence of a descriptor grants no reuse
-      ;; to a later unified consumer.
-      (when (or (not preserve-unrecorded?) previous
-                (not (module-source-type (static-product-path identity libdir))))
-        (let ()
+      ;; A source prelude is a checked input during bootstrap. Once Make
+      ;; builds it, another process resolves the compiled prelude and has a
+      ;; different descriptor. Only record a transferable local input when
+      ;; it does not depend on that transient source route.
+      (def bootstrap-prelude
+        (and preserve-unrecorded? (.slot? input 'prelude)
+             (source-prelude-path (.ref input 'prelude))))
+      ;; An unrecorded native marker remains under ordinary Make freshness.
+      ;; A later unified consumer still requires its own matching descriptor.
+      (cond
+        (bootstrap-prelude
+         (when previous
+           (call-with-module-source-callback
+             (lambda ()
+               ;; A former compiled-route descriptor must not authorize the
+               ;; product that the source bootstrap is about to replace.
+               (invalidate-build-products! (list identity) libdir)
+               (delete-file target)))))
+        ((or (not preserve-unrecorded?) previous
+             (not (module-source-type (static-product-path identity libdir))))
+         (let ()
           (def content
             (call-with-output-string
               (lambda (out)
@@ -838,6 +854,6 @@
               (lambda ()
                 (invalidate-build-products! (list identity) libdir)
                 (create-directory* (path-directory target))
-                (call-with-output-file (list path: target truncate: #t) (lambda (out) (display content out))))))))
+                (call-with-output-file (list path: target truncate: #t) (lambda (out) (display content out)))))))))
       (module-source-measure-operation 'compiler-view-after
         (lambda () ((.ref input 'admit-current))))) batch))))
