@@ -267,3 +267,33 @@ All three had identical 12/27/12 cold target sets, zero hot dispatches and
 zero scopes during build. The aggregate, action and idle limits stayed at
 120, 120 and 60 seconds. The timings include Harness startup and subprocess
 collection, which are separate from the independent first scope reads.
+
+** Source prelude during an empty-output build
+
+The source prelude remains a currentness input while Core bootstraps. When
+Gerbil resolves that source path, the ordinary build cannot publish a reusable
+compiler-input descriptor for the Interface. A following process resolves the
+compiled prelude and observes a different input set. An unrecorded native marker
+stays under Make's freshness checks, while a downstream selected build still
+requires its own matching descriptor. If a prior descriptor exists when the
+source path returns, invalidate the native product before removing the old
+record. Both actions run under the existing selected-output lock.
+
+The Lean check treats a source prelude, an existing descriptor and a native
+marker as separate facts. A source route issues no descriptor. A subsequent
+compiled route with a marker and no descriptor leaves the marker to native
+Make. The Quint control runs source build, compiled-route build and downstream
+demand in that order. Recording the source route reproduces the redundant
+hot invalidation. Keeping a former compiled-route descriptor across source
+bootstrap would grant reuse for the wrong product. These checks model the
+recording and retirement decisions. Native tests verify the selected input
+observations and actual Gerbil dispatches.
+
+Run =just test-file t/module-build-process-test.ss= to exercise the empty
+bootstrap, new-process hot build and clean/rebuild sequence. In the full
+same-prefix comparison, the corrected Core cold/hot pair dispatched 275/0
+targets in 97.48/22.90 seconds. The Lab selected/hot pair dispatched 35/0 in
+48.77/19.27 seconds, and returning to Core dispatched zero in 29.81 seconds.
+All 23 shared records and completion markers retained their digests and mtimes.
+The two Interface dispatches in the first Lab process remain expected because
+that process needs matching descriptors of its own.
