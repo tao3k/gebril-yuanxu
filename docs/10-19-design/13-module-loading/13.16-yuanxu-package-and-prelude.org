@@ -347,6 +347,28 @@ renaming a probe does not qualify it against a different source cut.
 
 * Qualification prerequisites and current evidence
 
+** Reproducing a platform result
+
+For a pull request run, take the checkout SHA from the job log. GitHub can
+test a merge commit that differs from the PR branch head. Reproduce from that
+clean revision with the job's pinned Gerbil release, Just version and Gerbil
+package dependencies. Set an explicit =GERBIL_PATH= for both build and test
+and use the same load-path policy as the job.
+
+For a local qualification build, use =just build=, then
+=just test-qualification=. The preflight checks the checkout against the
+installed build and reports the Gerbil, Gambit, Just and POO versions. Run
+=just test-platform= for the complete platform suite, or use
+=just test-directory dense-declarations= and =just test-directory dense-selection=
+to reproduce those individual gates. The focused =just test-file= path remains
+available for development. A focused result covers its own file and build.
+
+For an earlier job that transferred a package artifact, use its exact checkout,
+artifact and original Just target to reproduce the failure. The host OS,
+architecture and scheduling remain part of the timing observation.
+
+** Partition and provider inputs
+
 The complete 204-file partition now has seven disjoint owners: bootstrap (17),
 modules (70), contracts (16), objects (18), scenarios (15), providers (19) and
 runtime (49). The Provider owner realizes the real, checksum-pinned qualification
