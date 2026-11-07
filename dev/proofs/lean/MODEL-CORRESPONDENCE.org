@@ -837,3 +837,24 @@ the existing observation window for repeated comparisons within that
 window. Its native regression keeps the directory and decoded selection
 unchanged while altering one Unicode character across the buffer boundary.
 The Lean late-decoder control covers failure after an unequal prefix.
+
+* Public platform failure baseline
+
+Run =42373146993= reports all seven failures on =cd794638291d=.
+The 180-second values below are the Case's recorded elapsed durations.
+The compiler-side rows identify the distinct failure boundary.
+
+| Platform | Gate | Result |
+|-
+| Ubuntu | Dense declarations | Harness exit 42 at 180.012 s |
+| Ubuntu | Dense selection | Harness exit 42 at 180.008 s |
+| macOS | Dense declarations | Harness exit 42 at 180.007 s |
+| macOS | Dense selection | Harness exit 42 at 179.997 s |
+| macOS | Thousand selection | Harness exit 42 at 180.146 s |
+| macOS | Source gateway | Compiler exit 124 before the Harness |
+| macOS | Source-only bootstrap | Harness exit 42 after cold compile failed |
+
+The source-only bootstrap's preceding specification step took 21.679 s.
+The source gateway's last logged compile owner was the gateway test
+itself. Keep these compiler failures separate from the declaration
+watchdogs and from downstream Lab runtime acceptance.
