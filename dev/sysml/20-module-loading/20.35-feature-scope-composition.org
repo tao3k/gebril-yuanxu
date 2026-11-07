@@ -9,7 +9,7 @@ preparation is once per graph; a Module lookup does not rescan all selected node
 This does not replace native slot/index caches or cache admission results.
 
 =source/link.ss= passes that selected graph through the existing dependency
-walk. Core construction produces the base. =source/feature-scopes.ss= applies
+walk. Core construction produces the base. =feature/scope.ss= applies
 only that owner's ordered =refine= functions. The existing native MOP construction
 frame protects both the current scope and its base from writes. Dependency-edge
 refinement uses the same function; there is no second write-fence implementation.
@@ -57,7 +57,7 @@ ownership; neither selection nor withdrawal unloads code or tears down resources
   =t/module-feature-interface-test.ss=. They read actual Interface source roles,
   execute production linking, and retain failure/currentness controls.
 
-The Core library target list includes =source/feature-scopes= exactly once.
+The Core library target list includes =feature/scope= exactly once.
 Selected build/clean target ownership is unchanged; the change does not introduce
 a Runtime loader, a builder, a second manifest or a cache protocol.
 

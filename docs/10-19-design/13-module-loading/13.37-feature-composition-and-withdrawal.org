@@ -36,7 +36,7 @@ directory windows; =rename:= changes their access namespace, not their authority
 
 Correct selection alone does not establish composable/removable Module behavior.
 The final-scope integration is now implemented in
-[[file:../../../module-system/source/feature-scopes.ss][feature-scopes.ss]]; product migration and the broader package gates below are
+[[file:../../../module-system/feature/scope.ss][feature/scope.ss]]; product migration and the broader package gates below are
 separate acceptance obligations.
 
 The downstream Agentic Context still has a Boolean =memory?= descriptor factory,

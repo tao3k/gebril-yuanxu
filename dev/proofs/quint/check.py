@@ -634,7 +634,7 @@ def main():
         # Bind the actual consumers, not only the pre-existing abstract model.
         bound.extend(core / path for path in (
             "module-system/source/selection.ss",
-            "module-system/source/feature-scopes.ss",
+            "module-system/feature/scope.ss",
             "module-system/source/publication.ss",
             "module-system/source/link.ss",
             "t/module-feature-interface-test.ss",

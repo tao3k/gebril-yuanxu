@@ -14,7 +14,7 @@ universally proved requirements.
 * Per-model inspection
 
 [[file:YuanxuProof/ModuleSystem/Selection/FeatureScopes.lean][Selection/FeatureScopes]] corresponds to the ordered refinement fold and final
-Contract list in =module-system/source/feature-scopes.ss=. Its structural laws do
+Contract list in =module-system/feature/scope.ss=. Its structural laws do
 not assert callback purity, MOP write interception or extraction completeness.
 Those runtime obligations and the reused QNT owners are allocated in
 [[file:../../sysml/20-module-loading/20.35-feature-scope-composition.org][20.35 Feature Scope Composition]].
