@@ -8,7 +8,8 @@
 
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads slot-read-value without-observation)
+        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!
+                 slot-read-receiver slot-read-value without-observation)
         (only-in :clan/poo/mop Type. define-type element? validate)
         (only-in :clan/poo/type List)
         (only-in :std/list/list any filter-map find)
@@ -470,7 +471,7 @@
               (let (profile (assq parent default-function-profiles))
                 (and profile (cdr profile))))
             (object-%precedence-list role))))
-(def (observe-default-method! executor role interface)
+(def (reobserve-default-method! executor role interface)
   (def method #f)
   (with-catch
     (lambda (cause)
@@ -494,6 +495,28 @@
                    (default-function-method executor role interface)))
             (unless method (raise 'unsupported-default-authoring-method)))))
       method)))
+(def (observe-default-method! executor role interface)
+  (def (deliver!) (reobserve-default-method! executor role interface))
+  ;; The caller has only maintained observers. Capture the real ordered
+  ;; delivery in a native child scope, retaining all three authentication
+  ;; passes. The original reads are forwarded only if those observers would
+  ;; have had no effect on any receiver.
+  (defvalues (method reads)
+    (with-catch
+      (lambda (cause)
+        ;; Preserve the original delivery/failure path. A successful retry
+        ;; cannot approve an already refused invocation.
+        (deliver!)
+        (raise cause))
+      (lambda ()
+        (without-observation
+          (lambda () (%call-with-recorded-slot-reads deliver!))))))
+  (cond
+   ((not method) #f)
+   ((andmap (lambda (read) (plain-dispatch-argument? (slot-read-receiver read))) reads)
+    (%record-slot-reads! reads)
+    method)
+   (else (deliver!))))
 (def current-authoring-carrier-demand (make-parameter #f))
 (def (authoring-generic-call executor role interface datum)
   ;; Only this actual Generic branch requests carrier support. Nested calls

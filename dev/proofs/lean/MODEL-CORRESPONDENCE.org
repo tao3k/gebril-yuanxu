@@ -451,6 +451,14 @@ simultaneous source and admission refusal. The Scheme path uses the native
 protected replay and preserves post-checkpoint failure and the independent
 checks around Gerbil expansion and author callbacks.
 
+=PublicationReads.forwardAuthoringReads_preserves_order= relates the ordered
+record capture to delivery without observer effects. The Scheme path retains
+per-delivery native validation. The transient refusal counterexample shows
+why the two endpoints alone are insufficient. The separate
+=RootCollection.private_subgraph_projection_keeps_external_reach= theorem
+specifies the reachability obligation for a future retained frontier. Scheme
+does not remove those records.
+
 The installed 13.35 session refinement keeps fixed checkpoints and original read
 roots in the private linked-publication carrier, indexes append-only membership
 using an ordinary POO derived slot, and reauthenticates the complete native union

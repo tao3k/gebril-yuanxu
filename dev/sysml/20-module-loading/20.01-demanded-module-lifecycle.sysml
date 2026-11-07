@@ -89,6 +89,13 @@ package YuanxuModuleLoading {
                independent entry and return guards. The next run reads
                the post-effect state. */
     }
+    part def StockAuthoringReadDelivery {
+        ref part support : RuntimeReadSupport;
+        doc /* Capture the exact ordered native read delivery in a local
+               scope. Preserve all native checks. Forward original records
+               together only when the maintained observer has no effects
+               on their receivers. Otherwise use original delivery. */
+    }
     part def SourceAuthoringDecision {
         ref part authoring : StockAuthoringRun;
         doc /* Validate every actual datum. Source consumes a decision and

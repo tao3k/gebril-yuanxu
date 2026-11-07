@@ -149,4 +149,34 @@ theorem private_leaf_removal_keeps_first_refusal
 theorem leaked_leaf_can_change_refusal :
     ([1, 2].filter (· != 1)).find? (· == 1) ≠ [1, 2].find? (· == 1) := by decide
 
+-- The local complete authentication still owns every issued read. Its
+-- external projection can omit a private intermediate record with outgoing
+-- dependencies by retaining the actual external records reached through it.
+-- No retained native record may depend on an omitted one: a signed edge
+-- cannot be edited merely to make the projection smaller.
+theorem private_subgraph_projection_keeps_external_reach
+    (roots traversal : List Nat) (deps : Nat → List Nat) (privateRead : Nat → Bool)
+    (complete : ∀ token, token ∈ traversal ↔ IssuedRootForwarding.Reach roots deps token)
+    (closed : ∀ parent child, IssuedRootForwarding.Reach roots deps parent →
+      privateRead parent = false → child ∈ deps parent → privateRead child = false)
+    (token : Nat) :
+    IssuedRootForwarding.Reach (traversal.filter (fun read => !privateRead read)) deps token ↔
+      IssuedRootForwarding.Reach roots deps token ∧ privateRead token = false := by
+  constructor
+  · intro reached
+    induction reached with
+    | root member =>
+      have retained := List.mem_filter.mp member
+      exact ⟨(complete _).mp retained.1, by simpa using retained.2⟩
+    | child _ edge ih =>
+      exact ⟨.child ih.1 edge, closed _ _ ih.1 ih.2 edge⟩
+  · intro retained
+    exact .root (List.mem_filter.mpr ⟨(complete _).mpr retained.1, by simpa using retained.2⟩)
+
+theorem retained_read_cannot_hide_its_private_child
+    (roots : List Nat) (deps : Nat → List Nat) (parent child : Nat)
+    (retained : IssuedRootForwarding.Reach roots deps parent)
+    (edge : child ∈ deps parent) :
+    IssuedRootForwarding.Reach roots deps child := .child retained edge
+
 end YuanxuProof.Admission.RootCollection

@@ -385,4 +385,46 @@ theorem candidate_return_retry_cannot_grant_success {Failure : Type} (refused : 
 theorem candidate_return_checks_after_checkpoint {Failure : Type} (stale : Failure) :
     replayCheckpoint (.ok ()) (.ok ()) (.error stale : Except Failure Unit) =
       .error stale := rfl
+
+-- Forwarding uses exactly the ordered native traversal, not its set of
+-- receivers or a list of reconstructed records. Earlier captures keep their
+-- position and multiplicity.
+def forwardAuthoringReads {Read Failure : Type}
+    (earlier nativeTraversal : List Read) (preflight postflight : Except Failure Unit) :
+    Except Failure (List Read) := do
+  preflight
+  postflight
+  pure (earlier ++ nativeTraversal)
+
+def deliverAuthoringReads {Read Failure : Type}
+    (earlier nativeTraversal : List Read)
+    (preflight perDelivery postflight : Except Failure Unit) :
+    Except Failure (List Read) := do
+  preflight
+  perDelivery
+  postflight
+  pure (earlier ++ nativeTraversal)
+
+theorem forwardAuthoringReads_preserves_order
+    {Read Failure : Type} (earlier traversal : List Read)
+    (preflight postflight : Except Failure Unit) :
+    deliverAuthoringReads earlier traversal preflight (.ok ()) postflight =
+      forwardAuthoringReads earlier traversal preflight postflight := by
+  cases preflight <;> rfl
+
+-- A legitimate monotone runtime revision that still matches the issued
+-- generation at return did not cross that generation during the interval.
+theorem no_intermediate_revision_change
+    (issued entry during exitRevision : Nat) (atEntry : entry = issued)
+    (entryDuring : entry ≤ during) (duringReturn : during ≤ exitRevision)
+    (atReturn : exitRevision = issued) : during = issued := by omega
+
+-- Exact endpoint validation by itself does not rule out a raw mutation which
+-- is restored before return. An open delivery must keep its own checks.
+theorem transient_delivery_refusal_requires_original_path :
+    deliverAuthoringReads ([] : List Nat) [1] (.ok ())
+      (.error "changed while delivering") (.ok ()) ≠
+    forwardAuthoringReads [] [1] (.ok ()) (.ok ()) := by
+  intro same
+  cases same
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

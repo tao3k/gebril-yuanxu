@@ -339,3 +339,18 @@ operations retain the original order. A rejected union preflight runs the
 original sequence to recover the first refusal. Successful fallback cannot
 approve a refused preflight. The open Gerbil and Contract checkpoints remain
 separate.
+
+** Stock authoring read delivery and retained frontier
+
+The maintained authoring method captures its original ordered read delivery
+in a call-local POO scope. It still runs the native preflight, per-delivery
+currentness and return checks. If the existing observer would have no effect
+on any receiver, forward the completed capture in order. Unknown hooks and
+native failures use the original delivery path. No traversal or approval is
+retained for later invocations.
+
+Omitting an owner-local subgraph from retained evidence also requires proof
+that no surviving signed read references it. Preserve the original external
+records reached through the omitted nodes, and keep local authentication
+complete. A closed capture with no incoming edge does not establish escape
+analysis. This frontier remains a design constraint.
