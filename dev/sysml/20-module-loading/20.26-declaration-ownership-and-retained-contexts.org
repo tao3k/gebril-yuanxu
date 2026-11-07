@@ -296,3 +296,10 @@ validates the complete record graph on every invocation.
 =profile_checkpoint_keeps_fresh_refusal= model the identity match and
 rejection. Their premise is the exact signed record identity, never a
 matching receiver, slot name, or previous successful verdict.
+
+Splitting the Profile root out of each preparation lane was also tested on
+the same 64 owners. Separate Profile and remainder validation visited 60,544
+records per pass, compared with 58,624 in the original lanes. Both paths
+took about 0.71 to 0.72 seconds wall time for six repeats. Some Profile
+descendants are reachable through other preparation roots. Keep the original
+combined preparation replay and reduce evidence where it is produced.
