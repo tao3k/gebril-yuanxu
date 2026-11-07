@@ -33,25 +33,6 @@ def declaredSource (packageSource kernel : Option String) : Option String :=
 theorem nested_package_miss_uses_admitted_kernel (kernel : Option String) :
     declaredSource none kernel = kernel := rfl
 
--- Runtime representations may differ while the native package owner still
--- resolves the same original language source. The descriptor uses its bytes.
-def preludeObservation (boundSource ownedSource : Option (String × String)) :
-    Option (String × String) :=
-  boundSource.orElse (fun () => ownedSource)
-
-theorem installed_owned_prelude_keeps_source_observation (path bytes : String) :
-    preludeObservation (some (path, bytes)) none =
-      preludeObservation none (some (path, bytes)) := rfl
-
-theorem changed_owned_prelude_bytes_change_observation (path before after : String)
-    (changed : before ≠ after) :
-    preludeObservation (some (path, before)) none ≠
-      preludeObservation none (some (path, after)) := by
-  simpa [preludeObservation] using changed
-
-theorem unowned_installed_prelude_has_no_source_observation :
-    preludeObservation none none = none := rfl
-
 theorem local_source_preserves_owner (packageSource : String) (kernel : Option String) :
     declaredSource (some packageSource) kernel = some packageSource := rfl
 open YuanxuProof.Admission.TestMakeLayout

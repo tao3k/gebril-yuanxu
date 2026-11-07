@@ -267,27 +267,3 @@ All three had identical 12/27/12 cold target sets, zero hot dispatches and
 zero scopes during build. The aggregate, action and idle limits stayed at
 120, 120 and 60 seconds. The timings include Harness startup and subprocess
 collection, which are separate from the independent first scope reads.
-
-** Preserve the Prelude source observation after native bootstrap
-
-On PR =ccbafeeb= the Ubuntu bootstrap's second compile dispatched
-=modules/json-schema/interface=. The same cold/hot fixture on macOS
-reproduced the dispatch. The persisted compiler view's generated body,
-compiler and options were identical. Only the cold stamp included the
-package-owned =prelude.ss= source observation, since the warm native
-binding pointed to its compiled interface.
-
-When that warm Context still belongs to the declared kernel's Yuanxu
-Prelude, preparation resolves its original source through the existing
-=module-build-source-path= operation. It reads and guards those bytes
-through the original source path. The fallback retains the native path
-if the declared kernel cannot authenticate a source. Lean
-=SourceView.installed_owned_prelude_keeps_source_observation= models the
-common input, with separate changed-byte and unowned-prerequisite cases.
-
-The normal bootstrap gate checks that the cold compiler view includes
-the actual Prelude bytes and the hot compiler view is byte-identical.
-The existing zero-compile, product identity, clean and rebuild checks
-still apply. The Harness records a build action as progress after the
-child returns successfully, including spec and hot actions that need no
-compiler event. Failed actions cannot advance that progress count.
