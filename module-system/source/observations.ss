@@ -144,12 +144,14 @@
               (measure-source-operation times name action))))))))
 (def (measure-source-operation times name action)
   (if (if (eq? (current-module-source-operation-accounting?) 'stages)
-              (or (and (pair? name) (memq (car name) '(reader-initialization reader-initializer-body)))
+              (or (and (pair? name)
+                       (memq (car name) '(reader-initialization reader-initializer-body
+                                         reader-candidate-replay-site)))
                   (memq name '(build-main build-specification build-dispatch std-make build-current
                            profile-interface-scan reader-bootstrap reader-preparation-start reader-interface-start
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
                            reader-admission-start reader-value-admission reader-admission-evidence
-                           reader-current metadata-replay
+                           reader-current metadata-replay reader-candidate-fused-return-replay
                            reader-tool-inputs reader-private-closure reader-private-prepare
                            reader-native-import reader-role-import reader-source-resolution
                            reader-compile-start reader-eval-start

@@ -756,4 +756,56 @@ theorem fixed_trace_still_refuses_at_an_independent_effect
     dispatchWithOriginalTrace (.ok ()) (.ok oldOwner) (.error failure) fixed =
       .error failure := rfl
 
+/-- A single callback-free native pass can share its route for a run of
+records with the same live receiver and storage. Prefix checks (issuance
+and key) and suffix checks (slot state) remain ordered for every record. -/
+def checkReadRoutes {Failure : Type} (route : Except Failure Unit) :
+    List (Except Failure Unit × Except Failure Unit) → Except Failure Unit
+  | [] => .ok ()
+  | (before, slot) :: rest => do
+      before
+      route
+      slot
+      checkReadRoutes route rest
+
+def checkSharedReadRoute {Failure : Type} (route : Except Failure Unit) :
+    List (Except Failure Unit × Except Failure Unit) → Except Failure Unit
+  | [] => .ok ()
+  | (before, slot) :: rest => do
+      before
+      route
+      slot
+      checkReadRoutes (.ok ()) rest
+
+theorem same_route_run_preserves_first_refusal (route : Except Failure Unit)
+    (records : List (Except Failure Unit × Except Failure Unit)) :
+    checkSharedReadRoute route records = checkReadRoutes route records := by
+  cases records with
+  | nil => rfl
+  | cons record rest =>
+    rcases record with ⟨before, slot⟩
+    cases route with
+    | ok value => cases value; rfl
+    | error cause => cases before <;> rfl
+
+theorem shared_route_keeps_later_slot_refusal (stale : Failure) :
+    checkSharedReadRoute (.ok ()) [(.ok (), .ok ()), (.ok (), .error stale)] =
+      .error stale := rfl
+
+theorem shared_route_refuses_after_independent_effect (stale : Failure) :
+    (do
+      checkSharedReadRoute (.ok ()) [(.ok (), .ok ())]
+      checkSharedReadRoute (.error stale) [(.ok (), .ok ())]) = .error stale := rfl
+
+-- Equal receiver identities cannot supply the stability premise. In
+-- particular, a foreign storage route can refuse the second signed read.
+theorem receiver_identity_alone_does_not_authorize_route_reuse :
+    checkSharedReadRoute (.ok ()) [(.ok (), .ok ()), (.ok (), .ok ())] ≠
+      (do
+        checkReadRoutes (.ok ()) [(.ok (), .ok ())]
+        checkReadRoutes (.error "changed storage route") [(.ok (), .ok ())]) := by
+  change (Except.ok () : Except String Unit) ≠ .error "changed storage route"
+  intro impossible
+  cases impossible
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

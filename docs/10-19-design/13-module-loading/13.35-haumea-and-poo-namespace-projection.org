@@ -1852,6 +1852,38 @@ requires independent lifetime evidence before retirement.
 
 *** Native replay topology and live checks
 
+On the current thousand-owner fixture, declaration admission took 39.053 s
+wall and 37.716 s CPU. Its nested native replay took 14.160 s wall and had
+6,004 calls. Gerbil wrapper expansion used 6.058 s user CPU. Branch
+construction took 0.300 s wall, independent currentness 0.492 s and scope
+after admission 7.701 s. The declaration replay sites accounted for
+1,000 calls each at =declaration-before=, =declaration-inputs=,
+=role-entry=, =role-return=, =declaration-after= and the fused candidate
+return. Each site now records CPU as well as wall time in =stages= mode.
+The default Case and its observer policy are unchanged.
+
+For 64 actual owners, the joined preparation and admission traversal
+visited 74,955 signed reads. 50,979 followed a read of the same receiver
+without an intervening receiver or bootstrap record. This is an upper bound
+on consecutive route reuse, before checking the native storage and key
+conditions. Keep each record's issuance, key and slot-state check in the
+original order. Start a fresh route at each native pass and after every
+effect. =PublicationReads.same_route_run_preserves_first_refusal= assumes
+the exact same route result for the run. =shared_route_keeps_later_slot_refusal=
+and =shared_route_refuses_after_independent_effect= show why a successful
+route check supplies neither a slot verdict nor a post-effect verdict.
+
+Same-process alternating sweeps authenticated 1,199,280 records per lane.
+Symbol-only reuse avoided 117,664 route checks, with CPU changing from
+1.324–1.326 s to 1.266–1.304 s. Including the existing supported structural
+keys avoided 815,664 route checks, with CPU changing from 1.362–1.375 s
+to 1.205–1.212 s. These scans use the existing native issuance, route and
+live-state routines on the captured traversal. They leave out topology
+selection, protected return and callbacks. The native production path
+keeps per-record routing. =receiver_identity_alone_does_not_authorize_route_reuse=
+shows the remaining obligation: establish the same live route even when the
+receiver identity has stayed the same.
+
 The probe instruments the existing generated Gambit Scheme for
 =clan/poo/object~0= in a private runtime. The first attempt to rebuild
 =object.ss= from the installed package source failed to load the existing

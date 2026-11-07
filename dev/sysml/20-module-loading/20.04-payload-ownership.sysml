@@ -49,6 +49,16 @@ package YuanxuPayloadOwnership {
                and filesystem correspondence. No second model, source-result
                cache, manual purity flag or omitted observer is authorized. */
     }
+    requirement def ReplayRouteRunAttribution {
+        doc /* Measure CPU and wall time at the existing Reader replay sites.
+               In one callback-free native pass, consecutive records can
+               share a route only for the same live receiver and storage.
+               Authenticate issuance, key and slot state in original order.
+               A return pass after Gerbil, a callback or observer delivery
+               starts a fresh route check. Lean PublicationReads models the
+               same-route premise and refusal order. The Scheme receiver
+               census establishes frequency, not native state stability. */
+    }
     requirement def LoadingStageEvidence {
         doc /* Library compilation, selected-graph construction, demand of a
                selected business scope and runtime compiled-module loading are
