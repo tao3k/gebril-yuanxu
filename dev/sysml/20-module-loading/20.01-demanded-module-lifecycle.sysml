@@ -7,7 +7,9 @@ package YuanxuModuleLoading {
                not expand roles, run user macros or admit domain objects.
                A wide-branch membership index projects the same ordered
                directory snapshot. A hit still checks the live path type.
-               Full currentness still observes the directory listing. */
+               Full currentness still observes the directory listing.
+               A large selection source compares exact decoded text through
+               EOF with a bounded buffer inside one observation window. */
     }
     part def SelectedDeclarations {
         attribute selectedCount : Integer;

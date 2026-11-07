@@ -829,3 +829,11 @@ three explicit compile roots and checks the coverage of the affected
 source owners. An incomplete prelude mapping selects the full import
 walk. The native compiler and existing source-tail test retain their
 original budgets.
+
+=source_chunk_check_preserves_decode_result= relates bounded comparison
+of the directory's original selection text to complete decoding and
+equality. The Scheme guard keeps the same independent opens and uses
+the existing observation window for repeated comparisons within that
+window. Its native regression keeps the directory and decoded selection
+unchanged while altering one Unicode character across the buffer boundary.
+The Lean late-decoder control covers failure after an unequal prefix.

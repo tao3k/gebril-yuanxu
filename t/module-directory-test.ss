@@ -252,6 +252,20 @@
            ((.get view admit-current))
            (create-directory (path-expand "modules/new-category" root))
            (check-exception ((.get view admit-current)) error?)))))
+    (yuanxu-test-case "large selection source checks exact decoded text through EOF"
+      (with-sources
+       (lambda (root)
+         (def init (path-expand "init.ss" root))
+         (def prefix (string-append ";" (make-string 8190 #\x) "界"
+                                     (make-string 28000 #\y)))
+         (def selection "\r\n(yuanxu! mode: auto source: \"./modules\")\r\n")
+         (write-source init (string-append prefix selection))
+         (def view (yuanxu-load-modules init read-publication: (fixture-reader void)))
+         ((.get view admit-current))
+         ;; Keep the same size, directory, and decoded selection.
+         (string-set! prefix 8191 #\語)
+         (write-source init (string-append prefix selection))
+         (check-exception ((.get view admit-current)) error?))))
     (yuanxu-test-case "module-local init is relative to its own source, required disable fails"
       (with-sources
        (lambda (root)

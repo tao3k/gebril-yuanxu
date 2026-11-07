@@ -43,6 +43,56 @@ theorem indexed_directory_child_does_not_authorize_stale_path
   let children := Std.HashSet.ofList names
   names.all children.contains && !children.contains "10000"
 
+private theorem split_source_equality (expected chunk rest : List α) :
+    (expected.take chunk.length = chunk ∧ expected.drop chunk.length = rest) ↔
+      expected = chunk ++ rest := by
+  constructor
+  · intro ⟨head, tail⟩
+    rw [← List.take_append_drop chunk.length expected, head, tail]
+  · rintro rfl
+    exact ⟨List.take_left, List.drop_left⟩
+
+def decodeSourceChunks : List (Except Failure (List α)) → Except Failure (List α)
+  | [] => .ok []
+  | part :: rest => do
+      let chunk ← part
+      let suffix ← decodeSourceChunks rest
+      pure (chunk ++ suffix)
+
+-- The decoder reaches EOF or its first failure even after a mismatching
+-- chunk. The equality check uses only the current chunk and offset.
+def checkSourceChunks [DecidableEq α] (expected : List α) :
+    List (Except Failure (List α)) → Except Failure Bool
+  | [] => .ok (decide (expected = []))
+  | part :: rest => do
+      let chunk ← part
+      let suffixMatches ← checkSourceChunks (expected.drop chunk.length) rest
+      pure (decide (expected.take chunk.length = chunk) && suffixMatches)
+
+theorem source_chunk_check_preserves_decode_result [DecidableEq α]
+    (expected : List α) (parts : List (Except Failure (List α))) :
+    checkSourceChunks expected parts =
+      (decodeSourceChunks parts).map (fun decoded => decide (expected = decoded)) := by
+  induction parts generalizing expected with
+  | nil => rfl
+  | cons part rest ih =>
+    cases part with
+    | error cause => rfl
+    | ok chunk =>
+      cases tail : decodeSourceChunks rest with
+      | error cause =>
+        simp [checkSourceChunks, decodeSourceChunks, Bind.bind, Except.bind, Except.map, ih, tail]
+      | ok suffix =>
+        have compared :
+            (decide (expected.take chunk.length = chunk) &&
+              decide (expected.drop chunk.length = suffix)) = decide (expected = chunk ++ suffix) := by
+          apply Bool.eq_iff_iff.mpr
+          simp [split_source_equality]
+        simp [checkSourceChunks, decodeSourceChunks, Bind.bind, Except.bind, Except.map, ih, tail]
+        exact congrArg (Except.ok : Bool → Except Failure Bool) compared
+
+example : checkSourceChunks [1] [.ok [2], .error "decoder"] = .error "decoder" := rfl
+
 -- Context order is supplied by the completed runtime traversal. Resolve the
 -- CURRENT input registry during consumption; no per-root transitive list or
 -- previously projected registration is required to preserve this result.

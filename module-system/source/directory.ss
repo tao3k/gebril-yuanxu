@@ -10,7 +10,8 @@
         (only-in :clan/poo/slot-observation slot-read-observers-compatible?)
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/admission
-        (only-in :yuanxu/module-system/source/observations module-source-object-policies)
+        (only-in :yuanxu/module-system/source/observations module-source-object-policies
+                 module-source-text-guard)
         :yuanxu/module-system/source/init)
 (export module-directory-context)
 (defstruct directory-source (value current?) final: #t)
@@ -34,9 +35,10 @@
                 (location-guards)))
     ;; Observations include negative lookups and immediate child names. They are
     ;; checked at the explicit publication boundary, not on every cached slot read.
-    (def (observe! reader file (local? #t))
+    (def (observe! reader file (local? #t) (text? #f))
       (let (value (reader file))
-        (def guard (lambda () (equal? value (module-source-observe reader file))))
+        (def guard (if text? (module-source-text-guard file value)
+                     (lambda () (equal? value (module-source-observe reader file)))))
         (set! observations (cons (cons local? guard) observations))
         (when local? (enroll-location! guard))
         value))
@@ -96,7 +98,7 @@
            (_declared (unless init-path (error "module window requires a yuanxu! declaration" input)))
            (intent-value
              (module-init-intent
-               (call-with-input-string (observe! module-source-read init-path) read-all) init-path))
+               (call-with-input-string (observe! module-source-read init-path #t #t) read-all) init-path))
            (root-path (intent-root
                         (if (.slot? intent-value 'windows)
                           (car (.ref intent-value 'windows)) intent-value) init-path))

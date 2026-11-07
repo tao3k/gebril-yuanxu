@@ -8,6 +8,7 @@
         (only-in :std/misc/ports read-all-as-string))
 (export observe-source
         module-source-type module-source-read module-source-name? module-source-admit-current!
+        module-source-text-guard
         module-compiler-interface-source
         call-with-module-source-read-cache call-with-module-source-fresh-reads
         call-with-module-source-callback module-source-window-preserved?
@@ -328,6 +329,13 @@
   (observe-source 'reads)
   (when (current-module-source-observer)
     (observe-source (list 'file-read (current-module-source-phase) path))))
+(def (record-physical-source-read! characters)
+  (let (times (current-module-source-operation-times))
+    (when times
+      (hash-update! times '(characters source-read) (cut + <> characters) 0)
+      (hash-update! times (list 'physical-reads (current-module-source-phase)) (cut + <> 1) 0)
+      (hash-update! times (list 'source-characters (current-module-source-phase))
+        (cut + <> characters) 0))))
 (def (module-source-read path)
   (observe-read-request path)
   (unless (eq? (module-source-type path) 'regular)
@@ -343,18 +351,57 @@
       (let (text (begin (observe-read path)
                        (module-source-measure-operation 'source-read
                          (lambda () (call-with-input-file path read-all-as-string)))))
-        (when (current-module-source-operation-times)
-          (hash-update! (current-module-source-operation-times) '(characters source-read)
-            (cut + <> (string-length text)) 0)
-          ;; Scalar attribution in the existing invocation-local diagnostics.
-          ;; No observer/callback, retained path or different read window.
-          (hash-update! (current-module-source-operation-times)
-            (list 'physical-reads (current-module-source-phase)) (cut + <> 1) 0)
-          (hash-update! (current-module-source-operation-times)
-            (list 'source-characters (current-module-source-phase))
-            (cut + <> (string-length text)) 0))
+        (record-physical-source-read! (string-length text))
         (when cache (hash-put! cache path text))
         text))))
+
+(def (read-large-source-matches? path expected)
+  (def capacity 8192)
+  (def length (string-length expected))
+  (observe-read path)
+  (defvalues (matches? characters)
+    (module-source-measure-operation 'source-read
+      (lambda ()
+        (call-with-input-file path
+          (lambda (port)
+            (def buffer (make-string capacity))
+            (def (matches-chunk? offset count)
+              (let compare ((index 0))
+                (or (##fx= index count)
+                    (and (##char=? (##string-ref buffer index)
+                                   (##string-ref expected (##fx+ offset index)))
+                         (compare (##fx+ index 1))))))
+            (let read-next ((offset 0) (matching? #t))
+              (let (count (read-substring buffer 0 capacity port))
+                (if (zero? count)
+                  (values (and matching? (= offset length)) offset)
+                  (let (end (+ offset count))
+                    ;; Consume the same decoder through EOF. A later I/O or
+                    ;; decoder failure still wins over a mismatching prefix.
+                    (read-next end
+                      (and matching? (<= end length)
+                           (matches-chunk? offset count))))))))))))
+  (record-physical-source-read! characters)
+  matches?)
+
+(def (module-source-text-guard path expected)
+  (def (whole-text-current?)
+    (equal? expected (module-source-observe module-source-read path)))
+  (if (< (string-length expected) 32768) whole-text-current?
+    (let ()
+      (def (large-text-current?)
+        (observe-read-request path)
+        (unless (eq? (module-source-type path) 'regular)
+          (error "module role must be a regular file" path))
+        (def cache (source-read-cache))
+        (def cached (if cache (hash-ref cache path missing-source-query) missing-source-query))
+        (if (eq? cached missing-source-query)
+          (read-large-source-matches? path expected)
+          (equal? expected cached)))
+      (lambda ()
+        (if (current-module-source-observer) (whole-text-current?)
+          ;; This comparison lives in the original observation window.
+          (module-source-observe large-text-current?))))))
 
 (def (compiler-interface-info path)
   ;; The native importer owns .ssi paths. Bazel may project its Tree Artifact
