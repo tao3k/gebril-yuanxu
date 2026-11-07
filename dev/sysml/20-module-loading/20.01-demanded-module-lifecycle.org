@@ -355,6 +355,22 @@ globals reclaimed about 4.76 MB. This measures a possible post-owner
 lifetime cost. The dense graph itself still needs its Module values, and
 the runtime continues to use Gerbil's original registry and bindings.
 
+The terminal diagnostic at =1bf62f4= admitted 64 distinct Module owners
+through the real candidate Reader. Its post-GC live heap rose from 202.34
+MB before admission to 220.03 MB with the results held. Releasing the
+diagnostic's receipts, guards and root lists recovered 4.48 MB. Dropping its
+Module results and explicit Reader reference recovered another 0.02 MB
+while native bindings remained reachable. In that terminal process only,
+clearing the freshly generated Interface bindings recovered 11.44 MB.
+Clearing the role bindings and registry aliases recovered another 0.80 MB.
+
+These are sequential reachability differences. The Interface bindings
+reach the actual Module and the Reader support captured by its deferred
+slots, so the 11.44 MB is not the size of the binding objects themselves.
+The active graph still needs these identities. Attribute the captured
+preparation and runtime-role state separately before choosing a reduction;
+do not clear native bindings from a live Reader.
+
 ** Session read roots
 
 The selected Graph's existing metadata slot records publication rows directly
