@@ -20,8 +20,10 @@
         (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :yuanxu/module-system/authoring/admission
                  ModuleAuthoringAnalysisGeneric ModuleAuthoringAnalysisProtocol
+                 YuanxuModuleAuthoringAdmission
                  yuanxu-module-authoring-role
                  yuanxu-module-authoring-admit-datums
+                 yuanxu-module-authoring-source-admit
                  yuanxu-module-authoring-admission-accepted?)
         (only-in :yuanxu/poo-clos/types
                  ClosGenericFunction ClosEffectiveMethod ClosInvocationFrame ClosMethod)
@@ -308,4 +310,38 @@
       (check-exception (replay-slot-reads! reads void) error?)
       ;; Restored live declarations still work via ordinary Generic fallback.
       (check-equal? (yuanxu-module-authoring-admission-accepted?
-        (yuanxu-module-authoring-admit-datums interface 'objects '((def Restored 1)))) #t))))
+        (yuanxu-module-authoring-admit-datums interface 'objects '((def Restored 1)))) #t))
+    (yuanxu-test-case "source-only admission omits the empty stock receipt and still runs a replaced validator"
+      (def interface (yuanxu-module-interface "source-only" (Record) '()))
+      (def (source-admit)
+        (call-with-values
+          (lambda () (yuanxu-module-authoring-source-admit interface 'objects '((def Good 1))))
+          list))
+      (defvalues (result reads)
+        (%call-with-recorded-slot-reads source-admit unique-roots?: #t))
+      (check-equal? result '(#t #f))
+      (check-equal?
+        (ormap (lambda (read)
+               (let (owner (slot-read-receiver read))
+                 (and (object-%instance owner)
+                      (eq? (hash-get (object-%instance owner) 'kind) 'yuanxu.module-authoring.admission))))
+             reads)
+        #f)
+      (check-equal?
+        (ormap (lambda (read)
+                 (and (eq? (slot-read-receiver read) YuanxuModuleAuthoringAdmission)
+                      (eq? (slot-read-key read) '.validate))) reads)
+        #t)
+      (def original (.ref YuanxuModuleAuthoringAdmission '.validate))
+      (def calls 0)
+      (dynamic-wind
+        (lambda ()
+          (.put! YuanxuModuleAuthoringAdmission '.validate
+            (lambda (_receipt)
+              (set! calls (1+ calls))
+              (.o accepted?: #f diagnostics: '(#f)))))
+        (lambda ()
+          ;; A false diagnostic still belongs to an actual refusal.
+          (check-equal? (source-admit) '(#f #f))
+          (check-equal? calls 1))
+        (lambda () (.put! YuanxuModuleAuthoringAdmission '.validate original))))))

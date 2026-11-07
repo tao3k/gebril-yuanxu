@@ -213,8 +213,11 @@ The 16/32-owner census observed 15/31 preparation captures with
 counts describe original issued roots, including roots shared between
 owners. They do not measure exclusive heap bytes. The receipt census
 also identifies per-role authoring admission receivers among the issued
-records. A source-only preparation path would need a separate proof before
-it could omit constructing any of those receipts.
+records. The closed source-only candidate reduced that census to 206 roots
+per capture and reduced the 32-owner issued identity union from 6,232 to
+5,176. It retains live Type and owner support through the original POO
+reads. The source guard and the public receipt validator keep their usual
+effect checks. The counts do not establish the dense heap or time limit.
 
 For validation without a user visitor, the Core replay uses the existing
 POO checkpoint. It authenticates the same ordered traversal and repeats

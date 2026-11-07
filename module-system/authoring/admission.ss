@@ -8,7 +8,7 @@
 
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads slot-read-value)
+        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads slot-read-value without-observation)
         (only-in :clan/poo/mop Type. define-type element? validate)
         (only-in :clan/poo/type List)
         (only-in :std/list/list any filter-map find)
@@ -48,6 +48,7 @@
         yuanxu-module-authoring-analyze-datum
         yuanxu-module-authoring-admit-datum
         yuanxu-module-authoring-admit-datums
+        yuanxu-module-authoring-source-admit
         yuanxu-module-authoring-admit-port
         call-with-module-authoring-read-scope
         yuanxu-module-authoring-admission?
@@ -559,6 +560,10 @@
   (with-authoring-analysis interface role-name datum
     (cut yuanxu-module-authoring-admission interface <> <>)))
 
+(def (authoring-datum-diagnostics interface role-name datums)
+  (foldr append '()
+         (map (cut yuanxu-module-authoring-analyze-datum interface role-name <>) datums)))
+
 ;; : (-> PooModuleInterface Symbol [SchemeDatum] PooModuleAuthoringAdmission)
 (def (yuanxu-module-authoring-admit-datums interface role-name datums)
   ;; Consume the caller's inert source snapshot. Dispatch and validation still
@@ -567,9 +572,45 @@
   (yuanxu-module-authoring-admission
    interface
    (yuanxu-module-authoring-role interface role-name)
-   (foldr append '()
-          (map (cut yuanxu-module-authoring-analyze-datum interface role-name <>)
-               datums))))
+   (authoring-datum-diagnostics interface role-name datums)))
+
+(def (stock-empty-authoring-receipt? interface role)
+  ;; Revision zero is the native construction generation. A replaced or
+  ;; restored Type/prototype must run the actual receipt validator again.
+  (and (owned-read-function-scope?)
+       (object-construction-current?)
+       (zero? (object-revision Type.))
+       (zero? (object-revision YuanxuModuleAuthoringAdmission))
+       (zero? (object-revision ModuleAuthoringAdmission))
+       (plain-dispatch-argument? interface)
+       (plain-dispatch-argument? role)
+       (object-%instance interface)
+       (object-%instance role)
+       ;; Do not run a new owner callback while deciding whether to use the
+       ;; stock result. Source/role validation already demanded these fields.
+       (without-observation
+         (lambda ()
+           (and (string? (.ref/cached interface 'id (lambda () #f)))
+                (symbol? (.ref/cached role 'identity (lambda () #f))))))
+       ;; Retain native dependencies on the actual Type methods, the stock
+       ;; prototype and the owner fields across later publication effects.
+       (procedure? (.ref YuanxuModuleAuthoringAdmission '.validate))
+       (eq? (.ref YuanxuModuleAuthoringAdmission '.element?) yuanxu-module-authoring-admission-shape?)
+       (.all-slots ModuleAuthoringAdmission)
+       (string? (yuanxu-module-interface-id interface))
+       (symbol? (.ref role 'identity))))
+
+(def (yuanxu-module-authoring-source-admit interface role-name datums)
+  (def role (yuanxu-module-authoring-role interface role-name))
+  (def diagnostics (authoring-datum-diagnostics interface role-name datums))
+  ;; Source admission consumes only a refusal diagnostic. All datum and
+  ;; diagnostic Type work has completed before the stock receipt decision.
+  (if (and (null? diagnostics) (stock-empty-authoring-receipt? interface role))
+    (values #t #f)
+    (let (receipt (yuanxu-module-authoring-admission interface role diagnostics))
+      (if (yuanxu-module-authoring-admission-accepted? receipt)
+        (values #t #f)
+        (values #f (car (yuanxu-module-authoring-admission-diagnostics receipt)))))))
 
 ;; The public port API keeps its original streaming reader semantics.
 ;; : (-> PooModuleInterface Symbol InputPort PooModuleAuthoringAdmission)

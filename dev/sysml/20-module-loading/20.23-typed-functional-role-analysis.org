@@ -123,6 +123,22 @@ and still owns independent checks. The authoring dispatch tests retain the
 original issued dependencies, later-revision refusal and actual Generic
 fallback.
 
+Source preparation consumes a decision and, on refusal, the first
+diagnostic. Its empty stock result can omit constructing the temporary
+receipt when the native constructor and the actual Type and prototype
+remain at construction generation, the owner fields are warm, and the
+read scope permits maintained dispatch. The actual Type methods and owner
+field reads still enter publication support. Per-datum diagnostics are
+validated normally. Open observers, changed Type state, and nonempty
+diagnostics keep the original receipt validator. The public authoring API
+still constructs and validates a receipt.
+
+=PublicationReads.empty_stock_receipt_valid= and
+=source_only_preserves_closed_empty_receipt= express the shape and
+decision correspondence. Scheme tests exercise a replaced validator
+returning a false diagnostic and reject a selected Graph after the actual
+validator is changed and restored.
+
 =Queries.firstProfile_ordered_reference= and =firstProfile_least_position= prove
 the ordered/minimum-position lookup law; =profile_search_bounded_by_c4_depth=
 bounds visited C4 entries. The catalog has two identity keys, so each entry has

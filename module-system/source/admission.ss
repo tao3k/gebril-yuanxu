@@ -19,9 +19,7 @@
                  SourceInspectionPolicy. yuanxu-module-owner-import-datum-observations)
         (only-in :yuanxu/module-system/authoring/admission
                  call-with-module-authoring-read-scope
-                 yuanxu-module-authoring-admit-datums
-                 yuanxu-module-authoring-admission-accepted?
-                 yuanxu-module-authoring-admission-diagnostics)
+                 yuanxu-module-authoring-source-admit)
         (only-in :yuanxu/module-system/authoring/roles make-default-module-authoring-profile
                  ModuleAuthoringProfileContract))
 (export yuanxu-module-required-role-files yuanxu-module-allowed-entrypoint-roles
@@ -125,17 +123,15 @@
                 'metadata (list (cons 'module-root module-root)))))
         (for-each
           (lambda (role)
-            (let* ((path
-                    (path-expand (module-role-file role) module-root))
-                   (admission
-                    (module-source-measure-operation 'source-authoring-role
-                      (lambda ()
-                        (yuanxu-module-authoring-admit-datums
-                          interface (if (eq? role 'func) 'funs role) (read-datums path))))))
-              (unless (yuanxu-module-authoring-admission-accepted? admission)
-                (error "YUANXU-MODULE-E009 role violates Interface authoring Contract"
-                       module-name role path
-                       (car (yuanxu-module-authoring-admission-diagnostics admission))))))
+            (def path (path-expand (module-role-file role) module-root))
+            (defvalues (accepted? diagnostic)
+              (module-source-measure-operation 'source-authoring-role
+                (lambda ()
+                  (yuanxu-module-authoring-source-admit
+                    interface (if (eq? role 'func) 'funs role) (read-datums path)))))
+            (unless accepted?
+              (error "YUANXU-MODULE-E009 role violates Interface authoring Contract"
+                     module-name role path diagnostic)))
           (filter
             (lambda (role)
               (reader (path-expand (module-role-file role) module-root) #f))

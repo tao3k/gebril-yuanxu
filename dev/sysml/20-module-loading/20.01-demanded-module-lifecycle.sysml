@@ -56,6 +56,15 @@ package YuanxuModuleLoading {
                independent entry and return guards. The next run reads
                the post-effect state. */
     }
+    part def SourceAuthoringDecision {
+        ref part authoring : StockAuthoringRun;
+        doc /* Validate every actual datum. Source consumes a decision and
+               optional diagnostic. An empty maintained result may omit its
+               temporary receipt after native constructor, Type, prototype
+               and warm owner fields are authenticated. Retain their actual
+               reads. Changed Type and observer paths validate the ordinary
+               receipt. */
+    }
     part def ReadOnlyPublicationCheckpoint {
         ref part support : RuntimeReadSupport;
         doc /* Use native POO authentication for a validation-only traversal.
