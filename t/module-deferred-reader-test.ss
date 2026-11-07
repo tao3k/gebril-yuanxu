@@ -76,6 +76,34 @@
           (def extended (.cc roles types: (.o FixtureContract: replacement)))
           (check-equal? (eq? (.get extended FixtureContract) replacement) #t)
           (check-equal? (eq? (.get roles FixtureContract) replacement) #f))))
+    (test-case "an object slot can shadow the role alias of the same name"
+      (with-publication-source
+        (lambda (_root _module-root source _view)
+          (def publication (.call (module-publication-reader) read source))
+          (def scope ((.get publication core link) (.o)))
+          (check-equal? (.get scope selected) 'local))
+        roles:
+        (.o config: '((def Greeting (error "shadowed role was evaluated")) (export Greeting))
+            interface:
+            '((.def Fixture identity: 'custom/example
+                core: (.o requires: (.o) scope-contract: FixtureContract
+                          exports: (.o Greeting: 'local selected: Greeting))
+                features: (.o))))))
+    (test-case "the link checks an unused dependency before entering the export body"
+      (with-publication-source
+        (lambda (_root _module-root source _view)
+          (def publication (.call (module-publication-reader) read source))
+          (def link (.get publication core link))
+          (check-exception (link (.o Shared: (error "dependency read")))
+            (lambda (cause)
+              (and (Error? cause) (string=? (Error-message cause) "dependency read")))))
+        roles:
+        (.o interface:
+            '((.def Fixture identity: 'custom/example
+                core: (.o requires: (.o Shared: (.o module-id: 'custom/shared contract: FixtureContract))
+                          scope-contract: FixtureContract
+                          exports: (error "export ran before dependency"))
+                features: (.o))))))
     (yuanxu-test-fixture "a selected provider Objects initializer is actually demanded"
       (fixture (.cc RuntimeValueFixture size: 2))
       (replace-forms (module-path fixture "objects.ss")

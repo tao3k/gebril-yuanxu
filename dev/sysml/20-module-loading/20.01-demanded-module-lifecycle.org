@@ -96,6 +96,25 @@ wrapper span took 2.49 versus 2.76 seconds of CPU and 2.50 versus 2.77
 seconds elapsed. This run used compiled overlays for the declaration and
 linker on the same existing Core build. It establishes a bounded comparison
 and leaves the full-source capacity run to the platform gate.
+
+The closed frame lowering uses the same Gerbil wrapper and a shared POO
+constructor for ordered lazy fields. Gerbil expands the actual owner field
+bodies. Local slot shadowing, unknown macros, inherited computations and
+other unsupported options retain ordinary expansion. The generated link
+still reads every dependency in declaration order before evaluating exports.
+Only explicit detailed accounting retains per-file initializer metrics.
+
+=SourceClosureWork.shared_frame_forces_only_the_same_field= and
+=stock_link_refuses_first_unavailable_dependency= express the owner,
+receiver and rejection contract. The Scheme regressions exercise a local
+slot shadowing a role alias and an unused dependency that must still fail
+before the export body runs.
+
+In the 64-owner same-process overlay comparison, the shared frame reduced
+positive-phase compile and eval calls from 4,594 each to 256 each. Wrapper
+CPU was 0.72 seconds on the closed path and 3.52 seconds on the open path.
+The preparation and currentness costs are independent parts of the dense
+acceptance budget.
 | Admit | Final receiver Contracts, all contributors, original read support | A reusable successful approval |
 | Publish/build/run | Phase-specific admitted values and existing issuance/effect boundaries | A metadata-only declaration treated as deployable |
 

@@ -72,6 +72,16 @@ package YuanxuModuleLoading {
                receiver, owner resolver, demand and native return checks
                remain attached to the individual publication. */
     }
+    part def DeferredInterfaceFrame {
+        ref part lexicalSupport : DeferredRoleLexicalSupport;
+        doc /* Gerbil emits delayed field bodies in the owning Context.
+               A closed frame can use the common native POO slot constructor.
+               The binder, ordered dependency reads and lazy receiver survive
+               that lowering. Unknown syntax, local shadowing and other
+               object options retain normal declaration expansion.
+               Source and issued-read guards still enclose expansion and
+               author effects. */
+    }
     part def LoadingWork {
         attribute expandedIdentities : Integer;
         attribute processedEdgeOccurrences : Integer;
