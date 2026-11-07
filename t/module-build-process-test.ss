@@ -4,9 +4,13 @@
 ;;; Declarative Ops scripts; each child establishes its own source context.
 (import :std/test :clan/poo/object
         (only-in :yuanxu/ops/func run-script)
+        (only-in :yuanxu/ops/progress execution-progress!)
+        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/module-system/building/products selected-output-source-directory)
         (only-in :gerbil/expander core-read-module/sexp)
         "./qualification/module-bootstrap/objects.ss")
 (export module-build-process-test)
+(def completed-build-actions 0)
 (def (build-command script action)
   (displayln "BUILD-PROCESS " action) (force-output)
   ;; Forward actual compiler output while retaining the captured result for
@@ -28,6 +32,10 @@
               '("*** ERROR" "ERROR CASE" "ERROR CHECK" "Heap overflow" "Stack overflow"))
     (display output)
     (error "normal build command reported an error" action))
+  ;; Spec and hot builds may emit no compiler event. Their successful natural
+  ;; return is progress. A failed child cannot advance it.
+  (set! completed-build-actions (1+ completed-build-actions))
+  (execution-progress! 'source-bootstrap-action completed-build-actions)
   output)
 (def (compiled-path root lib name)
   (let-values (((_prelude identity _namespace _body)
@@ -98,6 +106,18 @@
       (check-equal? (length (filter (cut equal? <> "object-types/facts") names)) 1)
       (check-equal? (member "module-system/building/artifacts" names) #f)
       (def cold-output (build-command Build "compile"))
+      (def recorded-interface
+        (path-expand "yuanxu/modules/json-schema/interface.ss" (selected-output-source-directory lib)))
+      (def cold-view (module-source-read recorded-interface))
+      (def view-header (call-with-input-string cold-view read-line))
+      (def stamp-prefix ";; yuanxu-input ")
+      (check-equal? (string-prefix? stamp-prefix view-header) #t)
+      (def stamp
+        (call-with-input-string
+          (substring view-header (string-length stamp-prefix) (string-length view-header)) read))
+      (def prelude-source (path-normalize (path-expand "prelude.ss" root)))
+      (check-equal? (assoc prelude-source (car stamp))
+        (cons prelude-source (module-source-read prelude-source)))
       (def bootstrap-targets
         '("... compile module-system/selection/init-syntax" "... compile prelude"))
       (check-equal? (filter (cut member <> bootstrap-targets) (string-split cold-output #\newline))
@@ -114,6 +134,7 @@
              prelude-products))
       (def first-times (product-times))
       (def hot-output (build-command Build "compile"))
+      (check-equal? (module-source-read recorded-interface) cold-view)
       (check-equal? (string-contains hot-output "... compile ") #f)
       (check-equal? (string-contains hot-output "... execute compile job ") #f)
       (check-equal? (product-times) first-times)

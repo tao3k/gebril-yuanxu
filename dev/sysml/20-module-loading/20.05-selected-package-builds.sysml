@@ -203,6 +203,10 @@ package YuanxuSelectedPackageBuilds {
                Native projection retains input bytes, compiler identity, options,
                original locations and fresh currentness. Missing native imports
                refuse through Gerbil; they do not authorize compiling a checkout.
+               A warm binding for the package-owned Yuanxu Prelude retains the
+               same authenticated source observation as its cold source
+               binding. An unrelated installed prerequisite contributes no
+               inferred checkout source.
                Downstream output/clean affects only projected identities in its
                own canonical environment. Cross-owner artifact issuance remains
                separately refused until the existing issuer can cover all owners. */

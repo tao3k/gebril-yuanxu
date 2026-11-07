@@ -6,7 +6,8 @@
                  build-output-directory current-build-source-directory current-build-compiler-options
                  invalidate-build-products! artifact-files static-product-path
                  call-with-selected-output-lock selected-output-source-directory)
-        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
+        (only-in :yuanxu/module-system/building/source-package
+                 call-with-build-input-path module-build-source-path)
         (only-in :clan/poo/object .o .ref .ref/cached .slot? object? object-protocol
                  object-%instance object-%precedence-list object-construction-current?)
         (only-in :clan/poo/slot-observation without-observation)
@@ -107,8 +108,8 @@
 (def (source-metadata source key)
   (let (entry (assq key (yuanxu-module-source-ref-metadata source)))
     (and entry (cdr entry))))
-(def (module-compiler-identity path)
-  (module-source-observe read-module-compiler-identity path))
+(def (module-compiler-identity path source-root)
+  (module-source-observe read-module-compiler-identity path #f #t source-root))
 (def (default-role-prelude? prelude)
   ;; core-read-module/sexp has already resolved runtime prelude references. Do
   ;; not compare its result to the spelling originally written in gerbil.pkg.
@@ -122,16 +123,27 @@
                 (lambda () (equal? prelude (core-resolve-library-module-path identity)))))
        '(:gerbil/core :tao3k/yuanxu/prelude)))
     (else (memq (syntax->datum prelude) '(:gerbil/core :tao3k/yuanxu/prelude)))))
-(def (read-module-compiler-identity path (text #f) (classify-role? #t))
+(def (read-module-compiler-identity path (text #f) (classify-role? #t) (source-root #f))
   ;; Runtime package/header resolution, without core-import-module or expansion.
   (when (current-module-source-observer)
     ((current-module-source-observer) 'compiler-identity-reads 1))
   (let-values (((prelude identity namespace body) (core-read-module/sexp path)))
+    (def prelude-path
+      (cond ((module-context? prelude) (module-context-path prelude))
+            ((prelude-context? prelude) (prelude-context-path prelude))
+            (else prelude)))
+    ;; A warm bootstrap binds the installed interface for the same language.
+    ;; Retain its original source observation only when the declared source
+    ;; owner can authenticate that language through the native projection.
+    (def owned-prelude-source
+      (and source-root (string? prelude-path)
+           (string=? (path-extension prelude-path) ".ssi")
+           (or (module-context? prelude) (prelude-context? prelude))
+           (eq? (expander-context-id prelude) 'tao3k/yuanxu/prelude)
+           (module-build-source-path prelude source-root)))
     ;; Do not return the read syntax. Interpreted slot closures retain their
     ;; lexical frame, including unused sibling bindings, until their owner dies.
-    (list (cond ((module-context? prelude) (module-context-path prelude))
-                ((prelude-context? prelude) (prelude-context-path prelude))
-                (else prelude))
+    (list (or owned-prelude-source prelude-path)
           identity namespace
           (or (not text)
               ;; The runtime reader has already resolved and checked the entire
@@ -276,7 +288,7 @@
                  (lambda () (call-with-input-string interface-text read-all))))
              (name (publication-source-binding path interface-forms))
              (package-sources (package-source-snapshot path))
-             (compiler-info (module-compiler-identity path))
+             (compiler-info (module-compiler-identity path (source-metadata source-value 'kernel-root)))
              (prelude-inputs
               (let (prelude (car compiler-info))
                 (if (and (string? prelude) (string=? (path-extension prelude) ".ss"))
