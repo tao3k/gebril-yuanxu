@@ -109,6 +109,17 @@ package YuanxuModuleLoading {
                together only when the maintained observer has no effects
                on their receivers. Otherwise use original delivery. */
     }
+    requirement def ClosedStockDatumTrace {
+        doc /* Share method support within a stock run only when owner binding
+               and effect-free execution are independently established. Keep
+               the exact common read occurrences before each row's owner
+               suffix. Publish the original trace only after native return
+               authentication. An effectful role getter, diagnostic Type,
+               source observer or precheck retains the original operation and
+               its independent guards. The protected replay action suppresses
+               observation; running a body there requires proof that it can
+               neither demand an effect nor suppress a required precheck. */
+    }
     part def SourceAuthoringDecision {
         ref part authoring : StockAuthoringRun;
         doc /* Validate every actual datum. Source consumes a decision and

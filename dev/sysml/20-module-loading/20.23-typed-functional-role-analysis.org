@@ -270,3 +270,36 @@ These measurements are not a substitute for the existing 10000-module Case.
 Capacity remains OPEN until that same Case
 completes under its original acceptance policy. No unsupported speedup,
 full-CI result, commit or push is claimed.
+
+* Same-owner stock method support across datums
+
+An interleaved diagnostic used the native installed method support and an
+Interface derived from the source policy's real prototype. The dispatch-only
+probe preserved all 158 read identities per datum, including their order and
+occurrences. For 150 groups of four, CPU fell from 0.407--0.414 s to
+0.143--0.180 s. For groups of twelve it fell from 1.251--1.283 s to
+0.158--0.192 s. This interval executed no datum body.
+
+The second probe ran the maintained Types and Config handlers and their
+normal result Type on four inert datums. Both paths returned the same
+diagnostics and retained the exact same ordered read identities, 708 for
+Types and 728 for Config. Over 120 groups per lane, Types CPU was
+0.279--0.280 s before sharing and 0.106 s with sharing. Config CPU was
+0.256--0.284 s before sharing and 0.107--0.136 s with sharing. The six
+default roles already had issued reads for the sampled policy fields at
+entry. These results cover the examined warm owner, policies and datums.
+
+The native protected replay suspends the caller's observers and prechecks.
+An injected before-read callback runs on an ordinary read and is suppressed
+inside the protected action. A production path must prove effect freedom
+before using this region, or keep the original native observer/precheck
+and role and diagnostic Type boundaries. It cannot retry an author callback
+after a failed shared preflight or return. The probe is not a Scheme cutover.
+
+=PublicationReads.closed_stock_run_preserves_ordered_owner_traces= covers
+the repeated common support and each distinct owner suffix.
+=stale_stock_return_cannot_deliver= and
+=stock_body_refusal_precedes_return_refusal= cover the protected return.
+=closed_stock_trace_cannot_cross_changed_owner= exercises a refusal after
+an independent effect. These laws state the proof obligations for using
+the measured mechanism in source authoring.

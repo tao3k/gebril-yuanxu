@@ -447,4 +447,48 @@ theorem lexical_receipt_fields_do_not_fix_contract_identity
     (value : Value) (identity : World → Except Failure Identity) (world : World) :
     (receiptFields value identity).2 world = identity world := rfl
 
+-- Each row still owns its original receiver and the suffix read by its body.
+-- Sharing immutable method support cannot combine the row-local captures.
+def stockDatumTraces (support : List Read) (rows : List (Except Failure (List Read))) :
+    List (Except Failure (List Read)) :=
+  rows.map (fun row => row.map (support ++ ·))
+
+theorem closed_stock_run_preserves_ordered_owner_traces
+    (check : Except Failure Unit) (support : List Read)
+    (rows : List (Except Failure (List Read))) :
+    checkStockRun check (stockDatumTraces support rows) =
+      checkStockEach check (stockDatumTraces support rows) :=
+  unchanged_stock_support_preserves_results_and_refusal check _
+
+theorem stock_datum_trace_preserves_owner_suffix (support : List Read)
+    (first second : List Read) :
+    stockDatumTraces (Failure := Failure) support [.ok first, .ok second] =
+      [.ok (support ++ first), .ok (support ++ second)] := rfl
+
+-- The native protected action disables the outer recorder. Publish its
+-- original read identities only after its independent return authentication.
+def returnStockTrace (entry exit : Except Failure Unit)
+    (captured : Except Failure (List Read)) : Except Failure (List Read) := do
+  entry
+  let trace ← captured
+  exit
+  pure trace
+
+theorem stale_stock_return_cannot_deliver (stale : Failure) (trace : List Read) :
+    returnStockTrace (.ok ()) (.error stale) (.ok trace) = .error stale := rfl
+
+theorem stock_body_refusal_precedes_return_refusal (body stale : Failure) :
+    returnStockTrace (.ok ()) (.error stale) (.error body) =
+      (.error body : Except Failure (List Nat)) := rfl
+
+-- A role getter or a diagnostic Type is an effect if it runs author code.
+-- Authentication of the previous pure segment grants no later permission.
+theorem closed_stock_trace_cannot_cross_changed_owner :
+    stockAroundOpen checkStockRun
+      (fun changed => if changed then .error "stale owner" else .ok ())
+      (fun (_ : Bool) => true)
+      (fun _ => stockDatumTraces [0] [.ok [1]])
+      (fun _ => stockDatumTraces [0] [.ok [2]]) false =
+        (.error "stale owner" : Except String (List (List Nat) × List (List Nat) × Bool)) := rfl
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads
