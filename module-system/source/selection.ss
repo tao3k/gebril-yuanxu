@@ -143,11 +143,20 @@
     (for-each (lambda (row) (hash-put! decision-index (.ref row 'identity) row)) decision-values)
     (def (row-for id)
       (and (hash-key? decision-index id) (hash-ref decision-index id)))
-    (def (feature-descriptor-for owner-id name)
-      (let (features (.ref (publication-for owner-id) 'features))
-        (unless (.slot? features name)
-          (error "unknown init feature" owner-id name origin (.ref context 'generation)))
-        (let* ((declared (.ref features name))
+    (def (feature-interface owner id name)
+      (and (.slot? context 'collect-entrypoint)
+           ((.ref context 'collect-entrypoint)
+             owner id (list "features" (symbol->string name) "interface.ss"))))
+    (def (feature-descriptor-for owner-id name features interface)
+        (let* ((declared
+                 (if (list? features)
+                   (let (publication (publication-for owner-id))
+                     (unless interface (error "missing selected Feature interface" owner-id name))
+                     (unless (and (.slot? publication 'feature-reader)
+                                  (procedure? (.ref publication 'feature-reader)))
+                       (error "no source reader for selected Feature" owner-id name))
+                     ((.ref publication 'feature-reader) name))
+                   (.ref features name)))
                (owner (.ref (publication-for owner-id) 'identity))
                (descriptor-value
                  ;; Interface authors declare native POO values. This owner
@@ -185,7 +194,7 @@
             (.cc descriptor-value 'feature-id id 'owner-module-id owner-id
               'requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'requires))
               'optional-requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'optional-requires))
-              'conflicts (map (cut feature-key owner-id <>) (.ref descriptor-value 'conflicts)))))))
+              'conflicts (map (cut feature-key owner-id <>) (.ref descriptor-value 'conflicts))))))
     (let* ((core-selections
             (map (lambda (id)
                    (let* ((key (core-node-id id))
@@ -210,14 +219,15 @@
                        (let-values (((name enabled?) (signed-feature flag)))
                          ;; Negative decisions validate the name, but do not force
                          ;; its descriptor or contribution payload.
-                         (unless (.slot? (.ref (publication-for owner-id) 'features) name)
-                           (error "unknown init feature" owner-id name origin (.ref context 'generation)))
-                         (let (id (feature-node-id owner-id name))
+                         (let ((id (feature-node-id owner-id name))
+                               (features (.ref (publication-for owner-id) 'features)))
+                           (unless (if (list? features) (memq name features) (.slot? features name))
+                             (error "unknown init feature" owner-id name origin (.ref context 'generation)))
                            (if enabled?
-                             (let* ((descriptor-value (feature-descriptor-for owner-id name))
-                                    (interface (and (.slot? context 'collect-entrypoint)
-                                                    ((.ref context 'collect-entrypoint)
-                                                     owner-id id (list "features" (symbol->string name) "interface.ss")))))
+                             (let* ((listed? (list? features))
+                                    (source (and listed? (feature-interface owner-id id name)))
+                                    (descriptor-value (feature-descriptor-for owner-id name features source))
+                                    (interface (if listed? source (feature-interface owner-id id name))))
                                (hash-put! nodes id (.o kind: 'feature identity: id owner: owner-id interface
                                                       descriptor: descriptor-value))
                                (feature-selection

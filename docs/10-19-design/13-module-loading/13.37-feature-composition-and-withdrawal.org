@@ -71,6 +71,15 @@ binding. =selection.ss= supplies inert Feature metadata on selected demand;
 =link.ss= supplies graph/owner routing and supported callback guards. This is
 not a new macro, a Runtime registry or a component-to-prototype coercion.
 
+For a Feature with its own source directory, the Module Interface can declare
+=features: '(memory)=. Selecting =+memory= reads the =Feature= export from
+=features/memory/interface.ss= through an ordinary Gerbil re-export of
+=feature.ss=. The Feature supplies the POO descriptor,
+including its refinement and Contract. The selected entry and its native
+imports enter the existing =std-make-spec= graph under the Feature contributor.
+An unselected or withdrawn Feature does not load its interface. A selected name
+without an interface fails admission.
+
 Feature Contracts are additional obligations on the final Core-normalized
 receiver. Native =validate= runs their obligations, but a Feature Contract's
 returned wrapper does not replace that receiver. The final receiver must itself

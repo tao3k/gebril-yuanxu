@@ -143,7 +143,10 @@
         ([['.def (? symbol?) . body]]
          (def rows (closed-rows body))
          (closed-symbol (closed-field rows 'identity:))
-         (closed-object (closed-field rows 'features:))
+         (match (closed-field rows 'features:)
+           (['quote (? list? names)]
+            (unless (andmap symbol? names) (error "invalid Feature names" names)))
+           (value (closed-object value)))
          (def baseline (closed-object (closed-field rows 'core:)))
          (closed-field baseline 'scope-contract:)
          (closed-field baseline 'exports:)
@@ -272,6 +275,10 @@
                 (case (stx-e key)
                   ((core:) (wrap-core value shadows))
                   ((identity:) value)
+                  ((features:)
+                   (syntax-case value (quote)
+                     ((quote (_ ...)) value)
+                     (_ (wrap value core-reference shadows))))
                   (else (wrap value core-reference shadows)))))))
               (syntax/loc form (head name . slots)))))))
        (with-syntax ((loader loader)

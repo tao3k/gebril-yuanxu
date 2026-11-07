@@ -8,7 +8,8 @@
         (for-syntax :gerbil/expander
                     :yuanxu/module-system/source/role-forms))
 (export .def include-module-body export-role-config define-module-build-binding
-        current-module-build-phase? current-module-build-resolver)
+        current-module-build-phase? current-module-build-resolver current-module-feature-reader)
+(def current-module-feature-reader (make-parameter #f))
 (begin-syntax
   ;; Project only the direct runtime fields of a publication frame. Payloads
   ;; remain syntax; .def/ctx and .o/ctx own object semantics and slot binding.
@@ -99,8 +100,22 @@
                     (name (identifier? #'name) #'name)
                     (_ (raise-syntax-error #f "expected a .def binding" #'binding)))))
        (slot-value rows 'identity stx)
-       (slot-value rows 'features stx)
+       (def feature-names (syntax->datum (slot-value rows 'features stx)))
+       (def feature-reader
+         (and (pair? feature-names) (eq? (car feature-names) 'quote)
+              (pair? (cdr feature-names)) (list? (cadr feature-names))
+              (genident 'read-feature)))
        (with-syntax ((context stx) (name name)
+                     ((feature-binding ...)
+                      (if feature-reader
+                        (with-syntax ((reader feature-reader))
+                          (syntax->list #'((def reader (current-module-feature-reader)))))
+                        '()))
+                     ((feature-row ...)
+                      (if feature-reader
+                        (with-syntax ((reader feature-reader))
+                          (syntax->list #'((feature-reader reader))))
+                        '()))
                      ((build-binding ...)
                       (let* ((location (stx-source stx))
                              (file (and location (vector-ref location 0)))
@@ -143,7 +158,8 @@
            (begin
              role-import ...
              build-binding ...
-             (runtime-.def/ctx context binding row ...)
+             feature-binding ...
+             (runtime-.def/ctx context binding row ... feature-row ...)
              (export name))))))
     (_ (raise-syntax-error #f "expected one runtime Module declaration" stx))))
 
