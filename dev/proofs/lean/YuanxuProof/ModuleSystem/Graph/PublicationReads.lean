@@ -71,6 +71,83 @@ theorem replay_of_issued_descendants_has_same_currentness
     exact current node ((replay_of_issued_descendants_has_same_demands
       deps roots descendants issued node).mp demand)
 
+-- Native re-observation has an issuance preflight followed by delivery.
+-- A stale maintained method may route to the Generic during preflight.
+-- Once delivery begins its refusal belongs to that invocation.
+inductive DispatchOutcome (Failure Result : Type) where
+  | generic
+  | refused (cause : Failure)
+  | returned (value : Result)
+  deriving DecidableEq
+
+def stockDelivery {Failure Result : Type} (ready : Bool)
+    (delivery : Except Failure Result) : DispatchOutcome Failure Result :=
+  if ready then
+    match delivery with
+    | .error cause => .refused cause
+    | .ok value => .returned value
+  else .generic
+
+def splitDispatch {Failure Result : Type} (firstCheck nextCheck payload method : Bool)
+    (delivery : Except Failure Result) (stale : Failure) : DispatchOutcome Failure Result :=
+  if firstCheck && payload && method then
+    if nextCheck then stockDelivery true delivery else .refused stale
+  else .generic
+
+def joinedDispatch {Failure Result : Type} (nativeCheck payload method : Bool)
+    (delivery : Except Failure Result) : DispatchOutcome Failure Result :=
+  stockDelivery (nativeCheck && payload && method) delivery
+
+theorem join_preflight_in_same_read_state {Failure Result : Type}
+    (firstCheck nextCheck payload method : Bool)
+    (unchanged : firstCheck = nextCheck)
+    (delivery : Except Failure Result) (stale : Failure) :
+    joinedDispatch nextCheck payload method delivery =
+      splitDispatch firstCheck nextCheck payload method delivery stale := by
+  subst nextCheck
+  cases firstCheck <;> cases payload <;> cases method <;> rfl
+
+theorem joined_does_not_retry_a_delivery_failure {Failure Result : Type} (cause : Failure) :
+    joinedDispatch (Result := Result) true true true (.error cause) = .refused cause := rfl
+
+def authenticateAndVisit {Read Failure : Type} (auth : Read → Except Failure Unit)
+    (visit : Read → Unit) : List Read → Except Failure Unit
+  | [] => .ok ()
+  | read :: rest => do
+      auth read
+      let () := visit read
+      authenticateAndVisit auth visit rest
+
+theorem no_observer_authenticates_the_same_order
+    {Read Failure : Type} (auth : Read → Except Failure Unit)
+    (visit : Read → Unit) (reads : List Read) :
+    authenticateAndVisit auth visit reads = authenticateAndVisit auth (fun _ => ()) reads := by
+  induction reads with
+  | nil => rfl
+  | cons read rest ih => simp only [authenticateAndVisit, ih]
+
+def readWindow {Read Failure Result : Type}
+    (before after : Read → Except Failure Unit) (visit : Read → Unit)
+    (reads : List Read) (action : Except Failure Result) : Except Failure Result := do
+  authenticateAndVisit before visit reads
+  let result ← action
+  authenticateAndVisit after (fun _ => ()) reads
+  pure result
+
+theorem read_only_checkpoint_preserves_both_refusals
+    {Read Failure Result : Type}
+    (before after : Read → Except Failure Unit) (visit : Read → Unit)
+    (reads : List Read) (action : Except Failure Result) :
+    readWindow before after visit reads action =
+      readWindow before after (fun _ => ()) reads action := by
+  unfold readWindow
+  rw [no_observer_authenticates_the_same_order before visit reads]
+
+-- Separate snapshots can disagree. The equality applies only to a single
+-- authenticated pre-delivery read, never across an author call.
+example : joinedDispatch (Result := Nat) false true true (.ok 1) ≠
+    splitDispatch true false true true (.ok 1) "changed" := by decide
+
 -- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,
 -- unchanged real observer delivery, and no nonlocal continuation escape.
