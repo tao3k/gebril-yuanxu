@@ -249,6 +249,15 @@ package YuanxuPayloadOwnership {
                original reads and fallback. Lean PublicationReads models
                the exact issued root order and refusal. */
     }
+    requirement def PublicationRootSegments {
+        doc /* A linked publication owns the original preparation and
+               admission read spines. A native checkpoint that needs one
+               spine joins them for that invocation. The Graph forwards
+               the two segments to its existing POO index in original
+               owner and phase order. Observed checks keep their separate
+               boundaries. Lean PublicationReads.flatten_root_segments
+               preserves the ordered signed input and the first refusal. */
+    }
     requirement def PreludeDependencyRepresentation {
         doc /* Keep Gerbil Core as a complete runtime import-set; filter the two
                POO constructor exports at the export boundary. Verify every public

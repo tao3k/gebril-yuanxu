@@ -84,7 +84,7 @@
   roots)
 (def (publication-metadata-current policy-current? preparation-current!
                                    (admission-current! void) (location-current! void)
-                                   (joined-roots #f))
+                                   (root-segments #f))
   ;; Only the fixed producer's semantic reads, plus the actual pre-role
   ;; policy identities. Preserve open producer traces without replaying Gerbil
   ;; constructor scratch reads as if they were enduring Graph requirements.
@@ -105,7 +105,7 @@
             (admission-current!)
             (require-publication-policy! policy-current?)
             (when observed? (preparation-current!)))))
-      (if (and joined-roots (not observed?) (object-construction-current?)
+      (if (and root-segments (not observed?) (object-construction-current?)
                (owned-read-function-scope?))
         (begin
           (with-catch
@@ -113,7 +113,8 @@
               ;; Restore the original first failure; a successful retry must
               ;; never turn a failed merged preflight into approval.
               (split!) (raise cause))
-            (lambda () (module-source-measure-replay joined-roots)))
+            (lambda ()
+              (module-source-measure-replay (append (car root-segments) (cdr root-segments)))))
           (require-publication-policy! policy-current?))
         (split!)))))
 (def (call-with-publication-reads action (finish #f) unique-roots?: (unique-roots? #t))

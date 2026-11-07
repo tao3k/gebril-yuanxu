@@ -303,3 +303,21 @@ records per pass, compared with 58,624 in the original lanes. Both paths
 took about 0.71 to 0.72 seconds wall time for six repeats. Some Profile
 descendants are reachable through other preparation roots. Keep the original
 combined preparation replay and reduce evidence where it is produced.
+
+** Original root spines on the linked publication
+
+Each of 64 actual owners had 206 preparation roots. Of these, 194
+were the same signed records in the same order across all owners, with
+901 reachable native reads. Separating that entire common segment from
+owner-local roots visited the same 58,624 records as the original lanes.
+Six interleaved repeats took 0.723/0.733 seconds wall time with the
+original lanes and 0.736/0.732 seconds with the separated checks.
+
+The linked publication retains its two original spines. Its individual
+unobserved checkpoint joins them only for the native call. The selected
+Graph forwards the original two spines directly to its existing POO
+root index. Observed execution still uses preparation, admission and
+return checks in their original order. The Lean lemmas
+=PublicationReads.flatten_root_segments= and
+=segmented_roots_preserve_first_refusal= state the ordered equivalence.
+The change removes a second retained preparation spine per owner.

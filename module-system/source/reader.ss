@@ -141,13 +141,12 @@
                                   (module-publication-dependency-projection (cadar results)
                                     (lambda (read) (hash-key? observed read)))))
                               (unless fused-return? (project-dependencies!))
-                              ;; POO keys its replay topology by the actual
-                              ;; root spine. Pass one ordered, immutable list
-                              ;; to both consumers. Each still checks freshness.
-                              (def joined-roots (append preparation-roots roots))
+                              ;; Retain only the two original spines. The native
+                              ;; return checkpoint borrows a temporary join.
+                              (def root-segments (cons preparation-roots roots))
                               (def guard
                                 (publication-metadata-current policy-current? preparation-current! admission-current! location-current!
-                                  joined-roots))
+                                  root-segments))
                               (def entry! (publication-metadata-entry policy-current? location-current!))
                               (def tail! (publication-metadata-tail policy-current?))
                               (module-source-measure-operation 'reader-candidate-return-replay
@@ -168,7 +167,7 @@
                                       (lambda ()
                                         (module-source-measure-operation 'reader-candidate-fused-return-replay
                                           (lambda ()
-                                            (module-source-measure-replay joined-roots
+                                            (module-source-measure-replay (append preparation-roots roots)
                                               (lambda ()
                                                 (set! entered? #t)
                                                 (tail!)
@@ -182,7 +181,7 @@
                               ;; issued roots for the linker's POO topology
                               ;; slot. No successful check or purity flag.
                               (list (append (car results)
-                                      (list ids guard entry! tail! joined-roots)))))) prepared))
+                                      (list ids guard entry! tail! root-segments)))))) prepared))
                     )))))))
       admit-current: (cut reader-full-current! session <...>)
       read-only-current?: (cut reader-source-state-current? session <...>)

@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
-(import (only-in :std/list/list delete-duplicates/hash foldl)
+(import (only-in :std/list/list delete-duplicates/hash foldl foldr)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
         (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
         (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
@@ -408,12 +408,14 @@
                     (or (not (linked-publication-metadata-current record))
                         (and (linked-publication-metadata-entry record)
                              (linked-publication-metadata-tail record)
-                             (list? (linked-publication-metadata-roots record)))))
+                             (pair? (linked-publication-metadata-roots record)))))
                   (.get index rows))
           roots:
           (merge-publication-read-roots
-            (map (lambda (record) (or (linked-publication-metadata-roots record) '()))
-                 (.get index rows)))
+            (foldr (lambda (record groups)
+                     (let (segments (linked-publication-metadata-roots record))
+                       (if segments (cons (car segments) (cons (cdr segments) groups)) groups)))
+                   '() (.get index rows)))
           ;; Route only: a protected invocation still authenticates all
           ;; ORIGINAL reads, holds the receivers and rechecks on return.
           ;; Unprotected callers authenticate independently before proceeding.

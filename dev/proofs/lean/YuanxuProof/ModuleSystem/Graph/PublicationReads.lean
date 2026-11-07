@@ -333,6 +333,24 @@ theorem profile_checkpoint_keeps_fresh_refusal [DecidableEq Read]
       authenticateAndVisit auth (fun _ => ()) observed := by
   rw [profile_checkpoint_preserves_issued_order]
 
+/-- The two original native spines remain separate until a checkpoint needs
+their concatenation. Neither phase's issued records are reconstructed. -/
+def rootSegments (row : List Read × List Read) : List (List Read) := [row.1, row.2]
+
+theorem flatten_root_segments (rows : List (List Read × List Read)) :
+    (rows.flatMap rootSegments).flatten =
+      (rows.map fun row => row.1 ++ row.2).flatten := by
+  induction rows with
+  | nil => rfl
+  | cons row rest ih =>
+    simp [rootSegments, ih, List.append_assoc]
+
+theorem segmented_roots_preserve_first_refusal
+    (auth : Read → Except Failure Unit) (rows : List (List Read × List Read)) :
+    authenticateAndVisit auth (fun _ => ()) (rows.flatMap rootSegments).flatten =
+      authenticateAndVisit auth (fun _ => ()) (rows.map fun row => row.1 ++ row.2).flatten := by
+  rw [flatten_root_segments]
+
 -- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,
 -- unchanged real observer delivery, and no nonlocal continuation escape.
