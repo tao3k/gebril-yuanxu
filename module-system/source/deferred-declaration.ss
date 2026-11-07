@@ -3,6 +3,7 @@
 ;;; The resolver is captured once by an admitted private wrapper, never a user
 ;;; purity flag or an alternate cache. POO owns all delayed role values.
 (import (runtime: :clan/poo/object)
+        (only-in :clan/poo/prototype-map prototype-map)
         (only-in :gerbil/expander datum->syntax eval-syntax resolve-identifier
                  import-module current-expander-context expander-context-id
                  module-context? module-context-path make-top-context
@@ -13,7 +14,7 @@
         (only-in :std/list/list delete-duplicates/hash append-map)
         (for-syntax :gerbil/expander (only-in :std/list/list append-map)))
 (export module-deferred-role-exports include-deferred-declaration module-role-values module-import-role-values
-        current-module-role-resolver module-entry-action module-binding-action)
+        current-module-role-resolver module-entry-action module-binding-action deferred-role-values)
 (def current-module-role-resolver (make-parameter #f))
 
 ;; Runtime source evaluation and compiled runtime loading have different
@@ -161,13 +162,29 @@
          roles)
         (else #f)))))
 
+;; The generated role receiver has no implicit lexical slot bindings. Use
+;; the same native slot specifications with the current owner resolver.
+(def (deferred-role-values load roles)
+  (make-object
+    slots: (prototype-map
+             (append-map
+               (lambda (spec)
+                 (def role (car spec))
+                 (def names (cdr spec))
+                 (cons (cons role ($self-slot-spec (lambda (_self) (load role names))))
+                       (map (lambda (name)
+                              (cons name ($self-slot-spec (lambda (self) (.ref (.ref self role) name)))))
+                            names))) roles)
+             policy: 'compact)
+    defaults: (prototype-map '() policy: 'compact)))
+
 (defsyntax (include-deferred-declaration input)
   (syntax-case input ()
     ((_ path ((role exports ...) ...) resolver)
      (let-values (((_prelude _id _namespace forms) (core-read-module/sexp (stx-e #'path))))
        (def loader (genident 'role-loader))
        (def private (genident 'role-values))
-       (def roles-self (genident 'roles-self))
+       (def constructor (quote-syntax deferred-role-values))
        (def specifications (syntax->list #'((role exports ...) ...)))
        (def names (append-map (lambda (spec) (cdr (syntax->list spec))) specifications))
        (def (map-fields rows transform)
@@ -209,20 +226,8 @@
                (lambda (key value)
                  (if (eq? (stx-e key) 'contract:) (wrap value receiver shadowed) value))))))
        (def (role-values)
-         (with-syntax ((self roles-self)
-                       ((row ...)
-                        (append-map
-                          (lambda (spec)
-                            (syntax-case spec ()
-                              ((role name ...)
-                               (with-syntax ((loader loader) (self roles-self))
-                                 (cons #'(role (loader 'role '(name ...)))
-                                   (syntax->list #'((name (.ref (.ref self 'role) 'name)) ...)))))))
-                          specifications)))
-           ;; All generated formulas use hygienic loader or explicit self.
-           ;; Native computed slots still receive the current POO receiver;
-           ;; implicit lexical aliases add no binding used by this object.
-           #'(.o self: self bind-these: #f row ...)))
+         (with-syntax ((constructor constructor) (loader loader))
+           #'(constructor loader '((role exports ...) ...))))
        (def (wrap-core core root-shadows)
          ;; Keep fields as a runtime syntax list; append one private lazy slot.
          (def (build head options self fields)

@@ -24,6 +24,34 @@ theorem shadowed_role_alias_keeps_outer {Value : Type} (roles shadowed : List Na
     roleAliasLookup roles shadowed role outer name = outer name := by
   simp [roleAliasLookup, hidden]
 
+inductive RoleSlotRecipe (Name : Type) where
+  | role (name : Name) (exports : List Name)
+  | alias (role name : Name)
+
+-- The role entry captures its original resolver. An alias must read the
+-- actual POO self, including its role overrides, before reading the export.
+def ownerSlotRecipe {Owner Name Value : Type}
+    (load : Owner → Name → List Name → Value) (read : Value → Name → Value)
+    (owner : Owner) : RoleSlotRecipe Name → Value → Value
+  | .role name exports => fun _ => load owner name exports
+  | .alias role name => fun self => read (read self role) name
+
+def sharedRoleSlot {Owner Name Value : Type}
+    (load : Owner → Name → List Name → Value) (read : Value → Name → Value)
+    (owner : Owner) (recipe : RoleSlotRecipe Name) (self : Value) : Value :=
+  match recipe with
+  | .role name exports => load owner name exports
+  | .alias role name => read (read self role) name
+
+theorem shared_role_slot_preserves_resolver_and_self
+    (load : Owner → Name → List Name → Value) (read : Value → Name → Value)
+    (owner : Owner) (recipe : RoleSlotRecipe Name) (self : Value) :
+    sharedRoleSlot load read owner recipe self = ownerSlotRecipe load read owner recipe self := by
+  cases recipe <;> rfl
+
+example : sharedRoleSlot (fun owner _ _ => owner) (fun self slot => self + slot)
+    (0 : Nat) (.alias 1 2) 7 = 10 := rfl
+
 -- A fresh native replay supplies the COMPLETE ordered original token trace.
 -- Known callbacks may be omitted only when each is actually an identity effect.
 -- Parent collection policy remains native: no signed dependency is rewritten.
