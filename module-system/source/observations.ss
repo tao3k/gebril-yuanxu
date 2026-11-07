@@ -148,7 +148,8 @@
                   (memq name '(build-main build-specification build-dispatch std-make build-current
                            profile-interface-scan reader-bootstrap reader-preparation-start reader-interface-start
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
-                           reader-admission-start reader-current metadata-replay
+                           reader-admission-start reader-value-admission reader-admission-evidence
+                           reader-current metadata-replay
                            reader-tool-inputs reader-private-closure reader-private-prepare
                            reader-native-import reader-role-import reader-source-resolution
                            reader-compile-start reader-eval-start

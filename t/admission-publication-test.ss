@@ -9,7 +9,7 @@
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence
                  yuanxu-predicate-contract yuanxu-contract-admit
-                 yuanxu-validation-evidence-accepted?)
+                 yuanxu-validation-evidence yuanxu-validation-evidence-accepted?)
         (only-in :yuanxu/admission/publication AdmissionPublication.)
         (only-in :yuanxu/module-system/source/selection select-module-graph)
         (only-in :yuanxu/module-system/source/build module-build-graph)
@@ -144,6 +144,21 @@
 
 (def admission-publication-test
   (test-suite "Platform admission context and publication currentness"
+    (yuanxu-test-case "receipt values preserve references and defer descriptor identity"
+      (def identity-reads 0)
+      (def descriptor (.o identity: (begin (set! identity-reads (1+ identity-reads)) 'test/initial)))
+      (def candidate (.o port: 5432))
+      (def context (.o owner: 'test/publication))
+      (def classification
+        (yuanxu-classification-evidence 'test/initial candidate #t '() context))
+      (def evidence
+        (yuanxu-validation-evidence descriptor candidate classification '() #t '() context))
+      (check-equal? (eq? (.get evidence classification candidate) candidate) #t)
+      (check-equal? (eq? (.get evidence context) context) #t)
+      (check-equal? (eq? (.get (.cc evidence) admission-contract) descriptor) #t)
+      (check-equal? identity-reads 0)
+      (check-equal? (.get evidence contract-identity) 'test/initial)
+      (check-equal? identity-reads 1))
     (yuanxu-test-case "one Graph read per export; selection replacement still refuses after restoration"
       (with-inputs
         (lambda (source schema)

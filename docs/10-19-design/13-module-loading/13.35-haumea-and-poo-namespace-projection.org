@@ -1139,6 +1139,23 @@ not every remaining latency source. Native expansion, fresh source checks and
 runtime metadata replay remain substantial; passing the watchdog is not the
 performance target. The earlier forwarding proposal remains rejected research.
 
+** Publication evidence value slots
+
+Classification and validation receipts keep their original references in POO
+lexical value slots. Derived evidence reads the same candidate and context.
+The =contract-identity= slot still reads the actual descriptor on demand, so
+creating evidence or reading its other fields cannot invoke that getter.
+Lean =PublicationReads.lexical_receipt_slot_preserves_reference= and
+=lexical_receipt_fields_do_not_fix_contract_identity= model these two cases.
+The native Type admission and evidence Record validation remain separate.
+
+An interleaved same-process comparison of 320 evidence pairs per lane retained
+122 native read roots per receipt with both representations. Lexical slots
+reduced retained live heap by about 0.35--0.59 MB per batch. Construction and
+Record validation took about 41--42 ms per batch in both lanes. This isolates
+receipt representation from owner admission. The Reader's stage accounting
+separates =reader-value-admission= from =reader-admission-evidence=.
+
 ** Package workflow acceptance remains distinct
 
 The earlier real-product harness copied a third consumer package's files and

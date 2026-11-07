@@ -238,8 +238,11 @@
     reject-protocols?: #f))
 
 (def (admit-module-value! contract candidate context-value)
-  (let (evidence (yuanxu-value-admit contract candidate context-value))
-    (unless (yuanxu-validation-evidence-accepted? evidence)
+  (let (evidence
+        (module-source-measure-operation 'reader-value-admission
+          (cut yuanxu-value-admit contract candidate context-value)))
+    (unless (module-source-measure-operation 'reader-admission-evidence
+              (cut yuanxu-validation-evidence-accepted? evidence))
       (error "module scope admission refused" (.ref contract 'identity) evidence))
     evidence))
 

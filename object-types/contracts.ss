@@ -129,15 +129,11 @@
                      (null? (.get value obligation-evidence))))))))
 
 ;; : (-> Object Object Boolean [Alist] Object YuanxuClassificationEvidence)
-(def (yuanxu-classification-evidence type-identity-value candidate-value
-                                        accepted-value diagnostics-value context-value)
+(def (yuanxu-classification-evidence type-identity candidate accepted-value diagnostics context)
+  (def kind 'yuanxu.type.classification-evidence)
+  (def accepted? (if accepted-value #t #f))
   (owned-read-leaf!
-    (.o kind: 'yuanxu.type.classification-evidence
-        type-identity: type-identity-value
-        candidate: candidate-value
-        accepted?: (if accepted-value #t #f)
-        diagnostics: diagnostics-value
-        context: context-value)))
+    (.o bind-these: #f kind type-identity candidate accepted? diagnostics context)))
 
 ;; : (-> Object Boolean)
 (def (yuanxu-classification-evidence? value)
@@ -161,19 +157,14 @@
 ;; The single evidence producer records its actual descriptor, including failure
 ;; rows. Symbolic names remain a diagnostic/wire projection, not object identity.
 ;; : (-> YuanxuContract Object YuanxuClassificationEvidence [Alist] Boolean [Alist] Object YuanxuValidationEvidence)
-(def (yuanxu-validation-evidence contract-value candidate-value
-                                    classification-value obligation-evidence-value
-                                    accepted-value diagnostics-value context-value)
+(def (yuanxu-validation-evidence admission-contract candidate classification obligation-evidence
+                                accepted-value diagnostics context)
+  (def kind 'yuanxu.contract.validation-evidence)
+  (def accepted? (if accepted-value #t #f))
+  ;; Keep the actual descriptor's identity lookup lazy.
   (owned-read-leaf!
-    (.o kind: 'yuanxu.contract.validation-evidence
-        contract-identity: (.ref contract-value 'identity)
-        admission-contract: contract-value
-        candidate: candidate-value
-        classification: classification-value
-        obligation-evidence: obligation-evidence-value
-        accepted?: (if accepted-value #t #f)
-        diagnostics: diagnostics-value
-        context: context-value)))
+    (.o bind-these: #f kind contract-identity: (.ref admission-contract 'identity)
+        admission-contract candidate classification obligation-evidence accepted? diagnostics context)))
 
 ;; : (-> Object Boolean)
 (def (yuanxu-validation-evidence? value)

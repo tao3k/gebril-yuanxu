@@ -348,6 +348,14 @@ package YuanxuSelectedPackageBuilds {
                approves a failed batch. Checkpoint failures retain their own cause. Unknown callbacks/contexts retain the original path.
                Every effect still has independent before/after authentication. */
     }
+    requirement def PublicationEvidenceSlotIdentity {
+        doc /* Classification and validation evidence carry the original checked
+               candidate, context and diagnostic references in lexical POO value
+               slots. Contract identity remains a separate lazy read of the
+               actual descriptor. Native Type validation and the evidence Record
+               check remain independent. Measure these two admission stages
+               separately from preparation, expansion and currentness replay. */
+    }
     requirement def ReaderGuardQueryWork {
         doc /* The existing pure source-read window keys a reader check by its
                private source-row producer and append-only guard/source counts.

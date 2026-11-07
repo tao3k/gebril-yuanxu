@@ -427,4 +427,24 @@ theorem transient_delivery_refusal_requires_original_path :
     forwardAuthoringReads [] [1] (.ok ()) (.ok ()) := by
   intro same
   cases same
+-- Lexical evidence fields capture reference identities. Their former
+-- receiver-taking bodies ignored the receiver and returned those same values.
+def receiptValueSlot {Receiver Value : Type} (value : Value) : Receiver → Value :=
+  fun _ => value
+
+theorem lexical_receipt_slot_preserves_reference {Receiver Value : Type}
+    (value : Value) (original derived : Receiver) :
+    receiptValueSlot value original = receiptValueSlot value derived := rfl
+
+-- Contract identity is a separately demanded live read and may refuse.
+-- Constructing or reading lexical fields cannot execute it.
+def receiptFields {World Value Identity Failure : Type}
+    (value : Value) (identity : World → Except Failure Identity) :=
+  (value, identity)
+
+theorem lexical_receipt_fields_do_not_fix_contract_identity
+    {World Value Identity Failure : Type}
+    (value : Value) (identity : World → Except Failure Identity) (world : World) :
+    (receiptFields value identity).2 world = identity world := rfl
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads
