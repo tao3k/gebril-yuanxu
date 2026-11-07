@@ -12,7 +12,8 @@
         :yuanxu/module-system/source/admission
         (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)
         :yuanxu/module-system/source/selection
-        :yuanxu/module-system/source/feature-scopes
+        (only-in :yuanxu/module-system/feature/scope
+                 refine-module-scope compose-module-features module-feature-scope-contract)
         :yuanxu/module-system/source/preparation
         :yuanxu/module-system/source/directory
         :yuanxu/module-system/source/reader

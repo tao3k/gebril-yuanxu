@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Selected Feature refinements use the same write fence as dependency edges.
+;;; Selected Feature refinements and dependency edges share the same scope write fence.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop Type. define-type element? validate)
         (only-in :yuanxu/module-system/source/publication ModuleFeatureRefinementContract)
