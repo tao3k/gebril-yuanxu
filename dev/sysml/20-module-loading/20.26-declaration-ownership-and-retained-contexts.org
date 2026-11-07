@@ -321,3 +321,11 @@ return checks in their original order. The Lean lemmas
 =PublicationReads.flatten_root_segments= and
 =segmented_roots_preserve_first_refusal= state the ordered equivalence.
 The change removes a second retained preparation spine per owner.
+
+At =3692135=, holding a copy of the former joined spine for each of the
+same 64 owners added 638,912 live bytes in the same process. Dropping
+those copies released 638,608 bytes. The preparation and admission
+native visit counts stayed identical. At 3,200 owners in the observed
+capacity run the sampled live heap was 1,286,353,768 bytes, compared with
+1,311,180,144 in the previous candidate. Both original dense Cases still
+reached the 180-second watchdog.
