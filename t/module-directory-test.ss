@@ -5,7 +5,8 @@
         (only-in :std/error Error? Error-message)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .+ .get .ref .slot? .ref/cached .all-slots/sort)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case
+                 yuanxu-test-case/with yuanxu-default-testing-case-profile)
         (only-in :yuanxu/module-system/source/observations
                  module-source-text-guard module-source-read module-source-observe
                  call-with-module-source-read-cache current-module-source-observer)
@@ -255,7 +256,10 @@
            ((.get view admit-current))
            (create-directory (path-expand "modules/new-category" root))
            (check-exception ((.get view admit-current)) error?)))))
-    (yuanxu-test-case "large selection source checks exact decoded text through EOF"
+    ;; The feature requests the cost probe; the ordinary Case profile keeps
+    ;; both comparison lanes free of the source observer.
+    (yuanxu-test-case/with yuanxu-default-testing-case-profile
+      "large selection source checks exact decoded text through EOF"
       (with-sources
        (lambda (root)
          (def init (path-expand "init.ss" root))
