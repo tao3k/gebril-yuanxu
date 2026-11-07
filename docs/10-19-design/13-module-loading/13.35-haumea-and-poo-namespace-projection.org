@@ -1680,6 +1680,42 @@ and 96.878 CPU seconds, without returning a business value. The per-site
 attribution came from the separate 64-owner run. No completed thousand
 scope or replay speedup is inferred from the timeout.
 
+*** Retained read frontier
+
+The local observed dense-declarations run reached 3,300 declarations before
+the 180-second Case refusal. Its sampled live heap rose from 994,483,904
+bytes at 2,100 owners to 1,352,942,152 bytes at 3,300 owners, about 299,000
+bytes per additional owner over that interval. The allocated heap was near
+its 2 GiB fence. This interval alone does not attribute the growth to one
+runtime object family.
+
+On the separate unobserved dense-selection run, the watchdog interrupted
+the 3,206th candidate read. The retained diagnostics report these inclusive
+spans. Overlapping rows must not be added.
+
+| Operation | Wall seconds | CPU seconds where sampled |
+|-----------+--------------+---------------------------|
+| Publication preparation | 40.58 | |
+| Wrapper write | 1.72 | |
+| Interface source read during expansion | 0.34 | |
+| Native wrapper expansion | 23.88 | |
+| Declaration admission | 36.37 | |
+| Source read | 16.96 | 14.30 |
+| Metadata replay | 62.18 | 54.86 |
+
+Replay had 25,642 attempts and 24,306,667 visits. The partial totals follow
+the real work up to refusal and do not qualify a completed graph.
+
+The next representation change must distinguish an original dependency
+from a locally owned scratch leaf. The original local check covers the
+entire capture. =RootCollection.private_leaf_removal_keeps_external_reach=
+preserves reachability from the remaining original roots when each omitted
+root is dependency-free. =private_leaf_removal_keeps_first_refusal= also
+requires that the omitted entries cannot supply a later refusal in the
+original traversal. =leaked_leaf_can_change_refusal= rejects using a leaf's
+shape alone as permission to discard it. The actual producer still needs
+to establish non-escape. Until then Scheme retains every original root.
+
 *** Native replay topology and live checks
 
 The probe instruments the existing generated Gambit Scheme for

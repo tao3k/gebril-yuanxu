@@ -48,6 +48,15 @@ package YuanxuModuleLoading {
         doc /* Once issued, every original dependency remains. No observer
                event, miss, second requirement or stale record is pruned. */
     }
+    part def PrivateLeafProjectionCandidate {
+        ref part support : RuntimeReadSupport;
+        doc /* The original local check authenticates the complete capture.
+               A later representation may omit a direct root only after the
+               producer proves that it is dependency-free, cannot escape, and
+               cannot supply a later refusal. Keep the other original
+               identities and their first-refusal order. Runtime projection
+               requires evidence of non-escape for the actual producer. */
+    }
     part def StockAuthoringRun {
         ref part support : RuntimeReadSupport;
         doc /* Share authentication only within an established closed run

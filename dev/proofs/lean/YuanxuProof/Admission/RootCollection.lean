@@ -100,4 +100,53 @@ theorem demanded_closure_unchanged (input : List Nat) (dependencies : Nat → Li
       IssuedRootForwarding.Reach input dependencies token :=
   IssuedRootForwarding.forward_keeps_dependency_closure input dependencies token
 
+-- Roots are native issuance identities. Only a dependency-free leaf can be
+-- removed directly. The escape analysis which marks such a leaf is separate.
+theorem private_leaf_removal_keeps_external_reach
+    (roots : List Nat) (dependencies : Nat → List Nat) (keep : Nat → Bool)
+    (leaves : ∀ token ∈ roots, keep token = false → dependencies token = [])
+    (token : Nat) (external : keep token = true) :
+    IssuedRootForwarding.Reach (roots.filter keep) dependencies token ↔
+      IssuedRootForwarding.Reach roots dependencies token := by
+  constructor
+  · intro reached
+    clear external
+    induction reached with
+    | root member => exact .root (List.mem_filter.mp member).1
+    | child _ edge ih => exact .child ih edge
+  · intro reached
+    have preserve {n : Nat} (original : IssuedRootForwarding.Reach roots dependencies n) :
+        keep n = true ∨ dependencies n ≠ [] →
+          IssuedRootForwarding.Reach (roots.filter keep) dependencies n := by
+      induction original with
+      | @root root member =>
+        intro required
+        cases kept : keep root with
+        | true => exact .root (List.mem_filter.mpr ⟨member, kept⟩)
+        | false => simp [kept, leaves root member kept] at required
+      | @child parent child _ edge ih =>
+        intro _
+        exact .child (ih (.inr (by intro empty; simp [empty] at edge))) edge
+    exact preserve reached (.inl external)
+
+-- Order is already supplied by the issued traversal. The local complete
+-- check owns failures during construction. A later projection only erases
+-- leaves that cannot fail in that later snapshot.
+theorem private_leaf_removal_keeps_first_refusal
+    (traversal : List Nat) (keep bad : Nat → Bool)
+    (valid : ∀ token ∈ traversal, keep token = false → bad token = false) :
+    (traversal.filter keep).find? bad = traversal.find? bad := by
+  induction traversal with
+  | nil => rfl
+  | cons token rest ih =>
+    have tail := ih (fun n member => valid n (by simp [member]))
+    cases kept : keep token with
+    | false =>
+      have good := valid token (by simp) kept
+      simp [kept, good, tail]
+    | true => simp [List.find?_cons, kept, tail]
+
+theorem leaked_leaf_can_change_refusal :
+    ([1, 2].filter (· != 1)).find? (· == 1) ≠ [1, 2].find? (· == 1) := by decide
+
 end YuanxuProof.Admission.RootCollection
