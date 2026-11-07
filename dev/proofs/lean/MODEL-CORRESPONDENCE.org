@@ -776,3 +776,38 @@ retains ordinary source/currentness guards. =t/module-windows-test.ss=
 checks grammar confinement and ordinary library-facade classification.
 Native checkout pinning, source/package identity and filesystem observations
 remain bridge obligations, not consequences of list concatenation in Lean.
+
+* Dense admission controls and stock authoring support
+
+The exact-head wrapper-only comparison at =cd79463= reduced native
+Interface expansion CPU per entry from 70.50 ms to 9.11 ms. The run
+still reached the 180-second guard with 645 completed candidate returns.
+Its incomplete first Graph used 43.689 s CPU and 176.323 s wall.
+Preparation and admission used 13.628 s and 8.338 s CPU respectively.
+These inclusive measurements cover different owner counts. The two local
+10,000-owner Graph controls also reached the original guard.
+
+=indexed_directory_child_matches_snapshot= preserves exact child membership
+and =indexed_directory_child_does_not_authorize_stale_path= preserves the
+live type refusal after an indexed hit. The 10,000-name model checks every
+present name and a miss. The ordered name sequence remains available for
+enumeration and the existing directory currentness check.
+
+=unchanged_stock_support_preserves_results_and_refusal= specifies when
+the same support can be authenticated once for a run of stock authoring
+rows. Each row still supplies its ordered native read evidence.
+=stock_runs_preserve_independent_open_checks= retains entry and return
+checks at an author callback. Its control changes method support in
+that callback and refuses even with no later stock row. The native
+protected checkpoint suppresses read delivery during its action.
+A Scheme batch requires a bridge that retains original read delivery
+and establishes the closed scope before any body runs.
+
+The local Lab A/B run on =cd79463= exited naturally in 103.75 s within
+the 120-second aggregate and 60-second idle limits. Specification took
+23.318 s wall and 7.019 s CPU. Cold A and B took 19.982 s and 13.058 s.
+A cleanup took 0.169 s and B hot build took 1.171 s. The B child printed
+success 4.158 s before the supervisor returned. The harness checked the
+46 selected targets, zero business scopes during specification, the
+unchanged B hashes and prerequisites, B-product use and zero hot
+compiler events.

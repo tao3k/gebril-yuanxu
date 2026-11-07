@@ -4,7 +4,10 @@ package YuanxuModuleLoading {
     part def SourceCatalogue {
         attribute entryCount : Integer;
         doc /* Directory/package identity and inert SourceRefs. Discovery must
-               not expand roles, run user macros or admit domain objects. */
+               not expand roles, run user macros or admit domain objects.
+               A wide-branch membership index projects the same ordered
+               directory snapshot. A hit still checks the live path type.
+               Full currentness still observes the directory listing. */
     }
     part def SelectedDeclarations {
         attribute selectedCount : Integer;
@@ -42,6 +45,14 @@ package YuanxuModuleLoading {
         attribute orderedEdgeCount : Integer;
         doc /* Once issued, every original dependency remains. No observer
                event, miss, second requirement or stale record is pruned. */
+    }
+    part def StockAuthoringRun {
+        ref part support : RuntimeReadSupport;
+        doc /* Share authentication only within an established closed run
+               with unchanged stock-method support. Keep the ordered read
+               delivery of each rule invocation. An author callback owns
+               independent entry and return guards. The next run reads
+               the post-effect state. */
     }
     part def LoadingWork {
         attribute expandedIdentities : Integer;

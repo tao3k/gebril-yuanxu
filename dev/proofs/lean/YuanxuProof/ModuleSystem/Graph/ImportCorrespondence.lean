@@ -2,6 +2,7 @@
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import YuanxuProof.ModuleSystem.Graph.TestAdmission
 import YuanxuProof.Admission.Source
+import Std.Data.HashSet.Lemmas
 
 /-! The runtime reader produces a finite source-text observation list. Reuse the
 public source-check model to supply the discovery model's currentness premise.
@@ -9,6 +10,38 @@ Runtime context/path projection and event completeness remain executable gates. 
 namespace YuanxuProof.ModuleSystem.Graph.ImportCorrespondence
 open TestAdmission
 open YuanxuProof.Admission.Source
+
+inductive DirectoryChild where
+  | missing
+  | wrongKind
+  | admitted
+  deriving DecidableEq, Repr
+
+-- The snapshot index owns membership. A hit still checks the live path type.
+def checkedDirectoryChild (listed : Bool) (name : String)
+    (directoryNow : String → Bool) : DirectoryChild :=
+  if !listed then .missing
+  else if directoryNow name then .admitted
+  else .wrongKind
+
+theorem indexed_directory_child_matches_snapshot (children : List String) (name : String)
+    (directoryNow : String → Bool) :
+    checkedDirectoryChild ((Std.HashSet.ofList children).contains name) name directoryNow =
+      checkedDirectoryChild (children.contains name) name directoryNow := by
+  rw [Std.HashSet.contains_ofList]
+
+theorem indexed_directory_child_does_not_authorize_stale_path
+    (children : List String) (name : String)
+    (listed : children.contains name = true) (changed : directoryNow name = false) :
+    checkedDirectoryChild ((Std.HashSet.ofList children).contains name) name directoryNow =
+      .wrongKind := by
+  rw [Std.HashSet.contains_ofList, listed]
+  simp [checkedDirectoryChild, changed]
+
+#guard
+  let names := (List.range 10000).map toString
+  let children := Std.HashSet.ofList names
+  names.all children.contains && !children.contains "10000"
 
 -- Context order is supplied by the completed runtime traversal. Resolve the
 -- CURRENT input registry during consumption; no per-root transitive list or
