@@ -90,8 +90,13 @@
                (lambda (sources-current!)
                  (call-with-publication-reads action
                    (lambda (results reads-current! _roots)
-                     (hash-put! (reader-session-kernel-initializers session) context
-                       (lambda () (reads-current!) (sources-current!)))
+                     ;; The exact Interface wrapper is never registered with
+                     ;; a private role source and owner. Its publication
+                     ;; keeps the original source/return checks, but the role
+                     ;; transfer index cannot consume its initializer guard.
+                     (unless (eq? context interface-context)
+                       (hash-put! (reader-session-kernel-initializers session) context
+                         (lambda () (reads-current!) (sources-current!))))
                      (if (and (pair? results) (null? (cdr results)) (wrapper-delivery? (car results)))
                        (begin
                          (unless (and (eq? context interface-context) (not delivered))
@@ -615,6 +620,7 @@
                     (list 'reader-retention
                       (cons 'tools (hash-length (reader-session-compiler-contexts session)))
                       (cons 'private-contexts (hash-length (reader-session-kernel-contexts session)))
+                      (cons 'transfer-initializers (hash-length (reader-session-kernel-initializers session)))
                       ;; No per-root transitive topology copies are retained.
                       (cons 'dependency-closures 0)
                       (cons 'dependency-contexts 0)

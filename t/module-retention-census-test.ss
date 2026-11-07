@@ -202,6 +202,10 @@
   (def memory (yuanxu-debug-memory-snapshot 'retention-census collect?: #t))
   (check-equal? (length (.get graph module-order)) size)
   (check-equal? (.ref/cached (.get fixture modules) 'module-0) #f)
+  ;; This fixture initializes one private Types role per Interface. The
+  ;; Interface bodies complete too, but have no role transfer association.
+  (check-equal? (cdr (assq 'private-contexts retention)) size)
+  (check-equal? (cdr (assq 'transfer-initializers retention)) size)
   (displayln "RETENTION-CENSUS modules=" size
     " expansions=" body-expansions " live-bytes=" (.get memory live-bytes)
     " reader-roots=" retention)

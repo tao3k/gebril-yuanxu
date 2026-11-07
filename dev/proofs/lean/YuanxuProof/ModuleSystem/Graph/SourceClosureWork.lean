@@ -804,6 +804,27 @@ theorem scratch_outside_support_preserves_guard
 theorem failed_candidate_keeps_previous {Value : Type} (previous candidate : Value) :
     (if false then candidate else previous) = previous := rfl
 
+-- The transfer consumer constructs a role row only if the actual Context
+-- supplies all three source associations. Native Interface evaluation still
+-- owns its normal source and return checks.
+def transferInitializer {Input Owner Guard : Type}
+    (input : Option Input) (owner : Option Owner) (guard : Option Guard) :
+    Option (Input × Owner × Guard) := do
+  let input ← input
+  let owner ← owner
+  let guard ← guard
+  pure (input, owner, guard)
+
+theorem unowned_interface_has_no_initializer_transfer
+    (guard : Option Guard) :
+    transferInitializer (Input := Input) (Owner := Owner) none none guard =
+      transferInitializer none none (none : Option Guard) := rfl
+
+theorem owned_role_keeps_its_exact_initializer
+    (input : Input) (owner : Owner) (guard : Guard) :
+    transferInitializer (some input) (some owner) (some guard) =
+      some (input, owner, guard) := rfl
+
 -- Count real support widths, not the accumulated publication prefix. Open
 -- callbacks retain their independently charged full work; no linear bound is
 -- claimed for N open callbacks each of which depends on the complete Graph.

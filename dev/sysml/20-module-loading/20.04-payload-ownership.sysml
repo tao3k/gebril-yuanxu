@@ -269,6 +269,15 @@ package YuanxuPayloadOwnership {
                The 64-owner census and 256-owner heap probe bound these
                candidates independently of the full capacity gate. */
     }
+    requirement def RoleInitializerTransferCustody {
+        doc /* Role transfer consumes initializer support only with the
+               private source and owner association for the same Context.
+               The exact Interface wrapper completes its own source checks
+               and forwards its original issued reads. Its initialization
+               guard has no transfer row. Actual role guards remain attached
+               to their native Contexts and authenticate again at transfer.
+               Lean SourceClosureWork proves both cases. */
+    }
     requirement def PreludeDependencyRepresentation {
         doc /* Keep Gerbil Core as a complete runtime import-set; filter the two
                POO constructor exports at the export boundary. Verify every public

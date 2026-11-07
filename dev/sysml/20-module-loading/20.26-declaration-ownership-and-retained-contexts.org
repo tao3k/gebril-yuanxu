@@ -329,3 +329,26 @@ native visit counts stayed identical. At 3,200 owners in the observed
 capacity run the sampled live heap was 1,286,353,768 bytes, compared with
 1,311,180,144 in the previous candidate. Both original dense Cases still
 reached the 180-second watchdog.
+
+** Initializer guard custody
+
+Transfer requires the same native Context to supply a private source input,
+owner and initialization guard. The Interface wrapper has its own publication
+return checks and forwards the original read trace. Its Context has no
+private role input or owner, so the reader omits its entry from the role
+initializer index. Actual role Contexts keep the same guard and call it at
+transfer. =SourceClosureWork.unowned_interface_has_no_initializer_transfer=
+and =owned_role_keeps_its_exact_initializer= cover the two cases.
+
+In the 128-owner local probe, each owner had one Interface entry without
+a role source or owner. Removing those 128 entries in the same process
+released 25,488 live bytes after collection. Source currentness still
+passed before the terminal part of the probe. The bounded retention census
+checks the installed rule by comparing the number of initializer entries
+with the private role Context count.
+
+In the terminal part, the same 128 publication rows held their Module
+values while the probe released their metadata guard columns and then
+their evidence references. The two steps released 4,082,016 and 3,624,528
+live bytes, respectively. Those deltas depend on release order. The
+metadata and evidence remain part of the live publication contract.
