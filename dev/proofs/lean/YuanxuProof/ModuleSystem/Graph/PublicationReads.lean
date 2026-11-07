@@ -143,6 +143,72 @@ theorem read_only_checkpoint_preserves_both_refusals
   unfold readWindow
   rw [no_observer_authenticates_the_same_order before visit reads]
 
+-- Source preparation consumes only the first diagnostic. The public API
+-- still returns and validates its receipt. A closed empty result has no
+-- diagnostic whose Type could run, but the maintained aggregate validator
+-- and the actual owner/role field reads must both be established.
+structure SourceAuthoringReceipt (Owner Role Diagnostic : Type) where
+  owner : Owner
+  role : Role
+  diagnostics : List Diagnostic
+  accepted : Bool
+  runtimeExecuted : Bool
+
+def stockAuthoringReceipt {Owner Role Diagnostic : Type} (owner : Owner) (role : Role)
+    (diagnostics : List Diagnostic) : SourceAuthoringReceipt Owner Role Diagnostic :=
+  ⟨owner, role, diagnostics, diagnostics.isEmpty, false⟩
+
+def stockReceiptShape {Owner Role Diagnostic : Type}
+    (ownerValid : Owner → Bool) (roleValid : Role → Bool) (diagnosticValid : Diagnostic → Bool)
+    (receipt : SourceAuthoringReceipt Owner Role Diagnostic) : Bool :=
+  ownerValid receipt.owner && roleValid receipt.role &&
+    (receipt.accepted == receipt.diagnostics.isEmpty) &&
+    !receipt.runtimeExecuted && receipt.diagnostics.all diagnosticValid
+
+theorem empty_stock_receipt_valid
+    {Owner Role Diagnostic : Type} (ownerValid : Owner → Bool) (roleValid : Role → Bool)
+    (diagnosticValid : Diagnostic → Bool) (owner : Owner) (role : Role)
+    (ownerChecked : ownerValid owner = true) (roleChecked : roleValid role = true) :
+    stockReceiptShape ownerValid roleValid diagnosticValid
+      (stockAuthoringReceipt owner role []) = true := by
+  simp [stockReceiptShape, stockAuthoringReceipt, ownerChecked, roleChecked]
+
+def consumeSourceReceipt {Owner Role Diagnostic Failure : Type}
+    (validate : SourceAuthoringReceipt Owner Role Diagnostic →
+      Except Failure (SourceAuthoringReceipt Owner Role Diagnostic))
+    (receipt : SourceAuthoringReceipt Owner Role Diagnostic) :
+    Except Failure (Option Diagnostic) := do
+  let checked ← validate receipt
+  pure (if checked.accepted then none else checked.diagnostics.head?)
+
+def sourceOnlyReceipt {Owner Role Diagnostic Failure : Type}
+    (closed : Bool)
+    (validate : SourceAuthoringReceipt Owner Role Diagnostic →
+      Except Failure (SourceAuthoringReceipt Owner Role Diagnostic))
+    (receipt : SourceAuthoringReceipt Owner Role Diagnostic) :
+    Except Failure (Option Diagnostic) :=
+  if closed && receipt.diagnostics.isEmpty then .ok none
+  else consumeSourceReceipt validate receipt
+
+theorem source_only_preserves_closed_empty_receipt
+    {Owner Role Diagnostic Failure : Type}
+    (validate : SourceAuthoringReceipt Owner Role Diagnostic →
+      Except Failure (SourceAuthoringReceipt Owner Role Diagnostic))
+    (owner : Owner) (role : Role)
+    (maintained : validate (stockAuthoringReceipt owner role []) =
+      .ok (stockAuthoringReceipt owner role [])) :
+    sourceOnlyReceipt true validate (stockAuthoringReceipt owner role []) =
+      consumeSourceReceipt validate (stockAuthoringReceipt owner role []) := by
+  simp only [sourceOnlyReceipt, consumeSourceReceipt, maintained]
+  rfl
+
+theorem source_only_preserves_open_receipt
+    {Owner Role Diagnostic Failure : Type}
+    (validate : SourceAuthoringReceipt Owner Role Diagnostic →
+      Except Failure (SourceAuthoringReceipt Owner Role Diagnostic))
+    (receipt : SourceAuthoringReceipt Owner Role Diagnostic) :
+    sourceOnlyReceipt false validate receipt = consumeSourceReceipt validate receipt := rfl
+
 -- Separate snapshots can disagree. The equality applies only to a single
 -- authenticated pre-delivery read, never across an author call.
 example : joinedDispatch (Result := Nat) false true true (.ok 1) ≠

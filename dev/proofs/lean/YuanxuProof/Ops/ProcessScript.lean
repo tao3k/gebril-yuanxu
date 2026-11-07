@@ -114,6 +114,23 @@ theorem checkpoint_replay_does_not_advance (prepared ownerMatches : Bool) :
     ¬ specificationCheckpoint prepared ownerMatches <
       specificationCheckpoint prepared ownerMatches := Nat.lt_irrefl _
 
+-- Once the Case watchdog claims a stop, the interrupted operation can
+-- catch it and return or raise a different cause. The Case still owns the
+-- original rejection object.
+def finishCase {Failure Value : Type} (stop : Option Failure)
+    (operation : Except Failure Value) : Except Failure Value :=
+  match stop with
+  | some original => .error original
+  | none => operation
+
+theorem claimed_stop_survives_replacement {Failure Value : Type}
+    (original replacement : Failure) :
+    finishCase (Value := Value) (some original) (.error replacement) =
+      .error original := rfl
+
+theorem ordinary_failure_keeps_its_cause {Failure Value : Type} (failure : Failure) :
+    finishCase (Value := Value) none (.error failure) = .error failure := rfl
+
 #guard match checkedProgress (fun line => .ok (.text line)) (.text "line") with
   | .ok value => decide (value = .text "line")
   | .error _ => false
