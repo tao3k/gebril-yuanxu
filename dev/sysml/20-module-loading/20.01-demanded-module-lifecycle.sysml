@@ -65,6 +65,14 @@ package YuanxuModuleLoading {
                callbacks, observers and all later effect boundaries retain
                independent authentication. */
     }
+    part def InterfaceDatumProjection {
+        ref part declaration : SelectedDeclarations;
+        doc /* The private stock Interface datum read supplies both the
+               binding check and deferred-role classification. Keep owner
+               and native compiler identity independent. Custom readtables
+               and source observers preserve separate reads. Release the
+               datums before retaining the prepared declaration. */
+    }
     part def StockAuthoringRun {
         ref part support : RuntimeReadSupport;
         doc /* Share authentication only within an established closed run

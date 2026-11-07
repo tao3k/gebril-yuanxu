@@ -318,3 +318,12 @@ prepared inputs and a public dependency in a separate package. A private
 same-kernel source import does not exercise public alias replacement and cannot
 substitute for that control. The existing selected-source-view lifecycle suite
 owns real Make products and independent output-environment isolation.
+
+** Interface datum projection
+
+One private read of the captured Interface text supplies binding validation
+and deferred-role classification under the stock Gerbil readtable. Source
+observers and custom readtables retain separate reads. The native compiler
+still resolves identity, reads and expands the owner source, and checks
+currentness after effects. The retained preparation owns the source text
+and projections. The temporary datum tree is released before retention.

@@ -306,4 +306,35 @@ theorem fused_directory_entry_cannot_bless_open_return {Failure : Type} (stale :
     (do
       fusedReaderEntry (.ok ()) (.ok ()) (.ok ()) (.ok ()) (.ok ())
       (.error stale : Except Failure Unit)) = .error stale := rfl
+
+-- Only the inert datum read from the same captured Interface bytes is shared.
+-- Owner binding, native identity admission and post-expansion validation retain
+-- independent inputs and first-refusal order.
+theorem interface_datum_read_preserves_owner_and_refusals
+    {Failure Forms Owner Identity Roles : Type}
+    (parsed : Except Failure Forms) (binding : Forms → Except Failure Owner)
+    (nativeIdentity : Owner → Except Failure Identity)
+    (classify : Forms → Option Roles)
+    (afterExpansion : Identity → Except Failure Unit) :
+    (do
+      let forms ← parsed
+      let owner ← binding forms
+      let identity ← nativeIdentity owner
+      let roles := classify forms
+      afterExpansion identity
+      pure (owner, identity, roles)) =
+    (do
+      let forms ← parsed
+      let owner ← binding forms
+      let identity ← nativeIdentity owner
+      let forms ← parsed
+      let roles := classify forms
+      afterExpansion identity
+      pure (owner, identity, roles)) := by
+  cases parsed with
+  | error => rfl
+  | ok forms =>
+    cases binding forms with
+    | error => rfl
+    | ok owner => cases nativeIdentity owner <;> rfl
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

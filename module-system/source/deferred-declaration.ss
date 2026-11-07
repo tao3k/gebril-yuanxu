@@ -138,13 +138,14 @@
   (parameterize ((current-expander-context context))
     (module-role-values names)))
 (def (module-deferred-role-exports interface-text role-texts
+                                  interface-forms: (interface-forms #f)
                                   private-import: (observe-private-import void))
   ;; Only inspect the already guarded byte snapshots. No source initializer,
   ;; macro expander, Type predicate or role loader runs here.
   (with-catch
     (lambda (_open) #f)
     (lambda ()
-      (match (call-with-input-string interface-text read-all)
+      (match (or interface-forms (call-with-input-string interface-text read-all))
         ([['.def (? symbol?) . body]]
          (def rows (closed-rows body))
          (closed-symbol (closed-field rows 'identity:))

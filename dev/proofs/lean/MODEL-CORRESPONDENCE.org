@@ -438,6 +438,12 @@ stage timings. =module-eval-once-1000-test.ss= separately measures one named
 declaration EVAL expression with operation instrumentation off; its hot repeat
 does not stand in for fresh source admission or business evaluation.
 
+=PublicationReads.interface_datum_read_preserves_owner_and_refusals= models
+sharing the stock Interface datum tree between preparation's binding check and
+the deferred role classifier. The native identity, effect and currentness
+boundaries remain separate in =source/preparation.ss=. Observed or custom
+reader operations retain both datum reads.
+
 The installed 13.35 session refinement keeps fixed checkpoints and original read
 roots in the private linked-publication carrier, indexes append-only membership
 using an ordinary POO derived slot, and reauthenticates the complete native union

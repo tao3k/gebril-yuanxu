@@ -18,6 +18,8 @@
         (only-in :yuanxu/module-system/source/config-prelude)
         (only-in :yuanxu/module-system/source/module-prelude)
         (only-in :std/io/tempfile call-with-temporary-directory)
+        (only-in :gerbil/runtime/gambit current-readtable)
+        (only-in :gerbil/runtime/syntax __*readtable*)
         (only-in :gerbil/expander current-expander-module-import expander-context-id syntax-e
                  core-read-module/sexp core-read-module-package core-library-package-plist __module-pkg-cache syntax->datum
                  core-resolve-library-module-path
@@ -237,12 +239,10 @@
   (if (source-datum? value) (write value port)
       (call-with-module-source-callback (lambda () (write value port)))))
 
-;; Return only the binding identity. Interpreted slot/guard closures retain
-;; enclosing lexical frames, including unused sibling bindings. The persistent
-;; preparation must not own a second parsed interface tree beside its bytes.
-(def (publication-source-binding path text)
-  (let* ((forms (call-with-input-string text read-all))
-         (declarations (filter (lambda (form) (and (pair? form) (eq? (car form) '.def))) forms)))
+;; The binding check and the closed role classifier consume the same private
+;; datums. No datum is passed to the native reader or an author callback.
+(def (publication-source-binding path forms)
+  (let (declarations (filter (lambda (form) (and (pair? form) (eq? (car form) '.def))) forms))
     (unless (and (= (length declarations) 1)
                  (andmap (cut module-interface-form? <> forms) forms))
       (error "interface.ss must contain one Module .def with optional imports and local re-exports" path))
@@ -268,7 +268,13 @@
      (lambda (file)
        (let (text (module-source-read file))
          (hash-put! texts file text) text)))
-      (let* ((name (publication-source-binding path (hash-ref texts path)))
+      (let* ((interface-text (hash-ref texts path))
+             (share-forms? (and (not (current-module-source-observer))
+                                (eq? (current-readtable) __*readtable*)))
+             (interface-forms
+               (module-source-measure-operation 'reader-interface-datums
+                 (lambda () (call-with-input-string interface-text read-all))))
+             (name (publication-source-binding path interface-forms))
              (package-sources (package-source-snapshot path))
              (compiler-info (module-compiler-identity path))
              (prelude-inputs
@@ -316,10 +322,12 @@
         (def private-import-roles '())
         (def deferred-roles
           (and shared-prelude?
-            (module-deferred-role-exports (hash-ref texts path)
+            (module-deferred-role-exports interface-text
               (map (lambda (role)
                      (cons role (hash-ref texts
                        (path-expand (string-append (symbol->string role) ".ss") root)))) roles)
+              interface-forms: (and share-forms? (not (current-module-source-observer))
+                                    (eq? (current-readtable) __*readtable*) interface-forms)
               private-import: (lambda (role)
                                 (unless (memq role private-import-roles)
                                   (set! private-import-roles (cons role private-import-roles)))))))
@@ -360,6 +368,8 @@
            (if (hash-key? texts (path-expand "build.ss" root))
              (list '(define-module-build-binding Build)) '())
            (list (if deferred `(include-deferred-declaration ,path ,deferred ,resolver) `(include ,path))))))
+        ;; Retained preparation and guard closures own bytes, not this parse tree.
+        (set! interface-forms #f)
         (def construction-intact? (object-construction-current?))
         (def value
           (.o bind-these: #f path source: source-value identity: owner binding: name

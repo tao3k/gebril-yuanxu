@@ -14,6 +14,12 @@
           '((types . "(def ScopeContract #f) (export ScopeContract)")
             (config . "(def Config #f) (export Config)")))
         '((types ScopeContract) (config Config)))
+      (check-equal?
+        (module-deferred-role-exports interface
+          '((types . "(def ScopeContract #f) (export ScopeContract)")
+            (config . "(def Config #f) (export Config)"))
+          interface-forms: (call-with-input-string interface read-all))
+        '((types ScopeContract) (config Config)))
       ;; Preserve the original implicit Config capability. Its runtime binding
       ;; is resolved after role expansion, as the integration Case checks.
       (check-equal?
