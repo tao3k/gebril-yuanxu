@@ -8,10 +8,10 @@
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
         (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
         (only-in :yuanxu/module-system/graph/funs module-closure)
-        (only-in :yuanxu/feature-system/model feature-descriptor feature-selection feature-profile)
-        (only-in :yuanxu/feature-system/resolver resolve-feature-profile)
-        (only-in :yuanxu/feature-system/feature-manifest feature-manifest-bundle)
-        (only-in :yuanxu/feature-system/composition feature-composition-plan))
+        (only-in :yuanxu/module-system/feature-system/model feature-descriptor feature-selection feature-profile)
+        (only-in :yuanxu/module-system/feature-system/resolver resolve-feature-profile)
+        (only-in :yuanxu/module-system/feature-system/feature-manifest feature-manifest-bundle)
+        (only-in :yuanxu/module-system/feature-system/composition feature-composition-plan))
 (export select-module-graph)
 
 ;; One complete value from the EXISTING Feature publisher. Runtime .cc copies

@@ -6,7 +6,7 @@
 ;;; Invariant: dependency closure cannot introduce an undeclared feature identity.
 (import (only-in :std/list/list fold fold-right map filter-map)
         (runtime: :clan/poo/object)
-        :yuanxu/feature-system/model
+        :yuanxu/module-system/feature-system/model
         :yuanxu/utilities/functional)
 
 (export resolve-feature-profile)

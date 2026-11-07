@@ -41,7 +41,7 @@ policy and deployment providers. The shared JSON Schema bridge is implemented in
 Core modules/json-schema. Optional-extension and
 build protocols may be implemented by consumers; Core must not import product
 owners to implement a shared primitive. The reusable Feature System is implemented in Core under
-[[file:../../feature-system/design/README.org][its ownership and migration guide]]; no import back into product implementations
+[[file:../../module-system/feature-system/design/README.org][its ownership and migration guide]]; no import back into product implementations
 is needed or permitted. Moving documentation is not a source/API
 migration or proof that an adapter has been implemented.
 

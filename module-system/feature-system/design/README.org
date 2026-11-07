@@ -8,7 +8,7 @@
 * Shared mechanism and product adapter
 
 The Feature System implementation is owned by Core, not the product's former
-src/feature-system. Public declarations remain POO objects and the existing
+module-system/feature-system. Public declarations remain POO objects and the existing
 bounded defrules forms. No compatibility modules or parallel implementation remain.
 
 | Owner | Contents |
@@ -17,16 +17,35 @@ bounded defrules forms. No compatibility modules or parallel implementation rema
 | [[file:../domain-case/interface.ss][Core DomainCase]] | generic closure, Contract projection, instance overlay and method/projection binding |
 | Core capability/policy/adapter binding | provider identity/version matching, requirements and inert handoff values |
 | Core Bundle v1 | lowering, validated foreign arena images, DomainCase projection and explicit byte-file writing |
-| [[file:../../../modules/workflow/scenario/bundle-v1-projection.ss][Product Scenario adapter]] | Scenario -> execution Plan; node identities, guard policy, graph edges and environment handoff |
+| [[file:../../../../modules/workflow/scenario/bundle-v1-projection.ss][Product Scenario adapter]] | Scenario -> execution Plan; node identities, guard policy, graph edges and environment handoff |
+
+** Selected Module Features
+
+Module System owns Feature selection. A module's Interface declares its
+Feature descriptors. The selected graph records each enabled Feature with
+its owning Module ID, dependencies and optional native Interface entry.
+The resolver orders the selected contributions, then Module System checks
+the core and selected Feature Contracts on the final receiver. Withdrawal
+validates the Feature name without collecting its Interface or forcing its
+contribution.
+
+The build projection uses the enabled Feature's Interface as a source
+root. Gerbil follows that root's native imports, including imports made
+solely to re-export bindings. A product facade that re-exports multiple
+capabilities makes all their imports part of the selected build. A
+separately selectable capability needs its own Feature declaration and
+dependency edges. Core cannot infer that a Gerbil export is optional from
+whether a particular consumer happened to read it. The selected build and
+clean use the same target projection.
 
 The adapter reference identifies a downstream integration, not a Core import.
 Core never imports its Plan types or Scenario syntax. Wire IDs, Bundle layout,
 source-lock IDs and feature resolution precedence are unchanged.
 
-The extracted [[file:../../composition/roles.ss][runtime role algorithms]] retain the existing constant-slot fast lane
+The extracted [[file:../../../composition/roles.ss][runtime role algorithms]] retain the existing constant-slot fast lane
 and runtime .mix fallback semantics. Computed/self/super slots are not silently
 flattened into constants. Product flow/task/runtime roles remain product objects.
-[[file:../../utilities/functional.ss][Pure functions]] and [[file:../../object-family/role-syntax.ss][existing role-object syntax]] have a single shared owner.
+[[file:../../../utilities/functional.ss][Pure functions]] and [[file:../../../object-family/role-syntax.ss][existing role-object syntax]] have a single shared owner.
 The public function names are retained as definitions at that owner, not aliases
 from deleted product modules.
 
@@ -36,7 +55,7 @@ A selected Module's mandatory baseline is a Module System responsibility.
 Optional descriptor resolution and feature projections are Feature System
 responsibilities. No baseline operation has been wrapped in a synthetic Feature.
 The selected Core/Feature/init/build integration remains pending where described
-in [[file:../../module-system/design/03-publication-selection.org][the publication/selection protocol]]. This migration does not implement directory
+in [[file:../../design/03-publication-selection.org][the publication/selection protocol]]. This migration does not implement directory
 loading, capability discovery or init-source resolution.
 
 * Product source organization

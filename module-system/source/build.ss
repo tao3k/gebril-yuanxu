@@ -32,7 +32,7 @@
                  module-source-package-info)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
         (only-in :yuanxu/module-system/source/publication requirement-option)
-        (only-in :yuanxu/feature-system/capability-model feature-projection-request?)
+        (only-in :yuanxu/module-system/feature-system/capability-model feature-projection-request?)
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
         (only-in :yuanxu/module-system/building/package write-selected-package))
 (export module-test-source-spec module-build-graph module-build-graph/linked unique-build-inputs retained-build-entries BuildContributionContract ExternalPackageContributionContract BuildSpecContract

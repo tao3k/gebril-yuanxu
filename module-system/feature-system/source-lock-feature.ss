@@ -10,7 +10,7 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/hash/misc hash-key? hash-put! hash-ref)
         (only-in :std/encoding/hex hex-encode)
-        :yuanxu/feature-system/model)
+        :yuanxu/module-system/feature-system/model)
 
 (export +sources-lock-feature-id+
         sources-lock-feature

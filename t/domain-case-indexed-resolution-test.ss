@@ -8,7 +8,7 @@
 (import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         (only-in :clan/poo/object .ref)
-        :yuanxu/feature-system/domain-case/contracts)
+        :yuanxu/module-system/feature-system/domain-case/contracts)
 
 (export domain-case-indexed-resolution-test)
 

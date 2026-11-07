@@ -14,8 +14,8 @@
         (only-in :clan/poo/type String)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/mop Type.)
-        (only-in :yuanxu/feature-system/model feature-descriptor)
-        (only-in :yuanxu/feature-system/capability-model feature-projection-request)
+        (only-in :yuanxu/module-system/feature-system/model feature-descriptor)
+        (only-in :yuanxu/module-system/feature-system/capability-model feature-projection-request)
         (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
         (only-in :yuanxu/module-system/source/admission module-source-type module-source-read current-module-source-observer
                  call-with-module-source-read-cache module-source-admit-current!)
@@ -376,7 +376,7 @@
          (let (path (path-expand "modules/app/web/interface.ss" root))
            (write-file path
             (string-append
-             "(import (only-in :yuanxu/feature-system/model feature-descriptor)) "
+             "(import (only-in :yuanxu/module-system/feature-system/model feature-descriptor)) "
              "(.def Published identity: 'app/web core: (.o requires: (.o Schema: (.o module-id: 'core/schema contract: Scope)) scope-contract: Scope exports: (error \"must not link while building\")) features: "
              "(.o early: (feature-descriptor (.o feature-id: 'app/web/early owner-module-id: 'app/web projections: (list (.o kind: 'module/build roots: '(\"extra/early\"))))) "
              "late: (feature-descriptor (.o feature-id: 'app/web/late owner-module-id: 'app/web requires: '(app/web/early) projections: (list (.o kind: 'module/build roots: '(\"extra/late\"))))) "

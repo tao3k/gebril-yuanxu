@@ -7,7 +7,7 @@
 (import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :yuanxu/feature-system/bundle-v1-lowering)
+        :yuanxu/module-system/feature-system/bundle-v1-lowering)
 
 (def (sample-component component-id composition-order)
   (feature-bundle-v1-component

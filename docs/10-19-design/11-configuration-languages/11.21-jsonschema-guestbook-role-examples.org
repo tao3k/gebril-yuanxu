@@ -15,7 +15,7 @@ local role imports are shown. This does not assert that current code auto-inject
 unbound names or that source discovery replaces Gerbil's phase/import rules.
 
 The bridge is now implemented under [[file:../../../modules/json-schema/interface.ss][Core modules/json-schema]], and the Feature
-System implementation lives under [[file:../../../feature-system/interface.ss][Core feature-system]]. These are reusable moved
+System implementation lives under [[file:../../../module-system/feature-system/interface.ss][Core feature-system]]. These are reusable moved
 owners, not future source extractions. The four-role object assembly, publication
 linker and Guestbook/Kubernetes adapter examples below remain proposed. The shorter
 YuanxuObjectContract. export rename remains pending independently. See the

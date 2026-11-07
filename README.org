@@ -148,7 +148,7 @@ Profiles, Scenarios, reference checkouts and product integration adapters.
 
 * Feature System migration design
 
-[[file:feature-system/design/README.org][The Feature System extraction design]] assigns the reusable feature framework
+[[file:module-system/feature-system/design/README.org][The Feature System extraction design]] assigns the reusable feature framework
 to Core and records current product dependencies, the Bundle writer adapter split,
 source-role organization and acceptance requirements. The shared implementation now resides in Core. Scenario/Plan conversion remains
 a downstream adapter; no compatibility source tree is retained.

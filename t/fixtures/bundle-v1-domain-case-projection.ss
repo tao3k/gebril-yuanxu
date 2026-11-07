@@ -3,8 +3,8 @@
 (import (only-in :std/list/list map)
         :clan/poo/object
         :yuanxu/utilities/functional
-        :yuanxu/feature-system/domain-case/interface
-        :yuanxu/feature-system/interface)
+        :yuanxu/module-system/feature-system/domain-case/interface
+        :yuanxu/module-system/feature-system/interface)
 
 (def (fixture-id prefix index)
   (string->symbol
