@@ -453,16 +453,14 @@
             (if (and frame (eq? roots (protected-source-frame-roots frame)))
               (module-source-measure-operation 'prepared-batch-checkpoint checkpoints!)
               (replay!))))))
-    (def (check-current!)
+    (def (check-source-current!)
       (let (frame (protected-preparations))
         (unless (if frame
                     (module-source-observe (protected-source-frame-current? frame))
                     (source-current?))
           (set! failed? #t)
-          (error "stale module scope generation" generation-value)))
-      ;; The realized narrow guard is source-only. Full package effects
-      ;; remain outside this boundary in the public/package guards.
-      (when realization ((.ref realization 'sources-current)))
+          (error "stale module scope generation" generation-value))))
+    (def (check-publications-current!)
       ;; Pending and accepted records share this ONE existing index. Replaying
       ;; projected runtime evidence detects Contract/policy edits without
       ;; repeating classification or retaining discarded construction reads.
@@ -474,6 +472,19 @@
                (owned-read-function-scope?))
         (check-indexed-publications!)
         (check-publications!)))
+    (def (check-current!)
+      (check-source-current!)
+      (if realization
+        (begin
+          ;; A package view may replace the source guard, including its getter.
+          ;; Neither that callback nor the return check may inherit old bytes.
+          (call-with-module-source-callback
+            (lambda () ((.ref realization 'sources-current))))
+          (call-with-module-source-read-cache
+            (lambda ()
+              (check-source-current!)
+              (check-publications-current!))))
+        (check-publications-current!)))
     (def (current! (origin 'link-current))
       (when failed? (error "module scope session was refused" generation-value))
       (module-source-measure-operation 'link-current

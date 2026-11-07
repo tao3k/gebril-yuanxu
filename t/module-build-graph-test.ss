@@ -318,6 +318,24 @@
          (check-equal? (eq? (.get realized selected-graph) selected) #t)
          (write-file (path-expand "modules/app/web/config.ss" root) "(def Config 'changed)")
          (check-exception ((.get realized admit-current)) error?))))
+    (yuanxu-test-case "package source callback cannot return with a changed selected source"
+      (with-source
+       (lambda (root _prefix)
+         (def view (fixture-view root))
+         (def graph (.get view build-graph))
+         (def source (path-expand "modules/app/web/config.ss" root))
+         (def calls 0)
+         (def packages
+           (.o build-graph: graph packages: (.o) admit-current: void
+             sources-current:
+             (lambda ()
+               (set! calls (1+ calls))
+               (write-file source "(def Config 'changed)"))))
+         (def realized (.call view .with-packages packages))
+         (def failure (with-catch values (lambda () (.call realized sources-current))))
+         (check-equal? calls 1)
+         (check-equal? (Error? failure) #t)
+         (check-equal? (Error-message failure) "stale module scope generation"))))
     (yuanxu-test-case "one pure window shares a Graph traversal but independent calls recheck"
       (with-source
        (lambda (root _prefix)
