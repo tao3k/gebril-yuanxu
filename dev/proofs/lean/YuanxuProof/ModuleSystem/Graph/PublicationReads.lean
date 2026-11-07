@@ -267,6 +267,42 @@ theorem no_direct_delivery_for_open_or_compiled (privateWrapper stock : Bool)
     directDelivery privateWrapper stock = false := by
   rcases openOrCompiled with h | h <;> simp [directDelivery, h]
 
+/-- Ordered guards over the same read state. The authenticator supplies the
+same observation for every lane, including the first refusal. -/
+def authenticateLanes (auth : Read → Except Failure Unit) :
+    List (List Read) → Except Failure Unit
+  | [] => .ok ()
+  | reads :: lanes => do
+    authenticateAndVisit auth (fun _ => ()) reads
+    authenticateLanes auth lanes
+
+theorem authenticate_append (auth : Read → Except Failure Unit) (left right : List Read) :
+    authenticateAndVisit auth (fun _ => ()) (left ++ right) = (do
+      authenticateAndVisit auth (fun _ => ()) left
+      authenticateAndVisit auth (fun _ => ()) right) := by
+  induction left with
+  | nil => rfl
+  | cons read rest ih =>
+    simp only [List.cons_append, authenticateAndVisit]
+    cases auth read with
+    | error => rfl
+    | ok => exact ih
+
+theorem same_window_preserves_first_refusal
+    (auth : Read → Except Failure Unit) (lanes : List (List Read)) :
+    authenticateAndVisit auth (fun _ => ()) lanes.flatten = authenticateLanes auth lanes := by
+  induction lanes with
+  | nil => rfl
+  | cons reads rest ih =>
+    simp only [List.flatten_cons, authenticate_append, authenticateLanes, ih]
+
+/-- Reusing an issued token's identity supplies no equality of observations
+across an effect. The after-check can refuse the very same token. -/
+example :
+    readWindow (fun (_ : Nat) => (.ok () : Except String Unit))
+        (fun _ => .error "changed") (fun _ => ()) [7] (.ok 9) =
+      .error "changed" := rfl
+
 -- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,
 -- unchanged real observer delivery, and no nonlocal continuation escape.

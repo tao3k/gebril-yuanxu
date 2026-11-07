@@ -5,6 +5,7 @@
 (import :std/test :clan/poo/object
         (only-in :yuanxu/ops/func run-script)
         (only-in :yuanxu/ops/progress execution-progress!)
+        (only-in :yuanxu/module-system/building/products selected-output-source-directory)
         (only-in :gerbil/expander core-read-module/sexp)
         "./qualification/module-bootstrap/objects.ss")
 (export module-build-process-test)
@@ -104,6 +105,9 @@
       (check-equal? (length (filter (cut equal? <> "object-types/facts") names)) 1)
       (check-equal? (member "module-system/building/artifacts" names) #f)
       (def cold-output (build-command Build "compile"))
+      (def recorded-interface
+        (path-expand "yuanxu/modules/json-schema/interface.ss" (selected-output-source-directory lib)))
+      (check-equal? (file-exists? recorded-interface) #f)
       (def bootstrap-targets
         '("... compile module-system/selection/init-syntax" "... compile prelude"))
       (check-equal? (filter (cut member <> bootstrap-targets) (string-split cold-output #\newline))
@@ -120,6 +124,7 @@
              prelude-products))
       (def first-times (product-times))
       (def hot-output (build-command Build "compile"))
+      (check-equal? (file-exists? recorded-interface) #f)
       (check-equal? (string-contains hot-output "... compile ") #f)
       (check-equal? (string-contains hot-output "... execute compile job ") #f)
       (check-equal? (product-times) first-times)

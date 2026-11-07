@@ -207,6 +207,15 @@ package YuanxuSelectedPackageBuilds {
                own canonical environment. Cross-owner artifact issuance remains
                separately refused until the existing issuer can cover all owners. */
     }
+    requirement def BootstrapPreludeDescriptor {
+        doc /* An ordinary Make bootstrap that resolves a source Prelude
+               admits its bytes but publishes no shared Interface descriptor.
+               If an older descriptor exists, retire its native marker first
+               under the same output lock. A subsequent compiled-Prelude
+               invocation leaves an unrecorded marker with Make. A selected
+               consumer still requires its exact descriptor.
+               SourceView.descriptorAction models this decision. */
+    }
     requirement def CompletePublication {
         doc /* Lean publication_sources_current and missing_realization_refused
                retain complete input footprint and external realization demand.

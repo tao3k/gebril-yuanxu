@@ -118,6 +118,33 @@ structure Stamp where
   platform : String
   deriving DecidableEq, Repr
 
+inductive DescriptorAction where
+  | leaveNative
+  | retireBeforeBuild
+  | compareAndRecord
+  deriving DecidableEq
+
+/-- Ordinary Make can retain its own marker. A selected consumer needs the
+exact shared view, and the source-only Prelude route grants no such record. -/
+def descriptorAction (localBuild sourcePrelude previous marker : Bool) : DescriptorAction :=
+  if localBuild && sourcePrelude then
+    if previous then .retireBeforeBuild else .leaveNative
+  else if !localBuild || previous || !marker then .compareAndRecord
+  else .leaveNative
+
+theorem local_source_prelude_issues_no_descriptor (previous marker : Bool) :
+    descriptorAction true true previous marker ≠ .compareAndRecord := by
+  cases previous <;> simp [descriptorAction]
+
+theorem source_route_retires_an_old_descriptor (marker : Bool) :
+    descriptorAction true true true marker = .retireBeforeBuild := rfl
+
+theorem warm_local_marker_stays_with_make :
+    descriptorAction true false false true = .leaveNative := rfl
+
+theorem selected_consumer_requires_a_descriptor (sourcePrelude previous marker : Bool) :
+    descriptorAction false sourcePrelude previous marker = .compareAndRecord := rfl
+
 structure UnitState where
   descriptor : Stamp
   productInput : Option Stamp
