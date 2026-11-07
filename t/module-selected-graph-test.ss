@@ -13,7 +13,7 @@
         (prefix-in (only-in :gerbil/runtime/mop find-method bind-method!) runtime.)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/mop Type.)
-        :yuanxu/feature-system/model
+        :yuanxu/module-system/feature-system/model
         :yuanxu/module-system/source/init
         :yuanxu/module-system/source/objects
         (only-in :yuanxu/module-system/source/selection select-module-graph)

@@ -6,7 +6,7 @@
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :yuanxu/feature-system/interface
+        :yuanxu/module-system/feature-system/interface
         :yuanxu/utilities/functional)
 
 (export feature-system-test)

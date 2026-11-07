@@ -7,7 +7,7 @@
 (import (only-in :std/list/list fold filter-map)
         (runtime: :clan/poo/object)
         :yuanxu/composition/roles
-        :yuanxu/feature-system/adapter-projection-binding
+        :yuanxu/module-system/feature-system/adapter-projection-binding
         :yuanxu/utilities/functional)
 
 (export +feature-runtime-c-bundle-version+

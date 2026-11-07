@@ -159,7 +159,7 @@ turn a held callback into a revocable capability or a conditional effect commit.
 
 * Inheritance, reflection and role assembly
 
-=composition/roles.ss= and =feature-system/domain-case/interface.ss= maintain
+=composition/roles.ss= and =module-system/feature-system/domain-case/interface.ss= maintain
 constant-only overlay eligibility, an owner index, copied defaults and a second
 instance assembly path. They are candidates for retirement in favor of runtime
 =.mix=/=.cc=, persistent prototype storage and declared reflection.

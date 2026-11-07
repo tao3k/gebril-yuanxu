@@ -7,7 +7,7 @@
 (import (only-in :std/list/list fold map filter-map)
         (runtime: :clan/poo/object)
         :yuanxu/composition/roles
-        :yuanxu/feature-system/domain-case-assembly
+        :yuanxu/module-system/feature-system/domain-case-assembly
         :yuanxu/utilities/functional)
 
 (export +feature-policy-contribution-kind+

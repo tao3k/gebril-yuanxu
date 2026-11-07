@@ -7,8 +7,8 @@
          :std/test
         :clan/poo/object
         :yuanxu/composition/roles
-        :yuanxu/feature-system/interface
-        :yuanxu/feature-system/domain-case/interface
+        :yuanxu/module-system/feature-system/interface
+        :yuanxu/module-system/feature-system/domain-case/interface
         :yuanxu/utilities/functional)
 
 (export feature-system-domain-case-assembly-test)

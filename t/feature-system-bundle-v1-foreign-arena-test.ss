@@ -7,8 +7,8 @@
          :std/test
         :clan/poo/object
         :yuanxu/utilities/functional
-        :yuanxu/feature-system/bundle-v1-lowering
-        :yuanxu/feature-system/bundle-v1-foreign-arena)
+        :yuanxu/module-system/feature-system/bundle-v1-lowering
+        :yuanxu/module-system/feature-system/bundle-v1-foreign-arena)
 
 (export feature-system-bundle-v1-foreign-arena-test)
 

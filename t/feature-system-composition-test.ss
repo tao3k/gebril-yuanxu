@@ -7,7 +7,7 @@
          :std/test
         :clan/poo/object
         :yuanxu/composition/roles
-        :yuanxu/feature-system/interface
+        :yuanxu/module-system/feature-system/interface
         :yuanxu/utilities/functional)
 
 (export feature-system-composition-test)

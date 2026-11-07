@@ -65,7 +65,7 @@
         (runtime: :clan/poo/object)
         :yuanxu/utilities/functional)
 
-(import :yuanxu/feature-system/bundle-v1-lowering-model)
+(import :yuanxu/module-system/feature-system/bundle-v1-lowering-model)
 
 ;; : (-> PooFeatureBundleV1CompactId PooFeatureBundleV1CompactId Integer)
 (def (compare-compact-ids left right)

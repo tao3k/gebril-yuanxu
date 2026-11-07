@@ -7,7 +7,7 @@
 (import (only-in :std/list/list map)
         (runtime: :clan/poo/object)
         :yuanxu/composition/roles
-        :yuanxu/feature-system/feature-manifest
+        :yuanxu/module-system/feature-system/feature-manifest
         :yuanxu/utilities/functional)
 
 (export feature-composition-plan

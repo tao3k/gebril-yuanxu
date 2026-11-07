@@ -18,7 +18,7 @@
 (def (feature-interface-roles root)
   (.o
     interface:
-    `((import (only-in :yuanxu/feature-system/model feature-descriptor))
+    `((import (only-in :yuanxu/module-system/feature-system/model feature-descriptor))
       (.def Fixture
         identity: 'custom/example
         core:
@@ -174,7 +174,7 @@
             (call-with-output-string
               (lambda (port)
                 (write
-                  `(import (only-in :yuanxu/feature-system/model feature-descriptor)) port)
+                  `(import (only-in :yuanxu/module-system/feature-system/model feature-descriptor)) port)
                 (write
                   `(.def Fixture identity: 'custom/example
                     core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope)
