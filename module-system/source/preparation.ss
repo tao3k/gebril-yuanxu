@@ -353,11 +353,12 @@
            (list 'package: (substring id-text 0 (- (string-length id-text) (string-length suffix)))
                  'namespace: (caddr compiler-info)
                  `(import ,@(if shared-prelude? '() '((except-in :clan/poo/object .def)))
-                          ,(if deferred
-                             `(only-in :yuanxu/module-system/source/deferred-declaration
-                                       .def define-module-build-binding include-deferred-declaration
-                                       ,@(if compiled? '(module-import-role-values) '()))
-                             '(only-in :yuanxu/module-system/source/declaration .def define-module-build-binding))
+                          (only-in :yuanxu/module-system/source/declaration .def define-module-build-binding)
+                          ,@(if deferred
+                              `((only-in :yuanxu/module-system/source/deferred-declaration
+                                         include-deferred-declaration
+                                         ,@(if compiled? '(module-import-role-values) '())))
+                              '())
                           ,@(if (and deferred compiled? (pair? roles))
                               `((for-template
                                  ,@(map (lambda (role)

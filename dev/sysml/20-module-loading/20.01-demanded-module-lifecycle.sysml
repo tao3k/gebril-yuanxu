@@ -73,12 +73,11 @@ package YuanxuModuleLoading {
                and source observers preserve separate reads. Release the
                datums before retaining the prepared declaration. */
     }
-    part def DeferredWrapperImports {
+    part def ReaderFormProjection {
         ref part declaration : SelectedDeclarations;
-        doc /* One existing native module exports the fixed declaration
-               and deferred-wrapper bindings. Keep them strong and retain
-               their phase and identity. Each owner keeps its original
-               context, payload expansion, and compiler role imports. */
+        doc /* Store one Reader form lane for the admitted owner. Preserve
+               native compiler forms separately. Selecting the deferred
+               lane does not demand eager role forms. */
     }
     part def CandidateReturn {
         ref part support : RuntimeReadSupport;

@@ -444,11 +444,9 @@ the deferred role classifier. The native identity, effect and currentness
 boundaries remain separate in =source/preparation.ss=. Observed or custom
 reader operations retain both datum reads.
 
-=ImportCorrespondence.wrapper_fixed_imports_preserve_binding_order= models
-the deferred wrapper's joined list of strong native bindings. Gerbil's
-=free-identifier=?= test checks the original declaration and Build
-bindings against their re-exports. The owner and actual expansion remain
-independent of the grouping.
+=ImportCorrespondence.deferred_reader_does_not_demand_eager_forms= and
+=eager_reader_does_not_demand_deferred_forms= model the single lazy
+=reader-forms= slot. The compiler projection remains independently owned.
 
 =PublicationReads.candidate_return_union_preserves_first_refusal= requires
 the original check order when joined preparation and admission preflight

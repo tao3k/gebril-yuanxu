@@ -349,23 +349,18 @@ theorem two_revisions_of_one_path_cannot_both_pass
   have rightRead := current (path, some right) (List.mem_map.mpr ⟨(path, right), second, rfl⟩)
   exact different (Option.some.inj (leftRead.symm.trans rightRead))
 
--- Each entry is the native binding identity at its phase. Re-exporting a
--- binding through an existing native module retains that identity.
-def wrapperImportProjection {Binding : Type}
-    (imports : List (List Binding)) (ownerImports : List Binding) : List Binding :=
-  imports.flatten ++ ownerImports
+def selectedReaderForms {Forms : Type} (deferred : Bool)
+    (deferredForms eagerForms : Unit → Forms) : Forms :=
+  if deferred then deferredForms () else eagerForms ()
 
-theorem wrapper_fixed_imports_preserve_binding_order {Binding : Type}
-    (declaration deferred ownerImports : List Binding) :
-    wrapperImportProjection [declaration ++ deferred] ownerImports =
-      wrapperImportProjection [declaration, deferred] ownerImports := by
-  simp [wrapperImportProjection]
+theorem deferred_reader_does_not_demand_eager_forms {Forms : Type}
+    (deferredForms leftEager rightEager : Unit → Forms) :
+    selectedReaderForms true deferredForms leftEager =
+      selectedReaderForms true deferredForms rightEager := rfl
 
-theorem wrapper_projection_keeps_owner_and_effect {Owner Binding Result Failure : Type}
-    (owner : Owner) (declaration deferred ownerImports : List Binding)
-    (expand : Owner → List Binding → Except Failure Result) :
-    expand owner (wrapperImportProjection [declaration ++ deferred] ownerImports) =
-      expand owner (wrapperImportProjection [declaration, deferred] ownerImports) := by
-  rw [wrapper_fixed_imports_preserve_binding_order]
+theorem eager_reader_does_not_demand_deferred_forms {Forms : Type}
+    (eagerForms leftDeferred rightDeferred : Unit → Forms) :
+    selectedReaderForms false leftDeferred eagerForms =
+      selectedReaderForms false rightDeferred eagerForms := rfl
 
 end YuanxuProof.ModuleSystem.Graph.ImportCorrespondence
