@@ -17,6 +17,7 @@
 (export ops-process-script-test ops-watchdog-test)
 ;; Consume the Core publication directly; Ops has no OpenTofu fixture dependency.
 (def ProcessScript. (.get Ops prototypes Script))
+(def ScriptBatch. (.get Ops prototypes ScriptBatch))
 (def (process-gone? pid)
   (with-catch
     (lambda (failure)
@@ -25,6 +26,64 @@
     (lambda () (kill pid 0) #f)))
 (def ops-process-script-test
   (test-suite "POO declarative operational scripts"
+    (yuanxu-test-case "a batch admits every declaration before starting a process"
+      (call-with-temporary-directory "ops-batch-preflight"
+        (lambda (root)
+          (def marker (path-expand "started" root))
+          (def script (.cc ProcessScript. command: (list "touch" marker) timeout: 5))
+          (def batch (.cc ScriptBatch. scripts: (list script (.cc script timeout: #f))))
+          (check (procedure? (.get batch .run)) => #t)
+          (check-exception (.call batch .run) (lambda (_) #t))
+          (check-equal? (file-exists? marker) #f))))
+    (yuanxu-test-case "bounded native children overlap and report in declaration order"
+      (call-with-temporary-directory "ops-batch-overlap"
+        (lambda (root)
+          (def (script arguments)
+            (.cc ProcessScript. directory: root timeout: 8 command: (cons "sh" arguments)))
+          (def barrier
+            "printf ready > \"$1\"; while [ ! -f \"$2\" ]; do sleep .02; done; touch \"$1.done\"; printf %s \"$1\"; exit \"$3\"")
+          (def first (script (list "-c" barrier "barrier" "left" "right" "0")))
+          (def second (script (list "-c" barrier "barrier" "right" "left" "17")))
+          (def third (script '("-ec" "test -f left.done || test -f right.done; printf tail")))
+          (def results (.call Ops run-batch (.cc ScriptBatch. scripts: (list first second third) concurrency: 2)))
+          (check-equal? (map (lambda (result) (.get result ok?)) results) '(#t #f #t))
+          (check-equal? (.get (car results) receipt output) "left")
+          (check-equal? (Error-irritants (.get (cadr results) failure)) '(17 #f "right"))
+          (check-equal? (.get (caddr results) receipt output) "tail"))))
+    (yuanxu-test-case "batch cancellation joins workers, kills owned children and leaves the queue untouched"
+      (call-with-temporary-directory "ops-batch-cancel"
+        (lambda (root)
+          (def pids (map (cut path-expand <> root) '("left.pid" "right.pid")))
+          (def pending (path-expand "queued" root))
+          (def (wait-script path)
+            (.cc ProcessScript. timeout: 15
+              command: (list "sh" "-ec" "printf '%s\\n' \"$$\" > \"$1.tmp\"; mv \"$1.tmp\" \"$1\"; exec sleep 15" "waiting" path)))
+          (def batch
+            (.cc ScriptBatch. concurrency: 2
+              scripts: (append (map wait-script pids)
+                               (list (.cc ProcessScript. timeout: 5 command: (list "touch" pending))))))
+          (def stop (list 'batch-stop))
+          (def owner
+            (thread-start!
+              (make-thread (lambda () (with-catch values (lambda () (.call batch .run)))))))
+          (def ready?
+            (let wait ((remaining 250))
+              (or (every file-exists? pids)
+                  (and (positive? remaining) (begin (thread-sleep! .02) (wait (1- remaining)))))))
+          (with-catch
+            (lambda (cause) (unless (abandoned-mutex-exception? cause) (raise cause)))
+            (lambda () (thread-interrupt! owner (lambda () (raise stop)))))
+          (check-eq? (thread-join! owner) stop)
+          (check-equal? ready? #t)
+          (check-equal? (file-exists? pending) #f)
+          (for-each
+            (lambda (path)
+              (def pid (call-with-input-file path read))
+              (check-equal?
+                (let wait ((remaining 100))
+                  (or (process-gone? pid)
+                      (and (positive? remaining) (begin (thread-sleep! .01) (wait (1- remaining)))))) #t))
+            pids))))
     (yuanxu-test-case "line pump preserves callbacks, forwarding and final fragments"
       (def rows '())
       (def forwarded (open-output-string))

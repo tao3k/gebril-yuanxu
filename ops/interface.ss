@@ -6,13 +6,15 @@
 (export Ops)
 (.def Ops
   config: Config
-  types: (.o ProcessScript: ProcessScriptContract ProcessResult: ProcessResultContract Config: OpsConfigContract
+  types: (.o ProcessScript: ProcessScriptContract ScriptBatch: ScriptBatchContract ProcessResult: ProcessResultContract Config: OpsConfigContract
              Environment: OpsEnvironmentContract)
   validate: validate-script
   prepare-command: prepare-script-command
   merge-environment: merge-script-environment
   preview: preview-script
   run: run-script
+  run-batch: run-script-batch
   prototypes:
   (.o Script: (.cc ProcessScript. 'config config)
+      ScriptBatch: ScriptBatch.
       SelectedPackages: SelectedPackages.))

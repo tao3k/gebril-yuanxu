@@ -5,7 +5,7 @@
         (only-in :clan/poo/mop Type. define-type Function Any Bool element?)
         (only-in :clan/poo/type Record String List OrFalse Union Unit)
         (only-in :clan/poo/number Integer Real))
-(export ProcessScriptContract ProcessResultContract OpsConfigContract OpsScopeContract OpsEnvironmentContract)
+(export ProcessScriptContract ProcessResultContract ScriptBatchContract OpsConfigContract OpsScopeContract OpsEnvironmentContract)
 (def ProcessResultContract
   (Record status: (list Integer) wait-status: (list Integer) seconds: (list Real)
           output: (list (Union String Unit))
@@ -56,6 +56,13 @@
              (not (string-empty? (car (.get value command))))
              (let (program (and (.slot? value 'timeout-program) (.get value timeout-program)))
                (or (not program) (string-prefix? "/" program))))))))
+(def ScriptBatchContract
+  (.o inherit: (list (Record scripts: (list (List ProcessScriptContract))
+                             concurrency: (list Integer)))
+    (.element? (inherited)
+      (lambda (value)
+        (and ((inherited) value) (> (.get value concurrency) 0)
+             (every (lambda (script) (.get script timeout)) (.get value scripts)))))))
 (def (ops-scope? scope)
   (and (object? scope)
        (every (cut .slot? scope <>) '(config types prototypes validate prepare-command merge-environment preview run))

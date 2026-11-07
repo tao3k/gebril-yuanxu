@@ -13,7 +13,8 @@ prelude: :gerbil/core
         current-execution-progress-port
         execution-progress! execution-progress-status execution-progress-idle-milliseconds
         execution-progress-limit
-        call-with-execution-watchdog call-with-execution-cancellation
+        call-with-execution-watchdog call-with-execution-cancellation make-execution-child
+        interrupt-execution!
         progress-record make-test-progress-reader copy-process-output)
 
 ;; A TERM from the enclosing process budget must unwind the resource owner,
@@ -27,6 +28,12 @@ prelude: :gerbil/core
   (dynamic-wind
     (lambda () (mutex-lock! cancellation-lock)) thunk
     (lambda () (mutex-unlock! cancellation-lock))))
+(def (interrupt-execution! thread action)
+  (with-catch
+    (lambda (cause)
+      (unless (or (inactive-thread-exception? cause) (abandoned-mutex-exception? cause))
+        (raise cause)))
+    (lambda () (thread-interrupt! thread action))))
 (def (cancel-executions!)
   (def owners
     (with-cancellation-lock
@@ -39,7 +46,7 @@ prelude: :gerbil/core
   ;; Never interrupt while holding the registry lock: unwinding unregisters.
   (for-each
     (lambda (entry)
-      (thread-interrupt! (vector-ref entry 0)
+      (interrupt-execution! (vector-ref entry 0)
         (lambda ()
           (when (vector-ref entry 1)
             (error "Ops execution terminated" SIGTERM)))))
@@ -64,6 +71,16 @@ prelude: :gerbil/core
               (set! cancellation-owners (remq entry cancellation-owners))
               (when (null? cancellation-owners)
                 (remove-signal-handler! SIGTERM)))))))))
+
+;; The enclosing owner must interrupt and join these children on unwind.
+;; Only that owner receives SIGTERM, so a child cannot start more work
+;; between its own signal and the owner's cancellation.
+(def (make-execution-child thunk)
+  (unless (eq? (cancellation-owner) (current-thread))
+    (error "Ops child requires an active cancellation owner"))
+  (make-thread
+    (lambda ()
+      (parameterize ((cancellation-owner (current-thread))) (thunk)))))
 
 (def execution-idle-seconds 60)
 (def execution-total-seconds 600)

@@ -45,12 +45,52 @@ library, constructing Script, reading its =.run= slot and previewing it do not
 execute commands. The default Script's empty command cannot pass execution
 admission until its caller supplies a command.
 
+* Independent process batches
+
+A ScriptBatch declares independent one-shot scripts and a positive
+concurrency limit. Construction and slot access are inert. Calling
+=.run= validates the entire batch before starting a process. Each script
+must have a timeout so Ops owns its process group during cancellation.
+For dependent scripts, Funflow still determines effect order.
+
+#+begin_src scheme
+(def Script (.get Ops prototypes Script))
+(def CheckBoth
+  (.cc (.get Ops prototypes ScriptBatch)
+    concurrency: 2
+    scripts: (list (.cc Script directory: left command: '("make" "check") timeout: 20)
+                   (.cc Script directory: right command: '("make" "check") timeout: 20))))
+(.call CheckBoth .run)
+#+end_src
+
+=Ops.run-batch= and the prototype method share the same execution function.
+Gerbil threads supervise separate native child processes through the existing
+Script executor. The result list follows declaration order. Each result has
+=ok?=, =receipt= and =failure= slots. A checked command failure retains its
+original error and lets independent scripts finish. A Script with
+=check-status: #f= still returns its raw status in a receipt.
+
+Cancellation stops issuing queued work, interrupts active workers, and joins
+them after the Script executor signals its owned process groups and waits for
+its child processes.
+The caller's original condition is preserved. Use independent working
+directories, output paths and logs. The batch does not infer independence
+from commands or paths.
+
+Run =just test-file t/ops-process-script-test.ss= to check batch
+admission before spawn, overlapping native children, ordered results and
+cancellation of two active processes with a third still queued. Run
+=just test-file t/ops-functional-test.ss= to check the existing
+single-script functional interface.
+
+* Source roles
+
 | File | Responsibility |
 |------+----------------|
 | types.ss | Command, environment, configuration and scope Contracts |
 | config.ss | Inert execution defaults |
 | func.ss | Pure preparation and the one explicit execution function |
-| objects.ss | Existing Script and SelectedPackages prototypes |
+| objects.ss | Script, ScriptBatch and SelectedPackages prototypes |
 | interface.ss | Built-in Ops object and functional slot bindings |
 | process-script.ss | Receiver-local defaults and runtime .run delegation |
 | progress.ss | Existing process progress, cancellation and watchdog boundary |

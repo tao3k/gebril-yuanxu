@@ -3,14 +3,14 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object "./types.ss"
         (only-in "./progress.ss" call-with-execution-watchdog call-with-execution-cancellation
-                 copy-process-output)
+                 make-execution-child interrupt-execution! copy-process-output)
         (only-in :clan/poo/mop validate)
         (only-in :std/misc/process run-process)
         (only-in :std/os/signal kill SIGKILL)
         (only-in :std/os/error os-error? OSError-errno ESRCH)
         (only-in :std/misc/ports read-all-as-string))
 (export validate-script prepare-script-command merge-script-environment preview-script
-        run-script call-with-script-coprocess)
+        run-script call-with-script-coprocess run-script-batch)
 
 ;; Pure APIs: explicit inert inputs, no environment lookup, clock, files or spawn.
 (def (validate-script script)
@@ -138,6 +138,78 @@
   (unless (or (not forward) (output-port? forward))
     (error "Ops forwarding requires an output port"))
   (run-owned-script script arguments stderr-value forward #f))
+
+;; Scheduling owns only workers and declaration order. run-script still owns
+;; every child, including its output, watchdog and process-group unwind.
+(def (run-script-batch batch)
+  (def checked (validate ScriptBatchContract batch))
+  (def scripts (list->vector (.get checked scripts)))
+  (def size (vector-length scripts))
+  (def results (make-vector size))
+  (def lock (make-mutex 'ops-script-batch))
+  (def stop (gensym 'ops-script-batch-cancelled))
+  (def next 0)
+  (def stopped? #f)
+  (def workers '())
+  (def joined? #f)
+  (def cleanup-errors '())
+  (def (claim!)
+    (with-dynamic-lock lock
+      (lambda ()
+        (and (not stopped?) (< next size)
+             (begin0 next (set! next (1+ next)))))))
+  (def (worker)
+    (with-catch (lambda (cause) (unless (eq? cause stop) (raise cause)))
+      (lambda ()
+        (let loop ()
+          (let (index (claim!))
+            (when index
+              (vector-set! results index
+                (with-catch
+                  (lambda (cause)
+                    (if (eq? cause stop) (raise cause)
+                      (.o ok?: #f receipt: #f failure: cause)))
+                  (lambda ()
+                    (def completed (run-script (vector-ref scripts index)))
+                    (.o ok?: #t receipt: completed failure: #f))))
+              (loop)))))))
+  (def (cancel!)
+    (with-dynamic-lock lock (lambda () (set! stopped? #t)))
+    (def started
+      (filter (lambda (thread) (not (thread-state-initialized? (thread-state thread)))) workers))
+    (for-each
+      (lambda (thread)
+        (with-catch
+          (lambda (cause) (set! cleanup-errors (cons cause cleanup-errors)))
+          (lambda () (interrupt-execution! thread (lambda () (raise stop))))))
+      started)
+    (for-each
+      (lambda (thread)
+        (with-catch
+          (lambda (cause)
+            (unless (and (uncaught-exception? cause) (eq? (uncaught-exception-reason cause) stop))
+              (set! cleanup-errors (cons cause cleanup-errors))))
+          (lambda () (thread-join! thread))))
+      started))
+  (call-with-execution-cancellation
+    (lambda ()
+      (with-catch
+        (lambda (cause)
+          (if (null? cleanup-errors) (raise cause)
+            (error "Ops batch and worker cleanup failed" cause (reverse cleanup-errors))))
+        (lambda ()
+          (dynamic-wind void
+            (lambda ()
+              (let start ((remaining (min size (.get checked concurrency))))
+                (unless (zero? remaining)
+                  (let (thread (make-execution-child worker))
+                    (set! workers (cons thread workers))
+                    (thread-start! thread)
+                    (start (1- remaining)))))
+              (for-each thread-join! workers)
+              (set! joined? #t)
+              (vector->list results))
+            (lambda () (unless joined? (cancel!)))))))))
 
 (def (call-with-script-coprocess script exchange)
   (unless (procedure? exchange)
