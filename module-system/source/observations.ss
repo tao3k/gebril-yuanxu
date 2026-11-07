@@ -145,10 +145,13 @@
               (or (and (pair? name) (memq (car name) '(reader-initialization reader-initializer-body)))
                   (memq name '(build-main build-specification build-dispatch std-make build-current
                            profile-interface-scan reader-bootstrap reader-preparation-start reader-interface-start
+                           reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
                            reader-admission-start reader-current metadata-replay
                            reader-tool-inputs reader-private-closure reader-private-prepare
                            reader-native-import reader-role-import reader-source-resolution
                            reader-compile-start reader-eval-start
+                           reader-expander-compile reader-expander-eval
+                           reader-expander-phase-compile reader-expander-phase-eval
                            source-authoring source-direction source-import-policy source-parse)))
               (and (current-module-source-operation-accounting?)
                  (memq name '(metadata-replay selection-current selected-graph reader-current source-read

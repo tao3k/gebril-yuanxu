@@ -12,7 +12,9 @@
         (only-in :gerbil/runtime/loader load-module)
         (only-in :clan/poo/io module-action)
         (only-in :std/list/list delete-duplicates/hash append-map)
-        (for-syntax :gerbil/expander (only-in :std/list/list append-map)))
+        (for-syntax :gerbil/expander (only-in :std/list/list append-map)
+                    (only-in :yuanxu/module-system/source/observations
+                             module-source-measure-operation)))
 (export module-deferred-role-exports include-deferred-declaration module-role-values module-import-role-values
         current-module-role-resolver module-entry-action module-binding-action deferred-role-values)
 (def current-module-role-resolver (make-parameter #f))
@@ -181,7 +183,9 @@
 (defsyntax (include-deferred-declaration input)
   (syntax-case input ()
     ((_ path ((role exports ...) ...) resolver)
-     (let-values (((_prelude _id _namespace forms) (core-read-module/sexp (stx-e #'path))))
+     (let-values (((_prelude _id _namespace forms)
+                   (module-source-measure-operation 'reader-interface-read
+                     (lambda () (core-read-module/sexp (stx-e #'path))))))
        (def loader (genident 'role-loader))
        (def private (genident 'role-values))
        (def constructor (quote-syntax deferred-role-values))
@@ -279,6 +283,9 @@
                   ((identity:) value)
                   (else (wrap value core-reference shadows)))))))
               (syntax/loc form (head name . slots)))))))
+       (def definitions
+         (module-source-measure-operation 'reader-interface-rewrite
+           (lambda () (map rewrite forms))))
        (with-syntax ((loader loader)
                      (resolver (if (identifier? #'resolver)
                                  (datum->syntax (stx-car (car forms)) (stx-e #'resolver))
@@ -286,5 +293,5 @@
          (syntax-local-rewrap
            (stx-wrap-source
              (core-cons 'begin
-               (cons #'(def loader (resolver)) (map rewrite forms)))
+               (cons #'(def loader (resolver)) definitions))
              (stx-source input))))))))

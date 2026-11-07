@@ -445,7 +445,8 @@
            (and (string? requested) (path-normalize (core-resolve-module-path path))))
          (cond
           ((and resolved (hash-key? artifacts resolved))
-           (gerbil-import path reload?))
+           (module-source-measure-operation 'reader-wrapper-expansion
+             (lambda () (gerbil-import path reload?))))
           ((and resolved (string=? (path-extension resolved) ".ss"))
            (source-context resolved reload?))
           (else
@@ -543,7 +544,11 @@
             (if deferred-roles '() (.ref prepared 'role-sources)))
           (reader-enroll-candidate! session (.ref prepared 'admit-current))
           (parameterize ((current-module-source-phase 'declaration-inputs)) (reader-current! session))
-          (let (wrapper (write-wrapper interface-path (reader-body (.ref prepared (if deferred-roles 'deferred-reader-forms 'reader-forms))) (.ref prepared 'compiler-identity)))
+          (let (wrapper (module-source-measure-operation 'reader-wrapper-write
+                           (lambda ()
+                             (write-wrapper interface-path
+                               (reader-body (.ref prepared (if deferred-roles 'deferred-reader-forms 'reader-forms)))
+                               (.ref prepared 'compiler-identity)))))
             (parameterize
                 ((current-configuration-input-observer record-data!)
                  (current-expander-compile compile)

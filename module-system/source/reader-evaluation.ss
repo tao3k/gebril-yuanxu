@@ -63,7 +63,11 @@
            (origin (owned-body-origin context form)))
       (when origin (body-event 'reader-body-expanded context))
       (let (program
-              (if (not origin) (gerbil-compile form)
+              (if (not origin)
+                (module-source-measure-operation
+                  (if (positive? (current-expander-phi)) 'reader-expander-phase-compile
+                    'reader-expander-compile)
+                  (lambda () (gerbil-compile form)))
                 (observe-reader-work 'reader-compile-start 'reader-compile-end
                   (lambda () (gerbil-compile form)))))
         (when (and (pair? program) origin)
@@ -74,7 +78,11 @@
     (let (entry (hash-get pending program))
       (call-with-values
         (lambda ()
-          (if (not entry) (gerbil-eval program)
+          (if (not entry)
+            (module-source-measure-operation
+              (if (positive? (current-expander-phi)) 'reader-expander-phase-eval
+                'reader-expander-eval)
+              (lambda () (gerbil-eval program)))
             (observe-reader-work 'reader-eval-start 'reader-eval-end
               (lambda ()
                 (def context (car entry))
