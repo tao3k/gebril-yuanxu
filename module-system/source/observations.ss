@@ -410,7 +410,9 @@
   (def observed? (current-module-source-observer))
   (def key (and cache (cons check-source-current! (car entry))))
   (def checked (and cache (hash-get cache key)))
-  (if (and checked (hash-key? checked (cdr entry)))
+  (if (and checked
+           (or (eq? (car checked) (cdr entry))
+               (and (cdr checked) (hash-key? (cdr checked) (cdr entry)))))
     (observe-source 'source-comparison-hits)
     (begin
       (observe-source 'source-comparisons)
@@ -428,10 +430,15 @@
       ;; A failed check never enrolls a comparison result. Observation collection
       ;; remains in module-source-admit-current!, outside this memoized work.
       (when cache
-        (unless checked
-          (set! checked (make-hash-table-eq))
-          (hash-put! cache key checked))
-        (hash-put! checked (cdr entry) #t)))))
+        ;; Keep the first expected identity directly. Only paths with another
+        ;; successful identity need the table for additional expectations.
+        (if (not checked)
+          (hash-put! cache key (cons (cdr entry) #f))
+          (let (additional (or (cdr checked)
+                               (let (table (make-hash-table-eq))
+                                 (set-cdr! checked table)
+                                 table)))
+            (hash-put! additional (cdr entry) #t)))))))
 (def (call-with-collected-module-sources consume)
   (def by-path (make-hash-table))
   (def observed '())

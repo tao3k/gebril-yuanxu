@@ -52,6 +52,21 @@
         (call-with-module-source-operation-measurement
           (lambda () (module-source-admit-current! batch))))
       (check-equal? (hash-get closed-counts '(source stats)) 1)
+      ;; The same bytes under another expected identity still require a check.
+      ;; Both identities and a checked absence can then be reused in this pass.
+      (def same-bytes (cons batch-path (string-copy (cdar batch))))
+      (check-eq? (eq? (cdr same-bytes) (cdar batch)) #f)
+      (def absent (cons (path-expand "absent.json" (.get fixture root)) #f))
+      (defvalues (_identities identity-counts)
+        (call-with-module-source-operation-measurement
+          (lambda ()
+            (call-with-module-source-read-cache
+              (lambda ()
+                (module-source-admit-current!
+                  (list (car batch) same-bytes (car batch) same-bytes absent absent)))))))
+      (check-equal? (hash-get identity-counts '(source source-comparisons)) 3)
+      (check-equal? (hash-get identity-counts '(source source-comparison-hits)) 3)
+      (check-equal? (hash-get identity-counts '(source reads)) 1)
       (defvalues (_observed observed-counts)
         (call-with-module-source-operation-measurement
           (lambda ()
