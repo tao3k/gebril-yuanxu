@@ -1,11 +1,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
+        (only-in :std/error Error-message Error-irritants)
         (only-in "./module-candidate-stage-test" with-other-source)
         (only-in "./qualification/module-publication/fixtures.ss" write-file)
         (only-in :yuanxu/module-system/source/admission
                  call-with-module-source-operation-measurement current-module-source-observer
                  module-source-measure-replay)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
+        (only-in :yuanxu/module-system/source/reader-support merge-publication-read-roots)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-session-metadata-index-test)
 (def (checked-work view (accounting? #t))
@@ -26,6 +28,29 @@
   times)
 (def module-session-metadata-index-test
   (test-suite "Native POO session metadata topology and fresh authentication"
+    (yuanxu-test-case "the session root union retains native traversal and refusal order"
+      (def first (.o left: 1))
+      (def second (.o right: 2))
+      (defvalues (_left left) (%call-with-recorded-slot-reads (lambda () (.ref first 'left))))
+      (defvalues (_right right) (%call-with-recorded-slot-reads (lambda () (.ref second 'right))))
+      (def rows (list left (append left right) right))
+      (def original (apply append rows))
+      (def projected (merge-publication-read-roots rows))
+      (check-equal? (< (length projected) (length original)) #t)
+      (def (trace roots)
+        (def events '())
+        (replay-slot-reads! roots
+          (lambda (receiver key) (set! events (cons (cons receiver key) events))))
+        (reverse events))
+      (check-equal? (trace projected) (trace original))
+      (.put! first 'left 3)
+      (.put! second 'right 4)
+      (def (refusal roots)
+        (with-catch
+          (lambda (cause) (cons (Error-message cause) (Error-irritants cause)))
+          (lambda () (module-source-measure-replay roots) #f)))
+      (check-equal? (refusal projected) (refusal original))
+      (check-equal? (car (refusal projected)) "stale slot dependency"))
     (yuanxu-test-case "checkpoint runs once under native protection and retains its failure"
       (def value (.o field: 1))
       (defvalues (_ reads) (%call-with-recorded-slot-reads (lambda () (.get value field))))

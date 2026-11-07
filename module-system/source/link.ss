@@ -15,7 +15,8 @@
         :yuanxu/module-system/source/feature-scopes
         :yuanxu/module-system/source/preparation
         :yuanxu/module-system/source/directory
-        (only-in :yuanxu/module-system/source/reader-support call-with-publication-reads)
+        (only-in :yuanxu/module-system/source/reader-support call-with-publication-reads
+                 merge-publication-read-roots)
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?))
 (export yuanxu-load-modules module-namespace-project call-with-linked-prepared-guards
         linked-configuration-guard-active?)
@@ -409,7 +410,7 @@
                              (list? (linked-publication-metadata-roots record)))))
                   (.get index rows))
           roots:
-          (foldr append '()
+          (merge-publication-read-roots
             (map (lambda (record) (or (linked-publication-metadata-roots record) '()))
                  (.get index rows)))
           ;; Route only: a protected invocation still authenticates all

@@ -12,7 +12,8 @@
 (export (struct-out source-preparation)
         capture-source-preparation source-preparation-current? source-observation-rows
         publication-read-current require-publication-policy! publication-metadata-entry
-        publication-metadata-tail publication-metadata-current call-with-publication-reads)
+        publication-metadata-tail publication-metadata-current call-with-publication-reads
+        merge-publication-read-roots)
 
 ;; The existing preparation registry owns constructor output and its actual
 ;; checker identity. No successful source check or user purity tag is stored.
@@ -73,6 +74,14 @@
   (lambda () (location-current!) (require-publication-policy! policy-current?)))
 (def (publication-metadata-tail policy-current?)
   (lambda () (require-publication-policy! policy-current?)))
+(def (merge-publication-read-roots groups)
+  ;; Use the existing native capture's identity set. No intermediate
+  ;; concatenated spine, replay, or second observer delivery is needed.
+  (defvalues (_ roots)
+    (%call-with-recorded-slot-reads
+      (lambda () (for-each %record-slot-reads! groups))
+      unique-roots?: #t))
+  roots)
 (def (publication-metadata-current policy-current? preparation-current!
                                    (admission-current! void) (location-current! void)
                                    (joined-roots #f))

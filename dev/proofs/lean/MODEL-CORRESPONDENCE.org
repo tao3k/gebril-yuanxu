@@ -448,6 +448,13 @@ reader operations retain both datum reads.
 =eager_reader_does_not_demand_deferred_forms= model the single lazy
 =reader-forms= slot. The compiler projection remains independently owned.
 
+=RootCollection.record_session_rows_first_occurrences= models collecting
+the existing publication rows with native identity deduplication.
+=record_session_rows_preserves_refusal= and
+=record_session_rows_preserves_reach= establish the same ordered failure
+and transitive evidence. The Scheme session test compares actual native
+traversal and stale-read refusal.
+
 =PublicationReads.candidate_return_union_preserves_first_refusal= requires
 the original check order when joined preparation and admission preflight
 fails. =candidate_return_cannot_report_admission_before_source= covers a

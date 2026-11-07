@@ -79,6 +79,13 @@ package YuanxuModuleLoading {
                native compiler forms separately. Selecting the deferred
                lane does not demand eager role forms. */
     }
+    part def SessionReadRootProjection {
+        ref part support : RuntimeReadSupport;
+        doc /* Record ordered publication rows in the existing native
+               unique collection. Retain first-occurrence identities and
+               the complete signed dependency traversal. Replay still
+               authenticates live reads independently. */
+    }
     part def CandidateReturn {
         ref part support : RuntimeReadSupport;
         doc /* A fixed directory and source check may run inside the

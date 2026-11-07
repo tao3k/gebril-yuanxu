@@ -179,4 +179,42 @@ theorem retained_read_cannot_hide_its_private_child
     (edge : child ∈ deps parent) :
     IssuedRootForwarding.Reach roots deps child := .child retained edge
 
+-- A session already owns ordered publication rows. Recording their issued
+-- roots into one native unique collection retains the first identity across
+-- row boundaries, without allocating the repeated concatenated spine.
+def recordSessionRows (rows : List (List Nat)) : List Nat :=
+  (rows.foldl (mergeCaptured true) ⟨[], ()⟩).roots
+
+theorem record_session_rows_first_occurrences (rows : List (List Nat)) :
+    recordSessionRows rows = rows.flatten.eraseDups := by
+  unfold recordSessionRows
+  have collect (remaining : List (List Nat)) (prior : List Nat) :
+      (remaining.foldl (mergeCaptured true) ⟨prior.eraseDups, ()⟩).roots =
+        (prior ++ remaining.flatten).eraseDups := by
+    induction remaining generalizing prior with
+    | nil => simp
+    | cons next rest ih =>
+      simp only [List.foldl_cons, List.flatten_cons]
+      have stepEq : mergeCaptured true ⟨prior.eraseDups, ()⟩ next =
+          (⟨(prior ++ next).eraseDups, ()⟩ : Frame Unit) := by
+        cases h : mergeCaptured true ⟨prior.eraseDups, ()⟩ next with
+        | mk roots world =>
+          have rootsEq := merge_original_identities prior next ()
+          rw [h] at rootsEq
+          cases world
+          exact congrArg (fun captured => (⟨captured, ()⟩ : Frame Unit)) rootsEq
+      rw [stepEq, ih, List.append_assoc]
+  simpa using collect rows []
+
+theorem record_session_rows_preserves_refusal (rows : List (List Nat)) (bad : Nat → Bool) :
+    (recordSessionRows rows).find? bad = rows.flatten.find? bad := by
+  rw [record_session_rows_first_occurrences, first_diagnostic_unchanged]
+
+theorem record_session_rows_preserves_reach (rows : List (List Nat)) (deps : Nat → List Nat)
+    (token : Nat) :
+    IssuedRootForwarding.Reach (recordSessionRows rows) deps token ↔
+      IssuedRootForwarding.Reach rows.flatten deps token := by
+  rw [record_session_rows_first_occurrences]
+  exact demanded_closure_unchanged rows.flatten deps token
+
 end YuanxuProof.Admission.RootCollection

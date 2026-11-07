@@ -355,6 +355,15 @@ globals reclaimed about 4.76 MB. This measures a possible post-owner
 lifetime cost. The dense graph itself still needs its Module values, and
 the runtime continues to use Gerbil's original registry and bindings.
 
+** Session read roots
+
+The selected Graph's existing metadata slot records publication rows directly
+in POO's unique capture. This retains the first occurrence of each original
+root identity, without building a concatenated spine with duplicate entries.
+Native replay still owns dependency traversal, issuance, currentness and
+return validation. Publication rows and their source checkpoints retain
+their original order. Open observers retain the existing split checks.
+
 ** Candidate return
 
 After the Publication Contract returns, a closed directory candidate can
