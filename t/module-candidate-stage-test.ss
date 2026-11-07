@@ -13,7 +13,8 @@
         (only-in :yuanxu/module-system/source/directory module-directory-context)
         (only-in :yuanxu/module-system/source/admission
                  module-source-read yuanxu-default-module-style-policy
-                 current-module-source-observer call-with-module-source-read-cache)
+                 current-module-source-observer call-with-module-source-read-cache
+                 call-with-module-source-operation-measurement)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-candidate-stage-test with-other-source)
 
@@ -54,7 +55,12 @@
                       (.o task-contract: TaskContract flow-contract: FlowContract scenario-type: Scenario))
                     (export FixtureScope)))))))
         (lambda (_root _first _other view)
-          (def scope (.get view modules custom example))
+          (defvalues (scope times)
+            (call-with-module-source-operation-measurement
+              (lambda () (.get view modules custom example))))
+          (unless (current-module-source-observer)
+            (check-equal? (hash-ref times '(calls reader-candidate-entry-replay) 0) 1)
+            (check-equal? (hash-ref times '(calls reader-preparation-replay) 0) 0))
           (check-equal? (eq? (.get scope task-contract) TaskContract) #t)
           (check-equal? (eq? (.get scope flow-contract) FlowContract) #t)
           (check-equal? (eq? (.get scope scenario-type) Scenario) #t)
@@ -187,7 +193,15 @@
           (def prepared (.call reader discover first))
           (check-equal? (file-exists? (path-expand "initialized" root)) #f)
           (check-equal? (.get prepared identity) 'custom/example)
-          (def result (.call reader read-candidate (lambda () first) 'custom/example (.get view context)))
+          (def location-calls 0)
+          (defvalues (result times)
+            (call-with-module-source-operation-measurement
+              (lambda ()
+                (.call reader read-candidate (lambda () first) 'custom/example
+                  (.get view context) #f (lambda () (set! location-calls (1+ location-calls)))))))
+          (check-equal? (> location-calls 1) #t)
+          (check-equal? (hash-ref times '(calls reader-candidate-entry-replay) 0) 0)
+          (check-equal? (hash-ref times '(calls reader-preparation-replay) 0) 1)
           (check-equal? (file-exists? (path-expand "initialized" root)) #t)
           (check-equal? (eq? (cadr result) (.get (caddr result) candidate)) #t)
           (check-equal? (.get (cadr result) identity) 'custom/example)

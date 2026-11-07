@@ -238,7 +238,8 @@
         (lambda (input (path #f))
           (and context-construction-intact? reader ((reader-ref 'metadata-state) input path)))
         (lambda ()
-          (and context-construction-intact? reader ((reader-ref 'read-only-current?)))))
+          (and context-construction-intact? reader ((reader-ref 'read-only-current?))))
+        (.ref context '%candidate-guard))
          (.o .refresh:
            (lambda ()
              ;; A fresh directory graph owns selection, publication and every
@@ -252,7 +253,8 @@
 (def (link-module-context context-value (realization #f) (original-graph #f) (module-view #f)
                           (source-publications #f) (source-prepared #f) (read-located #f)
                           (location-current? #f) (candidate-read #f) (candidate-location-current? #f)
-                          (input-metadata-state #f) (reader-read-only-current? #f))
+                          (input-metadata-state #f) (reader-read-only-current? #f)
+                          (directory-candidate-guard #f))
   (observe-link-stage 'context-admission
     (lambda () (admit-module-value! ModuleScopeContextContract context-value context-value)))
   (let ((cache (make-hash-table))
@@ -371,15 +373,9 @@
        (else
         (check-selected!)
         (with-source-metadata '() inputs check-inputs! input-state #t))))
-    (def (candidate-location-current! id)
-      ;; This closure belongs to the runtime paired directory factory. Share
-      ;; only a pure filesystem window, ending BEFORE any reader/MOP callback.
-      (when candidate-location-current?
-        (call-with-module-source-read-cache
-          (lambda ()
-            (unless (candidate-location-current? generation-value id)
-              (set! failed? #t)
-              (error "stale module location generation" generation-value))))))
+    (def (refuse-candidate-location!)
+      (set! failed? #t)
+      (error "stale module location generation" generation-value))
     ;; Package realization changes scope bindings, not the selected source
     ;; Graph. Preserve its identity and resolver result at this handoff; every
     ;; public use below still performs a fresh source/package boundary check.
@@ -615,7 +611,7 @@
                     (eligible! id '() #t #t)
                     ((.ref context-value 'locate) id))
                   id context-value (lambda () (current! 'candidate-open))
-                  (lambda () (candidate-location-current! id))))))
+                  (directory-candidate-guard generation-value id refuse-candidate-location!)))))
                (record (apply make-linked-publication result)))
           (unless (paired-context-current?)
             (set! failed? #t)

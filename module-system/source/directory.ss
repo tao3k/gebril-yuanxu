@@ -13,10 +13,11 @@
         (only-in :yuanxu/module-system/source/observations module-source-object-policies
                  module-source-text-guard)
         :yuanxu/module-system/source/init)
-(export module-directory-context)
+(export module-directory-context directory-candidate-guard? directory-candidate-guard-invoke)
 (defstruct directory-source (value current?) final: #t)
 (defstruct directory-decision (value current?) final: #t)
 (defstruct directory-snapshot (children child-index interface?) final: #t)
+(defstruct directory-candidate-guard (invoke) final: #t)
 (def (directory-path-current source-current? checks)
   ;; Allocate outside locate-source's collecting frame: a retained SourceRef
   ;; must not retain that frame, its box or another located receiver.
@@ -627,6 +628,17 @@
             (yuanxu-module-source-collection-optional-entrypoint root owner contributor parts
               (lambda (path) (observe! module-source-type path))))
           resolve-module-id: resolve-reference resolve-root: resolve-request-root current?: current-source? candidate-current?: candidate-location-current?
+          %candidate-guard:
+          (lambda (generation id stale!)
+            ;; Issued here over the actual directory check, never over a
+            ;; caller's success callback. The linker owns refusal handling.
+            (make-directory-candidate-guard
+              (lambda ()
+                (call-with-module-source-read-cache
+                  (lambda ()
+                    (unless (candidate-location-current? generation id)
+                      (stale!)
+                      (error "stale module location generation" generation)))))))
           eligible?: (lambda (id)
                        (let (row (decision-row id))
                          (and (not (and row (.ref row 'disabled?)))

@@ -57,6 +57,14 @@ package YuanxuModuleLoading {
                identities and their first-refusal order. Runtime projection
                requires evidence of non-escape for the actual producer. */
     }
+    part def DirectoryReaderEntry {
+        ref part support : RuntimeReadSupport;
+        doc /* The directory factory owns the location check. POO authenticates
+               the actual preparation roots before and after that closed check.
+               The trailing policy and source checks still run. Custom
+               callbacks, observers and all later effect boundaries retain
+               independent authentication. */
+    }
     part def StockAuthoringRun {
         ref part support : RuntimeReadSupport;
         doc /* Share authentication only within an established closed run

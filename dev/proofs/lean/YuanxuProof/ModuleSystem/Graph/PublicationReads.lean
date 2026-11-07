@@ -267,4 +267,43 @@ example : stockAroundOpen (Result := Nat) checkStockRun
     (fun changed => if changed then .error "stale method" else .ok ())
     (fun _ => true) (fun _ => List.replicate 9 (.ok 1)) (fun _ => []) false =
       .error "stale method" := rfl
+
+-- A native replay authenticates before and after its protected action.
+-- For the factory's callback-free directory check, put the original
+-- location and leading policy between those same endpoints. Keep the
+-- trailing policy after the final authentication.
+def replayCheckpoint {Failure : Type} (before action after : Except Failure Unit) :
+    Except Failure Unit := do
+  before
+  action
+  after
+
+def separateReaderEntry {Failure : Type}
+    (before location policy after trailing : Except Failure Unit) : Except Failure Unit := do
+  replayCheckpoint before (.ok ()) before
+  location
+  policy
+  replayCheckpoint after (.ok ()) after
+  trailing
+
+def fusedReaderEntry {Failure : Type}
+    (before location policy after trailing : Except Failure Unit) : Except Failure Unit := do
+  replayCheckpoint before (do location; policy) after
+  trailing
+
+theorem directory_entry_preserves_refusal
+    (before location policy after trailing : Except Failure Unit) :
+    fusedReaderEntry before location policy after trailing =
+      separateReaderEntry before location policy after trailing := by
+  cases before <;> cases location <;> cases policy <;> cases after <;> rfl
+
+theorem directory_entry_keeps_post_location_refusal {Failure : Type} (stale : Failure) :
+    fusedReaderEntry (.ok ()) (.ok ()) (.ok ()) (.error stale) (.ok ()) = .error stale := rfl
+
+-- The fusion never replaces the independent checkpoint after a Gerbil or
+-- author effect. A successful entry grants no authority over the next state.
+theorem fused_directory_entry_cannot_bless_open_return {Failure : Type} (stale : Failure) :
+    (do
+      fusedReaderEntry (.ok ()) (.ok ()) (.ok ()) (.ok ()) (.ok ())
+      (.error stale : Except Failure Unit)) = .error stale := rfl
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

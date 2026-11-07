@@ -1682,6 +1682,18 @@ scope or replay speedup is inferred from the timeout.
 
 *** Retained read frontier
 
+The directory factory issues the private candidate location guard. At the
+first Reader checkpoint, an unobserved closed candidate can use POO's
+protected authentication before and after that location check and its
+leading policy check. The trailing policy and full source check still run.
+This replaces the separate preparation replay and first checkpoint replay.
+The original root spine and later checks remain available without a
+retained verdict. A raw caller callback, an observer or a preparation
+which opened the candidate retains the split path.
+=PublicationReads.directory_entry_preserves_refusal= relates the original
+and combined order. =fused_directory_entry_cannot_bless_open_return=
+keeps independent post-effect refusal in the correspondence.
+
 The local observed dense-declarations run reached 3,300 declarations before
 the 180-second Case refusal. Its sampled live heap rose from 994,483,904
 bytes at 2,100 owners to 1,352,942,152 bytes at 3,300 owners, about 299,000

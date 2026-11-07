@@ -2,9 +2,12 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Assemble the public reader over one generation-local source session.
-(import (only-in :clan/poo/object .o .ref)
+(import (only-in :clan/poo/object .o .ref object-construction-current?)
         (only-in :yuanxu/object-family/read-projection current-owned-read-open-guard
-                 call-with-owned-source-reads)
+                 call-with-owned-source-reads owned-read-function-scope?)
+        (only-in :yuanxu/module-system/source/directory
+                 directory-candidate-guard? directory-candidate-guard-invoke)
+        (only-in :yuanxu/module-system/source/observations module-source-measure-replay)
         (only-in :yuanxu/module-system/source/publication module-publication-dependency-projection
                  module-publication-contract-current?)
         :yuanxu/module-system/source/admission
@@ -45,7 +48,10 @@
         (let (prepared (reader-prepare-publication session source))
           (reader-full-current! session) prepared))
       read-candidate:
-      (lambda (prefix expected-id context-value (epoch-current #f) (location-current! void))
+      (lambda (prefix expected-id context-value (epoch-current #f) (location void))
+        (def directory-location? (directory-candidate-guard? location))
+        (def location-current!
+          (if directory-location? (directory-candidate-guard-invoke location) location))
         (def tools (list->hash-table (reader-session-interpreter-observations session)))
         (def scope (make-candidate-support '() tools (source-observation-rows tools)
                       #f epoch-current location-current!))
@@ -62,6 +68,7 @@
                       (def policy-current? (module-source-publication-policy))
                       (def preparation-current! void)
                       (def preparation-roots '())
+                      (def fused-entry? #f)
                       ;; Discovery is inert. Roles run later in the SAME
                       ;; reader/preparation index, before actual admission.
                       (def source
@@ -72,15 +79,33 @@
                             (call-with-publication-reads
                               (lambda () (reader-prepare-publication session source))
                               (lambda (results preparation-check! roots)
-                                (module-source-measure-operation 'reader-preparation-replay preparation-check!)
+                                (set! fused-entry?
+                                  (and directory-location? (not (candidate-support-open? scope))
+                                       (not (current-module-source-observer))
+                                       (object-construction-current?) (owned-read-function-scope?)))
+                                (unless fused-entry?
+                                  (module-source-measure-operation 'reader-preparation-replay preparation-check!))
                                 (set! preparation-current! preparation-check!)
                                 (set! preparation-roots roots)
                                 results)))))
                       (def check-prepared!
                         (publication-metadata-current policy-current? preparation-current! void location-current!))
+                      (def (check-candidate!)
+                        (module-source-measure-operation 'reader-candidate-checkpoint-replay check-prepared!))
                       (set! (candidate-support-metadata-current scope)
-                        (lambda ()
-                          (module-source-measure-operation 'reader-candidate-checkpoint-replay check-prepared!)))
+                        (if fused-entry?
+                          (lambda ()
+                            ;; Reader's first declaration-before guard runs
+                            ;; before any author/MOP or native expansion call.
+                            ;; Reinstall the ordinary independent checkpoint
+                            ;; before executing the native protected entry.
+                            (set! (candidate-support-metadata-current scope) check-candidate!)
+                            (module-source-measure-operation 'reader-candidate-entry-replay
+                              (lambda ()
+                                (module-source-measure-replay preparation-roots
+                                  (publication-metadata-entry policy-current? location-current!))
+                                (require-publication-policy! policy-current?))))
+                          check-candidate!))
                       (when (current-module-source-observer)
                         ((current-module-source-observer) 'publication-discovered 1))
                       (reader-read-publication session source #f
