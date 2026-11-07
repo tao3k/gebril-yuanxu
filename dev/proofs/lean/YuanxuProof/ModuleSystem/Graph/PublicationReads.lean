@@ -303,6 +303,36 @@ example :
         (fun _ => .error "changed") (fun _ => ()) [7] (.ok 9) =
       .error "changed" := rfl
 
+/-- The stock Profile may retain a spine naming a signed singleton root.
+Selection compares record identity, and never remembers the guard outcome. -/
+def profileCheckpointRoots [DecidableEq Read] (observed retained : List Read) : List Read :=
+  match observed, retained with
+  | [current], [previous] => if current = previous then retained else observed
+  | _, _ => observed
+
+theorem profile_checkpoint_preserves_issued_order [DecidableEq Read]
+    (observed retained : List Read) : profileCheckpointRoots observed retained = observed := by
+  cases observed with
+  | nil => rfl
+  | cons current observed =>
+    cases observed with
+    | cons _ _ => rfl
+    | nil =>
+      cases retained with
+      | nil => rfl
+      | cons previous retained =>
+        cases retained with
+        | cons _ _ => rfl
+        | nil =>
+          simp only [profileCheckpointRoots]
+          split <;> simp_all
+
+theorem profile_checkpoint_keeps_fresh_refusal [DecidableEq Read]
+    (auth : Read → Except Failure Unit) (observed retained : List Read) :
+    authenticateAndVisit auth (fun _ => ()) (profileCheckpointRoots observed retained) =
+      authenticateAndVisit auth (fun _ => ()) observed := by
+  rw [profile_checkpoint_preserves_issued_order]
+
 -- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,
 -- unchanged real observer delivery, and no nonlocal continuation escape.

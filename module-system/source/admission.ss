@@ -6,7 +6,9 @@
         (only-in :gerbil/expander core-read-module/sexp)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/mop Type element? validate)
-        (only-in :clan/poo/slot-observation call-with-slot-read-observer slot-read-receiver slot-read-key)
+        (only-in :clan/poo/slot-observation
+                 call-with-slot-read-observer slot-read-receiver slot-read-key without-observation)
+        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
         (only-in :yuanxu/module-system/source/role-forms yuanxu-module-allowed-entrypoint-roles
                  yuanxu-module-required-role-files module-role-file)
         (only-in :std/list/list any)
@@ -91,6 +93,35 @@
 ;;; The loader applies the Interface-owned authoring Profile to each stable
 ;;; role before exposing any entrypoint.  Admission reads inert datums only;
 ;;; it neither expands nor evaluates module source.
+(def (read-authoring-interface policy)
+  (def reads '())
+  (def value
+    (call-with-slot-read-observer
+      (lambda (read)
+        (when (and (eq? (slot-read-receiver read) policy)
+                   (eq? (slot-read-key read) '%authoring-interface))
+          (set! reads (cons read reads))))
+      (lambda () (.ref policy '%authoring-interface))))
+  (values value (reverse reads)))
+
+(def (admit-authoring-interface policy)
+  (defvalues (value reads) (read-authoring-interface policy))
+  (unless (pair? reads) (error "unissued source authoring Interface"))
+  ;; Retain a spine for POO's existing topology lookup. The actual Profile
+  ;; read above still delivers the original token in every invocation.
+  (def roots
+    (and (null? (cdr reads)) (owned-read-function-scope?)
+         (object-construction-current?)
+         ;; The real getter ran before this lookup and may have opened the policy.
+         (module-source-style-policy-current?)
+         (without-observation
+           (lambda () (.ref policy '%authoring-interface-roots)))))
+  (if (and (pair? roots) (null? (cdr roots)) (eq? (car reads) (car roots)))
+    (module-source-measure-operation 'source-authoring-profile-checkpoint
+      (lambda () (call-with-current-slot-reads roots void)))
+    (replay-slot-reads! reads (lambda (_receiver _key) (void))))
+  value)
+
 (def (yuanxu-module-role-authoring-validate! policy module-name module-root reader read-datums)
   ;; Interface creation validates the authoring Profile and its child roles.
   ;; Their temporary evidence belongs to the SAME region as datum dispatch.
@@ -101,19 +132,7 @@
                  (lambda ()
                    (if (and (eq? policy yuanxu-default-module-style-policy)
                             (module-source-style-policy-current?))
-                     (let ((reads '()))
-                       (def value
-                         (call-with-slot-read-observer
-                           (lambda (read)
-                             (when (and (eq? (slot-read-receiver read) policy)
-                                        (eq? (slot-read-key read) '%authoring-interface))
-                               (set! reads (cons read reads))))
-                           (lambda () (.ref policy '%authoring-interface))))
-                       ;; Keep the actual constructor token and all its Type
-                       ;; and field dependencies current on each use.
-                       (unless (pair? reads) (error "unissued source authoring Interface"))
-                       (replay-slot-reads! (reverse reads) (lambda (_receiver _key) (void)))
-                       value)
+                     (admit-authoring-interface policy)
                      ;; Custom policies keep their constructor and Type calls.
                      (yuanxu-module-interface "source-policy" (Record) '()
                        authoring: (.ref policy 'authoring))))))
@@ -217,7 +236,9 @@
       source-policy: SourceInspectionPolicy.
       validate: yuanxu-module-source-admit!))
 (def yuanxu-default-module-style-policy
-  (.o (:: @ yuanxu-module-style-policy-prototype)))
+  (.o (:: policy yuanxu-module-style-policy-prototype)
+      (%authoring-interface-roots
+        (let-values (((_value roots) (read-authoring-interface policy))) roots))))
 
 ;; Capture the maintained policy BEFORE exposing it for extension. Include its
 ;; actual Profile children; changing a role need not edit the containing slot.

@@ -3,7 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .o .cc .get .put! object? replay-slot-reads!)
+        (only-in :clan/poo/object .o .cc .get .put! object? replay-slot-reads!
+                 call-with-current-slot-reads)
         (only-in :clan/poo/mop Type. Bool)
         (only-in :clan/poo/type Enum Tuple)
         (only-in :clan/poo/testing/type check-property report-diagnostics)
@@ -203,6 +204,14 @@
             (check-equal? parses 12))
           (check-equal? (eq? template
                          (.get yuanxu-default-module-style-policy %authoring-interface)) #t)
+          (def observed '())
+          (call-with-slot-read-observer
+            (lambda (read)
+              (when (and (eq? (slot-read-receiver read) yuanxu-default-module-style-policy)
+                         (memq (slot-read-key read) '(%authoring-interface %authoring-interface-roots)))
+                (set! observed (cons (slot-read-key read) observed))))
+            (lambda () (check-exception (collection-source root) error?)))
+          (check-equal? observed '(%authoring-interface))
           ;; A derived receiver cannot borrow a parent's normalized Profile.
           (def invalid
             (.o (:: @ yuanxu-default-module-style-policy)
@@ -225,6 +234,7 @@
           (.put! (.get checked authoring) 'config #f)
           (check-exception
             (replay-slot-reads! reads (lambda (_owner _key) (void))) error?)
+          (check-exception (call-with-current-slot-reads reads void) error?)
           (check-equal? (eq? template
                          (.get yuanxu-default-module-style-policy %authoring-interface)) #t))))
     (yuanxu-test-case "source guards require exact Unicode content and EOF"

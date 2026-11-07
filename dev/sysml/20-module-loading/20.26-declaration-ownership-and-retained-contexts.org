@@ -274,3 +274,25 @@ the same token before and after a changed observation and requires refusal.
 Native expansion and author callbacks keep independent validation on both
 sides. The capacity work is to reduce evidence produced by each admission
 before those checks, including shared authoring and validation support.
+
+** Maintained authoring Profile replay
+
+The 64-owner diagnostic split the original joined roots at the actual
+admission suffix. Preparation visited 58,624 records separately and 1,861
+in one native replay. Admission visited 25,931 separately and 6,193 in one
+replay. Some records appear in both stages. Each preparation contained the
+same signed =%authoring-interface= root with 728 reachable records.
+
+Six interleaved measurements repeated that exact root 256 times per lane.
+Visitor replay with a fresh spine took 0.489 and 0.610 seconds wall time.
+The validation-only primitive with a fresh spine took 0.591 and 0.614.
+With one stable spine it took 0.382 and 0.383. Changing the visitor alone
+does not establish a speedup. The maintained policy's native slot supplies
+the stable spine, and the reader compares its token to the one actually
+observed this time. POO's original topology index owns reuse, and POO
+validates the complete record graph on every invocation.
+
+=PublicationReads.profile_checkpoint_preserves_issued_order= and
+=profile_checkpoint_keeps_fresh_refusal= model the identity match and
+rejection. Their premise is the exact signed record identity, never a
+matching receiver, slot name, or previous successful verdict.

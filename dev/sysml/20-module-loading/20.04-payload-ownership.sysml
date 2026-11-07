@@ -239,6 +239,16 @@ package YuanxuPayloadOwnership {
                proves delivery identity and refusal order. Runtime verification
                owns the closure grammar and Gerbil result correspondence. */
     }
+    requirement def StockAuthoringProfileCheckpoint {
+        doc /* Read the maintained Profile on every owner invocation. Its
+               native slot may retain the one-root replay spine for the
+               signed record it observed. Select that spine only when the
+               newly observed record is identical and the caller has no
+               open slot observer. POO freshly authenticates its full
+               traversal and return. Open or changed receivers preserve
+               original reads and fallback. Lean PublicationReads models
+               the exact issued root order and refusal. */
+    }
     requirement def PreludeDependencyRepresentation {
         doc /* Keep Gerbil Core as a complete runtime import-set; filter the two
                POO constructor exports at the export boundary. Verify every public
