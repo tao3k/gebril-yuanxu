@@ -368,7 +368,7 @@
                    (module-source-measure-operation 'build-product-require
                      (lambda () (require-build-products! identities libdir)))
                    (.call prepared .admit-spec spec)))
-               refuse-input-context!)))))
+               refuse-input-context! #t)))))
       ((equal? (car args) "tags")
        (unless (= (length args) 2)
          (error "tags requires an explicit output file"))

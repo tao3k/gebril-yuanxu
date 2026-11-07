@@ -225,3 +225,45 @@ source-only Fixture. The small wall/CPU difference does not support attributing
 this particular full-build cost to host scheduling. Its startup, projection,
 Make/currentness and signing costs still need same-cohort attribution; the
 bootstrap receipt must not be presented as a full-build speedup.
+
+* Shared selected inputs across ordinary and downstream builds
+
+The ordinary Core compile action records the selected Module inputs through
+its existing source-view preparation, inside the output lock. Core still
+compiles from its original source directory. The downstream selected build
+compares the same input descriptors and uses native Make to determine
+freshness. A descriptor records source, compiler and options. Each invocation
+still admits its own inputs.
+
+A narrower downstream selection may prune an inactive descriptor. When
+ordinary Core sees a missing descriptor and a present native completion
+marker, it leaves the marker under Make's ordinary dependency checks. A
+missing descriptor gives a subsequent downstream consumer no permission to
+reuse that target. Without a native marker, Core can prepare the descriptor
+before Make builds. This also preserves the interrupted-build retry path.
+
+For the reproduction, build Core with an empty output prefix. Register Lab
+in that prefix and compile its Sandbox Interface together with the Core
+Funflow and JSON Schema Interfaces through Lab's existing development build
+entry. Repeat the selection in a new Lab process, then run the ordinary Core
+build again. The measured Core/Lab/Lab/Core sequence dispatched 275/35/0/0
+native targets in 86.73/30.12/10.77/22.01 seconds. The 23 tracked input
+descriptors and native completion markers retained their bytes and mtimes.
+The two Core Interfaces still dispatch in the first Lab selection. Their
+cold Core descriptors also observe the source prelude, which is required
+for the empty-output build.
+
+Run =just test-file t/selected-source-view-lifecycle-test.ss= for the focused
+check. It covers consumer pruning, missing-descriptor behavior, same-mtime
+source changes, interruption, output isolation and unowned-input rejection.
+Run =just test-build-input-context-mutations <artifact-dir>= for input-order,
+restoration and mutation controls. Lab owns the separate Memory runtime gate.
+
+The corresponding Lab gate is
+=just test-file t/yuanxu-context-memory-downstream-test.ss=. On Gerbil
+=1cfb032=, Gambit =ea114fc= and gerbil-poo =cd4de644=, three consecutive
+runs on independent outputs completed in 109.71, 85.35 and 108.33 seconds.
+All three had identical 12/27/12 cold target sets, zero hot dispatches and
+zero scopes during build. The aggregate, action and idle limits stayed at
+120, 120 and 60 seconds. The timings include Harness startup and subprocess
+collection, which are separate from the independent first scope reads.

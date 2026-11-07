@@ -7,7 +7,7 @@
         (only-in :yuanxu/module-system/source/observations module-source-type module-source-measure-operation))
 (export artifact-files clean-build-artifacts! repair-build-products! require-build-products! build-output-directory
         call-with-selected-output-lock selected-output-source-directory
-        current-build-output-directory current-build-source-directory current-build-compiler-options current-build-module-roots invalidate-build-products!)
+        current-build-output-directory current-build-source-directory current-build-compiler-options current-build-module-roots invalidate-build-products! static-product-path)
 
 ;; The output directory is an invocation parameter, not an approval.
 (def current-build-output-directory (make-parameter #f))

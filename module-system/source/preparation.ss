@@ -4,7 +4,7 @@
 ;;; Prepare compiler input from selected local sources; never import or run them.
 (import (only-in :yuanxu/module-system/building/products
                  build-output-directory current-build-source-directory current-build-compiler-options
-                 invalidate-build-products! artifact-files
+                 invalidate-build-products! artifact-files static-product-path
                  call-with-selected-output-lock selected-output-source-directory)
         (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
         (only-in :clan/poo/object .o .ref .ref/cached .slot? object? object-protocol
@@ -550,6 +550,7 @@
 ;; identity and original included syntax. Make still owns original source targets
 ;; and dependency/product timestamps; generated frames are not new build targets.
 (def (call-with-module-compiler-inputs entries action unified?: (unified? #f)
+         recorded-entries: (recorded-entries '())
          source-reads: (source-reads for-each-batch) source-state: (source-state #f)
          source-owner: (source-owner #f) source-import: (source-import compiler-import/independent)
          refuse-input-context: (refuse-input-context #f))
@@ -569,7 +570,14 @@
     (let (roles (compiler-role-paths entries))
       (if unified? (call-with-selected-source-view entries roles action source-reads source-import
                      refuse-input-context)
-        (call-with-role-compiler-inputs entries roles action source-reads source-import)))))
+        (begin
+          (unless (null? recorded-entries)
+            (let* ((libdir (build-output-directory))
+                   (view (selected-output-source-directory libdir)))
+              (artifact-files (map (cut .ref <> 'compiler-identity) recorded-entries) libdir #f)
+              (create-directory* view)
+              (prepare-compiler-view-entries! recorded-entries roles source-reads libdir view preserve-unrecorded?: #t)))
+          (call-with-role-compiler-inputs entries roles action source-reads source-import))))))
 (def (for-each-batch entries action) (action entries))
 (def (compiler-import/independent _entry _input _importer _target _identity action)
   (call-with-module-source-callback action))
@@ -761,6 +769,16 @@
         (error "compiler input alias collides with selected source" target))
       (hash-put! (compiler-source-inputs) target
         (hash-ref (compiler-source-inputs) (path-normalize (.ref entry 'path))))) entries)
+  (prepare-compiler-view-entries! entries roles source-reads libdir view)
+  (def (compile)
+    (parameterize ((current-build-source-directory view))
+      (call-with-role-compiler-inputs entries roles action source-reads source-import)))
+  (if refuse-input-context
+    (call-with-build-input-path libdir compile refuse-input-context source-roots: (list view))
+    (call-with-build-input-path libdir compile source-roots: (list view))))
+
+(def (prepare-compiler-view-entries! entries roles source-reads libdir view
+                                        preserve-unrecorded?: (preserve-unrecorded? #f))
   (source-reads entries
    (lambda (batch)
     (for-each
@@ -778,44 +796,48 @@
               (error "selected source view component is not a directory" next))
             (create-directory* next)
             (walk next (cdr parts)))))
-      (when (and (module-source-type target) (not (eq? (module-source-type target) 'regular)))
+      (def kind (module-source-type target))
+      (when (and kind (not (eq? kind 'regular)))
         (error "selected source target is not a regular file" target))
-      (def content
-        (call-with-output-string
-          (lambda (out)
-            ;; One escaped datum in a comment binds bytes, options and tools to
-            ;; this compiler input without storing any admission verdict.
-            (display ";; yuanxu-input " out)
-            (write-source-datum (list (.ref input 'source-inputs) (.ref entry 'options)
-                         (gerbil-version-string) (gerbil-home) (current-build-compiler-options)
-                         (map (lambda (key) (cons key (getenv key #f)))
-                           '("GERBIL_GSC" "GERBIL_GCC" "GERBIL_BUILD_OPTIMIZED" "GERBIL_BUILD_DEBUG" "GERBIL_BUILD_RELEASE"))) out)
-            (newline out)
-            ;; Ordinary libraries retain only the EXISTING Make input stamp.
-            ;; Their source is neither copied as a module nor included/expanded
-            ;; here. The native importer above receives their original path.
-            (if (hash-key? roles (path-normalize (.ref entry 'path)))
-              (for-each (lambda (form) (write-source-datum form out) (newline out))
-                        (.ref input 'compiler-forms))
-              ;; Make reads target identity before asking the importer to expand
-              ;; the original library. Publish its package in the native header.
-              (begin
-                (display "package: " out)
-                (write-source-datum
-                  (path-strip-trailing-directory-separator (path-directory name)) out)
-                (newline out))))))
-      (unless (and (module-source-type target) (equal? (module-source-read target) content))
-        ;; A crash after invalidation cannot reuse the previous native marker.
-        (call-with-module-source-callback
-          (lambda ()
-            (invalidate-build-products! (list identity) libdir)
-            (create-directory* (path-directory target))
-            (call-with-output-file (list path: target truncate: #t) (lambda (out) (display content out))))))
+      (def previous (and kind (module-source-read target)))
+      (when (and previous (not (string-prefix? ";; yuanxu-input " previous)))
+        (error "unowned source in selected compiler view" target))
+      ;; A local producer leaves an unrecorded native marker under Make's
+      ;; existing freshness policy. Absence of a descriptor grants no reuse
+      ;; to a later unified consumer.
+      (when (or (not preserve-unrecorded?) previous
+                (not (module-source-type (static-product-path identity libdir))))
+        (let ()
+          (def content
+            (call-with-output-string
+              (lambda (out)
+                ;; One escaped datum in a comment binds bytes, options and tools to
+                ;; this compiler input without storing any admission verdict.
+                (display ";; yuanxu-input " out)
+                (write-source-datum (list (.ref input 'source-inputs) (.ref entry 'options)
+                             (gerbil-version-string) (gerbil-home) (current-build-compiler-options)
+                             (map (lambda (key) (cons key (getenv key #f)))
+                               '("GERBIL_GSC" "GERBIL_GCC" "GERBIL_BUILD_OPTIMIZED" "GERBIL_BUILD_DEBUG" "GERBIL_BUILD_RELEASE"))) out)
+                (newline out)
+                ;; Ordinary libraries retain only the EXISTING Make input stamp.
+                ;; Their source is neither copied as a module nor included/expanded
+                ;; here. The native importer above receives their original path.
+                (if (hash-key? roles (path-normalize (.ref entry 'path)))
+                  (for-each (lambda (form) (write-source-datum form out) (newline out))
+                            (.ref input 'compiler-forms))
+                  ;; Make reads target identity before asking the importer to expand
+                  ;; the original library. Publish its package in the native header.
+                  (begin
+                    (display "package: " out)
+                    (write-source-datum
+                      (path-strip-trailing-directory-separator (path-directory name)) out)
+                    (newline out))))))
+          (unless (equal? previous content)
+            ;; A crash after invalidation cannot reuse the previous native marker.
+            (call-with-module-source-callback
+              (lambda ()
+                (invalidate-build-products! (list identity) libdir)
+                (create-directory* (path-directory target))
+                (call-with-output-file (list path: target truncate: #t) (lambda (out) (display content out))))))))
       (module-source-measure-operation 'compiler-view-after
-        (lambda () ((.ref input 'admit-current))))) batch)))
-  (def (compile)
-    (parameterize ((current-build-source-directory view))
-      (call-with-role-compiler-inputs entries roles action source-reads source-import)))
-  (if refuse-input-context
-    (call-with-build-input-path libdir compile refuse-input-context source-roots: (list view))
-    (call-with-build-input-path libdir compile source-roots: (list view))))
+        (lambda () ((.ref input 'admit-current))))) batch))))

@@ -96,6 +96,17 @@
           (successful (action root a "compile" "base"))
           (check-equal? (file-exists? (path-expand (string-append ".yuanxu-source/" consumer ".ss") a)) #f)
           (check-equal? (file-exists? (path-expand (string-append ".yuanxu-source/" producer ".ss") a)) #t)
+          ;; A local compiler must leave an ordinary marker alone when a
+          ;; narrower consumer has pruned its descriptor.
+          (def consumer-marker (marker a consumer))
+          (def consumer-before (module-source-read consumer-marker))
+          (def consumer-time (time->seconds (file-info-last-modification-time (file-info consumer-marker))))
+          (def local (successful (action root a "observe-local")))
+          (check-equal? (and (string-contains local "SOURCE-VIEW-LOCAL-READY") #t) #t)
+          (check-equal? (compile-events local) '())
+          (check-equal? (file-exists? (path-expand (string-append ".yuanxu-source/" consumer ".ss") a)) #f)
+          (check-equal? (module-source-read consumer-marker) consumer-before)
+          (check-equal? (time->seconds (file-info-last-modification-time (file-info consumer-marker))) consumer-time)
           ;; An unknown view file is preserved and refuses before compilation.
           (def unknown (path-expand ".yuanxu-source/unowned.ss" a))
           (write-source unknown ";; user input\n")

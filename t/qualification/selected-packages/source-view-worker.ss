@@ -7,7 +7,7 @@
                  yuanxu-prepare-module-retained-source call-with-module-compiler-inputs)
         (only-in :yuanxu/module-system/building/products
                  current-build-output-directory current-build-source-directory
-                 repair-build-products! require-build-products!))
+                 repair-build-products! require-build-products! call-with-selected-output-lock))
 
 (def (main root lib operation selection)
   (add-load-path! lib)
@@ -28,7 +28,14 @@
                         `(gxc: ,(symbol->string (.ref entry 'compiler-identity))
                                (extra-inputs: ,(map car (.ref (.ref entry 'input) 'source-inputs))))) entries)))
       (parameterize ((current-build-output-directory lib))
-        (if (equal? operation "interrupt")
+        (cond
+         ((equal? operation "observe-local")
+          (call-with-selected-output-lock lib
+            (lambda ()
+              (call-with-module-compiler-inputs entries
+                (lambda () (displayln "SOURCE-VIEW-LOCAL-READY"))
+                recorded-entries: entries))))
+         ((equal? operation "interrupt")
           ;; The exception is injected at the existing callback boundary, not
           ;; through a production fault hook. Catch only our exact sentinel.
           (let (sentinel (gensym 'before-native))
@@ -36,7 +43,8 @@
               (lambda (failure)
                 (if (eq? failure sentinel) (displayln "SOURCE-VIEW-INTERRUPTED") (raise failure)))
               (lambda ()
-                (call-with-module-compiler-inputs entries (lambda () (raise sentinel)) unified?: #t))))
+                (call-with-module-compiler-inputs entries (lambda () (raise sentinel)) unified?: #t)))))
+         (else
           (call-with-module-compiler-inputs entries
             (lambda ()
               (repair-build-products! identities lib)
@@ -46,4 +54,4 @@
                   (make spec srcdir: make-source prefix: #f
                         libdir: lib bindir: (path-expand "bin" root) parallelize: 1 optimize: #f))
                 make-source: make-source)
-              (require-build-products! identities lib)) unified?: #t))))))
+              (require-build-products! identities lib)) unified?: #t)))))))
