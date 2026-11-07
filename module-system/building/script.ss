@@ -29,6 +29,13 @@
             (names (cdr remaining) (cons id selected))))))
      (else (scan (cdr rest) (cons (car rest) native) roots)))))
 
+(def (recorded-compiler-options options)
+  (let loop ((rest options))
+    (cond
+     ((null? rest) '())
+     ((and (eq? (car rest) 'libdir:) (not (cadr rest))) (loop (cddr rest)))
+     (else (cons (car rest) (cons (cadr rest) (loop (cddr rest))))))))
+
 (defsyntax (defbuild-script stx)
   (syntax-case stx ()
     ((macro build-spec key ...)
@@ -48,7 +55,7 @@
                  (option key) ...)
              (def options (list option ...))
              (defvalues (native-args roots) (split-build-modules args))
-             (parameterize ((current-build-compiler-options options)
+             (parameterize ((current-build-compiler-options (recorded-compiler-options options))
                             (current-build-module-roots roots))
               (call-with-init-build-spec
                (lambda () build-spec)
