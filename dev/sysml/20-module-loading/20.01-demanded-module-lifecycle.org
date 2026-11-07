@@ -76,24 +76,26 @@ unaccounted binding, Gerbil still expands the full visible alias group.
 The payload itself stays in the owning native Context. Role receivers,
 delayed values, per-owner admission, and the checks before and after
 expansion and author effects retain their existing boundaries.
+An originally nonempty alias group still evaluates its receiver once even
+when the restricted inventory is empty. Its POO read remains part of the
+original support.
 
 =SourceClosureWork.stock_role_alias_inventory_exact= proves lookup equality
 on the admitted inventory. =open_expansion_retains_every_alias= and
 =expanded_owner_needs_fresh_return_check= cover the open route and the
 independent return check.
 
-In the same macOS Gerbil process, the 64-owner attribution fixture compares
-stock payloads with equivalent payloads wrapped in open Gerbil syntax. Both
-admit all declarations and construct the same requested business scope.
+The 64-owner attribution fixture compares stock payloads with equivalent
+payloads wrapped in open Gerbil syntax in the same process. Both admit all
+declarations and construct the same requested business scope. The fixture
+attributes the expansion work independently of the platform capacity gates.
 
-| Payloads | Positive-phase compile calls | Positive-phase eval calls | Wrapper CPU (s) | Wrapper elapsed (s) |
-|----------+------------------------------+---------------------------+-----------------+---------------------|
-| Stock    |                         4082 |                      4082 |            3.27 |                6.77 |
-| Open     |                         4594 |                      4594 |            3.98 |                9.73 |
-
-This comparison uses a compiled module overlay on the pinned toolchain
-and existing Core build. The bounded fixture identifies the saved expansion
-work. The full-source build and platform capacity receipts are separate.
+The pinned macOS run measured 4,082 positive-phase compile and eval calls
+each on the stock path versus 4,594 each on the open path. The inclusive
+wrapper span took 2.49 versus 2.76 seconds of CPU and 2.50 versus 2.77
+seconds elapsed. This run used compiled overlays for the declaration and
+linker on the same existing Core build. It establishes a bounded comparison
+and leaves the full-source capacity run to the platform gate.
 | Admit | Final receiver Contracts, all contributors, original read support | A reusable successful approval |
 | Publish/build/run | Phase-specific admitted values and existing issuance/effect boundaries | A metadata-only declaration treated as deployable |
 

@@ -278,11 +278,20 @@
            (let* ((visible (filter (lambda (name) (not (memq (stx-e name) shadowed))) names))
                   (uses (known-role-uses value context (map stx-e visible) shadowed))
                   (needed (if uses (filter (lambda (name) (memq (stx-e name) uses)) visible) visible)))
-             (if (null? needed) value
-               (with-syntax ((receiver receiver) (private private) (value value)
-                             ((alias ...) (map (lambda (name) (datum->syntax context (stx-e name))) needed)))
-                 (syntax/loc #'value
-                   (with-slots (alias ...) (.get receiver private) value)))))))
+             (with-syntax ((receiver receiver) (private private) (value value))
+               (cond
+                ((null? visible) #'value)
+                ((null? needed)
+                 ;; The nonempty native with-slots evaluates its receiver
+                 ;; even when no alias is read. Preserve that POO observation.
+                 (with-syntax ((object (genident 'role-receiver)))
+                   (syntax/loc #'value
+                     (let (object (.get receiver private)) value))))
+                (else
+                 (with-syntax (((alias ...)
+                               (map (lambda (name) (datum->syntax context (stx-e name))) needed)))
+                   (syntax/loc #'value
+                     (with-slots (alias ...) (.get receiver private) value)))))))))
        (def (wrap-requires value receiver (shadowed '()))
          (map-object value
            (lambda (_alias spec)

@@ -41,6 +41,17 @@ theorem stock_role_alias_inventory_exact {Value : Type}
 theorem open_expansion_retains_every_alias (roles : List Nat) :
     neededRoleAliases roles none = roles := rfl
 
+-- The original with-slots evaluates its receiver once whenever it installs
+-- any aliases. Keep the original observation even if none of them is read.
+def withRoleReceiver {State Value : Type} (original : List Nat)
+    (observe : State → State) (body : State → Value) (state : State) : Value :=
+  body (if original.isEmpty then state else observe state)
+
+theorem empty_inventory_keeps_native_receiver_observation
+    {State Value : Type} (role : Nat) (rest : List Nat)
+    (observe : State → State) (body : State → Value) (state : State) :
+    withRoleReceiver (role :: rest) observe body state = body (observe state) := rfl
+
 theorem stock_inventory_preserves_owner_resolution {Owner Value : Type}
     (roles shadows names : List Nat) (role outer : Owner → Nat → Value)
     (owner : Owner) (name : Nat) (used : name ∈ names) :

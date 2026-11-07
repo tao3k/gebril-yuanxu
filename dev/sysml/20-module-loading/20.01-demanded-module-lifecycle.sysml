@@ -66,7 +66,9 @@ package YuanxuModuleLoading {
         ref part slot : DeferredRoleSlot;
         doc /* Closed payload syntax may use a conservative inventory of its
                lexical identifiers to limit the wrapper's role aliases.
-               Unknown expansion retains every visible alias. Source syntax,
+               Unknown expansion retains every visible alias. An existing
+               nonempty alias group observes its receiver once even if the
+               restricted inventory is empty. Source syntax,
                receiver, owner resolver, demand and native return checks
                remain attached to the individual publication. */
     }
