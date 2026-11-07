@@ -73,6 +73,13 @@ package YuanxuModuleLoading {
                and source observers preserve separate reads. Release the
                datums before retaining the prepared declaration. */
     }
+    part def DeferredWrapperImports {
+        ref part declaration : SelectedDeclarations;
+        doc /* One existing native module exports the fixed declaration
+               and deferred-wrapper bindings. Keep them strong and retain
+               their phase and identity. Each owner keeps its original
+               context, payload expansion, and compiler role imports. */
+    }
     part def CandidateReturn {
         ref part support : RuntimeReadSupport;
         doc /* A fixed directory and source check may run inside the

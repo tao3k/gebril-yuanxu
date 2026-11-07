@@ -349,4 +349,23 @@ theorem two_revisions_of_one_path_cannot_both_pass
   have rightRead := current (path, some right) (List.mem_map.mpr ⟨(path, right), second, rfl⟩)
   exact different (Option.some.inj (leftRead.symm.trans rightRead))
 
+-- Each entry is the native binding identity at its phase. Re-exporting a
+-- binding through an existing native module retains that identity.
+def wrapperImportProjection {Binding : Type}
+    (imports : List (List Binding)) (ownerImports : List Binding) : List Binding :=
+  imports.flatten ++ ownerImports
+
+theorem wrapper_fixed_imports_preserve_binding_order {Binding : Type}
+    (declaration deferred ownerImports : List Binding) :
+    wrapperImportProjection [declaration ++ deferred] ownerImports =
+      wrapperImportProjection [declaration, deferred] ownerImports := by
+  simp [wrapperImportProjection]
+
+theorem wrapper_projection_keeps_owner_and_effect {Owner Binding Result Failure : Type}
+    (owner : Owner) (declaration deferred ownerImports : List Binding)
+    (expand : Owner → List Binding → Except Failure Result) :
+    expand owner (wrapperImportProjection [declaration ++ deferred] ownerImports) =
+      expand owner (wrapperImportProjection [declaration, deferred] ownerImports) := by
+  rw [wrapper_fixed_imports_preserve_binding_order]
+
 end YuanxuProof.ModuleSystem.Graph.ImportCorrespondence

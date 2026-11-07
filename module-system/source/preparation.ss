@@ -353,12 +353,11 @@
            (list 'package: (substring id-text 0 (- (string-length id-text) (string-length suffix)))
                  'namespace: (caddr compiler-info)
                  `(import ,@(if shared-prelude? '() '((except-in :clan/poo/object .def)))
-                          (only-in :yuanxu/module-system/source/declaration .def define-module-build-binding)
-                          ,@(if deferred
-                              `((only-in :yuanxu/module-system/source/deferred-declaration
-                                         include-deferred-declaration
-                                         ,@(if compiled? '(module-import-role-values) '())))
-                              '())
+                          ,(if deferred
+                             `(only-in :yuanxu/module-system/source/deferred-declaration
+                                       .def define-module-build-binding include-deferred-declaration
+                                       ,@(if compiled? '(module-import-role-values) '()))
+                             '(only-in :yuanxu/module-system/source/declaration .def define-module-build-binding))
                           ,@(if (and deferred compiled? (pair? roles))
                               `((for-template
                                  ,@(map (lambda (role)
@@ -392,9 +391,10 @@
                             (and (memq role private-import-roles)
                                  (path-expand (module-role-file role) root))) roles)
               '())
-            deferred-reader-forms: (and deferred-roles (publication-forms '() deferred-roles))
-            reader-forms: (publication-forms
-                           (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles))
+            reader-forms: (if deferred-roles
+                           (publication-forms '() deferred-roles)
+                           (publication-forms
+                             (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles)))
             compiler-forms: (if deferred-roles
                              (publication-forms '() deferred-roles #t)
                              (publication-forms

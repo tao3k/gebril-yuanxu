@@ -12,13 +12,15 @@
         (only-in :gerbil/runtime/loader load-module)
         (only-in :clan/poo/io module-action)
         (only-in :std/list/list delete-duplicates/hash append-map)
-        (rename-in (only-in :yuanxu/module-system/source/declaration .def)
+        (rename-in (only-in :yuanxu/module-system/source/declaration .def define-module-build-binding)
                    (.def publication-.def))
         (for-syntax :gerbil/expander (only-in :std/list/list append-map)
                     (only-in :yuanxu/module-system/source/observations
                              module-source-measure-operation)))
 (export module-deferred-role-exports include-deferred-declaration module-role-values module-import-role-values
-        current-module-role-resolver module-entry-action module-binding-action deferred-role-values)
+        current-module-role-resolver module-entry-action module-binding-action deferred-role-values
+        define-module-build-binding
+        (rename-out publication-.def (publication-.def .def)))
 (def current-module-role-resolver (make-parameter #f))
 
 ;; Runtime source evaluation and compiled runtime loading have different

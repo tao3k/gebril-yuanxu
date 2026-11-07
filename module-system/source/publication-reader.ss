@@ -547,7 +547,7 @@
           (let (wrapper (module-source-measure-operation 'reader-wrapper-write
                            (lambda ()
                              (write-wrapper interface-path
-                               (reader-body (.ref prepared (if deferred-roles 'deferred-reader-forms 'reader-forms)))
+                               (reader-body (.ref prepared 'reader-forms))
                                (.ref prepared 'compiler-identity)))))
             (parameterize
                 ((current-configuration-input-observer record-data!)

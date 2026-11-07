@@ -328,6 +328,14 @@ still resolves identity, reads and expands the owner source, and checks
 currentness after effects. The retained preparation owns the source text
 and projections. The temporary datum tree is released before retention.
 
+** Deferred wrapper imports
+
+Deferred wrappers import their fixed bindings through the existing
+deferred-declaration module. Gerbil re-exports the original strong
+declaration bindings, including Build. Keep the owner's prelude, namespace,
+role imports and native expansion. The prepared owner carries one Reader
+form slot for its actual lane and a separate native compiler projection.
+
 ** Candidate return
 
 After the Publication Contract returns, a closed directory candidate can
