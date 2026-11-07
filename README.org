@@ -123,15 +123,23 @@ location during migration is not a second permanent implementation contract.
 
 * Build and test
 
-Use Gerbil v0.19 with =gerbil-poo= available in an isolated =GERBIL_PATH=.
-The Just recipes set the build parallelism and heap-fence tests before module
-imports:
+Use the platform's pinned Gerbil v0.19 release and Just version from the
+[[file:.github/actions/setup-gerbil/action.yml][CI setup]]. Keep dependency
+installation, build and test in the same =GERBIL_PATH=:
 
 #+begin_src sh
+export GERBIL_PATH="$PWD/.gerbil"
+gerbil deps --install
 just build
-just test
-just test-file t/module-interface-test.ss
+just test-build-input-context-mutations "$GERBIL_PATH/build-input-context"
+just test-platform
+just test-selected-modules
 #+end_src
+
+Use =just test-directory GROUP= to reproduce a failing CI group with the same
+Scheme dispatcher and resource limits. =just test-file PATH= runs a focused
+diagnostic, while =just test= runs the platform suites and the additional
+local allocation diagnostic.
 
 Core's =t/= tests cover shared semantics. Agentic AI Lab retains product selection
 and cross-package integration tests.

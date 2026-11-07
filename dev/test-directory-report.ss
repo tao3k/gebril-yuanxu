@@ -85,13 +85,22 @@
   (and source
        (qualification-field cohort 'clean?)
        (equal? source (qualification-field cohort 'build-source))
+       (qualification-field cohort 'source-tree)
+       (equal? (qualification-field cohort 'runtime-options) qualification-runtime-options)
        (qualification-field cohort 'package-declaration)
        (qualification-field cohort 'just)
        (qualification-field cohort 'poo)
        (qualification-field cohort 'compiler-version)
        (qualification-field cohort 'release-manifest)))
 
+;; Focused tests can override the VM options. A platform qualification has
+;; one fixed envelope, including when invoked outside GitHub Actions.
+(def qualification-runtime-options "-:max-heap=2G,debug=q")
+
 (def (qualification-cohort runtime-options)
+  (unless (equal? runtime-options qualification-runtime-options)
+    (error "platform qualification requires the original VM options"
+           qualification-runtime-options runtime-options))
   (def (command-output command)
     (def result
       (run-script (.cc ProcessScript. command: command check-status: #f)))
@@ -99,9 +108,11 @@
   (def (digest-file path)
     (and (file-exists? path)
          (hex-encode (sha256 (call-with-input-file path read-all-as-u8vector)))))
-  (def source (command-output '("git" "rev-parse" "HEAD")))
+  (def revision (command-output '("git" "rev-parse" "HEAD" "HEAD^{tree}")))
   (def changes (command-output '("git" "status" "--porcelain" "--untracked-files=normal")))
-  (def source-id (and source (car (string-split source #\newline))))
+  (def revisions (and revision (string-split revision #\newline)))
+  (def source-id (and revisions (car revisions)))
+  (def source-tree (and revisions (cadr revisions)))
   (def clean? (and changes (string-empty? changes)))
   (def prefix (getenv "GERBIL_PATH"))
   (def test-lib (path-expand "test-lib" prefix))
@@ -135,7 +146,8 @@
     (digest-file (path-expand "../gerbil-toolchain-release.json" (gerbil-home))))
   (def cohort
     (list 'test-qualification
-          (cons 'source source-id) (cons 'build-source build-source) (cons 'clean? clean?)
+          (cons 'source source-id) (cons 'source-tree source-tree)
+          (cons 'build-source build-source) (cons 'clean? clean?)
           (cons 'package-declaration (digest-file "gerbil.pkg"))
           (cons 'gerbil (gerbil-version-string))
           (cons 'gambit (system-version-string))
@@ -146,6 +158,7 @@
           (cons 'poo-origin poo-origin)
           (cons 'load-path (load-path))
           (cons 'runtime-options runtime-options)
+          (cons 'gambopt (getenv "GAMBOPT" #f))
           (cons 'build-cores (getenv "GERBIL_BUILD_CORES" #f))
           (cons 'gerbil-gcc gcc)
           (cons 'compiler-version (and compiler-version
@@ -485,13 +498,18 @@
   (defvalues (linux-cohort linux-rows linux-qualification) (read-audited-report linux group))
   (defvalues (macos-cohort macos-rows macos-qualification) (read-audited-report macos group))
   (unless (and (qualification-build-matches? linux-qualification)
-               (qualification-build-matches? macos-qualification)
-               (andmap (lambda (key)
-                         (let (left (qualification-field linux-qualification key))
-                           (and left (equal? left (qualification-field macos-qualification key)))))
-                       '(source package-declaration gerbil gambit just poo
-                         runtime-options idle-seconds worker-seconds)))
-    (error "platform reports have different source or test qualification inputs"))
+               (qualification-build-matches? macos-qualification))
+    (error "platform reports lack matching build or VM evidence"
+           linux-qualification macos-qualification))
+  (def differences
+    (filter-map (lambda (key)
+                  (def left (qualification-field linux-qualification key))
+                  (def right (qualification-field macos-qualification key))
+                  (and (not (and left (equal? left right))) [key left right]))
+                '(source source-tree package-declaration gerbil gambit just poo
+                  runtime-options idle-seconds worker-seconds)))
+  (unless (null? differences)
+    (error "platform reports have different source or test qualification inputs" differences))
   (unless (match [linux-cohort macos-cohort]
             ([[sha run attempt "Linux" linux-arch] [other-sha other-run other-attempt "macOS" macos-arch]]
              (and (andmap (lambda (value) (and (string? value) (not (string-empty? value))))
