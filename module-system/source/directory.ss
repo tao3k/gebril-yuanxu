@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Filesystem source preparation. No eval, compiler, dynamic import or runtime Loader.
 (import (runtime: :clan/poo/object)
-        (only-in :std/list/list delete-duplicates/hash any foldl)
+        (only-in :std/list/list delete-duplicates/hash any foldl length<=n?)
         (only-in :yuanxu/module-system/source/preparation module-source-package-prefix)
         (only-in :yuanxu/module-system/source/collection yuanxu-module-source-collection-optional-entrypoint)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
@@ -15,6 +15,7 @@
 (export module-directory-context)
 (defstruct directory-source (value current?) final: #t)
 (defstruct directory-decision (value current?) final: #t)
+(defstruct directory-snapshot (children child-index interface?) final: #t)
 (def (directory-path-current source-current? checks)
   ;; Allocate outside locate-source's collecting frame: a retained SourceRef
   ;; must not retain that frame, its box or another located receiver.
@@ -49,9 +50,7 @@
                 (children
                  (filter (lambda (name)
                            (and (module-source-name? name)
-                                (eq? (module-source-type (path-expand name directory)) 'directory))) names))
-                (value (.o path: directory child-names: children
-                           interface?: (and (member "interface.ss" names) #t))))
+                                (eq? (module-source-type (path-expand name directory)) 'directory))) names)))
            (unless (= (length children)
                       (length (delete-duplicates/hash (map string-downcase children))))
              (error "case-colliding module directories" directory children))
@@ -62,8 +61,14 @@
            ;; Whole listings establish global namespace/collision policy, not
            ;; each private candidate's path support. locate-source* enrolls
            ;; actual path kinds even when this snapshot is already present.
-           (hash-put! directories directory value)
-           value)))
+           ;; Keep enumeration order while indexing wide membership queries.
+           ;; Use the same small-branch cutoff as POO's compact prototype map.
+           (let* ((child-index (and (not (length<=n? children 8))
+                                    (list->hash-table (map (cut cons <> #t) children))))
+                  (value (make-directory-snapshot children child-index
+                                                  (and (member "interface.ss" names) #t))))
+             (hash-put! directories directory value)
+             value))))
     (def (intent-root intent file)
         (let (configured (.ref intent 'root))
           (if (and (not (.ref intent 'root-explicit?)) (string=? configured "modules")
@@ -273,14 +278,14 @@
                          (id (string->symbol (string-append prefix name)))
                          (node (snapshot child))
                          (file (path-expand "interface.ss" child))
-                         (classified (and (.ref node 'interface?)
+                         (classified (and (directory-snapshot-interface? node)
                                           (observe! interface-tags file #f))))
                     (if classified
                       (when (and (not (decision-row (window-key window id)))
                                  (memq tag classified))
                         (set! selected (cons id selected)))
                       (walk child (string-append prefix name "/")))))
-                (.ref (snapshot parent) 'child-names)))
+                (directory-snapshot-children (snapshot parent))))
             (hash-put! profile-roots window (reverse selected)))))
       (when (any profile-tag (or windows (list intent-value)))
         (module-source-measure-operation 'profile-interface-scan
@@ -465,7 +470,7 @@
                (let* ((child (observe! path-normalize raw-child))
                       (collection-root (path-normalize raw-collection-root))
                       (leaf (snapshot child)))
-                 (unless (.ref leaf 'interface?) (error "module has no interface.ss" id child))
+                 (unless (directory-snapshot-interface? leaf) (error "module has no interface.ss" id child))
                  (unless (eq? (observe! module-source-type (path-expand "interface.ss" child)) 'regular)
                    (error "module interface is not a regular file" id child))
                  ;; The runtime publication preparer owns role/authoring
@@ -501,8 +506,10 @@
              (if origin
                (publish origin (path-directory (path-strip-trailing-directory-separator origin)))
                (let walk ((directory owner-root) (parts (source-parts local-id)))
-                 (let (node (snapshot directory))
-                   (unless (member (car parts) (.ref node 'child-names))
+                 (let* ((node (snapshot directory))
+                        (index (directory-snapshot-child-index node)))
+                   (unless (if index (hash-key? index (car parts))
+                             (member (car parts) (directory-snapshot-children node)))
                      (error "module directory not found" id directory))
                    (let (child (path-expand (car parts) directory))
                      (unless (eq? (observe! module-source-type child) 'directory)
@@ -561,7 +568,7 @@
                (names (delete-duplicates/hash
                         (append (if (and node (not (profile-tag (or window intent-value)))
                                          (or (not window) (eq? (.ref window 'mode) 'auto)))
-                                  (.ref node 'child-names) '()) declared))))
+                                  (directory-snapshot-children node) '()) declared))))
           ;; Actual inspected declaration rows; diagnostic observers are optional.
           ;; No timer heartbeat, business resolution or persistent verdict.
           (when (current-module-source-observer)
@@ -580,7 +587,7 @@
                         id (.ref window 'mount) (.ref row 'window)))
                (if (and row (.ref row 'source-root)) (resolve owner)
                  (let (child-node (and (eq? (observe! module-source-type child) 'directory) (snapshot child)))
-                   (if (and child-node (.ref child-node 'interface?)) (resolve owner)
+                   (if (and child-node (directory-snapshot-interface? child-node)) (resolve owner)
                      (tree resolve child (string-append (symbol->string id) "/") window children))))))
            keys: (map string->symbol names))))
       ;; Capture the root metadata now, never recursively enumerate every module.

@@ -2,6 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/io/tempfile make-temporary-file-name)
+        (only-in :std/error Error? Error-message)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .+ .get .ref .slot? .ref/cached .all-slots/sort)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
@@ -139,6 +140,27 @@
          (create-symbolic-link (path-expand "modules/custom/guestbook" root)
                                (path-expand "modules/escape" root))
          (check-exception (yuanxu-load-modules (path-expand "modules" root)) error?))))
+    (yuanxu-test-case "wide directory names retain exact misses and live path checks"
+      (with-sources
+       (lambda (root)
+         (def modules (path-expand "modules" root))
+         (def init (path-expand "init.ss" root))
+         (for-each (lambda (index)
+                     (create-directory (path-expand (string-append "extra-" (number->string index)) modules)))
+                   (iota 9))
+         (write-source init "(yuanxu! mode: auto source: \"./modules\")")
+         (def view (yuanxu-load-modules init read-publication: (fixture-reader void)))
+         (def locate (.get view context locate))
+         (check-equal? (yuanxu-module-source-ref? (locate 'core/schema)) #t)
+         (check-exception (locate 'missing)
+           (lambda (failure) (and (Error? failure)
+                                  (equal? (Error-message failure) "module directory not found"))))
+         (def custom (path-expand "custom" modules))
+         (rename-file custom (path-expand "former-custom" root))
+         (write-source custom "replacement")
+         (check-exception (locate 'custom/guestbook)
+           (lambda (failure) (and (Error? failure)
+                                  (equal? (Error-message failure) "module path is not a directory")))))))
     (yuanxu-test-case "explicit init retains negatives and links only the selected closure"
       (with-sources
        (lambda (root)
