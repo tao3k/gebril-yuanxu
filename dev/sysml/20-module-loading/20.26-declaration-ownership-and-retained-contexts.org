@@ -205,3 +205,20 @@ refusal, parent/child isolation, both requirements and cold unselected branches.
 No ten-thousand-module claim follows from these small diagnostics. Dominant
 retained-body ownership remains open; no speculative context pruning or raw
 metadata fast path was installed to obtain smaller numbers.
+
+** Preparation roots and validation-only replay
+
+The 16/32-owner census observed 15/31 preparation captures with
+3,450/7,130 original roots, or 230 roots per observed capture. These
+counts describe original issued roots, including roots shared between
+owners. They do not measure exclusive heap bytes. The receipt census
+also identifies per-role authoring admission receivers among the issued
+records. A source-only preparation path would need a separate proof before
+it could omit constructing any of those receipts.
+
+For validation without a user visitor, the Core replay uses the existing
+POO checkpoint. It authenticates the same ordered traversal and repeats
+authentication on return. The measured visit count describes completed
+preflight. Source observers retain their existing before/after callbacks
+and counting path. =PublicationReads.read_only_checkpoint_preserves_both_refusals=
+states the boundary for an effect-free visitor.

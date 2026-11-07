@@ -99,26 +99,26 @@
   (call-with-module-authoring-read-scope
     (lambda ()
       (let* ((prototype
-               (if (and (eq? policy yuanxu-default-module-style-policy)
-                        (module-source-style-policy-current?))
-                 (let ((reads '()))
-                   (def value
-                     (call-with-slot-read-observer
-                       (lambda (read)
-                         (when (and (eq? (slot-read-receiver read) policy)
-                                    (eq? (slot-read-key read) '%authoring-interface))
-                           (set! reads (cons read reads))))
-                       (lambda () (.ref policy '%authoring-interface))))
-                   ;; This is the actual runtime cached constructor token. Its
-                   ;; edges retain every Type/field check, including temporary
-                   ;; normalization receivers. Authenticate/recheck them on
-                   ;; every use, even when this public function has no Reader.
-                   (unless (pair? reads) (error "unissued source authoring Interface"))
-                   (replay-slot-reads! (reverse reads) (lambda (_receiver _key) (void)))
-                   value)
-                 ;; Custom policies keep their ordinary constructor/Type calls.
-                 (yuanxu-module-interface "source-policy" (Record) '()
-                   authoring: (.ref policy 'authoring))))
+               (module-source-measure-operation 'source-authoring-profile
+                 (lambda ()
+                   (if (and (eq? policy yuanxu-default-module-style-policy)
+                            (module-source-style-policy-current?))
+                     (let ((reads '()))
+                       (def value
+                         (call-with-slot-read-observer
+                           (lambda (read)
+                             (when (and (eq? (slot-read-receiver read) policy)
+                                        (eq? (slot-read-key read) '%authoring-interface))
+                               (set! reads (cons read reads))))
+                           (lambda () (.ref policy '%authoring-interface))))
+                       ;; Keep the actual constructor token and all its Type
+                       ;; and field dependencies current on each use.
+                       (unless (pair? reads) (error "unissued source authoring Interface"))
+                       (replay-slot-reads! (reverse reads) (lambda (_receiver _key) (void)))
+                       value)
+                     ;; Custom policies keep their constructor and Type calls.
+                     (yuanxu-module-interface "source-policy" (Record) '()
+                       authoring: (.ref policy 'authoring))))))
              (interface
               (.cc prototype
                 'id (if (symbol? module-name) (symbol->string module-name) module-name)
@@ -128,8 +128,10 @@
             (let* ((path
                     (path-expand (module-role-file role) module-root))
                    (admission
-                    (yuanxu-module-authoring-admit-datums
-                      interface (if (eq? role 'func) 'funs role) (read-datums path))))
+                    (module-source-measure-operation 'source-authoring-role
+                      (lambda ()
+                        (yuanxu-module-authoring-admit-datums
+                          interface (if (eq? role 'func) 'funs role) (read-datums path))))))
               (unless (yuanxu-module-authoring-admission-accepted? admission)
                 (error "YUANXU-MODULE-E009 role violates Interface authoring Contract"
                        module-name role path

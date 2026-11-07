@@ -445,14 +445,6 @@
     unique-roots?: #t))
 (def default-method-payloads
   (map (lambda (read) (cons read (copy-policy-payload (slot-read-value read)))) default-method-reads))
-(def (default-method-policy?)
-  (and (owned-read-function-scope?)
-       (with-catch (lambda (_stale) #f)
-         (lambda ()
-           (replay-slot-reads! default-method-reads (lambda (_receiver _key) (void)))
-           (andmap (lambda (entry)
-                     (same-policy-payload? (slot-read-value (car entry)) (cdr entry)))
-                   default-method-payloads)))))
 (def (plain-dispatch-argument? value)
   ;; Inspect only warm runtime metadata. No cold getter or logical class bridge
   ;; may open a callback before ordinary Generic fallback owns that operation.
@@ -471,12 +463,36 @@
   ;; axes. Only the role's native C4 position distinguishes their specificity.
   ;; Walking C4, rather than profile declaration order, retains multiple-parent
   ;; precedence. Unknown axes/method state still use the public Generic below.
-  (and (memq ModuleAuthoringExecutor. (compute-precedence-list! executor))
-       (memq yuanxu-module-interface-prototype (compute-precedence-list! interface))
+  (and (memq ModuleAuthoringExecutor. (object-%precedence-list executor))
+       (memq yuanxu-module-interface-prototype (object-%precedence-list interface))
        (any (lambda (parent)
               (let (profile (assq parent default-function-profiles))
                 (and profile (cdr profile))))
-            (compute-precedence-list! role))))
+            (object-%precedence-list role))))
+(def (observe-default-method! executor role interface)
+  (def method #f)
+  (with-catch
+    (lambda (cause)
+      ;; Once the native operation begins delivery, preserve the exact
+      ;; observer failure. Only a pre-delivery refusal selects the Generic.
+      (if method (raise cause) #f))
+    (lambda ()
+      (reobserve-slot-reads! default-method-reads
+        (lambda ()
+          ;; POO has authenticated the issued traversal and owns its replay
+          ;; window. Check the mutable policy payload before its first read
+          ;; is delivered. Keep all original deliveries and its return check.
+          (unless method
+            (set! method
+              (and (plain-dispatch-argument? executor)
+                   (plain-dispatch-argument? role)
+                   (plain-dispatch-argument? interface)
+                   (andmap (lambda (entry)
+                             (same-policy-payload? (slot-read-value (car entry)) (cdr entry)))
+                           default-method-payloads)
+                   (default-function-method executor role interface)))
+            (unless method (raise 'unsupported-default-authoring-method)))))
+      method)))
 (def current-authoring-carrier-demand (make-parameter #f))
 (def (authoring-generic-call executor role interface datum)
   ;; Only this actual Generic branch requests carrier support. Nested calls
@@ -484,26 +500,21 @@
   ((current-authoring-carrier-demand))
   (poo-clos-call ModuleAuthoringAnalysisGeneric executor role interface datum))
 (def (authoring-call executor role interface datum)
-  (if (and (owned-read-function-scope?)
-           (andmap plain-dispatch-argument? (list executor role interface))
-           ;; Universal logical-class dispatch on object data may run a getter.
-           ;; Source datums are inert pairs/scalars; object data stays Generic.
-           (not (object? datum))
-           (default-method-policy?))
-    (let (method (default-function-method executor role interface))
-      (if (not method)
-        (authoring-generic-call executor role interface datum)
-        (begin
-          ;; Re-observe ORIGINAL issued declaration support. The maintained
-          ;; primary does not call next; the caller validates its result Type.
-          (reobserve-slot-reads! default-method-reads)
-          (let ((body (.ref/inline method authoring-body-site))
-                (primary (.ref/inline method authoring-primary-site)))
-            ;; Like ordinary invoke, capture the selected body BEFORE the open
-            ;; ownership guard. Its callback cannot retarget this invocation.
-            (owned-read-method! body method)
-            (primary interface role datum)))))
-    (authoring-generic-call executor role interface datum)))
+  (cond
+   ((and (owned-read-function-scope?)
+         (andmap plain-dispatch-argument? (list executor role interface))
+         ;; Universal logical-class dispatch on object data may run a getter.
+         ;; Source datums are inert pairs/scalars; object data stays Generic.
+         (not (object? datum))
+         (observe-default-method! executor role interface))
+    => (lambda (method)
+         (let ((body (.ref/inline method authoring-body-site))
+               (primary (.ref/inline method authoring-primary-site)))
+           ;; Like ordinary invoke, capture the selected body BEFORE the open
+           ;; ownership guard. Its callback cannot retarget this invocation.
+           (owned-read-method! body method)
+           (primary interface role datum))))
+   (else (authoring-generic-call executor role interface datum))))
 
 (def (call-with-module-authoring-read-scope action)
   (if (current-authoring-carrier-demand) (action)

@@ -56,6 +56,14 @@ package YuanxuModuleLoading {
                independent entry and return guards. The next run reads
                the post-effect state. */
     }
+    part def ReadOnlyPublicationCheckpoint {
+        ref part support : RuntimeReadSupport;
+        doc /* Use native POO authentication for a validation-only traversal.
+               Preserve the complete issued preorder and the independent
+               return check. Actual observers keep their original effect
+               boundaries and deliveries. A diagnostic count describes a
+               completed preflight. */
+    }
     part def DeferredRoleSlot {
         doc /* Native slot construction shares one implementation.
                The role captures its own owner resolver.
@@ -80,7 +88,8 @@ package YuanxuModuleLoading {
                that lowering. Unknown syntax, local shadowing and other
                object options retain normal declaration expansion.
                Source and issued-read guards still enclose expansion and
-               author effects. */
+               author effects. The hygienic wrapper captures the current
+               owner's reader resolver through its existing parameter. */
     }
     part def LoadingWork {
         attribute expandedIdentities : Integer;

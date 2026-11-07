@@ -43,6 +43,9 @@
   (def replay-seconds 0)
   (def replay-calls 0)
   (def replay-visits 0)
+  (def preparation-depth 0)
+  (def preparation-captures 0)
+  (def preparation-roots 0)
   (def query-stages '())
   (def open-boundaries (make-hash-table))
   (def (query-stage label action)
@@ -63,6 +66,8 @@
     (def before-replay replay-seconds)
     (def before-calls replay-calls)
     (def before-visits replay-visits)
+    (def before-preparation-captures preparation-captures)
+    (def before-preparation-roots preparation-roots)
     (def roots '())
     ;; Installed Gambit's own accounting covers the ENTIRE phase, including
     ;; initialization and GC outside the nested reader spans. It adds no read
@@ -103,6 +108,10 @@
       " inclusive-seconds=" (- replay-seconds before-replay)
       " calls=" (- replay-calls before-calls)
       " visits=" (- replay-visits before-visits))
+    (displayln "RETENTION-PREPARATION-ROOTS modules=" size " phase=" label
+      " captures=" (- preparation-captures before-preparation-captures)
+      " roots=" (- preparation-roots before-preparation-roots))
+    (check-equal? preparation-depth 0)
     (displayln "RETENTION-OPEN modules=" size " phase=" label
       " states=" (hash->list open-boundaries))
     ;; Existing reader spans overlap: report them separately, never add them
@@ -160,6 +169,14 @@
         (list (cdr key) (module-source-style-policy-current?) (object-construction-current?))
         1+ 0))
     (case category
+      ((reader-preparation-start) (set! preparation-depth (1+ preparation-depth)))
+      ((reader-preparation-end) (set! preparation-depth (1- preparation-depth)))
+      ((reader-read-roots)
+       ;; The native recording frame reports the original root count. Count
+       ;; only captures made during preparation, without retaining its tokens.
+       (when (positive? preparation-depth)
+         (set! preparation-captures (1+ preparation-captures))
+         (set! preparation-roots (+ preparation-roots (cdr (assq 'stored-roots (cdr key)))))))
       ((metadata-replay-start)
        (set! replay-starts (cons (real-time) replay-starts))
        (set! replay-calls (1+ replay-calls)))

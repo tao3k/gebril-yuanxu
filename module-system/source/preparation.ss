@@ -325,8 +325,7 @@
                                   (set! private-import-roles (cons role private-import-roles)))))))
         (def (publication-forms imports (deferred #f) (compiled? #f))
           (let (resolver
-                 (and deferred
-                   (if compiled?
+                 (and deferred compiled?
                      `(lambda ()
                         (lambda (role names)
                           (module-import-role-values
@@ -338,8 +337,7 @@
                                               (substring id-text 0 (- (string-length id-text) (string-length "interface")))
                                               (symbol->string (car row)))))) deferred)
                               (else (error "unknown published role" role)))
-                            names)))
-                     (string->symbol (symbol->string (gensym 'role-resolver))))))
+                            names)))))
           (append
            (if shared-prelude?
              '(prelude: :yuanxu/module-system/source/config-prelude)
@@ -348,13 +346,11 @@
                  'namespace: (caddr compiler-info)
                  `(import ,@(if shared-prelude? '() '((except-in :clan/poo/object .def)))
                           (only-in :yuanxu/module-system/source/declaration .def define-module-build-binding)
-                          ,@(if (and deferred compiled?)
-                              '((only-in :yuanxu/module-system/source/deferred-declaration
-                                         include-deferred-declaration module-import-role-values))
-                              (if deferred
-                              `((rename-in (only-in :yuanxu/module-system/source/deferred-declaration
-                                                   include-deferred-declaration current-module-role-resolver)
-                                           (current-module-role-resolver ,resolver))) '()))
+                          ,@(if deferred
+                              `((only-in :yuanxu/module-system/source/deferred-declaration
+                                         include-deferred-declaration
+                                         ,@(if compiled? '(module-import-role-values) '())))
+                              '())
                           ,@(if (and deferred compiled? (pair? roles))
                               `((for-template
                                  ,@(map (lambda (role)

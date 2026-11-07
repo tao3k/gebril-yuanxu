@@ -154,7 +154,8 @@
                            reader-compile-start reader-eval-start
                            reader-expander-compile reader-expander-eval
                            reader-expander-phase-compile reader-expander-phase-eval
-                           source-authoring source-direction source-import-policy source-parse)))
+                           source-authoring source-authoring-profile source-authoring-role
+                           source-direction source-import-policy source-parse)))
               (and (current-module-source-operation-accounting?)
                  (memq name '(metadata-replay selection-current selected-graph reader-current source-read
                         build-projection build-current std-make
@@ -199,31 +200,20 @@
   (when (< (metric 'bytes-allocated) 0)
     (hash-update! times (list 'accounting-invalid name) (cut + <> 1) 0))
   (if failed? (raise failure) (apply values (metric 'result))))
-;; Fixed diagnostic visitor: no caller callback, retained read graph or observer
-;; installation. Ordinary execution keeps the original void visitor fast path.
+;; Validation-only replay needs neither receiver/key delivery nor a per-record
+;; diagnostic visitor. POO authenticates the same traversal and its return.
 (def (module-source-measure-replay reads (checkpoint #f))
   (let (times (current-module-source-operation-times))
     (module-source-measure-operation 'metadata-replay
       (lambda ()
-        (if checkpoint
-          ;; Native POO authenticates the complete DAG before work, protects
-          ;; its receivers during work, and authenticates again on return.
-          ;; This fixed checkpoint is validation, not another semantic read.
-          ;; Suppress native re-delivery; filesystem collectors remain active.
-          (call-with-current-slot-reads reads
-            (lambda (visits)
-              (when times
-                (hash-update! times '(visits metadata-replay) (cut + <> visits) 0))
-              (module-source-measure-operation 'metadata-checkpoints checkpoint)))
-        (if (not times)
-          (replay-slot-reads! reads (lambda (_receiver _key) (void)))
-          (let (visits 0)
-            (dynamic-wind void
-              (lambda ()
-                (replay-slot-reads! reads
-                  (lambda (_receiver _key) (set! visits (+ visits 1)))))
-              (lambda ()
-                (hash-update! times '(visits metadata-replay) (cut + <> visits) 0))))))))))
+        (call-with-current-slot-reads reads
+          (lambda (visits)
+            ;; This count represents a completed preflight. The observed
+            ;; reader retains its original per-record delivery and accounting.
+            (when times
+              (hash-update! times '(visits metadata-replay) (cut + <> visits) 0))
+            (when checkpoint
+              (module-source-measure-operation 'metadata-checkpoints checkpoint))))))))
 ;; A Case-owned logging allowance, never a query/currentness cache. The testing
 ;; adapter binds a fresh box only for detailed observation; execution consumes
 ;; it solely to add the provider's diagnostic flags to a bounded set of calls.

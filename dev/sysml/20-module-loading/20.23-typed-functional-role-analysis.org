@@ -111,8 +111,17 @@ Changed registrations, modified policy payloads, open hooks, cold/unknown
 arguments and POO object datums retain ordinary Generic dispatch. The original
 issued metadata is still reobserved, and body/primary capture remains before the
 open ownership guard. Diagnostic output Type validation still runs per datum.
-This does not authorize removing either metadata authentication pass: the
-eligibility probe and original-record delivery have different error boundaries.
+The maintained route checks its payload and selects the actual warm C4 method
+inside native re-observation, after complete preflight and before the first
+delivery. That operation authenticates each delivered read and checks the
+return. A pre-delivery refusal uses the Generic; a failure once delivery
+starts propagates from that invocation.
+
+=PublicationReads.join_preflight_in_same_read_state= is limited to the
+authenticated pre-delivery state. A separate effect can invalidate that state
+and still owns independent checks. The authoring dispatch tests retain the
+original issued dependencies, later-revision refusal and actual Generic
+fallback.
 
 =Queries.firstProfile_ordered_reference= and =firstProfile_least_position= prove
 the ordered/minimum-position lookup law; =profile_search_bounded_by_c4_depth=

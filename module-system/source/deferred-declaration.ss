@@ -472,8 +472,10 @@
                         (module-source-measure-operation 'reader-shared-frame (lambda () stock))
                         (rewrite form)))) forms))))
        (with-syntax ((loader loader)
-                     (resolver (if (identifier? #'resolver)
-                                 (datum->syntax (stx-car (car forms)) (stx-e #'resolver))
+                     ;; The reader supplies the owner through the existing
+                     ;; parameter. Keep the binding private to this macro.
+                     (resolver (if (eq? (stx-e #'resolver) #f)
+                                 (quote-syntax current-module-role-resolver)
                                  #'resolver)))
          (syntax-local-rewrap
            (stx-wrap-source
