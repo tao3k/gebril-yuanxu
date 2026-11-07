@@ -431,7 +431,10 @@ shows these inputs before a run.
 
 CI refuses a report if the checked-out revision, the build revision
 and its workflow revision disagree or if its resolved Core interface
-comes from outside the installed prefix. Platform comparison requires
+comes from outside the installed prefix. The Scheme receipt records the
+source tree, dependency revision, toolchain and compiler environment after
+the native build. Qualification refuses drift in these inputs between the
+build and the test, including the compiler worker count. Platform comparison requires
 the same source, declared and installed dependency inputs, and test
 budgets. The OS-specific toolchain artifact and available compiler
 cores remain visible on each report.

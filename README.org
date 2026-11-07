@@ -141,6 +141,12 @@ Scheme dispatcher and resource limits. =just test-file PATH= runs a focused
 diagnostic, while =just test= runs the platform suites and the additional
 local allocation diagnostic.
 
+Use the commit actually checked out in the CI log. For a pull request this may
+be GitHub's merge commit. Run =just test-qualification= before timing a local
+reproduction. It checks the build and test inputs in the same prefix, including
+the POO revision, compiler, build concurrency, and Gerbil release manifest.
+Match the runner's compiler and concurrency when investigating compiler time.
+
 Core's =t/= tests cover shared semantics. Agentic AI Lab retains product selection
 and cross-package integration tests.
 
