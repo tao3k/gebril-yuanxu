@@ -39,6 +39,38 @@ theorem dedup_preserves_currentness [BEq α] [LawfulBEq α]
   · intro current node demanded
     exact current node ((dedup_preserves_demands deps roots node).mp demanded)
 
+-- An authenticated traversal's issued descendants are already part of the
+-- original roots' obligations. This law concerns demand and freshness only.
+-- An open observer must still receive every original occurrence in order.
+theorem replay_of_issued_descendants_has_same_demands
+    (deps : Node → List Node) (roots descendants : List Node)
+    (issued : ∀ node ∈ descendants, Demanded deps roots node) (node : Node) :
+    Demanded deps (roots ++ descendants) node ↔ Demanded deps roots node := by
+  constructor
+  · intro demand
+    induction demand with
+    | root node member =>
+      rcases List.mem_append.mp member with original | derived
+      · exact Demanded.root node original
+      · exact issued node derived
+    | dependency parent child _ edge ih => exact Demanded.dependency parent child ih edge
+  · intro demand
+    induction demand with
+    | root node member => exact Demanded.root node (List.mem_append_left _ member)
+    | dependency parent child _ edge ih => exact Demanded.dependency parent child ih edge
+
+theorem replay_of_issued_descendants_has_same_currentness
+    (deps : Node → List Node) (roots descendants : List Node)
+    (issued : ∀ node ∈ descendants, Demanded deps roots node) (fresh : Node → Prop) :
+    Current deps (roots ++ descendants) fresh ↔ Current deps roots fresh := by
+  constructor
+  · intro current node demand
+    exact current node ((replay_of_issued_descendants_has_same_demands
+      deps roots descendants issued node).mpr demand)
+  · intro current node demand
+    exact current node ((replay_of_issued_descendants_has_same_demands
+      deps roots descendants issued node).mp demand)
+
 -- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,
 -- unchanged real observer delivery, and no nonlocal continuation escape.
