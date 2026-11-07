@@ -491,4 +491,47 @@ theorem closed_stock_trace_cannot_cross_changed_owner :
       (fun _ => stockDatumTraces [0] [.ok [2]]) false =
         (.error "stale owner" : Except String (List (List Nat) × List (List Nat) × Bool)) := rfl
 
+-- A role-local trace is structure, not a retained validation result. Each
+-- datum separately authenticates the actual current entry and return state.
+def dispatchWithOriginalTrace (entry : Except Failure Unit)
+    (selected : Except Failure Method) (exit : Except Failure Unit)
+    (original : List Read) : Except Failure (Method × List Read) := do
+  entry
+  let method ← selected
+  exit
+  pure (method, original)
+
+theorem transparent_dispatch_keeps_fresh_authentication
+    (entry exit : Except Failure Unit) (selected : Except Failure Method)
+    (captured native : List Read) (same : captured = native) :
+    dispatchWithOriginalTrace entry selected exit captured =
+      dispatchWithOriginalTrace entry selected exit native := by
+  cases same
+  rfl
+
+theorem dispatch_reuse_refuses_changed_return
+    (method : Method) (captured : List Read) (stale : Failure) :
+    dispatchWithOriginalTrace (.ok ()) (.ok method) (.error stale) captured =
+      .error stale := rfl
+
+def dispatchWithPerDeliveryAuth (entry delivery exit : Except Failure Unit)
+    (selected : Except Failure Method) (original : List Read) :
+    Except Failure (Method × List Read) := do
+  entry
+  let method ← selected
+  delivery
+  exit
+  pure (method, original)
+
+-- Only dispatch metadata is inside the protected region. The equality
+-- premise forbids any supported change between entry and silent delivery.
+theorem unchanged_dispatch_delivery_auth_is_redundant
+    (entry delivery exit : Except Failure Unit)
+    (selected : Except Failure Method) (original : List Read)
+    (unchanged : delivery = entry) :
+    dispatchWithPerDeliveryAuth entry delivery exit selected original =
+      dispatchWithOriginalTrace entry selected exit original := by
+  subst delivery
+  cases entry <;> cases selected <;> rfl
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

@@ -471,6 +471,14 @@
               (let (profile (assq parent default-function-profiles))
                 (and profile (cdr profile))))
             (object-%precedence-list role))))
+(def (current-default-method executor role interface)
+  (and (plain-dispatch-argument? executor)
+       (plain-dispatch-argument? role)
+       (plain-dispatch-argument? interface)
+       (andmap (lambda (entry)
+                 (same-policy-payload? (slot-read-value (car entry)) (cdr entry)))
+               default-method-payloads)
+       (default-function-method executor role interface)))
 (def (reobserve-default-method! executor role interface)
   (def method #f)
   (with-catch
@@ -485,52 +493,58 @@
           ;; window. Check the mutable policy payload before its first read
           ;; is delivered. Keep all original deliveries and its return check.
           (unless method
-            (set! method
-              (and (plain-dispatch-argument? executor)
-                   (plain-dispatch-argument? role)
-                   (plain-dispatch-argument? interface)
-                   (andmap (lambda (entry)
-                             (same-policy-payload? (slot-read-value (car entry)) (cdr entry)))
-                           default-method-payloads)
-                   (default-function-method executor role interface)))
+            (set! method (current-default-method executor role interface))
             (unless method (raise 'unsupported-default-authoring-method)))))
       method)))
-(def (observe-default-method! executor role interface)
+(def (plain-method-trace? reads)
+  (andmap (lambda (read) (plain-dispatch-argument? (slot-read-receiver read))) reads))
+(def (observe-default-method! executor role interface (trace #f))
   (def (deliver!) (reobserve-default-method! executor role interface))
-  ;; The caller has only maintained observers. Capture the real ordered
-  ;; delivery in a native child scope, retaining all three authentication
-  ;; passes. The original reads are forwarded only if those observers would
-  ;; have had no effect on any receiver.
-  (defvalues (method reads)
+  (def (reuse! reads)
+    (def selected #f)
     (with-catch
       (lambda (cause)
-        ;; Preserve the original delivery/failure path. A successful retry
-        ;; cannot approve an already refused invocation.
-        (deliver!)
-        (raise cause))
+        ;; Retain the ordinary diagnostic after selection, even when retry
+        ;; succeeds. A pre-selection miss leaves ordinary replay in charge.
+        (and selected (begin (deliver!) (raise cause))))
       (lambda ()
-        (without-observation
-          (lambda () (%call-with-recorded-slot-reads deliver!))))))
-  (cond
-   ((not method) #f)
-   ((andmap (lambda (read) (plain-dispatch-argument? (slot-read-receiver read))) reads)
-    (%record-slot-reads! reads)
-    method)
-   (else (deliver!))))
+        (call-with-current-slot-reads default-method-reads
+          (lambda (_visits)
+            (when (plain-method-trace? reads)
+              (set! selected (current-default-method executor role interface)))))))
+    ;; Forward only after native return authentication. The real method,
+    ;; role reads and result Type all run in the original caller scope.
+    (when selected (%record-slot-reads! reads))
+    selected)
+  (or (and trace (unbox trace) (object-construction-current?) (reuse! (unbox trace)))
+      (let ()
+        (defvalues (method reads)
+          (with-catch
+            (lambda (cause) (deliver!) (raise cause))
+            (lambda ()
+              (without-observation
+                (lambda () (%call-with-recorded-slot-reads deliver!))))))
+        (cond
+         ((not method) #f)
+         ((plain-method-trace? reads)
+          (when trace (set-box! trace reads))
+          (%record-slot-reads! reads)
+          method)
+         (else (deliver!))))))
 (def current-authoring-carrier-demand (make-parameter #f))
 (def (authoring-generic-call executor role interface datum)
   ;; Only this actual Generic branch requests carrier support. Nested calls
   ;; share the first guard and its return check in the enclosing dynamic scope.
   ((current-authoring-carrier-demand))
   (poo-clos-call ModuleAuthoringAnalysisGeneric executor role interface datum))
-(def (authoring-call executor role interface datum)
+(def (authoring-call executor role interface datum (trace #f))
   (cond
    ((and (owned-read-function-scope?)
          (andmap plain-dispatch-argument? (list executor role interface))
          ;; Universal logical-class dispatch on object data may run a getter.
          ;; Source datums are inert pairs/scalars; object data stays Generic.
          (not (object? datum))
-         (observe-default-method! executor role interface))
+         (observe-default-method! executor role interface trace))
     => (lambda (method)
          (let ((body (.ref/inline method authoring-body-site))
                (primary (.ref/inline method authoring-primary-site)))
@@ -563,7 +577,7 @@
 
 ;; Resolve the actual arguments once. A contributed method may rebind the
 ;; Profile; admission must describe the role dispatched for THIS datum.
-(def (with-authoring-analysis interface role-name datum consume)
+(def (with-authoring-analysis interface role-name datum consume (trace #f))
   (let* ((authoring (yuanxu-module-interface-authoring interface))
          (executor (.ref authoring 'executor))
          (role (yuanxu-module-authoring-role interface role-name)))
@@ -571,7 +585,7 @@
       (lambda ()
         (consume role
           (validate YuanxuModuleAuthoringDiagnostics
-            (authoring-call executor role interface datum)))))))
+            (authoring-call executor role interface datum trace)))))))
 
 ;; One typed functional result per datum, through the SAME extensible Generic.
 (def (yuanxu-module-authoring-analyze-datum interface role-name datum)
@@ -583,9 +597,12 @@
   (with-authoring-analysis interface role-name datum
     (cut yuanxu-module-authoring-admission interface <> <>)))
 
-(def (authoring-datum-diagnostics interface role-name datums)
+(def (authoring-datum-diagnostics interface role-name datums (trace #f))
   (foldr append '()
-         (map (cut yuanxu-module-authoring-analyze-datum interface role-name <>) datums)))
+         (map (lambda (datum)
+                (with-authoring-analysis interface role-name datum
+                  (lambda (_role diagnostics) diagnostics) trace))
+              datums)))
 
 ;; : (-> PooModuleInterface Symbol [SchemeDatum] PooModuleAuthoringAdmission)
 (def (yuanxu-module-authoring-admit-datums interface role-name datums)
@@ -625,7 +642,10 @@
 
 (def (yuanxu-module-authoring-source-admit interface role-name datums)
   (def role (yuanxu-module-authoring-role interface role-name))
-  (def diagnostics (authoring-datum-diagnostics interface role-name datums))
+  ;; Retain only the original ordered method trace for this source role.
+  ;; Each datum resolves its own live arguments and checks freshness anew.
+  (def trace (and (pair? datums) (pair? (cdr datums)) (box #f)))
+  (def diagnostics (authoring-datum-diagnostics interface role-name datums trace))
   ;; Source admission consumes only a refusal diagnostic. All datum and
   ;; diagnostic Type work has completed before the stock receipt decision.
   (if (and (null? diagnostics) (stock-empty-authoring-receipt? interface role))

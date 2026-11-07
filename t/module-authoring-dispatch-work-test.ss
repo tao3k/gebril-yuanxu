@@ -20,11 +20,12 @@
         (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :yuanxu/module-system/authoring/admission
                  ModuleAuthoringAnalysisGeneric ModuleAuthoringAnalysisProtocol
-                 YuanxuModuleAuthoringAdmission
+                 YuanxuModuleAuthoringAdmission YuanxuModuleAuthoringDiagnostics
                  yuanxu-module-authoring-role
                  yuanxu-module-authoring-admit-datums
                  yuanxu-module-authoring-source-admit
                  yuanxu-module-authoring-admission-accepted?)
+        (only-in :yuanxu/module-system/authoring/roles ConfigSourceRole.)
         (only-in :yuanxu/poo-clos/types
                  ClosGenericFunction ClosEffectiveMethod ClosInvocationFrame ClosMethod)
         (only-in :yuanxu/poo-clos/objects %prepare-effective-method)
@@ -286,6 +287,27 @@
           (yuanxu-write-observation-line! "authoring-return-probe code=%s calls=%s" code calls)
           (eq? code 'invalid-effective-method-result)))
       (check-equal? calls 1))
+    (yuanxu-test-case "source role resolves again after the previous result Type runs"
+      (def interface (yuanxu-module-interface "role-return-boundary" (Record) '()))
+      (def profile (.get interface authoring))
+      (def original (.ref YuanxuModuleAuthoringDiagnostics '.validate))
+      (def calls 0)
+      (dynamic-wind
+        (lambda ()
+          (.put! YuanxuModuleAuthoringDiagnostics '.validate
+            (lambda (value)
+              (set! calls (1+ calls))
+              (when (= calls 1) (.put! profile 'objects ConfigSourceRole.))
+              (original value))))
+        (lambda ()
+          (defvalues (accepted? diagnostic)
+            (yuanxu-module-authoring-source-admit interface 'objects
+              '((def First 1) (stage build))))
+          (check-equal? accepted? #f)
+          (check-equal? (.get diagnostic code) 'poo-config-must-compose-maintained-values)
+          (check-equal? (.get diagnostic role) 'config)
+          (check-equal? calls 2))
+        (lambda () (.put! YuanxuModuleAuthoringDiagnostics '.validate original))))
     (yuanxu-test-case "closed support retains original Generic declaration and rejects ABA"
       (def interface (yuanxu-module-interface "support-forwarding" (Record) '()))
       (yuanxu-module-authoring-admit-datums interface 'objects '((def Warm 1)))

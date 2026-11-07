@@ -303,3 +303,24 @@ the repeated common support and each distinct owner suffix.
 =closed_stock_trace_cannot_cross_changed_owner= exercises a refusal after
 an independent effect. These laws state the proof obligations for using
 the measured mechanism in source authoring.
+
+** Preserve the effect boundary in Scheme
+
+Source admission uses a narrower protected interval than the handler probe.
+The first maintained datum captures the actual native method read trace.
+Later datums of that role authenticate the complete native support anew at
+entry and return, check the live method payload and actual owner arguments,
+and forward the original trace after return. The native authentication
+replaces the per-delivery check only when its maintained observers would do
+no work. All role getters, method bodies and result Type validation run in
+the original caller scope. A changed role after a diagnostic Type callback
+must select its own method on the next datum. The retained trace ends with
+this role's walk and carries no selected method or freshness verdict.
+
+=PublicationReads.unchanged_dispatch_delivery_auth_is_redundant= states
+the no-intervening-change premise. The installed private source routine's
+matched comparison over 180 four-datum groups preserved the exact 708 and
+728 read identities and their order. Types CPU was 0.381--0.412 s with
+per-datum capture and 0.286--0.314 s with the role-local trace. Config CPU
+was 0.411--0.415 s and 0.289--0.317 s, respectively. The full thousand-owner
+run is a separate measurement and does not establish end-to-end speedup.

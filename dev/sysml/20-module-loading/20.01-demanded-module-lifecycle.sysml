@@ -120,6 +120,15 @@ package YuanxuModuleLoading {
                observation; running a body there requires proof that it can
                neither demand an effect nor suppress a required precheck. */
     }
+    requirement def RoleLocalDispatchTrace {
+        doc /* A source role may retain the original native dispatch trace for
+               its current datum walk. Every datum resolves its actual owner
+               arguments and performs fresh native entry and return checks.
+               Only immutable method selection and trace eligibility run under
+               observation suppression. Actual body and diagnostic Type work
+               keep the caller's scope. A stale or incompatible dispatch keeps
+               the original refusal and fallback path. */
+    }
     part def SourceAuthoringDecision {
         ref part authoring : StockAuthoringRun;
         doc /* Validate every actual datum. Source consumes a decision and
