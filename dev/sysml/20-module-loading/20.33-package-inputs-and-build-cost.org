@@ -279,15 +279,15 @@ requires its own matching descriptor. If a prior descriptor exists when the
 source path returns, invalidate the native product before removing the old
 record. Both actions run under the existing selected-output lock.
 
-The Lean check treats a source prelude, an existing descriptor and a native
-marker as separate facts. A source route issues no descriptor. A subsequent
-compiled route with a marker and no descriptor leaves the marker to native
-Make. The Quint control runs source build, compiled-route build and downstream
-demand in that order. Recording the source route reproduces the redundant
-hot invalidation. Keeping a former compiled-route descriptor across source
-bootstrap would grant reuse for the wrong product. These checks model the
-recording and retirement decisions. Native tests verify the selected input
-observations and actual Gerbil dispatches.
+The tracked Lean decision =SourceView.descriptorAction= treats a source
+prelude, an existing descriptor and a native marker as separate facts.
+A source route issues no descriptor. A subsequent compiled route with a
+marker and no descriptor leaves the marker to native Make. A downstream
+selected build requires its own descriptor. Keeping a former compiled-route
+descriptor across source bootstrap would grant reuse for the wrong product.
+The native bootstrap regression checks that the shared descriptor stays
+absent through the cold and hot actions and that the hot action emits no
+compiler events.
 
 Run =just test-file t/module-build-process-test.ss= to exercise the empty
 bootstrap, new-process hot build and clean/rebuild sequence. In the full

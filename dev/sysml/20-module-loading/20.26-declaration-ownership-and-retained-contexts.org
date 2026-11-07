@@ -251,3 +251,26 @@ continue to use their regular Gerbil binding and export.
 state the result and refusal contract. They assume the owner and payload
 produced by native expansion. The Scheme tests check that concrete
 correspondence and the existing source and effect checks.
+
+** Ordered common reads in one checkpoint
+
+The 64-owner native fixture captured the original preparation and admission
+roots. Walking their signed dependency records by identity found 7,589 distinct
+records and 74,955 visits across the separate owner lanes. All 64 lanes
+contained the same 1,026 issued records. Receiver and slot equality alone
+would not establish this identity correspondence.
+
+The same-process comparison interleaved separate, batch, batch and separate
+replay of those unchanged root lists. Each measurement repeated the replay
+six times. The separate lanes took 0.930 to 0.934 seconds wall time and
+0.928 to 0.934 seconds CPU. Batch validation took 0.093 to 0.094 seconds
+wall time and CPU, and visited 7,589 records on each repeat. This is the
+existing pure POO checkpoint used for the final Graph, with source and
+owner checkpoints still inside their established boundaries.
+
+=PublicationReads.same_window_preserves_first_refusal= proves the ordered
+flattening law with a fixed authenticator. Its effect counterexample checks
+the same token before and after a changed observation and requires refusal.
+Native expansion and author callbacks keep independent validation on both
+sides. The capacity work is to reduce evidence produced by each admission
+before those checks, including shared authoring and validation support.
