@@ -39,6 +39,7 @@ runs remain visible in the owning measurement documents.
 | Cross-window libraries and build lifecycle | [[file:13.35-haumea-and-poo-namespace-projection/11-cross-window-and-build-lifecycle.org][Read]] |
 | Weaver identities and package installation | [[file:13.35-haumea-and-poo-namespace-projection/12-weaver-and-package-installation.org][Read]] |
 | Directed graph algorithms and local order repair | [[file:13.35-haumea-and-poo-namespace-projection/13-dynamic-graph-repair.org][Read]] |
+| Complete Graph Goal, properties, Benchmark and CI acceptance | [[file:13.35-haumea-and-poo-namespace-projection/14-graph-qualification.org][Read]] |
 
 * Maintenance
 

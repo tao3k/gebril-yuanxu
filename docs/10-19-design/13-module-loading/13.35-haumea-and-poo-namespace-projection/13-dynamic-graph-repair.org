@@ -3,7 +3,7 @@
 #+title: 13.35 Directed graph algorithms and local order repair
 #+language: en
 #+date: [2026-11-08]
-#+property: STATUS research-and-lean-contracts
+#+property: STATUS implementation-and-qualification
 
 [[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]] ·
 [[file:05-indexed-graph-algorithms.org][Library and Scheme source audit]]
@@ -18,9 +18,9 @@ roots, edges or acceptance rules. Keep their correspondence explicit.
 |------------+-----------+-----------------------------------------|
 | First sparse Module demand | Indexed DFS/work frames over reached owners | Core =graph/funs.ss= already implements the traversal |
 | Cold dependency order and cycle refusal | Three-state DFS | Core Feature resolver and POO generalized schedule already implement it |
-| A changed dependency's order | Rank test, then bounded directed searches and sparse label reassignment | New Lean prototype and local certificates; Scheme adapter pending |
+| A changed dependency's order | Rank test, then bounded directed searches and sparse label reassignment | POO =generalized-graph.ss:reschedule=; universal construction and permutation proofs |
 | Changed value/source support | Complete old reverse-dependency closure | Existing POO receiver invalidation and Module publication contracts; never truncate to the order interval |
-| Cyclic component partition | Linear SCC discovery, followed by stable representative normalization | Upstream POO candidate; current implementation repeatedly intersects reachability sets |
+| Cyclic component partition | Iterative Tarjan, followed by one source-order normalization pass | POO =strong-components.ss:partition=; old strategy retained only as a qualification baseline |
 | Positive Boolean equations | Indexed watchers with selected append/chunked/hybrid queues | LeanPoo and POO =closure.ss= already implement this restricted solver |
 
 New generic algorithms belong in POO's existing graph owners. Core supplies
@@ -42,9 +42,10 @@ The executable prototype places the provider-dependency frontier before the
 consumer frontier. Copying the paper's forward/backward names without this
 orientation conversion would reverse the required compilation order.
 
-The Module-specific certificates below are proved over the existing LeanPoo
+The generic graph certificates below are proved in LeanPoo over its existing
 =StrongComponents.Reach= relation and =GeneralizedGraph.Scheduled= witness.
-They do not claim that the complete Scheme algorithm has been implemented.
+The Scheme correspondence and acceptance boundary are recorded below and in
+[[file:14-graph-qualification.org][14 Graph qualification]].
 
 ** Insertions and exact cycle tests
 
@@ -88,9 +89,9 @@ whole new edge relation. Removed edges require no new order inequality.
 =library_local_rank_checks_suffice= binds the incident-edge specialization
 to the actual library declaration and old schedule.
 
-This is a sound acceptance rule for a candidate rank. Completeness of the
-sorted proposal for every acyclic input, its global permutation property,
-and its native operation-cost bound remain separate proof obligations.
+This is a sound acceptance rule for a candidate rank. The construction and
+permutation obligations are now proved in =StableOrderRepair= and
+=HashRankLabels=. Physical/hash/allocation cost remains a measured obligation.
 The runtime must still check supported keys, known footprints, source
 currentness and the publication ticket; a rank law is not a new publication.
 The incidence lists must be complete for the same captured graph. An
@@ -150,7 +151,8 @@ loops, and normalize computed groups in a single source-order pass. Map
 internal component numbers back to the existing first source-order member.
 Internal dense indices do not replace public Gerbil Module identities.
 
-The pinned POO source has further scans around SCC discovery:
+The original pinned POO source had further scans around SCC discovery. The
+current Scheme changes also replace those around condensation and membership:
 
 | Source owner | Actual repeated operation | Required indexed replacement |
 |--------------+---------------------------+------------------------------|
@@ -209,19 +211,93 @@ That second edge pass checks a real effect boundary; it cannot be removed
 merely because discovery already visited the owner. Optimize repeated list
 searches and structure construction without erasing this late-edge refusal.
 
+* Construction proof and implementation correspondence
+
+The generic Lean model is
+[[https://github.com/tao3k/lean-poo/blob/59aae5dbef4daccb01b6ec40b1880c1ae1abb7c8/LeanPoo/Functional/DependencyOrderRepair.lean][LeanPoo DependencyOrderRepair]].
+It has universal cycle, interval and local-certificate theorems and negative
+controls for overlap, duplicate labels, wrong cycle inference and missing
+reverse checks. Core's [[file:../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/DependencyOrderRepair.lean][Module adapter]] retains the executable 10,000-owner
+fixture and out-of-interval invalidation witness.
+
+The generic construction proof belongs to LeanPoo; Core retains only the
+Module invalidation adapter and its integration fixture. The proof is factored
+into small library modules:
+
+| Owner | Proved contract |
+|-------+-----------------|
+| [[https://github.com/tao3k/lean-poo/blob/59aae5dbef4daccb01b6ec40b1880c1ae1abb7c8/LeanPoo/Functional/RankLabels.lean][LeanPoo RankLabels]] | A sorted subsequence bounds its prefix/suffix slots; stable forward owners move earlier, backward owners move later; both internal orders and forward-before-backward separation hold. |
+| [[https://github.com/tao3k/lean-poo/blob/59aae5dbef4daccb01b6ec40b1880c1ae1abb7c8/LeanPoo/Functional/HashRankLabels.lean][LeanPoo HashRankLabels]] | Actual =Std.HashMap.ofList/getD= assigns every zipped slot, preserves the exact rank-label permutation, leaves outside owners unchanged and lifts that permutation to a complete roster. |
+| [[https://github.com/tao3k/lean-poo/blob/59aae5dbef4daccb01b6ec40b1880c1ae1abb7c8/LeanPoo/Functional/StableOrderRepair.lean][LeanPoo StableOrderRepair]] | Complete finite frontiers, an injective valid old order and the absence of the exact insertion cycle suffice to construct a valid new order. No hypothesis assumes that the proposed incident edges already pass. |
+
+The proof uses consumer-to-provider edges. Forward is provider reachability
+bounded below by the consumer rank; backward is reachability to the consumer
+bounded above by the provider rank. Old ranking supplies the other interval
+bound. Acyclic insertion makes these frontiers disjoint. Only their old labels
+are sorted and reassigned; the intervening numeric interval is not enumerated.
+The proof covers edges to unchanged consumers, not just changed owners' reads.
+=forward_interval_exact= and =backward_interval_exact= establish bounded-search
+equivalence for every frontier owner, not only for the cycle endpoint.
+Hash assignment also preserves injectivity, so the repaired order supplies the
+next insertion's premise. =acyclic_final_accepts_every_prefix= proves that,
+after removing every deleted edge, a prefix contained in an acyclic final graph
+cannot fail the exact insertion cycle check. Batch replacement therefore has no
+false cycle refusal caused by an edge that the same batch removes.
+
+The architectural allocation is
+[[file:../../../../dev/sysml/20-module-loading/20.06-local-dependency-order.sysml][20.06 Local dependency order]].
+POO =generalized-graph.ss= owns the executable repair in =reschedule=; Yuanxu
+does not duplicate it. Remove the entire batch's deleted edges before
+sequentially admitting additions, so a final acyclic replacement is not
+refused for a transient cycle. Every candidate has private adjacency, rank
+and reverse tables. Refusal leaves the prior schedule intact. Equal footprints
+retain the exact prior order/read view. Support changes retain the existing
+full scheduling path. The current change does not update downstream pins.
+
+The POO =t/construction/graph-order-repair-test.ss= gate binds these claims to
+the real Graph and ConstructionCache APIs. Its wide-interval 10,000-owner
+fixture requires two search buckets, two inspected boundary edges and two rank
+assignments. Owner 9,999 keeps its rank but depends on changed owner 1: the
+existing value cache must reevaluate it. A separate full oracle checks every
+owner and edge; that oracle is not counted as local update work. Exhaustive
+four-owner DAG insertion tests compare acceptance/refusal with cold scheduling.
+
+This is not a claim that the entire native update is O(delta). Without a
+trusted exact declaration delta, footprint acquisition still enumerates the
+supported roster, though unchanged program identities avoid repeated getters.
+Private snapshot copies and conversion back to the public order list are also
+linear. The callback-free =schedule-work= POO receipt reports these costs apart
+from frontier buckets, inspected edges, incident checks and rank assignments.
+ConstructionCache uses the existing Graph support index rather than repeated
+=memq= over the old roster. No source approval is retained across effects.
+
+Final order-list materialization is explicitly sequenced after rank writes.
+An earlier Scheme projection updated the private ranks but returned the old
+public order; the wide-interval and exhaustive tests refused it. Checking only
+rank counters would have missed that defect. Keep both the full order/permutation
+oracle and the sparse work counters. The implementation-fault control reverses
+forward/backward assignment and must fail by =rank= refusal, not by timeout.
+
 * Acceptance and remaining work
 
-The Lean model is
-[[file:../../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/DependencyOrderRepair.lean][DependencyOrderRepair]].
-It has universal cycle, interval and local-certificate theorems, executable
-10,000-owner checks, and negative controls for overlap, duplicate labels,
-wrong cycle inference, missing reverse checks and out-of-interval invalidation.
+The local structural fixture does not prove the real Interface EVAL budget or
+remote CI. Native compilation, the ordinary construction/publication consumers,
+and the real full-admission gates remain separate evidence. Keep independent
+effect checks and the frozen budgets; a successful structural test is not a
+replacement for any of them.
 
-The prototype is not a native PK implementation and does not prove the
-real Interface EVAL budget. No Scheme runtime or package pin changes are
-made in this research step. Native integration must bind proposals and
-indices to the real POO publication, preserve exact key/currentness checks,
-and establish the remaining algorithm/permutation and work bounds.
+Local qualification on 2026-11-08 uses the Core working change over =1d4c52a=
+and POO working change over =cd4de64=; no release or downstream pin is implied.
+Raw successful and failed logs remain outside source control.
+
+| Gate | Local evidence |
+|------+----------------|
+| =just proofs-lean= | 255 jobs; 10,469 declarations; standard Lean axioms only; executable 10,000-owner guard passed. |
+| POO =just build-core=, =just build-group construction= | Standard Gerbil build entries passed; the new suite is in the existing test declaration. |
+| =just test-group construction= under an outer 180-second watchdog | 24 compiled cases passed, including the 10,000-owner and 1,024-insertion oracles; 2 GiB existing heap fence; 6.52 seconds for the whole group, not a local-lookup benchmark. |
+| Reversed-frontier implementation fault | Three cases failed with =rank= errors in 4.90 seconds; source restored, rebuilt and the full group passed again. |
+| Component / joint-publication consumers | 30 / 19 cases passed against the final Graph source; existing admission/refusal boundaries retained. |
+| Existing feedback graph consumer | 10 cases passed; cyclic/empty SCC and current joint approval controls retained. |
 
 For native qualification, measure initial index preparation, touched buckets,
 all inspected edges including pruned ones, rank assignments, old-certificate

@@ -19,6 +19,14 @@ else:
     from cli import QuintCLI
 
 CASES = [
+    ("GraphSnapshot", "safety", False),
+    ("GraphSnapshot_mixed", "ConsistentHead", True),
+    ("GraphSnapshot_stale", "ExactTicket", True),
+    ("GraphSnapshot_earlyRetire", "OldIndexLifetime", True),
+    ("GraphSnapshot_replaceFailure", "FailedKeepsHead", True),
+    ("GraphSnapshot_retired", "RetiredRefused", True),
+    ("GraphSnapshot_interval", "FullOldImpact", True),
+    ("GraphSnapshot", "RejectAll", True),
     ("RoleFunction", "safety", False),
     ("RoleFunction_revision", "ClosedRoute", True),
     ("RoleFunction_observer", "ClosedRoute", True),
@@ -608,13 +616,17 @@ def main():
         parser.error("selected typechecking requires an explicit --case-prefix")
     producer_bound = []
     if args.producer_source:
-        if not args.case_prefix or not args.case_prefix.startswith(("SelectionReplay", "IncrementalRoles", "ThunkConstruction")):
-            parser.error("producer-source requires replay, incremental or thunk-construction correspondence cases")
+        if not args.case_prefix or not args.case_prefix.startswith(("SelectionReplay", "IncrementalRoles", "ThunkConstruction", "GraphSnapshot")):
+            parser.error("producer-source requires replay, incremental, thunk-construction or graph-snapshot correspondence cases")
         args.producer_source = args.producer_source.resolve()
-        producer_bound = [args.producer_source / name for name in
+        producer_names = (("gerbil.pkg", "generalized-graph.ss", "strong-components.ss", "feedback-graph.ss",
+                           "construction-cache.ss", "component-revision.ss", "component-publication.ss",
+                           "t/feedback/graph-algorithms-test.ss", "t/construction/graph-order-repair-test.ss")
+                          if args.case_prefix.startswith("GraphSnapshot") else
                           ("gerbil.pkg", "object.ss", "object/observation.scm", "object-state.ss", "slot-observation.ss",
                            "read-route.ss", "slot-layout.ss", "prototype-map.ss",
-                           "support/object-syntax.ss", "mop.ss", "t/objects/issued-read-test.ss")]
+                           "support/object-syntax.ss", "mop.ss", "t/objects/issued-read-test.ss"))
+        producer_bound = [args.producer_source / name for name in producer_names]
         if not all(p.is_file() for p in producer_bound):
             parser.error("producer-source must contain the complete selected runtime source owners")
     args.receipt.unlink(missing_ok=True)
@@ -727,7 +739,9 @@ def main():
         actual = subprocess.check_output(git + ["HEAD^{commit}"], text=True, timeout=5).strip()
         if actual != expected:
             raise AssertionError("Producer checkout differs from Core's declared package reference")
-    if producer_bound:
+    # Graph certificates bind the graph owners below, not the unrelated
+    # issued-read implementation digest recorded by SelectionReplay.
+    if producer_bound and not args.case_prefix.startswith("GraphSnapshot"):
         producer_digest = "sha256:" + hashlib.sha256((args.producer_source / "object.ss").read_bytes()).hexdigest()
         proof_owner = payload_lean if args.case_prefix.startswith("ThunkConstruction") else selection_lean
         if f'projectionObjectDigest : String := "{producer_digest}"' not in proof_owner.read_text():
@@ -758,6 +772,11 @@ def main():
                   core / "dev/proofs/lean/lean-toolchain",
                   core / "dev/sysml/10-evaluation/10.01-efficient-caching.sysml"]
     bound.extend(layout_bound)
+    if any(case[0].startswith("GraphSnapshot") for case in selected_cases):
+        graph_lean = core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/DependencyOrderRepair.lean"
+        bound.extend([graph_lean,
+                      core / "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/DependencyPublication.lean",
+                      core / "dev/sysml/20-module-loading/20.06-local-dependency-order.sysml"])
     retention_lean = core / "dev/proofs/lean/YuanxuProof/Admission/ReadRetention.lean"
     collection_lean = core / "dev/proofs/lean/YuanxuProof/Admission/RootCollection.lean"
     collection_digest = "sha256:" + hashlib.sha256((models / "RootCollection.qnt").read_bytes()).hexdigest()

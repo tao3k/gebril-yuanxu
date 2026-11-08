@@ -1,0 +1,130 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 13.35 Graph algorithm implementation and qualification Goal
+#+language: en
+#+date: [2026-11-08]
+#+property: STATUS active-goal
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]] ·
+[[file:13-dynamic-graph-repair.org][Algorithm and proof contracts]]
+
+* Scope and completion rule
+
+Close Graph algorithm implementation, native properties, negative controls,
+Benchmark and exact-commit GitHub CI together. Existing =yuanxu!=, Interface,
+Gerbil imports, =.get=, package/build/test entrypoints and effect guards remain.
+Do not add a loader, approval cache, compatibility layer or alternative runner.
+The Goal is complete only after the recorded commits are pushed and their
+required CI passes. Focused success is not whole Core acceptance.
+
+| Obligation | Owner | Qualification |
+|------------+-------+---------------|
+| Sparse Module closure / public graph analysis | Core =graph/algorithms.ss= and =graph/algorithms-list-support.ss= | Existing indexed closure/topological/SCC semantics and graph tests |
+| DAG rank repair | POO =generalized-graph.ss= | 10,000-owner wide interval; exact sparse counters, all-node oracle, sequential batch and refusal controls |
+| SCC discovery / stable representative | POO =strong-components.ss= | Explicit Tarjan frames, exact support index and one normalization pass; exhaustive small graphs and typed PBT |
+| Condensation / external read authority | POO =feedback-graph.ss= | Partition-owned representative index; linear footprint builder; exact captured external-node authority |
+| Support and contribution revisions | POO =generalized-graph.ss= / =component-revision.ss= | Hash membership, no per-key old roster scans; no unbounded =apply append= |
+| Value invalidation / currentness | Existing POO state, cache and publication | Include consumers outside the rank interval; preserve source/author-callback and approval boundaries |
+
+These owners serve different domains. Core's generic graph receipt already
+has indexed Tarjan; POO's Symbol-key component graph formerly intersected
+forward/reverse closures repeatedly. Core's build-publication adapter uses POO
+component publication, often with one completion node. A POO SCC improvement
+alone therefore does not establish faster full Interface declaration admission.
+
+* Formal allocation
+
+- Generic graph laws live in [[https://github.com/tao3k/lean-poo/pull/16][LeanPoo PR #16]]. Generic Scheme code,
+  properties and Benchmark live in gerbil-poo. Core imports the pinned library
+  and owns only Module selection, invalidation and publication adapters. There
+  is no second generic graph implementation or copied proof family in Core.
+- Lake owns LeanPoo's dependency revision. No hand-maintained QNT digest is
+  embedded in the graph proof. The existing QNT receipt records the inputs it
+  actually checked; this provenance does not prove Lean/QNT semantic equivalence.
+- =RankLabels=, =HashRankLabels= and =StableOrderRepair= prove sparse layout,
+  actual HashMap assignment, permutation, injectivity, bounded-frontier exactness
+  and acyclic-insertion completeness under finite exact captured frontiers.
+- =ComponentWitness= reuses LeanPoo =Reach=. Within-group paths plus strict
+  external quotient ranks prove exact SCC membership. Representative renaming
+  preserves the equivalence. This certificate law is not an extracted Tarjan
+  implementation or a proof of physical complexity.
+- =GraphSnapshot.qnt= checks finite interleavings: staged metadata invisible to
+  readers, whole-head generation consistency, old-index lifetime, exact pending
+  result tickets, rival installation and failed-candidate head retention. Six
+  matched faults and an accepting witness prevent vacuous success. The numeric
+  epochs abstract existing snapshot/request identity, not a new runtime protocol.
+- Existing =CandidatePublication= and =IncrementalRoles= retain author/source
+  currentness, complete reverse invalidation and selected compile/evaluate
+  boundaries. Reuse these models rather than duplicate their laws.
+
+* Frozen native workload
+
+Use POO's standard =just test-file= / =build-group= / =test-group= and existing
+=benchmarks/scc-test.ss=. All focused runs are serial, with the existing 2 GiB
+heap fence and an outer 180-second watchdog. Core's real 10,000-declaration
+Cases retain 180 seconds and 4 GiB, and the real Lab gate retains 120 seconds.
+
+1. Enumerate all 512 directed graphs on three nodes, including every self loop.
+   Compare ordered groups to an independent all-source reachability oracle.
+2. Use POO's existing typed property runner, fixed seed 2947, 256 cases and
+   size 64. Check arbitrary Boolean adjacency, duplicate edges, reversed source
+   order and transposition. Business computation evaluation is a failing trap.
+3. At exactly 10,000 owners, qualify isolated nodes, self loops, a deep chain,
+   disjoint two-node cycles, one giant cycle, a shared hub and a degree-16 band
+   (159,864 edges). Compare complete
+   group membership/order, representative lookup and exact owner/edge counters.
+4. Preserve the earlier 10,000-owner local repair, 1,024 DAG insertions and
+   reversed-frontier implementation fault. Add SCC implementation faults before
+   claiming mutation sensitivity; a timeout is not a rejected mutation.
+5. Run existing construction, feedback, component/publication and full POO
+   standard checks. No removed test, curated successful subset or warmed scope
+   substitutes for the complete gates.
+
+* Benchmark and interpretation
+
+Keep the original 320-observation SCC matrix unchanged. Extend its same official
+TestSuite with seven 10,000-owner source-preparation/partition observations and
+32 paired observations of the former production strategy versus iterative
+Tarjan (1,000 and 10,000 disjoint two-cycles, ABBA/AABB, natural/collected GC).
+Also measure 32 same-source cold/full versus local rank updates; prepare the
+original schedule separately and run full permutation checks outside timing.
+The old source strategy is test-only, frozen from =cd4de64=; it is not a second
+runtime graph implementation. Inputs, ordered-group oracles and output formatting
+are outside each measured partition window. Native process statistics retain CPU,
+wall, GC, collection and signed allocation fields. Invalid allocation deltas are
+not gains. Import/compilation and final process exit remain separate costs.
+
+Partition counters distinguish input validation, unique DFS edges, node entry,
+finish, component popping, normalization, both independent group-spanning
+certificate walks and every cross-group quotient check. Raw duplicate declarations count
+as input validations, while traversal visits their unique captured adjacency.
+Counter bounds do not assert constant-time hashing or a wall-clock theorem.
+
+Whole-module EVAL still includes first source admission and demanded scope.
+Measure it through the existing Core entry, independently of SCC microbenchmarks.
+Retain failed evidence and report actual stages if the original budget expires.
+
+* Publication checklist
+
+- [X] POO implementation branch =feat/indexed-graph-algorithms= created from the
+  published protected-checkpoint cohort =cd4de64=; closed PR #15 is not reused.
+- [X] Local sparse-repair proof and implementation gates passed on the preceding cut.
+- [X] SCC certificate laws built in the complete Core Lean project.
+- [X] Generic proofs moved to LeanPoo; Core's adapter compiled against the
+  published library revision (257 jobs, 10,342 audited declarations).
+- [X] GraphSnapshot positive/matched-negative scope passed eight QNT checks.
+- [X] LeanPoo PR #16 at =59aae5db= passed its exact-head CI, including every
+  shard, source differential, documentation audit and validation supervisors.
+- [X] Final typed properties, seven-shape work bounds, original 320-observation
+  matrix and the two 32-observation paired Benchmarks pass locally.
+- [X] SCC lowlink mutation fails with =invalid SCC quotient certificate=;
+  reversed representative ordering fails the independent ordered-group oracle.
+  Both faults compiled successfully and failed naturally, without a timeout.
+  The exact positive source was restored before the full POO gate.
+- [ ] Full standard POO acceptance passes with source frozen.
+- [ ] POO commits pushed and corresponding PR checks complete.
+- [ ] Core pin updated through native dependency installation; actual module
+  capacity/business EVAL and required publication/build-input gates complete.
+- [ ] Core PR #19 contains the final source/proofs and exact-head CI passes.
+
+Core must pass before propagating pins into Ascent or Parser. Raw logs remain
+local/CI artifacts; commit only executable gates, contracts and structured results.

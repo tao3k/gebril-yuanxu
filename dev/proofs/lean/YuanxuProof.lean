@@ -21,6 +21,8 @@ import YuanxuProof.ModuleSystem.Graph.TestAdmission
 import YuanxuProof.ModuleSystem.Graph.SourceClosureWork
 import YuanxuProof.ModuleSystem.Graph.IndexedWork
 import YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair
+import LeanPoo.Functional.StableOrderRepair
+import LeanPoo.Functional.ComponentWitness
 import YuanxuProof.ModuleSystem.Graph.SemanticReads
 import YuanxuProof.ModuleSystem.Graph.OwnedReads
 import YuanxuProof.ModuleSystem.Graph.PublicationReads
@@ -233,15 +235,28 @@ run_cmd do
       `YuanxuProof.ModuleSystem.Graph.IndexedWork.continuation_preserves_pending,
       `YuanxuProof.ModuleSystem.Graph.IndexedWork.continuation_balanced,
       `YuanxuProof.ModuleSystem.Graph.IndexedWork.retained_affected_exact,
-      `YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair.inserted_cycle_exact,
-      `YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair.interval_search_exact,
-      `YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair.local_rank_checks_suffice,
-      `YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair.delta_rank_checks_suffice,
-      `YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair.library_local_rank_checks_suffice,
+      `LeanPoo.Functional.DependencyOrderRepair.inserted_cycle_exact,
+      `LeanPoo.Functional.DependencyOrderRepair.interval_search_exact,
+      `LeanPoo.Functional.DependencyOrderRepair.local_rank_checks_suffice,
+      `LeanPoo.Functional.DependencyOrderRepair.delta_rank_checks_suffice,
+      `LeanPoo.Functional.DependencyOrderRepair.library_local_rank_checks_suffice,
       `YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair.outside_order_interval_still_affected,
-      `YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair.rank_violation_need_not_be_a_cycle,
-      `YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair.outgoing_checks_can_miss_a_rank_failure,
-      `YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair.unlisted_rank_is_preserved,
+      `LeanPoo.Functional.DependencyOrderRepair.rank_violation_need_not_be_a_cycle,
+      `LeanPoo.Functional.DependencyOrderRepair.outgoing_checks_can_miss_a_rank_failure,
+      `LeanPoo.Functional.DependencyOrderRepair.unlisted_rank_is_preserved,
+      `LeanPoo.Functional.DependencyOrderRepair.frontiers_disjoint,
+      `LeanPoo.Functional.DependencyOrderRepair.forward_interval_exact,
+      `LeanPoo.Functional.ComponentWitness.exact_components,
+      `LeanPoo.Functional.ComponentWitness.representative_renaming,
+      `LeanPoo.Functional.DependencyOrderRepair.backward_interval_exact,
+      `LeanPoo.Functional.DependencyOrderRepair.stable_relabel_complete,
+      `LeanPoo.Functional.DependencyOrderRepair.sparse_repair_complete,
+      `LeanPoo.Functional.DependencyOrderRepair.repair_ranks_injective,
+      `LeanPoo.Functional.DependencyOrderRepair.acyclic_final_accepts_every_prefix,
+      `LeanPoo.Functional.RankLabels.assign_slots,
+      `LeanPoo.Functional.RankLabels.assign_labels_permutation,
+      `LeanPoo.Functional.RankLabels.whole_roster_permutation,
+      `LeanPoo.Functional.RankLabels.assign_injective,
       `YuanxuProof.ModuleSystem.Graph.TestAdmission.incomplete_admission_refuses,
       `YuanxuProof.ModuleSystem.Graph.TestAdmission.selected_admission_is_not_catalog_certification,
       `YuanxuProof.ModuleSystem.Loading.DependencyPublication.merged_changes_exact,

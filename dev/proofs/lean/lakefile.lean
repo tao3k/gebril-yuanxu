@@ -9,7 +9,7 @@ package YuanxuProof where
 
 require LeanPoo from git
   "https://github.com/tao3k/lean-poo.git"
-  @ "da273cdc75c9d65409e3d4979a6e9856c384809f"
+  @ "59aae5dbef4daccb01b6ec40b1880c1ae1abb7c8"
 
 @[default_target]
 lean_lib YuanxuProof where
