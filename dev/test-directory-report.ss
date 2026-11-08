@@ -47,7 +47,7 @@
      (cond ((ormap (cut string-prefix? <> file)
                    '("package-" "prelude-" "core-build-" "module-build-" "module-bootstrap-"
                      "runtime-publication-identity-")) "bootstrap")
-           ((ormap (cut string-prefix? <> file) '("module-" "feature-system-")) "modules")
+           ((ormap (cut string-prefix? <> file) '("module-" "feature-")) "modules")
            ((ormap (cut string-prefix? <> file)
                    '("json-schema-" "source-" "contract-" "admission-" "contribution-"
                      "configuration-" "poo-" "object-" "issued-" "path-" "evidence-"

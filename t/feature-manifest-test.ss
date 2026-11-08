@@ -9,7 +9,7 @@
         :yuanxu/module-system/feature/interface
         :yuanxu/utilities/functional)
 
-(export feature-system-manifest-test)
+(export feature-manifest-test)
 
 (def manifest-option-a
   (feature-option-schema 'mode 'symbol 'safe #f))
@@ -19,39 +19,39 @@
 
 (defpoo-feature manifest-base-feature
   (feature-id 'manifest-base)
-  (owner-module-id 'feature-system-manifest-test))
+  (owner-module-id 'feature-manifest-test))
 
 (defpoo-feature manifest-dependent-feature
   (feature-id 'manifest-dependent)
-  (owner-module-id 'feature-system-manifest-test)
+  (owner-module-id 'feature-manifest-test)
   (requires manifest-base-feature))
 
 (defpoo-feature manifest-missing-requirement-feature
   (feature-id 'manifest-missing-requirement)
-  (owner-module-id 'feature-system-manifest-test)
+  (owner-module-id 'feature-manifest-test)
   (requires manifest-base-feature))
 
 (defpoo-feature manifest-duplicate-feature
   (feature-id 'manifest-base)
-  (owner-module-id 'feature-system-manifest-test-duplicate))
+  (owner-module-id 'feature-manifest-test-duplicate))
 
 (defpoo-feature manifest-conflict-target-feature
   (feature-id 'manifest-conflict-target)
-  (owner-module-id 'feature-system-manifest-test))
+  (owner-module-id 'feature-manifest-test))
 
 (defpoo-feature manifest-conflicting-feature
   (feature-id 'manifest-conflicting)
-  (owner-module-id 'feature-system-manifest-test)
+  (owner-module-id 'feature-manifest-test)
   (conflicts manifest-conflict-target-feature))
 
 (defpoo-feature manifest-duplicate-option-feature
   (feature-id 'manifest-duplicate-option)
-  (owner-module-id 'feature-system-manifest-test)
+  (owner-module-id 'feature-manifest-test)
   (option-schemas manifest-option-a manifest-option-a-duplicate))
 
 (defpoo-feature manifest-duplicate-option-second-feature
   (feature-id 'manifest-duplicate-option-second)
-  (owner-module-id 'feature-system-manifest-test)
+  (owner-module-id 'feature-manifest-test)
   (option-schemas manifest-option-a manifest-option-a-duplicate))
 
 (defpoo-feature-manifest-bundle manifest-valid-bundle
@@ -100,7 +100,7 @@
       (let* ((base
               (feature-descriptor-base
                (manifest-stress-feature-id index)
-               'feature-system-manifest-stress))
+               'feature-manifest-stress))
              (spec
               (if previous
                 (feature-spec-compose
@@ -127,7 +127,7 @@
                     hits)))
           ([] (outer (- round 1) hits)))))))
 
-(def feature-system-manifest-test
+(def feature-manifest-test
   (test-suite "feature system immutable manifests"
     (yuanxu-test-case "descriptor projects to an immutable POO manifest"
       (let ((manifest (feature-manifest manifest-dependent-feature)))
@@ -135,7 +135,7 @@
         (check (.ref manifest 'schema-version) => 1)
         (check (.ref manifest 'feature-id) => 'manifest-dependent)
         (check (.ref manifest 'owner-module-id)
-               => 'feature-system-manifest-test)
+               => 'feature-manifest-test)
         (check (.ref manifest 'requires) => '(manifest-base))))
 
     (yuanxu-test-case "explicit bundle reuses the resolver activation plan"

@@ -9,7 +9,7 @@
         :yuanxu/module-system/feature/interface
         :yuanxu/utilities/functional)
 
-(export feature-system-test)
+(export feature-test)
 
 (def (test-feature feature-id
                    (requires '())
@@ -53,7 +53,7 @@
          feature-id
          (cons (test-feature feature-id requires) features))))))
 
-(def feature-system-test
+(def feature-test
   (test-suite "POO Feature system"
     (yuanxu-test-case "descriptor is an immutable module-owned POO value"
       (let ((descriptor (test-feature 'memory-core)))

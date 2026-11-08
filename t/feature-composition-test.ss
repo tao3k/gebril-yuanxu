@@ -10,7 +10,7 @@
         :yuanxu/module-system/feature/interface
         :yuanxu/utilities/functional)
 
-(export feature-system-composition-test)
+(export feature-composition-test)
 
 (def (composition-test-component component-id)
   (let ((object (make-object)))
@@ -29,7 +29,7 @@
 
 (defpoo-feature composition-base-feature
   (feature-id 'composition-base)
-  (owner-module-id 'feature-system-composition-test)
+  (owner-module-id 'feature-composition-test)
   (components composition-base-component)
   (policy-contributions 'composition-base-policy-a
                         'composition-base-policy-b)
@@ -39,7 +39,7 @@
 
 (defpoo-feature composition-agent-feature
   (feature-id 'composition-agent)
-  (owner-module-id 'feature-system-composition-test)
+  (owner-module-id 'feature-composition-test)
   (requires composition-base-feature)
   (components composition-agent-component)
   (policy-contributions 'composition-agent-policy)
@@ -81,7 +81,7 @@
               (composition-stress-id "composition-feature-" index))
              (base
               (feature-descriptor-base
-               feature-id 'feature-system-composition-stress))
+               feature-id 'feature-composition-stress))
              (components
               (feature-components
                (composition-stress-id "component-" index)))
@@ -119,7 +119,7 @@
               descriptor
               (cons descriptor descriptors))))))
 
-(def feature-system-composition-test
+(def feature-composition-test
   (test-suite "POO Feature composition plan"
     (yuanxu-test-case "composition follows resolver order, not declaration order"
       (check (.ref composition-plan 'kind) => 'feature-composition-plan)

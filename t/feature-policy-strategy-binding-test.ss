@@ -11,7 +11,7 @@
         :yuanxu/module-system/feature/domain-case/interface
         :yuanxu/utilities/functional)
 
-(export feature-system-policy-strategy-binding-test)
+(export feature-policy-strategy-binding-test)
 
 (def (binding-test-role slot-values)
   (let ((object (make-object)))
@@ -88,14 +88,14 @@
 
 (defpoo-feature binding-base-feature
   (feature-id 'binding-base-feature)
-  (owner-module-id 'feature-system-policy-strategy-binding-test)
+  (owner-module-id 'feature-policy-strategy-binding-test)
   (components binding-base-component)
   (policy-contributions binding-base-policy-contribution)
   (strategy-contributions binding-base-strategy-contribution))
 
 (defpoo-feature binding-agent-feature
   (feature-id 'binding-agent-feature)
-  (owner-module-id 'feature-system-policy-strategy-binding-test)
+  (owner-module-id 'feature-policy-strategy-binding-test)
   (requires binding-base-feature)
   (components binding-agent-component)
   (policy-contributions binding-agent-policy-contribution)
@@ -195,7 +195,7 @@
 
 (defpoo-feature binding-no-algebra-feature
   (feature-id 'binding-no-algebra-feature)
-  (owner-module-id 'feature-system-policy-strategy-binding-test)
+  (owner-module-id 'feature-policy-strategy-binding-test)
   (components binding-no-algebra-component)
   (policy-contributions binding-base-policy-contribution))
 
@@ -217,7 +217,7 @@
 
 (defpoo-feature binding-invalid-component-feature
   (feature-id 'binding-invalid-component-feature)
-  (owner-module-id 'feature-system-policy-strategy-binding-test)
+  (owner-module-id 'feature-policy-strategy-binding-test)
   (components 'not-a-case-component))
 
 (defpoo-feature-manifest-bundle binding-invalid-component-bundle
@@ -283,7 +283,7 @@
               descriptor
               (cons descriptor descriptors))))))
 
-(def feature-system-policy-strategy-binding-test
+(def feature-policy-strategy-binding-test
   (test-suite "Feature policy/strategy algebra binding"
     (yuanxu-test-case "accepted assembly binds ordered POO role contributions"
       (let* ((policy-binding (.ref binding-ready 'policy-binding))

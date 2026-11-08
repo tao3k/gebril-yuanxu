@@ -7,7 +7,7 @@
         :clan/poo/object
         :yuanxu/module-system/feature/interface)
 
-(export feature-system-syntax-test)
+(export feature-syntax-test)
 
 (def syntax-session-mode-schema
   (feature-option-schema 'mode 'symbol 'durable #f))
@@ -56,7 +56,7 @@
 (def syntax-agent-plan
   (resolve-feature-profile syntax-agent-profile))
 
-(def feature-system-syntax-test
+(def feature-syntax-test
   (test-suite "POO Feature declaration macros"
     (yuanxu-test-case "defpoo-feature lowers to a module-owned descriptor"
       (check-equal? (.ref syntax-session-feature 'kind)

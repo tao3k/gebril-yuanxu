@@ -9,7 +9,7 @@
         (only-in :std/test check-equal? check-exception test-suite)
         :yuanxu/module-system/feature/interface)
 
-(export feature-system-sources-lock-test)
+(export feature-sources-lock-test)
 
 (def locked-payload "locked source payload")
 
@@ -26,7 +26,7 @@
    "example/sources" "2026-09-17" (list locked-source-reference)
    (lambda (_path) locked-payload)))
 
-(def feature-system-sources-lock-test
+(def feature-sources-lock-test
   (test-suite
    "POO Sources Lock Feature"
    (yuanxu-test-case
