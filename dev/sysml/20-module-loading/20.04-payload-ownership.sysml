@@ -318,6 +318,8 @@ package YuanxuPayloadOwnership {
                The actual Slot field checker also receives the entire Record.
                Guard a replacement on its delivered method even when dispatch
                selects a different Slot descriptor Type.
+               Guard the Interface's selected outer Profile validator as well.
+               It may allocate receipts before calling any Record predicate.
                A success-only Profile value lane requires custody of the
                producer, preserved normalized child identities and independent
                support for root and child evidence acceptance. Decline the

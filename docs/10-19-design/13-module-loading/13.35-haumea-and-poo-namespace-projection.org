@@ -1924,6 +1924,12 @@ closed. Projection therefore needs actual producer custody as well as
 receipt-method guards. An enrolled receiver and a closed region alone
 cannot establish non-escape.
 
+The Interface constructor now checks the actual delivered outer Profile
+validator in the existing owned-read scope. In the native Case the original
+path could invoke a replacement without consulting the guard. The revised
+path retains the original refusal before the callback, or invokes the same
+selected callback once after successful entry.
+
 The native read census of 64 real owners found 206 preparation roots and 916
 reachable records per owner. The same issued Profile root reached 728 records
 in each preparation. Of those, 698 were reachable only from that root. The
@@ -2030,6 +2036,19 @@ support. Identical normalized values alone can still accompany a rejected
 receipt. A declined lane keeps the complete original refusal path. The
 runtime still needs to establish producer custody and the evidence support
 before this projection can replace the existing constructor.
+
+A same-process probe retained the real value action for each child and
+checked three representative receipts with the original native evidence
+Type. With both lanes in the same ownership scope it reached all 424
+unowned records of the original, but reordered them. A role-specific
+replacement predicate still refused through the full path. Filtering the
+original native preorder in the same stock sample produced exactly 424
+reachable records and exposed no directly owned values in those records.
+For 512 checkpoints per lane, this filtered order took 0.449–0.457 s CPU,
+compared with 0.759–0.764 s for 720 original records. This measures the
+available replay reduction. A sample's ownership and exact order do not
+establish continued validity of omitted records, especially when a private
+normalized receiver still has external prototype dependencies.
 
 Two independent publications of the same fixture, from separate package
 origins in one process, each had 914 reachable preparation records, 899

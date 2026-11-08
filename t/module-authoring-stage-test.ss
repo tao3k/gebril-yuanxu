@@ -12,6 +12,8 @@
         (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :yuanxu/module-system/types ModuleAuthoringProfileContract)
         (only-in :yuanxu/module-system/authoring/roles yuanxu-default-module-authoring-profile)
+        (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection
+                 current-owned-read-open-guard)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-authoring-stage-test)
 
@@ -91,4 +93,31 @@
               (.put! ModuleAuthoringProfileContract 'value-contract previous)
               (check-exception (.call graph admit-current) stale-runtime-dependency?)
               (check-exception (.call view sources-current) stale-runtime-dependency?))))
-        (lambda () (.put! ModuleAuthoringProfileContract 'value-contract previous))))))
+        (lambda () (.put! ModuleAuthoringProfileContract 'value-contract previous))))
+    (yuanxu-test-case "a replaced Profile validator crosses the guard before receiving the value"
+      (def policy (.o (:: @ yuanxu-module-style-policy-prototype)))
+      (def raw (.get policy authoring))
+      (def schema (Record))
+      (def maintained (.ref ModuleAuthoringProfileContract '.validate))
+      (def events '())
+      (def (run entry)
+        (parameterize ((current-owned-read-open-guard entry))
+          (call-with-owned-read-projection '() void
+            (lambda () (yuanxu-module-interface "profile-effect" schema '() authoring: raw)))))
+      (dynamic-wind
+        (lambda ()
+          (.put! ModuleAuthoringProfileContract '.validate
+            (lambda (value)
+              (check-equal? (eq? raw value) #t)
+              (set! events (cons 'method events))
+              value)))
+        (lambda ()
+          (check-exception
+            (run (lambda () (set! events (cons 'entry events)) (error "stale Profile entry")))
+            (lambda (failure)
+              (and (Error? failure) (string=? (Error-message failure) "stale Profile entry"))))
+          (check-equal? events '(entry))
+          (set! events '())
+          (check-equal? (eq? raw (.get (run (lambda () (set! events (cons 'entry events)))) authoring)) #t)
+          (check-equal? (reverse events) '(entry method)))
+        (lambda () (.put! ModuleAuthoringProfileContract '.validate maintained))))))

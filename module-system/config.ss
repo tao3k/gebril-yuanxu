@@ -7,6 +7,8 @@
 ;;; supplied by the caller; gerbil-poo owns effective Slot metadata.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
+        (only-in :yuanxu/object-family/read-projection
+                 make-owned-method-check call-with-owned-read-method-checks)
         (only-in :yuanxu/module-system/types ModuleAuthoringProfileContract))
 
 (export yuanxu-module-kind=?
@@ -54,10 +56,19 @@
        (.all-slots slots))
     index))
 
+(def profile-validation-checks
+  (list (make-owned-method-check ModuleAuthoringProfileContract '.validate
+          (.ref ModuleAuthoringProfileContract '.validate))))
+(def validate-authoring-profile (cut validate ModuleAuthoringProfileContract <>))
+
 (def (make-module-interface prototype interface-id-value schema-object
                             metadata-value authoring-value)
   (let (admitted-authoring
-        (validate ModuleAuthoringProfileContract authoring-value))
+        ;; A contributed outer validator can create its own receipts before
+        ;; delegating. Guard the actual delivered method, even if no Record
+        ;; predicate has received a receipt yet.
+        (call-with-owned-read-method-checks profile-validation-checks
+          validate-authoring-profile authoring-value))
     (.o (:: @ (list prototype))
         id: interface-id-value
         schemas: schema-object
