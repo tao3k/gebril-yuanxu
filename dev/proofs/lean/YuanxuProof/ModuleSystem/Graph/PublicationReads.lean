@@ -592,6 +592,55 @@ theorem private_reads_preserve_external_refusal
     | false => simp [kept, authenticateAndVisit, privateCurrent read kept, ih, Except.bind, bind]
     | true => simp [kept, authenticateAndVisit, ih]
 
+-- A derived scratch receiver can become stale through a retained ancestor
+-- without escaping. An omitted refusal is harmless only when an earlier
+-- retained check already refuses. Keep the original preorder, including
+-- when several independent source or type edits are visible.
+def PrefixCovered (auth : Read → Except Failure Unit)
+    (keep : Read → Bool) (reads : List Read) : Prop :=
+  ∀ earlier read suffix, reads = earlier ++ read :: suffix →
+    keep read = false →
+    authenticateAndVisit auth (fun _ => ()) (earlier.filter keep) = .ok () →
+    auth read = .ok ()
+
+theorem prefix_guarded_reads_preserve_first_refusal
+    (auth : Read → Except Failure Unit) (keep : Read → Bool) (reads : List Read)
+    (guarded : PrefixCovered auth keep reads) :
+    authenticateAndVisit auth (fun _ => ()) (reads.filter keep) =
+      authenticateAndVisit auth (fun _ => ()) reads := by
+  induction reads with
+  | nil => rfl
+  | cons read rest ih =>
+    cases kept : keep read with
+    | false =>
+      have current := guarded [] read rest rfl kept rfl
+      have restGuarded : PrefixCovered auth keep rest := by
+        intro before next after shape omitted entry
+        apply guarded (read :: before) next after (by simp [shape]) omitted
+        simpa [kept] using entry
+      simp [kept, authenticateAndVisit, current, Except.bind, bind, ih restGuarded]
+    | true =>
+      cases current : auth read with
+      | error refused => simp [kept, authenticateAndVisit, current, Except.bind, bind]
+      | ok checked =>
+        cases checked
+        have restGuarded : PrefixCovered auth keep rest := by
+          intro before next after shape omitted entry
+          apply guarded (read :: before) next after (by simp [shape]) omitted
+          simp [kept, authenticateAndVisit, current, Except.bind, bind, entry]
+        simp [kept, authenticateAndVisit, current, Except.bind, bind, ih restGuarded]
+
+theorem projected_prefix_guarded_read_window
+    (before after : Read → Except Failure Unit) (keep : Read → Bool)
+    (reads : List Read) (action : Except Failure Result)
+    (beforeCovered : PrefixCovered before keep reads)
+    (afterCovered : PrefixCovered after keep reads) :
+    readWindow before after (fun _ => ()) (reads.filter keep) action =
+      readWindow before after (fun _ => ()) reads action := by
+  simp only [readWindow,
+    prefix_guarded_reads_preserve_first_refusal before keep reads beforeCovered,
+    prefix_guarded_reads_preserve_first_refusal after keep reads afterCovered]
+
 -- The producer must discharge privacy/currentness at BOTH sides of an
 -- effect. The currentness of the kept reads is always checked anew.
 theorem projected_private_read_window

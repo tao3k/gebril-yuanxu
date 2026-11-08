@@ -325,6 +325,11 @@ package YuanxuPayloadOwnership {
                support for root and child evidence acceptance. Decline the
                lane before running an open callback. Use the complete native
                refusal path when any premise fails.
+               An owned derived record can become stale through an external
+               ancestor without escaping. An omitted record that can fail
+               needs an earlier retained check that refuses first. Establish
+               this coverage separately at entry and return. Preserve the
+               original signed order of all retained records.
                Attribute replay visits per checkpoint and retained records
                by identity across owners. Repeated traversal of a shared
                Profile receipt increases replay work without creating a new

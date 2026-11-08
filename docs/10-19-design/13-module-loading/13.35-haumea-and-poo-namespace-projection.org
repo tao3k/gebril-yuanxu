@@ -2050,6 +2050,17 @@ available replay reduction. A sample's ownership and exact order do not
 establish continued validity of omitted records, especially when a private
 normalized receiver still has external prototype dependencies.
 
+Changing an actual retained parent role's revision made 12 private reads
+stale without exposing their receiver. Both native traversals refused first
+at =(presence identity)=. A second projection required an earlier signed
+read of the recorded generation of every external ancestor. It retained
+426 records, including two owned records without such a prefix witness.
+Native replay preserved the 426-record order and returned the same first
+refusal. =PublicationReads.projected_prefix_guarded_read_window= permits an
+omitted refusal only if a retained check before it already refuses, with
+independent premises at both boundaries. The sample demonstrates a
+candidate witness relation and does not establish producer non-escape.
+
 Two independent publications of the same fixture, from separate package
 origins in one process, each had 914 reachable preparation records, 899
 shared by issued identity. All 14 Profile receipt receivers were shared.
