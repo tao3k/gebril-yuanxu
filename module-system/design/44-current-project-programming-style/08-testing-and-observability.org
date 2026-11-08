@@ -301,7 +301,10 @@ platform scheduling weights. Supply one directory containing that platform's
 extracted group artifacts. The Scheme audit reconciles discovered files,
 group outcomes and individual worker receipts, checks transcripts and clock
 ordering, and compares the tested commit, workflow run, attempt, OS and
-architecture. A complete report can contain failed tests. An absent worker
+architecture. It verifies the report's commit and tree against the current
+checkout and checks that the recorded build and test inputs agree. An
+unchanged test inventory cannot make a report from another commit eligible.
+A complete report can contain failed tests. An absent worker
 result, duplicate file, inconsistent timing or mixed run cannot supply
 scheduling weights. Supplying a group name audits only that group.
 

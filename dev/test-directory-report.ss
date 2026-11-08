@@ -111,16 +111,21 @@
     (run-script (.cc ProcessScript. command: command check-status: #f)))
   (and (zero? (.get result status)) (.get result output)))
 
+(def (qualification-source)
+  (def revision (qualification-command-output '("git" "rev-parse" "HEAD" "HEAD^{tree}")))
+  (match (and revision (string-split revision #\newline))
+    ([source tree] (values source tree))
+    (else (error "qualification requires a Git checkout" revision))))
+
+(def (qualification-clean?)
+  (def changes (qualification-command-output '("git" "status" "--porcelain" "--untracked-files=normal")))
+  (and changes (string-empty? changes)))
+
 (def (qualification-build-inputs)
   (def (digest-file path)
     (and (file-exists? path)
          (hex-encode (sha256 (call-with-input-file path read-all-as-u8vector)))))
-  (def revision (qualification-command-output '("git" "rev-parse" "HEAD" "HEAD^{tree}")))
-  (def changes (qualification-command-output '("git" "status" "--porcelain" "--untracked-files=normal")))
-  (def revisions (and revision (string-split revision #\newline)))
-  (def source-id (and revisions (car revisions)))
-  (def source-tree (and revisions (cadr revisions)))
-  (def clean? (and changes (string-empty? changes)))
+  (defvalues (source-id source-tree) (qualification-source))
   (def prefix (getenv "GERBIL_PATH"))
   (def checkout (path-expand "pkg/github.com/tao3k/gerbil-poo" prefix))
   (def poo (and (file-exists? checkout)
@@ -134,7 +139,7 @@
   (def release
     (digest-file (path-expand "../gerbil-toolchain-release.json" (gerbil-home))))
   (list 'test-build-inputs
-        (cons 'source source-id) (cons 'source-tree source-tree) (cons 'clean? clean?)
+        (cons 'source source-id) (cons 'source-tree source-tree) (cons 'clean? (qualification-clean?))
         (cons 'package-declaration (digest-file "gerbil.pkg"))
         (cons 'gerbil (gerbil-version-string))
         (cons 'gambit (system-version-string))
@@ -464,14 +469,22 @@
      [file effective-status wall status entry harness-ms (and returned (- wall returned))])
     (else (error "malformed dispatch receipt" path))))
 
-(def (audit-group directory)
+(def (audit-group directory source tree)
   (def report
     (if (file-exists? (path-expand "group.ss" directory)) directory
       (path-expand "test-report" directory)))
   (match (read-receipt (path-expand "group.ss" report))
     (['test-group-result (? string? group) (? exact-integer? elapsed) cohort rows]
-     (def expected (discovered-files group))
      (def qualification (read-receipt (path-expand "qualification.ss" report)))
+     (unless (and (pair? qualification)
+                  (eq? (car qualification) 'test-qualification)
+                  (qualification-build-matches? qualification)
+                  (equal? source (qualification-field qualification 'source))
+                  (equal? tree (qualification-field qualification 'source-tree))
+                  (list? cohort) (= (length cohort) 5)
+                  (or (not (car cohort)) (equal? source (car cohort))))
+       (error "test report checkout or build identity mismatch" report source tree))
+     (def expected (discovered-files group))
      (def actual
        (filter-map
          (lambda (name)
@@ -480,9 +493,7 @@
          (directory-files report)))
      (def (order rows)
        (list-sort (lambda (left right) (string<? (car left) (car right))) rows))
-     (unless (and (list? cohort) (= (length cohort) 5)
-                  (pair? qualification) (eq? (car qualification) 'test-qualification)
-                  (andmap (lambda (field) (or (not field) (string? field))) cohort)
+     (unless (and (andmap (lambda (field) (or (not field) (string? field))) cohort)
                   (pair? expected) (equal? expected (read-receipt (path-expand "expected-files.ss" report)))
                   (equal? expected (map car rows)) (equal? (order rows) (order (map (cut take <> 3) actual)))
                   (>= elapsed (apply + (map caddr rows))))
@@ -491,6 +502,9 @@
     (else (error "malformed test group receipt" report))))
 
 (def (read-audited-report root group)
+  (defvalues (source tree) (qualification-source))
+  (unless (qualification-clean?)
+    (error "test report audit requires a clean checkout" source))
   (def nested (path-expand "test-report" root))
   (def report (if (file-exists? nested) nested root))
   (def folders
@@ -501,7 +515,7 @@
   (def rows '())
   (for-each
     (lambda (folder)
-      (defvalues (identity results environment) (audit-group folder))
+      (defvalues (identity results environment) (audit-group folder source tree))
       (when (and cohort (not (and (equal? identity cohort) (equal? environment qualification))))
         (error "test reports mix CI runs, revisions, or platforms" folder))
       (set! cohort identity)
@@ -532,10 +546,6 @@
 (def (compare-reports linux macos (group "all"))
   (defvalues (linux-cohort linux-rows linux-qualification) (read-audited-report linux group))
   (defvalues (macos-cohort macos-rows macos-qualification) (read-audited-report macos group))
-  (unless (and (qualification-build-matches? linux-qualification)
-               (qualification-build-matches? macos-qualification))
-    (error "platform reports lack matching build or VM evidence"
-           linux-qualification macos-qualification))
   (def differences
     (filter-map (lambda (key)
                   (def left (qualification-field linux-qualification key))
