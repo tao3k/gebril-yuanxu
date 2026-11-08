@@ -2111,6 +2111,29 @@ empty demand trace under this primitive. The existing handoff fails the
 second premise. Leave the Scheme checkpoints in place, including the
 independent native expansion and author effect checks.
 
+The installed POO internal frame can suppress observations during its
+authentication and run the action in the original recorder. On the real
+prepared input it delivered the original =admit-current= read once and
+retained it in the caller's capture. Replacing the checker made that
+captured record stale. A peer mutation of separate protected support
+refused the native return and the caller still captured the checker read.
+=PublicationReads.recorded_handoff_keeps_reads_when_return_refuses=
+and =recorded_handoff_keeps_author_refusal_and_reads= specify the different
+roles of native return authentication and already delivered reads. This
+capability addresses read delivery only. Sharing intermediate validation
+still requires the live-state premises above.
+
+The fused candidate return joins the preparation and admission roots into
+a fresh list for one invocation. A matched diagnostic borrowed POO's
+existing cold traversal without installing its weak topology owner. Each
+alternating 384-call block authenticated 430,080 records with the same
+entry and return passes. Across two batches the ordinary path took
+1.012–1.119 s CPU and the transient path took 1.010–1.091 s. Both retained the same issued coverage,
+and the transient path refused a forged root before the action and a
+peer mutation on return. The overlapping samples show no repeatable
+CPU benefit and the
+production path remains the public POO checkpoint.
+
 For 64 actual owners, the joined preparation and admission traversal
 visited 74,955 signed reads. 50,979 followed a read of the same receiver
 without an intervening receiver or bootstrap record. This is an upper bound

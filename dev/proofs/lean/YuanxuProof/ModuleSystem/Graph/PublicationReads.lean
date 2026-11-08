@@ -675,6 +675,46 @@ theorem deferred_handoff_preserves_read_delivery (demands : List Read) :
   change ([] = demands) ↔ demands = []
   exact eq_comm
 
+-- A native frame can mute its own authentication while leaving the action
+-- in the caller's recorder. A refusal on return does not undo prior delivery.
+def recordedHandoff {Failure Result : Type} (entry postflight : Except Failure Unit)
+    (action : Except Failure Result × List Read) : Except Failure Result × List Read :=
+  match entry with
+  | .error cause => (.error cause, [])
+  | .ok () =>
+    ((do
+      let value ← action.1
+      postflight
+      pure value), action.2)
+
+theorem recorded_handoff_refused_entry_delivers_nothing {Failure Result : Type}
+    (cause : Failure) (postflight : Except Failure Unit)
+    (action : Except Failure Result × List Read) :
+    recordedHandoff (.error cause) postflight action = (.error cause, []) := rfl
+
+theorem recorded_handoff_keeps_reads_when_return_refuses {Failure Result : Type}
+    (stale : Failure) (value : Result) (reads : List Read) :
+    recordedHandoff (.ok ()) (.error stale) (.ok value, reads) =
+      (.error stale, reads) := rfl
+
+theorem recorded_handoff_keeps_author_refusal_and_reads {Failure Result : Type}
+    (cause : Failure) (postflight : Except Failure Unit) (reads : List Read) :
+    recordedHandoff (Result := Result) (.ok ()) postflight (.error cause, reads) =
+      (.error cause, reads) := rfl
+
+theorem admitted_handoff_can_mute_action_iff_empty {Failure Result : Type}
+    (postflight : Except Failure Unit) (action : Except Failure Result × List Read) :
+    recordedHandoff (.ok ()) postflight (action.1, []) =
+      recordedHandoff (.ok ()) postflight action ↔ action.2 = [] := by
+  constructor
+  · intro same
+    exact (congrArg Prod.snd same).symm
+  · intro empty
+    rcases action with ⟨outcome, reads⟩
+    change reads = [] at empty
+    subst reads
+    rfl
+
 -- Only the inert datum read from the same captured Interface bytes is shared.
 -- Owner binding, native identity admission and post-expansion validation retain
 -- independent inputs and first-refusal order.

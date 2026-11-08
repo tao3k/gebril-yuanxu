@@ -311,6 +311,18 @@ package YuanxuPayloadOwnership {
                boundaries. Lean PublicationReads.flatten_root_segments
                preserves the ordered signed input and the first refusal. */
     }
+    requirement def RecordedReaderHandoff {
+        doc /* A protected native frame authenticates entry before the
+               prepared input action and authenticates return before
+               accepting its result. Authentication does not emit business
+               reads. The action delivers each original read to the caller.
+               A refused entry emits nothing. Action or return refusal
+               preserves already delivered reads. Lean PublicationReads
+               recorded_handoff_keeps_reads_when_return_refuses states
+               this order. The native diagnostic does not establish
+               unchanged live verdicts across the handoff. Independent
+               Gerbil expansion and author effect checks remain required. */
+    }
     requirement def CompletedWrapperRetentionEvidence {
         doc /* Measure the signed read frontier separately from native
                Gerbil registry aliases. Classify a temporary authoring
