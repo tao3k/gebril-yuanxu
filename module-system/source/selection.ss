@@ -8,6 +8,7 @@
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
         (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
         (only-in :yuanxu/module-system/graph/funs module-closure)
+        (only-in :yuanxu/module-system/source/observations module-source-measure-operation)
         (only-in :yuanxu/module-system/feature/model feature-descriptor feature-selection feature-profile)
         (only-in :yuanxu/module-system/feature/resolver resolve-feature-profile)
         (only-in :yuanxu/module-system/feature/feature-manifest feature-manifest-bundle)
@@ -102,7 +103,8 @@
          (selected-index (list->hash-table (map (lambda (id) (cons id #t)) (.ref context 'selected))))
          (denied-index (list->hash-table (map (lambda (id) (cons id #t)) (.ref context 'denied-modules))))
          (modules
-          (module-closure root-values identity
+          (module-source-measure-operation 'selected-owner-closure
+           (lambda () (module-closure root-values identity
            (lambda (id)
              (let (required-ids
                     (if read-dependencies
@@ -125,7 +127,7 @@
                         (error "required module not explicitly declared" id required origin
                                (.ref context 'generation)))
                       required)
-                    required-ids)))))
+                    required-ids)))))))
          ;; Dependency projection can leave a private candidate pending. Close
          ;; it BEFORE decision slots, Feature construction or any open resolver
          ;; callback. Generic readers keep their independent publication tails.
@@ -196,7 +198,8 @@
               'optional-requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'optional-requires))
               'conflicts (map (cut feature-key owner-id <>) (.ref descriptor-value 'conflicts))))))
     (let* ((core-selections
-            (map (lambda (id)
+            (module-source-measure-operation 'selected-core-projection
+             (lambda () (map (lambda (id)
                    (let* ((key (core-node-id id))
                           (requirements (.ref/inline
                             (.ref/inline (publication-for id) publication-core-site)
@@ -207,7 +210,7 @@
                           (descriptor-value (core-feature-descriptor key id required)))
                      (hash-put! nodes key (.o kind: 'module-core identity: id owner: id
                                              publication: (publication-for id)))
-                     (feature-selection descriptor-value))) modules))
+                     (feature-selection descriptor-value))) modules))))
            (feature-selections
             (foldr append '()
              (map
@@ -240,8 +243,9 @@
               ;; The closure populated publications for each visited Module.
               (filter (lambda (id) (hash-key? publications id))
                       (map (cut .ref <> 'identity) decision-values)))))
-           (resolution (resolve-feature-profile
-                        (feature-profile 'module-selection (append core-selections feature-selections))))
+           (resolution (module-source-measure-operation 'selected-topological-resolution
+                         (lambda () (resolve-feature-profile
+                           (feature-profile 'module-selection (append core-selections feature-selections))))))
            (diagnostics (.ref resolution 'diagnostics)))
       (unless (eq? (.ref resolution 'status) 'ready)
         (error "selected Graph rejected" origin (.ref context 'generation)

@@ -88,6 +88,10 @@
   ;; Only the fixed producer's semantic reads, plus the actual pre-role
   ;; policy identities. Preserve open producer traces without replaying Gerbil
   ;; constructor scratch reads as if they were enduring Graph requirements.
+  ;; POO's topology index keys the original root spine by identity. Retain
+  ;; that structure with its guard, instead of copying it at every use.
+  ;; Each invocation still authenticates issuance, routes and live values.
+  (def roots (and root-segments (append (car root-segments) (cdr root-segments))))
   (lambda ()
     (location-current!)
     (require-publication-policy! policy-current?)
@@ -114,7 +118,7 @@
               ;; never turn a failed merged preflight into approval.
               (split!) (raise cause))
             (lambda ()
-              (module-source-measure-replay (append (car root-segments) (cdr root-segments)))))
+              (module-source-measure-replay roots)))
           (require-publication-policy! policy-current?))
         (split!)))))
 (def (call-with-publication-reads action (finish #f) unique-roots?: (unique-roots? #t))

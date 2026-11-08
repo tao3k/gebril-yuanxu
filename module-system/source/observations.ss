@@ -149,6 +149,7 @@
                                          reader-candidate-replay-site)))
                   (memq name '(build-main build-specification build-dispatch std-make build-current
                            profile-interface-scan reader-bootstrap reader-preparation-start reader-interface-start
+                           selected-owner-closure selected-core-projection selected-topological-resolution
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
                            reader-admission-start reader-value-admission reader-admission-evidence
                            reader-current metadata-replay reader-candidate-fused-return-replay
@@ -162,6 +163,7 @@
                            source-direction source-import-policy source-parse)))
               (and (current-module-source-operation-accounting?)
                  (memq name '(metadata-replay selection-current selected-graph reader-current source-read
+                        selected-owner-closure selected-core-projection selected-topological-resolution
                         build-projection build-current std-make
                         build-product-repair build-product-require))))
           (measure-source-accounting times name action)
