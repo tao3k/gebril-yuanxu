@@ -903,4 +903,64 @@ theorem later_ambient_resolver_cannot_replace_owner_capture :
   intro same
   cases same
 
+-- A stock expansion can share the operations after Gerbil has resolved the
+-- lexical references. These are distinct native reads even when their names
+-- coincide. The recipe contains neither a receiver nor an admission verdict.
+inductive StockInterfaceRead (Name : Type) where
+  | roleReceiver
+  | roleAlias (name : Name)
+  | dependency (name : Name)
+
+def ownerStockReads (recipe : List (StockInterfaceRead Name))
+    (read : Owner → Resolver → StockInterfaceRead Name → Except Failure Value)
+    (owner : Owner) (resolver : Resolver) : Except Failure (List Value) :=
+  recipe.mapM (read owner resolver)
+
+-- The owner wrapper previously emitted one closure per lexical read. A
+-- shared recipe binds the same operands at invocation, in the same order.
+-- The list describes one demanded computation, never all deferred slots.
+theorem shared_stock_reads_preserve_owner_and_first_refusal
+    (recipe : List (StockInterfaceRead Name))
+    (read : Owner → Resolver → StockInterfaceRead Name → Except Failure Value)
+    (owner : Owner) (resolver : Resolver) :
+    ((recipe.map (fun op => fun () => read owner resolver op)).mapM fun run => run ()) =
+      ownerStockReads recipe read owner resolver := by
+  simp [ownerStockReads, List.mapM_map, Function.comp_def]
+
+theorem shared_stock_reads_do_not_reuse_another_resolver :
+    let recipe := [StockInterfaceRead.roleAlias (Name := Nat) 0]
+    let read (owner resolver : Nat) (_ : StockInterfaceRead Nat) : Except String Nat :=
+      .ok (owner + resolver)
+    ownerStockReads recipe read 1 2 ≠ ownerStockReads recipe read 1 3 := by
+  dsimp only
+  intro same
+  change (Except.ok [3] = (Except.ok [4] : Except String (List Nat))) at same
+  cases same
+
+/-- Keep the independent checks after Gerbil expansion and after the author
+callback. Each takes the live state from its own effect boundary. -/
+def deliverStockInterface (entry : Except Failure Unit)
+    (expand : Except Failure (State × List (StockInterfaceRead Name)))
+    (check : State → Except Failure Unit)
+    (author : List Value → State → Except Failure (Result × State))
+    (read : Owner → Resolver → StockInterfaceRead Name → Except Failure Value)
+    (owner : Owner) (resolver : Resolver) : Except Failure Result := do
+  entry
+  let (expanded, recipe) ← expand
+  check expanded
+  let bindings ← ownerStockReads recipe read owner resolver
+  let (result, afterAuthor) ← author bindings expanded
+  check afterAuthor
+  pure result
+
+theorem shared_stock_interface_refuses_mutation_at_each_effect :
+    let check (current : Bool) : Except String Unit :=
+      if current then .ok () else .error "stale owner"
+    let read (_owner _resolver : Unit) (_ : StockInterfaceRead Nat) : Except String Unit :=
+      .ok ()
+    let run (expanded : Bool) (author : List Unit → Bool → Except String (Unit × Bool)) :=
+      deliverStockInterface (.ok ()) (.ok (expanded, [.roleReceiver])) check author read () ()
+    run false (fun _ _ => .error "author should not run") = .error "stale owner" ∧
+    run true (fun _ _ => .ok ((), false)) = .error "stale owner" := ⟨rfl, rfl⟩
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

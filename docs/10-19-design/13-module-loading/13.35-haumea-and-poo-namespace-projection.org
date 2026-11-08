@@ -1808,6 +1808,26 @@ forms keep their lexical resolver binding.
 The deferred-reader regression changes the ambient resolver after publication
 and still demands the original owner's role.
 
+In the stock assembly comparison, each lane imported 120 fresh Gerbil
+wrapper modules and checked its own role resolver and deferred scope. In
+the same process, the original/shared/shared/original import CPU totals
+were 0.620, 0.067, 0.064, and 0.615 s. The corresponding import wall totals
+were 0.623, 0.067, 0.065, and 0.618 s. Writing the wrappers took 0.013–0.015 s
+per lane. Native evaluation took 0.043–0.044 s CPU for the original and
+about 0.0033 s for the shared assembly. The shared lane is a diagnostic
+implementation of one fixed fixture. It bypasses the original Interface
+rewrite and does not measure full source admission or currentness.
+
+For each demanded computation, the shared assembly may encode the ordered
+native reads but must supply the actual owner and captured resolver at
+invocation. Acquiring the role receiver, looking up an alias, and reading
+a dependency remain distinct operations. The recipe keeps each occurrence
+and the first refusal. After Gerbil expansion and again after an author
+callback, authenticate the live state at that boundary before delivering
+the result. Lean =PublicationReads.shared_stock_reads_preserve_owner_and_first_refusal=
+and =shared_stock_interface_refuses_mutation_at_each_effect= model this
+contract. The production Scheme emitter still uses the existing path.
+
 An ordered role-path capture is equivalent only while the original path
 binding holds. In the alternating 256-owner role-check probe, captured
 paths took 0.289–0.308 s CPU per 2,048 checks, compared with 0.267–0.285 s

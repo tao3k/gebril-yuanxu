@@ -267,7 +267,12 @@ package YuanxuPayloadOwnership {
                Checks before expansion, after evaluation and during admission
                keep their original order and refusal. Lean PublicationReads
                proves delivery identity and refusal order. Runtime verification
-               owns the closure grammar and Gerbil result correspondence. */
+               owns the closure grammar and Gerbil result correspondence.
+               A shared assembly may describe only reads in an individual
+               demanded computation. Resolve role receiver, role alias and
+               dependency separately, in original order, against the invoking
+               owner and captured resolver. Keep separate checks on the live
+               state after Gerbil expansion and after the author callback. */
     }
     requirement def StockAuthoringProfileCheckpoint {
         doc /* Read the maintained Profile on every owner invocation. Its
