@@ -282,7 +282,11 @@ package YuanxuPayloadOwnership {
                open slot observer. POO freshly authenticates its full
                traversal and return. Open or changed receivers preserve
                original reads and fallback. Lean PublicationReads models
-               the exact issued root order and refusal. */
+               the exact issued root order and refusal. Omitting this root
+               requires coverage of its native support at that same boundary.
+               Authenticating the other preparation reads does not establish
+               this coverage. Lean profile_omission_can_hide_native_refusal
+               preserves this independent failure. */
     }
     requirement def PublicationRootSegments {
         doc /* A linked publication owns the original preparation and

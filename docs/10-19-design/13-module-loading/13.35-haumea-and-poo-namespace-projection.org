@@ -1864,6 +1864,33 @@ forwarded roots, eleven per owner, in addition to all 74,955 records
 reached by the two retained checkpoints. These measurements leave most of
 the observed per-owner heap growth unexplained.
 
+*** Profile support within owner preparation
+
+The native read census of 64 real owners found 206 preparation roots and 916
+reachable records per owner. The same issued Profile root reached 728 records
+in each preparation. Of those, 698 were reachable only from that root. The
+other preparation roots reached 218 records including 30 also reached from
+the Profile. This separates shared record identity from independently checked
+currentness. Any compact representation must preserve the native Profile
+refusal at each effect boundary. Lean
+=PublicationReads.profile_omission_can_hide_native_refusal= covers the case
+where the rest of the preparation still authenticates.
+
+The native full/residual/residual/full replay comparison used the same 64
+owners and 512 checkpoints per lane. The full path visited 468,992 records
+and took 1.163–1.245 s CPU. The diagnostic residual path visited 111,616
+records and took 0.278–0.296 s CPU. It omits the Profile and supplies a cost
+counterfactual only. Removing the actual Profile token from its receiver's
+native read table made the complete checkpoint refuse while the residual
+checkpoint still succeeded. Restoring the token restored the complete check.
+
+A direct-value-slot candidate for the already determined preparation fields
+passed its focused regressions. It left the thousand-owner replay count at
+5,958,069 visits. Declaration admission took 34.13 s wall and 33.57 s CPU,
+compared with 32.67 s wall and 32.42 s CPU on the earlier unchanged run.
+These were separate process runs. The candidate was withdrawn because the
+measured replay work stayed the same and the full phase showed no gain.
+
 The directory factory issues the private candidate location guard. At the
 first Reader checkpoint, an unobserved closed candidate can use POO's
 protected authentication before and after that location check and its

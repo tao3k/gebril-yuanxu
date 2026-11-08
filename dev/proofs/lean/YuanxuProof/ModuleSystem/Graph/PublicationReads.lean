@@ -333,6 +333,20 @@ theorem profile_checkpoint_keeps_fresh_refusal [DecidableEq Read]
       authenticateAndVisit auth (fun _ => ()) observed := by
   rw [profile_checkpoint_preserves_issued_order]
 
+-- The same Profile root may occur in every owner's preparation. If a live
+-- check of its native token refuses, authenticating all other reads can
+-- still succeed. A replacement must account for the Profile's own support.
+theorem profile_omission_can_hide_native_refusal
+    (auth : Read → Except Failure Unit) (before after : List Read)
+    (profile : Read) (stale : Failure)
+    (beforeOk : authenticateAndVisit auth (fun _ => ()) before = .ok ())
+    (afterOk : authenticateAndVisit auth (fun _ => ()) after = .ok ())
+    (profileStale : auth profile = .error stale) :
+    authenticateAndVisit auth (fun _ => ()) (before ++ profile :: after) = .error stale ∧
+    authenticateAndVisit auth (fun _ => ()) (before ++ after) = .ok () := by
+  simp only [authenticate_append, beforeOk, afterOk, authenticateAndVisit, profileStale,
+    Except.bind, bind, and_self]
+
 /-- The two original native spines remain separate until a checkpoint needs
 their concatenation. Neither phase's issued records are reconstructed. -/
 def rootSegments (row : List Read × List Read) : List (List Read) := [row.1, row.2]
