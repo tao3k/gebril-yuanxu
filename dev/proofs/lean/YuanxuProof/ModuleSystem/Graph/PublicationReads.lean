@@ -863,4 +863,13 @@ theorem owner_dependent_slot_cannot_share_a_literal :
     frameSlot (some 0) (fun (owner : Nat) => (owner, ([] : List Unit))) 1 ≠
       (1, []) := by decide
 
+theorem frame_environment_survives_either_slot
+    (deps : Node → List Node) (roots : List Node) (core features environment : Node)
+    (coreCapture : environment ∈ deps core) (featureCapture : environment ∈ deps features)
+    (retained : core ∈ roots ∨ features ∈ roots) :
+    Demanded deps roots environment := by
+  rcases retained with coreRoot | featureRoot
+  · exact Demanded.dependency core environment (Demanded.root core coreRoot) coreCapture
+  · exact Demanded.dependency features environment (Demanded.root features featureRoot) featureCapture
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

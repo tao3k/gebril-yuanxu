@@ -67,14 +67,14 @@ package YuanxuPayloadOwnership {
                PublicationReads.retargeted_role_cannot_reuse_prepared_path
                and the candidate-stage control require the live refusal. */
     }
-    requirement def NativeLiteralFrameSlot {
-        doc /* Closed Gerbil frames may supply a native POO constant SlotSpec
-               for an immediate literal or a symbol under the resolved native
-               quote. Each declaration retains its receiver and specification
-               identities. Role aliases and other computations keep lazy
-               receiver functions. PublicationReads.closed_literal_slot_preserves_owner_read
-               models the literal and empty receiver-read premises. Runtime
-               tests check the actual emitted SlotSpec and delayed roles. */
+    requirement def ClosedFrameCaptureOwnership {
+        doc /* Distinguish the literal-slot lowering premise from the shared
+               interpreter environment held by the core and features thunks.
+               PublicationReads.frame_environment_survives_either_slot
+               models reachability for both original edges. The terminal
+               Scheme cuts compare both orders. Any release needs to remove
+               the unnecessary shared capture while keeping the owner role
+               resolver and original lazy computations. */
     }
     requirement def LoadingStageEvidence {
         doc /* Library compilation, selected-graph construction, demand of a

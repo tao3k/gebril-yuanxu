@@ -1772,15 +1772,22 @@ the default case for ordinary qualification.
 
 *** Retained read frontier
 
-The closed frame emitter now uses a native constant SlotSpec for immediate
-literal values and for symbols under the resolved Gerbil =quote=. Other
-fields keep their original lazy self-slot bodies, including role access and
-scope factories. Each owner still constructs its own POO object and
-specifications. =PublicationReads.closed_literal_slot_preserves_owner_read=
-states the literal-value and empty-read premise.
-=owner_dependent_slot_cannot_share_a_literal= rules out applying the same
-lowering to a receiver-dependent field. The private-wrapper test checks both
-the literal identity specification and the retained scope-contract function.
+Lowering immediate literals and symbols under the resolved Gerbil =quote=
+to native constant SlotSpecs passed the private-wrapper and deferred-role
+checks. The 256-owner live sample changed from 265.37 MB to 265.69 MB.
+The emitter keeps the original lowering. The literal and empty-read
+premises remain modeled by
+=PublicationReads.closed_literal_slot_preserves_owner_read=.
+
+The terminal 256-owner cut first removed checkpoints, evidence, derived
+root caches and Reader tables. Removing either =core= or =features= first
+then released about 22 KB. Removing the other specification released
+32.23 MB in both orders. The two actual thunk closures shared a direct
+two-element vector referent. The measured bytes belong to a shared
+reachable graph, so the later marginal cut cannot be charged exclusively
+to either slot. =PublicationReads.frame_environment_survives_either_slot=
+models the two edges. Keep the role resolver's owner and all lazy
+computations while isolating the environment each thunk needs.
 
 An ordered role-path capture is equivalent only while the original path
 binding holds. In the alternating 256-owner role-check probe, captured
