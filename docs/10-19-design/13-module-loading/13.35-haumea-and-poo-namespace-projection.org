@@ -1772,6 +1772,16 @@ the default case for ordinary qualification.
 
 *** Retained read frontier
 
+The closed frame emitter now uses a native constant SlotSpec for immediate
+literal values and for symbols under the resolved Gerbil =quote=. Other
+fields keep their original lazy self-slot bodies, including role access and
+scope factories. Each owner still constructs its own POO object and
+specifications. =PublicationReads.closed_literal_slot_preserves_owner_read=
+states the literal-value and empty-read premise.
+=owner_dependent_slot_cannot_share_a_literal= rules out applying the same
+lowering to a receiver-dependent field. The private-wrapper test checks both
+the literal identity specification and the retained scope-contract function.
+
 An ordered role-path capture is equivalent only while the original path
 binding holds. In the alternating 256-owner role-check probe, captured
 paths took 0.289–0.308 s CPU per 2,048 checks, compared with 0.267–0.285 s

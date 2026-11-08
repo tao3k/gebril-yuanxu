@@ -842,4 +842,25 @@ theorem retargeted_role_cannot_reuse_prepared_path :
   intro impossible
   cases impossible
 
+/-- A closed literal has no receiver reads. Lowering it to a native constant
+specification preserves the value for each owner; other slot bodies keep
+their original receiver and observation sequence. -/
+def frameSlot (literal : Option Value) (body : Owner → Value × List Read)
+    (owner : Owner) : Value × List Read :=
+  match literal with
+  | some value => (value, [])
+  | none => body owner
+
+theorem closed_literal_slot_preserves_owner_read
+    (literal : Option Value) (body : Owner → Value × List Read)
+    (exact : ∀ value, literal = some value → ∀ owner, body owner = (value, []))
+    (owner : Owner) : frameSlot literal body owner = body owner := by
+  cases literal with
+  | none => rfl
+  | some value => exact (exact value rfl owner).symm
+
+theorem owner_dependent_slot_cannot_share_a_literal :
+    frameSlot (some 0) (fun (owner : Nat) => (owner, ([] : List Unit))) 1 ≠
+      (1, []) := by decide
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

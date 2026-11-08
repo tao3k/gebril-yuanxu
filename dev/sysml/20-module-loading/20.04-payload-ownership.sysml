@@ -67,6 +67,15 @@ package YuanxuPayloadOwnership {
                PublicationReads.retargeted_role_cannot_reuse_prepared_path
                and the candidate-stage control require the live refusal. */
     }
+    requirement def NativeLiteralFrameSlot {
+        doc /* Closed Gerbil frames may supply a native POO constant SlotSpec
+               for an immediate literal or a symbol under the resolved native
+               quote. Each declaration retains its receiver and specification
+               identities. Role aliases and other computations keep lazy
+               receiver functions. PublicationReads.closed_literal_slot_preserves_owner_read
+               models the literal and empty receiver-read premises. Runtime
+               tests check the actual emitted SlotSpec and delayed roles. */
+    }
     requirement def LoadingStageEvidence {
         doc /* Library compilation, selected-graph construction, demand of a
                selected business scope and runtime compiled-module loading are

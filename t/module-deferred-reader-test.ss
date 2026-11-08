@@ -38,6 +38,9 @@
           (check-equal? (module-context-export native-context) '())
           (check-equal? (void? (eval-module native-context)) #t)
           (check-equal? (.get publication identity) 'custom/example)
+          (check-equal? ($constant-slot-spec? (cdr (assq 'identity (object-slots publication)))) #t)
+          (check-equal? ($self-slot-spec? (cdr (assq 'scope-contract
+                                                    (object-slots (.get publication core))))) #t)
           (def scope ((.get publication core link) (.o)))
           (check-equal? (.get scope greeting) "hello")
           (check-equal? (.get scope retained) 'upstream))))

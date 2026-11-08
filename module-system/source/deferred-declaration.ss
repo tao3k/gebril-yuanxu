@@ -187,12 +187,10 @@
 
 ;; A closed payload without local slot references needs the same lazy POO
 ;; frame, but no per-owner lexical slot transformers.
-(def (deferred-payload-object parents fields)
+(def (deferred-payload-object parents slots)
   (make-object
     supers: parents
-    slots: (prototype-map
-             (map (lambda (field) (cons (car field) ($self-slot-spec (cdr field)))) fields)
-             policy: 'compact)
+    slots: (prototype-map slots policy: 'compact)
     defaults: (prototype-map '() policy: 'compact)))
 
 (defsyntax (include-deferred-declaration input)
@@ -231,13 +229,28 @@
                     (loop (cddr rest) (cons key seen) (cons (cons key (cadr rest)) rows)))))
             (else #f))))
        (def (frame origin parents rows self)
+         (def (slot row)
+           (def body (cdr row))
+           (def literal?
+             (syntax-case body ()
+               ((head datum)
+                (and (identifier? #'head)
+                     (free-identifier=? (syntax-local-rewrap #'head) (quote-syntax quote))
+                     (symbol? (stx-e #'datum)))
+                #t)
+               (_ (let (value (stx-e body))
+                    (or (boolean? value) (fixnum? value) (char? value))))))
+           (with-syntax ((key (datum->syntax (stx-car origin) (car row)))
+                         (body body)
+                         (self self))
+             (if literal?
+               #'(cons 'key ($constant-slot-spec body))
+               #'(cons 'key ($self-slot-spec (lambda (self) body))))))
          (with-syntax ((build-frame frame-constructor)
                        (parents-expr parents)
-                       (self self)
-                       ((key ...) (map (lambda (row) (datum->syntax (stx-car origin) (car row))) rows))
-                       ((body ...) (map cdr rows)))
+                       ((spec ...) (map slot rows)))
            (syntax/loc origin
-             (build-frame parents-expr (list (cons 'key (lambda (self) body)) ...)))))
+             (build-frame parents-expr (list spec ...)))))
        (def (project-stock-value value context aliases shadowed)
          ;; Only these fixed Gerbil forms cannot introduce an unlisted alias.
          ;; Keep payload leaves in the owner expander. Unknown forms keep the
