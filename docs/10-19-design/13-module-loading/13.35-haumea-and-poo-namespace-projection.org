@@ -13,7 +13,8 @@ owners and their dependency closure into one init-owned =std-make-spec=.
 No additional loader, cache layer or compatibility interface is introduced.
 
 Start with modules 01 and 03 for the contracts and user surface, module 05
-for graph algorithms, and module 07 for incremental publication. Modules
+for the algorithm audit, module 13 for directed graph repair research,
+and module 07 for incremental publication. Modules
 02, 04, 06 and 09--11 preserve experiments and failure evidence. Modules
 08 and 12 describe downstream selection and package boundaries.
 
@@ -37,6 +38,7 @@ runs remain visible in the owning measurement documents.
 | Reader query keys and compiler-tool provenance | [[file:13.35-haumea-and-poo-namespace-projection/10-reader-query-and-tool-provenance.org][Read]] |
 | Cross-window libraries and build lifecycle | [[file:13.35-haumea-and-poo-namespace-projection/11-cross-window-and-build-lifecycle.org][Read]] |
 | Weaver identities and package installation | [[file:13.35-haumea-and-poo-namespace-projection/12-weaver-and-package-installation.org][Read]] |
+| Directed graph algorithms and local order repair | [[file:13.35-haumea-and-poo-namespace-projection/13-dynamic-graph-repair.org][Read]] |
 
 * Maintenance
 

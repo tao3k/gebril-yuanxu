@@ -656,6 +656,17 @@ There is no native throughput or byte bound in this operation-count proof.
 The library and runtime algorithm audit is maintained in
 [[file:../../../docs/10-19-design/13-module-loading/13.35-haumea-and-poo-namespace-projection/05-indexed-graph-algorithms.org][13.35 Graph algorithms]], separately from replay experiments and capacity receipts.
 
+=Graph/DependencyOrderRepair= reuses =StrongComponents.Reach= for exact
+single-edge cycle and interval-search laws and =GeneralizedGraph.Scheduled=
+for a local rank certificate. Retained edges incident to changed labels and
+all added edges suffice; outgoing checks alone do not. =KeyIndex= frames
+unchanged rank lookup. An executable sparse proposal repairs two labels in
+a 10,000-owner fixture; the independent full oracle checks the result.
+The sorted proposal's universal completeness/permutation and native work
+bounds remain unproved. An outer consumer still belongs to invalidation
+even when it lies outside the order interval. See
+[[file:../../../docs/10-19-design/13-module-loading/13.35-haumea-and-poo-namespace-projection/13-dynamic-graph-repair.org][13.35 local order repair]] for the algorithm/Scheme ownership boundary.
+
 =ClosedNamespaceProjection= and =LeafReceiverAndInheritance= separate an
 admitted filesystem branch key from the leaf expression. In
 =Loading/NamespaceProjection=, =leafValue= has inputs for the effective

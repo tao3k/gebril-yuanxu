@@ -6,6 +6,9 @@
 
 [[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
 
+Detailed local-order certificates and the complete POO pipeline audit are in
+[[file:13-dynamic-graph-repair.org][Directed graph algorithms and local order repair]].
+
 * Profile support within owner preparation
 
 ** Indexed Graph algorithm and library correspondence

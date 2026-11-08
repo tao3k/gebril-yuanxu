@@ -22,11 +22,26 @@ def start (roots : List Nat) : Work := ⟨⟨⟨[], roots⟩, ∅⟩, 0, 0, 0⟩
 def step (deps : Nat → List Nat) (state : Work) : Work :=
   match state.discovery.ordered.pending with
   | [] => state
-  | owner :: _ =>
-    let present := state.discovery.visited.contains owner
-    ⟨advanceIndexed deps state.discovery, state.probes + 1,
-      state.buckets + if present then 0 else 1,
-      state.edges + if present then 0 else (deps owner).length⟩
+  | owner :: rest =>
+    if state.discovery.visited.contains owner then
+      { state with
+        discovery := { state.discovery with ordered := ⟨state.discovery.ordered.seen, rest⟩ }
+        probes := state.probes + 1 }
+    else
+      -- One adjacency acquisition supplies both the transition and its count.
+      -- Instrumentation must not call the producer again just for length.
+      let children := deps owner
+      ⟨⟨⟨owner :: state.discovery.ordered.seen, children ++ rest⟩,
+          state.discovery.visited.insert owner⟩,
+        state.probes + 1, state.buckets + 1, state.edges + children.length⟩
+
+theorem step_projects_existing_discovery (deps : Nat → List Nat) (state : Work) :
+    (step deps state).discovery = advanceIndexed deps state.discovery := by
+  cases pending : state.discovery.ordered.pending with
+  | nil => simp [step, advanceIndexed, pending]
+  | cons owner rest =>
+    by_cases present : state.discovery.visited.contains owner = true <;>
+      simp [step, advanceIndexed, pending, Std.HashSet.mem_iff_contains, present]
 
 def run (deps : Nat → List Nat) : Nat → Work → Work
   | 0, state => state
@@ -37,9 +52,8 @@ theorem projects_existing_discovery (deps : Nat → List Nat) (fuel : Nat) (stat
   induction fuel generalizing state with
   | zero => rfl
   | succ fuel ih =>
-    rw [run, ih]
-    cases pending : state.discovery.ordered.pending <;>
-      simp [step, discoverIndexed, advanceIndexed, pending]
+    rw [run, ih, step_projects_existing_discovery]
+    rfl
 
 theorem step_bucket_accounting (deps : Nat → List Nat) (state : Work) :
     (step deps state).buckets + state.discovery.ordered.seen.length =
@@ -48,7 +62,7 @@ theorem step_bucket_accounting (deps : Nat → List Nat) (state : Work) :
   | nil => simp [step, pending]
   | cons owner rest =>
     by_cases present : state.discovery.visited.contains owner = true <;>
-      simp [step, advanceIndexed, pending, Std.HashSet.mem_iff_contains, present,
+      simp [step, pending, present,
         Nat.add_comm, Nat.add_left_comm]
 
 theorem bucket_accounting (deps : Nat → List Nat) (fuel : Nat) (state : Work) :
@@ -71,10 +85,10 @@ theorem step_balanced (deps : Nat → List Nat) (roots : Nat) (state : Work)
   | nil => simpa [step, pending] using before
   | cons owner rest =>
     by_cases present : state.discovery.visited.contains owner = true
-    · simpa [Balanced, step, advanceIndexed, pending, Std.HashSet.mem_iff_contains, present,
+    · simpa [Balanced, step, pending, present,
         Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using before
     · simp only [Balanced, pending, List.length_cons] at before
-      simp [Balanced, step, advanceIndexed, pending, Std.HashSet.mem_iff_contains,
+      simp [Balanced, step, pending,
         present, List.length_append]
       omega
 
