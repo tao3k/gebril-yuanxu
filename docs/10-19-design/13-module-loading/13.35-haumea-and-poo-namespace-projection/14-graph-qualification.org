@@ -121,7 +121,7 @@ Retain failed evidence and report actual stages if the original budget expires.
   Both faults compiled successfully and failed naturally, without a timeout.
   The exact positive source was restored before the full POO gate.
 - [ ] Full standard POO acceptance passes with source frozen.
-- [X] POO implementation published as [[https://github.com/tao3k/gerbil-poo/pull/17][PR #17]], =c20626ce=.
+- [X] POO implementation published as [[https://github.com/tao3k/gerbil-poo/pull/17][PR #17]], updated to =6c3208d8=.
 - [ ] POO exact-head CI complete; local full standard acceptance also remains open.
 - [ ] Core pin updated through native dependency installation; actual module
   capacity/business EVAL and required publication/build-input gates complete.
@@ -129,3 +129,18 @@ Retain failed evidence and report actual stages if the original budget expires.
 
 Core must pass before propagating pins into Ascent or Parser. Raw logs remain
 local/CI artifacts; commit only executable gates, contracts and structured results.
+
+The first complete local POO run failed: the runtime loaded a numbered
+~strong-components~ object left by the reversed-order mutation, despite a newer
+positive ~.o1~ and restored source. Expander Context origin alone did not show
+this; the standard loader inventory did. That failed output environment is
+retained as evidence, and complete acceptance is restarting in the same private
+GERBIL_PATH location with fresh outputs. No load-path override selects a winner.
+
+The first exact-head Core CI did not reach capacity acceptance: an invalid
+artifact action reference refused platform startup, the Lean installer received
+HTTP 504, and verifier preparation failed during download/bootstrap. Preparation
+now delegates distribution fetching to the pinned Quint package without rerunning
+a business model in every shard. The 60-second preparation bound remains; a cold
+local download still timed out and is not a proof result. Tool-distribution reuse
+in CI never reuses model results or proof receipts.

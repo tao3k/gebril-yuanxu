@@ -2,6 +2,7 @@
 /manifest.ss
 /build-deps
 /_apalache*
+/dev/proofs/quint/node_modules/
 
-# SDK manifests produced by the fixed native qualification packages.
+# Gerbil manifests produced by the fixed qualification packages.
 /t/qualification/native-*/manifest.ss

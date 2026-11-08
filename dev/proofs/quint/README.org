@@ -358,6 +358,10 @@ source or alternate TLA checker entrypoint remains in Core.
 Run =just prepare-quint= once from Core to install the locked tool and bootstrap
 the backend before checking. Bootstrap has its own bounded preparation deadline
 and never emits an accepted proof receipt.
+It calls the pinned Quint package's distribution fetcher without running a
+business model. CI may reuse that downloaded tool distribution; model results
+and proof receipts are always produced again. Backend startup still attests
+version 0.62.1 before verification.
 Run =just proofs-quint /private/tmp/core-quint-proof.ss= from Core. The runner
 requires exact Quint version, typechecks every source, verifies nine positive
 cases, forty-one matched controls and five expected acceptance-witness counterexamples, and writes a =yuanxu.quint-proof.v1= Scheme

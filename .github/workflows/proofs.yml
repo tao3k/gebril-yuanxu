@@ -14,11 +14,17 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - name: Install elan
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
-            | sh -s -- -y --default-toolchain none
-          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - uses: actions/cache@v5
+        with:
+          path: ~/.elan/toolchains
+          key: lean-toolchain-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('dev/proofs/lean/lean-toolchain') }}
+      - uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: dev/proofs/lean
+          auto-config: false
+          build: false
+          test: false
+          lint: false
       - name: Build Yuanxu proof package
         working-directory: dev/proofs/lean
         run: lake build
@@ -43,13 +49,17 @@ jobs:
           java-version: '21'
       - name: Install pinned Quint
         run: npm ci --prefix dev/proofs/quint --no-audit --no-fund
+      - uses: actions/cache@v5
+        with:
+          path: ~/.quint/apalache-dist-0.62.1
+          key: quint-apalache-0.62.1-${{ runner.os }}-${{ runner.arch }}
       - name: Prepare pinned backend
         run: python3 dev/proofs/quint/prepare.py
       - name: Check runtime CLI isolation and deadlines
         run: python3 -m unittest discover -s dev/proofs/quint -p test_typecheck.py
       - name: Check finite models and matched faults
         run: python3 dev/proofs/quint/check.py --shard-count 8 --shard-index ${{ matrix.shard }} --receipt "$RUNNER_TEMP/yuanxu-quint-proof.ss"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@v7
         with:
           name: yuanxu-quint-proof-${{ matrix.shard }}
           path: ${{ runner.temp }}/yuanxu-quint-proof.ss

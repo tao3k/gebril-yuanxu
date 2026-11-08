@@ -7,4 +7,4 @@
  prelude: :tao3k/yuanxu/prelude
  depend:
  ;; Graph and read checkpoints; return to a release tag containing these APIs.
- ("github.com/tao3k/gerbil-poo@c20626cedf71e2a7541b32bc273005c8c51c6b7f"))
+ ("github.com/tao3k/gerbil-poo@6c3208d8751307c703209f36ea48126ab28e873c"))
