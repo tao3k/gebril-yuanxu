@@ -19,6 +19,19 @@
   (.call (prepared-package-tests root) .for-files
     (list (path-expand "probe.ss" root)) '()
     '((exe: "probe" bin: "probe-test"))))
+(def (with-program-workspace action)
+  (call-with-temporary-directory "program-publication"
+    (lambda (workspace)
+      (def previous (getenv "GERBIL_PATH" #f))
+      (def root (path-expand "source" workspace))
+      (def output (path-expand "output" workspace))
+      ;; Both processes key the publication by the same existing prefix.
+      (create-directory* (path-expand "lib" output))
+      (def prefix (path-normalize output))
+      (dynamic-wind
+        (cut setenv "GERBIL_PATH" prefix)
+        (cut action root prefix)
+        (cut setenv "GERBIL_PATH" previous)))))
 (def module-program-test
   (test-suite "Init-owned standard native executable publication"
     (yuanxu-test-case "explicit library demand roots compile while Harness-only roots stay interpreted"
@@ -87,8 +100,8 @@
             (lambda () (delete-file closer)))
           ((.get build admit-current)))))
     (yuanxu-test-case "real program publication rejects stale source and altered executable"
-      (call-with-temporary-directory "program-publication"
-        (lambda (root)
+      (with-program-workspace
+        (lambda (root prefix)
           ;; This isolated temporary package is compiler Fixture data. It is
           ;; never a package boundary below the repository's test directory.
           (put root "gerbil.pkg" "(package: program-fixture)\n")
@@ -146,6 +159,8 @@
           (yuanxu-test-checkpoint 'official-program-build-completed)
           (def build (.get (demand root) build))
           (def binary (.call build .program 'program-fixture/probe))
+          (check-equal? (string-prefix? (path-expand "test-lib/" (path-normalize prefix))
+                                       (path-normalize binary)) #t)
           (def result (.call (.cc ProcessScript. 'command (list binary "-:max-heap=2G,debug=q") 'timeout 30) .run))
           (check-equal? (.get result status) 0)
           (check-equal? (and (string-contains (.get result output) "NATIVE-PROGRAM-OK") #t) #t)
