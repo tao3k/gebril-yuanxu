@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(export feature-system-bundle-v1-domain-case-projection-test)
+(export feature-bundle-v1-domain-case-projection-test)
 
 (import (only-in :std/list/list find)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
@@ -21,7 +21,7 @@
 (def (projection-diagnostic-code projection)
   (.ref (car (.ref projection 'diagnostics)) 'code))
 
-(def feature-system-bundle-v1-domain-case-projection-test
+(def feature-bundle-v1-domain-case-projection-test
   (test-suite
    "Bundle v1 projection from accepted Domain Case owners"
 

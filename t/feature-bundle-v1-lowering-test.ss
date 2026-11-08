@@ -2,7 +2,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(export feature-system-bundle-v1-lowering-test)
+(export feature-bundle-v1-lowering-test)
 
 (import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
@@ -20,9 +20,9 @@
 (def (sample-symbol component-id label)
   (feature-bundle-v1-symbol 'component component-id label 1))
 
-(def feature-system-bundle-v1-lowering-test
+(def feature-bundle-v1-lowering-test
   (test-suite
-   "feature-system Bundle v1 lowering"
+   "Feature Bundle v1 lowering"
 
    (yuanxu-test-case
     "compact identities are deterministic and domain separated"

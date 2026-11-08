@@ -11,7 +11,7 @@
         :yuanxu/module-system/feature/domain-case/interface
         :yuanxu/utilities/functional)
 
-(export feature-system-runtime-handoff-plan-test)
+(export feature-runtime-handoff-plan-test)
 
 (def runtime-handoff-projector-calls (vector 0))
 
@@ -118,7 +118,7 @@
 
 (defpoo-feature runtime-handoff-feature
   (feature-id 'runtime-handoff-feature)
-  (owner-module-id 'feature-system-runtime-handoff-plan-test)
+  (owner-module-id 'feature-runtime-handoff-plan-test)
   (components runtime-handoff-component)
   (adapter-requirements
    runtime-bundle-requirement
@@ -307,7 +307,7 @@
          'runtime-bundle-schema-v1)
         handoffs)))))
 
-(def feature-system-runtime-handoff-plan-test
+(def feature-runtime-handoff-plan-test
   (test-suite "Feature runtime handoff planning"
     (yuanxu-test-case "Bundle v1, Cedar and Evidence resolve as POO references"
       (let ((resolved (.ref runtime-handoff-ready-plan 'resolved-handoffs)))

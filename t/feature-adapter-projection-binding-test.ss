@@ -11,7 +11,7 @@
         :yuanxu/module-system/feature/domain-case/interface
         :yuanxu/utilities/functional)
 
-(export feature-system-adapter-projection-binding-test)
+(export feature-adapter-projection-binding-test)
 
 (def adapter-projection-projector-calls (vector 0))
 
@@ -110,14 +110,14 @@
 
 (defpoo-feature adapter-projection-base-feature
   (feature-id 'adapter-projection-base-feature)
-  (owner-module-id 'feature-system-adapter-projection-binding-test)
+  (owner-module-id 'feature-adapter-projection-binding-test)
   (components adapter-projection-base-component)
   (adapter-requirements python-runtime-requirement)
   (projections runtime-projection-request))
 
 (defpoo-feature adapter-projection-agent-feature
   (feature-id 'adapter-projection-agent-feature)
-  (owner-module-id 'feature-system-adapter-projection-binding-test)
+  (owner-module-id 'feature-adapter-projection-binding-test)
   (requires adapter-projection-base-feature)
   (components adapter-projection-agent-component)
   (adapter-requirements cedar-policy-requirement)
@@ -358,7 +358,7 @@
               descriptor
               (cons descriptor descriptors))))))
 
-(def feature-system-adapter-projection-binding-test
+(def feature-adapter-projection-binding-test
   (test-suite "Feature adapter capability and projection binding"
     (yuanxu-test-case "accepted chain binds adapters and closed Case projections"
       (let* ((adapter-bindings

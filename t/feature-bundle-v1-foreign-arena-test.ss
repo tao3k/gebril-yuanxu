@@ -10,7 +10,7 @@
         :yuanxu/module-system/feature/bundle-v1-lowering
         :yuanxu/module-system/feature/bundle-v1-foreign-arena)
 
-(export feature-system-bundle-v1-foreign-arena-test)
+(export feature-bundle-v1-foreign-arena-test)
 
 (def +byte-offsets/u16+ '(0 1))
 (def +byte-offsets/u32+ '(0 1 2 3))
@@ -55,7 +55,7 @@
     (feature-bundle-v1-evidence
      'case-a 'obligation-a 'contract-a 'evidence-a 'lean-a 0))))
 
-(def feature-system-bundle-v1-foreign-arena-test
+(def feature-bundle-v1-foreign-arena-test
   (test-suite
    "feature system Bundle v1 foreign arena"
 

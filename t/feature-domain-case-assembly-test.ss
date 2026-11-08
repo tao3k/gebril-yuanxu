@@ -11,7 +11,7 @@
         :yuanxu/module-system/feature/domain-case/interface
         :yuanxu/utilities/functional)
 
-(export feature-system-domain-case-assembly-test)
+(export feature-domain-case-assembly-test)
 
 (def (domain-case-test-role slot-id)
   (let ((object (make-object)))
@@ -81,7 +81,7 @@
 
 (defpoo-feature domain-case-base-feature
   (feature-id 'domain-case-base-feature)
-  (owner-module-id 'feature-system-domain-case-assembly-test)
+  (owner-module-id 'feature-domain-case-assembly-test)
   (components domain-case-base-component)
   (policy-contributions 'domain-case-base-policy)
   (adapter-requirements 'python-runtime-v1)
@@ -89,7 +89,7 @@
 
 (defpoo-feature domain-case-agent-feature
   (feature-id 'domain-case-agent-feature)
-  (owner-module-id 'feature-system-domain-case-assembly-test)
+  (owner-module-id 'feature-domain-case-assembly-test)
   (requires domain-case-base-feature)
   (components domain-case-agent-component)
   (policy-contributions 'domain-case-agent-policy)
@@ -125,12 +125,12 @@
 ;; by the existing Domain Case closure owner.
 (defpoo-feature domain-case-unordered-base-feature
   (feature-id 'domain-case-unordered-base-feature)
-  (owner-module-id 'feature-system-domain-case-assembly-test)
+  (owner-module-id 'feature-domain-case-assembly-test)
   (components domain-case-base-component))
 
 (defpoo-feature domain-case-unordered-agent-feature
   (feature-id 'domain-case-unordered-agent-feature)
-  (owner-module-id 'feature-system-domain-case-assembly-test)
+  (owner-module-id 'feature-domain-case-assembly-test)
   (components domain-case-agent-component))
 
 (defpoo-feature-manifest-bundle domain-case-unordered-bundle
@@ -149,7 +149,7 @@
 
 (defpoo-feature domain-case-raw-projection-feature
   (feature-id 'domain-case-raw-projection-feature)
-  (owner-module-id 'feature-system-domain-case-assembly-test)
+  (owner-module-id 'feature-domain-case-assembly-test)
   (components domain-case-base-component)
   (projections 'runtime-v1))
 
@@ -224,7 +224,7 @@
               type-id
               (cons descriptor descriptors))))))
 
-(def feature-system-domain-case-assembly-test
+(def feature-domain-case-assembly-test
   (test-suite "Feature composition to existing Domain Case algebra"
     (yuanxu-test-case "accepted plan closes through the existing Domain Case owner"
       (let ((closure (.ref domain-case-feature-assembly 'closure-receipt))
