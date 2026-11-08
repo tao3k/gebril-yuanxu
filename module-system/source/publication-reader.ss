@@ -14,6 +14,7 @@
         (only-in :clan/poo/object .o .ref .slot?)
         (only-in :yuanxu/module-system/source/collection
                  yuanxu-module-source-collection-optional-entrypoint)
+        (only-in :yuanxu/module-system/source/role-forms module-feature-interface?)
         :yuanxu/module-system/source/admission
         :yuanxu/module-system/source/preparation
         (only-in :yuanxu/module-system/source/declaration current-module-build-resolver
@@ -551,6 +552,8 @@
              root (.ref prepared 'identity) name
              (list "features" (symbol->string name) "interface.ss") module-source-type))
          (unless path (error "missing selected Feature interface" interface-path name))
+         (unless (module-feature-interface? path (call-with-input-string (module-source-read path) read-all))
+           (error "selected Feature interface requires one .def Feature declaration" interface-path name))
          (unless feature-inputs (set! feature-inputs (make-hash-table)))
          (dynamic-wind
            (lambda () (set! reading-feature? #t))

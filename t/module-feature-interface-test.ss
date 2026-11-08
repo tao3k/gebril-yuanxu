@@ -87,16 +87,21 @@
                           exports: (.o (:: @ FixtureScope) greeting: Greeting))
                 features: '(memory missing))")
           (def facade (path-expand "features/memory/interface.ss" module-root))
-          (def implementation (path-expand "feature.ss" (path-directory facade)))
+          (def types (path-expand "types.ss" (path-directory facade)))
+          (def implementation (path-expand "objects.ss" (path-directory facade)))
           (create-directory* (path-directory facade))
-          (write-file facade "(import \"feature.ss\") (export (import: \"feature.ss\"))")
-          (write-file implementation
+          (write-file facade
+            "(import (only-in :yuanxu/module-system/source/declaration .def))
+             (.def Feature refine: refine-memory contract: MemoryContract)")
+          (write-file types
             "(import (only-in :clan/poo/object .o .cc)
                      (only-in :clan/poo/type Record True))
-             (def Feature
-               (.o refine: (lambda (scope) (.o (:: self scope) memory: #t))
-                   contract: (.cc (Record memory: [True]) identity: 'fixture/memory)))
-             (export Feature)")
+             (def MemoryContract (.cc (Record memory: [True]) identity: 'fixture/memory))
+             (export MemoryContract)")
+          (write-file implementation
+            "(import (only-in :clan/poo/object .o))
+             (def (refine-memory scope) (.o (:: self scope) memory: #t))
+             (export refine-memory)")
           (def enabled (feature-view root "listed.ss" '(+memory)))
           (def disabled (feature-view root "withdrawn.ss" '(-memory -missing)))
           (def missing (feature-view root "missing.ss" '(+missing)))
@@ -110,17 +115,24 @@
                 (.get (find (lambda (entry) (equal? (.get entry path) (path-normalize source)))
                             (.get enabled build-graph entries)) contributor)
                 'custom/example/memory))
-            (list facade implementation))
-          (write-file implementation
-            "(import (only-in :clan/poo/object .o .cc)
-                     (only-in :clan/poo/type Record True))
-             (def Feature
-               (.o refine: (lambda (scope) (.o (:: self scope) memory: #f))
-                   contract: (.cc (Record memory: [True]) identity: 'fixture/memory)))
-             (export Feature)")
+            (list facade types implementation))
+          (def config (path-expand "config.ss" (path-directory facade)))
+          (write-file config "(def Config (.o)) (export Config)")
           (check-exception ((.get selected admit-current)) error?)
+          (delete-file config)
+          (def before-revision
+            (.get (feature-view root "before-revision.ss" '(+memory)) selected-graph))
+          (write-file implementation
+            "(import (only-in :clan/poo/object .o))
+             (def (refine-memory scope) (.o (:: self scope) memory: #f))
+             (export refine-memory)")
+          (check-exception ((.get before-revision admit-current)) error?)
           (def invalid (feature-view root "invalid.ss" '(+memory)))
-          (check-exception (.get invalid modules custom example memory) error?))))
+          (check-exception (.get invalid modules custom example memory) error?)
+          (write-file facade "(import \"objects.ss\") (export (import: \"objects.ss\"))")
+          (def facade-only (feature-view root "facade-only.ss" '(+memory)))
+          (def refusal (exception-message (lambda () (.get facade-only selected-graph))))
+          (check-equal? (and (string-contains refusal "requires one .def Feature declaration") #t) #t))))
     (yuanxu-test-case "Interface Features stay cold when absent or explicitly disabled"
       (with-feature-interface-source
         (lambda (root _module-root)
