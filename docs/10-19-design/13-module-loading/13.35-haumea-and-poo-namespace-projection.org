@@ -1900,6 +1900,30 @@ count includes all recorded lanes, so it is not a count of effect-free
 duplicates. Keep the before/after checks at native expansion and author
 effects distinct when reducing their support.
 
+The local reproduction of the Actions checkout =52809f5= used its native
+build, original dependency pin, two build workers and a temporary directory
+outside any checkout. Both 10,000-owner Cases reproduced the original
+failure. Dense declaration reached the 1,400-owner sample at 2,024,429,584
+heap bytes, then refused during graph admission. That phase measured
+150.43 s elapsed and 135.93 s CPU. Dense selection enumerated the namespace
+in 1.42 s and refused in the first graph after 173.84 s elapsed and 156.11 s
+CPU. These are the original checkout results, separate from =f2f7c34=.
+
+A closed native-capture candidate forwarded the same issued Profile root.
+The real source-admission Case confirmed its identity, and the authoring
+and reader-effect Cases passed. In the interleaved 20,000-call comparison,
+the original warm acquisition took 21.77–22.10 ms CPU and native capture
+took 29.58–57.24 ms CPU. Retain the original acquisition in production.
+The capture path can be reconsidered at a producer boundary that benefits
+from eliminating the temporary observer.
+
+An outer Profile =.validate= override can also construct and retain an
+enrolled receipt inside the active region. The probe emitted a read on
+that receipt while the existing inner Record and Slot guards remained
+closed. Projection therefore needs actual producer custody as well as
+receipt-method guards. An enrolled receiver and a closed region alone
+cannot establish non-escape.
+
 The native read census of 64 real owners found 206 preparation roots and 916
 reachable records per owner. The same issued Profile root reached 728 records
 in each preparation. Of those, 698 were reachable only from that root. The
