@@ -808,4 +808,27 @@ theorem receiver_identity_alone_does_not_authorize_route_reuse :
   intro impossible
   cases impossible
 
+/-- Capture only source obligations from inert preparation. The effectful
+world is supplied anew at each checkpoint, including negative file inputs. -/
+def checkSourceRows (check : Path → Option Bytes → Except Failure Unit) :
+    List (Path × Option Bytes) → Except Failure Unit
+  | [] => .ok ()
+  | (path, expected) :: rest => do
+      check path expected
+      checkSourceRows check rest
+
+theorem prepared_role_rows_preserve_first_refusal
+    (roles : List Role) (path : Role → Path) (expected : Path → Option Bytes)
+    (check : Path → Option Bytes → Except Failure Unit) :
+    checkSourceRows check (roles.map fun role => (path role, expected (path role))) =
+      checkSourceRows (fun role _ => check (path role) (expected (path role)))
+        (roles.map fun role => (role, (none : Option Bytes))) := by
+  induction roles with
+  | nil => rfl
+  | cons role rest ih => simp only [List.map_cons, checkSourceRows, ih]
+
+theorem prepared_absence_is_checked_again (stale : Failure) :
+    checkSourceRows (fun (_ : Nat) (_ : Option Unit) => .error stale)
+      [(0, none)] = .error stale := rfl
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

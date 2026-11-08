@@ -59,6 +59,15 @@ package YuanxuPayloadOwnership {
                same-route premise and refusal order. The Scheme receiver
                census establishes frequency, not native state stability. */
     }
+    requirement def PreparedRoleSourceObligations {
+        doc /* Capture the existing ordered role paths and positive or absent
+               inputs once in Module preparation. Each Reader checkpoint runs
+               its original filesystem check after the package and prelude
+               guards. PublicationReads.prepared_role_rows_preserve_first_refusal
+               relates the ordered checks. Source observers and public input
+               projections receive separate path strings. A path row carries
+               expected input data and no successful verification result. */
+    }
     requirement def LoadingStageEvidence {
         doc /* Library compilation, selected-graph construction, demand of a
                selected business scope and runtime compiled-module loading are

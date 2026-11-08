@@ -1772,6 +1772,15 @@ the default case for ordinary qualification.
 
 *** Retained read frontier
 
+The prepared publication retains ordered role input rows rather than the
+preparation hash and a recipe to rebuild paths at each checkpoint. Every
+invocation still checks the original prelude and package before checking
+each role's contents or absence. Public input rows and open observer events
+receive separate path strings. Lean
+=PublicationReads.prepared_role_rows_preserve_first_refusal= gives the
+ordered check equivalence. =prepared_absence_is_checked_again= preserves
+the negative input obligation when a previously absent role appears.
+
 The directory factory issues the private candidate location guard. At the
 first Reader checkpoint, an unobserved closed candidate can use POO's
 protected authentication before and after that location check and its

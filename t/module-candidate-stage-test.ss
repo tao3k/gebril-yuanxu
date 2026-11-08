@@ -10,6 +10,7 @@
         (only-in :yuanxu/modules/funflow/scenario Scenario)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-publication)
         (only-in :yuanxu/module-system/source/directory module-directory-context)
         (only-in :yuanxu/module-system/source/admission
                  module-source-read yuanxu-default-module-style-policy
@@ -38,6 +39,30 @@
 
 (def module-candidate-stage-test
   (test-suite "Unpublished candidate operations and complete Graph boundaries"
+    (yuanxu-test-case "prepared role paths remain private across projections and observers"
+      (with-publication-source
+        (lambda (_root _owner source _view)
+          (def prepared (yuanxu-prepare-module-publication source))
+          (def current! (.ref prepared 'admit-current))
+          (def role
+            (car (filter (lambda (row) (string-suffix? "/types.ss" (car row)))
+                         (.ref prepared 'source-inputs))))
+          (def (edit-path! path) (string-set! path (1- (string-length path)) #\x))
+          (edit-path! (car role))
+          (current!)
+          (def edited? #f)
+          (check-exception
+            (parameterize ((current-module-source-observer
+                            (lambda (key _amount)
+                              (match key
+                                (['file-request _ path]
+                                 (when (string-suffix? "/types.ss" path)
+                                   (set! edited? #t) (edit-path! path)))
+                                (else (void))))))
+              (current!))
+            error?)
+          (check-equal? edited? #t)
+          (current!))))
     (yuanxu-test-case "Core functional definitions retain their admitted compiler context"
       (with-other-source
         (lambda (root first _other)
