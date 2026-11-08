@@ -11,20 +11,25 @@
     (test-case "An installed SSI can load its syntax-phase object"
       (call-with-temporary-directory "role-prelude-phase"
         (lambda (root)
+          (def package "native-role-prelude")
           (def name (symbol->string (gensym 'native-role-phase-)))
           (def source (path-expand (string-append name ".ss") root))
           (call-with-output-file source
             (lambda (out)
               (display "prelude: :yuanxu/module-system/source/config-prelude\n" out)
+              ;; The fixture can live under another package's TMPDIR.
+              (display "package: " out) (display package out) (newline out)
               (display "(defsyntax answer (identifier-rules () (_ 42)))\n(export answer)\n" out)))
           (def lib (path-expand "lib" root))
-          (make (list name) srcdir: root libdir: lib optimize: #f)
+          (def ssi (path-expand (string-append package "/" name ".ssi") lib))
           ;; A fresh expander must read the generated SSI, not the source context.
           (def previous (load-path))
           (dynamic-wind
-            (lambda () (set-load-path! (cons lib previous)))
+            void
             (lambda ()
+              (make (list name) srcdir: root libdir: lib prefix: package optimize: #f)
+              (set-load-path! (cons lib previous))
               (parameterize ((current-expander-context (make-top-context)))
-                (eval-syntax `(import ,(path-expand (string-append name ".ssi") lib)))
+                (eval-syntax `(import ,ssi))
                 (check-equal? (eval-syntax 'answer) 42)))
             (lambda () (set-load-path! previous))))))))

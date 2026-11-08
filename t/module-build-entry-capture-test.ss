@@ -12,9 +12,9 @@
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (display text port))))
 
-(def (entry-at entry spec lib bin)
+(def (entry-at entry spec lib bin package)
   (let ((this-source-file (lambda () entry)))
-    (defbuild-script spec libdir: lib bindir: bin prefix: ""
+    (defbuild-script spec libdir: lib bindir: bin prefix: package
                      parallelize: 1 optimize: #f)
     main))
 
@@ -26,10 +26,11 @@
           (let* ((source (path-expand "source" root))
                  (lib (path-expand "lib" root))
                  (entry (path-expand "build.ss" source))
-                 (run (entry-at entry '("probe") lib (path-expand "bin" root)))
-                 (output (path-expand "probe.ssi" lib)))
+                 (package "build-entry-capture")
+                 (run (entry-at entry '("probe") lib (path-expand "bin" root) package))
+                 (output (path-expand (string-append package "/probe.ssi") lib)))
             (write-source (path-expand "probe.ss" source)
-              "(export answer) (def answer 42)\n")
+              (string-append "package: " package "\n(export answer) (def answer 42)\n"))
             (write-source entry "; runtime dispatcher source anchor\n")
             (let (text (call-with-output-string
                          (lambda (port)
