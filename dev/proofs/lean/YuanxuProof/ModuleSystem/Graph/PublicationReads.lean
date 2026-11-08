@@ -216,6 +216,23 @@ theorem fused_entry_keeps_independent_return
         authenticateAndVisit after (fun _ => ()) reads) := by
   rw [fused_entry_preserves_split_refusal, split_entry_second_issuance_reads_same_state]
 
+-- A retry determines the original diagnostic precedence. A concurrent
+-- restoration during that retry cannot erase the already observed refusal.
+def diagnosticEntryRetry (first : Failure) (split : Except Failure Unit) :
+    Except Failure Unit :=
+  match split with
+  | .ok () => .error first
+  | .error cause => .error cause
+
+theorem diagnostic_retry_cannot_approve
+    (first : Failure) (split : Except Failure Unit) :
+    ∃ cause, diagnosticEntryRetry first split = .error cause := by
+  cases split with
+  | error cause => exact ⟨cause, rfl⟩
+  | ok checked =>
+    cases checked
+    exact ⟨first, rfl⟩
+
 -- The native topology lookup authenticates issuance in its own original
 -- preorder. A validation-only checkpoint can use one live pass if both
 -- passes see the same state and the intervening action has no effect.

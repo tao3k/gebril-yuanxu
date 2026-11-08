@@ -214,16 +214,18 @@
 ;; diagnostic visitor. POO authenticates the same traversal and its return.
 (def (module-source-measure-replay reads (checkpoint #f))
   (let (times (current-module-source-operation-times))
-    (module-source-measure-operation 'metadata-replay
-      (lambda ()
-        (call-with-current-slot-reads reads
-          (lambda (visits)
-            ;; This count represents a completed preflight. The observed
-            ;; reader retains its original per-record delivery and accounting.
-            (when times
-              (hash-update! times '(visits metadata-replay) (cut + <> visits) 0))
-            (when checkpoint
-              (module-source-measure-operation 'metadata-checkpoints checkpoint))))))))
+    (if (or times checkpoint)
+      (module-source-measure-operation 'metadata-replay
+        (lambda ()
+          (call-with-current-slot-reads reads
+            (lambda (visits)
+              ;; Count completed preflight. The observed Reader retains
+              ;; its per-record delivery and accounting.
+              (when times
+                (hash-update! times '(visits metadata-replay) (cut + <> visits) 0))
+              (when checkpoint
+                (module-source-measure-operation 'metadata-checkpoints checkpoint))))))
+      (call-with-current-slot-reads reads void))))
 ;; A Case-owned logging allowance, never a query/currentness cache. The testing
 ;; adapter binds a fresh box only for detailed observation; execution consumes
 ;; it solely to add the provider's diagnostic flags to a bounded set of calls.

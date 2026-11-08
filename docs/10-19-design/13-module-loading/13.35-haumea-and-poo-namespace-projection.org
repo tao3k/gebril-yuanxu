@@ -2121,6 +2121,12 @@ native topology acquisition.
 =PublicationReads.fused_entry_keeps_independent_return= assumes the same
 live observations for the first sweep. Runtime integration still needs
 to justify that premise and keep the original path for protected actions.
+The ordinary Reader now passes Gerbil's existing =void= action when it
+has neither accounting nor a checkpoint body. Accounting retains the
+native visit count, and effectful actions retain the protected callback.
+On an entry refusal, a diagnostic retry can restore the split refusal
+precedence. It cannot turn a transient restoration into approval.
+=PublicationReads.diagnostic_retry_cannot_approve= models that condition.
 
 The callback-free thousand-owner attribution measured 29.38 s wall and
 29.33 s CPU for declaration admission. The Init guard ran 10,006 times,
