@@ -107,3 +107,33 @@ do not replace the original failed and passing receipts above.
 A source audit or abstract proof is not a runtime or complete-CI pass.
 No heap/timeout increase, ten-thousand-module rerun or commit/push is authorized
 by this slice. Global capacity closure remains open.
+
+* Indexed Graph producer and consumer boundary
+
+The current package pin is gerbil-poo
+=6394e95ca35d0d8f602bce2178bcdcdbb1b68309=, from the existing indexed Graph
+PR. Its =generalized-graph= schedule/repair and =strong-components= partition
+owners are distinct from the MOP's =call-with-issued-reads= traversal. The latter's
+=object.ss=, =object/observation.scm= and =read-route.ss= bytes are unchanged from
+the previous =6c3208d= pin. Do not attribute a replay change to this upgrade.
+
+Core's =module-system/graph/funs.ss= inline closure and
+=module-system/feature/resolver.ss= ordering still use local walks. Merely
+updating the dependency does not migrate those consumers or certify the
+ten-thousand-Module loading gate. A native Graph integration must preserve
+Module/Feature identity, dependency acquisition order, cycle diagnostics,
+source checks and lazy business scopes. Admission and source callbacks remain
+independent of a cached schedule.
+
+=module-system/building/artifacts.ss= already uses native generalized Graph,
+component revision and feedback publication. That build-product integration
+must not be conflated with declaration loading or MOP read authentication.
+
+Reproduce the producer's graph work/count controls in its checkout with
+=just test-file t/feedback/graph-algorithms-test.ss=. In Core, use
+=just test-file t/module-runtime-selection-1000-test.ss= for complete declaration
+loading; do not substitute the producer's inert graph metadata workload for it.
+Consumer protection gates remain =just test-build-input-context-mutations
+<artifact-dir>=, =just test-file t/module-feature-interface-test.ss= and
+=just test-file t/gitea-postgresql-publication-test.ss=. Their local success is
+separate from the existing PR's complete platform CI.
