@@ -2056,6 +2056,18 @@ by weak identity and reads the promise state without forcing it. These
 counts bound the observed direct Context fields. They do not account for
 global bindings, compiled code or the Reader's retained closure graph.
 
+The retention observer reads the width of the Reader's existing guard
+spine. Source preparation, configuration assets and transferred role
+initializers now append through one operation that replaces the spine and
+its count together. =PublicationReads.source_guard_push_keeps_count_and_order=
+proves the same LIFO sequence and exact width. The observer still receives
+the same scalar field at the same publication boundary. In an interleaved
+same-process diagnostic, two guards per owner for 10,000 owners produced
+the same sum of reported widths, 100,010,000. Recounting used 122–144 ms
+CPU, and the stored count used 1.68–1.70 ms. This removes quadratic work
+from that observation. Declaration admission and replay still dominate
+the capacity measurements.
+
 The macOS Contracts job for =bc532c2= failed the source-admission gateway
 before the Harness started. The original 120 s preparation returned
 status 124 during full native compilation, with unrelated JsonSchema jobs

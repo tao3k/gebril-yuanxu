@@ -230,6 +230,30 @@ theorem fresh_receipt_field_preserves_order {Key Value : Type} [DecidableEq Key]
     simp only [List.map_cons, List.mem_cons, not_or] at fresh
     simp [extendReceiptSlots, Ne.symm fresh.1, ih fresh.2]
 
+-- The diagnostic width travels with the guard spine. One replacement makes
+-- a new head and its count visible together and does not discharge a guard.
+def pushSourceGuard {Guard : Type} (guard : Guard) (support : List Guard × Nat) :
+    List Guard × Nat :=
+  (guard :: support.1, support.2 + 1)
+
+theorem source_guard_push_keeps_count_and_order {Guard : Type} (guards : List Guard) :
+    let support := guards.foldl (fun support guard => pushSourceGuard guard support) ([], 0)
+    support.1 = guards.reverse ∧ support.2 = guards.length := by
+  have general : ∀ (rest spine : List Guard) (width : Nat),
+      rest.foldl (fun support guard => pushSourceGuard guard support) (spine, width) =
+        (rest.reverse ++ spine, width + rest.length) := by
+    intro rest
+    induction rest with
+    | nil => simp
+    | cons guard rest ih =>
+      intro spine width
+      rw [List.foldl_cons, show pushSourceGuard guard (spine, width) =
+        (guard :: spine, width + 1) from rfl, ih]
+      simp only [List.reverse_cons, List.append_assoc, List.singleton_append, List.length_cons]
+      congr 1
+      omega
+  simp [general]
+
 -- Separate snapshots can disagree. The equality applies only to a single
 -- authenticated pre-delivery read, never across an author call.
 example : joinedDispatch (Result := Nat) false true true (.ok 1) ≠

@@ -161,8 +161,8 @@
            (module-source-admit-current! observations "selected configuration asset changed"))
          (asset-current!)
          (unless (hash-key? input-paths file)
-           (set! (reader-session-guards session)
-             (cons (make-source-preparation #f asset-current! #f file asset-current! #f (lambda () #t)) (reader-session-guards session)))
+           (reader-session-add-guard! session
+             (make-source-preparation #f asset-current! #f file asset-current! #f (lambda () #t)))
            (record-input!
              (.o kind: 'data path: file relative-path: relative
                  source-inputs: observations admit-current: asset-current!))))
@@ -298,9 +298,8 @@
                              ;; Initialization support remains live after the
                              ;; transfer. A successful handoff is not approval
                              ;; for a later source or receiver mutation.
-                             (set! (reader-session-guards session)
-                               (cons (make-source-preparation #f #f #f #f
-                                       initialization-current! #f #f) (reader-session-guards session)))
+                             (reader-session-add-guard! session
+                               (make-source-preparation #f #f #f #f initialization-current! #f #f))
                              (for-each (lambda (asset)
                                          (reader-add-input-guard! session asset)
                                          (record-input! asset)) assets))
@@ -657,7 +656,7 @@
                       (cons 'prepared-publications (reader-session-publication-prepared-count session))
                       (cons 'prepared-public-dependencies (reader-session-public-prepared-count session))
                       (cons 'source-objects (reader-session-kernel-source-count session))
-                      (cons 'source-guards (length (reader-session-guards session)))) 1)
+                      (cons 'source-guards (reader-session-guard-count session))) 1)
                   ((current-module-source-observer)
                     (list 'publication-end interface-path) 1))
                 ;; Include the already prepared roles as well as private

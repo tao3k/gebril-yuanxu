@@ -325,7 +325,10 @@ package YuanxuPayloadOwnership {
                distinguish registry aliases, bindings, expanded code and
                pending initializer thunks. Read settled promise state
                without forcing it. Direct fields do not measure all
-               reachable heap or compiled code. */
+               reachable heap or compiled code. The source guard spine
+               and its scalar count advance together when a guard is
+               enrolled. Observer delivery reads that count without
+               traversing the accumulated spine. */
     }
     requirement def RoleInitializerTransferCustody {
         doc /* Role transfer consumes initializer support only with the

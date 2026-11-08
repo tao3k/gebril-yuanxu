@@ -92,7 +92,7 @@
                    (make-source-preparation input #f #f #f #f #f #f)))
   (set! (source-preparation-invoke origin) invoke)
   (set! (source-preparation-public-path origin) public-path)
-  (set! (reader-session-guards session) (cons origin (reader-session-guards session)))
+  (reader-session-add-guard! session origin)
   origin)
 (def (reader-derived-input session prepared source (related #f))
   (def origin (without-observation (lambda () (reader-input-origin session prepared))))

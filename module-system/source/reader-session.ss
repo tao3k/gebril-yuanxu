@@ -4,21 +4,31 @@
 ;;; One reader's source associations and generation-local counters.
 (import (only-in :yuanxu/module-system/source/compiler-tools module-compiler-tools)
         (only-in :yuanxu/module-system/source/reader-support source-observation-rows))
-(export (struct-out reader-session) (struct-out candidate-support) new-reader-session)
+(export (struct-out reader-session) (struct-out candidate-support) new-reader-session
+        reader-session-guards reader-session-guard-count reader-session-add-guard!)
 
 ;; One unpublished operation's support, released after its recording frame.
 (defstruct candidate-support (guards tools tool-rows open? epoch-current metadata-current) final: #t)
 
 (defstruct reader-session
-  (guards dependencies refused? evaluated-interface-bindings
+  (guard-support dependencies refused? evaluated-interface-bindings
    kernel-contexts kernel-inputs kernel-source-count kernel-owners kernel-data
    kernel-initializers preparations public-prepared-count publication-prepared-count
    candidate tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts
    interpreter-observations tool-rows previous-context check-current check-current/closed open-boundary)
   final: #t)
 
+(def (reader-session-guards session)
+  (car (reader-session-guard-support session)))
+(def (reader-session-guard-count session)
+  (cdr (reader-session-guard-support session)))
+(def (reader-session-add-guard! session guard)
+  ;; Publish the new guard spine and its exact diagnostic width together.
+  (let (support (reader-session-guard-support session))
+    (set! (reader-session-guard-support session)
+      (cons (cons guard (car support)) (1+ (cdr support))))))
+
 (def (new-reader-session previous-context)
-  (def guards '())
   (def dependencies (make-hash-table))
   (def kernel-contexts (make-hash-table))
   (def kernel-inputs (make-hash-table-eq))
@@ -29,7 +39,7 @@
   (def candidate (make-parameter #f))
   (defvalues (tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts)
     (module-compiler-tools))
-  (make-reader-session guards dependencies #f 0
+  (make-reader-session (cons '() 0) dependencies #f 0
     kernel-contexts kernel-inputs 0 kernel-owners kernel-data kernel-initializers
     preparations 0 0 candidate
     tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts

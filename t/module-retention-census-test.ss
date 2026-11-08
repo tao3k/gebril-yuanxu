@@ -262,6 +262,7 @@
   ;; Interface bodies complete too, but have no role transfer association.
   (check-equal? (cdr (assq 'private-contexts retention)) size)
   (check-equal? (cdr (assq 'transfer-initializers retention)) size)
+  (check-equal? (cdr (assq 'source-guards retention)) (* 2 size))
   (displayln "RETENTION-CENSUS modules=" size
     " expansions=" body-expansions " live-bytes=" (.get memory live-bytes)
     " reader-roots=" retention)
