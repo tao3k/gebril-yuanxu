@@ -318,6 +318,11 @@ package YuanxuPayloadOwnership {
                The actual Slot field checker also receives the entire Record.
                Guard a replacement on its delivered method even when dispatch
                selects a different Slot descriptor Type.
+               A success-only Profile value lane requires custody of the
+               producer, preserved normalized child identities and independent
+               support for root and child evidence acceptance. Decline the
+               lane before running an open callback. Use the complete native
+               refusal path when any premise fails.
                Attribute replay visits per checkpoint and retained records
                by identity across owners. Repeated traversal of a shared
                Profile receipt increases replay work without creating a new

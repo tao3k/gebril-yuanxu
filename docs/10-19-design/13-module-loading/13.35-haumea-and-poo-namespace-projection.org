@@ -2022,6 +2022,15 @@ separate native traversals overlap. A smaller private proof must retain
 the child value action and the original checks for author-contributed
 descriptors or observers.
 
+=PublicationReads.projected_stock_profile_preserves_value_and_refusal=
+specifies a success-only lane. Every child must pass its actual value
+action and classification, and normalization must preserve the supplied
+role identity. Root and child evidence acceptance require separate native
+support. Identical normalized values alone can still accompany a rejected
+receipt. A declined lane keeps the complete original refusal path. The
+runtime still needs to establish producer custody and the evidence support
+before this projection can replace the existing constructor.
+
 Two independent publications of the same fixture, from separate package
 origins in one process, each had 914 reachable preparation records, 899
 shared by issued identity. All 14 Profile receipt receivers were shared.

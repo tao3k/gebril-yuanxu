@@ -276,6 +276,59 @@ theorem source_only_preserves_open_receipt
     (receipt : SourceAuthoringReceipt Owner Role Diagnostic) :
     sourceOnlyReceipt false validate receipt = consumeSourceReceipt validate receipt := rfl
 
+-- A successful private Profile result still needs its actual child value
+-- decisions, including preservation of each supplied role's identity. The
+-- public path keeps its detailed refusal when any stock premise fails.
+structure ProfileRoleCheck (Value : Type) where
+  supplied : Value
+  normalized : Value
+  classified : Bool
+  evidenceAdmitted : Bool
+
+def profileRoleValueAccepted [BEq Value] (role : ProfileRoleCheck Value) : Bool :=
+  (role.normalized == role.supplied) && role.classified
+
+def profileRoleAccepted [BEq Value] (role : ProfileRoleCheck Value) : Bool :=
+  profileRoleValueAccepted role && role.evidenceAdmitted
+
+def checkedProfileValue [BEq Value] (profile : Value) (root : Bool)
+    (roles : List (ProfileRoleCheck Value)) (rootEvidence : Bool)
+    (refusal : Failure) : Except Failure Value :=
+  if root && roles.all profileRoleAccepted && rootEvidence then .ok profile
+  else .error refusal
+
+-- The caller may select this lane only with actual stock producer custody.
+-- A failed structural check stays with the full original refusal path.
+def projectedProfileValue [BEq Value] (owned : Bool) (profile : Value) (root : Bool)
+    (roles : List (ProfileRoleCheck Value)) (rootEvidence : Bool)
+    (refusal : Failure) : Except Failure Value :=
+  if owned && root && roles.all profileRoleValueAccepted then .ok profile
+  else checkedProfileValue profile root roles rootEvidence refusal
+
+theorem projected_stock_profile_preserves_value_and_refusal [BEq Value]
+    (owned : Bool) (profile : Value) (root : Bool) (roles : List (ProfileRoleCheck Value))
+    (rootEvidence : Bool) (refusal : Failure)
+    (receiptSupport : owned = true → root = true → roles.all profileRoleValueAccepted = true →
+      rootEvidence = true ∧ ∀ role ∈ roles, role.evidenceAdmitted = true) :
+    projectedProfileValue owned profile root roles rootEvidence refusal =
+      checkedProfileValue profile root roles rootEvidence refusal := by
+  cases owned <;> cases root <;> simp [projectedProfileValue]
+  case true.true =>
+    by_cases accepted : roles.all profileRoleValueAccepted = true
+    · have support := receiptSupport rfl rfl accepted
+      have allAdmitted : roles.all profileRoleAccepted = true := by
+        apply List.all_eq_true.mpr
+        intro role member
+        simp [profileRoleAccepted, List.all_eq_true.mp accepted role member, support.2 role member]
+      simp [checkedProfileValue, allAdmitted, support.1]
+    · intro allRoles
+      exact False.elim (accepted (List.all_eq_true.mpr allRoles))
+
+theorem unchanged_role_value_can_have_rejected_evidence :
+    profileRoleValueAccepted (⟨(0 : Nat), 0, true, false⟩ : ProfileRoleCheck Nat) = true ∧
+    profileRoleAccepted (⟨(0 : Nat), 0, true, false⟩ : ProfileRoleCheck Nat) = false :=
+  ⟨rfl, rfl⟩
+
 -- Resolve the actual method once. A replacement receives the receipt only
 -- after the existing open boundary has authenticated its entry.
 def resolvedEvidenceCall (maintained : Bool) (boundary : Except Failure Unit)
