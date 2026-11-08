@@ -341,6 +341,14 @@ package YuanxuPayloadOwnership {
                Retained replay roots must also be closed over their signed
                dependency edges. Dropping a root cannot suppress a read
                that another retained record still demands.
+               Producer custody must survive publication. A later reader of
+               the Graph can obtain the original issued Profile descendants,
+               including constructor receipts, through native observation.
+               Removing such a receipt from its route must still refuse.
+               A read-only warm entry may combine birth and live checks
+               under the same input state. A failed combination must restore
+               the original refusal precedence. Preserve the independent
+               return sweep and use the original path around effects.
                Attribute replay visits per checkpoint and retained records
                by identity across owners. Repeated traversal of a shared
                Profile receipt increases replay work without creating a new

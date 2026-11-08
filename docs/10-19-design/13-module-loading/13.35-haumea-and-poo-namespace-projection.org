@@ -2090,6 +2090,38 @@ preserves the selected demand set.
 shows how a removed root remains live when a retained record points to it.
 The separate entry/return and custody requirements still apply.
 
+A narrower experiment omitted only the owned bare leaves and kept all
+derived receivers. The real source-policy Interface retained 486 of 722
+records. Against the restored original, unobserved thousand-owner
+admission used 25.80 s versus 30.01 s CPU. Observed thousand-owner Graph
+construction used 35.20 s versus 42.40 s CPU. Collected live heap for the
+observed Graph was 482,398,632 versus 482,800,248 bytes. The shared Profile
+reduction therefore saved little retained memory.
+
+The candidate removed an original observation path. A cold Graph was
+published without a slot observer. A later native read of the existing
+Graph obtained its issued Profile root and a descendant validation
+receipt. Temporarily removing that token from its receiver's read index
+made Graph admission refuse with =stale slot dependency=, at the same
+receiver revision. The compact candidate made the receipt unreachable
+through that original path. Construction-time non-escape therefore does
+not establish publication-time custody.
+=PublicationReads.later_observation_can_invalidate_private_return= records
+the separate return obligation. The production source retains the full
+Profile support and the Reader regression exercises the late mutation.
+
+A separate warm-entry probe kept all 1,183 original native records and the
+same independent return sweep. It combined issuance and live checks only
+in the first sweep and restored the original split precedence on failure.
+Interleaved 512-checkpoint blocks took 1.341–1.351 s CPU with the split and
+1.204–1.235 s with the joined entry. A later unissued token still took
+precedence over an earlier stale route. A route removed after entry still
+refused on return. The probe isolates the sweeps and does not replace
+native topology acquisition.
+=PublicationReads.fused_entry_keeps_independent_return= assumes the same
+live observations for the first sweep. Runtime integration still needs
+to justify that premise and keep the original path for protected actions.
+
 The callback-free thousand-owner attribution measured 29.38 s wall and
 29.33 s CPU for declaration admission. The Init guard ran 10,006 times,
 including 8,006 physical read attempts and 103,981,928 decoded characters.

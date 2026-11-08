@@ -143,6 +143,79 @@ theorem read_only_checkpoint_preserves_both_refusals
   unfold readWindow
   rw [no_observer_authenticates_the_same_order before visit reads]
 
+-- A warm replay currently checks every birth before starting live state
+-- checks. Try the two tests together on the same ordered records. Failure
+-- must run the original split checks to recover its refusal precedence.
+def splitReplayEntry (issued live : Read → Except Failure Unit) (reads : List Read) :
+    Except Failure Unit := do
+  authenticateAndVisit issued (fun _ => ()) reads
+  authenticateAndVisit live (fun _ => ()) reads
+
+def fusedReplayEntry (issued live : Read → Except Failure Unit) (reads : List Read) :
+    Except Failure Unit :=
+  match authenticateAndVisit (fun read => do issued read; live read) (fun _ => ()) reads with
+  | .ok () => .ok ()
+  | .error _ => splitReplayEntry issued live reads
+
+theorem fused_entry_success_covers_both_checks
+    (issued live : Read → Except Failure Unit) (reads : List Read)
+    (passed : authenticateAndVisit
+      (fun read => do issued read; live read) (fun _ => ()) reads = .ok ()) :
+    splitReplayEntry issued live reads = .ok () := by
+  induction reads with
+  | nil => rfl
+  | cons read rest ih =>
+    cases issuedHere : issued read with
+    | error failure => simp [authenticateAndVisit, issuedHere, Except.bind, bind] at passed
+    | ok issuedUnit =>
+      cases issuedUnit
+      cases liveHere : live read with
+      | error failure => simp [authenticateAndVisit, issuedHere, liveHere, Except.bind, bind] at passed
+      | ok liveUnit =>
+        cases liveUnit
+        have tail := ih (by simpa [authenticateAndVisit, issuedHere, liveHere, Except.bind, bind] using passed)
+        simpa [splitReplayEntry, authenticateAndVisit, issuedHere, liveHere, Except.bind, bind] using tail
+
+theorem fused_entry_preserves_split_refusal
+    (issued live : Read → Except Failure Unit) (reads : List Read) :
+    fusedReplayEntry issued live reads = splitReplayEntry issued live reads := by
+  unfold fusedReplayEntry
+  split
+  next passed => exact (fused_entry_success_covers_both_checks issued live reads passed).symm
+  next => rfl
+
+theorem split_entry_second_issuance_reads_same_state
+    (issued live : Read → Except Failure Unit) (reads : List Read) :
+    splitReplayEntry issued (fun read => do issued read; live read) reads =
+      splitReplayEntry issued live reads := by
+  have noRepeat : ∀ rows : List Read, authenticateAndVisit issued (fun _ => ()) rows = .ok () →
+      authenticateAndVisit (fun read => do issued read; live read) (fun _ => ()) rows =
+        authenticateAndVisit live (fun _ => ()) rows := by
+    intro rows passed
+    induction rows with
+    | nil => rfl
+    | cons read rest ih =>
+      cases issuedHere : issued read with
+      | error failure => simp [authenticateAndVisit, issuedHere, Except.bind, bind] at passed
+      | ok checked =>
+        cases checked
+        have tail := ih (by simpa [authenticateAndVisit, issuedHere, Except.bind, bind] using passed)
+        cases liveHere : live read <;>
+          simp [authenticateAndVisit, issuedHere, liveHere, Except.bind, bind] <;> exact tail
+  unfold splitReplayEntry
+  cases entered : authenticateAndVisit issued (fun _ => ()) reads with
+  | error failure => rfl
+  | ok checked =>
+    cases checked
+    exact noRepeat reads entered
+
+theorem fused_entry_keeps_independent_return
+    (issued live after : Read → Except Failure Unit) (reads : List Read) :
+    (do fusedReplayEntry issued live reads; authenticateAndVisit after (fun _ => ()) reads) =
+    (do splitReplayEntry issued (fun read => do issued read; live read) reads
+        authenticateAndVisit after (fun _ => ()) reads) := by
+  rw [fused_entry_preserves_split_refusal, split_entry_second_issuance_reads_same_state]
+
 -- The native topology lookup authenticates issuance in its own original
 -- preorder. A validation-only checkpoint can use one live pass if both
 -- passes see the same state and the intervening action has no effect.
@@ -685,6 +758,16 @@ theorem projected_private_read_window
   subst projected
   simp only [readWindow, private_reads_preserve_external_refusal before keep reads privateBefore,
     private_reads_preserve_external_refusal after keep reads privateAfter]
+
+-- A retained native root may expose a descendant after the producer returned.
+-- Construction-time custody alone cannot justify skipping its return check.
+theorem later_observation_can_invalidate_private_return
+    (read : Read) (value : Result) (stale : Failure) :
+    readWindow (fun _ => .ok ()) (fun _ => .error stale) (fun _ => ()) [read] (.ok value)
+      = .error stale ∧
+    readWindow (fun _ => .ok ()) (fun _ => .error stale) (fun _ => ()) ([] : List Read) (.ok value)
+      = .ok value := by
+  constructor <;> rfl
 
 /-- The two original native spines remain separate until a checkpoint needs
 their concatenation. Neither phase's issued records are reconstructed. -/
