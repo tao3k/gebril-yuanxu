@@ -6,6 +6,7 @@
         (only-in :std/list/list delete-duplicates/hash any foldl length<=n?)
         (only-in :yuanxu/module-system/source/preparation module-source-package-prefix)
         (only-in :yuanxu/module-system/source/collection yuanxu-module-source-collection-optional-entrypoint)
+        (only-in :yuanxu/module-system/source/role-forms module-publication-role-imports)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
         (only-in :clan/poo/slot-observation slot-read-observers-compatible?)
         :yuanxu/module-system/source/objects
@@ -176,10 +177,15 @@
         (set! denied-values (map (cut .ref <> 'identity)
                                 (filter (cut .ref <> 'disabled?) decisions))))
       (def scoped-intent (if qualified-owners? (.cc intent-value 'decisions decisions) intent-value))
-      ;; The parser has already resolved the signed decisions. Any Feature
-      ;; choice retains full selection before linking a business scope.
-      (def feature-decisions?
-        (ormap (lambda (row) (pair? (.ref (.ref row 'selection) 'selection-flags))) decisions))
+      ;; Keep every signed decision in the scope-demand graph, including
+      ;; withdrawals. Unrelated Core-only roots stay lazy until demanded.
+      (def feature-roots
+        (filter-map
+          (lambda (row)
+            (and (not (.ref row 'disabled?))
+                 (pair? (.ref (.ref row 'selection) 'selection-flags))
+                 (.ref row 'identity)))
+          decisions))
       (defvalues (key-intact? key-policies)
         (if qualified-owners?
           (module-source-object-policies
@@ -619,14 +625,21 @@
                    (andmap (lambda (check) (check)) location-inputs)
                    (or (not entry) ((directory-source-current? entry))))))))
       (.o generation: generation-value module-ids: selected-values selected: selected-values
-          (feature-decisions?)
+          (feature-roots)
           denied-modules: denied-values intent: scoped-intent init-source: init-path source-root: root-path
           locate: (lambda (id) (locate-source (resolve-request-root id)))
           collect-entrypoint:
           (lambda (owner contributor parts)
             (def root (path-directory (yuanxu-module-source-ref-value (locate-source owner))))
-            (yuanxu-module-source-collection-optional-entrypoint root owner contributor parts
-              (lambda (path) (observe! module-source-type path))))
+            (def entry
+              (yuanxu-module-source-collection-optional-entrypoint root owner contributor parts
+                (lambda (path) (observe! module-source-type path))))
+            (when entry
+              ;; Expansion discovers these roles by convention. Include even
+              ;; absent roles in the selected source epoch.
+              (module-publication-role-imports (path-directory entry)
+                (lambda (path) (observe! module-source-type path))))
+            entry)
           resolve-module-id: resolve-reference resolve-root: resolve-request-root current?: current-source? candidate-current?: candidate-location-current?
           %candidate-guard:
           (lambda (generation id stale!)

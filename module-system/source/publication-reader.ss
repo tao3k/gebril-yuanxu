@@ -12,9 +12,13 @@
                  current-expander-compile current-expander-eval expander-context-table syntax-e
                  core-read-module/sexp core-resolve-module-path)
         (only-in :clan/poo/object .o .ref .slot?)
+        (only-in :yuanxu/module-system/source/collection
+                 yuanxu-module-source-collection-optional-entrypoint)
+        (only-in :yuanxu/module-system/source/role-forms module-feature-interface?)
         :yuanxu/module-system/source/admission
         :yuanxu/module-system/source/preparation
-        (only-in :yuanxu/module-system/source/declaration current-module-build-resolver)
+        (only-in :yuanxu/module-system/source/declaration current-module-build-resolver
+                 current-module-feature-reader)
         (only-in :yuanxu/module-system/source/deferred-declaration
                  current-module-role-resolver module-role-values
                  wrapper-delivery? wrapper-delivery-value)
@@ -83,6 +87,13 @@
        (def interface-wrapper #f)
        (def interface-context #f)
        (def delivered #f)
+       (def feature-inputs #f)
+       (def reading-feature? #f)
+       (def (publication-inputs)
+         (reverse
+           (if feature-inputs
+             (filter (lambda (input) (not (hash-key? feature-inputs (.ref input 'path)))) input-values)
+             input-values)))
        (defvalues (compile evaluate)
          (reader-evaluation-observers artifacts completed
            (lambda (context action)
@@ -123,7 +134,10 @@
            (hash-put! wrappers path target) target))
        (def (record-input! input)
          (let (path (.ref input 'path))
+           (when (and feature-inputs (not reading-feature?))
+             (hash-remove! feature-inputs path))
            (unless (hash-key? input-paths path)
+             (when reading-feature? (hash-put! feature-inputs path #t))
              ;; The existing uniqueness index owns the input itself.
              ;; Runtime imports recurse before returning: a role need not
              ;; remain the head of input-values when its context arrives.
@@ -520,7 +534,7 @@
                                 (not (equal? kernel kernel-root))
                                 (module-build-source-path context kernel))))))
                  (if source (source-context source reload?) context))))))))
-       (def (resolve-role role names)
+       (def (resolve-values path names (role? #t))
          (reader-current! session 'role-entry)
          (def created? (not (file-exists? directory)))
          (dynamic-wind
@@ -534,7 +548,6 @@
                ;; Use the SAME confined context and source-input registry as
                ;; eager publication. Symbol imports must not create a second
                ;; public copy of an already admitted private role or kernel.
-               (def path (path-expand (string-append (symbol->string role) ".ss") root))
                (def context (source-context path #f))
                ;; The runtime context owns its initializer promise. Reuse it
                ;; after wrapper cleanup without resolving a deleted file.
@@ -545,11 +558,27 @@
                (def value
                  (parameterize ((current-expander-context context))
                    (module-role-values names)))
-               (hash-put! (reader-session-dependencies session) interface-path (reverse input-values))
+               (when role?
+                 (hash-put! (reader-session-dependencies session) interface-path (publication-inputs)))
                (reader-current! session 'role-return)
                (release-reader-expansions! completed)
                value))
            (lambda () (when created? (remove-reader-tree directory)))))
+       (def (resolve-role role names)
+         (resolve-values (path-expand (string-append (symbol->string role) ".ss") root) names))
+       (def (resolve-feature name)
+         (def path
+           (yuanxu-module-source-collection-optional-entrypoint
+             root (.ref prepared 'identity) name
+             (list "features" (symbol->string name) "interface.ss") module-source-type))
+         (unless path (error "missing selected Feature interface" interface-path name))
+         (unless (module-feature-interface? path (call-with-input-string (module-source-read path) read-all))
+           (error "selected Feature interface requires one .def Feature declaration" interface-path name))
+         (unless feature-inputs (set! feature-inputs (make-hash-table)))
+         (dynamic-wind
+           (lambda () (set! reading-feature? #t))
+           (lambda () (.ref (resolve-values path '(Feature) #f) 'Feature))
+           (lambda () (set! reading-feature? #f))))
        (dynamic-wind
         (lambda () (create-directory directory))
         (lambda ()
@@ -574,6 +603,7 @@
                  (current-expander-eval evaluate)
                  (current-expander-context (make-top-context))
                  (current-module-build-resolver resolve-build!)
+                 (current-module-feature-reader resolve-feature)
                  (current-module-role-resolver resolve-role)
                  (current-expander-module-import
                   publication-import))
@@ -633,7 +663,7 @@
                 ;; Include the already prepared roles as well as private
                 ;; dependencies. Build projection must not allocate a second
                 ;; header/guard object for the very same observed source.
-                (hash-put! (reader-session-dependencies session) interface-path (reverse input-values))
+                (hash-put! (reader-session-dependencies session) interface-path (publication-inputs))
                 result))))
         (lambda ()
           (set! delivered #f)

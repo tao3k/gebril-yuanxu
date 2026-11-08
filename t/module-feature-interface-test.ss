@@ -78,6 +78,61 @@
 
 (def module-feature-interface-test
   (test-suite "Module Interface owns Feature declarations and init only selects"
+    (yuanxu-test-case "a named Feature owns its declaration and build entry"
+      (with-publication-source
+        (lambda (root module-root _source _view)
+          (write-file (path-expand "interface.ss" module-root)
+            "(.def Fixture identity: 'custom/example
+                core: (.o requires: (.o) scope-contract: FixtureContract
+                          exports: (.o (:: @ FixtureScope) greeting: Greeting))
+                features: '(memory missing))")
+          (def facade (path-expand "features/memory/interface.ss" module-root))
+          (def types (path-expand "types.ss" (path-directory facade)))
+          (def implementation (path-expand "objects.ss" (path-directory facade)))
+          (create-directory* (path-directory facade))
+          (write-file facade
+            "(import (only-in :yuanxu/module-system/source/declaration .def))
+             (.def Feature refine: refine-memory contract: MemoryContract)")
+          (write-file types
+            "(import (only-in :clan/poo/object .o .cc)
+                     (only-in :clan/poo/type Record True))
+             (def MemoryContract (.cc (Record memory: [True]) identity: 'fixture/memory))
+             (export MemoryContract)")
+          (write-file implementation
+            "(import (only-in :clan/poo/object .o))
+             (def (refine-memory scope) (.o (:: self scope) memory: #t))
+             (export refine-memory)")
+          (def enabled (feature-view root "listed.ss" '(+memory)))
+          (def disabled (feature-view root "withdrawn.ss" '(-memory -missing)))
+          (def missing (feature-view root "missing.ss" '(+missing)))
+          (check-equal? (.get disabled selected-graph feature-order) '())
+          (check-exception (.get missing selected-graph) error?)
+          (check-equal? (.get enabled modules custom example memory) #t)
+          (def selected (.get enabled selected-graph))
+          (for-each
+            (lambda (source)
+              (check-equal?
+                (.get (find (lambda (entry) (equal? (.get entry path) (path-normalize source)))
+                            (.get enabled build-graph entries)) contributor)
+                'custom/example/memory))
+            (list facade types implementation))
+          (def config (path-expand "config.ss" (path-directory facade)))
+          (write-file config "(def Config (.o)) (export Config)")
+          (check-exception ((.get selected admit-current)) error?)
+          (delete-file config)
+          (def before-revision
+            (.get (feature-view root "before-revision.ss" '(+memory)) selected-graph))
+          (write-file implementation
+            "(import (only-in :clan/poo/object .o))
+             (def (refine-memory scope) (.o (:: self scope) memory: #f))
+             (export refine-memory)")
+          (check-exception ((.get before-revision admit-current)) error?)
+          (def invalid (feature-view root "invalid.ss" '(+memory)))
+          (check-exception (.get invalid modules custom example memory) error?)
+          (write-file facade "(import \"objects.ss\") (export (import: \"objects.ss\"))")
+          (def facade-only (feature-view root "facade-only.ss" '(+memory)))
+          (def refusal (exception-message (lambda () (.get facade-only selected-graph))))
+          (check-equal? (and (string-contains refusal "requires one .def Feature declaration") #t) #t))))
     (yuanxu-test-case "Interface Features stay cold when absent or explicitly disabled"
       (with-feature-interface-source
         (lambda (root _module-root)
@@ -90,6 +145,39 @@
               (check-equal? (file-exists? (path-expand "scope-entered" root)) #f)
               (check-equal? (file-exists? (path-expand "effect-entered" root)) #f))
             '(() (-memory -cold))))))
+    (yuanxu-test-case "scope demand checks every Feature owner and leaves unrelated Core roots cold"
+      (with-feature-interface-source
+        (lambda (root module-root)
+          (def other (path-expand "../other/interface.ss" module-root))
+          (write-file (path-expand "../other/types.ss" module-root)
+            "(import (only-in :clan/poo/mop Type.) (only-in :clan/poo/object object?))
+             (def ScopeContract (.cc Type. identity: 'other/scope .element?: object?))
+             (export ScopeContract)")
+          (write-file (path-expand "../other/objects.ss" module-root)
+            "(def OtherScope (.o)) (export OtherScope)")
+          (write-file (path-expand "../other/config.ss" module-root)
+            "(def OtherConfig (.o)) (export OtherConfig)")
+          (write-file other
+            "(.def Other identity: 'custom/other
+                core: (.o requires: (.o) scope-contract: (error \"unrelated Core read\")
+                          exports: (.o))
+                features: '())")
+          (def demand (path-expand "demand.ss" root))
+          (def checked (path-expand "checked.ss" root))
+          (write-file demand "(yuanxu! mode: explicit :custom (example +memory) (other))")
+          (write-file checked "(yuanxu! mode: explicit :custom (example +memory) (other +missing))")
+          (def view (yuanxu-load-modules demand))
+          (check-equal? (.get view modules custom example greeting) "hello")
+          (check-exception (.get view selected-graph) error?)
+          (write-file other
+            "(.def Other identity: 'custom/other
+                core: (.o requires: (.o) scope-contract: ScopeContract exports: (.o))
+                features: '(missing))")
+          (def message
+            (exception-message
+              (lambda () (.get (yuanxu-load-modules checked) modules custom example greeting))))
+          (unless (string-contains message "missing selected Feature interface")
+            (error "expected missing Feature refusal" message)))))
     (yuanxu-test-case "selected Interface contributes inert values; explicit run owns effects"
       (with-feature-interface-source
         (lambda (root _module-root)

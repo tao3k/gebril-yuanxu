@@ -162,7 +162,10 @@
           (call-with-publication-reads action
             (lambda (results reads-current! _roots)
               (retain! (lambda ()
-                         (reads-current!)
+                         (with-catch
+                           (lambda (cause)
+                             (error "module link slot support changed" stage cause))
+                           reads-current!)
                          (sources-current!)))
               results)))))
     current!))
@@ -903,10 +906,12 @@
             ((and (not realization) candidate-read paired-context-current?
                   (paired-context-current?) (object-construction-current?)
                   (not (current-module-source-observer)) (owned-read-function-scope?)
-                  (not (.ref context-value 'feature-decisions?)))
-             ;; The same resolver authenticates the requested owner and every
-             ;; requirement. A scope demand does not certify other roots.
-             (resolve-selection-graph (list id)))
+                  (.slot? context-value 'feature-roots))
+             ;; The same resolver checks all signed Feature decisions and their
+             ;; Core requirements, plus the requested owner's closure.
+             (let (feature-roots (.ref context-value 'feature-roots))
+               (resolve-selection-graph
+                 (if (memq id feature-roots) feature-roots (cons id feature-roots)))))
             (else
              (resolve-selection-graph (if (memq id roots) roots (append roots (list id)))))))
          (link id '() graph))))

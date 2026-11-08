@@ -5,7 +5,26 @@ prelude: :gerbil/core
 ;;; Gerbil-only role discovery shared by publication preparation and expansion.
 (export yuanxu-module-allowed-entrypoint-roles yuanxu-module-required-role-files
         module-role-file module-publication-role-imports
-        module-regular-role-file? module-init-export-name module-interface-form?)
+        module-regular-role-file? module-init-export-name module-interface-form?
+        module-feature-interface? module-feature-declaration?)
+
+(def (module-feature-declaration? path form)
+  (and (string? path) (pair? form) (eq? (car form) '.def)
+       (pair? (cdr form)) (eq? (cadr form) 'Feature)
+       (string=? (path-strip-directory path) "interface.ss")
+       (string=? (path-strip-directory
+                    (path-strip-trailing-directory-separator
+                      (path-directory (path-strip-trailing-directory-separator
+                                        (path-directory path)))))
+                 "features")))
+
+(def (module-feature-interface? path forms)
+  (and (list? forms)
+       (andmap (lambda (form)
+                 (and (pair? form) (list? form)
+                      (or (eq? (car form) 'import) (module-feature-declaration? path form))))
+               forms)
+       (= 1 (length (filter (cut module-feature-declaration? path <>) forms)))))
 
 ;; A Gerbil facade re-exports directly imported files within its directory.
 ;; A Yuanxu Interface declares its publication with exactly one .def.

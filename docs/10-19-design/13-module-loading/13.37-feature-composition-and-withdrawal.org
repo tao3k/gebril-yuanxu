@@ -71,6 +71,20 @@ binding. =selection.ss= supplies inert Feature metadata on selected demand;
 =link.ss= supplies graph/owner routing and supported callback guards. This is
 not a new macro, a Runtime registry or a component-to-prototype coercion.
 
+For a Feature with its own source directory, the Module Interface can declare
+=features: '(memory)=. Selecting =+memory= reads the =Feature= export from
+=features/memory/interface.ss=. Its single =.def Feature= declaration
+references the Contract in =types.ss= and the refinement in =objects.ss=.
+Yuanxu imports the adjacent roles through the standard role convention.
+The selected entry and its native
+imports enter the existing =std-make-spec= graph under the Feature contributor.
+An unselected or withdrawn Feature does not load its interface. A selected name
+without an interface fails admission.
+Gerbil's Module declaration captures the reader bound to that owner when
+the Interface is initialized. Named Features use this declaration path.
+The private assembly for inline Feature objects has no named Feature reader
+to capture.
+
 Feature Contracts are additional obligations on the final Core-normalized
 receiver. Native =validate= runs their obligations, but a Feature Contract's
 returned wrapper does not replace that receiver. The final receiver must itself

@@ -264,6 +264,8 @@ package YuanxuPayloadOwnership {
                Context, accept it once and leave the native promise with void.
                Keep the lexical role resolver and all owner guards. Compiled
                and open declarations retain the native export and lookup.
+               Named Feature lists retain declaration expansion to capture
+               the reader bound to that owner before any Feature is demanded.
                Checks before expansion, after evaluation and during admission
                keep their original order and refusal. Lean PublicationReads
                proves delivery identity and refusal order. Runtime verification

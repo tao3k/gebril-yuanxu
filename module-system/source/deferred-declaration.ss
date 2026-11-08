@@ -151,7 +151,10 @@
         ([['.def (? symbol?) . body]]
          (def rows (closed-rows body))
          (closed-symbol (closed-field rows 'identity:))
-         (closed-object (closed-field rows 'features:))
+         (match (closed-field rows 'features:)
+           (['quote (? list? names)]
+            (unless (andmap symbol? names) (error "invalid Feature names" names)))
+           (value (closed-object value)))
          (def baseline (closed-object (closed-field rows 'core:)))
          (closed-field baseline 'scope-contract:)
          (closed-field baseline 'exports:)
@@ -391,6 +394,10 @@
        (def (role-values)
          (with-syntax ((constructor constructor) (loader loader))
            #'(constructor loader '((role exports ...) ...))))
+       (def (named-features? value)
+         (match (syntax->datum value)
+           (['quote (? list? _names)] #t)
+           (else #f)))
        (def (stock-publication form direct?)
          ;; A fully known frame requires no synthesized lexical slot
          ;; transformers. All unknown source still uses declaration .def.
@@ -436,6 +443,9 @@
                        (alias-names (map car require-rows)))
                   (known (and (andmap (cut memq <> '(identity core features tags)) root-names)
                               (assq 'features root-rows)
+                              ;; The declaration macro captures the owner-bound
+                              ;; Feature reader for named source entrypoints.
+                              (not (named-features? (field root-rows 'features)))
                               (andmap (cut memq <> '(requires scope-contract exports)) core-names)
                               (assq 'scope-contract core-rows)
                               (assq 'exports core-rows)))
@@ -545,6 +555,8 @@
                 (case (stx-e key)
                   ((core:) (wrap-core value shadows))
                   ((identity:) value)
+                  ((features:)
+                   (if (named-features? value) value (wrap value core-reference shadows)))
                   (else (wrap value core-reference shadows)))))))
               (syntax/loc form (head name . slots)))))))
        (def private? (and (eq? (stx-e #'resolver) #f) (pair? forms) (null? (cdr forms))))

@@ -8,7 +8,7 @@
         (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
         (only-in :clan/poo/slot-observation slot-read-revision slot-read-instance slot-read-value)
         (only-in :clan/poo/mop Type Type. Bool Object define-type element?)
-        (only-in :clan/poo/type Record Symbol List))
+        (only-in :clan/poo/type Record Symbol List Or))
 (export ModulePublicationContract ModuleScopeContextContract ContributionRouteContract ModuleInterfaceViewContract
         ModuleFeatureRefinementContract
         module-publication? module-scope-context? requirement-option
@@ -56,7 +56,7 @@
 (define-type (ContributionRoutes @ Type.) .element?: (named-values? ContributionRouteContract))
 (define-type (AdmissionRoutes @ Type.) .element?: (named-values? AdmissionRoute))
 (def PublicationShape
-  (Record identity: [Symbol] features: [Object]
+  (Record identity: [Symbol] features: [(Or Object (List Symbol))]
           core: [(Record contributions: [ContributionRoutes optional: #t]
                          admissions: [AdmissionRoutes optional: #t]
                          requires: [Requirements] scope-contract: [ScopeType] link: [Callable])]))

@@ -8,7 +8,8 @@
         (for-syntax :gerbil/expander
                     :yuanxu/module-system/source/role-forms))
 (export .def include-module-body export-role-config define-module-build-binding
-        current-module-build-phase? current-module-build-resolver)
+        current-module-build-phase? current-module-build-resolver current-module-feature-reader)
+(def current-module-feature-reader (make-parameter #f))
 (begin-syntax
   ;; Project only the direct runtime fields of a publication frame. Payloads
   ;; remain syntax; .def/ctx and .o/ctx own object semantics and slot binding.
@@ -41,6 +42,18 @@
       (syntax-case row ()
         ((_ value) #'value)
         (_ (raise-syntax-error #f "publication field must be a direct runtime value slot" row)))))
+  (def (interface-role-imports stx (prepared-roles? #t))
+    (def location (stx-source stx))
+    (def file (and location (vector-ref location 0)))
+    (if (and (string? file) (string=? (path-strip-directory file) "interface.ss")
+             (or (not prepared-roles?)
+                 ;; A prepared Module wrapper already imports its roles.
+                 (let (module (core-context-top (current-expander-context) module-context?))
+                   (and module (string? (module-context-path module))
+                        (equal? (path-normalize file) (path-normalize (module-context-path module)))))))
+      (map (lambda (path) (datum->syntax (stx-car stx) `(import ,path) location))
+           (module-publication-role-imports (path-directory file) module-regular-role-file?))
+      '()))
   (def (object-parts value)
     (syntax-case value (runtime-.o)
       ((runtime-.o (:: options ...) body ...)
@@ -91,6 +104,17 @@
      (with-syntax ((context stx))
        #'(runtime-.def/ctx context binding body ...)))
     ((_ binding body ...)
+     (and (eq? (stx-e #'binding) 'Feature)
+          (let (location (stx-source stx))
+            (module-feature-declaration? (and location (vector-ref location 0)) '(.def Feature))))
+     (with-syntax ((context stx)
+                   ((row ...) (publication-fields stx #'(body ...)))
+                   ((role-import ...) (interface-role-imports stx #f)))
+       (syntax/loc stx
+         (begin role-import ...
+                (runtime-.def/ctx context binding row ...)
+                (export binding)))))
+    ((_ binding body ...)
      (let* ((rows (publication-fields stx #'(body ...)))
             (core-row (slot-row rows 'core))
             (core-value (lower-core (slot-value rows 'core stx)))
@@ -99,8 +123,22 @@
                     (name (identifier? #'name) #'name)
                     (_ (raise-syntax-error #f "expected a .def binding" #'binding)))))
        (slot-value rows 'identity stx)
-       (slot-value rows 'features stx)
+       (def feature-names (syntax->datum (slot-value rows 'features stx)))
+       (def feature-reader
+         (and (pair? feature-names) (eq? (car feature-names) 'quote)
+              (pair? (cdr feature-names)) (list? (cadr feature-names))
+              (genident 'read-feature)))
        (with-syntax ((context stx) (name name)
+                     ((feature-binding ...)
+                      (if feature-reader
+                        (with-syntax ((reader feature-reader))
+                          (syntax->list #'((def reader (current-module-feature-reader)))))
+                        '()))
+                     ((feature-row ...)
+                      (if feature-reader
+                        (with-syntax ((reader feature-reader))
+                          (syntax->list #'((feature-reader reader))))
+                        '()))
                      ((build-binding ...)
                       (let* ((location (stx-source stx))
                              (file (and location (vector-ref location 0)))
@@ -116,22 +154,7 @@
                           (with-syntax ((build-name build-name))
                             (syntax->list #'((define-module-build-binding build-name))))
                           '())))
-                     ((role-import ...)
-                      (let* ((location (stx-source stx))
-                             (file (and location (vector-ref location 0))))
-                       (if (and (string? file) (string=? (path-strip-directory file) "interface.ss")
-                                 ;; A prepared wrapper already imports prepared
-                                 ;; roles. Following the include's original source
-                                 ;; location would import bare config.ss a second time.
-                                 (let (module (core-context-top (current-expander-context) module-context?))
-                                   (and module (string? (module-context-path module))
-                                        (equal? (path-normalize file)
-                                                (path-normalize (module-context-path module))))))
-                          (map (lambda (path)
-                                 (datum->syntax (stx-car stx) `(import ,path) location))
-                               (module-publication-role-imports (path-directory file)
-                                                                module-regular-role-file?))
-                          '())))
+                     ((role-import ...) (interface-role-imports stx))
                      ((row ...) (map (lambda (row)
                                        (if (eq? row core-row)
                                          ;; Retain the caller's lexical slot binder and its token span.
@@ -143,7 +166,8 @@
            (begin
              role-import ...
              build-binding ...
-             (runtime-.def/ctx context binding row ...)
+             feature-binding ...
+             (runtime-.def/ctx context binding row ... feature-row ...)
              (export name))))))
     (_ (raise-syntax-error #f "expected one runtime Module declaration" stx))))
 

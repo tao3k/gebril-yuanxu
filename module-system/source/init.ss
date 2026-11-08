@@ -5,7 +5,8 @@
 (import (runtime: :clan/poo/object)
         (only-in :std/list/list any)
         (only-in :yuanxu/module-system/source/role-forms
-                 init-name? parse-module-init module-init-export-name module-interface-form?)
+                 init-name? parse-module-init module-init-export-name module-interface-form?
+                 module-feature-declaration?)
         (only-in :yuanxu/module-system/selection/objects yuanxu-user-module-selection))
 (export module-init-intent module-init-export-name module-interface-tags module-init-source-root
         module-init-compiler-source-roots
@@ -36,7 +37,8 @@
   (def forms (call-with-input-string text read-all))
   (unless (and (pair? forms) (andmap (cut module-interface-form? <> forms) forms))
     (error "invalid Interface configuration or library facade" path))
-  (any (lambda (form) (eq? (car form) '.def)) forms))
+  (any (lambda (form)
+         (and (eq? (car form) '.def) (not (module-feature-declaration? path form)))) forms))
 
 ;; A declaration belongs to its runtime module identity, not its prelude, Git
 ;; remote or the caller's filesystem spelling. init.ss is a convention, not a
@@ -51,7 +53,10 @@
 ;; Interface metadata, never a slot getter or an author callback.
 (def (module-interface-tags path text)
   (def forms (call-with-input-string text read-all))
-  (def declarations (filter (lambda (form) (and (pair? form) (eq? (car form) '.def))) forms))
+  (def declarations
+    (filter (lambda (form)
+              (and (pair? form) (eq? (car form) '.def)
+                   (not (module-feature-declaration? path form)))) forms))
   (if (not (and (pair? declarations)
                 (andmap (cut module-interface-form? <> forms) forms)))
     #f
