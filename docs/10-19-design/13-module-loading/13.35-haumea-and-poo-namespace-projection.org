@@ -1927,6 +1927,32 @@ separate native traversals overlap. A smaller private proof must retain
 the child value action and the original checks for author-contributed
 descriptors or observers.
 
+Two independent publications of the same fixture, from separate package
+origins in one process, each had 914 reachable preparation records, 899
+shared by issued identity. All 14 Profile receipt receivers were shared.
+Each publication's admission reached 356 records, of which 269 were
+shared. Of the 87 distinct records per origin, 32 belonged to two
+publication receipt receivers. The preparation Profile is therefore a
+shared replay cost in this sample. Per-owner heap attribution must count
+distinct retained state, following =ReadRetention.shared_record_once=.
+The two-source census does not measure exclusive bytes or predict the
+thousand-owner heap slope.
+
+The fresh receipt field candidate appends =responsibility-evidence= at
+construction instead of adding it with =.cc=. Lean's
+=PublicationReads.fresh_receipt_field_preserves_order= establishes the
+ordered direct-slot law for a new field. Both native lanes produced the
+same ordered fields, passed public evidence validation and issued four
+reachable read records for the three consumed fields. Each interleaved
+block constructed 8,192 receipts. In the same interpreter mode, cloning
+took 111–117 ms CPU in the constructor-only blocks and direct construction
+took 74–75 ms. Constructing and reading the receipt took 267–301 ms versus
+250–276 ms. These blocks overlap in cost and do not shorten the read
+traversal. An initializer replacement reported no calls from the installed
+compiled constructor and one call in each interpreted lane. The mixed
+compiled/interpreted comparison was discarded. The Scheme construction
+path is unchanged.
+
 The same runtime's cold dense selection stopped at the original limit after
 5,411 candidate-read calls. The incomplete first-graph phase recorded 79.37 s
 of metadata replay, 35.33 s of preparation, 47.46 s of value admission and

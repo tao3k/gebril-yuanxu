@@ -209,6 +209,27 @@ theorem source_only_preserves_open_receipt
     (receipt : SourceAuthoringReceipt Owner Role Diagnostic) :
     sourceOnlyReceipt false validate receipt = consumeSourceReceipt validate receipt := rfl
 
+-- The native copy extends the ordered direct-slot map. A stock evidence
+-- constructor can supply the final field at allocation when the field is
+-- fresh and neither constructor invocation can expose the intermediate.
+def extendReceiptSlots {Key Value : Type} [DecidableEq Key]
+    (slots : List (Key × Value)) (key : Key) (value : Value) : List (Key × Value) :=
+  match slots with
+  | [] => [(key, value)]
+  | first :: rest =>
+    if first.1 = key then (key, value) :: rest
+    else first :: extendReceiptSlots rest key value
+
+theorem fresh_receipt_field_preserves_order {Key Value : Type} [DecidableEq Key]
+    (slots : List (Key × Value)) (key : Key) (value : Value)
+    (fresh : key ∉ slots.map Prod.fst) :
+    extendReceiptSlots slots key value = slots ++ [(key, value)] := by
+  induction slots with
+  | nil => rfl
+  | cons first rest ih =>
+    simp only [List.map_cons, List.mem_cons, not_or] at fresh
+    simp [extendReceiptSlots, Ne.symm fresh.1, ih fresh.2]
+
 -- Separate snapshots can disagree. The equality applies only to a single
 -- authenticated pre-delivery read, never across an author call.
 example : joinedDispatch (Result := Nat) false true true (.ok 1) ≠

@@ -296,7 +296,11 @@ package YuanxuPayloadOwnership {
                Receipt kind does not establish privacy. Lean
                projected_private_read_window requires the exact retained
                preorder and live evidence for omitted records separately on
-               both sides of an effect. */
+               both sides of an effect.
+               Attribute replay visits per checkpoint and retained records
+               by identity across owners. Repeated traversal of a shared
+               Profile receipt increases replay work without creating a new
+               receipt receiver for each owner. */
     }
     requirement def PublicationRootSegments {
         doc /* A linked publication owns the original preparation and
