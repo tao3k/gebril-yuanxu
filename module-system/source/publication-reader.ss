@@ -494,9 +494,8 @@
                (hash-put! runtime-imports context
                  (cons (expander-context-id context) (string-copy origin)))
                (let (current! (lambda () (runtime-context? context)))
-                 (set! (reader-session-guards session)
-                   (cons (make-source-preparation #f #f #f #f current! #f #f)
-                         (reader-session-guards session)))
+                 (reader-session-add-guard! session
+                   (make-source-preparation #f #f #f #f current! #f #f))
                  (reader-enroll-candidate! session current!))))
            context))
        (def (import-request path reload?)
