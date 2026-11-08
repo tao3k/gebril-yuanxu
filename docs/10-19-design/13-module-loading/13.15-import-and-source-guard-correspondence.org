@@ -57,6 +57,65 @@ not a test-owned completed-input list.
 
 * Exact source checks
 
+** Runtime initialization and Scope support
+
+A cold AITIA consumer exposed a separate ownership error. The ordinary Config
+import reached an Orgize compiled interface and Parser's reduction-plan
+initializer. Constructing the exported generic read its initial POO revision;
+method registration then advanced that revision before the consumer read the
+completed export. Retaining the initializer's construction trace as Scope
+support made the first consumer stale immediately. Moving imports into business
+adapters or warming a business Scope would only hide this cold/hot difference.
+
+=publication-reader.ss= now records the actual Context returned by an admitted
+compiled import. The existing compiler-tool authority remains separate and is
+reused for already authenticated prerequisites. Additional runtime provenance
+checks the same Context object, its observed identity and path, and its current
+native registry owner. A printed module name or an =.ssi= suffix alone cannot
+enroll an import. These records contain no loaded value or accepted verdict.
+
+=reader-evaluation.ss= partitions only the standard compiler's original native
+import descriptors, preserving their order and the native evaluator. Successful
+one-time dependency initialization owns its construction reads; subsequent
+Scope-body reads still belong to the Scope. Failed initialization forwards the
+original exception and partial trace. Open compiler/evaluator or source-observer
+execution retains the original whole-program path. No loader, eager business
+import, refreshed old read token or second user API is added.
+
+The executable correspondence is =t/module-runtime-import-support-test.ss=:
+
+| Case | Required result |
+|------+-----------------|
+| Cold compiled construction followed by a live exported-value read | Accept; later exported-value mutation refuses the old Scope |
+| Exported initialization snapshot | Accept before and after unrelated live-state mutation |
+| Retarget the admitted Context path | Refuse old Scope consumption |
+| Open evaluator | Invoke the supplied evaluator; preserve actual value support |
+| Warm prerequisite with an open evaluator | Accept, then refuse a changed value |
+
+On the isolated candidate, all five cases completed with MODULE-OK, HARNESS-OK
+and final OK. The existing publication, source-admission, effect-support and
+failed-root collection controls passed separately. The complete build-input
+mutation gate passed both before/after order and admission suites and rejected
+all four faults with the expected refusal, retaining unchanged checkout source.
+An earlier candidate duplicated compiler-tool guards and failed the existing
+build-role source-read comparison; that failed receipt remains local. Reusing
+the original tool authority corrected it without changing the assertion.
+
+These five controls cover boundary behavior; they are not an independent
+reproducer of Parser's generic-construction failure. Their simplified native
+initializer also passed with import partitioning disabled. The original defect
+is instead checked at the real AITIA GitOps protocol consumer: disabling the
+partition with the same compiler/evaluator reproduced =module link slot support
+changed= and status 70; restoring the candidate had previously completed within
+the original 60-second gate. No compiler failure or timeout is counted as that
+counterexample. The test-only nested-fixture experiments were removed rather
+than published as false regression coverage.
+
+This is focused consumer evidence, not a completed dependency
+installation or latest-head CI receipt. In particular, the independent
+180-second cold dependency installation remains open. Compiler-policy component
+experiments do not close that gate, and no experimental flags are installed.
+
 The correspondence reuses =Admission.Source.checkSources=,
 =checkSources_certifies= and =returnCheck_certifies=. The new adapter proves:
 

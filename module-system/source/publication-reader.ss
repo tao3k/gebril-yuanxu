@@ -10,7 +10,8 @@
                  current-expander-module-import eval-syntax eval-module expander-context-id module-context-path
                  core-library-package-path-prefix module-context-code module-context?
                  current-expander-compile current-expander-eval expander-context-table syntax-e
-                 core-read-module/sexp core-resolve-module-path)
+                 core-read-module/sexp core-resolve-module-path __module-registry)
+        (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/object .o .ref .slot?)
         (only-in :yuanxu/module-system/source/collection
                  yuanxu-module-source-collection-optional-entrypoint)
@@ -85,6 +86,24 @@
             (input-values '()) (input-paths (make-hash-table)) (gerbil-import (current-expander-module-import)))
        (def feature-inputs #f)
        (def reading-feature? #f)
+       ;; Runtime import provenance is separate from compiler-tool authority.
+       ;; Only the real admitted import below can enroll a Context; names or
+       ;; artifact suffixes supplied by a caller cannot create this evidence.
+       (def runtime-imports (make-hash-table-eq))
+       (def (runtime-context? context)
+         (or (and (module-context? context)
+                  (captured-tool-context? (reader-session-compiler-contexts session) context)
+                  (let (path (module-context-path context))
+                    (and (string? path) (string=? (path-extension path) ".ssi"))))
+          (let (origin (hash-get runtime-imports context))
+           (and origin
+             (begin
+               (require-read-route! 'compiler-module-cache __module-registry #f)
+               (if (and (eq? (car origin) (expander-context-id context))
+                        (equal? (cdr origin) (module-context-path context))
+                        (eq? context (or (hash-get __module-registry (cdr origin))
+                                         (hash-get __module-registry (path-normalize (cdr origin))))))
+                 #t (error "runtime import context changed")))))))
        (def (publication-inputs)
          (reverse
            (if feature-inputs
@@ -99,7 +118,8 @@
                    (lambda (results reads-current! _roots)
                      (hash-put! (reader-session-kernel-initializers session) context
                        (lambda () (reads-current!) (sources-current!)))
-                     results)))))))
+                     results)))))
+           runtime-context?))
        (def (write-wrapper path forms runtime-identity)
          (let* ((name (string-append (number->string (hash-length wrappers)) "-" (path-strip-directory path)))
                 (target (path-expand name directory)))
@@ -452,6 +472,19 @@
              (parameterize ((current-module-source-phase 'build-role-after)) (reader-current! session)) value)))
        (def deferred-roles (.ref prepared 'deferred-roles))
        (def (publication-import path (reload? #f))
+         (let* ((context (import-request path reload?))
+                (origin (module-context-path context)))
+           (when (and (string? origin) (string=? (path-extension origin) ".ssi"))
+             (unless (runtime-context? context)
+               (hash-put! runtime-imports context
+                 (cons (expander-context-id context) (string-copy origin)))
+               (let (current! (lambda () (runtime-context? context)))
+                 (set! (reader-session-guards session)
+                   (cons (make-source-preparation #f #f #f #f current! #f #f)
+                         (reader-session-guards session)))
+                 (reader-enroll-candidate! session current!))))
+           context))
+       (def (import-request path reload?)
          ;; Native import arguments may carry syntax/source locations. Resolve
          ;; file requests before importing: expansion can execute initializers.
          (def requested (syntax-e path))
