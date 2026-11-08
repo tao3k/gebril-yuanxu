@@ -6,6 +6,12 @@
                  current-expander-context current-expander-phi module-context?
                  module-context-code module-context-path expander-context-table
                  module-context-import)
+        (only-in :gerbil/runtime __compile-top __compile-top-source)
+        (only-in :gerbil/expander module-import? module-import-source module-export-context
+                 module-import-phi import-set? import-set-source import-set-phi)
+        (only-in :std/list/list append-map)
+        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!)
+        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  module-source-measure-operation module-source-type)
         (only-in :gerbil/runtime/loader list-modules))
@@ -21,7 +27,8 @@
   (unless (equal? path canonical) (hash-put! owned path origin)))
 
 (def (reader-evaluation-observers owned completed
-                                  (initialize (lambda (_context action) (action))))
+                                  (initialize (lambda (_context action) (action)))
+                                  (runtime-context? (lambda (_context) #f)))
   ;; Gerbil runtime imports bypass current-expander-module-eval. Pair the exact
   ;; phi-zero module body with its compiled program, then observe successful
   ;; evaluation of that same program. Macro-phase or partial evaluation alone
@@ -29,11 +36,77 @@
   (def gerbil-compile (current-expander-compile))
   (def gerbil-eval (current-expander-eval))
   (def pending (make-hash-table-eq))
-  (def (evaluate-body program label)
+  (def (code expression)
+    (if (##source? expression) (##source-code expression) expression))
+  (def (runtime-import? entry)
+    (cond
+     ((module-context? entry) (runtime-context? entry))
+     ((module-import? entry)
+      (and (zero? (module-import-phi entry))
+           (runtime-context? (module-export-context (module-import-source entry)))))
+     ((import-set? entry)
+      (and (zero? (import-set-phi entry)) (runtime-context? (import-set-source entry))))
+     (else #f)))
+  (def (import-parts program)
+    (and (or (eq? gerbil-compile __compile-top) (eq? gerbil-compile __compile-top-source))
+         (eq? gerbil-eval ##eval)
+      (let* ((wrapped? (and (pair? program) (eq? (car program) __noexpand:)))
+             (body (code (if wrapped? (cdr program) program))))
+        (def (wrap expression) (if wrapped? (cons __noexpand: expression) expression))
+        (and (pair? body) (eq? (code (car body)) 'begin)
+          (let (split? #f)
+            (def parts
+              (append-map
+                (lambda (expression)
+                  (def form (code expression))
+                  (if (and (list? form) (= (length form) 2)
+                           (eq? (code (car form)) '__eval-import)
+                           (pair? (code (cadr form)))
+                           (eq? (code (car (code (cadr form)))) 'quote))
+                    (let (entries (cadr (code (cadr form))))
+                      (if (and (list? entries) (ormap runtime-import? entries))
+                        (begin
+                          (set! split? #t)
+                          (map (lambda (entry)
+                                 (cons (and (runtime-import? entry) entry)
+                                   (wrap (##make-source
+                                     (list (car form) (list 'quote (list entry)))
+                                     (and (##source? expression) (##source-locat expression))))))
+                            entries))
+                        (list (cons #f (wrap expression)))))
+                    (list (cons #f (wrap expression)))))
+                (cdr body)))
+            (and split? parts))))))
+  (def (initialize-runtime entry expression)
+    (unless (runtime-import? entry) (error "runtime import provenance changed"))
+    (def failed? #f)
+    (def failure #f)
+    (defvalues (results reads)
+      (%call-with-recorded-slot-reads
+        (lambda ()
+          (with-catch (lambda (cause) (set! failed? #t) (set! failure cause) '())
+            (lambda () (call-with-values (lambda () (gerbil-eval expression)) list))))))
+    (when failed? (%record-slot-reads! reads) (raise failure))
+    (unless (runtime-import? entry) (error "runtime import provenance changed during initialization"))
+    (apply values results))
+  (def (evaluate-program program parts)
+    ;; Never split an open compiler/evaluator or observer execution. The
+    ;; standard compiler's exact import descriptors retain Gerbil's ordering,
+    ;; one-time promises and errors; no loader or result cache is introduced.
+    (if (or (not parts) (current-module-source-observer)
+            (not (owned-read-function-scope?)))
+      (gerbil-eval program)
+      (let loop ((parts parts))
+        (def part (car parts))
+        (def (invoke)
+          (if (car part) (initialize-runtime (car part) (cdr part)) (gerbil-eval (cdr part))))
+        (if (null? (cdr parts)) (invoke)
+          (begin (invoke) (loop (cdr parts)))))))
+  (def (evaluate-body program label parts)
     (def verbosity (string->number (getenv "GERBIL_BUILD_VERBOSE" "0")))
-    (if (not (and verbosity (>= verbosity 4))) (gerbil-eval program)
+    (if (not (and verbosity (>= verbosity 4))) (evaluate-program program parts)
       (let (before (list->hash-table (map (lambda (row) (cons (car row) #t)) (list-modules))))
-        (begin0 (gerbil-eval program)
+        (begin0 (evaluate-program program parts)
           (write (list 'READER-NATIVE-LOAD label
                    (filter (lambda (row) (not (hash-key? before (car row)))) (list-modules))))
           (newline) (force-output)))))
@@ -72,7 +145,7 @@
                   (lambda () (gerbil-compile form)))))
         (when (and (pair? program) origin)
           (body-event 'reader-body-compiled context)
-          (hash-put! pending program (list context form origin)))
+          (hash-put! pending program (list context form origin (import-parts program))))
         program)))
   (def (evaluate program)
     (let (entry (hash-get pending program))
@@ -93,7 +166,7 @@
                     (initialize context
                       (lambda ()
                         (module-source-measure-operation (list 'reader-initializer-body label)
-                          (lambda () (evaluate-body program label)))))))))))
+                          (lambda () (evaluate-body program label (cadddr entry))))))))))))
         (lambda results
           (when entry
             (hash-remove! pending program)
