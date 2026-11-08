@@ -120,18 +120,23 @@
                 core: (.o requires: (.o) scope-contract: FixtureContract
                           exports: (.o Greeting: 'local selected: Greeting))
                 features: (.o))))))
-    (test-case "the link checks an unused dependency before entering the export body"
+    (test-case "the link checks unused dependencies in order before entering the export body"
       (with-publication-source
         (lambda (_root _module-root source _view)
           (def publication (.call (module-publication-reader) read source))
           (def link (.get publication core link))
-          (check-exception (link (.o Shared: (error "dependency read")))
+          (def reads '())
+          (check-exception (link (.o Shared: (begin (set! reads (cons 'Shared reads)) (.o))
+                                      Second: (begin (set! reads (cons 'Second reads))
+                                                     (error "dependency read"))))
             (lambda (cause)
-              (and (Error? cause) (string=? (Error-message cause) "dependency read")))))
+              (and (Error? cause) (string=? (Error-message cause) "dependency read"))))
+          (check-equal? (reverse reads) '(Shared Second)))
         roles:
         (.o interface:
             '((.def Fixture identity: 'custom/example
-                core: (.o requires: (.o Shared: (.o module-id: 'custom/shared contract: FixtureContract))
+                core: (.o requires: (.o Shared: (.o module-id: 'custom/shared contract: FixtureContract)
+                                        Second: (.o module-id: 'custom/second contract: FixtureContract))
                           scope-contract: FixtureContract
                           exports: (error "export ran before dependency"))
                 features: (.o))))))

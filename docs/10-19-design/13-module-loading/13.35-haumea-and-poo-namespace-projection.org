@@ -1826,7 +1826,12 @@ and the first refusal. After Gerbil expansion and again after an author
 callback, authenticate the live state at that boundary before delivering
 the result. Lean =PublicationReads.shared_stock_reads_preserve_owner_and_first_refusal=
 and =shared_stock_interface_refuses_mutation_at_each_effect= model this
-contract. The production Scheme emitter still uses the existing path.
+contract. The private Scheme emitter now lowers only this Gerbil-checked
+grammar to data for =stock-interface-publication=. The native helper creates
+fresh POO SlotSpecs per owner and invokes the actual role receiver on demand.
+The Reader accepts the same Context-bound delivery and keeps its existing
+currentness and admission checks. Compiled exports and open Interface syntax
+still use Gerbil's declaration expansion.
 
 An ordered role-path capture is equivalent only while the original path
 binding holds. In the alternating 256-owner role-check probe, captured
