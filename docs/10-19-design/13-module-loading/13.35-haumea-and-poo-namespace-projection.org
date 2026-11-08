@@ -1903,6 +1903,17 @@ visits the same 713. Checking the checked Profile's output inventory visits
 and all seven role identities. That equality does not establish freshness
 of the Type dependencies and cannot replace their checks.
 
+Of the Profile Type's 713 distinct records, 224 belong to 14 classification
+or validation receipts. The receipts account for 210 of the 573 Type roots.
+Filtering those roots leaves the same 489 external records as filtering the
+original traversal, in a different preorder. An open native read observer
+also retained a validation receipt. After its =accepted?= slot changed, the
+full checkpoint refused and the filtered checkpoint succeeded. These are
+independent reasons to retain the issued support.
+=PublicationReads.projected_private_read_window= requires the exact retained
+preorder and live authentication of omitted reads on both sides of an effect.
+Any production reduction must establish these premises at the producer.
+
 The same runtime's cold dense selection stopped at the original limit after
 5,411 candidate-read calls. The incomplete first-graph phase recorded 79.37 s
 of metadata replay, 35.33 s of preparation, 47.46 s of value admission and

@@ -291,7 +291,12 @@ package YuanxuPayloadOwnership {
                preserves this independent failure. Preserve the original
                return refusal order when separating traversal support.
                Lean nested_lane_return_can_change_first_refusal shows why
-               nesting protected replay calls does not establish this order. */
+               nesting protected replay calls does not establish this order.
+               An observer may retain and mutate a validation receipt.
+               Receipt kind does not establish privacy. Lean
+               projected_private_read_window requires the exact retained
+               preorder and live evidence for omitted records separately on
+               both sides of an effect. */
     }
     requirement def PublicationRootSegments {
         doc /* A linked publication owns the original preparation and

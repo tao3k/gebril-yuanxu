@@ -358,6 +358,34 @@ theorem profile_omission_can_hide_native_refusal
   simp only [authenticate_append, beforeOk, afterOk, authenticateAndVisit, profileStale,
     Except.bind, bind, and_self]
 
+-- Projecting a producer's internal proof requires its actual retained
+-- preorder, not just a receiver tag or the checked value's identity.
+theorem private_reads_preserve_external_refusal
+    (auth : Read → Except Failure Unit) (keep : Read → Bool) (reads : List Read)
+    (privateCurrent : ∀ read, keep read = false → auth read = .ok ()) :
+    authenticateAndVisit auth (fun _ => ()) (reads.filter keep) =
+      authenticateAndVisit auth (fun _ => ()) reads := by
+  induction reads with
+  | nil => rfl
+  | cons read rest ih =>
+    cases kept : keep read with
+    | false => simp [kept, authenticateAndVisit, privateCurrent read kept, ih, Except.bind, bind]
+    | true => simp [kept, authenticateAndVisit, ih]
+
+-- The producer must discharge privacy/currentness at BOTH sides of an
+-- effect. The currentness of the kept reads is always checked anew.
+theorem projected_private_read_window
+    (before after : Read → Except Failure Unit) (keep : Read → Bool)
+    (reads projected : List Read) (action : Except Failure Result)
+    (exactOrder : projected = reads.filter keep)
+    (privateBefore : ∀ read, keep read = false → before read = .ok ())
+    (privateAfter : ∀ read, keep read = false → after read = .ok ()) :
+    readWindow before after (fun _ => ()) projected action =
+      readWindow before after (fun _ => ()) reads action := by
+  subst projected
+  simp only [readWindow, private_reads_preserve_external_refusal before keep reads privateBefore,
+    private_reads_preserve_external_refusal after keep reads privateAfter]
+
 /-- The two original native spines remain separate until a checkpoint needs
 their concatenation. Neither phase's issued records are reconstructed. -/
 def rootSegments (row : List Read × List Read) : List (List Read) := [row.1, row.2]
@@ -379,7 +407,7 @@ theorem segmented_roots_preserve_first_refusal
 -- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,
 -- unchanged real observer delivery, and no nonlocal continuation escape.
--- This does not prove SDK ownership, GC behavior or a memory byte bound.
+-- This does not prove toolchain ownership, GC behavior or a memory byte bound.
 -- Each result carries its own ordered read delivery. Fixed support can be
 -- authenticated once for a closed run of these independently evaluated rows.
 def checkStockEach {Failure Result : Type} (check : Except Failure Unit) :
