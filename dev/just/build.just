@@ -3,13 +3,11 @@
 build:
     #!/usr/bin/env bash
     set -euo pipefail
-    prefix="${GERBIL_PATH:-}"
+    export GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}"
     source=""
-    if [[ -n "$prefix" ]]; then
-        rm -f -- "$prefix/test-build-source"
-        if [[ -z "$(git status --porcelain --untracked-files=normal 2>/dev/null)" ]]; then
-            source="$(git rev-parse HEAD 2>/dev/null || true)"
-        fi
+    rm -f -- "$GERBIL_PATH/test-build-source"
+    if [[ -z "$(git status --porcelain --untracked-files=normal 2>/dev/null)" ]]; then
+        source="$(git rev-parse HEAD 2>/dev/null || true)"
     fi
     GERBIL_BUILD_VERBOSE="${GERBIL_BUILD_VERBOSE:-1}" {{ gerbil_compiler_environment }} gerbil build
     if [[ -n "$source" && "$source" == "$(git rev-parse HEAD)" &&

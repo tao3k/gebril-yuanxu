@@ -85,11 +85,12 @@
   (def inputs (qualification-field cohort 'build-inputs))
   (and (pair? inputs)
        (qualification-field cohort 'clean?)
+       (qualification-field cohort 'poo-tracked-clean?)
        (andmap (lambda (key)
                  (def value (qualification-field cohort key))
                  (and value (equal? value (qualification-field inputs key))))
                '(source source-tree package-declaration gerbil gambit just release-manifest
-                 poo gerbil-gcc compiler-version build-cores))
+                 poo poo-tracked-clean? gerbil-gcc compiler-version build-cores))
        (andmap (lambda (key)
                  (equal? (qualification-field cohort key) (qualification-field inputs key)))
                '(load-path gambopt compiler-path library-path pkg-config-path))
@@ -119,6 +120,9 @@
   (def checkout (path-expand "pkg/github.com/tao3k/gerbil-poo" prefix))
   (def poo (and (file-exists? checkout)
                 (qualification-command-output ["git" "-C" checkout "rev-parse" "HEAD"])))
+  (def poo-changes (and poo
+                        (qualification-command-output
+                          ["git" "-C" checkout "status" "--porcelain" "--untracked-files=no"])))
   (def just-version (qualification-command-output '("just" "--version")))
   (def gcc (getenv "GERBIL_GCC" "gcc"))
   (def compiler-version (qualification-command-output [gcc "--version"]))
@@ -132,6 +136,7 @@
         (cons 'just (and just-version (car (string-split just-version #\newline))))
         (cons 'release-manifest release)
         (cons 'poo (and poo (car (string-split poo #\newline))))
+        (cons 'poo-tracked-clean? (and poo-changes (string-empty? poo-changes)))
         (cons 'load-path (load-path))
         (cons 'gambopt (getenv "GAMBOPT" #f))
         (cons 'build-cores (getenv "GERBIL_BUILD_CORES" #f))

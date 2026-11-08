@@ -144,7 +144,10 @@ local allocation diagnostic.
 Use the commit actually checked out in the CI log. For a pull request this may
 be GitHub's merge commit. Run =just test-qualification= before timing a local
 reproduction. It checks the build and test inputs in the same prefix, including
-the POO revision, compiler, build concurrency, and Gerbil release manifest.
+the POO revision and tracked source state, compiler, build concurrency, and
+Gerbil release manifest. The build and test recipes use =$PWD/.gerbil= when
+=GERBIL_PATH= is unset. Generated dependency files such as =TAGS= can remain
+untracked.
 Match the runner's compiler and concurrency when investigating compiler time.
 
 Core's =t/= tests cover shared semantics. Agentic AI Lab retains product selection
