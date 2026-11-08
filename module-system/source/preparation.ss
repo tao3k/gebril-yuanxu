@@ -298,10 +298,10 @@
           (unless (and (package-snapshot-current? package-sources)
                        (andmap
                          (lambda (role)
-                           (let (file (path-expand
-                                        (string-append (symbol->string role) ".ss") root))
-                             (if (hash-key? texts file)
-                               (equal? (hash-ref texts file) (module-source-read file))
+                           (let* ((file (path-expand (module-role-file role) root))
+                                  (expected (hash-get texts file)))
+                             (if expected
+                               (equal? expected (module-source-read file))
                                (not (module-source-type file)))))
                          yuanxu-module-allowed-entrypoint-roles))
             (error "stale prepared Module publication" owner path)))
@@ -378,8 +378,8 @@
             source-inputs:
             (append (package-source-inputs package-sources) prelude-inputs
                     (map (lambda (role)
-                           (let (file (path-expand (string-append (symbol->string role) ".ss") root))
-                             (cons file (and (hash-key? texts file) (hash-ref texts file)))))
+                           (let (file (path-expand (module-role-file role) root))
+                             (cons file (hash-get texts file))))
                          yuanxu-module-allowed-entrypoint-roles))
             role-sources: (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles)
             build-source: (let (file (path-expand "build.ss" root))

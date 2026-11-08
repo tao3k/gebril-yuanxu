@@ -65,7 +65,12 @@ package YuanxuPayloadOwnership {
                only while that path binding holds. An open source observer
                can retarget a later role during the same guard. Lean
                PublicationReads.retargeted_role_cannot_reuse_prepared_path
-               and the candidate-stage control require the live refusal. */
+               and the candidate-stage control require the live refusal.
+               Resolve each role at its original checkpoint and retrieve
+               its optional captured text in one lookup. A present role
+               still reads its current bytes and an absent role still checks
+               for a newly created input. Lean PublicationReads
+               role_text_lookup_preserves_live_check preserves either check. */
     }
     requirement def ClosedFrameCaptureOwnership {
         doc /* Distinguish the literal-slot lowering premise from the shared

@@ -1856,6 +1856,13 @@ while checking =types.ss=. The captured-path candidate admitted a later
 live path resolution. =PublicationReads.retargeted_role_cannot_reuse_prepared_path=
 and the candidate-stage control preserve the distinction.
 
+Once the live role path is resolved, the prepared text table returns
+its optional text in one lookup. The checker still reads current bytes
+for a present role and tests for a newly created file for an absent role.
+The table stores only strings, so an empty string remains distinct from
+absence. =PublicationReads.role_text_lookup_preserves_live_check= keeps
+the original source operation for either case.
+
 The 256-owner terminal heap probe released 1,717,904 bytes after replacing
 the private delayed-role slot and invalidating its attached state. This
 includes cache invalidation and gives no exclusive closure size. The

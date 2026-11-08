@@ -1102,6 +1102,17 @@ theorem prepared_absence_is_checked_again (stale : Failure) :
     checkSourceRows (fun (_ : Nat) (_ : Option Unit) => .error stale)
       [(0, none)] = .error stale := rfl
 
+-- The private role table stores only source texts. Its optional lookup
+-- supplies both presence and bytes, while the live path is still resolved
+-- independently for every role. No source comparison is retained.
+theorem role_text_lookup_preserves_live_check
+    {Path Bytes Failure : Type} (path : Path) (expected : Option Bytes)
+    (present : Path → Bytes → Except Failure Unit)
+    (absent : Path → Except Failure Unit) :
+    (if expected.isSome then expected.elim (absent path) (present path) else absent path) =
+      expected.elim (absent path) (present path) := by
+  cases expected <;> rfl
+
 -- An observer may change the path of a later role while the guard is active.
 -- Rechecking the original path cannot establish the required live path.
 theorem retargeted_role_cannot_reuse_prepared_path :
