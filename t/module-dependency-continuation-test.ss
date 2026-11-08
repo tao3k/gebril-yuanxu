@@ -10,7 +10,8 @@
         (only-in :yuanxu/module-system/source/admission
                  module-source-read current-module-source-observer admit-module-value!)
         (only-in :yuanxu/module-system/source/publication ModulePublicationContract
-                 module-publication-contract-current? module-publication-dependency-projection)
+                 module-publication-contract-current? module-publication-dependency-projection
+                 module-publication-recorded-dependencies)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file))
 (export module-dependency-continuation-test)
@@ -18,6 +19,10 @@
   (test-suite "Runtime dependency continuation with the maintained publication producer"
     (yuanxu-test-case "dependency projection requires actual tokens and never forces a cold leaf"
       (def reads (make-hash-table-eq))
+      (def roots '())
+      (def (remember! read)
+        (set! roots (cons read roots))
+        (hash-put! reads read #t))
       (def calls 0)
       (def Scope (.cc Type. identity: 'test/scope .element?: object?))
       (def Requirement (.o module-id: (begin (set! calls (+ calls 1)) 'custom/other) contract: Scope))
@@ -27,13 +32,15 @@
                       scope-contract: Scope link: (lambda (_bindings) (.o)))))
       (def evidence
         (call-with-slot-read-observer
-          (lambda (read) (hash-put! reads read #t))
+          remember!
           (lambda () (admit-module-value! ModulePublicationContract Publication #f))))
       (def candidate (.get evidence candidate))
       (check-equal? calls 1)
       (check-equal? (module-publication-dependency-projection candidate (lambda (_read) #f)) #f)
       (check-equal? (module-publication-dependency-projection candidate
                       (lambda (read) (hash-key? reads read))) '(custom/other))
+      (check-equal? (module-publication-recorded-dependencies candidate '()) #f)
+      (check-equal? (module-publication-recorded-dependencies candidate roots) '(custom/other))
       (def requires (.get candidate core requires))
       (def names-read (hash-ref (object-%reads requires) '(names)))
       (check-equal? (eq? (slot-read-value names-read) (object-%all-slots requires)) #f)
@@ -53,8 +60,9 @@
       (set-cdr! snapshot snapshot)
       (check-equal? (module-publication-dependency-projection candidate
                       (lambda (read) (hash-key? reads read))) #f)
+      (check-equal? (module-publication-recorded-dependencies candidate roots) #f)
       (call-with-slot-read-observer
-        (lambda (read) (hash-put! reads read #t))
+        remember!
         (lambda () (admit-module-value! ModulePublicationContract candidate #f)))
       (check-equal? (eq? names-read (hash-ref (object-%reads requires) '(names))) #f)
       (check-equal? (object-read-issued? names-read) #f)
@@ -66,6 +74,7 @@
         ($thunk-slot-spec (lambda () (set! calls (+ calls 1)) 'custom/replaced)))
       (check-equal? (module-publication-dependency-projection candidate
                       (lambda (read) (hash-key? reads read))) #f)
+      (check-equal? (module-publication-recorded-dependencies candidate roots) #f)
       (check-equal? calls 1))
     (yuanxu-test-case "pending source changes refuse before a declaration or Feature callback"
       (for-each

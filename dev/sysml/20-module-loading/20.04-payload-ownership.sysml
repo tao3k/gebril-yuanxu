@@ -314,7 +314,12 @@ package YuanxuPayloadOwnership {
                the two segments to its existing POO index in original
                owner and phase order. Observed checks keep their separate
                boundaries. Lean PublicationReads.flatten_root_segments
-               preserves the ordered signed input and the first refusal. */
+               preserves the ordered signed input and the first refusal.
+               Dependency projection resolves its first three membership
+               probes in the original capture. A wider projection builds
+               the same temporary eq? index over those roots. Lean
+               bounded_recorded_lookup_preserves_ordered_membership keeps
+               the query order and answers. No live check is removed. */
     }
     requirement def RecordedReaderHandoff {
         doc /* A protected native frame authenticates entry before the

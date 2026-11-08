@@ -516,6 +516,19 @@ theorem segmented_roots_preserve_first_refusal
       authenticateAndVisit auth (fun _ => ()) (rows.map fun row => row.1 ++ row.2).flatten := by
   rw [flatten_root_segments]
 
+-- Only recorded identity membership is selected here. The projection's
+-- live issuer and receiver checks remain in their original order.
+theorem bounded_recorded_lookup_preserves_ordered_membership
+    (scan indexed : Read → Bool) (queries : List Read) (budget : Nat)
+    (exactMembership : ∀ read, indexed read = scan read) :
+    (queries.take budget).map scan ++ (queries.drop budget).map indexed =
+      queries.map indexed := by
+  have scanned : (queries.take budget).map scan = (queries.take budget).map indexed := by
+    apply List.map_congr_left
+    intro read _
+    exact (exactMembership read).symm
+  rw [scanned, ← List.map_append, List.take_append_drop]
+
 -- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,
 -- unchanged real observer delivery, and no nonlocal continuation escape.

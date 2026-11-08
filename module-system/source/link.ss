@@ -658,23 +658,20 @@
                        cons))))
                (source-value (car pair))
                (publication-value (cdr pair))
-               (reads (make-hash-table-eq))
-               (evidence-value
+               ((values reads evidence-value)
                  (module-source-measure-operation 'publication-admission
                    (lambda ()
                      (call-with-publication-reads
                        (lambda ()
                          (admit-module-publication! source-value id publication-value context-value))
                        (lambda (results _current! roots)
-                         (for-each (lambda (read) (hash-put! reads read #t)) roots)
-                         results)
+                         (cons roots results))
                        ;; A caller's getter still owns EVERY dependency edge
                        ;; occurrence. This capture is not a replay-root set.
                        unique-roots?: #f))))
                (checked-publication (.ref evidence-value 'candidate))
                (dependency-ids
-                 (module-publication-dependency-projection checked-publication
-                   (lambda (read) (hash-key? reads read))))
+                 (module-publication-recorded-dependencies checked-publication reads))
                (record (make-linked-publication source-value checked-publication
                                                 evidence-value dependency-ids #f #f #f #f)))
           ;; Only the runtime paired selection can postpone this check across

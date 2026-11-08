@@ -12,7 +12,8 @@
 (export ModulePublicationContract ModuleScopeContextContract ContributionRouteContract ModuleInterfaceViewContract
         ModuleFeatureRefinementContract
         module-publication? module-scope-context? requirement-option
-        module-publication-contract-current? module-publication-dependency-projection)
+        module-publication-contract-current? module-publication-dependency-projection
+        module-publication-recorded-dependencies)
 (def (has-slots? value names)
   (and (object? value) (andmap (cut .slot? value <>) names)))
 (define-type (Callable @ Type.) .element?: procedure?)
@@ -112,6 +113,21 @@
                                 (unless (symbol? id) (set! complete? #f))
                                 id)) names))
                   (and complete? ids)))))))
+(def (module-publication-recorded-dependencies value roots)
+  ;; An empty requires object needs only core, requires and its names token.
+  ;; Check those directly in the original capture. A dependency edge can
+  ;; demand more tokens, so retain the original eq? index for wider projections.
+  (def remaining 3)
+  (def index #f)
+  (module-publication-dependency-projection value
+    (lambda (read)
+      (if (positive? remaining)
+        (begin (set! remaining (1- remaining)) (memq read roots))
+        (begin
+          (unless index
+            (set! index (make-hash-table-eq))
+            (for-each (lambda (root) (hash-put! index root #t)) roots))
+          (hash-key? index read))))))
 (def (symbol-set? value)
   (and (list? value) (andmap symbol? value)
        (= (length value) (length (delete-duplicates/hash value from-end?: #t)))))

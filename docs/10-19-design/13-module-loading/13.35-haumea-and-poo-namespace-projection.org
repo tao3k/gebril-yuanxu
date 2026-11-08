@@ -1193,6 +1193,24 @@ where to investigate replay work within each boundary. They do not justify
 sharing a freshness verdict across the role or replacing its runtime Type
 with a shape inferred from source. The temporary timing edits were removed.
 
+*** Membership in the original admission capture
+
+An empty dependency object needs three issued records to project its
+requirements. The Reader and linker check these directly in the
+original capture. A fourth query builds the same invocation-local
+identity index used for a wider dependency projection. Missing, stale
+or malformed tokens still refuse in the same order. The projection
+never forces an unobserved getter.
+=PublicationReads.bounded_recorded_lookup_preserves_ordered_membership=
+proves the same ordered answers when both operations use identity
+membership in the original roots.
+
+A real empty-requirements publication supplied 229 captured roots and
+exactly three membership probes. Alternating blocks of 10,000 matched
+projections used 0.291–0.304 s CPU with the eager index and about 0.011 s
+with the bounded scan. This isolates the dependency projection from
+Gerbil expansion, authoring, and native evidence replay.
+
 ** Package workflow acceptance remains distinct
 
 The earlier real-product harness copied a third consumer package's files and

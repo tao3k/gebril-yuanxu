@@ -8,7 +8,7 @@
         (only-in :yuanxu/module-system/source/directory
                  directory-candidate-guard? directory-candidate-guard-invoke)
         (only-in :yuanxu/module-system/source/observations module-source-measure-replay)
-        (only-in :yuanxu/module-system/source/publication module-publication-dependency-projection
+        (only-in :yuanxu/module-system/source/publication module-publication-recorded-dependencies
                  module-publication-contract-current?)
         :yuanxu/module-system/source/admission
         :yuanxu/module-system/source/objects
@@ -135,11 +135,8 @@
                             (lambda (results admission-current! roots)
                               (def ids #f)
                               (def (project-dependencies!)
-                                (def observed (make-hash-table-eq))
-                                (for-each (lambda (read) (hash-put! observed read #t)) roots)
                                 (set! ids
-                                  (module-publication-dependency-projection (cadar results)
-                                    (lambda (read) (hash-key? observed read)))))
+                                  (module-publication-recorded-dependencies (cadar results) roots)))
                               (unless fused-return? (project-dependencies!))
                               ;; Retain only the two original spines. The native
                               ;; return checkpoint borrows a temporary join.
