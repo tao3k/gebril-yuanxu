@@ -2,15 +2,81 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object "./types.ss"
-        (only-in "./progress.ss" call-with-execution-watchdog call-with-execution-cancellation
-                 make-execution-child interrupt-execution! copy-process-output)
+        (only-in "./progress.ss" call-with-execution-watchdog copy-process-output)
         (only-in :clan/poo/mop validate)
         (only-in :std/misc/process run-process)
-        (only-in :std/os/signal kill SIGKILL)
+        (only-in :std/os/signal kill SIGKILL SIGTERM)
+        (only-in :std/os/signal-handler add-signal-handler! remove-signal-handler!)
         (only-in :std/os/error os-error? OSError-errno ESRCH)
         (only-in :std/misc/ports read-all-as-string))
 (export validate-script prepare-script-command merge-script-environment preview-script
-        run-script call-with-script-coprocess run-script-batch)
+        run-script call-with-script-coprocess run-script-batch
+        call-with-execution-cancellation)
+
+;; A TERM from the enclosing process budget must unwind the resource owner,
+;; not just stop its child. Register lazily around effects/fixtures. Nested
+;; operations on the same thread share one registration; no resource is held
+;; after that dynamic extent. SIGKILL cannot run Scheme cleanup.
+(def cancellation-owner (make-parameter #f))
+(def cancellation-lock (make-mutex 'execution-cancellation))
+(def cancellation-owners '())
+(def (with-cancellation-lock thunk)
+  (dynamic-wind
+    (lambda () (mutex-lock! cancellation-lock)) thunk
+    (lambda () (mutex-unlock! cancellation-lock))))
+(def (interrupt-execution! thread action)
+  (with-catch
+    (lambda (cause)
+      (unless (or (inactive-thread-exception? cause) (abandoned-mutex-exception? cause))
+        (raise cause)))
+    (lambda () (thread-interrupt! thread action))))
+(def (cancel-executions!)
+  (def owners
+    (with-cancellation-lock
+      (lambda ()
+        (filter-map
+          (lambda (entry)
+            (and (not (vector-ref entry 2))
+                 (begin (vector-set! entry 2 #t) entry)))
+          cancellation-owners))))
+  ;; Never interrupt while holding the registry lock: unwinding unregisters.
+  (for-each
+    (lambda (entry)
+      (interrupt-execution! (vector-ref entry 0)
+        (lambda ()
+          (when (vector-ref entry 1)
+            (error "Ops execution terminated" SIGTERM)))))
+    owners))
+(def (call-with-execution-cancellation thunk)
+  (def owner (current-thread))
+  (if (eq? owner (cancellation-owner)) (thunk)
+    (let (entry (vector owner #t #f))
+      (dynamic-wind
+        (lambda ()
+          (with-cancellation-lock
+            (lambda ()
+              (vector-set! entry 1 #t)
+              (when (null? cancellation-owners)
+                (add-signal-handler! SIGTERM cancel-executions!))
+              (set! cancellation-owners (cons entry cancellation-owners)))))
+        (lambda () (parameterize ((cancellation-owner owner)) (thunk)))
+        (lambda ()
+          (with-cancellation-lock
+            (lambda ()
+              (vector-set! entry 1 #f)
+              (set! cancellation-owners (remq entry cancellation-owners))
+              (when (null? cancellation-owners)
+                (remove-signal-handler! SIGTERM)))))))))
+
+;; The enclosing owner must interrupt and join these children on unwind.
+;; Only that owner receives SIGTERM, so a child cannot start more work
+;; between its own signal and the owner's cancellation.
+(def (make-execution-child thunk)
+  (unless (eq? (cancellation-owner) (current-thread))
+    (error "Ops child requires an active cancellation owner"))
+  (make-thread
+    (lambda ()
+      (parameterize ((cancellation-owner (current-thread))) (thunk)))))
 
 ;; Pure APIs: explicit inert inputs, no environment lookup, clock, files or spawn.
 (def (validate-script script)

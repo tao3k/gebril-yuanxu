@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (runtime: :clan/poo/object)
-        (only-in :yuanxu/ops/progress call-with-execution-cancellation)
+        (only-in :yuanxu/ops/func call-with-execution-cancellation)
         (only-in "./testing-case.ss" yuanxu-test-case yuanxu-test-case/with
                  yuanxu-test-checkpoint))
 (export call-with-yuanxu-fixture with-yuanxu-fixture yuanxu-test-fixture)
