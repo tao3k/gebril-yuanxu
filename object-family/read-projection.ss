@@ -5,11 +5,12 @@
         (only-in :clan/poo/prototype-map prototype-map-length)
         (only-in :clan/poo/slot-observation
                  %call-with-recorded-slot-reads %record-slot-reads!
-                 slot-read-receiver slot-read-dependencies
+                 slot-read-receiver slot-read-dependencies slot-read-key slot-read-value
                  call-with-slot-read-observer slot-read-observers-compatible?
                  slot-read-precheck-active?))
 (export call-with-owned-read-projection current-owned-read-open-guard owned-read-value! owned-read-leaf! owned-read-copy! owned-read-derived! owned-read-open!
         owned-read-method! owned-read-hook-owner! owned-read-function-scope?
+        make-owned-method-check call-with-owned-read-method-checks
         owned-read-fields-present? call-with-owned-source-reads)
 
 ;; This region is a construction/ownership scope, never a result/currentness
@@ -17,6 +18,8 @@
 ;; receivers; ancestry or a user-supplied kind cannot claim ownership.
 (defstruct read-region (bodies owned parents open?) final: #t)
 (def current-region (make-parameter #f))
+(defstruct owned-method-check (receiver key method) final: #t)
+(def current-owned-method-checks (make-parameter '()))
 ;; An operation owner may require a fresh boundary BEFORE a known open call.
 ;; No approval is retained; the owner decides the support and sticky fallback.
 (def current-owned-read-open-guard (make-parameter #f))
@@ -78,10 +81,28 @@
   (when (current-region)
     (owned-read-hook-owner! receiver)
     (unless (memq body (read-region-bodies (current-region))) (owned-read-open!))))
+(def (call-with-owned-read-method-checks checks action value)
+  ;; The caller knows the delegated native operation. Check its actual read,
+  ;; so an earlier shape rejection cannot open the boundary prematurely.
+  (if (current-region)
+    (parameterize ((current-owned-method-checks checks)) (action value))
+    (action value)))
 (def (observe-owned-hook read)
   ;; Inspect only an actually demanded receiver. Unknown MOP execution
   ;; keeps the WHOLE trace; this neither suppresses nor stores observations.
-  (owned-read-hook-owner! (slot-read-receiver read)))
+  (def receiver (slot-read-receiver read))
+  (owned-read-hook-owner! receiver)
+  (let (checks (current-owned-method-checks))
+    (unless (null? checks)
+      (let (key (slot-read-key read))
+        (when (ormap (lambda (check)
+                       (let (owner (owned-method-check-receiver check))
+                         (and (eq? key (owned-method-check-key check))
+                              (or (not owner) (eq? receiver owner))
+                              (not (eq? (slot-read-value read)
+                                        (owned-method-check-method check))))))
+                     checks)
+          (owned-read-open!))))))
 
 ;; One maintained precheck, with a private dynamic stack of actual Reader
 ;; boundaries. Nested callers cannot replace an enclosing Reader's boundary.

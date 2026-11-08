@@ -1891,6 +1891,15 @@ the observed per-owner heap growth unexplained.
 
 *** Profile support within owner preparation
 
+The serial local platform qualification of =f2f7c34= used the original
+180-second Case and 2 GiB VM envelope. Dense selection enumerated the
+10,000 names in 1.37 s. Before the first graph timed out, 5,592 candidates
+reached admission. The 33,552 metadata checkpoint invocations accounted for
+32,179,816 completed native record visits and 80.22 s CPU. The checkpoint
+count includes all recorded lanes, so it is not a count of effect-free
+duplicates. Keep the before/after checks at native expansion and author
+effects distinct when reducing their support.
+
 The native read census of 64 real owners found 206 preparation roots and 916
 reachable records per owner. The same issued Profile root reached 728 records
 in each preparation. Of those, 698 were reachable only from that root. The
@@ -1938,6 +1947,12 @@ independent reasons to retain the issued support.
 =PublicationReads.projected_private_read_window= requires the exact retained
 preorder and live authentication of omitted reads on both sides of an effect.
 Any production reduction must establish these premises at the producer.
+=OwnedReads.retained_replay_exact_support= separates support from order.
+When the projected root list contains every retained record, its native
+traversal has exactly that support if and only if every signed dependency
+of a retained record is also retained. A retained parent can otherwise
+reintroduce a removed record. The original external preorder and
+freshness remain independent requirements.
 
 A subsequent probe retained the actual Profile validation and used
 POO's issued traversal to order its external frontier. The recorded
@@ -1956,8 +1971,19 @@ accepted. The evidence predicates now resolve the actual method once
 and run the existing open boundary before handing a receipt to a
 replacement. Lean =PublicationReads.replacement_evidence_method_cannot_outrun_refusal=
 and the Scheme evidence ownership suite cover this dispatch point.
-Further projection still requires non-escape for the complete producer,
-including nested Type calls, and the original external replay order.
+The native Record also calls the classification Type through its Slot
+check. While running the maintained Record predicate in an owned region,
+its existing read observer checks the actual classifier method delivered
+by POO. It invokes the same open boundary for a replacement before the
+method can receive the receipt. Earlier field rejection and method
+resolution retain their original order, as modeled by
+=PublicationReads.checkNestedEvidence=. A second native probe replaced
+the Slot =.slot.check= method and received the whole validation Record
+while the classifier-only guard remained closed. The same delivery check
+must cover the actual Slot method selected by native dispatch. Lean
+=PublicationReads.replaced_slot_method_cannot_expose_evidence= puts this
+check before the nested classification decision. Further projection requires
+non-escape for the complete producer and the original external replay order.
 
 Splitting the stock Type call at its existing Generic protocol gives 691
 reachable records for =.admit=, 178 for checking the resulting evidence, and

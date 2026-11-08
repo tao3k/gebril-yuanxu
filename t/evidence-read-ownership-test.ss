@@ -8,7 +8,7 @@
                  current-owned-read-open-guard)
         (only-in :clan/poo/prototype-map prototype-map)
         (only-in :clan/poo/validation-rebinding rebind-validation)
-        (only-in :clan/poo/mop Type. define-type validate object-read-issued?)
+        (only-in :clan/poo/mop Slot Type. define-type validate object-read-issued?)
         (only-in :yuanxu/module-system/types ModuleSourceRoleContract)
         (only-in :yuanxu/module-system/authoring/roles TypesSourceRole.)
         (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
@@ -388,4 +388,30 @@
               (check-equal? (reverse events) '(entry method)))
             (lambda () (.put! descriptor '.element? maintained))))
         (list (list YuanxuClassificationEvidence yuanxu-classification-evidence? classification)
-              (list YuanxuValidationEvidence yuanxu-validation-evidence? validation))))))
+              (list YuanxuValidationEvidence yuanxu-validation-evidence? validation)
+              ;; Native Record Slot checking dispatches the classifier without
+              ;; calling yuanxu-classification-evidence?.
+              (list YuanxuClassificationEvidence
+                    (lambda (_receipt) (yuanxu-validation-evidence? validation))
+                    classification)))
+      (def maintained-slot (.ref Slot '.slot.check))
+      (def seen '())
+      (dynamic-wind
+        (lambda ()
+          (.put! Slot '.slot.check
+            (lambda (descriptor name value)
+              (set! seen (cons value seen))
+              (maintained-slot descriptor name value))))
+        (lambda ()
+          (for-each
+            (lambda (check)
+              (def entered? #f)
+              (parameterize
+                  ((current-owned-read-open-guard
+                    (lambda () (set! entered? #t) (error "stale Slot check entry"))))
+                (check-exception (call-with-owned-read-projection '() void check) error?))
+              (check-equal? entered? #t)
+              (check-equal? seen '()))
+            (list (cut yuanxu-classification-evidence? classification)
+                  (cut yuanxu-validation-evidence? validation))))
+        (lambda () (.put! Slot '.slot.check maintained-slot))))))

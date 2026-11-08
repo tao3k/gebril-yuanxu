@@ -297,6 +297,40 @@ theorem replacement_evidence_method_keeps_selected_result
     resolvedEvidenceCall false (.ok ()) invoke = invoke := by
   cases invoke <;> rfl
 
+-- A Record can resolve the nested classification Type directly. An effect
+-- check belongs to delivery of that actual method read, after earlier fields
+-- have passed and before the chosen method can receive the receipt.
+def checkNestedEvidence (earlierFields : Except Failure Bool)
+    (resolve : Except Failure Bool) (boundary : Except Failure Unit)
+    (invoke : Except Failure Bool) : Except Failure Bool := do
+  if ← earlierFields then
+    let maintained ← resolve
+    resolvedEvidenceCall maintained boundary invoke
+  else pure false
+
+theorem rejected_record_prefix_never_checks_nested_effect
+    (resolve : Except Failure Bool) (boundary : Except Failure Unit)
+    (invoke : Except Failure Bool) :
+    checkNestedEvidence (.ok false) resolve boundary invoke = .ok false := rfl
+
+theorem nested_resolution_refusal_precedes_effect
+    (refusal : Failure) (boundary : Except Failure Unit) (invoke : Except Failure Bool) :
+    checkNestedEvidence (.ok true) (.error refusal) boundary invoke = .error refusal := rfl
+
+theorem replaced_nested_evidence_cannot_outrun_refusal
+    (refusal : Failure) (invoke : Except Failure Bool) :
+    checkNestedEvidence (.ok true) (.ok false) (.error refusal) invoke = .error refusal := rfl
+
+theorem maintained_nested_evidence_preserves_result
+    (boundary : Except Failure Unit) (invoke : Except Failure Bool) :
+    checkNestedEvidence (.ok true) (.ok true) boundary invoke = invoke := rfl
+
+theorem replaced_slot_method_cannot_expose_evidence
+    (refusal : Failure) (slotCheck resolve invoke : Except Failure Bool)
+    (boundary : Except Failure Unit) :
+    checkNestedEvidence (resolvedEvidenceCall false (.error refusal) slotCheck)
+      resolve boundary invoke = .error refusal := rfl
+
 -- The native copy extends the ordered direct-slot map. A stock evidence
 -- constructor can supply the final field at allocation when the field is
 -- fresh and neither constructor invocation can expose the intermediate.

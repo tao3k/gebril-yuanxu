@@ -23,7 +23,8 @@
         (only-in :std/error Error-irritants)
         (only-in :std/list/list every)
         (only-in :yuanxu/object-family/read-projection
-                 owned-read-leaf! owned-read-copy! owned-read-open!)
+                 owned-read-leaf! owned-read-copy! owned-read-open!
+                 make-owned-method-check call-with-owned-read-method-checks)
 )
 
 (export YuanxuType.
@@ -120,7 +121,8 @@
   ;; Only contextual relations remain here; runtime Slot/Record owns shape.
   (.element? (inherited)
     (lambda (value)
-      (and ((inherited) value)
+      (and (call-with-owned-read-method-checks validation-evidence-method-checks
+             (inherited) value)
            (eq? (.get value contract-identity) (.get value admission-contract identity))
            (equal? (.get value candidate) (.get value classification candidate))
            (equal? (.get value context) (.get value classification context))
@@ -136,13 +138,24 @@
     (.o bind-these: #f kind type-identity candidate accepted? diagnostics context)))
 
 (def classification-evidence-element (.ref YuanxuClassificationEvidence '.element?))
+(def evidence-slot-method-checks
+  ;; Native Slot dispatch can select a different descriptor Type. The actual
+  ;; selected field checker must be maintained before it receives the Record.
+  (list (make-owned-method-check #f '.slot.check (.ref Slot '.slot.check))))
+(def validation-evidence-method-checks
+  (cons (make-owned-method-check YuanxuClassificationEvidence '.element?
+          classification-evidence-element)
+        evidence-slot-method-checks))
 (def validation-evidence-element (.ref YuanxuValidationEvidence '.element?))
 (def (evidence-element? descriptor maintained value)
   (def method (.ref descriptor '.element?))
   ;; An ordinary POO method can retain a receipt without a slot observer or
   ;; an object protocol. Authenticate the open boundary before handing it over.
-  (unless (eq? method maintained) (owned-read-open!))
-  (method value))
+  (cond
+   ((not (eq? method maintained)) (owned-read-open!) (method value))
+   ((eq? descriptor YuanxuClassificationEvidence)
+    (call-with-owned-read-method-checks evidence-slot-method-checks method value))
+   (else (method value))))
 
 ;; : (-> Object Boolean)
 (def (yuanxu-classification-evidence? value)

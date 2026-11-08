@@ -310,6 +310,14 @@ package YuanxuPayloadOwnership {
                method, run the existing open-boundary check. Lean
                replacement_evidence_method_cannot_outrun_refusal keeps this
                check ahead of method execution.
+               Native Record slot checking may demand the nested classifier
+               without the Yuanxu predicate wrapper. Check the exact
+               delivered method before it receives the classification receipt.
+               Preserve earlier field and method-resolution refusals. Lean
+               replaced_nested_evidence_cannot_outrun_refusal covers this order.
+               The actual Slot field checker also receives the entire Record.
+               Guard a replacement on its delivered method even when dispatch
+               selects a different Slot descriptor Type.
                Attribute replay visits per checkpoint and retained records
                by identity across owners. Repeated traversal of a shared
                Profile receipt increases replay work without creating a new

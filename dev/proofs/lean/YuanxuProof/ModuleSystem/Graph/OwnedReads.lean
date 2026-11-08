@@ -118,6 +118,25 @@ theorem completed_frontier_covers_external [DecidableEq α]
       (completed_discovery_exact (ownedDependencies owned deps) roots fuel complete frontier).mpr cut,
       ext, path⟩
 
+-- An issued parent retains its signed dependencies. Filtering roots cannot
+-- hide a private record still demanded by a retained parent. For a root list
+-- containing every retained record, checking direct edges is necessary and
+-- sufficient. Ordering and freshness remain separate replay obligations.
+theorem retained_replay_exact_support (deps : α → List α) (retained : List α) :
+    (∀ node, Demanded deps retained node ↔ node ∈ retained) ↔
+      (∀ parent ∈ retained, ∀ child ∈ deps parent, child ∈ retained) := by
+  constructor
+  · intro exactSupport parent present child edge
+    exact (exactSupport child).mp (Demanded.dependency parent child
+      (Demanded.root parent present) edge)
+  · intro closed node
+    constructor
+    · intro demanded
+      induction demanded with
+      | root _ present => exact present
+      | dependency parent child _ edge ih => exact closed parent ih child edge
+    · exact Demanded.root node
+
 -- GC/identity premise: a still-reachable semantic carrier remains weakly alive.
 -- These are hypotheses about the runtime weak-value table, not a Lean GC model.
 def Admitted (externalCurrent policyCurrent alive token originalCurrent : Prop) : Prop :=
