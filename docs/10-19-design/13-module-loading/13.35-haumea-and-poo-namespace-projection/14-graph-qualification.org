@@ -121,7 +121,8 @@ Retain failed evidence and report actual stages if the original budget expires.
   Both faults compiled successfully and failed naturally, without a timeout.
   The exact positive source was restored before the full POO gate.
 - [ ] Full standard POO acceptance passes with source frozen.
-- [ ] POO commits pushed and corresponding PR checks complete.
+- [X] POO implementation published as [[https://github.com/tao3k/gerbil-poo/pull/17][PR #17]], =c20626ce=.
+- [ ] POO exact-head CI complete; local full standard acceptance also remains open.
 - [ ] Core pin updated through native dependency installation; actual module
   capacity/business EVAL and required publication/build-input gates complete.
 - [ ] Core PR #19 contains the final source/proofs and exact-head CI passes.
