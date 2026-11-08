@@ -1,0 +1,392 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Profiles, downstream selection and user authoring
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+* Governance-only downstream compilation
+
+The Lab qualification consumer declares =governance= in its own
+=init.ss= source window. The selected owner lives in
+=modules/governance/publication= so existing Gerbil imports of
+=agentic-ai-lab/modules/governance/interface= keep their identities.
+The owner's Build role declares that public library root. The same
+init export supplies the visible namespace and =std-make-spec=.
+The downstream build adds its own application roots and installs the
+selected foreign artifacts in its own Gerbil environment.
+
+The native fixture's specification, cold compiler events and emitted
+=.ssi= identities agree on eleven targets. Nine belong to Governance
+and two to the consumer. The qualification prerequisite path omits
+Lab products. The hot build emits zero compilation events, and the
+consumer imports the Governance library and reads the declared owner
+through native =.get=. On a hot projection, an owned library's =.ssi=
+context must be replaced by the context of its confined declared source
+before walking imports. The compiler identity and exact source path
+are still checked. This rule applies only to owner library roots.
+
+For a one-off selection, the Yuanxu build-script wrapper accepts
+=./build.ss spec --modules governance= and
+=./build.ss compile --modules governance --debug=. It consumes the
+module IDs before asking init for the build specification. The existing
+selected graph resolves the IDs and their dependencies, and the
+native script receives its original command and remaining options.
+The Lab's explicit selection bypasses its legacy retained roots.
+Downstream application roots still belong to the downstream build
+declaration. Native =gerbil build= continues to use the package's
+unflagged build script.
+
+The fixture starts with an available Lab source checkout. It does not
+qualify the producer's default install build or migrate Lab's other
+retained public roots.
+
+* Profile selection by declared Interface tags
+
+A Module Interface explicitly declares its tags as literal metadata
+under the Interface authoring Contract. Its tag list is nonempty and
+contains distinct classification symbols. A tag is a classification of the canonical
+owner and grants no visibility or admission authority. Classification
+must be readable without expanding author callbacks or forcing a scope.
+
+The consumer's =yuanxu!= declaration owns the selected Profile and
+its scope. Scope specifies the source window and allowed owner domain.
+The Profile name is itself the tag used to select roots within that
+domain. There is no second tag selector in the init declaration.
+With several windows, matches for the same category are combined. A window
+without matching roots may still supply differently classified dependencies;
+a category with no matches in any of its declared windows is refused.
+Relative paths, including parent components, resolve against the downstream
+declaration. The declared windows and owner/currentness admission remain the
+source boundary. Aliases deduplicate by
+canonical owner. No tag match can widen a source window, enable a
+denied owner, or replace the owner's dependency declarations.
+
+Resolve this root set once through the existing namespace metadata
+projection. Runtime demand, =std-make-spec= and selected tests all
+consume the same selection. Required dependencies follow their own
+edges within the source policy even when they have different tags.
+An independent full catalog certification retains its own root set.
+Build and test projection do not construct runtime scopes to find
+their classification. Source and effect currentness checks still
+belong to the individual admission boundaries.
+
+The source-window syntax is =mode: auto profile: security=. It
+matches the =security= tag in an Interface's declaration such as
+=tags: '(security audited)=. Differently classified
+dependencies can enter the closure through their declared edges and
+are kept outside the root namespace. Existing windows without a
+Profile do not perform this classification pass. The =./build.ss tags Security.TAGS= action sends the selected
+build graph's original source files to native Gerbil's TAGS writer.
+It uses the existing guarded compiler-input route so Interface roles
+resolve and editor entries point to live sources. Currentness is
+checked before indexing and before replacing the named output. The
+normal editor =TAGS= file remains managed by Gerbil.
+
+Lab classifies OpenTofu as =deployment=, Nix as =package-management=,
+Durable as =engine policy=, and D2 as =graph diagram=. These capability
+categories can group multiple owners. The Governance consumer declares
+=profile: governance= without listing module identities. Its selected test
+source and runtime namespace share the same selected Graph. The test harness
+consumes that source's file list against the downstream compiled products.
+
+The real Lab deployment consumer declares only categories:
+#+begin_src scheme
+(yuanxu!
+  :load-modules "../../../modules" rename: Lab mode: auto profile: deployment
+  :load-modules "../../../core/modules" rename: Core mode: auto profile: deployment)
+(.get yuanxu-deployment-consumer.init.exports Lab services opentofu)
+#+end_src
+These paths belong to Lab's downstream test package, not to Yuanxu's package
+runtime. OpenTofu is the only root. Its =requires= edges bring Nix
+(=package-management=), JsonSchema (=schema validation=), and Funflow
+(=workflow=) into the selected Graph. No dependency names are repeated in init.
+The Core namespace has no category roots; those owners still enter through
+the cross-package edges. Native imports outside the selected owner sources
+remain installed Gerbil prerequisites. The same selected Graph owns Make
+projection and test discovery; the Lab gate compares actual native compile
+events and product identities, runs selected tests against B's compiled
+products, and checks A's cleanup against B's product hashes.
+
+Ordinary public libraries also need an owner compilation declaration.
+=library-roots= strings retain nearest-package-relative paths; a symbol names
+a native library in that owner's already declared package kernel. Nix declares
+=library-roots: '(agentic-ai-lab/nix-contracts)=. OpenTofu declares
+=library-roots: '(agentic-ai-lab/opentofu-contracts)=, whose native imports
+include =services= and =nix-contracts=. The existing confined public-library
+projection checks native package/header identities and source currentness,
+including when its runtime Context is a downstream hot product. It never
+admits a new source window. These explicit roots keep cold, hot and clean
+inventories identical. Merely finding an optional checkout beside an installed
+library or compiler tool must not promote it to a compilation target.
+
+Default Profile test discovery follows this same selected Graph's owner order.
+Explicit owner test requests and ordinary non-Profile discovery retain their
+bounded, Graph-lazy behavior. Test discovery admits source declarations without
+constructing business scopes; execution uses the existing test harness.
+
+The earlier deployment diagnostic completed in 201.61 seconds but missed
+its 120-second aggregate gate. Per-source attribution found no repeated owned
+initializer: each ran once. The hot OpenTofu types body took 11.59 seconds wall
+but only 0.46 seconds CPU, execution took 6.41/0.67 seconds, and recording-finish
+cost was about 0.2 milliseconds. Native module-load records showed downstream
+JsonSchema/Funflow products shadowing the compiler prerequisites. This was not
+evidence of a slow native POO =.get= algorithm.
+
+The init-owned build projection now establishes =call-with-build-input-path=
+using the native invocation's output directory. Prerequisites keep their
+relative order; output remains native fallback. Native Make still checks its
+own output inventory and timestamps. Restore the caller path on every exit;
+reject a mutated context and refuse prepared-evidence reuse for that build
+epoch. An output-first downstream caller requires no environment workaround.
+With the input context separated, hot Interface time measured 2.54--2.88
+seconds, declaration admission 0.10--0.16 seconds, and metadata replay
+0.70--0.99 seconds. These are individual diagnostic observations.
+
+Normal first =.get= acceptance uses callback-free operation accounting, not an
+open source observer that deliberately selects adversarial replay behavior.
+Owner-qualified factory counts prove each of the four scopes is constructed
+once; a repeated read retains identity with no declaration/factory repetition.
+The open-observer and author-callback mutation controls remain independent.
+
+The complete real deployment gate passed its unchanged =just test-file=
+120-second entrypoint with a natural exit in 118.85 seconds. The final code,
+including mutation followed by an author exception, passed again in 104.41
+seconds. These are separate run observations, not a guaranteed latency. Source projection
+admitted four owners without constructing business scopes. A and B each began
+with empty products and actually compiled 61 targets (19 Lab libraries, 40
+Core Module libraries and two consumer libraries). A uses an independent CLI;
+B invokes that same native =build.ss= entry with Gerbil's =libdir= parameter and
+reuses the already guarded POO source plan. This is artifact-cold qualification,
+not a claim of two fresh interpreter preparations. Fresh CLI processes perform
+A cleanup and B hot build; the latter compiles zero targets. A cleanup preserves
+its sentinel, B/prerequisite product hashes and source bytes.
+
+The existing qualification projection supplies the independent B runtime test.
+The standard harness executes that first business =.get= and all three selected
+owner suites in one B process. It verifies actual initialized B native products,
+not only SSI paths. Its combined source retains module-directory, qualification
+and file guards, sharing pure reads only within each before/after boundary.
+All action/idle limits remain 120/60 seconds. No loader or cache layer is added.
+
+Regression sensitivity is executable through
+=just test-build-input-context-mutations <artifact-dir>=. The gate compiles four
+isolated variants: output-first lookup, reversed prerequisite order, missing
+path restoration and accepted input mutation. All four variants compiled and
+their corresponding Scheme assertions rejected them with exit 70. Correct
+order/admission suites passed in fresh workers before and after injection.
+The checkout source SHA-256 remained unchanged; no shared source or installed
+prerequisite was patched. Timeouts, compilation errors and heap/stack failures
+cannot count as successful mutation rejection.
+
+The Core platform build and Lab runtime CI run this gate on Linux and macOS,
+followed by the publication and source-admission controls. Lab additionally
+runs the real deployment file as a separate original 120-second gate and
+checks its complete receipt; the larger unit-batch deadline cannot replace it.
+CI retains local/CI-only mutation receipts and raw output on success or failure.
+An extra real-Lab output-first fault run reached the existing idle fence during
+A clean (106.40 seconds overall). That is retained diagnostic evidence, not a
+deterministic assertion-based rejection and not one of the four mutation passes.
+The subsequent correct-code A/B run reached the business-test handoff at
+106.25 seconds and exceeded the unchanged aggregate fence (exit 124, wall
+124.13 seconds including shutdown). A cold CLI took 33.41 seconds, A clean
+22.88 and B hot 19.44. No mutation-owned compiler/build process remained after
+that run. The 66/49/66 aggregate call counters for A cold/A clean/B hot were
+identical to the earlier complete pass; the slower elapsed time alone does not
+establish additional initialization, admission or replay operations. This run
+is failed evidence: the earlier 104.41-second complete pass
+does not make this later run green, and CI must retain the same rejecting gate.
+
+The follow-up attribution retained that workload and the original limits. Its
+failed 106.25-second pre-business interval consists of 33.41 seconds A cold,
+22.88 A clean, 19.44 B hot, and 30.52 seconds in the parent (including B's
+artifact-cold build and specification/test preparation). The actual native
+Gerbil clean was about 0.01 seconds; the slow action cannot be attributed to
+file deletion alone.
+
+Coarse phase sampling then captured specification preparation taking 35.56
+seconds wall but only 8.22 seconds CPU. A contemporaneous host sample reported
+load 96.19 on 12 logical processors, with no remaining mutation-owned compiler
+process. This identifies a material non-CPU component under contention; it is
+not proof that every historical gap has the same operating-system cause.
+That run failed the original fence (exit 137 after cancellation), and another
+run printed all success markers but exited 124 at 120.53 seconds. Neither is
+accepted. No host-load wait, scope warming or budget adjustment was used.
+
+The init entry now reports a common wall-clock epoch and Gambit's CPU clock.
+The downstream records spawn, main-return delivery and completed-operation
+times. This separates process handoff from interpreter-local =real-time= and
+source/currentness work. Normal scalar accounting no longer collects detailed
+per-file initializer timing: the former normal log contained 480 such rows.
+Detailed =stages= accounting still provides those probes. Actual initialization,
+aggregate call counters, owner scope counts and all effect guards are retained.
+Removing diagnostic work does not explain the entire difference between runs.
+
+The final normal =gxi build.ss= qualification passed with natural exit 0 in
+111.81 seconds; business execution started at 71.64 and returned at 107.67.
+An earlier detailed-attribution run also completed in 111.90 seconds. The final
+normal action breakdown is:
+
+| action | total wall | before init entry | init entry | after main return |
+|--------+------------+-------------------+------------+-------------------|
+| A cold |     24.431 |             1.841 |     19.737 |             2.853 |
+| A clean |    11.013 |             1.835 |      6.214 |             2.964 |
+| B hot |      13.754 |             1.790 |      8.863 |             3.101 |
+
+Within those entries, specification preparation took 6.215/6.006/6.048
+seconds. A cold native Make took 12.928 seconds; B hot native Make took 2.433
+seconds with zero compilations. Return-line delivery took about 1 millisecond,
+so the subsequent 2.9--3.1-second process completion interval is measured
+separately. Nested currentness/replay spans overlap these entry times; they
+must not be added as independent intervals. B's artifact-cold native entry
+took 11.94 seconds in the parent, without warming business scopes.
+
+The final aggregate action call counters remain exactly 66/49/66, identical
+to the earlier failed run. Both cold outputs contain the same 61 targets; the
+independent B runtime retains the first =.get= and selected suites, and clean
+preserves B/prerequisite hashes and source bytes. All four mutation controls,
+publication/source-admission suites and the native build-process qualification
+passed after the accounting changes. This closes this acceptance run, not a
+claim of a contention-independent latency guarantee.
+
+The 1,000-Interface fixture selected one root and its differently
+tagged provider. Runtime, the native Make specification and the test
+Graph used the same init export. The first classification scan
+measured 0.406 seconds wall and 0.276 seconds CPU. A subsequent
+currentness check measured 0.131 seconds wall and 0.123 seconds CPU.
+These are one run's measurements, including the existing observation
+checks in currentness.
+
+The compiler acceptance uses the same tag in a generated package with
+1,000 physical owner directories. A and B start with independent output
+directories and use the same producer and consumer sources. The test
+compares both the cold compiler events and the actual output interface
+inventory against the selected Make specification. Warm builds must
+emit zero compile events. The test compares B's product digests before
+and after cleaning A and checks that producer and consumer sources
+are unchanged.
+
+The source-runtime test starts from a cold namespace slot and runs one
+native business =.get=. It checks the exact Interface paths admitted
+and factory identities reached, once per owner. A repeat returns the
+same value without new admissions or factories. The compiled consumer
+separately enumerates the branch and checks for zero admissions and
+factories before its first business =.get=. Both runtime checks demand
+the selected root and its provider before requesting the test Graph.
+
+With the stronger runtime assertions enabled, the source-only first
+business read took 10.21 s wall, including 0.50 s for Interface
+classification. The separate compiled-consumer run passed with
+11 compiler events and 11 installed interfaces in each cold build,
+zero compile events in all warm builds, and clean isolation.
+
+The complete rerun reported 11 compiler targets in each cold build
+(16.02 s in A and 19.36 s in B) and zero in all three warm builds.
+The first run hit the 60 s idle guard on B's second warm build, after
+the missing-provider control. The same action completed in 13.19 s
+on the rerun. The 180 s per-action and 600 s outer limits were kept.
+
+* Ordinary authoring stays short
+
+Start with an actual configuration value and native lexical slots:
+
+#+begin_src scheme
+(.def BuildProfile
+  executable: "gerbil"
+  flags: '("build")
+  argv: (cons executable flags))
+
+(.def (DebugProfile @ BuildProfile)
+  (flags => append '("--debug")))
+
+(.get DebugProfile argv) ; ("gerbil" "build" "--debug")
+#+end_src
+
+=argv= reads the derived profile's flags even if the parent's =argv= was already
+forced. The parent cache remains its own. Direct assignment replaces a known
+value; =(flags => append ...)= transforms the inherited value; =config: =>.+ ...=
+refines an inherited object while retaining its other slots. Use an explicit
+per-slot =(sup)= only for conditional inheritance or more complex expressions.
+It is a computation, not a promise that repeated calls are separately memoized;
+bind its result once if a formula needs to reuse that result. No new accessor,
+configuration DSL or general =lambda (self super)= authoring hook is introduced.
+The inherited computation follows the remaining native C4 precedence chain for
+this slot. It need not be a single directly declared parent and cannot be used
+as a reified parent object for arbitrary other-field lookup.
+
+Native keyword shorthand consumes one transform expression. With extra function
+arguments, use =(flags => append '("--debug"))=, or the unary functional spelling
+=flags: => (cut append <> '("--debug"))=. Do not write
+=flags: => append '("--debug")=: the quoted tail can be parsed as a separate
+slot specification rather than an argument to =append=. The native control
+checks both supported expressions and absence of an accidental =quote= slot.
+This is syntax discipline over the existing POO forms, not new sugar.
+
+Module consumption and business derivation stay separate:
+
+#+begin_src scheme
+(def Nix (.get consumer.init.exports modules nix))
+(def Source (.get Nix prototypes Source))
+(.def (LocalSource @ Source)
+  config: =>.+ (.o nix: "/opt/local/bin/nix"))
+(.get LocalSource config nix)
+#+end_src
+
+Here =Nix= remains the original admitted Module scope. =LocalSource= is an
+explicit new business value derived from its public prototype; it retains other
+configuration defaults. It does not clone the Module scope for namespace
+visibility or acquire new source/build authority. Interface remains the loading
+configuration. This example constructs configuration without realizing a Nix build.
+These are module expressions under the declared Yuanxu Prelude. A standalone
+=gxi use.ss= script must explicitly import the POO construction bindings it
+uses (as the product fixture does); it must not rely on ambient interactive
+bindings or assume package metadata changes the interpreter's script language.
+
+* Nested objects and functional boundaries
+
+Native hygienic slot bindings may reference the enclosing effective receiver.
+An inner same-named slot shadows that binding. An explicitly named inner =self=
+denotes the inner receiver; it is not an alias for the outer namespace. Use
+descriptive native names such as =self: profile= / =self: task= where necessary.
+At an ordinary function boundary, pass values/receivers explicitly; Haumea's
+function-argument injection/scopedImport is not an excuse to change Scheme's
+lexical scope. Fetching a parent's already computed list and assigning it to a
+child intentionally captures that value and cannot substitute for receiver-aware
+inheritance. Named functional combinators preserve this distinction.
+
+SysML =LeafReceiverAndInheritance= records these separate capabilities. Lean
+=ProfileComposition.Prototype.ancestor_uses_final_receiver= reuses LeanPoo's
+actual prototype composition; its captured-parent counterexample separates the
+two computations. Native =namespace-leaf-expression-test.ss= checks warm parent
+caches, sibling isolation, per-slot =sup=/=super:= equivalence, lazy missing
+inheritance, discarded ancestor refusal, nested shadowing and explicit containing
+namespace values. Existing =path-slots-test.ss= covers the maintained Pipeline
+configuration through the hygienic path adapter. These native observations are
+not inferred from an isolated numeric Lean example.
+
+* Qualification of the user expression refinement
+
+The pinned Haumea checkout's native =loadEvalTests= passed offline via
+=nix eval --offline --no-write-lock-file --json path:<checkout>#checks=,
+returning ={}= for its 13 expression fixtures. The five native leaf-expression
+cases and the existing path-slot suite passed through the heap-fenced Just
+entrypoint, with MODULE-OK, HARNESS-OK, final OK and no failure markers.
+The complete Lean aggregate passed 218 jobs; its source cut audits 8827
+declarations with standard axioms and no arbitrary Prop-valued model fields.
+
+The real Lab downstream test also passed its unchanged 120-second file budget.
+It compiled exactly the selected 10 targets, compiled zero targets on the hot
+build, and preserved the target set. Its standalone use process verifies cold
+namespace reflection, original scope identity/currentness and a derived public
+=Source= configuration with inherited defaults and unchanged parent values.
+It performs no Nix realization. Cleaning environment A removed every selected
+artifact family, including generated object versions; B's complete selected
+artifact snapshot remained unchanged and B still worked in a fresh process.
+Producer inputs and installed prerequisite artifacts remained unchanged.
+
+This refinement changes authoring examples, contracts and regression controls;
+it does not change the runtime EVAL algorithm. The earlier 113.170463-second
+complete business EVAL remains a separate dated measurement, not a new timing
+or an improvement attributed to these expression tests. The native package
+CLI's automatic TAGS-stage qualification remains open as recorded above.

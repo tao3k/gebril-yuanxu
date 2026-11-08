@@ -1,0 +1,305 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.18 Same-receiver measurements and cross-process reuse
+#+language: en
+#+property: STATUS historical-superseded
+
+[[file:../13.18-guarded-test-precompilation.org][13.18 index]]
+
+Historical experiment; its APIs are retired. The current boundary is
+[[file:../13.28-managed-dependency-and-activation-policy.org][13.28]].
+
+* Default single-file execution and measured Scenario reuse, 2026-10-22
+
+** Corrected connection and mount ownership
+
+The default Core =just test-file PATH trace= now imports the current root
+=init.ss=, selects =(.call (.get yuanxu.init.exports tests) .for-files (list PATH))=,
+and refines that demand's existing execution object for the requested policy.
+It no longer constructs a separate source-only =TestingScript.=. This file
+selector accommodates Core-owned qualifications outside module =tests/=
+folders; module-local runnable tests remain published by their module view.
+Both routes use the same execution factory, runtime Make projection, =.compile=
+issuer and Harness. There is no additional Builder or test assertion engine.
+
+The namespace slots on =yuanxu.init.exports= are generated from the declaration's
+actual =rename:= values. No unconditional =modules= container is inserted for
+renamed windows. The window regression checks object identity between the
+new projection and the existing hygienic identifier, rather than comparing
+independently reconstructed equivalent namespaces.
+
+** Evidence scope and retained failures
+
+All measured executions use the installed Gerbil 1cfb032/Gambit ea114fc and the
+locked gerbil-poo =096da65e0dfb57df397ee16c78f71643847ec46b= cohort. Changed Core
+owners are compiled into an owned temporary library over the previously
+qualified dependency closure. This is the default Core Just recipe with an
+explicit dependency library context, not an isolated replacement interpreter
+or a full production-build/CI qualification. The first launch without that
+context exited 70 before any Case; it is retained as a failed launch, not
+reported as a cold run.
+
+The existing Gitea/PostgreSQL publication test remains the source of all eleven
+business controls: final derived ports, two requirements, explicit mismatch,
+plan identity, source replacement/currentness and publication admission. A
+local measurement driver runs an unchanged, owned copy of that Case file twice
+through the same test demand and issuer. It edits only that owned copy for the
+negative source check. No second maintained business test suite is added.
+
+The first measurement driver's static Fixture import caused its outer test
+preparation to compile support before the inner demand. Its inner zero-entry
+specification is not cold-compilation evidence. Printing the expected negative
+exception also triggered the existing Harness failure-marker gate; that failed
+receipt is retained. The accepted driver avoids the static import and checks
+the exact =explicit test source changed= message without printing a failure
+marker. Gates and deadlines are unchanged.
+
+** Accepted same-receiver cold/hot measurements
+
+These are one matched local pair, not a stable speedup estimate. Seconds are
+wall-clock observations. Make counts are successful =std/make= =... compile=
+actions, not inferred from specification length or process exit status.
+
+| Phase | Cold | Hot, same demand/issuer |
+|-------+------+-------------------------|
+| Runtime test import projection | 0.897427 s | 0.000018 s |
+| Support entries retained in specification | 5 | 5 |
+| Compile/issuance boundary | 16.549456 s | 6.894978 s |
+| std/make process, included above | 15.380116 s | 5.639538 s |
+| Actual runtime Make compilation actions | 5 | 0 |
+| Runtime Harness process | 30.067594 s | 26.869656 s |
+| Complete explicit run | 48.871623 s | 34.878916 s |
+| Business Cases admitted | 11 | 11 |
+
+The five compiler identities were =yuanxu/module-system/source/admission=,
+=yuanxu/module-system/source/link=, =yuanxu/admission/publication=,
+=yuanxu/observability/testing-case= and =yuanxu/observability/testing-fixture=.
+Explicit prebuilt dependencies retain the existing trust boundary; the count
+does not claim recompilation of every transitive source module.
+
+After the two successful runs, modifying the owned Case source caused =.run=
+to refuse in 0.061631 s with =explicit test source changed=. The retained build's
+=admit-artifacts= also refused. This occurs at source admission, before another
+Make or Harness launch; an arbitrary exception is not accepted as the expected
+result.
+
+** Where the hot time remains
+
+The cached import projection is no longer the substantial hot cost. Runtime
+Make still starts once and performs its incremental decision even when it
+compiles zero units. Compile/issuance costs outside the Make process are about
+1.26 s in this hot observation; these include source/artifact checks, not a
+second runtime compile.
+
+The cold Harness recorded 20.410 s across eleven Case spans, including 18.960 s
+to acquire their fixtures. The hot Harness recorded 21.277 s across those same
+spans, including 19.804 s in acquisition. Each control deliberately obtains its
+own mutable source tree, reader/link context and Scenario. A passing verdict or
+mutable Fixture must not be shared to remove that work. Reuse of immutable
+preparation metadata is a candidate for subsequent measurement and proof;
+source currentness around effects and before return remains independent.
+
+Observation is opt-in through the existing test policy. Projection time,
+retained support count, runtime Make time and compilation count are emitted by
+the existing preparation owner. They do not add a process wrapper, compiler
+scheduler, synthetic progress or a new source-freshness cache. Existing 2 GiB
+heap fencing, 60 s idle / 600 s overall limits and the 120 s compilation boundary
+remain unchanged. Raw transcripts remain local under
+=/private/tmp/yuanxu-test-chain-20261022/=, outside source control.
+
+** Independent Just process is not a hot issuer
+
+A subsequent, independent =just test-file t/gitea-postgresql-publication-test.ss
+trace= invocation passed all eleven Cases but compiled five support units
+again: init import 1.380685 s, cumulative selection 5.727799 s, import projection
+0.900921 s, compile/issuance 15.992105 s (runtime Make 14.820376 s), Harness
+28.348603 s and total execution-owner time 52.264032 s, plus the separate 2 s
+context probe. These wall times describe this one run only.
+
+The test projection allocates its own output directory and issuance endpoint.
+A new process does not inherit the previous process's retained approval. Thus
+same-receiver warm reuse is verified, but cross-Just incremental publication
+is still a gap. Merely remembering a directory or accepting an existing .o1
+would weaken issuance. Any subsequent improvement must use the existing runtime
+publication/artifact authority and currentness boundary, not another Builder
+or a disk-side assertion that compilation succeeded.
+
+The existing =module-windows-test= passed its four controls, including the
+=rename:= projection identity checks; =module-test-preparation-test= passed its
+two controls, including source rejection, removed compiler-association refusal,
+unselected poison laziness and compiler failure before Harness launch. Each
+accepted file has MODULE-OK, HARNESS-OK and final OK, without failure, overflow
+or undefined-binding markers. The measurement driver is retained only as a
+local artifact and removed from the repository source tree. No maintained
+business Cases or Fixture families were added.
+
+* Cross-Just test publication, 2026-10-22
+
+The architectural entry for further cache changes is now
+[[file:../../../../dev/sysml/README.org][Development System Architecture and Verification Allocation]],
+with [[file:../../../../dev/sysml/10-evaluation/10.01-efficient-caching.org][10.01 Efficient Caching]]
+allocating each property to existing QNT, Lean and Scheme owners. Recovery stays
+internal to runtime build publication; this does not add a public =restore*=
+family or a new cache protocol. SysML documents ownership and requirements;
+runtime and formal evidence retain separate status.
+
+The subsequently observed new-process rebuild is resolved by the
+[[file:../../../../dev/sysml/10-evaluation/10.01-efficient-caching.org::*Root-cause repair and runtime correspondence, 2026-10-22][root-relative Make layout repair]]. A nested package was emitted as an absolute
+=gxc:= target, so runtime Make's expected output paths differed from the compiler's
+module-identity paths. The fix uses the existing root-prefix target projection
+and checks the physical source correspondence. Restoration and cache/admission
+protocols are unchanged. The existing preparation Fixture now includes an aligned
+nested package; no new Builder, scheduler or duplicate compiler suite is added.
+
+The previous section's cross-process gap is historical. The implementation now
+reuses the existing =build-publication= / =.restore-build= hook and the unchanged
+=yuanxu-build-handoff-v1= packet. It does not introduce a second cache record
+format, compiler scheduler, Builder, signing scheme or Harness.
+
+** Authority and storage
+
+The normal Gerbil package installation is already a trusted source of imported
+compiled code. Test completion handoffs are retained under
+=$GERBIL_PATH/lib/.yuanxu-test-publications/= in that same trust domain. Test
+products remain separate, under =$GERBIL_PATH/test-lib/=. A product directory,
+its writable issuance sidecar, or a candidate-supplied pathname cannot choose
+the approval root or expected hashes.
+
+This deliberately names the trust root: package installation and installed
+compiler code must remain trusted. It is not cryptographic protection against
+a compromised account or replacement of the trusted installation itself. A
+readable receipt in an arbitrary product directory is still not an issuer.
+Core does not acquire a Nix dependency to obtain this local development reuse.
+
+The existing runtime publication remains the in-process authority. Recovery
+first matches the selected compiler identities, source observations and output
+directory; it then rebinds the process-local generation and submits through the
+same runtime publication owner. Its checks include the approved packet source,
+original issuance-record digest, product digests and source currentness before
+return. Replacing a product and its local record together cannot replace the
+separate package-owned approval.
+
+** Demand identity and diagnostic order
+
+The test artifact location is derived from the test domain, installed Gerbil
+version/home, runtime Make specification, compiler-affecting environment,
+compiler identities and exact selected source observations. No unselected
+module catalog or dependency directory is scanned. Changing selected source
+bytes or the bound compiler context selects a different product; an existing
+source snapshot also refuses changed bytes independently.
+
+Input observations are canonicalized only for location/matching. Matching
+retains every path/value pair; inconsistent duplicates do not become valid.
+The actual checks keep the requesting projection's observation order, including
+its first diagnostic. Restored issuance retains that current projection order.
+This fixes a real control failure where equivalent input sets collected in a
+different order received different artifact directories.
+
+** Explicit compilation and recovery
+
+#+begin_src scheme
+;; Published by the test projection, never by its production sibling:
+build-publication: (test-build-publication projection)
+
+;; Same existing runtime effect boundary:
+.compile:
+(lambda (libdir action)
+  (call-with-build-artifact-issuance projection libdir action))
+#+end_src
+
+Before compiling, the existing boundary attempts recovery from the selected
+publication when no receiver-local issuance exists. Missing approval takes the
+normal fresh-output compilation path. Existing but invalid approval/products
+refuse; they are not silently adopted or repaired into authority. Runtime
+=std/make= still runs on a successful warm call and makes the incremental
+compilation decision. Harness execution and domain admission run again.
+
+A normal Gerbil =std/os/flock= lock serializes recovery, Make and retained
+completion for the selected test product. Its timeout stays within the existing
+120 s preparation boundary. Runtime publication still owns receiver-local
+stage/submit semantics; the file lock does not pretend to make external file
+changes or Harness effects atomic. A partially written approval fails closed.
+
+The approved observation and decoded packet are private to the Source's closure,
+not mutable public expectation slots. Ordinary inspection exposes only its
+artifact/reference paths. Warm completion leaves the existing approved handoff
+unchanged. Currentness checks do not carry approval across effects or cache a
+passing test verdict.
+
+** Runtime dependency alignment
+
+GitHub PR #13 was checked at
+=ecaa8a6f51c746f974b2db4c220838647a82af3b= on the existing
+=feat/positive-closure-costs= branch. The publication and protected MOP source
+owners are byte-identical to the qualified =096da65e= cut; the changed runtime
+owner =table.ss= was compiled from the new revision into the qualification
+library. Changed Core owners were rebuilt with the installed interpreter.
+Core's dependency pin now names the checked PR revision. No Gerbil compiler
+source, upstream working tree, timeout or assertion policy was changed.
+
+** Accepted default-entry receipts
+
+Two independent Core =just test-file
+t/gitea-postgresql-publication-test.ss trace= processes, with the same locked
+installed-runtime/dependency context, produced:
+
+| Phase | New cold process | Second independent process |
+|-------+------------------+----------------------------|
+| Selected test import projection | 1.291486 s | 0.873787 s |
+| Retained support entries | 5 | 5 |
+| Compile/recovery/issuance boundary | 16.620804 s | 8.954177 s |
+| std/make process, included above | 14.452965 s | 5.315419 s |
+| Actual runtime Make compilation actions | 5 | 0 |
+| Runtime Harness process | 31.059534 s | 25.927359 s |
+| Execution-owner total, excluding context probe | 56.578882 s | 42.778201 s |
+| Existing real Scenario Cases | 11 passed | 11 passed |
+
+Each shell also used the unchanged separate 2 s package-context probe. These
+are local wall observations, not a stable performance claim. Cross-process
+reuse removes repeated compilation, not the independent source projection,
+Make startup, domain admission, per-Case mutable Fixture preparation or Harness.
+Those boundaries still run and must not be represented as a cached verdict.
+
+The existing two-Case =module-test-preparation-test= now also checks a distinct
+issuer receiver restoring the approved location, unchanged output mtime,
+explicit rejection of joint product/issuance-record replacement, rejection of
+the old source snapshot after a helper edit, and a different product location
+for a fresh projection of changed source. Its existing unselected poison,
+removed compiler association and compiler failure before Harness controls remain.
+The joint-replacement failure is specifically =test approved issuance record
+changed=, not an arbitrary caught error. No duplicate business suite was added.
+
+The existing =build-artifact-publication-test= passed its retained-parent/
+independent-worker and tamper/source controls. The existing sixteen-Case
+=slot-read-replay-test= passed the protected MOP read/replay controls. The real
+Gitea/PostgreSQL suite retains both port requirements, parent-plan/child-config
+isolation, source changes and publication/plan identity checks. All accepted
+receipts have MODULE-OK, HARNESS-OK and final OK with no failure, overflow or
+undefined-binding markers. Intermediate failed compilation/control receipts
+remain under =/private/tmp/yuanxu-cross-just-20261022/= and are not counted as
+passes or committed as logs.
+
+Production projections without this test publication keep their existing
+signature/recovery path. Only the actual retained-publication callback adds
+an additional post-effect admission; there is no extra post-retention check
+for production projections that did not perform that callback.
+
+The final tail cleanup was recompiled and the independent-process pair rerun:
+
+| Final-code repeat | Cold process | New warm process |
+|-------------------+--------------+------------------|
+| Actual compilation actions | 5 | 0 |
+| Compile/recovery/issuance | 17.532289 s | 17.059139 s |
+| std/make, included above | 15.262190 s | 13.058109 s |
+| Harness | 30.871091 s | 25.733593 s |
+| Execution-owner total | 57.905505 s | 51.560393 s |
+| Real Scenario Cases | 11 passed | 11 passed |
+
+The separate context probes were 3 s and 2 s. The final warm Make process took
+longer than the preceding matched receipt despite still compiling zero units.
+A later host-load snapshot was 16.40 / 9.04 / 7.34; that observation does not
+prove the cause. Both pairs are retained. Compilation avoidance is verified;
+a stable total-runtime improvement is not claimed. The final generic artifact
+publication regression also passed after the production-tail cleanup. The
+source-change, joint-replacement and protected-MOP controls above exercise the
+unchanged test-publication/issuance and MOP paths respectively.

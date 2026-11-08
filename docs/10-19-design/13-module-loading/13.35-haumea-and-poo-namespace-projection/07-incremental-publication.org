@@ -1,0 +1,193 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Incremental admission, certificate publication and index retirement
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+* Ten-thousand-owner module-system design
+
+Yuanxu projects authorized Interface names into the existing POO
+branch index. An alias stores its canonical owner binding. Scope
+identity and lazy evaluation follow that owner through native =.get=.
+Bulk directory construction reads name metadata once per projected
+directory generation. It does not expand Interface bodies or force
+scope slots. The original roster remains available for enumeration
+and full catalog certification.
+
+The admission request supplies the roots. An explicitly selected
+request explores those roots and their declared dependency closure.
+Full catalog certification supplies the full roster and preserves its
+existing refusal semantics, including failures in unrelated
+declarations. Replacing an existing full certification boundary with
+selection requires an explicit contract change.
+
+For one admission, an indexed worklist checks membership once per
+popped root or edge. It reads outgoing edges once per reached owner
+and retains ordered results for diagnostics. With bounded native
+index operations, the traversal work is proportional to the roots
+plus reached owners and reached edges. Directory construction and
+source authentication are separate costs. A shared provider can be
+enqueued several times but is admitted once in this traversal.
+Pending work, unknown owners and failed admission cannot certify a
+closed selection.
+
+Reusable declaration data belongs to the original owner's existing
+POO slot. The binding includes owner, source window, source identity
+and policy identity. Reuse checks the original support against the
+live view. Disjoint changes outside that support cannot affect the
+result for an unchanged key. Gerbil expansion and author callbacks
+each retain independent entry and return checks. A hit retains
+declaration data and dependency identity, never a freshness verdict.
+No separate Yuanxu cache, loader or scope identity is required.
+
+Lean's =discover_indexed_refines= proves that indexed membership
+preserves the ordered reference traversal.
+=completed_indexed_discovery_exact= characterizes the completed
+selection as exactly the reachable dependency closure.
+=declaration_slot_hit_exact=, =declaration_reuse_local_to_support=
+and =declaration_effect_return_rechecks= cover reuse and invalidation.
+The executable scale cases cover 10,000 catalog owners with a
+two-owner demand and a 10,000-owner chain. They establish work shape
+and order rather than Scheme latency or hash collision bounds.
+
+** Admission and incremental certificate repair
+
+First demand checks the directory and live admission evidence for
+every owner in the completed forward closure. Full certification
+starts from the complete roster and, for a closed catalog, checks
+every owner in it. A failed unrelated declaration can therefore
+refuse full certification while a selected demand succeeds.
+A partial worklist cannot approve either request. Directory membership
+does not grant permission to execute a missing Interface.
+
+For a change in an already certified view, seed the changed canonical
+owners and follow the existing POO provider-to-consumer registration
+buckets. Walk every reached receiver, even when that receiver itself
+has no retained entry in the certificate being repaired. Point-check
+certificate membership only on reached receivers. Recheck exactly
+that intersection. An ordinary hit checks the requested evidence at
+the existing effect boundary without enumerating the full roster.
+The resulting work depends on the affected registered receivers and
+edges, and on the actual revalidation work for their certificates.
+
+The repair theorem assumes exact reverse buckets for the registered
+read relation, prior certification, and equal verification for
+unaffected retained owners. Source and policy changes must be
+observed and enrolled. A changed dependency declaration seeds its
+owner. Use the old registration to invalidate existing consumers,
+then admit newly reachable owners forward before publishing a new
+certificate with updated dependencies. A catalog membership change
+needs separate roster validation. Untracked changes or an incomplete
+reverse walk cannot justify repair. Gerbil expansion and author
+callbacks keep separate entry and return checks.
+
+Lean proves the two admission boundaries and the equivalence of
+local repair with rechecking every retained owner under these
+premises. The 10,000-owner repair fixture checks exactly three
+owners after one change. Native registration completeness and
+runtime costs remain Scheme correspondence obligations.
+
+** Dependency edit publication
+
+Keep the old registration visible to invalidation until its reverse
+walk completes. Affected entries cannot satisfy reads from the old
+certificate, even if replacement admission fails. While the reverse
+walk is incomplete it cannot certify any old entry as unaffected.
+Use a point lookup in the affected membership index to check an old
+entry, rather than enumerating the catalog.
+
+Seed one forward worklist with affected retained owners and any new
+requested roots. Follow the new dependency declarations. At a clean
+retained owner, stop the walk and reuse its evidence. This cut is
+sound when the old certificate was dependency-closed, the old reverse
+registration covered its reads, and every clean owner retained its
+outgoing edges. An owner with changed dependency bytes must be a
+change root. With these premises, any new reachable owner not covered
+by clean evidence is visited and checked. One visited index deduplicates
+the affected repair roots and new dependencies.
+
+Publish only after both worklists complete and the independent entry
+and return checks succeed. Publication grants scope access according
+to reachability from the public roots in the new graph. Internal
+repair roots grant no public scope access. Removing the last path to
+a provider removes its authority for that request, even if its own
+unaffected evidence remains available for another request. Rejected
+new admission publishes no replacement and does not revive affected
+evidence. Updating the live POO registration and exposing the new
+certificate must share the publication boundary in Scheme.
+
+The executable 10,000-owner fixture uses a three-owner affected
+component. Deleting its outgoing edge checks those three owners;
+replacing the edge checks the same three and one new provider.
+Refusing that provider, or failing the return check, blocks publication.
+The fixture also checks that the old affected consumer is unavailable.
+These are model checks and do not establish runtime timing.
+
+** Atomic certificate handoff
+
+A view contains the certificate slots and both directions of its
+dependency registration. One publication cell selects the view and its
+read restriction. Starting a change advances its ticket and fences old
+reads. Sealing walks the old reverse index and keeps the old view,
+then restricts it by point lookup in the completed affected index.
+An incomplete reverse walk leaves the fence in place.
+
+A reader captures one view, reads from that view, and validates the
+same ticket before returning. Entry and return evidence checks are
+separate from the ticket check. Across any sequence of serialized
+edits, equality of the final ticket implies that the entire captured
+state is unchanged. A successful read therefore gets its certificate
+and reverse registration from one view. This includes the race in
+which a previously clean reader overlaps the final switch.
+
+A writer stages against a captured sealed view. Admission evidence is
+indexed by that view and the exact replacement bundle. The forward
+worklist uses the replacement's declared dependencies. Its admission
+check also requires a certificate entry for each reached owner.
+The replacement's reverse registration must be the exact reversal of
+its forward edges. The commit consumes this stage as a whole and
+checks its ticket against the live cell. It installs the staged
+certificate and both directions of registration together.
+
+A new observed change during fencing or admission appends its roots
+to the outstanding change roots, advances the ticket and fences
+readers again. If the old reverse walk has already sealed, resealing
+resumes it with only the added roots. Its affected set is exactly
+the union of the two old-index closures. A stale result remains rejected after
+resealing and through later transitions. A failed current stage
+leaves the union restriction in place. Independent entry and return
+evidence checks remain part of approval.
+
+The 10,000-owner fixture stages one edit, receives a second change,
+then checks a four-owner reverse walk and a six-owner forward walk.
+The latter contains the four affected retained owners and two new
+providers. It tests rejected stale and failed stages, unaffected old
+reads after failure, and the two new registrations after commit.
+This is a proof over serialized cell transitions. Scheme still must
+supply atomic installation and issue the evidence for the captured
+view and exact replacement, with changes enrolled before affected
+reads can return.
+
+** Retire the old registration at commit
+
+The successful commit replaces the active bundle. The next edit
+reads only the replacement registration. A reader may still hold
+the old bundle, but its old ticket cannot authorize a return after
+commit. Once readers and staged writers release their references,
+the old registration may be reclaimed by the native runtime. The
+proof establishes loss of active authority, not reclamation timing.
+
+Before commit, a completed reverse walk can resume on the same
+immutable old registration. Keep its visited index and enqueue
+only the newly observed roots. =resumed_reverse_exact= proves that
+a completed resumed walk gives the same affected set as starting
+from the combined roots. The 10,000-owner fixture needs two extra
+reverse steps after the first two, and the next edit observes that
+the removed old provider bucket is empty. The publication transition now uses
+the resumed worklist directly. The two-step reseal succeeds where
+restarting from both roots with the same budget leaves work pending.
+An already visited owner consumes its queue entry without expanding
+its bucket again. Resume across a committed registration switch is
+outside this contract.

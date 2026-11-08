@@ -1,0 +1,406 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.18 Official Harness publication and source custody
+#+language: en
+#+property: STATUS historical-superseded
+
+[[file:../13.18-guarded-test-precompilation.org][13.18 index]]
+
+Historical experiment; its APIs are retired. The current boundary is
+[[file:../13.28-managed-dependency-and-activation-policy.org][13.28]].
+
+* Scope and decision
+
+** Official Harness publication, 2026-10-26
+
+A test declaration is a Gerbil module exporting =TestSuite= values.
+The installed =gerbil/tools/gxtest= prepares that module by examining its
+runtime exports whose names end in =-test=. A file list is the resulting
+Harness input projection; it must not become another maintained inventory of
+Suite declarations. A module may use runtime =export (import: ...)= to publish
+existing Suites without reconstructing Cases or invoking a second runner.
+
+The product Context/Temporal qualification now publishes this way. Its former
+six-file spec and standalone =t/build.ss= are removed. Both Core and product
+test trees inherit their root package identity; no =t/gerbil.pkg= or separate
+test language is required. Explicit test macro imports keep the ordinary
+Gerbil lexical semantics.
+
+The init-owned =tests= object exposes =.compile= through the same execution
+owner as =.run=. Both enter =call-with-prepared-testing-script=, preserving the
+captured compiler association, source guard, runtime artifact issuance and
+post-operation checks. =.compile= returns a prepared execution value without
+starting the Harness. =.run= independently authenticates currentness and uses
+the issued runtime outputs before invoking =gerbil test=. Returning that value
+does not cache an admission result.
+
+An explicit file demand may include auxiliary command inputs (for example,
+the qualification's actual watchdog script). These are source observations,
+not Harness arguments or Make roots. They remain checked before and after
+the operation and never expand the Suite set.
+
+Package-level implementation regressions can use =tests.for-directory= over
+their bounded =t/= tree. Discovery reads names and prunes excluded branches;
+leaf bytes are bound at first admission and checked again after execution.
+Module public behavior remains exported by the existing owner-confined
+=modules.<owner>.tests= projection. Both publish ordinary runtime file specs.
+
+The new split-phase and module-publication paths require their own executable
+qualification. Earlier compile counts or passing Harness logs below must not
+be treated as results for this migration.
+
+The discovery regression must not execute the complete selected test group
+inside one Case. That demand compiled 54 production support units before the
+bounded inner run failed; it was integration work hidden inside a mechanics
+test. The complete group is retained as the external =test-selected-modules=
+gate. Runtime test values must be exported with the installed Harness's =-test=
+suffix; an exported value named only =atomic= does not establish Case execution.
+The preparation control therefore checks both a module-load marker and an
+actual TestCase marker: neither may exist after =.compile=, and both must
+exist after =.run=.
+
+Gerbil-only progress and role-name utilities now explicitly use =:gerbil/core=.
+This changes import cost, not execution policy or wire format. The focused
+support-free run passed in 30.13 seconds, followed by 24.57 seconds in a fresh
+process; neither result qualifies the compiled-support path. That path first
+refused a mismatched compiler-tool context for =source/declaration.ssi= in a
+mixed local library environment. Its identity check remains mandatory; no
+fingerprint update or successful minimal run substitutes for rebuilding a
+consistent declaration cohort and rerunning the stronger controls.
+
+Recompiling =declaration.ss= and =deferred-declaration.ss= into the first
+library prefix changed the reported path to that new prefix but did not remove
+the identity refusal. Consequently stale bytes or a mixed prefix alone are
+not an established cause. The reader's exact context association still needs
+diagnosis; its identity check has not been weakened. The diagnostic now names
+the runtime context identity and path instead of reporting only a generic
+publication failure.
+
+*** Context identity, not module-name uniqueness
+
+The expanded diagnostic established two observed contexts with the same
+=yuanxu/module-system/source/declaration= name: one has a =.ss= source path,
+the other the installed =.ssi= path. The previous bootstrap name index retained
+only one. Using that index as the complete context-membership predicate was
+incorrect even when no source bytes changed.
+
+=yuanxu-bootstrap-contexts= now accepts an optional runtime DFS visitor. Its
+existing name projection remains available for named lookups. The reader uses
+that visitor to retain every exact observed context in an identity table and
+builds its input/path indices from that table. Publication, configuration and
+private-closure cuts use the same captured identity membership. The table is
+not extended by subsequent imports: an unobserved same-name or same-path object
+still fails. Currentness and per-demand source checks are unchanged.
+
+This repairs the implementation's correspondence premise rather than weakening
+it. The existing =ContextWalk= model distinguishes node identity from names;
+the existing =expanded_identities_unique= theorem in =SourceClosureWork.lean=
+assumes equality on those identities. Neither proves that a name projection is
+injective. The runtime publication oracle now collects exact contexts through
+the same visitor and still compares full versus pruned traversal order. These
+models are not new proofs of the Scheme index or runtime execution. The
+compiled-support regression must pass independently.
+
+The focused runtime =module-context-walk-test.ss= subsequently passed all three
+Cases through default =just test-file=, with =MODULE-OK=, =HARNESS-OK=, final
+=OK= and no error/overflow markers. Its new bootstrap Case checks one visit
+per exact context and coverage of the name projection. Existing Cases retain
+postorder/cut equivalence and bounded synthetic context-graph traversal. This
+is not a ten-thousand-module Loader qualification. Total wall time was 61.96
+seconds; the three Cases took 3.767, 0.080 and 1.117 seconds respectively.
+The demand had zero support units; remaining startup is not Case execution.
+
+The stronger preparation regression passed the former context-refusal point
+and reached runtime Make with 23 actual support units. It then failed the
+unchanged 120-second compilation budget (outer wall 152.60 seconds), before
+Harness execution. The failed record is retained locally. It does not prove
+the support-free poison-role Case, signed hot reuse, source-change refusals or
+the complete publication oracle passed on this snapshot. No further identical
+cold rebuild is warranted until the support compilation cost is attributed.
+
+*** Separate generic resources from service-publication support
+
+The 23-unit demand was traced through an overly broad Fixture import, not an
+intrinsic requirement of runtime Make. The preparation test imported only
+=DirectoryFixture= and =write-source=, but their module also imported service
+linking and admission publication. Runtime imports consequently brought in JSON
+Schema implementation units before a directory resource could be used.
+
+Directory ownership, dual-failure verification and =write-source= now have one
+definition in =t/qualification/testing/directory.ss=. Their bodies and cleanup
+semantics are moved unchanged. The service-publication Fixture imports that
+owner; it no longer re-exports generic directory bindings. Consumers import
+the owner directly. Private test support uses runtime relative file imports,
+so a newly added source helper does not depend on an already-installed =.ssi=.
+There is no test package marker, forwarding wrapper, extra runtime or Builder.
+The Nix qualification's existing dependency traversal includes the new support
+namespace without adding a maintained list of files.
+
+This change removes an unnecessary import edge at its construction owner. It
+does not omit a discovered edge, trust an unsigned artifact, change Make's
+currentness rules or reuse an admission result. New support counts and passing
+controls are required before claiming the original cold-build failure closed.
+
+The same default preparation regression now passes all three Cases on cold
+and fresh-process hot runs, including the poison unselected Types, actual
+Harness/Case markers, unchanged hot products, a fresh receiver's approved
+handoff, joint product/record replacement refusal, helper-source change refusal
+and compiler failure without Harness entry. Both runs contain =MODULE-OK=,
+=HARNESS-OK= and final =OK= without error or overflow markers.
+
+| Observation | Cold | Fresh-process hot |
+|-------------+------+-------------------|
+| Outer runtime support units | 2 | 2 |
+| Outer modules compiled | 2 | 0 |
+| Outer runtime Make process | 48.375 s | 0 s |
+| Outer preparation including issuance checks | 60.966 s | 3.889 s |
+| Runtime Harness process | 120.897 s | 48.446 s |
+| Whole default Just invocation | 290.03 s | 101.19 s |
+
+The hot row reports only the outer shared support. The integration Cases still
+create their own source packages, compile a fresh helper and exercise failure
+controls. They are not zero-effect unit tests, and their internal cold compile
+must not be reported as an outer cache miss. These two runs are local receipts,
+not a repeated host-controlled benchmark or a claim of second-scale startup.
+Source checks and the 120-second compiler / 600-second outer limits are intact.
+
+Service-publication consumers likewise use relative private support imports,
+so installed old Fixture exports cannot mask the moved source definition.
+Their domain-specific regressions remain separately required; passing the
+generic preparation controls does not establish application admission results.
+
+The real =gitea-postgresql-publication-test.ss= then passed all eleven existing
+Cases with its completion receipt and runtime Harness markers. Its 22 genuine
+domain support units remained in the Make request and compiled in 66.481
+seconds; whole invocation wall time was 223.45 seconds. This is deliberately
+distinct from the two-unit generic preparation demand. Controls retained the
+cached parent / final child port, two conflicting published requirements,
+explicit client configuration, closed-field typo refusal, child obligation,
+deep/source changes and omitted/substituted contribution rows. It is local
+consumer evidence, not complete CI or a scale-capacity result.
+
+The existing =service-publication-fixture-test.ss= also passed all ten Cases
+after migration, with runtime completion markers and no failure/overflow
+markers. Its checks retain inert declarations, independently acquired resources,
+real service cleanup, failed relocated preparation, dual-error identity,
+sibling isolation, repeated verification and interrupted verification recovery.
+The moved generic and retained service Fixture bodies were additionally checked
+byte-for-byte against their original definitions. Whole wall time was 168.89
+seconds, including a 48.889-second runtime Make process for 22 domain support
+units. No resource budget or refusal assertion was relaxed.
+
+*** Empty support does not import compilation/signing
+
+The next source audit found two eager imports even after graph selection was
+deferred: the test build accessor imported =building/build-projection= to
+discover an empty spec, and =TestingScript= statically imported artifact APIs.
+Runtime runtime module reuse cannot eliminate these imports in a new process.
+
+The existing owners now separate the phases:
+
+- =source/build.module-test-source-spec= discovers the demanded runtime import
+  closure, retains source observations and returns a POO spec. No directory
+  catalog or peer suites are scanned. The discovery body was moved from the
+  build adapter; target-name validation is shared through =source/preparation=.
+- The init facade acquires that function through a private runtime promise.
+  Importing init still does not import =source/build= or construct its products.
+- An empty spec returns observed data and its currentness / lazy selected-graph
+  guards, without a build publication. =tests.compile= remains a checked no-op.
+- Only nonempty support requests acquire =artifacts.test-build-projection=.
+  That owner attaches the existing endpoint, =.compile= and =admit-artifacts=
+  through runtime prototype inheritance. Empty support is rejected by that
+  attachment function before publication construction.
+- =TestingScript= acquires the two existing artifact bindings only inside its
+  nonempty preparation branch. The promise retains runtime function identities,
+  never a guard result. Private expansion contexts first import =:gerbil/core=
+  so =only-in= and ordinary value syntax have runtime bindings.
+
+An import/initializer is not a pure observation window: discovery rechecks
+its source guard after the artifact producer returns. Compiler authority,
+required build-accessor identity and final currentness remain with their
+existing owners. No Builder, restored-verdict cache or alternative Harness is
+introduced. Empty support intentionally does not expose signing operations;
+the user-facing =tests.compile= / =tests.run= interface is unchanged.
+
+The verification environment was rebuilt with local =gxpkg deps --install=
+at declared gerbil-poo =e281ad2e33784cfb9951c684b6be78bd2f4b7fca=, without
+changing the shared installation. In that same prefix, the minimal Gerbil control
+passed before and after the change: whole wall 18.73 / 7.49 seconds; projection
+3.348 / 0.990 seconds; runtime Harness 1.086 / 1.130 seconds. This is one local
+pair, not an independently repeated performance result.
+
+The preparation regression passed all three Cases (43.89-second whole wall).
+It observes the Gerbil's actual =list-modules=, requiring the artifact runtime to
+remain absent after spec inspection, =.compile= and =.run= for empty support.
+The nonempty Case supplies a positive module-presence control and retains cold
+compilation, hot/fresh receiver reuse, joint replacement refusal, source-change
+refusal and compiler failure without Harness entry. No hand-maintained module
+state table replaces the runtime loader. Import-only and real Scenario
+qualification remain separate gates.
+
+*** Delegate to public std/make; preserve compiled-library boundaries
+
+The installed Gerbil =std/make.ss= exports =make= and =make-clean=, together
+with platform/configuration helpers. Its =make= entry owns spec normalization,
+duplicate-target refusal, inputs/outputs, dependency timestamps, dependency
+completion waiting and worker scheduling. =std/build-script.defbuild-script=
+owns ordinary CLI dispatch. Core must not mirror those algorithms or reach
+into private =make-build=, =build?= or =dependency-timestamp= implementations.
+
+std/make schedules the targets supplied in a spec; it does not select Core
+Modules/Features or enumerate additional private test helpers for us. The
+remaining projection must therefore identify only the selected, owned targets
+and retain provenance. Byte/currentness admission and approved publication
+are distinct from Make's timestamp-based incremental decisions. They do not
+justify another build scheduler or a second compilation cache.
+
+The existing execution still calls the public entry directly:
+
+#+begin_src scheme
+(make spec srcdir: root libdir: output)
+#+end_src
+
+The next audit found that the discovery import hook remained active *inside*
+compiled =.ssi= libraries. It could redirect their runtime dependencies to
+package source files, depending on prior Gerbil imports. This reconstructed
+library sources as test targets. The hook now delegates the complete compiled
+library import to the captured runtime importer, matching the existing reader
+boundary. Explicit source files/private helpers retain their original input
+guards. The full runtime dependency graph is still visited and compiled
+interfaces are still source observations; no discovered edges are filtered
+out to manufacture a smaller count.
+
+The Gitea/PostgreSQL request changed from 35 to two actual support modules.
+std/make took 8.343 seconds and all eleven existing domain Cases passed
+(51.05-second whole invocation). The preparation controls passed again after
+this boundary change (29.41-second whole invocation), including actual Gerbil
+module-presence controls, source refusal and publication replacement refusal.
+Those are local source-snapshot results, not full CI or scale qualification.
+
+*** Repeated runtime-entry benchmark
+
+The same source snapshot was exercised through the default
+=just test-file t/gitea-postgresql-publication-test.ss true= entry, with two
+runtime Make workers and the unchanged heap/watchdog limits. The local package
+environment uses the declared =gerbil-poo= revision
+=e281ad2e33784cfb9951c684b6be78bd2f4b7fca=. Changed Core owners were compiled
+into that private package prefix; unchanged Core dependencies come from the
+existing package library. This is not a clean full-library build qualification.
+
+| Invocation | Support targets | Actual compilations | Make process (s) | Harness (s) | Whole wall (s) | User / system (s) |
+|------------+-----------------+---------------------+------------------+-------------+----------------+-------------------|
+| First support publication | 2 | 2 | 8.343 | 26.311 | 51.05 | 42.33 / 6.86 |
+| New process, warm publication 1 | 2 | 0 | 0 | 26.015 | 41.19 | 33.17 / 5.64 |
+| New process, warm publication 2 | 2 | 0 | 0 | 26.659 | 45.00 | 34.36 / 5.88 |
+
+Each invocation completed all eleven domain Cases and emitted =MODULE-OK=,
+=HARNESS-OK= and the final =OK= without harness/overflow errors. Warm reuse
+restores issued products and performs fresh admission; it does not reuse a test
+verdict or launch Make to rediscover that there is nothing to compile.
+
+The warm preparation spans were 1.154 and 2.463 seconds; source/artifact
+currentness remains inside those spans. The whole warm invocation still takes
+41--45 seconds, including roughly 26 seconds in the eleven-Case integration
+Harness. Zero compilation closes the duplicate-compilation claim, not the
+remaining latency problem. The first publication is cold only with respect to
+these two support products: Gerbil/filesystem caches were not flushed. The earlier
+35-target result is a diagnostic baseline, not a controlled multi-round speedup
+claim.
+
+The subsequent preparation regression also passed its three existing Cases:
+empty support does not load signing, nonempty support compiles through runtime
+Make and reuses issued products, and preparation failure cannot start the
+Harness. It retained the source-edit and joint product/record replacement
+negative controls. Its outer support reused two targets with zero compilation;
+the temporary test package deliberately compiled its one private helper.
+Whole wall/user/system time was 66.75/30.48/8.14 seconds (Harness 41.753
+seconds), slower than the earlier 29.41-second sample. That variance remains
+visible: the current data supports bounded correctness and zero warm support
+compilation, not a stable end-to-end latency claim or an attribution to host
+load without further measurement.
+
+*** Harness attribution and trace ownership
+
+The maintained services Fixture now uses the existing Case checkpoints at
+=service-files-prepared=, =service-selection-ready= and
+=service-publication-ready=. These are completed lifecycle observations, not
+alternate preparation steps. Each Case still acquires its own directory,
+selection, receiver and publication. No mutable Scenario or admission verdict
+is shared between Cases.
+
+Two new-process warm runs of the final source snapshot give the following
+additive attribution, summed over the eleven existing Cases:
+
+| Stage | Warm 1 (s) | Warm 2 (s) |
+|-------+------------+------------|
+| File/directory preparation after Case entry | 0.227 | 0.216 |
+| Lazy selection construction | 0.131 | 0.181 |
+| .for-export publication assembly | 18.509 | 17.809 |
+| Fixture body (including assertions/admission) | 1.156 | 0.973 |
+| Release | 0.217 | 0.138 |
+| Complete Case spans, including checkpoints | 20.867 | 19.870 |
+| Runtime Harness process | 27.181 | 26.122 |
+
+The 6.314/6.252-second difference between Harness duration and summed Case
+spans is a residual: VM/import/discovery, runtime harness setup/finish and
+process/output handling. It is not a separately measured VM startup time.
+The first Case's process CPU observation includes pre-Case imports; it does
+not give a common wall-clock epoch for the parent and child processes.
+
+The source observer attributes 10.930/10.456 seconds to complete pure source
+check windows, with 10.163/9.738 seconds already spent by Fixture acquisition.
+These spans overlap the publication/body stages above and must not be added
+to them. They include dependency/metadata validation, file-kind/read queries
+and byte comparisons, not just disk I/O. Both warm runs observe 37,337 actual
+source reads over all Cases, exactly as the instrumented pre-change run did.
+Independent boundaries were not collapsed to manufacture a lower number.
+
+An experiment removed the reader's aggregate query reuse while retaining its
+per-source window. All eleven controls passed, but source reads did not fall
+and CPU cost increased. That change was reverted; the original reader guard
+and its query scope remain. The failed experiment is retained as a local
+artifact, not as a production optimization or a new caching protocol.
+
+The production change separates the existing trace-only retention function
+into =module-system/building/test-retention.ss=. The ordinary Profile imports
+neither that owner nor its CLOS/reflective dependencies. A private runtime
+promise imports only the function binding on explicit trace; each invocation
+still creates its own observations and restores them with the unchanged
+=dynamic-wind=. The moved function body is identical to the previous body.
+The existing =core-spec= installs this optional library without executing it.
+Ordinary runtime module-presence and explicit-trace positive controls verify
+the boundary; this is more than a file split, but it has not demonstrated a
+lower whole-Harness latency.
+
+| Final invocation | Support compilations | Harness (s) | Whole wall (s) | User / system (s) |
+|------------------+----------------------+-------------+----------------+-------------------|
+| First support publication | 2 | 31.937 | 57.23 | 44.04 / 7.17 |
+| Independent warm process 1 | 0 | 27.181 | 42.58 | 34.93 / 5.75 |
+| Independent warm process 2 | 0 | 26.122 | 41.48 | 33.96 / 5.79 |
+
+The default =just test-file= path and the same pinned private package prefix
+were used, with observation enabled for these rows and two runtime Make
+workers. Cold means missing selected support products, not flushed system/Gerbil
+caches. All eleven domain controls passed each time: final child values after
+parent caching, both independent requirements, malformed ports/typos,
+contextual child obligations, omitted/substituted contributions and source
+changes. The observation regression passed (10.70 seconds), including explicit
+trace, observer restoration and runtime read delivery; preparation controls
+passed (37.64 seconds), including no trace initialization on the ordinary path,
+source refusal and joint product/record replacement refusal.
+
+The principal latency gap remains publication assembly, not Make or file
+copying. The next optimization must attribute its source windows to concrete
+callback/getter boundaries before combining them. Neither independent
+admission nor post-callback/return certification may reuse an earlier verdict.
+Current samples do not establish an end-to-end speedup over the earlier
+26-second Harness receipt, full CI closure or scale qualification.
+
+A separate unobserved default invocation
+=just test-file t/gitea-postgresql-publication-test.ss= also completed all eleven
+controls and the three completion markers: whole wall/user/system was
+35.00/29.00/5.14 seconds. The default entry does not print per-stage counters,
+so this row is not an independently measured zero-compilation or Harness-only
+receipt. It shows the cost of the real entry without opt-in observation; it
+must not be compared to the instrumented rows as a source optimization. Source
+admission, Case/resource limits and assertion coverage remain enabled.

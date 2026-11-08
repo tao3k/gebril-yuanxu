@@ -1,0 +1,221 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Cross-window libraries and build lifecycle
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+* Cross-window ordinary libraries and actual Module boundaries
+
+The failed Lab developer import exposes a classification error: a declared
+window's directory prefix was treated as Module implementation ownership.
+A window declares eligible namespace locations. A Module owner is established
+by its explicit declaration or actual Interface boundary, not by containment
+alone and never by gerbil.pkg. An ordinary library below another window must
+not disappear from the package's native dependency closure.
+
+Reuse the existing source-owner index and ancestor walk. Selected declared
+owners retain their existing SourceRef/Context path. Disabled declarations,
+including missing-source declarations, remain closed. An Interface encountered
+inside a declared window without an eligible owner refuses BEFORE expansion;
+there is no fallback through an enclosing selected owner. If no Module boundary
+exists, a library inside the same package kernel uses the existing shared
+source projection. Files outside that kernel retain public-package confinement.
+No second scanner, registry, loader, cache or public access syntax is added.
+
+Negative Interface probes belong to currentness support. Adding Interface
+later must invalidate the original classification. Required native controls
+cover cross-window library identity sharing and source projection, disabled
+owners, unselected poison initializers, absent-to-present Interface changes,
+plus the existing mounted dependency and lazy-scope cases. Gerbil remains
+responsible for native library/module identity and package artifacts.
+
+Idle-timeout acceptance requires real compiler/process progress and natural
+exit, not additional heartbeat output or a larger watchdog. Diagnose command
+startup, import/projection, actual compilation and output/exit separately.
+The full real Lab lifecycle suite must retain both cold environments, zero
+hot compilation, business use, source identity and A/B/prerequisite clean
+isolation before the earlier failure can be superseded.
+
+
+** Owner source spelling and immutable tool execution identity
+
+A precompiled Yuanxu interpreter may have a different compile anchor from a
+consumer's explicitly declared Core source window. The old path index knew
+only the compile-anchor spelling, so relative imports from that owner could
+re-evaluate installed tool sources and clone POO definitions. Reuse the existing
+owned-source projection: after confinement/role checks and source preparation,
+the input must be the exact object from the private preparation association
+for the captured Gerbil context. Only then may its actual owner path join the
+same tool-path index. Conflicting native contexts or aliases refuse. This is
+not authority inferred from a module name or package-prefix spelling.
+
+Every subsequent demand still uses the original tool-context guard and owned
+source projection. Owner byte edits and package changes invalidate its build;
+an unrelated installed prerequisite checkout does not. The native context's
+object, module ID and artifact path remain the execution version. Qualify this
+with a complete Core source owner located outside the interpreter's compile
+anchor, including the existing foreign same-name and changed-tool controls.
+
+
+The owner projection also reuses the source path already bound in the SAME
+private native-context preparation index. A repeated demand must invoke its
+original byte/package checker, not repeat native whole-file header parsing to
+rediscover that path. A removed owned file refuses through that binding; it
+must not silently vanish from the selected closure because fresh resolution
+returns no path. A different owner root still needs native resolution and the
+original exact-context association; no successful verdict is retained.
+
+
+** Native public-name binding remains an independent observation
+
+An ownerless library inside a declared window remains an ordinary native
+library. The existing public-dependency preparation binds its public name,
+source observations and original runtime context when a native SSI is already
+registered. It does not manufacture a Module owner. Byte equality alone cannot
+allow load-path replacement after a compiler consumer returns. The existing
+selected compiler-input association alone bridges Make's temporary source-path
+removal, and that parameter's original extent is retained.
+
+Reuse the original SourcePreparation and its saved invocation on every hit;
+never recapture a changed public binding as fresh authority. A registered SSI
+can coexist with its owned source: the context must be actually present in
+Gerbil's registry with the same source-declared identity and artifact path.
+Capture its instance/name/path, preserve that observation on subsequent checks,
+and reject a different canonical target outside the compiler association.
+An SSI filename alone or matching spelling is insufficient. No new registry,
+loader or successful-currentness cache is introduced. The cross-window fixture
+registers its actual native package root and restores the load path on unwind.
+
+* Lab package lifecycle timing and watchdogs
+
+The fixed Lab integration invokes two independent downstream environments under
+the existing 120-second file fence. Each package action has a 180-second total
+limit and a 60-second genuine-progress idle limit. The file fence also includes
+test startup, the root Lab business getter, all child startups, the assertions
+and cleanup. It is a fixed-workload regression gate. It cannot serve as a
+latency target for an expanding module catalog or identify a deadlock by itself.
+
+Use the existing =GERBIL_BUILD_VERBOSE=2= instrumentation for diagnostic runs.
+Report native =std-make= wall time alongside the included metadata and compiler
+currentness work. These are nested timings. The post-main interval is measured
+on a single external monotonic clock from the flushed build-main return marker
+to the parent's action return marker. It includes output delivery and wait.
+A missing marker leaves the corresponding phase unmeasured. Acceptance
+requires all lifecycle assertions, natural status zero, the harness completion
+markers and absence of failure markers. Diagnostic timestamps do not advance
+the progress watchdog.
+
+The downstream integration locates its fixture relative to its own test
+source. This avoids demanding the root Lab test projection for a directory
+coordinate. The test still executes the root public getter and independently
+checks upstream init and selected source bytes, downstream products, and
+cleaning isolation. Lean's =sourceAccess= and =publicSourceCurrent= still
+describe the admission rules exercised by the same Scheme entrypoints.
+Neither law uses a wall-clock limit as evidence of source authority.
+
+The first diagnostic baseline on 2026-11-04 reached the file fence while the
+root Lab use case continued to report progress. At about 95 seconds its test
+process was runnable with 14.94 seconds of CPU time. The 12-logical-CPU host
+reported a one-minute load of 124.74. The outer command stopped after 125.75
+seconds including kill grace, before any selected package action started.
+A subsequent diagnostic completed the first business getter in 55.93 seconds
+and A's cold package action in 22.16 seconds. That build recorded 11.24 seconds
+inside build main, 4.31 seconds in native Make and 0.20 seconds of cumulative
+metadata replay. The file fence interrupted A's hot action. Those measurements
+attribute completed phases only.
+
+The timestamped full run measured 101.24 seconds for the root getter and
+hit the file fence during =spec= at 125.54 seconds including kill grace.
+A separate cold native build in a fresh output directory emitted ten compile
+targets. Its start-to-main interval was 18.65 seconds, build main took 44.07
+seconds, Make took 24.08 seconds, and cumulative metadata replay took 0.41
+seconds. The native command returned to the diagnostic shell 8.29 seconds
+after the main-return marker. A shell variable error lost the native exit
+status, so that cold run supplies timing and target evidence only.
+
+The independent hot action reused those products and exited with status zero.
+It emitted no compile targets and took 23.22 seconds total. Startup through
+main entry took 6.99 seconds, build main took 9.12 seconds, Make took 0.48
+seconds, cumulative metadata replay took 0.31 seconds, and main return through
+process completion took 7.11 seconds. The post-main interval includes process
+and output handling. It does not identify a hang in any individual waiter.
+
+The ordinary full run then exposed a separate progress gap. The root getter
+finished in 39.35 seconds and =spec= returned in 27.41 seconds. The enclosing
+watchdog had no progress event for the completed =spec= and reported =idle=
+while A's compile action awaited its first compiler line. The file fence
+also fired, with the invocation ending after 121.28 seconds. The test now
+advances its existing Ops progress sequence once after each native action
+returns successfully and its output has no failure markers. A process that
+stalls after printing still cannot advance this sequence. The same action
+statuses, compiler roster, and A/B output and source assertions are required.
+
+After the progress correction, the ordinary full run recorded 69.13 seconds
+for the root getter and 17.55 seconds for =spec=. Successful =spec= exit
+advanced the parent progress sequence. This run was terminated during A's
+compile by the outer fence, with no idle refusal and 125.65 seconds elapsed
+including kill grace. The complete A/B lifecycle remains unqualified on
+this source cut under the current host conditions.
+
+A later low-load window reached three consecutive one-minute samples of
+11.37, 10.84 and 10.79 on the 12-logical-CPU host. The queued run detected a
+changed build source and stopped before testing. Rebuilding the private
+runtime from the current Core sources preserved the original Lab gate.
+The first run started at load 11.40 and exited 124 at 123.97 seconds during
+root Lab admission, with progress through 225 and no downstream command.
+At 76 seconds the running test process had accumulated 7.45 CPU seconds.
+
+A second run started after three CPU samples with 25 to 31 percent idle.
+The root getter completed in 31.47 seconds. The native spec action took
+45.44 seconds, with 28.66 seconds to the last spec output line and 16.78
+seconds from that line to the observed action return. That second interval
+includes output and process handling and does not isolate a particular
+waiter. Spec completion advanced the enclosing progress sequence to 266.
+The host load rose to 87.19 during the run. A's cold compile had about
+40 seconds before the total fence sent TERM. It emitted no compile events.
+The run exited 124 at 125.30 seconds with no idle refusal. This confirms the
+observed spec completion signal and leaves the full A/B lifecycle open.
+
+** Native pipe and Make entry attribution
+
+An isolated native process probe measured stdout/stderr EOF and process status
+with the same monotonic clock. It bypasses the Ops output pump for attribution
+and does not qualify the full Lab lifecycle. Two successful spec runs took
+17.45 and 32.38 seconds of wall time with 7.20 and 7.33 seconds of combined
+child CPU. In both runs observed wait returned within 0.35 milliseconds of
+EOF. The first run took 2.54 seconds from the final spec datum to EOF. The
+second took 6.48 seconds from the build-main return marker to EOF. This
+localizes the reproduced tail before EOF; the original 16.78-second tail did
+not record this boundary and cannot be assigned to a specific waiter.
+
+In the instrumented cold run, build main began at 6.95 seconds after spawn.
+Spec preparation took 4.89 seconds, including 3.98 seconds for the selected
+Graph. Make began at 25.27 seconds and emitted the first compile event at
+26.97 seconds. Output lock acquisition took 0.14 milliseconds, and the
+compiler source view extent exceeded its nested Make span by about 45
+milliseconds. The approximately 13 seconds between spec preparation and
+Make entry remain unattributed by these counters. All ten compile targets
+were emitted and the command exited zero after 89.97 seconds. The interval
+from main return to EOF was 24.74 seconds, while EOF to observed exit status
+was below one millisecond. Host load rose from 39.58 to 71.74. These runs
+establish stage boundaries without attributing all elapsed time to the host
+or treating the independent cold build as an A/B acceptance.
+
+The next handoff probe measured 2.92 seconds between completed specification
+preparation and Make entry. The installed-product call accounted for 2.85
+seconds even with an empty prerequisite list. Skipping the empty request
+moved 3.30 seconds to the first product repair. Both called the same existing
+products module through a dynamic entry, although the build interface already
+imports that module. The compile path now invokes its ordinary require and
+repair bindings directly and skips the empty prerequisite list. Selected
+output repair and post-Make product verification still run in their original
+order. Artifact issuance and cleanup retain their own entry boundaries.
+
+The revised native cold probe exited zero. Specification preparation ended
+about 49 milliseconds before Make entry, and selected product repair took
+0.18 milliseconds. This verifies the removal of the observed deferred-entry
+cost in the measured handoff. It does not assign the entirety of the earlier
+13-second sample to that entry, and the full Lab gate must still qualify
+selected output ownership, hot behavior, and cross-environment cleanup.

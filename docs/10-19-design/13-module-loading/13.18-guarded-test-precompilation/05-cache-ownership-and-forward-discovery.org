@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.18 Cache ownership and forward discovery
+#+language: en
+#+property: STATUS historical-superseded
+
+[[file:../13.18-guarded-test-precompilation.org][13.18 index]]
+
+Historical experiment; its APIs are retired. The current boundary is
+[[file:../13.28-managed-dependency-and-activation-policy.org][13.28]].
+
+* POO caching is the owner; MakeLayout is a bounded regression
+
+The current follow-up is [[file:../../../../dev/sysml/10-evaluation/10.01-efficient-caching.org][the caching study]], including the actual runtime
+=publication.current -> graph-cache-ref -> group-closed -> closed-raw= path.
+The MakeLayout model explains output-path correspondence only; it does not
+replace the POO cache design. Receiver identity, runtime completion heads,
+dependency replay, approval recovery and external currentness have distinct
+owners and lifetimes. Diagnostic timing now distinguishes runtime completion
+lookup from the filesystem validation performed around a cache hit.
+
+Two bounded reductions use the existing owners: a file-source guard no longer
+invokes =selected!= and then immediately invokes its already-completed guard
+again; recovery reuses its privately decoded approved packet while rerunning
+all admission checks. No successful currentness result is cached across Make,
+package callbacks or Harness. Runtime stage/submit!, both port requirements,
+parent/child isolation and the external approval root are unchanged. Formal
+decode/admission properties belong to =TestPublicationReuse=, independently
+of =TestMakeLayout=. Runtime MOP replay remains covered by its existing tests
+and models; no new MOP optimization is claimed from a wrapper-level reduction.
+
+** Selection and runtime replay follow-up
+
+The caching study now separates new-VM linker import, directory construction,
+reader bootstrap, role expansion/evaluation, runtime replay and source guards.
+Trace mode makes twenty bounded warm demands requiring the same cached Graph;
+ordinary =just test-file= does not perform those extra probes. Measurement uses
+a functional owner-scoped scalar report, with no injectable hash callback or
+source/slot observer added to the closed replay segment.
+
+The reader's private completed-publication guard retains preparation replay,
+admission replay and policy order. With no source observer it omits only the
+stable repeated preparation tail; with an observer it retains that tail even
+after self-removal. Original runtime roots/edges, signature checks, file/source
+tails, final admission and Harness remain. This is a within-call reduction,
+not a currentness cache or a merged preflight. =SelectionReplay= owns its
+Lean/QNT correspondence; MakeLayout remains independent.
+
+The next attribution separates actual replay visits, physical source reads,
+CPU/GC and wall time. A real warm demand increased from about 19 ms to 64 ms
+with unchanged 5647 visits and 128 physical reads; about 44 ms was collector
+CPU inside the port-read span. This does not retrospectively establish the
+cause of older uninstrumented receipts. The VM allocation stream is unqualified,
+and fewer calls alone establishes no speedup. The costing model and negative
+control retain that distinction; no additional currentness check was removed.
+
+* Forward owner discovery and role compilation boundary, 2026-10-23
+
+An auto-selected directory can be the target of a runtime type import before its
+publication is demanded. The directory context now resolves only that requested
+path through its existing locator. Explicit decisions, including disabled
+Modules, retain authority. This does not enumerate or activate the auto window.
+The focused window suite passed with a forward owner, a changed type source,
+a disabled owner and malformed unselected interfaces remaining cold. Canonical
+owner paths remain required; crossing an owner with unresolved =../= spelling
+is still refused.
+
+Directory organization is not a separate Gerbil package boundary. A nested
+=modules/gerbil.pkg= or =scenarios/gerbil.pkg= must not be required merely to
+select role-specific default bindings. The root package owns identity; the
+=yuanxu!= selection and existing source preparer own role lowering. Prepared
+reader forms already inject declaration bindings and role imports. Runtime
+Make entry points must consume corresponding prepared role inputs instead of
+requiring a directory package to repair bare source imports. This remaining
+build-path correspondence is not established by the focused window result.
+
+The complete baseline run retained failures in both declaration scale suites,
+compiled namespace execution and the isolated source gateway. No timeout,
+memory budget, source confinement or unissued-output rejection was relaxed.
+
+The product's runtime build also demanded command-manifest and Agent data
+constructors from unpublished implementation paths. Funflow now re-exports
+these existing pure functions through its maintained =func.ss= role. Its
+existing publication closure therefore includes their runtime libraries without
+adding a separate retained build list. The two-case atomic suite passed through
+=just test-file ... true=: manifest projection is inert, and a cached parent Job
+still reads a child's command while its unused task remains cold. An earlier
+unobserved invocation hit the unchanged idle gate; it remains a failed receipt,
+so this focused pass does not establish cold-path timing or full CI closure.

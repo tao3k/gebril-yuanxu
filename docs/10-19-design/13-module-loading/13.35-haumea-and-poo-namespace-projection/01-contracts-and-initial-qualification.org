@@ -1,0 +1,578 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Contracts, owner mapping and initial qualification
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+* Reference cohort and decision
+
+The requested reference checkout is =.data/haumea= in the Lab workspace, ignored
+by the parent Git repository. Research is pinned to upstream commit
+=252218e686de786f45311c323e105bd4340c2179=, not an unspecified moving main branch.
+Primary references are its [[https://github.com/nix-community/haumea/blob/252218e686de786f45311c323e105bd4340c2179/src/load.nix][load implementation]],
+[[https://github.com/nix-community/haumea/blob/252218e686de786f45311c323e105bd4340c2179/src/__parsePath.nix][path classification]],
+[[https://github.com/nix-community/haumea/blob/252218e686de786f45311c323e105bd4340c2179/docs/src/api/load.md][load documentation]] and
+[[https://github.com/nix-community/haumea/blob/252218e686de786f45311c323e105bd4340c2179/docs/src/api/loaders.md][loader documentation]].
+
+The implementation refines Yuanxu's existing POO namespace projection:
+source hierarchy supplies an admitted structural index, POO supplies
+lazy slots and receiver identity, the existing Module System supplies semantic
+selection/admission, and Gerbil supplies native import/phase/compilation.
+Applications keep their existing declaration and native lookup:
+
+#+begin_src scheme
+(.get yuanxu-nix-consumer.init.exports modules nix config)
+#+end_src
+
+This contract adds no new public getter, wrapper object, loader DSL, global
+registry or cache. A demanded Module leaf remains the admitted public object
+itself. It does not turn every Scheme file into an independently published
+Module or make directory enumeration a compile request.
+
+Current user-layer decisions are collected under =User expression refinement:
+names do not define scope= below: namespace ancestry, final POO receiver and
+inherited-slot computation have separate owners. Existing native forms supply
+the expression surface. The native dependency installation API is qualified;
+normal native CLI installation must keep editor TAGS. The opt-out experiment
+was rejected and removed; current repair/acceptance is recorded under
+=Required native TAGS and loading-window correction= below.
+
+** Current closure boundaries
+
+| Contract | Implementation / acceptance |
+|----------+-----------------------------|
+| Interface entry and user expression | Native Prelude, original =.get=, public prototype derivation and leaf-scope controls implemented |
+| Namespace projection | Native POO target visibility, branch-local index and original leaf identity qualified |
+| Selected compilation | Owner declarations and native dependency closure qualified on independent thousand-owner and real product consumers |
+| Product ownership | Downstream native output directories, currentness, cold/hot builds and A/B clean isolation qualified |
+| Runtime mutation and laziness | Complete thousand-name runtime Case now passes its unchanged budget; stale reads refuse and unrelated scopes remain stable; latency remains open |
+| Native package CLI | Normal =deps --install= with native concurrency and TAGS retained; no local package-manager patch or alternative installer |
+| First business EVAL | Native =.get= from a cold thousand-owner namespace admits and constructs only the reached pair. The separate dense certification Cases still require the full selected graph |
+
+The dated receipts below distinguish source candidates, installed tools and
+runtime workloads. Earlier first-EVAL receipts described full admission on
+their then-current path. In the current workload, =business-eval-cold= and
+=business-eval-hot= time only the expression. The cold read admits and
+constructs module-1 and module-0, and the hot read repeats neither operation.
+=full-graph-after-business= separately demands the full selection. The dense
+certification gates still start with all declarations cold and retain their
+original resource limits.
+
+With the =adaa875= runtime and the split measurement, the native cold
+expression took 1.879 s wall and 1.165 s process CPU. The counters reported
+two admissions and one scope per reached owner. The hot expression retained
+its identity with zero admissions and zero scopes. The subsequent full-graph
+request took 43.215 s wall and 31.264 s CPU and verified all 1000 declarations.
+Its two reached owners were already admitted. The independently cold dense
+declaration and selection cases both still reached the 180-second limit.
+
+* What Haumea actually does
+
+Its implementation separates =aggregate= (structural filesystem metadata) from
+=view= (a perspective-dependent attribute tree). File content is represented by
+a fixed point and a selected loader. Nix evaluation controls when those content
+thunks are forced. Directory shape and name collision checks still require
+metadata work; lazy values do not imply zero filesystem traversal.
+
+Names strip up to two leading underscores before classification and strip the
+last file extension. Public names are visible externally. A single leading
+underscore is collection-internal; a double leading underscore is visible from
+the containing directory's perspective. The implementation uses a prefix test
+on the caller perspective, so enclosing-directory internal names remain visible
+to descendants. The result is a visibility view, not a sandbox or an authority
+to execute another Module.
+
+Normalized collisions reject, including a file/directory collision or an
+internal/public name collision. Symlinks are not loaded by the regular-file/
+directory branches. Yuanxu currently rejects symlinks in admitted source trees;
+that stronger source policy must not be weakened to copy a reference convention.
+
+The default loader imports a value, uses function argument names to select
+inputs when it is a function, and provides =self=, =super= and =root=. Its default
+loader ignores optional argument defaults; its callPackage variant has different
+default/override behavior. Those are concrete Nix function semantics, not generic
+dependency-injection laws that can be copied onto Scheme bindings.
+
+Haumea's =self= is the current file result, =super= is its containing directory
+view, and =root= is the collection view from that file's perspective. Its
+=super= is not a POO inheritance predecessor. Its transformers run over directory
+views; =liftDefault= is an explicit transformer with disjoint-union collision
+checks. Arbitrary transformers need not preserve cold enumeration.
+
+* Mapping onto existing Yuanxu owners
+
+| Concern | Existing Yuanxu mechanism | Status / constraint |
+|---------+--------------------------+---------------------|
+| Hierarchical lazy namespace | =source/link.ss:scope-tree= and =source/directory.ss:tree= use native =object<-fun= | Existing; namespace branches are POO objects and Module leaves resolve to actual admitted scopes |
+| File/directory source association | Directory Context, source collections, Interface preparation | Existing; Interface remains loading configuration, ordinary libraries retain their native classification |
+| Receiver-local self reference | Native POO computed slots and prototype composition | Existing; productive slot dependencies and CyclicSlot diagnostics belong to POO |
+| Other Module dependency | Core =requires= aliases, selected Graph and scope admission | Existing; a tree-relative name does not add an admitted dependency |
+| Public/internal view | Qualified init exports, role boundaries, explicit selection and =module-namespace-project= | Closed branch-local target restriction is implemented; arbitrary effectful perspective callbacks are not an adopted API |
+| Alias or mount transformation | Existing =rename:= window mounts | Existing; a mount changes organization, not publication/compiler identity |
+| Build contribution | Owner Build roles and native cross-package projection | Existing, including 13.34's real Nix owner; namespace transformations cannot change compilation authority |
+| Generic filesystem loader / arbitrary transformer API | No new public implementation | Unnecessary for this research stage; any future syntax needs the existing macro/phase review |
+
+There are two different recursive structures: POO value-slot dependencies and
+Module =requires= edges. A productive self-referential object does not legalize
+a cyclic Module dependency or a cyclic native compiler import. Keep their
+diagnostics and admission boundaries separate.
+
+Injecting the whole source tree as an ambient =root= would bypass explicit
+selection/dependency contracts. Existing admitted aliases and explicit functional
+parameters provide the intended dependency values. Do not infer imports or
+effects from a Scheme function's argument names or rebind lexical scope through
+an unreviewed scoped-import mechanism.
+
+* Namespace-view contract
+
+1. Structural indexing and key enumeration may observe source metadata and
+   validate naming/currentness policy. They do not run business scope factories,
+   external builds or compilation. Metadata enumeration is not universally free.
+2. A view can restrict visible paths or mount existing paths. Direct lookup and
+   reflection must agree: hiding a name from enumeration alone is insufficient.
+   An excluded lookup refuses before requesting its provider.
+3. A permitted leaf returns the original admitted POO object. Do not clone it
+   with =.cc= merely to build a view, inject a =scope= slot or reconstruct it per
+   path. Aliases must preserve receiver identity and original source provenance.
+4. View policy cannot enlarge the admitted selection or authorize operational
+   effects. Build roots/options/resources remain owner contributions; views
+   cannot turn private role files into independent compilation declarations.
+5. Naming and leaf/branch conflicts refuse before conflicting scope factories
+   run. No implicit =default.ss=, new entrypoint or underscore-renaming rule is
+   adopted. Publication identity and native compiler identity remain authoritative.
+6. Original input/currentness and Contract checks still guard permitted demand.
+   A previously computed view or warm POO slot is not an approval cache.
+
+Closed metadata projections and ordinary POO/functional composition are the
+default abstractions. A general user callback for filtering/transforming views
+would need explicit phase/effect semantics before adoption; pure behavior cannot
+be inferred merely because a callback is stored in a POO slot.
+
+* Refinement: POO is the abstraction, hierarchy is its expression
+
+Do not introduce Tree, Node, Leaf or View wrapper families. A branch is an
+ordinary native POO object. Its finite slot specifications express its names;
+its slot thunks reference original admitted children. A leaf is the admitted
+object itself. Native =.o= composition expresses fixed projections and aliases;
+=object<-fun= expresses a metadata-derived set of the same ordinary slots.
+Neither expression needs a new accessor or changes Interface configuration.
+
+The current installed gerbil-poo source cohort
+=a84e76c1b1a61de2db52e38ba8d1d8c8671ec601= already supplies receiver-local
+slot/layout indexes, persistent ordered =prototype-map=, ordinary hash-table
+interfaces, Type/ObjectContract descriptors, and =table-indexes= for correlated
+collection snapshots. Use each at its owning boundary:
+
+| Boundary | Existing POO capability | Decision |
+|----------+-------------------------+----------|
+| Public expression | Native object slots, =.o=, =.get= and prototype composition | Branches and aliases use these directly; no leaf wrapper |
+| Structural name grouping | Persistent =prototype-map= and private native hash builders | Reuse the existing symbol-keyed index; pass only a branch's declaration suffixes to its children |
+| Changing correlated catalog | =table-indexes= and persistent table snapshots | Available when an actual catalog/delta contract is needed; no second catalog is introduced for this immutable generation |
+| Namespace admissibility | Existing Type/ObjectContract phase semantics | Check finite names/origin policy without demanding business fields |
+| Business leaf admissibility | Existing Module/Scope Contracts and ManagedBinding | Keep complete requirement and source checks on their original boundary |
+
+Contract use must be phase-correct: ObjectContract's required-field validation,
+including its shape routine, can read required values. Calling that routine on
+every namespace leaf would defeat cold enumeration. The native control instead
+uses an empty responsibility set plus a delegated names-only whole-object Type
+constraint; leaf Contracts remain at actual demand. A contract does not imply
+purity or harmless evaluation merely because it is a POO object.
+
+Visibility is a restriction of bindings available from the admitted source
+namespace, not a string convention or a filter over already materialized values.
+Aliases may rename exposed paths but must reference an existing permitted source
+binding. They cannot recover a hidden target through a new public name. Closed
+slot specifications supply both reflection and direct lookup: inheritance of the
+entire source object would also inherit its hidden slots and is not a narrowing
+projection. Native POO composition still applies normally within the admitted
+leaf; namespace visibility and business prototype inheritance are different axes.
+
+The names-only Contract certifies names, not opaque getter provenance. Native
+aliases in these controls reference the restricted source object. A caller
+holding a broader source capability can explicitly construct a broader object;
+that is a new declaration requiring its own publication/admission, not a breach
+of a Scheme sandbox. Source-origin eligibility remains an existing Module
+System obligation and is not inferred from names or function captures.
+
+Currentness is explicit at its original owner. A namespace is an immutable
+generation snapshot; a cached native slot is not live filesystem IO. Pure warm
+=.get= can return its existing object identity. Before graph publication, build
+or checked execution, the original owner's currentness/admission boundary must
+still refuse stale source/generation. This refinement does not add an observer
+to every slot read or claim every warm lookup revalidates source bytes.
+
+* Formal allocation before Scheme changes
+
+=Loading/NamespaceProjection.lean= models bindings as a pure path-to-path
+function, not a runtime Tree type. Restriction filters the target binding;
+reflection enumerates exactly defined bindings within the supplied finite
+domain. Demand delegates to the original resolver verbatim. A hidden name
+returns refusal with unchanged state without calling that resolver. Aliases to
+one source path invoke the same original binding operation; no reconstructed
+Scope or secondary memoization state is modeled.
+
+Here =demand= denotes the cold slot thunk's invocation, not interception of
+every warm =.get=. The existing native POO memo/CompiledPlan semantics govern
+whether that thunk runs again. Alias equality is stated at the same input
+state; cross-call receiver stability additionally uses the original source
+slot's memo semantics and is checked with native =eq?=. An arbitrary stateful
+resolver is not assumed to return one allocation forever.
+
+The branch-index law states that a suffix is in a child's bucket exactly when
+the original input contains that child's name followed by that suffix. The native
+grouping uses cons followed by reverse to retain occurrence/order; the
+membership theorem alone does not establish an ordering guarantee.
+It does not prove hashing, filesystem naming admission, native pointer equality
+or compiler behavior. ManagedBinding and DemandMaterialization retain those
+existing admission/identity premises; Scheme must establish the concrete bridge.
+
+SysML allocates closed-name visibility, unchanged resolver returns and explicit
+currentness, plus measured branch-local indexing. The Scheme acceptance is
+ordinary POO expressions, Contracts and the existing source namespace. There is
+no public visibility grammar or automatic underscore policy in this increment.
+
+* Efficiency questions with concrete owning source
+
+=scope-tree= already groups immutable rows by the next name using the native
+ordered prototype map. It does not scan all siblings for every cold lookup.
+=directory.ss= snapshots immediate directory metadata, preserves collision and
+symlink checks, and constructs deeper namespace nodes on demand. It explicitly
+does not recursively enumerate every Module at Context construction.
+
+The pre-refinement =directory.ss:tree= filtered all selected paths for each
+demanded branch. The current implementation groups branch-local declaration
+suffixes through the existing persistent prototype map. The paired native
+measurement below establishes a gain for its explicit wide-branch corpus.
+This remains a generation-owned structural index with no additional semantic
+graph or approval cache.
+
+Keep distinct workloads separate when evaluating further changes:
+
+- Metadata-only namespace creation, enumeration, cold path demand and repeated
+  warm lookup, with fixed path depth/fanout and explicit versus auto selection.
+- Real source declaration/admission, including all explicitly selected headers.
+  Current tests require the first scope demand to admit the complete explicit
+  selection, while only demanded providers' business factories run. Do not claim
+  one declaration read per leaf by changing that contract.
+- Native compilation of the selected owner/dependency closure. The 13.34 Nix
+  receipt establishes ten targets and zero hot compiler events, not a general
+  thousand-Module latency result or a speed comparison against Nix evaluation.
+
+Record source reads/stats, declaration/contract work, factory calls, native
+compiler events, wall/CPU time and retained/peak memory separately. Use matched
+workloads and the unchanged project budgets. An arbitrary transformer that
+forces every leaf is a different workload, not a baseline for lazy lookup.
+
+* Formal and native follow-up
+
+Reuse =ManagedBinding= for complete/current admitted returns and
+=DemandMaterialization= for receiver/reflection identity. Reuse InterfaceRoots
+and SelectedPackages for semantic/compiler closure. NamespaceProjection now
+proves the binding/action laws allocated above. A future general perspective
+API must also establish its concrete path/policy correspondence, conflict
+admission and source-generation preservation. Those do not follow from
+Haumea's Nix implementation or from this mapping table alone.
+
+The native controls must include hidden direct lookup, enumeration remaining
+cold, aliases returning the same object, original-owner admission refusing a
+stale generation even when namespace slots are warm, two
+independent init generations, and productive slot recursion versus rejected
+Module/import cycles. Keep real Lab cold/hot/clean compilation as a separate
+gate. This proposal does not implement a second loader while these contracts
+remain under review.
+
+* Native refinement and measurement receipt (2026-11-03)
+
+The native =namespace-projection-test.ss= passed after the Lean refinement.
+It uses ordinary POO slot composition, Type/ObjectContract descriptors and the
+existing selected-scope resolver. It verifies cold name validation, rejected
+hidden lookup and hidden-target alias, identical admitted receiver references,
+the complete explicit declaration boundary, independent generations and stale
+owner admission refusal. It also rejects inheritance of a broader source
+namespace by the same names-only Contract without demanding its fields.
+Productive native slots work and cyclic slot demand refuses. A real directory
+leaf/branch conflict refuses before the supplied resolver is invoked.
+
+The production change is confined to the existing =directory.ss:tree=:
+use native persistent =prototype-map= buckets and pass branch-local path
+suffixes. No alternate Tree/Node class, loader, value cache or lookup helper
+was added. The existing directory observations, case/symlink checks, source
+generation and semantic resolver remain the owners of their original duties.
+The native Core build passed under the unchanged 300-second entrypoint.
+
+The Lean aggregate passed 217 jobs, with shape and axiom audits over 8716
+declarations and standard Lean axioms only. This is a pure binding/action
+refinement, separate from the native behavior and performance measurements.
+The audited =metadata_preserves_handle= theorem additionally transports the
+original handle intact, including owner, revision, generation and dependencies.
+
+** Matched native branch-index measurement
+
+Both captured before/after implementations were compiled together with
+=gxc -O= in the same Gerbil installation and private output environment.
+This local macOS cohort used Homebrew Gerbil
+=0.19.20261009110849.1cfb032.patch618d76f9eb72= for both =gxi= and =gxc=.
+Their distinct module names separate code cohorts; they use the same language
+prelude and dependencies. Timing starts after imports. The original pre-change
+directory source SHA-256 was
+=206ddc3dd4d2ca6d5c2bd994d365e7b76d38c5f07bc33a3162db1e0b539f849e=.
+The compiled captured sources, including their package headers and optional
+diagnostic counter, had SHA-256:
+
+- Reference: =ad53f21e0b0750c89802e1238bb2e275399fda0994bcfdde180d2d68f83c9dfe=.
+- Candidate: =944c36266d85158c76d2af0aac97ecaab4b3e26017968626defa9fbe9951eab2=.
+
+The corpus contains 1000 explicit two-segment paths, 1000 branches and one
+distinct leaf name in each branch. Invalid, deliberately unread publication
+bodies make accidental interpretation fail. Each run verifies every branch's
+leaf names against the original selected paths, warm branch reference identity
+and final Context currentness. Both cohorts perform zero publication reads and
+zero provider resolutions. The same filesystem fixture is used throughout.
+
+Fresh processes run reference, candidate, candidate, reference, with three timed
+samples each: six samples per cohort. Diagnostic row counts have a separate run;
+timed samples disable the source observer. Each process retains the unchanged
+2 GiB pre-import heap fence and 120-second deadline. No other Gerbil tests or
+builds run concurrently with this paired measurement.
+
+| Measurement | Reference | Branch-local candidate |
+|-------------+-----------+------------------------|
+| Tree declaration rows inspected | 1,001,000 | 2,000 |
+| Context construction median | 214.28 ms | 209.93 ms |
+| Cold branch enumeration median | 5128.75 ms | 276.41 ms |
+| Cold branch enumeration range | 4659.60--5975.26 ms | 233.31--352.23 ms |
+| 10,000 warm branch reads median | 4.27 ms | 3.32 ms |
+| Measured trial CPU median | 2283.37 ms | 202.53 ms |
+| Whole-worker peak RSS, two processes | 792,494,080 / 766,312,448 bytes | 466,599,936 / 487,571,456 bytes |
+
+The cold branch median improved by approximately 18.56 times for this corpus.
+The row reduction explains the algorithmic work removed; it does not establish
+a universal latency ratio. Peak RSS is measured for the entire worker including
+imports and runtime, not retained namespace bytes. Retained-memory attribution,
+arbitrary fanout/depth, complete thousand-Module declaration admission and native
+thousand-Module compilation are not qualified by this metadata-only experiment.
+
+The worker and heap-fenced =benchmark-namespace-branches= /
+=compile-namespace-branches= recipes are tracked; captured cohort sources,
+raw JSON samples and OS timing logs remain local qualification artifacts.
+The benchmark takes native library identities to prevent accidentally comparing
+an interpreted reference with a compiled candidate.
+
+Recreate this corpus from the Core root with
+=python3 dev/namespace_branch_fixture.py /absolute/new-corpus --size 1000=.
+The output directory must not exist; the generator never resets an existing
+checkout or fixture. Supply the archived before/after sources to
+=compile-namespace-branches=, then invoke =benchmark-namespace-branches= with
+their compiled native library identities in the paired order above.
+
+** Current verification scope
+
+The namespace contract test is now in the ordinary =just test= roster. The full
+Core entrypoint passed 102 serial file gates plus three selected-module tests:
+105 MODULE-OK markers, 103 HARNESS-OK markers, final OK and
+~phase=all-files-complete fileCount=102~, with no case/check/harness, heap/stack
+overflow or unexpected error markers. The real Lab selected-build replay also
+passed on this rebuilt Core cohort:
+
+#+begin_example
+LAB-DOWNSTREAM selected-targets=10 hot=0 fresh-use=ok clean-isolation=ok upstream=unchanged owner-library=ok disabled-lab-targets=0
+MODULE-OK t/selected-package-downstream-test.ss
+HARNESS-OK ("t/selected-package-downstream-test.ss")
+OK
+#+end_example
+
+That replay retains native module identities, the direct init.exports/.get
+path, selected closure, owner declarations and independent downstream product
+environments after the namespace index and terminology changes. It does not
+expand the metadata-only measurement into a thousand-Module acceptance claim.
+The terminology correction uses Gerbil language/runtime/compiler/expander or
+=std/make= according to responsibility; platform =SDKROOT= retains its actual
+macOS meaning. It changes no resource or acceptance budget.
+
+* Research receipt
+
+The upstream pinned checkout's offline =nix eval ...#checks= completed with
+JSON ={}= and zero exit status through its native =loadEvalTests= implementation.
+The source test tree contains thirteen =expr.nix= fixtures. This is an upstream
+Nix evaluation receipt, not a package build, benchmark, or Yuanxu equivalence
+proof. No upstream production pins or lockfile were changed.
+
+From the Lab workspace root, with the locked library prerequisite available in
+the local Nix cache:
+
+#+begin_src sh
+nix eval --offline --no-write-lock-file --json "path:$PWD/.data/haumea#checks"
+#+end_src
+
+A separate temporary native Nix fixture confirmed the perspective-prefix law:
+=group/__local.nix= exported 7 to =group/child/value.nix= through that file's
+root view, while a root-level peer could not see =group.local=. External group
+keys contained only =child=. The successful evaluation returned:
+
+#+begin_src json
+{"descendantPrivateValue":7,"externalKeys":["group","outside"],"externalPrivateNames":["child"],"outsidePrivateAccess":false}
+#+end_src
+
+The initial direct hidden lookup returned a missing-attribute error with nonzero
+status; that negative diagnostic is preserved separately. Nix =tryEval= did not
+recover this missing-attribute access. The final presence-check fixture above
+completed successfully; it does not reinterpret the negative access as success.
+The reference checkout remains clean.
+
+The current =module-scope-link-test.ss= also passed through =just test-file= in
+the qualified private Core runtime, with MODULE-OK, HARNESS-OK and final OK and
+no failure/overflow markers. It covers existing namespace/provider laziness,
+leaf/branch refusal, identity/currentness and Module cycle boundaries. It is
+not native acceptance of the proposed perspective-view API.
+
+13.34's real Lab owner gate, Build-role gate, production-build-boundary gate and
+Lean audit passed before this research follow-up. The refinement and measured
+branch-local index are recorded above; new general perspective-view APIs and
+further performance work remain proposals. No complete Haumea-equivalent loader
+or full thousand-Module scope/build capacity is claimed by that experiment.
+
+* Real catalog qualification refinement (13.35)
+
+The acceptance protocol distinguishes physical catalog R, explicit declarations
+D, demanded semantic scope closure S and native compiler closure C. A catalog
+with 1000 directories is not evidence that 1000 declarations were admitted.
+Admitting every declaration does not authorize construction of every scope.
+A downstream build uses its own explicit selection; hiding namespace names
+never changes compiler authority. Owner Build contributions enter C through
+that same selected owner, with original native source identities.
+
+=NamespaceProjection.scope_demand_stays_in_admitted_catalog= reuses the existing
+=Graph.TestAdmission.Demanded= relation. The finite star fixture establishes
+that demand for module-1 reaches only module-1 and module-0 within a closed
+thousand-node region. Compiler exactness remains the existing
+=SelectedPackages.successful_target_iff= obligation, and product ownership
+remains the existing SourceView/downstream environment contract. No parallel
+graph engine, loader or cache is introduced. These are model laws; actual
+reader, scope factory, compiler and cleanup behavior require native gates.
+
+The original =module-declaration-1000-test.ss= passed in the qualified private
+Core runtime with 1000 actual four-role declarations, cold business exports,
+1000 completed publications and the existing stale-source rejection. The
+subsequent =module-runtime-values-1000-test.ss= failed its unchanged 180000 ms
+Case limit during first-scope demand; the trace was in publication metadata
+currentness. This is retained negative evidence, not an accepted runtime
+capacity result. Neither the Case budget nor the heap fence was enlarged.
+
+The new downstream gate must create 1000 valid Interface directories, select
+module-0 and module-1 in a distinct consumer, count exactly those scope factory
+invocations, derive C from the projected native spec, compare cold compiler
+events against C, require hot zero compilation, and clean one downstream
+environment while the second remains usable. The original full-catalog runtime
+value gate remains independent and must pass before claiming its capacity.
+
+** Executable ownership and correspondence
+
+| Plane | Owner | Native correspondence |
+|-------+-------+-----------------------|
+| Catalog R | =dev/thousand_package_fixture.py= | Creates 1000 actual four-role directories with valid POO declarations, config and deferred functional values |
+| Complete declaration capacity | =t/module-declaration-1000-test.ss= | Existing separate 1000-declaration fixture; business exports remain cold, stale-source mutation is refused |
+| Explicit downstream D | =thousand-consumer/init.ss=, generated in a private fixture | Canonical Prelude =yuanxu!= selects module-0 and module-1 from the producer's 1000-directory catalog |
+| Scope S | =thousand-consumer/use.ss= and =scope-control.ss= | Existing publication and scope-factory observer events; no new runtime observer/loader API |
+| Compiler C | =thousand-consumer/build.ss= | Existing =package-library-spec=, =std-make-spec= and =defbuild-script= close native imports plus selected owner contributions |
+| Product owner | =t/thousand-package-downstream-test.ss= | Private downstream A/B output roots preserve original producer package/module identities; cleaning A preserves B and an unrelated sentinel |
+| Formal relation | =NamespaceProjection= + =SelectedPackages= + =SourceView= | Existing demand graph, exact native input projection and environment ownership; not a second graph implementation |
+
+The scope control has its own package/init and admits three declarations before
+any scope factory runs. It then requests module-1, requires exactly one factory
+call each for module-1 and module-0, and checks the admitted module-2 scope stays
+cold. This is stronger than equating a two-owner selection with a two-owner
+demand: the third selected declaration makes an eager-all-selected path fail.
+The compiler consumer continues to select only two owners. Neither control
+changes the producer's default init or another consumer's init.
+
+Module-1 owns =build.ss= and contributes =support= with
+=-cc-options -DYUANXU_THOUSAND_OWNER=1=. The target uses Gerbil's native
+=begin-foreign=; its C preprocessor refuses compilation if that option is lost.
+The Build role is an observed source, not an extra compiled public Module. The
+compiler-event oracle is derived from the projected spec; it does not repeat
+the private role list. A separate missing-provider consumer selects only
+module-1 and must refuse with =required module not explicitly declared= before
+any compilation. Its source and output roots are separate from A/B.
+
+The embedded C control has no external header or resource input. It qualifies
+owner compiler-option propagation; general header/resource currentness,
+external-build contributions and signing retain the separate obligations in
+[[file:../13.34-owner-library-declarations-and-root-migration.org][13.34]]. This gate
+does not certify those broader contribution protocols.
+
+The gate also requires a fresh native process to observe cold imports and
+enumeration, two declaration admissions with zero factories, the original
+=.get= leaf/config identity, hot value identity, configuration-driven functional
+recomputation and explicit original Graph currentness. It compares every
+producer and successful consumer source byte before/after, checks original
+compiler identities in downstream products, and requires fresh B use/hot
+compilation after A cleanup and after the rejected selection. No source checkout
+is used as the artifact owner.
+
+Reproduce serially in an already qualified private Core runtime:
+
+#+begin_src sh
+GERBIL_PATH=/private/tmp/yuanxu-1331-runtime GERBIL_LOADPATH=/private/tmp/yuanxu-1331-runtime/lib just test-file t/module-declaration-1000-test.ss
+just test-thousand-package-builds /private/tmp/yuanxu-1331-runtime
+GERBIL_PATH=/private/tmp/yuanxu-1331-runtime GERBIL_LOADPATH=/private/tmp/yuanxu-1331-runtime/lib just test-file t/module-runtime-values-1000-test.ss
+just proofs-lean
+#+end_src
+
+The last runtime-value command retains its original failure described above;
+it is not part of the passing small-selection receipt. Its first-scope interval
+includes declaration admission and currentness as well as scope construction,
+so the timeout is not a measurement of isolated factory cost. Detailed causal
+attribution remains open. The new native gate has no comparative performance
+claim and does not enlarge any existing capacity budget.
+
+** Native receipt and remaining capacity boundary
+
+The final =just test-thousand-package-builds /private/tmp/yuanxu-1331-runtime=
+passed with MODULE-OK, HARNESS-OK, final OK and no error/check/harness, heap/stack
+overflow or unexpected error markers:
+
+#+begin_example
+THOUSAND-USE scopes=2 declarations=2 factories-once=ok hot-identity=ok incremental=ok currentness=ok
+THOUSAND-SCOPE catalog=1000 declarations=3 scopes=2 unrelated-admitted-scope=cold
+THOUSAND-DOWNSTREAM catalog=1000 declared=2 scopes=2 targets=11 scope-control=3-to-2 owner-options=ok hot=0 clean-isolation=ok upstream=unchanged missing-provider=refused
+MODULE-OK t/thousand-package-downstream-test.ss
+HARNESS-OK ("t/thousand-package-downstream-test.ss")
+OK
+#+end_example
+
+Cold means empty downstream producer/consumer product namespaces in each A/B
+environment; Core, POO and compiler prerequisites were already built. This is
+not an all-prerequisites cold installation receipt. Both A/B cold compilation
+event sets equaled the independently requested projected spec; all eleven
+original-identity =.ssi= and =.o1= products were present under the corresponding
+downstream lib. The selected namespace stayed cold until demand, and each scope
+factory ran once. A cleanup removed its selected products and preserved its
+unrelated sentinel; B remained usable and hot, including after a separate
+source/output selection was refused. Producer and successful consumer source
+snapshots were byte-identical after the complete lifecycle.
+
+The existing full declaration gate independently passed 1000 publications and
+retained its original count, source-currentness and cold-export assertions.
+Together these receipts extend 13.35 beyond metadata-only branch indexing. They
+do not close the separate full-catalog runtime-value gate that exceeded its
+180-second Case limit. No timeout, heap allowance or assertion was relaxed.
+
+The final Lean run completed 218 jobs. Shape audit found no arbitrary
+Prop-valued fields; the axiom audit covered 8725 declarations using standard
+Lean axioms only. No new graph algorithm, loader or cache layer was added.
+SysML requirements and the Org/Lean correspondence name these same boundaries;
+SysML/Org text is a contract specification, not an additional executed proof.
+Raw successful and failed attempt logs remain private qualification artifacts.
+
+The real Lab downstream gate was replayed serially after the final thousand
+catalog gate and passed with clean MODULE-OK, HARNESS-OK and final OK:
+
+#+begin_example
+LAB-DOWNSTREAM selected-targets=10 hot=0 fresh-use=ok clean-isolation=ok upstream=unchanged owner-library=ok disabled-lab-targets=0
+#+end_example
+
+This preserves the maintained Lab Nix owner's public-library declaration and
+disabled-selection behavior alongside the new native corpus control. No full
+Core suite rerun is claimed for this qualification-only refinement.

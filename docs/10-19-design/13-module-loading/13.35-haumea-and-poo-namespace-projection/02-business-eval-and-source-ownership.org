@@ -1,0 +1,689 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Business EVAL and selected-source ownership
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+* Thousand-declaration scope timeout attribution
+
+The unchanged 180-second attribution Case uses the same real RuntimeValueFixture
+and no source observer. Operation measurement is enabled: these are diagnostic
+timings, not an uninstrumented performance claim. Declaration admission finished
+in 137.52 seconds, with 1000 candidates, 2000 role evaluations, only four linker
+currentness calls, and 13,000 metadata replays visiting 10,215,018 read nodes.
+An independent currentness call took 3.01 seconds: 2000 metadata replays visited
+1,193,006 nodes (2.75 seconds in replay). The subsequent scope phase exceeded
+the original Case budget after fourteen linker checks; 27,489 replay calls
+visited 16,396,676 nodes and accounted for 32.76 seconds. Timings are nested and
+must not be summed as disjoint stages. Signed VM allocation accounts remain
+unqualified, not physical allocation evidence.
+
+This localizes repeated authentication work separately from the already indexed
+DFS. =graph/funs.ss:module-closure= remains the hash-membership sibling-frame
+algorithm modeled by =SourceClosureWork.Frames=. Its existing native work test
+covers 1000/5000/10000 identities; those graph controls do not certify declaration
+or scope capacity. The original scope timeout includes complete admission.
+
+The first experimental refinement joined the fixed reader's preparation and admission root
+spines once per publication, preserving their order and all native issued read
+objects. Existing POO replay owns shared/cyclic topology deduplication and fresh
+issuance/route/revision validation on every call. Source location and policy
+checks remain; arbitrary source observers keep the original split replay path
+and callback order. No check crosses an expansion, Contract or scope effect.
+No new cache/index service, loader or user purity flag is introduced.
+
+Lean extends the existing =Graph.SourceClosureWork= with exact dependency-support
+union and both-frame checking laws. The existing Quint =SourceClosureWork= and
+=SelectionReplayTopology= families govern pure-epoch work, effect/currentness,
+root order and non-cached verdicts. These are refinement obligations, not a
+proof of installed POO primitive cost or a native time bound. The unchanged
+unmeasured runtime-value gate remains the acceptance authority.
+
+** Guard refinement and proof integrity
+
+The experimental no-source-observer fixed replay joined original preparation and admission
+roots in order. Native POO validates issuance, route and revision afresh and
+retains its existing receiver-local topology owner. Its preflight can encounter
+a later frame's issuance error before an earlier stale token; a failed join
+therefore executes the original split checks for their original diagnostic. If
+the split retry succeeds, the joined failure is still raised. Source observers
+and unknown read callbacks retain the original split path. Location and policy
+checks remain before/after; all expansion, normalization and scope boundaries
+still run their fresh guards. No successful verdict is retained.
+
+=SourceClosureWork.joined_guard_support_exact= proves dependency support is
+exactly the union of the original frames. =joined_guard_checks_both= preserves
+both obligations; =joined_failure_preserves_original_error= and
+=failed_join_never_approves= describe the refusal path. These augment the same
+existing graph/work model rather than introducing another loading algorithm.
+
+The Quint entry initially rejected a stale =CompilerEnrollment= source binding.
+Its existing source also contains a compiler input-extent model that was absent
+from the executable catalog. The binding was refreshed against the inspected
+source, the remaining SDK comment was corrected to Gerbil, and two import-only
+positive/reversed-ownership controls were catalogued. All six Compiler controls
+then typechecked and produced their expected verification/counterexample
+outcomes under the original limits. No binding assertion was disabled.
+=SourceClosureWork= likewise passed all nine expected outcomes;
+=SelectionReplayTopology= passed all five and bound the actual gerbil-poo source.
+These scoped receipts do not assert a full Quint catalog pass.
+
+The focused candidate-metadata gate exposed an old test that tried to mutate
+=.obligations= on the current =ModulePublicationContract= Type. That slot no
+longer exists. The negative injection now targets its real =.element?= slot,
+retaining the expected stale-policy refusal and the assertion that the injected
+predicate is never invoked. The complete focused gate passed.
+
+Existing operation measurement now attributes only the actual stage body to
+=scope-factory=, =scope-admission= and =requirement-admission=. The surrounding
+source checks remain in =link-current=. A factory body can itself demand a
+deferred role and its checks, so nested timings remain inclusive; they are not
+an excuse to add overlapping wall totals. No source observer is installed by
+these scalar diagnostics.
+
+** EVAL measurement boundary and rejected fusion attempt
+
+180 seconds is an abnormal-execution watchdog, not a performance objective or
+measurement value. The main metric must identify a concrete complete EVAL call;
+benchmark data reports wall, user/system CPU and GC independently. Initial
+interpretation, cold admission, hot native .get and fresh owner currentness are
+different operations and must not be presented as interchangeable EVAL times.
+
+The two-frame fusion reduced measured visits but did not establish an end-to-end
+gain. In its diagnostic run, declaration admission took 162.83 seconds versus
+the earlier 137.52; metadata visits fell from 10,215,018 to 9,771,018. Independent
+currentness still took 3.05 seconds versus 3.01, with 1,045,006 versus 1,193,006
+visits. These are individual diagnostic runs with different GC/scheduling costs,
+not a statistical causal speed comparison. The uninstrumented original runtime
+Case also exceeded its watchdog. The fusion was therefore removed from Scheme,
+not retained as a claimed optimization. Its support-union and refusal laws remain
+research refinements, not proof that fusion is faster or currently installed.
+
+The new =module-eval-once-1000-test.ss= times the explicit declaration expression
+=(.get FixtureExports tests selected-graph)= once without operation-by-operation
+instrumentation, then repeats that exact expression and separately measures
+original Graph currentness. It requires all 1000 declarations and all 1000
+business scopes cold after declaration EVAL. It does not claim to evaluate the
+thousand business scopes. =module-runtime-attribution-1000-test.ss= retains
+instrumented admission/currentness/scope separation under the same Case limit.
+The user-facing business-EVAL benchmark must likewise name its actual expression
+and state whether admission/scope construction is included.
+
+** Main EVAL expression and session-level topology refinement
+
+The confirmed main metric is one business expression
+=(.get FixtureExports modules module-1 plan)= in a real thousand-name namespace.
+It includes complete first declaration admission, the provider/consumer scope
+closure and the first business value. Namespace construction/enumeration is
+reported separately; the selected Graph is not warmed before that expression.
+The same expression is then timed hot. Independent currentness remains a
+separate operation. The 180-second watchdog is not a performance objective.
+
+The next refinement keeps original issued metadata roots plus fixed entry/tail
+checks on the existing private linked-publication record. The publication table
+only inserts immutable entries once. An ordinary POO object's derived slot
+indexes the record snapshot and concatenated root spine, invalidated by actual
+table cardinality changes. Its private bookkeeping is unobserved; the original
+semantic tokens are unchanged. This is native POO slot/index reuse, not another
+loader or a successful-check cache. Cardinality says nothing about currentness.
+
+Inside the existing pure source-check window, a native paired Context with
+unchanged policy and compatible read observers uses two fresh native POO replays over every original root, surrounding
+fixed entry checks and followed by all fixed tail checks.
+Original entry/tail reads remain in the caller's observation scope. Only POO
+topology bookkeeping is unobserved. Native POO owns issuance, route, receiver
+revision and dependency validation afresh on every call. Shared topology is
+deduplicated by its existing traversal. No scope/normalization/expansion effect
+is crossed. Unknown contexts, constructors or observers retain the old path.
+
+If the batch fails, the original complete per-record sequence supplies its
+original first diagnostic. A successful retry still cannot approve a failed
+batch. Lean reuses SourceClosureWork support-union, all-frame validation and
+refusal laws; a new append-only same-size law specifies the topology-slot
+invalidation premise. Native Scheme must establish append-only immutable
+records, complete roots, pure guard provenance and identity. These assumptions
+are not conferred by a user flag, a Module name or a nominal Contract label.
+
+The session batch first authenticates all metadata before any location checkpoint
+can mark its owner refused. It then executes original entry checkpoints, freshly
+replays all metadata again, and executes original policy tails. Only read-only
+replay failures use the legacy diagnostic fallback. A checkpoint's own failure
+is propagated directly; it is never rerun under its newly changed sticky refusal
+flag. This preserves the native refusal boundary as well as complete support.
+
+** First complete business-EVAL observation
+
+The confirmed primary expression completed in a fresh process with operation
+instrumentation disabled: cold wall 158.245922 s, user CPU 129.553152 s, system
+CPU 19.472531 s and GC wall 20.268736 s (already included in elapsed time). Its
+hot repeat measured 0.000005 s, at the scale of timer resolution: this is one
+native cached-value call, not a throughput distribution or fresh source
+authentication. The gate required 1000 admitted declarations, the selected
+module-1/module-0 dependency, one value computation and an unrelated cold leaf;
+MODULE-OK, HARNESS-OK and final OK were clean. This is a single observation, not
+a general latency guarantee or a full-toolchain cold-start receipt.
+
+The detailed diagnostic run independently observed one currentness call using
+two native union replays and 255,848 visits, versus 2000 calls/1,193,006 visits
+in the earlier split-replay diagnostic. Its wall was 0.803786 s versus
+3.008742 s; CPU was 0.800666 s versus 2.943451 s. Those runs have different
+scheduling/GC histories, so the structural visit/call change is the stronger
+claim. All original source inputs remained checked.
+
+Detailed instrumentation itself matters: that run spent 176.083955 s in
+declaration admission (including per-file CPU/GC sampling), leaving too little
+of the unchanged Case watchdog for a complete scope measurement. The diagnostic
+Case still failed and remains negative evidence. To avoid substituting profiler
+overhead for EVAL time, the same owning measurement function now also supports
+wall-only operation sampling with =accounting?: #f=. It installs no callback or
+source observer, changes no loading branch or guard, and preserves the existing
+detailed default. Coarse phase CPU/GC still comes from the installed runtime's
+outer sample. The main EVAL benchmark keeps all operation instrumentation off.
+
+** Completed phase attribution (wall-only operation profile)
+
+The lower-overhead diagnostic completed the same unchanged Case and all native
+harness markers. Its sequential probes were declaration admission 156.111609 s
+(user/system CPU 120.630698/15.817304 s, GC wall 21.774725 s), independent
+currentness 0.768763 s, then first scope after admission 12.577636 s. This is a
+separate diagnostic run, not a decomposition to sum against the independent
+158.245922-second main EVAL observation.
+
+Within the scope probe, exactly two factories, two scope admissions and one
+requirement admission ran. Factory bodies totaled 0.705490 s, scope admission
+0.000502 s and requirement admission 0.000220 s. Linker checks totaled
+11.870273 s, including 7.456051 s of metadata replay: these are nested totals.
+There were 28 native union replays visiting 3,581,872 read nodes. The independent
+currentness probe used two native replays and 255,848 visits. Declaration body
+execution totaled 0.226479 s for 2000 actual role bodies; declaration-interface
+work (85.881781 s) includes nested expansion/check work, not isolated EVAL.
+
+Thus the measurement separates the first-admission front end and authentication
+from actual business construction. Further work should target the measured
+declaration import/expansion/preflight path while retaining complete contracts
+and source checks. Pure graph traversal already has the existing indexed frame
+algorithm; replacing it without profiling those callbacks would miss most cost.
+
+The native session-index test passed actual automatic source growth, increased
+root support after append, a fixed replay-call bound, changed/restored publication
+revision refusal, and source-observer fallback with cold scopes. Checkpoint
+closure factories live outside the admission capture activation frame, keeping
+its temporary observed-token hash out of retained publication payloads.
+
+Reproduce the primary measurement with
+=just measure-thousand-business-eval /private/tmp/yuanxu-1331-runtime=; use
+=just measure-thousand-eval-stages /private/tmp/yuanxu-1331-runtime= for the
+separate diagnostic probes. Both reuse the unchanged heap-fenced test entry.
+
+A later original =module-runtime-values-1000-test.ss= replay did not qualify. It
+reported first-scope wall 547.510235 s, user/system CPU 183.070817/29.557325 s
+and GC wall 66.366518 s before the full-file 600-second boundary ended the run
+with exit 124. The Case's recorded rejection remained
+=duration-exceeded 180000 180003=. During that run, a process snapshot showed
+386 seconds elapsed versus 124 seconds CPU. The current wall/CPU disparity and
+late rejection are negative evidence, not a stable latency sample or a passing
+extended regression. Neither limit changed. The cause of delayed interruption
+is not closed here; it is not attributed to a particular host process or VM bug.
+The completed primary and phase-attribution observations remain scoped to their
+own exact runs.
+
+** Repeat outcome and measurement acceptance
+
+The next uninstrumented primary repeat did not return its business value. Its
+partial sample reported 178.786461 s wall, 101.579278 s user CPU, 14.304344 s
+system CPU and 23.297226 s included GC wall before the existing Case refusal
+=duration-exceeded 180000 180004=. The interrupted stack was still in
+=yuanxu-prepare-module-publication= / =yuanxu-module-source-admit!= and
+=module-source-read=. The process exited 70 with =runtime-phase-incomplete=;
+this is neither a completed EVAL latency nor a second successful sample. The
+Case also covers fixture acquisition, so its limit is not the expression timer.
+The seven recorded implementation/workload source hashes did not change during
+this repeat. No limit or assertion was relaxed.
+These observations are not a matched same-source A/B comparison: the later
+gate includes refined checkpoint closure allocation and stronger postconditions.
+
+The strengthened verifier checks every unrelated namespace leaf remains cold,
+after the timed expression. This assertion is implemented, but the interrupted
+repeat did not reach it. The earlier complete observation checked one unrelated
+leaf. Do not promote that earlier result into a pass of the strengthened gate.
+
+The completed diagnostic also counted 321,202 physical source reads and
+3,097,953,668 source characters during declaration admission, versus 0.226479 s
+for the 2000 actual role-body evaluations. These are operation counters from
+that separate instrumented run; they do not establish unique input size or
+isolated source-I/O wall time. The next measured optimization target is repeated
+declaration preparation/import/preflight work. Reuse the existing pure query
+windows and native POO dependency traversal, while preserving fresh checks across
+every author-code effect. The existing thousand/ten-thousand pure graph tests do
+not establish real-directory admission capacity or native latency.
+
+The broader ordinary Core replay stopped on a concurrent change of
+=module-system/building/interface.ss=: its source mtime fell inside the failing
+test's run, and the retained preparation correctly refused
+=source-bytes-changed=. A fresh isolated replay of
+=contribution-deep-publication-isolation-test.ss= passed all ten cases and all
+harness markers. This is a focused recovery receipt, not a completed full-suite
+qualification. Preserve the other session's source edits.
+
+Final focused replay passed the native session metadata index, candidate stage
+and candidate metadata files, each with =MODULE-OK=, =HARNESS-OK=, final =OK=
+and no Case/Check/Harness or heap/stack error markers. Lean rebuilt 218 jobs;
+its audit covered 8743 declarations with standard axioms only and no arbitrary
+Prop-valued fields. The selected =SourceClosureWork= Quint family passed all
+13 expected outcomes, including counterexamples for the intentionally broken
+index variants. This is a scoped formal receipt, not the entire Quint catalog
+or an elapsed-time theorem. The real thousand-module strengthened business gate
+and stable full-suite qualification remain open.
+
+* Selected owner source versus installed prerequisite
+
+The Lab downstream replay exposed an ownership regression: filtering selected
+Graph entries by the consumer package prefix returned only its retained
+=("init" "main")= roots. A prefix mismatch cannot change admitted owner source
+into an installed prerequisite. The normative disposition is:
+
+| Input provenance | Compiler action | Product owner |
+|------------------+-----------------+---------------|
+| Selected Graph owner source, including required owners and owner public libraries | Compile the complete selected source closure with original identities/options | Current downstream environment |
+| Consumer retained ordinary library | Preserve the native spec/options; include in the same downstream build | Current downstream environment |
+| Installed canonical Gerbil/Core/POO import outside selected source entries | Resolve using native import/Make; do not add a source target | Existing prerequisite environment |
+| Explicit external build request | Keep its existing contribution/realization boundary | Existing declared owner contract |
+
+An installed artifact does not cancel an explicit selected-source obligation.
+Graph =entries= already carry admitted owner/input provenance; no new package
+registry, user origin tag or prefix-based authority is needed. Unknown/missing
+imports fail through Gerbil instead of authorizing a rebuild of another checkout.
+A source owner retains public roots, FFI options, assets, original source/package
+observations and all existing currentness guards. The native namespace remains
+Interface configuration followed by ordinary =init.exports= / =.get= demand.
+
+For a local-only plan, retain ordinary source paths and existing Make names.
+For a cross-package selected plan, reuse the existing downstream-owned compiler
+source view for the merged entries, full original compiler identities as target
+names, and an absent Make prefix (#f). Gerbil still expands/imports and
+=std/make= still compiles, checks hot products and cleans. Source-view descriptors
+are the existing adapter's materialization, not a loader or cache layer.
+
+Lean =SelectedPackages= keeps source/external disposition separate and adds
+=selected_source_is_target=, =installed_input_has_no_source_target=,
+=package_reassembly_exact= and =foreign_partition_cannot_be_dropped=. Package
+partitions may schedule/name work but must reassemble every source obligation.
+Existing Store laws retain identity/revision and isolate install/clean by physical
+environment. Native extraction of Graph provenance, source paths, output mapping
+and runtime imports remain correspondence obligations. Ordinary compilation does
+not grant artifact publication authority: the separate cross-owner issuer refusal
+remains until all owner issuance obligations are implemented.
+
+The correction is implemented; the scoped native receipt follows below.
+Acceptance uses the real Lab downstream fixture: exact native compiler-event
+closure, full module identities and source inputs/options, no Core/POO rebuild,
+products in A/B only, hot compile count zero, fresh native POO use, cleaning A
+preserves B and installed prerequisites, and producer sources stay byte-identical.
+The existing timeouts, heap fence and currentness refusal assertions remain.
+
+The first implementation emitted all ten Lab targets but failed its hot check:
+all ten recompiled. The existing =SourceView.makePrefix= model supplies the
+missing native correspondence: absent =#f= preserves the full identity, whereas
+present =""= prepends a slash. The adapter therefore uses an ABSENT prefix and
+the existing source view's prohibition on =gerbil.pkg= prevents native fallback.
+The build entry rejects present explicit prefixes, including =""=, in this view.
+The Lab negative controls require rejection before any compile event or product,
+and verify the accepted B environment remains hot. This keeps Make's own naming
+and completion logic; no success marker or cache is added to hide recompilation.
+
+One earlier full Lab run hit the unchanged 60-second Ops idle guard; a separate
+existing-action diagnostic returned the ten-target spec in about eight seconds.
+The subsequent full replay reached cold compilation and exposed the hot-prefix
+failure above. These failed attempts remain negative evidence; neither a diagnostic
+spec nor a cold compile alone constitutes the complete native acceptance.
+
+** Selected-source correction: completed native receipt
+
+The corrected =build-projection.ss= preserves every selected Graph source entry,
+merges retained targets with conflict checks, and uses the existing unified
+source view only for a cross-package plan. =building/script.ss= rejects explicit
+present Make prefixes in that view. Source preparation, normal POO =.get=,
+contracts, native imports, source-view locking and std/make remain the owners.
+No loader, registry, cache layer, admission bypass or budget change was added.
+=dependency-identities= contains no reclassified selected source IDs; installed
+imports remain native Gerbil prerequisites rather than another maintained source
+inventory. Cross-owner artifact issuance still refuses independently.
+
+| Executable gate | Observed outcome |
+|-----------------+------------------|
+| Private Core build, original 300-second entry | Passed; installed prerequisite artifacts were seeded, so this is not a cold toolchain-install claim |
+| =selected-package-downstream-test.ss= | Passed: actual Lab/Nix closure + consumer = 10 targets; A/B cold products, fresh native .get and stable scope identity; hot compile count 0; clean A preserves B and unrelated sentinel; disabled selection has no Lab targets |
+| Same Lab gate, prerequisite/negative controls | Installed Core/POO SSI bytes and mtimes unchanged; no Core/POO outputs in A; producer sources unchanged; empty/nonempty explicit prefixes reject before compilation/products; B remains hot |
+| =selected-source-view-lifecycle-test.ss= | Passed: equal-mtime content change rebuilds affected units, independent unit stays hot; interruption/retry, fresh values 1/2/3, B isolation, pruning and unowned-file refusal |
+| =module-build-spec-test.ss= | Passed both Cases against a temporary minimal source package; local retained widths 1/64, exact spec admission, all foreign selected entries retained, conflicting options/identities and stale sources refused; cross-owner publication callback remains uninvoked |
+| =thousand-package-downstream-test.ss= | Passed: real catalog 1000, declarations 2, scopes 2, compiler targets 11; owner compiler options/public support root, hot 0, A/B clean isolation, producer/consumer bytes unchanged, missing provider refused; separate D=3 control keeps unrelated admitted scope cold |
+| Lean | 218 jobs passed; shape/axiom audit: 8749 declarations, standard axioms only; four new disposition/partition laws plus existing SourceView absent-prefix law in root audit |
+
+The build-spec unit uses an isolated minimal =yuanxu= source package with the
+existing role grammar and ordinary retained libraries. Its deliberate source
+mutations therefore do not edit the shared Core checkout. This unit is distinct
+from the real Lab acceptance; neither substitutes for the other. All native gates
+have MODULE-OK, HARNESS-OK, final OK and no ERROR CASE/CHECK/HARNESS or heap/stack
+overflow marker. Expected child prefix refusals remain visible in the Lab log.
+Raw logs, generated fixture files and source/artifact fingerprints stay in local
+artifacts, outside source control.
+
+Qualification is scoped to the private compiled Core cohort and the tested owner
+projection changes. An unrelated concurrent =building/interface.ss= edit occurred
+after the completed Lab receipt; it was preserved, and its obsolete prerequisite
+comment alone was aligned here. This is not a claim that every concurrent edit,
+the entire ordinary Core suite, remote CI or the full Quint catalog was qualified.
+The physical thousand-directory gate admits only its declared owners; it does
+not close the earlier ALL-1000-declaration first-business-EVAL performance gap.
+That performance boundary and cross-owner publication issuance remain separate
+open work. The selected-source disposition/build/output-ownership correction above
+has completed its real downstream native acceptance.
+
+* Full thousand-declaration EVAL: call-local authoring support refinement
+
+A fresh uninstrumented baseline completed the confirmed expression in
+145.096690 s wall (126.346125 s user + 16.930504 s system CPU; included GC wall
+18.916157 s). The strengthened gate checked all 1000 declarations, exactly the
+required module-1/module-0 scope closure, one business computation and every
+unrelated namespace leaf cold. This is a baseline observation, not a performance
+objective derived from the unchanged 180-second exception watchdog.
+
+The next candidate targets duplicate native declaration-support authentication
+inside each default authoring datum call. The existing code first replays
+=default-method-reads= for policy eligibility, then reobserves the same support
+for delivery. Capture one fresh native reobservation under =without-observation=
+plus the native recording frame: retain its COMPLETE original ordered traversal
+events. Check the same policy payload snapshots. Only actual compatible observers
+and warm protocol-free support receivers permit bulk forwarding through native
+=%record-slot-reads!=. Maintained observers are then no-ops; merge preserves the
+parent's occurrence/unique policy. It does not substitute root-only support,
+deduplicate delivery events or rewrite any signed dependency record.
+
+Cold/protocol receivers retain normal reobservation. Unknown observer/precheck
+identities, changed policy, failed capture or missing method retain Generic/old
+paths. The capture/forward continuation contains only intrinsic metadata and
+already-warm C4 queries, with no author callback. Source checks around macros,
+role initializers, open callbacks, scope factories and result Type validation
+remain unchanged. The support trace and its freshness are invocation-local;
+no admission result, source approval or new cache layer is retained.
+
+Lean reuses RootCollection merge laws for exact occurrences and unique policy,
+and proves callback identity under an explicit no-op premise. SourceClosureWork
+Quint adds the bounded call-local trace model and dropped/duplicated events,
+unknown-observer and cross-effect reuse mutants. Establishing the actual native
+observer identities, receiver preparation/protocol status, authentic trace and
+absence of effects remains a Scheme correspondence obligation. Model success
+cannot substitute for native thousand-module EVAL measurement.
+
+** Rejected authoring-forwarding candidate
+
+The candidate passed dispatch/observer/cold-C3/invalid-return controls and the new
+Generic-method-list mutate/restore refusal control. Its actual compiled private
+support diagnostic returned 158 events over 22 receivers, all warm/protocol-free.
+Nevertheless complete cold EVAL took 173.179348 s wall, CPU 147.640113 s and
+included GC wall 23.411474 s; the outer Case failed at 180018 ms during subsequent
+currentness verification. Baseline CPU was 143.276629 s. These are individual
+observations with different scheduling/GC histories, not a matched causal A/B,
+and they establish no end-to-end gain. The Scheme forwarding candidate was
+removed after checking the task-owned file hash, preserving unrelated edits.
+Its private diagnostic entry/test was removed too. Lean/Quint forwarding laws
+remain RESEARCH, not a claim of an installed optimization. The ABA regression
+remains applicable to the original native reobservation path.
+
+To locate the dominant cost before another optimization, the existing diagnostic
+sampler gains bounded =accounting?: 'stages=. It samples CPU/GC only at fixed
+reader/preparation/admission/authoring/import-policy/parse/direction stages; file
+reads retain wall-only counters. Existing Boolean modes and the uninstrumented
+main metric stay unchanged. This installs no read observer or callback and does
+not change source-window or admission behavior. Stage totals are nested and must
+not be added to each other or equated with an independent complete EVAL sample.
+
+** Direct role identifier lowering candidate
+
+The scalar CPU controls locate the remaining declaration cost primarily inside
+native Interface expansion, not body compilation/evaluation or source-path
+resolution. A bare identifier that is one of the unshadowed role exports has a
+closed lexical meaning in the existing generated =with-slots=: evaluate the
+same private role receiver once, then perform one native POO slot access.
+Lower that case directly to nested native =.get=. Preserve the role/private
+receiver, exported name, returned object identity, lazy forcing point and native
+read dependencies. This is syntax lowering, not a new module access API.
+
+Eligibility is deliberately narrow: an identifier, an actual generated role
+alias in the same syntax context, and absence from the existing root/core/require
+shadow set. Unknown identifiers and every compound expression retain the full
+original =with-slots= path; do not scan macro payloads or guess free variables.
+All source/currentness/Contract guards stay in their original positions.
+Lean models lexical alias selection and shadow fallback; Quint must reject
+wrong-alias and shadow-bypass mutants. Scheme must establish hygienic lowering,
+role laziness, identity, failure and observer correspondence. Only fresh native
+full thousand-declaration business EVAL measurements can accept a gain.
+
+The generated private role object is a second closed lowering site. Every role
+initializer references the hygienic loader directly; every export alias uses
+explicit =.ref self= and quoted role/export keys. None uses implicit slot-name
+bindings. Use existing native =.o self: self bind-these: #f= for this generated
+object only. Keep native computed slots and their current receiver on extension;
+do not replace them with closures captured over the first object. Unknown/user
+objects retain their original binding mode. The Lean role lookup function is
+parameterized by the current receiver's role lookup; Quint additionally varies
+receiver identity and rejects a captured-original-receiver mutant. This does
+not change slot inventory, role loading order or source guards.
+
+** Native stage localization and source-cut discipline
+
+The 64-declaration scalar CPU control passed with no source observer. Nested
+Interface work used 4.676654 s CPU; owned body compilation used 0.029248 s and
+body evaluation 0.013544 s. Reader currentness used 2.302498 s CPU and metadata
+replay 1.045411 s; authoring used 0.592588 s. Source-path resolution separately
+used 0.087702 s. These are diagnostic runs with nested timing/visitor overhead,
+not disjoint shares or the full business EVAL metric. In particular repeated
+source-path parsing was investigated and ruled out as the dominant target;
+its validation and owner lookup were retained.
+
+Direct-alias-only full EVAL returned in 158.042682 s wall / 142.130272 s CPU,
+with 20.730323 s included GC wall, and passed the complete gate. Quint briefly
+ran concurrently, so this is functional evidence, not a clean latency comparison.
+The first combined role-binding candidate run was correctly refused when
+another writer changed =source/admission.ss= in the shared workspace. The
+61.125889 s printed at exception return is an INCOMPLETE EVAL sample; it is not
+a performance improvement or a completed gate. Preserve the changed source and
+refusal. Qualify subsequent A/B from one isolated frozen source cohort and the
+same native prerequisites, keeping all watchdog/heap limits unchanged. Change
+only the owned lowering expressions between reference/candidate and verify
+source hashes around each run. A source snapshot is a qualification artifact,
+not a runtime loader or persistent cache layer.
+
+** Constructor-cold negative control
+
+A cold public namespace slot alone cannot establish that an internal resolver
+never eagerly constructed an unrelated scope. The business fixture therefore
+replaces the existing Objects counter and Config initializers with refusals for
+every owner outside =module-0/module-1=. This preserves 1000 declarations, the
+same definition count and dependency topology; no role or scope is pre-warmed.
+One full business =.get= must still return normally, with all unrelated leaves
+cold. A separate selected-provider Objects refusal must be reached after Graph
+admission, proving that the demanded runtime role was not bypassed. The measured
+workload version is recorded separately from earlier public-leaf-only runs.
+
+This is the native correspondence of Lean's
+=NamespaceProjection.thousand_catalog_two_scope_demand= / closed-catalog law,
+and complements the SourceClosureWork demand-only/work-bound controls. Those
+finite laws do not prove Gerbil initializer behavior or elapsed time; the real
+poisoned-role test supplies that evidence. No receiver/source approval, role
+result registry or alternate loader is introduced.
+
+** Independent package ownership correction
+
+Yuanxu is an independent package. Its role as a product submodule grants no
+knowledge of that product's checkout layout, source root or default settings.
+Core now owns only the independent source-view and synthetic producer/consumer
+qualification. Real product integration is owned by the product test tree; the redundant
+third-consumer package assembly has been removed. Earlier receipts naming the misplaced Core-hosted real
+product test are historical; that file is no longer a Core test entry.
+
+The product integration consumes its init-owned POO test source value; the Core
+synthetic fixture consumes Yuanxu's own corresponding source value. Neither
+infers a product root by walking upward from Yuanxu. The synthetic compiler fixture uses standard Gerbil source search paths.
+The product integration consumes its actual package declaration directly. The private LAB_SOURCE, SELECTED_RUNTIME and THOUSAND_SOURCE flags
+were removed. Runtime state uses standard Gerbil configuration. Path expansion
+remains for source admission, fixture files and build outputs; it does not act
+as the module lookup API. Public selection stays Interface plus native =.get=.
+
+=just check-package-namespace= now requires =check-package-independence=.
+Both scan untracked source too and work without a parent Git repository. The
+independence gate rejects downstream imports/branding, inferred product-root
+bindings and the removed private source flags. Core-owned default Feature and
+user settings identify Yuanxu; product refinements are explicit product values.
+
+The standalone qualification root is a regular snapshot under =/private/tmp=,
+with native Gerbil/POO/Core prerequisites and no installed product library. The
+self-contained thousand-catalog downstream gate passed: 1000 directories,
+2 admitted owners, 2 scopes, 11 native targets, owner FFI/public-root options,
+hot compile 0, A/B clean isolation, unchanged producer/consumer bytes, and an
+actually reached missing-provider refusal. Its separate 3-declaration control
+keeps the unrelated admitted scope cold. Budgets were preserved.
+
+** Closed role-binding expansion work and full EVAL receipts
+
+Two native syntax reductions are installed: a known unshadowed bare role alias
+lowers to the same nested =.get=, and the generated private role object uses
+native =self:= plus =bind-these: #f= because every formula already uses explicit
+self or the hygienic loader. Arbitrary syntax retains the original bindings.
+Native extended-receiver, root-shadow, selected-provider initializer and delayed
+Config/Objects controls passed. No read/source guard moved or became cached.
+
+A regular frozen source cohort isolates concurrent development edits. Reference
+and candidate change only the two owned lowering expressions. Before/after
+source manifests were stable for each complete run. All cold runs start a new
+native process and new physical 1000-owner fixture, with Graph admission cold;
+OS page caches and external host activity are not controlled. The strengthened
+workload makes every unrelated Objects/Config initializer refuse if entered.
+
+| Same strengthened 1000-owner workload | Complete wall s | CPU user+system s | Included GC wall s | GC count |
+|--------------------------------------+-----------------+-------------------+--------------------+----------|
+| Reference | 142.871032 | 140.973672 | 19.160139 | 230 |
+| Candidate | 115.707902 | 114.983191 | 15.238500 | 185 |
+| Candidate, fresh-process repeat, exact same source hashes | 121.327148 | 118.872966 | 16.076681 | 185 |
+
+Each passed MODULE-OK, HARNESS-OK and final OK with no harness/check/overflow
+marker: all 1000 declarations, returned =(5432)=, one value computation and
+all unrelated leaves cold. Hot identity hits were 5--6 microseconds; they are
+not fresh source-currentness evidence. These are individual local samples,
+not a latency percentile, universal ratio or remote CI claim. The 180-second
+Case watchdog and 2 GiB pre-import heap fence remain unchanged.
+
+The same-cohort 64-owner diagnostic attributes Interface CPU 4.749057 ->
+3.190534 s; currentness 2.238437 -> 2.351499 s and metadata replay 1.102485 ->
+1.054201 s. These stages are nested and not additive. Actual body compile/eval
+stay about 0.03/0.014 s. This closes repeated unused lexical binding expansion,
+not every remaining latency source. Native expansion, fresh source checks and
+runtime metadata replay remain substantial; passing the watchdog is not the
+performance target. The earlier forwarding proposal remains rejected research.
+
+** Publication evidence value slots
+
+Classification and validation receipts keep their original references in POO
+lexical value slots. Derived evidence reads the same candidate and context.
+The =contract-identity= slot still reads the actual descriptor on demand, so
+creating evidence or reading its other fields cannot invoke that getter.
+Lean =PublicationReads.lexical_receipt_slot_preserves_reference= and
+=lexical_receipt_fields_do_not_fix_contract_identity= model these two cases.
+The native Type admission and evidence Record validation remain separate.
+
+An interleaved same-process comparison of 320 evidence pairs per lane retained
+122 native read roots per receipt with both representations. Lexical slots
+reduced retained live heap by about 0.35--0.59 MB per batch. Construction and
+Record validation took about 41--42 ms per batch in both lanes. This isolates
+receipt representation from owner admission. The Reader's stage accounting
+separates =reader-value-admission= from =reader-admission-evidence=.
+
+*** Native value admission and the deferred Type role
+
+On the real thousand-owner selection fixture, a temporary scoped
+measurement inside the native admission path reported the following
+inclusive times for 1,000 calls. Each original check ran in its original
+order. The probe did not install a source observer or demand business scopes.
+
+| Operation | Wall s | CPU s |
+|-----------+--------+-------|
+| Named Type descriptor check | 0.011 | 0.010 |
+| Native validation of the published value | 7.388 | 7.378 |
+| Context obligation lookup | 0.002 | 0.002 |
+| Receipt construction | 0.010 | 0.009 |
+
+The publication shape demands the actual Scope Type. On this fixture the
+native Type check includes the delayed =types.ss= role, with roughly 1.96 s
+of metadata replay at each of its entry and return boundaries. Those two
+intervals are inside the 7.388 s row. A role can execute Gerbil code, so the
+two boundaries must independently authenticate. The measurements identify
+where to investigate replay work within each boundary. They do not justify
+sharing a freshness verdict across the role or replacing its runtime Type
+with a shape inferred from source. The temporary timing edits were removed.
+
+*** Membership in the original admission capture
+
+An empty dependency object needs three issued records to project its
+requirements. The Reader and linker check these directly in the
+original capture. A fourth query builds the same invocation-local
+identity index used for a wider dependency projection. Missing, stale
+or malformed tokens still refuse in the same order. The projection
+never forces an unobserved getter.
+=PublicationReads.bounded_recorded_lookup_preserves_ordered_membership=
+proves the same ordered answers when both operations use identity
+membership in the original roots.
+
+A real empty-requirements publication supplied 229 captured roots and
+exactly three membership probes. Alternating blocks of 10,000 matched
+projections used 0.291–0.304 s CPU with the eager index and about 0.011 s
+with the bounded scan. This isolates the dependency projection from
+Gerbil expansion, authoring, and native evidence replay.
+
+** Package workflow acceptance remains distinct
+
+The earlier real-product harness copied a third consumer package's files and
+later added a producer-source bootstrap file. That duplicated package ownership
+inside a test. This harness and its templates were removed. The product-owned
+integration now reads its actual =init.exports= and uses the normal product
+test entry; no file whitelist, generated bootstrap package or private source
+flag is needed. It checks the public package surface, not a simulated install.
+Core's synthetic corpus remains compiler/projection engine qualification.
+Neither result is promoted to complete native package-manager acceptance.
+
+Native =gxpkg= and each package's own =gerbil.pkg=/=build.ss= remain the
+package structure/dependency authority. An inert package SourceRef alone does
+not justify adding another resolver. Actual dependency install -> package-owned
+selection -> downstream compilation/output acceptance is not qualified by the
+removed assembly harness. That acceptance must use the existing native package
+entrypoints first; no new Core API, source registry, loader or cache is inferred
+from this unqualified test scope.
+
+** Final independent-source-cut checks
+
+After preserving the shared read/currentness updates, three native controls
+passed again: source observation (6 Cases), reader ambient-effect boundaries,
+and session metadata topology/currentness. Complete uninstrumented thousand-owner
+business EVAL returned in 121.732136 s wall, CPU 117.424974 s and included GC wall
+15.723220 s (185 collections). All 1000 declarations were admitted; both required
+scopes and the returned business value passed, while every unrelated
+Objects/Config initializer remained cold. This is a distinct source cut; it is
+not an extra matched A/B claim for the shared read optimization.
+
+The standalone namespace/independence gates passed without a parent Git checkout.
+Three untracked-source negative injections (downstream import, inferred product
+root and private source flag) were rejected, followed by a clean positive pass.
+The Core synthetic native compiler gate passed again without the generated
+bootstrap file: catalog 1000, declarations/scopes 2, targets 11, owner options,
+hot 0, A/B cleanup isolation, unchanged sources and missing-provider refusal.
+Core-owned Sources Lock/profile tests passed with generic Yuanxu defaults.
+
+The product's actual public-package test passed through its ordinary test-file
+entry, using =init.exports= and native =.get=. No reconstructed third consumer
+package or extra fixture bootstrap is retained. This does not claim a native
+package-manager install gate. Lean's 218-job build audited 8764 declarations
+with standard axioms only and no arbitrary Prop-valued model fields. The scoped
+SourceClosureWork Quint qualification covers 22 cases, including expected
+counterexamples; no complete-catalog or remote CI pass is claimed. Raw logs,
+receipts and exact input manifests remain local qualification artifacts.

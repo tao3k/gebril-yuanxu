@@ -1,0 +1,386 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Branch projection, build integration and leaf expression
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+* Closed branch projection: executable contract
+
+The existing =module-system/source/link.ss= owner exports
+=module-namespace-project= through =module-system/interface.ss=. It is a named
+functional projection returning an ordinary native POO object, not another
+namespace class or loader. Fixed declarations may still use =.o= directly.
+Interface remains the Module loading configuration and consumption remains
+native =.get=:
+
+#+begin_src scheme
+(import (only-in :yuanxu/module-system/interface module-namespace-project))
+(def Public
+  (module-namespace-project
+    (.get application.init.exports modules)
+    (.o nix: 'nix hidden-alias: 'internal)
+    '(nix)))
+(.get Public nix config)
+#+end_src
+
+The second argument is finite POO declaration metadata: exposed slot -> source
+slot symbol. =Public= is a module namespace, not a package manager. Its =nix=
+entry retains the selected business Module's name; Yuanxu owns declaration,
+admission, namespace construction and build projection. Aliasing is an optional
+namespace operation, not a reason to rename the module system after a service.
+The third argument lists permitted SOURCE names. A binding to an
+excluded target is omitted even under a new alias. Permitted but absent targets
+and malformed metadata refuse construction. The source's slot names are checked
+without reading their values. One immutable native =prototype-map= and its key
+domain supply both reflection and lookup. Only a requested getter reads the
+original source slot. Its value is returned unchanged; there is no leaf clone,
+=scope= wrapper, source observer or approval cache in this projection.
+
+This function restricts one branch. Nested restrictions compose ordinary POO
+branches; permitting a branch alone grants that branch as it stands and does
+not recursively sanitize it. Do not advertise this as a sandbox or infer
+eligibility from alias spelling. The caller supplies admitted source capability
+and policy. Author-supplied binding metadata may evaluate native slots; this is
+not an assertion of callback purity. Currentness, leaf Contracts, source version
+and build contribution authority remain at their existing owners.
+
+SysML =ClosedNamespaceProjection= records that boundary. Lean
+=NamespaceProjection.branch_restrict_target= connects symbol-level branch
+metadata to the existing path-level restriction laws. Existing handle transport,
+reflection/lookup, hidden-target and resolver-state laws continue to apply.
+=t/namespace-projection-test.ss= executes hidden alias refusal before provider
+demand, nested branch composition, exact leaf identity, malformed declarations,
+stale owner admission, and a separate 10000-binding index workload. That workload
+counts metadata reads and demanded providers; it is not thousand-declaration
+EVAL or native compiler capacity evidence.
+
+* Product-owned native build integration
+
+The real consumer package now lives at the product's
+=t/qualification/yuanxu-nix-consumer=. Its own =gerbil.pkg=, =init.ss=,
+=build.ss= and public =main.ss= own the declaration and build. Its literal source
+declaration selects the product's actual Nix owner. Core neither locates the
+product nor reconstructs this consumer. There is no generated bootstrap source,
+file-copy whitelist, source environment flag, alternate accessor or loader.
+
+The product's =t/yuanxu-package-integration-test.ss= invokes native
+=gerbil pkg build .= and =gerbil pkg clean .= through heap-fenced Just recipes.
+The package manager owns its generated =manifest.ss=; that generated file is
+ignored. Standard =GERBIL_PATH=/=GERBIL_LOADPATH= select isolated output states
+and already installed prerequisites. Qualification checks the exact compile
+events against the package's spec, owner bounds and public Nix library coverage,
+then cold/hot builds, fresh-process business demand, A/B output and clean
+isolation, unchanged upstream inputs and byte-for-byte preservation of any
+selected-name artifacts already present in inherited prerequisite environments.
+The product consumer uses its existing =init.exports modules= namespace directly.
+Its explicit init selection already determines visibility; an additional
+identity-only =public-modules= projection adds no policy and is unnecessary.
+Dynamic closed projection remains an opt-in operation for an actual metadata
+policy, not a mandatory layer around every leaf. Import and reflection controls
+verify that the native namespace leaves scopes cold.
+
+This is an in-tree integration consumer with preinstalled Yuanxu/POO and an
+explicit source declaration. It does not yet establish native dependency fetch,
+tag checkout or package-source window resolution. Do not describe an empty
+=deps --install= run as evidence of that workflow, and do not infer a new source
+resolver from this remaining acceptance boundary. The earlier pending native
+dependency-install statement above remains applicable to those separate steps.
+
+** Native hot-clean source ownership refinement
+
+The real-product gate exposed a case absent from the synthetic owner's public
+library: =nix-contracts= is an ordinary package kernel library imported by a
+selected role. Cold compilation included it, but a fresh hot/clean process could
+bind its installed SSI first. Two source-resolution boundaries mattered:
+=module-build-source-path= could stop at an outside bound context, and the
+publication reader tried only the nested =modules/gerbil.pkg= package root.
+The latter cannot resolve a library belonging to the enclosing product kernel.
+The ordinary library disappeared from the clean projection and its downstream
+SSI remained. Fixing the bound-context choice alone did not pass the native gate.
+
+The existing =building/source-package.ss= now retains an in-root bound SOURCE
+path; an SSI or outside binding falls through to Gerbil's existing package-scoped
+lookup. The resolved file must be a confined source form and its actual native
+header must have the requested compiler identity. No installed interface is
+reclassified from its name alone. Unselected packages and installed Core/POO
+prerequisites remain outside the selected producer's source root. Original
+prepared-source byte/package/currentness checks remain responsible for demand.
+
+The reader now tries the native compiler package, then only the existing source
+Context's admitted =kernel-root= if distinct. It does not discover an ancestor
+or infer a checkout from an import name. The original source-context confinement
+and header/currentness checks still apply to the resulting candidate. This
+preserves the difference between native package nesting and source authority.
+
+SysML =SelectedSourceDisposition= now includes ordinary library stability across
+cold, hot and clean processes. Lean =SourceView.sourceCandidate= and
+=outside_binding_uses_native=/=owned_binding_preserved= specify the binding
+choice; =declaredSource= and =nested_package_miss_uses_admitted_kernel= specify
+the declared source capability fallback. Core's self-contained =module-source-package-resolution-test.ss=
+checks native bound-context fallback, original source preservation, unchanged
+load-path, no application evaluation during lookup and actual header identity
+refusal. The product-owned native package test checks the compiled-SSI case and
+cleanup under the original budgets. This is a repair of the existing source
+projection; it adds no resolver registry, loader or cache.
+
+* Native dependency-install refinement
+
+Native Gerbil =deps --install= fetches dependencies and executes their own
+=build.ss=. It is not intrinsically fetch-only. The source catalog package must
+therefore own a deliberately small default build. The independent thousand-owner
+corpus declares zero default owner roots; dependency installation must fetch all
+1000 directories while producing no owner compilation events. Consumer selection
+then invokes its own ordinary =build.ss=, closing only the declared owners.
+Lean =empty_default_selects_no_owner= states that source availability cannot
+invent demand without roots; it does not prove Git or the native CLI.
+
+The native acceptance uses complete package fixtures and normal Git checkouts,
+native package-root discovery, the public =pkg-install=/=pkg-link= APIs, and
+native CLI =build=/=clean=.
+Only Git's standard configuration redirects the fixture remote to a local bare
+repository. There is no network dependency, copied consumer file whitelist,
+generated source-registration bootstrap or new Core resolver. The consumer owns
+its literal directory declaration in the documented native checkout layout.
+Automatic package-ID source-window syntax is not required for that existing
+route and is not silently implemented by interpreting inert SourceRefs.
+
+Installation receipts must bind tag, Git HEAD and native package manifest.
+Downstream compilation must preserve original compiler identities and owner
+options, produce the exact selected spec in its own environment, and leave the
+producer checkout and another environment unchanged. Existing source/package
+byte observations remain the runtime currentness authority; a Git version string
+is provenance rather than authentication or permission to reuse stale products.
+
+** CLI editor-tagging boundary
+
+The unmodified CLI =deps --install= additionally invokes =pkg-retag=. Native
+=gxtags:try-import-module= calls =import-module= on source files. In the pinned
+Gerbil, =import-module= defaults =eval?= to =#f=: it expands imports but does not
+by itself initialize phase-0 runtime values. Compile-time code can still run.
+This is a separate editor indexing operation over the
+whole source catalog, not selected-owner compilation or Module admission.
+In the fixed-budget native probe, Git cloning/checking out the local pinned
+remote and the producer's empty default build completed, but the command then
+exceeded its unchanged 60-second idle bound. Diagnostic default-build entry/exit
+markers and native Git tracing distinguish that stage from compilation.
+
+The supported source-catalog acceptance uses Gerbil's existing public script API:
+=pkg-plist= reads the package's own dependency declaration and =pkg-install=
+performs native fetching, pinning, recursive dependencies and its own build.
+=pkg-link= supplies the other build environment's native source association.
+Neither API implicitly requests editor TAGS. This is no replacement installer,
+resolver or cache. The test does not claim that the unmodified CLI's automatic
+whole-catalog TAGS operation passed; that tooling boundary remains a native
+Gerbil issue. It must not be hidden by increasing budgets or treating TAGS
+whole-catalog import expansion as harmless metadata admission. The earlier
+statement that this call necessarily initializes phase-0 runtime values was
+incorrect; source expansion, phase execution and runtime evaluation are distinct.
+
+* Qualification receipt (2026-11-04)
+
+| Boundary | Current evidence |
+|----------+------------------|
+| Closed branch projection | Native namespace suite passed, including 10000 metadata bindings, exactly 10000 metadata reads, one provider and 0.032302 s elapsed for that separate index workload |
+| Complete first business EVAL | Uninstrumented one-get workload admitted all 1000 declarations, constructed 2 required scopes and kept 998 unrelated Objects/Config initializers cold; 113.170463 s wall, 111.012429 s CPU, GC wall 14.799949 s / 186 collections |
+| Native thousand-directory source compilation | Declarations/scopes 2/2, exact 11 targets including owner-specific native options; hot 0, missing provider refused, source unchanged and A/B clean isolation passed |
+| Real product-owned consumer | Native CLI build/clean passed with 10 targets, hot 0, cold/hot target equality, public POO leaf identity, cold reflection, preserved inherited artifacts, A/B isolation and unchanged producer inputs |
+| Native package installation API | Fetched/pinned all 1000 owner directories at v0.1.0; native default build compiled 0 owner targets, downstream compiled exactly 11 targets for 2 owners; manifests/HEAD, hot 0, source preservation and A/B clean isolation passed |
+| Source admission regressions | Package-source resolution, namespace projection, public dependency boundary and 6 source-observation cases passed |
+| Formal/static | Current Lean aggregate passed 218 jobs, auditing 8800 declarations with standard axioms and no arbitrary Prop-valued model fields; independent package/namespace source gates passed |
+
+Every reported native test required MODULE-OK, HARNESS-OK and final OK, natural
+completion and no harness/check/heap/stack failure marker. Scheme tests ran
+serially with the existing pre-import heap fence; the thousand-owner Case
+watchdog remains 180 seconds. The product test retained its 120-second file
+budget. The extra second-environment clean was unnecessary once A clean,
+B artifact preservation and B fresh-process use had established isolation;
+temporary fixture ownership releases B afterward.
+
+The 32 ms index control is not the 113 s EVAL result. This source cut is not a
+matched A/B performance attribution. Negative native VM-account statistics are
+not a qualified memory result. Existing Quint work algorithms were unchanged
+by the branch projection/source-resolution refinements; earlier 22-case Quint
+receipts are not represented as a new complete-catalog run. Native dependency
+installation via the public API and the unmodified CLI's automatic editor TAGS
+stage remain explicitly distinct. No full workspace or remote CI pass is claimed.
+
+* User expression refinement: names do not define scope (2026-11-04)
+
+The reference checkout was refreshed under the product's ignored =.data/haumea=;
+its HEAD is the same pinned =252218e686de786f45311c323e105bd4340c2179=.
+Read =src/load.nix:aggregate/view=, =src/loaders/__defaultWith.nix= and
+=docs/src/api/load.md= together. In the leaf case the loader result is tied with
+=fix=; containing/root values come from =view tree= and its current perspective.
+Transformers run on directory views; the leaf's content is returned directly.
+Neither a containing directory nor a visibility perspective is prototype ancestry.
+
+| Expression | Meaning / binding owner | Yuanxu decision |
+|------------+-------------------------+-----------------|
+| Haumea leaf =self= | Fixed point of this file's loader result | For a POO leaf, use native computed slots and its effective receiver; arbitrary Nix scalars are not automatically Module scopes |
+| Haumea leaf =super= | Transformed, perspective-filtered containing directory view | An explicit admitted namespace/dependency capability, never POO's inherited-slot continuation |
+| Haumea leaf =root= | Transformed root view from this leaf's perspective, not necessarily the external load result | No ambient whole-catalog injection; Module =requires= and explicit functional parameters keep authority bounded |
+| POO =self:= | Names the final effective object receiver | Normally use hygienic slot references; name the receiver explicitly when scope is otherwise ambiguous |
+| POO =(slot (sup) expression)= | =sup= is the author's local name for this slot's inherited computation | Call =(sup)= lazily when inheritance is intended; it is neither a parent object nor a parent directory |
+| POO =super: inherited= | Names that same per-slot inherited computation across computed formulas | Advanced native option; different slots have different inherited computations |
+| POO =sup= outside such a binder | An ordinary Scheme identifier | No reserved =sup= namespace, automatic lookup, or textual identifier rewriting |
+
+Haumea's implementation also uses =root= for its own library parameter at an
+outer lexical scope. That parameter and the =root= supplied to a loaded file
+have different owners. Nix overlay =final/prev= conventions likewise do not
+change the containing-directory semantics of Haumea's =super=. Identify the
+binder and operation, not just the identifier's spelling.
+
+** What authors write in =interface.ss=
+
+A directory contributes a Module through its Interface. The init declaration
+chooses where that Module is visible. The Interface names the Module, declares
+its dependencies and scope contract, and publishes an ordinary POO object.
+Keep implementation in the role files. Put contracts in =types.ss=,
+prototypes in =objects.ss=, functions in =func.ss= and configuration in
+=config.ss=. Expose the values the consumer needs through =core.exports=.
+
+The existing mounted-window fixture has an =engine= Module and a =release=
+Module. Here is its Release Interface, formatted for an author. =Scope= is
+the contract supplied by its Types role.
+
+#+begin_src scheme
+(.def Published
+  identity: 'release
+  core:
+  (.o requires: (.o Engine: (.o module-id: 'engine contract: Scope))
+      scope-contract: Scope
+      exports: (.o value: (.get Engine value)))
+  features: (.o))
+#+end_src
+
+=Engine= is the dependency bound by =requires=. The export formula asks for
+the admitted Engine scope through ordinary =.get=. Moving the Release source
+from one declared window to another does not change that dependency name.
+The caller chooses the public names at its own init.
+
+#+begin_src scheme
+(yuanxu!
+  :load-modules "./modules" mode: explicit rename: Modules (engine)
+  :load-modules "./scenarios" mode: explicit rename: "Scenarios" (release))
+#+end_src
+
+With that declaration, application code uses
+=(.get consumer.init.exports Scenarios release value)=. The lookup of
+=Scenarios release= returns the admitted scope. Asking for =value= uses the
+scope's ordinary POO slot semantics. Namespace traversal and dependency
+binding preserve the scope's identity.
+
+Inside a leaf, use the effective receiver for this object's other slots.
+Use =(flags (sup) (append (sup) '("--debug")))= only in a derived prototype
+when the formula needs the inherited computation for =flags=. A dependency
+such as =Engine= comes from =requires=, while a parent or root namespace
+needed by an ordinary function can be passed as an explicit argument.
+These three spellings represent three different relationships: the receiver,
+the inherited computation for one slot, and a capability supplied by the
+caller or the Module contract.
+
+The real Lab Nix Interface follows the same pattern. Its public =config=,
+=types= and =prototypes= are ordinary slots. A consumer can read
+=(.get consumer.init.exports modules nix config)= or derive its own value
+from =(.get consumer.init.exports modules nix prototypes Source)=. Keep
+derivation at that explicit business boundary.
+
+** Indexed branches and native leaf evaluation
+
+The filesystem contributes owner keys and branch names through =yuanxu!=.
+A public alias binds a name to an existing target key using
+=module-namespace-project=. Construction checks allowed keys with a local
+symbol-identity hash. Each admitted row contributes one ordinary native
+thunk slot bound to its original target. The POO constructor owns the
+resulting =prototype-map=, whose default is a persistent symbol-keyed tree.
+Neither the permit hash nor a separate alias-to-target index survives
+construction. POO's native slot value storage retains the result of demand.
+Constructing or reflecting on a branch reads its names.
+Demanding an alias calls the original source getter, which owns its scope
+and currentness. A public alias can retain the returned reference in its
+ordinary slot. It never stores a second scope or grants permission to load a
+hidden target. The indexed branch is metadata and the lazy slot is evaluation.
+
+The Release authoring example combines four inputs from different owners.
+The filesystem defines the branch. The native receiver defines the slots
+read by an inherited formula. The per-slot =sup= invokes the inherited
+computation. The Interface provides the =Engine= dependency. A branch move
+therefore changes a public name without changing the receiver, inherited
+computation or dependencies of a leaf. An unrelated sibling stays cold.
+
+=LeafReceiverAndInheritance= captures this boundary in SysML.
+=mounted_leaf_preserves_value_and_demand= in Lean expresses the same owner and
+explicit dependency trace through two public paths. The Scheme fixture
+observes the actual object with =eq?= and puts a poison initializer in an
+eligible sibling. The example in =t/qualification/namespace/release= keeps
+the prototype formulas in =objects.ss= and the dependency binding in
+=interface.ss=. Its two projected paths are =Commands.release= and
+=Tools.deploy=. Both return the original =Scenarios.release= scope. The
+test observes the spare source slot before and after both reads. Its
+poison is an exported definition in a closed role. A bare top-level
+expression instead enters the ordinary Gerbil role path and is outside
+this deferred-role guarantee.
+
+The mounted-window suite and namespace projection suite completed through
+the heap-fenced Scheme harness. The separate 10000-binding index probe
+recorded 10000 metadata reads and one provider demand in 0.181 seconds
+on this run. It measures name indexing separately from scope evaluation.
+
+** Lab Nix correspondence and scale measurements
+
+The real Lab consumer in =t/qualification/yuanxu-nix-consumer= uses the
+Yuanxu Prelude and declares its own source window in =init.ss=.
+
+#+begin_src scheme
+(yuanxu! source: "../../../modules" mode: explicit (nix))
+#+end_src
+
+Lab's =modules/nix/interface.ss= declares an empty =requires= object and
+=NixScopeContract=. The Config role supplies =NixConfig=. The Objects role
+defines =NixSource.= with a =config= slot. The following excerpt shows how
+the Interface connects those values.
+
+#+begin_src scheme
+exports:
+(.o config: NixConfig
+    prototypes: (.o Source: (.cc NixSource. 'config config)))
+#+end_src
+
+The consumer imports its own init export and follows native slots.
+
+#+begin_src scheme
+(import (only-in "./init.ss" yuanxu-nix-consumer.init.exports))
+
+(def Config (.get yuanxu-nix-consumer.init.exports modules nix config))
+(def Source (.get yuanxu-nix-consumer.init.exports modules nix prototypes Source))
+#+end_src
+
+=labNixBindings= routes the namespace prefix =modules nix= to the existing
+Nix owner. =config= and =prototypes Source= are business slots on that scope.
+=lab_nix_scope_closure= covers the single Module scope. The native compiler
+closure is separate and can include Gerbil libraries and role files.
+
+For the thousand-module fixture, the Lean model checks a thousand indexed
+branch paths and a thousand catalog entries. Demanding =module-1= reaches
+exactly =module-0= and =module-1= under the fixture dependency function.
+The native measurement must report branch construction and reflection,
+declaration admission, and demanded scope construction separately. Use
+the existing =measure-thousand-eval-stages= gate for phase probes and
+=measure-thousand-business-eval= for the independent first business
+expression. The latter now starts with a cold branch slot and enumerates
+only after the timed expression. Inclusive phase spans cannot be added
+to the end-to-end time.
+
+The 10000-name sparse projection probe exposed one alias. Its 0.181 seconds
+included enumeration, 10000 native metadata getters, authorization and view
+construction. Only one alias row entered the output index. It did not
+measure 10000 persistent tree insertions or the latency of a warm hash
+lookup. To choose an optimization, measure sparse and dense projections
+separately. Isolate name enumeration, first metadata getters, index/slot
+construction, first authorized lookup and hot native lookup. Keep the
+metadata order and refusal behavior, and check that construction reads zero
+providers and aliases return the exact original scope. The Lean
+=admitted_branch_rows_exact= law specifies the rows a batch builder may
+retain after the original metadata reads.

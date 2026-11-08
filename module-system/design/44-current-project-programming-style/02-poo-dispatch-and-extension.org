@@ -64,7 +64,7 @@ The native =self:= binder names the final receiver. A per-slot binder such as
 computation; it does not name a containing namespace. Keyword =flags: => f=
 accepts one transform expression. For extra arguments use
 =(flags => append '("--debug"))= or a unary functional combinator. See
-[[file:../../../docs/10-19-design/13-module-loading/13.35-haumea-and-poo-namespace-projection.org][13.35 leaf receiver and namespace scope]] and the native leaf/path controls.
+[[file:../../../docs/10-19-design/13-module-loading/13.35-haumea-and-poo-namespace-projection/03-projection-build-and-leaf-expression.org][13.35 leaf receiver and namespace scope]] and the native leaf/path controls.
 
 * Dispatch ownership
 
