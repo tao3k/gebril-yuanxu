@@ -2046,6 +2046,30 @@ specifies exact Context comparison, and
 =PublicationReads.retiring_a_live_wrapper_alias_changes_resolution=
 requires independent lifetime evidence before retirement.
 
+The 16/32-owner retention diagnostic now counts the exact private
+Interface and Types Contexts in Gerbil's registry. Each owner left one
+of each, with two aliases per Context, four Interface binding entries,
+and five Types entries. No completed Context held expanded code. The
+pinned Gambit promise state showed that all observed initializers were
+resolved to void and held no thunk. The census takes the prior Contexts
+by weak identity and reads the promise state without forcing it. These
+counts bound the observed direct Context fields. They do not account for
+global bindings, compiled code or the Reader's retained closure graph.
+
+The macOS Contracts job for =bc532c2= failed the source-admission gateway
+before the Harness started. The original 120 s preparation returned
+status 124 during full native compilation, with unrelated JsonSchema jobs
+still running. The failed log named 110 distinct compile Contexts before
+interruption. The local candidate's existing affected-Context path
+visited 382 Contexts and compiled 35. On the same pinned toolchain, its
+native preparation completed in 27.039 s, and all seven gateway cases
+completed through the regular =just test-discovered-file= entrypoint.
+This is a local qualification of the replacement plan.
+=IncrementalRoles.reverse_index_reaches_exactly_affected= identifies the
+exact-edge premise for that reverse traversal. Runtime must supply the
+actual import and prelude-owner edges. The planner falls back to full
+preparation if it cannot establish that prelude ownership.
+
 *** Native replay topology and live checks
 
 On the current thousand-owner fixture, declaration admission took 39.053 s

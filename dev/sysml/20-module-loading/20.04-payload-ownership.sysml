@@ -320,7 +320,12 @@ package YuanxuPayloadOwnership {
                demand, and an exact Context comparison that preserves a
                replacement. The current reader retains both native paths.
                The 64-owner census and 256-owner heap probe bound these
-               candidates independently of the full capacity gate. */
+               candidates independently of the full capacity gate.
+               Inspect each live native Context once by identity and
+               distinguish registry aliases, bindings, expanded code and
+               pending initializer thunks. Read settled promise state
+               without forcing it. Direct fields do not measure all
+               reachable heap or compiled code. */
     }
     requirement def RoleInitializerTransferCustody {
         doc /* Role transfer consumes initializer support only with the

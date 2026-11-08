@@ -1,6 +1,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message Error-irritants)
+        (only-in :gerbil/expander __module-registry expander-context-table
+                 module-context? module-context-code module-context-e
+                 module-context-import module-context-export module-context-ns module-context-path)
         (only-in :gerbil/runtime/loader list-modules)
         (only-in :gerbil/runtime/gambit unbound-global-exception?)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads slot-read-dependencies slot-read-receiver)
@@ -30,10 +33,63 @@
             (hash-put! identities read #t)
             (walk (append (slot-read-dependencies read) (cdr pending))))))))
   identities)
+(def (reader-contexts)
+  (def owners (make-hash-table-eq weak-keys: #t))
+  (hash-for-each
+    (lambda (_key context)
+      (when (and (module-context? context)
+                 (let (namespace (module-context-ns context))
+                   (and (string? namespace) (string-prefix? "publication-reader-" namespace))))
+        (hash-update! owners context 1+ 0)))
+    __module-registry)
+  owners)
+(def (report-reader-contexts size before)
+  (def rows (make-hash-table-eq))
+  (hash-for-each
+    (lambda (context aliases)
+      (unless (hash-key? before context)
+        (let* ((path (module-context-path context))
+               (role (cond ((string-suffix? "-interface.ss" path) 'interface)
+                           ((string-suffix? "-types.ss" path) 'types)
+                           (else 'other)))
+               (row (or (hash-get rows role) (make-vector 10 0)))
+               (initializer (module-context-e context))
+               ;; Gambit's delay-promise state holds the result (or the state
+               ;; itself while pending) and the thunk. Inspect it without force.
+               (state (and (promise? initializer) (##promise-state initializer)))
+               (resolved? (and state (not (eq? state (vector-ref state 0))))))
+          ;; Count direct native state, without forcing the initializer or
+          ;; following imports into shared library Contexts.
+          (for-each
+            (lambda (index amount) (vector-set! row index (+ (vector-ref row index) amount)))
+            '(0 1 2 3 4 5 6 7 8 9)
+            (list 1 aliases (hash-length (expander-context-table context))
+                  (length (module-context-import context)) (length (module-context-export context))
+                  (if (module-context-code context) 1 0)
+                  (if state 1 0) (if resolved? 1 0)
+                  (if (and state (vector-ref state 1)) 1 0)
+                  (if (and resolved? (not (eq? (vector-ref state 0) (void)))) 1 0)))
+          (hash-put! rows role row))))
+    (reader-contexts))
+  (displayln "RETENTION-READER-CONTEXTS modules=" size
+    " fields=(contexts registry-aliases binding-entries imports exports code-bodies"
+    " promises resolved-promises retained-thunks nonvoid-results)"
+    " roles=" (hash->list rows))
+  (for-each
+    (lambda (role)
+      (let (row (hash-get rows role))
+        ;; The census permits future retirement of a registry alias. A live
+        ;; completed Context must release its body and initializer thunk.
+        (when row
+          (check-equal? (vector-ref row 5) 0)
+          (check-equal? (vector-ref row 7) (vector-ref row 6))
+          (check-equal? (vector-ref row 8) 0))))
+    '(interface types)))
 (def (census fixture size (earlier #f))
   ;; This diagnostic is not a source/acceptance cache. Its values are weak, so
   ;; the next Case can observe liveness after this Fixture and stack unwind.
   (def lifetime (make-hash-table-eq weak-values: #t))
+  (def prior-contexts (reader-contexts))
   ;; Actual runtime loader state, not a fixture flag or inferred field value.
   (check-equal? (assoc "yuanxu/module-system/source/build" (list-modules)) #f)
   (check-equal? (build-producer-ready?) #f)
@@ -209,6 +265,7 @@
   (displayln "RETENTION-CENSUS modules=" size
     " expansions=" body-expansions " live-bytes=" (.get memory live-bytes)
     " reader-roots=" retention)
+  (report-reader-contexts size prior-contexts)
   (check-equal? (object? (hash-get lifetime 'publication)) #t)
   (hash-put! lifetime 'graph graph)
   (hash-put! lifetime 'namespace (.get fixture modules))
