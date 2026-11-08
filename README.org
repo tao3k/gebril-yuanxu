@@ -141,6 +141,12 @@ Scheme dispatcher and resource limits. =just test-file PATH= runs a focused
 diagnostic, while =just test= runs the platform suites and the additional
 local allocation diagnostic.
 
+Ten-thousand-module files (=*-10000-test.ss=) launch with a 4 GiB VM heap.
+Their declaration Case uses the same 4 GiB heap and live-growth limits,
+with a 180-second deadline. The focused and platform entrypoints select
+this policy before importing the test. Qualification receipts record the
+per-file overrides. Ordinary test workers and the build use 2 GiB.
+
 Use the commit actually checked out in the CI log. For a pull request this may
 be GitHub's merge commit. Run =just test-qualification= before timing a local
 reproduction. It checks the build and test inputs in the same prefix, including

@@ -36,6 +36,10 @@ test-file path observe="false":
     # Preserve explicit runtime overlays before the host library fallback.
     # The real source package root replaces the removed nested t/gerbil.pkg.
     options=()
+    runtime_options="{{ gerbil_test_runtime_options }}"
+    case "{{ path }}" in
+      *-10000-test.ss) runtime_options="-:max-heap=4G,debug={{ gerbil_test_debug }}" ;;
+    esac
     case "{{ observe }}" in
       false) ;;
       true) options=(-D yuanxu-module-test-observation) ;;
@@ -43,7 +47,8 @@ test-file path observe="false":
       stages) options=(-D yuanxu-module-test-stage-accounting) ;;
       *) echo 'observe must be false, true, trace, or stages' >&2; exit 64 ;;
     esac
-    GERBIL_LOADPATH="$test_lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:${GERBIL_PATH:-$PWD/.gerbil}/lib:$PWD" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" "${launcher[@]}" {{ gerbil_test_runtime_options }} dev/test-file.ss ${options[@]+"${options[@]}"} "{{ path }}"
+    echo "TEST-RUNTIME {{ path }} $runtime_options"
+    GERBIL_LOADPATH="$test_lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:${GERBIL_PATH:-$PWD/.gerbil}/lib:$PWD" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" "${launcher[@]}" "$runtime_options" dev/test-file.ss ${options[@]+"${options[@]}"} "{{ path }}"
 
 # Fault injection uses fresh native module overlays and the same test-file gates.
 # Compilation is preparation; each test retains its existing heap/watchdog fence.

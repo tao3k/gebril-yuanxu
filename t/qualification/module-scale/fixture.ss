@@ -18,7 +18,7 @@
   (let (profile (.cc (yuanxu-selected-testing-case-profile)
                    max-duration-milliseconds: 180000))
     (if (= count 10000)
-      (.cc profile live-growth-limit-bytes: 2147483648)
+      (.cc profile heap-limit-bytes: 4294967296 live-growth-limit-bytes: 4294967296)
       profile)))
 (def (declaration-stage name action)
   ;; A handful of real phase boundaries survive a failed outer watchdog.

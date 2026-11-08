@@ -1891,6 +1891,14 @@ the observed per-owner heap growth unexplained.
 
 *** Profile support within owner preparation
 
+On 2026-11-08 the ten-thousand-module memory envelope was revised to
+4 GiB by explicit user instruction. Both the pre-import VM heap and the
+scale Case heap/live-growth limits use this value. The 180-second Case
+deadline remains in force. The existing Just and Scheme dispatchers apply
+the same per-file policy locally and in CI, and qualification receipts
+bind that policy to the checked source. Earlier 2 GiB runs below remain
+historical observations under their recorded envelope.
+
 The serial local platform qualification of =f2f7c34= used the original
 180-second Case and 2 GiB VM envelope. Dense selection enumerated the
 10,000 names in 1.37 s. Before the first graph timed out, 5,592 candidates

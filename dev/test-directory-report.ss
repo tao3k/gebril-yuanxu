@@ -100,11 +100,18 @@
                  (equal? (qualification-field cohort key) (qualification-field inputs key)))
                '(load-path gambopt compiler-path library-path pkg-config-path))
        (equal? (qualification-field cohort 'runtime-options) qualification-runtime-options)
+       (equal? (qualification-field cohort 'worker-runtime-options)
+               (qualification-worker-options))
        (qualification-field inputs 'clean?)))
 
-;; Focused tests can override the VM options. A platform qualification has
-;; one fixed envelope, including when invoked outside GitHub Actions.
+;; Build and report use 2 GiB. Ten-thousand-module workers use 4 GiB,
+;; selected before import in both the focused Just and platform entrypoints.
 (def qualification-runtime-options "-:max-heap=2G,debug=q")
+(def (worker-runtime-options file runtime-options)
+  (if (string-suffix? "-10000-test.ss" file) "-:max-heap=4G,debug=q" runtime-options))
+(def (qualification-worker-options)
+  (map (lambda (file) (cons file (worker-runtime-options file qualification-runtime-options)))
+       (filter (cut string-suffix? "-10000-test.ss" <>) (discovered-files "all"))))
 
 (def (qualification-command-output command)
   (def result
@@ -203,6 +210,7 @@
                         (cons 'core-origin core-origin)
                         (cons 'poo-origin poo-origin)
                         (cons 'runtime-options runtime-options)
+                        (cons 'worker-runtime-options (qualification-worker-options))
                         (cons 'host (and host (car (string-split host #\newline))))
                         (cons 'runner-image (getenv "ImageOS" #f))
                         (cons 'runner-image-version (getenv "ImageVersion" #f))
@@ -332,6 +340,7 @@
       (display line)
       (force-output)))
   (displayln "TEST-START " file)
+  (displayln "TEST-RUNTIME " file " " (worker-runtime-options file runtime-options))
   (force-output)
   (def prepared?
     (member file '("t/artifact-closure-test.ss" "t/mop-store-boundary-test.ss"
@@ -384,7 +393,7 @@
 (def (native-test-command runtime-options file)
   (list "env" "-u" "SDKROOT" "timeout" "--signal=TERM" "--kill-after=5s"
         (string-append (number->string test-worker-seconds) "s")
-        "gxi" runtime-options "dev/test-file.ss" file))
+        "gxi" (worker-runtime-options file runtime-options) "dev/test-file.ss" file))
 
 (def (native-test-environment (overlay #f))
   (def prefix (getenv "GERBIL_PATH"))
@@ -552,7 +561,7 @@
                   (def right (qualification-field macos-qualification key))
                   (and (not (and left (equal? left right))) [key left right]))
                 '(source source-tree package-declaration gerbil gambit just poo
-                  runtime-options idle-seconds worker-seconds)))
+                  runtime-options worker-runtime-options idle-seconds worker-seconds)))
   (unless (null? differences)
     (error "platform reports have different source or test qualification inputs" differences))
   (unless (match [linux-cohort macos-cohort]
