@@ -2070,6 +2070,28 @@ omitted refusal only if a retained check before it already refuses, with
 independent premises at both boundaries. The sample demonstrates a
 candidate witness relation and does not establish producer non-escape.
 
+An independent read census through the actual guarded Interface constructor
+found the same 720-record support as direct Profile validation. Passing the
+424 externally owned records to native replay produced exactly those records
+in the original order. In a 512-checkpoint sample the original used 0.730 s
+CPU and the external projection 0.418 s. The reduction depends on the
+retained records being closed over signed dependencies.
+=PublicationReads.closed_read_selection_demands_exactly= proves that closure
+preserves the selected demand set.
+=PublicationReads.filtering_roots_cannot_hide_a_retained_signed_dependency=
+shows how a removed root remains live when a retained record points to it.
+The separate entry/return and custody requirements still apply.
+
+The callback-free thousand-owner attribution measured 29.38 s wall and
+29.33 s CPU for declaration admission. The Init guard ran 10,006 times,
+including 8,006 physical read attempts and 103,981,928 decoded characters.
+Its measured cost was 0.63 s CPU and wall. Native metadata replay accounted
+for 6,004 calls, 5,961,075 completed record visits and 13.53 s CPU.
+The dedicated Profile checkpoint took 1.46 s CPU over 1,000 calls.
+These are inclusive spans. In particular, a protected replay can include a
+location check. The diagnostic records the separate Init and Profile costs
+without replacing either check or installing an observer.
+
 Two independent publications of the same fixture, from separate package
 origins in one process, each had 914 reachable preparation records, 899
 shared by issued identity. All 14 Profile receipt receivers were shared.

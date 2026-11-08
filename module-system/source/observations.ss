@@ -135,7 +135,7 @@
                             reader-current reader-interface-start reader-preparation-start
                             reader-admission-start reader-native-import reader-role-import
                             reader-tool-inputs reader-private-closure reader-compile-start
-                            reader-eval-start metadata-replay
+                            reader-eval-start metadata-replay source-init-current
                             compiler-input-lookup compiler-role-inventory
                             compiler-import-before compiler-import-after
                             compiler-view-before compiler-view-after)))
@@ -152,6 +152,7 @@
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
                            reader-admission-start reader-value-admission reader-admission-evidence
                            reader-current metadata-replay reader-candidate-fused-return-replay
+                           source-init-current source-authoring-profile-checkpoint
                            reader-tool-inputs reader-private-closure reader-private-prepare
                            reader-native-import reader-role-import reader-source-resolution
                            reader-compile-start reader-eval-start
@@ -174,10 +175,16 @@
   ;; overlap; never sum them as disjoint filesystem work. Failed I/O attempts
   ;; remain attempts, not successfully admitted byte observations.
   (def before (hash-ref times '(source reads) 0))
+  (def init-characters
+    (and (eq? name 'source-init-current)
+         (hash-ref times '(characters source-read) 0)))
   (dynamic-wind void action
     (lambda ()
       (hash-update! times (list 'read-attempts name)
-        (cut + <> (- (hash-ref times '(source reads) 0) before)) 0))))
+        (cut + <> (- (hash-ref times '(source reads) 0) before)) 0)
+      (when init-characters
+        (hash-update! times '(characters source-init-current)
+          (cut + <> (- (hash-ref times '(characters source-read) 0) init-characters)) 0)))))
 (def (measure-source-accounting times name action)
   ;; Use installed Gambit's own sample/frame correction, not duplicated vector
   ;; indices. The signed VM account is NOT physical constructor allocation.

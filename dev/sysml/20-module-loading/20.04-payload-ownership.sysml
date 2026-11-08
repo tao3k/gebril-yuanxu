@@ -335,6 +335,9 @@ package YuanxuPayloadOwnership {
                needs an earlier retained check that refuses first. Establish
                this coverage separately at entry and return. Preserve the
                original signed order of all retained records.
+               Retained replay roots must also be closed over their signed
+               dependency edges. Dropping a root cannot suppress a read
+               that another retained record still demands.
                Attribute replay visits per checkpoint and retained records
                by identity across owners. Repeated traversal of a shared
                Profile receipt increases replay work without creating a new

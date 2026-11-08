@@ -39,8 +39,11 @@
     ;; checked at the explicit publication boundary, not on every cached slot read.
     (def (observe! reader file (local? #t) (text? #f))
       (let (value (reader file))
-        (def guard (if text? (module-source-text-guard file value)
-                     (lambda () (equal? value (module-source-observe reader file)))))
+        (def guard
+          (if text?
+            (let (check! (module-source-text-guard file value))
+              (lambda () (module-source-measure-operation 'source-init-current check!)))
+            (lambda () (equal? value (module-source-observe reader file)))))
         (set! observations (cons (cons local? guard) observations))
         (when local? (enroll-location! guard))
         value))

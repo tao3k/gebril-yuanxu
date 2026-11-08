@@ -603,6 +603,37 @@ def PrefixCovered (auth : Read → Except Failure Unit)
     authenticateAndVisit auth (fun _ => ()) (earlier.filter keep) = .ok () →
     auth read = .ok ()
 
+-- Signed dependencies are still traversed when a caller drops a root. The
+-- selected order can stand in for roots only when its retained records are
+-- closed under those edges in the original traversal.
+theorem closed_read_selection_demands_exactly
+    (deps : Node → List Node) (order : List Node) (keep : Node → Bool)
+    (complete : ∀ parent ∈ order, ∀ child ∈ deps parent, child ∈ order)
+    (closed : ∀ parent ∈ order, keep parent = true →
+      ∀ child ∈ deps parent, keep child = true)
+    (node : Node) :
+    Demanded deps (order.filter keep) node ↔ node ∈ order.filter keep := by
+  constructor
+  · intro demand
+    induction demand with
+    | root _ member => exact member
+    | dependency parent child _ edge ih =>
+      obtain ⟨member, kept⟩ := List.mem_filter.mp ih
+      exact List.mem_filter.mpr ⟨complete parent member child edge,
+        closed parent member kept child edge⟩
+  · exact Demanded.root node
+
+theorem filtering_roots_cannot_hide_a_retained_signed_dependency
+    (deps : Node → List Node) (order : List Node) (keep : Node → Bool)
+    (parent child : Node) (parentPresent : parent ∈ order)
+    (retained : keep parent = true) (omitted : keep child = false)
+    (edge : child ∈ deps parent) :
+    Demanded deps (order.filter keep) child ∧ child ∉ order.filter keep := by
+  constructor
+  · exact Demanded.dependency parent child
+      (Demanded.root parent (List.mem_filter.mpr ⟨parentPresent, retained⟩)) edge
+  · simp [omitted]
+
 theorem prefix_guarded_reads_preserve_first_refusal
     (auth : Read → Except Failure Unit) (keep : Read → Bool) (reads : List Read)
     (guarded : PrefixCovered auth keep reads) :
