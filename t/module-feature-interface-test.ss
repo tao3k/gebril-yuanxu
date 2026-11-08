@@ -78,6 +78,26 @@
 
 (def module-feature-interface-test
   (test-suite "Module Interface owns Feature declarations and init only selects"
+    (yuanxu-test-case "publication rejects malformed named Feature lists before selection"
+      (for-each
+        (lambda (features)
+          (with-publication-source
+            (lambda (root module-root _source _view)
+              (write-file (path-expand "interface.ss" module-root)
+                (call-with-output-string
+                  (lambda (port)
+                    (write
+                      `(.def Fixture identity: 'custom/example
+                         core: (.o requires: (.o) scope-contract: FixtureContract
+                                   exports: FixtureScope)
+                         features: ,features)
+                      port))))
+              (def message
+                (exception-message
+                  (lambda () (.get (feature-view root "malformed.ss" '()) selected-graph))))
+              (unless (string-contains message "module scope admission refused")
+                (error "expected publication Type refusal" features message)))))
+        '(#f "memory" '(memory 7) '(memory . missing))))
     (yuanxu-test-case "a named Feature owns its declaration and build entry"
       (with-publication-source
         (lambda (root module-root _source _view)

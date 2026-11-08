@@ -170,12 +170,13 @@ its expansions and validation material, is now maintained here; see the
 [[file:module-system/design/ownership-and-migration.org][ownership and migration boundary]]. Agentic AI Lab keeps actual business Modules,
 Profiles, Scenarios, reference checkouts and product integration adapters.
 
-* Feature System migration design
+* Module Features
 
-[[file:module-system/feature/design/README.org][The Feature System extraction design]] assigns the reusable feature framework
-to Core and records current product dependencies, the Bundle writer adapter split,
-source-role organization and acceptance requirements. The shared implementation now resides in Core. Scenario/Plan conversion remains
-a downstream adapter; no compatibility source tree is retained.
+Import =:yuanxu/module-system/feature/interface= for the shared Feature API.
+Feature composition belongs to the Module System. Modules declare optional
+contributions in their own Interface, and init selects them.
+[[file:module-system/feature/design/README.org][The Feature ownership guide]] describes final-receiver Contracts, source-role
+organization and the downstream Bundle writer adapter boundary.
 
 * Configuration language design
 

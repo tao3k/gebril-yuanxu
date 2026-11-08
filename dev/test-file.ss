@@ -20,7 +20,9 @@
   (def report (getenv "YUANXU_TEST_REPORT_DIR" ""))
   (def status (if (string-empty? report) (run) (report-harness report arguments run)))
   (unless (eqv? status 0)
-    (error "official test harness failed" arguments status)))
+    ;; Preserve the official Harness status for callers such as mutation gates.
+    ;; An import or compiler exception retains its distinct runtime failure.
+    (exit status)))
 
 (def (report-harness directory arguments run)
   (create-directory* directory)

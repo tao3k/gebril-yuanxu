@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-# Compiled/public sources must not reintroduce the removed Core namespace.
+# Compiled/public sources must use the current Core and Feature namespaces.
 check-package-namespace: check-package-independence
     #!/usr/bin/env bash
     set -euo pipefail
     status=0
-    rg -n 'AgenticAILab|agentic[-]ai[-]lab-core|agentic[-]ai[-]lab-|:co[r]e/|:agentic[-]ai[-]lab/|package: core' --glob '*.ss' --glob '*.scm' --glob '*.py' --glob '*.nix' --glob '*.yml' --glob '*.yaml' --glob '*.toml' --glob '*.lean' --glob '*.qnt' --glob '*.sh' --glob 'gerbil.pkg' . || status=$?
+    rg -n 'AgenticAILab|agentic[-]ai[-]lab-core|agentic[-]ai[-]lab-|:co[r]e/|:agentic[-]ai[-]lab/|package: core|:yuanxu/(feature[-]system|module-system/feature[-]system|module-system/source/feature[-]scopes)/?' --glob '*.ss' --glob '*.scm' --glob '*.py' --glob '*.nix' --glob '*.yml' --glob '*.yaml' --glob '*.toml' --glob '*.lean' --glob '*.qnt' --glob '*.sh' --glob 'gerbil.pkg' . || status=$?
     case "$status" in
-      0) echo 'removed Core namespace found' >&2; exit 1 ;;
+      0) echo 'retired Yuanxu namespace found' >&2; exit 1 ;;
       1) echo 'YUANXU-NAMESPACE-OK' ;;
       *) exit "$status" ;;
     esac

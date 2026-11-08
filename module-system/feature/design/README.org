@@ -1,19 +1,19 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-#+title: Core Feature System Ownership and Integration Boundary
+#+title: Module System Feature Ownership and Integration Boundary
 #+date: [2026-10-16]
-#+property: STATUS implemented-source-migration-loader-not-connected
+#+property: STATUS implemented
 
 * Shared mechanism and product adapter
 
-The Feature System implementation is owned by Core, not the product's former
-module-system/feature. Public declarations remain POO objects and the existing
-bounded defrules forms. No compatibility modules or parallel implementation remain.
+Feature is a component of Yuanxu's Module System. Its public Gerbil module is
+=:yuanxu/module-system/feature/interface=. Public declarations use POO objects
+and the existing bounded defrules forms.
 
 | Owner | Contents |
 |-------+----------|
-| [[file:../interface.ss][Core Feature System]] | descriptors, selections, dependency/conflict resolution, manifests, composition |
+| [[file:../interface.ss][Module System Feature]] | descriptors, selections, dependency/conflict resolution, manifests, composition |
 | [[file:../domain-case/interface.ss][Core DomainCase]] | generic closure, Contract projection, instance overlay and method/projection binding |
 | Core capability/policy/adapter binding | provider identity/version matching, requirements and inert handoff values |
 | Core Bundle v1 | lowering, validated foreign arena images, DomainCase projection and explicit byte-file writing |
@@ -52,11 +52,13 @@ from deleted product modules.
 * Core versus Feature
 
 A selected Module's mandatory baseline is a Module System responsibility.
-Optional descriptor resolution and feature projections are Feature System
-responsibilities. No baseline operation has been wrapped in a synthetic Feature.
-The selected Core/Feature/init/build integration remains pending where described
-in [[file:../../design/03-publication-selection.org][the publication/selection protocol]]. This migration does not implement directory
-loading, capability discovery or init-source resolution.
+The Feature component resolves optional descriptors and projects their
+contributions.
+Feature selection uses the existing init and publication path described in
+[[file:../../design/03-publication-selection.org][the publication and selection protocol]].
+The linker calls [[file:../scope.ss][scope composition]] internally. Downstream
+Gerbil imports use =:yuanxu/module-system/feature/interface= and module authors
+declare Features in their owning Module's Interface.
 
 * Product source organization
 
@@ -74,7 +76,7 @@ that declaration; it must not infer an extra object layer from a file location.
 Only one product init object is currently declared. It performs no discovery or
 module initialization. The existing load-modules collection API is unchanged.
 
-* Validation and remaining qualification
+* Original source migration validation
 
 The Core-only source environment contains Core and the immutable gerbil-poo
 099b381 dependency, with no Agentic AI Lab namespace. All 17 relocated Feature/DomainCase/

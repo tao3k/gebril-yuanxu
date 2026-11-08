@@ -3,7 +3,7 @@
 
 #+title: 13.37 Feature Composition And Withdrawal Through The Module System
 #+property: DOCUMENT_ID 13.37
-#+property: STATUS implemented-module-scope-refinement-product-migration-open
+#+property: STATUS implemented-module-scope-and-context-memory
 
 * Decision and ownership
 
@@ -39,12 +39,12 @@ The final-scope integration is now implemented in
 [[file:../../../module-system/feature/scope.ss][feature/scope.ss]]; product migration and the broader package gates below are
 separate acceptance obligations.
 
-The downstream Agentic Context still has a Boolean =memory?= descriptor factory,
-a separately constructed manifest, and =selection-adapter.ss= that decorates
-selections after Core admission. These are migration targets, not an extension
-pattern to retain. Their source owners are
-=modules/ai-agentic-context/{config,funs-features,selection-adapter}.ss= in Lab.
-These product entrypoints are not migrated by the generic Core integration.
+The downstream Agentic Context declares Memory in its owning =interface.ss=.
+Its =core= publishes the baseline profile; the selected =memory= refinement and
+Type add obligations to the final receiver. Init selects =+memory= or =-memory=.
+Lab's =t/yuanxu-context-memory-downstream-test.ss= owns the independent package
+build, first compiled reads, consumer refinement and withdrawal qualification.
+Core's synthetic domain values cannot substitute for that product gate.
 
 * Current Interface declaration and native lowering boundary
 
@@ -84,6 +84,13 @@ Gerbil's Module declaration captures the reader bound to that owner when
 the Interface is initialized. Named Features use this declaration path.
 The private assembly for inline Feature objects has no named Feature reader
 to capture.
+
+The publication Type accepts either a POO Feature object or a proper list of
+symbols. It rejects false, strings, non-symbol members and improper lists
+before selection. This check belongs to =source/publication.ss= and uses the
+native =Or= and =List Symbol= Types. The public Feature import path is
+=:yuanxu/module-system/feature/interface=; the existing namespace gate refuses
+the retired standalone and repeated =feature-system= paths.
 
 Feature Contracts are additional obligations on the final Core-normalized
 receiver. Native =validate= runs their obligations, but a Feature Contract's
@@ -277,7 +284,7 @@ it can return. Reproduce through the existing entry:
 just test-file t/module-feature-interface-test.ss
 #+end_src
 
-These five Cases exercise real source reading and selection, with synthetic
+These Cases exercise real source reading and selection, with synthetic
 domain values. Final behavior is covered separately by
 [[file:../../../t/module-feature-scope-test.ss][the scope integration suite]]: refinements, explicit execution, parent/hot-slot
 isolation, withdrawal, independent final port obligations, retained provider
