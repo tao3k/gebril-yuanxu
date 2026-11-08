@@ -77,6 +77,11 @@
   (let (report (getenv "YUANXU_TEST_REPORT_DIR" ""))
     (if (string-empty? report) (make-temporary-file-name "yuanxu-test-report-") report)))
 
+(def (prepare-report-directory! directory)
+  (create-directory* directory)
+  (unless (null? (directory-files directory))
+    (error "qualification report directory must be empty" directory)))
+
 (def (qualification-field cohort key)
   (cond ((assq key (cdr cohort)) => cdr)
         (else #f)))
@@ -216,6 +221,7 @@
   (check-partition)
   (def root (report-root))
   (def cohort (qualification-cohort runtime-options))
+  (prepare-report-directory! root)
   (def passed? #t)
   (for-each (lambda (group)
               (unless (report-group group runtime-options (path-expand group root) cohort)
@@ -231,7 +237,7 @@
   (def files (discovered-files group))
   (unless (and (pair? files) (= (length files) (length (delete-duplicates/hash files))))
     (error "missing or duplicated files in the discovered test group" group))
-  (create-directory* report)
+  (prepare-report-directory! report)
   (call-with-output-file (path-expand "qualification.ss" report)
     (lambda (port) (write qualification port) (newline port)))
   (display "TEST-QUALIFICATION ") (write qualification) (newline)
