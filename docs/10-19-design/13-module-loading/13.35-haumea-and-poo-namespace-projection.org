@@ -1884,6 +1884,16 @@ counterfactual only. Removing the actual Profile token from its receiver's
 native read table made the complete checkpoint refuse while the residual
 checkpoint still succeeded. Restoring the token restored the complete check.
 
+An independent native comparison retained the entire Profile and nested the
+existing protected checks for the prefix, shared singleton root and suffix.
+Across 512 calls per lane the split visited 484,352 records, compared with
+468,992 in the full path. The extra 15,360 visits are the 30 overlapping
+records per checkpoint. CPU was 1.015–1.019 s for the split and 0.997–1.009 s
+for the original. Sharing the traversal shape this way did not lower the
+authentication cost. The native frames also return in reverse lane order.
+=PublicationReads.nested_lane_return_can_change_first_refusal= models why
+the split cannot be adopted solely on matching results for unchanged inputs.
+
 A direct-value-slot candidate for the already determined preparation fields
 passed its focused regressions. It left the thousand-owner replay count at
 5,958,069 visits. Declaration admission took 34.13 s wall and 33.57 s CPU,

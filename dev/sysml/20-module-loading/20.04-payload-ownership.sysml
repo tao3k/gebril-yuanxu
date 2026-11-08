@@ -286,7 +286,10 @@ package YuanxuPayloadOwnership {
                requires coverage of its native support at that same boundary.
                Authenticating the other preparation reads does not establish
                this coverage. Lean profile_omission_can_hide_native_refusal
-               preserves this independent failure. */
+               preserves this independent failure. Preserve the original
+               return refusal order when separating traversal support.
+               Lean nested_lane_return_can_change_first_refusal shows why
+               nesting protected replay calls does not establish this order. */
     }
     requirement def PublicationRootSegments {
         doc /* A linked publication owns the original preparation and

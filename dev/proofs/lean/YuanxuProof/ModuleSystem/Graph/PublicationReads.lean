@@ -296,6 +296,17 @@ theorem same_window_preserves_first_refusal
   | cons reads rest ih =>
     simp only [List.flatten_cons, authenticate_append, authenticateLanes, ih]
 
+-- Nesting protected checks unwinds the last lane first. A shared topology
+-- cannot justify reversing the original return authentication when more than
+-- one lane can independently refuse.
+theorem nested_lane_return_can_change_first_refusal :
+    let auth (read : Nat) : Except Nat Unit := .error read
+    authenticateLanes auth [[0], [1]] ≠ authenticateLanes auth [[1], [0]] := by
+  dsimp only
+  intro same
+  change (Except.error 0 : Except Nat Unit) = .error 1 at same
+  cases same
+
 /-- Reusing an issued token's identity supplies no equality of observations
 across an effect. The after-check can refuse the very same token. -/
 example :
