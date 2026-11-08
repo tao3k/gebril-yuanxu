@@ -323,6 +323,17 @@ theorem route_foreign_class_refuses_before_field {Fields : Type}
     (validate : Fields → Except String Unit) :
     guardedRouteField false foreign native validate = .error foreign := rfl
 
+-- The class check succeeds in both observations. A changed symbolic offset
+-- can still select a different field and produce a different refusal.
+theorem same_class_does_not_pin_route_offset :
+    let field (offset : Nat) := offset
+    let authenticate (ref : Nat) : Except String Unit :=
+      if ref = 0 then .ok () else .error "changed metadata ref"
+    guardedRouteField true "foreign metadata wrapper" (fun _ => field 1) authenticate =
+      .error "changed metadata ref" ∧
+    guardedRouteField true "foreign metadata wrapper" (fun _ => field 0) authenticate =
+      .ok () := ⟨rfl, rfl⟩
+
 -- A joined issuance preflight may encounter a later frame's error first.
 -- Pure failure fallback restores the original diagnostic, without approving a
 -- failed joined check even if the independent split retry happens to succeed.

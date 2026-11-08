@@ -2,9 +2,11 @@
 ;;; Isolation controls: runtime metadata setters are not POO object edits.
 (import :std/test :clan/poo/object
         (only-in :clan/poo/mop call-with-slot-read-observer replay-slot-reads! slot-read-key)
-        (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.)
+        (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set! object-class
+                            class-slot-offset &class-type-slot-table) runtime.)
         (only-in :gerbil/runtime/table &raw-table-hash &raw-table-hash-set!
-                 &raw-table-test &raw-table-test-set! &raw-table-seed &raw-table-seed-set!)
+                 &raw-table-test &raw-table-test-set! &raw-table-seed &raw-table-seed-set!
+                 symbolic-table-set!)
         (only-in :std/error Error? Error-message)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export mop-route-mutation-test test-cleanup!)
@@ -103,6 +105,31 @@
       (lambda () (runtime.slot-set! table 'ref original)))
     (check-equal? calls 0)
     (set! completed (+ completed 1)))
+  (yuanxu-test-case "same wrapper class can retarget a live metadata field"
+    (.def Root port: 5432)
+    (def read (port-read Root))
+    (def table (object-%reads Root))
+    (def class (runtime.object-class table))
+    (def offsets (runtime.&class-type-slot-table class))
+    (def original (runtime.class-slot-offset class 'ref))
+    (def replacement (runtime.class-slot-offset class 'object))
+    (def revision (object-revision Root))
+    (def visits 0)
+    (def failure
+      (dynamic-wind
+        (lambda () (symbolic-table-set! offsets 'ref replacement))
+        (lambda ()
+          (with-catch values
+            (cut replay-slot-reads! (list read)
+              (lambda (_owner _key) (set! visits (+ visits 1))))))
+        (lambda () (symbolic-table-set! offsets 'ref original))))
+    (check-equal? (Error? failure) #t)
+    (check-equal? (Error-message failure) "changed metadata ref")
+    (check-equal? visits 0)
+    (check-equal? (eq? (runtime.object-class table) class) #t)
+    (check-equal? (object-revision Root) revision)
+    (check-equal? (object-read-current? read) #t)
+    (set! completed (+ completed 1)))
   (yuanxu-test-case "parent cached reads remain separate from final child reads"
     (.def Parent port: 5432 unused: (error "unselected branch forced"))
     (def parent-read (port-read Parent))
@@ -116,5 +143,5 @@
     (check-equal? (object-read-current? child-read) #t)
     (set! completed (+ completed 1)))))
 (def (test-cleanup!)
-  (check-equal? completed 4)
-  (displayln "ROUTE-MUTATION: 4 cases; 12 restored metadata writes; 3 actual callback calls"))
+  (check-equal? completed 5)
+  (displayln "ROUTE-MUTATION: 5 cases; 12 restored receiver metadata writes; live class offset refusal"))

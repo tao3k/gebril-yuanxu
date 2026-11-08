@@ -692,9 +692,11 @@ one call and retains independent Gerbil expansion and author checks.
 =route_pinned_field_preserves_validation= permits an exact-class
 native accessor under the same-field premise.
 =route_foreign_class_refuses_before_field= excludes field access on the
-rejected branch. The Scheme candidate uses the existing Gerbil class
-accessor and reads the live field at each check. It retains no live
-handle or successful verdict between calls.
+rejected branch. =same_class_does_not_pin_route_offset= shows why the
+class alone cannot establish the same-field premise. A Gerbil class can
+retain its identity while its symbolic slot map changes. The live-offset
+candidate uses the checked class to resolve the current field on each
+access. It retains no field offset or successful verdict between calls.
 
 =indexed_admission_boundary= and =full_catalog_certification_exact=
 distinguish selected closure admission from a complete roster check.

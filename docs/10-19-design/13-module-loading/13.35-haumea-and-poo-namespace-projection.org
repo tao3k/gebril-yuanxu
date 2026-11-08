@@ -2407,6 +2407,40 @@ Case budget in Gerbil expansion. The business expression consumed
 interruption, with no returned business value. This run does not
 qualify complete thousand-module demand.
 
+*** Live class offsets in native route authentication
+
+The fixed-accessor candidate skipped a real refusal. Retargeting the
+Gerbil wrapper class's symbolic =ref= slot to the =object= field left
+the class and receiver revision unchanged. The installed route refused
+with =changed metadata ref= and the fixed-offset route accepted. The
+live-offset candidate refused with the installed diagnostic. The
+mutation is restored after the check. The Core route mutation suite
+also exercises this through native replay and requires zero observer
+visits on refusal. Lean =SourceClosureWork.same_class_does_not_pin_route_offset=
+captures the failed same-field premise.
+
+The live-offset candidate uses the class already authenticated by the
+route, then resolves the field in the current Gerbil slot map at each
+access. The guarded hash, vector and structural-key branches keep
+their order. The private comparison compiled each lane and exercised
+the same production Graph entry in one process. With 128 owners,
+ordinary lanes used 3.32–3.54 s CPU and live-offset lanes 3.20–3.24 s.
+The thousand-owner pair made 16,272,150 route calls per lane and kept
+business scopes cold. The ordinary Graph used 27.43 s CPU and 27.90 s
+wall. The live-offset Graph used 25.71 s CPU and 25.78 s wall. These
+are Graph measurements, distinct from first business demand and
+unmodified capacity gates.
+
+The existing thousand-module business test then ran in four fresh
+processes against the installed route, an isolated compiled function
+variant, its inline variant and the installed route again. Both
+variants passed the native route and replay controls. All business
+tests admitted and constructed exactly two scopes at the first =.get=.
+The subsequent full-Graph wall times were 27.12, 26.93, 28.29 and
+28.04 seconds. The ranges overlap at this sample size and the paired
+Graph benefit did not carry through to the isolated module build.
+The production POO pin remains unchanged.
+
 *** Ten-thousand-owner module-system design
 
 Yuanxu projects authorized Interface names into the existing POO

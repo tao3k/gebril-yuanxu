@@ -57,7 +57,11 @@ package YuanxuPayloadOwnership {
                A return pass after Gerbil, a callback or observer delivery
                starts a fresh route check. Lean PublicationReads models the
                same-route premise and refusal order. The Scheme receiver
-               census establishes frequency, not native state stability. */
+               census establishes frequency, not native state stability.
+               An identical Gerbil wrapper class can have a changed slot
+               map. Resolve field offsets in the live map before reading
+               the field. SourceClosureWork.same_class_does_not_pin_route_offset
+               and the Scheme class-retarget control preserve this refusal. */
     }
     requirement def PreparedRoleSourceObligations {
         doc /* The Reader resolves role paths at their original checks after

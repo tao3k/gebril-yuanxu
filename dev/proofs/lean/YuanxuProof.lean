@@ -200,6 +200,7 @@ run_cmd do
       `YuanxuProof.ModuleSystem.Graph.SourceClosureWork.vector_return_still_checks_changed_state,
       `YuanxuProof.ModuleSystem.Graph.SourceClosureWork.route_pinned_field_preserves_validation,
       `YuanxuProof.ModuleSystem.Graph.SourceClosureWork.route_foreign_class_refuses_before_field,
+      `YuanxuProof.ModuleSystem.Graph.SourceClosureWork.same_class_does_not_pin_route_offset,
       `YuanxuProof.ModuleSystem.Graph.SourceClosureWork.replay_cannot_share_across_changed_read,
       `YuanxuProof.ModuleSystem.Graph.SourceClosureWork.checkpoint_requires_both,
       `YuanxuProof.ModuleSystem.Graph.SourceClosureWork.checkpoint_preserves_failure,
