@@ -74,7 +74,10 @@ package YuanxuPayloadOwnership {
                models reachability for both original edges. The terminal
                Scheme cuts compare both orders. Any release needs to remove
                the unnecessary shared capture while keeping the owner role
-               resolver and original lazy computations. */
+               resolver and original lazy computations. Direct private
+               delivery binds the original resolver only in the core SlotSpec.
+               PublicationReads.private_core_slot_preserves_owner_and_resolver
+               owns the captured-argument refinement. */
     }
     requirement def LoadingStageEvidence {
         doc /* Library compilation, selected-graph construction, demand of a

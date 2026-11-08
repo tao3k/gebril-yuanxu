@@ -1792,6 +1792,22 @@ to either slot. =PublicationReads.frame_environment_survives_either_slot=
 models the two edges. Keep the role resolver's owner and all lazy
 computations while isolating the environment each thunk needs.
 
+With Reader tables still live, a terminal cut of the entire resolver edge
+released 3.07 MB for 256 owners. The next cut of the Reader tables released
+17.20 MB. The remaining specifications still released 12.96 MB at their
+last cut. These sequential marginals distinguish the resolver's exclusive
+cost from storage reachable through the tables or interpreter procedures.
+
+The direct private wrapper passes its actual resolver to the native frame
+constructor. Only the =core= SlotSpec retains it. Its Gerbil body receives
+that same resolver and the actual slot receiver when demanded. The other
+fields retain their existing computations. The compiled and open wrapper
+forms keep their lexical resolver binding.
+=PublicationReads.private_core_slot_preserves_owner_and_resolver= and
+=private_core_slot_keeps_independent_effect_refusal= model the handoff.
+The deferred-reader regression changes the ambient resolver after publication
+and still demands the original owner's role.
+
 An ordered role-path capture is equivalent only while the original path
 binding holds. In the alternating 256-owner role-check probe, captured
 paths took 0.289–0.308 s CPU per 2,048 checks, compared with 0.267–0.285 s

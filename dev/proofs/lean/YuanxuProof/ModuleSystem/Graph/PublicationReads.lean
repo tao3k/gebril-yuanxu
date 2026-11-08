@@ -872,4 +872,35 @@ theorem frame_environment_survives_either_slot
   · exact Demanded.dependency core environment (Demanded.root core coreRoot) coreCapture
   · exact Demanded.dependency features environment (Demanded.root features featureRoot) featureCapture
 
+/-- The private wrapper captures the resolver when it creates the owner.
+The native slot calls the same deferred body on that owner and resolver. -/
+def privateCoreSlot (body : Owner → Resolver → Except Failure Result)
+    (captured : Resolver) : Owner → Except Failure Result :=
+  fun owner => body owner captured
+
+theorem private_core_slot_preserves_owner_and_resolver
+    (body : Owner → Resolver → Except Failure Result)
+    (captured : Resolver) (owner : Owner) :
+    privateCoreSlot body captured owner = body owner captured := rfl
+
+theorem private_core_slot_keeps_independent_effect_refusal
+    (captured : Resolver) (owner : Owner) (entry : Except Failure Unit)
+    (run : Owner → Resolver → Except Failure Result) (after : Result → Except Failure Unit) :
+    (do
+      entry
+      let result ← privateCoreSlot run captured owner
+      after result
+      pure result) =
+    (do
+      entry
+      let result ← run owner captured
+      after result
+      pure result) := rfl
+
+theorem later_ambient_resolver_cannot_replace_owner_capture :
+    privateCoreSlot (fun (_ : Unit) (resolver : Nat) => (Except.ok resolver : Except Unit Nat))
+      0 () ≠ .ok 1 := by
+  intro same
+  cases same
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

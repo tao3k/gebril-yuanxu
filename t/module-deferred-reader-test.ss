@@ -9,6 +9,7 @@
         (only-in "./qualification/module-publication/fixtures.ss" with-publication-source)
         (only-in :yuanxu/module-system/authoring/admission YuanxuModuleAuthoringAdmission)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :yuanxu/module-system/source/deferred-declaration current-module-role-resolver)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer))
 (export module-deferred-reader-test)
 (def (replace-forms path forms)
@@ -38,7 +39,11 @@
           (check-equal? (module-context-export native-context) '())
           (check-equal? (void? (eval-module native-context)) #t)
           (check-equal? (.get publication identity) 'custom/example)
-          (def scope ((.get publication core link) (.o)))
+          (def scope
+            (parameterize ((current-module-role-resolver
+                            (lambda _ (error "ambient resolver must remain unused"))))
+              (check-equal? (object? (.get publication core scope-contract)) #t)
+              ((.get publication core link) (.o))))
           (check-equal? (.get scope greeting) "hello")
           (check-equal? (.get scope retained) 'upstream))))
     (test-case "private role imports are observed before their values are demanded"

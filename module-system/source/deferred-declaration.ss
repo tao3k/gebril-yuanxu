@@ -195,6 +195,17 @@
              policy: 'compact)
     defaults: (prototype-map '() policy: 'compact)))
 
+;; Only core uses the private reader resolver. Bind it in a native slot
+;; function so sibling interpreter thunks never close over that binding.
+(def (deferred-private-publication resolver fields)
+  (deferred-payload-object '()
+    (map (lambda (field)
+           (if (eq? (car field) 'core)
+             (let (core (cdr field))
+               (cons 'core (lambda (self) (core self resolver))))
+             field))
+         fields)))
+
 (defsyntax (include-deferred-declaration input)
   (syntax-case input ()
     ((_ path ((role exports ...) ...) resolver)
@@ -230,14 +241,23 @@
                     (not (memq (stx-e (cadr rest)) '(? => =>.+)))
                     (loop (cddr rest) (cons key seen) (cons (cons key (cadr rest)) rows)))))
             (else #f))))
-       (def (frame origin parents rows self)
+       (def (frame origin parents rows self (private? #f))
+         (def (field row)
+           (with-syntax ((key (datum->syntax (stx-car origin) (car row)))
+                         (body (cdr row)) (self self) (loader loader))
+             (if (and private? (eq? (car row) 'core))
+               #'(cons 'key (lambda (self loader) body))
+               #'(cons 'key (lambda (self) body)))))
          (with-syntax ((build-frame frame-constructor)
+                       (private-frame (quote-syntax deferred-private-publication))
+                       (resolve (quote-syntax current-module-role-resolver))
                        (parents-expr parents)
-                       (self self)
-                       ((key ...) (map (lambda (row) (datum->syntax (stx-car origin) (car row))) rows))
-                       ((body ...) (map cdr rows)))
-           (syntax/loc origin
-             (build-frame parents-expr (list (cons 'key (lambda (self) body)) ...)))))
+                       ((field ...) (map field rows)))
+           (if private?
+             (syntax/loc origin
+               (private-frame (resolve) (list field ...)))
+             (syntax/loc origin
+               (build-frame parents-expr (list field ...))))))
        (def (project-stock-value value context aliases shadowed)
          ;; Only these fixed Gerbil forms cannot introduce an unlisted alias.
          ;; Keep payload leaves in the owner expander. Unknown forms keep the
@@ -404,20 +424,19 @@
                         (list (cons (stx-e private) (role-values))))
                       core-self))
                   (def root-body
-                    (base-frame form
+                    (frame form #'(quote ())
                       (map (lambda (row)
                              (cons (car row)
                                    (case (car row)
                                      ((identity) (stock-value (cdr row) root-names))
                                      ((core) core-body)
                                      (else (known (wrap (cdr row) role-receiver root-names #t)))))) root-rows)
-                      root-self))
-                  (with-syntax ((body root-body) (loader loader)
-                                (deliver (quote-syntax make-wrapper-delivery))
-                                (resolve (quote-syntax current-module-role-resolver)))
+                      root-self direct?))
+                  (with-syntax ((body root-body)
+                                (deliver (quote-syntax make-wrapper-delivery)))
                     (if direct?
                       (syntax/loc form
-                        (deliver (let (loader (resolve)) body)))
+                        (deliver body))
                       (syntax/loc form (begin (def binding body) (export binding)))))))
                (_ (open #f))))))
        (def (wrap-core core root-shadows)
