@@ -7,9 +7,11 @@
 ;;; supplied by the caller; gerbil-poo owns effective Slot metadata.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
+        (only-in :std/list/list append-map)
         (only-in :yuanxu/object-family/read-projection
                  make-owned-method-check call-with-owned-read-method-checks)
-        (only-in :yuanxu/module-system/types ModuleAuthoringProfileContract))
+        (only-in :yuanxu/module-system/types ModuleAuthoringProfileContract
+                 ModuleSourceRoleContract))
 
 (export yuanxu-module-kind=?
         yuanxu-module-object-ref/default
@@ -57,16 +59,21 @@
     index))
 
 (def profile-validation-checks
-  (list (make-owned-method-check ModuleAuthoringProfileContract '.validate
-          (.ref ModuleAuthoringProfileContract '.validate))))
+  (let* ((profile ModuleAuthoringProfileContract)
+         (executor (.ref (.ref profile 'responsibilities) 'executor)))
+    (cons (make-owned-method-check profile '.validate (.ref profile '.validate))
+      (append-map
+        (lambda (descriptor)
+          (map (lambda (key) (make-owned-method-check descriptor key (.ref descriptor key)))
+               '(.admit .classify .obligations prepared-value-action)))
+        (list profile executor ModuleSourceRoleContract)))))
 (def validate-authoring-profile (cut validate ModuleAuthoringProfileContract <>))
 
 (def (make-module-interface prototype interface-id-value schema-object
                             metadata-value authoring-value)
   (let (admitted-authoring
-        ;; A contributed outer validator can create its own receipts before
-        ;; delegating. Guard the actual delivered method, even if no Record
-        ;; predicate has received a receipt yet.
+        ;; Contributed validators and responsibility producers can create and
+        ;; retain receipts before any Record predicate receives one.
         (call-with-owned-read-method-checks profile-validation-checks
           validate-authoring-profile authoring-value))
     (.o (:: @ (list prototype))

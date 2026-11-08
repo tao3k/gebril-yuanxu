@@ -320,6 +320,11 @@ package YuanxuPayloadOwnership {
                selects a different Slot descriptor Type.
                Guard the Interface's selected outer Profile validator as well.
                It may allocate receipts before calling any Record predicate.
+               Guard the delivered producer methods of the stock Profile,
+               executor Contract and source role Contract at their existing
+               call boundary. A replaced source role admission can mint and
+               retain evidence before Record validation. A refusal at entry
+               precedes the first such callback.
                A success-only Profile value lane requires custody of the
                producer, preserved normalized child identities and independent
                support for root and child evidence acceptance. Decline the

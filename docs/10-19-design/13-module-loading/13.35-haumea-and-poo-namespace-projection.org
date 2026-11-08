@@ -2037,6 +2037,15 @@ receipt. A declined lane keeps the complete original refusal path. The
 runtime still needs to establish producer custody and the evidence support
 before this projection can replace the existing constructor.
 
+The Interface guard checks the delivered producer methods of the stock
+Profile, executor Contract and source role Contract. In the native effect
+control, a replacement source role =.admit= issues and retains an actual
+validation receipt. A stale entry guard refuses before the callback runs.
+A successful control observes a fresh guard before each invocation.
+This covers the selected stock descriptors; arbitrary responsibility maps
+still require custody and exact replay support before a projection can omit
+reads.
+
 A same-process probe retained the real value action for each child and
 checked three representative receipts with the original native evidence
 Type. With both lanes in the same ownership scope it reached all 424

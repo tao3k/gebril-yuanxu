@@ -3,10 +3,19 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; An import closure describes code use, not all effects of Scheme.
 (import :std/test :clan/poo/object
+        (only-in :clan/poo/type Record)
+        (only-in :std/error Error? Error-message)
         (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file)
+        (only-in :yuanxu/module-system/authoring/roles make-default-module-authoring-profile)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
         (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :yuanxu/module-system/types ModuleSourceRoleContract)
+        (only-in :yuanxu/object-family/read-projection
+                 call-with-owned-read-projection current-owned-read-open-guard)
+        (only-in :yuanxu/object-types/contracts
+                 yuanxu-classification-evidence yuanxu-validation-evidence)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-reader-effect-support-test)
 (def module-reader-effect-support-test
@@ -51,4 +60,41 @@
               ;; after its real effect. Neither publishes a successful value.
               (check-equal? (file-exists? marker) (eq? phase 'return))
               (check-exception (.call reader admit-current) error?))))
-        '(entry return)))))
+        '(entry return)))
+    (yuanxu-test-case "a replaced role producer crosses the guard before creating evidence"
+      (def raw (make-default-module-authoring-profile))
+      (def schema (Record))
+      (def maintained (.ref ModuleSourceRoleContract '.admit))
+      (def calls 0)
+      (def checks 0)
+      (def previous-checks 0)
+      (def escaped #f)
+      (def (run entry)
+        (parameterize ((current-owned-read-open-guard entry))
+          (call-with-owned-read-projection '() void
+            (lambda () (yuanxu-module-interface "role-effect" schema '() authoring: raw)))))
+      (dynamic-wind
+        (lambda ()
+          (.put! ModuleSourceRoleContract '.admit
+            (lambda (value context)
+              (check-equal? (> checks previous-checks) #t)
+              (set! previous-checks checks)
+              (set! calls (+ calls 1))
+              (def classification
+                (yuanxu-classification-evidence 'module-source-role value #t '() context))
+              (set! escaped
+                (yuanxu-validation-evidence ModuleSourceRoleContract value
+                  classification '() #t '() context))
+              escaped)))
+        (lambda ()
+          (check-exception (run (lambda () (error "stale role producer entry")))
+            (lambda (failure)
+              (and (Error? failure) (string=? (Error-message failure) "stale role producer entry"))))
+          (check-equal? calls 0)
+          (check-equal? escaped #f)
+          (def interface
+            (run (lambda () (set! checks (+ checks 1)))))
+          (check-equal? (eq? (.get interface authoring) raw) #t)
+          (check-equal? (> calls 0) #t)
+          (check-equal? (object? escaped) #t))
+        (lambda () (.put! ModuleSourceRoleContract '.admit maintained))))))
