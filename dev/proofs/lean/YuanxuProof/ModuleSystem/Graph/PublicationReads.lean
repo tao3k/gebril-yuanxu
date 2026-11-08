@@ -143,6 +143,57 @@ theorem read_only_checkpoint_preserves_both_refusals
   unfold readWindow
   rw [no_observer_authenticates_the_same_order before visit reads]
 
+-- The native topology lookup authenticates issuance in its own original
+-- preorder. A validation-only checkpoint can use one live pass if both
+-- passes see the same state and the intervening action has no effect.
+def validateOnlyCheckpoint
+    (issuance entry exit : Read → Except Failure Unit) (reads : List Read) :
+    Except Failure Unit := do
+  authenticateAndVisit issuance (fun _ => ()) reads
+  readWindow entry exit (fun _ => ()) reads (.ok ())
+
+def validateOnlyAtExit
+    (issuance exit : Read → Except Failure Unit) (reads : List Read) :
+    Except Failure Unit := do
+  authenticateAndVisit issuance (fun _ => ()) reads
+  authenticateAndVisit exit (fun _ => ()) reads
+
+theorem validation_only_same_state_needs_one_live_pass
+    (issuance entry exit : Read → Except Failure Unit) (reads : List Read)
+    (stable : ∀ read ∈ reads, entry read = exit read) :
+    validateOnlyCheckpoint issuance entry exit reads =
+    validateOnlyAtExit issuance exit reads := by
+  have live : authenticateAndVisit entry (fun _ => ()) reads =
+      authenticateAndVisit exit (fun _ => ()) reads := by
+    induction reads with
+    | nil => rfl
+    | cons read rest ih =>
+      simp only [authenticateAndVisit, stable read (by simp)]
+      rw [ih (fun next member => stable next (by simp [member]))]
+  unfold validateOnlyCheckpoint validateOnlyAtExit readWindow
+  rw [live]
+  cases authenticateAndVisit issuance (fun _ => ()) reads <;>
+    cases authenticateAndVisit exit (fun _ => ()) reads <;> rfl
+
+theorem exit_only_can_lose_earlier_refusal (read : Read) (refused : Failure) :
+    validateOnlyCheckpoint (fun _ => .ok ()) (fun _ => .error refused)
+      (fun _ => .ok ()) [read] = .error refused ∧
+    validateOnlyAtExit (Failure := Failure) (fun _ => .ok ()) (fun _ => .ok ()) [read] = .ok () :=
+  ⟨rfl, rfl⟩
+
+-- A one-pass check on a mutable runtime needs a common point of validity.
+-- Under permanent invalidation, a record that is still current when visited
+-- was current at the beginning of the scan. The proof requires the premise
+-- for every record, including structural routes and issuance, not just POO
+-- receiver revisions.
+theorem monotone_live_scan_has_common_entry
+    (live : Read → Nat → Prop) (visited : List (Read × Nat)) (entry : Nat)
+    (permanent : ∀ read earlier later, earlier ≤ later → live read later → live read earlier)
+    (checked : ∀ item ∈ visited, entry ≤ item.2 ∧ live item.1 item.2) :
+    ∀ item ∈ visited, live item.1 entry := by
+  intro item member
+  exact permanent _ _ _ (checked item member).1 (checked item member).2
+
 -- Source preparation consumes only the first diagnostic. The public API
 -- still returns and validates its receipt. A closed empty result has no
 -- diagnostic whose Type could run, but the maintained aggregate validator

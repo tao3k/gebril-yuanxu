@@ -416,6 +416,16 @@ package YuanxuSelectedPackageBuilds {
                preparation/admission support is joined only inside one boundary,
                never across two initializers or Contract callbacks. */
     }
+    requirement def ValidationOnlyNativeReplay {
+        doc /* A candidate one-pass operation retains the native topology
+               and issuance preflight. It applies only to a validation with
+               no caller action. Equality of live observations preserves
+               the original refusal. A mutable scan requires a common
+               validity point for every issued record and live route.
+               Receiver revision alone cannot establish that premise.
+               Protected callbacks retain both native passes, including
+               refusal after a peer write. */
+    }
     requirement def WindowSourceOwnership {
         doc /* A yuanxu! window is a namespace admission boundary, not ownership
                of every file below its directory. Resolve selected owners through

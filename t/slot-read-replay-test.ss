@@ -6,16 +6,19 @@
         (only-in "../scenarios/gitea-postgresql/gitea/types.ss" ApplicationContract)
         (only-in "../scenarios/gitea-postgresql/postgresql/types.ss" Port PostgreSQLConfigContract)
         (only-in :yuanxu/configuration/json config-json-file)
+        (only-in :yuanxu/module-system/source/observations module-source-measure-replay)
+        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in "./qualification/service-publication/fixtures.ss" read-overrides)
         (only-in :yuanxu/admission/source call-with-source-slot-reads)
-        (only-in :clan/poo/slot-layout make-slot-cache))
+        (only-in :clan/poo/slot-layout make-slot-cache)
+        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads))
 (export slot-read-replay-test test-cleanup!)
 (def completed 0)
 (def (test-cleanup!)
-  (unless (= completed 16) (error "incomplete slot replay qualification" completed))
-  (displayln "SLOT-READ-REPLAY: 16 cases completed"))
+  (unless (= completed 17) (error "incomplete slot replay qualification" completed))
+  (displayln "SLOT-READ-REPLAY: 17 cases completed"))
 (def (prepare workspace)
   (def root (.get workspace root))
   (def db (path-expand "postgresql.json" root))
@@ -50,6 +53,36 @@
   (Error-message cause))
 (def slot-read-replay-test
   (test-suite "MOP cold records and warm replay"
+    (yuanxu-test-case "source checkpoint rejects a peer write before returning"
+      (def receiver (.o port: 5432))
+      (defvalues (_value roots) (%call-with-recorded-slot-reads (cut .ref receiver 'port)))
+      (def gate (make-mutex))
+      (mutex-lock! gate)
+      (def writer
+        (thread-start!
+          (make-thread
+            (lambda ()
+              (mutex-lock! gate)
+              (dynamic-wind void (lambda () (.put! receiver 'port 5433))
+                (lambda () (mutex-unlock! gate)))))))
+      (def entered? #f)
+      (check-equal?
+        (failure-message
+          (lambda ()
+            (dynamic-wind void
+              (lambda ()
+                (module-source-measure-replay roots
+                  (lambda ()
+                    (set! entered? #t)
+                    (mutex-unlock! gate)
+                    (thread-join! writer))))
+              (lambda ()
+                (unless entered?
+                  (mutex-unlock! gate)
+                  (thread-join! writer))))))
+        "stale slot dependency")
+      (check-equal? (.ref receiver 'port) 5433)
+      (set! completed (+ completed 1)))
     (yuanxu-test-fixture "parent warm, child final receiver and child obligations"
       (fixture ReplayFixture)
       (def Parent (.get fixture parent))

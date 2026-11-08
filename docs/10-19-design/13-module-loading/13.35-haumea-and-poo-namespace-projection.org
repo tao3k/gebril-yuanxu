@@ -2172,6 +2172,39 @@ verified benefit to the default vector path and no completed capacity
 run, the Scheme candidate remains in isolation. The production runtime
 and dependency pin retain their original implementations.
 
+*** One live pass for validation without a caller action
+
+A diagnostic reuses POO's installed private topology lookup and issuance
+preflight. The native protected action returns the distinct record count
+and the final native pass authenticates every record. The ordinary
+checkpoint also authenticates the records before the action. For four
+actual publication traces, each alternating 512-call block covered the
+same 573,440 records. The ordinary blocks used 1.168–1.172 s CPU and the
+single-pass blocks used 0.639–0.645 s. Both reject forged and stale records
+with the same precedence on a fixed state.
+
+The same process then used four fresh 128-owner selected Graphs.
+The probe intercepted the installed generated unary and binary replay
+entry points, verified that every lane reached 512 validation-only calls
+and 261 protected calls, and restored both bindings after each lane.
+Only the validation-only calls used the candidate. Graph construction
+used 3.549–3.573 s CPU and 3.558–3.658 s wall with the ordinary path,
+compared with 3.074–3.085 s CPU and 3.090–3.360 s wall with the candidate.
+Module order was complete and the tested business scope remained cold.
+An initial probe intercepted only the binary entry and recorded no
+validation-only calls. Its measurements are excluded.
+
+=PublicationReads.validation_only_same_state_needs_one_live_pass= proves
+the equivalence under identical live observations.
+=PublicationReads.monotone_live_scan_has_common_entry= identifies the
+additional concurrent premise for a shared point of validity. A raw
+native route replacement and restoration made the same record refuse
+and then succeed at an unchanged receiver revision. Thus this revision
+alone cannot establish permanent invalidation. A separate Core regression
+makes a peer thread change the receiver during a real source checkpoint.
+The protected return must refuse even though the action itself returns.
+The production Scheme replay and dependency pin retain their current paths.
+
 *** Default vector route CPU
 
 The native batch probe selected 128 issued reads whose live instance
