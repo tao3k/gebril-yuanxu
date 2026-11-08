@@ -1914,6 +1914,19 @@ independent reasons to retain the issued support.
 preorder and live authentication of omitted reads on both sides of an effect.
 Any production reduction must establish these premises at the producer.
 
+Splitting the stock Type call at its existing Generic protocol gives 691
+reachable records for =.admit=, 178 for checking the resulting evidence, and
+two for reading its candidate. These are overlapping traversals. The
+=.admit= call already reaches 205 receipt records on 13 receivers, compared
+with 224 on 14 receivers for complete =validate=. Optimizing only the
+outer receipt consumer would leave most of the issued receipt support.
+For the stock =types= role, its public value action returns the same role
+and reaches 149 records with no receipt receivers. Its complete child
+=.admit= reaches 229 records and its acceptance check reaches 178. These
+separate native traversals overlap. A smaller private proof must retain
+the child value action and the original checks for author-contributed
+descriptors or observers.
+
 The same runtime's cold dense selection stopped at the original limit after
 5,411 candidate-read calls. The incomplete first-graph phase recorded 79.37 s
 of metadata replay, 35.33 s of preparation, 47.46 s of value admission and
@@ -2018,6 +2031,23 @@ after admission 7.701 s. The declaration replay sites accounted for
 =role-entry=, =role-return=, =declaration-after= and the fused candidate
 return. Each site now records CPU as well as wall time in =stages= mode.
 The default Case and its observer policy are unchanged.
+
+On the same thousand-owner phase fixture at =ced2ea5=, the admission phase
+took 42.027 s wall and 35.621 s CPU. The entry and enrolled-input sites used
+2.622 s and 2.109 s CPU, respectively, over 1,000 calls each. The native
+checkpoint suspends the caller's slot read recording, observers and prechecks
+for its action. The prepared input enrollment explicitly reads its POO
+=admit-current= slot. A native probe using real prepared source and a
+nonempty Profile checkpoint observed that the two handoffs return the same
+checker but only the ordinary handoff records its read. Replacing that
+checker makes the ordinary captured support refuse, while replay of the
+protected handoff's support succeeds.
+=PublicationReads.closed_deferred_preparation_preserves_refusal= requires
+equal live intermediate verdicts, and
+=PublicationReads.deferred_handoff_preserves_read_delivery= requires an
+empty demand trace under this primitive. The existing handoff fails the
+second premise. Leave the Scheme checkpoints in place, including the
+independent native expansion and author effect checks.
 
 For 64 actual owners, the joined preparation and admission traversal
 visited 74,955 signed reads. 50,979 followed a read of the same receiver

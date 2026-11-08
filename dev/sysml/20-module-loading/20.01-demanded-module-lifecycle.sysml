@@ -65,6 +65,16 @@ package YuanxuModuleLoading {
                callbacks, observers and all later effect boundaries retain
                independent authentication. */
     }
+    requirement def DeferredPreparationHandoff {
+        doc /* Keep location, policy, source, and prepared input enrollment in
+               their original refusal order. Sharing the intermediate replay
+               requires identical live verdicts at the omitted checkpoints.
+               The native protected action suspends recording, observers, and
+               prechecks. It may not enclose a required prepared checker read.
+               PublicationReads proves the independent refusal and delivery
+               premises. Gerbil expansion and author calls retain their own
+               checks. */
+    }
     part def InterfaceDatumProjection {
         ref part declaration : SelectedDeclarations;
         doc /* The private stock Interface datum read supplies both the

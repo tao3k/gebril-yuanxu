@@ -497,6 +497,72 @@ theorem fused_directory_entry_cannot_bless_open_return {Failure : Type} (stale :
       fusedReaderEntry (.ok ()) (.ok ()) (.ok ()) (.ok ()) (.ok ())
       (.error stale : Except Failure Unit)) = .error stale := rfl
 
+-- A deferred handoff must keep the location, policy and source checks in
+-- order even if its two intermediate POO checks can share an entry verdict.
+def deferredPreparationChecks {Failure : Type}
+    (entry location policy afterLocation entryPolicy entrySource handoff
+      inputLocation inputPolicy beforeInputs afterInputs returnPolicy inputSource :
+      Except Failure Unit) : Except Failure Unit := do
+  replayCheckpoint entry (do location; policy) afterLocation
+  entryPolicy
+  entrySource
+  handoff
+  inputLocation
+  inputPolicy
+  replayCheckpoint beforeInputs (.ok ()) afterInputs
+  returnPolicy
+  inputSource
+
+def deferredPreparationWindow {Failure : Type}
+    (entry location policy entryPolicy entrySource handoff
+      inputLocation inputPolicy afterInputs returnPolicy inputSource :
+      Except Failure Unit) : Except Failure Unit := do
+  replayCheckpoint entry (do
+    location
+    policy
+    entryPolicy
+    entrySource
+    handoff
+    inputLocation
+    inputPolicy) afterInputs
+  returnPolicy
+  inputSource
+
+theorem closed_deferred_preparation_preserves_refusal {Failure : Type}
+    (entry location policy afterLocation entryPolicy entrySource handoff
+      inputLocation inputPolicy beforeInputs afterInputs returnPolicy inputSource :
+      Except Failure Unit)
+    (locationStable : afterLocation = entry) (inputStable : beforeInputs = entry) :
+    deferredPreparationWindow entry location policy entryPolicy entrySource handoff
+      inputLocation inputPolicy afterInputs returnPolicy inputSource =
+    deferredPreparationChecks entry location policy afterLocation entryPolicy entrySource handoff
+      inputLocation inputPolicy beforeInputs afterInputs returnPolicy inputSource := by
+  subst afterLocation
+  subst beforeInputs
+  cases entry <;> cases location <;> cases policy <;> cases entryPolicy <;>
+    cases entrySource <;> cases handoff <;> cases inputLocation <;> cases inputPolicy <;> rfl
+
+-- Even with a current entry, an intervening effect can make the omitted
+-- checkpoint own the first refusal before the later source check fails.
+theorem deferred_preparation_requires_independent_open_refusal :
+    deferredPreparationWindow (.ok ()) (.ok ()) (.ok ()) (.ok ()) (.ok ()) (.ok ())
+      (.error "source moved") (.ok ()) (.ok ()) (.ok ()) (.ok ()) ≠
+    deferredPreparationChecks (.ok ()) (.ok ()) (.ok ()) (.error "stale slot") (.ok ())
+      (.ok ()) (.ok ()) (.error "source moved") (.ok ()) (.ok ()) (.ok ()) (.ok ()) (.ok ()) := by
+  intro same
+  exact (by decide : "source moved" ≠ "stale slot") (Except.error.inj same)
+
+-- The primitive disables capture as well as observers and prechecks.
+-- A callback-free interval can still emit required POO read records.
+def deferredHandoffDelivery (protectedWindow : Bool) (demands : List Read) : List Read :=
+  if protectedWindow then [] else demands
+
+theorem deferred_handoff_preserves_read_delivery (demands : List Read) :
+    deferredHandoffDelivery true demands = deferredHandoffDelivery false demands ↔
+    demands = [] := by
+  change ([] = demands) ↔ demands = []
+  exact eq_comm
+
 -- Only the inert datum read from the same captured Interface bytes is shared.
 -- Owner binding, native identity admission and post-expansion validation retain
 -- independent inputs and first-refusal order.
