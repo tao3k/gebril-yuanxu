@@ -2,16 +2,22 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/io/tempfile make-temporary-file-name)
+        (only-in :std/error Error? Error-message)
         (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :clan/poo/object .o .cc .get .put! object? replay-slot-reads!
+        (only-in :clan/poo/object .o .cc .get .ref .put! object? replay-slot-reads!
                  call-with-current-slot-reads)
         (only-in :clan/poo/mop Type. Bool)
-        (only-in :clan/poo/type Enum Tuple)
+        (only-in :clan/poo/type Enum Record Tuple)
         (only-in :clan/poo/testing/type check-property report-diagnostics)
         (prefix-in :clan/poo/testing/property/test pbt.)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-receiver slot-read-key)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :yuanxu/object-family/read-projection
+                 call-with-owned-read-projection current-owned-read-open-guard)
+        (only-in :yuanxu/module-system/authoring/roles make-default-module-authoring-profile)
+        (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
+        (only-in :yuanxu/module-system/types ModuleSourceRoleContract)
         (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
         :yuanxu/module-system/source/collection
         :yuanxu/module-system/source/objects
@@ -469,4 +475,43 @@
         (check-exception (admit-module-publication! source 'custom/example value (.o)) error?)
         (check-exception
          (admit-module-publication! (make-yuanxu-module-generated-source 'custom/example)
-                                    'custom/example (.o identity: 'custom/example) (.o)) error?)))))
+                                    'custom/example (.o identity: 'custom/example) (.o)) error?)))
+    (yuanxu-test-case "a replaced role normalizer crosses the guard before retaining a checked receiver"
+      (def raw (make-default-module-authoring-profile))
+      (def schema (Record))
+      (def descriptor (.ref ModuleSourceRoleContract 'value-contract))
+      (def maintained (.ref descriptor '.validation-fields))
+      (def entries 0)
+      (def last-entry 0)
+      (def calls 0)
+      (def normalized #f)
+      (def (run entry)
+        (parameterize ((current-owned-read-open-guard entry))
+          (call-with-owned-read-projection '() void
+            (lambda () (yuanxu-module-interface "role-normalizer" schema '() authoring: raw)))))
+      (dynamic-wind
+        (lambda ()
+          (.put! descriptor '.validation-fields
+            (lambda (value)
+              (set! calls (+ calls 1))
+              (check-equal? (> entries last-entry) #t)
+              (set! last-entry entries)
+              (let* ((fields (maintained value)) (first (car fields)))
+                (cons
+                  (cons (car first)
+                    (lambda (original checked)
+                      (set! normalized checked)
+                      ((cdr first) original checked)))
+                  (cdr fields))))))
+        (lambda ()
+          (check-exception (run (lambda () (error "stale role normalization entry")))
+            (lambda (failure)
+              (and (Error? failure)
+                   (string=? (Error-message failure) "stale role normalization entry"))))
+          (check-equal? calls 0)
+          (check-equal? normalized #f)
+          (def interface (run (lambda () (set! entries (+ entries 1)))))
+          (check-equal? (eq? (.ref interface 'authoring) raw) #t)
+          (check-equal? (> calls 0) #t)
+          (check-equal? (object? normalized) #t))
+        (lambda () (.put! descriptor '.validation-fields maintained))))))

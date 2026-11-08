@@ -325,6 +325,9 @@ package YuanxuPayloadOwnership {
                call boundary. A replaced source role admission can mint and
                retain evidence before Record validation. A refusal at entry
                precedes the first such callback.
+               The role value Contract's field and prepared normalization
+               methods can retain the derived checked receiver. Authenticate
+               the open boundary before delivering a replaced method.
                A success-only Profile value lane requires custody of the
                producer, preserved normalized child identities and independent
                support for root and child evidence acceptance. Decline the

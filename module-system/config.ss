@@ -60,13 +60,15 @@
 
 (def profile-validation-checks
   (let* ((profile ModuleAuthoringProfileContract)
-         (executor (.ref (.ref profile 'responsibilities) 'executor)))
-    (cons (make-owned-method-check profile '.validate (.ref profile '.validate))
-      (append-map
-        (lambda (descriptor)
-          (map (lambda (key) (make-owned-method-check descriptor key (.ref descriptor key)))
-               '(.admit .classify .obligations prepared-value-action)))
-        (list profile executor ModuleSourceRoleContract)))))
+         (executor (.ref (.ref profile 'responsibilities) 'executor))
+         (role-value (.ref ModuleSourceRoleContract 'value-contract)))
+    (def (checks descriptor keys)
+      (map (lambda (key) (make-owned-method-check descriptor key (.ref descriptor key))) keys))
+    (append
+      (checks profile '(.validate))
+      (checks role-value '(.validation-fields prepared-validation))
+      (append-map (cut checks <> '(.admit .classify .obligations prepared-value-action))
+                  (list profile executor ModuleSourceRoleContract)))))
 (def validate-authoring-profile (cut validate ModuleAuthoringProfileContract <>))
 
 (def (make-module-interface prototype interface-id-value schema-object
