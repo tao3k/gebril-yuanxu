@@ -831,4 +831,15 @@ theorem prepared_absence_is_checked_again (stale : Failure) :
     checkSourceRows (fun (_ : Nat) (_ : Option Unit) => .error stale)
       [(0, none)] = .error stale := rfl
 
+-- An observer may change the path of a later role while the guard is active.
+-- Rechecking the original path cannot establish the required live path.
+theorem retargeted_role_cannot_reuse_prepared_path :
+    checkSourceRows (fun path (_ : Option Unit) =>
+      if path = (0 : Nat) then .ok () else .error "stale role path") [(0, none)] ≠
+    checkSourceRows (fun path (_ : Option Unit) =>
+      if path = (0 : Nat) then .ok () else .error "stale role path") [(1, none)] := by
+  change (Except.ok () : Except String Unit) ≠ .error "stale role path"
+  intro impossible
+  cases impossible
+
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

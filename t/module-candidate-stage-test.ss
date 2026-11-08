@@ -11,6 +11,7 @@
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-publication)
+        (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
         (only-in :yuanxu/module-system/source/directory module-directory-context)
         (only-in :yuanxu/module-system/source/admission
                  module-source-read yuanxu-default-module-style-policy
@@ -39,29 +40,35 @@
 
 (def module-candidate-stage-test
   (test-suite "Unpublished candidate operations and complete Graph boundaries"
-    (yuanxu-test-case "prepared role paths remain private across projections and observers"
+    (yuanxu-test-case "open source guard rejects a new role under a retargeted root"
       (with-publication-source
         (lambda (_root _owner source _view)
+          (def root (cdr (assq 'module-root (yuanxu-module-source-ref-metadata source))))
+          (def index (- (string-length (path-strip-trailing-directory-separator root)) 1))
+          (def original (string-ref root index))
+          (def replacement (string-copy root))
+          (string-set! replacement index #\z)
+          (write-file (path-expand "objects.ss" replacement) "(def Unexpected #t)")
           (def prepared (yuanxu-prepare-module-publication source))
           (def current! (.ref prepared 'admit-current))
-          (def role
-            (car (filter (lambda (row) (string-suffix? "/types.ss" (car row)))
-                         (.ref prepared 'source-inputs))))
-          (def (edit-path! path) (string-set! path (1- (string-length path)) #\x))
-          (edit-path! (car role))
-          (current!)
-          (def edited? #f)
+          (def retargeted? #f)
           (check-exception
-            (parameterize ((current-module-source-observer
-                            (lambda (key _amount)
-                              (match key
-                                (['file-request _ path]
-                                 (when (string-suffix? "/types.ss" path)
-                                   (set! edited? #t) (edit-path! path)))
-                                (else (void))))))
-              (current!))
-            error?)
-          (check-equal? edited? #t)
+            (dynamic-wind void
+              (lambda ()
+                (parameterize ((current-module-source-observer
+                                (lambda (key _amount)
+                                  (match key
+                                    (['file-request _ path]
+                                     (when (and (not retargeted?) (string-suffix? "/types.ss" path))
+                                       (set! retargeted? #t)
+                                       (string-set! root index #\z)))
+                                    (else (void))))))
+                  (current!)))
+              (lambda () (string-set! root index original)))
+            (lambda (cause)
+              (and (Error? cause)
+                   (equal? (Error-message cause) "stale prepared Module publication"))))
+          (check-equal? retargeted? #t)
           (current!))))
     (yuanxu-test-case "Core functional definitions retain their admitted compiler context"
       (with-other-source

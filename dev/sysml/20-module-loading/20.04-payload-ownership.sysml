@@ -60,13 +60,12 @@ package YuanxuPayloadOwnership {
                census establishes frequency, not native state stability. */
     }
     requirement def PreparedRoleSourceObligations {
-        doc /* Capture the existing ordered role paths and positive or absent
-               inputs once in Module preparation. Each Reader checkpoint runs
-               its original filesystem check after the package and prelude
-               guards. PublicationReads.prepared_role_rows_preserve_first_refusal
-               relates the ordered checks. Source observers and public input
-               projections receive separate path strings. A path row carries
-               expected input data and no successful verification result. */
+        doc /* The Reader resolves role paths at their original checks after
+               package and prelude admission. A prepared row is equivalent
+               only while that path binding holds. An open source observer
+               can retarget a later role during the same guard. Lean
+               PublicationReads.retargeted_role_cannot_reuse_prepared_path
+               and the candidate-stage control require the live refusal. */
     }
     requirement def LoadingStageEvidence {
         doc /* Library compilation, selected-graph construction, demand of a

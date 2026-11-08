@@ -1772,14 +1772,22 @@ the default case for ordinary qualification.
 
 *** Retained read frontier
 
-The prepared publication retains ordered role input rows rather than the
-preparation hash and a recipe to rebuild paths at each checkpoint. Every
-invocation still checks the original prelude and package before checking
-each role's contents or absence. Public input rows and open observer events
-receive separate path strings. Lean
-=PublicationReads.prepared_role_rows_preserve_first_refusal= gives the
-ordered check equivalence. =prepared_absence_is_checked_again= preserves
-the negative input obligation when a previously absent role appears.
+An ordered role-path capture is equivalent only while the original path
+binding holds. In the alternating 256-owner role-check probe, captured
+paths took 0.289–0.308 s CPU per 2,048 checks, compared with 0.267–0.285 s
+for the original guard. An open observer also changed the SourceRef root
+while checking =types.ss=. The captured-path candidate admitted a later
+=objects.ss= check against the former root. The Reader keeps the original
+live path resolution. =PublicationReads.retargeted_role_cannot_reuse_prepared_path=
+and the candidate-stage control preserve the distinction.
+
+The 256-owner terminal heap probe released 1,717,904 bytes after replacing
+the private delayed-role slot and invalidating its attached state. This
+includes cache invalidation and gives no exclusive closure size. The
+64-owner read census found 704 records reachable only through the
+forwarded roots, eleven per owner, in addition to all 74,955 records
+reached by the two retained checkpoints. These measurements leave most of
+the observed per-owner heap growth unexplained.
 
 The directory factory issues the private candidate location guard. At the
 first Reader checkpoint, an unobserved closed candidate can use POO's

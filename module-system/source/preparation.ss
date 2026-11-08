@@ -291,30 +291,19 @@
           (error "selected native module identity differs from its source" owner (cadr compiler-info) path))
         (unless (and (symbol? name) (string-suffix? suffix id-text))
           (error "invalid Module binding or runtime compiler identity" path name compiler-info))
-        (def role-rows
-          (map (lambda (role)
-                 (def file (path-expand (module-role-file role) root))
-                 (cons file (hash-get texts file)))
-               yuanxu-module-allowed-entrypoint-roles))
-        (def build-source
-          (let (file (path-expand (module-role-file 'build) root))
-            (and (hash-key? texts file) file)))
         (def (check-source!)
           (module-source-admit-current! prelude-inputs "stale Module prelude source")
           ;; Unchanged role/header bytes plus runtime package lookup determine
           ;; identity; do not parse interface.ss again on every guard.
           (unless (and (package-snapshot-current? package-sources)
                        (andmap
-                         (lambda (row)
-                           ;; Observers receive the path as before but cannot
-                           ;; mutate the path retained by this guard.
-                           (def file
-                             (if (current-module-source-observer)
-                               (string-copy (car row)) (car row)))
-                           (if (cdr row)
-                             (equal? (cdr row) (module-source-read file))
-                             (not (module-source-type file))))
-                         role-rows))
+                         (lambda (role)
+                           (let (file (path-expand
+                                        (string-append (symbol->string role) ".ss") root))
+                             (if (hash-key? texts file)
+                               (equal? (hash-ref texts file) (module-source-read file))
+                               (not (module-source-type file)))))
+                         yuanxu-module-allowed-entrypoint-roles))
             (error "stale prepared Module publication" owner path)))
         ;; The native no-context route is the source checker itself, not a
         ;; wrapper annotated as pure. Open contexts retain both actual calls.
@@ -377,7 +366,7 @@
                                           (string-append "./" (symbol->string role) ".ss")) roles)))
                               '())
                           ,@imports))
-           (if build-source
+           (if (hash-key? texts (path-expand "build.ss" root))
              (list '(define-module-build-binding Build)) '())
            (list (if deferred `(include-deferred-declaration ,path ,deferred ,resolver) `(include ,path))))))
         ;; Retained preparation and guard closures own bytes, not this parse tree.
@@ -388,9 +377,13 @@
             compiler-identity: (cadr compiler-info)
             source-inputs:
             (append (package-source-inputs package-sources) prelude-inputs
-                    (map (lambda (row) (cons (string-copy (car row)) (cdr row))) role-rows))
+                    (map (lambda (role)
+                           (let (file (path-expand (string-append (symbol->string role) ".ss") root))
+                             (cons file (and (hash-key? texts file) (hash-ref texts file)))))
+                         yuanxu-module-allowed-entrypoint-roles))
             role-sources: (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles)
-            build-source: build-source
+            build-source: (let (file (path-expand "build.ss" root))
+                            (and (hash-key? texts file) file))
             namespace: (caddr compiler-info) prelude: (car compiler-info)
             admit-current: current!
             deferred-roles: deferred-roles
