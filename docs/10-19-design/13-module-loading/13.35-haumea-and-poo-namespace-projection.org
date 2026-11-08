@@ -2205,6 +2205,23 @@ makes a peer thread change the receiver during a real source checkpoint.
 The protected return must refuse even though the action itself returns.
 The production Scheme replay and dependency pin retain their current paths.
 
+The four publication traces contained 1,411 distinct native records.
+None belonged to a sealed receiver. Native invalidation also refused a
+previously issued record on a receiver whose seal remained set. A seal
+alone leaves cache invalidation and route authentication in the replay
+contract.
+
+The separate compiler-Context inventory check already receives the
+captured origin from each hash row. It now compares that row with the
+current Context identity and path without another hash lookup. Point
+queries still authenticate table membership. Lean's
+=PublicationReads.compiler_inventory_rows_preserve_refusal= requires the
+same entry and preserves the original traversal and refusal. Alternating
+scans of the same 350 installed Contexts visited 2,100,000 rows per lane.
+The lookup path used 0.514–0.587 s CPU and direct row use took
+0.413–0.489 s. Independent Context checks still surround the original
+effects.
+
 *** Default vector route CPU
 
 The native batch probe selected 128 issued reads whose live instance

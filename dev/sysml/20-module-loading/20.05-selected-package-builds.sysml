@@ -376,7 +376,10 @@ package YuanxuSelectedPackageBuilds {
                window; no accepted verdict survives it. Open observers retain
                the original query and callback order. Lean SourceClosureWork
                prepend_only_same_size_same_rows and existing Quint index replace,
-               dropped-support and stale-approval controls bound this refinement. */
+               dropped-support and stale-approval controls bound this refinement.
+               A compiler inventory traversal uses the origin supplied by its
+               native table row and still reads the Context identity and path
+               live. Independent point queries authenticate table membership. */
     }
     requirement def CandidateReplaySites {
         doc /* Attribute declaration-before, declaration-inputs, role-entry,

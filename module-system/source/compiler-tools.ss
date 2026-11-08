@@ -16,7 +16,7 @@
         (only-in :yuanxu/module-system/building/source-package module-build-source-path))
 (export public-dependency-input admit-compiler-inputs!
         compiler-tool-inputs compiler-tool-input record-source-observations!
-        captured-tool-context? module-compiler-tools)
+        compiler-context-origin-current? captured-tool-context? module-compiler-tools)
 
 ;; One canonical-library check for publication and configuration readers. This
 ;; prepares observations, never imports, expands or initializes the dependency.
@@ -130,12 +130,12 @@
                    (not (equal? (hash-ref observations file) (cdr observation))))
           (error "inconsistent compiler tool source observations" file))
         (hash-put! observations file (cdr observation)))) rows))
+(def (compiler-context-origin-current? context origin)
+  (and origin (eq? (car origin) (expander-context-id context))
+       (equal? (cdr origin) (module-context-path context))))
 (def (captured-tool-context? contexts context)
-  ;; Preserve both the runtime instance and its identity at capture time.
-  ;; A same-name replacement or a mutated captured instance is not a capability.
-  (let (origin (hash-get contexts context))
-    (and origin (eq? (car origin) (expander-context-id context))
-         (equal? (cdr origin) (module-context-path context)))))
+  ;; Point queries authenticate the actual captured instance before reading it.
+  (compiler-context-origin-current? context (hash-get contexts context)))
 (def (module-compiler-tools)
   (def compiler-contexts (make-hash-table-eq))
   (def tool-contexts

@@ -194,6 +194,22 @@ theorem monotone_live_scan_has_common_entry
   intro item member
   exact permanent _ _ _ (checked item member).1 (checked item member).2
 
+-- A compiler inventory visits a native Context together with the origin
+-- already stored for it. Point lookup and traversal have the same inputs
+-- while that table is fixed. Read the actual Context again in both lanes.
+theorem compiler_inventory_rows_preserve_refusal
+    {Context Origin Failure : Type} (rows : List (Context × Origin))
+    (lookup : Context → Option Origin)
+    (current : Context → Option Origin → Except Failure Unit)
+    (exactEntry : ∀ row ∈ rows, lookup row.1 = some row.2) :
+    authenticateAndVisit (fun row => current row.1 (lookup row.1)) (fun _ => ()) rows =
+    authenticateAndVisit (fun row => current row.1 (some row.2)) (fun _ => ()) rows := by
+  induction rows with
+  | nil => rfl
+  | cons row rest ih =>
+    simp only [authenticateAndVisit, exactEntry row (by simp)]
+    rw [ih (fun other member => exactEntry other (by simp [member]))]
+
 -- Source preparation consumes only the first diagnostic. The public API
 -- still returns and validates its receipt. A closed empty result has no
 -- diagnostic whose Type could run, but the maintained aggregate validator

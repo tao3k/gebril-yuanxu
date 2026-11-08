@@ -6,7 +6,7 @@
         :yuanxu/module-system/source/admission
         :yuanxu/module-system/source/reader-session
         :yuanxu/module-system/source/reader-support
-        (only-in :yuanxu/module-system/source/compiler-tools captured-tool-context?))
+        (only-in :yuanxu/module-system/source/compiler-tools compiler-context-origin-current?))
 (export reader-check-tool-contexts! reader-check-current! reader-check-current/closed!
         reader-current! reader-full-current! reader-open-boundary! reader-fixed-candidate-guards?)
 
@@ -14,8 +14,8 @@
   (module-source-measure-operation 'reader-native-identity
    (lambda ()
     (hash-for-each
-      (lambda (context _origin)
-        (unless (captured-tool-context? (reader-session-compiler-contexts session) context)
+      (lambda (context origin)
+        (unless (compiler-context-origin-current? context origin)
           (error "compiler tool context changed; use a fresh publication reader")))
       (reader-session-compiler-contexts session)))))
 (def (reader-check-current! session observed-guards observations)
