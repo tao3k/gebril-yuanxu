@@ -459,8 +459,14 @@ package YuanxuSelectedPackageBuilds {
     }
     requirement def BusinessEvalMeasurement {
         doc /* Measure one actual native .get of module-1 plan without warming
-               the selected Graph. Its result requires admission of all 1000
-               declarations and only the module-1/module-0 business scope closure.
+               the selected Graph. Only module-1 and its module-0 provider
+               enter declaration admission and scope construction. Assert both
+               counts and each scope owner with the callback-free counters.
+               Full certification is a separate demand for all 1000 selected
+               declarations, measured after the cold and hot business reads.
+               Lean Graph.TestAdmission.plain_scope_demand_is_within_full_selection
+               and NamespaceProjection.thousand_catalog_two_scope_demand
+               describe the two demand sets.
                Enumerating namespace keys is outside this expression and must
                not admit declarations. Assert every unrelated leaf stays cold.
                Unrelated Objects/Config initializers must fail if entered, so cold

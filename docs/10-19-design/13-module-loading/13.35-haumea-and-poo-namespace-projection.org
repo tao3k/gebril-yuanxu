@@ -48,10 +48,24 @@ was rejected and removed; current repair/acceptance is recorded under
 | Product ownership | Downstream native output directories, currentness, cold/hot builds and A/B clean isolation qualified |
 | Runtime mutation and laziness | Complete thousand-name runtime Case now passes its unchanged budget; stale reads refuse and unrelated scopes remain stable; latency remains open |
 | Native package CLI | Normal =deps --install= with native concurrency and TAGS retained; no local package-manager patch or alternative installer |
-| Complete first business EVAL | Latest fixed-cohort comparison: 149.636221 -> 145.449673 s wall, 138.380257 -> 133.178676 s CPU; all 1000 declarations/two scopes retained. Single local comparison; remaining latency is open |
+| First business EVAL | Native =.get= from a cold thousand-owner namespace admits and constructs only the reached pair. The separate dense certification Cases still require the full selected graph |
 
 The dated receipts below distinguish source candidates, installed tools and
-runtime workloads. No full workspace or remote CI completion is implied.
+runtime workloads. Earlier first-EVAL receipts described full admission on
+their then-current path. In the current workload, =business-eval-cold= and
+=business-eval-hot= time only the expression. The cold read admits and
+constructs module-1 and module-0, and the hot read repeats neither operation.
+=full-graph-after-business= separately demands the full selection. The dense
+certification gates still start with all declarations cold and retain their
+original resource limits.
+
+With the =adaa875= runtime and the split measurement, the native cold
+expression took 1.879 s wall and 1.165 s process CPU. The counters reported
+two admissions and one scope per reached owner. The hot expression retained
+its identity with zero admissions and zero scopes. The subsequent full-graph
+request took 43.215 s wall and 31.264 s CPU and verified all 1000 declarations.
+Its two reached owners were already admitted. The independently cold dense
+declaration and selection cases both still reached the 180-second limit.
 
 * What Haumea actually does
 

@@ -3,5 +3,5 @@
 (export module-business-eval-once-1000-test)
 (def module-business-eval-once-1000-test
   (test-suite "One cold business EVAL in a real thousand-module namespace"
-    (declaration-scale-case "one business .get includes first admission, scopes and value"
+    (declaration-scale-case "one business .get admits and constructs only its reached closure"
       1000 BusinessEvalOnceFixture)))

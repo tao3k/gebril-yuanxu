@@ -286,24 +286,37 @@
     "eval-once-complete modules=%s admitted=%s business-scopes=0 repeated-identity=ok"
     count (length (.get graph module-order))))
 
-;; Confirmed main benchmark: one business .get, including its FIRST complete
-;; declaration admission, reached scopes and returned value. Do not warm Graph.
+;; The first business .get admits its reached closure in a cold namespace.
+;; Full-directory certification is a separate demand after both business reads.
 (def (verify-business-eval-once FixtureExports count _source-root)
   (check-equal? (current-module-source-observer) #f)
   ;; Inspect only the existing slot state. The timed expression owns first
   ;; branch construction as well as admission and scope demand.
   (check-equal? (.ref/cached FixtureExports 'modules) #f)
   (yuanxu-write-observation-line!
-    "business-eval-boundary modules=%s expression=%s operation-measurement=off"
+    "business-eval-boundary modules=%s expression=%s operation-accounting=scalar"
     count '(.get FixtureExports modules module-1 plan))
-  (def cold
-    (measure-runtime count 'business-eval-cold
-      (lambda () (.get FixtureExports modules module-1 plan))))
+  (def (business-phase phase)
+    (measure-runtime count phase
+      (lambda ()
+        (call-with-values
+          (lambda ()
+            (call-with-module-source-operation-measurement
+              (lambda () (.get FixtureExports modules module-1 plan)) accounting?: #f))
+          cons))))
+  (def (calls run operation) (hash-ref (cdr run) (list 'calls operation) 0))
+  (def (admissions run) (+ (calls run 'candidate-read) (calls run 'publication-read)))
+  (def cold-run (business-phase 'business-eval-cold))
+  (def cold (car cold-run))
   (check-equal? cold '(5432))
-  (def hot
-    (measure-runtime count 'business-eval-hot
-      (lambda () (.get FixtureExports modules module-1 plan))))
-  (check-equal? (eq? cold hot) #t)
+  (check-equal? (admissions cold-run) 2)
+  (check-equal? (calls cold-run 'scope-factory) 2)
+  (check-equal? (calls cold-run '(scope-factory module-0)) 1)
+  (check-equal? (calls cold-run '(scope-factory module-1)) 1)
+  (def hot-run (business-phase 'business-eval-hot))
+  (check-equal? (eq? cold (car hot-run)) #t)
+  (check-equal? (admissions hot-run) 0)
+  (check-equal? (calls hot-run 'scope-factory) 0)
   (def modules (.get FixtureExports modules))
   (check-equal? (length (.all-slots modules)) count)
   (check-equal? (.call (.get modules module-1) computations) 1)
@@ -311,11 +324,15 @@
               (unless (memq id '(module-0 module-1))
                 (check-equal? (.ref/cached modules id) #f)))
             (.all-slots modules))
-  (def graph (.get FixtureExports tests selected-graph))
+  (yuanxu-write-observation-line!
+    "business-eval-complete modules=%s admissions=2 scopes=2 demanded=module-1 provider=module-0 unrelated=cold"
+    count)
+  (def graph
+    (measure-runtime count 'full-graph-after-business
+      (lambda () (.get FixtureExports tests selected-graph))))
   (check-equal? (length (.get graph module-order)) count)
   (yuanxu-write-observation-line!
-    "business-eval-complete modules=%s declarations=%s demanded=module-1 provider=module-0 unrelated=cold"
-    count (length (.get graph module-order))))
+    "business-eval-full-graph modules=%s declarations=%s" count (length (.get graph module-order))))
 
 (def (check-sparse-business-result exports count value)
   (check-equal? value '(5432))
