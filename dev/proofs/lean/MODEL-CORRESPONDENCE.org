@@ -644,6 +644,16 @@ conditions and supplies no timing or progress bound.
 
 ** Filesystem branches and native leaf expressions
 
+=ModuleSystem/Graph/IndexedWork= composes the executable indexed traversal
+with =LeanPoo.Functional.KeyIndex= and the existing reverse-dependency proof.
+It accounts for probes, expanded buckets and emitted edges, including
+continuation from a completed or unfinished old-generation walk. Its full, sparse, shared
+cycle and merged-edit fixtures exercise 10,000-owner indices.
+=GeneralizedGraph.Scheduled.restrict= supplies the rank-preserving edge
+restriction operation. A new edge violating the saved rank refuses reuse.
+Scheme =graph/funs.ss= and =feature/resolver.ss= remain the runtime owners.
+There is no native throughput or byte bound in this operation-count proof.
+
 =ClosedNamespaceProjection= and =LeafReceiverAndInheritance= separate an
 admitted filesystem branch key from the leaf expression. In
 =Loading/NamespaceProjection=, =leafValue= has inputs for the effective

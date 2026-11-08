@@ -19,6 +19,7 @@ import YuanxuProof.ModuleSystem.Selection.FeatureScopes
 import YuanxuProof.ModuleSystem.Graph.ImportCorrespondence
 import YuanxuProof.ModuleSystem.Graph.TestAdmission
 import YuanxuProof.ModuleSystem.Graph.SourceClosureWork
+import YuanxuProof.ModuleSystem.Graph.IndexedWork
 import YuanxuProof.ModuleSystem.Graph.SemanticReads
 import YuanxuProof.ModuleSystem.Graph.OwnedReads
 import YuanxuProof.ModuleSystem.Graph.PublicationReads
@@ -224,6 +225,12 @@ run_cmd do
       `YuanxuProof.ModuleSystem.Loading.NamespaceProjection.scope_demand_stays_in_admitted_catalog,
       `YuanxuProof.ModuleSystem.Graph.TestAdmission.indexed_admission_boundary,
       `YuanxuProof.ModuleSystem.Graph.TestAdmission.full_catalog_certification_exact,
+      `YuanxuProof.ModuleSystem.Graph.IndexedWork.completed_probe_count,
+      `YuanxuProof.ModuleSystem.Graph.IndexedWork.bucket_bound,
+      `YuanxuProof.ModuleSystem.Graph.IndexedWork.continued_bucket_count,
+      `YuanxuProof.ModuleSystem.Graph.IndexedWork.continuation_preserves_pending,
+      `YuanxuProof.ModuleSystem.Graph.IndexedWork.continuation_balanced,
+      `YuanxuProof.ModuleSystem.Graph.IndexedWork.retained_affected_exact,
       `YuanxuProof.ModuleSystem.Graph.TestAdmission.incomplete_admission_refuses,
       `YuanxuProof.ModuleSystem.Graph.TestAdmission.selected_admission_is_not_catalog_certification,
       `YuanxuProof.ModuleSystem.Loading.DependencyPublication.merged_changes_exact,

@@ -191,14 +191,26 @@ package YuanxuModuleLoading {
         attribute exhaustedFrames : Integer;
         attribute demandedReceivers : Integer;
         attribute affectedReceivers : Integer;
+        attribute membershipProbes : Integer;
+        attribute dependencyBucketReads : Integer;
         doc /* Derived observations of the production algorithm, not policy
                flags or a second cache. Lean SourceClosureWork.Frames owns the
                recursive-frame/worklist representation proof and frame bound.
-               IncrementalRoles owns affected-owner correspondence. Costs of
-               actual index primitives, Type callbacks, per-boundary source
+               IncrementalRoles owns affected-owner correspondence.
+               IndexedWork instruments the existing HashSet worklist. A
+               completed walk charges each root/edge occurrence one probe
+               and each reached owner one bucket. Resuming the same captured
+               graph charges only newly reached buckets. A continuation
+               retains unfinished work when new roots arrive. Retained-owner
+               membership uses LeanPoo KeyIndex, with exact key equality.
+               GeneralizedGraph permits reuse of checked order/rank for edge
+               restrictions. Added edges must satisfy the retained rank or
+               obtain a new checked schedule. These structural witnesses do
+               not discharge an independent source or signed-read check.
+               Costs of actual index primitives, Type callbacks, per-boundary source
                authentication and unique strongly held payloads remain separate.
                A linear DFS alone does not prove linear publication work,
-               a 2 GiB heap bound, or a wall-time deadline. Quint checks effect
+               the applicable heap bound, or a wall-time deadline. Quint checks effect
                and mutation traces, not another copy of frame arithmetic.
                Physical source reads are attributed by actual init-source owner
                and authentication phase, without retaining another read graph.

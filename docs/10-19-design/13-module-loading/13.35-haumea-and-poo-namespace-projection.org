@@ -1891,6 +1891,73 @@ the observed per-owner heap growth unexplained.
 
 *** Profile support within owner preparation
 
+**** Indexed Graph algorithm and library correspondence
+
+The =selected-graph= measurement includes source preparation, Gerbil
+expansion, publication admission, source guards and signed-record replay.
+The current dependency closure already uses a hash visited set and sibling
+frames in =module-system/graph/funs.ss=. The Feature resolver also uses
+an indexed three-state dependency traversal. Improving the Graph requires
+accounting for both structural traversal and the work of each admitted owner.
+
+=Graph/IndexedWork= instruments the existing =TestAdmission.discoverIndexed=
+algorithm. It proves that a completed walk performs one membership probe
+per root or emitted edge occurrence and one adjacency bucket read per
+distinct reached owner. A same-publication continuation preserves the visited
+set and charges only new buckets. The counter is an executable operation
+count. It places no constant-time bound on a hash probe.
+When a change arrives during traversal, =continueFrom= retains pending work
+and appends the new roots. =continuation_preserves_pending= and
+=continuation_balanced= bind this behavior to the same work accounting.
+The runtime publication ticket supplies the graph-generation boundary.
+
+The module uses =LeanPoo.Functional.KeyIndex= directly to intersect the
+reached reverse-index closure with retained owners. Its correctness is
+connected to =IncrementalRoles.Affected=, with exact dependency registration
+as the premise. Construct the retained index once with its native publication.
+Subsequent change handling point-checks only reached owners. A constant-hash
+negative control retains distinct keys, and no digest is treated as identity.
+Runtime source and module keys retain their existing fully qualified identity.
+
+| Operation | Existing algorithm or library | Scheme owner and contract |
+|-----------+-------------------------------+---------------------------|
+| Demand closure | =TestAdmission.discoverIndexed= and =SourceClosureWork.Frames= | =graph/funs.ss= and =source/selection.ss= retain one visited set across roots and deterministic traversal order |
+| Selected-owner membership | =LeanPoo.Functional.KeyIndex= | The selected publication owns the exact root index, without per-demand roster scans |
+| Changed-owner propagation | =IncrementalRoles= and =DependencyPublication= | POO reverse dependency buckets find affected consumers, then the new dependency graph admits required additions |
+| Topological rank reuse | =LeanPoo.Functional.GeneralizedGraph.Scheduled.restrict= | =feature/resolver.ss= can reuse a checked rank after edge removal when publication and roster bindings hold |
+| Cycles | Existing three-state DFS and library reachability laws | Module cycle refusal and diagnostics remain part of selected Graph admission |
+
+The first and last rows already have Scheme traversal implementations.
+The point-membership rule is implemented in =source/selection.ss=, while
+=source/link.ss= still has list membership at its root dispatch. Connecting
+the library's retained-root and rank-restriction witnesses to those runtime
+consumers remains pending. The new reverse-walk operation counts are proved
+over the existing model; native bucket counters must still establish their
+correspondence in the publication/refresh path.
+
+The checked scheduling library already preserves order and rank under an
+edge restriction. =removed_edges_preserve_library_schedule= reuses that
+implementation. =new_edge_cannot_reuse_a_violated_rank= rejects an added edge
+that violates the retained rank. This condition is independent of source
+admission. The library's finite SCC relation can support cycle specifications,
+but its all-pairs reachability table is not a capacity implementation for the
+Module admission path.
+
+The executable 10,000-owner fixture uses a shared provider. Sparse demand
+reads 2 buckets. A single full traversal reads 10,000 buckets and processes
+19,999 queue entries. Restarting traversal for every root reads 19,999 buckets.
+A shared cycle terminates with 4 bucket reads. An edit rooted at owner 11
+reaches only owners 11, 12 and 13. Merging roots 11 and 21 into the completed
+old-generation walk adds only 2 bucket reads. The existing publication model
+continues to reject stale tickets and require exact registration at commit.
+The unfinished-walk fixture keeps its queued consumers and completes the
+merged closure with 5 bucket reads in total.
+
+These laws specify the algorithm to preserve when optimizing Scheme.
+They do not remove the per-effect currentness obligations. In particular,
+sharing the Profile's topology does not establish that its signed records
+remain current after Gerbil expansion or an author callback.
+
 On 2026-11-08 the ten-thousand-module memory envelope was revised to
 4 GiB by explicit user instruction. Both the pre-import VM heap and the
 scale Case heap/live-growth limits use this value. The 180-second Case
