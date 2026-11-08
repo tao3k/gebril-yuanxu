@@ -1894,6 +1894,23 @@ authentication cost. The native frames also return in reverse lane order.
 =PublicationReads.nested_lane_return_can_change_first_refusal= models why
 the split cannot be adopted solely on matching results for unchanged inputs.
 
+The merged =b2806f4= runtime attributes the producer of this support. Its
+actual issued Profile read visits 726 records. Calling the Profile Type on
+the same stock input visits 713 records, and constructing the Interface
+visits the same 713. Checking the checked Profile's output inventory visits
+26 records on its own. The combined constructor and output check visits
+723 distinct records. In this stock sample the Type preserves the Profile
+and all seven role identities. That equality does not establish freshness
+of the Type dependencies and cannot replace their checks.
+
+The same runtime's cold dense selection stopped at the original limit after
+5,411 candidate-read calls. The incomplete first-graph phase recorded 79.37 s
+of metadata replay, 35.33 s of preparation, 47.46 s of value admission and
+5.82 s of wrapper expansion. These spans are nested, and the counts describe
+an interrupted run. The Profile checkpoint took 8.48 s within preparation.
+Reducing the read support created by the native Type is a distinct question
+from retaining and replaying its already-issued graph.
+
 A direct-value-slot candidate for the already determined preparation fields
 passed its focused regressions. It left the thousand-owner replay count at
 5,958,069 visits. Declaration admission took 34.13 s wall and 33.57 s CPU,
