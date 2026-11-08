@@ -135,9 +135,18 @@
   (owned-read-leaf!
     (.o bind-these: #f kind type-identity candidate accepted? diagnostics context)))
 
+(def classification-evidence-element (.ref YuanxuClassificationEvidence '.element?))
+(def validation-evidence-element (.ref YuanxuValidationEvidence '.element?))
+(def (evidence-element? descriptor maintained value)
+  (def method (.ref descriptor '.element?))
+  ;; An ordinary POO method can retain a receipt without a slot observer or
+  ;; an object protocol. Authenticate the open boundary before handing it over.
+  (unless (eq? method maintained) (owned-read-open!))
+  (method value))
+
 ;; : (-> Object Boolean)
 (def (yuanxu-classification-evidence? value)
-  (element? YuanxuClassificationEvidence value))
+  (evidence-element? YuanxuClassificationEvidence classification-evidence-element value))
 
 ;; : (-> YuanxuClassificationEvidence Boolean)
 (def (yuanxu-classification-evidence-accepted? evidence)
@@ -168,7 +177,7 @@
 
 ;; : (-> Object Boolean)
 (def (yuanxu-validation-evidence? value)
-  (element? YuanxuValidationEvidence value))
+  (evidence-element? YuanxuValidationEvidence validation-evidence-element value))
 
 ;; : (-> YuanxuValidationEvidence Boolean)
 (def (yuanxu-validation-evidence-accepted? evidence)

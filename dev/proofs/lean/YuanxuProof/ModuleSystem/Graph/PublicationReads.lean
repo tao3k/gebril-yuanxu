@@ -276,6 +276,27 @@ theorem source_only_preserves_open_receipt
     (receipt : SourceAuthoringReceipt Owner Role Diagnostic) :
     sourceOnlyReceipt false validate receipt = consumeSourceReceipt validate receipt := rfl
 
+-- Resolve the actual method once. A replacement receives the receipt only
+-- after the existing open boundary has authenticated its entry.
+def resolvedEvidenceCall (maintained : Bool) (boundary : Except Failure Unit)
+    (invoke : Except Failure Result) : Except Failure Result :=
+  if maintained then invoke else do
+    boundary
+    invoke
+
+theorem maintained_evidence_method_preserves_result
+    (boundary : Except Failure Unit) (invoke : Except Failure Result) :
+    resolvedEvidenceCall true boundary invoke = invoke := rfl
+
+theorem replacement_evidence_method_cannot_outrun_refusal
+    (refusal : Failure) (invoke : Except Failure Result) :
+    resolvedEvidenceCall false (.error refusal) invoke = .error refusal := rfl
+
+theorem replacement_evidence_method_keeps_selected_result
+    (invoke : Except Failure Result) :
+    resolvedEvidenceCall false (.ok ()) invoke = invoke := by
+  cases invoke <;> rfl
+
 -- The native copy extends the ordered direct-slot map. A stock evidence
 -- constructor can supply the final field at allocation when the field is
 -- fresh and neither constructor invocation can expose the intermediate.

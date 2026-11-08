@@ -14,6 +14,7 @@
         (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
         (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence yuanxu-validation-evidence
                  yuanxu-classification-evidence? yuanxu-validation-evidence?
+                 YuanxuClassificationEvidence YuanxuValidationEvidence
                  YuanxuContract. yuanxu-contract-admit)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export evidence-read-ownership-test)
@@ -353,4 +354,38 @@
         (%call-with-recorded-slot-reads (lambda () (.get evidence contract-identity))))
       (.put! original 'identity 'changed-after-read)
       (check-exception
-        (replay-slot-reads! reads (lambda (_receiver _key) (void))) error?))))
+        (replay-slot-reads! reads (lambda (_receiver _key) (void))) error?))
+    (yuanxu-test-case "replaced evidence methods receive the receipt only after the open check"
+      (def contract (.cc YuanxuContract. 'identity 'fixture))
+      (def subject (.o port: 443))
+      (def classification (yuanxu-classification-evidence 'fixture subject #t '() #f))
+      (def validation (yuanxu-validation-evidence contract subject classification '() #t '() #f))
+      (for-each
+        (lambda (row)
+          (def descriptor (car row))
+          (def check (cadr row))
+          (def receipt (caddr row))
+          (def maintained (.ref descriptor '.element?))
+          (def events '())
+          (def (run boundary)
+            (parameterize ((current-owned-read-open-guard boundary))
+              (call-with-owned-read-projection '() void (cut check receipt))))
+          (check-equal? (run (lambda () (error "maintained evidence method opened"))) #t)
+          (dynamic-wind
+            (lambda ()
+              (.put! descriptor '.element?
+                (lambda (value)
+                  (check-equal? (eq? value receipt) #t)
+                  (set! events (cons 'method events))
+                  (maintained value))))
+            (lambda ()
+              (check-exception
+                (run (lambda () (set! events (cons 'entry events)) (error "stale evidence entry")))
+                error?)
+              (check-equal? events '(entry))
+              (set! events '())
+              (check-equal? (run (lambda () (set! events (cons 'entry events)))) #t)
+              (check-equal? (reverse events) '(entry method)))
+            (lambda () (.put! descriptor '.element? maintained))))
+        (list (list YuanxuClassificationEvidence yuanxu-classification-evidence? classification)
+              (list YuanxuValidationEvidence yuanxu-validation-evidence? validation))))))

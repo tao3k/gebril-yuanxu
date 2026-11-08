@@ -1939,6 +1939,26 @@ independent reasons to retain the issued support.
 preorder and live authentication of omitted reads on both sides of an effect.
 Any production reduction must establish these premises at the producer.
 
+A subsequent probe retained the actual Profile validation and used
+POO's issued traversal to order its external frontier. The recorded
+region owned 32 receivers. Its 720 native records included 224 owned
+receipt records. Replaying the remaining 496 records in their original
+external preorder took 0.536–0.537 s CPU per 512 checkpoints, compared
+with 0.778 s for the complete trace. A separate value-only probe
+retained 313 records, but incorrectly accepted when the validation
+evidence Type refused. Its numbers only bound the possible savings.
+
+Replacing the evidence Type's =.element?= method provided a second
+escape channel alongside explicit slot observers. The method retained
+an enrolled receipt without opening the recorded region. Mutating that
+receipt made the full replay refuse while the external-only replay
+accepted. The evidence predicates now resolve the actual method once
+and run the existing open boundary before handing a receipt to a
+replacement. Lean =PublicationReads.replacement_evidence_method_cannot_outrun_refusal=
+and the Scheme evidence ownership suite cover this dispatch point.
+Further projection still requires non-escape for the complete producer,
+including nested Type calls, and the original external replay order.
+
 Splitting the stock Type call at its existing Generic protocol gives 691
 reachable records for =.admit=, 178 for checking the resulting evidence, and
 two for reading its candidate. These are overlapping traversals. The

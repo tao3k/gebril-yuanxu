@@ -305,7 +305,11 @@ package YuanxuPayloadOwnership {
                Receipt kind does not establish privacy. Lean
                projected_private_read_window requires the exact retained
                preorder and live evidence for omitted records separately on
-               both sides of an effect.
+               both sides of an effect. Resolve the actual evidence Type's
+               element method once. Before passing a receipt to a replaced
+               method, run the existing open-boundary check. Lean
+               replacement_evidence_method_cannot_outrun_refusal keeps this
+               check ahead of method execution.
                Attribute replay visits per checkpoint and retained records
                by identity across owners. Repeated traversal of a shared
                Profile receipt increases replay work without creating a new
