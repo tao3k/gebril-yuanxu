@@ -75,6 +75,15 @@ delegates that context to Gerbil and only releases bodies it enrolled itself.
 | =reader-evaluation.ss= | Observe runtime evaluation and release completed interpreter bodies |
 | =reader-support.ss= | Carry preparation identity and ordered native read support |
 
+The cached dependency continuation checks the actual Gerbil lookup routes
+for both the value table and the issued-read table before querying either.
+The original record, receiver revision, instance and value still have to
+match. A changed route leaves the existing independent currentness path in
+charge. The native regression in =t/module-dependency-continuation-test.ss=
+replaces each table method with a forwarding callback and verifies that
+neither callback runs. The Lean =Admission/MetadataRoute= model checks the
+lookup order and requires both routes.
+
 The implementation modules share the same reader session and source indexes.
 Checker procedures retain their per-reader identities, including the existing
 pure-query keys and active owned-read handler. =reader.ss= reexports the original

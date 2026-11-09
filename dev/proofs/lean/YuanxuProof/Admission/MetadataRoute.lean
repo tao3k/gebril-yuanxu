@@ -29,6 +29,24 @@ theorem outer_ref_does_not_close_hash :
 theorem reads_table_does_not_close_instance_table :
     (⟨0, 1, 0, 0, 0⟩ : Route).ref = 0 ∧ gate ⟨0, 1, 0, 0, 0⟩ = false := by decide
 
+/-- A cached publication projection first authenticates both native table
+routes. Refusal of the shortcut leaves the existing full currentness path in
+charge of diagnosis. The inventory/value read and the token read stay ordered. -/
+def publicationLookup (route : Route) (tokenPresent : Bool) : List Nat × Bool :=
+  if gate route then ([0, 1], tokenPresent) else ([], false)
+
+theorem ineligible_route_never_performs_a_lookup (route : Route) (present : Bool)
+    (ineligible : gate route = false) : publicationLookup route present = ([], false) := by
+  simp [publicationLookup, ineligible]
+
+theorem current_route_keeps_lookup_order_and_original_token_requirement
+    (route : Route) (present : Bool) (current : gate route = true) :
+    publicationLookup route present = ([0, 1], present) := by
+  simp [publicationLookup, current]
+
+theorem read_route_alone_cannot_authorize_instance_lookup :
+    publicationLookup ⟨0, 1, 0, 0, 0⟩ true = ([], false) := by decide
+
 -- The closed direct call has no callback transition. A callback must not be
 -- smuggled into this operation by interpreting a pointer comparison as a fence.
 def directCheck (r : Route) (s : ReturnTail.Live) : ReturnTail.Live × Bool :=

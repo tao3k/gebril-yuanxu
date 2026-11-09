@@ -3,9 +3,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source capabilities supply generation-qualified declarations, never user syntax.
 (import (only-in :std/list/list delete-duplicates/hash)
-        (prefix-in (only-in :gerbil/runtime/mop slot-ref) runtime.)
+        (prefix-in (only-in :gerbil/runtime/mop class-of slot-ref) runtime.)
+        (only-in :gerbil/runtime/error Error::t)
         (runtime: :clan/poo/object)
         (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/slot-observation slot-read-revision slot-read-instance slot-read-value)
         (only-in :clan/poo/mop Type Type. Bool Object define-type element?)
         (only-in :clan/poo/type Record Symbol List Or))
@@ -81,30 +83,38 @@
             (else (and (symbol? (car left)) (eq? (car left) (car right))
                        (loop (cdr left) (cdr right))))))))
 (def (module-publication-dependency-projection value observed?)
-  ;; Read ONLY runtime cache/token storage. No .ref, MOP query, replay callback
-  ;; or observer delivery may execute after the producer in this probe.
-  (def (observed-value? receiver key value)
-    (and (object? receiver) (object-%instance receiver)
-         (object-%precedence-list receiver) (not (object-protocol receiver))
-         (object-%reads receiver)
-         (let (read (hash-get (object-%reads receiver) key))
-           (and read (observed? read)
-                (= (slot-read-revision read) (object-revision receiver))
-                (eq? (slot-read-instance read) (object-%instance receiver))
-                (if (equal? key '(names))
-                  ;; Inspect the native snapshot before any defensive list
-                  ;; copy: a malformed spine must return #f, not enter list-copy.
-                  (same-slot-names? (runtime.slot-ref read 'value) value)
-                  (eq? (slot-read-value read) value))))))
+  ;; Even hash-get dispatches through mutable Gerbil table metadata. Qualify
+  ;; both native routes before using either cache. A changed route abandons
+  ;; this shortcut; the caller's full currentness path owns the refusal.
+  (def (route-current? key reads instance)
+    (with-catch
+      ;; The native route guard raises plain Errors. A watchdog or another
+      ;; condition must still unwind the publication instead of falling back.
+      (lambda (failure)
+        (if (eq? (runtime.class-of failure) Error::t) #f (raise failure)))
+      (lambda () (require-read-route! key reads instance) #t)))
   (def (cached receiver key)
-    (and (object? receiver) (object-%instance receiver)
-         (let (value (hash-get (object-%instance receiver) key))
-           (and (observed-value? receiver key value) value))))
+    (and (object? receiver) (object-%precedence-list receiver)
+         (not (object-protocol receiver))
+         (let ((instance (object-%instance receiver)) (reads (object-%reads receiver)))
+           (and instance reads (route-current? key reads instance)
+                (let* ((names? (equal? key '(names)))
+                       (value (if names? (object-%all-slots receiver) (hash-get instance key)))
+                       (read (hash-get reads key)))
+                  (and read (observed? read)
+                       (= (slot-read-revision read) (object-revision receiver))
+                       (eq? (slot-read-instance read) instance)
+                       (if names?
+                         ;; Check the native snapshot before any defensive list
+                         ;; copy; a malformed spine must not enter list-copy.
+                         (same-slot-names? (runtime.slot-ref read 'value) value)
+                         (eq? (slot-read-value read) value))
+                       value))))))
   (and (module-publication-contract-current?)
        (let* ((core (cached value 'core))
               (requires (cached core 'requires))
-              (names (and (object? requires) (object-%all-slots requires))))
-         (and (list? names) (observed-value? requires '(names) names)
+              (names (cached requires '(names))))
+         (and names
               (let ((complete? #t))
                 (let (ids
                        (map (lambda (name)

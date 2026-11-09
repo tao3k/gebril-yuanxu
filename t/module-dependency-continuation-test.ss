@@ -1,9 +1,9 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (prefix-in (only-in :gerbil/runtime/mop slot-ref) runtime.)
+        (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.)
         (only-in :clan/poo/object .o .get .all-slots .putslot! $thunk-slot-spec object?
-                 object-%reads object-%all-slots object-read-issued?)
+                 object-%reads object-%instance object-%all-slots object-read-issued?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer slot-read-value)
         (only-in :clan/poo/mop Type.)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case)
@@ -40,6 +40,25 @@
       (check-equal? (module-publication-dependency-projection candidate
                       (lambda (read) (hash-key? reads read))) '(custom/other))
       (check-equal? (module-publication-recorded-dependencies candidate '()) #f)
+      (check-equal? (module-publication-recorded-dependencies candidate roots) '(custom/other))
+      ;; A candidate can retain the original token while its lookup route
+      ;; changes. Neither the instance nor the read-table ref may run here.
+      (for-each
+        (lambda (table)
+          (def original (runtime.slot-ref table 'ref))
+          (def calls 0)
+          (dynamic-wind
+            (lambda ()
+              (runtime.slot-set! table 'ref
+                (lambda (self key fallback)
+                  (set! calls (1+ calls))
+                  (original self key fallback))))
+            (lambda ()
+              (def projected (module-publication-recorded-dependencies candidate roots))
+              (check-equal? calls 0)
+              (check-equal? projected #f))
+            (lambda () (runtime.slot-set! table 'ref original))))
+        (list (object-%instance candidate) (object-%reads candidate)))
       (check-equal? (module-publication-recorded-dependencies candidate roots) '(custom/other))
       (def requires (.get candidate core requires))
       (def names-read (hash-ref (object-%reads requires) '(names)))
