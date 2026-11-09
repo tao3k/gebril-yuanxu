@@ -280,6 +280,17 @@ total deadlines. Normal exit, failure and TERM clean up the owned backend.
 An explicitly supplied =--server-endpoint= retains caller-owned lifecycle.
 The final Core source cut includes the helper itself.
 
+The compilation server uses =-XX:TieredStopAtLevel=1= with the same =-Xmx1G=.
+This reduces JVM bootstrap compilation work; the separately launched TLC
+worker retains its original options. Readiness reports elapsed startup time
+only after version attestation and actual gRPC reflection. No heartbeat or
+deadline renewal is added. An interleaved SourceWindows comparison measured
+2135/1974 ms with the original tiering and 1597/1629 ms with C1; all eight
+positive/negative controls passed in every run. Existing isolation/deadline
+controls and the complete 66-case fifth shard passed locally. The CI startup
+failure and new exact-head CI remain separate evidence; local improvement
+does not erase the failed run or prove that every host starts within budget.
+
 * Metadata allocation and shared payload authority
 
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.37-metadata-allocation-and-shared-authority.org][32.37]] adds eight scoped =MetadataAllocation= checks. Runtime tests reproduce

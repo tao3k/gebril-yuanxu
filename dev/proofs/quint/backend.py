@@ -33,8 +33,10 @@ def backend_session(progress, quint_executable):
     with socket.socket() as reservation:
         reservation.bind(('127.0.0.1', 0))
         port = reservation.getsockname()[1]
-    # One compilation backend, plus the existing one-worker 1G TLC process.
-    environment = dict(os.environ, JVM_ARGS='-Xmx1G')
+    # This server compiles bounded requests; TLC exploration uses its separate
+    # unchanged worker. C1 reduces server bootstrap compilation work without
+    # extending the 45s total/5s real-output deadlines or the 1G heap.
+    environment = dict(os.environ, JVM_ARGS='-Xmx1G -XX:TieredStopAtLevel=1')
     with subprocess.Popen([str(executable), 'server', f'--port={port}'],
                           env=environment, stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT, start_new_session=True) as process:
@@ -52,7 +54,10 @@ def backend_session(progress, quint_executable):
                         raise RuntimeError('Apalache exited before server readiness')
                     now = time.monotonic()
                     if now - started > 45 or now - last_output > 5:
-                        raise TimeoutError('Apalache startup exceeded 45s or 5s real-output deadline')
+                        raise TimeoutError(
+                            'Apalache startup exceeded 45s or 5s real-output deadline: '
+                            f'elapsed-ms={int((now - started) * 1000)} '
+                            f'quiet-ms={int((now - last_output) * 1000)}')
                     for key, _ in selector.select(0.1):
                         chunk = os.read(key.fileobj.fileno(), 65536)
                         if not chunk:
@@ -113,7 +118,8 @@ client.waitForReady(deadline, error => {
                         raise RuntimeError('Owned Apalache exited during readiness handshake')
                     break
                 time.sleep(0.05)
-            progress(f'APALACHE-SESSION pid={process.pid} endpoint=127.0.0.1:{port} version=0.62.1 heap=1G grpc=ready\n'.encode())
+            startup_ms = int((time.monotonic() - started) * 1000)
+            progress(f'APALACHE-SESSION pid={process.pid} endpoint=127.0.0.1:{port} version=0.62.1 heap=1G startup-ms={startup_ms} grpc=ready\n'.encode())
             yield f'127.0.0.1:{port}'
         finally:
             terminate(process)
