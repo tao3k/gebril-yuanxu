@@ -12,7 +12,7 @@
 
 (defstruct reader-session
   (guard-support dependencies refused? evaluated-interface-bindings
-   input-origins kernel-contexts kernel-inputs kernel-source-count kernel-owners kernel-data
+   input-origins kernel-contexts kernel-inputs kernel-source-count kernel-progress-key kernel-owners kernel-data
    kernel-initializers preparations public-prepared-count publication-prepared-count
    candidate tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts
    interpreter-observations tool-rows previous-context check-current check-current/closed open-boundary)
@@ -40,7 +40,8 @@
   (defvalues (tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts)
     (module-compiler-tools))
   (make-reader-session (cons '() 0) dependencies #f 0
-    (make-hash-table-eq) kernel-contexts kernel-inputs 0 kernel-owners kernel-data kernel-initializers
+    (make-hash-table-eq) kernel-contexts kernel-inputs 0 (gensym 'reader-native-imports)
+    kernel-owners kernel-data kernel-initializers
     preparations 0 0 candidate
     tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts
     (hash->list tool-observations) (source-observation-rows tool-observations) previous-context #f #f #f))

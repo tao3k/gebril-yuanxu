@@ -338,7 +338,6 @@
                               (list 'compiler-source-import-start path) 1))
                           (let (context (module-source-measure-operation 'reader-role-import
                                            (lambda () (gerbil-import target reload?))))
-                            (execution-progress! (list 'source-import path) 1)
                             (when (current-module-source-observer)
                               ((current-module-source-observer)
                                 (list 'compiler-source-import-end path
@@ -349,21 +348,29 @@
                             (when (captured-tool-context? (reader-session-compiler-contexts session) context)
                               (error "private source resolved to canonical compiler tool" path))
                             (hash-put! (reader-session-kernel-contexts session) path context)
-                            (let (input (hash-get input-paths path))
+                            (let ((input (hash-get input-paths path))
+                                  (new? (not (hash-key? (reader-session-kernel-inputs session) context))))
                               (unless (and input (equal? (.ref input 'path) path))
                                 (error "private source input identity changed" path))
                               ;; Reuse the existing per-publication index;
                               ;; do not read every unrelated input's slots
                               ;; into the runtime dependency frame.
-                              (unless (hash-key? (reader-session-kernel-inputs session) context)
-                                (set! (reader-session-kernel-source-count session) (+ (reader-session-kernel-source-count session) 1)))
-                              (hash-put! (reader-session-kernel-inputs session) context input))
-                            (when source-tree
-                              (let (owner ((.ref source-tree 'locate-owner) path))
-                                (hash-put! (reader-session-kernel-owners session) context
-                                  (if owner (list (.ref owner 'identity) (.ref owner 'root))
-                                    (let (kernel (library-kernel path))
-                                      (and kernel (list 'library kernel)))))))
+                              (when new?
+                                (set! (reader-session-kernel-source-count session)
+                                  (1+ (reader-session-kernel-source-count session))))
+                              (hash-put! (reader-session-kernel-inputs session) context input)
+                              (when source-tree
+                                (let (owner ((.ref source-tree 'locate-owner) path))
+                                  (hash-put! (reader-session-kernel-owners session) context
+                                    (if owner (list (.ref owner 'identity) (.ref owner 'root))
+                                      (let (kernel (library-kernel path))
+                                        (and kernel (list 'library kernel)))))))
+                              ;; The progress table caps distinct keys. Reuse
+                              ;; this Reader's key and count each new import
+                              ;; only after its source owner is recorded.
+                              (when new?
+                                (execution-progress! (reader-session-kernel-progress-key session)
+                                  (reader-session-kernel-source-count session))))
                             context))
                         (lambda () (when shared? (set! kernel-depth (- kernel-depth 1)))))))))
            (call-with-module-source-read-cache

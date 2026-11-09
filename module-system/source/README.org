@@ -86,6 +86,12 @@ imports the public reader back. Publication import routing shares one operation'
 native expander extent; it does not allocate a second session or duplicate the
 source indexes. Each boundary still authenticates its actual support.
 
+New private Gerbil contexts advance one scalar progress stream per reader
+after their source ownership is recorded. Reusing a context does not advance
+the stream. Its key carries neither a source path nor the reader session, so
+distinct imports do not exhaust the bounded progress table. The Case keeps
+its independent idle, total duration and heap limits.
+
 The publication Fixture materializes ordinary Scheme role forms and owns their
 temporary files and cleanup. Cases refine those forms through POO values.
 File mutation Cases exercise actual reader/expander and provenance boundaries;

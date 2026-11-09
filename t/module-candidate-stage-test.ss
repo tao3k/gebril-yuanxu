@@ -17,6 +17,9 @@
                  module-source-read yuanxu-default-module-style-policy
                  current-module-source-observer call-with-module-source-read-cache
                  call-with-module-source-operation-measurement)
+        (only-in :yuanxu/ops/progress current-execution-progress current-execution-progress-port
+                 call-with-execution-progress execution-progress!
+                 execution-progress-idle-milliseconds execution-progress-status)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-candidate-stage-test with-other-source)
 
@@ -138,6 +141,38 @@
             (write-file (path-expand "modules/custom/example/config.ss" root)
               "(def Greeting 42) (export Greeting)")
             (check-exception (.call reader admit-current) error?)))))
+    (yuanxu-test-case "Reader keeps reporting new imports after the progress table fills"
+      (with-other-source
+        (lambda (_root _first _other) (void))
+        (lambda (_root first other view)
+          (def reader (module-publication-reader))
+          (def context (.get view context))
+          (def now 0)
+          ;; Keep the synthetic producers outside the enclosing test's
+          ;; real progress table and deadline.
+          (call-with-output-string
+            (lambda (port)
+              (parameterize ((current-execution-progress '())
+                               (current-execution-progress-port port))
+                (call-with-execution-progress 60000 #f
+                  (lambda (progress)
+                    (.call reader read-candidate (lambda () first) 'custom/example context)
+                    ;; The Reader already owns one progress key. Unrelated producers
+                    ;; fill the bounded table before the second real native import.
+                    (let fill ((index 0))
+                      (when (< index 4096)
+                        (execution-progress! (list 'independent-progress index) 1)
+                        (fill (1+ index))))
+                    (set! now 50000)
+                    (.call reader read-candidate (lambda () other) 'custom/other context)
+                    (check-equal? (execution-progress-idle-milliseconds progress) 0)
+                    (set! now 51000)
+                    (.call reader read-candidate (lambda () first) 'custom/example context)
+                    ;; Reading the same native Context again must not rearm idle.
+                    (check-equal? (execution-progress-idle-milliseconds progress) 1000)
+                    (set! now 110000)
+                    (check-equal? (execution-progress-status progress) 'idle))
+                  clock: (lambda () now))))))))
     (yuanxu-test-case "unrelated SourceRefs do not enlarge actual candidate filesystem work"
       (with-other-source
         (lambda (_root _first _other) (void))
