@@ -5,6 +5,29 @@ package YuanxuCaching {
     doc /* Development architecture model, not a new runtime cache protocol.
            Correspondence and limits: 10.01-efficient-caching.org. */
 
+    requirement def BoundedStageAccounting {
+        attribute stagesEnabled : Boolean;
+        attribute initializerFamilyCount : Integer;
+        attribute initializerPathsRetained : Boolean;
+        attribute exactOwnerScopeCounts : Boolean;
+        attribute sameResultsAndErrors : Boolean;
+        attribute sameAdmissionChecks : Boolean;
+        require constraint {
+            not stagesEnabled or
+                (initializerFamilyCount >= 0 and initializerFamilyCount <= 2
+                 and not initializerPathsRetained
+                 and exactOwnerScopeCounts and sameResultsAndErrors
+                 and sameAdmissionChecks)
+        }
+        doc /* Fixed initializer stage families accumulate the same actual
+               measurements without retaining a metric family per path.
+               Explicit detailed mode keeps source paths; owner-qualified
+               scope counts remain distinct in every mode. This affects
+               diagnostics only, never source admission or currentness.
+               TestingCase.StageSummary proves the key projection and exact
+               scope counts; see 10.09-bounded-stage-accounting.org. */
+    }
+
     part def Receiver {
         attribute identity : String;
         attribute revision : Integer;

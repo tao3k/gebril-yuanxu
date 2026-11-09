@@ -1,0 +1,73 @@
+#+title: 10.09 Bounded Stage Accounting
+#+language: en
+
+* Contract
+
+=stages= is an invocation-local phase summary. Initializer source paths
+must not multiply its metric keys. Both =reader-initialization= and
+=reader-initializer-body= retain one aggregate family each. The same
+call counts and CPU/wall/GC samples are accumulated; actions still execute
+once and retain their value or original exception. Explicit detailed
+accounting retains paths. Scalar mode keeps its existing behavior.
+
+Owner-qualified =scope-factory= counts remain distinct: they prove which
+selected owners actually constructed scopes. Folding them into one total
+would lose selection evidence. This change installs no source observer,
+changes no source admission or currentness decision and stores no reusable
+validation result. Independent effect-boundary checks remain unchanged.
+
+The existing =YuanxuProof.Observability.TestingCase.StageSummary= model
+proves that initializer events map into exactly the two declared families,
+different scope owners stay distinct, and aggregation preserves each
+owner's exact scope count. These are key-projection laws, not CPU bounds
+or a general effect proof for arbitrary Scheme code.
+
+* Discovered failure
+
+The diagnostic experiment used the fixed Core =b1b895d= source cohort and
+the POO method-preparation candidate, not a newly built Core PR #19.
+The real 10K Case retained 180 seconds and 4 GiB and exited 42. Its duration
+failure reported =180000/180014= milliseconds. First Graph remained
+incomplete; independent currentness and business scopes were not reached.
+The process runtime also includes imports and fixture preparation, so it
+must not be substituted for the Case watchdog interval.
+
+Fixture preparation took 21.364 seconds wall. Namespace took 6.745 seconds
+wall and 2.088 seconds CPU. The failed first-Graph measurement included
+unwind/reporting: 204.150 seconds wall and 123.442 seconds CPU, with 5.616
+seconds GC CPU. It is not a successful complete Graph evaluation.
+
+The phase reporter retained per-file metric families and printed roughly
+26 MB after failure. Thus even callback-free attribution imposed
+unbounded-by-phase retention/output work. Do not compare this inclusive
+interval with an uninstrumented business request or call it SCC time.
+
+At interruption, the cohort reported 3,194 value admissions, 19,165
+metadata replays and 18,380,242 read visits. Init currentness made 25,555
+read attempts and consumed 3,551,838,340 source characters. Inclusive CPU
+spans were metadata replay 34.393 s, value admission 26.484 s, init
+currentness 13.873 s, wrapper expansion 4.757 s, expander compile 0.035 s
+and expander eval 0.719 s. These spans overlap and must not be summed.
+The observations concern an incomplete, instrumented source cohort.
+Inspect the exact current consumer and call path before using them to
+justify a runtime change.
+
+* Regression controls and publication
+
+The focused existing =module-source-cost-test.ss= now compares 2 and 64
+initializer paths, preserves owner scope counts and detailed paths, and
+checks original exception identity. Fixed source passed before and after
+an isolated old-source control. The control failed with exit 42: its
+stable metric key count grew from 52 to 1540. The focused Lean file passed.
+No 10K rerun is justified merely by reducing diagnostics.
+
+The public Core source at =eac7470= contains the same inverted stage/path
+selection. Its patch is prepared against that exact public file, preserving
+its other accounting stages and runtime exports. The local checkout has
+other source changes and must not be copied wholesale over the public
+branch. Test logs remain local artifacts.
+
+POO's scoped protocol-selection change is public at =6446abe=; complete
+Scheme CI =42716076782= passed. Lean proof =55ed9c08= passed complete Lean
+CI =42715365861=. Those producer results do not close Core's 10K gate,
+seconds-scale first business demand, or downstream build qualification.

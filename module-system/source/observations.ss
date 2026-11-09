@@ -123,10 +123,10 @@
                     (car name)))
              (accounting (current-module-source-operation-accounting?)))
         (if (and initialization (not accounting)) (action)
-          ;; Aggregate initializer counts and clocks in ordinary measurements.
-          ;; Only explicit detailed accounting retains paths. Scope counters
-          ;; still identify their owners.
-          (let (name (if (and initialization (not (eq? accounting 'stages))) initialization name))
+          ;; Stage summaries retain only initializer families. Explicit detailed
+          ;; accounting keeps source paths. Owner-qualified scope counters
+          ;; retain their identities in every mode.
+          (let (name (if (and initialization (eq? accounting 'stages)) initialization name))
             (hash-update! times (list 'calls name) (cut + <> 1) 0)
             ;; Attribute bounded stages, not each leaf read/query. In particular
             ;; source-read starts AFTER its read-attempt counter was incremented.
@@ -147,7 +147,8 @@
               (or (and (pair? name)
                        (memq (car name) '(reader-initialization reader-initializer-body
                                          reader-candidate-replay-site)))
-                  (memq name '(build-main build-specification build-dispatch std-make build-current
+                  (memq name '(reader-initialization reader-initializer-body
+                           build-main build-specification build-dispatch std-make build-current
                            profile-interface-scan reader-bootstrap reader-preparation-start reader-interface-start
                            selected-owner-closure selected-core-projection selected-topological-resolution
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite

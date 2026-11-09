@@ -152,3 +152,6 @@ published dependency, consumer/proof gates and timestamp-driven rebuild failure.
 
 [[file:20-module-loading/20.30-test-discovery-and-domain-demand.org][20.30 Test Discovery and Domain Demand]] separates official test discovery,
 typed workflow construction, independent admission and cached pure projections.
+
+[[file:10-evaluation/10.09-bounded-stage-accounting.org][10.09 Bounded Stage Accounting]]
+keeps initializer metric families bounded while preserving exact owner scope counts.
