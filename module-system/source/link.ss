@@ -216,6 +216,9 @@
            (unless (original-current? (.ref context 'generation))
              (error "stale module scope generation" (.ref context 'generation)))
            (set! reader (module-source-measure-operation 'reader-bootstrap reader-maker))
+           ;; A refresh's deferred factory can still reference the previous
+           ;; reader. The new reader now owns the exact transfer associations.
+           (set! reader-maker #f)
            ;; Runtime Gerbil bootstrap may initialize code. No directory approval
            ;; crosses that boundary, even before the first candidate is read.
            (unless (original-current? (.ref context 'generation))

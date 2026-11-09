@@ -679,6 +679,10 @@ def main():
         raise AssertionError("Lean retains a stale IncrementalRoles Quint source binding")
     bound.extend([incremental_lean, core / "t/module-incremental-cache-test.ss",
                   core / "t/module-incremental-make-test.ss",
+                  core / "module-system/source/reader-session.ss",
+                  core / "module-system/source/reader-preparation.ss",
+                  core / "module-system/source/publication-reader.ss",
+                  core / "module-system/source/role-context.ss",
                   core / "dev/sysml/20-module-loading/20.03-incremental-role-ownership.sysml",
                   core / "t/module-retention-census-test.ss",
                   core / "module-system/building/test-observation.ss",

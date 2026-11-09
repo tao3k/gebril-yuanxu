@@ -41,6 +41,28 @@ imports, bindings and runtime promises. This is intentional, not permission to
 unload arbitrary SDK state. The scalar reader telemetry measures these owners;
 a weak runtime-read census below distinguishes surviving observed receivers.
 
+* Reader ownership during refresh
+
+A refreshed reader may borrow the predecessor's native Context associations.
+The transfer closure captures only the Context, input, owner, asset and
+initializer tables and the canonical compiler Context lookup. Source
+preparation origins are keyed by the POO input object in the originating
+reader. They are separate from the Gerbil Context keys used by transfer.
+The lazy factory is released as soon as the receiving reader is constructed.
+
+=role_transfer_input_projection= in =IncrementalRoles.lean= proves that
+partitioning the input index leaves the ordered Context lookup unchanged.
+=role_transfer_preserves_handoff= preserves the receiving handoff for the same
+ordered rows. Scheme still walks Gerbil's actual import closure and passes the
+original initializer and source guards to the receiving owner. The existing
+=IncrementalRoles= Quint controls cover stale approval, observer delivery,
+isolation and both requirements. They do not establish heap reachability.
+
+=just test-file t/module-role-context-test.ss= checks the real linker refresh
+across three generations. It exercises an unchanged role value by identity,
+then a changed Config while the original value is warm. The new view
+independently checks its admission, and the obsolete view refuses.
+
 * Diagnostic method and its limits
 
 =t/module-retention-census-test.ss= reuses DeclarationFixture and the REAL init,

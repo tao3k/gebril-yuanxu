@@ -557,4 +557,26 @@ private def dependencyEditScale : Bool :=
 
 #guard dependencyEditScale
 
+/-- The predecessor input index originally combined two disjoint native key
+spaces. Transfer visits only the original Gerbil Context keys, in walk order. -/
+theorem role_transfer_input_projection
+    {Context InputKey Input Origin : Type}
+    (contextInput : Context → Option Input) (inputOrigin : InputKey → Option Origin)
+    (walk : List Context) :
+    walk.map (fun context =>
+      (Sum.elim (fun key => (contextInput key).map Sum.inl)
+        (fun key => (inputOrigin key).map Sum.inr) (Sum.inl context) :
+          Option (Sum Input Origin))) =
+      walk.map (fun context => (contextInput context).map Sum.inl) := rfl
+
+/-- With the same ordered Context rows, the same receiving authority runs the
+same handoff. Initializer and source guards remain in the original rows. -/
+theorem role_transfer_preserves_handoff
+    {Context Row Result : Type} (walk : List Context)
+    (fromSession fromRoleTables : Context → Row)
+    (same : ∀ context ∈ walk, fromSession context = fromRoleTables context)
+    (handoff : List Row → Result) :
+    handoff (walk.map fromSession) = handoff (walk.map fromRoleTables) := by
+  exact congrArg handoff (List.map_congr_left same)
+
 end YuanxuProof.ModuleSystem.Loading.IncrementalRoles

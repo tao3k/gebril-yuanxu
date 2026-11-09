@@ -37,6 +37,16 @@ package YuanxuIncrementalRoles {
                Lean checks support sufficiency; Quint checks transition order
                and the stale result admitted by file-only reuse. */
     }
+    part def RoleContextTransfer {
+        ref part input : RoleInput;
+        doc /* A refreshed reader borrows the predecessor's existing Gerbil
+               Context associations, with original source and initializer
+               support in import walk order. It does not hold the predecessor's
+               reader session or transfer constructor origins. The pending
+               reader factory is released after successful initialization.
+               Destination owner resolution and independent admission remain
+               with the new generation. */
+    }
     part def DecodedSourceRange {
         doc /* Compare the two live decoded ranges by character. Keep reading
                through EOF after a mismatch so a later port fault is preserved.

@@ -368,7 +368,7 @@
                         (lambda () (when shared? (set! kernel-depth (- kernel-depth 1)))))))))
            (call-with-module-source-read-cache
              (lambda ()
-               (reader-for-each-kernel-context session context
+               (reader-for-each-kernel-context (reader-session-compiler-contexts session) context
                  (lambda (child)
                    (let (input (hash-get (reader-session-kernel-inputs session) child))
                      (when input

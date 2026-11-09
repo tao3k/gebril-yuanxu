@@ -19,12 +19,12 @@
         reader-bind-input-state reader-input-state-current? reader-source-state-current?
         reader-add-input-guard! reader-derived-input reader-preparation-key
         reader-prepare-publication reader-check-preparation-policy!
-        reader-prepare-public-dependency reader-for-each-kernel-context reader-transfer-context)
+        reader-prepare-public-dependency reader-for-each-kernel-context reader-role-transfer)
 
 (def (reader-enroll-candidate! session guard (input #f))
   (let (candidate ((reader-session-candidate session)))
     (when candidate
-      (let* ((origin (and input (hash-get (reader-session-kernel-inputs session) input)))
+      (let* ((origin (and input (hash-get (reader-session-input-origins session) input)))
              (checker (and origin (source-preparation-checker origin)))
              (entry (if (source-preparation? guard) guard
                         ;; Preserve the enrolled procedure even if the origin
@@ -36,16 +36,16 @@
 (def (reader-capture-input session value checker path ready? state (kind 'origin))
   (def origin (capture-source-preparation value checker path ready? state))
   (if (eq? kind 'origin)
-    ;; Reuse the existing eq? input index. Runtime Context keys map to
-    ;; inputs; POO input keys map to their actual constructor association.
-    (hash-put! (reader-session-kernel-inputs session) value origin)
+    ;; Constructor associations belong to this reader. The transferable
+    ;; Context index has no keys for preparation objects.
+    (hash-put! (reader-session-input-origins session) value origin)
     ;; Derived copies are bounded by path here. Link binds their exact
     ;; association before a later derivation can replace this last view.
     (hash-put! (reader-session-preparations session) (list 'derived (path-normalize path)) origin))
   value)
 (def (reader-input-origin session input (known-path #f))
   (and (object? input)
-    (or (hash-get (reader-session-kernel-inputs session) input)
+    (or (hash-get (reader-session-input-origins session) input)
         (let (path
                (or known-path
                    (and (object-%instance input)
@@ -179,7 +179,7 @@
 ;; input index. Do not retain a transitive context list for every root: on
 ;; overlapping/deep graphs those lists duplicate already-owned references.
 ;; Registration can grow, so resolve kernel-inputs afresh on EVERY visit.
-(def (reader-for-each-kernel-context session context visit)
+(def (reader-for-each-kernel-context compiler-contexts context visit)
   (when (current-module-source-observer)
     ((current-module-source-observer) 'kernel-closure-requests 1)
     ((current-module-source-observer) 'kernel-closure-walks 1))
@@ -190,21 +190,25 @@
         ((current-module-source-observer) 'kernel-context-visits 1))
       ;; Canonical tools keep their complete separate source support.
       ;; Unknown contexts must still be traversed before filtering.
-      (unless (captured-tool-context? (reader-session-compiler-contexts session) child)
+      (unless (captured-tool-context? compiler-contexts child)
         (visit child)))
     (make-hash-table-eq)
     (lambda (child)
-      (not (captured-tool-context? (reader-session-compiler-contexts session) child)))))))
-(def (reader-transfer-context session path owner-at available? install! tool?)
-  (transfer-role-context (hash-get (reader-session-kernel-contexts session) path)
-    (cut reader-for-each-kernel-context session <...>)
-    (lambda (child)
-      (values (hash-get (reader-session-kernel-inputs session) child)
-              (hash-get (reader-session-kernel-owners session) child)
-              (or (hash-get (reader-session-kernel-data session) child) '())
-              (hash-get (reader-session-kernel-initializers session) child)))
-    owner-at tool? available? install!
-    (lambda (reason)
-      (when (current-module-source-observer)
-        ((current-module-source-observer)
-          (list 'reader-context-not-transferred path reason) 1)))))
+      (not (captured-tool-context? compiler-contexts child)))))))
+;; Capture only the existing native Context associations. Capturing the
+;; session would also keep earlier sessions, preparation origins and the old
+;; reader's publication guards alive across every refresh.
+(def (reader-role-transfer contexts inputs owners data initializers compiler-contexts)
+  (lambda (path owner-at available? install! tool?)
+    (transfer-role-context (hash-get contexts path)
+      (cut reader-for-each-kernel-context compiler-contexts <...>)
+      (lambda (child)
+        (values (hash-get inputs child)
+                (hash-get owners child)
+                (or (hash-get data child) '())
+                (hash-get initializers child)))
+      owner-at tool? available? install!
+      (lambda (reason)
+        (when (current-module-source-observer)
+          ((current-module-source-observer)
+            (list 'reader-context-not-transferred path reason) 1))))))

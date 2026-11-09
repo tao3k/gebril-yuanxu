@@ -82,6 +82,30 @@
           (def next (yuanxu-load-modules (path-expand "modules" root)))
           (check-equal? (.get next modules custom example greeting) "changed")
           (check-equal? (eq? scope (.get next modules custom example)) #f))))
+    (yuanxu-test-case "refresh reuses unchanged native role values and checks changed inputs"
+      (with-publication-source
+        (lambda (_root module-root _source first)
+          (def parent (.get first modules custom example))
+          (check-equal? (.get parent greeting) "hello")
+          (def retained (.get parent role-value))
+          (def second (.call first .refresh))
+          (def unchanged (.get second modules custom example))
+          (check-equal? (eq? retained (.get unchanged role-value)) #t)
+          (write-file (path-expand "config.ss" module-root)
+            "(def Greeting \"changed\") (export Greeting)")
+          (check-exception ((.get second admit-current)) error?)
+          (def third (.call second .refresh))
+          (def changed (.get third modules custom example))
+          (check-equal? (eq? retained (.get changed role-value)) #t)
+          (check-equal? (.get changed greeting) "changed")
+          (check-equal? (.get parent greeting) "hello")
+          ((.get third admit-current)))
+        roles:
+        (.o interface:
+          '((.def Fixture identity: 'custom/example
+              core: (.o requires: (.o) scope-contract: FixtureContract
+                        exports: (.o role-value: FixtureScope greeting: Greeting))
+              features: (.o))))))
     (yuanxu-test-case "changed public name refuses before use and exact restoration admits"
       (with-external-publication
         (lambda (library _root view reader)

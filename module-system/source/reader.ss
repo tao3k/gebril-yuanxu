@@ -28,7 +28,16 @@
   (set! (reader-session-check-current session) (cut reader-check-current! session <...>))
   (set! (reader-session-check-current/closed session) (cut reader-check-current/closed! session <...>))
   (set! (reader-session-open-boundary session) (cut reader-open-boundary! session <...>))
-  (.o .fork: (lambda () (module-publication-reader (cut reader-transfer-context session <...>)))
+  (.o .fork:
+      (lambda ()
+        (module-publication-reader
+          (reader-role-transfer
+            (reader-session-kernel-contexts session)
+            (reader-session-kernel-inputs session)
+            (reader-session-kernel-owners session)
+            (reader-session-kernel-data session)
+            (reader-session-kernel-initializers session)
+            (reader-session-compiler-contexts session))))
       read: (lambda (source) (call-with-publication-reads (cut reader-read-publication session source)))
       ;; Internal paired-directory continuation, not an author callback API.
       read-located:
