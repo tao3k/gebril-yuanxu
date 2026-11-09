@@ -1064,6 +1064,7 @@ def main():
                   core / "module-system/source/selection.ss",
                   core / "module-system/graph/funs.ss",
                   core / "module-system/source/reader.ss",
+                  core / "module-system/source/reader-support.ss",
                   core / "module-system/source/preparation.ss",
                   core / "module-system/source/link.ss",
                   core / "module-system/source/publication.ss",

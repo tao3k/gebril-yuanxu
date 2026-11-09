@@ -7,7 +7,8 @@
                  call-with-module-source-operation-measurement current-module-source-observer
                  module-source-measure-replay)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
-        (only-in :yuanxu/module-system/source/reader-support merge-publication-read-roots)
+        (only-in :yuanxu/module-system/source/reader-support
+                 merge-publication-read-roots publication-read-current)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-session-metadata-index-test)
 (def (checked-work view (accounting? #t))
@@ -98,7 +99,43 @@
       (defvalues (_result times)
         (call-with-module-source-operation-measurement (lambda () (module-source-measure-replay reads))))
       (check-equal? (hash-ref times '(visits metadata-replay)) expected)
-      (check-equal? (hash-get times '(calls metadata-checkpoints)) #f))
+      (check-equal? (hash-get times '(calls metadata-checkpoints)) #f)
+      (def (observer-events visits)
+        (list (cons '(metadata-replay-start runtime) 1)
+              (cons 'metadata-replay-visits visits)
+              (cons '(metadata-replay-end runtime) 1)))
+      (def (observe-guard start)
+        (def events '())
+        (def failure
+          (with-catch values
+            (lambda ()
+              (parameterize ((current-module-source-observer
+                               (lambda (key amount)
+                                 (set! events (cons (cons key amount) events))
+                                 (when (equal? key '(metadata-replay-start runtime))
+                                   (start)))))
+                ((publication-read-current reads)))
+              #f)))
+        (values failure (reverse events)))
+      (defvalues (success events) (observe-guard void))
+      (check-equal? success #f)
+      (check-equal? events (observer-events expected))
+      (defvalues (refusal rejected-events)
+        (observe-guard
+          (lambda ()
+            (.put! (cadr receivers) 'field -1)
+            (current-module-source-observer #f))))
+      (def prefix-visits 0)
+      (def original
+        (with-catch values
+          (lambda ()
+            (replay-slot-reads! reads
+              (lambda (_receiver _key) (set! prefix-visits (1+ prefix-visits)))))))
+      (check-equal? (> prefix-visits 0) #t)
+      (check-equal? (< prefix-visits expected) #t)
+      (check-equal? (Error-message refusal) (Error-message original))
+      (check-equal? (Error-irritants refusal) (Error-irritants original))
+      (check-equal? rejected-events (observer-events prefix-visits)))
     (yuanxu-test-case "actual source growth invalidates topology; restored values remain stale"
       (with-other-source
         (lambda (root _first _other)

@@ -229,10 +229,15 @@ check covers the complete selected support.
 For validation without checkpoint work, Core asks the existing POO operation
 for a fixed result. It authenticates the same ordered traversal. Diagnostic
 accounting records the returned count after validation. Source or policy
-checkpoints retain protected entry and return, and observers retain their
-original delivery path. The equivalence in
+checkpoints retain protected entry and return. The publication reader delivers
+the same observer start, visit count and end events. Its native visitor only
+counted records, so a successful pass uses POO's fixed-result count between
+those events. A refusal recovers the original visited prefix in the same
+synchronous state and propagates the first failure. The equivalence in
 =PublicationReads.validation_only_same_state_needs_one_live_pass= assumes
-equal live observations within the supported serial replay.
+equal live observations within the supported serial replay. The existing
+=t/module-session-metadata-index-test.ss= checks both success and refusal,
+including an entry observer that mutates a receiver and removes itself.
 
 ** Private interpreter result lifetime
 

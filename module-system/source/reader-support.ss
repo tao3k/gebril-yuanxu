@@ -2,7 +2,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source preparation identity and ordered publication read support.
-(import (only-in :clan/poo/object object-construction-current? replay-slot-reads!)
+(import (only-in :clan/poo/object object-construction-current?
+                 call-with-current-slot-reads replay-slot-reads!)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!)
         (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
         (only-in :yuanxu/module-system/source/preparation module-compiler-source-input-compatible?)
@@ -58,11 +59,22 @@
         (let (visits 0)
           ;; Count actual runtime DFS visits, not the width of the root list.
           ;; No read token or receiver is retained by this diagnostic counter.
+          (def (count-prefix!)
+            (replay-slot-reads! reads
+              (lambda (_receiver _key) (set! visits (1+ visits)))))
           (dynamic-wind
             (lambda () (observer '(metadata-replay-start runtime) 1))
             (lambda ()
-              (replay-slot-reads! reads
-                (lambda (_receiver _key) (set! visits (+ visits 1)))))
+              (if (object-construction-current?)
+                (with-catch
+                  (lambda (cause)
+                    ;; Recover the diagnostic prefix in the same synchronous
+                    ;; state. No source observer runs between these checks.
+                    (with-catch (lambda (_failure) (void)) count-prefix!)
+                    (raise cause))
+                  (lambda ()
+                    (set! visits (call-with-current-slot-reads reads values))))
+                (count-prefix!)))
             (lambda ()
               (observer 'metadata-replay-visits visits)
               (observer '(metadata-replay-end runtime) 1))))))))
