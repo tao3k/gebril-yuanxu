@@ -214,12 +214,11 @@ isolation, explicit port mismatch, both requirements, nested obligations and
 unselected branches retain their existing refusal/laziness controls.
 
 Lean passes the selected 105-job closure. Quint passes 11 catalogued cases.
-The dev-only =--producer-source= option binds the real runtime source owners into
-the same receipt/currentness cut. =projectionObjectDigest= connects the Lean
-correspondence to the actual =object.ss= bytes; real source paths are retained
-relative to Core, not invented logical paths. Default proof catalog behavior is
-unchanged. This is a source binding plus runtime correspondence, not a theorem
-about the Gerbil compiler or all kernel reflection/SMP behaviors.
+The dev-only =--producer-source= option verifies the producer checkout against
+the package reference in =gerbil.pkg=. It includes the actual source paths and
+their measured contents in the receipt to detect changes during qualification.
+Lean states the correspondence laws and Gerbil tests exercise the implementation
+at that package revision.
 
 Local receipts and transcripts remain under
 =/private/tmp/yuanxu-replay-projection-20261022/=, including all six trace runs,

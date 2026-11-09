@@ -559,21 +559,22 @@ not filesystem reads or wall time. Quint's four mutants omit entry, return,
 write protection or failure preservation. Native metadata-index tests require
 one checkpoint, rejection of selected-receiver mutation and restored stale
 metadata, original exception identity, and unchanged source-observer effects.
-The issuer's callback receives only the distinct-record count, never its
-mutable traversal or protection table. Accounting and ordinary execution use
-the same checkpoint entry. Issuance preflight still precedes all live checks;
-the action runs once even for empty support, and final authentication remains
-inside the issuer's dynamic frame. The producer's issued-read regression owns
-shared-root cardinality, transient misses outside the read cache, forgery
-priority, ancestor protection, nested unwind and multiple-return controls.
+The issuer's checkpoint callback receives only the distinct-record count.
+Issuance preflight precedes the live checks, the action runs once even for
+empty support, and final authentication remains inside the issuer's dynamic
+frame. When Core has no checkpoint action, it passes the fixed native result
+=values= or =void= and records any returned count outside the replay. Lean
+=PublicationReads.validation_only_same_state_needs_one_live_pass= requires the
+same live observations to preserve the original refusal. Its common-entry
+law separately requires permanent invalidation throughout the scan. No
+filesystem or author callback uses the fixed-result case. The producer's
+issued-read regression owns shared-root cardinality, transient misses outside
+the read cache, forgery priority, ancestor protection, nested unwind and
+multiple-return controls.
 These tests establish the Scheme correspondence; the Boolean Lean model alone
 does not establish native record issuance or filesystem atomicity.
-The temporary producer pin is
-[[https://github.com/tao3k/gerbil-poo/commit/cd4de644385a591b879e3de5795418b5b7e9d767][cd4de644385a591b879e3de5795418b5b7e9d767]],
-based on the v0.1.3 source tree. Its existing issued-read suite contains 29
-cases, and its complete native property-testing suite passes. Replace the
-temporary commit pin with a release containing the public checkpoint entry;
-do not silently substitute v0.1.3, which does not export it.
+=gerbil.pkg= owns the producer reference. A replacement release must export
+the public checkpoint entry and include the fixed-result behavior.
 The observer-free reader tail joins the original roots; opaque effect
 boundaries and unknown observer paths remain split.
 

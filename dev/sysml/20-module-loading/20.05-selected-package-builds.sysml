@@ -420,9 +420,10 @@ package YuanxuSelectedPackageBuilds {
                never across two initializers or Contract callbacks. */
     }
     requirement def ValidationOnlyNativeReplay {
-        doc /* A candidate one-pass operation retains the native topology
-               and issuance preflight. It applies only to a validation with
-               no caller action. Equality of live observations preserves
+        doc /* The POO fixed-result replay retains the native topology
+               and issuance preflight. Core uses values to obtain a count
+               for accounting after replay and void when no count is needed.
+               Equality of live observations preserves
                the original refusal. A mutable scan requires a common
                validity point for every issued record and live route.
                Receiver revision alone cannot establish that premise.

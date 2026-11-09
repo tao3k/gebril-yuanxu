@@ -153,10 +153,11 @@ package YuanxuModuleLoading {
     part def ReadOnlyPublicationCheckpoint {
         ref part support : RuntimeReadSupport;
         doc /* Use native POO authentication for a validation-only traversal.
-               Preserve the complete issued preorder and the independent
-               return check. Actual observers keep their original effect
-               boundaries and deliveries. A diagnostic count describes a
-               completed preflight. */
+               The issuer retains the complete issued preorder and checks
+               every live record before returning the fixed result. Source,
+               policy and observer callbacks retain their original entry
+               and return checks and observer delivery. A diagnostic count
+               describes the completed native preflight. */
     }
     part def DeferredRoleSlot {
         doc /* Native slot construction shares one implementation.

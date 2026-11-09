@@ -110,12 +110,11 @@ by this slice. Global capacity closure remains open.
 
 * Indexed Graph producer and consumer boundary
 
-The current package pin is gerbil-poo
-=6394e95ca35d0d8f602bce2178bcdcdbb1b68309=, from the existing indexed Graph
-PR. Its =generalized-graph= schedule/repair and =strong-components= partition
-owners are distinct from the MOP's =call-with-issued-reads= traversal. The latter's
-=object.ss=, =object/observation.scm= and =read-route.ss= bytes are unchanged from
-the previous =6c3208d= pin. Do not attribute a replay change to this upgrade.
+The gerbil-poo reference in =gerbil.pkg= selects the indexed Graph producer.
+Its =generalized-graph= schedule/repair and =strong-components= partition
+owners are distinct from the MOP's =call-with-issued-reads= traversal. Upstream
+commit [[https://github.com/tao3k/gerbil-poo/commit/37f6dfc9208ddd0ba546e8b03bc0418bb49771c7][37f6dfc]] reduces replay work for the fixed results =values= and =void=.
+It still authenticates original issuance, live routes and receiver state.
 
 Core's =module-system/graph/funs.ss= inline closure and
 =module-system/feature/resolver.ss= ordering still use local walks. Merely

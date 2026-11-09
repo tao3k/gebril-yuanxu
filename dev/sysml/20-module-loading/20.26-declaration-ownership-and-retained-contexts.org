@@ -219,12 +219,20 @@ per capture and reduced the 32-owner issued identity union from 6,232 to
 reads. The source guard and the public receipt validator keep their usual
 effect checks. The counts do not establish the dense heap or time limit.
 
-For validation without a user visitor, the Core replay uses the existing
-POO checkpoint. It authenticates the same ordered traversal and repeats
-authentication on return. The measured visit count describes completed
-preflight. Source observers retain their existing before/after callbacks
-and counting path. =PublicationReads.read_only_checkpoint_preserves_both_refusals=
-states the boundary for an effect-free visitor.
+Publication admission combines three independent facts. The reader checks the
+selected source and native import context. POO authenticates the original
+ordered reads and live receivers. The Module Contract validates the candidate.
+Publication admission matches the checked receiver's owner to the selected
+source before the linker enrolls the publication. The selected Graph's final
+check covers the complete selected support.
+
+For validation without checkpoint work, Core asks the existing POO operation
+for a fixed result. It authenticates the same ordered traversal. Diagnostic
+accounting records the returned count after validation. Source or policy
+checkpoints retain protected entry and return, and observers retain their
+original delivery path. The equivalence in
+=PublicationReads.validation_only_same_state_needs_one_live_pass= assumes
+equal live observations within the supported serial replay.
 
 ** Private interpreter result lifetime
 

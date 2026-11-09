@@ -729,27 +729,6 @@ def main():
                              (core / "gerbil.pkg").read_text())
     if not declared_poo:
         raise AssertionError("Core must pin gerbil-poo in gerbil.pkg")
-    # Package management owns revisions; proofs do not duplicate them. For a
-    # Git source, resolve the declared reference with Git and authenticate the
-    # supplied checkout. Archives retain the existing exact-source digest gate.
-    if producer_bound and (args.producer_source / ".git").exists():
-        git = ["git", "-C", str(args.producer_source), "rev-parse", "--verify"]
-        expected = subprocess.check_output(git + [declared_poo[1] + "^{commit}"],
-                                           text=True, timeout=5).strip()
-        actual = subprocess.check_output(git + ["HEAD^{commit}"], text=True, timeout=5).strip()
-        if actual != expected:
-            raise AssertionError("Producer checkout differs from Core's declared package reference")
-    # Graph certificates bind the graph owners below, not the unrelated
-    # issued-read implementation digest recorded by SelectionReplay.
-    if producer_bound and not args.case_prefix.startswith("GraphSnapshot"):
-        producer_digest = "sha256:" + hashlib.sha256((args.producer_source / "object.ss").read_bytes()).hexdigest()
-        proof_owner = payload_lean if args.case_prefix.startswith("ThunkConstruction") else selection_lean
-        if f'projectionObjectDigest : String := "{producer_digest}"' not in proof_owner.read_text():
-            raise AssertionError("Selected projection proof retains a stale runtime object source binding")
-        observation_digest = "sha256:" + hashlib.sha256(
-            (args.producer_source / "object/observation.scm").read_bytes()).hexdigest()
-        if f'projectionObservationDigest : String := "{observation_digest}"' not in proof_owner.read_text():
-            raise AssertionError("Selected projection proof retains a stale issued-read source binding")
     selection_bound = [selection_lean, core / "module-system/source/reader.ss",
                        core / "module-system/source/admission.ss",
                        core / "module-system/source/observations.ss", core / "module-system/source/link.ss",
@@ -1131,6 +1110,25 @@ def main():
                   Path(__file__).with_name("cli.py").resolve(),
                   Path(__file__).with_name("test_typecheck.py").resolve()])
     sources = digests()
+    if producer_bound:
+        if not (args.producer_source / ".git").exists():
+            raise AssertionError("Producer source must be a checkout of the declared package reference")
+        git = ["git", "--no-replace-objects", "-C", str(args.producer_source)]
+        expected = subprocess.check_output(
+            git + ["rev-parse", "--verify", declared_poo[1] + "^{commit}"], text=True, timeout=5,
+        ).strip()
+        actual = subprocess.check_output(
+            git + ["rev-parse", "--verify", "HEAD^{commit}"], text=True, timeout=5,
+        ).strip()
+        if actual != expected:
+            raise AssertionError("Producer checkout differs from Core's declared package reference")
+        # Compare the receipt's actual source bytes with the declared commit.
+        # Git index flags can hide worktree edits from status.
+        for path in producer_bound:
+            relative = path.relative_to(args.producer_source).as_posix()
+            pinned = subprocess.check_output(git + ["cat-file", "blob", f"{expected}:{relative}"], timeout=5)
+            if sources[os.path.relpath(path, core)] != hashlib.sha256(pinned).hexdigest():
+                raise AssertionError("Producer source differs from its pinned checkout: " + relative)
     args.receipt.parent.mkdir(parents=True, exist_ok=True)
     # Input identities are not a passing qualification receipt. Retain them even
     # if a concurrently edited owner makes the final source-cut gate fail.

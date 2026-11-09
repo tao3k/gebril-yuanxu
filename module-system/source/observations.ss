@@ -212,21 +212,24 @@
   (when (< (metric 'bytes-allocated) 0)
     (hash-update! times (list 'accounting-invalid name) (cut + <> 1) 0))
   (if failed? (raise failure) (apply values (metric 'result))))
-;; Validation-only replay needs neither receiver/key delivery nor a per-record
-;; diagnostic visitor. POO authenticates the same traversal and its return.
+;; Fixed results use the native validation-only path. Keep actual checkpoint
+;; work inside the issuer's protected frame.
 (def (module-source-measure-replay reads (checkpoint #f))
   (let (times (current-module-source-operation-times))
     (if (or times checkpoint)
       (module-source-measure-operation 'metadata-replay
         (lambda ()
-          (call-with-current-slot-reads reads
-            (lambda (visits)
-              ;; Count completed preflight. The observed Reader retains
-              ;; its per-record delivery and accounting.
-              (when times
-                (hash-update! times '(visits metadata-replay) (cut + <> visits) 0))
-              (when checkpoint
-                (module-source-measure-operation 'metadata-checkpoints checkpoint))))))
+          (def (record-visits! visits)
+            (when times
+              (hash-update! times '(visits metadata-replay) (cut + <> visits) 0)))
+          (if checkpoint
+            (call-with-current-slot-reads reads
+              (lambda (visits)
+                (record-visits! visits)
+                (module-source-measure-operation 'metadata-checkpoints checkpoint)))
+            (begin
+              (record-visits! (call-with-current-slot-reads reads values))
+              (void)))))
       (call-with-current-slot-reads reads void))))
 ;; A Case-owned logging allowance, never a query/currentness cache. The testing
 ;; adapter binds a fresh box only for detailed observation; execution consumes

@@ -149,8 +149,6 @@ theorem privateCatalogFoldOrder {Value : Type} (roots : List (List Value)) :
     rw [rows, ih]
 
 def thunkConstructionDigest : String := "sha256:892e2ba2a76188b126fca8286be57c90fc17a2dfb81e2fd575464b322e0ee46c"
-def projectionObjectDigest : String := "sha256:1c4fcd96e8e120cdbfc3036008170ea161e0a0380cc747b913e74ae63b91d7cc"
-def projectionObservationDigest : String := "sha256:a75b5bcbfed24fab11756a4f87ffa8b77fd394f04f8fc2da02a9f3d71dc4c800"
 
 -- Identifiers denote binding identity, not spelling or a user purity label.
 def inject (original : Nat → Option Nat) (fresh binding : Nat) (name : Nat) : Option Nat :=

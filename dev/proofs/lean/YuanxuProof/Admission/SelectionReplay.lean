@@ -131,10 +131,6 @@ def topologySourceDigest : String := "sha256:711666f5afe6d73d34cc59caf536311b2eb
 -- Warm metadata preparation uses LeanPoo lookupOr_present; a cleared cache
 -- uses lookupOr_missing and still invokes runtime preparation. The Scheme
 -- cache-branch/invalidation correspondence remains a runtime-test obligation.
--- The release splits issuance/replay into the included observation owner.
--- These bind model correspondence, not package resolution or a proved compiler.
-def projectionObjectDigest : String := "sha256:1c4fcd96e8e120cdbfc3036008170ea161e0a0380cc747b913e74ae63b91d7cc"
-def projectionObservationDigest : String := "sha256:a75b5bcbfed24fab11756a4f87ffa8b77fd394f04f8fc2da02a9f3d71dc4c800"
 
 -- A structural projection contains record identities, not receiver/key pairs.
 -- Fuel bounds the executable model; IdentityDFS owns termination/coverage.

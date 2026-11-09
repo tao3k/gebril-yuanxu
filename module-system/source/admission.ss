@@ -126,7 +126,7 @@
          (without-observation
            (lambda () (.ref policy '%authoring-interface-checkpoint)))))
   (unless (and checkpoint (module-source-style-policy-current?) (checkpoint (car reads)))
-    (replay-slot-reads! reads (lambda (_receiver _key) (void))))
+    (call-with-current-slot-reads reads void))
   value)
 
 (def (yuanxu-module-role-authoring-validate! policy module-name module-root reader read-datums)
