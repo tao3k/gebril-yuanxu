@@ -38,6 +38,12 @@ Disabling a Feature creates a new selection and composes from Core again, never
 from the previously extended scope. Code modules remain under Gerbil import/load
 ownership; neither selection nor withdrawal unloads code or tears down resources.
 
+An import reached only through a named Feature contributes to that Feature's
+build entries. The reader still retains its source guard for the selected
+Graph. A revision to such an import refuses publication from the older Graph.
+A fresh selection of the same init source can admit the revised value, and a
+cached scope with the Feature disabled keeps its own identity and currentness.
+
 * Formal owners
 
 - Lean owns =Selection/FeatureScopes.lean=: resolver-order folding, empty-selection
@@ -51,11 +57,14 @@ ownership; neither selection nor withdrawal unloads code or tears down resources
   They do not prove the new Scheme extraction or memory complexity.
   The existing scoped receipt binds the four production consumers, their two
   test suites, this allocation and the Lean structural owner. Producer-source
-  qualification additionally requires the existing upstream projection bindings
-  to match; a stale producer binding is a separate refusal, not a model pass.
+  qualification checks the actual checkout against the reference in
+  =gerbil.pkg=.
 - Scheme owns the correspondence through =t/module-feature-scope-test.ss= and
   =t/module-feature-interface-test.ss=. They read actual Interface source roles,
-  execute production linking, and retain failure/currentness controls.
+  execute production linking, and retain failure/currentness controls. The
+  named-Feature case changes a helper imported by the Feature implementation
+  after both scopes have been demanded. It checks contributor ownership,
+  old-Graph refusal and fresh admission alongside disabled-scope identity.
 
 The Core library target list includes =feature/scope= exactly once.
 Selected build/clean target ownership is unchanged; the change does not introduce
