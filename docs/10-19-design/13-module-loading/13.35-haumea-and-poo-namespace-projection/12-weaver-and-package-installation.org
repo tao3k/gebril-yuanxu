@@ -194,3 +194,21 @@ Module selection. =SourceAddress= proves anchoring and absence of a local
 fallback in the bounded model. The grammar/window tests and real Weaver
 same-leaf, different-root build/runtime gate exercise the corresponding Scheme
 paths. Gerbil still owns checkout installation and pinning.
+
+** Package probe channels and liveness
+
+The public =pkg-root-dir= probe returns a Scheme string on stdout. Its caller
+uses the existing Ops =stderr-redirection: #f= boundary, so a deprecation warning
+cannot become the first datum through stdout/stderr scheduling. Ordinary package
+commands retain their merged diagnostic capture and all failure checks. The
+existing =t/ops-process-script-test.ss= exercises this channel distinction;
+=t/package-install-test.ss= exercises the real package manager and complete
+thousand-owner index, selected compilation, hot build and clean isolation.
+
+Package children inherit their Case heap policy and Gambit's standard =1n,2n=
+stdio settings. Newline buffering exposes actual tool output during execution;
+it is not a heartbeat or an additional progress protocol. Total and idle
+budgets, worker capacity and final index assertions are unchanged. A completed
+package run does not establish that every host meets the idle deadline: paired
+runs also failed in source indexing. Likewise, debugger/dynamic-loader waiting
+seen in a local worker sample does not establish the cause of Linux failures.

@@ -42,7 +42,12 @@
       (def runtime-environment
         (string-append (let (inherited-options (getenv "GAMBOPT" #f))
                        (if inherited-options (string-append inherited-options ",") ""))
-                       (substring runtime-option 2 (string-length runtime-option))))
+                       (substring runtime-option 2 (string-length runtime-option))
+                       ;; The official package/tagging tools emit actual TAG
+                       ;; records. Preserve them across redirected stdio while
+                       ;; the tool is running, rather than only at process exit.
+                       ;; This changes buffering, never the idle/total budgets.
+                       ",1n,2n"))
       (call-with-temporary-directory "selected-package-"
         (lambda (temporary)
           (def fixture (path-expand "fixture" temporary))
@@ -56,7 +61,7 @@
           (write-source git-config
             (string-append "[url \"file://" remotes "/\"]\n  insteadOf = https://qualification.invalid/haumea/\n  insteadOf = git@qualification.invalid:haumea/\n"))
           (def actions 0)
-          (def (invoke command directory state)
+          (def (invoke command directory state (stdout-only? #f))
             (def result
               (run-script
                 (.cc (.get Ops prototypes Script)
@@ -65,7 +70,8 @@
                   environment: (.o GERBIL_PATH: state GIT_CONFIG_GLOBAL: git-config
                     GAMBOPT: runtime-environment
                     GERBIL_LOADPATH: (string-append (path-expand "lib" state) ":" inherited)))
-                '() output-port: (current-error-port)))
+                '() stderr-redirection: (not stdout-only?)
+                output-port: (current-error-port)))
             (def output (.get result output))
             (when (ormap (lambda (marker) (string-contains output marker))
                     '("*** ERROR" "ERROR CASE" "ERROR CHECK" "ERROR HARNESS" "Heap overflow" "Stack overflow"))
@@ -102,7 +108,9 @@
             (substring (git temporary "ls-remote" "https://qualification.invalid/haumea/producer.git" "refs/tags/v0.1.0")
                        0 40)
             (substring revision 0 40))
-          (def package-root (call-with-input-string (invoke '("gxi" "-e" "(import (only-in :gerbil/tools/gxpkg pkg-root-dir))" "-e" "(write (pkg-root-dir)) (newline)") temporary installed) read))
+          ;; This public probe returns a Scheme string on stdout. Diagnostics
+          ;; must stay on stderr; their scheduling cannot change the payload.
+          (def package-root (call-with-input-string (invoke '("gxi" "-e" "(import (only-in :gerbil/tools/gxpkg pkg-root-dir))" "-e" "(write (pkg-root-dir)) (newline)") temporary installed #t) read))
           (def managed-consumer (path-expand consumer-id package-root))
           (create-directory* (path-directory managed-consumer))
           (git temporary "clone" "-q" "--branch" "v0.1.0" consumer managed-consumer)
@@ -169,7 +177,7 @@
             ;; indexing still work. Never index the thousand-owner catalog here.
             (def editor-state (path-expand "editor-control" temporary))
             (create-directory* (path-expand "lib" editor-state))
-            (def editor-root (call-with-input-string (invoke '("gxi" "-e" "(import (only-in :gerbil/tools/gxpkg pkg-root-dir))" "-e" "(write (pkg-root-dir)) (newline)") temporary editor-state) read))
+            (def editor-root (call-with-input-string (invoke '("gxi" "-e" "(import (only-in :gerbil/tools/gxpkg pkg-root-dir))" "-e" "(write (pkg-root-dir)) (newline)") temporary editor-state #t) read))
             (def editor-package (path-expand "editor-source" temporary))
             (write-source (path-expand "gerbil.pkg" editor-package) "(package: tiny)\n")
             (write-source (path-expand "tagged.ss" editor-package)
