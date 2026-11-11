@@ -558,3 +558,18 @@ separate official CLI processes. Gerbil prepares all Harness modules before
 running Cases; importing the compiled boundary would otherwise load callbacks
 before the closure-before-load control. Both processes and the final digest
 checks remain independent CI steps, including after an earlier assertion fails.
+
+** Fresh-process correspondence
+
+Semantic domains share the platform build, not a Scheme VM. The official
+Harness imports all selected files before running any Case. An experimental
+shared-Harness module run exposed both an already-loaded execution library and
+a retained build-source binding into a released fixture. These failed samples
+are retained in ignored cache; they are not accepted scheduling evidence.
+
+CI therefore invokes the official CLI once per file, retaining its 600-second
+process ceiling and all Case budgets, and attempts the remaining files after a
+failure. It does not scan stdout for a replacement verdict. Domains follow the
+authoring, loading, testing, graph/selection, MOP and workflow owners; the full
+compiled-module integration test has its own job. This retains the previous
+fresh-process assertions without reintroducing a development runner.

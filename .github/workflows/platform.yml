@@ -129,10 +129,19 @@ jobs:
           if [[ -n "${CORE_SOURCE_TAIL_ROOT:-}" ]]; then
             cd "$CORE_SOURCE_TAIL_ROOT/source/yuanxu"
           fi
-          env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s \
-            gerbil "-:max-heap=$YUANXU_TEST_HEAP,debug=q" test -v 0 "${files[@]}" \
-            > "$YUANXU_TEST_REPORT_DIR/gerbil.log" 2>&1
-          echo "PASS: ${#files[@]} files"
+          failed=0
+          for file in "${files[@]}"; do
+            log="$YUANXU_TEST_REPORT_DIR/${file##*/}.log"
+            if env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s \
+              gerbil "-:max-heap=$YUANXU_TEST_HEAP,debug=q" test -v 0 "$file" > "$log" 2>&1; then
+              echo "PASS $file"
+            else
+              result=$?
+              echo "FAIL $file exit=$result"
+              failed=1
+            fi
+          done
+          exit "$failed"
       - name: Verify the compiled fixture is unchanged
         if: ${{ !cancelled() && matrix.group == 'store-callbacks' && steps.callbacks.outcome == 'success' }}
         run: |

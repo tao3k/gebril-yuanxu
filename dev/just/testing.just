@@ -164,13 +164,15 @@ test-files group="all":
 test-ci-groups:
     @GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} -e '(import (only-in "./dev/ci-inventory.ss" main))' -e '(main "--matrix")'
 
-# Explicit local convenience, not a second execution/reporting implementation.
+# Each file retains a fresh official Gerbil process, including cold-load tests.
+# This alias supplies arguments only; no Harness or verdict parser exists here.
 test-directory group:
     #!/usr/bin/env bash
     set -euo pipefail
-    files=()
     selected=$(just test-files "{{ group }}")
     test -n "$selected"
-    while IFS= read -r file; do files+=("$file"); done <<< "$selected"
-    test "${#files[@]}" -gt 0
-    env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s gerbil {{ gerbil_test_runtime_options }} test "${files[@]}"
+    failed=0
+    while IFS= read -r file; do
+        if ! just test-file "$file"; then failed=1; fi
+    done <<< "$selected"
+    exit "$failed"

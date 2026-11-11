@@ -9,13 +9,15 @@
   '("dense-declarations" "dense-selection" "dense-values" "sparse-business" "build-inputs"
     "scale-declarations" "scale-runtime" "scale-packages"
     "store-callbacks" "artifact-authority" "source-loader" "source-gateway"
-    "building" "sources" "features" "modules" "contracts" "providers" "ops" "runtime" "bootstrap"))
+    "building" "sources" "features" "module-authoring" "module-loading" "module-tests"
+    "compiled-module-tests" "modules" "mop" "workflow" "contracts" "providers" "ops" "runtime" "bootstrap"))
 (def (group-owner file)
   (case (string->symbol file)
     ((module-declaration-10000-test.ss) "dense-declarations")
     ((module-runtime-selection-10000-test.ss) "dense-selection")
     ((module-runtime-values-10000-test.ss) "dense-values")
     ((module-business-sparse-10000-test.ss) "sparse-business")
+    ((module-testing-compiled-test.ss) "compiled-module-tests")
     ((artifact-closure-test.ss mop-store-boundary-test.ss) "store-callbacks")
     ((artifact-authority-test.ss) "artifact-authority")
     ((source-loader-authority-test.ss) "source-loader")
@@ -39,7 +41,18 @@
            ((ormap (cut string-prefix? <> file)
                    '("package-" "prelude-" "module-bootstrap-"
                      "runtime-publication-identity-")) "bootstrap")
+           ((ormap (cut string-prefix? <> file)
+                   '("module-authoring-" "module-schema-" "module-config-" "module-configuration-")) "module-authoring")
+           ((ormap (cut string-prefix? <> file)
+                   '("module-context-" "module-compiler-" "module-load-" "module-loader-"
+                     "module-init-" "module-deferred-" "module-public-dependency-"
+                     "module-retained-" "module-role-")) "module-loading")
+           ((ormap (cut string-prefix? <> file)
+                   '("module-test-" "module-testing-" "module-case-profile-")) "module-tests")
            ((ormap (cut string-prefix? <> file) '("module-" "feature-")) "modules")
+           ((string-prefix? "mop-" file) "mop")
+           ((ormap (cut string-prefix? <> file)
+                   '("functional-flow-" "funflow-" "domain-case-" "composition-")) "workflow")
            ((ormap (cut string-prefix? <> file)
                    '("contract-" "admission-" "contribution-" "configuration-"
                      "poo-" "object-" "issued-" "path-" "evidence-" "issuer-")) "contracts")
