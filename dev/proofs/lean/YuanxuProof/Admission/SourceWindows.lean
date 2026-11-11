@@ -150,6 +150,95 @@ theorem pure_window_preserves_first_issue (requirements : List (String × String
     · exact ih _ (fetch_sound cache world path sound)
     · rfl
 
+/-- Ordered policy rows are already owned by the directory publication. A world
+fact can encode listing membership, kind or exact content. -/
+def agreesOn (requirements : List (String × String)) (left right : World) : Prop :=
+  ∀ row ∈ requirements, left row.1 = right row.1
+
+theorem firstIssue_agreesOn (requirements : List (String × String)) (left right : World)
+    (same : agreesOn requirements left right) :
+    firstIssue requirements left = firstIssue requirements right := by
+  induction requirements with
+  | nil => rfl
+  | cons row rest ih =>
+    obtain ⟨path, expected⟩ := row
+    simp only [firstIssue, same (path, expected) (List.mem_cons_self ..)]
+    split
+    · exact ih fun row member => same row (List.mem_cons_of_mem _ member)
+    · rfl
+
+theorem firstIssue_append (left right : List (String × String)) (world : World) :
+    firstIssue (left ++ right) world = (firstIssue left world).or (firstIssue right world) := by
+  induction left with
+  | nil => rfl
+  | cons row rest ih =>
+    obtain ⟨path, expected⟩ := row
+    simp only [List.cons_append, firstIssue]
+    split <;> simp_all
+
+/-- A locally observed request cannot decide a global policy that can fail at an
+unobserved path. Construct the alternative world by changing just that fact. -/
+theorem missing_fact_precludes_global_decision
+    (localPolicy globalPolicy : List (String × String)) (world : World)
+    (path expected : String)
+    (unseen : ∀ row ∈ localPolicy, row.1 ≠ path)
+    (required : (path, expected) ∈ globalPolicy)
+    (accepted : (check globalPolicy world empty).accepted = true) :
+    ∃ changed : World, agreesOn localPolicy world changed ∧
+      (check globalPolicy world empty).accepted ≠ (check globalPolicy changed empty).accepted := by
+  let changed : World := fun queried => if queried = path then none else world queried
+  refine ⟨changed, ?_, ?_⟩
+  · intro row member
+    simp [changed, unseen row member]
+  · rw [accepted, changed_source_rejected globalPolicy changed (path, expected) required]
+    · decide
+    · simp [changed]
+
+structure DirectoryGeneration where
+  authority : Nat
+  revision : Nat
+  deriving DecidableEq
+
+/-- Indexed by the exact ordered policy. The summary is computed at publication;
+it is not evidence that a later filesystem observation is still current. -/
+structure DirectoryCut (requirements : List (String × String)) where
+  generation : DirectoryGeneration
+  snapshot : World
+  issue : Option String
+  summarized : issue = firstIssue requirements snapshot
+
+def DirectoryCut.use {requirements : List (String × String)}
+    (cut : DirectoryCut requirements) (active : DirectoryGeneration) : Option (Option String) :=
+  if active = cut.generation then some cut.issue else none
+
+theorem DirectoryCut.use_exact {requirements : List (String × String)}
+    (cut : DirectoryCut requirements) (active : DirectoryGeneration) (live : World)
+    (authority : active = cut.generation → agreesOn requirements cut.snapshot live) :
+    cut.use active = if active = cut.generation then some (firstIssue requirements live) else none := by
+  by_cases current : active = cut.generation
+  · simp [DirectoryCut.use, current, cut.summarized,
+      firstIssue_agreesOn requirements _ _ (authority current)]
+  · simp [DirectoryCut.use, current]
+
+theorem DirectoryCut.reject_stale {requirements : List (String × String)}
+    (cut : DirectoryCut requirements) (active : DirectoryGeneration)
+    (stale : active ≠ cut.generation) : cut.use active = none := by
+  simp [DirectoryCut.use, stale]
+
+theorem DirectoryCut.reject_other_authority {requirements : List (String × String)}
+    (cut : DirectoryCut requirements) (active : DirectoryGeneration)
+    (different : active.authority ≠ cut.generation.authority) : cut.use active = none := by
+  exact cut.reject_stale active (fun same => different (congrArg DirectoryGeneration.authority same))
+
+/-- A controlled edit can carry unaffected ordered summaries into a new cut.
+The producer must establish both frame conditions in the new world. -/
+theorem repair_firstIssue (leading edited trailing : List (String × String))
+    (old live : World) (before : agreesOn leading old live) (after : agreesOn trailing old live) :
+    firstIssue (leading ++ (edited ++ trailing)) live =
+      (firstIssue leading old).or ((firstIssue edited live).or (firstIssue trailing old)) := by
+  rw [firstIssue_append, firstIssue_append, ← firstIssue_agreesOn leading old live before,
+    ← firstIssue_agreesOn trailing old live after]
+
 /-- Extracted from the actual context procedure: only native `void` selects
 `identity`. Every other procedure is opaque, including normal and exceptional
 resumption. This is not a caller-supplied purity annotation. -/

@@ -1,0 +1,92 @@
+#+title: 20.36 Metadata Catalog Prototype
+
+Catalog stores canonical symbolic module names, exact version labels and
+dependency references. It pulls a stream of metadata rows into private
+Gerbil red-black trees. The outer tree indexes names and each inner tree
+orders the version labels of one name. Labels sort lexically for
+enumeration. Resolution requires an explicit label and selects the exact
+release object from the supplied snapshot.
+
+Demand checks that the selected release still belongs to its snapshot and
+calls the dependency metadata reader once with the name, version and
+reference. Catalog retains the scalar reference. The reader owns its
+interpretation and any I/O. Module and Prototype realization are separate
+operations. Gerbil owns package installation, source lookup and imports.
+
+Publication applies a finite edit batch to private persistent roots.
+An edit supplies the actual expected release identity, or absence for
+insertion. If a conflict occurs, the operation returns no successor.
+Successful point edits share the untouched branches and do not enumerate
+unrelated names or versions. Older snapshots remain queryable.
+
+=CatalogPublication.lean= models the point edit, conflict, untouched
+keys and exact release check. The Scheme tests exercise the same cases
+with actual tree snapshots and count calls to the dependency reader.
+The untouched-name projection preserves requested version order and
+release identities. The proof abstracts tree balance and callback
+execution. The native tests exercise lexical enumeration and dependency
+callback cardinality.
+The companion SysML requirement is =MetadataCatalogOwnership=.
+
+The independent capacity test runs through =just test-file
+t/qualification/catalog/metadata-capacity-test.ss=. It uses 100,000 and
+1,000,000 releases in two distributions. The wide catalog has one
+128-version name. In the skewed catalog one name owns half the release
+rows. The same cases measure cold indexing, first and repeated point
+lookup, version enumeration, one dependency request, two successful
+edits, and rejection of a batch that conflicts after a provisional edit.
+These are metadata workloads.
+
+The first local native run used Gerbil =2591dcd= with the Core candidate's
+installed dependencies. Both capacity cases and the separate functional
+Catalog suite passed.
+
+| Releases | Cold wall | Cold CPU | Cold GC CPU | 10,000 hot lookups CPU | Two edits CPU | Dependency reads |
+|----------+-----------+----------+-------------+-----------------------+---------------+------------------|
+| 100,000  | 0.313 s   | 0.267 s  | 0.078 s     | 3.04 ms               | 12 µs         | 1                |
+| 1,000,000 | 21.284 s | 4.698 s  | 1.732 s     | 3.27 ms               | 13 µs         | 1                |
+
+The producer supplied exactly the stated row count and one EOF per
+case. A second native wide run measured 7.704 s wall, 4.708 s CPU and
+1.787 s GC CPU to build the million-release snapshot. Whole-command
+peak RSS for both sizes, including the Just harness, was 1,173,232 KiB.
+The test checks old and new visibility after publication. The timings
+above exclude constructor instrumentation.
+
+The two-shape run built four fresh snapshots in one Just invocation,
+with the wide distribution first at each size. Each shape supplied
+exactly its declared rows and called the dependency reader once.
+
+| Releases | Shape  | Cold wall | Cold CPU | Cold GC CPU | Enumerated versions | Enumeration CPU | Two edits CPU |
+|----------+--------+-----------+----------+-------------+---------------------+-----------------+---------------|
+| 100,000  | Wide   | 0.395 s   | 0.319 s  | 0.104 s     | 128                 | 0.010 ms        | 10 µs         |
+| 100,000  | Skewed | 0.261 s   | 0.256 s  | 0.088 s     | 50,000              | 1.099 ms        | 10 µs         |
+| 1,000,000 | Wide  | 4.119 s   | 3.912 s  | 1.399 s     | 128                 | 0.008 ms        | 8 µs          |
+| 1,000,000 | Skewed | 2.449 s  | 2.363 s  | 0.627 s     | 500,000             | 10.747 ms       | 11 µs         |
+
+Whole-command peak RSS was 1,316,864 KiB. Names and versions may
+already be interned from an earlier case. The timings separate
+snapshot construction from lookup, enumeration and point edits.
+The functional suite and all four capacity workloads passed. The
+isolated fault bypassing exact expected-release validation failed the
+batch-conflict assertion at both sizes.
+
+An independent diagnostic used the same Just workload against an
+instrumented copy of the pinned Gerbil red-black tree. It counted
+nonempty tree-node constructions by the names or versions comparator.
+These counts include temporary nodes made while balancing. They do
+not measure bytes, wrapper or zipper allocations, release records,
+list construction, or RSS.
+
+| Releases | Shape  | Cold names | Cold versions | Two edits, names | Two edits, versions |
+|----------+--------+------------+---------------+------------------+---------------------|
+| 100,000  | Wide   | 1,742,241  | 101,010       | 33               | 8                   |
+| 100,000  | Skewed | 821,141    | 1,104,252     | 28               | 16                  |
+| 1,000,000 | Wide  | 20,927,744 | 1,001,010     | 44               | 8                   |
+| 1,000,000 | Skewed | 9,911,265 | 13,513,423    | 40               | 19                  |
+
+First and repeated resolution, version enumeration and one dependency
+request all constructed zero tree nodes. A conflicting batch still
+constructed provisional nodes for its first edit, then left the
+published snapshot unchanged. The instrumentation remained outside
+the production runtime and supplied no timing samples.

@@ -113,6 +113,7 @@ import YuanxuProof.ModuleSystem.Loading.DemandMaterialization
 import YuanxuProof.ModuleSystem.Loading.MetadataProjection
 import YuanxuProof.ModuleSystem.Loading.IncrementalRoles
 import YuanxuProof.ModuleSystem.Loading.DependencyPublication
+import YuanxuProof.ModuleSystem.Loading.CatalogPublication
 import YuanxuProof.Observability.TestingCase
 import Lean.Util.CollectAxioms
 import Lean.Elab.Command
@@ -260,6 +261,14 @@ run_cmd do
       `YuanxuProof.ModuleSystem.Graph.TestAdmission.incomplete_admission_refuses,
       `YuanxuProof.ModuleSystem.Graph.TestAdmission.selected_admission_is_not_catalog_certification,
       `YuanxuProof.ModuleSystem.Loading.DependencyPublication.merged_changes_exact,
+      `YuanxuProof.ModuleSystem.Graph.PublicationReads.ScopeProjection.projected_current_exact,
+      `YuanxuProof.ModuleSystem.Graph.PublicationReads.ScopeProjection.local_scope_does_not_certify_unselected_owner,
+      `YuanxuProof.ModuleSystem.Graph.PublicationReads.TrackedEdit.clean_owner_has_no_changed_read,
+      `YuanxuProof.ModuleSystem.Graph.PublicationReads.TrackedEdit.retain_current_after_tracked_edit,
+      `YuanxuProof.ModuleSystem.Graph.PublicationReads.TrackedEdit.publication_read_keeps_current_roots,
+      `YuanxuProof.ModuleSystem.Graph.PublicationReads.TrackedEdit.incomplete_index_can_miss_stale_support,
+      `YuanxuProof.ModuleSystem.Graph.PublicationReads.TrackedEdit.untracked_write_cannot_transport_currentness,
+      `YuanxuProof.ModuleSystem.Loading.DependencyPublication.successful_read_keeps_view,
       `YuanxuProof.ModuleSystem.Loading.DependencyPublication.reseal_after_merge_matches_restart,
       `YuanxuProof.ModuleSystem.Loading.DependencyPublication.merge_rejects_staged_even_after_more_steps,
       `YuanxuProof.ModuleSystem.Loading.DependencyPublication.commit_binds_captured_admission,

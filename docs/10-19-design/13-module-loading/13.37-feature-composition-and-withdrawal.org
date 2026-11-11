@@ -52,7 +52,7 @@ The following uses ordinary POO declarations. The Module System supplies the
 Feature ID, owner and existing descriptor defaults from the enclosing Module
 identity and the =memory= slot. Authors need no descriptor factory/import or
 second selection manifest. Existing explicit Feature descriptors still serve
-the Feature System's domain assembly APIs; their declared owners are validated.
+the Feature component's domain assembly APIs; their declared owners are validated.
 
 #+begin_src scheme
 (.def Context

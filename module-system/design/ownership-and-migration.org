@@ -18,7 +18,7 @@ Neither entry carries a second normative body.
 | Module directory roles, source identity and publication | Core Module System |
 | Directory discovery, init selection and negative decisions | Core Module System design |
 | A selected Module's mandatory baseline | Core Module System |
-| Optional extension descriptors, dependencies and projections | Core Feature System |
+| Optional extension descriptors, dependencies and projections | [[file:../feature/interface.ss][Module System Feature component]] |
 | Contracts, POO composition, scope and generic protocols | Corresponding Core mechanism and its design |
 | Configuration-language UX and ecosystem comparison methodology | Core Config Languages design |
 | Actual Funflow, JsonSchema, Kubernetes and other provider wiring | Agentic AI Lab or contributing package |
@@ -32,7 +32,7 @@ make the product package a dependency of Core.
 * Related design locations
 
 - [[file:README.org][Current Module directory/publication/selection/build protocols]].
-- [[file:../../module-system/feature/design/README.org][Feature System extraction and product-dependent units]].
+- [[file:../feature/design/README.org][Feature ownership and downstream adapters]].
 - [[file:../../docs/10-19-design/11-configuration-languages/11.01-index.org][Configuration language design and comparisons]].
 - [[file:../../docs/10-19-design/11-configuration-languages/11.18-guestbook-auto-explicit-init-examples.org][Complete auto/explicit init example and negative selection facts]].
 - [[file:../../docs/10-19-design/11-configuration-languages/11.21-jsonschema-guestbook-role-examples.org][JsonSchema and Guestbook source-role review]].
@@ -57,10 +57,10 @@ evidence status; use the current ownership guide when they disagree.
 The earlier chapter migration moved documentation and associated evidence.
 Shared proof packages have subsequently moved into [[file:../../dev/proofs/README.org][Core proof ownership]];
 this remains separate from runtime source migration.
-The shared Feature System implementation has now migrated into Core. Product
-Scenario/Plan conversion is a separate downstream module; generic Bundle output
-remains in Core. The former product src tree has been replaced by named module
-owners. No compatibility re-export tree is introduced.
+The shared Feature implementation lives under =module-system/feature= and
+publishes =:yuanxu/module-system/feature/interface=. Generic Bundle output
+belongs to that component. Product Scenario/Plan conversion belongs to the
+downstream module that uses it.
 
 The directory Loader adapter, stronger role-file admission, init selection
 integration and selected build entry generation remain proposals where their

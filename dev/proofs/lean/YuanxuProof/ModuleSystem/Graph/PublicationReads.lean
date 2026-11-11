@@ -1,6 +1,8 @@
 -- SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 -- SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 import YuanxuProof.ModuleSystem.Graph.TestAdmission
+import YuanxuProof.ModuleSystem.Loading.IncrementalRoles
+import YuanxuProof.ModuleSystem.Loading.DependencyPublication
 
 namespace YuanxuProof.ModuleSystem.Graph.PublicationReads
 open TestAdmission
@@ -1545,5 +1547,276 @@ theorem shared_stock_interface_refuses_mutation_at_each_effect :
       deliverStockInterface (.ok ()) (.ok (expanded, [.roleReceiver])) check author read () ()
     run false (fun _ _ => .error "author should not run") = .error "stale owner" ∧
     run true (fun _ _ => .ok ((), false)) = .error "stale owner" := ⟨rfl, rfl⟩
+
+
+/-- A shared Profile root and owner-local roots can share traversal structure
+while requiring currentness for every demanded record at the new cut. -/
+theorem demanded_append (deps : α → List α) (shared owner : List α) (node : α) :
+    Demanded deps (shared ++ owner) node ↔
+      Demanded deps shared node ∨ Demanded deps owner node := by
+  constructor
+  · intro demand
+    induction demand with
+    | root node member =>
+      cases List.mem_append.mp member with
+      | inl left => exact Or.inl (.root node left)
+      | inr right => exact Or.inr (.root node right)
+    | dependency parent child _ edge ih =>
+      cases ih with
+      | inl left => exact Or.inl (.dependency parent child left edge)
+      | inr right => exact Or.inr (.dependency parent child right edge)
+  · intro demand
+    cases demand with
+    | inl left =>
+      induction left with
+      | root node member => exact .root node (List.mem_append.mpr (Or.inl member))
+      | dependency parent child _ edge ih => exact .dependency parent child ih edge
+    | inr right =>
+      induction right with
+      | root node member => exact .root node (List.mem_append.mpr (Or.inr member))
+      | dependency parent child _ edge ih => exact .dependency parent child ih edge
+
+theorem current_append (deps : α → List α) (shared owner : List α) (fresh : α → Prop) :
+    Current deps (shared ++ owner) fresh ↔
+      Current deps shared fresh ∧ Current deps owner fresh := by
+  constructor
+  · intro both
+    exact ⟨fun node demand => both node ((demanded_append deps shared owner node).mpr (.inl demand)),
+           fun node demand => both node ((demanded_append deps shared owner node).mpr (.inr demand))⟩
+  · intro ⟨left, right⟩ node demand
+    exact ((demanded_append deps shared owner node).mp demand).elim (left node) (right node)
+
+/-- Removing one issued read from its receiver after an effect can leave all
+owner-local reads current. Entry approval of the shared Profile cannot be
+transported through that effect, even when the roots and edges are identical. -/
+theorem shared_profile_recheck_is_independent (deps : α → List α) (shared owner : List α)
+    (before after : α → Prop) (lost : α)
+    (entry : Current deps (shared ++ owner) before)
+    (localAfter : Current deps owner after)
+    (sharedRead : Demanded deps shared lost) (removed : ¬ after lost) :
+    Current deps shared before ∧ Current deps owner after ∧
+      ¬ Current deps (shared ++ owner) after := by
+  refine ⟨((current_append deps shared owner before).mp entry).1, localAfter, ?_⟩
+  intro both
+  exact removed (((current_append deps shared owner after).mp both).1 lost sharedRead)
+
+namespace ScopeProjection
+
+/-- Source-policy facts are shared; owner receipts are selected through the
+Module dependency closure. The two dependency relations remain distinct. -/
+def ScopeCurrent (modules : Owner → List Owner) (reads : Read → List Read)
+    (shared : List Read) (support : Owner → List Read) (selected : List Owner)
+    (fresh : Read → Prop) : Prop :=
+  Current reads shared fresh ∧
+    ∀ owner, Demanded modules selected owner → Current reads (support owner) fresh
+
+def scopeRoots (shared : List Read) (owners : List Owner) (support : Owner → List Read) :
+    List Read := shared ++ owners.flatMap support
+
+theorem demanded_owner_roots (reads : Read → List Read) (owners : List Owner)
+    (support : Owner → List Read) (read : Read) :
+    Demanded reads (owners.flatMap support) read ↔
+      ∃ owner, owner ∈ owners ∧ Demanded reads (support owner) read := by
+  induction owners with
+  | nil =>
+    constructor
+    · intro demanded
+      induction demanded with
+      | root _ member => cases member
+      | dependency _ _ _ _ ih =>
+        obtain ⟨_, member, _⟩ := ih
+        cases member
+    · rintro ⟨_, member, _⟩; cases member
+  | cons owner rest ih =>
+    simp only [List.flatMap_cons, demanded_append, ih, List.mem_cons]
+    constructor
+    · rintro (here | ⟨other, member, reached⟩)
+      · exact ⟨owner, Or.inl rfl, here⟩
+      · exact ⟨other, Or.inr member, reached⟩
+    · rintro ⟨other, same | member, reached⟩
+      · subst other; exact Or.inl reached
+      · exact Or.inr ⟨other, member, reached⟩
+
+/-- The existing indexed forward walk supplies owners. Construct its root
+projection once; every effect boundary still validates all demanded records.
+No catalog enumeration or successful-currentness cache is used by this law. -/
+theorem projected_current_exact (modules : Owner → List Owner) (reads : Read → List Read)
+    (shared : List Read) (support : Owner → List Read) (selected owners : List Owner)
+    (complete : ∀ owner, owner ∈ owners ↔ Demanded modules selected owner)
+    (fresh : Read → Prop) :
+    Current reads (scopeRoots shared owners support) fresh ↔
+      ScopeCurrent modules reads shared support selected fresh := by
+  rw [scopeRoots, current_append]
+  constructor
+  · rintro ⟨sharedCurrent, ownerCurrent⟩
+    refine ⟨sharedCurrent, ?_⟩
+    intro owner reached read demanded
+    exact ownerCurrent read ((demanded_owner_roots reads owners support read).mpr
+      ⟨owner, (complete owner).mpr reached, demanded⟩)
+  · rintro ⟨sharedCurrent, ownerCurrent⟩
+    refine ⟨sharedCurrent, ?_⟩
+    intro read demanded
+    obtain ⟨owner, member, localDemand⟩ :=
+      (demanded_owner_roots reads owners support read).mp demanded
+    exact ownerCurrent owner ((complete owner).mp member) read localDemand
+
+private theorem no_edges_demand {Node : Type} (roots : List Node) (node : Node) :
+    Demanded (fun _ => []) roots node ↔ node ∈ roots := by
+  constructor
+  · intro demanded
+    cases demanded with
+    | root _ member => exact member
+    | dependency _ _ _ edge => cases edge
+  · exact .root node
+
+/-- Owner demand is intentionally weaker than certifying every publication.
+This is NOT a drop-in equivalence to today's global link guard. Shared facts
+must still contain every genuinely global policy obligation. -/
+theorem local_scope_does_not_certify_unselected_owner :
+    ScopeCurrent (fun (_ : Bool) => []) (fun (_ : Bool) => []) []
+      (fun owner => [owner]) [false] (fun read => read = false) ∧
+    ¬ Current (fun (_ : Bool) => []) [false, true] (fun read => read = false) := by
+  constructor
+  · constructor
+    · intro read demanded
+      have empty := (no_edges_demand [] read).mp demanded
+      cases empty
+    · intro owner reached read demanded
+      have own : owner = false := by simpa using (no_edges_demand [false] owner).mp reached
+      subst owner
+      simpa using (no_edges_demand [false] read).mp demanded
+  · intro current
+    have impossible := current true (.root true (by simp))
+    cases impossible
+
+end ScopeProjection
+
+namespace TrackedEdit
+open Loading.IncrementalRoles
+
+/-- Registration is about actual POO read receivers, including shared Type and
+policy inputs. A Module-only requires graph cannot supply this premise. -/
+def Covers (dependencies : Read → List Read) (roots : Owner → List Read)
+    (receiver : Read → Owner) (registered : Owner → Owner → Prop) : Prop :=
+  ∀ owner read, Demanded dependencies (roots owner) read → registered owner (receiver read)
+
+/-- A completed old reverse-index walk excludes every changed receiver in an
+unaffected certificate's original support. No directory roster is inspected. -/
+theorem clean_owner_has_no_changed_read
+    (dependencies : Read → List Read) (roots : Owner → List Read)
+    (receiver : Read → Owner) (registered : Owner → Owner → Prop)
+    (changed : Owner → Prop) (owner : Owner)
+    (complete : Covers dependencies roots receiver registered)
+    (clean : ¬ Affected registered changed owner)
+    (read : Read) (demanded : Demanded dependencies (roots owner) read) :
+    ¬ changed (receiver read) := by
+  intro modified
+  exact clean (.consumer (complete owner read demanded) (.source modified))
+
+/-- Transport only after the native writer proves coverage of EVERY changed
+freshness fact. Raw table/route edits, unknown callbacks and filesystem writes
+cannot be certified by a receiver revision or ticket number alone.
+Signed dependency lists and retained roots still belong to this captured cut. -/
+theorem retain_current_after_tracked_edit
+    (dependencies : Read → List Read) (roots : Owner → List Read)
+    (receiver : Read → Owner) (registered : Owner → Owner → Prop)
+    (changed : Owner → Prop) (before after : Read → Prop) (owner : Owner)
+    (complete : Covers dependencies roots receiver registered)
+    (writerFrame : ∀ read, ¬ changed (receiver read) → before read → after read)
+    (old : Current dependencies (roots owner) before)
+    (clean : ¬ Affected registered changed owner) :
+    Current dependencies (roots owner) after := by
+  intro read demanded
+  exact writerFrame read
+    (clean_owner_has_no_changed_read dependencies roots receiver registered changed owner
+      complete clean read demanded)
+    (old read demanded)
+
+/-- Root projections come from the SAME immutable bundle as the returned
+certificate and index. Concurrent publication cannot retarget a successful
+read's roots to another generation while retaining an old verdict. -/
+theorem publication_read_keeps_current_roots
+    (snapshot : Loading.DependencyPublication.State)
+    (edits : List Loading.DependencyPublication.Edit)
+    (owner certificate : Nat) (consumers : List Nat) (entryOK returnOK : Bool)
+    (dependencies : Loading.DependencyPublication.Bundle → Read → List Read)
+    (roots : Loading.DependencyPublication.Bundle → Nat → List Read)
+    (receiver : Read → Nat) (registered : Nat → Nat → Prop)
+    (changed : Nat → Prop) (before after : Read → Prop)
+    (served : Loading.DependencyPublication.read snapshot
+      (Loading.DependencyPublication.run snapshot edits) owner entryOK returnOK =
+        some (certificate, consumers))
+    (complete : Covers (dependencies snapshot.bundle) (roots snapshot.bundle) receiver registered)
+    (writerFrame : ∀ read, ¬ changed (receiver read) → before read → after read)
+    (old : Current (dependencies snapshot.bundle) (roots snapshot.bundle owner) before)
+    (clean : ¬ Affected registered changed owner) :
+    Current (dependencies (Loading.DependencyPublication.run snapshot edits).bundle)
+      (roots (Loading.DependencyPublication.run snapshot edits).bundle owner) after := by
+  rw [Loading.DependencyPublication.successful_read_keeps_view snapshot edits owner
+    certificate consumers entryOK returnOK served]
+  exact retain_current_after_tracked_edit _ _ receiver registered changed before after owner
+    complete writerFrame old clean
+
+/-- A missing registration for a shared provider makes a falsely clean owner
+appear reusable. The fixed writer frame can hold while the old certificate is
+stale; complete read registration is indispensable. -/
+theorem incomplete_index_can_miss_stale_support :
+    let dependencies : Unit → List Unit := fun _ => []
+    let roots : Nat → List Unit := fun _ => [()]
+    let changed : Nat → Prop := fun owner => owner = 1
+    let registered : Nat → Nat → Prop := fun _ _ => False
+    let before : Unit → Prop := fun _ => True
+    let after : Unit → Prop := fun _ => False
+    Current dependencies (roots 0) before ∧
+      (¬ Affected registered changed 0) ∧
+      (∀ read : Unit, ¬ changed (1 : Nat) → before read → after read) ∧
+      ¬ Current dependencies (roots 0) after := by
+  dsimp only
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro _ _; trivial
+  · intro affected
+    cases affected with
+    | source modified => simp at modified
+    | consumer edge _ => exact edge
+  · intro _ unmodified _
+    exact unmodified rfl
+  · intro current
+    exact current () (.root () (by simp))
+
+/-- Even a complete index does not authorize reuse after an untracked edit.
+Here no changed receiver was reported, yet an actual read became stale. -/
+theorem untracked_write_cannot_transport_currentness :
+    let dependencies : Unit → List Unit := fun _ => []
+    let roots : Unit → List Unit := fun _ => [()]
+    let receiver : Unit → Unit := id
+    let registered : Unit → Unit → Prop := fun _ _ => True
+    let changed : Unit → Prop := fun _ => False
+    let before : Unit → Prop := fun _ => True
+    let after : Unit → Prop := fun _ => False
+    Covers dependencies roots receiver registered ∧
+      Current dependencies (roots ()) before ∧
+      (¬ Affected registered changed ()) ∧
+      ¬ Current dependencies (roots ()) after := by
+  dsimp only
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro _ _ _; trivial
+  · intro _ _; trivial
+  · intro affected
+    have impossible : ∀ owner : Unit,
+        ¬ Affected (fun (_ _) => True) (fun _ => False) owner := by
+      intro owner dirty
+      induction dirty with
+      | source modified => exact modified
+      | consumer _ _ ih => exact ih
+    exact impossible () affected
+  · intro current
+    exact current () (.root () (by simp))
+
+end TrackedEdit
+
+-- Runtime correspondence premises remain: eq?-identity normalization,
+-- unmodified original dependency lists, public replay's final recheck,
+-- unchanged real observer delivery, and no nonlocal continuation escape.
+-- This does not prove Gerbil source ownership, GC behavior or a memory byte bound.
 
 end YuanxuProof.ModuleSystem.Graph.PublicationReads

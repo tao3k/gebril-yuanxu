@@ -295,9 +295,9 @@ does not erase the failed run or prove that every host starts within budget.
 
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.37-metadata-allocation-and-shared-authority.org][32.37]] adds eight scoped =MetadataAllocation= checks. Runtime tests reproduce
 shared self-slot function replacement/restoration with a retained cold-child
-cache, and show that export hiding/opaque final structures do not block SDK
+cache, and show that export hiding/opaque final structures do not block Gerbil
 reflection. The private allocation ledger is a proposed MOP design, not an
-implemented SDK ownership barrier. Run =--case-prefix MetadataAllocation
+implemented POO ownership barrier. Run =--case-prefix MetadataAllocation
 --typecheck-scope selected=. A Lean decoder consumes actual runtime observations;
 scope, raw-write counterexamples and existing domain guarantees remain distinct.
 
@@ -305,7 +305,7 @@ scope, raw-write counterexamples and existing domain guarantees remain distinct.
 
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.36-metadata-ownership-and-write-boundary.org][32.36]] adds nine scoped =MetadataOwnership= checks. An isolation gateway
 derives metadata owners from genuine selected reads and reuses the production
-receiver guard. Raw generated and SDK reflective setters remain reachable
+receiver guard. Raw generated and Gerbil reflective setters remain reachable
 counterexamples; this is NOT an installed universal write barrier. Run with
 =--case-prefix MetadataOwnership --typecheck-scope selected=. Unknown targets
 fail closed; missing backend association has a separate coverage control.

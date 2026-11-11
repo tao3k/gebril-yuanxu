@@ -6,7 +6,7 @@
         :yuanxu/module-system/source/admission
         :yuanxu/module-system/source/reader-session
         :yuanxu/module-system/source/reader-support
-        (only-in :yuanxu/module-system/source/compiler-tools compiler-context-origin-current?))
+        (only-in :yuanxu/module-system/source/import-provenance compiler-context-origin-current?))
 (export reader-check-tool-contexts! reader-check-current! reader-check-current/closed!
         reader-current! reader-full-current! reader-open-boundary! reader-fixed-candidate-guards?)
 

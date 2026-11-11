@@ -10,7 +10,7 @@
         :yuanxu/module-system/source/admission
         :yuanxu/module-system/source/preparation
         :yuanxu/module-system/source/reader-evaluation
-        :yuanxu/module-system/source/compiler-tools
+        :yuanxu/module-system/source/import-provenance
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module))
 (export module-prepared-source-binding)
 
@@ -20,7 +20,7 @@
                                     shared-contexts: (shared-contexts #f)
                                     shared-inputs: (shared-inputs #f)
                                     private-sources: (private-sources '())
-                                    compiler-tools: (compiler-tools #f)
+                                    import-provenance: (import-provenance #f)
                                     source-inputs: (observe-inputs void))
   (let* ((inputs (append (cons prepared related) private-sources))
          (directory (make-temporary-file-name "configuration-reader-"))
@@ -33,7 +33,7 @@
     ;; Share its structural maps, not a source-currentness or admission result.
     ;; Standalone role readers still acquire their own runtime compiler closure.
     (defvalues (tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts)
-      (if compiler-tools (apply values compiler-tools) (module-compiler-tools)))
+      (if import-provenance (apply values import-provenance) (module-import-provenance)))
     (def (current!)
       (parameterize ((current-module-source-phase 'configuration-current))
         (context-current!)
@@ -113,7 +113,7 @@
                          ((and (string? path) (hash-get tool-paths (path-normalize path)))
                           => (lambda (context)
                                (when reload? (error "compiler tool reload requires a fresh configuration context"))
-                               (unless (captured-tool-context? compiler-contexts context)
+                               (unless (captured-import-context? compiler-contexts context)
                                  (error "compiler tool context changed during configuration"))
                                (parameterize ((current-module-source-phase 'configuration-import))
                                  (admit-compiler-inputs! context tool-dependencies))

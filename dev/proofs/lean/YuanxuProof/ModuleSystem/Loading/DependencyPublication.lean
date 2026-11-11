@@ -161,6 +161,19 @@ def read (snapshot live : State) (owner : Nat) (entryOK returnOK : Bool) :
     (snapshot.bundle.certificate owner).map fun cert => (cert, snapshot.bundle.consumers owner)
   else none
 
+/-- Preserve the whole captured view, including any owner-root projections
+bound to its bundle, rather than just the two fields returned by read. -/
+theorem successful_read_keeps_view (snapshot : State) (edits : List Edit) (owner cert : Nat)
+    (consumers : List Nat) (entryOK returnOK : Bool)
+    (served : read snapshot (run snapshot edits) owner entryOK returnOK = some (cert, consumers)) :
+    run snapshot edits = snapshot := by
+  unfold read at served
+  split at served
+  next guard =>
+    simp only [Bool.and_eq_true, beq_iff_eq] at guard
+    exact run_same_ticket_same_view snapshot edits guard.1.2.symm
+  next => contradiction
+
 theorem concurrent_read_has_one_view (snapshot : State) (edits : List Edit) (owner cert : Nat)
     (consumers : List Nat) (entryOK returnOK : Bool)
     (served : read snapshot (run snapshot edits) owner entryOK returnOK = some (cert, consumers)) :

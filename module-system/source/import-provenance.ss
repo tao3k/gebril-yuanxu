@@ -1,7 +1,8 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Capture native compiler contexts and authenticate their source support.
+;;; Record the origin of Gerbil import contexts and authenticate their source support.
+;;; Gerbil owns module resolution and loading. std/make owns compilation.
 (import (only-in :gerbil/expander core-resolve-library-module-path core-library-package-path-prefix
                  expander-context-id module-context-path module-context? __module-registry)
         (only-in :clan/poo/object .ref)
@@ -16,7 +17,7 @@
         (only-in :yuanxu/module-system/building/source-package module-build-source-path))
 (export public-dependency-input admit-compiler-inputs!
         compiler-tool-inputs compiler-tool-input record-source-observations!
-        compiler-context-origin-current? captured-tool-context? module-compiler-tools)
+        compiler-context-origin-current? captured-import-context? module-import-provenance)
 
 ;; One canonical-library check for publication and configuration readers. This
 ;; prepares observations, never imports, expands or initializes the dependency.
@@ -133,10 +134,10 @@
 (def (compiler-context-origin-current? context origin)
   (and origin (eq? (car origin) (expander-context-id context))
        (equal? (cdr origin) (module-context-path context))))
-(def (captured-tool-context? contexts context)
+(def (captured-import-context? contexts context)
   ;; Point queries authenticate the actual captured instance before reading it.
   (compiler-context-origin-current? context (hash-get contexts context)))
-(def (module-compiler-tools)
+(def (module-import-provenance)
   (def compiler-contexts (make-hash-table-eq))
   (def tool-contexts
     (yuanxu-reader-contexts
@@ -214,7 +215,7 @@
   ;; Reuse only exact Gerbil-observed compiler contexts. A source path or Core-like
   ;; identity alone grants no exemption from publication source confinement.
   (def (capture-tool-sources!)
-   (parameterize ((current-module-source-phase 'compiler-tools))
+   (parameterize ((current-module-source-phase 'import-provenance))
    (call-with-module-source-read-cache
     (lambda ()
       (for-each

@@ -99,7 +99,7 @@ plan object as the demanded slot, a child of a cached parent obtains its own
 plan, and a derived Record obligation refuses before serialization. It exports
 one Suite binding, so the official Harness does not discover the same Suite
 again through an alias. Reproduce with
-=just test-file t/feature-system-bundle-v1-composition-writer-test.ss= and the
+=just test-file t/feature-bundle-v1-composition-writer-test.ss= and the
 existing composition consumers in =t/scenarios/=. No new execution dispatcher
 or cache protocol is involved.
 

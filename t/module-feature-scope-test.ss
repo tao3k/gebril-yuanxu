@@ -1,6 +1,9 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+prelude: :gerbil/core
+
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .cc .get .ref .slot? .call .put!)
         (only-in :clan/poo/mop validate)
@@ -171,7 +174,7 @@
               (+malformed "invalid Module Feature refinement")
               (+primitive "must return a POO scope")
               (+wrong-port "feature/base"))))))
-    (yuanxu-test-case "a downstream requires refinement cannot erase a selected provider Feature Contract"
+    (yuanxu-test-case "cross-owner Feature selection composes only demanded scopes and preserves provider Contracts"
       (with-feature-scopes
         (lambda (root _module-root)
           (for-each
@@ -196,7 +199,7 @@
                                                '(.o (:: self scope) memory: #f)))))
                             scope-contract: ReviewContract
                             exports: (.o observed: (.get Source memory)))
-                        features: (.o)))))
+                        features: ',(if (eq? name 'review) '(audit exclusive) '())))))
               (for-each
                 (lambda (role)
                   (write-file (path-expand (string-append (symbol->string role) ".ss") module-root)
@@ -205,18 +208,72 @@
                         (for-each (lambda (form) (write form port) (newline port)) (.ref roles role))))))
                 '(types objects config interface)))
             '((review #t) (override #f)))
+          (def review-feature (path-expand "modules/custom/review/features/audit" root))
+          (create-directory* review-feature)
+          (write-file (path-expand "interface.ss" review-feature)
+            "(import (only-in :yuanxu/module-system/source/declaration .def))
+             (.def Feature requires: '(custom/example/memory)
+                           refine: enable-audit contract: AuditContract)")
+          (write-file (path-expand "objects.ss" review-feature)
+            "(import (only-in :clan/poo/object .o))
+             (def (enable-audit scope) (.o (:: self scope) audited: #t))
+             (export enable-audit)")
+          (write-file (path-expand "types.ss" review-feature)
+            "(import (only-in :clan/poo/object .cc)
+                     (only-in :clan/poo/type Record True))
+             (def AuditContract (.cc (Record audited: [True]) identity: 'feature/audit))
+             (export AuditContract)")
+          (write-file (path-expand "modules/custom/review/features/exclusive/interface.ss" root)
+            "(import (only-in :yuanxu/module-system/source/declaration .def))
+             (.def Feature conflicts: '(custom/example/memory))")
           (write-file (path-expand "review.ss" root)
-            "(yuanxu! mode: explicit :custom (example +memory) (review))")
+            "(yuanxu! mode: explicit :custom (example +memory) (review +audit))")
+          (write-file (path-expand "conflict.ss" root)
+            "(yuanxu! mode: explicit :custom (example +memory) (review +exclusive))")
+          (write-file (path-expand "withdrawn.ss" root)
+            "(yuanxu! mode: explicit :custom (example -memory) (review +audit))")
           (write-file (path-expand "override.ss" root)
             "(yuanxu! mode: explicit :custom (example +memory) (override))")
           (def good (yuanxu-load-modules (path-expand "review.ss" root)))
           (def bad (yuanxu-load-modules (path-expand "override.ss" root)))
-          (def review (.get good modules custom review))
+          (defvalues (provider provider-counts)
+            (call-with-module-source-operation-measurement
+              (lambda () (.get good modules custom example))))
+          (check-equal? (.get provider memory) #t)
+          (check-equal? (hash-get provider-counts '(calls (scope-factory custom/example))) 1)
+          (check-equal? (hash-get provider-counts '(calls (scope-factory custom/review))) #f)
+          (check-equal?
+            (hash-get provider-counts '(calls (feature-refinement custom/review custom/review/audit))) #f)
+          (defvalues (review review-counts)
+            (call-with-module-source-operation-measurement
+              (lambda () (.get good modules custom review))))
           (check-equal? (.get review observed) #t)
+          (check-equal? (.get review audited) #t)
+          (check-equal? (hash-get review-counts '(calls (scope-factory custom/example))) #f)
+          (check-equal? (hash-get review-counts '(calls (scope-factory custom/review))) 1)
+          (check-equal?
+            (hash-get review-counts '(calls (feature-admission custom/review custom/review/audit))) 1)
           (def message (exception-message (lambda () (.get bad modules custom override))))
           (check-equal? (and (string-contains message "feature/memory") #t) #t)
           (check-exception ((.get bad admit-current)) error?)
-          (check-equal? (eq? review (.get good modules custom review)) #t))))
+          (for-each
+            (lambda (entry)
+              (def rejected (yuanxu-load-modules (path-expand (car entry) root)))
+              (defvalues (refusal counts)
+                (call-with-module-source-operation-measurement
+                  (lambda ()
+                    (exception-message (lambda () (.get rejected modules custom example))))))
+              (for-each
+                (lambda (part) (check-equal? (and (string-contains refusal part) #t) #t))
+                (cdr entry))
+              (check-equal? (hash-get counts '(calls (scope-factory custom/example))) #f)
+              (check-equal? (hash-get counts '(calls (scope-factory custom/review))) #f)
+              (check-exception ((.get rejected admit-current)) error?))
+            '(("conflict.ss" "selected Graph rejected" "conflict" "custom/review/exclusive")
+              ("withdrawn.ss" "selected Graph rejected" "missing-dependency" "custom/review/audit")))
+          (check-equal? (eq? review (.get good modules custom review)) #t)
+          (delete-file (path-expand "types.ss" review-feature))
+          (check-exception ((.get good admit-current)) error?))))
     (yuanxu-test-case "source mutation inside a Feature refuses before returning its scope"
       (with-feature-scopes
         (lambda (root module-root)

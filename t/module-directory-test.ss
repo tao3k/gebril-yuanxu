@@ -2,14 +2,14 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/io/tempfile make-temporary-file-name)
-        (only-in :std/error Error? Error-message)
+        (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .+ .get .ref .slot? .ref/cached .all-slots/sort)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case
                  yuanxu-test-case/with yuanxu-default-testing-case-profile)
         (only-in :yuanxu/module-system/source/observations
                  module-source-text-guard module-source-read module-source-observe
-                 call-with-module-source-read-cache current-module-source-observer)
+                 call-with-module-source-read-cache current-module-source-observer module-source-type)
         (only-in :clan/poo/mop Type.)
         :yuanxu/module-system/feature/model
         :yuanxu/module-system/source/objects
@@ -137,13 +137,42 @@
          (check-exception (yuanxu-load-modules (path-expand "modules" root)) error?)
          (let (view (yuanxu-load-modules (path-expand "modules/init.ss" root)))
            ((.get view admit-current))))))
-    (yuanxu-test-case "symlink module entries cannot escape the source root"
+    (yuanxu-test-case "directory policy retains owner and symlink refusal order"
       (with-sources
        (lambda (root)
-         (write-source (path-expand "init.ss" root) "(yuanxu! mode: auto source: \"./modules\")")
+         (def init (path-expand "init.ss" root))
+         (write-source init "(yuanxu! mode: auto source: \"./modules\")")
          (create-symbolic-link (path-expand "modules/custom/guestbook" root)
                                (path-expand "modules/escape" root))
-         (check-exception (yuanxu-load-modules (path-expand "modules" root)) error?))))
+         (create-symbolic-link (path-expand "modules/custom/guestbook" root)
+                               (path-expand "modules/a:excluded" root))
+         (check-exception (yuanxu-load-modules (path-expand "modules" root))
+           (lambda (failure)
+             (and (Error? failure)
+                  (equal? (Error-message failure) "symlink in module source tree")
+                  (equal? (cadr (Error-irritants failure)) "a:excluded"))))
+         (write-source init "(yuanxu! mode: explicit source: \"./modules\" (core) (alias @ \"./modules/core\"))")
+         (check-exception (yuanxu-load-modules init)
+           (lambda (failure)
+             (and (Error? failure)
+                  (equal? (Error-message failure) "duplicate declared module source owner")))))))
+    (yuanxu-test-case "an enclosing source window retains physical owner resolution"
+      (with-sources
+        (lambda (root)
+          (def init (path-expand "init.ss" root))
+          (def directory (path-expand "./modules" (path-directory init)))
+          (def core (path-expand "core" directory))
+          (def custom (path-expand "custom" directory))
+          (write-source init "(yuanxu! mode: explicit source: \"./modules\" (core disable: #t) (custom))")
+          (call-with-module-source-read-cache
+            (lambda ()
+              (check-equal? (module-source-type core) 'directory)
+              (rename-file core (path-expand "modules/original" root))
+              (create-symbolic-link custom core)
+              (check-exception (yuanxu-load-modules init)
+                (lambda (failure)
+                  (and (Error? failure)
+                       (equal? (Error-message failure) "duplicate declared module source owner")))))))))
     (yuanxu-test-case "wide directory names retain exact misses and live path checks"
       (with-sources
        (lambda (root)

@@ -406,4 +406,225 @@ theorem declaration_effect_return_rechecks {Declaration : Type}
       simp [changed] at live
   exact ⟨by rw [entry]; rfl, by simp [reuseDeclaration, stale]⟩
 
+section DirectoryOwnerKeys
+
+variable {Owner PathKey Refusal : Type}
+
+/-- A successful callback-free root snapshot can certify an exact direct child.
+Every other row still uses its own native filesystem normalization result. -/
+structure DirectOwnerKeys (normalize : Owner → Except Refusal PathKey) where
+  direct : Owner → Option PathKey
+  exact : ∀ owner key, direct owner = some key → normalize owner = .ok key
+
+def ownerKeyFromRoot (normalize : Owner → Except Refusal PathKey)
+    (root : Option (DirectOwnerKeys normalize)) (owner : Owner) : Except Refusal PathKey :=
+  match root.bind (fun evidence => evidence.direct owner) with
+  | none => normalize owner
+  | some key => .ok key
+
+theorem owner_key_from_root_exact (normalize : Owner → Except Refusal PathKey)
+    (root : Option (DirectOwnerKeys normalize)) (owner : Owner) :
+    ownerKeyFromRoot normalize root owner = normalize owner := by
+  cases root with
+  | none => rfl
+  | some evidence =>
+    cases found : evidence.direct owner with
+    | none => simp [ownerKeyFromRoot, found]
+    | some key => simp [ownerKeyFromRoot, found, evidence.exact owner key found]
+
+def ownerRootForWindow {normalize : Owner → Except Refusal PathKey} (enclosing : Bool)
+    (root : Option (DirectOwnerKeys normalize)) : Option (DirectOwnerKeys normalize) :=
+  if enclosing then none else root
+
+theorem enclosing_window_uses_physical_owner_keys (normalize : Owner → Except Refusal PathKey)
+    (root : Option (DirectOwnerKeys normalize)) (owner : Owner) :
+    ownerKeyFromRoot normalize (ownerRootForWindow true root) owner = normalize owner := rfl
+
+variable [DecidableEq PathKey]
+
+/-- Path collisions retain the first conflicting declaration in source order,
+including owners whose Interface is disabled. -/
+def indexOwnerKeys (normalize : Owner → Except Refusal PathKey)
+    (duplicate : Owner → Refusal) (seen : List PathKey) : List Owner →
+      Except Refusal (List PathKey)
+  | [] => .ok seen
+  | owner :: rest => (normalize owner).bind fun key =>
+    if key ∈ seen then .error (duplicate owner)
+    else indexOwnerKeys normalize duplicate (key :: seen) rest
+
+theorem owner_index_from_root_exact (normalize : Owner → Except Refusal PathKey)
+    (root : Option (DirectOwnerKeys normalize)) (duplicate : Owner → Refusal)
+    (seen : List PathKey) (owners : List Owner) :
+    indexOwnerKeys (ownerKeyFromRoot normalize root) duplicate seen owners =
+      indexOwnerKeys normalize duplicate seen owners := by
+  have exactNormalizer : ownerKeyFromRoot normalize root = normalize :=
+    funext (owner_key_from_root_exact normalize root)
+  rw [exactNormalizer]
+
+theorem owner_index_stops_at_first_duplicate :
+    indexOwnerKeys (fun (_ : Nat) => (.ok 0 : Except Nat Nat)) id [] [1, 2, 3] = .error 2 := rfl
+
+/-- A failed early root probe leaves the original owner pass in front of the
+root refusal. An index failure therefore still wins over a root failure. -/
+theorem rejected_root_preserves_owner_refusal (normalize : Owner → Except Refusal PathKey)
+    (duplicate : Owner → Refusal) (owners : List Owner) (ownerError rootError : Refusal)
+    (first : indexOwnerKeys normalize duplicate [] owners = .error ownerError) :
+    (indexOwnerKeys (ownerKeyFromRoot normalize none) duplicate [] owners).bind
+      (fun _ => (.error rootError : Except Refusal Unit)) = .error ownerError := by
+  rw [owner_index_from_root_exact, first]
+  rfl
+
+end DirectoryOwnerKeys
+
+section DecisionViews
+
+/-- Identity may already be qualified by the source window. A signed decision
+includes a withdrawal. Disabled rows remain indexed as owners. -/
+def decisionViews {Row Key : Type} (identity : Row → Key)
+    (disabled signed : Row → Bool) : List Row → List Key × List Key × List Key
+  | [] => ([], [], [])
+  | row :: rest =>
+    let (selected, denied, featureRoots) := decisionViews identity disabled signed rest
+    if disabled row then (selected, identity row :: denied, featureRoots)
+    else (identity row :: selected, denied,
+      if signed row then identity row :: featureRoots else featureRoots)
+
+theorem decision_views_exact {Row Key : Type} (identity : Row → Key)
+    (disabled signed : Row → Bool) (rows : List Row) :
+    decisionViews identity disabled signed rows =
+      ((rows.filter (fun row => !disabled row)).map identity,
+       (rows.filter disabled).map identity,
+       (rows.filter (fun row => !disabled row && signed row)).map identity) := by
+  induction rows with
+  | nil => rfl
+  | cons row rest ih =>
+    cases h : disabled row <;> cases s : signed row <;>
+      simp [decisionViews, h, s, ih]
+
+end DecisionViews
+
+section DirectoryPolicy
+
+variable {Check : Type}
+
+/-- A check can represent a path observation or a collision bucket.
+The roster is ordered by the reference refusal order. -/
+def firstPolicyRefusal (roster : List Check) (accepts : Check → Bool) : Option Check :=
+  roster.find? (fun check => !accepts check)
+
+/-- The first pass observes all candidate directory names. Only unchecked
+names before the first known link can precede that link's refusal. -/
+def directoryLinkCandidates (observed isLink : Check → Bool) : List Check → List Check
+  | [] => []
+  | name :: rest =>
+    if observed name then
+      if isLink name then [name] else directoryLinkCandidates observed isLink rest
+    else name :: directoryLinkCandidates observed isLink rest
+
+theorem directory_link_refusal_exact (observed isLink : Check → Bool)
+    (names : List Check) :
+    (directoryLinkCandidates observed isLink names).find? isLink = names.find? isLink := by
+  induction names with
+  | nil => rfl
+  | cons name rest ih =>
+    cases known : observed name <;> cases link : isLink name <;>
+      simp [directoryLinkCandidates, known, link, ih]
+
+/-- Reusing directory observations and owner keys together preserves the
+owner refusal, then the collision refusal, then the first symlink refusal. -/
+theorem owner_and_directory_refusals_exact {Owner PathKey Refusal : Type}
+    [DecidableEq PathKey] (normalize : Owner → Except Refusal PathKey)
+    (root : Option (DirectOwnerKeys normalize)) (duplicate : Owner → Refusal)
+    (owners : List Owner) (collision : Option Refusal) (linkError : Check → Refusal)
+    (observed isLink : Check → Bool) (names : List Check) :
+    let finish (keys : List PathKey) (link : Option Check) : Except Refusal (List PathKey) :=
+      match collision, link with
+      | some cause, _ => .error cause
+      | none, some name => .error (linkError name)
+      | none, none => .ok keys
+    (indexOwnerKeys (ownerKeyFromRoot normalize root) duplicate [] owners).bind
+      (fun keys => finish keys ((directoryLinkCandidates observed isLink names).find? isLink)) =
+    (indexOwnerKeys normalize duplicate [] owners).bind
+      (fun keys => finish keys (names.find? isLink)) := by
+  dsimp only
+  rw [owner_index_from_root_exact, directory_link_refusal_exact]
+
+/-- Reuse requires the same observed cut. A link introduced at an independent
+effect boundary cannot be authenticated by the original first-pass observation. -/
+theorem directory_link_changed_cut_requires_observation :
+    (directoryLinkCandidates (fun _ : Nat => true) (fun _ => false) [0]).find?
+      (fun _ => true) ≠ ([0] : List Nat).find? (fun _ => true) := by decide
+
+/-- An opaque probe that omits one required check has the same observations
+on a fully valid cut and a cut that must refuse. -/
+theorem omitted_check_indistinguishable [DecidableEq Check] (roster probed : List Check)
+    (missing : Check) (required : missing ∈ roster) (omitted : missing ∉ probed) :
+    probed.map (fun _ => true) = probed.map (fun check => decide (check ≠ missing)) ∧
+      firstPolicyRefusal roster (fun _ => true) = none ∧
+      firstPolicyRefusal roster (fun check => decide (check ≠ missing)) = some missing := by
+  constructor
+  · induction probed with
+    | nil => rfl
+    | cons check rest ih =>
+      have different : check ≠ missing := fun same => omitted (same ▸ (by simp))
+      have restOmitted : missing ∉ rest := fun mem => omitted (by simp [mem])
+      have headExact : decide (check ≠ missing) = true := decide_eq_true different
+      rw [List.map_cons, List.map_cons, headExact, ih restOmitted]
+  constructor
+  · simp [firstPolicyRefusal]
+  · induction roster with
+    | nil => simp at required
+    | cons check rest ih =>
+      by_cases same : check = missing
+      · simp [firstPolicyRefusal, same]
+      · have inRest : missing ∈ rest := by
+          simpa [Ne.symm same] using required
+        simpa [firstPolicyRefusal, same] using ih inRest
+
+theorem no_exact_policy_from_incomplete_probe [DecidableEq Check]
+    (roster probed : List Check) (missing : Check)
+    (required : missing ∈ roster) (omitted : missing ∉ probed)
+    (decideFromProbe : List Bool → Option Check) :
+    ¬ ∀ accepts : Check → Bool,
+        decideFromProbe (probed.map accepts) = firstPolicyRefusal roster accepts := by
+  intro exactDecision
+  obtain ⟨same, good, bad⟩ :=
+    omitted_check_indistinguishable roster probed missing required omitted
+  have accepted := exactDecision (fun _ => true)
+  have refused := exactDecision (fun check => decide (check ≠ missing))
+  rw [good, same] at accepted
+  rw [bad, accepted] at refused
+  contradiction
+
+/-- Indexed retrieval may supply an ordered subset directly. Keeping all
+failures suffices to preserve the first refusal on the new roster. -/
+theorem indexed_first_refusal_exact (candidates roster : List Check)
+    (accepts : Check → Bool) (ordered : candidates.Sublist roster)
+    (unique : roster.Nodup)
+    (covers : ∀ check ∈ roster, accepts check = false → check ∈ candidates) :
+    firstPolicyRefusal candidates accepts = firstPolicyRefusal roster accepts := by
+  induction ordered with
+  | slnil => rfl
+  | @cons candidates rest check tail ih =>
+    obtain ⟨outside, uniqueRest⟩ := List.nodup_cons.mp unique
+    have accepted : accepts check = true := by
+      cases current : accepts check with
+      | true => rfl
+      | false => exact False.elim (outside (tail.subset (covers check (by simp) current)))
+    have coversRest : ∀ other ∈ rest, accepts other = false → other ∈ candidates :=
+      fun other mem bad => covers other (List.mem_cons_of_mem _ mem) bad
+    simpa [firstPolicyRefusal, accepted] using ih uniqueRest coversRest
+  | @cons_cons candidates rest check _ ih =>
+    obtain ⟨outside, uniqueRest⟩ := List.nodup_cons.mp unique
+    have coversRest : ∀ other ∈ rest, accepts other = false → other ∈ candidates := by
+      intro other mem bad
+      have retained := covers other (List.mem_cons_of_mem _ mem) bad
+      have different : other ≠ check := fun same => outside (same ▸ mem)
+      simpa [different] using retained
+    simp only [firstPolicyRefusal, List.find?_cons]
+    rw [← firstPolicyRefusal, ih uniqueRest coversRest]
+    rfl
+
+end DirectoryPolicy
+
 end YuanxuProof.ModuleSystem.Loading.NamespaceProjection

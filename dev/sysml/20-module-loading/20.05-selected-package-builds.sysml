@@ -2,6 +2,17 @@
 package YuanxuSelectedPackageBuilds {
     private import ScalarValues::*;
 
+    requirement def MetadataCatalogOwnership {
+        doc /* The catalog stores native module names, exact versions and
+               opaque dependency references. Resolution selects a release
+               within a supplied immutable snapshot. Demand reads dependency
+               metadata only for an exact release in that snapshot.
+               Module and Prototype realization are separate operations.
+               Gerbil owns package installation and imports. Incremental
+               publication compares expected release identities and returns a
+               complete successor only after all point edits pass. */
+    }
+
     requirement def RootQualifiedOwnerIdentity {
         doc /* A leaf declaration name is relative to its Gerbil module
                namespace. Agentic AI Lab Governance and Weaver Governance

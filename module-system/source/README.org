@@ -71,7 +71,7 @@ delegates that context to Gerbil and only releases bodies it enrolled itself.
 | =reader-guards.ss= | Run policy, metadata and source checks at operation boundaries |
 | =publication-reader.ss= | Read one Interface with confined imports and demand-driven role values |
 | =configuration-reader.ss= | Evaluate an explicit Build or configuration binding |
-| =compiler-tools.ss= | Capture native compiler contexts and their observed source support |
+| =import-provenance.ss= | Record Gerbil import context identities and authenticate their observed sources |
 | =reader-evaluation.ss= | Observe runtime evaluation and release completed interpreter bodies |
 | =reader-support.ss= | Carry preparation identity and ordered native read support |
 
@@ -188,8 +188,8 @@ Selected modules automatically include their declared Core dependency closure.
 This does not globally select every module under a category named core. A denied
 required owner fails before its publication is read. The error retains the
 requester chain; the denying init path and negative decision remain in context.
-Feature decisions resolve on the same selected graph. The Feature System checks
-selection requirements and conflicts. Module Collection owns source discovery,
+Feature decisions resolve on the same selected graph. The Feature component
+checks selection requirements and conflicts. Module Collection owns source discovery,
 and the linker admits the final scope against the Core and selected Feature
 Contracts. Build projects the collected Interface through Gerbil's imports.
 

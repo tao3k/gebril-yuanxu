@@ -40,10 +40,9 @@ Core remains independent of Agentic AI Lab, current product-specific adapters, A
 policy and deployment providers. The shared JSON Schema bridge is implemented in
 Core modules/json-schema. Optional-extension and
 build protocols may be implemented by consumers; Core must not import product
-owners to implement a shared primitive. The reusable Feature System is implemented in Core under
-[[file:../../module-system/feature/design/README.org][its ownership and migration guide]]; no import back into product implementations
-is needed or permitted. Moving documentation is not a source/API
-migration or proof that an adapter has been implemented.
+owners to implement a shared primitive. The Module System owns the reusable
+[[file:../feature/design/README.org][Feature component]]. Product adapters consume its public Gerbil interface
+=:yuanxu/module-system/feature/interface=.
 
 Core owns init selection semantics, directory/source-role Contracts, publication,
 Core/Feature integration and selected build graph design, including their research

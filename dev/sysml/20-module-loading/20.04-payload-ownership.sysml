@@ -88,6 +88,52 @@ package YuanxuPayloadOwnership {
                PublicationReads.private_core_slot_preserves_owner_and_resolver
                owns the captured-argument refinement. */
     }
+    requirement def CompactReadReceiptRepresentation {
+        doc /* The receiver may represent its preparation receipt and first
+               ordinary receipt directly. A second distinct ordinary key can
+               promote the directory while preserving every issued record
+               identity. LeanPoo PreparationEvidence.ReadDirectory proves
+               lookup/update correspondence and equal live-check results.
+               The Scheme candidate authenticates the actual compact or
+               table route and the original receiver generation on each
+               side of effects. Core's read projection must use the native
+               receipt lookup before this producer is adopted. SourceWindows
+               Quint remains the effect-boundary model. Retention diagnostics
+               do not qualify a replacement. */
+    }
+    requirement def DirectoryPublicationCoverage {
+        doc /* A sparse demand observes its reached paths. A global directory
+               policy requires all facts that can change its ordered refusal.
+               Admission.SourceWindows proves the indistinguishable-world
+               counterexample, preservation of the first refusal for a
+               covered cut, rejection across authority or revision, and
+               composition with unaffected summaries for a controlled edit.
+               Scheme must establish exact listing/kind coverage and live
+               generation ownership before consuming such a cut. Existing
+               SourceWindows Quint still requires fresh checks around effects.
+               Uncontrolled filesystem input retains independent live checks. */
+    }
+    requirement def SupportedComponentRepair {
+        doc /* An upstream POO revision may add or retire owners. Before
+               masking inactive positions, certify the new rows and every
+               surviving reader of retired providers. The repair region uses
+               forward and reverse reachability over the union of old and
+               new edges. LeanPoo SupportedComponents proves exact cold SCC
+               membership and order after projection through the successor
+               roster. Remapped members also require quotient edge checks
+               for readers outside the repair region. GraphOperations Quint
+               covers declared structural closure, and PersistentSelectedHead
+               covers stale head/fence rejection. Neither runs the SCC walk.
+               The POO source editor candidate appends private witness
+               positions without recycling retired addresses. DependencyRows
+               proves position uniqueness and roster correspondence. The
+               existing reverse index supplies retired providers' surviving
+               readers for ordered source admission. The Scheme candidate
+               repairs the partition and condensation under the same staged
+               publication and splices the group witnesses using predecessor
+               and successor positions. Large workload and downstream
+               qualification remain distinct gates. */
+    }
     requirement def LoadingStageEvidence {
         doc /* Library compilation, selected-graph construction, demand of a
                selected business scope and runtime compiled-module loading are

@@ -1,0 +1,720 @@
+#+title: 10.10 First Demand: Implementation Obligations
+#+language: en
+#+property: STATUS design-review
+
+* Decision
+
+Seconds-scale sparse first demand remains an unresolved product defect.
+Do not describe an indexed Graph kernel, an abstract Lean resolver, or a
+faster replay microbenchmark as its resolution. Keep consumer pins unchanged
+until the producer eliminates the predicted work and the actual consumer
+exercises that path. Preserve the existing 180-second / 4-GiB and downstream
+120-second gates; those watchdogs are not latency objectives.
+
+This review narrows [[file:10.08-first-demand-algorithm-review.org][10.08]] to the remaining source-to-runtime obligations.
+[[file:10.13-admission-and-demand-boundary.org][10.13]] gives the adaptive-admission lower bound and the concrete existing
+=object<-fun= implementation cut. It distinguishes unknown-source certification
+from facts derived by the real constructor; neither moves work outside EVAL.
+It changes no Scheme entrypoint. =yuanxu!=, Interface, Gerbil import and POO
+=.get= remain the user path. The common implementation of POO actions belongs
+in gerbil-poo; directory/owner admission belongs in Yuanxu. No extra evaluator,
+loader, cache, purity tag or package resolver is proposed.
+
+* Correct interpretation of the evidence
+
+| Observation | What was timed | What it does not establish |
+|-------------+----------------+----------------------------|
+| Historical 2.355719 s wall / 2.260404 s CPU | First business request in a 10K catalog; two admitted owners and two scopes, Core b1b895d / POO 269dfb5 | Current public head latency, or SCC latency |
+| Separate topology diagnostic, about 0.72 ms wall | Dependency topology stage | End-to-end source admission or first demand |
+| 727 shared records in a 916-record checkpoint | Fixed-size sampled Profile support; same Profile identity in 43 sampled checkpoints | Reconstructing that Profile per owner, or quadratic growth in owner count |
+| Guarded producer comparison, 251.699 ms CPU | 500 complete cold construct/read operations, 256 slots / 32 layers | A single operation taking 251.699 ms, or successful Module acceptance |
+| Failed dense 10K diagnostic | 3,194 value admissions before interruption; 19,165 replays; 18,380,242 visits | Completed 10K EVAL or completed SCC |
+
+The batch denominator matters. The guarded comparison averages approximately
+0.503 ms per cold operation, but the measured batch does not report the latency
+distribution of individual operations. The separate historical 60-by-256 action
+study performs 15,360 observable writes. Neither study replaces first Module
+demand. Existing seconds-scale and failed results remain failures.
+
+In a separate diagnostic, the directory Context used 1.233 s CPU, including
+519 ms owner indexing (424 ms system CPU). This identifies substantial work
+outside Graph ordering; it cannot be subtracted from another run's total.
+The failed dense diagnostic also observed about 3.55 billion initializer source
+characters read. Eliminate repeated proof production and source replay in their
+owners before attempting another SCC algorithm substitution. Inclusive spans
+overlap; do not add them together.
+
+* Apply the papers at the correct boundary
+
+POOF separates prototype composition from its recursive instance and separates
+effective methods from mutable results. Lambda: The Ultimate Object, sections
+10.2–10.3, distinguishes record representation from recursive computation,
+including a record of suspended fields. In this implementation that supports
+sharing ordered indexes and unbound method recipes, then binding only demanded
+methods to the final receiver. It does not authorize sharing receiver values,
+failure state, inherited =sup= continuations or currentness approvals.
+
+Self-adjusting computation couples retained computations with tracked mutable
+inputs and change propagation. Its correctness result is not a permission to
+reuse after arbitrary untracked mutation. Here the existing POO read issuer,
+receiver-owned slot state and forward/reverse dependency indexes are the
+mechanisms to use. Adding another memo table would not supply missing tracking.
+
+These are design applications of the cited semantics. None of the papers gives
+a millisecond bound for this Scheme implementation or arbitrary filesystem I/O.
+Choose a Graph path by available evidence (cold rows, certified order, exact
+delta, affected SCC), not just a vertex-count threshold. Input capture and output
+enumeration remain charged even when the indexed kernel is fast.
+
+* Implementation plan and proof gaps
+
+| Owner and path | Work that must disappear | Existing evidence | Missing implementation obligation |
+|----------------+--------------------------+-------------------+-----------------------------------|
+| POO method preparation, =compute-slot-funs!= | Compile/bind unrelated effective methods on one-key demand; repeated C4 selection | =IndexedPlan.prepareKey_sound=, =prepareKey_frame=; guarded protocol-selection Scheme change | A Scheme source issuer certifying whole-preparation refusal and original payload-capture time, including shadowed malformed input, mutable SlotSpec and hook order. The point-resolver theorem alone does not supply it |
+| POO observation, =slot-observation.ss= | Opaque fixed data collection was a candidate source of conservative fallback | Local =ReadSelection= proof and native candidate, below | Candidate rejected for this performance problem: the real consumer's operation counts are unchanged. Do not add its runtime API |
+| Yuanxu factory receipt producer | Redundant structural presence proofs in the enduring receipt | Existing call-local =owned-read-fields-present?= inventory route | Reduce the actual producer support and preserve its Contract. Replacing the Profile collector alone did not reduce it |
+| POO read replay | Repeated topology acquisition / route lookup within a closed interval | Existing issued-read topology and fixed-result replay | Reuse only within the proved interval; authenticate original records in refusal order and restart independently after expansion or author effects |
+| Yuanxu directory Context | Repeated observation of the same required source fact in one cut | Existing child-kind reuse and source-window contracts | One ordered projection of required facts and indexes. Unknown source still receives ordinary certification; no hidden init prepayment |
+| POO publication / Graph | Whole owner scan and full index copy for an authenticated local edit | Existing checked delta, old reverse index and repair contracts | Verify the real caller uses the exact delta; visit affected old/new closure and publish atomically; unknown edits keep safe fallback |
+
+The current public Core admission already calls
+=call-with-current-slot-reads roots void= and retains a checkpoint root spine.
+The older canonical checkout's generic replay is not the public baseline.
+Replacing that old call again would not improve the public implementation.
+
+The examined observation path is
+=source/admission.ss:read-authoring-interface=. It installs a newly allocated
+callback whose body filters receiver/key and retains the original read. During
+the enclosed getter, =owned-read-function-scope?= cannot classify that arbitrary
+procedure as maintained data collection. The matched experiment below rejects
+the hypothesis that replacing this collector reduces the consumer's replay
+work. Its dynamic extent ends before per-datum role admission; it is not an
+observer spanning all those later receipt constructors. Capturing only final
+frame roots is not an equivalent substitute: the callback receives nested read
+events too. Peeking at a read table after delivery is not equivalent either.
+
+* Rejected experiment: fixed read selection
+
+The unpromoted =LeanPoo.Object.ReadSelection= draft models a selector with only
+receiver identity, key identity and a private output-cell identity. Native
+metadata reads occur at its original position among arbitrary observers.
+
+- =capture_eq_reference= and =delivery_eq_reference= preserve the old filter,
+  arbitrary callback interleavings, original event identity, partial state and
+  the first error.
+- =receiver_mismatch_skips_key= preserves receiver-before-key short circuit.
+- =capture_external_frame= preserves user state and the enclosing capture roots;
+  selection only retains the event in its private output cell.
+- =moving_selection_across_callback_changes_capture= is a counterexample to
+  precomputing matches or batching collectors ahead of callbacks: a prior
+  callback changes the receiver metadata and the selected event changes.
+- =structural_query_does_not_match_symbol= separates symbolic selection from
+  the structural presence/names queries replaced by the existing inventory path.
+
+The focused Lean build passed together with =Object.Indexed= and
+=Object.SlotPreparation= (48 jobs). An explicit axiom audit reports only
+=propext= / =Quot.sound= for equivalence; the external frame and counterexample
+use no axioms. This is a structural model, not a Scheme refinement
+proof, a receipt-pruning proof, thread/continuation qualification or latency
+result. No Scheme or consumer pin change follows from it alone. The draft
+belongs to LeanPoo, not a duplicate Core object implementation.
+
+An isolated Scheme candidate implemented that private collector inside the
+existing observation scope. It has no procedure fields and retains original
+delivery positions. The existing issued-read suite passed all 33 Cases: the
+29 original Cases plus four reference/native comparisons for nested duplicate
+events, mutable metadata order, callback/precheck classification, and disabled
+observation/exception restoration. This is focused evidence; native thread or
+continuation equivalence was not qualified.
+
+The actual consumer comparison used frozen Core =b1b895d= with production
+=-O2= POO overlays and the same bounded-accounting overlay in both arms.
+Both arms use the same candidate POO observation module; only the consumer's
+Profile collector changes. This isolates its downstream work claim, not the
+overall cost of introducing the candidate. It is not current public Core
+acceptance. The existing =module-runtime-attribution-test.ss= passed all three
+Cases in each arm, with normal markers and no source observer.
+
+| Workload and stage | Reference / candidate replays | Reference / candidate record visits |
+|--------------------+-------------------------------+-------------------------------------|
+| 16 owners, declaration admission | 100 / 100 | 97,419 / 97,419 |
+| 64 owners, declaration admission | 388 / 388 | 383,451 / 383,451 |
+| 64 owners, currentness only | 1 / 1 | 7,592 / 7,592 |
+| 64 owners, scope after admission | 14 / 14 | 106,288 / 106,288 |
+| 64 owners with open payloads, declaration admission | 388 / 388 | 383,451 / 383,451 |
+
+All 36 replay/checkpoint/index/visit counters over all nine measured stages
+match exactly. A separate experiment-only counter confirms the replacement
+actually runs: 17 calls in the 16-owner first Case (including initial checkpoint
+construction), then 64 in each 64-owner Case. The probe passes the same suite
+and leaves the measured work unchanged. This rules out a missing overlay as the
+explanation. It does not count all produced records, but it directly contradicts
+the predicted reduction of actual replay work.
+
+Therefore do not publish the collector API, change the Core consumer, run 10K
+because of it, or promote it as a performance fix. No matched mutation/performance
+qualification beyond this rejection is needed. The draft proof and native
+experiment stay local as failed-route evidence; the proposed SysML runtime
+requirement is removed. Existing POO observation and Core admission remain the
+production design. Revisit the producer's actual method preparation and enduring
+receipt, rather than spending more runs on this eligibility hypothesis.
+
+* Confirmed next boundary: scope checks inherit the complete publication proof
+
+[[file:10.11-owner-currentness-and-publication-view.org][10.11]] records the new selected-root, controlled-write and same-view proofs,
+their counterexamples, and the native source-binding obligations still open.
+
+The scope-stage visit count is exactly 14 times the independent-currentness
+count in both measured sizes: =37,744 = 14 * 2,696= and
+=106,288 = 14 * 7,592=. These are observations of the same three-case cohort,
+not a fitted complexity bound or proof that every replay root is identical.
+
+The source path explains why the proof can grow with all admitted publications.
+At public Core =fbe38020=, =source/link.ss:metadata-index= takes every entry
+from the =publications= table. Its =roots= slot merges every record's preparation
+and admission roots. =check-publications-current!= invokes
+=check-indexed-publications!=, which replays that merged proof before its
+entry/tail checkpoints. The same code is present in the frozen experiment.
+Thus a fast lookup of one leaf does not imply that the guard consumes only that
+leaf's support. The native topology index speeds traversal of the supplied
+proof; it does not choose a smaller proof on the consumer's behalf.
+
+Do not fix this by silently skipping other records. The existing
+=PublicationReads.shared_profile_recheck_is_independent= theorem already
+provides a counterexample: current local roots can coexist with stale shared
+support. Whole-selection certification and owner demand need explicit evidence
+boundaries before they can have different replay domains.
+
+The integration obligation is to bind the owner demand to the existing native
+publication view: exact generation/ticket, its certificate and dependency
+registration, plus the shared source-policy facts it actually consumes. Use
+the existing reverse index to fence affected certificates and admit their new
+dependency closure. Atomic publication must preserve that binding through
+entry/return checks; a local certificate cannot stand for a different global
+generation. Unknown source mutation or an unproved effect retains ordinary
+full checking. This is the missing consumer integration, not another cache.
+
+=Loading.DependencyPublication.concurrent_read_has_one_view= and
+=Loading.IncrementalRoles.recheck_owners_exact= already prove the snapshot and
+affected-closure laws. They do not establish that this =link.ss= guard uses
+those laws. The Scheme handoff is an open obligation. Audit and connect it
+before any claim that the Graph implementation solves Module first demand.
+
+* Implementation decision after the producer audit
+
+The source audit used POO =6446abe8= and Core =0fc1a866= on 2026-11-10.
+Neither head establishes improved first Module latency. The
+2.355719-second result above remains a historical measurement, not a new
+measurement of these heads. Do not update a consumer pin merely to make an
+indexed Graph available: first establish which operation actually uses it.
+
+There are three different Graphs on the examined path:
+
+| Graph | Existing owner | What a faster index can change |
+|-------+----------------+--------------------------------|
+| Prototype ancestry | =object.ss:compute-object-precedence!= and Gerbil C4 | Ordered inheritance; it does not select Module owners or scope receipts |
+| Issued-read support | POO observation / replay and receiver state | Traverse original dependency records and authenticate their live state |
+| Component dependencies | POO schedule / construction cache / publication | Reuse admitted rows, repair order and invalidate affected consumers |
+
+An SCC or topological-order improvement in the third Graph does not
+automatically change method preparation in the first, or the support supplied
+to the second. In particular, POO's existing =object-state= invalidation tracks
+prototype/receiver dependents and clears derived receiver state. It is not
+evidence that component schedule deltas already provide slot-granular
+invalidation for every POO action. That integration is a separate obligation,
+not an explanation established for the historical two-second sample.
+
+The source audit identifies two concrete whole-object operations to remove
+from sparse demand, under their original semantic obligations:
+
+1. =instantiate-object!= invokes =compute-slot-funs!= before allocating its
+   value store. That function prepares declarations across the C4 family,
+   validates contributions including shadowed input, compiles every surviving
+   chain, captures every payload, and finally invokes method hooks. Values
+   are lazy, but this method preparation is whole-object. A faster final
+   hash lookup does not avoid it.
+2. =source/link.ss:metadata-index= collects all admitted publications and their
+   roots; =check-indexed-publications!= authenticates this complete support.
+   A fast leaf lookup does not project that proof to the demanded owner.
+   Narrowing it requires the source-issued, same-view contract in [[file:10.11-owner-currentness-and-publication-view.org][10.11]],
+   including genuinely shared policy facts.
+
+The next first-demand implementation must therefore follow this order:
+
+- At the existing POO preparation owner, separate source admission/capture
+  from receiver binding. An admitted ordered recipe may be shared only when
+  its actual source authority covers C4, defaults, declarations, SlotSpec
+  payloads and protocol routes. Existing =prepareKey_sound= proves resolution
+  of an already supplied plan; it does not issue that authority. The issuer
+  and its preservation across real writes are the next proof obligation.
+- Bind only demanded chains to the final receiver. Preserve delayed =sup=,
+  receiver-local value/read state, missing-slot behavior, cycles, original
+  refusal order and observable reflection. Never share computed receiver
+  values as if they were recipes. A sealed receiver alone does not freeze
+  every reachable mutable SlotSpec or ancestor.
+- At Yuanxu's existing publication owner, bind the requested owner closure
+  and shared policy support to one immutable publication view. Reuse the
+  native reverse index for controlled edits; unknown writes retain ordinary
+  certification. Do not add another certificate table or approval cache.
+- Only after these paths remove the predicted method bindings or issued-read
+  visits should the existing first-business gate run again. Incremental
+  old-index continuation has its own qualification; it cannot by itself
+  improve a cold request with no prior graph.
+
+This plan cannot promise that sharing alone removes a fresh source's first
+linear capture. If a sibling's malformed contribution currently refuses the
+first access, omitting that sibling changes the public failure semantics.
+Likewise a raw SlotSpec payload edit need not advance its containing receiver's
+revision. A revision number or =seal-object!= alone is therefore insufficient
+to authorize borrowing old payloads. The concrete issuer must either derive
+coverage of every relevant write/capture from existing ownership mechanisms,
+or keep ordinary preparation. Moving full capture into init and calling the
+later lookup fast does not meet the cold-demand requirement.
+
+** What must remain visible in the first-request total
+
+For arbitrary fresh filesystem input, full namespace policy may require
+linear discovery, including names outside the selected closure. A Profile
+selected by tags may also require initial Interface metadata enumeration.
+Neither a hash index nor a Lean reachability theorem makes those inputs known
+without reading them. Keep this necessary source work distinct from redundant
+replays and from business scope construction. Charge it in the complete cold
+request even if it occurs during import or init; moving it earlier is not a
+latency improvement.
+
+The LeanPoo =SlotPreparation.PayloadCapture= laws make that limit
+explicit. =successful_capture_reads_all= counts the actual producer's required
+read schedule on successful capture; =capture_preserves_keys= retains its
+order and repeated keys, not a deduplicated final slot shape. =capture_append=
+preserves the first error under ordered composition. =capture_frame= transports
+the result only when the actual required field reads agree at both source
+cuts. This frame must come from native read/write authority, not a caller's
+claim that its object revision is unchanged.
+
+Three constructive counterexamples forbid skipping a required invalid sibling,
+reordering two failures, or moving a constant SlotSpec payload capture across
+an author callback. These laws model one closed preparation phase. They do not
+yet derive its schedule from Scheme: tag validation of a shadowed contribution
+and capture of a retained payload are different operations, and a discarded
+payload must not be added merely to make a certificate easier to construct.
+The native issuer, raw exposure and effectful phase composition remain open;
+no point-preparation Scheme adapter or speedup is claimed by this proof alone.
+
+The capture laws and old-inverse continuation laws are published on the
+existing [[https://github.com/tao3k/lean-poo/pull/16][LeanPoo PR #16]] at =7d72dc6a=, after a complete local
+404-job root build, 13 critical-law axiom checks and the existing POOF/Org
+checks (99 Org files). The laws use only standard Lean axioms; all three new
+capture counterexamples are axiom-free. The exact-head
+[[https://github.com/tao3k/lean-poo/actions/runs/42737048978][Lean CI]] also passed, including every shard and source differential.
+The later POO =e1a6f4c= change implements old-inverse continuation only, as
+qualified in [[file:10.11-owner-currentness-and-publication-view.org][10.11]]. Core/Ascent/Parser dependency pins remain unchanged.
+
+The =SlotPreparation.CapturedBinding= refinement proves the specific
+hook-free algorithm to use after capture. =newest_callable_exact= classifies
+an effective chain from its already captured most-specific head, without
+binding its suffix or invoking its body. =all_keys_refusal_exact= preserves
+the original complete callable-check result and first failing key in the
+original enumeration order. Classification must still cover every effective
+key, including those not demanded. Malformed thunk bodies hidden by a retained
+constant/computed wrapper must not gain an eager rejection.
+
+This permits eliminating eager receiver binding, not eliminating required
+capture. A one-key request can then bind its chain using the existing compiler;
+the existing receiver method/value cells remain the authority. Native storage
+must release the pending program when bound, preserve repeated procedure
+identity and reflection, and never memoize business results in a second store.
+The =hooks_can_repair_a_noncallable_result= counterexample excludes author
+hooks: a hook may legitimately repair a malformed next result before the
+stock callable check. Capture timing, actual callback-free routes, native
+method-cell/concurrency semantics and matched performance still require
+qualification. The refinement is published at LeanPoo =8255c64a= after the
+complete 404-job local root build, 19 critical-law axiom checks and the 99-file
+Org gate. Its exact-head [[https://github.com/tao3k/lean-poo/actions/runs/42741066172][Lean CI]] also passed; this qualifies the later
+refinement separately from the earlier green =7d72dc6a=.
+POO =72128c46= adds two matching semantics controls: hook repair of a captured
+non-callable thunk, and stable method identity with business memoization only
+at value demand. All 26 inheritance-hook Cases passed locally. That change
+also runs the owned inverse pairs in the existing CI command, without a new
+job or another complete-suite invocation. No Scheme point-preparation runtime
+or consumer pin change follows from these contracts and controls alone.
+
+The native representation to qualify is a pending/bound state in the existing
+receiver method store, not a second table of evaluated values. Capture the
+retained payloads in their original phase/order, then use the existing slot
+binder on the requested captured chain. A public method entry must retain
+stable procedure identity and its original arity; a thunk payload already
+supplied by its author must keep that exact procedure. Direct invocation of
+the method must still execute its body on every call. Only normal POO value
+demand owns business-result memoization. Binding must publish one method
+identity under the supported concurrent-read contract, without author code
+inside its publication boundary. Reflection, replacement and old retained
+method references must keep their existing behavior.
+
+The measured candidate must also retain a complete-demand control: deferring
+binding may help a sparse request while adding overhead when all fields are
+read. Compare both plus warm and clone paths on the same source cohort;
+qualify the whole requested path before selecting it. Native normalized
+single-step versus inherited-chain cases may justify different paths. A
+vertex-count or slot-count threshold by itself supplies neither authority
+nor evidence of a gain.
+
+For an already admitted, current source cut, unrelated owners should add zero
+admissions, scope constructions and receiver method bindings to sparse demand.
+After a supported local edit, charge the delta, affected closure and actual
+new demand. Across an arbitrary callback or Gerbil expansion, perform the
+independent check again. Sharing traversal structure never licenses carrying
+a successful currentness verdict across that boundary.
+
+These are work bounds and implementation obligations, not a claimed
+millisecond latency theorem. Seconds-scale first demand remains unacceptable;
+the remedy is to remove its actual whole-object work and then measure the
+complete request, not to relabel the watchdog or report an update benchmark.
+
+** Paper-to-implementation boundary
+
+POOF section 6.2 explicitly limits automatic invalidation in the presence of
+mutation: tracking restricted to objects cannot authenticate arbitrary changes
+elsewhere. =Lambda: The Ultimate Object= sections 10.3.2 and 10.4.2 distinguish
+a suspended whole record from independently suspended fields. Apply those
+distinctions to the preparation, binding and evidence boundaries above. Its
+discussion of expected constant-time mutable dictionary access does not make
+N dictionary operations constant work, nor remove payload capture or effects.
+This is an application of the papers, not a performance guarantee they state.
+
+* Fundamental review: an indexed lookup is not indexed preparation
+
+The current local pending-method experiment still walks every declaration,
+builds the whole =h= table, captures every retained chain and creates a wrapper
+for each eligible key. =instantiate-object!= then calls =hash-keys= and
+=make-slot-values= for the entire method directory. Deferring closure binding
+alone therefore leaves first preparation proportional to the complete object.
+It is a bounded constant-factor candidate, not the sparse preparation algorithm
+required here. Do not select it merely because a Graph or replay kernel is fast.
+
+The source audit also finds a correspondence gap before point preparation:
+=IndexedLayer.ofDeclaration= uses last-write-wins =Entry.toMap=, while the
+Scheme =prototype-map= retains duplicate contributions to the same method.
+=prototype-map-ref= returns the first contribution, not that method's complete
+chain. Neither function alone implements the native contribution fold. For
+example, a constant 1 followed by =sup + 2= and =sup * 3= produces 9; choosing
+the last contribution against a zero base produces 0. An otherwise sound
+hash lookup theorem must not hide this difference.
+
+LeanPoo =Object.OrderedContributions= adds the missing
+algorithm contract: one ordered source fold builds reverse contribution
+buckets; reversing the selected bucket reproduces every matching contribution
+in order. =indexed_fold_exact= preserves arbitrary final =self= and delayed
+=sup=; =other_key_frame= covers a concrete sibling insertion. These proofs
+operate on already supplied rows. They do not certify Scheme source admission,
+the separate default pass, payload-capture timing or a host hash complexity.
+The complete local =lake build LeanPoo= passed (404 jobs). The nine-law axiom
+audit reports only the standard =propext=, =Classical.choice= and =Quot.sound=,
+with no added axioms or =sorry=. The proofs are published at =3f8ca515= and
+the complete [[https://github.com/tao3k/lean-poo/actions/runs/42750559164][exact-head Lean CI]] passed. They do not extend the original
+=prepareKey_sound= claim to Scheme by assumption.
+
+Scheme already has a private name-to-position index. Its duplicate encoding
+is =first :: reverse(later)=: repeated inserts produce =[0,3,2,1]=, not
+chronological =[0,1,2,3]=. The draft =positions_append_exact= proves the exact
+decode/append law. Reuse those existing ordinals; do not add another index
+beside them. Compact maps scan at most eight entries. Large maps currently
+use RBTree lookups, so name/ordinal access is logarithmic, not an established
+expected-constant-time hash path. Any backend change belongs to POO's existing
+map representation and must cover duplicates, deletion/reinsertion, order,
+snapshot ownership and full-demand controls.
+
+Scheme =prototype-map-fold-key= now implements this prerequisite at POO
+=c463add8= against those existing indexes. The complete representation suite passed 86
+Cases; an isolated missing-tail-reversal fault failed the chronology and
+callback-refusal controls with exit 42, and restoration passed the original
+85-Case cohort. The final 86th Case explicitly retains raw malformed-sibling
+refusal even when keyed projection succeeds.
+The focused native study charges source construction and preserves all AB/BA
+observations, with work diagnostics after timing. At 10K/100K unrelated entries
+the selected query delivered three contributions rather than traversing
+10,003/100,003 entries. Its first indexed query measured 5/7 us CPU, while full
+source construction measured 23.482/466.459 ms CPU. These are individual local
+observations, not latency distributions or Module EVAL. The source issuer,
+sparse primary value store and consumer handoff remain unimplemented. No
+consumer pin or first-business qualification follows from this primitive.
+The complete [[https://github.com/tao3k/gerbil-poo/actions/runs/42750957489][exact-head Scheme CI]] failed at the same 1M band CSR allocation.
+The family-activation wrapper was therefore not accepted as a CI fix and is
+withdrawn. A weak-reference control releases five production Graph objects
+but observes retained interned fixture names; the combined command runs the
+million-name inverse study before the SCC Module. The next correction gives
+those independent benchmark Modules their existing separate Just/Gerbil
+process lifetimes. All functional suites still share their original process,
+and all unique benchmark cases, pairings, input names and heaps remain.
+The correction at =81447d16= passed the complete
+[[https://github.com/tao3k/gerbil-poo/actions/runs/42755780585][exact-head Scheme CI]]: all 30 jobs, including the original functional
+single-process gate and the complete certified Graph benchmark gate. This
+qualifies that CI correction, not the Core 4-GiB Module gate or first demand.
+
+** Constructor-owned source capture
+
+The published LeanPoo contract is =Object.SourcePreparation=, separated from
+method binding. Its producer constructs the four known forms, normalizes once,
+then retains the captured array. Issuance borrows that array; it does not map
+the complete source on each receiver request. A reachable sequence of actual
+allocation, raw exposure and permitted raw writes derives the private-field
+invariant. It is not a caller purity flag or a containing object revision.
+
+=reachable_original_capture_exact= transports that derived field equality to
+the existing ordered capture interpreter, including duplicates and the first
+missing-field error. =Reachable.capture_callable= derives callable installation
+for every produced sibling. It does not evaluate a body or authorize arbitrary
+raw SlotSpecs, hooks or declaration callbacks.
+
+Exposure precedes returning a raw handle and revokes new private issuance.
+A permitted raw write keeps the earlier prepared receiver's immutable methods
+while ordinary new capture observes the changed payload. The constructive
+malformed-thunk trace and =old_cut_cannot_certify_new_capture= reject using
+that old receiver cut as authority for a new capture. Fresh source identity
+also refuses a predecessor's handle after the new source exposes the same
+ordinal. This identity denotes native allocation, not a package revision,
+Module ID or new source digest.
+
+Native correspondence remains open: =object/init= and SlotSpec lowering must
+produce the owned form; =object-slots= and public prototype-map payload access,
+filtering/conversion and composition must preserve original raw identity and
+mark escape before an author can mutate it. Supported writes still use POO
+invalidation. Unknown source or an uncovered escape keeps full preparation.
+The model is not a theorem about unrestricted unsafe Scheme heap mutation.
+Its published =c00084ce= revision passed the complete 405-job local root build,
+the existing POOF/Org checks and the complete
+[[https://github.com/tao3k/lean-poo/actions/runs/42756237999][exact-head Lean CI]]. That establishes the modeled transition laws; it
+does not establish coverage of Scheme's available runtime writers.
+
+*** Rejected shortcut: exposure flags without runtime writer coverage
+
+Standard Gerbil MOP is part of this audit, not an unsafe-FFI exemption.
+=runtime.slot-ref= can obtain =object.%slots= and its compact =entries=
+vector; the original SlotSpec is the entry's payload. =runtime.slot-set!= can
+then replace its =fun= without advancing =object-revision= or calling
+=object-slots=, =prototype-map-ref= or any proposed exposure-marking wrapper.
+For a generated =(.o value: 7)=, an already prepared receiver must keep 7,
+while a fresh receiver over that same source must observe the replacement 11.
+The prepared receiver's immutable recipe is not authority for new capture.
+This diagnostic describes the current representation; it does not freeze its
+private fields as a public ABI. A replacement may remove that raw route, but
+must demonstrate its absence and preserve the actual public reflection and
+SlotSpec identity contracts instead of merely declaring the route unsupported.
+
+The local =SourcePreparation.runtime_bypass_*= counterexamples make the gap
+explicit: source identity and the unexposed marker remain unchanged, issuance
+still returns the original array, but raw field equivalence and the writer
+invariant both fail. The bypass is not reachable by the modeled writer. That
+last fact is a missing native correspondence obligation, not evidence that
+the real runtime cannot perform the write.
+
+Do not implement an exposure-bit-only issuer or classify ordinary MOP as
+out of scope to enable one. A private implementation must actually prevent
+unmarked mutable payload access, or authenticate every such access/write
+through existing POO ownership. Merely changing struct visibility does not
+do that. If this cannot be established, use ordinary capture for that source.
+Do not introduce a second source registry/cache to disguise the gap.
+
+This follows POOF's two separate lessons: share prototype representation and
+unbound computation, but do not assume mutation tracking covers changes
+outside the tracked interface. The concrete source is
+[[https://github.com/metareflection/poof/blob/9affa8fbbb4f12cbd98cb97f8b8b84474fc39429/poof.scrbl][POOF: different instance/prototype representation and cache invalidation]].
+Independent suspended fields avoid repeated whole-record work; they do not
+make an untracked mutable source immutable. No millisecond guarantee follows
+from the paper or the abstract ownership model.
+
+*** Shared storage authority across clone views
+
+[[file:10.12-composite-source-registration.org][10.12]] specifies the composite owner-count delta, actual ordinal binding,
+old-index/publication handoff and canonical-evidence ownership.
+
+The additional native control uses only public clone reflection: create
+=source= with a generated =value=, clone it with an unrelated =extra= override,
+prepare an old receiver, then obtain =value='s RawSpec through
+=object-slots clone=. Replacing its =fun= changes future captures through both
+source and clone, while the old receiver and source revision remain unchanged.
+The reflected original SlotSpec identity is shared. The exact-head freshly
+compiled reference passed the complete 92-Case representation/observation entry,
+including this control. No source observer was installed.
+
+An escape marker owned only by the clone would therefore leave the source's
+future issuer incorrectly live. Storage allocation identity must be distinct
+from clone/namespace view identity. The local Lean =SourcePreparation.View=
+transition delegates exposure to that actual shared storage owner.
+=View.exposure_revokes_alias_issuance= revokes new issuance for another view
+of the same owner; =View.exposure_other_owner_frame= leaves another owner's
+issuance unchanged. =View.identity_is_not_storage_authority= makes renaming
+irrelevant to this ownership. The witness theorem derives these results from
+the actual lookup, owner check and single-owner exposure transition.
+
+This proves one registered storage fragment. A complete clone can retain
+several fragments and add/replace its own contributions. Its exact owner
+registration, removal of overwritten support, and old reverse-index fencing
+must compose with the existing POO publication contracts before native source
+sharing is enabled. Preserve old prepared cuts; revoke permission for new
+capture, not already captured receiver methods. The model's =Storage= is the
+existing owner state, not a proposal for another runtime registry or cache.
+The complete local 405-job Lean root build, original POOF source audit and
+99-file Org gate pass. The four new view laws use no new axioms: identity
+independence is axiom-free; the witness and two exposure/frame laws use only
+=propext=. These additions are local proof evidence, not the already green
+published =c00084ce= head or a native source-sharing implementation.
+
+The storage audit also finds a concrete coupling: =read-route.ss= authenticates
+the layout's actual =cells= vector, missing marker, class and index route.
+Changing only =slot-layout.ss= to a sparse container would violate this
+authentication contract. Sparse primary storage and its native authentication
+must be proved and qualified together; no second store or weakened route check
+is acceptable. No Scheme storage/source switch follows from this local model.
+
+** Source, receiver and action boundaries
+
+The local =object/method-directory.scm= experiment now implements the narrower
+=CapturedBinding= / =PendingMethod= contract in POO itself. One existing native
+method table changes each captured program into its bound procedure in the
+same cell. It does not retain a second method cache or a business result.
+Payloads are captured in the original order before the complete callable
+preflight; unknown protocol routes keep the original eager implementation.
+Public method reflection returns the original procedure and arity. A private
+read-only diagnostic counts pending cells without installing an observer.
+
+The matching native control observes three pending methods after preparation,
+still three after presence/names queries, and two after one business demand.
+Explicit full method copying binds the remainder without evaluating their
+bodies. A changed backend method route is not invoked and selects the eager
+path. The current local inheritance, representation and issued-read suites
+pass. This is not native thread linearization qualification or a published
+latency improvement; the constructor-owned source issuer remains absent.
+
+An attempted automatic switch to the existing sparse HashTable value backend
+failed ten existing inline-cache/shape controls. That default switch was
+withdrawn; the tests and vector default remain intact. Having a supported hash
+read route does not preserve every layout/offset API automatically. Any later
+sparse-to-dense representation change must preserve the primary store's read
+identity, values and currentness, retain failure guards and be proved before
+its Scheme implementation. Do not add a second store, disable those controls
+or advertise the failed switch as a sparse preparation implementation.
+
+The local method-binding candidate still captures the complete required
+source and allocates the complete vector directory. Its cross-process AB/BA
+comparison recompiles the exact =81447d16= public sources and the candidate
+with the same =-O2= toolchain, then uses the same optimized benchmark
+module, the existing Just entry, natural GC and the original complete
+construction/clone workloads. All four benchmark commands passed. The native
+semantic gates passed 27 inheritance, 91 representation/observation and 29
+issued-read Cases, including the callback-return controls.
+
+| Workload | Repetitions per observation | Public A1 / A2 CPU ms | Candidate B1 / B2 CPU ms |
+|----------+-----------------------------+----------------------+--------------------------|
+| 1 slot, 1 layer, cold construct/read | 500 | 3.254 / 8.615 | 3.431 / 7.234 |
+| 1 slot, 1 layer, clone/read | 5000 | 63.296 / 91.953 | 62.724 / 90.884 |
+| 256 direct constant slots, 32 layers, cold construct/read | 500 | 235.012 / 341.866 | 230.279 / 342.687 |
+| 256 direct constant slots, 32 layers, clone/read | 5000 | 1047.729 / 1571.041 | 1028.153 / 1504.158 |
+
+These are complete batch observations, not single-request latencies or tail
+distributions. The 32-layer fixture has 31 empty ancestors; it is not a
+32-contribution =sup= chain at every field. Cold non-GC CPU at 256 slots is
+169.504 / 245.410 ms versus 163.454 / 252.484 ms. Some dense allocation
+samples are unqualified in both arms, as retained by the original sampler.
+No memory-reduction claim follows from their raw deltas.
+
+An earlier exploratory AB/BA reused an older compiled reference overlay whose
+provenance was not fully bound to that public head. Its apparent small-object
+regression is withdrawn as evidence about the public producer. Keep all its
+logs, but use the freshly compiled comparison above for that question. Both
+arms of the corrected comparison vary substantially between observations;
+there is no established repeatable gain and no measured attribution for that
+variation. These process-separated observations are not a same-process paired
+qualification.
+
+Do not select this standalone candidate: inconclusive timing, remaining
+whole-source work and an additional backend representation do not establish
+the required improvement. Do not publish it, introduce a
+size-threshold workaround or run 10K on its behalf. Keep the previous producer
+and consumer pins. The next native design must share an actually authenticated
+source plan first, retain public inline/layout behavior, and bind the selected
+receiver demand from that plan. Deferring binding while rebuilding the plan
+per receiver is not the required algorithm.
+
+The implementation target is one source-owned admitted representation and
+receiver-owned demand state, using the existing object stores. It requires
+these changes together, rather than renaming full-object work as lazy:
+
+| Existing operation | Required algorithm | Boundary that remains |
+|--------------------+--------------------+-----------------------|
+| Prototype construction / supported source edit | Admit ordered contributions once at the actual producer; retain existing name/ordinal index | Raw SlotSpec mutation and author hooks need actual capture/write authority; a revision number alone is insufficient |
+| C4 selection and composition | Reuse the actual current precedence order; query each layer for all contributions of the demanded key | C4 must remain C4; component SCC order is not a substitute |
+| First =.ref= / =.get= | Resolve the key's retained chain, bind final receiver and allocate only its demanded method/value state | Preserve absent versus =#f=, original required refusals, =sup=, cycles and read issuance |
+| =.mix= / clone | Share source/index structure; apply the actual local overlay, without copying or binding every inherited key | New receiver values and issued-read evidence remain independent |
+| Names / reflection / complete enumeration | Enumerate exact full order when requested | Returning all names necessarily charges that output; do not charge it to every point read |
+| Supported edit / publication | Fence old evidence via native reverse dependencies; repair the affected closure and publish one view | Unknown mutation retains full certification; no old ticket or mixed generation |
+| Currentness | Authenticate selected owner receipts and genuinely shared policy support at each required boundary | Gerbil expansion and author callbacks retain independent entry/return checks |
+
+The native implementation must also remove the eager full-key value-directory
+allocation on the point path. Replacing only =compile-slot-specs= leaves this
+whole-object work intact. Conversely, a required fresh-source scan cannot be
+deleted merely to make the first =.get= small. Full-source certification and
+current admitted demand are different contracts; charge all import/init work
+to the complete first request and preserve first-refusal behavior.
+
+The pending-method contract is useful only for its narrower representation law:
+one cell changes atomically from captured recipe to ready procedure. A success
+retires the recipe in the same update; subsequent forces retain procedure
+identity. Invocation occurs after publication and may fail or have effects.
+This cell stores method binding, never a second cached business result.
+=SlotPreparation.PendingMethod= models these sequential linearizations; a
+native mutex/continuation correspondence is still required. Two independent
+updates for installing the method and releasing the recipe are not that model.
+
+** Applying the papers, rather than borrowing their terminology
+
+The useful distinction in POOF is between composed specifications and the
+instance's recursive computation. =Lambda: The Ultimate Object= 10.2.3--10.2.5
+then makes representation and staging explicit: known keys and shapes can
+support finite maps and specialized access, while arbitrary opaque functions
+cannot justify those assumptions. Section 10.3 keeps inert bindings separate
+from fixpoint computation. Here that means sharing the admitted ordered source
+representation, not receiver results or an unrestricted currentness approval.
+
+Each representation change must repay its source preparation cost over the
+actual lifecycle. A whole-directory vector built afresh for every receiver is
+not a sparse-demand improvement simply because its final lookup is fast.
+Likewise incremental SCC repair cannot reduce a cold receiver's method-table
+construction. Evaluate the same source in sparse demand, complete demand,
+clone, warm lookup and controlled-edit cases, including preparation and retained
+memory. Do not introduce size-based dispatch until this work model and actual
+measurements establish its crossover.
+
+* Work and acceptance contracts
+
+Let N be catalog owners, K reached owners, A admitted method contributions,
+D demanded contributions, and Rb actual support at effect boundary b.
+
+- Fresh arbitrary source: charge discovery and all required policy facts.
+  Existing root-wide collision/symlink rejection requires sibling evidence.
+  Linear certification is not a justification for seconds of redundant work.
+- Current admitted Context: charge reached paths, K owners and their edges,
+  demanded binding D and actual business work. Unrelated owners must add zero
+  admissions, scope constructions and method bindings to that request.
+- Shared immutable recipe: its creation may cost A; a later one-key binding
+  must not repeat all A. Values and read state remain receiver/revision owned.
+- Authentication: topology reuse does not remove sum(Rb). Reduce actual receipt
+  production, or prove a closed interval; do not carry success across an effect.
+- Checked edit: charge the delta, repair frontier and affected old/new consumer
+  closure. Do not enumerate whole order unless the caller requests it.
+
+For the next candidate, first reuse focused semantic/fault controls. Inspect
+actual produced-record and method-binding counts with callback-free counters.
+Use one matched producer comparison on the same compiled source cohort only
+after the predicted count changes. Then run existing first-business and dense
+10K gates, including complete process preparation in the first-request report.
+No new capacity suite, blanket full-suite rerun, scope prewarming or larger
+budget is part of this design step. Report cold, warm and local revision
+separately; a watchdog pass is not a latency improvement.
+
+* Sources
+
+- [[https://fare.tunes.org/files/cs/poof.pdf][Rideau, Knauth and Amin: Prototypes: Object-Orientation, Functionally]], sections 1, 3, 4.1 and 6.
+- [[https://fare.tunes.org/files/cs/poof/ltuo.html][Rideau: Lambda: The Ultimate Object]], sections 10.2–10.3.
+- [[https://arxiv.org/abs/1106.0478][Acar, Blume and Donham: A Consistent Semantics of Self-Adjusting Computation]].
+- [[file:10.09-bounded-stage-accounting.org][10.09]] retains the failed dense diagnostic and bounded accounting repair.
+- [[file:../20-module-loading/20.16-factory-receipt-inventory.org][20.16]] owns the existing inventory route and its fallback controls.

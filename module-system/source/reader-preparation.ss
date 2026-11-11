@@ -12,7 +12,7 @@
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/reader-session
         :yuanxu/module-system/source/reader-support
-        :yuanxu/module-system/source/compiler-tools
+        :yuanxu/module-system/source/import-provenance
         (only-in :yuanxu/module-system/source/role-context transfer-role-context)
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module))
 (export reader-enroll-candidate! reader-capture-input reader-input-origin
@@ -190,11 +190,11 @@
         ((current-module-source-observer) 'kernel-context-visits 1))
       ;; Canonical tools keep their complete separate source support.
       ;; Unknown contexts must still be traversed before filtering.
-      (unless (captured-tool-context? compiler-contexts child)
+      (unless (captured-import-context? compiler-contexts child)
         (visit child)))
     (make-hash-table-eq)
     (lambda (child)
-      (not (captured-tool-context? compiler-contexts child)))))))
+      (not (captured-import-context? compiler-contexts child)))))))
 ;; Capture only the existing native Context associations. Capturing the
 ;; session would also keep earlier sessions, preparation origins and the old
 ;; reader's publication guards alive across every refresh.

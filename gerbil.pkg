@@ -6,5 +6,5 @@
 (package: yuanxu
  prelude: :tao3k/yuanxu/prelude
  depend:
- ;; Graph and read checkpoints; return to a release tag containing these APIs.
- ("github.com/tao3k/gerbil-poo@103aa5aea18da7b802f221f4bd849ef843d48651"))
+ ;; Graph, protected reads and method preparation from the qualified POO PR.
+ ("github.com/tao3k/gerbil-poo@7f6e68a1abce13758793651b723fb0e1d196b057"))

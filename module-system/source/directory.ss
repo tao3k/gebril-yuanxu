@@ -3,6 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Filesystem source preparation. No eval, compiler, dynamic import or runtime Loader.
 (import (runtime: :clan/poo/object)
+        (only-in :gerbil/runtime/mop class-of)
+        (only-in :gerbil/runtime/error Error::t)
         (only-in :std/list/list delete-duplicates/hash any foldl length<=n?)
         (only-in :yuanxu/module-system/source/preparation module-source-package-prefix)
         (only-in :yuanxu/module-system/source/collection yuanxu-module-source-collection-optional-entrypoint)
@@ -50,21 +52,40 @@
     (def (directory-names directory)
       (unless (eq? (module-source-type directory) 'directory) (error "module source is not a directory" directory))
       (list-sort string<? (directory-files directory)))
+    (def (closed-directory-observation?)
+      (and (not (current-module-source-observer))
+           (slot-read-observers-compatible? '())
+           (object-construction-current?)
+           (not (module-source-window-preserved? void))))
     (def (snapshot directory)
       (if (hash-key? directories directory)
         (hash-ref directories directory)
-         (let* ((names (observe! directory-names directory #f))
+         (let* ((reuse-kind? (closed-directory-observation?))
+                (first-link #f)
+                (unchecked '())
+                (names (observe! directory-names directory #f))
                 (children
                  (filter (lambda (name)
-                           (and (module-source-name? name)
-                                (eq? (module-source-type (path-expand name directory)) 'directory))) names)))
+                           (if (module-source-name? name)
+                             (let (kind (module-source-type (path-expand name directory)))
+                               (when (and reuse-kind? (not first-link) (eq? kind 'symbolic-link))
+                                 (set! first-link name))
+                               (eq? kind 'directory))
+                             (begin
+                               (when (and reuse-kind? (not first-link))
+                                 (set! unchecked (cons name unchecked)))
+                               #f))) names)))
            (unless (= (length children)
                       (length (delete-duplicates/hash (map string-downcase children))))
              (error "case-colliding module directories" directory children))
-           ;; Refuse symlinks rather than accidentally traverse an escaping tree.
+           ;; Preserve collision priority. Check unobserved names in order up
+           ;; to the first known symlink, including names excluded as modules.
            (for-each (lambda (name)
                        (when (eq? (module-source-type (path-expand name directory)) 'symbolic-link)
-                         (error "symlink in module source tree" directory name))) names)
+                         (error "symlink in module source tree" directory name)))
+                     (if reuse-kind? (reverse unchecked) names))
+           (when first-link
+             (error "symlink in module source tree" directory first-link))
            ;; Whole listings establish global namespace/collision policy, not
            ;; each private candidate's path support. locate-source* enrolls
            ;; actual path kinds even when this snapshot is already present.
@@ -330,15 +351,41 @@
         (set! selected-values (append selected-values profile-selected)))
       ;; Index declared ownership once. Locating an imported private owner walks
       ;; path ancestors, not the module list or another filesystem search tree.
+      (def direct-owner-root
+        (and (pair? decisions) (not windows)
+             (eq? (.ref intent-value 'mode) 'explicit)
+             (closed-directory-observation?)
+             (let (before observations)
+               (with-catch
+                 (lambda (cause)
+                   ;; Leave the owner pass ahead of the original root refusal.
+                   (if (or (eq? (class-of cause) Error::t) (os-exception? cause))
+                     (begin (set! observations before) #f)
+                     (raise cause)))
+                 (lambda ()
+                   (let (root (observe! path-normalize root-path))
+                     (and (string-suffix? "/" root)
+                          (let* ((children (.ref (snapshot root-path) 'child-names))
+                                 (index (make-hash-table size: (length children))))
+                            (for-each (lambda (name) (hash-put! index name #t)) children)
+                            (cons root index)))))))))
+      (def (direct-owner-key name)
+        (and direct-owner-root (hash-key? (cdr direct-owner-root) name)
+             (not (char=? (string-ref name 0) #\~))
+             (string-append (car direct-owner-root) name)))
       (for-each
        (lambda (row)
          (let* ((id (.ref row 'identity))
                 (declared (.ref row 'source-root))
-                (directory (if declared (path-expand declared (path-directory init-path))
-                               (path-expand (symbol->string (row-name row)) (row-root row))))
-                (key (path-strip-trailing-directory-separator (path-normalize directory))))
+                (name (and (not declared) (symbol->string (row-name row))))
+                (direct (and name (direct-owner-key name)))
+                (directory (and (not direct)
+                                (if declared (path-expand declared (path-directory init-path))
+                                  (path-expand name (row-root row)))))
+                (key (or direct (path-strip-trailing-directory-separator (path-normalize directory)))))
            (when (hash-key? source-owners key)
-             (error "duplicate declared module source owner" id directory init-path))
+             (error "duplicate declared module source owner" id
+                    (or directory (path-expand name (row-root row))) init-path))
            ;; Keep denied declarations in this SAME index. Their directory must
            ;; never become an ownerless library merely because Interface is absent.
            (hash-put! source-owners key

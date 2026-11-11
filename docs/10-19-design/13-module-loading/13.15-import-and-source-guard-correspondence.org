@@ -9,9 +9,13 @@ import and source-check boundaries. The evidence is deliberately separated:
 Lean proves the list/checking laws, Scheme tests exercise the Gerbil reader,
 and the AWS endpoint must still complete independently.
 
+Gerbil resolves and loads the import contexts. The Reader's
+=import-provenance.ss= records those identities and checks the sources that
+support them. Compilation remains with Gerbil's =std/make=.
+
 | Model value or transition | Actual Scheme producer | Executable observation |
 |---------------------------+------------------------+------------------------|
-| Demand root | =module-compiler-tools:inputs-for= | =compiler-demand= carries the actual Gerbil expander context |
+| Demand root | =inputs-for= in =module-import-provenance= | =compiler-demand= carries the actual Gerbil expander context |
 | First context discovery | =for-each-build-module= walks Gerbil import/export/import-set wrappers | =compiler-discovery= carries actual parent/child context objects and source path |
 | Context identity | Runtime object identity, through =make-hash-table-eq= | Per-context nested identity tables, not equality of printed module names |
 | Reused source topology | Reader-local =kernel-closures= | =kernel-closure-requests= versus =kernel-closure-walks= |

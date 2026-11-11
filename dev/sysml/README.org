@@ -95,6 +95,16 @@ qualifies that boundary against the declared dependency and its issuer projectio
 implements the producer-owned structure and qualifies reuse without caching admission.
 [[file:10-evaluation/10.06-issued-record-storage.org][10.06 Issued Record Storage]] separates duplicated issuer closure storage
 from original read identities, dependency edges and mandatory fresh checks.
+[[file:10-evaluation/10.07-first-business-demand.org][10.07 First Business Demand and Graph Work]] allocates cold lookup, effective
+method preparation, authenticated graph capture and SCC work to their owners.
+[[file:10-evaluation/10.08-first-demand-algorithm-review.org][10.08 First Demand Algorithm Review]] fixes the next implementation gates,
+distinguishes four graph obligations, and retains the failed dense 10K gate.
+[[file:10-evaluation/10.09-bounded-stage-accounting.org][10.09 Bounded Stage Accounting]]
+keeps diagnostic key space bounded while preserving owner scope evidence.
+[[file:10-evaluation/10.10-first-demand-implementation-obligations.org][10.10 First Demand Implementation Obligations]] separates producer proofs
+from the missing Scheme issuer and records the rejected fixed-collector experiment.
+[[file:10-evaluation/10.11-owner-currentness-and-publication-view.org][10.11 Owner Currentness and Publication View]] proves the selected-root
+projection and binds controlled-edit transport to one publication snapshot.
 
 [[file:20-module-loading/20.02-metadata-projection-correspondence.org][20.02 Metadata Projection Correspondence]]
 qualifies the closed source boundary with LeanPoo, QNT and actual role wrappers

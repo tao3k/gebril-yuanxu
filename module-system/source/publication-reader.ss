@@ -28,7 +28,7 @@
         (only-in :yuanxu/module-system/building/source-package module-build-source-path))
 (import :yuanxu/module-system/source/reader-support
         :yuanxu/module-system/source/reader-evaluation
-        :yuanxu/module-system/source/compiler-tools
+        :yuanxu/module-system/source/import-provenance
         :yuanxu/module-system/source/configuration-reader
         :yuanxu/module-system/source/reader-session
         :yuanxu/module-system/source/reader-preparation
@@ -96,7 +96,7 @@
        (def runtime-imports (make-hash-table-eq))
        (def (runtime-context? context)
          (or (and (module-context? context)
-                  (captured-tool-context? (reader-session-compiler-contexts session) context)
+                  (captured-import-context? (reader-session-compiler-contexts session) context)
                   (let (path (module-context-path context))
                     (and (string? path) (string=? (path-extension path) ".ssi"))))
           (let (origin (hash-get runtime-imports context))
@@ -200,13 +200,13 @@
                 (let-values (((_prelude identity _namespace _body) (core-read-module/sexp path)))
                   (let (context (hash-get (reader-session-tool-contexts session) identity))
                     (and context
-                         (captured-tool-context? (reader-session-compiler-contexts session) context)
+                         (captured-import-context? (reader-session-compiler-contexts session) context)
                          (equal? path (module-build-source-path context kernel-root))
                          context))))))
        (def (tool-context context reload?)
          (when reload? (error "compiler tool reload requires a fresh publication reader"))
          (let (expected (hash-get (reader-session-tool-contexts session) (expander-context-id context)))
-           (unless (captured-tool-context? (reader-session-compiler-contexts session) context)
+           (unless (captured-import-context? (reader-session-compiler-contexts session) context)
              ;; Preserve the strict runtime identity check and report both
              ;; origins so source/compiled aliases can be diagnosed.
              (error "compiler tool context changed during publication"
@@ -249,7 +249,7 @@
                  ;; preparation association, not a matching name, is authority.
                  (let* ((native (hash-get (reader-session-tool-contexts session) (.ref input 'compiler-identity)))
                         (previous (hash-get (reader-session-tool-paths session) path)))
-                   (unless (and native (captured-tool-context? (reader-session-compiler-contexts session) native)
+                   (unless (and native (captured-import-context? (reader-session-compiler-contexts session) native)
                                 (eq? input (compiler-tool-input native path)))
                      (error "owned compiler source has competing native contexts" path))
                    (when (and previous (not (eq? previous native)))
@@ -325,7 +325,7 @@
                                          (record-input! asset)) assets))
                            (reader-enroll-candidate! session initialization-current!))
                          (lambda (child)
-                           (and (captured-tool-context? (reader-session-compiler-contexts session) child)
+                           (and (captured-import-context? (reader-session-compiler-contexts session) child)
                                 (begin (tool-context child #f) #t)))))))
                 (context
                  (or retained
@@ -345,7 +345,7 @@
                             ;; A canonical Gerbil expander context must never acquire
                             ;; private-source registration. The closure cut
                             ;; relies on this identity invariant, not a name.
-                            (when (captured-tool-context? (reader-session-compiler-contexts session) context)
+                            (when (captured-import-context? (reader-session-compiler-contexts session) context)
                               (error "private source resolved to canonical compiler tool" path))
                             (hash-put! (reader-session-kernel-contexts session) path context)
                             (let ((input (hash-get input-paths path))
@@ -455,7 +455,7 @@
                              (let ((file (module-context-path child))
                                    (identity (expander-context-id child)))
                                (cond
-                                ((captured-tool-context?
+                                ((captured-import-context?
                                    (reader-session-compiler-contexts session) child)
                                  (tool-context child #f))
                                 ((and (string? file) (string=? (path-extension file) ".ss"))
@@ -477,7 +477,7 @@
                                 (yuanxu-prepare-module-build-source file void))
                               (.ref prepared 'role-sources))))
            (let (value (module-prepared-source-binding input 'Build related role-imports?: #t
-             compiler-tools: (list (reader-session-tool-contexts session) (reader-session-tool-paths session) (reader-session-tool-dependencies session)
+             import-provenance: (list (reader-session-tool-contexts session) (reader-session-tool-paths session) (reader-session-tool-dependencies session)
                                    (reader-session-tool-observations session) (reader-session-compiler-contexts session))
              shared-contexts: (reader-session-kernel-contexts session) shared-inputs: (reader-session-kernel-inputs session)
              source-inputs: (cut record-source-observations! (reader-session-tool-observations session) <>)

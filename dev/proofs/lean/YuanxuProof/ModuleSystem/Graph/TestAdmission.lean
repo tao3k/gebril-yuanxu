@@ -73,6 +73,71 @@ inductive Demanded (dependencies : Node → List Node) (roots : List Node) : Nod
   | dependency (parent child : Node) : Demanded dependencies roots parent →
       child ∈ dependencies parent → Demanded dependencies roots child
 
+/-- The row projection used by a point request. The proof below requires the
+admitted region to include every successor of each reached owner. -/
+def admittedRows (dependencies : Node → List Node) (admitted : Node → Bool)
+    (owner : Node) : List Node :=
+  if admitted owner then dependencies owner else []
+
+theorem admitted_rows_reach_exact (dependencies : Node → List Node)
+    (admitted : Node → Bool) (roots : List Node)
+    (rootAdmitted : ∀ node ∈ roots, admitted node = true)
+    (closed : ∀ parent, admitted parent = true →
+      ∀ child ∈ dependencies parent, admitted child = true)
+    (node : Node) :
+    Demanded (admittedRows dependencies admitted) roots node ↔
+      Demanded dependencies roots node := by
+  constructor
+  · intro path
+    induction path with
+    | root owner member => exact .root owner member
+    | dependency parent child _ edge path =>
+      cases present : admitted parent with
+      | false => simp [admittedRows, present] at edge
+      | true => exact .dependency parent child path (by simpa [admittedRows, present] using edge)
+  · intro path
+    have lift : ∀ owner, Demanded dependencies roots owner →
+        admitted owner = true ∧ Demanded (admittedRows dependencies admitted) roots owner := by
+      intro owner reached
+      induction reached with
+      | root owner member => exact ⟨rootAdmitted owner member, .root owner member⟩
+      | dependency parent child _ edge ih =>
+        exact ⟨closed parent ih.1 child edge,
+          .dependency parent child ih.2 (by simpa [admittedRows, ih.1] using edge)⟩
+    exact (lift node path).2
+
+/-- SCC membership is mutual reachability. Once the selected rows form a
+forward-closed region, an SCC query there agrees with the whole graph. -/
+theorem admitted_rows_component_exact (dependencies : Node → List Node)
+    (admitted : Node → Bool) (left right : Node)
+    (leftAdmitted : admitted left = true) (rightAdmitted : admitted right = true)
+    (closed : ∀ parent, admitted parent = true →
+      ∀ child ∈ dependencies parent, admitted child = true) :
+    (Demanded (admittedRows dependencies admitted) [left] right ∧
+      Demanded (admittedRows dependencies admitted) [right] left) ↔
+    (Demanded dependencies [left] right ∧ Demanded dependencies [right] left) :=
+  and_congr
+    (admitted_rows_reach_exact dependencies admitted [left] (by simpa) closed right)
+    (admitted_rows_reach_exact dependencies admitted [right] (by simpa) closed left)
+
+/-- Cutting the provider of a two-owner cycle loses the path back to the
+requested owner, even though the requested row itself remains exact. -/
+theorem incomplete_rows_can_break_cycle :
+    let dependencies := fun (owner : Bool) => [!owner]
+    Demanded dependencies [false] true ∧ Demanded dependencies [true] false ∧
+      ¬ Demanded (admittedRows dependencies not) [true] false := by
+  dsimp only
+  refine ⟨.dependency false true (.root false (by simp)) (by simp),
+    .dependency true false (.root true (by simp)) (by simp), ?_⟩
+  have onlyRoot (node : Bool)
+      (path : Demanded (admittedRows (fun owner => [!owner]) not) [true] node) :
+      node = true := by
+    induction path with
+    | root owner member => simpa using member
+    | dependency parent child _ edge ih => simp [admittedRows, ih] at edge
+  intro path
+  exact Bool.noConfusion (onlyRoot false path)
+
 /-- Ordinary scope demand uses its own root. Full certification still uses the
 entire selection. An effective Feature decision retains the full graph. -/
 def scopeRoots (roots : List Node) (target : Node) (hasFeatureDecisions : Bool) :

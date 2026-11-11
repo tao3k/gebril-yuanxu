@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; One reader's source associations and generation-local counters.
-(import (only-in :yuanxu/module-system/source/compiler-tools module-compiler-tools)
+(import (only-in :yuanxu/module-system/source/import-provenance module-import-provenance)
         (only-in :yuanxu/module-system/source/reader-support source-observation-rows))
 (export (struct-out reader-session) (struct-out candidate-support) new-reader-session
         reader-session-guards reader-session-guard-count reader-session-add-guard!)
@@ -38,7 +38,7 @@
   (def preparations (make-hash-table))
   (def candidate (make-parameter #f))
   (defvalues (tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts)
-    (module-compiler-tools))
+    (module-import-provenance))
   (make-reader-session (cons '() 0) dependencies #f 0
     (make-hash-table-eq) kernel-contexts kernel-inputs 0 (gensym 'reader-native-imports)
     kernel-owners kernel-data kernel-initializers
