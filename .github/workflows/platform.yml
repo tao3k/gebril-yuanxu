@@ -88,6 +88,7 @@ jobs:
         run: |
           echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
           echo "YUANXU_TEST_REPORT_DIR=$RUNNER_TEMP/test-report" >> "$GITHUB_ENV"
+          echo "GERBIL_LOADPATH=$GERBIL_PATH/lib:$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
       - name: Prepare the compiled callback fixture
         id: callbacks
         if: matrix.group == 'store-callbacks'
