@@ -9,9 +9,9 @@ proofs-lean:
 # Tool/backend bootstrap is preparation, never an accepted proof receipt.
 prepare-quint:
     npm ci --prefix dev/proofs/quint --no-audit --no-fund
-    python3 dev/proofs/quint/prepare.py
+    node dev/proofs/quint/prepare.cjs
 
 # All maintained finite models are Quint; receipts remain local artifacts.
-proofs-quint receipt="/private/tmp/core-quint-proof.ss":
-    python3 -m unittest discover -s dev/proofs/quint -p test_typecheck.py
-    python3 dev/proofs/quint/check.py --receipt "{{ receipt }}"
+proofs-quint receipt=".cache/proofs/quint/receipt.ss":
+    node --test dev/proofs/quint/runtime.test.cjs
+    node dev/proofs/quint/qualify.cjs --receipt "{{ receipt }}"

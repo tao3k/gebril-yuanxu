@@ -36,7 +36,7 @@ if (!['typecheck', 'verify'].includes(mode)) throw new Error('unknown runtime CL
     await Promise.all([process.stdout, process.stderr].map(stream =>
       new Promise(resolve => stream.write('', resolve))));
     // A separate pipe keeps model diagnostics out of the result protocol.
-    fs.writeSync(Number(process.argv[4]), JSON.stringify({ input: args.input,
+    fs.writeSync(Number(process.argv[4]), JSON.stringify({ requestId: args.requestId, input: args.input,
       main: args.main ?? null, invariant: args.invariant ?? null, status }) + '\n');
   }
   // Match the CLI's ownership of its gRPC handles at process completion.

@@ -54,12 +54,13 @@ jobs:
           path: ~/.quint/apalache-dist-0.62.1
           key: quint-apalache-0.62.1-${{ runner.os }}-${{ runner.arch }}
       - name: Prepare pinned backend
-        run: python3 dev/proofs/quint/prepare.py
+        run: node dev/proofs/quint/prepare.cjs
       - name: Check runtime CLI isolation and deadlines
-        run: python3 -m unittest discover -s dev/proofs/quint -p test_typecheck.py
+        run: node --test dev/proofs/quint/runtime.test.cjs
       - name: Check finite models and matched faults
-        run: python3 dev/proofs/quint/check.py --shard-count 8 --shard-index ${{ matrix.shard }} --receipt "$RUNNER_TEMP/yuanxu-quint-proof.ss"
+        run: node dev/proofs/quint/qualify.cjs --shard-count 8 --shard-index ${{ matrix.shard }} --receipt "$RUNNER_TEMP/yuanxu-quint-proof.ss"
       - uses: actions/upload-artifact@v7
+        if: always()
         with:
           name: yuanxu-quint-proof-${{ matrix.shard }}
-          path: ${{ runner.temp }}/yuanxu-quint-proof.ss
+          path: ${{ runner.temp }}/yuanxu-quint-proof.*

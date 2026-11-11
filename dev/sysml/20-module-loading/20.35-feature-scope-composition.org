@@ -76,7 +76,7 @@ a Runtime loader, a builder, a second manifest or a cache protocol.
 cd dev/proofs/lean
 timeout 120s lake build YuanxuProof.ModuleSystem.Selection.FeatureScopes
 cd ../../..
-python3 dev/proofs/quint/check.py --case-prefix IncrementalRoles \
+node dev/proofs/quint/qualify.cjs --case-prefix IncrementalRoles \
   --typecheck-scope selected --receipt /tmp/feature-scope-quint.scm
 just test-file t/module-feature-scope-test.ss
 just test-file t/module-feature-interface-test.ss

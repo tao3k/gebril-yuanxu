@@ -9,7 +9,7 @@ functions for every entry, including runtime import resolution. One Node runtime
 serves the serial requests; source maps, resolvers and typechecking state are
 fresh for each request. No successful result is retained. Every entry still has
 the original five-second wall deadline, including the first runtime startup.
-=python3 -m unittest discover -s dev/proofs/quint -p test_typecheck.py= compares
+=node --test dev/proofs/quint/runtime.test.cjs= compares
 runtime CLI verdicts and checks that an imported source mutation is rejected by
 the next request in the same runtime.
 
@@ -17,7 +17,7 @@ Verification similarly invokes the runtime =compile= and =verifySpec= stages
 with the original TLC options and shared Apalache session. Each case retains
 the 45-second wall and five-second real-output deadlines. Runtime diagnostics
 are streamed unchanged; a separate result pipe binds the runtime status to its
-input, main module and invariant. Positive and negative admission still require
+request epoch, input, main module and invariant. Positive and negative admission still require
 the original TLC state counts and success or counterexample evidence. Models,
 compiled representations and verification decisions are never reused.
 
@@ -33,7 +33,9 @@ witness. Runtime timestamp freshness is an explicit premise, not a cached verdic
 The existing runner supports this scope with =--case-prefix TestMakeLayout
 --typecheck-scope selected=. Its receipt binds actual layout/admission consumers,
 SysML, package/dependency pins and local Lean sources, and rejects changes before
-return. Full-catalogue bindings remain unchanged. The general path/work statements
+return. The full catalogue retains all 540 outcomes (72 positive and 468 negative)
+and all 53 Lean–Quint digest bindings. Receipt ownership additionally covers all
+maintained Lean sources and the Node runner itself. The general path/work statements
 live in =Admission/TestMakeLayout.lean=; installed compiler and filesystem behavior
 remain runtime correspondence obligations.
 
@@ -45,7 +47,7 @@ and laziness. The acceptance control rules out universal refusal. The paired
 Scheme measurement reports structural counts; VM allocation rollback invalidates
 memory claims without weakening semantic controls.
 
-Run =python3 dev/proofs/quint/check.py --case-prefix ReadRetention
+Run =node dev/proofs/quint/qualify.cjs --case-prefix ReadRetention
 --typecheck-scope selected --receipt /tmp/read-retention.scm=.
 
 * Original issued-root forwarding
@@ -60,7 +62,7 @@ also bind the real Scenario Types and runtime/contextual Contract regressions.
 checks original root coverage/authenticity, currentness, both requirements,
 parent isolation and lazy branches. Weak-retention and arbitrary callback
 purity are not promoted to proven properties.
-Run =python3 dev/proofs/quint/check.py --case-prefix IssuedRootForwarding
+Run =node dev/proofs/quint/qualify.cjs --case-prefix IssuedRootForwarding
 --typecheck-scope selected --receipt /tmp/issued-roots.scm= for the seven
 TLC safety/counterexample controls, including the acceptance witness. The runner
 also checks the Lean/QNT source digest; the finite result does not prove runtime
@@ -272,9 +274,9 @@ establish whole-runtime compiler coverage or production mutation protection.
 
 The default checker owns one version-checked Apalache =0.62.1= process on an
 ephemeral loopback endpoint for the entire invocation. Readiness requires
-successful gRPC reflection of the CmdExecutor service. [[file:backend.py][The shared backend helper]]
+successful gRPC reflection of the CmdExecutor service. [[file:backend.cjs][The shared backend helper]]
 also serves the product proof runner. Each model receives a fresh compilation
-request and a fresh, one-worker TLC exploration. The backend and TLC each have
+request and a fresh TLC exploration using the available CPU count (at least four workers). The backend and TLC each have
 a 1 GiB heap; startup and cases retain five-second real-output and 45-second
 total deadlines. Normal exit, failure and TERM clean up the owned backend.
 An explicitly supplied =--server-endpoint= retains caller-owned lifecycle.
@@ -333,7 +335,7 @@ source hashes and final source-cut rejection.
 * Metadata write ownership
 
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.34-metadata-write-boundary.org][32.34]] adds =RouteMutation=: one conditional positive safety check and six
-counterexample/witness checks. Run =python3 dev/proofs/quint/check.py --case-prefix
+counterexample/witness checks. Run =node dev/proofs/quint/qualify.cjs --case-prefix
 RouteMutation --receipt /private/tmp/route-mutation.ss=. The epoch policy assumes
 all relevant route writes advance an owned, non-resettable generation. This is
 NOT an implemented SDK barrier. The =endpoint= and =untracked= counterexamples
@@ -349,7 +351,7 @@ check and eight counterexample/witness checks. It distinguishes runtime procedur
 identity, receiver-table membership, transient cache-miss issuance and mutable
 HashTable-method dispatch. The positive read-only claim assumes unchanged runtime
 metadata operations; the separate metadata-hook counterexample refutes an
-unconditional claim. Run =python3 dev/proofs/quint/check.py --case-prefix CheckerOrigin
+unconditional claim. Run =node dev/proofs/quint/qualify.cjs --case-prefix CheckerOrigin
 --receipt /private/tmp/checker-origin.ss= from Core. This scope is not a passing
 receipt for unrelated model families or a proof of arbitrary Scheme effects.
 
@@ -374,8 +376,8 @@ business model. CI may reuse that downloaded tool distribution; model results
 and proof receipts are always produced again. Backend startup still attests
 version 0.62.1 before verification.
 Run =just proofs-quint /private/tmp/core-quint-proof.ss= from Core. The runner
-requires exact Quint version, typechecks every source, verifies nine positive
-cases, forty-one matched controls and five expected acceptance-witness counterexamples, and writes a =yuanxu.quint-proof.v1= Scheme
+requires exact Quint version, typechecks every source, verifies all 72 positive
+cases and 468 matched negative outcomes, and writes a =yuanxu.quint-proof.v1= Scheme
 receipt only after every case passes. Each case has a 45-second total deadline,
 a five-second real-output watchdog and a 1GB backend heap. Negative admission
 requires the named invariant violation and state counts; crashes, syntax failures
@@ -442,7 +444,7 @@ inheritance remains gerbil-poo's responsibility, not this operation model.
 The unified Lean project's =GraphOperations= module binds the exact Quint source
 digest and proves ordered-fold composition, live deletion endpoints, distinct
 containment paths, the one-pass receipt bound and a concrete non-fixed-point
-example. =check.py= rejects a stale binding. These are pure laws and an explicit
+example. =qualify.cjs= rejects a stale binding. These are pure laws and an explicit
 counterexample, not a theorem that the Scheme implementation refines Quint.
 
 * Source windows
@@ -467,7 +469,7 @@ requirements, shared/private sources, warm-parent plan isolation and a final
 fresh source window. The nine control wrappers include eight broken protocols
 and one acceptance witness. In particular, =lateEffect= demonstrates that even
 one root check requires a stable read-to-return interval. All ten cases are
-registered in =check.py=; the Lean binding is =Admission.RootChild.quintSourceDigest=.
+registered in =qualify.cjs=; the Lean binding is =Admission.RootChild.quintSourceDigest=.
 Qualification does not establish production Scheme conformance. See
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.16-root-child-admission.org][32.16]].
 
@@ -572,5 +574,6 @@ a purity declaration or a production fix. An independent writer remains a
 correct-model limitation requiring snapshot/conditional-commit authority.
 ClosedTail adds eight outcomes: one positive model, five unsafe variants (including
 return-only protection), one external-writer limitation and one acceptance witness.
-The catalog contains 136 outcomes over 137 sources. Scoped receipts explicitly
+The current catalogue contains 540 outcomes; =catalog.json= preserves their
+original order and expected polarity as data, rather than a second model. Scoped receipts explicitly
 name their case prefix; a scoped gate is not a full-catalog qualification.

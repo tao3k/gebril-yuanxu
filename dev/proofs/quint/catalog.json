@@ -1,0 +1,3247 @@
+{
+  "schema": "yuanxu.quint-catalog.v1",
+  "cases": [
+    {
+      "model": "GraphSnapshot",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "GraphSnapshot_mixed",
+      "invariant": "ConsistentHead",
+      "negative": true
+    },
+    {
+      "model": "GraphSnapshot_stale",
+      "invariant": "ExactTicket",
+      "negative": true
+    },
+    {
+      "model": "GraphSnapshot_earlyRetire",
+      "invariant": "OldIndexLifetime",
+      "negative": true
+    },
+    {
+      "model": "GraphSnapshot_replaceFailure",
+      "invariant": "FailedKeepsHead",
+      "negative": true
+    },
+    {
+      "model": "GraphSnapshot_retired",
+      "invariant": "RetiredRefused",
+      "negative": true
+    },
+    {
+      "model": "GraphSnapshot_interval",
+      "invariant": "FullOldImpact",
+      "negative": true
+    },
+    {
+      "model": "GraphSnapshot",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "RoleFunction",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "RoleFunction_revision",
+      "invariant": "ClosedRoute",
+      "negative": true
+    },
+    {
+      "model": "RoleFunction_observer",
+      "invariant": "ClosedRoute",
+      "negative": true
+    },
+    {
+      "model": "RoleFunction_origin",
+      "invariant": "ClosedRoute",
+      "negative": true
+    },
+    {
+      "model": "RoleFunction_memo",
+      "invariant": "ValidExecution",
+      "negative": true
+    },
+    {
+      "model": "RoleFunction_eagerCarrier",
+      "invariant": "NoUnusedCarrier",
+      "negative": true
+    },
+    {
+      "model": "RoleFunction",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "IncrementalRoles",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "IncrementalRoles_edge",
+      "invariant": "Invalidation",
+      "negative": true
+    },
+    {
+      "model": "IncrementalRoles_compile",
+      "invariant": "Compilation",
+      "negative": true
+    },
+    {
+      "model": "IncrementalRoles_observer",
+      "invariant": "Observer",
+      "negative": true
+    },
+    {
+      "model": "IncrementalRoles_approval",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "IncrementalRoles_parent",
+      "invariant": "Isolation",
+      "negative": true
+    },
+    {
+      "model": "IncrementalRoles_dropB",
+      "invariant": "Both",
+      "negative": true
+    },
+    {
+      "model": "IncrementalRoles",
+      "invariant": "NoAcceptance",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ModuleDemand_preflight",
+      "invariant": "PreflightOnly",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand_contract",
+      "invariant": "ValidPublication",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand_classifier",
+      "invariant": "Classification",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand_eager",
+      "invariant": "DeclarationOnly",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand_premature",
+      "invariant": "AdmissionPhase",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand_edge",
+      "invariant": "ActualTrace",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand_observer",
+      "invariant": "ActualTrace",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand_stale",
+      "invariant": "Fresh",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand_disabled",
+      "invariant": "Enabled",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand_dropB",
+      "invariant": "Both",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand_parent",
+      "invariant": "ParentIsolation",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand_opaque",
+      "invariant": "OpaqueCoverage",
+      "negative": true
+    },
+    {
+      "model": "ModuleDemand",
+      "invariant": "NoPublication",
+      "negative": true
+    },
+    {
+      "model": "SelectionReplay",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SelectionReplay_skipObserver",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "SelectionReplay_reorder",
+      "invariant": "Diagnostic",
+      "negative": true
+    },
+    {
+      "model": "SelectionReplay",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "SelectionReplay",
+      "invariant": "FewerMeansFaster",
+      "negative": true
+    },
+    {
+      "model": "SelectionReplay_falseMiss",
+      "invariant": "FalseHit",
+      "negative": true
+    },
+    {
+      "model": "SelectionReplayTopology",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SelectionReplayTopology_verdict",
+      "invariant": "Fresh",
+      "negative": true
+    },
+    {
+      "model": "SelectionReplayTopology_roots",
+      "invariant": "Order",
+      "negative": true
+    },
+    {
+      "model": "SelectionReplayTopology_seen",
+      "invariant": "Delivery",
+      "negative": true
+    },
+    {
+      "model": "SelectionReplayTopology_constructor",
+      "invariant": "Construction",
+      "negative": true
+    },
+    {
+      "model": "TestMakeLayout",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "TestMakeLayout_absolute",
+      "invariant": "NoWork",
+      "negative": true
+    },
+    {
+      "model": "TestMakeLayout_skipSource",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "TestMakeLayout",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "BuildTargetExecution",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "TestPublicationReuse",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "TestPublicationReuse_memoAdmission",
+      "invariant": "Fresh",
+      "negative": true
+    },
+    {
+      "model": "TestPublicationReuse_packet",
+      "invariant": "Bound",
+      "negative": true
+    },
+    {
+      "model": "TestPublicationReuse",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "RootCollection",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "RootCollection_suppress",
+      "invariant": "ObserverOrder",
+      "negative": true
+    },
+    {
+      "model": "RootCollection_observerOrder",
+      "invariant": "ObserverOrder",
+      "negative": true
+    },
+    {
+      "model": "RootCollection_redeliver",
+      "invariant": "ObserverOrder",
+      "negative": true
+    },
+    {
+      "model": "RootCollection_reverse",
+      "invariant": "FirstDiagnostic",
+      "negative": true
+    },
+    {
+      "model": "RootCollection_receiver",
+      "invariant": "IdentityOrder",
+      "negative": true
+    },
+    {
+      "model": "RootCollection_copy",
+      "invariant": "IdentityOrder",
+      "negative": true
+    },
+    {
+      "model": "RootCollection_edges",
+      "invariant": "Edges",
+      "negative": true
+    },
+    {
+      "model": "RootCollection",
+      "invariant": "NoWork",
+      "negative": true
+    },
+    {
+      "model": "ThunkConstruction",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ThunkConstruction_deferHook",
+      "invariant": "HookOrder",
+      "negative": true
+    },
+    {
+      "model": "ThunkConstruction_partialReflect",
+      "invariant": "MetadataComplete",
+      "negative": true
+    },
+    {
+      "model": "ThunkConstruction_reorder",
+      "invariant": "HookOrder",
+      "negative": true
+    },
+    {
+      "model": "ThunkConstruction_freshNext",
+      "invariant": "NextIdentity",
+      "negative": true
+    },
+    {
+      "model": "ThunkConstruction_freshRead",
+      "invariant": "StableIdentity",
+      "negative": true
+    },
+    {
+      "model": "ThunkConstruction",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ReadRetention",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ReadRetention_receiver",
+      "invariant": "Coverage",
+      "negative": true
+    },
+    {
+      "model": "ReadRetention_miss",
+      "invariant": "Coverage",
+      "negative": true
+    },
+    {
+      "model": "ReadRetention_approval",
+      "invariant": "Fresh",
+      "negative": true
+    },
+    {
+      "model": "ReadRetention_dropB",
+      "invariant": "Both",
+      "negative": true
+    },
+    {
+      "model": "ReadRetention_eager",
+      "invariant": "Lazy",
+      "negative": true
+    },
+    {
+      "model": "ReadRetention",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ReplayOwnership_dropDelivery",
+      "invariant": "PreWriteRefusal",
+      "negative": true
+    },
+    {
+      "model": "IssuedRootForwarding",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "IssuedRootForwarding_omit",
+      "invariant": "Coverage",
+      "negative": true
+    },
+    {
+      "model": "IssuedRootForwarding_forge",
+      "invariant": "Authentic",
+      "negative": true
+    },
+    {
+      "model": "IssuedRootForwarding_source",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "IssuedRootForwarding_dropB",
+      "invariant": "Both",
+      "negative": true
+    },
+    {
+      "model": "IssuedRootForwarding_eager",
+      "invariant": "Lazy",
+      "negative": true
+    },
+    {
+      "model": "IssuedRootForwarding",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CoreApprovedRecovery",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CoreApprovedRecovery_install",
+      "invariant": "Installed",
+      "negative": true
+    },
+    {
+      "model": "CoreApprovedRecovery_coverage",
+      "invariant": "Coverage",
+      "negative": true
+    },
+    {
+      "model": "CoreApprovedRecovery_approval",
+      "invariant": "Approval",
+      "negative": true
+    },
+    {
+      "model": "CoreApprovedRecovery_warm",
+      "invariant": "Approval",
+      "negative": true
+    },
+    {
+      "model": "CoreApprovedRecovery_source",
+      "invariant": "Source",
+      "negative": true
+    },
+    {
+      "model": "CoreApprovedRecovery_joint",
+      "invariant": "Files",
+      "negative": true
+    },
+    {
+      "model": "CoreApprovedRecovery_dropB",
+      "invariant": "Both",
+      "negative": true
+    },
+    {
+      "model": "CoreApprovedRecovery_parent",
+      "invariant": "Parent",
+      "negative": true
+    },
+    {
+      "model": "CoreApprovedRecovery_eager",
+      "invariant": "Lazy",
+      "negative": true
+    },
+    {
+      "model": "CoreApprovedRecovery_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CoreStoreRecovery",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CoreStoreRecovery_pin",
+      "invariant": "Origin",
+      "negative": true
+    },
+    {
+      "model": "CoreStoreRecovery_registry",
+      "invariant": "Origin",
+      "negative": true
+    },
+    {
+      "model": "CoreStoreRecovery_nar",
+      "invariant": "Origin",
+      "negative": true
+    },
+    {
+      "model": "CoreStoreRecovery_asset",
+      "invariant": "Origin",
+      "negative": true
+    },
+    {
+      "model": "CoreStoreRecovery_tail",
+      "invariant": "Final",
+      "negative": true
+    },
+    {
+      "model": "CoreStoreRecovery_dropB",
+      "invariant": "Both",
+      "negative": true
+    },
+    {
+      "model": "CoreStoreRecovery_parent",
+      "invariant": "Parent",
+      "negative": true
+    },
+    {
+      "model": "CoreStoreRecovery_eager",
+      "invariant": "Lazy",
+      "negative": true
+    },
+    {
+      "model": "CoreStoreRecovery_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildHandoff",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CoreBuildHandoff_disk",
+      "invariant": "Origin",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildHandoff_selection",
+      "invariant": "Origin",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildHandoff_tail",
+      "invariant": "Final",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildHandoff_source",
+      "invariant": "Final",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildHandoff_parent",
+      "invariant": "Parent",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildHandoff_eager",
+      "invariant": "Lazy",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildHandoff_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildPublication",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CoreBuildPublication_adopt",
+      "invariant": "Compiled",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildPublication_trustDisk",
+      "invariant": "Issued",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildPublication_saved",
+      "invariant": "Issued",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildPublication_skipReturn",
+      "invariant": "Issued",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildPublication_dropB",
+      "invariant": "BothRequirements",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildPublication_parent",
+      "invariant": "ParentCache",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildPublication_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "CoreBuildPublication_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "SourceLoader",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SourceLoader_oldEdge",
+      "invariant": "EntryCoverage",
+      "negative": true
+    },
+    {
+      "model": "SourceLoader_reload",
+      "invariant": "EntryCoverage",
+      "negative": true
+    },
+    {
+      "model": "SourceLoader_retry",
+      "invariant": "EntryCoverage",
+      "negative": true
+    },
+    {
+      "model": "SourceLoader_dropB",
+      "invariant": "BothRequirements",
+      "negative": true
+    },
+    {
+      "model": "SourceLoader_parent",
+      "invariant": "ParentCache",
+      "negative": true
+    },
+    {
+      "model": "SourceLoader_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "SourceLoader_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "IssuedLoading",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "IssuedLoading_trustSidecar",
+      "invariant": "ByteSafety",
+      "negative": true
+    },
+    {
+      "model": "IssuedLoading_skipHandoff",
+      "invariant": "HandoffCurrent",
+      "negative": true
+    },
+    {
+      "model": "IssuedLoading_publicPath",
+      "invariant": "ByteSafety",
+      "negative": true
+    },
+    {
+      "model": "IssuedLoading_skipCache",
+      "invariant": "CacheAuthority",
+      "negative": true
+    },
+    {
+      "model": "IssuedLoading_poolWriter",
+      "invariant": "ByteSafety",
+      "negative": true
+    },
+    {
+      "model": "IssuedLoading_latest",
+      "invariant": "LatestPath",
+      "negative": true
+    },
+    {
+      "model": "IssuedLoading_dropB",
+      "invariant": "BothRequirements",
+      "negative": true
+    },
+    {
+      "model": "IssuedLoading_parent",
+      "invariant": "ParentCache",
+      "negative": true
+    },
+    {
+      "model": "IssuedLoading_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "IssuedLoading_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ArtifactClosure",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ArtifactClosure_omitDependency",
+      "invariant": "NoChangedAdmission",
+      "negative": true
+    },
+    {
+      "model": "ArtifactClosure_ignoreResolution",
+      "invariant": "NoChangedAdmission",
+      "negative": true
+    },
+    {
+      "model": "ArtifactClosure_trustOldBody",
+      "invariant": "NoPoison",
+      "negative": true
+    },
+    {
+      "model": "ArtifactClosure_skipInput",
+      "invariant": "NoChangedAdmission",
+      "negative": true
+    },
+    {
+      "model": "ArtifactClosure_ignoreLoaded",
+      "invariant": "NoChangedAdmission",
+      "negative": true
+    },
+    {
+      "model": "ArtifactClosure_dropB",
+      "invariant": "BothRequirements",
+      "negative": true
+    },
+    {
+      "model": "ArtifactClosure_parent",
+      "invariant": "ParentCache",
+      "negative": true
+    },
+    {
+      "model": "ArtifactClosure_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "ArtifactClosure_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "StoreLowering",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "StoreLowering_unlowered",
+      "invariant": "NoPoison",
+      "negative": true
+    },
+    {
+      "model": "StoreLowering_missConstructor",
+      "invariant": "OwnerCoverage",
+      "negative": true
+    },
+    {
+      "model": "StoreLowering_missCarrier",
+      "invariant": "DeclaredPreWrite",
+      "negative": true
+    },
+    {
+      "model": "StoreLowering_missInline",
+      "invariant": "DeclaredPreWrite",
+      "negative": true
+    },
+    {
+      "model": "StoreLowering_missCallback",
+      "invariant": "DeclaredPreWrite",
+      "negative": true
+    },
+    {
+      "model": "StoreLowering_dropB",
+      "invariant": "BothRequirements",
+      "negative": true
+    },
+    {
+      "model": "StoreLowering_parent",
+      "invariant": "ChildPlan",
+      "negative": true
+    },
+    {
+      "model": "StoreLowering_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "StoreLowering_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "MetadataAllocation",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "MetadataAllocation_raw",
+      "invariant": "RestoredImpliesCoherent",
+      "negative": true
+    },
+    {
+      "model": "MetadataAllocation_exports",
+      "invariant": "HiddenExportsStopReflection",
+      "negative": true
+    },
+    {
+      "model": "MetadataAllocation_lastOwner",
+      "invariant": "SupportedPreWrite",
+      "negative": true
+    },
+    {
+      "model": "MetadataAllocation_dropB",
+      "invariant": "BothRequirements",
+      "negative": true
+    },
+    {
+      "model": "MetadataAllocation_parent",
+      "invariant": "ChildPlan",
+      "negative": true
+    },
+    {
+      "model": "MetadataAllocation_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "MetadataAllocation_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "MetadataOwnership",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "MetadataOwnership_noGuard",
+      "invariant": "GatewayPreWrite",
+      "negative": true
+    },
+    {
+      "model": "MetadataOwnership_allowUnknown",
+      "invariant": "UnknownRefused",
+      "negative": true
+    },
+    {
+      "model": "MetadataOwnership_omitBackend",
+      "invariant": "Coverage",
+      "negative": true
+    },
+    {
+      "model": "MetadataOwnership_dropB",
+      "invariant": "BothRequirements",
+      "negative": true
+    },
+    {
+      "model": "MetadataOwnership_parent",
+      "invariant": "ChildPlan",
+      "negative": true
+    },
+    {
+      "model": "MetadataOwnership_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "MetadataOwnership_raw",
+      "invariant": "NoRawCallbacks",
+      "negative": true
+    },
+    {
+      "model": "MetadataOwnership_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ReplayOwnership",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ReplayOwnership_noGuard",
+      "invariant": "PreWriteRefusal",
+      "negative": true
+    },
+    {
+      "model": "ReplayOwnership_dropOuter",
+      "invariant": "PreWriteRefusal",
+      "negative": true
+    },
+    {
+      "model": "ReplayOwnership_partialClear",
+      "invariant": "NoPartialClear",
+      "negative": true
+    },
+    {
+      "model": "ReplayOwnership_leak",
+      "invariant": "Released",
+      "negative": true
+    },
+    {
+      "model": "ReplayOwnership_dropB",
+      "invariant": "BothRequirements",
+      "negative": true
+    },
+    {
+      "model": "ReplayOwnership_parent",
+      "invariant": "ChildPlan",
+      "negative": true
+    },
+    {
+      "model": "ReplayOwnership_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "ReplayOwnership_raw",
+      "invariant": "NoRawCallbacks",
+      "negative": true
+    },
+    {
+      "model": "ReplayOwnership_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "RouteMutation",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "RouteMutation_endpoint",
+      "invariant": "NoRouteWritesAtReturn",
+      "negative": true
+    },
+    {
+      "model": "RouteMutation_untracked",
+      "invariant": "NoRouteWritesAtReturn",
+      "negative": true
+    },
+    {
+      "model": "RouteMutation_dropB",
+      "invariant": "BothRequirements",
+      "negative": true
+    },
+    {
+      "model": "RouteMutation_parent",
+      "invariant": "ChildPlan",
+      "negative": true
+    },
+    {
+      "model": "RouteMutation_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "RouteMutation_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "IssuerSequence",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "IssuerSequence_drop",
+      "invariant": "OrderedSnapshot",
+      "negative": true
+    },
+    {
+      "model": "IssuerSequence_order",
+      "invariant": "OrderedSnapshot",
+      "negative": true
+    },
+    {
+      "model": "IssuerSequence_alias",
+      "invariant": "OrderedSnapshot",
+      "negative": true
+    },
+    {
+      "model": "IssuerProjection",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "IssuerProjection_noRegistry",
+      "invariant": "AuthenticAtReturn",
+      "negative": true
+    },
+    {
+      "model": "IssuerProjection_noPayload",
+      "invariant": "AuthenticAtReturn",
+      "negative": true
+    },
+    {
+      "model": "IssuerProjection_cacheMiss",
+      "invariant": "MissNotCached",
+      "negative": true
+    },
+    {
+      "model": "IssuerProjection_noRoute",
+      "invariant": "NoForeignKernelCalls",
+      "negative": true
+    },
+    {
+      "model": "IssuerProjection_skipFinal",
+      "invariant": "EndpointCurrent",
+      "negative": true
+    },
+    {
+      "model": "IssuerProjection_dropB",
+      "invariant": "BothRequirements",
+      "negative": true
+    },
+    {
+      "model": "IssuerProjection_parent",
+      "invariant": "ChildPlan",
+      "negative": true
+    },
+    {
+      "model": "IssuerProjection_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "IssuerProjection_history",
+      "invariant": "NoCallbackEffects",
+      "negative": true
+    },
+    {
+      "model": "IssuerProjection_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "IssuedRead",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "IssuedRead_noBirth",
+      "invariant": "NoForgery",
+      "negative": true
+    },
+    {
+      "model": "IssuedRead_rootOnly",
+      "invariant": "WholeClosureBeforeObserve",
+      "negative": true
+    },
+    {
+      "model": "IssuedRead_noRoute",
+      "invariant": "NoForeignCheckerCalls",
+      "negative": true
+    },
+    {
+      "model": "IssuedRead_skipFinal",
+      "invariant": "FinalAuthenticity",
+      "negative": true
+    },
+    {
+      "model": "IssuedRead_registerMiss",
+      "invariant": "MissNotCached",
+      "negative": true
+    },
+    {
+      "model": "IssuedRead_rawBirth",
+      "invariant": "NoForgery",
+      "negative": true
+    },
+    {
+      "model": "IssuedRead_dropB",
+      "invariant": "TwoRequirements",
+      "negative": true
+    },
+    {
+      "model": "IssuedRead_parent",
+      "invariant": "FinalPlan",
+      "negative": true
+    },
+    {
+      "model": "IssuedRead_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "MetadataRoute",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "MetadataRoute_refOnly",
+      "invariant": "NoForeignCalls",
+      "negative": true
+    },
+    {
+      "model": "MetadataRoute_readsOnly",
+      "invariant": "NoForeignCalls",
+      "negative": true
+    },
+    {
+      "model": "MetadataRoute_entryOnly",
+      "invariant": "NoForeignCalls",
+      "negative": true
+    },
+    {
+      "model": "MetadataRoute_endpoint",
+      "invariant": "NoForeignCalls",
+      "negative": true
+    },
+    {
+      "model": "MetadataRoute_issuance",
+      "invariant": "Issuance",
+      "negative": true
+    },
+    {
+      "model": "MetadataRoute_dropB",
+      "invariant": "TwoRequirements",
+      "negative": true
+    },
+    {
+      "model": "MetadataRoute_parent",
+      "invariant": "FinalPlan",
+      "negative": true
+    },
+    {
+      "model": "MetadataRoute_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CheckerOrigin",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CheckerOrigin_identityOnly",
+      "invariant": "OwnedAtAdmission",
+      "negative": true
+    },
+    {
+      "model": "CheckerOrigin_invokeAny",
+      "invariant": "NoForeignCheckerCalls",
+      "negative": true
+    },
+    {
+      "model": "CheckerOrigin_rootOnly",
+      "invariant": "NoForeignCheckerCalls",
+      "negative": true
+    },
+    {
+      "model": "CheckerOrigin_rawTable",
+      "invariant": "AuthenticIssuance",
+      "negative": true
+    },
+    {
+      "model": "CheckerOrigin_metadataHook",
+      "invariant": "NoForeignCalls",
+      "negative": true
+    },
+    {
+      "model": "CheckerOrigin_dropB",
+      "invariant": "BothRequirements",
+      "negative": true
+    },
+    {
+      "model": "CheckerOrigin_parent",
+      "invariant": "FinalPlan",
+      "negative": true
+    },
+    {
+      "model": "CheckerOrigin_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "RuntimeSemanticQuery",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "GraphOperations_none",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "GraphOperations_reverseOrder",
+      "invariant": "OrderedPayload",
+      "negative": true
+    },
+    {
+      "model": "GraphOperations_wrongTarget",
+      "invariant": "PathIdentity",
+      "negative": true
+    },
+    {
+      "model": "GraphOperations_orphanDelete",
+      "invariant": "StructuralClosure",
+      "negative": true
+    },
+    {
+      "model": "GraphOperations_replay",
+      "invariant": "OrderedPayload",
+      "negative": true
+    },
+    {
+      "model": "GraphOperations_fixedPoint",
+      "invariant": "HonestReceipt",
+      "negative": true
+    },
+    {
+      "model": "TestSourceAdmission",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "TestSourceAdmission_eager",
+      "invariant": "NoUnrelatedExpansion",
+      "negative": true
+    },
+    {
+      "model": "TestSourceAdmission_stale",
+      "invariant": "CurrentEvidence",
+      "negative": true
+    },
+    {
+      "model": "TestSourceAdmission_cleanup",
+      "invariant": "FailureCleanup",
+      "negative": true
+    },
+    {
+      "model": "TestSourceAdmission_hardStop",
+      "invariant": "FailureCleanup",
+      "negative": true
+    },
+    {
+      "model": "TestSourceAdmission_secondGraph",
+      "invariant": "SameGraphIdentity",
+      "negative": true
+    },
+    {
+      "model": "TestSourceAdmission_repeat",
+      "invariant": "UniqueDiscovery",
+      "negative": true
+    },
+    {
+      "model": "TestSourceAdmission_dropDeferred",
+      "invariant": "CompleteConfiguration",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SourceClosureWork_repeat",
+      "invariant": "UniqueExpansion",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_eager",
+      "invariant": "DemandOnly",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_drop",
+      "invariant": "Complete",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_reuse",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_rescan",
+      "invariant": "PureEpochOnce",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_wideGuard",
+      "invariant": "GuardScope",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_leak",
+      "invariant": "Cleanup",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_index",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SourceClosureWork_indexReplace",
+      "invariant": "Coverage",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_indexDrop",
+      "invariant": "Coverage",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_indexApproval",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_alias",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SourceClosureWork_aliasReceiver",
+      "invariant": "Identity",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_aliasWrong",
+      "invariant": "Identity",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_aliasShadow",
+      "invariant": "Eligibility",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_forward",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SourceClosureWork_forwardDrop",
+      "invariant": "Trace",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_forwardDuplicate",
+      "invariant": "Trace",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_forwardObserver",
+      "invariant": "Eligibility",
+      "negative": true
+    },
+    {
+      "model": "SourceClosureWork_forwardReuse",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "ReplayCheckpoint",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ReplayCheckpoint_skipEntry",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "ReplayCheckpoint_skipExit",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "ReplayCheckpoint_unprotected",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "ReplayCheckpoint_swallow",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "ToolOrigin",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ToolOrigin_skipBinding",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "ToolOrigin_skipSource",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "ToolOrigin_skipBuild",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "ToolOrigin_overCapture",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "ToolOrigin_skipReturn",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "ToolOrigin_liveObserver",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "ToolOrigin_unownedAlias",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "ToolOrigin_skipAssociation",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "SourcePrefix",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SourcePrefix_open",
+      "invariant": "EntryCurrent",
+      "negative": true
+    },
+    {
+      "model": "SourcePrefix_scope",
+      "invariant": "EntryCurrent",
+      "negative": true
+    },
+    {
+      "model": "SourcePrefix_carry",
+      "invariant": "PublishedCurrent",
+      "negative": true
+    },
+    {
+      "model": "SourcePrefix_coldMetadata",
+      "invariant": "PublishedCurrent",
+      "negative": true
+    },
+    {
+      "model": "SourcePrefix_contextAfterCheck",
+      "invariant": "PublishedCurrent",
+      "negative": true
+    },
+    {
+      "model": "SourcePrefix_rawSubject",
+      "invariant": "SameAdmittedSubject",
+      "negative": true
+    },
+    {
+      "model": "SourcePrefix_drop",
+      "invariant": "PublishedCurrent",
+      "negative": true
+    },
+    {
+      "model": "SourcePrefix_repeat",
+      "invariant": "ClosedPrefixOnce",
+      "negative": true
+    },
+    {
+      "model": "SourcePrefix_cleanup",
+      "invariant": "Cleanup",
+      "negative": true
+    },
+    {
+      "model": "SourcePrefix_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "DependencyContinuation",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "DependencyContinuation_openWalk",
+      "invariant": "OpenEntryCurrent",
+      "negative": true
+    },
+    {
+      "model": "DependencyContinuation_unseenToken",
+      "invariant": "OpenEntryCurrent",
+      "negative": true
+    },
+    {
+      "model": "DependencyContinuation_beforeRead",
+      "invariant": "OpenEntryCurrent",
+      "negative": true
+    },
+    {
+      "model": "DependencyContinuation_beforeFeature",
+      "invariant": "OpenEntryCurrent",
+      "negative": true
+    },
+    {
+      "model": "DependencyContinuation_drop",
+      "invariant": "PublishedCurrent",
+      "negative": true
+    },
+    {
+      "model": "DependencyContinuation_earlyPublish",
+      "invariant": "AcceptedOnlyAtEnd",
+      "negative": true
+    },
+    {
+      "model": "DependencyContinuation_cleanup",
+      "invariant": "Cleanup",
+      "negative": true
+    },
+    {
+      "model": "DependencyContinuation_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ReaderEffectSupport",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ReaderEffectSupport_importsOnly",
+      "invariant": "EntrySupport",
+      "negative": true
+    },
+    {
+      "model": "ReaderEffectSupport_returnImports",
+      "invariant": "ReturnSupport",
+      "negative": true
+    },
+    {
+      "model": "ReaderEffectSupport_cleanup",
+      "invariant": "Cleanup",
+      "negative": true
+    },
+    {
+      "model": "ReaderEffectSupport_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CandidatePublication",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CandidatePublication_dropImport",
+      "invariant": "LocalEntry",
+      "negative": true
+    },
+    {
+      "model": "CandidatePublication_openBefore",
+      "invariant": "OpenEntry",
+      "negative": true
+    },
+    {
+      "model": "CandidatePublication_openAfter",
+      "invariant": "OpenReturn",
+      "negative": true
+    },
+    {
+      "model": "CandidatePublication_skipCommit",
+      "invariant": "FinalCurrent",
+      "negative": true
+    },
+    {
+      "model": "CandidatePublication_dropSchema",
+      "invariant": "FinalCurrent",
+      "negative": true
+    },
+    {
+      "model": "CandidatePublication_earlyVisible",
+      "invariant": "CommitOnly",
+      "negative": true
+    },
+    {
+      "model": "CandidatePublication_replaceOnFailure",
+      "invariant": "KeepPrevious",
+      "negative": true
+    },
+    {
+      "model": "CandidatePublication_cleanup",
+      "invariant": "Cleanup",
+      "negative": true
+    },
+    {
+      "model": "CandidatePublication_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CandidatePublication_retainScratch",
+      "invariant": "NoSpuriousRefusal",
+      "negative": true
+    },
+    {
+      "model": "CandidateLocation",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CandidateLocation_dropCachedPath",
+      "invariant": "LocalEntry",
+      "negative": true
+    },
+    {
+      "model": "CandidateLocation_skipCommit",
+      "invariant": "FinalCurrent",
+      "negative": true
+    },
+    {
+      "model": "CandidateLocation_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CompilerEnrollment",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CompilerEnrollment_reuseApproval",
+      "invariant": "FreshDemand",
+      "negative": true
+    },
+    {
+      "model": "CompilerEnrollment_dropEnrollment",
+      "invariant": "Complete",
+      "negative": true
+    },
+    {
+      "model": "CompilerEnrollment_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CompilerExtentOwned",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CompilerExtentRouteFirst",
+      "invariant": "RouteHasOwner",
+      "negative": true
+    },
+    {
+      "model": "CompilerProgress",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CompilerProgress_repeat",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "AuthoringStage",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "AuthoringStage_skipAdmission",
+      "invariant": "BoundaryChecked",
+      "negative": true
+    },
+    {
+      "model": "AuthoringStage_oldContract",
+      "invariant": "ValidAdmission",
+      "negative": true
+    },
+    {
+      "model": "AuthoringStage_rawSubject",
+      "invariant": "CheckedSubject",
+      "negative": true
+    },
+    {
+      "model": "AuthoringStage_skipCommit",
+      "invariant": "CurrentPublication",
+      "negative": true
+    },
+    {
+      "model": "AuthoringStage_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CarrierReturn",
+      "invariant": "ValidExecution",
+      "negative": false
+    },
+    {
+      "model": "CarrierReturn_skipReturn",
+      "invariant": "ValidExecution",
+      "negative": true
+    },
+    {
+      "model": "CarrierReturn_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CarrierAdmission",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CarrierAdmission_skipBefore",
+      "invariant": "CheckedHandoff",
+      "negative": true
+    },
+    {
+      "model": "CarrierAdmission_skipAfter",
+      "invariant": "ValidExecution",
+      "negative": true
+    },
+    {
+      "model": "CarrierAdmission_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "WitnessReplay",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "WitnessReplay_dropLive",
+      "invariant": "Complete",
+      "negative": true
+    },
+    {
+      "model": "WitnessReplay_openWeak",
+      "invariant": "Complete",
+      "negative": true
+    },
+    {
+      "model": "WitnessReplay_missing",
+      "invariant": "LiveToken",
+      "negative": true
+    },
+    {
+      "model": "WitnessReplay_skipFinal",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "WitnessReplay_repeat",
+      "invariant": "BatchWork",
+      "negative": true
+    },
+    {
+      "model": "WitnessReplay_noPin",
+      "invariant": "LiveRoots",
+      "negative": true
+    },
+    {
+      "model": "WitnessReplay_retain",
+      "invariant": "Released",
+      "negative": true
+    },
+    {
+      "model": "WitnessReplay_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ContextWalk",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ContextWalk_lateMark",
+      "invariant": "UniqueEntry",
+      "negative": true
+    },
+    {
+      "model": "ContextWalk_preorder",
+      "invariant": "Prefix",
+      "negative": true
+    },
+    {
+      "model": "ContextWalk_ignoreCut",
+      "invariant": "Prefix",
+      "negative": true
+    },
+    {
+      "model": "ContextWalk_forgetShared",
+      "invariant": "UniqueEntry",
+      "negative": true
+    },
+    {
+      "model": "ContextWalk_dropAfter",
+      "invariant": "Complete",
+      "negative": true
+    },
+    {
+      "model": "ContextWalk_eager",
+      "invariant": "Lazy",
+      "negative": true
+    },
+    {
+      "model": "ContextWalk_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ReaderProjection",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ReaderProjection_retain",
+      "invariant": "NoIdleProjection",
+      "negative": true
+    },
+    {
+      "model": "ReaderProjection_cacheInputs",
+      "invariant": "ExactInputs",
+      "negative": true
+    },
+    {
+      "model": "ReaderProjection_cutUnknown",
+      "invariant": "ExactInputs",
+      "negative": true
+    },
+    {
+      "model": "ReaderProjection_dropSource",
+      "invariant": "ExactInputs",
+      "negative": true
+    },
+    {
+      "model": "ReaderProjection_skipGuard",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "ReaderProjection_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "PublicationReads",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "PublicationReads_byKey",
+      "invariant": "Complete",
+      "negative": true
+    },
+    {
+      "model": "PublicationReads_failure",
+      "invariant": "Complete",
+      "negative": true
+    },
+    {
+      "model": "PublicationReads_observers",
+      "invariant": "AllEvents",
+      "negative": true
+    },
+    {
+      "model": "PublicationReads_suffix",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "PublicationReads_skipGuard",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "PublicationReads_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CarrierRoots",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CarrierRoots_strongObserver",
+      "invariant": "WeakDiagnostic",
+      "negative": true
+    },
+    {
+      "model": "CarrierRoots_dropArgument",
+      "invariant": "SamePayloads",
+      "negative": true
+    },
+    {
+      "model": "CarrierRoots_forgetRead",
+      "invariant": "ReadRetention",
+      "negative": true
+    },
+    {
+      "model": "CarrierRoots_clearSDK",
+      "invariant": "CanonicalPreserved",
+      "negative": true
+    },
+    {
+      "model": "CarrierRoots_payload",
+      "invariant": "PayloadGoneAfterReturn",
+      "negative": true
+    },
+    {
+      "model": "CarrierRoots_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "SemanticReads",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SemanticReads_policy",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "SemanticReads_contract",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "SemanticReads_source",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "SemanticReads_generic",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "SemanticReads_escape",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "SemanticReads_return",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "SemanticReads_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "OwnedReads",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "OwnedReads_promotion",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "OwnedReads_policy",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "OwnedReads_dead",
+      "invariant": "Current",
+      "negative": true
+    },
+    {
+      "model": "OwnedReads_missing",
+      "invariant": "MissingRefused",
+      "negative": true
+    },
+    {
+      "model": "OwnedReads_open",
+      "invariant": "UnknownStrong",
+      "negative": true
+    },
+    {
+      "model": "OwnedReads_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "OwnedReads_construction",
+      "invariant": "ConstructorOnly",
+      "negative": true
+    },
+    {
+      "model": "OwnedReads_generation",
+      "invariant": "GenerationStable",
+      "negative": true
+    },
+    {
+      "model": "OwnedReads_parentDuring",
+      "invariant": "GenerationStable",
+      "negative": true
+    },
+    {
+      "model": "WindowOwnership",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "WindowOwnership_prefix",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "WindowOwnership_skipBoundary",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "WindowOwnership_escapeKernel",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "WindowOwnership_staleBoundary",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "WindowOwnership_disabledAbsent",
+      "invariant": "safety",
+      "negative": true
+    },
+    {
+      "model": "SourceWindows",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SourceWindows_cross",
+      "invariant": "CurrentEvidence",
+      "negative": true
+    },
+    {
+      "model": "SourceWindows_omit",
+      "invariant": "CompleteRequirements",
+      "negative": true
+    },
+    {
+      "model": "SourceWindows_receiver",
+      "invariant": "FinalReceiver",
+      "negative": true
+    },
+    {
+      "model": "SourceWindows_repeat",
+      "invariant": "OncePerWindow",
+      "negative": true
+    },
+    {
+      "model": "SourceWindows_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "SourceWindows_skipfinal",
+      "invariant": "CurrentEvidence",
+      "negative": true
+    },
+    {
+      "model": "SourceWindows_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "RootChild",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "RootChild_analyticAuthority",
+      "invariant": "FinalSources",
+      "negative": true
+    },
+    {
+      "model": "RootChild_crossEffect",
+      "invariant": "FinalSources",
+      "negative": true
+    },
+    {
+      "model": "RootChild_omit",
+      "invariant": "TwoRequirements",
+      "negative": true
+    },
+    {
+      "model": "RootChild_skipchild",
+      "invariant": "DomainChecks",
+      "negative": true
+    },
+    {
+      "model": "RootChild_omitSource",
+      "invariant": "FinalSources",
+      "negative": true
+    },
+    {
+      "model": "RootChild_parent",
+      "invariant": "ReceiverIsolation",
+      "negative": true
+    },
+    {
+      "model": "RootChild_eager",
+      "invariant": "LazyBranch",
+      "negative": true
+    },
+    {
+      "model": "RootChild_lateEffect",
+      "invariant": "FinalSources",
+      "negative": true
+    },
+    {
+      "model": "RootChild_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ReturnWindows",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ReturnWindows_pure",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ReturnWindows_skipBefore",
+      "invariant": "CallbackEntry",
+      "negative": true
+    },
+    {
+      "model": "ReturnWindows_crossContribution",
+      "invariant": "PostContribution",
+      "negative": true
+    },
+    {
+      "model": "ReturnWindows_trustReturn",
+      "invariant": "FinalSources",
+      "negative": true
+    },
+    {
+      "model": "ReturnWindows_crossReplay",
+      "invariant": "FinalSources",
+      "negative": true
+    },
+    {
+      "model": "ReturnWindows_omitLate",
+      "invariant": "CompleteProjection",
+      "negative": true
+    },
+    {
+      "model": "ReturnWindows_dropParty",
+      "invariant": "TwoRequirements",
+      "negative": true
+    },
+    {
+      "model": "ReturnWindows_repeat",
+      "invariant": "PureBudget",
+      "negative": true
+    },
+    {
+      "model": "ReturnWindows_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ReplayBoundary",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ReplayBoundary_move",
+      "invariant": "OrderedDiagnostic",
+      "negative": true
+    },
+    {
+      "model": "ReplayBoundary_reuse",
+      "invariant": "SourcesCurrent",
+      "negative": true
+    },
+    {
+      "model": "ReplayBoundary_omit",
+      "invariant": "CompleteCoverage",
+      "negative": true
+    },
+    {
+      "model": "ReplayBoundary_effects",
+      "invariant": "NoEffects",
+      "negative": true
+    },
+    {
+      "model": "ReplayBoundary_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "IdentityDFS",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "IdentityDFS_lateMark",
+      "invariant": "TerminationBound",
+      "negative": true
+    },
+    {
+      "model": "IdentityDFS_payload",
+      "invariant": "CompleteCoverage",
+      "negative": true
+    },
+    {
+      "model": "IdentityDFS_noFinal",
+      "invariant": "RecheckedCurrent",
+      "negative": true
+    },
+    {
+      "model": "IdentityDFS_dropFinal",
+      "invariant": "FinalCoverage",
+      "negative": true
+    },
+    {
+      "model": "IdentityDFS_finalWrite",
+      "invariant": "RecheckedCurrent",
+      "negative": true
+    },
+    {
+      "model": "IdentityDFS_sourceReuse",
+      "invariant": "SourcesCurrent",
+      "negative": true
+    },
+    {
+      "model": "IdentityDFS_parent",
+      "invariant": "ReceiverIdentity",
+      "negative": true
+    },
+    {
+      "model": "IdentityDFS_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ReadOnlyEntry",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ReadOnlyEntry_sealed",
+      "invariant": "NoOpaque",
+      "negative": true
+    },
+    {
+      "model": "ReadOnlyEntry_revision",
+      "invariant": "NoOpaque",
+      "negative": true
+    },
+    {
+      "model": "ReadOnlyEntry_checker",
+      "invariant": "NoOpaque",
+      "negative": true
+    },
+    {
+      "model": "ReadOnlyEntry_observer",
+      "invariant": "NoOpaque",
+      "negative": true
+    },
+    {
+      "model": "ReadOnlyEntry_anchorExecute",
+      "invariant": "NoOpaque",
+      "negative": true
+    },
+    {
+      "model": "ReadOnlyEntry_scopeReuse",
+      "invariant": "NoOpaque",
+      "negative": true
+    },
+    {
+      "model": "ReadOnlyEntry_dropPrefix",
+      "invariant": "OrderedDiagnostic",
+      "negative": true
+    },
+    {
+      "model": "ReadOnlyEntry_parent",
+      "invariant": "ReceiverIdentity",
+      "negative": true
+    },
+    {
+      "model": "ReadOnlyEntry_sourceReuse",
+      "invariant": "SourcesCurrent",
+      "negative": true
+    },
+    {
+      "model": "ReadOnlyEntry_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "SnapshotEntry",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SnapshotEntry_revision",
+      "invariant": "ChangedRejected",
+      "negative": true
+    },
+    {
+      "model": "SnapshotEntry_checker",
+      "invariant": "ChangedRejected",
+      "negative": true
+    },
+    {
+      "model": "SnapshotEntry_value",
+      "invariant": "ChangedRejected",
+      "negative": true
+    },
+    {
+      "model": "SnapshotEntry_observer",
+      "invariant": "ChangedRejected",
+      "negative": true
+    },
+    {
+      "model": "SnapshotEntry_ancestor",
+      "invariant": "ChangedRejected",
+      "negative": true
+    },
+    {
+      "model": "SnapshotEntry_source",
+      "invariant": "SourcesCurrent",
+      "negative": true
+    },
+    {
+      "model": "SnapshotEntry_prefix",
+      "invariant": "OrderedDiagnostic",
+      "negative": true
+    },
+    {
+      "model": "SnapshotEntry_parent",
+      "invariant": "ReceiverIdentity",
+      "negative": true
+    },
+    {
+      "model": "SnapshotEntry_aba",
+      "invariant": "NoInterveningCallback",
+      "negative": true
+    },
+    {
+      "model": "SnapshotEntry_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ClosedTail",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "ClosedTail_foreign",
+      "invariant": "NoForeignCalls",
+      "negative": true
+    },
+    {
+      "model": "ClosedTail_returnOnly",
+      "invariant": "ObjectsCurrent",
+      "negative": true
+    },
+    {
+      "model": "ClosedTail_dropB",
+      "invariant": "TwoRequirements",
+      "negative": true
+    },
+    {
+      "model": "ClosedTail_parent",
+      "invariant": "ChildIdentity",
+      "negative": true
+    },
+    {
+      "model": "ClosedTail_prefix",
+      "invariant": "OrderedDiagnostic",
+      "negative": true
+    },
+    {
+      "model": "ClosedTail_external",
+      "invariant": "SourcesCurrent",
+      "negative": true
+    },
+    {
+      "model": "ClosedTail_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "ReturnTail",
+      "invariant": "recordedChecks",
+      "negative": false
+    },
+    {
+      "model": "ReturnTail_skipReplay",
+      "invariant": "ReplayWasCurrent",
+      "negative": true
+    },
+    {
+      "model": "ReturnTail_skipFile",
+      "invariant": "FilesMatchedWhenRead",
+      "negative": true
+    },
+    {
+      "model": "ReturnTail_dropB",
+      "invariant": "RequirementsWereChecked",
+      "negative": true
+    },
+    {
+      "model": "ReturnTail_parent",
+      "invariant": "ChildIdentity",
+      "negative": true
+    },
+    {
+      "model": "ReturnTail_prefix",
+      "invariant": "DiagnosticOrder",
+      "negative": true
+    },
+    {
+      "model": "ReturnTail_objects",
+      "invariant": "ObjectsCurrentAtReturn",
+      "negative": true
+    },
+    {
+      "model": "ReturnTail_sources",
+      "invariant": "SourcesCurrentAtReturn",
+      "negative": true
+    },
+    {
+      "model": "ReturnTail_plan",
+      "invariant": "PlanMatchesAtReturn",
+      "negative": true
+    },
+    {
+      "model": "ReturnTail_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "AdmissionBody",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "AdmissionBody_acquisitionOnly",
+      "invariant": "ObservedCurrent",
+      "negative": true
+    },
+    {
+      "model": "AdmissionBody_skipReplay",
+      "invariant": "ObservedCurrent",
+      "negative": true
+    },
+    {
+      "model": "AdmissionBody_trustHot",
+      "invariant": "HotBodies",
+      "negative": true
+    },
+    {
+      "model": "AdmissionBody_skipChild",
+      "invariant": "ChildOwnReject",
+      "negative": true
+    },
+    {
+      "model": "AdmissionBody_dropB",
+      "invariant": "TwoRequirements",
+      "negative": true
+    },
+    {
+      "model": "AdmissionBody_parent",
+      "invariant": "ChildIdentity",
+      "negative": true
+    },
+    {
+      "model": "AdmissionBody_prefix",
+      "invariant": "DiagnosticOrder",
+      "negative": true
+    },
+    {
+      "model": "AdmissionBody_noWrites",
+      "invariant": "NoWritesBeforeReject",
+      "negative": true
+    },
+    {
+      "model": "AdmissionBody_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "CallPhases",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "CallPhases_acceptVeto",
+      "invariant": "FailedBodyRejected",
+      "negative": true
+    },
+    {
+      "model": "CallPhases_lookupOnly",
+      "invariant": "CurrentPlan",
+      "negative": true
+    },
+    {
+      "model": "CallPhases_leak",
+      "invariant": "MethodUnwound",
+      "negative": true
+    },
+    {
+      "model": "CallPhases_dropCaller",
+      "invariant": "NestedProtected",
+      "negative": true
+    },
+    {
+      "model": "CallPhases_dropB",
+      "invariant": "TwoRequirements",
+      "negative": true
+    },
+    {
+      "model": "CallPhases_parent",
+      "invariant": "ReceiverIdentity",
+      "negative": true
+    },
+    {
+      "model": "CallPhases_prefix",
+      "invariant": "OrderedDiagnostic",
+      "negative": true
+    },
+    {
+      "model": "CallPhases_protected",
+      "invariant": "NoBodyMutation",
+      "negative": true
+    },
+    {
+      "model": "CallPhases_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "SerialUse",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SerialUse_noGuard",
+      "invariant": "ActiveProtected",
+      "negative": true
+    },
+    {
+      "model": "SerialUse_omitDemand",
+      "invariant": "ReadCurrent",
+      "negative": true
+    },
+    {
+      "model": "SerialUse_dropB",
+      "invariant": "TwoRequirements",
+      "negative": true
+    },
+    {
+      "model": "SerialUse_parent",
+      "invariant": "ReceiverIdentity",
+      "negative": true
+    },
+    {
+      "model": "SerialUse_prefix",
+      "invariant": "OrderedDiagnostic",
+      "negative": true
+    },
+    {
+      "model": "SerialUse_localOnly",
+      "invariant": "ConditionalCommit",
+      "negative": true
+    },
+    {
+      "model": "SerialUse_coldAll",
+      "invariant": "ColdFreezesAll",
+      "negative": true
+    },
+    {
+      "model": "SerialUse_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    },
+    {
+      "model": "SnapshotLifetime",
+      "invariant": "safety",
+      "negative": false
+    },
+    {
+      "model": "SnapshotLifetime_valueOnly",
+      "invariant": "CurrentPlan",
+      "negative": true
+    },
+    {
+      "model": "SnapshotLifetime_receiverOnly",
+      "invariant": "CurrentPlan",
+      "negative": true
+    },
+    {
+      "model": "SnapshotLifetime_crossEffect",
+      "invariant": "SourcesCurrent",
+      "negative": true
+    },
+    {
+      "model": "SnapshotLifetime_skipClosure",
+      "invariant": "ActiveBlocked",
+      "negative": true
+    },
+    {
+      "model": "SnapshotLifetime_duplicate",
+      "invariant": "OncePerOwner",
+      "negative": true
+    },
+    {
+      "model": "SnapshotLifetime_parent",
+      "invariant": "ReceiverIdentity",
+      "negative": true
+    },
+    {
+      "model": "SnapshotLifetime_dropRequirement",
+      "invariant": "TwoRequirements",
+      "negative": true
+    },
+    {
+      "model": "SnapshotLifetime_prefix",
+      "invariant": "OrderedDiagnostic",
+      "negative": true
+    },
+    {
+      "model": "SnapshotLifetime_history",
+      "invariant": "EndpointMeansNoEffect",
+      "negative": true
+    },
+    {
+      "model": "SnapshotLifetime_fenced",
+      "invariant": "NoStaleUse",
+      "negative": true
+    },
+    {
+      "model": "SnapshotLifetime_acceptance",
+      "invariant": "RejectAll",
+      "negative": true
+    }
+  ],
+  "bindings": [
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/IncrementalRoles.lean",
+      "model": "IncrementalRoles.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/PayloadSharing.lean",
+      "model": "ThunkConstruction.qnt",
+      "declaration": "thunkConstructionDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/MetadataProjection.lean",
+      "model": "ModuleDemand.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/TestMakeLayout.lean",
+      "model": "TestMakeLayout.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/TestPublicationReuse.lean",
+      "model": "TestPublicationReuse.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/SelectionReplay.lean",
+      "model": "SelectionReplay.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/SelectionReplay.lean",
+      "model": "SelectionReplayTopology.qnt",
+      "declaration": "topologySourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/RootCollection.lean",
+      "model": "RootCollection.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReadRetention.lean",
+      "model": "ReadRetention.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/IssuedRootForwarding.lean",
+      "model": "IssuedRootForwarding.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/SourceWindows.lean",
+      "model": "SourceWindows.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/RootChild.lean",
+      "model": "RootChild.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReturnWindows.lean",
+      "model": "ReturnWindows.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReplayBoundary.lean",
+      "model": "ReplayBoundary.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/IdentityDFS.lean",
+      "model": "IdentityDFS.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReadOnlyEntry.lean",
+      "model": "ReadOnlyEntry.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/SnapshotEntry.lean",
+      "model": "SnapshotEntry.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/ClosedTail.lean",
+      "model": "ClosedTail.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/CheckerOrigin.lean",
+      "model": "CheckerOrigin.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/MetadataRoute.lean",
+      "model": "MetadataRoute.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/CoreBuildPublication.lean",
+      "model": "CoreBuildPublication.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/CoreBuildHandoff.lean",
+      "model": "CoreBuildHandoff.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/CoreApprovedRecovery.lean",
+      "model": "CoreApprovedRecovery.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/CoreStoreRecovery.lean",
+      "model": "CoreStoreRecovery.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/SourceLoader.lean",
+      "model": "SourceLoader.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/IssuedLoading.lean",
+      "model": "IssuedLoading.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/ArtifactClosure.lean",
+      "model": "ArtifactClosure.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/StoreLowering.lean",
+      "model": "StoreLowering.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/MetadataAllocation.lean",
+      "model": "MetadataAllocation.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/MetadataOwnership.lean",
+      "model": "MetadataOwnership.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReplayOwnership.lean",
+      "model": "ReplayOwnership.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/RouteMutation.lean",
+      "model": "RouteMutation.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/IssuerProjection.lean",
+      "model": "IssuerProjection.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/IssuerProjection.lean",
+      "model": "IssuerSequence.qnt",
+      "declaration": "sequenceSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/IssuedRead.lean",
+      "model": "IssuedRead.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReturnTail.lean",
+      "model": "ReturnTail.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/AdmissionBody.lean",
+      "model": "AdmissionBody.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/CallPhases.lean",
+      "model": "CallPhases.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/SerialUse.lean",
+      "model": "SerialUse.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Admission/SnapshotLifetime.lean",
+      "model": "SnapshotLifetime.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/Graph/Operations.lean",
+      "model": "GraphOperations.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/TestAdmission.lean",
+      "model": "TestSourceAdmission.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
+      "model": "SourceClosureWork.qnt",
+      "declaration": "quintSourceDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
+      "model": "SourcePrefix.qnt",
+      "declaration": "sourcePrefixQuintDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
+      "model": "DependencyContinuation.qnt",
+      "declaration": "dependencyContinuationQuintDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
+      "model": "ReaderEffectSupport.qnt",
+      "declaration": "readerEffectSupportQuintDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
+      "model": "CandidatePublication.qnt",
+      "declaration": "candidatePublicationQuintDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
+      "model": "CandidateLocation.qnt",
+      "declaration": "candidateLocationQuintDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
+      "model": "CompilerEnrollment.qnt",
+      "declaration": "compilerEnrollmentQuintDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
+      "model": "AuthoringStage.qnt",
+      "declaration": "authoringStageQuintDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
+      "model": "CarrierReturn.qnt",
+      "declaration": "carrierReturnQuintDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
+      "model": "CarrierAdmission.qnt",
+      "declaration": "carrierAdmissionQuintDigest"
+    },
+    {
+      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean",
+      "model": "WitnessReplay.qnt",
+      "declaration": "witnessReplayQuintDigest"
+    }
+  ],
+  "owners": [
+    "core-spec.ss",
+    "dev/proofs/lean/ArtifactClosureCheck.lean",
+    "dev/proofs/lean/CoreApprovedRecoveryCheck.lean",
+    "dev/proofs/lean/CoreBuildHandoffCheck.lean",
+    "dev/proofs/lean/CoreBuildPublicationCheck.lean",
+    "dev/proofs/lean/CoreStoreRecoveryCheck.lean",
+    "dev/proofs/lean/IssuedLoadingCheck.lean",
+    "dev/proofs/lean/IssuerProjectionCheck.lean",
+    "dev/proofs/lean/MetadataAllocationCheck.lean",
+    "dev/proofs/lean/SourceLoaderCheck.lean",
+    "dev/proofs/lean/StoreLoweringCheck.lean",
+    "dev/proofs/lean/YuanxuProof.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/AdmissionBody.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/ArtifactClosure.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/CallPhases.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/CheckerOrigin.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/ClosedTail.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/CoreApprovedRecovery.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/CoreBuildHandoff.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/CoreBuildPublication.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/CoreStoreRecovery.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/DFSFrames.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/IdentityDFS.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/IssuedLoading.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/IssuedRead.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/IssuedRootForwarding.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/IssuerProjection.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/MetadataAllocation.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/MetadataOwnership.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/MetadataRoute.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/ReadOnlyEntry.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/ReadRetention.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/ReplayBoundary.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/ReplayOwnership.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/ReturnTail.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/ReturnWindows.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/RootChild.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/RootCollection.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/RouteMutation.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/SelectionReplay.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/SerialUse.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/SnapshotEntry.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/SnapshotLifetime.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/Source.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/SourceLoader.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/SourceWindows.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/StoreLowering.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/TestMakeLayout.lean",
+    "dev/proofs/lean/YuanxuProof/Admission/TestPublicationReuse.lean",
+    "dev/proofs/lean/YuanxuProof/Graph/Operations.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/DependencyOrderRepair.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/ImportCorrespondence.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/PublicationReads.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SemanticReads.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/TestAdmission.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/DependencyPublication.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/IncrementalRoles.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/MetadataProjection.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/PayloadSharing.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Selection/FeatureScopes.lean",
+    "dev/proofs/lean/YuanxuProof/ModuleSystem/Source/Collections.lean",
+    "dev/proofs/lean/YuanxuProof/Modules/Funflow/FunctionBoundary.lean",
+    "dev/proofs/lean/YuanxuProof/PooClos/CarrierCapture.lean",
+    "dev/proofs/lean/lake-manifest.json",
+    "dev/proofs/lean/lakefile.lean",
+    "dev/sysml/10-evaluation/10.01-efficient-caching.sysml",
+    "dev/sysml/20-module-loading/20.01-demanded-module-lifecycle.sysml",
+    "dev/sysml/20-module-loading/20.03-incremental-role-ownership.sysml",
+    "dev/sysml/20-module-loading/20.04-payload-ownership.sysml",
+    "dev/sysml/20-module-loading/20.06-local-dependency-order.sysml",
+    "dev/sysml/20-module-loading/20.35-feature-scope-composition.org",
+    "dev/test-file.ss",
+    "gerbil.pkg",
+    "init.ss",
+    "module-system/authoring/admission.ss",
+    "module-system/authoring/roles.ss",
+    "module-system/bootstrap/body-inclusion.ss",
+    "module-system/building/artifacts.ss",
+    "module-system/building/build-projection.ss",
+    "module-system/building/configuration-source.ss",
+    "module-system/building/interface.ss",
+    "module-system/building/source-closure.ss",
+    "module-system/building/test-observation.ss",
+    "module-system/building/test-projection.ss",
+    "module-system/config.ss",
+    "module-system/feature/scope.ss",
+    "module-system/graph/funs.ss",
+    "module-system/schema/slot-contracts.ss",
+    "module-system/selection/init-syntax.ss",
+    "module-system/source/admission.ss",
+    "module-system/source/collection.ss",
+    "module-system/source/config-prelude.ss",
+    "module-system/source/declaration.ss",
+    "module-system/source/deferred-declaration.ss",
+    "module-system/source/directory.ss",
+    "module-system/source/interface.ss",
+    "module-system/source/link.ss",
+    "module-system/source/module-prelude.ss",
+    "module-system/source/objects.ss",
+    "module-system/source/observations.ss",
+    "module-system/source/preparation.ss",
+    "module-system/source/projection.ss",
+    "module-system/source/publication-reader.ss",
+    "module-system/source/publication.ss",
+    "module-system/source/reader-preparation.ss",
+    "module-system/source/reader-session.ss",
+    "module-system/source/reader-support.ss",
+    "module-system/source/reader.ss",
+    "module-system/source/role-context.ss",
+    "module-system/source/role-forms.ss",
+    "module-system/source/selection.ss",
+    "module-system/types.ss",
+    "modules/funflow/func.ss",
+    "modules/funflow/objects.ss",
+    "modules/funflow/store.ss",
+    "modules/funflow/types.ss",
+    "modules/json-schema/objects.ss",
+    "modules/json-schema/types.ss",
+    "object-family/read-projection.ss",
+    "observability/memory.ss",
+    "observability/testing-fixture.ss",
+    "observability/testing-script.ss",
+    "ops/func.ss",
+    "ops/interface.ss",
+    "ops/process-script.ss",
+    "ops/progress.ss",
+    "ops/selected-packages.ss",
+    "ops/tests/atomic-test.ss",
+    "ops/types.ss",
+    "poo-clos/classes.ss",
+    "poo-clos/dispatch.ss",
+    "poo-clos/method-bundle-syntax.ss",
+    "poo-clos/objects.ss",
+    "poo-clos/syntax.ss",
+    "poo-clos/types.ss",
+    "t/artifact-authority-test.ss",
+    "t/artifact-closure-test.ss",
+    "t/build-artifact-publication-test.ss",
+    "t/build-recovery-boundary-test.ss",
+    "t/contract-diagnostics-test.ss",
+    "t/contract-function-composition-test.ss",
+    "t/evidence-read-ownership-test.ss",
+    "t/evidence-witness-replay-test.ss",
+    "t/execution-cancellation-test.ss",
+    "t/funflow-function-types-test.ss",
+    "t/gitea-postgresql-publication-test.ss",
+    "t/graph-operations-test.ss",
+    "t/issued-read-admission-test.ss",
+    "t/issued-root-forwarding-test.ss",
+    "t/issuer-projection-test.ss",
+    "t/module-authoring-dispatch-work-test.ss",
+    "t/module-authoring-stage-test.ss",
+    "t/module-authoring-test.ss",
+    "t/module-build-process-test.ss",
+    "t/module-business-eval-once-1000-test.ss",
+    "t/module-candidate-metadata-test.ss",
+    "t/module-candidate-stage-test.ss",
+    "t/module-closure-work-test.ss",
+    "t/module-context-walk-test.ss",
+    "t/module-declaration-1000-test.ss",
+    "t/module-declaration-10000-test.ss",
+    "t/module-declaration-calibration-test.ss",
+    "t/module-declaration-retention-test.ss",
+    "t/module-declaration-value-test.ss",
+    "t/module-deferred-projection-test.ss",
+    "t/module-deferred-reader-test.ss",
+    "t/module-demand-projection-test.ss",
+    "t/module-dependency-continuation-test.ss",
+    "t/module-eval-once-1000-test.ss",
+    "t/module-feature-interface-test.ss",
+    "t/module-feature-scope-test.ss",
+    "t/module-incremental-cache-test.ss",
+    "t/module-incremental-make-test.ss",
+    "t/module-init-import-test.ss",
+    "t/module-json-schema-publication-test.ss",
+    "t/module-loading-scale-test.ss",
+    "t/module-publication-test.ss",
+    "t/module-reader-effect-support-test.ss",
+    "t/module-retention-census-test.ss",
+    "t/module-role-context-test.ss",
+    "t/module-runtime-attribution-1000-test.ss",
+    "t/module-scope-link-test.ss",
+    "t/module-session-metadata-index-test.ss",
+    "t/module-source-admission-test.ss",
+    "t/module-source-cost-test.ss",
+    "t/module-test-observation-test.ss",
+    "t/module-test-preparation-test.ss",
+    "t/module-testing-source-admission-test.ss",
+    "t/mop-call-phases-test.ss",
+    "t/mop-checker-origin-test.ss",
+    "t/mop-metadata-allocation-test.ss",
+    "t/mop-metadata-ownership-test.ss",
+    "t/mop-metadata-route-test.ss",
+    "t/mop-replay-write-guard-test.ss",
+    "t/mop-route-mutation-test.ss",
+    "t/mop-serial-use-test.ss",
+    "t/mop-snapshot-lifetime-test.ss",
+    "t/mop-state-snapshot-test.ss",
+    "t/mop-store-boundary-test.ss",
+    "t/mop-thunk-construction-test.ss",
+    "t/persistent-selected-head-test.ss",
+    "t/poo-clos-dispatch-test.ss",
+    "t/poo-clos-method-bundle-test.ss",
+    "t/qualification/build-publication/compile.ss",
+    "t/qualification/build-publication/projection.ss",
+    "t/qualification/build-publication/store-producer.ss",
+    "t/qualification/build-publication/store.ss",
+    "t/qualification/build-publication/worker.ss",
+    "t/qualification/module-bootstrap/objects.ss",
+    "t/qualification/module-publication/controls.ss",
+    "t/qualification/module-publication/fixtures.ss",
+    "t/qualification/module-scale/fixture.ss",
+    "t/qualification/module-scale/workloads.ss",
+    "t/qualification/mop-state/artifact-authority.ss",
+    "t/qualification/mop-state/artifact-closure.ss",
+    "t/qualification/mop-state/checker-origin.ss",
+    "t/qualification/mop-state/closed-tail.ss",
+    "t/qualification/mop-state/compile-store-boundary.ss",
+    "t/qualification/mop-state/compile-tail-gateway.ss",
+    "t/qualification/mop-state/metadata-ownership.ss",
+    "t/qualification/mop-state/metadata-route.ss",
+    "t/qualification/mop-state/precompiled-stores.ss",
+    "t/qualification/mop-state/refine-tail-policy.ss",
+    "t/qualification/mop-state/reflection-surface.ss",
+    "t/qualification/mop-state/seal-artifact-closure.ss",
+    "t/qualification/mop-state/snapshot.ss",
+    "t/qualification/mop-state/store-boundary-driver.ss",
+    "t/qualification/mop-state/store-policy.ss",
+    "t/qualification/mop-state/unlowered-store.ss",
+    "t/read-retention-cost-test.ss",
+    "t/reader-root-collection-test.ss",
+    "t/root-child-admission-test.ss",
+    "t/root-child-effect-test.ss",
+    "t/runtime-statistics-test.ss",
+    "t/semantic-module-test.ss",
+    "t/slot-read-cost-test.ss",
+    "t/slot-read-replay-test.ss",
+    "t/source-admission-body-test.ss",
+    "t/source-admission-closed-tail-test.ss",
+    "t/source-admission-gateway-test.ss",
+    "t/source-admission-tail-test.ss",
+    "t/source-admission-test.ss",
+    "t/source-loader-authority-test.ss",
+    "t/source-observation-test.ss",
+    "t/testing-script-test.ss"
+  ],
+  "producerOwners": {
+    "graph": [
+      "gerbil.pkg",
+      "generalized-graph.ss",
+      "strong-components.ss",
+      "feedback-graph.ss",
+      "construction-cache.ss",
+      "component-revision.ss",
+      "component-publication.ss",
+      "t/feedback/graph-algorithms-test.ss",
+      "t/construction/graph-order-repair-test.ss"
+    ],
+    "reads": [
+      "gerbil.pkg",
+      "object.ss",
+      "object/observation.scm",
+      "object-state.ss",
+      "slot-observation.ss",
+      "read-route.ss",
+      "slot-layout.ss",
+      "prototype-map.ss",
+      "support/object-syntax.ss",
+      "mop.ss",
+      "t/objects/issued-read-test.ss"
+    ]
+  }
+}
