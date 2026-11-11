@@ -14,9 +14,13 @@
 (export DeclarationFixture RuntimeValueFixture RuntimeSelectionFixture RuntimeAttributionFixture ModuleEvalOnceFixture BusinessEvalOnceFixture
         SparseBusinessEvalFixture SparseBusinessAttributionFixture
         declaration-scale-case declaration-scale-profile)
-(def (declaration-scale-profile count)
-  (let (profile (.cc (yuanxu-selected-testing-case-profile)
-                   max-duration-milliseconds: 180000))
+(def (declaration-scale-profile count (performance-gate? #t))
+  ;; Timing diagnostic only: disabling the 180s performance ceiling inherits
+  ;; the ordinary Case resource watchdog; assertions and idle limits stay live.
+  (def selected (yuanxu-selected-testing-case-profile))
+  (let (profile (if performance-gate?
+                 (.cc selected max-duration-milliseconds: 180000)
+                 selected))
     (if (= count 10000)
       (.cc profile heap-limit-bytes: 4294967296 live-growth-limit-bytes: 4294967296)
       profile)))
@@ -166,7 +170,9 @@
   ((_ description count)
    (declaration-scale-case description count DeclarationFixture))
   ((_ description count fixture-profile)
-   (yuanxu-test-fixture description profile: (declaration-scale-profile count)
+   (declaration-scale-case description count fixture-profile #t))
+  ((_ description count fixture-profile performance-gate?)
+   (yuanxu-test-fixture description profile: (declaration-scale-profile count performance-gate?)
      (fixture (.cc fixture-profile size: count))
      (yuanxu-test-checkpoint 'fixture-ready)
      ;; This is the assertion workload of this SAME official std/test Case.

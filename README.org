@@ -150,7 +150,10 @@ performs this preparation explicitly rather than silently interpreting compiled
 fixtures as source. See [[file:dev/sysml/20-module-loading/20.30-test-discovery-and-domain-demand.org][the test execution boundary and preparation map]].
 
 Ordinary tests use a 2 GiB VM heap; ten-thousand-module cases use 4 GiB with
-the original 180-second Case deadline. Compiler capacity follows actual host
+the 180-second Case performance deadline. The dense declaration and selection
+cases temporarily disable that performance ceiling for a CI timing run and
+inherit the normal 600-second resource watchdog; all assertions remain. This
+diagnostic run does not qualify the 180-second requirement. Compiler capacity follows actual host
 cores. A failing performance or idle gate remains a failure. Reproduce from
 the exact checkout and pinned toolchain; keep complete failed logs in ignored
 cache or expiring CI artifacts. Production build memory is not a test quota.
