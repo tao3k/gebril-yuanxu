@@ -2,6 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
+        (only-in :std/os/pid getpid)
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-string)
@@ -240,22 +241,17 @@
         .admit-result: (lambda (result) (set! called? #t) result))
       (check-exception (.call Unchecked .run) error?)
       (check-equal? called? #f))
-    (test-case "the atomic gxi entry executes the official harness in its own process"
+    (test-case "the official Gerbil test entry executes once in its own process"
       (call-with-temporary-directory "testing-launch-"
         (lambda (directory)
           (def counter (path-expand "executions" directory))
           (def file (path-normalize (path-expand "t/qualification/testing/launch-count-test.ss")))
           (.def (Driver @ TestingScript.)
             source: (.o spec: (list file) source-root: (current-directory) admit-current: void)
-            command: (list "gxi" "-:max-heap=2G,debug=q"
-                           "dev/test-file.ss" file)
             environment: (.o YUANXU_TEST_LAUNCH_COUNT: counter)
             profile: =>.+ (.o max-duration-milliseconds: 120000))
           (def result (.call Driver .run))
           (def processes (call-with-input-file counter read-all))
           (check-equal? (length processes) 1)
-          (check-equal?
-            (and (pair? processes)
-                 (not (not (string-contains (.get result output)
-                   (string-append "test-entry pid=" (number->string (car processes)))))))
-            #t))))))
+          (check-equal? (and (pair? processes) (exact-integer? (car processes))
+                             (not (= (getpid) (car processes)))) #t))))))

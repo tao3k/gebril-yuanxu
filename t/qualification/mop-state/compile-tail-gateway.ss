@@ -36,11 +36,6 @@
                 (copy-file input output)))))))
     (directory-files directory)))
 (snapshot core "")
-;; Keep the project's existing test adapter in the coherent source snapshot.
-;; The qualification invokes the ordinary Just recipe from this package root.
-(create-directory* (path-expand "dev" source-core))
-(copy-file (path-expand "dev/test-file.ss" core)
-           (path-expand "dev/test-file.ss" source-core))
 (report-stage 'snapshot)
 (def path (path-expand "source/yuanxu/module-system/source/observations.ss" root))
 (def text (call-with-input-file (path-expand "module-system/source/observations.ss" core) read-all-as-string))

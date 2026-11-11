@@ -3043,7 +3043,6 @@
     "dev/sysml/20-module-loading/20.04-payload-ownership.sysml",
     "dev/sysml/20-module-loading/20.06-local-dependency-order.sysml",
     "dev/sysml/20-module-loading/20.35-feature-scope-composition.org",
-    "dev/test-file.ss",
     "gerbil.pkg",
     "init.ss",
     "module-system/authoring/admission.ss",
@@ -3216,7 +3215,10 @@
     "t/source-admission-test.ss",
     "t/source-loader-authority-test.ss",
     "t/source-observation-test.ss",
-    "t/testing-script-test.ss"
+    "t/testing-script-test.ss",
+    "dev/ci-inventory.ss",
+    "t/build-input-mutations-test.ss",
+    "t/qualification/build-input/mutations.ss"
   ],
   "producerOwners": {
     "graph": [

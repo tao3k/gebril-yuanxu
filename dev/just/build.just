@@ -1,19 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 build:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    export GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}"
-    source=""
-    rm -f -- "$GERBIL_PATH/test-build-source"
-    if [[ -z "$(git status --porcelain --untracked-files=normal 2>/dev/null)" ]]; then
-        source="$(git rev-parse HEAD 2>/dev/null || true)"
-    fi
-    GERBIL_BUILD_VERBOSE="${GERBIL_BUILD_VERBOSE:-1}" {{ gerbil_compiler_environment }} gerbil build
-    if [[ -n "$source" && "$source" == "$(git rev-parse HEAD)" &&
-          -z "$(git status --porcelain --untracked-files=normal)" ]]; then
-        {{ gerbil_compiler_environment }} gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --record-build "$source"
-    fi
+    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" GERBIL_BUILD_VERBOSE="${GERBIL_BUILD_VERBOSE:-1}" {{ gerbil_compiler_environment }} gerbil build
 
 # Native source-only Core build in an explicit private output environment.
 # Keep the ordinary build.ss dispatcher and its existing 300-second budget.

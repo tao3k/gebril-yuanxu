@@ -58,4 +58,4 @@ check-source-loader trace:
     cd dev/proofs/lean && timeout 120s lake env lean --run SourceLoaderCheck.lean "{{ trace }}"
 
 check-test-groups:
-    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --check-partition
+    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} -e '(import (only-in "./dev/ci-inventory.ss" main))' -e '(main "--check")'

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 # Qualification-only source dispatcher, built outside the checkout.
-test-source-tail-gateway directory:
+compile-source-tail-gateway directory:
     #!/usr/bin/env bash
     set -euo pipefail
     export CORE_SOURCE_TAIL_ROOT="{{ directory }}"
@@ -9,6 +9,13 @@ test-source-tail-gateway directory:
     test ! -e "$CORE_SOURCE_TAIL_ROOT/source"
     mkdir -p "$CORE_SOURCE_TAIL_ROOT"
     GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib" env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/compile-tail-gateway.ss
+
+# The compiler preparation is separate; Gerbil owns suite discovery and status.
+test-source-tail-gateway directory:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    just compile-source-tail-gateway "{{ directory }}"
+    export CORE_SOURCE_TAIL_ROOT="{{ directory }}"
     # The launcher imports ./init.ss. It must select the SAME snapshot whose
     # libraries were compiled above, not combine live declarations with clones.
     GERBIL_LOADPATH="$CORE_SOURCE_TAIL_ROOT/lib:$CORE_SOURCE_TAIL_ROOT/source:$(pwd):${GERBIL_TEST_HOST_PATH:-${GERBIL_PATH:-$(pwd)/.gerbil}}/lib" just --justfile "$PWD/Justfile" --working-directory "$CORE_SOURCE_TAIL_ROOT/source/yuanxu" test-file "$CORE_SOURCE_TAIL_ROOT/source/yuanxu/t/source-admission-gateway-test.ss"

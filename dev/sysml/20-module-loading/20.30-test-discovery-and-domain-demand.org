@@ -507,3 +507,48 @@ created by Core. It specializes only the constructor branch whose actual
 context procedure is =void=. Source observers, selected compiler inputs and
 general publication fallbacks retain their original open-route checks.
 
+
+* Official test execution boundary
+
+=gerbil test= is the sole test executor. Test suites live under =t/= and use
+=std/test=. There is no =dev/test-file.ss= or =dev/test-directory-report.ss=
+execution adapter. Just recipes may supply process resource limits and invoke
+the official command; they do not load suites or reinterpret its verdict.
+
+=dev/ci-inventory.ss= is metadata only: it partitions direct =t/*-test.ss=
+files exactly once, rejects omissions and duplicates, and projects the published
+Module test file selection. It cannot execute tests. Empty inventory is an
+error at the CI boundary. Build-input fault controls are ordinary test cases
+under =t/=, not a separate development test CLI.
+
+CI builds each platform once and restores that run's package artifact for
+independent domain jobs. It does not append a redundant full-suite run. Domain
+logs remain temporary CI artifacts; console output shows completion or bounded
+failure context. Existing Case deadlines and per-file heap classes remain
+acceptance constraints. Repartitioning is not evidence that the existing dense
+construction performance failures are fixed.
+
+** Complete coverage and preparation
+
+The partition retains every direct =t/*-test.ss= file exactly once. The sole
+execution-path substitution is the existing store-boundary facade, which loads
+the issued compiled suite; interpreting that suite's source is not acceptance.
+
+| Domain | Preparation and preserved evidence |
+|--------+-----------------------------------|
+| Store callbacks | Existing 120-second compiler and runtime stages; compiled boundary facade; callback, source and compiler-input SHA-256 checks after testing |
+| Artifact authority | Private authority directory; existing test-owned compiler acquisition and cleanup |
+| Source loader | Private authority directory; existing source-loader fixture acquisition and cleanup |
+| Source gateway | Existing 120-second compiler stage; tests run from the compiled source snapshot with that snapshot first in the load path |
+| Build-input mutations | Four compiled faults; correct implementation before and after faults; exact expected rejection rather than timeout or compiler failure |
+| Published modules | Currentness admission followed by the published file specification; one independent official Harness |
+
+The CI matrix keeps 4 GiB dense fixtures separate from ordinary 2 GiB fixtures.
+Case duration and idle policies remain in the existing Case Profiles, including
+the 180-second declaration acceptance gate. Native CLI exit status owns the
+result; no startup receipt, output scanner or second verdict is required.
+
+Just 1.56.0 =--quiet= suppresses child stdout as well as recipe presentation,
+so metadata-producing recipes must not use it. Empty matrix output is rejected
+before publication. Build logs, failed mutation transcripts and observation
+files remain ignored local cache or expiring CI artifacts, never source files.

@@ -9,27 +9,17 @@ permissions:
   contents: read
 jobs:
   build:
-    name: Build and test
+    name: Build package
     runs-on: ${{ inputs.os }}
     timeout-minutes: 120
+    outputs:
+      matrix: ${{ steps.inventory.outputs.matrix }}
     env:
       GERBIL_PATH: ${{ github.workspace }}/.gerbil
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - uses: ./.github/actions/setup-gerbil
         id: gerbil
-      - name: Select runtime compiler capacity
-        shell: bash
-        run: |
-          # Dependency compilation is serial; use the actual runner allocation.
-          # Test heap and watchdog profiles retain their independent limits.
-          if [[ "$RUNNER_OS" == macOS ]]; then
-            workers=$(sysctl -n hw.logicalcpu)
-          else
-            workers=$(getconf _NPROCESSORS_ONLN)
-          fi
-          echo "GERBIL_BUILD_CORES=$workers" >> "$GITHUB_ENV"
-          echo "BUILD-WORKERS $workers"
       - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         id: restore-dependencies
         # Only the pinned POO dependency namespace crosses CI runs. Archiving
@@ -62,30 +52,119 @@ jobs:
       - name: Build Yuanxu
         id: build-core
         run: GERBIL_BUILD_VERBOSE=1 just build
-      - name: Reject build input context regressions
-        run: just test-build-input-context-mutations "$RUNNER_TEMP/build-input-context"
-      - name: Run serial Gerbil tests and report each file
-        if: ${{ !cancelled() && steps.build-core.outcome == 'success' }}
-        env:
-          TMPDIR: ${{ runner.temp }}
-          YUANXU_TEST_REPORT_DIR: ${{ runner.temp }}/test-report
-        run: just test-platform
-      - name: Run published module TestSuites outside mechanism Cases
-        if: ${{ !cancelled() && steps.build-core.outcome == 'success' }}
-        env:
-          TMPDIR: ${{ runner.temp }}
-          YUANXU_TEST_REPORT_DIR: ${{ runner.temp }}/published-module-suites
-        run: just test-selected-modules
-      - name: Retain test and mutation evidence
+      - name: Validate the domain partition
+        id: inventory
+        run: |
+          matrix=$(just test-ci-groups)
+          test -n "$matrix"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+      - name: Archive the package build
+        run: tar -czf "$RUNNER_TEMP/package.tar.gz" .gerbil
+      - uses: actions/upload-artifact@v7
+        with:
+          name: yuanxu-build-${{ inputs.os }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/package.tar.gz
+          compression-level: 0
+          retention-days: 1
+
+  tests:
+    name: Test ${{ matrix.group }}
+    needs: build
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.build.outputs.matrix) }}
+    env:
+      GERBIL_PATH: ${{ github.workspace }}/.gerbil
+      YUANXU_TEST_FILES: ${{ matrix.files }}
+      YUANXU_TEST_HEAP: ${{ matrix.heap }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: ./.github/actions/restore-yuanxu
+        with:
+          artifact: yuanxu-build-${{ inputs.os }}-${{ github.run_attempt }}
+      - name: Set temporary report paths
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "YUANXU_TEST_REPORT_DIR=$RUNNER_TEMP/test-report" >> "$GITHUB_ENV"
+      - name: Prepare the compiled callback fixture
+        if: matrix.group == 'store-callbacks'
+        run: |
+          mkdir -p "$YUANXU_TEST_REPORT_DIR"
+          just compile-mop-store-boundary "$RUNNER_TEMP/store-fixture" > "$YUANXU_TEST_REPORT_DIR/prepare.log" 2>&1
+          echo "CORE_STORE_ROOT=$RUNNER_TEMP/store-fixture" >> "$GITHUB_ENV"
+          echo "GERBIL_LOADPATH=$RUNNER_TEMP/store-fixture/lib:$GERBIL_PATH/lib:$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+      - name: Prepare isolated authority directories
+        if: matrix.group == 'artifact-authority' || matrix.group == 'source-loader'
+        run: echo "CORE_STORE_ROOT=$RUNNER_TEMP/test-report/authority-fixture" >> "$GITHUB_ENV"
+      - name: Prepare the source gateway snapshot
+        if: matrix.group == 'source-gateway'
+        run: |
+          mkdir -p "$YUANXU_TEST_REPORT_DIR"
+          just compile-source-tail-gateway "$RUNNER_TEMP/source-fixture" > "$YUANXU_TEST_REPORT_DIR/prepare.log" 2>&1
+          echo "CORE_SOURCE_TAIL_ROOT=$RUNNER_TEMP/source-fixture" >> "$GITHUB_ENV"
+          echo "GERBIL_LOADPATH=$RUNNER_TEMP/source-fixture/lib:$RUNNER_TEMP/source-fixture/source:$GITHUB_WORKSPACE:$GERBIL_PATH/lib" >> "$GITHUB_ENV"
+      - name: Run only this domain's standard Gerbil tests
+        shell: bash
+        run: |
+          mkdir -p "$YUANXU_TEST_REPORT_DIR"
+          files=()
+          while IFS= read -r file; do files+=("$file"); done <<< "$YUANXU_TEST_FILES"
+          test "${#files[@]}" -gt 0
+          if [[ -n "${CORE_SOURCE_TAIL_ROOT:-}" ]]; then
+            cd "$CORE_SOURCE_TAIL_ROOT/source/yuanxu"
+          fi
+          env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s \
+            gerbil "-:max-heap=$YUANXU_TEST_HEAP,debug=q" test -v 0 "${files[@]}" \
+            > "$YUANXU_TEST_REPORT_DIR/gerbil.log" 2>&1
+          echo "PASS: ${#files[@]} files"
+      - name: Verify the compiled fixture is unchanged
+        if: matrix.group == 'store-callbacks'
+        run: |
+          shasum -a 256 -c "$CORE_STORE_ROOT/callback-artifacts.sha256"
+          shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
+          shasum -a 256 -c "$CORE_STORE_ROOT/sdk-inputs.sha256"
+      - name: Show failure context
+        if: failure()
+        run: tail -n 80 "$YUANXU_TEST_REPORT_DIR"/*.log
+      - name: Retain this domain's complete report
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: yuanxu-qualification-${{ inputs.os }}-${{ github.sha }}
+          name: yuanxu-tests-${{ inputs.os }}-${{ matrix.group }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/test-report/
-            ${{ runner.temp }}/published-module-suites/
             ${{ runner.temp }}/declaration-scale-observation-*
-            ${{ runner.temp }}/build-input-context/**/receipt.json
-            ${{ runner.temp }}/build-input-context/**/*.log
+            ${{ runner.temp }}/store-fixture/*.json
+            ${{ runner.temp }}/store-fixture/*.sha256
           if-no-files-found: ignore
+          retention-days: 7
+
+  published:
+    name: Published module suites
+    needs: build
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 15
+    env:
+      GERBIL_PATH: ${{ github.workspace }}/.gerbil
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: ./.github/actions/restore-yuanxu
+        with:
+          artifact: yuanxu-build-${{ inputs.os }}-${{ github.run_attempt }}
+      - name: Set temporary report paths
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "YUANXU_TEST_REPORT_DIR=$RUNNER_TEMP/published-module-suites" >> "$GITHUB_ENV"
+      - name: Run the published Module TestSuites once
+        run: just test-selected-modules > "$RUNNER_TEMP/published-module-suites.log" 2>&1
+      - name: Retain published module reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: yuanxu-published-${{ inputs.os }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/published-module-suites.log
+            ${{ runner.temp }}/published-module-suites/
           retention-days: 7

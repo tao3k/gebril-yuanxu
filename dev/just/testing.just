@@ -18,28 +18,17 @@ measure-thousand-business-eval directory:
 measure-thousand-eval-stages directory:
     GERBIL_PATH="{{ directory }}" GERBIL_LOADPATH="{{ directory }}/lib" just test-file t/module-runtime-attribution-1000-test.ss stages
 
+# Convenience alias only. Gerbil owns loading, discovery, fixtures and status.
 test-file path observe="false":
     #!/usr/bin/env bash
     set -euo pipefail
-    launcher=(gxi)
-    if [[ -z "${GERBIL_PATH:-}" ]]; then
-        launcher=(gerbil {{ gerbil_test_runtime_options }} env gxi)
-    elif [[ "${PATH%%:*}" != "$GERBIL_PATH/bin" ]]; then
-        export PATH="$GERBIL_PATH/bin:$PATH"
-    fi
-    # Do not boot another Gerbil instance just
-    # to print the same fixed value and its runtime package directory.
-    budget=600
-    test_lib="${GERBIL_PATH:-$PWD/.gerbil}/test-lib"
-    # Tests belong to the selected working directory, including an
-    # explicitly relocated snapshot; the Justfile's location is not authority.
-    # Preserve explicit runtime overlays before the host library fallback.
-    # The real source package root replaces the removed nested t/gerbil.pkg.
-    options=()
+    export GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}"
+    export GERBIL_LOADPATH="${GERBIL_LOADPATH:+$GERBIL_LOADPATH:}$GERBIL_PATH/lib:$PWD"
     runtime_options="{{ gerbil_test_runtime_options }}"
     case "{{ path }}" in
       *-10000-test.ss) runtime_options="-:max-heap=4G,debug={{ gerbil_test_debug }}" ;;
     esac
+    options=()
     case "{{ observe }}" in
       false) ;;
       true) options=(-D yuanxu-module-test-observation) ;;
@@ -47,13 +36,12 @@ test-file path observe="false":
       stages) options=(-D yuanxu-module-test-stage-accounting) ;;
       *) echo 'observe must be false, true, trace, or stages' >&2; exit 64 ;;
     esac
-    echo "TEST-RUNTIME {{ path }} $runtime_options"
-    GERBIL_LOADPATH="$test_lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:${GERBIL_PATH:-$PWD/.gerbil}/lib:$PWD" env -u SDKROOT timeout --signal=TERM --kill-after=5s "${budget}s" "${launcher[@]}" "$runtime_options" dev/test-file.ss ${options[@]+"${options[@]}"} "{{ path }}"
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s gerbil "$runtime_options" test ${options[@]+"${options[@]}"} "{{ path }}"
 
 # Fault injection uses fresh native module overlays and the same test-file gates.
 # Compilation is preparation; each test retains its existing heap/watchdog fence.
 test-build-input-context-mutations artifacts:
-    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" {{ gerbil_compiler_environment }} gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --mutate-build-input "{{ artifacts }}" '{{ gerbil_test_runtime_options }}'
+    RUNNER_TEMP="{{ artifacts }}" just test-file t/build-input-mutations-test.ss
 
 test-build-publication directory file="t/build-artifact-publication-test.ss":
     #!/usr/bin/env bash
@@ -69,7 +57,7 @@ persistent-head-worker path operation argument="":
 
 # Local and CI runs share the discovered platform inventory. The nested
 # allocation diagnostic and published Module suites remain separate invocations.
-test: test-platform
+test: test-directory
     just test-file t/qualification/observability/raw-allocation-test.ss
     just test-selected-modules
 
@@ -100,7 +88,7 @@ benchmark-redefinition:
 
 # Source-level ownership controls; heap fence applies before any imports.
 test-module-ownership:
-    env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gxi {{ gerbil_test_runtime_options }} dev/test-file.ss t/qualification/module-ownership/run.ss
+    env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} test t/qualification/module-ownership/run.ss
 
 # Source-only qualification: retain installed external dependencies, remove Core.
 test-bootstrap:
@@ -118,7 +106,15 @@ test-modules:
 # A complete published module test group is an external integration phase,
 # never a Case inside the test which verifies discovery/projection mechanics.
 test-selected-modules:
-    env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s gerbil {{ gerbil_test_runtime_options }} env gxi {{ gerbil_test_runtime_options }} -e '(import :clan/poo/object (only-in "./init.ss" yuanxu.init.exports) (rename-in (only-in "./dev/test-file.ss" main) (main test-main)))' -e '(def tests (.get yuanxu.init.exports tests))' -e '(def files (.get tests spec))' -e '(unless (pair? files) (error "selected module tests are empty"))' -e '(dynamic-wind (.get tests admit-current) (lambda () (apply test-main files)) (.get tests admit-current))'
+    #!/usr/bin/env bash
+    set -euo pipefail
+    export GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}"
+    files=()
+    selected=$(gxi {{ gerbil_test_runtime_options }} -e '(import (only-in "./dev/ci-inventory.ss" main))' -e '(main "--published")')
+    test -n "$selected"
+    while IFS= read -r file; do files+=("$file"); done <<< "$selected"
+    test "${#files[@]}" -gt 0
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s gerbil {{ gerbil_test_runtime_options }} test "${files[@]}"
 
 verify-mop-store-boundary-runtime directory:
     #!/usr/bin/env bash
@@ -164,52 +160,19 @@ compile-namespace-branches reference candidate:
 # ending in -test.ss, in runtime lexical order. Each existing test-file gate
 # gets the original CI heap limit; no suite or assertion is excluded.
 test-files group="all":
-    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --list "{{ group }}"
+    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} -e '(import (only-in "./dev/ci-inventory.ss" main))' -e '(main "--list" "{{ group }}")'
 
-# Supply the existing compilation fixture before invoking its std/test facade.
-# These suites inspect issued AOT callbacks, not interpreted substitutes.
-test-discovered-file path:
+# CI consumes this exact, checked domain partition; it never reruns `all`.
+test-ci-groups:
+    @GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} -e '(import (only-in "./dev/ci-inventory.ss" main))' -e '(main "--matrix")'
+
+# Explicit local convenience, not a second execution/reporting implementation.
+test-directory group="all":
     #!/usr/bin/env bash
     set -euo pipefail
-    case "{{ path }}" in
-      t/artifact-closure-test.ss|t/mop-store-boundary-test.ss)
-        fixture=$(mktemp -d)
-        trap 'rm -rf "$fixture"' EXIT
-        just compile-mop-store-boundary "$fixture"
-        if [[ "{{ path }}" == t/artifact-closure-test.ss ]]; then
-          CORE_STORE_ROOT="$fixture" GERBIL_LOADPATH="$fixture/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" just test-file "{{ path }}"
-        else
-          printf 'AOT-SUITE %s facade=t/qualification/mop-state/store-boundary-driver.ss\n' "{{ path }}"
-          CORE_STORE_ROOT="$fixture" GERBIL_LOADPATH="$fixture/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}" just test-file t/qualification/mop-state/store-boundary-driver.ss
-        fi
-        shasum -a 256 -c "$fixture/callback-artifacts.sha256"
-        shasum -a 256 -c "$fixture/inputs.sha256"
-        shasum -a 256 -c "$fixture/sdk-inputs.sha256"
-        ;;
-      t/source-admission-gateway-test.ss)
-        fixture=$(mktemp -d)
-        trap 'rm -rf "$fixture"' EXIT
-        just test-source-tail-gateway "$fixture"
-        ;;
-      t/artifact-authority-test.ss|t/source-loader-authority-test.ss)
-        fixture=$(mktemp -d)
-        trap 'rm -rf "$fixture"' EXIT
-        CORE_STORE_ROOT="$fixture" just test-file "{{ path }}"
-        ;;
-      *) just test-file "{{ path }}" ;;
-    esac
-
-test-directory group="all":
-    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" {{ gerbil_compiler_environment }} gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss "{{ group }}" '{{ gerbil_test_runtime_options }}'
-
-test-platform:
-    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" {{ gerbil_compiler_environment }} gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --platform '{{ gerbil_test_runtime_options }}'
-
-test-qualification:
-    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" {{ gerbil_compiler_environment }} gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --qualification '{{ gerbil_test_runtime_options }}'
-
-test-report-audit directory group="all":
-    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --audit "{{ directory }}" "{{ group }}"
-
-test-report-compare linux macos group="all":
-    GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} dev/test-directory-report.ss --compare "{{ linux }}" "{{ macos }}" "{{ group }}"
+    files=()
+    selected=$(just test-files "{{ group }}")
+    test -n "$selected"
+    while IFS= read -r file; do files+=("$file"); done <<< "$selected"
+    test "${#files[@]}" -gt 0
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s gerbil {{ gerbil_test_runtime_options }} test "${files[@]}"
