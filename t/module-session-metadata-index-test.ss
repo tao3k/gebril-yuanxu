@@ -1,5 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
+        (only-in :yuanxu/ops/progress call-with-execution-progress
+                 execution-progress-idle-milliseconds current-execution-progress-check)
         (only-in :std/error Error-message Error-irritants)
         (only-in "./module-candidate-stage-test" with-other-source)
         (only-in "./qualification/module-publication/fixtures.ss" write-file)
@@ -70,6 +72,65 @@
       (check-exception (module-source-measure-replay reads) error?)
       (check-exception (module-source-measure-replay reads (lambda () (set! calls (1+ calls)))) error?)
       (check-equal? calls 1))
+    (yuanxu-test-case "large observed replay advances only after validated read batches"
+      (def receivers (map (lambda (index) (.o field: index)) (iota 4097)))
+      (defvalues (_ reads)
+        (%call-with-recorded-slot-reads
+          (lambda () (for-each (lambda (receiver) (.ref receiver 'field)) receivers))
+          unique-roots?: #t))
+      (def expected (call-with-current-slot-reads reads values))
+      (def events '())
+      (def now 0)
+      (def checks 0)
+      (def inherited-check (current-execution-progress-check))
+      (call-with-execution-progress 60000 600000
+        (lambda (state)
+          (set! now 7)
+          (parameterize ((current-module-source-observer
+                          (lambda (key amount) (set! events (cons (cons key amount) events))))
+                         (current-execution-progress-check
+                          (lambda ()
+                            (when inherited-check (inherited-check))
+                            (set! checks (1+ checks)))))
+            ((publication-read-current reads)))
+          (check-equal? (> checks 1) #t)
+          (check-equal? (execution-progress-idle-milliseconds state) 0)
+          ;; Advancing a clock alone cannot invent another completed batch.
+          (set! now 17)
+          (check-equal? (execution-progress-idle-milliseconds state) 10))
+        clock: (lambda () now))
+      (check-equal? (reverse events)
+        (list (cons '(metadata-replay-start runtime) 1)
+              (cons 'metadata-replay-visits expected)
+              (cons '(metadata-replay-end runtime) 1)))
+      ;; The progress hook remains inside POO's protected receiver frame.
+      (def attempted? #f)
+      (set! checks 0)
+      (parameterize ((current-module-source-observer (lambda (_key _amount) (void)))
+                     (current-execution-progress-check
+                      (lambda ()
+                        (when inherited-check (inherited-check))
+                        (set! checks (1+ checks))
+                        (when (= checks 2)
+                          (set! attempted? #t)
+                          (.put! (car receivers) 'field -1)))))
+        (check-exception ((publication-read-current reads)) error?))
+      (check-equal? attempted? #t)
+      (check-equal? (.ref (car receivers) 'field) 0)
+      ;; Authoritative stops propagate unchanged, without a diagnostic retry.
+      (def stop (gensym 'replay-stop))
+      (set! checks 0)
+      (parameterize ((current-module-source-observer (lambda (_key _amount) (void)))
+                     (current-execution-progress-check
+                      (lambda ()
+                        (when inherited-check (inherited-check))
+                        (set! checks (1+ checks))
+                        (when (= checks 2) (raise stop)))))
+        (check-equal? (eq? stop (with-catch values (publication-read-current reads))) #t))
+      (check-equal? checks 2)
+      (.put! (car receivers) 'field 0)
+      (parameterize ((current-module-source-observer (lambda (_key _amount) (void))))
+        (check-exception ((publication-read-current reads)) error?)))
     (yuanxu-test-case "validation-only replay authenticates the same issued traversal"
       (def receivers (map (lambda (index) (.o field: index)) (iota 256)))
       (defvalues (_ reads)

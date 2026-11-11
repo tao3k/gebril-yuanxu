@@ -640,3 +640,28 @@ This run measures CI completion with that performance acceptance criterion
 disabled. A green result cannot qualify the original 180-second requirement.
 Report queue delay, environment preparation, package build, test execution and
 artifact publication separately; aggregate completion is not a runtime benchmark.
+
+** Completed-read progress for a large observed metadata replay
+
+The gate-disabled declaration failure completed all 10,000 publications before
+the retained idle watchdog fired inside final metadata replay. Publication
+completion is not a progress witness for a later bulk validation phase.
+
+Reuse POO's protected =replay-slot-reads!= visitor for large observed root
+sets, and advance the existing Ops counter only after each completed batch of
+validated reads. Keep its complete entry and return checks. Small observed
+replays and the ordinary unobserved fast path remain unchanged. Do not add
+timer heartbeats, cache a successful admission, or weaken the 60-second idle
+policy. A partial count is liveness evidence only, never permission to publish.
+Existing metadata trace, mutation/refusal and reader-effect controls own the
+correspondence; no duplicate Lean or Quint model is introduced.
+
+The local complete 1,000-owner declaration Case passes with this change.
+The complete 10,000-owner attempt does not qualify: it reached 8,524 completed
+publications before the existing outer CLI watchdog ended it with status 137.
+Keep that failure separate from the focused replay controls. Both publication
+and testing-source-admission suites, reader-effect/tool-context controls and the
+four build-input mutations pass; none establishes the remaining Darwin scale
+budget. The gate-disabled platform run finished with 55 of 58 jobs successful;
+Darwin declaration/selection resource failures remain algorithmic acceptance
+work, not permission to remove workload or increase limits.
