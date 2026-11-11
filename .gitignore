@@ -2,7 +2,11 @@
 /manifest.ss
 /build-deps
 /_apalache*
+/.cache/
+/t/evidence/
 /dev/proofs/quint/node_modules/
+*.log
+*.orig
 
 # Gerbil manifests produced by the fixed qualification packages.
 /t/qualification/native-*/manifest.ss
