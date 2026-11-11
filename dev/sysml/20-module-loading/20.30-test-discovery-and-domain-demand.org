@@ -552,3 +552,9 @@ Just 1.56.0 =--quiet= suppresses child stdout as well as recipe presentation,
 so metadata-producing recipes must not use it. Empty matrix output is rejected
 before publication. Build logs, failed mutation transcripts and observation
 files remain ignored local cache or expiring CI artifacts, never source files.
+
+The callback closure and issued boundary reuse one prepared fixture but run in
+separate official CLI processes. Gerbil prepares all Harness modules before
+running Cases; importing the compiled boundary would otherwise load callbacks
+before the closure-before-load control. Both processes and the final digest
+checks remain independent CI steps, including after an earlier assertion fails.

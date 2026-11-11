@@ -28,8 +28,8 @@ it does not prove Gerbil's resolver or compiler. No new state transition is
 introduced, so the existing QNT currentness model remains the dynamic model.
 
 Test execution and support construction are separate phases. =just test-file=
-uses =dev/test-file.ss= to call the installed Gerbil test tool in the same VM;
-it must not import init, create TestingScript, compile support or sign outputs.
+delegates directly to =gerbil test=; it must not import init, create
+TestingScript, compile support or sign outputs.
 The explicit build phase retains =init.exports.tests= specifications and the
 existing compilation/issuance boundary. Missing support is an importer/build
 failure, not permission for the test entry to synthesize a compiler pipeline.
@@ -39,7 +39,7 @@ Domain source checks remain module API obligations, exercised by ordinary
 | Owner | Source |
 |-------+--------|
 | Heap-fenced entry | =dev/just/testing.just:test-file= |
-| Atomic tool adapter | =dev/test-file.ss= |
+| Official test executor | =gerbil test= |
 | Make subprocess and budgets | =observability/testing-script.ss:prepare-testing-script= |
 | Test build identity and approval | =module-system/building/artifacts.ss:test-build-publication= |
 | Locked issuance and staging | =call-with-build-artifact-issuance/locked= |

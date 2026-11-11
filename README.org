@@ -123,39 +123,37 @@ location during migration is not a second permanent implementation contract.
 
 * Build and test
 
-Use the platform's pinned Gerbil v0.19 release and Just version from the
-[[file:.github/actions/setup-gerbil/action.yml][CI setup]]. Keep dependency
-installation, build and test in the same =GERBIL_PATH=:
+Use one explicit package environment and the official Gerbil commands:
 
 #+begin_src sh
 export GERBIL_PATH="$PWD/.gerbil"
 gerbil deps --install
 just build
-just test-build-input-context-mutations "$GERBIL_PATH/build-input-context"
-just test-platform
+just test-file t/testing-script-test.ss
+just test-directory modules
+just test-build-input-context-mutations "$PWD/.cache/build-input-context"
 just test-selected-modules
 #+end_src
 
-Use =just test-directory GROUP= to reproduce a failing CI group with the same
-Scheme dispatcher and resource limits. =just test-file PATH= runs a focused
-diagnostic, while =just test= runs the platform suites and the additional
-local allocation diagnostic.
+=just build= delegates to =gerbil build=. Test aliases only supply the original
+resource limits and arguments to =gerbil test=. There is no development test
+executor or generic launch-receipt admission layer. Use =just test-file PATH=
+for a focused run and =just test-directory GROUP= for an ordinary CI domain.
+The CI metadata inventory checks exact coverage; CI does not append another
+full-suite run after the domain jobs.
 
-Ten-thousand-module files (=*-10000-test.ss=) launch with a 4 GiB VM heap.
-Their declaration Case uses the same 4 GiB heap and live-growth limits,
-with a 180-second deadline. The focused and platform entrypoints select
-this policy before importing the test. Qualification receipts record the
-per-file overrides. Ordinary test workers and the build use 2 GiB.
+Compiled callback tests require =just test-mop-store-boundary DIRECTORY=;
+source-gateway tests require =just test-source-tail-gateway DIRECTORY=. These
+retain the existing compiler limits, coherent source selection and artifact
+checks. Authority tests require an isolated =CORE_STORE_ROOT=. The CI workflow
+performs this preparation explicitly rather than silently interpreting compiled
+fixtures as source. See [[file:dev/sysml/20-module-loading/20.30-test-discovery-and-domain-demand.org][the test execution boundary and preparation map]].
 
-Use the commit actually checked out in the CI log. For a pull request this may
-be GitHub's merge commit. Run =just test-qualification= before timing a local
-reproduction. It checks the build and test inputs in the same prefix, including
-the POO revision and tracked source state, compiler, build concurrency, and
-Gerbil release manifest. The build and test recipes use =$PWD/.gerbil= when
-=GERBIL_PATH= is unset. Generated dependency files such as =TAGS= can remain
-untracked. Each qualification writes to an empty report directory so it
-cannot combine evidence from different runs.
-Match the runner's compiler and concurrency when investigating compiler time.
+Ordinary tests use a 2 GiB VM heap; ten-thousand-module cases use 4 GiB with
+the original 180-second Case deadline. Compiler capacity follows actual host
+cores. A failing performance or idle gate remains a failure. Reproduce from
+the exact checkout and pinned toolchain; keep complete failed logs in ignored
+cache or expiring CI artifacts. Production build memory is not a test quota.
 
 Core's =t/= tests cover shared semantics. Agentic AI Lab retains product selection
 and cross-package integration tests.

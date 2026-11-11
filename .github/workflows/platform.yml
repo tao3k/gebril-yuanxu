@@ -89,6 +89,7 @@ jobs:
           echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
           echo "YUANXU_TEST_REPORT_DIR=$RUNNER_TEMP/test-report" >> "$GITHUB_ENV"
       - name: Prepare the compiled callback fixture
+        id: callbacks
         if: matrix.group == 'store-callbacks'
         run: |
           mkdir -p "$YUANXU_TEST_REPORT_DIR"
@@ -105,7 +106,20 @@ jobs:
           just compile-source-tail-gateway "$RUNNER_TEMP/source-fixture" > "$YUANXU_TEST_REPORT_DIR/prepare.log" 2>&1
           echo "CORE_SOURCE_TAIL_ROOT=$RUNNER_TEMP/source-fixture" >> "$GITHUB_ENV"
           echo "GERBIL_LOADPATH=$RUNNER_TEMP/source-fixture/lib:$RUNNER_TEMP/source-fixture/source:$GITHUB_WORKSPACE:$GERBIL_PATH/lib" >> "$GITHUB_ENV"
+      - name: Inspect the callback closure before loading
+        if: matrix.group == 'store-callbacks'
+        run: |
+          env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s \
+            gerbil -:max-heap=2G,debug=q test -v 0 t/artifact-closure-test.ss \
+            > "$YUANXU_TEST_REPORT_DIR/closure.log" 2>&1
+      - name: Execute the issued callback boundary in a fresh process
+        if: ${{ !cancelled() && matrix.group == 'store-callbacks' && steps.callbacks.outcome == 'success' }}
+        run: |
+          env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s \
+            gerbil -:max-heap=2G,debug=q test -v 0 t/qualification/mop-state/store-boundary-driver.ss \
+            > "$YUANXU_TEST_REPORT_DIR/boundary.log" 2>&1
       - name: Run only this domain's standard Gerbil tests
+        if: matrix.group != 'store-callbacks'
         shell: bash
         run: |
           mkdir -p "$YUANXU_TEST_REPORT_DIR"
@@ -120,7 +134,7 @@ jobs:
             > "$YUANXU_TEST_REPORT_DIR/gerbil.log" 2>&1
           echo "PASS: ${#files[@]} files"
       - name: Verify the compiled fixture is unchanged
-        if: matrix.group == 'store-callbacks'
+        if: ${{ !cancelled() && matrix.group == 'store-callbacks' && steps.callbacks.outcome == 'success' }}
         run: |
           shasum -a 256 -c "$CORE_STORE_ROOT/callback-artifacts.sha256"
           shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"

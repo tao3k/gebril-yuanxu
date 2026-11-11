@@ -55,15 +55,13 @@ test-build-publication directory file="t/build-artifact-publication-test.ss":
 persistent-head-worker path operation argument="":
     @env -u SDKROOT timeout --signal=TERM --kill-after=5s 30s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/build-publication/persistent-head-worker.ss "{{ path }}" "{{ operation }}" "{{ argument }}"
 
-# Local and CI runs share the discovered platform inventory. The nested
-# allocation diagnostic and published Module suites remain separate invocations.
-test: test-directory
-    just test-file t/qualification/observability/raw-allocation-test.ss
-    just test-selected-modules
+# Focused alias only; complete CI coverage is the checked domain matrix.
+test path:
+    just test-file "{{ path }}"
 
-# Opt-in wall/user/system timing while preserving the same bounded test path.
-test-profile:
-    time just test
+# Opt-in timing of that same official command, without an aggregate rerun.
+test-profile path:
+    time just test-file "{{ path }}"
 
 # Real pinned Provider Schema publications and a local Null apply/destroy.
 # AWS is rendered and validated without deployment. Uses the bounded runtime harness.
@@ -167,7 +165,7 @@ test-ci-groups:
     @GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" gxi {{ gerbil_test_runtime_options }} -e '(import (only-in "./dev/ci-inventory.ss" main))' -e '(main "--matrix")'
 
 # Explicit local convenience, not a second execution/reporting implementation.
-test-directory group="all":
+test-directory group:
     #!/usr/bin/env bash
     set -euo pipefail
     files=()

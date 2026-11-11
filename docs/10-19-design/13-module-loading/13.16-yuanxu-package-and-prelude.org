@@ -355,19 +355,14 @@ clean revision with the job's pinned Gerbil release, Just version and Gerbil
 package dependencies. Set an explicit =GERBIL_PATH= for both build and test
 and use the same load-path policy as the job.
 
-For a local qualification build, use =just build=, then
-=just test-qualification= to inspect the inputs. Both platform and individual
-group runs require the same clean-checkout and installed-build preflight.
-The receipt reports Gerbil, Gambit, Just and POO versions, the configured C
-compiler and its version, compiler routing, the build worker count, the host
-kernel and architecture, and the runner image when supplied by the host.
-Qualification refuses a =test-lib= overlay or an explicit =GERBIL_LOADPATH=
-entry outside the installed library directory. Focused and fault-injection
-tests retain their fixture overlays. Run
-=just test-platform= for the complete platform suite, or use
-=just test-directory dense-declarations= and =just test-directory dense-selection=
-to reproduce those individual gates. The focused =just test-file= path remains
-available for development. A focused result covers its own file and build.
+For local validation, run =just build= and the relevant official Gerbil test
+domain from the exact checkout with its pinned dependencies and toolchain.
+The platform workflow owns complete partition coverage, explicit compiler
+fixtures, mutation controls and published module suites. It restores one
+platform build artifact rather than recording a second build approval.
+Use =just test-directory dense-declarations= or
+=just test-directory dense-selection= to reproduce the scale gates with their
+original heap and Case budgets. Retain failed transcripts outside Git.
 
 For an earlier job that transferred a package artifact, use its exact checkout,
 artifact and original Just target to reproduce the failure. The host OS,

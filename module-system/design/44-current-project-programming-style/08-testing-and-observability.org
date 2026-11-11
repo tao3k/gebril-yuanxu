@@ -151,180 +151,31 @@ public consumers.  Keep build wall time, macro-expansion time and runtime test
 time distinct.  A focused green result does not qualify independent closure;
 the completion report names exactly which gate ran and which remains blocked.
 
-* CI qualification design
+* CI execution and evidence
 
-This section specifies a migration of the existing Just and Gerbil test
-entrypoints. The evidence model comes first, followed by reporting and then
-scheduling. Each stage has a separate acceptance criterion.
+The official =gerbil test= command owns discovery, module setup/cleanup,
+assertions and exit status. =gerbil build= owns package compilation. The
+metadata-only =dev/ci-inventory.ss= reconciles every direct test file exactly
+once and projects the published Module selection; it cannot execute a suite.
 
-** What the current job measures
+CI builds each OS package once and restores that workflow run's immutable
+artifact into independent semantic domain jobs. Compiler capacity follows
+actual host cores. Fixture-specific preparation remains explicit: compiled
+callback issuance and its three digest checks, the coherent source-gateway
+snapshot, isolated authority fixtures, four build-input mutations with
+before/after controls, and one published-Module Harness. No aggregate test
+job repeats those domains.
 
-=test-directory= runs each discovered file in its group serially through
-=test-discovered-file=. Each ordinary file starts a fresh Gerbil process
-through =test-file=. The default 2 GiB fence applies to each Gambit heap.
-Process RSS and runner memory are separate quantities. A group wall clock
-covers the serial execution of several different tests and includes worker
-startup, fixture work, teardown and process exit. The workflow records runner
-queueing, dependency builds and artifact restoration in separate steps.
+Keep the original Case and compiler deadlines, mutation rejection reasons and
+2 GiB / 4 GiB heap classes. Report a failing or interrupted gate as such. Raw
+logs and observations belong in ignored cache or expiring workflow artifacts;
+normal CI output only needs completion and bounded failure context. Match the
+exact checkout, pinned dependency/toolchain and actual cores when comparing
+Linux and Darwin. The workflow run/attempt and platform artifact identify the
+build; do not manufacture a second approval or receipt protocol for testing.
 
-The [[https://github.com/tao3k/gebril-yuanxu/actions/runs/42211203860/job/127874282928][Ubuntu scale job for commit 5c3c5c2]] spent about 11 minutes 35 seconds in
-=test-directory=. Six files ran. Three reached their 180-second Case limit.
-The two cases that measured a cold 10,000-name namespace completed its
-construction and enumeration in 0.66–0.68 seconds. Their subsequent phases
-were interrupted. The same group emitted 616 progress frames. Keep this
-failure as the baseline for the redesign.
-
-On the same commit, the other five completed Ubuntu group steps took
-35 seconds to 4 minutes 43 seconds. In the
-[[https://github.com/tao3k/gebril-yuanxu/actions/runs/42177448916/job/127763169292][preceding Ubuntu modules job for commit 6e6535d]], five 1,000-module
-workers accounted for about 14 minutes 53 seconds from worker entry to
-the Harness marker. These spans identify the long tail in that job.
-Capture launch and exit directly before using them as full worker costs.
-
-** Workload and evidence contract
-
-Vary catalog size, requested roots and graph shape independently. Record
-the expected closure in the workload and the actual reached closure in the
-result. Record selection mode and cold or warm state alongside them. Use
-existing Fixtures and the production =yuanxu!=, Interface and =.get= path.
-Give each question a separate row in the qualification report.
-
-| Workload | Demand | Required evidence |
-|-
-| Directory discovery | Enumerate a real 10,000-module catalog | Names and identity agree, zero scopes, no unselected body reads |
-| Sparse first business read | One explicit root in that catalog, with a known provider | First native =.get= returns the expected value, exact owner-qualified admission and scope counts, unrelated initializers stay cold |
-| Dense declaration capacity | Explicitly select all 10,000 owners | Complete graph, exact-once declarations, provider order, zero business scopes |
-| Hot read and change | Reuse the same receiver, then change one dependency | Hot read preserves value identity, stale evidence is rejected, affected values recompute, unrelated values remain identical |
-| Selected compilation | Build the selected closure through the existing Make specification | Cold target set, downstream-owned outputs, zero hot compilation, independent clean |
-
-Add the sparse business read beside the current directory control. Preserve the
-existing dense first-scope, dense graph and observer-driven diagnostics as
-independent controls. The sparse fixture keeps the catalog large while its
-explicit roots and dependency graph stay small. Qualify phase attribution with
-callback-free counters. Use an independent ordinary first =.get= sample for
-latency and preserve owner-qualified scope counts in the attribution sample.
-Open source observers and detailed allocation accounting belong to diagnostic
-runs. Report their timing under that configuration. A comparison uses the same
-fixture, closure, entrypoint, Gerbil and POO revisions, runner class, limits and
-instrumentation. Report wall time and user/system CPU separately. Report GC
-time within its enclosing span and peak or retained memory with its measurement
-method. Timeouts carry the elapsed bound and the last completed phase.
-
-** Execution liveness and human-readable results
-
-=@yuanxu-progress [execution, sequence]= is the Ops liveness protocol. An
-accepted increasing counter can advance the sequence. Fixture writes,
-checkpoints, compiler work and declaration completions can contribute to it.
-The sequence has no common domain unit or denominator. The existing producer
-rate-limits the relay to at most one frame per second. Idle and total limits
-keep their existing meaning even while a producer keeps advancing.
-
-Preserve the raw transcript and the original relay to every supervising
-process. At the terminal CI presentation boundary, summarize protocol frames
-instead of printing each one. Show a file start, named phase boundaries for
-long cases, and one terminal row per file. The row includes the exact
-discovered file, wall time from launch through exit, exit status, Harness
-verdict, and the last phase and failure reason on refusal. Preserve the last
-progress frame and source diagnostic in the failure detail. Display an
-explicit completed/expected count only when the named phase owns both values.
-A compact group summary reports file totals and the longest worker spans.
-
-Keep bootstrap, fixture creation, admission, scope/value work, teardown and
-process exit attributable where the existing boundaries permit. An unmeasured
-interval remains unmeasured. The presentation step must preserve the worker
-exit status and the full Harness validation. A pass requires natural success,
-the expected =MODULE-OK= and =HARNESS-OK= identities, final =OK= and no failure
-marker. Qualify the presentation with a nonzero exit, exit zero with a Harness
-error, a missing terminal marker and a real idle or total expiry. Each keeps
-its failure verdict in both views.
-
-** Scheduling and rollout
-
-First collect per-file timing and outcome rows for a complete run of the
-unchanged partition on each platform. Match all expected files to exactly one
-terminal result. Check that all known failures still fail. Use these receipts
-to separate worker startup and duplicated support preparation from long test
-bodies. A change to the presentation alone has no speedup claim.
-
-Then isolate long capacity files in explicitly named jobs and balance the
-remaining groups using measured per-file duration on each platform. Schedule
-by estimated total work, with a stable path order for ties. Compare the
-longest required job, total runner time, queue time and per-file timings.
-Include timed-out workers in scheduling estimates at their observed cost.
-Retain the disjoint and complete discovery check. Keep existing limits,
-negative controls, same-head artifact ownership and serial workers inside a
-runner until an aggregate memory bound is enforced. A long job still
-participates in the required result after it moves.
-
-Implement the presentation in the current Just/CI entrypoint. Implement the
-sparse workload in the existing scale fixtures and validate it before changing
-job membership. Keep dense-capacity failures visible throughout the migration.
-
-The first reporting increment runs inside the existing Scheme Harness
-adapter. Its =harness-ms= covers the adapter's invocation of Gerbil and ends
-when the Harness returns. It does not include the caller's process launch or
-exit. The opt-in CI receipt keeps the native Harness status and its machine
-progress stream. A supervised child continues to use the Ops relay. An
-interrupted process may leave progress without a terminal receipt. Use the
-outer job result and the original transcript to classify that run.
-
-The group increment keeps Just's discovery and per-file preparation
-routes. One Scheme invocation uses the existing Ops process operation for
-each file in order. It stores the expected file list, the complete worker
-transcript, and the actual exit and wait status. Its =dispatch-ms= begins
-before the per-file Just dispatch and ends after the worker exits.
-=entry-ms= and =harness-return-ms= locate observed child markers on that
-same clock. Startup includes any file-specific preparation; the interval
-after the Harness result can include artifact checks and process exit.
-CI queue and package preparation are separate workflow observations.
-Profile roots, namespace windows, the thousand-owner downstream package and
-the public prelude have one required execution per platform in the test
-partition. Build input mutation controls and their publication and
-source-admission checks retain their separate build-phase execution.
-Published Module TestSuites retain their independent integration phase and
-Harness receipt. A completed mechanism test with a failure still permits
-that phase to run against the package built on the same runner.
-
-For a local reproduction, use the checkout SHA printed by Actions. Pull
-request runs may check out GitHub's merge commit. Run the native dependency
-install and =just build= with the platform's pinned Gerbil release, Just
-version and compiler, then run =just test-platform= or
-=just test-directory GROUP= for the exact failing group. Both emit
-=TEST-QUALIFICATION= with the checkout commit and tree, build source, POO
-revision, toolchain identity and VM configuration. Platform qualification
-requires the original =-:max-heap=2G,debug=q= options. A focused =just
-test-file= run can use alternate options for diagnosis.
-
-Use =just test-report-audit DIRECTORY= from the tested checkout before deriving
-platform scheduling weights. Supply one directory containing that platform's
-extracted group artifacts. The Scheme audit reconciles discovered files,
-group outcomes and individual worker receipts, checks transcripts and clock
-ordering, and compares the tested commit, workflow run, attempt, OS and
-architecture. It verifies the report's commit and tree against the current
-checkout and checks that the recorded build and test inputs agree. An
-unchanged test inventory cannot make a report from another commit eligible.
-A complete report can contain failed tests. An absent worker
-result, duplicate file, inconsistent timing or mixed run cannot supply
-scheduling weights. Supplying a group name audits only that group.
-
-Use =just test-report-compare LINUX MACOS= to join the two audited reports by
-file. Both platforms must come from the same revision, workflow run and
-attempt. Input mismatches identify the differing fields. Each row contains
-the group verdict, full dispatch, actual worker
-exit, startup, Harness and post-Harness interval for both platforms. An
-unobserved phase is =#f=.
-Phase totals include the number of files with an unobserved interval.
-The dispatch time includes the observed cost of failed or interrupted workers.
-
-The [[https://github.com/tao3k/gebril-yuanxu/actions/runs/42220936509][unchanged-partition baseline]] covered 216 distinct files on each platform.
-Three dense ten-thousand-owner tests each consumed 186–195 seconds across
-the platforms, including their existing timeout verdicts. Keep those groups
-separate in the Scheme report so each failure retains its own verdict and
-transcript. Run the seven groups serially in the same job as their build,
-with one install and no cross-job transfer of Core build products.
-The Gerbil POO =v0.1.3= release and the previous PR pin resolve to the same
-Git tree =aa5c56a7dd6869ccc9cfc14cb3b097d3e83711cc=. Measure package preparation
-separately because the release pin has its own CI dependency cache key.
+The canonical preparation map is maintained in
+[[file:../../../dev/sysml/20-module-loading/20.30-test-discovery-and-domain-demand.org][20.30 Test Discovery and Domain Demand]].
 
 * Specialized qualifications
 
@@ -398,45 +249,8 @@ current testing-script controls instead of a deleted execution-progress test;
 this is an executable-input correction, not a new theorem or a replacement for
 the finite model's positive/negative checks.
 
-* Shared Scheme entrypoint for local and platform tests
+* Shared official execution entrypoint
 
-Each platform installs pinned dependencies and runs =gerbil build= once.
-CI and =just test= share the Scheme dispatcher. It checks complete and
-disjoint discovery, then executes a fresh heap-fenced native Gerbil Test
-Harness per file. Capacity groups run first. A worker failure is retained
-in its report and later groups still execute. File-specific native
-compilation and published module suites keep their execution boundaries.
-The platform summary lists completed groups and their failed files.
-
-Scheme compiles each build-input mutant in a private overlay and requires
-the expected diagnostic and native Harness exit status. It runs positive
-controls before and after the faults and records the original source hash,
-the mutant hashes and their actual worker outcomes. Build products stay in
-the platform job that created them.
-
-Record runner time and elapsed time separately. The preceding
-[[https://github.com/tao3k/gebril-yuanxu/actions/runs/42373146993][PR run]]
-spent about 41 Ubuntu minutes and 67 macOS minutes in its seven test
-groups. The shared job removes repeated setup and artifact handling.
-Serial scheduling can extend platform elapsed time.
-
-** Qualification identity
-
-CI and local qualification enter =just build= with an explicit Gerbil
-prefix. After native Gerbil exits successfully, the recipe records the
-clean source revision only if it still matches the build's initial
-revision. The Scheme test report records that build source alongside
-the actual checkout, package declaration digest, installed POO revision,
-Gerbil and Gambit versions, release manifest digest, resolved Core
-interface path, loader path and worker settings. =just test-qualification=
-shows these inputs before a run.
-
-CI refuses a report if the checked-out revision, the build revision
-and its workflow revision disagree or if its resolved Core interface
-comes from outside the installed prefix. The Scheme receipt records the
-source tree, dependency revision, toolchain and compiler environment after
-the native build. Qualification refuses drift in these inputs between the
-build and the test, including the compiler worker count. Platform comparison requires
-the same source, declared and installed dependency inputs, and test
-budgets. The OS-specific toolchain artifact and available compiler
-cores remain visible on each report.
+Local and CI tests delegate directly to =gerbil test= with their resource
+fences. Metadata projection and compiler-fixture preparation cannot become
+a second Harness, verdict interpreter or build-approval layer.

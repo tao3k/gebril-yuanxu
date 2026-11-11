@@ -634,14 +634,12 @@ the heap-fenced controller for the official framework, not another assertion
 engine. Scale Cases explicitly retain the 180-second ceiling; test preparation,
 Harness startup and Fixture file generation are not module evaluation times.
 
-The atomic adapter is =dev/test-file.ss=. It invokes the installed
-=:gerbil/tools/gxtest:main= in the current heap-fenced VM, with official CLI
-arguments. It never imports init, constructs a Script/Process, compiles support
-or starts another Harness. Build specifications and issuance belong to the
-independent build phase. Domain source authentication remains an obligation of
-the actual module/publication APIs and their Cases; a generic test-launch
-receipt cannot establish it. Standard Suite facades export existing Suites and
-must not execute them or manufacture completion records at import time.
+The execution entry is the official =gerbil test= command. No development
+adapter invokes or interprets the Harness. Build specifications and issuance
+belong to the independent build phase. Domain source authentication remains an
+obligation of the actual module/publication APIs and their Cases; generic
+test-launch receipts cannot establish it. Standard Suite facades export
+existing Suites without running them at import time.
 
 The test projection publishes source inputs and =std-make-spec=; it does not
 publish a =.run= or =.compile= scheduler. No runtime binding to =std/make:make=
