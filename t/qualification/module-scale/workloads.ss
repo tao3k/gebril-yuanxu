@@ -24,6 +24,7 @@
   (def source-reads (make-hash-table))
   (def class-construction-reads 0)
   (def completed-declarations 0)
+  (def replayed-reads 0)
   (def previous (current-module-source-observer))
   (def (observe key amount)
     (def category (if (pair? key) (car key) key))
@@ -43,6 +44,13 @@
     ;; A warm known import need not import new code. Completion of an
     ;; actual declaration still advances the Case's scalar progress frame.
     ;; Do not construct typed checkpoint receipts inside an active reader.
+    ;; Final admission replays every retained publication after discovery. Its
+    ;; existing observer reports actual validated visits, including a rejected
+    ;; prefix. Count work, never output or elapsed time; the Case still owns
+    ;; refusal and the authoritative stop runs before progress can advance.
+    (when (and (eq? category 'metadata-replay-visits) (positive? amount))
+      (set! replayed-reads (+ replayed-reads amount))
+      (execution-progress! '(declaration-replayed-reads) replayed-reads))
     (when (eq? category 'publication-end)
       (set! completed-declarations (+ completed-declarations amount))
       (execution-progress! '(declaration-completed) completed-declarations)

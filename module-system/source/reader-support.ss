@@ -2,9 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source preparation identity and ordered publication read support.
-(import (only-in :std/list/list length<=n?)
-        (only-in :yuanxu/ops/progress execution-progress!)
-        (only-in :clan/poo/object object-construction-current?
+(import (only-in :clan/poo/object object-construction-current?
                  call-with-current-slot-reads replay-slot-reads!)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!)
         (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
@@ -58,29 +56,16 @@
     (let (observer (current-module-source-observer))
       (if (not observer)
         (module-source-measure-replay reads)
-        (let ((visits 0)
-              (progress-key (and (not (length<=n? reads 4096))
-                                 (gensym 'metadata-replay))))
+        (let (visits 0)
           ;; Count actual runtime DFS visits, not the width of the root list.
           ;; No read token or receiver is retained by this diagnostic counter.
           (def (count-prefix!)
             (replay-slot-reads! reads
-              (lambda (_receiver _key)
-                (set! visits (1+ visits))
-                (when (and progress-key (zero? (modulo visits 1024)))
-                  (execution-progress! progress-key visits)))))
+              (lambda (_receiver _key) (set! visits (1+ visits)))))
           (dynamic-wind
             (lambda () (observer '(metadata-replay-start runtime) 1))
             (lambda ()
-              (cond
-               (progress-key
-                ;; The native visitor holds the complete protected receiver
-                ;; set and rechecks it at return. Counters follow validated
-                ;; records; neither a timer nor a source-observer callback
-                ;; manufactures progress inside the fixed-result fast path.
-                (count-prefix!)
-                (execution-progress! progress-key visits))
-               ((object-construction-current?)
+              (if (object-construction-current?)
                 (with-catch
                   (lambda (cause)
                     ;; Recover the diagnostic prefix in the same synchronous
@@ -88,8 +73,8 @@
                     (with-catch (lambda (_failure) (void)) count-prefix!)
                     (raise cause))
                   (lambda ()
-                    (set! visits (call-with-current-slot-reads reads values)))))
-               (else (count-prefix!))))
+                    (set! visits (call-with-current-slot-reads reads values))))
+                (count-prefix!)))
             (lambda ()
               (observer 'metadata-replay-visits visits)
               (observer '(metadata-replay-end runtime) 1))))))))

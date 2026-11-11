@@ -641,27 +641,34 @@ disabled. A green result cannot qualify the original 180-second requirement.
 Report queue delay, environment preparation, package build, test execution and
 artifact publication separately; aggregate completion is not a runtime benchmark.
 
-** Completed-read progress for a large observed metadata replay
+** Completed metadata work belongs to the existing scale observer
 
-The gate-disabled declaration failure completed all 10,000 publications before
-the retained idle watchdog fired inside final metadata replay. Publication
-completion is not a progress witness for a later bulk validation phase.
+The gate-disabled Ubuntu declaration failure completed all 10,000 publications
+before the retained idle watchdog fired in the final retained-publication
+validation pass. Publication completion alone does not witness progress in
+this later phase. A real candidate measurement found 206 preparation roots
+and 229 admission roots; root width is not the number of transitive visits.
+Do not add a root-width threshold or a second replay path in Core.
 
-Reuse POO's protected =replay-slot-reads!= visitor for large observed root
-sets, and advance the existing Ops counter only after each completed batch of
-validated reads. Keep its complete entry and return checks. Small observed
-replays and the ordinary unobserved fast path remain unchanged. Do not add
-timer heartbeats, cache a successful admission, or weaken the 60-second idle
-policy. A partial count is liveness evidence only, never permission to publish.
-Existing metadata trace, mutation/refusal and reader-effect controls own the
-correspondence; no duplicate Lean or Quint model is introduced.
+The existing declaration observer accumulates the existing
+=metadata-replay-visits= event into one monotonic Case progress counter.
+These are completed native validations, including an actually validated prefix
+on refusal, rather than timer heartbeats. Progress is not an admission verdict;
+a refusal remains a refusal, and the authoritative stop is checked before any
+counter advances. Keep the native fixed-result path, original observer trace,
+full currentness checks and the 60-second idle policy unchanged.
 
-The local complete 1,000-owner declaration Case passes with this change.
-The complete 10,000-owner attempt does not qualify: it reached 8,524 completed
-publications before the existing outer CLI watchdog ended it with status 137.
-Keep that failure separate from the focused replay controls. Both publication
-and testing-source-admission suites, reader-effect/tool-context controls and the
-four build-input mutations pass; none establishes the remaining Darwin scale
-budget. The gate-disabled platform run finished with 55 of 58 jobs successful;
-Darwin declaration/selection resource failures remain algorithmic acceptance
-work, not permission to remove workload or increase limits.
+The earlier protected-visitor candidate passed focused controls but did not
+address this actual multi-publication loop. It is removed rather than retained
+as an unused alternate mechanism. The local complete 1,000-owner declaration
+Case passed that candidate; the complete 10,000-owner attempt reached 8,524
+publications and ended under the existing outer watchdog with status 137.
+Neither result qualifies the corrected observer or the remaining Darwin scale
+budget. Publication, source-admission, reader-effect/tool-context and all four
+build-input mutation controls also passed and remain separate evidence.
+
+The gate-disabled platform run finished with 55 of 58 jobs successful. Darwin
+resource failures remain algorithmic acceptance work, not permission to remove
+the workload or increase limits. Raw failed attempts remain ignored local
+artifacts. Existing formal models retain their responsibilities; no new semantic
+model is needed for a test-owned liveness counter.
