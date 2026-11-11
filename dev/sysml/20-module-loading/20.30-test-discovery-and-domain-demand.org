@@ -588,3 +588,38 @@ and runtime-object loading, and changed init/test-input refusal. Inspect the
 real runtime loader to prove the execution library stays cold; do not edit a
 production library to manufacture a file marker. No deadline or concurrency
 setting changes.
+
+** Remaining acceptance obligations
+
+The completed =f26a566= platform run retained all 58 jobs: 52 succeeded;
+the two 10,000-owner gates failed on both OSes at the unchanged 180-second
+Case ceiling, Linux package indexing lost liveness, and Darwin's compiled
+consumer repeated a Core source build. The consumer refactor removes that
+duplicate bootstrap, with the independent source-only control retained.
+This is not a claim that the two dense performance gates are resolved.
+
+The failed Linux selection sample completed 6,844 declarations before refusal.
+Its partial first-Graph span was about 176 seconds, including about 159 seconds
+of user CPU. Inclusive metadata replay was about 72 seconds and init-source
+currentness about 26 seconds, with 39,388,999 metadata visits and repeated
+checks of the roughly 139k-character init. These overlapping spans must not be
+summed as disjoint costs. This is incomplete failure attribution, not a passing
+benchmark or proof that host contention caused the regression.
+
+Do not cache an admission across callbacks, remove live metadata checks, shrink
+the corpus, or move fixture work outside the frozen Case to pass the gate.
+Existing SourceWindows/ReaderEffects contracts delimit any subsequent
+optimization; an additional state model is not justified by these measurements.
+
+The pinned Gerbil =pkg-retag= calls =run-process= and discards its captured
+stdout. =run-process/batch= forwards real completed-file TAG progress instead.
+An isolated compiled tool module passed the unchanged complete 1,000-owner
+package test, including default indexing, exact binding counts, selective
+compilation, hot build and clean isolation. Its index stage took about 83 seconds
+without exceeding the existing idle or total policy. A tiny native comparison
+also produced byte-identical TAGS. This producer fix is not adopted by Yuanxu:
+it belongs to the toolchain owner, and deployment requires an authorized
+single toolchain update rather than a consumer wrapper or fake heartbeat.
+
+All failed attempts and candidate logs remain ignored local artifacts. The
+public source tree contains neither transcripts nor compiled candidate tools.
