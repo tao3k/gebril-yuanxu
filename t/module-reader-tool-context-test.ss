@@ -2,18 +2,29 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
+        (only-in :std/source this-source-file)
+        (only-in "./qualification/module-testing/fixtures.ss" selection-fixture)
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :clan/poo/object .get)
+        (only-in :clan/poo/object .get .call)
         (only-in :gerbil/expander core-import-module module-context-path)
         (only-in :yuanxu/module-system/source/reader module-publication-reader)
         (only-in "qualification/module-publication/fixtures.ss" with-publication-source)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/admission module-source-read current-module-source-observer
                  call-with-module-source-operation-measurement))
-(export module-reader-tool-context-test)
-(def root (getenv "CORE_QUALIFICATION_ROOT" #f))
+(export module-reader-tool-context-test test-setup! test-cleanup!)
+(def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
+(def resource #f)
+(def root #f)
+(def (test-setup!)
+  (set! resource (.call Fixture .acquire))
+  (set! root (.get resource root)))
+(def (test-cleanup!)
+  (when resource
+    (begin0 (.call Fixture .release resource)
+      (set! resource #f) (set! root #f))))
 (def (write-source path text)
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (display text port))))
@@ -37,7 +48,6 @@
         test
         (lambda () (write-source path text)))))
   (def module-reader-tool-context-test
-    (if root
     (test-suite "Compiler tool reuse preserves source confinement"
       (test-case "installed execution does not own an unrelated checkout"
         (def tool (core-import-module ':yuanxu/module-system/source/declaration))
@@ -79,9 +89,8 @@
         (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                (graph (.get view build-graph)))
           (check-equal?
-            (and (member 'yuanxu/modules/json-schema/interface
-                         (.get graph selected-graph module-order)) #t)
-            #t)
+            (.get graph selected-graph module-order)
+            '(json-schema))
           (check-equal?
             (assoc (path-expand "module-system/source/declaration.ss" root)
                    (.get graph compiler-inputs))
@@ -136,9 +145,17 @@
                                                      (path-expand "init.ss" root)) build-graph))) #t)
                   (check-equal? (file-exists? marker) #f)))))))
       (test-case "private cycles and interface self-import reject in the complete source package"
-        ;; Establish the positive source closure before introducing either cycle.
-        (check-equal? (> (length (.get (yuanxu-load-modules
-                                        (path-expand "init.ss" root)) build-graph entries)) 15) #t)
+        ;; Require the actual selected role closure, not a historical row count.
+        (def entries
+          (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph entries))
+        (def identities (map (lambda (entry) (.get entry compiler-identity)) entries))
+        (for-each
+          (lambda (identity) (check-equal? (and (member identity identities) #t) #t))
+          '(yuanxu/modules/json-schema/types yuanxu/modules/json-schema/objects
+            yuanxu/modules/json-schema/func yuanxu/modules/json-schema/config
+            yuanxu/modules/json-schema/json-schema-source
+            yuanxu/modules/json-schema/json-schema-contract
+            yuanxu/modules/json-schema/contracts yuanxu/modules/json-schema/interface))
         (let* ((base (path-expand "modules/json-schema" root))
                (first (path-expand "cycle-a.ss" base))
                (second (path-expand "cycle-b.ss" base)))
@@ -164,7 +181,4 @@
           (lambda ()
             (check-equal? (rejects? "YUANXU-MODULE-E007 reversed module role dependency"
                             (lambda () (.get (yuanxu-load-modules
-                                               (path-expand "init.ss" root)) build-graph))) #t)))))
-    (begin
-      (displayln "SKIP module-reader-tool-context: CORE_QUALIFICATION_ROOT is unset")
-      (test-suite "module-reader-tool-context (source-only opt-in)" (void)))))
+                                               (path-expand "init.ss" root)) build-graph))) #t))))))

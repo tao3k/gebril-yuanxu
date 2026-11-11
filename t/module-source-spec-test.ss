@@ -1,16 +1,27 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Source-only Core qualification: direct source targets, unchanged SDK macro.
+;;; Source-only Core qualification: direct source targets, standard Gerbil macro.
 (import :std/test
+        (only-in :clan/poo/object .get .call)
+        (only-in "./qualification/module-testing/fixtures.ss" selection-fixture)
         (only-in :std/source this-source-file)
         (only-in :std/error Error? Error-message)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :gerbil/expander eval-syntax current-expander-context
                  make-top-context syntax->list core-read-module/sexp)
         (only-in :yuanxu/module-system/source/admission module-source-read))
-(export module-source-spec-test)
-(def root (getenv "CORE_QUALIFICATION_ROOT" #f))
+(export module-source-spec-test test-setup! test-cleanup!)
+(def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
+(def resource #f)
+(def root #f)
+(def (test-setup!)
+  (set! resource (.call Fixture .acquire))
+  (set! root (.get resource root)))
+(def (test-cleanup!)
+  (when resource
+    (begin0 (.call Fixture .release resource)
+      (set! resource #f) (set! root #f))))
 (def owner (path-expand ".." (path-directory (this-source-file))))
 (def (compiled-path root lib name)
   (let-values (((_prelude identity _namespace _body)
@@ -46,7 +57,6 @@
         test
         (lambda () (write-source path text)))))
   (def module-source-spec-test
-    (if root
     (test-suite "User-owned standard build script consumes direct source spec"
       (test-case "real JsonSchema spec compile clean without source relocation"
         (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)
@@ -118,7 +128,4 @@
           (check-equal? (rejects? "module scope session was refused"
                                  (lambda () (run "spec"))) #t)
           (check-equal? (file-exists? (path-expand ".gerbil/module-build" root)) #f)
-          (displayln "SOURCE-SPEC-TARGETS " (length targets)))))
-    (begin
-      (displayln "SKIP module-source-spec: CORE_QUALIFICATION_ROOT is unset")
-      (test-suite "module-source-spec (source-only opt-in)" (void)))))
+          (displayln "SOURCE-SPEC-TARGETS " (length targets))))))

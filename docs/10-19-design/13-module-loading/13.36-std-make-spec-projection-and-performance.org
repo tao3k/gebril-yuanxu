@@ -263,7 +263,7 @@ retains its original order or rejects an unowned actual target.
 
 The timing gate covers two separate boundaries. The early bootstrap marker
 does not stop the startup clock. Time to the first owned clean removal and
-natural command exit includes the import of =building/script=, products and
+natural command exit includes the standard build entry, products and
 source admission, plus spec projection. A 3–4 second clean is a design target
 for the bounded JsonSchema fixture. Removing work after Make begins or
 deferring an eager import until later in the same clean cannot meet that

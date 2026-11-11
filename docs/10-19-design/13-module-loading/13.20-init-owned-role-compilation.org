@@ -105,10 +105,10 @@ relabel those failures as successes.
 
 * Runtime compiler integration
 
-The Gerbil spec adapter, the existing internal dispatch and explicit =.compile= share one internal role-lowering
-callback on the prepared projection. Maintained package entries consume =std-make-spec=
-through the Core libraries macro adapter. Internally this retains ordinary Gerbil
-incrementality without granting publication approval.
+Maintained package entries consume =std-make-spec= through Gerbil's standard
+macro. Modules declare their actual role syntax in their original source.
+Explicit source-projection and =.compile= consumers retain the existing guarded
+role-lowering callback; ordinary package compilation grants no publication approval.
 The removed public dispatch slot is not retained as a compatibility alias;
 explicit =.compile= also keeps its artifact issuance boundary. The source preparer materializes the already selected publication/role frames and
 binds the Gerbil's public =current-expander-module-import= only for that action.
@@ -202,25 +202,22 @@ The maintained build entry has no user dispatcher:
 
 #+begin_src scheme
 (def modules-spec (.get yuanxu.init.exports std-make-spec))
-(defbuild-script (modules-spec core-spec))
+(defbuild-script (modules-spec core-spec (this-source-file)))
 #+end_src
 
-=defbuild-script= is imported from =module-system/building/script.ss=. It is a
-thin hygienic adapter over the installed =std/build-script= macro, not a copy
-of the Gerbil command parser or Make scheduler. The unmodified Gerbil macro has no
-around-command hook, so importing it directly would lose selected role guards.
-The adapter evaluates the spec and keyword values once, retains the caller's
-source location, and delegates spec/compile/clean/meta/options to that macro.
+=defbuild-script= is imported directly from =:std/build-script=. The package
+contains no replacement macro, alias or new command parser. Gerbil owns native
+=meta=, =spec=, =compile=, =clean= and its compiler options. Each Module interface
+imports its existing declaration binding explicitly; Config modules export the
+values their interfaces import. Language semantics must not depend on a CLI
+interception layer.
 
-During spec evaluation, the existing init producer supplies its retained
-projection owner through a dynamically scoped observer. The consumer verifies
-that the returned list is the exact produced spec, then delegates to the existing
-checked dispatch. This association ends with the synchronous invocation. There
-is no registry, persistent cache, new Builder, approval cache or cloned issuer.
-Ordinary Gerbil-only specs retain ordinary dispatch. Compilation uses the existing
-role callback and before/after currentness; explicit =.compile= keeps issuance.
-The adapter itself is included in the existing compiler-tool source closure.
-
+Init still supplies ordinary selected Make targets. Source admission and
+explicit artifact publication retain their existing POO APIs; a successful
+ordinary package build does not issue a publication. The separate
+=call-with-init-build-spec= function has an active Weaver consumer and is not
+silently removed during this macro migration. Its further retirement requires
+that consumer to migrate together. No new call site to that function is added.
 
 * Library inventory versus init consumption
 
@@ -231,8 +228,8 @@ particular init declaration is a source-bound build input with its own owner.
 Module interfaces are supplied by the init-selected graph, not repeated in the
 library inventory. This preserves lazy selection, shared role preparation,
 currentness and the existing explicit issuance boundary without a second build
-protocol. The adapter retains ordinary package compilation internally; the default
-issued path and explicit =.compile= remain guarded.
+protocol. Ordinary package compilation uses the standard macro directly;
+explicit =.compile= retains its independent guarded publication boundary.
 
 The earlier attempt to remove init consumption from the entry was withdrawn.
 It is not the accepted separation and its intermediate runtime-library-only run
@@ -667,14 +664,15 @@ keep the existing runtime build declaration:
 
 #+begin_src scheme
 (def modules-spec (.get yuanxu.init.exports std-make-spec))
-(defbuild-script (modules-spec core-spec))
+(defbuild-script (modules-spec core-spec (this-source-file)))
 #+end_src
 
-The internal consumer accepts only the exact specification produced during its
-current preparation. Copying the list loses its owner and is refused. Role
+The retained explicit POO consumer accepts only the exact specification produced
+during its current preparation. This is not an implicit hook in the standard CLI. Copying the list loses its owner and is refused. Role
 lowering still checks currentness before compiler entry and after return;
-clean still invalidates issued artifacts before std/make cleanup. The adapter does
-not cache an admission verdict or run test targets in the production phase.
+its guarded clean invalidates issued artifacts before std/make cleanup. Ordinary
+standard CLI cleanup is compiler cleanup and does not substitute for revoking an
+issued POO product. Neither path may run tests during production compilation.
 Explicit projection =.compile= remains the artifact-issuance boundary. A runtime
 package callback that returns without producing compiler outputs cannot satisfy
 that boundary, while ordinary =defbuild-script= compilation grants no publication
@@ -686,7 +684,11 @@ missing-output rejection at =.compile= and stale-source rejection before Gerbil
 handoff. The source-only consumer qualification invokes its generated =main=
 for spec/compile/clean and no longer obtains an execution closure from init.
 
-** Focused spec-only qualification
+** Historical spec-only qualification
+
+These measurements predate the standard-macro migration and do not qualify its
+cold/hot/clean behavior. Current evidence and open compiler obligations are in
+[[file:../../../dev/sysml/20-module-loading/20.37-standard-gerbil-build-ownership.org][Standard Gerbil Build Ownership]].
 
 The installed Gerbil and pinned =80b590b= producer passed the default runtime
 build and its subsequent warm build with zero module/compiler jobs. The default

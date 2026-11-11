@@ -5,7 +5,9 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :std/error Error? Error-message)
-        (only-in :gerbil/expander core-import-module)
+        (only-in :gerbil/expander core-import-module eval-syntax current-expander-context make-top-context)
+        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
+        (only-in :yuanxu/ops/progress call-with-execution-watchdog)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint)
         (only-in :yuanxu/ops/process-script ProcessScript.)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
@@ -120,14 +122,19 @@
               (for-each (cut pretty-print <> out)
                 '((import :clan/poo/object
                     (only-in :std/source this-source-file)
-                    (only-in :yuanxu/module-system/building/script defbuild-script)
+                    (only-in :std/build-script defbuild-script)
+                    (only-in :yuanxu/module-system/building/products current-build-output-directory)
                     (only-in "./init.ss" program-fixture.init.exports))
+                  (export main)
                   (def root (path-directory (this-source-file)))
                   (defbuild-script
                     ((.get (.call (.get program-fixture.init.exports tests) .for-files
                       (list (path-expand "probe.ss" root)) '()
                       '((exe: "probe" bin: "probe-test"))) std-make-spec))
-                    prefix: "program-fixture")))))
+                    prefix: "program-fixture"
+                    libdir: (current-build-output-directory)
+                    bindir: (and (current-build-output-directory)
+                                 (path-expand "bin" (current-build-output-directory))))))))
           ;; Explicit test programs do not widen the production Module API.
           (check-exception
             (yuanxu-project-source-spec #f '((exe: "probe" bin: "probe-test"))
@@ -158,6 +165,26 @@
           (check-equal? (.get built status) 0)
           (yuanxu-test-checkpoint 'official-program-build-completed)
           (def build (.get (demand root) build))
+          ;; Standard Gerbil compile is deliberately not publication authority.
+          (check-exception (.call build .program 'program-fixture/probe) error?)
+          (def package-main
+            (parameterize ((current-expander-context (make-top-context)))
+              (eval-syntax '(import :gerbil/core))
+              (eval-syntax `(import (only-in ,(path-expand "build.ss" root) main)))
+              (eval-syntax 'main)))
+          ;; The existing POO issuer owns the effect. Invoke the SAME exported
+          ;; standard entry under its output and borrowed-input scope. No new
+          ;; macro, command parser or implicit publication hook is involved.
+          (.call build .compile (.get build output-directory)
+            (lambda ()
+              (def output ((.get build compile-output)))
+              (call-with-build-input-path output
+                (lambda ()
+                  (.call build .with-static-inputs
+                    (lambda ()
+                      (call-with-execution-watchdog 60000 120000
+                        (lambda () (package-main "compile"))))))
+                make-source: root)))
           (def binary (.call build .program 'program-fixture/probe))
           (check-equal? (string-prefix? (path-expand "test-lib/" (path-normalize prefix))
                                        (path-normalize binary)) #t)

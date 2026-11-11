@@ -27,10 +27,25 @@
     (else (cons (observe-export (car datum) marker forbidden?)
                 (observe-export (cdr datum) marker forbidden?)))))
 (def (selection-fixture repository)
-  (.o .acquire: (lambda () (source-build-fixture repository #f))
+  (.o .acquire:
+      (lambda ()
+        (def paths (load-path))
+        (def prefix (getenv "GERBIL_PATH" #f))
+        (def source (source-build-fixture repository #f))
+        (def fixture (.cc source
+                         root: (path-normalize (.get source root))
+                         state: (path-normalize (.get source state))
+                         previous-path: paths previous-prefix: prefix))
+        (setenv "GERBIL_PATH" (.get fixture state))
+        fixture)
       .release: (lambda (fixture)
-                  (clear-temporary-file!
-                    (path-normalize (path-expand "../.." (.get fixture root)))))))
+                  (dynamic-wind void
+                    (lambda ()
+                      (clear-temporary-file!
+                        (path-normalize (path-expand "../.." (.get fixture root)))))
+                    (lambda ()
+                      (set-load-path! (.get fixture previous-path))
+                      (setenv "GERBIL_PATH" (.get fixture previous-prefix)))))))
 (def (prepare-selection! fixture repository owner)
   (def root (.get fixture root))
   ;; Source-only dependency fallbacks are copied from the current qualified
@@ -121,7 +136,7 @@
             '((import :clan/poo/object
                       (only-in :std/source this-source-file)
                       (only-in :yuanxu/module-system/building/source-closure package-library-spec)
-                      (only-in :yuanxu/module-system/building/script defbuild-script)
+                      (only-in :std/build-script defbuild-script)
                       (only-in "./init.ss" compiled-namespace-client.init.exports))
               (def consumer-spec
                 (package-library-spec (path-directory (this-source-file))

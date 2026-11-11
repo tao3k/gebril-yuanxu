@@ -4,7 +4,7 @@
 ;;; Build the existing init-owned qualification publication; never run Cases.
 (import :clan/poo/object
         (only-in :std/source this-source-file)
-        (only-in :yuanxu/module-system/building/script defbuild-script)
+        (only-in :std/build-script defbuild-script)
         (only-in "../../../init.ss" yuanxu.init.exports))
 
 (def root (path-expand "../../.." (path-directory (this-source-file))))

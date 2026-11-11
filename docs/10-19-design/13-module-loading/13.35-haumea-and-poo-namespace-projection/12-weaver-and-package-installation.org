@@ -159,6 +159,11 @@ return delay.
 
 ** Package installation and selected builds are separate declarations
 
+The observations below describe the earlier build adapter. After its removal,
+Lab must express selection through its existing Module/Profile data and consume
+=:std/build-script= directly before adopting this Yuanxu revision. No previous
+CLI-flag result qualifies the new standard entry.
+
 Lab's =build.ss= now consumes =build-modules.ss=, whose catalog is eligible
 for explicit =--modules= requests. With no flag, the build supplies an empty
 root request. It does not import the application =init.exports=.

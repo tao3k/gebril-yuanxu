@@ -3,6 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Direct-source adapter refusals; no compiler invocation or source generation.
 (import :std/test
+        (only-in :std/source this-source-file)
+        (only-in "./qualification/module-testing/fixtures.ss" selection-fixture)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/error Error? Error-message)
         (only-in :std/text/pregexp pregexp-match)
@@ -13,8 +15,17 @@
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/admission module-source-read call-with-module-source-callback)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
-(export module-build-spec-test)
-(def root (getenv "CORE_QUALIFICATION_ROOT" #f))
+(export module-build-spec-test test-setup! test-cleanup!)
+(def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
+(def resource #f)
+(def root #f)
+(def (test-setup!)
+  (set! resource (.call Fixture .acquire))
+  (set! root (.get resource root)))
+(def (test-cleanup!)
+  (when resource
+    (begin0 (.call Fixture .release resource)
+      (set! resource #f) (set! root #f))))
 (def (write-source path text)
   (create-directory* (path-directory path))
   (call-with-output-file (list path: path truncate: #t)
@@ -26,7 +37,6 @@
           (begin (display-exception e) #f)))
       (lambda () (thunk) #f)))
   (def module-build-spec-test
-    (if root
     (test-suite "Direct source build specification identity and validity"
       (test-case "retained width does not multiply Graph admission; source and Graph drift still refuse"
         (for-each
@@ -111,7 +121,8 @@
                       (and (string-prefix? "yuanxu/" (symbol->string (.get row compiler-identity)))
                            (string-prefix? (path-expand "modules/" root) (.get row path))))
                     (.get selected entries)))
-            (unless overlap (error "build-spec fixture requires a selected package input"))
+            (unless overlap
+              (error "build-spec fixture requires a selected package input"))
             (def overlap-name
               (substring (symbol->string (.get overlap compiler-identity)) 7
                          (string-length (symbol->string (.get overlap compiler-identity)))))
@@ -196,6 +207,4 @@
               (check-equal? (rejects? "conflicting compiler inputs"
                               (lambda () (project (list overlap-spec) foreign build))) #t))
             (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) installed-core?)))))
-    (begin
-      (displayln "SKIP module-build-spec: CORE_QUALIFICATION_ROOT is unset")
-      (test-suite "module-build-spec (source-only opt-in)" (void)))))
+)

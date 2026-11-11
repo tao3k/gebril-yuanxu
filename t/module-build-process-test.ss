@@ -50,18 +50,8 @@
 (def (check-clean-output output root lib names)
   (check-equal? (string-contains output "... compile ") #f)
   (check-equal? (string-contains output "... execute compile job ") #f)
-  ;; Accounting must be active for absence to count as a work assertion.
-  (check-equal? (and (string-contains output "(BUILD-ACCOUNT (calls build-current)") #t) #t)
-  ;; Normal build verbosity keeps admission/work counters, without detailed
-  ;; per-file initializer timing. All native clean/identity checks below remain.
-  (check-equal? (string-contains output "(BUILD-ACCOUNT (reader-initialization ") #f)
-  (check-equal? (string-contains output "(BUILD-ACCOUNT (calls (reader-initializer-body ") #f)
-  (check-equal?
-    (string-contains output "BUILD-BOOTSTRAP-ROOT :yuanxu/admission/publication") #f)
-  (for-each
-    (lambda (stage)
-      (check-equal? (string-contains output (string-append "(BUILD-ACCOUNT (calls " stage ")")) #f))
-    '("compiler-source-state" "compiler-input-enrollment" "compiler-role-inventory"))
+  ;; Assert the standard compiler's actual products below. The removed
+  ;; Yuanxu CLI adapter's BUILD-ACCOUNT text is not a Gerbil contract.
   (def removal-prefix "... remove ")
   (def removed-interfaces
     (filter-map

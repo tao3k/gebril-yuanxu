@@ -123,13 +123,14 @@ command branch. The current package/prelude bootstrap stays in its owner;
 the following shows the changed consumer portion only:
 
 #+begin_src scheme
-(import (only-in :yuanxu/module-system/building/script defbuild-script)
+(import (only-in :std/build-script defbuild-script)
+        (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get)
         (only-in "./init.ss" yuanxu.init.exports)
         (only-in "./core-spec.ss" core-spec))
 
 (def modules-spec (.get yuanxu.init.exports std-make-spec))
-(defbuild-script (modules-spec core-spec))
+(defbuild-script (modules-spec core-spec (this-source-file)))
 #+end_src
 
 The public build entry is the runtime Make specification. The Core adapter

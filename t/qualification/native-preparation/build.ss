@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
         (only-in :std/source this-source-file)
-        (only-in :yuanxu/module-system/building/script defbuild-script)
+        (only-in :std/build-script defbuild-script)
         (only-in "./init.ss" yuanxu-native-preparation.init.exports))
 ;; Only the selected test support is built. Resolving production scopes would
 ;; activate the poison below and must remain outside this compiler declaration.

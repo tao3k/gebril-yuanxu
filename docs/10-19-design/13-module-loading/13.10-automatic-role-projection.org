@@ -13,12 +13,13 @@ The consumer imports init exports at the build entry, never in the library
 inventory. The Core adapter preserves Gerbil macro syntax and encloses runtime compilation:
 
 #+begin_src scheme
-(import (only-in "./module-system/building/script.ss" defbuild-script)
+(import (only-in :std/build-script defbuild-script)
+        (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get)
         (only-in "./init.ss" yuanxu.init.exports)
         (only-in "./core-spec.ss" core-spec))
 (def modules-spec (.get yuanxu.init.exports std-make-spec))
-(defbuild-script (modules-spec core-spec))
+(defbuild-script (modules-spec core-spec (this-source-file)))
 #+end_src
 
 There is no consumer source alias, replacement main, Gerbil patch or additional

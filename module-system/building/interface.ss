@@ -277,14 +277,14 @@
             source-roots: (compiler-source-roots)))
         action)
       refuse-input-context!))
-  (def (build-spec roots)
+  (def (build-spec roots (entry-source #f))
     ;; Looking up the spec must preserve native runtime bindings. The
     ;; compiler output fallback belongs to run-spec, after projection.
     (with-input-context #f
-      (lambda () (build-spec/in-input-context roots))))
-  (def (build-spec/in-input-context roots)
+      (lambda () (build-spec/in-input-context roots entry-source))))
+  (def (build-spec/in-input-context roots explicit-entry-source)
     (def consumer (current-build-spec-consumer))
-    (def entry-source (or (and consumer (car consumer))
+    (def entry-source (or explicit-entry-source (and consumer (car consumer))
                           (and prepared (cadr retained))
                           init-file))
     (def request (list (current-build-module-roots) entry-source roots))

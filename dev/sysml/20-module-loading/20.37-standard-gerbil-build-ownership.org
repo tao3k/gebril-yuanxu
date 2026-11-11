@@ -1,0 +1,103 @@
+#+title: 20.37 Standard Gerbil Build Ownership
+#+language: en
+#+filetags: :build:ownership:currentness:
+
+#+attr_org: :width 1100
+[[file:20.37-standard-gerbil-build-ownership.svg]]
+
+Diagram source: [[file:20.37-standard-gerbil-build-ownership.d2]].
+
+* Responsibility allocation
+
+| Owner | Responsibility |
+|-------+----------------|
+| Init and Module declarations | Select source owners and expose an ordinary Make specification |
+| :std/build-script | Define the package entry and interpret standard build commands |
+| :std/make | Resolve compiler dependencies, schedule actual cores, compile and clean |
+| Module declaration syntax | Import adjacent roles and export the publication through the original source |
+| Config module | Export its authored Config value through the native module system |
+| Existing source projection and publication APIs | Enforce their explicit source/spec/product contracts; package build success grants no authority |
+
+The Yuanxu =module-system/building/script.ss= macro is removed. Production and
+test declarations import =defbuild-script= from =:std/build-script= directly.
+Do not replace the deleted macro with an alias, new dispatcher, CLI flag parser
+or implicit consumer registration. The existing spec producer accepts an optional explicit entry-source, passed
+from the standard build entry with =this-source-file=. The source owner retains
+the build.ss byte binding without discovering an implicit CLI consumer.
+A native module test imports
+=:std/source= when it needs the standard macro's source anchor.
+
+The first direct build exposed undeclared Module syntax; the next exposed
+missing Config exports. Those failures are retained locally. Explicit imports
+in the five production Module/Scenario interfaces and explicit Config exports
+in the three Scenario Config modules make the authored sources independently
+compilable. The complete standard package build then passed at actual host
+compiler capacity; no dependency pin or deadline changed.
+
+The independent =call-with-init-build-spec= API remains an actual Weaver
+consumer boundary. Removing it and changing its POO product contracts together
+is a separate migration, not a rename of the deleted macro. Existing
+currentness, product-refusal and mutation tests must
+continue to run while the standard entry migration is verified.
+
+* Validation obligations
+
+- Execute the original complete build through =gerbil build=.
+- Keep native source anchors and single evaluation of Make values/options.
+- Verify real compiled namespaces and executable consumers.
+- Retain stale-source, altered-spec and missing-product refusal controls.
+- Run all four build-input mutations and before/after controls.
+- Follow exact-head Ubuntu and Darwin CI; a local build is not full acceptance.
+
+All raw transcripts stay in ignored local cache storage.
+
+* Standard Make qualification still required
+
+The locked Gerbil toolchain's direct hot build recompiles =prelude=: its
+predicted outputs use the directory package prefix while that source declares
+a different native compiler identity. A successful build does not close that
+incrementality gap. Keep the original header-identity, no-op, cleanup and
+unselected-output controls. The correction belongs to Gerbil's =std/make=;
+do not restore a Yuanxu macro, output alias or custom artifact cleanup layer.
+The current toolchain remains pinned, and no uncommitted producer patch is
+adopted as downstream evidence.
+
+The unchanged complete source-bootstrap test confirms this failure after the
+standard-entry migration: spec returned in 11.050 seconds, cold compilation in
+30.195 seconds, and the supposed no-op compiled the Prelude again and took
+17.723 seconds. The original no-compile assertion rejected it. This is a failed
+incrementality check, not a qualified speedup or a reason to remove that check.
+
+The real program test passed through both the official package build and the
+explicit POO issuer. It rejects the first unissued program, accepts the scoped
+standard-main result, and retains executable tampering, unknown-program and
+stale-source refusals. All four input mutations and both surrounding controls
+passed. Full cold/hot/clean acceptance remains independent of these results.
+
+* Native test coverage
+
+The source-entry, specification, reader-tool-context, source-snapshot and public
+dependency-readiness suites now acquire the existing selection fixture through
+standard =test-setup!= / =test-cleanup!=. Their cases no longer silently disappear
+when an external qualification variable is missing. Fixture paths are canonical
+before source-membership checks, and release restores the original load path
+and package prefix even when cleanup fails.
+
+These five suites passed as independent =gerbil test= invocations. The reader
+suite checks the selected =json-schema= identity and every one of its eight
+compiler-role identities, then retains changed-tool, removed-tool, foreign
+same-identity and cyclic-import refusals. A historical minimum row count is not
+an assertion about the selected closure.
+
+The process-level cold/hot/clean suite checks actual compiler output identity,
+modification times, selected product removal and unselected-output retention.
+It does not require accounting text from the deleted CLI adapter. The existing
+source-currentness and four mutation suites remain separate mandatory gates.
+The source-spec clean check and process no-op check still expose the locked
+compiler's identity/cleanup gap; neither is recorded as passing.
+
+The separate historical =module-build-reimport-test.ss= still requires its
+cross-process residue fixture. This revision does not claim that conditional
+case executed, nor that a prepared dependency identity check proves its ABI.
+The standard Make no-op/cleanup and residual-loader controls remain open
+acceptance obligations until the compiler owner is qualified.

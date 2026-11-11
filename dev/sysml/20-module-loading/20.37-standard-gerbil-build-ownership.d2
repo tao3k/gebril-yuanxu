@@ -1,0 +1,21 @@
+direction: down
+classes: {
+  source: {style.fill: "#EFF6FF"; style.stroke: "#3B82F6"; style.font-color: "#1E3A5F"}
+  standard: {style.fill: "#F0FDFA"; style.stroke: "#0D9488"; style.font-color: "#134E4A"}
+  authority: {style.fill: "#FAF5FF"; style.stroke: "#9333EA"; style.font-color: "#581C87"}
+}
+source: "Init and Module sources\nSource and entry binding" {class: source}
+spec: "std-make-spec\nOrdinary Make data" {class: source}
+entry: "Standard Gerbil build\n:std/build-script + :std/make" {class: standard}
+products: "Compiler products\nUnissued" {class: standard}
+issuer: "POO .compile\nScoped execution" {class: authority}
+admission: "Product admission\nSource and product checks" {class: authority}
+publication: "Checked publication" {class: authority}
+source -> spec
+spec -> entry
+entry -> products
+source -> issuer: source contract {style.stroke-dash: 5}
+issuer -> entry: guarded call {style.stroke-dash: 5}
+issuer -> admission: retained obligations {style.stroke-dash: 5}
+products -> admission
+admission -> publication

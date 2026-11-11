@@ -2,11 +2,12 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
+        (only-in :std/source this-source-file)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/make make)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context)
         (only-in :clan/poo/object .get .ref .o)
-        (only-in :yuanxu/module-system/building/script defbuild-script)
+        (only-in :std/build-script defbuild-script)
         (only-in :yuanxu/module-system/source/role-forms
                  module-publication-role-imports module-regular-role-file?)
         (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)

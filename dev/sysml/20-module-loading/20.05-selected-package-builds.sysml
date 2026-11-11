@@ -2,6 +2,21 @@
 package YuanxuSelectedPackageBuilds {
     private import ScalarValues::*;
 
+    requirement def StandardGerbilBuildEntry {
+        doc /* Package entries import defbuild-script directly from
+               std/build-script. Init supplies ordinary std/make data and its
+               actual entry-source binding; no Yuanxu replacement macro or
+               implicit CLI publication hook is permitted. Each Module source
+               declares its existing Module syntax and exports its Config
+               through Gerbil. Ordinary compilation yields unissued products.
+               The existing POO compile issuer may invoke that same standard
+               main under its source, output and borrowed-input guards. Product
+               admission, tamper refusal and recovery remain explicit. Existing
+               TestMakeLayout and TestPublicationReuse own their semantic laws;
+               Quint retains temporal obligations rather than a duplicate model.
+               Full cold/hot/clean and source-mutation evidence is required. */
+    }
+
     requirement def MetadataCatalogOwnership {
         doc /* The catalog stores native module names, exact versions and
                opaque dependency references. Resolution selects a release

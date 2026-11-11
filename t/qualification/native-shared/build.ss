@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
         (only-in :std/source this-source-file)
-        (only-in :yuanxu/module-system/building/script defbuild-script)
+        (only-in :std/build-script defbuild-script)
         (only-in "./init.ss" yuanxu-native-shared.init.exports))
  ;; Native spec discovery precedes Make; expose this package's authored
  ;; libraries through the Gerbil's ordinary source-path lookup for that phase.

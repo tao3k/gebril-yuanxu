@@ -343,8 +343,11 @@ spec nor a cold compile alone constitutes the complete native acceptance.
 
 The corrected =build-projection.ss= preserves every selected Graph source entry,
 merges retained targets with conflict checks, and uses the existing unified
-source view only for a cross-package plan. =building/script.ss= rejects explicit
-present Make prefixes in that view. Source preparation, normal POO =.get=,
+source view only for an explicit cross-package projection consumer. The deleted
+Yuanxu macro no longer interprets Make prefixes. Direct standard-entry
+cold/hot/clean qualification is required before promoting that consumer path;
+the earlier adapter observations below do not qualify the new entry.
+Source preparation, normal POO =.get=,
 contracts, native imports, source-view locking and std/make remain the owners.
 No loader, registry, cache layer, admission bypass or budget change was added.
 =dependency-identities= contains no reclassified selected source IDs; installed

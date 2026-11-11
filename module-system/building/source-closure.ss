@@ -215,7 +215,7 @@
 (def bootstrap-roots
   (append '(:yuanxu/module-system/building/build-projection)
           role-language-roots
-          '(:yuanxu/module-system/building/script
+          '(:yuanxu/module-system/building/interface
             :yuanxu/module-system/building/configuration-source)
           shared-library-roots))
 (def reader-roots

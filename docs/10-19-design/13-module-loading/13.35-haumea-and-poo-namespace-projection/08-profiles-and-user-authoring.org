@@ -27,16 +27,11 @@ context must be replaced by the context of its confined declared source
 before walking imports. The compiler identity and exact source path
 are still checked. This rule applies only to owner library roots.
 
-For a one-off selection, the Yuanxu build-script wrapper accepts
-=./build.ss spec --modules governance= and
-=./build.ss compile --modules governance --debug=. It consumes the
-module IDs before asking init for the build specification. The existing
-selected graph resolves the IDs and their dependencies, and the
-native script receives its original command and remaining options.
-The Lab's explicit selection bypasses its legacy retained roots.
-Downstream application roots still belong to the downstream build
-declaration. Native =gerbil build= continues to use the package's
-unflagged build script.
+One-off selection belongs to the existing Module/Profile data and selected
+Graph. The package entry imports the standard Gerbil macro directly; it has no
+Yuanxu =--modules= parser. Refine the owner's selection before projecting its
+Make data. Gerbil retains its standard compiler options. Downstream application
+roots remain declared by their own package; no new selection CLI is introduced.
 
 The fixture starts with an available Lab source checkout. It does not
 qualify the producer's default install build or migrate Lab's other

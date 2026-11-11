@@ -3,13 +3,25 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Exercise the actual source-only root entry without a whole Core compile.
 (import :std/test
+        (only-in :clan/poo/object .get .call)
+        (only-in :std/source this-source-file)
+        (only-in "./qualification/module-testing/fixtures.ss" selection-fixture)
         (only-in :std/error Error? Error-message)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :gerbil/expander eval-syntax current-expander-context
                  make-top-context syntax->list)
         (only-in :yuanxu/module-system/source/admission module-source-read))
-(export core-build-entry-test)
-(def root (getenv "CORE_QUALIFICATION_ROOT" #f))
+(export core-build-entry-test test-setup! test-cleanup!)
+(def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
+(def resource #f)
+(def root #f)
+(def (test-setup!)
+  (set! resource (.call Fixture .acquire))
+  (set! root (.get resource root)))
+(def (test-cleanup!)
+  (when resource
+    (begin0 (.call Fixture .release resource)
+      (set! resource #f) (set! root #f))))
 (def (script-main path)
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))
@@ -32,7 +44,6 @@
   (def (target-name target)
     (if (string? target) target (cadr target)))
   (def core-build-entry-test
-    (if root
     (test-suite "Actual Core entry delegates to Module System Building"
       (test-case "cold source entry selects JsonSchema and rechecks input bytes"
         (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)
@@ -47,11 +58,14 @@
                       (hash-put! seen name #t)) names))
         (for-each
           (lambda (name)
-            (check-equal? (length (filter (cut equal? <> name) names)) 1))
+            (check-equal? (cons name (length (filter (cut equal? <> name) names))) (cons name 1)))
           '("modules/json-schema/types" "modules/json-schema/config"
             "modules/json-schema/func" "modules/json-schema/objects"
             "modules/json-schema/interface" "object-types/contracts" "utilities/algorithms"
-            "module-system/building/interface" "core-spec"))
+            "core-spec"))
+        ;; Source tooling prepares the spec but is not a retained runtime target.
+        (check-equal? (member "module-system/building/interface" names) #f)
+        (check-equal? (member "module-system/building/script" names) #f)
         (check-equal?
           (filter (lambda (name)
                     (or (string-prefix? "modules/nix/" name)
@@ -86,7 +100,4 @@
         (check-equal? (rejects? "module scope session was refused"
                                (lambda () (fresh "spec"))) #t)
         (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)
-        (displayln "ROOT-ENTRY-SELECTED-TARGETS " (length spec))))
-    (begin
-      (displayln "SKIP core-build-entry: CORE_QUALIFICATION_ROOT is unset")
-      (test-suite "core-build-entry (source-only opt-in)" (void)))))
+        (displayln "ROOT-ENTRY-SELECTED-TARGETS " (length spec)))))
