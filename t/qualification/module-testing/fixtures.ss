@@ -6,8 +6,9 @@
         (only-in :std/io/tempfile clear-temporary-file!)
         (only-in :std/misc/ports read-all-as-string)
         (only-in :gerbil/expander core-resolve-library-module-path)
-        "../module-bootstrap/fixtures.ss")
-(export selection-fixture prepare-selection!)
+        "../module-bootstrap/fixtures.ss"
+        (only-in "../testing/directory.ss" DirectoryFixture))
+(export selection-fixture prepare-selection! compiled-selection-fixture prepare-module-selection!)
 (def (write-forms path forms)
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (for-each (cut pretty-print <> port) forms))))
@@ -59,6 +60,9 @@
           (lambda (port) (display "loaded" port))))))
   ;; The independent compiled-import gate owns this diagnostic directory.
   (create-directory* (path-expand "t/qualification/module-testing" root))
+  (prepare-module-selection! fixture owner))
+(def (prepare-module-selection! fixture owner)
+  (def root (.get fixture root))
   (for-each
     (lambda (module)
       (def name (symbol->string module))
@@ -90,3 +94,37 @@
                      (lambda (out) (display "test" out)))
                    (error "unselected real module test evaluated")) port))))))
     '(json-schema funflow)))
+
+(def (compiled-selection-fixture repository)
+  (.cc DirectoryFixture
+    prefix: "compiled-namespace-client-"
+    .prepare:
+    (lambda (resource)
+      (def root (.get resource root))
+      (def state (path-expand ".gerbil" root))
+      (create-directory* (path-expand "lib" state))
+      (create-directory* (path-expand "t/qualification/module-testing" root))
+      (for-each
+        (lambda (name)
+          (copy-fixture-tree (path-expand (string-append "modules/" name) repository)
+            (path-expand (string-append "modules/" name) root)
+            (lambda (_path file _kind) (not (string-prefix? "." file)))))
+        '("json-schema" "funflow"))
+      (write-forms (path-expand "gerbil.pkg" root)
+        '((package: compiled-namespace-client prelude: :tao3k/yuanxu/prelude)))
+      (write-forms (path-expand "init.ss" root)
+        '((yuanxu! source: "./modules" mode: explicit (json-schema))))
+      (call-with-output-file (list path: (path-expand "build.ss" root) permissions: #o755)
+        (lambda (port)
+          (display "#!/usr/bin/env gxi\n" port)
+          (for-each (cut pretty-print <> port)
+            '((import :clan/poo/object
+                      (only-in :std/source this-source-file)
+                      (only-in :yuanxu/module-system/building/source-closure package-library-spec)
+                      (only-in :yuanxu/module-system/building/script defbuild-script)
+                      (only-in "./init.ss" compiled-namespace-client.init.exports))
+              (def consumer-spec
+                (package-library-spec (path-directory (this-source-file))
+                  'compiled-namespace-client '("init.ss")))
+              (defbuild-script ((.get compiled-namespace-client.init.exports std-make-spec) consumer-spec))))))
+      (.cc resource state: state))))

@@ -573,3 +573,18 @@ failure. It does not scan stdout for a replacement verdict. Domains follow the
 authoring, loading, testing, graph/selection, MOP and workflow owners; the full
 compiled-module integration test has its own job. This retains the previous
 fresh-process assertions without reintroducing a development runner.
+
+** Compiled consumer and source bootstrap are distinct obligations
+
+The compiled namespace qualification must be a downstream package using the
+already-built public Core dependency. Its build owns only selected business
+modules and compiled import consumers. Rebuilding a source-only Core inside
+this qualification repeats the independent bootstrap obligation and measures
+that repetition against the consumer's 60-second process budget.
+
+Keep the source-only bootstrap fixture unchanged. The consumer qualification
+retains only-in/rename-in identity, lazy values, read-only exports, actual SSI
+and runtime-object loading, and changed init/test-input refusal. Inspect the
+real runtime loader to prove the execution library stays cold; do not edit a
+production library to manufacture a file marker. No deadline or concurrency
+setting changes.

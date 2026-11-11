@@ -7,15 +7,19 @@
         (only-in :std/misc/ports read-all-as-string)
         (only-in :gerbil/expander core-import-module module-context-path)
         (only-in :gerbil/runtime list-modules)
-        (rename-in :yuanxu/compiled-bindings/only
+        (rename-in :compiled-namespace-client/compiled-bindings/only
                    (namespace only-namespace) (atomic only-atomic))
-        (rename-in :yuanxu/compiled-bindings/renamed
+        (rename-in :compiled-namespace-client/compiled-bindings/renamed
                    (namespace renamed-namespace) (atomic renamed-atomic)))
 (export compiled-binding-test)
 (def root (path-expand "../../.." (path-directory (this-source-file))))
 (def (write-text path text)
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (display text port))))
+(def (execution-library-loaded?)
+  (ormap (lambda (row)
+           (string-prefix? "yuanxu/observability/testing-script" (car row)))
+         (list-modules)))
 (def compiled-binding-test
   (test-suite "Runtime compiled namespace binding"
     (test-case "compiler artifacts are actually imported"
@@ -23,7 +27,7 @@
         (lambda (name)
           (def path (module-context-path (core-import-module name)))
           (check-equal? (string-suffix? ".ssi" path) #t))
-        '(:yuanxu/compiled-bindings/only :yuanxu/compiled-bindings/renamed))
+        '(:compiled-namespace-client/compiled-bindings/only :compiled-namespace-client/compiled-bindings/renamed))
       (check-equal? (file-exists? (path-expand "compiled-bindings/only.ss" root)) #f)
       (check-equal? (file-exists? (path-expand "compiled-bindings/renamed.ss" root)) #f)
       (for-each
@@ -31,8 +35,8 @@
           (def entry (assoc name (list-modules)))
           (check-equal? (and entry (string? (cdr entry))
                            (string-suffix? ".o1" (cdr entry))) #t))
-        '("yuanxu/init~0" "yuanxu/compiled-bindings/only~0" "yuanxu/compiled-bindings/renamed~0"))
-      (check-equal? (file-exists? (path-expand "testing-execution.loaded" root)) #f))
+        '("compiled-namespace-client/init~0" "compiled-namespace-client/compiled-bindings/only~0" "compiled-namespace-client/compiled-bindings/renamed~0"))
+      (check-equal? (execution-library-loaded?) #f))
     (test-case "only-in and rename-in return one namespace without forcing values"
       (def modules (only-namespace))
       (check-equal? (eq? modules (only-namespace)) #t)
@@ -42,7 +46,7 @@
       (check-equal? (.slot? modules 'missing) #f)
       (check-equal? (.ref/cached modules 'json-schema) #f)
       (check-equal? (file-exists? (path-expand "json-schema.scope" root)) #f)
-      (check-equal? (file-exists? (path-expand "testing-execution.loaded" root)) #f))
+      (check-equal? (execution-library-loaded?) #f))
     (test-case "compiled binding keeps test identity and source guards"
       (def tests (only-atomic))
       (check-equal? (eq? tests (renamed-atomic)) #t)
