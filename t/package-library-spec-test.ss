@@ -3,6 +3,7 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/source this-source-file)
         (only-in "../core-spec.ss" core-spec)
+        (only-in "./qualification/module-init/fixture.ss" import-build-script!)
         (only-in :gerbil/expander expander-context-id)
         (only-in :yuanxu/module-system/building/source-closure package-library-spec))
 (export package-library-spec-test)
@@ -10,15 +11,21 @@
   (call-with-output-file (path-expand name root) (lambda (port) (display text port))))
 (def package-library-spec-test
   (test-suite "Selected package source projection"
-    (test-case "declared Make targets cover the public Funflow import closure"
+    (test-case "official Core Make spec includes the public Funflow import closure"
+      (def root (path-expand ".." (path-directory (this-source-file))))
+      (def main (import-build-script! (path-expand "build.ss" root) #t))
+      (def spec
+        (call-with-input-string
+          (call-with-output-string
+            (lambda (out) (parameterize ((current-output-port out)) (main "spec")))) read))
+      (def targets (map (lambda (target) (if (string? target) target (cadr target))) spec))
       (def roots
-        (package-library-spec
-          (path-expand ".." (path-directory (this-source-file))) 'yuanxu
+        (package-library-spec root 'yuanxu
           '("modules/funflow/control-plane/api.ss" "modules/funflow/scenario.ss"
             "modules/funflow/workload.ss" "modules/funflow/bundle-v1.ss")))
       (check-equal? (and (member "modules/funflow/control-plane/api" roots) #t) #t)
       (check-equal? (and (member "modules/funflow/control-plane/runtime-command-descriptor" roots) #t) #t)
-      (check-equal? (filter (lambda (target) (not (member target core-spec))) roots) '())
+      (check-equal? (filter (lambda (target) (not (member target targets))) roots) '())
       (check-equal? (member "init" core-spec) #f))
     (test-case "shared imports are projected once in dependency order; unused sources stay lazy"
       (call-with-temporary-directory "package-library-"
