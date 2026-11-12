@@ -88,14 +88,14 @@
     (test-case "Prelude and explicit declaration import retain one terminal binding"
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
-        (eval-syntax '(import (only-in :tao3k/yuanxu/prelude yuanxu!)))
+        (eval-syntax '(import (only-in :yuanxu/prelude yuanxu!)))
         (def inherited (resolve-identifier (datum->syntax #f 'yuanxu!)))
         (check-equal? (and inherited #t) #t)
         (eval-syntax '(import (only-in :yuanxu/module-system/selection/init-syntax yuanxu!)))
         (check-equal? (eq? inherited (resolve-identifier (datum->syntax #f 'yuanxu!))) #t)))
     (test-case "language bootstrap has no semantic declaration implementation dependency"
       (def identities '())
-      (for-each-build-module (core-import-module ':tao3k/yuanxu/prelude)
+      (for-each-build-module (core-import-module ':yuanxu/prelude)
         (lambda (context) (set! identities (cons (expander-context-id context) identities))))
       (check-equal? (and (memq 'yuanxu/module-system/selection/init-syntax identities) #t) #t)
       (for-each (lambda (identity) (check-equal? (and (memq identity identities) #t) #f))

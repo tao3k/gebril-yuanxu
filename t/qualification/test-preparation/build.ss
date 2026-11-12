@@ -4,13 +4,13 @@
 (import :clan/poo/object
         (only-in :std/source this-source-file)
         (only-in :std/build-script defbuild-script)
-        (only-in "./init.ss" yuanxu-native-preparation.init.exports))
+        (only-in "./init.ss" yuanxu-test-preparation.init.exports))
 ;; Only the selected test support is built. Resolving production scopes would
 ;; activate the poison below and must remain outside this compiler declaration.
- ;; Native spec discovery precedes Make; expose this package's authored
+ ;; Standard spec discovery precedes Make; expose this package's authored
  ;; libraries through the Gerbil's ordinary source-path lookup for that phase.
 (add-load-path! (path-directory (this-source-file)))
 (def tests
-  (.call (.get yuanxu-native-preparation.init.exports tests) .for-files
+  (.call (.get yuanxu-test-preparation.init.exports tests) .for-files
     '("modules/example/tests/atomic-test.ss")))
-(defbuild-script ((.get tests std-make-spec)))
+(defbuild-script (.get tests std-make-spec))

@@ -1,6 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Separate source selection: three admitted declarations, only two demanded
-;;; scopes. This selection never changes the native build consumer's init.
+;;; scopes. This selection never changes the standard build consumer's init.
 (import (only-in "./init.ss" yuanxu-thousand-scope-control.init.exports)
         (only-in :clan/poo/object .get .all-slots/sort .ref/cached)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer))

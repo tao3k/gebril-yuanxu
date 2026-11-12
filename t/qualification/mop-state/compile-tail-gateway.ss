@@ -25,7 +25,7 @@
         (let ((input (path-expand name directory)) (local (string-append relative name)))
           (if (eq? (file-info-type (file-info input #f)) 'directory)
             (snapshot input (string-append local "/"))
-            ;; Native qualification declarations also bind literal text inputs;
+            ;; Standard qualification declarations also bind literal text inputs;
             ;; those bytes must survive relocation rather than fall back live.
             (when (or (member (path-extension name) '(".ss" ".scm" ".json" ".txt"))
                       (string=? name "gerbil.pkg"))
@@ -57,7 +57,7 @@
 ;; Route both to the same snapshot; never mix the host's prelude into its clone.
 (def (snapshot-source name)
   (cond
-    ((equal? name "tao3k/yuanxu/prelude") (path-expand "prelude.ss" source-core))
+    ((equal? name "yuanxu/prelude") (path-expand "prelude.ss" source-core))
     ((and name (string-prefix? "yuanxu/" name))
      (path-expand (string-append (substring name (string-length "yuanxu/") (string-length name)) ".ss") source-core))
     (else #f)))
@@ -121,14 +121,14 @@
     (unless (hash-key? affected node)
       (hash-put! affected node #t)
       (for-each mark (hash-ref parents node '()))))
-  ;; Named prelude Contexts share the source of their native module owner.
+  ;; Named prelude Contexts share the source of their standard module owner.
   (hash-for-each
     (lambda (owner value)
       (when (and (module-context? owner) (prelude-context? value))
         (hash-put! prelude-owners value owner)))
     __module-registry)
   (for-each walk roots)
-  (unless edited-context (error "gateway source has no native owner" edited))
+  (unless edited-context (error "gateway source has no standard owner" edited))
   (when complete?
     (mark edited-context)
     (for-each (lambda (entry) (hash-put! affected entry #t)) roots))
@@ -178,5 +178,5 @@
 (displayln "SOURCE-TAIL-OPTIMIZER omitted-installed-ssxi=" skipped-optimizer-inputs)
 (report-stage 'contexts)
 (execute-pending-compile-jobs!)
-(report-stage 'native-jobs)
+(report-stage 'build-jobs)
 (displayln "SOURCE-TAIL-GATEWAY-COMPILED: one temporary dispatcher; current source import closure")

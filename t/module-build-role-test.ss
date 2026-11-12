@@ -58,6 +58,187 @@
     owner))
 (def module-build-role-test
   (test-suite "module-build-role-test"
+    (yuanxu-test-case "init exports a spec List and ordinary append keeps package inputs separate"
+      (call-with-temporary-directory "build-export-value"
+        (lambda (root)
+          (fixture root "(def Build '())")
+          (write-source (path-expand "init.ss" root)
+            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
+          (write-source (path-expand "support.ss" root) "(def support 42) (export support)")
+          (def exports (import-fixture-init! (path-expand "init.ss" root)))
+          (def started (real-time))
+          (defvalues (module-spec cold-counts)
+            (call-with-module-source-operation-measurement
+              (lambda () (.get exports std-make-spec))))
+          (def cold-seconds (- (real-time) started))
+          (def hot-started (real-time))
+          (defvalues (hot-spec hot-counts)
+            (call-with-module-source-operation-measurement
+              (lambda ()
+                (for-each (lambda (_) (.get exports std-make-spec)) '(1 2 3 4 5 6 7 8 9 10))
+                (.get exports std-make-spec))))
+          (check-equal? (eq? module-spec hot-spec) #t)
+          (check-equal? (hash-ref cold-counts '(calls build-projection) 0) 1)
+          (check-equal? (hash-ref cold-counts '(calls build-spec-contract) 0) 1)
+          (check-equal? (hash-ref hot-counts '(calls build-projection) 0) 0)
+          (check-equal? (hash-ref hot-counts '(calls build-spec-contract) 0) 0)
+          (displayln "STD-MAKE-SPEC-BENCHMARK cold-seconds=" cold-seconds
+            " hot-11-seconds=" (- (real-time) hot-started)
+            " cold-graph=" (hash-ref cold-counts '(calls build-projection) 0)
+            " cold-contract=" (hash-ref cold-counts '(calls build-spec-contract) 0)
+            " hot-graph=" (hash-ref hot-counts '(calls build-projection) 0)
+            " hot-contract=" (hash-ref hot-counts '(calls build-spec-contract) 0))
+          (check-equal? (list? module-spec) #t)
+          (check-equal? (procedure? module-spec) #f)
+          (check-equal? (eq? module-spec (.get exports std-make-spec)) #t)
+          (check-equal? (.slot? exports 'library-spec) #f)
+          (check-equal? (.slot? exports 'append-spec) #f)
+          (def package-spec (append module-spec '("support")))
+          (def support-input
+            (yuanxu-prepare-module-retained-source (path-expand "support.ss" root) void))
+          (check-equal? (list? package-spec) #t)
+          (check-equal? (member "support" package-spec) '("support"))
+          (check-equal? (member "support" module-spec) #f)
+          (check-equal? (eq? module-spec (.get exports std-make-spec)) #t)
+          (write-source (path-expand "support.ss" root) "(def support 43) (export support)")
+          (check-exception ((.get support-input admit-current)) error?)
+          ((.get exports admit-current)))))
+    (yuanxu-test-case "a reached standard init reuses the same Module build evaluation"
+      (call-with-temporary-directory "single-build-generation"
+        (lambda (root)
+          (def marker (path-expand "build-evaluations" root))
+          (def owner (fixture root
+            (string-append
+              "(def Build (begin (call-with-output-file (list path: "
+              (call-with-output-string (cut write marker <>))
+              " append: #t) (lambda (port) (display \"x\" port))) '(\"client\")))")))
+          ;; These authored sources are consumed by the official expander,
+          ;; not a generated role wrapper or an already-installed test package.
+          (write-source (path-expand "config.ss" owner)
+            "(import :clan/poo/object) (def Config (.o value: 42)) (export Config)")
+          (write-source (path-expand "interface.ss" owner)
+            "(import (only-in :clan/poo/object .o) (only-in :yuanxu/module-system/source/declaration .def)) (.def Example identity: 'app/example core: (.o requires: (.o) scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))")
+          (write-source (path-expand "init.ss" root)
+            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
+          (write-source (path-expand "client.ss" owner) "(import \"../../../init.ss\") (export)")
+          (def exports (import-fixture-init! (path-expand "init.ss" root)))
+          (def spec (.get exports std-make-spec))
+          (check-equal? (list? spec) #t)
+          (check-equal? (ormap (lambda (target)
+                               (equal? (if (string? target) target (cadr target)) "init")) spec) #t)
+          (check-equal? (module-source-read marker) "x")
+          (check-equal? (eq? spec (.get exports std-make-spec)) #t)
+          (check-equal? (module-source-read marker) "x"))))
+    (yuanxu-test-case "Module standard Make specs preserve library and EXE products through collection"
+      (call-with-temporary-directory "module-build-make-spec"
+        (lambda (root)
+          (def owner (fixture root
+            ;; One source can produce distinct library and executable products.
+            "(def Build '((gxc: \"entry\" \"-O\") (exe: \"entry\" bin: \"entry-tool\" \"-debug\")))"))
+          (write-source (path-normalize (path-expand "entry.ss" owner))
+            "(def (main . args) (void)) (export main)")
+          (def later (path-expand "modules/app/later" root))
+          (for-each
+            (lambda (role) (write-source (path-expand role later)
+                            (module-source-read (path-expand role owner))))
+            '("types.ss" "objects.ss" "config.ss"))
+          (write-source (path-expand "library.ss" later) "(def value 42) (export value)")
+          (write-source (path-expand "command.ss" later) "(def (main . args) (void)) (export main)")
+          (write-source (path-expand "build.ss" later)
+            "(def Build '(\"library\" (exe: \"command\" bin: \"later-tool\")))")
+          (write-source (path-expand "interface.ss" later)
+            "(.def Later identity: 'app/later core: (.o requires: (.o) scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))")
+          (write-source (path-expand "init.ss" root)
+            "(yuanxu! mode: explicit source: \"./modules\" :app (example) (later) :unused (bomb disable: #t))")
+          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
+          (def graph (.get view build-graph))
+          (def rows
+            (filter (lambda (row) (equal? (car row) (path-normalize (path-expand "entry.ss" owner))))
+                    (.get graph std-make-targets)))
+          (check-equal? (map cdr rows)
+                        '((gxc: "entry" "-O") (exe: "entry" bin: "entry-tool" "-debug")))
+          (check-equal? (length (filter
+            (lambda (entry) (equal? (.get entry path) (path-normalize (path-expand "entry.ss" owner))))
+            (.get graph entries))) 1)
+          (def projection (yuanxu-project-source-spec view '() root (path-expand "init.ss" root)))
+          (def targets
+            (filter (lambda (target) (equal? (if (string? target) target (cadr target)) "modules/app/example/entry"))
+                    (.get projection spec)))
+          (check-equal? targets
+            '((gxc: "modules/app/example/entry" "-O")
+              (exe: "modules/app/example/entry" bin: "entry-tool" "-debug")))
+          (check-equal?
+            (filter (lambda (target)
+                      (let (name (if (string? target) target (cadr target)))
+                        (member name '("modules/app/later/library" "modules/app/later/command"))))
+                    (.get projection spec))
+            '("modules/app/later/library" (exe: "modules/app/later/command" bin: "later-tool")))
+          (write-source (path-normalize (path-expand "entry.ss" owner))
+            "(def (main . args) (void)) (export main) ;; changed")
+          (check-exception ((.get projection admit-current)) error?))))
+    (yuanxu-test-case "standard Module targets collect their actual imports without running sources"
+      (for-each
+        (lambda (program?)
+          (call-with-temporary-directory "build-module-imports"
+            (lambda (root)
+              (def owner (fixture root
+                (if program?
+                  "(def Build '((exe: \"entry\" bin: \"tool\")))"
+                  "(def Build '((gxc: \"entry\" \"-O\")))")))
+              (write-source (path-expand "entry.ss" owner)
+                "(import \"./helper.ss\") (error \"standard source must not run\") (def (main . args) answer) (export main)")
+              (write-source (path-expand "helper.ss" owner)
+                "(import \"./leaf.ss\") (error \"standard dependency must not run\") (def answer leaf) (export answer)")
+              (write-source (path-expand "leaf.ss" owner) "(def leaf 42) (export leaf)")
+              (def view (yuanxu-load-modules (path-expand "init.ss" root)))
+              (def projection (yuanxu-project-source-spec view '() root (path-expand "init.ss" root)))
+              (def targets
+                (filter (lambda (target)
+                          (member (if (string? target) target (cadr target))
+                            '("modules/app/example/entry" "modules/app/example/helper" "modules/app/example/leaf")))
+                        (.get projection spec)))
+              (check-equal? (length targets) 3)
+              (check-equal? (filter (lambda (target)
+                                     (equal? (if (string? target) target (cadr target)) "modules/app/example/entry")) targets)
+                (if program?
+                  '((exe: "modules/app/example/entry" bin: "tool"))
+                  '((gxc: "modules/app/example/entry" "-O"))))
+              (check-equal? (ormap (lambda (target)
+                                    (equal? target '(gxc: "modules/app/example/helper"))) targets) #t)
+              (check-equal? (ormap (lambda (target)
+                                    (equal? target '(gxc: "modules/app/example/leaf"))) targets) #t)
+              (write-source (path-expand "leaf.ss" owner) "(def leaf 43) (export leaf)")
+              (check-exception ((.get projection admit-current)) error?))))
+        '(#f #t)))
+    (yuanxu-test-case "standard Module products refuse conflicting options and binary collisions"
+      (call-with-temporary-directory "module-build-programs"
+        (lambda (root)
+          (def owner (fixture root "(def Build '((exe: \"entry\" bin: \"entry-tool\") (exe: \"entry\" bin: \"other-tool\")))"))
+          (write-source (path-expand "entry.ss" owner) "(def (main . args) (void)) (export main)")
+          (def graph (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph))
+          (def targets
+            (map cdr (filter
+              (lambda (row) (equal? (car row) (path-normalize (path-expand "entry.ss" owner))))
+              (.get graph std-make-targets))))
+          (check-equal? targets '((exe: "entry" bin: "entry-tool") (exe: "entry" bin: "other-tool")))))
+      (for-each
+        (lambda (control)
+          (call-with-temporary-directory "module-build-conflict"
+            (lambda (root)
+              (def owner (fixture root (cdr control)))
+              (for-each
+                (lambda (name) (write-source (path-expand name owner)
+                                "(def (main . args) (void)) (export main)"))
+                '("entry.ss" "other.ss"))
+              (check-equal? (rejects? (car control)
+                (lambda () (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph))) #t))))
+        (list (cons "duplicate Module Make target" "(def Build '(\"entry\" \"entry\"))")
+              (cons "duplicate Module Make target" "(def Build '((gxc: \"entry\" \"-O\") (gxc: \"entry\" \"-O\")))")
+              (cons "duplicate Module Make target" "(def Build '((exe: \"entry\" bin: \"tool\") (exe: \"entry\" bin: \"tool\")))")
+              (cons "conflicting Module Make targets" "(def Build '((gxc: \"entry\" \"-O\") (gxc: \"entry\" \"-debug\")))")
+              (cons "programs share one binary output" "(def Build '((exe: \"entry\" bin: \"tool\") (exe: \"other\" bin: \"tool\")))")
+              (cons "build contribution must name an owner-relative source" "(def Build '(\"../entry\"))")
+              (cons "invalid Module Make target" "(def Build '((exe: \"entry\" bin: \"../tool\")))"))))
     (yuanxu-test-case "init build refuses a changed input context and cannot reuse its prepared evidence"
       (for-each
         (lambda (build)
@@ -73,15 +254,15 @@
               (parameterize ((current-build-output-directory (path-expand "lib" root)))
                 (assert 'changed-compiler-input-refused
                   (rejects? "source projection changed its compiler input context"
-                    (lambda () ((.get exports std-make-spec) '()))))
+                    (lambda () (.get exports std-make-spec))))
                 (check-equal? (load-path) before)
                 (assert 'refused-input-evidence-not-reused
                   (rejects? "build input context was refused"
-                    (lambda () ((.get exports std-make-spec) '()))))))))
+                    (lambda () (.get exports std-make-spec))))))))
         (list
-          "(def Build (begin (set-load-path! (cons \"/invalid-build-input-context\" (load-path))) (.o kind: 'module/build roots: '())))"
+          "(def Build (begin (set-load-path! (cons \"/invalid-build-input-context\" (load-path))) '()))"
           "(def Build (begin (set-load-path! (cons \"/invalid-build-input-context\" (load-path))) (error \"author failure after mutation\")))")))
-    (yuanxu-test-case "native preparation derives read-only eligibility from the official package cache"
+    (yuanxu-test-case "standard preparation derives read-only eligibility from the official package cache"
       (call-with-temporary-directory "compiler-source-origin-"
         (lambda (root)
           (def path (path-expand "source.ss" root))
@@ -102,7 +283,7 @@
           (dynamic-wind void
             (lambda ()
               ;; Equal content is sufficient for ordinary source admission;
-              ;; it is NOT the original native cache state for a closed prefix.
+              ;; it is NOT the original standard cache state for a closed prefix.
               (hash-put! __module-pkg-cache directory (map values cached))
               (check-equal? (ready?) #f)
               ((.get input admit-current))
@@ -127,7 +308,7 @@
     (yuanxu-test-case "official cached compiler imports retain both guards and reject foreign callbacks"
       (call-with-temporary-directory "compiler-warm-import-"
         (lambda (root)
-          (def owner (fixture root "(def Build (.o kind: 'module/build roots: '(\"source-a\")))"))
+          (def owner (fixture root "(def Build '(\"source-a\"))"))
           (write-source (path-expand "source-a.ss" owner) "(def value 42) (export value)")
           (write-source (path-expand "build.ss" root) "(void)")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
@@ -141,8 +322,8 @@
             (.call projection .with-compiler-inputs
               (lambda ()
                 (def path (path-expand "interface.ss" owner))
-                ;; The first native import may expand; the next two must use
-                ;; its actual native context, not a fixture-supplied warm flag.
+                ;; The first standard import may expand; the next two must use
+                ;; its actual standard context, not a fixture-supplied warm flag.
                 (def context (import-module path))
                 (set! warm-context context)
                 (defvalues (_reference reference)
@@ -172,7 +353,7 @@
                 (check-equal? (hash-ref counts '(calls compiler-source-shared) 0) 2)
                 (displayln "COMPILER-WARM-IMPORT reference=" (hash-ref reference '(source reads) 0) " shared=" (hash-ref counts '(source reads) 0)
                            " before=2 after=2 shared=2"))))
-          ;; This source is made by Graph's native void-context constructor,
+          ;; This source is made by Graph's standard void-context constructor,
           ;; not a Reader-derived or object-labelled purity declaration.
           (def source-entry
             (car (filter (lambda (row) (string=? (path-strip-directory (.get row path)) "source-a.ss"))
@@ -183,7 +364,7 @@
                          (current-expander-module-import core-import-module))
             (call-with-module-compiler-inputs (.get graph entries)
               (lambda ()
-                ;; Exercise native Make's enrolled descriptor. An ordinary
+                ;; Exercise standard Make's enrolled descriptor. An ordinary
                 ;; original-path import deliberately remains Gerbil-owned.
                 (def source-target
                   (path-expand (string-append (symbol->string (.get source-entry compiler-identity)) ".ss")
@@ -245,7 +426,7 @@
           (check-equal? (hash-ref child-counts '(calls compiler-import-after) 0) 2)
           (check-equal? (hash-ref child-counts '(calls compiler-import-cache-hit) 0) 0)
           ;; A different dynamic import procedure can mutate a source even
-          ;; when it returns an already cached native context. Keep fresh guards.
+          ;; when it returns an already cached standard context. Keep fresh guards.
           (def callbacks 0)
           (def (foreign target reload?)
             (set! callbacks (+ callbacks 1))
@@ -266,7 +447,7 @@
         (lambda (root)
           (def owner
             (fixture root
-              "(def Build (.o kind: 'module/build roots: '(\"source-a\" \"source-b\" \"source-c\" \"source-d\")))"))
+              "(def Build '(\"source-a\" \"source-b\" \"source-c\" \"source-d\"))"))
           (for-each (lambda (name)
             (write-source (path-expand (string-append name ".ss") owner)
               "(def value 42) (export value)"))
@@ -319,7 +500,7 @@
     (yuanxu-test-case "compiler metadata keeps the final publication fresh and every guard occurrence"
       (call-with-temporary-directory "compiler-source-prefix-"
         (lambda (root)
-          (def owner (fixture root "(def Build (.o kind: 'module/build roots: '()))"))
+          (def owner (fixture root "(def Build '())"))
           (def support (path-expand "support.ss" root))
           (write-source support "(def retained-answer 42) (export retained-answer)")
           (write-source (path-expand "build.ss" root) "(void)")
@@ -430,7 +611,7 @@
               (lambda (event action)
                 (call-with-slot-read-observer (lambda (_read) (event)) action))))
           ;; A foreign entry can change metadata and even restore its value.
-          ;; The next native segment must recheck the captured revision policy.
+          ;; The next standard segment must recheck the captured revision policy.
           (def original-options (.get (car entries) options))
           (def foreign
             (.cc (car entries) input:
@@ -602,7 +783,7 @@
     (yuanxu-test-case "selected compiler sources survive runtime timestamp path removal only inside their owner"
       (call-with-temporary-directory "module-compiler-owned-source"
         (lambda (root)
-          (def owner (fixture root "(def Build (.o kind: 'module/build roots: '()))"))
+          (def owner (fixture root "(def Build '())"))
           (def shared (path-expand "modules/shared.ss" root))
           (write-source shared "(def source-answer 42) (export source-answer)")
           (call-with-output-file (list path: (path-expand "types.ss" owner) append: #t)
@@ -634,7 +815,7 @@
         (lambda (root)
           (def consumer (path-expand "consumer" root))
           (def provider (path-expand "provider" root))
-          (def owner (fixture consumer "(def Build (.o kind: 'module/build roots: '()))"))
+          (def owner (fixture consumer "(def Build '())"))
           (write-source (path-expand "gerbil.pkg" provider)
             (string-append "(package: " (symbol->string (gensym 'compiler-view-provider-)) ")"))
           (def shared (path-expand "value.ss" provider))
@@ -686,7 +867,7 @@
     (yuanxu-test-case "compiler source pin rechecks bytes and never enrolls an unselected source"
       (call-with-temporary-directory "module-compiler-source-drift"
         (lambda (root)
-          (fixture root "(def Build (.o kind: 'module/build roots: '()))")
+          (fixture root "(def Build '())")
           (def shared (path-expand "modules/shared.ss" root))
           (def foreign (path-expand "foreign/shared.ss" root))
           (write-source shared "(def value 42) (export value)")
@@ -707,7 +888,7 @@
       (call-with-temporary-directory "module-public-library-options"
         (lambda (root)
           (def owner (fixture root
-            "(def Build (.o kind: 'module/build roots: '() library-roots: '(\"public\")))"))
+            "(def Build '(\"public\"))"))
           (def later (path-expand "modules/app/later" root))
           (for-each (lambda (role)
                       (write-source (path-expand role later)
@@ -715,13 +896,13 @@
                     '("types.ss" "objects.ss" "config.ss"))
           (write-source (path-expand "helper.ss" later) "(def value 42) (export value)")
           (write-source (path-expand "build.ss" later)
-            "(def Build (.o kind: 'module/build roots: '((gxc: \"helper\" \"-O\"))))")
+            "(def Build '((gxc: \"helper\" \"-O\")))")
           (write-source (path-expand "interface.ss" later)
             "(.def Later identity: 'app/later core: (.o requires: (.o) scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))")
           (write-source (path-expand "init.ss" root)
             "(yuanxu! mode: explicit source: \"./modules\" :app (example) (later))")
-          (write-source (path-expand "public.ss" root)
-            "(import ./modules/app/later/helper) (export (import: ./modules/app/later/helper))")
+          (write-source (path-expand "public.ss" owner)
+            "(import \"../later/helper.ss\") (export (import: \"../later/helper.ss\"))")
           (add-load-path! root)
           (def graph (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph))
           (def helper (filter (lambda (entry)
@@ -734,38 +915,34 @@
       (call-with-temporary-directory "module-public-library-entries"
         (lambda (root)
           (def owner (fixture root
-            "(def Build (.o kind: 'module/build roots: '() library-roots: '(\"public\")))"))
+            "(def Build '(\"public\"))"))
           (add-load-path! root)
           (write-source (path-expand "service.ss" owner)
             "(error \"public source runtime must not execute\") (def answer 42) (export answer)")
-          (write-source (path-expand "public.ss" root)
-            "(import ./modules/app/example/service) (export (import: ./modules/app/example/service))")
+          (write-source (path-expand "public.ss" owner)
+            "(import \"./service.ss\") (export (import: \"./service.ss\"))")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def graph (.get view build-graph))
           (def paths (map (cut .get <> path) (.get graph entries)))
-          (assert 'public-facade-enrolled (member (path-normalize (path-expand "public.ss" root)) (map path-normalize paths)))
+          (assert 'public-facade-enrolled (member (path-normalize (path-expand "public.ss" owner)) (map path-normalize paths)))
           (assert 'runtime-private-dependency-enrolled (member (path-normalize (path-expand "service.ss" owner)) (map path-normalize paths)))
           (call-with-output-file (list path: (path-expand "service.ss" owner) append: #t)
             (cut display "\n;; changed actual imported source\n" <>))
           (check-exception ((.get graph compiler-current)) error?))))
-    (yuanxu-test-case "native public library identities stay inside the declared owner kernel"
+    (yuanxu-test-case "standard public sources retain imports from the declared package kernel"
       (call-with-temporary-directory "module-public-library-identity"
         (lambda (root)
-          (def owner (fixture root "(def Build (.o kind: 'module/build roots: '()))"))
-          (def package (cadr (call-with-input-string
-                              (module-source-read (path-expand "gerbil.pkg" root)) read)))
-          (def public-id (string-append (symbol->string package) "/public"))
-          (write-source (path-expand "build.ss" owner)
-            (string-append "(def Build (.o kind: 'module/build roots: '() library-roots: '(" public-id ")))"))
+          (def owner (fixture root "(def Build '())"))
+          (write-source (path-expand "build.ss" owner) "(def Build '(\"public\"))")
           (write-source (path-expand "kernel-helper.ss" root)
-            "(error \"native public library runtime must not execute\") (def answer 42) (export answer)")
-          (write-source (path-expand "public.ss" root)
-            "(import ./kernel-helper) (export (import: ./kernel-helper))")
+            "(error \"standard public library runtime must not execute\") (def answer 42) (export answer)")
+          (write-source (path-expand "public.ss" owner)
+            "(import \"../../../kernel-helper.ss\") (export (import: \"../../../kernel-helper.ss\"))")
           (add-load-path! root)
           (def graph (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph))
           (def paths (map (lambda (entry) (path-normalize (.get entry path))) (.get graph entries)))
-          (assert 'native-public-root-enrolled (member (path-normalize (path-expand "public.ss" root)) paths))
-          (assert 'native-public-helper-enrolled (member (path-normalize (path-expand "kernel-helper.ss" root)) paths))
+          (assert 'build-public-root-enrolled (member (path-normalize (path-expand "public.ss" owner)) paths))
+          (assert 'build-public-helper-enrolled (member (path-normalize (path-expand "kernel-helper.ss" root)) paths))
           (write-source (path-expand "kernel-helper.ss" root) "(def answer 43) (export answer)")
           (check-exception ((.get graph compiler-current)) error?))))
     (yuanxu-test-case "Module public entries reject package escapes and missing sources"
@@ -774,8 +951,8 @@
           (call-with-temporary-directory "module-public-library-denied"
             (lambda (root)
               (fixture root (string-append
-                "(def Build (.o kind: 'module/build roots: '() library-roots: '("
-                (object->string entry) ")))"))
+                "(def Build '("
+                (object->string entry) "))"))
               (def view (yuanxu-load-modules (path-expand "init.ss" root)))
               (check-exception (.get view build-graph) error?))))
         '("../escape.ss" "missing.ss" foreign/public)))
@@ -784,23 +961,23 @@
         (lambda (kind)
           (call-with-temporary-directory "module-public-library-source-boundary"
             (lambda (root)
-              (fixture root
+              (def owner (fixture root
                 (if (eq? kind 'malformed)
-                  "(def Build (.o kind: 'module/build roots: '() library-roots: '(42)))"
-                  "(def Build (.o kind: 'module/build roots: '() library-roots: '(\"public\")))"))
+                  "(def Build '(42))"
+                  "(def Build '(\"public\"))")))
               (case kind
-                ((foreign) (write-source (path-expand "public.ss" root)
+                ((foreign) (write-source (path-expand "public.ss" owner)
                              "package: other-runtime-package (def value 42) (export value)"))
                 ((symlink)
                  (write-source (path-expand "target.ss" root) "(def value 42) (export value)")
-                 (create-symbolic-link (path-expand "target.ss" root) (path-expand "public.ss" root))))
+                 (create-symbolic-link (path-expand "target.ss" root) (path-expand "public.ss" owner))))
               (def view (yuanxu-load-modules (path-expand "init.ss" root)))
               (check-exception (.get view build-graph) error?))))
         '(symlink foreign malformed)))
     (yuanxu-test-case "private projections preserve runtime relative-symbol imports"
       (call-with-temporary-directory "module-runtime-relative-import"
         (lambda (root)
-          (def owner (fixture root "(def Build (.o kind: 'module/build roots: '()))"))
+          (def owner (fixture root "(def Build '())"))
           (add-load-path! root)
           (write-source (path-expand "shared.ss" owner) "(def answer 42) (export answer)")
           (write-source (path-expand "private/entry.ss" owner)
@@ -821,7 +998,7 @@
       (call-with-temporary-directory "compiled-role-demand"
         (lambda (root)
           (def marker (path-expand "config-demanded" root))
-          (def owner (fixture root "(def Build (.o kind: 'module/build roots: '()))"))
+          (def owner (fixture root "(def Build '())"))
           ;; This Case concerns inert runtime roles. The existing Cases below
           ;; separately cover operational Build's declared role dependencies.
           (delete-file (path-expand "build.ss" owner))
@@ -876,7 +1053,7 @@
             (fixture root
               (string-append "(def Build (begin (call-with-output-file "
                 (call-with-output-string (cut write marker <>))
-                " (lambda (p) (display \"wrong-phase\" p))) (.o kind: 'module/build roots: '())))")))
+                " (lambda (p) (display \"wrong-phase\" p))) '()))")))
           ;; An ordinary compiler has no reader-created publication wrapper.
           ;; Explicit role imports are valid source syntax and do not import Build.
           (write-source (path-expand "config.ss" owner)
@@ -889,7 +1066,7 @@
     (yuanxu-test-case "configuration cleanup does not import an unused related role"
       (call-with-temporary-directory "configuration-unused-role"
         (lambda (root)
-          (def owner (fixture root "(def Build (.o kind: 'module/build roots: '()))"))
+          (def owner (fixture root "(def Build '())"))
           (write-source (path-expand "objects.ss" owner)
             "(begin-syntax (error \"unused related role expanded\")) (error \"unused related role evaluated\")")
           (write-source (path-expand "config.ss" owner)
@@ -906,7 +1083,7 @@
                  (owner (fixture root
                    (string-append "prelude: :gerbil/core\n(def Build (begin (call-with-output-file "
                      (call-with-output-string (cut write marker <>))
-                     " (lambda (p) (display \"once\" p))) (.o kind: 'module/build roots: '())))")))
+                     " (lambda (p) (display \"once\" p))) '()))")))
                  (view (yuanxu-load-modules (path-expand "init.ss" root)))
                  (scope (.get view modules app example)))
             (assert 'selection-does-not-run-build (not (file-exists? marker)))
@@ -954,13 +1131,13 @@
     (yuanxu-test-case "Absent Build role is observed and cannot be added to an old generation"
       (call-with-temporary-directory "module-build-absence"
         (lambda (root)
-          (let (owner (fixture root "(def Build (.o kind: 'module/build roots: '()))"))
+          (let (owner (fixture root "(def Build '())"))
             (delete-file (path-expand "build.ss" owner))
             (write-source (path-expand "interface.ss" owner)
               "(.def Example identity: 'app/example core: (.o requires: (.o) scope-contract: Scope exports: (.o config: Config)) features: (.o))")
             (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
               (.get view build-graph)
-              (write-source (path-expand "build.ss" owner) "(def Build (.o kind: 'module/build roots: '()))")
+              (write-source (path-expand "build.ss" owner) "(def Build '())")
               (assert 'new-build-role-invalidates-old-generation
                 (rejects? "stale prepared Module publication"
                 (lambda () ((.get view admit-current))))))))))

@@ -15,7 +15,7 @@
   (check-equal? (current-module-source-observer) #f)
   (defvalues (_ times)
     (call-with-module-source-operation-measurement (.get view admit-current) accounting?: accounting?))
-  ;; A fixed number of native replay invocations, not a claim of constant-time
+  ;; A fixed number of standard replay invocations, not a claim of constant-time
   ;; source/receiver authentication. Visits must still cover actual support.
   (check-equal? (hash-ref times '(calls metadata-replay)) 1)
   (check-equal? (hash-ref times '(calls metadata-checkpoints)) 1)
@@ -28,8 +28,8 @@
   (check-equal? (hash-key? times '(cpu-user metadata-replay)) accounting?)
   times)
 (def module-session-metadata-index-test
-  (test-suite "Native POO session metadata topology and fresh authentication"
-    (yuanxu-test-case "the session root union retains native traversal and refusal order"
+  (test-suite "Standard POO session metadata topology and fresh authentication"
+    (yuanxu-test-case "the session root union retains standard traversal and refusal order"
       (def first (.o left: 1))
       (def second (.o right: 2))
       (defvalues (_left left) (%call-with-recorded-slot-reads (lambda () (.ref first 'left))))
@@ -52,7 +52,7 @@
           (lambda () (module-source-measure-replay roots) #f)))
       (check-equal? (refusal projected) (refusal original))
       (check-equal? (car (refusal projected)) "stale slot dependency"))
-    (yuanxu-test-case "checkpoint runs once under native protection and retains its failure"
+    (yuanxu-test-case "checkpoint runs once under standard protection and retains its failure"
       (def value (.o field: 1))
       (defvalues (_ reads) (%call-with-recorded-slot-reads (lambda () (.get value field))))
       (def calls 0)
@@ -153,7 +153,7 @@
           (check-equal? (hash-key? scalar '(cpu-user source-read)) #f)
           (check-equal? (hash-ref scalar '(calls metadata-replay))
                         (hash-ref before '(calls metadata-replay)))
-          ;; A separate auto demand appends an actual native publication to
+          ;; A separate auto demand appends an actual standard publication to
           ;; the SAME session, rather than reconstructing a second loader.
           (check-equal? (.get modules other greeting) "hello")
           (def after (checked-work view))

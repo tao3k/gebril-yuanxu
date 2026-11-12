@@ -37,7 +37,8 @@ does not issue the test publication protocol's execution authority.
 An ordinary consumer can import the projection directly:
 
 #+begin_src scheme
-(import (only-in :yuanxu/module-system/building/script defbuild-script)
+(import (only-in :std/build-script defbuild-script)
+        (only-in :std/source this-source-file)
         (only-in "./init.ss" std-make-spec))
 (defbuild-script std-make-spec)
 #+end_src
@@ -59,21 +60,17 @@ or contributor-supplied strategy flag is introduced.
 
 * Role projection
 
-The compiler's existing =for-template= import identifies the prepared role
-context. Re-resolving its public name can select an unwrapped source role or
-stale installed interface. =compiled-role-values= therefore reads that admitted
-context directly during expansion and resolves public aliases to canonical
-runtime identifiers. It rejects missing or non-runtime exports then, rather
-than postponing the error to a deployed binary.
+Generated program publications import each selected role value through an
+ordinary Gerbil =only-in= / =rename-in= import of its admitted source path.
+These are runtime dependency edges: a =for-template= edge alone has negative
+phase and does not enroll the role in Gerbil's executable closure. The emitted
+expression references the hygienic private binding directly. It does not add a
+loader, role registry, or value cache. Optional =Config= retains its existing
+absence semantics.
 
-The emitted runtime expression uses the creating static unit's registered
-descriptor to distinguish a linked program from a dynamic library. Linked role
-demand activates the registered Gambit descriptor and refuses a missing unit
-before any file lookup. Dynamic library demand retains Gerbil's ordinary load
-protocol. It then reads the canonical globals. It does not import an expander context, capture a function
-value during compilation, or create a value/approval cache. Optional =Config=
-retains its existing absence semantics. Interface inclusion owns the hygienic
-resolver binding; generated role data does not supply executable loader code.
+The separate =compiled-role-values= API retains its static-unit refusal and
+Gerbil dynamic-library protocol. That API is not a replacement for the ordinary
+runtime imports needed by the generated program publication.
 
 Source value factories retain the invoking reader's import owner. Replacing
 =current-expander-module-import= with =core-import-module= bypasses the reader's
@@ -725,3 +722,144 @@ before further disk cleanup. Post-merge build/regression, cold-install and
 exact-head CI obligations remain open; the earlier passing observations retain
 their preceding Core-base scope. Raw logs and local intermediates are excluded
 from the source commits.
+
+
+* 2026-11-12 native ownership audit: open corrections
+
+The deleted =building/script.ss= macro is not sufficient evidence that native
+build ownership has converged. The following live call paths remain under audit.
+These are open findings; successful narrower controls do not close them.
+
+| Finding | Actual owner/caller | Required correction |
+|---------+---------------------+---------------------|
+| Residual command adapter | =building/interface.ss=: =current-build-spec-consumer=, =call-with-init-build-spec=, =run-spec/current=; Weaver =build.ss= still calls it | Migrate the actual consumer to standard =defbuild-script= values and explicit artifact/publication APIs, then remove implicit registration and duplicate command dispatch. Preserve source/spec/product refusal controls at their real owner. |
+| Cross-package virtual target names | =building/build-projection.ss= emits prefix-free identities while standard Make resolves sources relative to its script | Project actual admitted native source targets; preserve compiler identities, source currentness and dependency closure. Do not restore the deleted adapter or a consumer load-path workaround. |
+| Compiler product identity | Gerbil =std/make= predicts outputs from directory package rather than authored headers | Reuse Gerbil's native identity reader and compiler filename encoding, with standard EXE declarations and cleanup. The SDK candidate is not a qualified immutable release. |
+| Dynamic loading authority | =source/compiled-role.ss= uses compiler-resolved exports plus native Gambit activation; =preparation.ss= restores temporary expander contexts | Verify whether each action is required compiler lowering or reproduces official registry, initialization or loading behavior. Remove duplicate authority/state only after source-hidden runtime, once-only initialization and failure controls establish the official replacement. |
+
+The runtime loader already owns its module table, loading synchronization,
+initialization errors and load order. Yuanxu must not introduce another runtime
+module table, loader, successful-admission cache or replacement initialization
+protocol. Source authentication and explicit publication refusal remain distinct
+obligations; deleting them does not establish native convergence.
+
+The audit must follow actual callers, including Weaver's standard build and
+Cargo input reporting, rather than infer non-use from the Core tree alone.
+Benchmark tooling may measure official operations through the existing bounded
+runner, but must not become a new runtime execution adapter. Native first-load,
+repeat-load, compiler work and OS dynamic-library waiting require distinct
+measurements and retained failures.
+
+** Audit implementation in progress
+
+The residual implicit consumer registration and command dispatcher have now
+been removed from =building/interface.ss=. The attempted Weaver migration was
+reverted after the owner restricted this repair to Yuanxu. Weaver remains an
+external caller of the removed API; it has not been migrated or qualified here.
+The absolute-source-path experiment for cross-package Make targets is also
+unqualified: it disagrees with native Make product prediction and an existing
+cross-package assertion still fails. Neither experiment establishes closure.
+
+The migrated build-graph controls retain exact spec identity, altered-spec
+refusal, stale source refusal and explicit publication's missing-product
+refusal. Standard package success itself grants no publication authority.
+The independent Ops/test progress controls remain in their existing suites.
+Candidate Core builds pass; complete source, mutation, consumer and remote
+qualification is still required. These changes do not close the loader audit
+or qualify an unpublished SDK.
+
+** Native generation boundary repair (in progress)
+
+The init-owned =std-make-spec= is a standard Make list value, not a procedure
+that a consumer completes with roots, source filenames or output directories.
+It collects the declared Module contributions and their owned import closure.
+Core's ordinary library inventory remains in =core-spec.ss= and is composed
+with the standard =append= directly in =defbuild-script=. There is no public
+=library-spec= / =append-spec= slot or collection function. The existing
+=BuildSpecContract= checks the final list for duplicate product declarations,
+including string/=gxc:= aliases, while preserving distinct library/EXE products.
+=core-spec.ss= must not acquire a runtime dependency on init just to compose
+build metadata. Funflow declares its own roots in its Module =build.ss=.
+
+Module contributions can supply native string, =gxc:= and =exe:= targets.
+Collection preserves product kinds, options and declaration order, separates
+compiler-input identity from executable products, and rejects inconsistent
+options or binary-output collisions. Explicit publication still checks its
+issued source/spec/product boundary; a native Make list grants no publication
+approval. The custom =module/build= / =roots= / =library-roots= carrier is
+removed. Module targets have one source interpretation, relative to their
+admitted owner, and the official expander supplies their actual package
+imports. Broader native target/plist coverage remains OPEN.
+
+Native import closure adds actual source dependencies under the package root.
+Library and EXE roots share that traversal; an EXE root does not acquire an
+extra library product. Explicit repeated products are refused, including identical declarations.
+Distinct library/EXE products and transitive imports share one source input
+and one closure request. Tests retain source-path, symlink, package-identity and
+source-currentness refusals, including a dependency in the package kernel.
+Installed compiler metadata remains a native prerequisite, even when its
+namespace shares the package prefix. Source generation observes the official
+package =build:= entry (default =build.ss=); consumers supply no source anchor.
+A reached init uses the existing program-projection kernel and official Gerbil
+source reload. Its already-issued compiler input is reused during native
+expansion, rather than evaluating the Module build declarations again.
+
+Dynamic Gerbil objects have generation-local Gambit unit names. A supplied
+compiled program therefore selects the compiled namespace directly; the static
+registered-unit check remains a refusal for a static init lacking publication.
+The complete init-import suite passed with the regression for that distinction.
+A source-hidden probe reached the native namespace keys without source I/O,
+but its first Scope demand still exceeded the diagnostic 90-second deadline.
+That timeout is retained; it is neither a first-load performance pass nor full
+source-free Scope acceptance. The callback-enabled probe and ordinary native
+loading must be measured separately.
+
+All SDK modifications made during earlier experiments were reverted. This
+repair and its remaining qualification use the unmodified released SDK
+Gerbil =2591dcd= / Gambit =dcd677c= and POO =7f6e68a1=. No new exact-head remote
+CI result is established by these local, uncommitted changes.
+
+** In-process official entry qualification
+
+Compiler conformance tests import the actual =build.ss= through Gerbil's
+=import-module= with runtime evaluation enabled, then invoke its SDK-generated
+=main= in the current test process for spec, compile, hot compile and clean.
+They do not parse/evaluate the script body themselves, implement a dispatcher,
+or start another Gerbil interpreter through =ProcessScript= / =run-process=.
+Temporary fixtures restore the original load path before removing sources,
+since official Make adds its source directory to that process-global path.
+The existing test heap and Case watchdog budgets remain unchanged.
+
+Single-Module and multi-Module collection are compared with independently
+written literal target lists through the same official =defbuild-script=.
+Compiler backend processes remain owned by the SDK; executable acceptance
+still runs actual binaries, including the source-hidden first-Scope check.
+Progress output and the existing watchdog thread are not OS process launches.
+These checks do not by themselves establish a loader performance benchmark or
+remote exact-head CI acceptance.
+
+** Regression gates for duplicate work and startup
+
+These controls execute in the existing official test suites and CI inventory;
+there is no benchmark launcher or second test dispatcher.
+
+| Failure class | Existing owning suite | Required invariant |
+|---------------+-----------------------+--------------------|
+| Repeated Module declarations | =module-build-role-test= | Reject duplicate strings, GXC products and EXE products with the specific collection error; different products of one source remain valid |
+| Core/Module overlap after append | =module-build-spec-test= and =core-build-entry-test= | Final contract denies duplicate product keys, including string/GXC aliases; actual root script is checked |
+| Repeated Graph/contract work | =module-build-role-test= and =module-program-test= | Callback-free counters: cold projection/contract once, repeated spec reads zero additional projection/contract |
+| Extra interpreter for a build action | =module-program-test= | Actual official entry records five PIDs for spec/spec/compile/hot/clean; every PID equals the enclosing test VM |
+| Divergence from STD Make | =module-program-test= | Independent literal reference for one and two Modules; same normalized specs, declared products, runtime result, hot behavior and cleanup residuals |
+| Startup/spec cost | =module-program-test= | Report module import, cold spec and hot spec time separately for generated and literal entries, alongside operation counts |
+| Repeated dynamic loading | =module-build-role-test= | Same SDK module identity loads twice without reinitializing Config; existing watchdog remains authoritative |
+
+PID probes cover the processes that actually evaluate the build entry, not an
+OS-wide exec trace. Compiler backend and executable acceptance processes are
+separate effects. Timings in this suite share a test VM and warmed SDK imports;
+they are observations, not independent cold-VM samples or a matched loader
+performance acceptance. Use the existing =test-profile= entry for whole-suite
+wall/CPU time. Do not infer a speedup from these single local samples.
+
+The dynamic-load control exposed an idle-budget failure during this repair.
+A later complete run passed after recompilation, without a budget change. The
+cause is not isolated; retain the failure and require a fresh cohort replay.

@@ -13,7 +13,10 @@
         (only-in :yuanxu/module-system/building/products current-build-source-directory
                  current-build-output-directory)
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/admission module-source-read call-with-module-source-callback)
+        (only-in :yuanxu/module-system/source/build retained-build-entries BuildSpecContract)
+        (only-in :clan/poo/mop validate)
+        (only-in :yuanxu/module-system/source/admission module-source-read call-with-module-source-callback
+                 call-with-module-source-operation-measurement)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
 (export module-build-spec-test test-setup! test-cleanup!)
 (def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
@@ -38,6 +41,70 @@
       (lambda () (thunk) #f)))
   (def module-build-spec-test
     (test-suite "Direct source build specification identity and validity"
+      (test-case "contract accounting counts actual validations even inside one caller"
+        (def candidate (.o module-spec: '("module") retained-spec: '("library")
+                          spec: '("module" "library")))
+        (for-each
+          (lambda (repetitions)
+            (defvalues (_ counts)
+              (call-with-module-source-operation-measurement
+                (lambda ()
+                  (for-each (lambda (_) (validate BuildSpecContract candidate)) repetitions))))
+            (check-equal? (hash-ref counts '(calls build-spec-contract) 0)
+                          (length repetitions)))
+          '((once) (first second))))
+      (test-case "the final spec contract denies overlapping declarations after ordinary append"
+        (def (checked first second)
+          (def result (append first second))
+          (validate BuildSpecContract (.o module-spec: first retained-spec: second spec: result))
+          result)
+        (check-equal? (checked '("library") '((exe: "library" bin: "tool")))
+                      '("library" (exe: "library" bin: "tool")))
+        (for-each
+          (lambda (parts)
+            (check-exception (apply checked parts) Error?))
+          '((("library") ((gxc: "library")))
+            (((gxc: "library" "-O")) ((gxc: "library" "-debug")))
+            (((exe: "first" bin: "tool")) ((exe: "second" bin: "tool")))))
+        (check-equal? (checked '("first") '("second")) '("first" "second")))
+      (test-case "standard library and executable products retain one source and independent options"
+        (call-with-temporary-directory "build-product-boundary"
+          (lambda (temporary)
+            (write-source (path-expand "gerbil.pkg" temporary) "(package: build-products)\n")
+            (write-source (path-expand "build.ss" temporary) "(export #t)\n")
+            (write-source (path-expand "entry.ss" temporary)
+              "(def (main . args) (void)) (export main)\n")
+            (def graph
+              (.o entries: '() compiler-inputs: '() other-projections: '()
+                  selected-graph: #f compiler-current: void))
+            (def (project spec)
+              (yuanxu-project-source-spec (.o build-graph: graph) spec temporary
+                (path-expand "build.ss" temporary)))
+            (def library '(gxc: "entry" "-O"))
+            (def program '(exe: "entry" bin: "entry-tool" "-debug"))
+            (for-each
+              (lambda (spec)
+                (def projection (project spec))
+                (check-equal? (.get projection spec) spec)
+                (check-equal? (.get projection compiler-identities) '(build-products/entry))
+                (check-equal? (.call projection .admit-spec (.get projection spec)) spec)
+                ;; A different binary is another official product of this source.
+                (check-equal? (.get (project (append spec '((exe: "entry" bin: "other-tool")))) spec)
+                              (append spec '((exe: "entry" bin: "other-tool")))))
+              (list (list library program) (list program library)))
+            (check-equal? (rejects? "duplicate retained compiler target"
+                            (lambda () (project (list program program)))) #t)
+            ;; Reusing the selected compiler input must not erase the EXE kind.
+            (def source-inputs
+              (retained-build-entries (list library) temporary "build-products" '()))
+            (def selected-graph (.cc graph 'entries source-inputs))
+            (def selected-product
+              (yuanxu-project-source-spec (.o build-graph: selected-graph) (list program)
+                temporary (path-expand "build.ss" temporary)))
+            (check-equal? (.get selected-product spec) (list library program))
+            (write-source (path-expand "entry.ss" temporary)
+              "(def (main . args) (void)) (export main)\n;; changed\n")
+            (check-exception ((.get selected-product admit-current)) Error?))))
       (test-case "retained width does not multiply Graph admission; source and Graph drift still refuse"
         (for-each
           (lambda (width)
@@ -74,12 +141,12 @@
                 ((.get projection admit-current))
                 (check-equal? (- checks previous) 1)
                 (check-equal? (length (.get projection spec)) width)
-                (check-equal? (.call projection .make-groups #t) '())
+                (check-equal? (.slot? projection '.make-groups) #f)
                 (check-equal? (.call projection .admit-spec (.get projection spec)) (.get projection spec))
-                ;; A well-shaped native target still cannot be substituted for
+                ;; A well-shaped standard target still cannot be substituted for
                 ;; the init-owned merge; structural typing alone is insufficient.
                 (check-exception (.call projection .admit-spec (cons "not-selected" (.get projection spec))) Error?)
-                ;; Merging the native specs must not relocate ordinary library
+                ;; Merging the standard specs must not relocate ordinary library
                 ;; inputs or give them a generated role source identity.
                 ((.get projection .with-compiler-inputs)
                   (lambda ()
@@ -88,7 +155,7 @@
                       (module-context-path (core-import-module (path-expand "owned0.ss" temporary)))
                       (path-normalize (path-expand "owned0.ss" temporary)))))
                 ;; The parent's method is already cached. A derived receiver
-                ;; cannot use it to run with a substituted final native spec.
+                ;; cannot use it to run with a substituted final standard spec.
                 (def entered? #f)
                 (def substituted (.cc projection 'spec (cons "not-selected" (.get projection spec))))
                 (check-exception (.call substituted .with-compiler-inputs

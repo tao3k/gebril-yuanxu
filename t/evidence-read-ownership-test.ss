@@ -389,7 +389,7 @@
             (lambda () (.put! descriptor '.element? maintained))))
         (list (list YuanxuClassificationEvidence yuanxu-classification-evidence? classification)
               (list YuanxuValidationEvidence yuanxu-validation-evidence? validation)
-              ;; Native Record Slot checking dispatches the classifier without
+              ;; Standard Record Slot checking dispatches the classifier without
               ;; calling yuanxu-classification-evidence?.
               (list YuanxuClassificationEvidence
                     (lambda (_receipt) (yuanxu-validation-evidence? validation))

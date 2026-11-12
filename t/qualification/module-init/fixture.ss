@@ -6,12 +6,9 @@
         (only-in :gerbil/expander core-read-module/sexp eval-syntax import-module
                  current-expander-context make-top-context)
         (only-in :yuanxu/observability/testing-fixture call-with-yuanxu-fixture)
-        (only-in :yuanxu/ops/process-script ProcessScript.)
-        (only-in :yuanxu/ops/func run-script)
-        (only-in :yuanxu/observability/testing-script make-compiler-progress-reader)
         (only-in :yuanxu/module-system/source/role-forms module-init-export-name))
 (export import-fixture-init! prepared-package-fixture call-with-prepared-package prepared-package-tests
-        build-prepared-package!)
+        import-build-script!)
 (def (import-fixture-init! path (fresh? #f))
   ;; A fresh top context has no import transformers until its prelude is bound.
   (eval-syntax '(import :gerbil/core))
@@ -61,25 +58,14 @@
     (lambda (workspace) (action (.get workspace root)))))
 (def (prepared-package-tests root-value)
   ;; Parent-side declaration discovery also needs the package's source lookup;
-  ;; the actual child execution receives its admitted native publication first.
+  ;; the actual child execution receives its admitted standard publication first.
   (add-load-path! root-value)
   (parameterize ((current-expander-context (make-top-context)))
     (.get (import-fixture-init! (path-expand "init.ss" root-value) #t) tests)))
 
-;; Explicitly authorized compiler qualification only. Ordinary preparation is
-;; the Just Gerbil build phase. This effect proves a real injected compiler error;
-;; it neither generates a runner nor replaces the Gerbil's build/test dispatcher.
-(def (build-prepared-package! root-value options)
-  (def inherited (getenv "GAMBOPT" ""))
-  (run-script
-    (.cc ProcessScript. 'directory root-value 'timeout 120 'idle-timeout 60
-      'progress make-compiler-progress-reader
-      'command (append '("gerbil") options '("build"))
-      'environment
-      (.o GAMBOPT:
-        (string-join
-          (append (if (zero? (string-length inherited)) '() (list inherited))
-            (map (lambda (option)
-                   (unless (string-prefix? "-:" option)
-                     (error "fixture requires native Gambit runtime options" option))
-                   (substring option 2 (string-length option))) options)) ",")))))
+;; Read the actual SDK entry from its owning module context. The test invokes
+;; this procedure directly, without another interpreter or script dispatcher.
+(def (import-build-script! path (reload? #f))
+  (def context (import-module path reload? #t))
+  (parameterize ((current-expander-context context))
+    (eval-syntax 'main)))

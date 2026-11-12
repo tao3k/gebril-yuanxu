@@ -27,14 +27,14 @@ prelude: :gerbil/core
       (check-equal? (path-normalize (module-build-source-path context root))
                     (path-normalize (path-expand "module-system/source/declaration.ss" root)))
       (check-equal? (path-normalize (module-build-source-path
-                      (core-import-module ':tao3k/yuanxu/prelude) root))
+                      (core-import-module ':yuanxu/prelude) root))
                     (path-normalize (path-expand "prelude.ss" root)))
       (check-equal? (load-path) before))
     (test-case "runtime dependency closure includes the selected language entry"
       (def identities '())
       (for-each-build-module (core-import-module ':yuanxu/utilities/functional)
         (lambda (context) (set! identities (cons (expander-context-id context) identities))))
-      (check-equal? (and (memq 'tao3k/yuanxu/prelude identities) #t) #t))
+      (check-equal? (and (memq 'yuanxu/prelude identities) #t) #t))
     (yuanxu-test-fixture "bound language uses its runtime source rather than a guessed package filename"
       (fixture DirectoryFixture)
       (def root (.get fixture root))

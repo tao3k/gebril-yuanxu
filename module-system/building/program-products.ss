@@ -23,7 +23,7 @@
                bin-name: (.get entry bin-name)))) entries))
   (def names (map (lambda (program) (.get program bin-name)) programs))
   (unless (= (length names) (length (delete-duplicates/hash names)))
-    (error "native programs share one binary output" names))
+    (error "programs share one binary output" names))
   programs)
 
 (def (projection-program-targets projection)

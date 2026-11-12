@@ -27,6 +27,6 @@
              (= (hash-length factories) 2)
              (= (hash-ref factories 'module-0) 1) (= (hash-ref factories 'module-1) 1)
              (eq? result (selected-plan)))
-  (error "native package selection differs from its owner closure"))
+  (error "standard package selection differs from its owner closure"))
 ((.get yuanxu-package-consumer.init.exports tests selected-graph admit-current))
 (displayln "PACKAGE-USE catalog-index=1000 declarations=2 scopes=2 identity=ok currentness=ok")

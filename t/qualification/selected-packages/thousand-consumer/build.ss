@@ -6,4 +6,5 @@
         (only-in "./init.ss" yuanxu-thousand-consumer.init.exports))
 (def application-spec
   (package-library-spec (path-directory (this-source-file)) 'yuanxu-thousand-consumer '("main.ss")))
-(defbuild-script ((.get yuanxu-thousand-consumer.init.exports std-make-spec) application-spec))
+(defbuild-script
+  (append (.get yuanxu-thousand-consumer.init.exports std-make-spec) application-spec))

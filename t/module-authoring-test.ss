@@ -98,7 +98,7 @@
             (def interface (yuanxu-module-interface "derived-profiles" (Record) '()))
             (def authoring (.get interface authoring))
             (def executor (.get authoring executor))
-            ;; Native shrinking/replay owns this input; composition and the
+            ;; Standard shrinking/replay owns this input; composition and the
             ;; reference oracle both use the real published POO objects.
             (for-each
               (lambda (name)

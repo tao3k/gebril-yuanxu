@@ -14,7 +14,7 @@
 (export reader-root-collection-test)
 (def reader-root-collection-test
   (test-suite "Selected publication controls"
-    (yuanxu-test-case "native child capture merges original roots before finish without redelivery"
+    (yuanxu-test-case "standard child capture merges original roots before finish without redelivery"
       (def before (.o value: 'before))
       (def child (.o value: 'child))
       (def after (.o value: 'after))

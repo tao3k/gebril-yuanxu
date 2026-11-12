@@ -38,7 +38,7 @@
          ((equal? operation "interrupt")
           ;; The exception is injected at the existing callback boundary, not
           ;; through a production fault hook. Catch only our exact sentinel.
-          (let (sentinel (gensym 'before-native))
+          (let (sentinel (gensym 'before-standard))
             (with-catch
               (lambda (failure)
                 (if (eq? failure sentinel) (displayln "SOURCE-VIEW-INTERRUPTED") (raise failure)))

@@ -22,9 +22,7 @@
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/link call-with-linked-prepared-guards)
         (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
-        (only-in :yuanxu/module-system/building/interface yuanxu-init-build call-with-init-build-spec)
-        (only-in :yuanxu/ops/progress call-with-execution-progress
-                 execution-progress-idle-milliseconds execution-progress-status)
+        (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
         (only-in "../core-spec.ss" core-spec)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
 (export module-build-graph-test)
@@ -63,7 +61,7 @@
        (write-file (path-expand "modules/app/web/extra/off.ss" root) "(((disabled feature must never compile"))
      (lambda () (test root prefix))
      (lambda () (clear-temporary-file! root)))))
-(def (build-contribution . root-values) (.o kind: 'module/build roots: root-values))
+(def (build-contribution . root-values) root-values)
 (def (fixture-module-id prefix name)
   (string->symbol (string-append prefix "/modules/" name "/interface")))
 (def (optional name paths (dependencies '()))
@@ -146,7 +144,7 @@
          (write-file path "namespace: #f\n(def value 7) (export value)")
          (check-exception (core-read-module/sexp path) syntax-error?)
          (check-exception (yuanxu-prepare-module-retained-source path void) syntax-error?))))
-    (yuanxu-test-case "SDK dispatch receives the admitted spec and rejects stale input first"
+    (yuanxu-test-case "standard spec identity and explicit publication reject altered or stale inputs"
       (with-source
        (lambda (root _prefix)
          (def declaration '(yuanxu! :load-modules "./modules" mode: explicit :core (schema)))
@@ -157,64 +155,25 @@
            (yuanxu-init-build (path-expand "init.ss" root) declaration))
          (def spec (.get exports std-make-spec))
          (check-exception (.get exports std-make-run) NoApplicableMethod?)
-         (def expected (spec '()))
-         (def calls 0)
-         ;; Observe the ordinary SDK callback without compiling fixture files.
-         (def (receive admitted arguments)
-           (set! calls (1+ calls))
-           (check-equal? (eq? admitted expected) #t)
-           (check-equal? arguments '("spec"))
-           'forwarded)
-         ;; The declarative SDK adapter obtains the same owner from the spec
-         ;; expression, with no user-maintained dispatcher or public registry.
-         (def now 0)
-         (call-with-execution-progress 60000 120000
-           (lambda (progress)
-             (check-equal?
-               (call-with-init-build-spec
-                 (lambda () (begin0 (spec '()) (set! now 30000)))
-                 receive '("spec") (path-expand "lib" root))
-               'forwarded)
-             (check-equal? (execution-progress-idle-milliseconds progress) 0)
-             (check-exception
-               (call-with-init-build-spec
-                 (lambda () (begin0 (map identity (spec '())) (set! now 40000)))
-                 receive '("spec") (path-expand "lib" root))
-               error?)
-             (check-equal? (execution-progress-idle-milliseconds progress) 10000)
-             (set! now 120000)
-             (check-equal? (execution-progress-status progress) 'total))
-           clock: (lambda () now))
-         (check-equal? calls 1)
-         ;; A runtime package callback returns no publication authority. The
-         ;; explicit projection .compile must reject missing compiler outputs.
-         (def compile-calls 0)
-         (def (uncompiled admitted arguments)
-           (set! compile-calls (1+ compile-calls))
-           (check-equal? (eq? admitted expected) #t)
-           (check-equal? arguments '("compile"))
-           'package-only)
+         (def expected spec)
+         (check-equal? (eq? expected (.get exports std-make-spec)) #t)
+         ;; Standard Make receives values; publication approval is an explicit API.
          (def projection
            (yuanxu-project-source-spec
              (yuanxu-load-modules (path-expand "init.ss" root)) '() root
              (path-expand "build.ss" root)))
+         (def build-spec (.get projection spec))
+         (check-equal? (eq? (.call projection .admit-spec build-spec) build-spec) #t)
+         (check-exception (.call projection .admit-spec (map identity build-spec)) error?)
+         (def compile-calls 0)
          (check-exception
            (.call projection .compile (path-expand "lib" root)
-             (cut uncompiled expected '("compile"))) error?)
+             (lambda () (set! compile-calls (1+ compile-calls)) 'package-only)) error?)
          (check-equal? compile-calls 1)
-         ;; The SDK entry must enforce the same complete-product boundary;
-         ;; a callback return value cannot authorize an absent runtime.
-         (check-exception
-           (call-with-init-build-spec (cut spec '()) uncompiled '("compile")
-             (path-expand "lib" root))
-           error?)
-         (check-equal? compile-calls 2)
          (def config (path-expand "modules/core/schema/config.ss" root))
          (write-file config (string-append (module-source-read config) "\n;; stale request\n"))
-         (check-exception
-           (call-with-init-build-spec (cut spec '()) receive '("spec")
-             (path-expand "lib" root)) error?)
-         (check-equal? calls 1))))
+         (check-exception ((.get exports admit-current)) error?)
+         (check-exception ((.get projection admit-current)) error?))))
     (yuanxu-test-case "configuration admission precedes publication binding"
       (with-source
        (lambda (root prefix)
@@ -378,8 +337,8 @@
             (string-append
              "(import (only-in :yuanxu/module-system/feature/model feature-descriptor)) "
              "(.def Published identity: 'app/web core: (.o requires: (.o Schema: (.o module-id: 'core/schema contract: Scope)) scope-contract: Scope exports: (error \"must not link while building\")) features: "
-             "(.o early: (feature-descriptor (.o feature-id: 'app/web/early owner-module-id: 'app/web projections: (list (.o kind: 'module/build roots: '(\"extra/early\"))))) "
-             "late: (feature-descriptor (.o feature-id: 'app/web/late owner-module-id: 'app/web requires: '(app/web/early) projections: (list (.o kind: 'module/build roots: '(\"extra/late\"))))) "
+             "(.o early: (feature-descriptor (.o feature-id: 'app/web/early owner-module-id: 'app/web projections: (list '(\"extra/early\")))) "
+             "late: (feature-descriptor (.o feature-id: 'app/web/late owner-module-id: 'app/web requires: '(app/web/early) projections: (list '(\"extra/late\")))) "
              "off: (error \"negative feature must not evaluate\")))")))
          (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                 (graph (.get view build-graph)))
@@ -456,20 +415,35 @@
        (lambda (root _prefix)
          (let (graph (.get (fixture-view root #f (list (build-contribution "extra/core"))) build-graph))
            (check-equal? (length (.get graph entries)) 12)))))
-    (yuanxu-test-case "identical contributions deduplicate and differing options conflict"
+    (yuanxu-test-case "explicit duplicate contributions refuse while shared imports remain one input"
       (with-source
        (lambda (root _prefix)
-         (let* ((v (fixture-view root
-                     (.o early: (optional 'early '("extra/early"))
-                         late: (optional 'late '("extra/early") '(app/web/early))
-                         off: (error "negative Feature forced"))))
-                (graph (.get v build-graph)))
-           (check-equal? (length (.get graph entries)) 9))
+         (check-exception
+          (.get (fixture-view root
+                  (.o early: (optional 'early '("extra/early"))
+                      late: (optional 'late '("extra/early") '(app/web/early))
+                      off: (error "negative Feature forced"))) build-graph)
+          (lambda (failure)
+            (and (Error? failure)
+                 (equal? (Error-message failure) "duplicate Module Make target"))))
          (check-exception
           (.get (fixture-view root
                   (.o early: (optional 'early '("extra/early"))
                       late: (optional 'late '((gxc: "extra/early" "-debug")) '(app/web/early))
-                      off: (error "negative Feature forced"))) build-graph) error?))))
+                      off: (error "negative Feature forced"))) build-graph)
+          (lambda (failure)
+            (and (Error? failure)
+                 (equal? (Error-message failure) "conflicting Module Make targets"))))
+         ;; late imports early. Two import edges are not two declarations.
+         (def graph
+           (.get (fixture-view root
+                   (.o early: (optional 'early '("extra/early"))
+                       late: (optional 'late '("extra/late") '(app/web/early))
+                       off: (error "negative Feature forced"))) build-graph))
+         (check-equal? (length (.get graph entries)) 10)
+         (check-equal?
+           (length (filter (lambda (id) (string-suffix? "/extra/early" (symbol->string id)))
+                           (entry-names graph))) 1))))
     (yuanxu-test-case "foreign requests are retained; unknown and unresolved build projections reject"
       (with-source
        (lambda (root _prefix)
@@ -478,7 +452,7 @@
          (for-each
           (lambda (projection)
             (check-exception (.get (fixture-view root #f (list projection)) build-graph) error?))
-          (list 'bad (.o kind: 'module/build roots: '(42)) (feature-projection-request 'r 'build 'v1))))))
+          (list 'bad '(42) (feature-projection-request 'r 'build 'v1))))))
     (yuanxu-test-case "owner-relative paths cannot escape or traverse symlinks"
       (with-source
        (lambda (root _prefix)
@@ -499,7 +473,7 @@
          (write-file (path-expand "build.ss" root) "(export #t)")
          (let* ((v (fixture-view root))
                 (artifact (yuanxu-project-source-spec v '() root (path-expand "build.ss" root)))
-                (names (map cadr (.get artifact spec))))
+                (names (map (lambda (target) (if (string? target) target (cadr target))) (.get artifact spec))))
            (check-equal? (eq? (.get artifact build-graph) (.get v build-graph)) #t)
            (check-equal? (length names) 10)
            (check-equal? (andmap (cut string-prefix? "modules/" <>) names) #t)

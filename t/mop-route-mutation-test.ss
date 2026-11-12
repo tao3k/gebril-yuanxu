@@ -67,7 +67,7 @@
                     (runtime.slot-ref (make-hash-table) 'object))
                   (set! changes (+ changes 2))
                   ;; Only reads and the vector shape index are raw hash tables.
-                  ;; The value wrapper has the producer's native layout backend.
+                  ;; The value wrapper has the producer's standard layout backend.
                   (unless (eq? table (object-%instance Root))
                     (change-and-restore (cut &raw-table-hash backend)
                       (cut &raw-table-hash-set! backend <>) (lambda (_key) 0))

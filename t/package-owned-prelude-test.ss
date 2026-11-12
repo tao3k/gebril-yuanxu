@@ -30,7 +30,7 @@
         (proc root package identity)))))
 (def package-owned-prelude-test
   (test-suite "Package-owned language registration"
-    (test-case "product prelude retains native source and target identity"
+    (test-case "product prelude retains standard source and target identity"
       (with-product "owned"
         (lambda (root package identity)
           (register-module-build-source! root package prelude: identity)
@@ -41,7 +41,7 @@
                         'product-owned/consumer)
           (check-equal? (and (member "prelude" (package-library-spec root package '("consumer.ss"))) #t)
                         #t))))
-    (test-case "native Module public-library projection publishes the owned language"
+    (test-case "standard Module public-library projection publishes the owned language"
       (with-product "projection"
         (lambda (root package identity)
           (register-module-build-source! root package)
@@ -58,7 +58,8 @@
             '(("objects.ss" . "(export)\n")
               ("config.ss" . "(export)\n")
               ("types.ss" . "(import :clan/poo/object (only-in :clan/poo/type Record))\n(def Scope (.cc (Record) identity: 'test/scope))\n(export Scope)\n")
-              ("build.ss" . "(import :clan/poo/object)\n(def Build (.o kind: 'module/build roots: '() library-roots: '(\"consumer\")))\n(export Build)\n")
+              ("build.ss" . "(import :clan/poo/object)\n(def Build '(\"facade\"))\n(export Build)\n")
+              ("facade.ss" . "(import \"../../consumer.ss\") (export)\n")
               ("interface.ss" . "(.def Example identity: 'example features: (.o) core: (.o requires: (.o) scope-contract: Scope exports: (.o) projections: (list Build)))\n")))
           (def projection
             (yuanxu-project-source-spec (yuanxu-load-modules (path-expand "modules" root))
@@ -68,19 +69,19 @@
           ;; admitted source, without requesting the test publication protocol.
           (def program-view (yuanxu-load-modules (path-expand "modules" root)))
           ;; Match the library's compiler options; bin: belongs to Make, not gxc.
-          (def native-target '(exe: "consumer" bin: "consumer-program"))
+          (def build-target '(exe: "consumer" bin: "consumer-program"))
           (def program-projection
-            (yuanxu-project-source-spec program-view (list native-target)
+            (yuanxu-project-source-spec program-view (list build-target)
               root (path-expand "init.ss" root)))
-          (def native-name (string-append (symbol->string package) "/consumer"))
+          (def build-name (string-append (symbol->string package) "/consumer"))
           (check-equal?
             (filter (lambda (target) (and (pair? target) (eq? (car target) exe:)))
               (.get program-projection spec))
-            (list `(exe: ,native-name bin: "consumer-program")))
+            (list `(exe: ,build-name bin: "consumer-program")))
           (check-equal?
             (length (filter (lambda (target)
                               (and (pair? target) (eq? (car target) gxc:)
-                                   (equal? (cadr target) native-name)))
+                                   (equal? (cadr target) build-name)))
                       (.get program-projection spec))) 1)
           (check-equal? (length (filter (lambda (id) (eq? id (string->symbol (string-append (symbol->string package) "/consumer"))))
                                 (.get program-projection compiler-identities))) 1)
@@ -91,7 +92,7 @@
           (check-equal?
             (filter (lambda (target) (and (pair? target) (eq? (car target) exe:)))
               (.get default-bin spec))
-            (list `(exe: ,native-name)))
+            (list `(exe: ,build-name)))
           (check-exception
             (yuanxu-project-source-spec program-view
               '((exe: "consumer" bin: "../escape")) root (path-expand "init.ss" root)) error?)

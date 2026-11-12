@@ -126,7 +126,7 @@
             (lambda (_path file _kind) (not (string-prefix? "." file)))))
         '("json-schema" "funflow"))
       (write-forms (path-expand "gerbil.pkg" root)
-        '((package: compiled-namespace-client prelude: :tao3k/yuanxu/prelude)))
+        '((package: compiled-namespace-client prelude: :yuanxu/prelude)))
       (write-forms (path-expand "init.ss" root)
         '((yuanxu! source: "./modules" mode: explicit (json-schema))))
       (call-with-output-file (list path: (path-expand "build.ss" root) permissions: #o755)
@@ -141,5 +141,6 @@
               (def consumer-spec
                 (package-library-spec (path-directory (this-source-file))
                   'compiled-namespace-client '("init.ss")))
-              (defbuild-script ((.get compiled-namespace-client.init.exports std-make-spec) consumer-spec))))))
+              (defbuild-script
+                (append (.get compiled-namespace-client.init.exports std-make-spec) consumer-spec))))))
       (.cc resource state: state))))

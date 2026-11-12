@@ -81,7 +81,7 @@
   (list-sort string<? (walk (path-expand "lib" state) "")))
 (def thousand-package-downstream-test
   (test-suite "Real thousand-directory catalog, independent downstream Profile"
-    (test-case "selected scope and native compiler closures, cold/hot and clean isolation"
+    (test-case "selected scope and standard compiler closures, cold/hot and clean isolation"
       (call-with-temporary-directory "thousand-downstream-"
         (lambda (temporary)
           (def fixture (path-expand "fixture" temporary))

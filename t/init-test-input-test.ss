@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Explicit module test inputs and native compiler specifications; no executor.
+;;; Explicit module test inputs and standard compiler specifications; no executor.
 (import :std/test :clan/poo/object
         (only-in :gerbil/expander core-resolve-library-module-path __module-registry
                  core-import-module expander-context-id module-context-path)
@@ -33,7 +33,7 @@
             "(import :std/test (phi: +1 \"./phase.ss\"))\n(defsyntax (use-support stx) (if enabled? #'(import \"./support.ss\") #'(begin)))\n(use-support)\n(error \"analysis evaluated the Suite runtime body\")\n(export probe-test)\n(def probe-test (test-suite \"generated imports\" (test-case \"value\" (check-equal? value 7))))\n")
           (check-equal? (hash-get __module-registry file) #f)
           (def build (.get (.call tests .for-files (list file)) build))
-          ;; The native importer owns the dependency, but analysis does not
+          ;; The standard importer owns the dependency, but analysis does not
           ;; install the requesting Suite or a delayed evaluator for its body.
           (check-equal? (hash-get __module-registry file) #f)
           (check-equal? (and (hash-get __module-registry helper) #t) #t)
@@ -187,7 +187,7 @@
               "(call-with-output-file " (object->string marker)
               " (lambda (port) (display \"ran\" port))))))\n"))
           (def demand (.call tests .for-files (list file)))
-          (check-equal? ((.get demand std-make-spec)) '())
+          (check-equal? (.get demand std-make-spec) '())
           (check-equal? (file-exists? marker) #f)
           (check-equal? (.slot? demand '.compile) #f)
           (check-equal? (.slot? demand 'execution) #f)

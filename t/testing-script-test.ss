@@ -43,7 +43,7 @@
           (cleanup "clean completed\n")
           (check-equal? (execution-progress-idle-milliseconds state) 1))
         clock: (lambda () now)))
-    (test-case "completed native index sources advance work, diagnostics and skips do not"
+    (test-case "completed standard index sources advance work, diagnostics and skips do not"
       (def now 0)
       (call-with-execution-progress 60000 180000
         (lambda (state)

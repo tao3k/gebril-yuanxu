@@ -12,7 +12,7 @@
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
         (unless (and (> (string-length implementation) 0) (char=? (string-ref implementation 0) #\:))
-          (error "compiled library reference required for matched native benchmark"))
+          (error "compiled library reference required for matched standard benchmark"))
         (eval-syntax `(import (only-in ,(string->symbol implementation) module-directory-context)))
         (eval-syntax 'module-directory-context))))
   (def n (string->number repetitions))

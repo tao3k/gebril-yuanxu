@@ -3,13 +3,14 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source-only Core qualification: direct source targets, standard Gerbil macro.
 (import :std/test
+        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :clan/poo/object .get .call)
         (only-in "./qualification/module-testing/fixtures.ss" selection-fixture)
         (only-in :std/source this-source-file)
         (only-in :std/error Error? Error-message)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :gerbil/expander eval-syntax current-expander-context
-                 make-top-context syntax->list core-read-module/sexp)
+                 import-module core-read-module/sexp)
         (only-in :yuanxu/module-system/source/admission module-source-read))
 (export module-source-spec-test test-setup! test-cleanup!)
 (def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
@@ -32,14 +33,10 @@
   (call-with-output-file (list path: path truncate: #t)
     (lambda (out) (display text out))))
 (def (script-at path)
-  (parameterize ((current-expander-context (make-top-context)))
-    (eval-syntax '(import :gerbil/core))
-    (eval-syntax '(import (only-in :clan/poo/object .get)))
-    (for-each eval-syntax (syntax->list (read-syntax-from-file path)))
-    (eval-syntax `(import (only-in ,(path-expand "init.ss" root)
-                                  yuanxu.init.exports)))
-    (values (eval-syntax 'main) (eval-syntax '(.get yuanxu.init.exports std-make-spec))
-            (eval-syntax '(.get yuanxu.init.exports admit-current)))))
+  (parameterize ((current-expander-context (import-module path #t #t)))
+    (def build (yuanxu-project-source-spec (path-expand "init.ss" root)
+                  (eval-syntax 'core-spec) root path))
+    (values (eval-syntax 'main) (eval-syntax 'yuanxu.init.exports) build)))
 (def (spec-of run)
   (call-with-input-string
     (call-with-output-string
@@ -66,15 +63,17 @@
         ;; Narrow only this isolated snapshot's retained manifest, not its build.ss.
         (write-source (path-expand "core-spec.ss" root)
           "(export core-spec) (def core-spec '(\"prelude\" \"utilities/algorithms\" \"object-types/contracts\" \"object-types/ports\" \"core-spec\"))\n")
-        (let-values (((run spec current!) (script-at (path-expand "build.ss" root))))
+        (let-values (((run exports build) (script-at (path-expand "build.ss" root))))
+          (def current! (.get build admit-current))
           (displayln "SOURCE-SPEC-ROOT-IMPORTED") (force-output)
           (def printed (spec-of run))
           (displayln "SOURCE-SPEC-GRAPH-READY") (force-output)
-          (def targets (spec retained))
+          (def module-targets (.get exports std-make-spec))
+          (def targets (append module-targets retained))
           (def names (map (lambda (entry) (if (string? entry) entry (cadr entry))) targets))
           (check-equal? printed targets)
-          (check-equal? (eq? targets (spec retained)) #t)
-          (check-exception (spec '("object-types/contracts")) error?)
+          (check-equal? (eq? module-targets (.get exports std-make-spec)) #t)
+          (check-exception (.call build .admit-spec '((gxc: "object-types/contracts"))) error?)
           (check-equal? (filter (lambda (name)
                                   (or (string-prefix? "modules/nix/" name)
                                       (string-prefix? "modules/opentofu/" name))) names) '())
@@ -101,20 +100,25 @@
           (for-each (lambda (name)
                       (check-equal? (file-exists?
                         (compiled-path root lib name)) #f)) names)
-          ;; The spec expression is evaluated for each SDK invocation.
+          ;; The standard list is data, not a continuing publication permit.
+          ;; Preserve stale-input refusals at the explicit compilation boundary.
           (for-each
             (lambda (control)
               (change-source (path-expand (car control) root)
                 (lambda ()
-                  (check-equal? (rejects? (cdr control) (lambda () (run "spec"))) #t)
-                  ;; Guarded SDK invocation rejects before runtime compilation.
-                  (check-equal? (rejects? (cdr control) (lambda () (run "compile"))) #t))))
+                  (check-equal? (rejects? (cdr control) current!) #t)
+                  (def entered? #f)
+                  (check-equal? (rejects? (cdr control)
+                    (lambda ()
+                      (.call build .compile lib
+                        (lambda () (set! entered? #t) (run "compile"))))) #t)
+                  (check-equal? entered? #f))))
             '(("build.ss" . "stale selected build input")
               ("core-spec.ss" . "stale prepared build source")
-              ("gerbil.pkg" . "stale")
-              ("prelude.ss" . "stale Module prelude source")
+              ("gerbil.pkg" . "compiler tool source changed")
+              ("prelude.ss" . "compiler tool source changed")
               ("module-system/source/role-forms.ss" . "compiler tool source changed")
-              ("modules/json-schema/functional.ss" . "stale")
+              ("modules/json-schema/functional.ss" . "compiler tool source changed")
               ("object-types/contracts.ss" . "compiler tool source changed")))
           (check-equal? (spec-of run) targets)
           ;; A completed command supplies no continuing validity guarantee.
@@ -124,8 +128,10 @@
           (change-source (path-expand "init.ss" root)
             (lambda ()
               (check-equal? (rejects? "stale module scope generation"
-                                     (lambda () (run "clean"))) #t)))
+                                     (lambda ()
+                                       (.call build .with-clean-outputs
+                                         (lambda () (run "clean"))))) #t)))
           (check-equal? (rejects? "module scope session was refused"
-                                 (lambda () (run "spec"))) #t)
+                                 current!) #t)
           (check-equal? (file-exists? (path-expand ".gerbil/module-build" root)) #f)
           (displayln "SOURCE-SPEC-TARGETS " (length targets))))))

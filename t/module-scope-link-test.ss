@@ -195,7 +195,7 @@
       (def old (.call (select) .selected-record 'core/schema))
       (check-equal? (.get old scope revision) 1)
       (set! revision 2)
-      ;; The native read/source support remains current, even though running
+      ;; The standard read/source support remains current, even though running
       ;; the same factory again has a different observable result.
       ((.get old admit-construction-current))
       (def fresh (.call (select) .selected-record 'core/schema))

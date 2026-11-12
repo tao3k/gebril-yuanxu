@@ -58,7 +58,7 @@
                ;; itself while pending) and the thunk. Inspect it without force.
                (state (and (promise? initializer) (##promise-state initializer)))
                (resolved? (and state (not (eq? state (vector-ref state 0))))))
-          ;; Count direct native state, without forcing the initializer or
+          ;; Count direct standard state, without forcing the initializer or
           ;; following imports into shared library Contexts.
           (for-each
             (lambda (index amount) (vector-set! row index (+ (vector-ref row index) amount)))
@@ -228,7 +228,7 @@
       ((reader-preparation-start) (set! preparation-depth (1+ preparation-depth)))
       ((reader-preparation-end) (set! preparation-depth (1- preparation-depth)))
       ((reader-read-roots)
-       ;; The native recording frame reports the original root count. Count
+       ;; The standard recording frame reports the original root count. Count
        ;; only captures made during preparation, without retaining its tokens.
        (when (positive? preparation-depth)
          (set! preparation-captures (1+ preparation-captures))

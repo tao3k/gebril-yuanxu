@@ -10,4 +10,4 @@
 ;; support spec at the init root even though this entry lives in a subdirectory.
 (def tests (.get compiled-namespace-client.init.exports tests))
 (defrule (this-source-file) (path-expand "init.ss" (.get tests source-root)))
-(defbuild-script ((.get tests std-make-spec)) prefix: "compiled-namespace-client")
+(defbuild-script (.get tests std-make-spec) prefix: "compiled-namespace-client")

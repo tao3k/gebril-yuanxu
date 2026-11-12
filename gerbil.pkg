@@ -4,7 +4,7 @@
 ;; The implementation uses its own language entry. Consumers independently
 ;; choose a prelude in their own package metadata.
 (package: yuanxu
- prelude: :tao3k/yuanxu/prelude
+ prelude: :yuanxu/prelude
  depend:
  ;; Graph, protected reads and method preparation from the qualified POO PR.
  ("github.com/tao3k/gerbil-poo@7f6e68a1abce13758793651b723fb0e1d196b057"))

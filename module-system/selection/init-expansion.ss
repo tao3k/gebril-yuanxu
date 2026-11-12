@@ -8,9 +8,12 @@
 
 (import (for-syntax
           (only-in :gerbil/expander current-expander-context core-context-top
-                   module-context? expander-context-id)
+                   module-context? expander-context-id module-context-path current-expander-compiling? stx-car datum->syntax
+                   make-top-context current-expander-phi current-import-expander-phi
+                   current-export-expander-phi current-expander-marks)
           (only-in :yuanxu/module-system/source/role-forms module-init-mounts module-init-export-name)
-          (only-in :gerbil/compiler/base module-id->path-string)))
+          (only-in :gerbil/compiler/base module-id->path-string)
+          (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)))
 (import (only-in :clan/poo/object .ref .o .+)
         (only-in :std/source this-source-file)
         (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
@@ -85,7 +88,7 @@
              (defsyntax make-spec-binding
                (identifier-rules ()
                  (id (identifier? #'id)
-                     ((.ref exports-value 'std-make-spec) '()))))
+                     (.ref exports-value 'std-make-spec))))
              (export exports-binding make-spec-binding)
              ;; Runtime runtime modules have one result, not projection values.
              (void))))))
@@ -95,10 +98,28 @@
 
 (defsyntax (expand-yuanxu-declaration stx)
   (syntax-case stx ()
-    ((_ original) (expand-declaration #'original))))
+    ((_ original)
+     (if (current-expander-compiling?)
+       (let* ((owner (core-context-top (current-expander-context) module-context?))
+              (path (and owner (module-context-path owner))))
+         (unless (string? path) (raise-syntax-error #f "native init requires its source module" stx))
+         (let skip-header
+           ((forms
+             (parameterize ((current-expander-context (make-top-context))
+                            (current-expander-compiling? #f)
+                            (current-expander-phi 0)
+                            (current-import-expander-phi #f)
+                            (current-export-expander-phi #f)
+                            (current-expander-marks '()))
+               (let (lower (module-binding-action "yuanxu/module-system/building/program-publication" 'init-compiler-forms))
+                 (lower (list path))))))
+           (if (and (pair? forms) (keyword? (car forms)) (pair? (cdr forms)))
+             (skip-header (cddr forms))
+             (datum->syntax (stx-car #'original) (cons 'begin forms)))))
+       (expand-declaration #'original)))))
 
-;; Only the admitted compiler source projection emits this form. The public
-;; yuanxu! declaration remains unchanged and cannot supply a runtime reader.
+;; The native expander and admitted compiler projection share this generated
+;; form. No runtime declaration supplies a source reader or a program factory.
 (defsyntax (expand-yuanxu-program-declaration stx)
   (syntax-case stx ()
     ((_ declaration source program)

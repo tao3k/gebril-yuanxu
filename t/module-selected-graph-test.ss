@@ -123,7 +123,7 @@
       (parameterize ((current-expander-context
                       (make-top-context
                         (core-module->prelude-context
-                          (core-import-module ':tao3k/yuanxu/prelude)))))
+                          (core-import-module ':yuanxu/prelude)))))
         (def name (gensym 'core-feature-origin))
         (def original (runtime.find-method object::t #f ':init!))
         (dynamic-wind

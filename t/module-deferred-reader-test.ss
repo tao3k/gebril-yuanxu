@@ -35,9 +35,9 @@
                 (hash-put! owners context #t)))
             __module-registry)
           (check-equal? (hash-length owners) 1)
-          (def native-context (car (hash-keys owners)))
-          (check-equal? (module-context-export native-context) '())
-          (check-equal? (void? (eval-module native-context)) #t)
+          (def build-context (car (hash-keys owners)))
+          (check-equal? (module-context-export build-context) '())
+          (check-equal? (void? (eval-module build-context)) #t)
           (check-equal? (.get publication identity) 'custom/example)
           (def scope
             (parameterize ((current-module-role-resolver

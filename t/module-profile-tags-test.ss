@@ -53,7 +53,7 @@
   (check-equal? (.get exports tests selected-graph module-order) '(module-0 module-1))
   (call-with-output-file (path-expand "build.ss" root)
     (lambda (port) (write '(def build-entry 0) port)))
-  (def targets (map cadr ((.get exports std-make-spec) '())))
+  (def targets (map cadr (.get exports std-make-spec)))
   (check-equal? (andmap (lambda (name)
                          (or (string-prefix? "modules/module-0/" name)
                              (string-prefix? "modules/module-1/" name))) targets) #t)
@@ -122,7 +122,7 @@
           (check-equal? (.call context eligible? 'flow) #t)
           (check-equal? (.call context eligible? 'tofu) #t)
           ;; Inert tag selection needs no package marker and cannot grant the
-          ;; native publication/compilation authority of a paired reader.
+          ;; standard publication/compilation authority of a paired reader.
           (check-exception
             (.call context read-publication (.call context locate 'tofu)) error?)
           ;; A miss for a DIFFERENT category cannot hide behind deployment's hit.

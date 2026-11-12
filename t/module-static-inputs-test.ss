@@ -1,6 +1,6 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Native compiler inputs keep original evidence and scoped write resources.
+;;; Standard compiler inputs keep original evidence and scoped write resources.
 (import :std/test
         (only-in :gerbil/compiler add-compile-job!)
         (only-in :gerbil/expander make-module-context)
@@ -25,9 +25,9 @@
                 (module-source-admit-current! (list (cons source-path source-text))))))))
 
 (def module-static-inputs-test
-  (test-suite "Native static input ownership"
-    (yuanxu-test-case "native compiler aliases retain their original followed input"
-      (call-with-temporary-directory "native-static-alias"
+  (test-suite "Standard static input ownership"
+    (yuanxu-test-case "standard compiler aliases retain their original followed input"
+      (call-with-temporary-directory "build-static-alias"
         (lambda (root)
           (def library (path-expand "lib" root))
           (def directory (path-expand "static" library))
@@ -68,7 +68,7 @@
             (lambda () (put original text)))
           (current!))))
     (yuanxu-test-case "derived files live in a private extent and release on return"
-      (call-with-temporary-directory "native-static-owner"
+      (call-with-temporary-directory "build-static-owner"
         (lambda (root)
           (def path (path-expand "original.scm" root))
           (def text "(define original 42)\n")
@@ -86,7 +86,7 @@
           (check-equal? (file-exists? extent) #f)
           (check-equal? (module-source-read path) text))))
     (yuanxu-test-case "failed work preserves its cause and restores the loader resource"
-      (call-with-temporary-directory "native-static-unwind"
+      (call-with-temporary-directory "build-static-unwind"
         (lambda (root)
           (def path (path-expand "original.scm" root))
           (def text "(define original 42)\n")
@@ -103,7 +103,7 @@
           (check-equal? (load-path) paths)
           (check-equal? (file-exists? extent) #f))))
     (yuanxu-test-case "early refusal drains the real compiler executor before removing inputs"
-      (call-with-temporary-directory "native-static-job-drain"
+      (call-with-temporary-directory "build-static-job-drain"
         (lambda (root)
           (def path (path-expand "original.scm" root))
           (def text "(define original 42)\n")
@@ -124,13 +124,13 @@
                                         (path-expand "static/borrowed.scm" extent)) text)
                           (error "compiler input retired before its worker"))
                         (set! drained? #t))
-                      'native-static-input-lifetime)
+                      'build-static-input-lifetime)
                     (raise cause)))))
             cause)
           (check-equal? drained? #t)
           (check-equal? (file-exists? extent) #f))))
     (yuanxu-test-case "changed originals and changed staged Scheme refuse successful work"
-      (call-with-temporary-directory "native-static-refusal"
+      (call-with-temporary-directory "build-static-refusal"
         (lambda (root)
           (def path (path-expand "original.scm" root))
           (def text "(define original 42)\n")

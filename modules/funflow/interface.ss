@@ -8,5 +8,6 @@
   core:
   (.o requires: (.o)
       scope-contract: FunflowScopeContract
+      projections: (list Build)
       exports: (.o (:: @ FunflowModule.) config: Config))
   features: (.o))

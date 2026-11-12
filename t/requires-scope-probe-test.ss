@@ -86,7 +86,7 @@
       (resolve-owner 'review (.o review: '(opentofu) opentofu: '(schema) schema: '()) '())
       (check-exception
         (resolve-owner 'review (.o review: '(opentofu) opentofu: '(review)) '()) error?))
-    (test-case "native import collection sees one compiler target for shared JsonSchema"
+    (test-case "standard import collection sees one compiler target for shared JsonSchema"
       (call-with-temporary-directory "requires-scope-targets"
         (lambda (root)
           (def (write-source name text)

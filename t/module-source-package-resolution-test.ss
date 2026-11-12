@@ -12,7 +12,7 @@
     (lambda (port) (display text port))))
 (def module-source-package-resolution-test
   (test-suite "Declared package source remains authoritative over bound imports"
-    (test-case "an outside binding cannot suppress native owned-source resolution"
+    (test-case "an outside binding cannot suppress standard owned-source resolution"
       (call-with-temporary-directory "package-source-resolution-"
         (lambda (root)
           (def original (path-expand "original" root))

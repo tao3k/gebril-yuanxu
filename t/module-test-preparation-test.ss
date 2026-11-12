@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Test metadata and support specification; native build qualification owns compilation.
+;;; Test metadata and support specification; standard build qualification owns compilation.
 (import "./qualification/module-init/fixture.ss" :std/test :clan/poo/object
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :gerbil/runtime/loader list-modules)
@@ -53,18 +53,18 @@
            (string-prefix? "yuanxu/module-system/building/artifacts" (car entry)))
          (list-modules)))
 (def module-test-preparation-test
-  (test-suite "Init-owned test inputs and native Make support"
+  (test-suite "Init-owned test inputs and standard Make support"
     (yuanxu-test-fixture "support-free projection neither loads business roles nor an issuer"
       (workspace TestPackage)
       (def root (.get workspace root))
       (forms root "modules/example/types.ss" '((error "business Types were demanded")))
       (forms root "modules/example/tests/plain-test.ss"
         '((import :std/test) (export plain-test)
-          (def plain-test (test-suite "plain" (test-case "native" (check-equal? 1 1))))))
+          (def plain-test (test-suite "plain" (test-case "standard" (check-equal? 1 1))))))
       (def exports (exports-at root))
       (def tests (.call (.get exports tests) .for-files
         (list (path-expand "modules/example/tests/plain-test.ss" root))))
-      (check-equal? ((.get tests std-make-spec)) '())
+      (check-equal? (.get tests std-make-spec) '())
       (check-equal? (artifact-runtime-loaded?) #f)
       (check-equal? (.ref/cached tests 'selected-graph) #f)
       (for-each (lambda (name) (check-equal? (.slot? tests name) #f))
@@ -72,14 +72,14 @@
       ((.get tests admit-current))
       (forms root "init.ss" '((error "changed init")))
       (check-exception ((.get tests admit-current)) error?))
-    (yuanxu-test-fixture "native spec binds shared inputs without compiling or running a Suite"
+    (yuanxu-test-fixture "standard spec binds shared inputs without compiling or running a Suite"
       (workspace TestPackage)
       (def root (.get workspace root))
       (def exports (exports-at root))
       (def tests (.call (.get exports tests) .for-files
         (list (path-expand "modules/example/tests/atomic-test.ss" root))))
       (check-equal? (.ref/cached tests 'build) #f)
-      (def spec ((.get tests std-make-spec)))
+      (def spec (.get tests std-make-spec))
       (check-equal? (map cadr spec) '("modules/example/tests/shared"))
       (check-equal? (file-exists? (path-expand "modules/example/tests/gerbil.pkg" root)) #f)
       (def windows 0)
@@ -96,7 +96,7 @@
       (check-equal? (file-exists? (path-expand "case-finished" root)) #f)
       (check-equal? (.ref/cached exports 'std-make-spec) #f)
       (forms root "modules/example/tests/shared.ss" '((export answer) (def answer 43)))
-      (check-exception ((.get tests std-make-spec)) error?)
+      (check-exception (.get tests std-make-spec) error?)
       (check-exception ((.get build admit-artifacts)) error?)
       (def changed (.call (.get exports tests) .for-files
         (list (path-expand "modules/example/tests/atomic-test.ss" root))))
@@ -108,5 +108,5 @@
       (write-source (path-expand "modules/example/tests/shared.ss" root) "(import")
       (def tests (.call (.get (exports-at root) tests) .for-files
         (list (path-expand "modules/example/tests/atomic-test.ss" root))))
-      (check-exception ((.get tests std-make-spec)) syntax-error?)
+      (check-exception (.get tests std-make-spec) syntax-error?)
       (check-equal? (file-exists? (path-expand "harness-started" root)) #f))))

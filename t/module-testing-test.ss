@@ -90,8 +90,8 @@
       ((.get yuanxu.init.exports tests admit-current)))
     (test-case "build and testing reuse one source epoch without building test files"
       (def files (.get yuanxu.init.exports tests spec))
-      (def spec ((.get yuanxu.init.exports std-make-spec) '()))
-      (check-equal? (eq? spec ((.get yuanxu.init.exports std-make-spec) '())) #t)
+      (def spec (.get yuanxu.init.exports std-make-spec))
+      (check-equal? (eq? spec (.get yuanxu.init.exports std-make-spec)) #t)
       (check-equal? (and (member "modules/json-schema/interface" (map cadr spec)) #t) #t)
       (check-equal? (and (member "modules/funflow/interface" (map cadr spec)) #t) #t)
       (check-equal? (and (member "scenarios/gitea-postgresql/interface" (map cadr spec)) #t) #t)

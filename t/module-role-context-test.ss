@@ -82,7 +82,7 @@
           (def next (yuanxu-load-modules (path-expand "modules" root)))
           (check-equal? (.get next modules custom example greeting) "changed")
           (check-equal? (eq? scope (.get next modules custom example)) #f))))
-    (yuanxu-test-case "refresh reuses unchanged native role values and checks changed inputs"
+    (yuanxu-test-case "refresh reuses unchanged standard role values and checks changed inputs"
       (with-publication-source
         (lambda (_root module-root _source first)
           (def parent (.get first modules custom example))

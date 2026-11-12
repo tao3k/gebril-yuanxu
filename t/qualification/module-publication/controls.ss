@@ -179,8 +179,8 @@
          (.call reader read source)
          (check-equal? (hash-key? (observed-paths reader) projection) #f)
          ;; Changing a role requires a fresh reader. Its actual import must
-         ;; register source contexts in the demanded native closure. An SSI
-         ;; retains native identity checks, not authority over its checkout.
+         ;; register source contexts in the demanded standard closure. An SSI
+         ;; retains standard identity checks, not authority over its checkout.
          (write-file (path-expand "build.ss" module-root)
            "(import (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)) (.def Build function: yuanxu-project-source-spec)")
          (write-file (path-expand "interface.ss" module-root)

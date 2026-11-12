@@ -1,5 +1,5 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
-;;; User-facing native POO expressions, exercised by the existing leaf suite.
+;;; User-facing standard POO expressions, exercised by the existing leaf suite.
 (import (only-in :clan/poo/object .def .get .o))
 (export Build Debug Explicit Inherited NamedSuper)
 

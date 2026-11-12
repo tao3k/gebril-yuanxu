@@ -35,7 +35,7 @@
           (check (procedure? (.get batch .run)) => #t)
           (check-exception (.call batch .run) (lambda (_) #t))
           (check-equal? (file-exists? marker) #f))))
-    (yuanxu-test-case "bounded native children overlap and report in declaration order"
+    (yuanxu-test-case "bounded standard children overlap and report in declaration order"
       (call-with-temporary-directory "ops-batch-overlap"
         (lambda (root)
           (def (script arguments)

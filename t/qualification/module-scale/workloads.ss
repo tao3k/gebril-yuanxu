@@ -61,7 +61,7 @@
           (displayln "DECLARATION-MEMORY completed=" completed-declarations
                      " heap=" (f64vector-ref stats 15)
                      " live=" (f64vector-ref stats 17)
-                     " native-vm-account=" (f64vector-ref stats 7)
+                     " build-vm-account=" (f64vector-ref stats 7)
                      " vm-account-qualified?=false")
           (force-output))))
     (when (eq? category 'candidate-open-boundary)
@@ -70,7 +70,7 @@
       (let (stats (##process-statistics))
         (displayln "DECLARATION-REFUSAL heap=" (f64vector-ref stats 15)
                    " live=" (f64vector-ref stats 17)
-                   " native-vm-account=" (f64vector-ref stats 7)
+                   " build-vm-account=" (f64vector-ref stats 7)
                    " vm-account-qualified?=false")
         (force-output))
       (error "closed runtime declaration crossed an unexpected open boundary" (cdr key)))
@@ -158,7 +158,7 @@
           (lambda (failure) (set! failed? #t) (set! cause failure))
           (lambda () (set! value (action)))))))
   (yuanxu-write-observation-line!
-    "runtime-capacity modules=%s observer=%s phase=%s metrics=%s native-vm-account=%s vm-account-qualified?=false"
+    "runtime-capacity modules=%s observer=%s phase=%s metrics=%s build-vm-account=%s vm-account-qualified?=false"
     count observer phase (filter (lambda (entry) (not (memq (car entry) '(result bytes-allocated)))) stats)
     (cdr (assq 'bytes-allocated stats)))
   (when failed?

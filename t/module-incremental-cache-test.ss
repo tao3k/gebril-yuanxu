@@ -4,7 +4,7 @@
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
         (only-in :yuanxu/observability/testing-case yuanxu-test-case))
 (export module-incremental-cache-test)
-;; Native with-slot-dependencies owns capture, issuance admission and weak edge
+;; Standard with-slot-dependencies owns capture, issuance admission and weak edge
 ;; registration. This is a kernel control; automatic Loader enrollment remains
 ;; a separate source-correspondence and complete-CI gate.
 (def module-incremental-cache-test

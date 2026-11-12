@@ -34,11 +34,13 @@ in the three Scenario Config modules make the authored sources independently
 compilable. The complete standard package build then passed at actual host
 compiler capacity; no dependency pin or deadline changed.
 
-The independent =call-with-init-build-spec= API remains an actual Weaver
-consumer boundary. Removing it and changing its POO product contracts together
-is a separate migration, not a rename of the deleted macro. Existing
-currentness, product-refusal and mutation tests must
-continue to run while the standard entry migration is verified.
+The earlier migration left an implicit consumer registration and command
+adapter behind =call-with-init-build-spec=, and Weaver still used it. That
+residual API and its dispatcher are now removed in Yuanxu. The experimental
+Weaver edit was reverted to honor the Yuanxu-only scope; that external caller
+has not been migrated or qualified. Explicit POO artifact issuance keeps
+its source/spec/product contracts, independent of native package compilation.
+Migrated consumers and refusal controls still require complete qualification.
 
 * Validation obligations
 

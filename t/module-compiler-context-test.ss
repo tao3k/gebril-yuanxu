@@ -14,7 +14,7 @@
 
 (def module-compiler-context-test
   (test-suite "Exact captured runtime context membership"
-    (test-case "native expansion finds a macro-introduced input without initializing the role"
+    (test-case "standard expansion finds a macro-introduced input without initializing the role"
       (call-with-temporary-directory "module-target-context"
         (lambda (root)
           (def (write-source name content)

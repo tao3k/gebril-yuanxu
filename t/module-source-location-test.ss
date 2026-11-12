@@ -81,13 +81,13 @@
               (cons (string-append consumer "/main") consumer-source)))
       (def spec
         (list
-          ;; Deliberately put the consumer first: native imports own ordering.
+          ;; Deliberately put the consumer first: standard imports own ordering.
           (list 'gxc: (string-append consumer "/main") (list 'extra-inputs: (list consumer-source)))
           (list 'gxc: (string-append producer "/value") (list 'extra-inputs: (list producer-source)))))
       (test root view lib bin producer consumer spec producer-source consumer-source))))
 (def module-source-location-test
   (test-suite "Source-root and output-identity boundary"
-    (test-case "one full-identity view compiles two packages and reuses native products"
+    (test-case "one full-identity view compiles two packages and reuses standard products"
       (with-cross-package-view
         (lambda (_root view lib bin producer consumer spec producer-source consumer-source)
           (def original-producer (call-with-input-file producer-source read-all))

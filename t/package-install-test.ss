@@ -80,7 +80,7 @@
             (execution-progress! 'package-actions actions)
             output)
           (def (pkg state directory . arguments)
-            ;; Use the native concurrency setting at the command boundary.
+            ;; Use the standard concurrency setting at the command boundary.
             ;; No local tagger override or package-manager patch participates.
             (invoke (append (list "env" (string-append "GERBIL_BUILD_CORES=" build-cores)
                                   "gerbil" "pkg") arguments) directory state))
@@ -114,7 +114,7 @@
           (def managed-consumer (path-expand consumer-id package-root))
           (create-directory* (path-directory managed-consumer))
           (git temporary "clone" "-q" "--branch" "v0.1.0" consumer managed-consumer)
-          ;; Exercise the user's native command, including its real TAGS index.
+          ;; Exercise the user's standard command, including its real TAGS index.
           (def install-started (real-time))
           (displayln "INSTALL-CORES " build-cores) (force-output)
           (def install-output (pkg installed managed-consumer "deps" "--install"))
@@ -138,7 +138,7 @@
           (check-equal? (file-exists? (path-expand "lib/yuanxu-thousand-library/modules" installed)) #f)
           (def original-status (git managed-producer "status" "--porcelain"))
           (check-equal? original-status "")
-          ;; Native link/build supplies each environment's dependency manifest.
+          ;; Standard link/build supplies each environment's dependency manifest.
           ;; The producer's own default remains empty; tests manufacture none.
           (for-each (lambda (state)
                       (pkg state temporary "link" producer-id managed-producer)
@@ -152,7 +152,7 @@
               (unless (or (string-prefix? "yuanxu-thousand-library/modules/module-0/" identity)
                           (string-prefix? "yuanxu-thousand-library/modules/module-1/" identity)
                           (member identity '("yuanxu-package-consumer/init" "yuanxu-package-consumer/main")))
-                (error "native package compiled an unselected owner" identity))) targets)
+                (error "standard package compiled an unselected owner" identity))) targets)
           (check-equal? (compile-events (pkg a managed-consumer "build")) targets)
           (check-equal? (compile-events (pkg a managed-consumer "build")) '())
           (check-equal? (and (string-contains (ordinary a managed-consumer "use") "PACKAGE-USE") #t) #t)
@@ -173,7 +173,7 @@
           (check-equal? (git managed-producer "status" "--porcelain") original-status)
           (check-equal? (git managed-producer "rev-parse" "HEAD") revision)
           (let ()
-            ;; A separate tiny native package proves default and explicit editor
+            ;; A separate tiny standard package proves default and explicit editor
             ;; indexing still work. Never index the thousand-owner catalog here.
             (def editor-state (path-expand "editor-control" temporary))
             (create-directory* (path-expand "lib" editor-state))
@@ -189,7 +189,7 @@
             (git editor-package "config" "user.name" "Yuanxu fixture")
             (git editor-package "config" "user.email" "fixture@invalid.example")
             (git editor-package "add" ".")
-            (git editor-package "commit" "-qm" "Native editor control")
+            (git editor-package "commit" "-qm" "Standard editor control")
             (git editor-package "tag" "v0.1.0")
             (git temporary "clone" "--bare" "-q" editor-package (path-expand "editor-control.git" remotes))
             (def editor-consumer (path-expand "editor-consumer" temporary))
@@ -211,7 +211,7 @@
                   environment: (.o GERBIL_PATH: editor-state GAMBOPT: runtime-environment
                     GERBIL_LOADPATH: inherited GERBIL_TAGS_FORMAT: "invalid-format"))))
             ;; Some Gerbil releases report the child failure without relaying
-            ;; gxtags stderr. Check the native diagnostic at its own boundary.
+            ;; gxtags stderr. Check the standard diagnostic at its own boundary.
             (def failed (invalid-format '("gerbil" "pkg" "retag") editor-consumer))
             (check-equal? (zero? (.get failed status)) #f)
             (check-equal? (call-with-input-file tags read-all-as-string) previous-index)

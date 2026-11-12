@@ -2,9 +2,9 @@
 ;;; Compile changed Core libraries with the installed, unmodified compiler.
 (import (for-syntax
           (only-in :std/source this-source-file)
-          (only-in "../../../module-system/building/source-package.ss" register-yuanxu-build-source!)))
+          (only-in "../../../module-system/building/source-package.ss" register-module-build-source!)))
 (begin-syntax
-  (register-yuanxu-build-source! (path-expand "../../.." (path-directory (this-source-file)))))
+  (register-module-build-source! (path-expand "../../.." (path-directory (this-source-file))) 'yuanxu))
 
 (import (only-in "../../../prelude.ss")
         :gerbil/compiler :gerbil/compiler/compile

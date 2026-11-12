@@ -7,6 +7,7 @@
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :gerbil/expander current-expander-context make-top-context
                  eval-syntax core-import-module expander-context-id)
+        (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer)
         (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
@@ -21,7 +22,19 @@
                   (check-equal? (file-exists? root) #f))))
 (def module-init-import-test
   (test-suite "Init import owns no eager Reader or build execution closure"
-    (test-case "native linker import leaves the Reader outside its import closure"
+    (test-case "standard program demand does not require a statically registered Gambit unit"
+      (def expected (.o ready: #t))
+      (def calls 0)
+      (defvalues (exports namespace)
+        (yuanxu-init-build "/nonexistent-yuanxu-build-program/init.ss"
+          '(yuanxu! source: "./missing" mode: explicit (missing))
+          (lambda () (set! calls (+ calls 1)) expected)
+          'not-a-registered-static-yuanxu-unit))
+      (check-equal? calls 0)
+      (check-equal? (eq? (namespace) expected) #t)
+      (check-equal? (eq? (namespace) expected) #t)
+      (check-equal? calls 1))
+    (test-case "standard linker import leaves the Reader outside its import closure"
       (def contexts '())
       (for-each-build-module (core-import-module ':yuanxu/module-system/source/link)
         (lambda (context) (set! contexts (cons (expander-context-id context) contexts))))
@@ -117,10 +130,10 @@
             (pretty-print '(yuanxu! :load-modules "./absent" mode: explicit
                                    rename: Modules (missing)) out)))
         path)
-      (def left-path (prepare! left ':tao3k/yuanxu/prelude))
+      (def left-path (prepare! left ':yuanxu/prelude))
       (def right-path (prepare! right ':gerbil/core))
       ;; A second declaration in the same package needs no init.ss suffix.
-      (def selection-path (prepare! left ':tao3k/yuanxu/prelude "selection.ss"))
+      (def selection-path (prepare! left ':yuanxu/prelude "selection.ss"))
       (def left-name (string->symbol (string-append (symbol->string left) ".init.exports")))
       (def right-name (string->symbol (string-append (symbol->string right) ".init.exports")))
       (def selection-name (string->symbol (string-append (symbol->string left) ".selection.exports")))

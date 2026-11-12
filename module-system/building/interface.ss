@@ -2,103 +2,23 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module System init projections. Infrastructure, not a selected module.
-(import (only-in :yuanxu/module-system/building/products build-output-directory
-                 current-build-output-directory current-build-source-directory
-                 current-build-compiler-options current-build-module-roots
-                 require-build-products! repair-build-products! clean-build-artifacts!)
-        (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
-        (only-in :yuanxu/module-system/building/program-products projection-program-targets)
-        (only-in :yuanxu/ops/progress current-execution-progress
-                 call-with-execution-progress execution-progress!)
+(import (only-in :yuanxu/module-system/building/products current-build-module-roots)
+        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path package-build-script-path)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
-        (only-in :yuanxu/module-system/source/deferred-declaration module-entry-action module-binding-action)
+        (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)
         (only-in :yuanxu/module-system/building/source-closure
                  call-with-build-expansion-accounting call-with-build-stage)
-        (only-in :yuanxu/module-system/source/observations module-source-read module-source-admit-current!
+        (only-in :yuanxu/module-system/source/observations module-source-type module-source-read module-source-admit-current!
                  call-with-module-source-read-cache call-with-module-source-callback
-                 call-with-module-source-operation-measurement
                  module-source-measure-operation))
-(export yuanxu-init-build call-with-init-build-spec)
-
-;; A dynamic association for this Gerbil invocation only, not a spec registry or
-;; cached approval. The producer retains its projection and all source checks.
-(def current-build-spec-consumer (make-parameter #f))
-(def (call-with-init-build-spec prepare dispatch args libdir (entry-source #f))
-  (def verbosity (string->number (getenv "GERBIL_BUILD_VERBOSE" "0")))
-  (def report? (and verbosity (>= verbosity 2)))
-  (def (run)
-    (module-source-measure-operation 'build-main
-      (lambda () (consume-init-build-spec prepare dispatch args libdir entry-source report?))))
-  ;; Reuse the runtime build verbosity and existing invocation-local accounting.
-  ;; No source observer, approval cache or alternative build entry is installed.
-  (if report?
-    (begin
-      ;; real-time has a process-local origin. The wall clock correlates this
-      ;; existing span with the caller's spawn/return without blaming their
-      ;; different clock origins on process shutdown. CPU is Gambit's clock.
-      (displayln "BUILD-STAGE main enter at=" (real-time)
-                 " epoch=" (time->seconds (current-time)) " cpu=" (cpu-time))
-      (force-output)
-      (let-values (((results times)
-                    (call-with-module-source-operation-measurement
-                      ;; Build timing needs phase clocks and work counters,
-                      ;; not VM/GC sampling around every physical file read.
-                      ;; Detailed accounting remains an explicit qualification
-                      ;; mode of the same existing measurement API.
-                      (lambda () (call-with-values run list)) accounting?: (if (>= verbosity 3) 'stages #f))))
-        (hash-for-each
-          (lambda (key value) (write (list 'BUILD-ACCOUNT key value)) (newline)) times)
-        (displayln "BUILD-STAGE main return at=" (real-time)
-                   " epoch=" (time->seconds (current-time)) " cpu=" (cpu-time))
-        (force-output)
-        (apply values results)))
-    (run)))
-(def (consume-init-build-spec prepare dispatch args libdir entry-source report?)
-  (def produced #f)
-  (def consume #f)
-  (def (prepare-spec)
-    (def value
-      (parameterize ((current-build-output-directory (build-output-directory libdir))
-                    (current-build-spec-consumer
-                      (cons entry-source
-                        (lambda (value owner)
-                          (when (and produced (not (eq? produced value)))
-                            (error "runtime build must consume one init-owned specification"))
-                          (set! produced value)
-                          (set! consume owner)))))
-        (module-source-measure-operation 'build-specification
-          (lambda () (call-with-build-stage 'build-specification prepare)))))
-    (if consume
-      (unless (eq? value produced)
-        (error "runtime build specification lost its init owner"))
-      (when (current-build-module-roots)
-        (error "--modules requires an init-owned build specification")))
-    value)
-  (def progress (current-execution-progress))
-  (def (prepare-with-progress)
-    ;; A standalone build reports one completed stage. Preparation keeps its
-    ;; previous progress extent, including any enclosing in-process owner.
-    (def value (parameterize ((current-execution-progress progress)) (prepare-spec)))
-    (execution-progress! (gensym 'build-specification) 1)
-    value)
-  (def spec
-    (cond ((pair? progress) (prepare-with-progress))
-          (report? (call-with-execution-progress #f #f (lambda (_) (prepare-with-progress))))
-          (else (prepare-spec))))
-  (if consume
-    (consume dispatch args libdir)
-    (dispatch spec args)))
+(export yuanxu-init-build)
 
 ;; Factories import their public binding through Gerbil. Actual artifact effects
 ;; retain whole runtime entry initialization. Both are inert at construction and
 ;; resolve every invocation without storing a procedure or admission result.
 (def module-linker
   (module-binding-action "yuanxu/module-system/interface" 'yuanxu-load-modules))
-(def write-native-tags
-  (module-entry-action 'yuanxu/module-system/building/interface "gerbil/tools/gxtags"
-    'gerbil/tools/gxtags#make-tags))
 (def build-projector
   (module-binding-action "yuanxu/module-system/building/build-projection" 'yuanxu-project-source-spec))
 (def init-compiler-roots
@@ -122,9 +42,7 @@
   ;; The parser permits package: only in the declaration's top-level window
   ;; options. Local windows need no package resolver or second path extent.
   (def package-windows? (memq 'package: declaration))
-  (def prepared #f)
   (def input-context-refused? #f)
-  (def retained #f)
   (def selection #f)
   (def compiled (and program (.o modules: (program))))
   (def tests (make-hash-table))
@@ -139,8 +57,7 @@
               (path-directory init-file) init-file
               (if (.slot? source-value 'std-make-spec)
                 (.get source-value std-make-spec) '())))
-            std-make-spec: (lambda ()
-                             (test-build-spec (.get tests build)))
+            std-make-spec: (test-build-spec (.get tests build))
             .for-files: file-tests
             .select: (lambda ((next-owners #f)) (test-source next-owners suite)))))
     (if suite executable
@@ -203,25 +120,6 @@
   (def (test-build-spec build)
     ((.get build admit-current))
     (def spec (.get build spec))
-    (def consumer (current-build-spec-consumer))
-    (when (and consumer (pair? (projection-program-targets build)))
-      ((cdr consumer) spec
-        (lambda (dispatch args _libdir)
-          (cond
-           ((or (null? args) (equal? (car args) "compile"))
-            (def publication (.get (.get build build-graph) build-publication))
-            (if (.call publication .available?)
-              ((.get build admit-artifacts))
-              (.call build .compile (.get build output-directory)
-                (lambda ()
-                  (def output ((.get build compile-output)))
-                  (call-with-build-input-path output
-                    (lambda ()
-                      (.call build .with-static-inputs
-                        (lambda () (dispatch spec args #f output)))))))))
-           ((equal? (car args) "spec") (dispatch spec args))
-           (else (error "test program build requires Gerbil compile or spec" args)))
-          ((.get build admit-current)))))
     spec)
   (def (source-tests file-source)
     ;; An explicit runtime file test does not select business Modules. Keep its
@@ -257,11 +155,6 @@
         spec: (test-spec)
         admit-current: test-current!
         .select: test-source)))
-  (def (check-prepared!)
-    (unless prepared (error "init std-make-spec must prepare the source context first"))
-    ((.ref/inline prepared source-current-site)))
-  (def (current!)
-    (with-input-context #f check-prepared!))
   (def (compiler-source-roots)
     ;; Only the bound init declaration can name native checkout inputs.
     (init-compiler-roots (list declaration init-file)))
@@ -278,138 +171,43 @@
             source-roots: (compiler-source-roots)))
         action)
       refuse-input-context!))
-  (def (build-spec roots (entry-source #f))
-    ;; Looking up the spec must preserve native runtime bindings. The
-    ;; compiler output fallback belongs to run-spec, after projection.
+  (def (prepare-build)
     (with-input-context #f
-      (lambda () (build-spec/in-input-context roots entry-source))))
-  (def (build-spec/in-input-context roots explicit-entry-source)
-    (def consumer (current-build-spec-consumer))
-    (def entry-source (or explicit-entry-source (and consumer (car consumer))
-                          (and prepared (cadr retained))
-                          init-file))
-    (def request (list (current-build-module-roots) entry-source roots))
-    (if prepared
-      (unless (equal? request retained)
-        (error "init build specification cannot change retained roots within one source epoch"))
-      (let* ((init (path-expand source)) (root (path-directory init)))
-        (set! prepared
-          (module-source-measure-operation 'build-projection
-            (lambda ()
-              (call-with-build-expansion-accounting 'module-projection
-                (lambda ()
-                  (build-projector (list (selected!) roots root entry-source)))))))
-        (set! retained request)))
-    (call-with-build-stage 'spec-current check-prepared!)
-    (def value (.ref/inline prepared source-spec-site))
-    (.call prepared .admit-spec value)
-    (when consumer
-      ((cdr consumer) value
-        (lambda (dispatch args libdir)
-          (run-spec value dispatch args libdir))))
-    value)
+      (lambda ()
+        (module-source-measure-operation 'build-projection
+          (lambda ()
+            (call-with-build-expansion-accounting 'module-projection
+              (lambda ()
+                (let* ((root (path-directory init-file))
+                       (script (package-build-script-path root))
+                       (kind (module-source-type script)))
+                  (when (and kind (not (eq? kind 'regular)))
+                    (error "package build script must be a regular source" script))
+                  (build-projector
+                    (list (selected!) '() root (if kind script init-file)))))))))))
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
   (def (module-namespace)
-    (if (and unit (##lookup-registered-module unit))
-      (if compiled (.get compiled modules)
-        (error "init has no compiled Module publication" unit))
-      (.get (selected!) modules)))
-  ;; The init consumer already owns this exact specification. Its preparation
-  ;; is not a second request: preserve the independent compiler-entry/return
-  ;; guards below instead of entering build-spec again during that handoff.
-  (def (run-spec spec package-main args requested-libdir)
-    (def libdir
-      (if (or (null? args) (member (car args) '("compile" "clean")))
-        (build-output-directory requested-libdir)
-        requested-libdir))
-    (parameterize ((current-build-output-directory libdir)
-                   (current-build-compiler-options
-                     (append (current-build-compiler-options) (if (pair? args) (cdr args) '()))))
-      (module-source-measure-operation 'build-dispatch
-        (lambda ()
-          (with-input-context (or libdir (build-output-directory))
-            (lambda () (run-spec/current spec package-main args libdir)))))))
-  (def (run-spec/current spec package-main args libdir)
-    (.call prepared .admit-spec spec)
-    (def compile? (or (null? args) (equal? (car args) "compile")))
-    (def (invoke targets (prefix #f))
-      (def (run)
-        (if prefix (package-main targets args prefix) (package-main targets args)))
-      (if compile?
-        (call-with-build-input-path libdir run refuse-input-context!
-          make-source: (or (current-build-source-directory) (path-directory (cadr retained))))
-        (run)))
-    (def (dispatch (groups '()))
-      (if (pair? groups)
-        (for-each
-          (lambda (group)
-            (invoke (.get group spec) (.get group prefix))) groups)
-        (invoke spec)))
     (cond
-      (compile?
-       ;; Ordinary Gerbil compilation cannot grant publication approval. Explicit
-       ;; projection .compile retains the separate artifact issuance boundary.
-       (let ((identities (.get prepared compiler-identities))
-             (groups (.call prepared .make-groups #t)))
-         ;; Installed prerequisites remain native Gerbil imports. The projection
-         ;; must never place selected owner source IDs in this prerequisite list;
-         ;; every selected source is covered by compiler-identities below.
-         (module-source-measure-operation 'build-installed-prerequisites
-           (lambda ()
-             (let (dependencies (.get prepared dependency-identities))
-               (unless (null? dependencies)
-                 (require-build-products! dependencies libdir)))))
-         (call-with-build-stage 'compiler-inputs
-           (lambda ()
-             (.call prepared .with-compiler-inputs
-               (lambda ()
-                 (module-source-measure-operation 'build-product-repair
-                   (lambda () (repair-build-products! identities libdir)))
-                 (begin0 (module-source-measure-operation 'std-make
-                           (lambda ()
-                             (call-with-build-expansion-accounting 'std-make
-                               (lambda () (dispatch groups)))))
-                   (module-source-measure-operation 'build-product-require
-                     (lambda () (require-build-products! identities libdir)))
-                   (.call prepared .admit-spec spec)))
-               refuse-input-context! #t)))))
-      ((equal? (car args) "tags")
-       (unless (= (length args) 2)
-         (error "tags requires an explicit output file"))
-       (let* ((output (path-normalize (cadr args)))
-              (temporary (make-temporary-file-name
-                           (path-expand ".profile-TAGS-" (path-directory output))))
-              (entries (.get prepared build-graph entries))
-              (inputs (filter-map (lambda (entry)
-                                    (and (memq (.get entry kind) '(source publication))
-                                         (.get entry path)))
-                                  entries)))
-         (when (null? inputs) (error "no selected sources for editor tags"))
-         (dynamic-wind void
-           (lambda ()
-             (check-prepared!)
-             (.call prepared .with-compiler-inputs
-               (lambda () (write-native-tags (list inputs temporary)))
-               refuse-input-context!)
-             (check-prepared!)
-             (move-file temporary output))
-           (lambda () (clear-temporary-file! temporary)))))
-      ((equal? (car args) "clean")
-       (let (groups (.call prepared .make-groups #f))
-         ;; This init-owned Make path only manages files. Its private
-         ;; projection never issues an artifact publication. Explicit issuance
-         ;; still validates physical products against its own receipt.
-         (call-with-build-stage 'clean-outputs
-           (lambda ()
-             (.call prepared .with-clean-outputs
-               (lambda ()
-                 (begin0 (call-with-build-stage 'gerbil-clean (lambda () (dispatch groups)))
-                   (call-with-build-stage 'clean-product-residue
-                     (lambda ()
-                       (clean-build-artifacts! (.get prepared compiler-identities) libdir))))))))))
-      (else (dispatch))))
+      ;; Dynamic Gerbil objects use generation-local Gambit units. The compiled
+      ;; program value already identifies native lowering; a static unit-name
+      ;; probe must not send a dynamic namespace back to the source reader.
+      (compiled (.get compiled modules))
+      ((and unit (##lookup-registered-module unit))
+       (error "init has no compiled Module publication" unit))
+      (else (.get (selected!) modules))))
   (values
-    (.o std-make-spec: build-spec
-        admit-current: current! tests: test-source-value)
+    (.o build: (prepare-build)
+        std-make-spec:
+        (with-input-context #f
+          (lambda ()
+            (def spec (.ref/inline build source-spec-site))
+            (.call build .admit-spec spec)
+            (.call build .prepare-compiler-contexts)
+            spec))
+        admit-current:
+        (lambda ()
+          (with-input-context #f
+            (lambda () ((.ref/inline build source-current-site)))))
+        tests: test-source-value)
     module-namespace))

@@ -8,8 +8,8 @@ prelude: :gerbil/core
                  module-source-path prelude-context-path core-read-module/sexp
                  core-library-package-plist core-library-package-path-prefix)
         (only-in :std/list/list delete-duplicates/hash))
-(export package-prelude-identity register-module-build-source! register-yuanxu-build-source! module-build-source-path
-        call-with-build-input-path)
+(export package-prelude-identity register-module-build-source! module-build-source-path
+        call-with-build-input-path package-build-script-path)
 
 ;; The init-owned source projection chooses its compiler inputs. std/make owns
 ;; the output directory separately; runtime consumers retain their normal path.
@@ -76,6 +76,11 @@ prelude: :gerbil/core
       (error "build source package identity mismatch" metadata expected-package))
     directory))
 
+(def (package-build-script-path root)
+  ;; Match Gerbil gxpkg's build: property and standard build.ss default.
+  (def properties (core-library-package-plist root #t))
+  (path-expand (or (and (list? properties) (pgetq build: properties)) "build.ss") root))
+
 (def (register-module-build-source! root expected-package prelude: (expected-prelude #f))
   (def directory (package-source-path root expected-package))
   (def identity (package-prelude-identity directory))
@@ -138,31 +143,3 @@ prelude: :gerbil/core
       (unless (eq? identity actual)
         (error "compiler source identity mismatch" identity actual source))
       source)))
-
-(def (register-yuanxu-build-source! root)
-  (def library (package-source-path root 'yuanxu))
-  (def language ':tao3k/yuanxu/prelude)
-  (def source (path-expand yuanxu-language-file library))
-  (def output (path-expand "lib" (gerbil-path)))
-  ;; Gerbil resolves the language in Make's output library. On a clean checkout
-  ;; the package prefix cannot resolve the off-prefix source language by ID.
-  ;; The bootstrap has one local macro prerequisite. Apply Gerbil's timestamp
-  ;; rule before using either generated interface during entry expansion.
-  (def installed (resolve-build-library language output))
-  (def selected
-    (or (and installed
-             (not (file-newer? source installed))
-             (not (file-newer? (path-expand "gerbil.pkg" library) installed))
-             (let (syntax-interface
-                    (resolve-build-library ':yuanxu/module-system/selection/init-syntax output))
-               (and syntax-interface
-                    (not (file-newer?
-                           (path-expand "module-system/selection/init-syntax.ss" library)
-                           syntax-interface))))
-             installed)
-        source))
-  (def prelude (core-import-module selected))
-  (unless (eq? (expander-context-id prelude) 'tao3k/yuanxu/prelude)
-    (error "build prelude identity mismatch" (expander-context-id prelude)))
-  (add-load-path! library)
-  (core-bind-root-syntax! language prelude #t))

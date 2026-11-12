@@ -7,12 +7,12 @@
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context))
 (export config-prelude-phase-test)
 (def config-prelude-phase-test
-  (test-suite "Native role prelude compiler phases"
+  (test-suite "Standard role prelude compiler phases"
     (test-case "An installed SSI can load its syntax-phase object"
       (call-with-temporary-directory "role-prelude-phase"
         (lambda (root)
-          (def package "native-role-prelude")
-          (def name (symbol->string (gensym 'native-role-phase-)))
+          (def package "build-role-prelude")
+          (def name (symbol->string (gensym 'build-role-phase-)))
           (def source (path-expand (string-append name ".ss") root))
           (call-with-output-file source
             (lambda (out)

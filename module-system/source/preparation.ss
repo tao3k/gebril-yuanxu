@@ -32,7 +32,8 @@
         yuanxu-prepare-module-publication yuanxu-write-module-publication
         yuanxu-prepare-module-build-source yuanxu-prepare-module-tool-source
         yuanxu-prepare-module-retained-source
-        yuanxu-prepare-module-private-source call-with-module-compiler-inputs module-compiler-source-input
+        yuanxu-prepare-module-private-source call-with-module-compiler-inputs
+        call-with-module-compiler-input-bindings module-compiler-init-forms module-compiler-source-input
         module-compiler-source-input-compatible? module-source-input-state module-compiler-source-owner?)
 ;; Only the existing compiler-input owner installs this dynamic source index.
 ;; std/make temporarily removes srcdir while checking dependency timestamps.
@@ -105,6 +106,15 @@
                    (lambda () ((.ref input 'admit-current))))
                  input))))
 
+;; The native expander can consume an already-issued init projection from the
+;; existing extent-owned compiler association. No second Graph or input catalog.
+(def (module-compiler-init-forms path)
+  (def inputs (compiler-source-inputs))
+  (when inputs (require-read-route! 'compiler-source inputs #f))
+  (def row (and inputs (hash-get inputs (path-normalize (path-expand path)))))
+  (and row (eq? (.ref (compiler-input-entry row) 'kind) 'init-publication)
+       (.ref (module-compiler-source-input path) 'compiler-forms)))
+
 (def (source-metadata source key)
   (let (entry (assq key (yuanxu-module-source-ref-metadata source)))
     (and entry (cdr entry))))
@@ -116,13 +126,13 @@
   (cond
     ((not prelude) #t)
     ((or (module-context? prelude) (prelude-context? prelude))
-     (memq (expander-context-id prelude) '(gerbil/core tao3k/yuanxu/prelude)))
+     (memq (expander-context-id prelude) '(gerbil/core yuanxu/prelude)))
     ((string? prelude)
      (ormap (lambda (identity)
               (with-catch (lambda (_missing) #f)
                 (lambda () (equal? prelude (core-resolve-library-module-path identity)))))
-       '(:gerbil/core :tao3k/yuanxu/prelude)))
-    (else (memq (syntax->datum prelude) '(:gerbil/core :tao3k/yuanxu/prelude)))))
+       '(:gerbil/core :yuanxu/prelude)))
+    (else (memq (syntax->datum prelude) '(:gerbil/core :yuanxu/prelude)))))
 (def (read-module-compiler-identity path (text #f) (classify-role? #t))
   ;; Runtime package/header resolution, without core-import-module or expansion.
   (when (current-module-source-observer)
@@ -551,8 +561,24 @@
          source-reads: (source-reads for-each-batch) source-state: (source-state #f)
          source-owner: (source-owner #f) source-import: (source-import compiler-import/independent)
          refuse-input-context: (refuse-input-context #f))
-  ;; Own the association before a source route or role preparation can invoke
-  ;; a currentness callback. Restoring this parameter also restores nested owners.
+  (call-with-module-compiler-input-bindings entries
+    (lambda ()
+      (let (roles (compiler-frame-paths entries))
+        (if unified? (call-with-selected-source-view entries roles action source-reads source-import
+                       refuse-input-context)
+          (begin
+            (unless (null? recorded-entries)
+              (let* ((libdir (build-output-directory))
+                     (view (selected-output-source-directory libdir)))
+                (artifact-files (map (cut .ref <> 'compiler-identity) recorded-entries) libdir #f)
+                (create-directory* view)
+                (prepare-compiler-view-entries! recorded-entries roles source-reads libdir view preserve-unrecorded?: #t)))
+            (call-with-prepared-compiler-inputs entries roles action source-reads source-import)))))
+    source-state: source-state source-owner: source-owner))
+
+(def (call-with-module-compiler-input-bindings entries action
+         source-state: (source-state #f) source-owner: (source-owner #f))
+  ;; Bind the same private input rows for either native expansion or compilation.
   (def selected-sources (make-hash-table))
   ;; The projection owner checks the complete footprint before and after
   ;; this extent. Enrollment is not admission: each lookup below still
@@ -563,18 +589,7 @@
       (for-each (lambda (entry)
         (hash-put! selected-sources (path-normalize (.ref entry 'path))
                    (make-compiler-input (.ref entry 'input) source-state source-owner entry))) entries)))
-  (parameterize ((compiler-source-inputs selected-sources))
-    (let (roles (compiler-frame-paths entries))
-      (if unified? (call-with-selected-source-view entries roles action source-reads source-import
-                     refuse-input-context)
-        (begin
-          (unless (null? recorded-entries)
-            (let* ((libdir (build-output-directory))
-                   (view (selected-output-source-directory libdir)))
-              (artifact-files (map (cut .ref <> 'compiler-identity) recorded-entries) libdir #f)
-              (create-directory* view)
-              (prepare-compiler-view-entries! recorded-entries roles source-reads libdir view preserve-unrecorded?: #t)))
-          (call-with-prepared-compiler-inputs entries roles action source-reads source-import))))))
+  (parameterize ((compiler-source-inputs selected-sources)) (action)))
 (def (for-each-batch entries action) (action entries))
 (def (compiler-import/independent _entry _input _importer _target _identity action)
   (call-with-module-source-callback action))
@@ -698,9 +713,7 @@
     (run (current-build-source-directory) #f)
     (call-with-temporary-directory "yuanxu-compiler-roles" (cut run <> #t))))
 
-(def (build-target-name identity package-prefix
-                        (language (and (equal? package-prefix "yuanxu")
-                                       'tao3k/yuanxu/prelude)))
+(def (build-target-name identity package-prefix (language #f))
   ;; One root-owned language file has an explicit runtime package identity.
   ;; Callers still verify its actual source path and prepared identity.
   (if (and language (eq? identity language))

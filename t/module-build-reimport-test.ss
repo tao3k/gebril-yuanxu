@@ -8,7 +8,7 @@
         (only-in :std/misc/ports read-all-as-string)
         (only-in :gerbil/expander eval-syntax core-import-module module-context-path
                  core-resolve-library-module-path current-expander-context
-                 make-top-context syntax->list))
+                 make-top-context import-module))
 (export module-build-reimport-test)
 (def root (getenv "CORE_QUALIFICATION_ROOT" #f))
 (def phase (getenv "CORE_REIMPORT_PHASE" "cycle"))
@@ -60,15 +60,14 @@
         (def owner (path-expand ".." (path-directory (this-source-file))))
         (check-equal? (source-text (path-expand "build.ss" root))
                       (source-text (path-expand "build.ss" owner)))
-        (parameterize ((current-expander-context (make-top-context)))
-          (eval-syntax '(import :gerbil/core))
-          (eval-syntax '(import (only-in :clan/poo/object .get)))
-          (for-each eval-syntax (syntax->list (read-syntax-from-file (path-expand "build.ss" root))))
-          (eval-syntax `(import (only-in ,(path-expand "init.ss" root)
-                                        yuanxu.init.exports )))
+        (parameterize ((current-expander-context
+                         (import-module (path-expand "build.ss" root) #t #t)))
           (def run (eval-syntax 'main))
-          (def spec (eval-syntax '(.get yuanxu.init.exports std-make-spec)))
-          (def current! (eval-syntax '(.get yuanxu.init.exports admit-current)))
+          (eval-syntax '(import (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)))
+          (def package
+            (eval-syntax `(yuanxu-project-source-spec ,(path-expand "init.ss" root)
+                           core-spec ,root ,(path-expand "build.ss" root))))
+          (def current! (.get package admit-current))
           (def retained (eval-syntax 'core-spec))
           ;; Fail before any compile if the fixture is accidentally a full build.
           (def expected-retained
@@ -77,10 +76,10 @@
           (check-equal? retained expected-retained)
           (unless (equal? retained expected-retained)
             (error "same-state regression requires the bounded JsonSchema fixture"))
-          (def targets (spec retained))
+          (def targets (spec-of run))
           (def names (map (lambda (entry) (if (string? entry) entry (cadr entry))) targets))
           (check-equal? (spec-of run) targets)
-          (check-equal? (eq? targets (spec retained)) #t)
+          (check-equal? (equal? targets (spec-of run)) #t)
           (check-equal? (filter (lambda (name)
                                   (or (string-prefix? "modules/nix/" name)
                                       (string-prefix? "modules/opentofu/" name))) names) '())

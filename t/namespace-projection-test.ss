@@ -14,7 +14,7 @@
   (create-directory* (path-directory path))
   (call-with-output-file (list path: path truncate: #t) (lambda (out) (display text out))))
 (def namespace-projection-test
-  (test-suite "Native POO namespaces, visibility and identity"
+  (test-suite "Standard POO namespaces, visibility and identity"
     (test-case "ordinary slots narrow names and preserve admitted leaf identity"
       (def world-generation "g1")
       (def reads '())
@@ -80,7 +80,7 @@
       (check-equal? (eq? leaf (.get fresh-view shown)) #f)
       (check-equal? (.get fresh-view shown revision) "g2")
       ((.get fresh admit-current)))
-    (test-case "nested projections compose native branches without leaf wrappers"
+    (test-case "nested projections compose standard branches without leaf wrappers"
       (def demands 0)
       (def leaf (.o business: 42))
       (def source (.o public: (begin (set! demands (1+ demands)) leaf)
@@ -97,12 +97,12 @@
       (check-equal? (eq? (.get projected Product command) leaf) #t)
       (check-equal? (.get projected Product command business) 42)
       (check-equal? demands 1))
-    (test-case "productive native slots need no fixed-point loader"
+    (test-case "productive standard slots need no fixed-point loader"
       (def value (.o a: 21 b: (* 2 a)))
       (check-equal? (.get value b) 42)
       (def cyclic (.o left: right right: left))
       (check-exception (.get cyclic left) CyclicSlot?))
-    (test-case "ten-thousand sparse and dense native projections"
+    (test-case "ten-thousand sparse and dense standard projections"
       (def names (map (lambda (n) (string->symbol (string-append "module-" (number->string n))))
                       (iota 10000)))
       (def (probe label permitted measured?)

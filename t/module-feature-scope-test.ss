@@ -15,7 +15,7 @@ prelude: :gerbil/core
 (export module-feature-scope-test)
 
 ;; Types and behavior are ordinary module roles. Only Interface selects which
-;; native function/Contract pair contributes to its owner's final receiver.
+;; standard function/Contract pair contributes to its owner's final receiver.
 (def (scope-roles root)
   (.o
     types:
@@ -87,7 +87,7 @@ prelude: :gerbil/core
 
 (def module-feature-scope-test
   (test-suite "Selected Interface Features extend and admit the final Module scope"
-    (yuanxu-test-case "native refinement and Contract run once per demanded scope; effects stay explicit"
+    (yuanxu-test-case "standard refinement and Contract run once per demanded scope; effects stay explicit"
       (with-feature-scopes
         (lambda (root _module-root)
           (def view (publication-feature-view root "enabled.ss" '(+memory -cold)))
@@ -144,7 +144,7 @@ prelude: :gerbil/core
           (check-equal? (and (string-contains message "feature/first-port") #t) #t)
           (check-equal? (and (string-contains message "port") #t) #t)
           (check-exception ((.get both admit-current)) error?))))
-    (yuanxu-test-case "the published native Type retains Feature obligations without borrowing child reads"
+    (yuanxu-test-case "the published standard Type retains Feature obligations without borrowing child reads"
       (with-feature-scopes
         (lambda (root _module-root)
           (def view (publication-feature-view root "provider.ss" '(+memory)))
@@ -279,7 +279,7 @@ prelude: :gerbil/core
         (lambda (root module-root)
           (def view (publication-feature-view root "changed.ss" '(+changed)))
           (def message (exception-message (lambda () (.get view modules custom example))))
-          ;; Keep the native first diagnostic (publication owner), rather than
+          ;; Keep the standard first diagnostic (publication owner), rather than
           ;; reorder guards to force a leaf-file diagnostic. Prove the callback
           ;; actually changed Config before this refusal, not during setup.
           (check-equal? (call-with-input-file (path-expand "config.ss" module-root) read)

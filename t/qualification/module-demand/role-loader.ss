@@ -12,7 +12,7 @@
   (def owner (path-normalize root))
   (def prepared (yuanxu-prepare-module-private-source owner (path-expand name owner) void))
   (def binding (string->symbol (symbol->string (gensym 'RoleValues))))
-  ;; Keep the native include wrapper and its issued read tokens. Only the
+  ;; Keep the standard include wrapper and its issued read tokens. Only the
   ;; ordinary POO tuple of actual exports is added to the admitted role body.
   (def bundled
     (.cc prepared compiler-forms:

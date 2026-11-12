@@ -75,12 +75,12 @@
           (check-equal? (compile-events (successful (action root b "compile"))) identities)
           (def b-marker (module-source-read (marker b producer)))
           ;; Preserve the EXACT original mtime: bytes, not newer-than, must
-          ;; invalidate the production adapter's native completion association.
+          ;; invalidate the production adapter's standard completion association.
           (write-source source "(export value) (def value 2)\n")
           (check-equal? (backdate source) original-time)
           (check-equal? (compile-events (successful (action root a "compile"))) affected)
           (check-equal? (and (string-contains (successful (action root a "use")) "SOURCE-VIEW-VALUE 2") #t) #t)
-          ;; A callback exception follows preparation but precedes native Make.
+          ;; A callback exception follows preparation but precedes standard Make.
           (write-source source "(export value) (def value 3)\n")
           (check-equal? (backdate source) original-time)
           (check-equal? (and (string-contains (successful (action root a "interrupt")) "SOURCE-VIEW-INTERRUPTED") #t) #t)

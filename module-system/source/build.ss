@@ -35,7 +35,7 @@
         (only-in :yuanxu/module-system/feature/capability-model feature-projection-request?)
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
         (only-in :yuanxu/module-system/building/package write-selected-package))
-(export module-test-source-spec module-build-graph module-build-graph/linked unique-build-inputs retained-build-entries BuildContributionContract ExternalPackageContributionContract BuildSpecContract
+(export module-test-source-spec module-build-graph module-build-graph/linked unique-build-inputs retained-build-entries ExternalPackageContributionContract BuildSpecContract
         BuildPublicationContract module-build-admit-context!
         module-build-package-inputs-current! module-build-package-source-check
         module-build-package-source-procedure module-build-package-source-inspector)
@@ -49,8 +49,6 @@
       (and (list? value) (>= (length value) 2) (eq? (car value) 'gxc:)
            (string? (cadr value)) (> (string-length (cadr value)) 0)
            (andmap string? (cddr value)))))
-(define-type (BuildTargetContract @ Type.)
-  identity: 'module/build-target .element?: build-root?)
 ;; Executables are native Make products, not test-only demands. Their source
 ;; ownership and currentness are checked by the enclosing projection.
 (def (make-target? value)
@@ -70,23 +68,36 @@
   (.cc ObjectContract. identity: 'module/build-spec
     responsibilities:
     (.o module-spec: (List MakeTargetContract)
-        library-spec: (List MakeTargetContract)
+        retained-spec: (List MakeTargetContract)
         spec: (List MakeTargetContract))
     obligations:
     (lambda (candidate location)
-      (if (equal? (.ref candidate 'spec)
-                  (append (.ref candidate 'module-spec) (.ref candidate 'library-spec)))
-        '()
-        (list (.o kind: 'build-spec-merge-mismatch path: (append location '(spec))))))))
-(def (build-contribution? value)
-  (and (object? value) (.slot? value 'kind) (.slot? value 'roots)
-       (eq? (.ref value 'kind) 'module/build)
-       (list? (.ref value 'roots)) (andmap build-root? (.ref value 'roots))
-       (or (not (.slot? value 'library-roots))
-           (and (list? (.ref value 'library-roots))
-                (andmap (lambda (root) (or (string? root) (symbol? root))) (.ref value 'library-roots))))))
-(define-type (BuildContributionContract @ Type.)
-  identity: 'module/build-contribution .element?: build-contribution?)
+      ;; Count actual obligation execution, not just its caller's wrapper.
+      ;; A second validate inside one boundary must count twice as well.
+      (module-source-measure-operation 'build-spec-contract
+        (lambda ()
+          (def spec (.ref candidate 'spec))
+          (if (not (equal? spec
+                           (append (.ref candidate 'module-spec) (.ref candidate 'retained-spec))))
+            (list (.o kind: 'build-spec-merge-mismatch path: (append location '(spec))))
+            (let ((seen (make-hash-table)) (issues '()) (index 0))
+              (for-each
+                (lambda (target)
+                  (def kind (if (string? target) gxc: (car target)))
+                  (def name (if (string? target) target (cadr target)))
+                  ;; One source can declare a library and an EXE. Their products
+                  ;; differ; two declarations of one library or binary do not.
+                  (def key (if (eq? kind exe:)
+                             (list 'binary (pgetq bin: (cddr target) (path-strip-directory name)))
+                             (list kind name)))
+                  (if (hash-key? seen key)
+                    (set! issues
+                      (cons (.o kind: 'duplicate-std-make-target
+                                path: (append location (list 'spec index))
+                                target: key first: (hash-ref seen key) repeated: target) issues))
+                    (hash-put! seen key target))
+                  (set! index (+ index 1))) spec)
+              (reverse issues))))))))
 (define-type (ExternalPackageContributionContract @ Type.)
   identity: 'module/external-package
   .element?: (lambda (value)
@@ -203,6 +214,9 @@
   (let ((entry-values '()) (by-path (make-hash-table)) (by-id (make-hash-table-eq))
         (prepared (make-hash-table)) (checks '()) (check-inputs '()) (other '())
         (asset-values '()) (asset-paths (make-hash-table))
+        (native-targets (make-hash-table)) (native-products (make-hash-table))
+        (native-binaries (make-hash-table))
+        (library-sources (make-hash-table))
         (package-values '()) (package-demands '()) (library-demands '()) (package-refused? #f)
         (package-ids (make-hash-table-eq))
         (cores (make-hash-table-eq)) (owned-graph #f) (graph-policy #f) (entry-construction-intact? (object-construction-current?)))
@@ -239,10 +253,11 @@
             (error "build source belongs to a different selected Graph" owner))
           (hash-put! prepared owner value)
           (add-check! value) value)))
-    (def (add! kind input options owner contributor)
+    (def (add! kind input options owner contributor (library? #t))
       (let* ((path (if (eq? kind 'publication)
                       (.ref (.ref input 'source) 'value) (.ref input 'path)))
              (compiler-identity (.ref input 'compiler-identity)))
+        (when library? (hash-put! library-sources path #t))
         (cond
          ((hash-key? by-path path)
           (let (old (hash-ref by-path path))
@@ -285,81 +300,67 @@
     ;; Package public entries belong to their declaring Module. Gerbil supplies
     ;; the actual import graph; the existing preparer guards every local source.
     ;; Owner-relative roots remain confined and keep their explicit options.
-    (def (add-library! publication roots owner contributor (collected? #f))
+    (def (add-library! publication sources owner contributor (program-source #f))
+      (def directory (path-directory (.ref publication 'path)))
+      (def binding (module-source-package-info directory))
+      (def package-root (and binding (path-normalize (car binding))))
+      (unless package-root (error "public library entries require runtime package metadata" owner))
+      (def package (pgetq package: (cadr binding) #f))
+      (def source-prefix (string-append (path-strip-trailing-directory-separator package-root) "/"))
+      (def entries
+        (map (lambda (path)
+               (unless (and (string? path) (string-prefix? source-prefix path))
+                 (error "collected source leaves its Gerbil package" owner contributor path))
+               (substring path (string-length source-prefix) (string-length path))) sources))
+      (unless (symbol? package) (error "public library entries require a runtime package identity" owner))
+      ;; Confine before expansion, including every unresolved path part.
+      (def prefix (string-append (symbol->string package) "/"))
+      (def language (package-prelude-identity package-root))
+      (def (owned? identity)
+        (and (symbol? identity)
+             (or (eq? identity language)
+                 (string-prefix? prefix (symbol->string identity)))))
       (for-each
-       (lambda (entry)
-        ;; Strings retain the original nearest-package-relative spelling.
-        ;; A native library identity explicitly contributes a public root
-        ;; in this owner's already declared package kernel, never a new window.
-        (let* ((directory
-                 (if (symbol? entry)
-                   (let* ((source (.ref publication 'source))
-                          (kernel (assq 'kernel-root (yuanxu-module-source-ref-metadata source))))
-                     (unless kernel (error "public library identity requires a declared package kernel" owner entry))
-                     (cdr kernel))
-                   (path-directory (.ref publication 'path))))
-               (binding (module-source-package-info directory))
-               (package-root (and binding (path-normalize (car binding)))))
-        (unless package-root (error "public library entries require runtime package metadata" owner))
-        (when (and (symbol? entry) (not (equal? package-root (path-normalize directory))))
-          (error "public library package differs from its declared kernel" owner entry))
-        (let* ((package (pgetq package: (cadr binding) #f))
-               (entries
-                (list (cond
-                       (collected?
-                        (def prefix (string-append (path-strip-trailing-directory-separator package-root) "/"))
-                        (unless (string-prefix? prefix entry)
-                          (error "collected Interface leaves its Gerbil package" owner contributor entry))
-                        (substring entry (string-length prefix) (string-length entry)))
-                       ((and (symbol? entry) (symbol? package))
-                        (build-target-name entry (symbol->string package)))
-                       (else entry)))))
-          (unless (symbol? package) (error "public library entries require a runtime package identity" owner))
-          ;; Confine before expansion, including every unresolved path part.
-          (def prefix (string-append (symbol->string package) "/"))
-          (def language (package-prelude-identity package-root))
-          (def (owned? identity)
-            (and (symbol? identity)
-                 (or (eq? identity language)
-                     (string-prefix? prefix (symbol->string identity)))))
-          (for-each
-            (lambda (entry)
-              (def path (confined-build-path package-root entry))
-              (def input (yuanxu-prepare-module-build-source path void))
-              (unless (string-prefix? prefix (symbol->string (.ref input 'compiler-identity)))
-                (error "public library entry belongs to another runtime package" path)))
-            entries)
-          (def (admit-context context)
-            (def identity (expander-context-id context))
-            (when (owned? identity)
-              (let* ((relative (build-target-name identity (symbol->string package) language))
-                     (path (confined-build-path package-root relative))
-                     (actual (module-context-path context)))
-                (unless (and (string? actual) (equal? path (path-normalize actual)))
-                  (error "public library compiler source differs from declared package" identity path actual))
-                ;; Imported leaves inherit an explicitly selected runtime option
-                ;; set; two explicit contributions still conflict in add!.
-                (add-source! path
-                  (if (hash-key? by-path path) (.ref (hash-ref by-path path) 'options) '())
-                  owner contributor))))
-          (def (declared-source-context context)
-            (let ((identity (expander-context-id context))
-                  (actual (module-context-path context)))
-              (if (and (owned? identity) (string? actual)
-                       (string=? (path-extension actual) ".ssi"))
-                ;; A compiled dependency may be this consumer's hot product.
-                ;; Expand the confined source before traversing its imports.
-                (let* ((relative (build-target-name identity (symbol->string package) language))
-                       (path (confined-build-path package-root relative))
-                       (source (core-import-module path)))
-                  (unless (eq? identity (expander-context-id source))
-                    (error "public library compiler identity differs from declared package" identity path))
-                  source)
-                context)))
-          (package-library-spec/source-context package-root package
-            (map (cut path-default-extension <> ".ss") entries)
-            admit-context declared-source-context))))
-       roots))
+        (lambda (entry)
+          (def path (confined-build-path package-root entry))
+          (def input (yuanxu-prepare-module-build-source path void))
+          (unless (string-prefix? prefix (symbol->string (.ref input 'compiler-identity)))
+            (error "public library entry belongs to another runtime package" path)))
+        entries)
+      (def (admit-context context)
+        (def identity (expander-context-id context))
+        (when (owned? identity)
+          (let* ((relative (build-target-name identity (symbol->string package) language))
+                 (path (confined-build-path package-root relative))
+                 (actual (module-context-path context)))
+            (unless (and (string? actual) (equal? path (path-normalize actual)))
+              (error "public library compiler source differs from declared package" identity path actual))
+            ;; Imported leaves inherit an explicitly selected runtime option
+            ;; set; two explicit contributions still conflict in add!.
+            ;; An EXE source owns a program product; only its imported
+            ;; libraries need gxc products. Do not manufacture a library
+            ;; merely because the official import graph includes its root.
+            (unless (equal? path program-source)
+              (add-source! path
+                (if (hash-key? by-path path) (.ref (hash-ref by-path path) 'options) '())
+                owner contributor)))))
+      (def (declared-source-context context)
+        (let ((identity (expander-context-id context))
+              (actual (module-context-path context)))
+          (if (and (owned? identity) (string? actual)
+                   (string=? (path-extension actual) ".ssi"))
+            ;; A compiled dependency may be this consumer's hot product.
+            ;; Expand the confined source before traversing its imports.
+            (let* ((relative (build-target-name identity (symbol->string package) language))
+                   (path (confined-build-path package-root relative))
+                   (source (core-import-module path)))
+              (unless (eq? identity (expander-context-id source))
+                (error "public library compiler identity differs from declared package" identity path))
+              source)
+            context)))
+      (package-library-spec/source-context package-root package
+        (map (cut path-default-extension <> ".ss") entries)
+        admit-context declared-source-context))
     (def (add-package! owner contributor projection (provider #f))
       (admit-module-value! ExternalPackageContributionContract projection selected-value)
       (let* ((publication (owner-preparation owner))
@@ -418,22 +419,50 @@
                 (eq? (.ref projection 'kind) 'module/external-package))
            (set! package-demands
              (cons (lambda () (add-package! owner contributor-value projection)) package-demands)))
-          ((and (object? projection) (.slot? projection 'kind)
-                (eq? (.ref projection 'kind) 'module/build))
-           (admit-module-value! BuildContributionContract projection selected-value)
+          ((list? projection)
+           ;; A Module's Build binding is an ordinary std/make specification.
+           ;; Keep native product kinds and option values; only source ownership
+           ;; and confinement belong to this collection boundary.
            (let* ((publication (owner-preparation owner))
                   (metadata (yuanxu-module-source-ref-metadata (.ref publication 'source)))
                   (root (or (assq 'module-root metadata) (assq 'module-tree-root metadata))))
-             (unless root (error "build contribution has no admitted source root" owner))
+             (unless root (error "build specification has no admitted source root" owner))
              (for-each
-              (lambda (spec)
-                (add-source! (confined-build-path (cdr root) (if (string? spec) spec (cadr spec)))
-                             (if (string? spec) '() (cddr spec)) owner contributor-value))
-              (.ref projection 'roots))
-             (when (.slot? projection 'library-roots)
-               (set! library-demands
-                 (cons (list publication (.ref projection 'library-roots) owner contributor-value)
-                       library-demands)))))
+               (lambda (spec)
+                 (unless (make-target? spec) (error "invalid Module Make target" spec))
+                 (let* ((name (if (string? spec) spec (cadr spec)))
+                        (kind (if (string? spec) gxc: (car spec)))
+                        (options (if (string? spec) '() (cddr spec)))
+                        (path (confined-build-path (cdr root) name))
+                        (program? (eq? kind exe:))
+                        (new-source? (not (hash-key? native-targets path)))
+                        (product (list path kind
+                                   (and program? (pgetq bin: options (path-strip-directory name))))))
+                   (when program?
+                     (let* ((binary (caddr product)) (old (hash-get native-binaries binary)))
+                       (when (and old (not (equal? old path)))
+                         (error "programs share one binary output" binary old path))
+                       (hash-put! native-binaries binary path)))
+                   (when (hash-key? native-products product)
+                     (unless (equal? (hash-ref native-products product) spec)
+                       (error "conflicting Module Make targets" spec))
+                     (error "duplicate Module Make target" owner contributor-value spec))
+                   (unless (hash-key? native-products product)
+                     (hash-put! native-products product spec)
+                     (hash-put! native-targets path (cons spec (hash-ref native-targets path '()))))
+                   (if program?
+                     (let (old (hash-get by-path path))
+                       (add! 'source
+                         (if old (.ref old 'input) (yuanxu-prepare-module-build-source path void))
+                         (if old (.ref old 'options) '()) owner contributor-value #f))
+                     (add-source! path options owner contributor-value))
+                   ;; Traverse actual imports after explicit selected options
+                   ;; are known, using the existing native source graph walker.
+                   (when new-source?
+                     (set! library-demands
+                       (cons (list publication (list path) owner contributor-value
+                                   (and program? path)) library-demands)))))
+               projection)))
           ((feature-projection-request? projection)
            ;; A build request still needs an admitted concrete build contribution.
            (when (eq? (.ref projection 'projection-id) 'build)
@@ -474,7 +503,7 @@
            ((feature)
             (when (.ref node 'interface)
               (set! library-demands
-                (cons (list (owner-preparation owner) (list (.ref node 'interface)) owner contributor #t)
+                (cons (list (owner-preparation owner) (list (.ref node 'interface)) owner contributor)
                       library-demands)))
             (add-projections! owner contributor (.ref (.ref node 'descriptor) 'projections)))
            (else (error "unknown selected Graph node" node))))) (.ref selected-value 'nodes))
@@ -704,6 +733,20 @@
           assets: (reverse asset-values)
           .package: (lambda (directory) (write-selected-package graph directory))
           entries: (reverse entry-values) other-projections: (reverse other)
+          ;; Source entries are unique compiler inputs; one input can own several
+          ;; native products. Generated role libraries remain ordinary gxc targets.
+          std-make-targets:
+          (foldr append '() (map
+            (lambda (entry)
+              (def path (.ref entry 'path))
+              (def targets (reverse (hash-ref native-targets path '())))
+              (def library? (hash-get library-sources path))
+              (def explicit-library?
+                (ormap (lambda (target) (or (string? target) (eq? (car target) gxc:))) targets))
+              (map (lambda (target) (cons path target))
+                (if (and library? (not explicit-library?))
+                  (cons `(gxc: ,path ,@(.ref entry 'options)) targets) targets)))
+            entries))
           ;; A single Graph, with independent compiler and operational demand.
           ;; Compiler projection never prepares provider configuration or scope.
           external-packages:
@@ -751,13 +794,14 @@
 (def (retained-build-entries specs root package-prefix selected capture: (capture #f) programs?: (programs? #f))
   (unless (and (list? specs) (or (null? specs) (and (string? root) (path-absolute? root))))
     (error "retained build entries require a source root" root))
-  (let ((seen (make-hash-table-eq)) (selected-by-path (make-hash-table))
+  (let ((seen (make-hash-table)) (selected-inputs (make-hash-table))
         (language (and (pair? specs) (package-prelude-identity root))))
     ;; Resolve each selected path once. Retained libraries overlap the Module
     ;; projection; a scan per library repeated both POO reads and normalization.
     (for-each
       (lambda (entry)
-        (hash-put! selected-by-path (path-normalize (.ref entry 'path)) entry))
+        (hash-put! selected-inputs (path-normalize (.ref entry 'path)) entry)
+        (hash-put! selected-inputs (.ref entry 'compiler-identity) entry))
       selected)
     (map
      (lambda (spec)
@@ -790,7 +834,7 @@
                (unless (eq? (module-source-type file) (if (pair? (cdr parts)) 'directory 'regular))
                  (error "retained source is missing, non-regular or a symlink" file))
                (if (pair? (cdr parts)) (walk file (cdr parts)) file)))))
-         (def old (hash-get selected-by-path path))
+         (def old (hash-get selected-inputs path))
          (def input (if old (.ref old 'input)
                                  ;; Ordinary retained files own their source/package guards.
                                  ;; The projection checks its selected Graph once at each
@@ -798,20 +842,30 @@
                                  ;; replay to every file (including every read of its fields).
                                  (yuanxu-prepare-module-retained-source path void capture: capture)))
          (def compiler-identity (.ref input 'compiler-identity))
+         ;; Authenticate explicit source identity before expanding its imports.
+         ;; An impostor with copied forms must not enter dependency discovery.
+         (def selected-input (hash-get selected-inputs compiler-identity))
+         (when (and selected-input
+                    (not (equal? path (path-normalize (.ref selected-input 'path)))))
+           (error "conflicting compiler inputs" compiler-identity))
          (unless (equal? name (build-target-name compiler-identity package-prefix language))
            (error "retained source path and compiler identity disagree" name compiler-identity))
-         (when (hash-key? seen compiler-identity)
+         ;; One source can produce a library and independent executable products.
+         ;; Repeated declarations of the same product remain an error.
+         (def product (list compiler-identity make-kind bin-name))
+         (when (hash-key? seen product)
            (error "duplicate retained compiler target" compiler-identity))
-         (hash-put! seen compiler-identity #t)
-         (when (and old (not (equal? options (.ref old 'options))))
+         (hash-put! seen product #t)
+         (when (and old (not program?) (not (equal? options (.ref old 'options))))
            (error "conflicting retained compiler options" compiler-identity))
          (def kind 'source)
          (def owner 'build)
          (def contributor 'retained)
-         (or old
-             (if program?
-               (.o kind path input options compiler-identity owner contributor make-kind bin-name)
-               (.o kind path input options compiler-identity owner contributor))))) specs)))
+         ;; Retain the program product even when its source is already selected.
+         ;; Returning old here silently changes an executable into a library.
+         (if program?
+           (.o kind path input options compiler-identity owner contributor make-kind bin-name)
+           (or old (.o kind path input options compiler-identity owner contributor))))) specs)))
 ;; This is compiler-input analysis, not module loading. Read package/prelude
 ;; metadata and expand the COMPLETE body with Gerbil, including generated and
 ;; phase-shifted imports. The private context is never installed in the loader,

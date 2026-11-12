@@ -12,7 +12,7 @@
              (displayln "runtime-attribution lexical=full")
              (verify-runtime-attribution exports count root accounting?: 'stages)))
 (def module-runtime-attribution-test
-  (test-suite "Native declaration/currentness/scope attribution controls"
+  (test-suite "Standard declaration/currentness/scope attribution controls"
     (declaration-scale-case "sixteen real declarations" 16 StageAttributionFixture)
     (declaration-scale-case "sixty-four real declarations" 64 StageAttributionFixture)
     (declaration-scale-case "sixty-four declarations with open payloads" 64 OpenStageAttributionFixture)))

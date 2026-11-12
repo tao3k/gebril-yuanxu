@@ -4,7 +4,7 @@
 ;;; purity flag or an alternate cache. POO owns all delayed role values.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/prototype-map prototype-map)
-        (only-in :gerbil/expander datum->syntax eval-syntax resolve-identifier
+        (only-in :gerbil/expander datum->syntax eval-syntax core-expand import-module resolve-identifier
                  current-expander-context expander-context-id
                  module-context? module-context-path make-top-context
                  current-expander-module-import core-import-module core-module->prelude-context
@@ -65,8 +65,9 @@
                                           (core-module->prelude-context language)))))
         ;; Preserve the invoking reader's import owner. Replacing its hook with
         ;; core-import-module loses dependency provenance on cached imports.
-        (when collision? (eval-syntax '(import :gerbil/core)))
-        (eval-syntax `(import (only-in ,specifier ,binding)))
+        (when collision? (core-expand '(import :gerbil/core)))
+        (core-expand `(import (only-in ,specifier ,binding)))
+        (import-module specifier #f #t)
         (apply (eval-syntax binding) arguments)))))
 (def (closed-rows body)
   (let loop ((rest body) (seen '()) (rows '()))

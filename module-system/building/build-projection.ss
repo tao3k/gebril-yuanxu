@@ -5,8 +5,8 @@
 ;;; std/make owns compilation, dependency scheduling and clean.
 (import (only-in :std/string/path path-absolute?)
         (only-in :yuanxu/module-system/building/program-publication project-program-init)
-        (only-in :gerbil/expander core-import-module expander-context-id)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module call-with-build-stage)
+        (only-in :gerbil/expander core-import-module expander-context-id module-context-path import-module current-expander-compiling?)
+        (only-in :yuanxu/module-system/building/source-closure for-each-build-module call-with-build-stage package-library-spec/source-context)
         (only-in :yuanxu/module-system/building/products build-output-directory
                  current-build-source-directory current-build-module-roots call-with-selected-output-lock
                  selected-output-source-directory artifact-files)
@@ -16,7 +16,8 @@
         (only-in :yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :yuanxu/module-system/source/build unique-build-inputs module-test-source-spec retained-build-entries BuildSpecContract)
         (only-in :clan/poo/mop validate)
-        (only-in :yuanxu/module-system/source/preparation build-target-name yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source call-with-module-compiler-inputs)
+        (only-in :yuanxu/module-system/source/preparation build-target-name yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source
+                 call-with-module-compiler-inputs call-with-module-compiler-input-bindings)
         (only-in :yuanxu/module-system/source/admission module-source-type
                  module-source-name? module-source-admit-current! call-with-module-source-read-cache
                  module-source-measure-operation))
@@ -29,62 +30,37 @@
   (module-entry-action 'yuanxu/module-system/building/build-projection
     "yuanxu/module-system/building/artifacts"
     'yuanxu/module-system/building/artifacts#run-build-artifact-process))
-(def (project-std-make-specs entries targets language compile?)
-  ;; The package language is the only local target with a distinct prefix.
-  ;; Gerbil orders dependencies within a batch. Its selected prerequisites
-  ;; must be in the ordinary batch before the language target.
-  (def prerequisites (make-hash-table-eq))
-  (when compile?
-    (for-each-build-module (core-import-module (.ref language 'path))
-      (lambda (context) (hash-put! prerequisites (expander-context-id context) #t))))
-  (def before '())
-  (def after '())
-  (def language-target #f)
-  (for-each
-    (lambda (entry target)
-      (cond
-       ((eq? (.ref entry 'compiler-identity) (.ref language 'compiler-identity))
-        (set! language-target target))
-       ((hash-key? prerequisites (.ref entry 'compiler-identity)) (set! before (cons target before)))
-       (else (set! after (cons target after)))))
-    entries targets)
-  (def (ordinary targets)
-    (let (batch-targets (reverse targets))
-      (if (null? batch-targets) '() (list (.o prefix: #f spec: batch-targets)))))
-  (def language-prefix
-    (path-strip-trailing-directory-separator
-      (path-directory (symbol->string (.ref language 'compiler-identity)))))
-  (unless language-target
-    (error "package language is absent from admitted Make targets"
-           (.ref language 'compiler-identity)))
-  (let (language-spec (list language-target))
-    (append (ordinary before) (list (.o prefix: language-prefix spec: language-spec)) (ordinary after))))
-
-(def (collect-build-entries selected kept retained)
-  (def seen (make-hash-table-eq))
-  (def (first? entry)
+(def (collect-build-entries selected kept retained library-source?)
+  (def sources (make-hash-table-eq))
+  (def libraries-seen (make-hash-table-eq))
+  (def (first? entry (selected? #f))
     (def id (.ref entry 'compiler-identity))
     (cond
-     ((hash-get seen id)
+     ((hash-get sources id)
       => (lambda (old)
            (unless (and (equal? (.ref old 'path) (.ref entry 'path))
-                        (equal? (.ref old 'options) (.ref entry 'options))
                         (equal? (.ref (.ref old 'input) 'compiler-forms)
                                 (.ref (.ref entry 'input) 'compiler-forms)))
-             (error "conflicting compiler inputs" id))
-           #f))
-     (else (hash-put! seen id entry) #t)))
-  (def modules (filter first? selected))
+             (error "conflicting compiler inputs" id))))
+     (else (hash-put! sources id entry)))
+    ;; Compiler identity authenticates source, not product or compiler options.
+    ;; EXE options belong to its binary; a library retains its own options.
+    (if (or (and (.slot? entry 'make-kind) (eq? (.ref entry 'make-kind) exe:))
+            (and selected? (not (library-source? entry))))
+      #t
+      (cond
+       ((hash-get libraries-seen id)
+        => (lambda (old)
+             (unless (equal? (.ref old 'options) (.ref entry 'options))
+               (error "conflicting compiler inputs" id))
+             #f))
+       (else (hash-put! libraries-seen id entry) #t))))
+  (def modules (filter (lambda (entry) (first? entry #t)) selected))
   (def libraries
     (filter-map
-      (lambda (entry target)
-        (def fresh? (first? entry))
-        ;; A library and an executable may share their compiler input. Only
-        ;; identical library targets collapse; an executable is a distinct product.
-        (and (or fresh? (and (pair? target) (eq? (car target) exe:)))
-             (cons entry target)))
+      (lambda (entry target) (and (first? entry) (cons entry target)))
       kept retained))
-  (values modules libraries (hash-get seen 'tao3k/yuanxu/prelude)))
+  (values modules libraries))
 
 (def (yuanxu-project-source-spec source retained root entry-source demand: (demand #f))
   (if demand
@@ -105,8 +81,7 @@
       (path-directory (symbol->string (.ref entry-input 'compiler-identity)))))
   (def (local-entry? entry)
     (let (identity (.ref entry 'compiler-identity))
-      (or (and (equal? package-prefix "yuanxu") (eq? identity 'tao3k/yuanxu/prelude))
-          (string-prefix? (string-append package-prefix "/") (symbol->string identity)))))
+      (string-prefix? (string-append package-prefix "/") (symbol->string identity))))
   (let* ((view (if (string? source) (yuanxu-load-modules source) source))
          (graph (module-source-measure-operation 'build-selected-graph
                   (lambda ()
@@ -117,6 +92,25 @@
                             ((.ref view '.build-graph-for) roots)
                             (.ref view 'build-graph))))))))
          (graph-entries (.ref graph 'entries))
+         (module-roots
+          (map (lambda (entry)
+                 (path-directory (.ref entry 'path)))
+               (filter (lambda (entry) (eq? (.ref entry 'kind) 'publication)) graph-entries)))
+         (init-source
+          (and (.slot? view 'context) (.ref (.ref view 'context) 'init-source)))
+         (module-source?
+          (lambda (entry)
+            (def path (.ref entry 'path))
+            (or (null? module-roots) (equal? path init-source)
+                (ormap (lambda (directory) (string-prefix? directory path)) module-roots))))
+         (native-target-index
+          (and (.slot? graph 'std-make-targets)
+            (let (index (make-hash-table))
+              (for-each
+                (lambda (row)
+                  (hash-put! index (car row) (cons (cdr row) (hash-ref index (car row) '()))))
+                (.ref graph 'std-make-targets))
+              index)))
          ;; Native imports and the retained package closure own the targets.
          ;; Lower a reached yuanxu! declaration below; do not manufacture a
          ;; target merely because this selection was obtained from init.
@@ -125,20 +119,40 @@
          ;; Share the existing pure read window across their own source guards.
          ;; The projection owns selected-Graph admission once per boundary; end
          ;; this window before compilation or independent currentness checks.
+         (capture-retained
+          (lambda (value checker path ready? state)
+            (when state
+              (hash-put! retained-states (.ref value 'compiler-identity)
+                (lambda (input actual)
+                  (and (eq? input value) (eq? actual checker) (state)))))
+            value))
          (kept (module-source-measure-operation 'build-retained-entries
                  (lambda ()
                    (call-with-module-source-read-cache
                      (lambda ()
                        (retained-build-entries retained root package-prefix graph-entries
-                     programs?: #t capture:
-                     (lambda (value checker path ready? state)
-                       ;; These procedures are captured at the native constructor,
-                       ;; not read from an author-supplied object property.
-                       (when state
-                         (hash-put! retained-states (.ref value 'compiler-identity)
-                           (lambda (input actual)
-                             (and (eq? input value) (eq? actual checker) (state)))))
-                       value)))))))
+                         programs?: #t capture: capture-retained))))))
+         ;; Expand actual native imports once. Keep explicit source objects and
+         ;; their constructor-issued state; only missing dependencies need new
+         ;; inputs, and no source-state procedure comes from an author field.
+         (additional-spec
+          (let* ((names (map (lambda (target) (if (string? target) target (cadr target))) retained))
+                 (source-prefix
+                   (string-append (path-strip-trailing-directory-separator (path-normalize root)) "/"))
+                 (closure
+                  (package-library-spec/source-context root (string->symbol package-prefix)
+                    (map (lambda (name) (string-append name ".ss")) names) void
+                    (lambda (context)
+                      (let (path (module-context-path context))
+                        (and (string? path) (string=? (path-extension path) ".ss")
+                             (string-prefix? source-prefix (path-normalize path)) context))))))
+            (filter (lambda (name) (not (member name names))) closure)))
+         (retained (append additional-spec retained))
+         (kept
+          (append
+            (retained-build-entries additional-spec root package-prefix graph-entries
+              programs?: #t capture: capture-retained)
+            kept))
          (kept (map (lambda (entry) (project-program-init view graph entry)) kept))
          ;; A declared package library may itself reach init. Project that
          ;; same native owner once, regardless of which edge discovered it.
@@ -147,8 +161,12 @@
          ;; A package prefix names a target; it cannot demote a selected source
          ;; to an installed prerequisite. Native imports outside this set remain
          ;; Gerbil prerequisites and never enter the compiler source view.
-         ((values module-entries library-entries language)
-          (collect-build-entries graph-entries kept retained))
+         ((values module-entries library-entries)
+          (collect-build-entries (filter module-source? graph-entries) kept retained
+            (lambda (entry)
+              (or (not native-target-index)
+                  (ormap (lambda (target) (or (string? target) (eq? (car target) gxc:)))
+                         (hash-ref native-target-index (.ref entry 'path) '()))))))
          (target-entries (append module-entries (map car library-entries)))
          (entries
            (let (seen (make-hash-table-eq))
@@ -156,23 +174,40 @@
                        (def id (.ref entry 'compiler-identity))
                        (and (not (hash-key? seen id))
                             (begin (hash-put! seen id #t) #t))) target-entries)))
+         (compiler-input-entries
+          (let (seen (make-hash-table-eq))
+            (filter (lambda (entry)
+                      (def id (.ref entry 'compiler-identity))
+                      (and (not (hash-key? seen id))
+                           (begin (hash-put! seen id #t) #t)))
+                    (append graph-entries kept))))
+         (native-init-entries
+          (filter (lambda (entry) (eq? (.ref entry 'kind) 'init-publication)) entries))
          (foreign? (ormap (lambda (entry) (not (local-entry? entry))) entries))
          (observed (unique-build-inputs
                      (append (.ref entry-input 'source-inputs) (.ref graph 'compiler-inputs)
                        (foldr append '()
                          (map (lambda (entry) (.ref (.ref entry 'input) 'source-inputs)) kept)))))
          (module-value
-          (map (lambda (entry)
-                 (let* ((name (build-target-name (.ref entry 'compiler-identity)
-                                (if foreign? "" package-prefix)))
+          (foldr append '() (map (lambda (entry)
+                 (let* ((name (if foreign?
+                                (symbol->string (.ref entry 'compiler-identity))
+                                (build-target-name (.ref entry 'compiler-identity) package-prefix)))
                         (expected (path-expand (string-append name ".ss") root)))
-                   ;; A local Make target must match the repository path. Cross-
-                   ;; package targets use the existing checked source view; their
-                   ;; original path/identity stays bound by input currentness.
+                   ;; A multi-package projection uses native compiler identities
+                   ;; in its owned prefix-free source view. Absolute author paths
+                   ;; cannot predict native Make output locations correctly.
                    (unless (or foreign?
                                (equal? (path-normalize expected) (path-normalize (.ref entry 'path))))
                      (error "source target does not match repository path" name (.ref entry 'path)))
-                   `(gxc: ,name ,@(.ref entry 'options)))) module-entries))
+                   (if native-target-index
+                     (map
+                       (lambda (row)
+                         (def target row)
+                         (if (string? target) name
+                           `(,(car target) ,name ,@(cddr target))))
+                       (reverse (hash-ref native-target-index (.ref entry 'path) '())))
+                     (list `(gxc: ,name ,@(.ref entry 'options)))))) module-entries)))
          ;; Keep the package's original native targets/options. The only
          ;; overlap removal is an already checked identical selected target.
          (library-value
@@ -181,7 +216,7 @@
                     (if foreign?
                       (let (target (cdr row))
                         `(,(if (pair? target) (car target) gxc:)
-                          ,(build-target-name (.ref entry 'compiler-identity) "")
+                          ,(symbol->string (.ref entry 'compiler-identity))
                           ,@(if (pair? target) (cddr target) (.ref entry 'options))))
                       (cdr row))))
                 library-entries))
@@ -231,9 +266,8 @@
       ;; Every use checks the actual native value against this init's two
       ;; independently produced inputs. This is not a cached admission verdict.
       (require-spec-identity! value)
-      (module-source-measure-operation 'build-spec-contract
-        (lambda ()
-          (validate BuildSpecContract (.o module-spec: module-value library-spec: library-value spec: value))))
+      (validate BuildSpecContract
+        (.o module-spec: module-value retained-spec: library-value spec: value))
       value)
     (def (with-admitted-spec receiver action)
       (current!)
@@ -243,17 +277,42 @@
         (admit-spec (.ref receiver 'spec))))
     (call-with-build-stage 'projection-current current!)
     (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
-        ;; Prefix batches partition the exact admitted Make targets.
-        .make-groups: (lambda (compile?)
-                        (if (and language (not foreign?) (equal? package-prefix "yuanxu"))
-                          (project-std-make-specs target-entries build-value language compile?)
-                          '()))
         compiler-identities: (map (cut .ref <> 'compiler-identity) entries)
-        ;; Installed imports are resolved by Gerbil, not manufactured from a
-        ;; discarded foreign source partition. No selected identity lives here.
-        dependency-identities: '()
+        ;; Sources outside the selected Module roots remain observed compiler
+        ;; dependencies; ordinary Core libraries have their own package list.
+        dependency-identities:
+        (filter (lambda (id) (not (memq id (.ref projection 'compiler-identities))))
+          (map (cut .ref <> 'compiler-identity) compiler-input-entries))
         source-inputs: observed
         .admit-spec: admit-spec
+        .prepare-compiler-contexts:
+        (lambda ()
+          (require-spec-identity! (.ref projection 'spec))
+          (if (null? native-init-entries)
+            (current!)
+            (with-admitted-spec projection
+              (lambda ()
+                (call-with-module-compiler-input-bindings compiler-input-entries
+                  (lambda ()
+                    ;; Reload in Gerbil's actual dependency order. Reloading
+                    ;; only init leaves cached consumers pointing at its OLD
+                    ;; context, so native linking misses the generated imports.
+                    (def owned (make-hash-table))
+                    (def seen (make-hash-table-eq))
+                    (def paths '())
+                    (for-each (lambda (entry) (hash-put! owned (.ref entry 'path) #t)) entries)
+                    (for-each
+                      (lambda (entry)
+                        (for-each-build-module (core-import-module (.ref entry 'path))
+                          (lambda (context)
+                            (def path (module-context-path context))
+                            (when (and (string? path) (hash-get owned path))
+                              (hash-remove! owned path)
+                              (set! paths (cons path paths)))) seen)) entries)
+                    (parameterize ((current-expander-compiling? #t))
+                      (for-each (lambda (path) (import-module path #t #f))
+                        (reverse paths))))
+                  source-owner: graph)))))
         ;; Ordinary package Make and issued compilation share role lowering,
         ;; not authority. A package build does not mint publication approval.
         .with-compiler-inputs:
@@ -264,7 +323,7 @@
           (def (compile-inputs)
             (with-admitted-spec projection
               (lambda ()
-                (call-with-module-compiler-inputs entries action unified?: foreign?
+                (call-with-module-compiler-inputs compiler-input-entries action unified?: foreign?
                       recorded-entries:
                       (append
                         (filter (lambda (entry) (eq? (.ref entry 'kind) 'init-publication)) entries)

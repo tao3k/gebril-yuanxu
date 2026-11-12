@@ -158,7 +158,7 @@
                   (lambda (progress)
                     (.call reader read-candidate (lambda () first) 'custom/example context)
                     ;; The Reader already owns one progress key. Unrelated producers
-                    ;; fill the bounded table before the second real native import.
+                    ;; fill the bounded table before the second real standard import.
                     (let fill ((index 0))
                       (when (< index 4096)
                         (execution-progress! (list 'independent-progress index) 1)
@@ -168,7 +168,7 @@
                     (check-equal? (execution-progress-idle-milliseconds progress) 0)
                     (set! now 51000)
                     (.call reader read-candidate (lambda () first) 'custom/example context)
-                    ;; Reading the same native Context again must not rearm idle.
+                    ;; Reading the same standard Context again must not rearm idle.
                     (check-equal? (execution-progress-idle-milliseconds progress) 1000)
                     (set! now 110000)
                     (check-equal? (execution-progress-status progress) 'idle))

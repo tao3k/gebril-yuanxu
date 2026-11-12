@@ -183,7 +183,7 @@
            (begin (set! stage 'table) (gambit-table? value))
            (##continuation? value) (gc-wrapper? value))
        (unless (hash-key? frontiers value)
-         ;; Native Gerbil tables are not Gambit tables. Their backing vector
+         ;; Standard Gerbil tables are not Gambit tables. Their backing vector
          ;; contains VM sentinel cells, not ordinary Scheme payload arguments.
          ;; Account through the runtime's read-only accessors without walking
          ;; storage cells, hashing, rehashing or invoking interface methods.

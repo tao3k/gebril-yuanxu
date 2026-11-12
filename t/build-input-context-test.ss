@@ -25,7 +25,7 @@
                 (call-with-build-input-path output
                   (lambda ()
                     (check-equal? (load-path) (list one two output))
-                    ;; Nested scopes and the normal native output fallback work.
+                    ;; Nested scopes and the normal standard output fallback work.
                     (call-with-build-input-path output
                       (lambda () (check-equal? (load-path) (list one two output))))
                     (values 1 2)))))

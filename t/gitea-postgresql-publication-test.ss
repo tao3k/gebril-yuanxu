@@ -89,7 +89,7 @@
         (check-equal? (.get (car (.get rejected diagnostics)) kind) 'stale-parent-plan)
         (check-equal? (.get rejected candidate plan postgresql port) 5433)
         (check-equal? (memq 'services/unused (.get selection selected-graph module-order)) #f)
-        ;; The real configuration supplies the finite policy domain. Native
+        ;; The real configuration supplies the finite policy domain. Standard
         ;; PBT derives its generator from Enum.; no separate sampler or runner.
         ;; Boundary ports additionally exercise refusal by both contributions.
         (def server-ports (.get parent config postgresql allowed-ports))

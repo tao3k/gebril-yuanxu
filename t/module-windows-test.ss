@@ -62,7 +62,7 @@
     (write-forms (path-expand "build.ss" root)
       `((import (only-in :clan/poo/object .get) (only-in :std/build-script defbuild-script)
                 (only-in "./init.ss" ,binding))
-        (defbuild-script ((.get ,binding std-make-spec) '()))))))
+        (defbuild-script (.get ,binding std-make-spec))))))
 (def module-windows-test
   (test-suite "One init, mounted directories and one selected Graph"
     (test-case "legacy Profile registries cannot select another yuanxu declaration path"
@@ -87,7 +87,7 @@
       (def intent (module-init-intent (list declaration) #f))
       (check-equal? (map (cut .ref <> 'mount) (.get intent windows)) '(Modules Scenarios))
       (check-equal? (map (cut .ref <> 'identity) (.get intent decisions)) '(engine release)))
-    (yuanxu-test-case "native package windows are confined declarations, not installation requests"
+    (yuanxu-test-case "standard package windows are confined declarations, not installation requests"
       (def intent
         (module-init-intent
           '((yuanxu! :load-modules "modules" package: "github.com/example/module-provider"
@@ -222,7 +222,7 @@
           '(eq? (.get (.call (.get FixtureExports tests) .select '(engine)) selected-graph)
                 (.get (.call (.get FixtureExports tests) .select '(release)) selected-graph))) #t)
         (check-equal? (length (eval-syntax '(.get FixtureExports tests spec))) 2)
-        (check-equal? (pair? (eval-syntax '((.get FixtureExports std-make-spec) '()))) #t)
+        (check-equal? (pair? (eval-syntax '(.get FixtureExports std-make-spec))) #t)
         (eval-syntax '((.get (.call (.get FixtureExports tests) .select '(release)) admit-current)))
         (eval-syntax '(def CapturedTests (.call (.get FixtureExports tests) .select '(release))))
         (check-equal? (eval-syntax '(.ref/cached (.get FixtureExports Scenarios) 'release)) #f)
@@ -272,7 +272,7 @@
       (fixture! root)
       (write-forms (path-expand "modules/library/shared.ss" root)
         '((import :clan/poo/object) (def Shared (.o value: 42)) (export Shared)))
-      ;; Native library facades do not acquire Module ownership merely from
+      ;; Standard library facades do not acquire Module ownership merely from
       ;; this conventional filename. Their bytes still belong to currentness.
       (write-forms (path-expand "modules/library/nested/value.ss" root)
         '((export nested) (def nested 42)))
@@ -341,7 +341,7 @@
         '((import (only-in "hidden/library.ss" Shared)) (export Shared)))
       (check-exception (.get (yuanxu-load-modules (path-expand "init.ss" nested)) build-graph) error?)
       (check-equal? (file-exists? marker) #f))
-    (yuanxu-test-fixture "same leaf names in native roots keep separate scopes and exact owner keys"
+    (yuanxu-test-fixture "same leaf names in standard roots keep separate scopes and exact owner keys"
       (root Workspace)
       (fixture! root)
       (def second (path-expand "scenarios/engine" root))
@@ -374,12 +374,12 @@
                         (yuanxu-module-source-ref-metadata left-source)))))
       (check-exception
         (admit-module-publication! forged right-id (.get left-record publication) (.get view context))
-        (message-is "root-qualified publication differs from native source identity"))
+        (message-is "root-qualified publication differs from standard source identity"))
       (check-equal? (.get view selected-graph module-order)
                     (list (fixture-owner root "modules/engine/interface.ss")
                           (fixture-owner root "scenarios/engine/interface.ss")))
       (check-exception (.call view .build-graph-for '(engine))
-        (message-is "unqualified module root requires one native owner")))
+        (message-is "unqualified module root requires one standard owner")))
     (yuanxu-test-fixture "a mounted local requirement follows its declared source location"
       (root Workspace)
       (fixture! root)
@@ -397,16 +397,16 @@
                           (fixture-owner root "scenarios/release/interface.ss")))
       (check-equal? (.get view modules Scenarios engine value) 42)
       (check-equal? (.get view modules Scenarios release value) 42))
-    (yuanxu-test-fixture "two auto checkouts cannot claim the same complete native root"
+    (yuanxu-test-fixture "two auto checkouts cannot claim the same complete standard root"
       (root Workspace)
-      (fixture! (path-expand "left" root) 'same-native-root)
-      (fixture! (path-expand "right" root) 'same-native-root)
+      (fixture! (path-expand "left" root) 'same-build-root)
+      (fixture! (path-expand "right" root) 'same-build-root)
       (write-forms (path-expand "init.ss" root)
         '((yuanxu! :load-modules "./left/modules" mode: auto rename: Left
                     :load-modules "./right/modules" mode: auto rename: Right)))
       (check-exception (yuanxu-load-modules (path-expand "init.ss" root))
-        (message-is "native root identity has multiple source owners")))
-    (yuanxu-test-fixture "a local requirement never falls back to another native root"
+        (message-is "standard root identity has multiple source owners")))
+    (yuanxu-test-fixture "a local requirement never falls back to another standard root"
       (root Workspace)
       (fixture! root)
       (write-forms (path-expand "scenarios/release/interface.ss" root)

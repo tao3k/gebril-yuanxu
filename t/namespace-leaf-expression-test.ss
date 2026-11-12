@@ -1,13 +1,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Native POO leaf expressions: receiver, slot continuation and lexical scope.
+;;; Standard POO leaf expressions: receiver, slot continuation and lexical scope.
 (import :std/test :clan/poo/object
         (only-in "./qualification/namespace/leaf-values.ss" Build Debug Explicit Inherited NamedSuper)
         (only-in :clan/poo/mop NoApplicableMethod?))
 (export namespace-leaf-expression-test)
 (def (command executable flags) (cons executable flags))
 (def namespace-leaf-expression-test
-  (test-suite "Leaf expression scope is native POO scope"
-    (test-case "documented user expressions use ordinary native POO values"
+  (test-suite "Leaf expression scope is standard POO scope"
+    (test-case "documented user expressions use ordinary standard POO values"
       (check-equal? (.get Build argv) '("gerbil" "build"))
       (check-equal? (.get Debug argv) '("gerbil" "build" "--debug"))
       (check-equal? (.get Explicit argv) '("gxi" "build"))

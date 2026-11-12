@@ -139,7 +139,7 @@
             " added-phases=" (hash->list added-phases)
             " dependency-contexts=" (length after)))
         '(("config-prelude"
-           "prelude: :tao3k/yuanxu/prelude\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) :clan/poo/object)\n(export (import: :gerbil/core :clan/poo/object))\n")
+           "prelude: :yuanxu/prelude\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) :clan/poo/object)\n(export (import: :gerbil/core :clan/poo/object))\n")
           ("module-prelude"
            "prelude: :gerbil/core\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) (except-in :clan/poo/object .def) (only-in :yuanxu/module-system/source/declaration .def) (phi: +1 :gerbil/core) (phi: +2 :gerbil/core))\n(export (import: :gerbil/core :clan/poo/object) (phi: +1 (import: :gerbil/core)) (phi: +2 (import: :gerbil/core)) (phi: 1 load-module) .def)\n"))))
     (yuanxu-test-case "binding factories share the runtime language frame without copying aliases"
@@ -346,11 +346,11 @@
         (def contract (.call scope contract 'bootstrap/value
                          '((type . "object") (required . ("value"))
                            (properties . ((value . ((type . "string"))))))))
-        ;; Exercise the real Core declarations and constructor-owned native
+        ;; Exercise the real Core declarations and constructor-owned standard
         ;; source bindings. No fixture supplies a bound path or a pure flag.
         (check-equal? (> (hash-ref costs '(calls reader-bound-source-reuse) 0) 0) #t)
         (yuanxu-test-observe 'bound-source-reuses (hash-ref costs '(calls reader-bound-source-reuse) 0))
-        (yuanxu-test-observe 'native-source-resolutions (hash-ref costs '(calls reader-source-resolution) 0))
+        (yuanxu-test-observe 'build-source-resolutions (hash-ref costs '(calls reader-source-resolution) 0))
         (check-equal? (.get view selected-graph module-order)
                       '(yuanxu/modules/json-schema/interface
                         yuanxu/modules/funflow/interface

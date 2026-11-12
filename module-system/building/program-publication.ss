@@ -1,10 +1,12 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Compiler projection of the admitted selection; no business scope execution.
-(import (runtime: :clan/poo/object)
+(import (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source module-compiler-init-forms)
+        (runtime: :clan/poo/object)
         (only-in :std/list/list find delete-duplicates/hash)
+        (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)
         (only-in :yuanxu/module-system/source/observations module-source-read))
-(export project-program-init)
+(export project-program-init init-compiler-forms)
 
 (def (project-program-init view build entry)
   (def context (and (.slot? view 'context) (.ref view 'context)))
@@ -19,10 +21,16 @@
         ((.ref input 'admit-current))
         ((.ref build 'compiler-current)))
       (current!)
-      (def (native-value input binding)
+      (def (role-value input binding)
         (def identity (.ref input 'compiler-identity))
-        (unless (memq identity imports) (set! imports (cons identity imports)))
-        `(.ref (compiled-role-values ',identity '(,binding)) ',binding))
+        (def previous
+          (find (lambda (row) (and (eq? (car row) identity) (eq? (caddr row) binding))) imports))
+        (if previous (cadddr previous)
+          (let (name (gensym 'publication))
+            ;; An ordinary value import exposes the actual runtime edge to
+            ;; Gerbil. Template-only imports cannot link a runtime publication.
+            (set! imports (cons (list identity (.ref input 'path) binding name) imports))
+            name)))
       (def (publication-input id)
         (def entry (find (lambda (entry)
                           (and (eq? (.ref entry 'kind) 'publication)
@@ -40,7 +48,7 @@
                  (value (if path
                           (begin
                             (unless entry (error "compiled init is missing selected Feature input" id))
-                            (native-value (.ref entry 'input) 'Feature))
+                            (role-value (.ref entry 'input) 'Feature))
                           `(.ref (.ref ,publication 'features) ',name)))
                  (descriptor (.ref node 'descriptor))
                  (declaration (.ref node 'declaration))
@@ -55,7 +63,7 @@
                                                  (eq? (.ref node 'identity) id))) nodes))
                (def original (.ref node 'publication))
                (def prepared (publication-input id))
-               (def value (native-value prepared (.ref prepared 'binding)))
+               (def value (role-value prepared (.ref prepared 'binding)))
                (def features (.ref original 'features))
                (def names (if (list? features) features (.all-slots features)))
                `(,id (.o declaration: ',(.ref original 'identity)
@@ -106,14 +114,12 @@
       (def emitted
         (append headers
           `((import (only-in :clan/poo/object .o .cc .ref)
-                    (only-in :yuanxu/module-system/source/compiled-role compiled-role-values)
                     (only-in :yuanxu/module-system/source/link module-program-namespace module-program-feature)
                     (only-in :yuanxu/module-system/selection/init-expansion expand-yuanxu-program-declaration)
-                    ,@(if (null? imports) '()
-                        `((for-template ,@(map (lambda (id)
-                                                 `(runtime: ,(string->symbol
-                                                               (string-append ":" (symbol->string id)))))
-                                               (reverse imports))))))
+                    ,@(map (lambda (row)
+                              `(rename-in (only-in ,(cadr row) ,(caddr row))
+                                 (,(caddr row) ,(cadddr row))))
+                            (reverse imports)))
             (expand-yuanxu-program-declaration ,declaration ,(.ref entry 'path)
               (lambda ()
                 (module-program-namespace ',(.ref input 'compiler-identity)
@@ -121,3 +127,14 @@
       (current!)
       (.cc entry 'kind 'init-publication
         'input (.cc input 'compiler-forms emitted 'admit-current current!)))))
+
+;; Both explicit publication and the official compiler use this same lowering.
+(def (init-compiler-forms path)
+  (or (module-compiler-init-forms path)
+      (let* ((select (module-binding-action "yuanxu/module-system/source/link" 'yuanxu-load-modules))
+             (view (select (list path)))
+             (graph (.get view build-graph))
+             (input (yuanxu-prepare-module-retained-source path void))
+             (entry (.o path input kind: 'source compiler-identity: (.get input compiler-identity)
+                        options: '())))
+        (.get (project-program-init view graph entry) input compiler-forms))))
