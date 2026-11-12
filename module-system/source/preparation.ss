@@ -783,9 +783,13 @@
   (def (compile)
     (parameterize ((current-build-source-directory view))
       (call-with-prepared-compiler-inputs entries roles action source-reads source-import)))
+  ;; std/make prepends its own source directory. The existing input
+  ;; extent accepts only that transition and restores the caller's path.
   (if refuse-input-context
-    (call-with-build-input-path libdir compile refuse-input-context source-roots: (list view))
-    (call-with-build-input-path libdir compile source-roots: (list view))))
+    (call-with-build-input-path libdir compile refuse-input-context
+      source-roots: (list view) make-source: view)
+    (call-with-build-input-path libdir compile
+      source-roots: (list view) make-source: view)))
 
 (def (prepare-compiler-view-entries! entries roles source-reads libdir view
                                         preserve-unrecorded?: (preserve-unrecorded? #f))

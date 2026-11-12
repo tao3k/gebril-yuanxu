@@ -23,7 +23,7 @@
   (error "namespace enumeration forced a declaration or scope"))
 (def initial (parameterize ((current-module-source-observer observe)) (selected-plan)))
 (unless (equal? initial '(5432)) (error "wrong selected value"))
-(unless (and (= declarations 2) (= (hash-length factories) 2)
+(unless (and (zero? declarations) (= (hash-length factories) 2)
              (andmap (lambda (owner) (eqv? (hash-get factories owner) 1)) selected-owners))
   (error "first business demand differs from the selected closure" declarations (hash->list factories)))
 (def graph
@@ -42,4 +42,4 @@
   (error "standard functional value did not recompute"))
 (unless (not (.ref/cached leaf 'unselected)) (error "unselected business value forced"))
 ((.get graph admit-current))
-(displayln "THOUSAND-USE scopes=2 declarations=2 cold-enumeration=0 first-get=ok factories-once=ok hot-identity=ok incremental=ok currentness=ok")
+(displayln "THOUSAND-USE scopes=2 declarations=0 cold-enumeration=0 first-get=ok factories-once=ok hot-identity=ok incremental=ok currentness=ok")

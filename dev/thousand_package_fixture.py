@@ -57,8 +57,7 @@ def generate(root: Path, profile: bool = False) -> None:
     # A genuine owner-local native target. Its C compilation fails if the
     # selected owner's compiler options are lost in cross-package projection.
     write(producer / "modules/module-1/build.ss", """(def Build
-  (.o kind: 'module/build
-      roots: '((gxc: "support" "-cc-options" "-DYUANXU_THOUSAND_OWNER=1"))))
+  '((gxc: "support" "-cc-options" "-DYUANXU_THOUSAND_OWNER=1")))
 """)
     write(producer / "modules/module-1/support.ss", """(begin-foreign
   (c-declare "#ifndef YUANXU_THOUSAND_OWNER\n#error selected owner compiler option missing\n#endif"))
@@ -91,6 +90,9 @@ def generate(root: Path, profile: bool = False) -> None:
     write(missing / "init.ss",
           f'(yuanxu! :load-modules {window} mode: explicit rename: Corpus (module-1))\n')
     shutil.copytree(templates.parent / "package-consumer", root / "package-consumer")
+    installed_build = root / "package-consumer" / "build.ss"
+    shutil.copyfile(templates / "build.ss", installed_build)
+    installed_build.chmod(0o755)
 
 
 if __name__ == "__main__":

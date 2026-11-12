@@ -106,7 +106,9 @@
           (def original (source-snapshot producer))
           (def consumer-original (source-snapshot consumer))
           (def spec (call-with-input-string (action consumer a producer "spec") read))
-          (def targets (list-sort string<? (map cadr spec)))
+          ;; The source view uses full native identities as Make target names.
+          (def targets
+            (list-sort string<? (map (lambda (target) (if (string? target) target (cadr target))) spec)))
           (def selected-prefix "yuanxu-thousand-library/modules/")
           (def producer-targets (filter (lambda (id) (string-prefix? selected-prefix id)) targets))
           (check-equal? (pair? producer-targets) #t)
