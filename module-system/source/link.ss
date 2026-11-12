@@ -195,7 +195,9 @@
          (cond
           ((and (pair? leaves) (pair? (cdr children)))
            (error "module namespace has a leaf/branch collision" name))
-          ((pair? leaves) (resolve (cdar leaves)))
+          ((pair? leaves)
+           (let (leaf (cdar leaves))
+             (if leaf (resolve leaf) (.o))))
           (else (scope-tree (map (lambda (row) (cons (cdar row) (cdr row))) children)
                             resolve)))))
      keys: names)))

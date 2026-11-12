@@ -258,8 +258,9 @@
           (def build-marker (path-expand "build-evaluations" root))
           (def scope-marker (path-expand "scope-evaluations" prefix))
           (put root "gerbil.pkg" "(package: module-build-program)\n")
+          (create-directory (path-expand "empty" root))
           (put root "init.ss"
-            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :load-modules \"./modules\" rename: modules mode: explicit (example) :load-modules \"./empty\" rename: Empty mode: explicit)\n")
           (put root "modules/example/types.ss"
             "(import :clan/poo/object (only-in :clan/poo/mop Type.)) (def Scope (.cc Type. identity: 'program/scope .element?: object?)) (export Scope)")
           (put root "modules/example/objects.ss"
@@ -275,7 +276,7 @@
           (put root "modules/example/interface.ss"
             "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Example identity: 'example core: (.o requires: (.o) scope-contract: Scope exports: Config projections: (list Build)) features: (.o))")
           (put root "modules/example/command.ss"
-            "(import :clan/poo/object (only-in \"../../init.ss\" module-build-program.init.exports)) (export main) (def (main . args) (displayln \"MODULE-PROGRAM-OK \" (list (.get module-build-program.init.exports modules example value) (.get module-build-program.init.exports modules example value))))")
+            "(import :clan/poo/object (only-in \"../../init.ss\" module-build-program.init.exports)) (export main) (def (main . args) (unless (null? (.all-slots (.get module-build-program.init.exports Empty))) (error \"compiled empty namespace changed\")) (displayln \"MODULE-PROGRAM-OK \" (list (.get module-build-program.init.exports modules example value) (.get module-build-program.init.exports modules example value))))")
           (call-with-output-file
             (list path: (path-expand "build.ss" root) permissions: #o755)
             (cut display
