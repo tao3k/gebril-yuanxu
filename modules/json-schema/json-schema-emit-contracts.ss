@@ -9,7 +9,7 @@
 ;;; the normalized schema again.
 
 (import (only-in :clan/poo/object object?)
-        (only-in :yuanxu/module-system/schema/slot-contracts
+        (only-in :tao3k/yuanxu/module-system/schema/slot-contracts
                  yuanxu-contract-slot
                  yuanxu-contract-value-type
                  yuanxu-object-contract)
@@ -35,7 +35,7 @@
                  yuanxu-json-schema-pattern-property->alist))
 
 
-(import :yuanxu/modules/json-schema/json-schema-emit-runtime)
+(import :tao3k/yuanxu/modules/json-schema/json-schema-emit-runtime)
 
 (export #t)
 

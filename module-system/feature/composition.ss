@@ -6,9 +6,9 @@
 ;;; Invariant: composition order is explicit and preserves POO role precedence.
 (import (only-in :std/list/list map)
         (runtime: :clan/poo/object)
-        :yuanxu/composition/roles
-        :yuanxu/module-system/feature/feature-manifest
-        :yuanxu/utilities/functional)
+        :tao3k/yuanxu/composition/roles
+        :tao3k/yuanxu/module-system/feature/feature-manifest
+        :tao3k/yuanxu/utilities/functional)
 
 (export feature-composition-plan
         defpoo-feature-composition-plan)

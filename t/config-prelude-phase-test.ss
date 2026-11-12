@@ -16,7 +16,7 @@
           (def source (path-expand (string-append name ".ss") root))
           (call-with-output-file source
             (lambda (out)
-              (display "prelude: :yuanxu/module-system/source/config-prelude\n" out)
+              (display "prelude: :tao3k/yuanxu/module-system/source/config-prelude\n" out)
               ;; The fixture can live under another package's TMPDIR.
               (display "package: " out) (display package out) (newline out)
               (display "(defsyntax answer (identifier-rules () (_ 42)))\n(export answer)\n" out)))

@@ -4,8 +4,8 @@
 
 (import :std/test
         :clan/poo/object
-        :yuanxu/composition/roles
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        :tao3k/yuanxu/composition/roles
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 
 (export composition-roles-test)
 

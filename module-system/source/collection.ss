@@ -8,9 +8,9 @@
 
 (import (runtime: :clan/poo/object)
         (only-in :std/list/list every)
-        :yuanxu/module-system/loader/load-path
-        :yuanxu/module-system/source/admission
-        :yuanxu/module-system/source/objects)
+        :tao3k/yuanxu/module-system/loader/load-path
+        :tao3k/yuanxu/module-system/source/admission
+        :tao3k/yuanxu/module-system/source/objects)
 
 (export yuanxu-module-source-collection-prototype
         make-yuanxu-module-source-collection

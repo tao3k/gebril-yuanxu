@@ -1,11 +1,11 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/configuration/slot-origin field-slot-origins/value)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/configuration/slot-origin field-slot-origins/value)
         (only-in "./qualification/testing/directory.ss" write-source)
         (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture RelocatedServicesFixture relocate-services read-overrides refused)
-        (only-in :yuanxu/module-system/source/admission module-source-read))
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read))
 (export relocation-test test-cleanup!)
 (def completed 0)
 (def (test-cleanup!)

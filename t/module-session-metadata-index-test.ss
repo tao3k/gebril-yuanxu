@@ -3,13 +3,13 @@
         (only-in :std/error Error-message Error-irritants)
         (only-in "./module-candidate-stage-test" with-other-source)
         (only-in "./qualification/module-publication/fixtures.ss" write-file)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  call-with-module-source-operation-measurement current-module-source-observer
                  module-source-measure-replay)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
-        (only-in :yuanxu/module-system/source/reader-support
+        (only-in :tao3k/yuanxu/module-system/source/reader-support
                  merge-publication-read-roots publication-read-current)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-session-metadata-index-test)
 (def (checked-work view (accounting? #t))
   (check-equal? (current-module-source-observer) #f)

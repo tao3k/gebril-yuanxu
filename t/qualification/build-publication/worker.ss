@@ -6,12 +6,12 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/string/misc string-subst)
-        (only-in :yuanxu/module-system/source/link yuanxu-load-modules)
-        (only-in :yuanxu/admission/publication AdmissionPublication.)
-        (only-in :yuanxu/module-system/building/artifacts
+        (only-in :tao3k/yuanxu/module-system/source/link yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
+        (only-in :tao3k/yuanxu/module-system/building/artifacts
           accept-build-artifact-handoff! call-with-build-artifact-issuance admit-build-artifacts!
           build-artifact-handoff)
-        (only-in :yuanxu/ops/progress call-with-execution-progress execution-progress!)
+        (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress execution-progress!)
         "./projection" "./store")
 (export main)
 (def (report-result prefix value)

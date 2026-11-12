@@ -3,11 +3,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/test test-suite check-equal?)
         (only-in :clan/poo/object .o .ref)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        :yuanxu/module-system/selection/objects
-        :yuanxu/module-system/selection/contract
-        :yuanxu/module-system/selection/syntax
-        :yuanxu/profile-composition/user-profile)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        :tao3k/yuanxu/module-system/selection/objects
+        :tao3k/yuanxu/module-system/selection/contract
+        :tao3k/yuanxu/module-system/selection/syntax
+        :tao3k/yuanxu/profile-composition/user-profile)
 (export module-selection-test)
 (def module-selection-test
   (test-suite "Core declarations keep repository policy scoped and values inert"

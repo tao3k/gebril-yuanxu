@@ -1,11 +1,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Ops-only controls: no selected product/configuration Graph or Nix process.
 (import :std/test :clan/poo/object
-        (only-in :yuanxu/ops/process-script ProcessScript.)
-        (only-in :yuanxu/ops/func prepare-script-command)
-        (only-in :yuanxu/ops/progress current-execution-progress current-execution-progress-port call-with-execution-progress
+        (only-in :tao3k/yuanxu/ops/process-script ProcessScript.)
+        (only-in :tao3k/yuanxu/ops/func prepare-script-command)
+        (only-in :tao3k/yuanxu/ops/progress current-execution-progress current-execution-progress-port call-with-execution-progress
                  execution-progress! execution-progress-status progress-record)
-        (only-in :yuanxu/observability/testing-fixture call-with-yuanxu-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-fixture call-with-yuanxu-fixture)
         (only-in :std/error Error? Error-message Error-irritants))
 (export ops-watchdog-test)
 (def ops-watchdog-test

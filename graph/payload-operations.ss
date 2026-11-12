@@ -6,7 +6,7 @@
 ;;; Boundary: explicit extension-node slot and child operations.
 
 (import (runtime: :clan/poo/object)
-        :yuanxu/graph/contribution)
+        :tao3k/yuanxu/graph/contribution)
 
 (export yuanxu-graph-slots-merge
         yuanxu-graph-node-merge

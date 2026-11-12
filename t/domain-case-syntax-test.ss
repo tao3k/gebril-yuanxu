@@ -5,15 +5,15 @@
 
 ;;; Boundary: expansion and runtime checks for DomainCase authoring macros.
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  check-equal?
                  check-eq?
                  test-suite)
         :clan/poo/object
-        :yuanxu/object-family/role-syntax
-        :yuanxu/module-system/feature/domain-case/interface
-        :yuanxu/module-system/feature/domain-case/syntax)
+        :tao3k/yuanxu/object-family/role-syntax
+        :tao3k/yuanxu/module-system/feature/domain-case/interface
+        :tao3k/yuanxu/module-system/feature/domain-case/syntax)
 
 (export domain-case-syntax-test)
 

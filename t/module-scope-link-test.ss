@@ -10,13 +10,13 @@
         (only-in :clan/poo/slot-observation call-with-slot-read-observer slot-read-key
                  %call-with-recorded-slot-reads)
         (only-in :clan/poo/object .o .ref .get .call .put! .all-slots object<-fun object? object-slots $constant-slot-spec?)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/mop Type.)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer module-source-admit-current!)
-        (only-in :yuanxu/module-system/source/publication module-scope-context?)
-        (only-in :yuanxu/module-system/source/role-context transfer-role-context)
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/interface)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer module-source-admit-current!)
+        (only-in :tao3k/yuanxu/module-system/source/publication module-scope-context?)
+        (only-in :tao3k/yuanxu/module-system/source/role-context transfer-role-context)
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/interface)
 (export module-scope-link-test)
 (def ObjectScope
   (.cc Type. identity: 'test/scope .element?: object?))

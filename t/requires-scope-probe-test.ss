@@ -1,7 +1,7 @@
 (import :std/test :clan/poo/object
         (only-in :clan/poo/mop Type. validate)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :yuanxu/module-system/building/source-closure package-library-spec))
+        (only-in :tao3k/yuanxu/module-system/building/source-closure package-library-spec))
 (export requires-scope-probe-test)
 
 ;; The role wrapper and edge resolution are an isolated design fixture.

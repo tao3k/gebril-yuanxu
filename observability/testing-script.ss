@@ -3,10 +3,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Testing policy over Ops and the original std/test harness, not a runner.
 (import :clan/poo/object
-        (only-in :yuanxu/ops/progress make-test-progress-reader call-with-execution-watchdog execution-progress!)
+        (only-in :tao3k/yuanxu/ops/progress make-test-progress-reader call-with-execution-watchdog execution-progress!)
         (only-in :std/misc/ports read-all-as-string)
-        (only-in :yuanxu/ops/process-script ProcessScript.)
-        (only-in :yuanxu/ops/func run-script)
+        (only-in :tao3k/yuanxu/ops/process-script ProcessScript.)
+        (only-in :tao3k/yuanxu/ops/func run-script)
         (only-in "./testing-case.ss" yuanxu-selected-testing-case-profile
                  yuanxu-testing-case-profile? yuanxu-test-checkpoint)
         (only-in "./testing-fixture.ss" call-with-yuanxu-fixture))

@@ -5,11 +5,11 @@
 ;;; It does not compile Module sources or generate a defbuild-script.
 (import :clan/poo/object
         (only-in :clan/poo/slot-observation %slot-read-active?)
-        (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
-        (only-in :yuanxu/module-system/source/build unique-build-inputs
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/module-system/source/build unique-build-inputs
                  module-build-package-inputs-current! module-build-package-source-check
                  module-build-package-source-procedure)
-        (only-in :yuanxu/module-system/source/admission module-source-type module-source-name?
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-type module-source-name?
                  module-source-read module-source-admit-current!
                  module-source-operation-resume
                  current-module-source-observer))
@@ -80,7 +80,7 @@
            (script
             (package-stage 'guard-script
              (lambda () (forms-text
-             `((import :gerbil/core :yuanxu/module-system/source/admission
+             `((import :gerbil/core :tao3k/yuanxu/module-system/source/admission
                        ,@(foldr append '() (map (cut .get <> guard-imports) values)))
                ;; A normal operational guard, not a build specification.
                (def (main . arguments)

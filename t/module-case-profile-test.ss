@@ -5,9 +5,9 @@
         (only-in :gerbil/expander core-resolve-identifier core-context-root
                  feature-binding? __module-registry current-expander-context
                  make-top-context eval-syntax)
-        (only-in :yuanxu/observability/testing-fixture
+        (only-in :tao3k/yuanxu/observability/testing-fixture
                  yuanxu-test-fixture with-yuanxu-fixture)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-observe
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-observe
                  yuanxu-selected-testing-case-profile yuanxu-test-case/with))
 (export module-case-profile-test)
 (def observed?
@@ -42,7 +42,7 @@
 (def (adapter-loaded?)
   ;; Source-evaluated modules live in the expander registry, not necessarily
   ;; the runtime loader's compiled-module registry. This is a read-only probe.
-  (and (hash-get __module-registry 'yuanxu/module-system/building/test-observation) #t))
+  (and (hash-get __module-registry 'tao3k/yuanxu/module-system/building/test-observation) #t))
 (def module-case-profile-test
   (test-suite "Runtime feature selects the Case profile at execution"
     (test-case "Case registration leaves profile and body unevaluated"
@@ -66,7 +66,7 @@
         (check-equal? (.get (yuanxu-selected-testing-case-profile) trace-enabled?) traced?)
         (when traced? (yuanxu-test-observe 'child-trace))
         (parameterize ((current-expander-context (make-top-context)))
-          (eval-syntax '(import :yuanxu/module-system/source/admission))
+          (eval-syntax '(import :tao3k/yuanxu/module-system/source/admission))
           (def observer (eval-syntax '(current-module-source-observer)))
           (check-equal? (procedure? observer) #t)
           (observer 'source-probe 2)
@@ -84,5 +84,5 @@
       (check-equal? (yuanxu-test-observe 'child-probe) 0)
       (when observed?
         (parameterize ((current-expander-context (make-top-context)))
-          (eval-syntax '(import :yuanxu/module-system/source/admission))
+          (eval-syntax '(import :tao3k/yuanxu/module-system/source/admission))
           (check-equal? (eval-syntax '(current-module-source-observer)) #f))))))

@@ -2,9 +2,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Private value projection, copied and admitted with the isolated Fixture.
 (import :clan/poo/object
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-private-source)
-        (only-in :yuanxu/module-system/source/reader module-prepared-source-binding)
-        (only-in :yuanxu/module-system/source/admission module-source-admit-current!))
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-private-source)
+        (only-in :tao3k/yuanxu/module-system/source/reader module-prepared-source-binding)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-admit-current!))
 (export load-role)
 
 (def (load-role root name names rows)

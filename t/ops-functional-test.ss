@@ -1,11 +1,11 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :clan/poo/object (only-in :yuanxu/ops/interface Ops)
-        (only-in :yuanxu/profile-composition/selection-syntax use-module)
+(import :std/test :clan/poo/object (only-in :tao3k/yuanxu/ops/interface Ops)
+        (only-in :tao3k/yuanxu/profile-composition/selection-syntax use-module)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-string)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export ops-functional-test)
 ;; Consume the Core publication directly; Ops has no OpenTofu fixture dependency.
 (def ops-functional-test

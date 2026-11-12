@@ -5,9 +5,9 @@
         (only-in :std/error Error? Error-message)
         (only-in "./module-candidate-stage-test" with-other-source)
         (only-in "./qualification/module-publication/fixtures.ss" write-file)
-        (only-in :yuanxu/module-system/source/publication ModulePublicationContract)
-        (only-in :yuanxu/module-system/source/admission yuanxu-default-module-style-policy)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/module-system/source/publication ModulePublicationContract)
+        (only-in :tao3k/yuanxu/module-system/source/admission yuanxu-default-module-style-policy)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-candidate-metadata-test)
 (def (stale-metadata? failure)
   (and (Error? failure) (string=? (Error-message failure) "stale module publication policy")))
@@ -47,9 +47,9 @@
                     "(yuanxu! mode: explicit :custom (example) (other))")
                   (write-file (path-expand "config.ss" other)
                     (if (eq? kind 'policy)
-                      "(import (only-in :clan/poo/object .ref .put!) (only-in :yuanxu/module-system/source/admission yuanxu-default-module-style-policy)) (.put! yuanxu-default-module-style-policy 'validate (.ref yuanxu-default-module-style-policy 'validate)) (def Greeting \"other\") (export Greeting)"
+                      "(import (only-in :clan/poo/object .ref .put!) (only-in :tao3k/yuanxu/module-system/source/admission yuanxu-default-module-style-policy)) (.put! yuanxu-default-module-style-policy 'validate (.ref yuanxu-default-module-style-policy 'validate)) (def Greeting \"other\") (export Greeting)"
                       (string-append
-                        "(import (only-in :clan/poo/object .put!) (only-in :yuanxu/module-system/source/publication ModulePublicationContract)) "
+                        "(import (only-in :clan/poo/object .put!) (only-in :tao3k/yuanxu/module-system/source/publication ModulePublicationContract)) "
                         "(.put! ModulePublicationContract '.element? (lambda (_value) (call-with-output-file "
                         (object->string (path-expand "must-not-call" root))
                         " (lambda (p) (display \"called\" p))) #t)) "

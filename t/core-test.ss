@@ -6,29 +6,29 @@
 (import (only-in :std/test test-suite test-case check-equal?)
         (only-in :clan/poo/object .o .ref .call .cc object-slots object-%slot-funs
                  $constant-slot-spec? object-protocol-set!)
-        (only-in :yuanxu/object-types/ports Port valid-port?)
+        (only-in :tao3k/yuanxu/object-types/ports Port valid-port?)
         (only-in :clan/poo/mop define-type element?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
-        (only-in :yuanxu/ops/progress execution-progress!)
-        (only-in :yuanxu/observability/memory
+        (only-in :tao3k/yuanxu/ops/progress execution-progress!)
+        (only-in :tao3k/yuanxu/observability/memory
                  call-with-yuanxu-debug-memory-case-watchdog
                  yuanxu-debug-memory-policy YuanxuDebugDurationAnomaly?
                  YuanxuDebugMemoryAnomaly-receipt YuanxuDebugDurationAnomaly-receipt)
-        (only-in :yuanxu/object-types/contracts
+        (only-in :tao3k/yuanxu/object-types/contracts
                  YuanxuObjectContract.
                  yuanxu-predicate-contract
                  yuanxu-contract-admit
                  yuanxu-validation-evidence-accepted?)
-        (only-in :yuanxu/object-family/syntax
+        (only-in :tao3k/yuanxu/object-family/syntax
                  defpoo-object-family)
-        (only-in :yuanxu/composition/lineage
+        (only-in :tao3k/yuanxu/composition/lineage
                  yuanxu-lineage-analysis
                  yuanxu-lineage-cycle?
                  yuanxu-productive-recursion?)
-        (only-in :yuanxu/observability/debug
+        (only-in :tao3k/yuanxu/observability/debug
                  YuanxuDebugMemoryAnomaly?
                  yuanxu-debug-memory-snapshot)
-        (only-in :yuanxu/observability/testing-case
+        (only-in :tao3k/yuanxu/observability/testing-case
                  yuanxu-default-testing-case-profile
                  yuanxu-testing-case-profile?
                  yuanxu-test-case/with))

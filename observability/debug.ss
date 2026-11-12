@@ -5,7 +5,7 @@
 
 ;;; Boundary: explicit effectful DEVELOPMENT output over aggregate projections.
 ;;; Upstream owns tracing and typed printing. No global hook or tracer is copied.
-(import :yuanxu/observability/memory
+(import :tao3k/yuanxu/observability/memory
         (only-in :clan/poo/support/base λ)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
@@ -13,14 +13,14 @@
         (only-in :clan/poo/debug DDT trace-poo)
         :gerbil/runtime/gambit
         (only-in :std/error deferror-class)
-        (only-in :yuanxu/observability/types
+        (only-in :tao3k/yuanxu/observability/types
                  YuanxuDebugMemoryPolicyContract
                  YuanxuDebugMemorySampleContract
                  YuanxuDebugMemoryReceiptContract
                  YuanxuDebugDurationReceiptContract
                  YuanxuDebugCallPolicyContract
                  YuanxuDebugCallReceiptContract)
-        (only-in :yuanxu/observability/funcs yuanxu-observation-admission-summary
+        (only-in :tao3k/yuanxu/observability/funcs yuanxu-observation-admission-summary
                  yuanxu-observation-summary-sexp
                  yuanxu-debug-call-policy
                  yuanxu-debug-call-receipt
@@ -30,7 +30,7 @@
                  yuanxu-debug-memory-sample
                  yuanxu-debug-memory-receipt
                  yuanxu-debug-memory-receipt-sexp)
-        :yuanxu/observability/slot-debug)
+        :tao3k/yuanxu/observability/slot-debug)
 (export yuanxu-observation-debug YuanxuObservationProjectionError?
         YuanxuDebugMemoryPolicyContract
         YuanxuDebugMemorySampleContract
@@ -58,7 +58,7 @@
         YuanxuDebugMemoryAnomaly-receipt
         YuanxuDebugDurationAnomaly?
         YuanxuDebugDurationAnomaly-receipt
-        (import: :yuanxu/observability/slot-debug))
+        (import: :tao3k/yuanxu/observability/slot-debug))
 
 (deferror-class YuanxuObservationProjectionError ())
 (deferror-class YuanxuDebugCallAnomaly (receipt))

@@ -6,7 +6,7 @@ prelude: :gerbil/core
 ;;; Explicit role imports remain authoritative over these weak prelude bindings.
 (import :gerbil/core
         :clan/poo/object
-        (rename-in (only-in :yuanxu/module-system/source/declaration .def)
+        (rename-in (only-in :tao3k/yuanxu/module-system/source/declaration .def)
                    (.def role-.def))
         (phi: +1 :gerbil/core)
         (phi: +2 :gerbil/core))

@@ -5,18 +5,18 @@
         (only-in :clan/poo/mop validate element?)
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit)
-        (only-in :yuanxu/admission/publication AdmissionPublication.)
-        (only-in :yuanxu/module-system/source/selection select-module-graph)
-        (only-in :yuanxu/module-system/source/build module-build-graph)
-        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
-        (only-in :yuanxu/module-system/source/admission module-source-read module-source-admit-current!)
-        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-file)
-        (only-in :yuanxu/modules/json-schema/json-schema-receipt
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-contract-admit)
+        (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
+        (only-in :tao3k/yuanxu/module-system/source/selection select-module-graph)
+        (only-in :tao3k/yuanxu/module-system/source/build module-build-graph)
+        (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read module-source-admit-current!)
+        (only-in :tao3k/yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-file)
+        (only-in :tao3k/yuanxu/modules/json-schema/json-schema-receipt
           yuanxu-json-schema->contract-artifact
           yuanxu-json-schema-contract-artifact-normalization)
-        (only-in :yuanxu/modules/json-schema/json-schema-ir yuanxu-json-schema-normalization-schema)
-        (only-in :yuanxu/modules/json-schema/contracts SchemaContract.)
+        (only-in :tao3k/yuanxu/modules/json-schema/json-schema-ir yuanxu-json-schema-normalization-schema)
+        (only-in :tao3k/yuanxu/modules/json-schema/contracts SchemaContract.)
         (only-in "./qualification/contract-adaptation/checked-publication-test.ss"
           make-scenario make-admission allow WebContract ConfigContract ScenarioContract))
 (export admission-checked-publication-test test-cleanup!)

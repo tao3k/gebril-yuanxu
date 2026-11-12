@@ -1,10 +1,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/source this-source-file)
-        (only-in :yuanxu/module-system/building/source-closure yuanxu-bootstrap-contexts yuanxu-bootstrap-spec)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/configuration/json config-json-file config-defaults config-field-origin)
-        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure yuanxu-bootstrap-contexts yuanxu-bootstrap-spec)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/configuration/json config-json-file config-defaults config-field-origin)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture refused))
 (export gitea-json-configuration-test test-cleanup!)
@@ -17,8 +17,8 @@
     (yuanxu-test-fixture "missing, null, false and explicit values stay distinct"
       (fixture DirectoryFixture)
       (with-slots (root) fixture
-        (check-equal? (hash-key? (yuanxu-bootstrap-contexts) 'yuanxu/configuration/json) #t)
-        (check-equal? (hash-key? (yuanxu-bootstrap-contexts) 'yuanxu/object-types/ports) #t)
+        (check-equal? (hash-key? (yuanxu-bootstrap-contexts) 'tao3k/yuanxu/configuration/json) #t)
+        (check-equal? (hash-key? (yuanxu-bootstrap-contexts) 'tao3k/yuanxu/object-types/ports) #t)
         (def spec (yuanxu-bootstrap-spec (path-expand ".." (path-directory (this-source-file)))))
         (check-equal? (if (member '(gxc: "configuration/json") spec) #t #f) #t)
         (def path (path-expand "input.json" root))

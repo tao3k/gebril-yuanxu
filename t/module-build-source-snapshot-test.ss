@@ -31,5 +31,5 @@
       (for-each
         (lambda (name) (check-equal? (file-exists? (path-expand name root)) #f))
         '("bootstrap.ss" "run.ss" ".git" "t" "dev"))
-      (check-equal? (file-exists? (path-expand "lib/yuanxu" state)) #f)
+      (check-equal? (file-exists? (path-expand "lib/tao3k/yuanxu" state)) #f)
       (check-equal? (file-exists? (path-expand "lib/tao3k/yuanxu" state)) #f))))

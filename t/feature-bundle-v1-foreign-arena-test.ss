@@ -3,12 +3,12 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import (only-in :std/list/list fold)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :yuanxu/utilities/functional
-        :yuanxu/module-system/feature/bundle-v1-lowering
-        :yuanxu/module-system/feature/bundle-v1-foreign-arena)
+        :tao3k/yuanxu/utilities/functional
+        :tao3k/yuanxu/module-system/feature/bundle-v1-lowering
+        :tao3k/yuanxu/module-system/feature/bundle-v1-foreign-arena)
 
 (export feature-bundle-v1-foreign-arena-test)
 

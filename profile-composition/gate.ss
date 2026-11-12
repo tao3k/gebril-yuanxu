@@ -7,7 +7,7 @@
 ;;; Invariant: public gate data is POO; alists appear only as Lean facts.
 
 (import (runtime: :clan/poo/object)
-        (only-in :yuanxu/profile-composition/user-profile
+        (only-in :tao3k/yuanxu/profile-composition/user-profile
                  yuanxu-user-profile?
                  yuanxu-user-profile-name))
 

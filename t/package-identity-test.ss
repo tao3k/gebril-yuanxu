@@ -5,12 +5,12 @@ prelude: :gerbil/core
         (only-in :std/source this-source-file)
         (only-in :gerbil/expander core-import-module expander-context-id core-bind-root-syntax!)
         (only-in :clan/poo/object .get)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
-        (only-in :yuanxu/utilities/functional yuanxu-stable-duplicates)
-        (only-in :yuanxu/module-system/building/source-closure
+        (only-in :tao3k/yuanxu/utilities/functional yuanxu-stable-duplicates)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure
                  for-each-build-module)
-        (only-in :yuanxu/module-system/building/source-package module-build-source-path))
+        (only-in :tao3k/yuanxu/module-system/building/source-package module-build-source-path))
 (export package-identity-test)
 
 (def package-identity-test
@@ -19,22 +19,22 @@ prelude: :gerbil/core
       (check-equal? (yuanxu-stable-duplicates '(a b a c b))
                     '(a b)))
     (test-case "compiler identities map back to the same root source"
-      (def context (core-import-module ':yuanxu/module-system/source/declaration))
+      (def context (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
       (def root (path-expand ".." (path-directory (this-source-file))))
       (check-equal? (expander-context-id context)
-                    'yuanxu/module-system/source/declaration)
+                    'tao3k/yuanxu/module-system/source/declaration)
       (def before (load-path))
       (check-equal? (path-normalize (module-build-source-path context root))
                     (path-normalize (path-expand "module-system/source/declaration.ss" root)))
       (check-equal? (path-normalize (module-build-source-path
-                      (core-import-module ':yuanxu/prelude) root))
+                      (core-import-module ':tao3k/yuanxu/prelude) root))
                     (path-normalize (path-expand "prelude.ss" root)))
       (check-equal? (load-path) before))
     (test-case "runtime dependency closure includes the selected language entry"
       (def identities '())
-      (for-each-build-module (core-import-module ':yuanxu/utilities/functional)
+      (for-each-build-module (core-import-module ':tao3k/yuanxu/utilities/functional)
         (lambda (context) (set! identities (cons (expander-context-id context) identities))))
-      (check-equal? (and (memq 'yuanxu/prelude identities) #t) #t))
+      (check-equal? (and (memq 'tao3k/yuanxu/prelude identities) #t) #t))
     (yuanxu-test-fixture "bound language uses its runtime source rather than a guessed package filename"
       (fixture DirectoryFixture)
       (def root (.get fixture root))

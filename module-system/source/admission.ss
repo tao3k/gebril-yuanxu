@@ -8,21 +8,21 @@
         (only-in :clan/poo/mop Type element? validate)
         (only-in :clan/poo/slot-observation
                  call-with-slot-read-observer slot-read-receiver slot-read-key without-observation)
-        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
-        (only-in :yuanxu/module-system/source/role-forms yuanxu-module-allowed-entrypoint-roles
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :tao3k/yuanxu/module-system/source/role-forms yuanxu-module-allowed-entrypoint-roles
                  yuanxu-module-required-role-files module-role-file)
         (only-in :std/list/list any)
-        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
-        :yuanxu/module-system/source/observations
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/source/publication
-        (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
-        (only-in :yuanxu/module-system/authoring/import-policy
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        :tao3k/yuanxu/module-system/source/observations
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/source/publication
+        (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
+        (only-in :tao3k/yuanxu/module-system/authoring/import-policy
                  SourceInspectionPolicy. yuanxu-module-owner-import-datum-observations)
-        (only-in :yuanxu/module-system/authoring/admission
+        (only-in :tao3k/yuanxu/module-system/authoring/admission
                  call-with-module-authoring-read-scope
                  yuanxu-module-authoring-source-admit)
-        (only-in :yuanxu/module-system/authoring/roles make-default-module-authoring-profile
+        (only-in :tao3k/yuanxu/module-system/authoring/roles make-default-module-authoring-profile
                  ModuleAuthoringProfileContract))
 (export yuanxu-module-required-role-files yuanxu-module-allowed-entrypoint-roles
         yuanxu-module-style-policy-prototype yuanxu-default-module-style-policy

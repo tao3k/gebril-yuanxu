@@ -7,7 +7,7 @@
 ;;; Invariant: generated functions are inspection, receipt, or presentation
 ;;; boundaries only; module activation and resolver logic stay explicit.
 
-(import :yuanxu/utilities/product-syntax)
+(import :tao3k/yuanxu/utilities/product-syntax)
 
 (export yuanxu-product-rows/tail
         yuanxu-product-rows-into/rev

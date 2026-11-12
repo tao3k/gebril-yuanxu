@@ -6,13 +6,13 @@
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax core-read-module/sexp)
         (only-in :gerbil/runtime/loader load-path set-load-path! add-load-path!)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/source/init module-init-intent)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer admit-module-publication!)
-        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/source/init module-init-intent)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer admit-module-publication!)
+        (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-source-ref
                  yuanxu-module-source-ref-value yuanxu-module-source-ref-metadata)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules module-namespace-project))
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules module-namespace-project))
 (export module-windows-test)
 (.def Workspace
   .acquire: (lambda () (let (root (make-temporary-file-name "module-windows-"))
@@ -57,7 +57,7 @@
   (write-forms (path-expand "modules/bomb/interface.ss" root) '((error "unselected Module loaded")))
   (write-forms (path-expand "scenarios/bomb/interface.ss" root) '((error "unselected Scenario loaded")))
   (write-forms (path-expand "init.ss" root)
-    `((import :yuanxu/module-system/selection/init-syntax) ,declaration))
+    `((import :tao3k/yuanxu/module-system/selection/init-syntax) ,declaration))
   (let (binding (string->symbol (string-append (symbol->string package) ".init.exports")))
     (write-forms (path-expand "build.ss" root)
       `((import (only-in :clan/poo/object .get) (only-in :std/build-script defbuild-script)
@@ -67,7 +67,7 @@
   (test-suite "One init, mounted directories and one selected Graph"
     (test-case "legacy Profile registries cannot select another yuanxu declaration path"
       (parameterize ((current-expander-context (make-top-context)))
-        (eval-syntax '(import :gerbil/core :yuanxu/module-system/selection/init-syntax))
+        (eval-syntax '(import :gerbil/core :tao3k/yuanxu/module-system/selection/init-syntax))
         (check-exception
           (eval-syntax '(yuanxu! Profile Registry (profile developer) :sandbox (nono-sandbox)))
           syntax-error?)
@@ -180,7 +180,7 @@
             core: (.o requires: (.o) scope-contract: Scope exports: (.o value: Cold))
             features: (.o))))
       (write-forms (path-expand "init.ss" root)
-        '((import :yuanxu/module-system/selection/init-syntax)
+        '((import :tao3k/yuanxu/module-system/selection/init-syntax)
           (yuanxu!
             :load-modules "./modules" mode: explicit rename: Modules (engine)
             :load-modules "./scenarios" mode: explicit rename: Scenarios (release) (spare))))
@@ -238,7 +238,7 @@
           (export Scope)))
       (def (declare! disabled? (directory root))
         (write-forms (path-expand "init.ss" directory)
-          `((import :yuanxu/module-system/selection/init-syntax)
+          `((import :tao3k/yuanxu/module-system/selection/init-syntax)
             (yuanxu! :load-modules "./modules" mode: auto rename: Modules
                      ,@(if disabled? '((engine disable: #t)) '())
                      :load-modules "./scenarios" mode: explicit rename: Scenarios (release)))))

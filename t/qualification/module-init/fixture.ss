@@ -5,8 +5,8 @@
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :gerbil/expander core-read-module/sexp eval-syntax import-module
                  current-expander-context make-top-context)
-        (only-in :yuanxu/observability/testing-fixture call-with-yuanxu-fixture)
-        (only-in :yuanxu/module-system/source/role-forms module-init-export-name))
+        (only-in :tao3k/yuanxu/observability/testing-fixture call-with-yuanxu-fixture)
+        (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-export-name))
 (export import-fixture-init! prepared-package-fixture call-with-prepared-package prepared-package-tests
         import-build-script!)
 (def (import-fixture-init! path (fresh? #f))

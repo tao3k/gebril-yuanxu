@@ -3,9 +3,9 @@
 (import "./qualification/module-init/fixture.ss" :std/test :clan/poo/object
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
         (only-in :gerbil/runtime/loader list-modules)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source))
 (export module-test-preparation-test)
 (def (forms root name body)
@@ -18,7 +18,7 @@
     (def package-name (string->symbol (symbol->string (gensym 'test-package-))))
     (forms root "gerbil.pkg" `((package: ,package-name)))
     (forms root "init.ss"
-      '((import :yuanxu/module-system/selection/init-syntax)
+      '((import :tao3k/yuanxu/module-system/selection/init-syntax)
         (yuanxu! mode: explicit source: "./modules" (example))))
     (forms root "modules/example/types.ss"
       '((import :clan/poo/object (only-in :clan/poo/mop Type.))
@@ -50,7 +50,7 @@
 ;; table. The nonempty support Case below is the positive matcher control.
 (def (artifact-runtime-loaded?)
   (ormap (lambda (entry)
-           (string-prefix? "yuanxu/module-system/building/artifacts" (car entry)))
+           (string-prefix? "tao3k/yuanxu/module-system/building/artifacts" (car entry)))
          (list-modules)))
 (def module-test-preparation-test
   (test-suite "Init-owned test inputs and standard Make support"

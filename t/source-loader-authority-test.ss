@@ -7,16 +7,16 @@
         (only-in :std/io/tempfile call-with-temporary-file-name)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
         (only-in :gerbil/runtime/loader load-module load-path set-load-path!)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture)
         "qualification/mop-state/artifact-authority"
         "qualification/mop-state/artifact-closure")
 (export source-loader-authority-test test-cleanup!)
 (extern namespace: #f
-  yuanxu/t/qualification/mop-state/source-loader#load-module
-  yuanxu/t/qualification/mop-state/source-loader#reload-module!
-  yuanxu/t/qualification/mop-state/source-loader#set-load-path!)
-(extern namespace: yuanxu/t/qualification/mop-state/precompiled-stores
+  tao3k/yuanxu/t/qualification/mop-state/source-loader#load-module
+  tao3k/yuanxu/t/qualification/mop-state/source-loader#reload-module!
+  tao3k/yuanxu/t/qualification/mop-state/source-loader#set-load-path!)
+(extern namespace: tao3k/yuanxu/t/qualification/mop-state/precompiled-stores
   precompiled-subjects precompiled-store)
 (def root (path-expand (getenv "CORE_STORE_ROOT")))
 (def original-path (load-path))
@@ -32,7 +32,7 @@
 (def state (.get resource issuer))
 (displayln "AUTHORITY-PHASE fixture-ready") (force-output)
 (def artifacts (authority-artifacts state))
-(def entry "yuanxu/t/qualification/mop-state/precompiled-stores")
+(def entry "tao3k/yuanxu/t/qualification/mop-state/precompiled-stores")
 (def (bytes path) (call-with-input-file path read-all-as-u8vector))
 (def (write-bytes path data)
   ;; Replace the pathname, not the backing inode of a resident ELF mapping.
@@ -58,9 +58,9 @@
  (test-suite "Runtime-source loader call edges"
   (yuanxu-test-case "saved compiled entry and reload retain admission"
     (prepare-source-authority! state)
-    (yuanxu/t/qualification/mop-state/source-loader#set-load-path! (load-path))
+    (tao3k/yuanxu/t/qualification/mop-state/source-loader#set-load-path! (load-path))
     ;; Capture the actual compiled runtime entry BEFORE first target loading.
-    (def saved yuanxu/t/qualification/mop-state/source-loader#load-module)
+    (def saved tao3k/yuanxu/t/qualification/mop-state/source-loader#load-module)
     (check-equal? (eq? load-module original-loader-entry) #t)
     (displayln "AUTHORITY-PHASE saved-entry-start") (force-output)
     (check-equal? (string? (saved entry)) #t)
@@ -81,16 +81,16 @@
     (dynamic-wind
       (lambda ()
         (write-bytes binary (bytes (path-expand
-          "lib/yuanxu/t/qualification/mop-state/unlowered-store~0.o1" artifacts)))
+          "lib/tao3k/yuanxu/t/qualification/mop-state/unlowered-store~0.o1" artifacts)))
         (call-with-output-file (list path: record truncate: #t)
           (cut write (compiler-code-facts entry '()) <>)))
       (lambda ()
         (expect-refusal "saved-hot-changed-record" saved)
         (expect-refusal "direct-hot-changed-record"
-          yuanxu/t/qualification/mop-state/source-loader#load-module)
+          tao3k/yuanxu/t/qualification/mop-state/source-loader#load-module)
         ;; Same-path reload is itself a cached early-return path in the Gerbil runtime.
         (expect-refusal "reload-hot-changed-record"
-          yuanxu/t/qualification/mop-state/source-loader#reload-module!))
+          tao3k/yuanxu/t/qualification/mop-state/source-loader#reload-module!))
       (lambda () (write-bytes record original-record) (write-bytes binary original-binary)))
     (check-equal? (string? (saved entry)) #t)
     (check-equal? (eq? load-module original-loader-entry) #t)

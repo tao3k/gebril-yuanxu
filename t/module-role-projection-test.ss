@@ -8,11 +8,11 @@
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context)
         (only-in :clan/poo/object .get .ref .o)
         (only-in :std/build-script defbuild-script)
-        (only-in :yuanxu/module-system/source/role-forms
+        (only-in :tao3k/yuanxu/module-system/source/role-forms
                  module-publication-role-imports module-regular-role-file?)
-        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
-        (only-in :yuanxu/module-system/source/reader module-publication-reader)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-publication
+        (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
+        (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-publication
                  yuanxu-prepare-module-build-source call-with-module-compiler-inputs))
 (export module-role-projection-test)
 (def (write-source path text)

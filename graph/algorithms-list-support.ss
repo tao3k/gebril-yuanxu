@@ -6,7 +6,7 @@
 ;;; Boundary: pure graph algorithms over composed POO graph facts.
 ;;; Invariant: algorithms emit analysis facts only; runtime execution is out.
 
-(import :yuanxu/graph/types-core
+(import :tao3k/yuanxu/graph/types-core
         (only-in :std/hash/misc hash-ensure-modify!)
         (only-in :std/struct/queue dequeue! enqueue! make-Queue queue-empty?))
 

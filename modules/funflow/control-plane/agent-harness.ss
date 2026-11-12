@@ -6,11 +6,11 @@
 ;;; Boundary: inert agent harness/session/run object families.
 ;;; Invariant: constructors and projections never execute runtime work.
 
-(import :yuanxu/modules/funflow/control-plane/agent-harness-vocabulary
-        :yuanxu/modules/funflow/control-plane/receipt
-        :yuanxu/modules/funflow/control-plane/projection-syntax)
+(import :tao3k/yuanxu/modules/funflow/control-plane/agent-harness-vocabulary
+        :tao3k/yuanxu/modules/funflow/control-plane/receipt
+        :tao3k/yuanxu/modules/funflow/control-plane/projection-syntax)
 
-(export (import: :yuanxu/modules/funflow/control-plane/agent-harness-vocabulary)
+(export (import: :tao3k/yuanxu/modules/funflow/control-plane/agent-harness-vocabulary)
         make-yuanxu-agent-profile
         yuanxu-agent-profile?
         yuanxu-agent-profile-name

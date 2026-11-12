@@ -6,9 +6,9 @@
 ;;; Boundary: extension contribution coalescing and single-pass resolution.
 
 (import (runtime: :clan/poo/object)
-        :yuanxu/graph/contribution
-        :yuanxu/graph/payload-operations
-        :yuanxu/graph/operation)
+        :tao3k/yuanxu/graph/contribution
+        :tao3k/yuanxu/graph/payload-operations
+        :tao3k/yuanxu/graph/operation)
 
 (export yuanxu-graph-apply-operations
         yuanxu-graph-local-operations?

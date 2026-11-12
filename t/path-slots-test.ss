@@ -1,8 +1,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import :yuanxu/object-syntax/path-slots
-        (rename-in (only-in :yuanxu/object-syntax/path-slots .def) (.def define-path))
+(import :tao3k/yuanxu/object-syntax/path-slots
+        (rename-in (only-in :tao3k/yuanxu/object-syntax/path-slots .def) (.def define-path))
         (prefix-in (only-in :clan/poo/object .o .def) runtime-)
         (only-in :clan/poo/object .get .+ .slot?)
         (only-in :std/test test-suite test-case check-equal? check-exception)

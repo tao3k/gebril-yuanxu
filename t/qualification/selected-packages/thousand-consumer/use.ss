@@ -1,7 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :yuanxu-thousand-consumer/main :yuanxu-thousand-consumer/init
         (only-in :clan/poo/object .get .all-slots/sort .ref/cached .call .put!)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer))
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer))
 (def selected-owners
   '(yuanxu-thousand-library/modules/module-0/interface
     yuanxu-thousand-library/modules/module-1/interface))

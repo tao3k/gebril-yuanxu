@@ -7,10 +7,10 @@
         (only-in :gerbil/expander make-module-context current-expander-context
                  current-expander-phi current-expander-compile current-expander-eval)
         (only-in :gerbil/runtime/loader load-path set-load-path! add-load-path!)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/reader module-publication-reader)
-        (only-in :yuanxu/module-system/source/reader-evaluation reader-evaluation-observers)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :tao3k/yuanxu/module-system/source/reader-evaluation reader-evaluation-observers)
         (only-in "qualification/module-publication/fixtures.ss"
                  with-publication-source PublicLibraryFixture write-file))
 (export module-role-context-test)

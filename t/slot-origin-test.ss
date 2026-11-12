@@ -1,16 +1,16 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :yuanxu/object-syntax/path-slots
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import :std/test :tao3k/yuanxu/object-syntax/path-slots
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/object .get .+ .cc .all-slots .put! object-slots with-slots
                  object-%declarations)
         (only-in :clan/poo/prototype-map prototype-map)
         (prefix-in (only-in :clan/poo/object make-object) poo-)
         (only-in :clan/poo/mop Slot)
-        (only-in :yuanxu/configuration/slot-origin field-slot-origins/value admit-field-sources!)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
-        (only-in :yuanxu/configuration/json config-json-file config-field-origin)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/configuration/slot-origin field-slot-origins/value admit-field-sources!)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :tao3k/yuanxu/configuration/json config-json-file config-field-origin)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture))
 (export slot-origin-test)
 (def slot-origin-test

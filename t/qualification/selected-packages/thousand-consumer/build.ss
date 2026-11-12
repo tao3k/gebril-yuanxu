@@ -4,8 +4,8 @@
 (import :std/source
         (only-in :std/make make make-clean)
         (only-in :clan/poo/object .get .call)
-        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
-        (only-in :yuanxu/module-system/building/products current-build-source-directory))
+        (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :tao3k/yuanxu/module-system/building/products current-build-source-directory))
 
 (def (main (operation "compile"))
   (def script (this-source-file))

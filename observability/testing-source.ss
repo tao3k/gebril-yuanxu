@@ -7,9 +7,9 @@ prelude: :gerbil/core
                  current-expander-module-eval current-expander-eval
                  current-expander-context current-expander-phi module-context? expander-context-id module-context-path
                  core-resolve-identifier core-context-root feature-binding?)
-        (only-in :yuanxu/ops/progress call-with-execution-progress
+        (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress
                  current-execution-progress execution-progress!)
-        (only-in :yuanxu/observability/output yuanxu-write-observation-line!))
+        (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!))
 (export install-test-source-observation! stop-test-source-observation!
         test-source-observation-active?)
 

@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/object .get object? .o .cc .def)
-        (only-in :yuanxu/configuration/json config-field-origin))
+        (only-in :tao3k/yuanxu/configuration/json config-field-origin))
 (export Application. gitea-application gitea-policy)
 ;; Configuration is supplied by the admitted dependency scope at publication.
 (.def (Application. @ [] config)

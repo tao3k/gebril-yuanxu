@@ -3,7 +3,7 @@
 ;;; scopes. This selection never changes the standard build consumer's init.
 (import (only-in "./init.ss" yuanxu-thousand-scope-control.init.exports)
         (only-in :clan/poo/object .get .all-slots/sort .ref/cached)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer))
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer))
 (def window (.get yuanxu-thousand-scope-control.init.exports Corpus))
 (unless (equal? (.all-slots/sort window) '(module-0 module-1 module-2))
   (error "wrong scope-control declaration domain"))

@@ -5,20 +5,20 @@
 (import (only-in :std/list/list delete-duplicates/hash foldl foldr)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
         (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
-        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
         (runtime: :clan/poo/object)
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/source/publication
-        :yuanxu/module-system/source/admission
-        (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)
-        :yuanxu/module-system/source/selection
-        (only-in :yuanxu/module-system/feature/scope
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/source/publication
+        :tao3k/yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        :tao3k/yuanxu/module-system/source/selection
+        (only-in :tao3k/yuanxu/module-system/feature/scope
                  refine-module-scope compose-module-features module-feature-scope-contract)
-        :yuanxu/module-system/source/preparation
-        :yuanxu/module-system/source/directory
-        (only-in :yuanxu/module-system/source/reader-support call-with-publication-reads
+        :tao3k/yuanxu/module-system/source/preparation
+        :tao3k/yuanxu/module-system/source/directory
+        (only-in :tao3k/yuanxu/module-system/source/reader-support call-with-publication-reads
                  merge-publication-read-roots)
-        (only-in :yuanxu/module-system/source/declaration current-module-build-phase?))
+        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?))
 (export yuanxu-load-modules module-namespace-project module-program-namespace module-program-feature call-with-linked-prepared-guards
         linked-configuration-guard-active?)
 
@@ -66,13 +66,13 @@
 ;; Export admission owns its Gerbil import. Selecting build targets neither
 ;; publishes an export nor needs the artifact issuer's compiler closure.
 (def export-publication
-  (module-binding-action "yuanxu/admission/publication" 'selected-export-publication))
+  (module-binding-action "tao3k/yuanxu/admission/publication" 'selected-export-publication))
 (def build-graph-producer
-  (module-binding-action "yuanxu/module-system/source/build" 'module-build-graph/linked))
+  (module-binding-action "tao3k/yuanxu/module-system/source/build" 'module-build-graph/linked))
 (def build-package-source-inspector
-  (module-binding-action "yuanxu/module-system/source/build" 'module-build-package-source-inspector))
+  (module-binding-action "tao3k/yuanxu/module-system/source/build" 'module-build-package-source-inspector))
 (def publication-reader-producer
-  (module-binding-action "yuanxu/module-system/source/reader" 'module-publication-reader))
+  (module-binding-action "tao3k/yuanxu/module-system/source/reader" 'module-publication-reader))
 (def (make-publication-reader)
   ;; The linker can enumerate or use a supplied reader without importing
   ;; the native Reader. reader-ref owns its independent entry and return.

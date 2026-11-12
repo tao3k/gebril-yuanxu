@@ -3,9 +3,9 @@
 (import (only-in :clan/poo/object o?/slots .o .cc)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/mop define-type Type.)
-        (only-in :yuanxu/object-types/ports Port valid-port?)
+        (only-in :tao3k/yuanxu/object-types/ports Port valid-port?)
         (only-in :clan/poo/type List)
-        (only-in :yuanxu/object-types/contracts YuanxuContract.))
+        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract.))
 (export Port PostgreSQLValueContract PostgreSQLConfigContract PostgreSQLScopeContract valid-port?)
 (def PostgreSQLValueContract
   (.cc ObjectContract. identity: 'postgresql/config-value

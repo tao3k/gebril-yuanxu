@@ -8,14 +8,14 @@
 (begin-syntax
   (when (getenv "GERBIL_BUILD_VERBOSE" #f)
     (displayln "BUILD-BOOTSTRAP Core at=" (real-time)) (force-output))
-  (register-module-build-source! (path-directory (this-source-file)) 'yuanxu))
+  (register-module-build-source! (path-directory (this-source-file)) 'tao3k/yuanxu))
 
 (import (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get)
         (only-in :std/build-script defbuild-script)
-        (only-in "./init.ss" yuanxu.init.exports)
+        (only-in "./init.ss" tao3k/yuanxu.init.exports)
         (only-in "./core-spec.ss" core-spec))
 
 ;; Core libraries and selected Modules are ordinary native Make lists.
 (defbuild-script
-  (append (.get yuanxu.init.exports std-make-spec) core-spec))
+  (append (.get tao3k/yuanxu.init.exports std-make-spec) core-spec))

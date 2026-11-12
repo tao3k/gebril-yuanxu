@@ -5,8 +5,8 @@
         (only-in :clan/poo/mop define-type validate Object Bool Function)
         (only-in :clan/poo/number IntegerRange)
         (only-in :clan/poo/type List)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence))
 (export object-contract-plan-identity-test test-cleanup!)
 
 ;; A source-matched copy of modules/gitea/objects.ss's pure constructor only.

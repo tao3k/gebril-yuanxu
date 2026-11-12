@@ -1,13 +1,13 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test (only-in :clan/poo/object .get .ref/cached .call .slot? .cc)
-        :yuanxu/object-syntax/path-slots
-        :yuanxu/modules/funflow/objects
-        (only-in :yuanxu/modules/funflow/config Config)
-        (only-in :yuanxu/modules/funflow/types FunflowScopeContract)
-        (only-in :yuanxu/modules/funflow/control-plane/signatures validate)
+        :tao3k/yuanxu/object-syntax/path-slots
+        :tao3k/yuanxu/modules/funflow/objects
+        (only-in :tao3k/yuanxu/modules/funflow/config Config)
+        (only-in :tao3k/yuanxu/modules/funflow/types FunflowScopeContract)
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/signatures validate)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export funflow-job-test)
 (.def (Deployment @ Job.)
   name: 'deployment

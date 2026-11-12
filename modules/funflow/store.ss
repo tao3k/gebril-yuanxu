@@ -3,34 +3,34 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :yuanxu/modules/funflow/control-plane/signatures
+(import (only-in :tao3k/yuanxu/modules/funflow/control-plane/signatures
                  Fun Any Number Integer String Symbol List Pair Null Unit type-description)
-        (only-in :yuanxu/modules/funflow/control-plane/flow flow-output-contract)
-        (only-in :yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/flow flow-output-contract)
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
 ;;; Owner: Store/CAS workflow alignment lives in this workflow module.
 ;;; Boundary: core provides generic task, strategy, config, and adapter slots.
-;;; Import contract: users opt in through =:yuanxu/modules/funflow/store= exports.
+;;; Import contract: users opt in through =:tao3k/yuanxu/modules/funflow/store= exports.
 ;;; Runtime contract: this module emits artifact-store request data only.
 ;;; Runtime contract: CAS materialization and cache reuse stay runtime-owned.
 ;;; Policy evidence: receipts carry generic adapter observations from core.
 
-(import (only-in :yuanxu/modules/funflow/control-plane/failure raise-control-plane-failure)
-        (only-in :yuanxu/modules/funflow/control-plane/task
+(import (only-in :tao3k/yuanxu/modules/funflow/control-plane/failure raise-control-plane-failure)
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/task
                  make-task-family-descriptor task-family-registry-extend
                  default-task-family-registry make-task task? task-name task-kind
                  task-request-operation task-request-payload)
-        (only-in :yuanxu/modules/funflow/control-plane/strategy
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/strategy
                  make-strategy strategy-name strategy-capabilities
                  strategy-cache-policy strategy-failure-policy strategy-planner
                  make-local-eager-strategy make-cached-local-eager-strategy)
-        (only-in :yuanxu/modules/funflow/control-plane/runtime-adapter
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/runtime-adapter
                  make-runtime-adapter runtime-adapter-name
                  runtime-adapter-capabilities runtime-adapter-submitter
                  runtime-adapter-fetcher runtime-adapter-store-putter
                  runtime-adapter-store-getter make-rust-adapter
                  make-request-only-adapter)
-        (only-in :yuanxu/modules/funflow/control-plane/config make-run-config)
-        (only-in :yuanxu/modules/funflow/control-plane/flow
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/config make-run-config)
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/flow
                  default-flow-declaration-registry task-flow flow-name flow-steps
                  flow-input-contract flow-output-contract))
 

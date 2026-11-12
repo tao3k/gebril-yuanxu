@@ -2,7 +2,7 @@
 (import :yuanxu-package-consumer/main :yuanxu-package-consumer/init
         (only-in "../producer/init.ss" yuanxu-thousand-library.init.exports)
         (only-in :clan/poo/object .get .all-slots/sort .ref/cached)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer))
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer))
 ;; The producer's actual yuanxu! window owns the logical catalog. No nested
 ;; gerbil.pkg or editor-TAGS export invents membership or forces leaf scopes.
 (def producer-window (.get yuanxu-thousand-library.init.exports modules))

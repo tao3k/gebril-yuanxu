@@ -8,7 +8,7 @@
                  &raw-table-test &raw-table-test-set! &raw-table-seed &raw-table-seed-set!
                  symbolic-table-set!)
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export mop-route-mutation-test test-cleanup!)
 (def completed 0)
 (def (port-read receiver)

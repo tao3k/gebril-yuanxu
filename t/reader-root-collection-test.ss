@@ -5,11 +5,11 @@
         (only-in :clan/poo/object .o .get replay-slot-reads!)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
                  call-with-slot-read-observer slot-read-key slot-read-receiver)
-        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
-        (only-in :yuanxu/module-system/source/reader call-with-publication-reads)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/t/qualification/module-publication/controls
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :tao3k/yuanxu/module-system/source/reader call-with-publication-reads)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/t/qualification/module-publication/controls
                  register-reader-root-collection-cases!))
 (export reader-root-collection-test)
 (def reader-root-collection-test

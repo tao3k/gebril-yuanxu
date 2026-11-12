@@ -6,11 +6,11 @@
 ;;; Pure option validation over Core Module POO values. Descriptor-specific
 ;;; schema discovery remains with the product adapter.
 
-(import (only-in :yuanxu/module-system/config yuanxu-module-kind=? yuanxu-module-object-ref/default)
+(import (only-in :tao3k/yuanxu/module-system/config yuanxu-module-kind=? yuanxu-module-object-ref/default)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/value-diagnostics diagnose-value)
         (only-in :clan/poo/object-contract checked-issues)
-        :yuanxu/module-system/projection/option-objects)
+        :tao3k/yuanxu/module-system/projection/option-objects)
 
 (export yuanxu-module-find-schema
         yuanxu-module-missing-schema-receipt

@@ -1,13 +1,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in "../init.ss" yuanxu.init.exports)
+        (only-in "../init.ss" tao3k/yuanxu.init.exports)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :yuanxu/ops/interface Ops)
-        (only-in :yuanxu/ops/func run-script)
-        (only-in :yuanxu/module-system/source/admission module-source-read)
-        (only-in :yuanxu/observability/testing-script make-compiler-progress-reader TestingScript.))
+        (only-in :tao3k/yuanxu/ops/interface Ops)
+        (only-in :tao3k/yuanxu/ops/func run-script)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read)
+        (only-in :tao3k/yuanxu/observability/testing-script make-compiler-progress-reader TestingScript.))
 (export selected-source-view-lifecycle-test)
-(def source-root (.get yuanxu.init.exports tests source source-root))
+(def source-root (.get tao3k/yuanxu.init.exports tests source source-root))
 (def runtime-option (car (.get TestingScript. runtime-options)))
 (def runtime-environment
   (string-append (let (inherited-options (getenv "GAMBOPT" #f))

@@ -6,9 +6,9 @@
 ;;; Invariant: handoff planning records requirements but performs no runtime effects.
 (import (only-in :std/list/list fold filter-map)
         (runtime: :clan/poo/object)
-        :yuanxu/composition/roles
-        :yuanxu/module-system/feature/adapter-projection-binding
-        :yuanxu/utilities/functional)
+        :tao3k/yuanxu/composition/roles
+        :tao3k/yuanxu/module-system/feature/adapter-projection-binding
+        :tao3k/yuanxu/utilities/functional)
 
 (export +feature-runtime-c-bundle-version+
         +feature-runtime-bundle-handoff-kind+

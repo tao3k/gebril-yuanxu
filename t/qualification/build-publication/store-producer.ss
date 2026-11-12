@@ -3,9 +3,9 @@
 (import :clan/poo/object
         (only-in "../testing/directory.ss" write-source)
         (only-in "../service-publication/fixtures.ss" ServicesFixture)
-        (only-in :yuanxu/module-system/building/artifacts call-with-build-artifact-issuance
+        (only-in :tao3k/yuanxu/module-system/building/artifacts call-with-build-artifact-issuance
                  run-build-artifact-process)
-        (only-in :yuanxu/observability/testing-script TestingScript.)
+        (only-in :tao3k/yuanxu/observability/testing-script TestingScript.)
         "./projection")
 (export main)
 ;; Standard Gerbil launchers share this argument surface; issuance stays process-local.

@@ -9,8 +9,8 @@
         (prefix-in :clan/poo/generalized-graph graph.)
         (prefix-in :clan/poo/strong-components scc.)
         (only-in :clan/poo/dependency-analysis Computation.)
-        :yuanxu/module-system/feature/model
-        :yuanxu/utilities/functional)
+        :tao3k/yuanxu/module-system/feature/model
+        :tao3k/yuanxu/utilities/functional)
 
 (export resolve-feature-profile)
 

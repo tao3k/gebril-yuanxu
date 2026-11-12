@@ -2,12 +2,12 @@
 ;;; Production return-currentness events; known misses remain expected witnesses.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence)
-        (only-in :yuanxu/admission/source SourceAdmissionContract.)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  current-module-source-phase module-source-read module-source-admit-current!)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture))
 (export source-admission-tail-test test-cleanup!)

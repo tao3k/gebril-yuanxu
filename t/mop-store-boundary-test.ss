@@ -5,7 +5,7 @@
         (prefix-in (only-in :gerbil/runtime/mop slot-set!) runtime.)
         (only-in :std/error Error? Error-message)
         (only-in :std/encoding/json write-json)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         "qualification/mop-state/store-policy"
         "qualification/mop-state/precompiled-stores"
         "qualification/mop-state/unlowered-store")

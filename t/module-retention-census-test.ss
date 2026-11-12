@@ -7,13 +7,13 @@
         (only-in :gerbil/runtime/loader list-modules)
         (only-in :gerbil/runtime/gambit unbound-global-exception?)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads slot-read-dependencies slot-read-receiver)
-        (only-in :yuanxu/t/qualification/retention/payload report-retained-reads)
-        (only-in :yuanxu/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
-        (only-in :yuanxu/t/qualification/module-scale/fixture DeclarationFixture)
-        (only-in :yuanxu/module-system/building/test-observation ModuleTestingProfile.)
-        (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot yuanxu-debug-cpu-microseconds)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+        (only-in :tao3k/yuanxu/t/qualification/retention/payload report-retained-reads)
+        (only-in :tao3k/yuanxu/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
+        (only-in :tao3k/yuanxu/t/qualification/module-scale/fixture DeclarationFixture)
+        (only-in :tao3k/yuanxu/module-system/building/test-observation ModuleTestingProfile.)
+        (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-memory-snapshot yuanxu-debug-cpu-microseconds)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  module-source-style-policy-current?
                  call-with-module-source-operation-measurement))
 (export module-retention-census-test)
@@ -22,7 +22,7 @@
   ;; defining context without loading its whole facade's runtime wrapper.
   (with-catch
     (lambda (cause) (if (unbound-global-exception? cause) #f (raise cause)))
-    (lambda () (procedure? (eval 'yuanxu/module-system/source/build#module-build-graph)))))
+    (lambda () (procedure? (eval 'tao3k/yuanxu/module-system/source/build#module-build-graph)))))
 (def (read-identities roots)
   (def identities (make-hash-table-eq))
   (let walk ((pending roots))
@@ -91,7 +91,7 @@
   (def lifetime (make-hash-table-eq weak-values: #t))
   (def prior-contexts (reader-contexts))
   ;; Actual runtime loader state, not a fixture flag or inferred field value.
-  (check-equal? (assoc "yuanxu/module-system/source/build" (list-modules)) #f)
+  (check-equal? (assoc "tao3k/yuanxu/module-system/source/build" (list-modules)) #f)
   (check-equal? (build-producer-ready?) #f)
   (def body-expansions 0)
   (def physical-reads 0)
@@ -253,7 +253,7 @@
   (check-equal? (eq? graph (phase 'hot query-and-authenticate)) #t)
   (check-equal? body-expansions cold-expansions)
   (check-equal? replay-starts '())
-  (check-equal? (assoc "yuanxu/module-system/source/build" (list-modules)) #f)
+  (check-equal? (assoc "tao3k/yuanxu/module-system/source/build" (list-modules)) #f)
   (check-equal? (build-producer-ready?) #f)
   (def memory (yuanxu-debug-memory-snapshot 'retention-census collect?: #t))
   (check-equal? (length (.get graph module-order)) size)

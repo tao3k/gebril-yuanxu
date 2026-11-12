@@ -3,22 +3,22 @@
 ;;; Platform-owned admission context over existing selected/build Graph guards.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop define-type Type element?)
-        (only-in :yuanxu/module-system/source/build unique-build-inputs module-build-admit-context!)
-        (only-in :yuanxu/module-system/building/artifacts admit-build-artifacts!
+        (only-in :tao3k/yuanxu/module-system/source/build unique-build-inputs module-build-admit-context!)
+        (only-in :tao3k/yuanxu/module-system/building/artifacts admit-build-artifacts!
           admit-build-artifact-publication! build-artifact-publication-current)
-        (only-in :yuanxu/admission/contributions bind-publication-contributions)
+        (only-in :tao3k/yuanxu/admission/contributions bind-publication-contributions)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :std/string/path path-absolute?)
-        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?
                  call-with-contract-analysis-root)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/source/admission
           module-source-read module-source-admit-current! call-with-module-source-read-cache
           current-module-source-observer module-source-object-policy)
-        (only-in :yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-port)
-        (only-in :yuanxu/modules/json-schema/json-schema-normalize yuanxu-json-schema-normalize)
-        (only-in :yuanxu/modules/json-schema/json-schema-ir
+        (only-in :tao3k/yuanxu/modules/json-schema/json-schema-source yuanxu-json-schema-read-port)
+        (only-in :tao3k/yuanxu/modules/json-schema/json-schema-normalize yuanxu-json-schema-normalize)
+        (only-in :tao3k/yuanxu/modules/json-schema/json-schema-ir
                  yuanxu-json-schema-normalization->alist yuanxu-json-schema-normalization-schema)
-        (only-in :yuanxu/modules/json-schema/json-schema-receipt
+        (only-in :tao3k/yuanxu/modules/json-schema/json-schema-receipt
           yuanxu-json-schema-contract-artifact?
           yuanxu-json-schema-contract-artifact-valid?
           yuanxu-json-schema-contract-artifact-source-ref

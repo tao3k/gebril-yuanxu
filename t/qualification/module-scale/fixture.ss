@@ -2,14 +2,14 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Real role sources and init; assertions run in the owning std/test Case.
-(import "../module-init/fixture.ss" "./workloads.ss" (except-in :clan/poo/object .def .o) :yuanxu/object-syntax/path-slots :std/test
+(import "../module-init/fixture.ss" "./workloads.ss" (except-in :clan/poo/object .def .o) :tao3k/yuanxu/object-syntax/path-slots :std/test
         (only-in :std/source this-source-file)
-        (only-in :yuanxu/ops/progress execution-progress!)
+        (only-in :tao3k/yuanxu/ops/progress execution-progress!)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
-        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/observability/testing-case
+        (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-case
                  yuanxu-test-checkpoint yuanxu-selected-testing-case-profile))
 (export DeclarationFixture RuntimeValueFixture RuntimeSelectionFixture RuntimeAttributionFixture ModuleEvalOnceFixture BusinessEvalOnceFixture
         SparseBusinessEvalFixture SparseBusinessAttributionFixture
@@ -69,13 +69,13 @@
           (list (list 'package: (string->symbol (symbol->string (gensym 'declaration-scale-))))))
         (write-fixture-source (path-expand "init.ss" fixture-root)
           (cond (profile-selection?
-                 '((import :yuanxu/module-system/selection/init-syntax)
+                 '((import :tao3k/yuanxu/module-system/selection/init-syntax)
                    (yuanxu! source: "./modules" mode: auto profile: security)))
                 (sparse-selection?
-                 '((import :yuanxu/module-system/selection/init-syntax)
+                 '((import :tao3k/yuanxu/module-system/selection/init-syntax)
                    (yuanxu! source: "./modules" mode: auto (module-1))))
                 (else
-                 `((import :yuanxu/module-system/selection/init-syntax)
+                 `((import :tao3k/yuanxu/module-system/selection/init-syntax)
                    (yuanxu! source: "./modules" mode: explicit ,@(map list ids))))))
         (for-each
           (lambda (id)

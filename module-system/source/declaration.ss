@@ -6,7 +6,7 @@
         (prefix-in (only-in :clan/poo/object
                             .def/ctx .o/ctx .o .ref) runtime-)
         (for-syntax :gerbil/expander
-                    :yuanxu/module-system/source/role-forms))
+                    :tao3k/yuanxu/module-system/source/role-forms))
 (export .def include-module-body export-role-config define-module-build-binding
         current-module-build-phase? current-module-build-resolver current-module-feature-reader)
 (def current-module-feature-reader (make-parameter #f))

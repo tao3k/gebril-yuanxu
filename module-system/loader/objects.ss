@@ -9,9 +9,9 @@
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop make-instance validate)
         (only-in :std/list/list find)
-        (only-in :yuanxu/module-system/source/types ModuleSourceBinding)
+        (only-in :tao3k/yuanxu/module-system/source/types ModuleSourceBinding)
         "types.ss"
-        :yuanxu/module-system/source/objects)
+        :tao3k/yuanxu/module-system/source/objects)
 
 (export ModuleSourceBinding ModuleLoaderBackend
         LazyLoadPlan ModuleLoadReceipt

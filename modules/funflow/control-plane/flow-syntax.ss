@@ -6,8 +6,8 @@
 ;;; Boundary: hygienic authoring macros for the functional flow kernel.
 ;;; Invariant: macros expand to public flow/plan combinators, not a workflow DSL.
 
-(import :yuanxu/modules/funflow/control-plane/flow
-        :yuanxu/modules/funflow/control-plane/graph)
+(import :tao3k/yuanxu/modules/funflow/control-plane/flow
+        :tao3k/yuanxu/modules/funflow/control-plane/graph)
 
 (export defyuanxu-arr
         defyuanxu-identity

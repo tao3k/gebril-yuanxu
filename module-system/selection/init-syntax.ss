@@ -9,6 +9,6 @@ prelude: :gerbil/core
                 (original stx))
     #'(begin
         (import (rename-in
-                  (only-in :yuanxu/module-system/selection/init-expansion implementation-name)
+                  (only-in :tao3k/yuanxu/module-system/selection/init-expansion implementation-name)
                   (implementation-name dispatch)))
         (dispatch original))))

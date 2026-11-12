@@ -10,12 +10,12 @@
         (only-in :std/hash/misc hash-ensure-modify!)
         (only-in :std/struct/queue dequeue! enqueue! make-Queue queue-empty?)
         (prefix-in :clan/poo/strong-components scc.)
-        (only-in :yuanxu/utilities/functional
+        (only-in :tao3k/yuanxu/utilities/functional
                  yuanxu-stable-duplicates)
         (only-in :std/list/list filter filter-map)
-        :yuanxu/modules/funflow/check-types
-        :yuanxu/modules/funflow/check-objects
-        :yuanxu/modules/funflow/projection-syntax)
+        :tao3k/yuanxu/modules/funflow/check-types
+        :tao3k/yuanxu/modules/funflow/check-objects
+        :tao3k/yuanxu/modules/funflow/projection-syntax)
 
 (export yuanxu-cicd-check-map->dependency-graph)
 

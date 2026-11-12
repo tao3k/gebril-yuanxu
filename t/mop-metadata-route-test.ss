@@ -4,7 +4,7 @@
         (only-in :gerbil/runtime/table &raw-table-hash-set! &raw-table-test-set!)
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/mop make-slot-read slot-read-key)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in "qualification/mop-state/checker-origin" recorded)
         "qualification/mop-state/metadata-route.ss")
 (export mop-metadata-route-test test-cleanup!)

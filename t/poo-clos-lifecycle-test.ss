@@ -5,12 +5,12 @@
 
 ;;; POO CLOS class, slot, and instance lifecycle conformance.
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  test-suite test-case check-equal? check-exception check)
         (only-in :clan/poo/object .ref object?)
         (only-in :clan/poo/mop Type element?)
-        :yuanxu/poo-clos/interface)
+        :tao3k/yuanxu/poo-clos/interface)
 
 (export poo-clos-lifecycle-test)
 

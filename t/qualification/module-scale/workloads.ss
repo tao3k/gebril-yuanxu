@@ -2,11 +2,11 @@
 ;;; Assertion workloads called by the existing std/test Case in this process.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/ops/progress execution-progress!)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-checkpoint)
-        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
-        (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer module-source-read
+        (only-in :tao3k/yuanxu/ops/progress execution-progress!)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-checkpoint)
+        (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-memory-snapshot)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer module-source-read
                  call-with-module-source-operation-measurement)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads))
 (export verify-declaration-scale verify-runtime-scale verify-runtime-selection verify-runtime-attribution

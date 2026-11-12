@@ -7,7 +7,7 @@
 ;;; Invariant: graph objects describe topology; they never schedule or run it.
 
 (import (runtime: :clan/poo/object)
-        :yuanxu/utilities/final-projection-syntax)
+        :tao3k/yuanxu/utilities/final-projection-syntax)
 
 (export #t)
 

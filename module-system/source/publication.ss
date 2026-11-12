@@ -6,13 +6,13 @@
         (prefix-in (only-in :gerbil/runtime/mop class-of slot-ref) runtime.)
         (only-in :gerbil/runtime/error Error::t)
         (runtime: :clan/poo/object)
-        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/slot-observation slot-read-revision slot-read-instance slot-read-value)
         (only-in :clan/poo/mop Type Type. Bool Object define-type element?)
         (only-in :clan/poo/type Record Symbol List Or)
-        (only-in :yuanxu/object-types/contracts yuanxu-value-admit yuanxu-validation-evidence-accepted?)
-        (only-in :yuanxu/module-system/source/observations module-source-measure-operation))
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-value-admit yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-measure-operation))
 (export ModulePublicationContract ModuleScopeContextContract ContributionRouteContract ModuleInterfaceViewContract
         ModuleFeatureRefinementContract admit-module-value!
         module-publication? module-scope-context? requirement-option

@@ -6,8 +6,8 @@
 ;;; Invariant: arena offsets are validated before any foreign view is exposed.
 (import (only-in :std/list/list fold)
         (runtime: :clan/poo/object)
-        :yuanxu/utilities/functional
-        :yuanxu/module-system/feature/bundle-v1-lowering)
+        :tao3k/yuanxu/utilities/functional
+        :tao3k/yuanxu/module-system/feature/bundle-v1-lowering)
 
 (export +feature-bundle-v1-foreign-arena-image-kind+
         +feature-bundle-v1-foreign-arena-diagnostic-kind+

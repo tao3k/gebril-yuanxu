@@ -6,12 +6,12 @@
 ;;; Boundary: flow strands describe Funflow-style interpreter families.
 ;;; Invariant: strand objects are declaration policy, not executable runners.
 
-(import :yuanxu/composition/roles
+(import :tao3k/yuanxu/composition/roles
         (only-in :clan/poo/object .@ object?)
-        :yuanxu/modules/funflow/control-plane/roles
-        :yuanxu/modules/funflow/control-plane/failure
-        :yuanxu/modules/funflow/control-plane/projection-syntax
-        :yuanxu/object-family/role-syntax)
+        :tao3k/yuanxu/modules/funflow/control-plane/roles
+        :tao3k/yuanxu/modules/funflow/control-plane/failure
+        :tao3k/yuanxu/modules/funflow/control-plane/projection-syntax
+        :tao3k/yuanxu/object-family/role-syntax)
 
 (export flow-strand-descriptor-prototype
         make-flow-strand-descriptor

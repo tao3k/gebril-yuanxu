@@ -6,9 +6,9 @@
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .get .cc)
         (only-in :clan/poo/mop make-instance validate TypeError?)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/loader/objects)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/loader/objects)
 
 (export module-loader-backend-test)
 

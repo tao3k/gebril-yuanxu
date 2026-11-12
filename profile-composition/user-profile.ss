@@ -7,7 +7,7 @@
 ;;; Invariant: profile objects are declarative and do not realize descriptors.
 
 (import (runtime: :clan/poo/object)
-        :yuanxu/module-system/selection/objects)
+        :tao3k/yuanxu/module-system/selection/objects)
 
 (export yuanxu-user-profile-kind
         yuanxu-user-profile-set-kind

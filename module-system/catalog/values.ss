@@ -7,7 +7,7 @@
 ;;; Invariant: catalog construction never evaluates modules or loads runtimes.
 
 (import (runtime: :clan/poo/object)
-        (only-in :yuanxu/module-system/config yuanxu-module-kind=?))
+        (only-in :tao3k/yuanxu/module-system/config yuanxu-module-kind=?))
 
 (export yuanxu-module-catalog
         yuanxuModuleCatalog)

@@ -4,8 +4,8 @@
 ;;; Runtime authoring Interface; branding and source policy are consumer inputs.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/type Record)
-        :yuanxu/module-system/config
-        (only-in :yuanxu/module-system/authoring/roles
+        :tao3k/yuanxu/module-system/config
+        (only-in :tao3k/yuanxu/module-system/authoring/roles
                  make-default-module-authoring-profile yuanxu-default-module-authoring-profile))
 (export yuanxu-module-interface-prototype yuanxu-module-interface
         yuanxu-module-interface? yuanxu-module-interface-id

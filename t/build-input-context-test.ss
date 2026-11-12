@@ -3,7 +3,7 @@
 (import :std/test
         (only-in :gerbil/runtime/loader load-path set-load-path!)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path))
+        (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path))
 (export build-input-context-test)
 (def (with-input-path paths action)
   (def previous (load-path))

@@ -13,30 +13,30 @@
         (only-in :clan/poo/mop Type. define-type element? validate)
         (only-in :clan/poo/type List)
         (only-in :std/list/list any delete-duplicates/hash filter-map find)
-        (only-in :yuanxu/utilities/algorithms
+        (only-in :tao3k/yuanxu/utilities/algorithms
                  yuanxu-read-datums/append-map
                  yuanxu-scheme-datum-find)
-        (only-in :yuanxu/module-system/source/interface
+        (only-in :tao3k/yuanxu/module-system/source/interface
                  yuanxu-module-interface-prototype
                  yuanxu-module-interface?
                  yuanxu-module-interface-id
                  yuanxu-module-interface-authoring)
-        (only-in :yuanxu/module-system/observability/presentation
+        (only-in :tao3k/yuanxu/module-system/observability/presentation
                  yuanxu-poo-slot-authoring-datum-bindings
                  yuanxu-poo-slot-authoring-self-reference?)
         ;; Role admission needs dispatch and immutable method declarations, not
         ;; the aggregate class evolution/reflection/load-form publication.
-        (only-in :yuanxu/poo-clos/objects
+        (only-in :tao3k/yuanxu/poo-clos/objects
                  poo-clos-generic-protocol
                  poo-clos-generic-binding-current poo-clos-compose-method-bundle
                  clos-call-carrier-policy-guard)
-        (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection
+        (only-in :tao3k/yuanxu/object-family/read-projection call-with-owned-read-projection
                  owned-read-function-scope? owned-read-method! owned-read-derived!
                  owned-read-fields-present?)
-        (only-in :yuanxu/poo-clos/generic-syntax .defgeneric .defmethod)
-        (only-in :yuanxu/poo-clos/dispatch poo-clos-call poo-clos-compute-applicable-methods)
-        (only-in :yuanxu/poo-clos/method-bundle-syntax .defmethod-bundle)
-        (only-in :yuanxu/module-system/authoring/roles ModuleAuthoringExecutor. ModuleSourceRole. ConfigSourceRole.))
+        (only-in :tao3k/yuanxu/poo-clos/generic-syntax .defgeneric .defmethod)
+        (only-in :tao3k/yuanxu/poo-clos/dispatch poo-clos-call poo-clos-compute-applicable-methods)
+        (only-in :tao3k/yuanxu/poo-clos/method-bundle-syntax .defmethod-bundle)
+        (only-in :tao3k/yuanxu/module-system/authoring/roles ModuleAuthoringExecutor. ModuleSourceRole. ConfigSourceRole.))
 
 (export ModuleAuthoringAnalysisProtocol
         ModuleAuthoringAnalysisGeneric

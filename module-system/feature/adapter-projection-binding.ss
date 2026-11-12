@@ -6,11 +6,11 @@
 ;;; Invariant: binding consumes declared capabilities without widening requested policy.
 (import (only-in :std/list/list fold filter-map)
         (runtime: :clan/poo/object)
-        :yuanxu/composition/roles
-        :yuanxu/module-system/feature/capability-model
-        :yuanxu/module-system/feature/policy-strategy-binding
-        :yuanxu/module-system/feature/domain-case/interface
-        :yuanxu/utilities/functional)
+        :tao3k/yuanxu/composition/roles
+        :tao3k/yuanxu/module-system/feature/capability-model
+        :tao3k/yuanxu/module-system/feature/policy-strategy-binding
+        :tao3k/yuanxu/module-system/feature/domain-case/interface
+        :tao3k/yuanxu/utilities/functional)
 
 (export +feature-adapter-capability-catalog-kind+
         feature-adapter-capability-catalog

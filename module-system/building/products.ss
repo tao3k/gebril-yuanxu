@@ -4,7 +4,7 @@
         (only-in "./program-products.ss" program-path program-identity?)
         (only-in :std/os/flock open-output-file/lock)
         (only-in :std/os/device device-close)
-        (only-in :yuanxu/module-system/source/observations module-source-type module-source-measure-operation))
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-type module-source-measure-operation))
 (export artifact-files clean-build-artifacts! repair-build-products! require-build-products! build-output-directory
         call-with-selected-output-lock selected-output-source-directory
         current-build-output-directory current-build-source-directory current-build-compiler-options current-build-module-roots invalidate-build-products! static-product-path)

@@ -4,7 +4,7 @@
         (only-in :clan/poo/mop element? validate Bool)
         (only-in :clan/poo/type String)
         :clan/poo/object-contract
-        :yuanxu/modules/json-schema/contracts)
+        :tao3k/yuanxu/modules/json-schema/contracts)
 (export json-schema-value-contract-test)
 
 (def PortObject

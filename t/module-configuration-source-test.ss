@@ -6,10 +6,10 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/object .get)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  module-source-read module-source-admit-current!)
-        (only-in :yuanxu/module-system/building/configuration-source
+        (only-in :tao3k/yuanxu/module-system/building/configuration-source
                  yuanxu-configuration-source configuration-request-current/owned))
 (export module-configuration-source-test)
 (def (write-source path text)

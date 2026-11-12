@@ -5,13 +5,13 @@
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-observation without-observation)
         (only-in :clan/poo/read-route require-read-route!)
-        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
-        (only-in :yuanxu/module-system/source/admission module-source-type module-source-admit-current! call-with-module-source-read-cache
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-type module-source-admit-current! call-with-module-source-read-cache
                  current-module-source-phase current-module-source-observer module-source-object-policy
                  call-with-module-source-callback)
-        (only-in :yuanxu/module-system/source/link linked-configuration-guard-active?)
-        (only-in :yuanxu/module-system/source/reader module-prepared-source-binding))
+        (only-in :tao3k/yuanxu/module-system/source/link linked-configuration-guard-active?)
+        (only-in :tao3k/yuanxu/module-system/source/reader module-prepared-source-binding))
 (export yuanxu-configuration-source configuration-request-current/owned)
 (defstruct configuration-request-check (context invoke closed ready?) final: #t)
 

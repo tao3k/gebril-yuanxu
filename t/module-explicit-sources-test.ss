@@ -4,9 +4,9 @@
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata))
 (export module-explicit-sources-test)
 (def (write-source path text)
   (create-directory* (path-directory path))

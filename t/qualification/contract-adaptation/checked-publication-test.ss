@@ -7,9 +7,9 @@
         (only-in :clan/poo/type String Symbol)
         :clan/poo/object-contract
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        :yuanxu/modules/json-schema/contracts
-        (only-in :yuanxu/admission/publication AdmissionPublication.)
-        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence))
+        :tao3k/yuanxu/modules/json-schema/contracts
+        (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
+        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence))
 (export checked-publication-test test-cleanup!
         make-scenario make-admission allow
         WebContract ConfigContract ScenarioContract)

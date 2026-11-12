@@ -194,32 +194,32 @@
                  (error "prelude has no runtime module association" (expander-context-id prelude))))))))
 ;; Empty only-in imports do not survive Gerbil's compiled graph. The reader
 ;; emits these role languages, so both paths retain their actual Contexts.
-(def role-language-roots '(:yuanxu/module-system/source/module-prelude
-                           :yuanxu/module-system/source/config-prelude))
+(def role-language-roots '(:tao3k/yuanxu/module-system/source/module-prelude
+                           :tao3k/yuanxu/module-system/source/config-prelude))
 ;; Published Modules remain selected dependencies. These shared library roots
 ;; keep their native value identities in both the reader and source bootstrap.
 (def shared-library-roots
-  '(:yuanxu/graph/types-core
-    :yuanxu/graph/algorithms
+  '(:tao3k/yuanxu/graph/types-core
+    :tao3k/yuanxu/graph/algorithms
     ;; Task/Flow and Scenario Record identities cross the library/Module
     ;; boundary. Only actual imports enroll their source support.
-    :yuanxu/modules/funflow/control-plane/flow
-    :yuanxu/modules/funflow/scenario
-    :yuanxu/profile-composition/module-prototype-syntax
+    :tao3k/yuanxu/modules/funflow/control-plane/flow
+    :tao3k/yuanxu/modules/funflow/scenario
+    :tao3k/yuanxu/profile-composition/module-prototype-syntax
     ;; Schema results, diagnostics, and field Types cross admission.
-    :yuanxu/modules/json-schema/json-schema-receipt
-    :yuanxu/modules/json-schema/json-schema-validate
-    :yuanxu/admission/source
-    :yuanxu/configuration/diagnostics
-    :yuanxu/object-types/ports))
+    :tao3k/yuanxu/modules/json-schema/json-schema-receipt
+    :tao3k/yuanxu/modules/json-schema/json-schema-validate
+    :tao3k/yuanxu/admission/source
+    :tao3k/yuanxu/configuration/diagnostics
+    :tao3k/yuanxu/object-types/ports))
 (def bootstrap-roots
-  (append '(:yuanxu/module-system/building/build-projection)
+  (append '(:tao3k/yuanxu/module-system/building/build-projection)
           role-language-roots
-          '(:yuanxu/module-system/building/interface
-            :yuanxu/module-system/building/configuration-source)
+          '(:tao3k/yuanxu/module-system/building/interface
+            :tao3k/yuanxu/module-system/building/configuration-source)
           shared-library-roots))
 (def reader-roots
-  (append '(:yuanxu/module-system/source/reader) role-language-roots shared-library-roots))
+  (append '(:tao3k/yuanxu/module-system/source/reader) role-language-roots shared-library-roots))
 ;; Flow imports role-syntax. The reader and diagnostics import configuration/json.
 ;; Their native dependency edges supply both Contexts to the same catalog walk.
 (def (yuanxu-bootstrap-contexts (observe-context void))

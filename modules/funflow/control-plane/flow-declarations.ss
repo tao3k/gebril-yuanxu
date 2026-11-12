@@ -6,13 +6,13 @@
 ;;; Boundary: flow declaration descriptors and registry metadata.
 ;;; Invariant: this owner does not define flow record classes or execute tasks.
 
-(import :yuanxu/composition/roles
+(import :tao3k/yuanxu/composition/roles
         (only-in :clan/poo/object .@ object?)
-        :yuanxu/modules/funflow/control-plane/projection-syntax
-        :yuanxu/modules/funflow/control-plane/roles
-        :yuanxu/modules/funflow/control-plane/failure
-        :yuanxu/modules/funflow/control-plane/task
-        :yuanxu/object-family/role-syntax)
+        :tao3k/yuanxu/modules/funflow/control-plane/projection-syntax
+        :tao3k/yuanxu/modules/funflow/control-plane/roles
+        :tao3k/yuanxu/modules/funflow/control-plane/failure
+        :tao3k/yuanxu/modules/funflow/control-plane/task
+        :tao3k/yuanxu/object-family/role-syntax)
 
 (export make-flow-declaration-descriptor
         flow-declaration-descriptor?

@@ -6,12 +6,12 @@
 ;;; Boundary: adapter-routed task dispatch and receipt classification helpers.
 ;;; Invariant: runner orchestration imports these helpers but owns DAG control.
 
-(import :yuanxu/modules/funflow/control-plane/projection-syntax
-        :yuanxu/modules/funflow/control-plane/failure
-        :yuanxu/modules/funflow/control-plane/task
-        :yuanxu/modules/funflow/control-plane/strategy
-        :yuanxu/modules/funflow/control-plane/runtime-protocol
-        :yuanxu/modules/funflow/control-plane/runtime-adapter)
+(import :tao3k/yuanxu/modules/funflow/control-plane/projection-syntax
+        :tao3k/yuanxu/modules/funflow/control-plane/failure
+        :tao3k/yuanxu/modules/funflow/control-plane/task
+        :tao3k/yuanxu/modules/funflow/control-plane/strategy
+        :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol
+        :tao3k/yuanxu/modules/funflow/control-plane/runtime-adapter)
 
 (export adapter-result-for-task
         adapter-result-failure

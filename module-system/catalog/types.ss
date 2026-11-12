@@ -5,7 +5,7 @@
 ;;; Catalog fields describe existing values; validation must not load a source.
 (import (only-in :clan/poo/mop define-type)
         (only-in :clan/poo/type Record List Symbol)
-        (only-in :yuanxu/module-system/source/types ModuleSourceBinding))
+        (only-in :tao3k/yuanxu/module-system/source/types ModuleSourceBinding))
 (export ModuleSourceBinding ModuleCatalog)
 
 (define-type ModuleCatalog

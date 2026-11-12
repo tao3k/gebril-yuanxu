@@ -4,7 +4,7 @@
 ;;; Gerbil limitation controls: a source path is not an independent target identity.
 (import :std/test
         (only-in :std/make make make-clean)
-        (only-in :yuanxu/module-system/building/artifacts clean-build-artifacts!)
+        (only-in :tao3k/yuanxu/module-system/building/artifacts clean-build-artifacts!)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :std/io/tempfile call-with-temporary-directory))
 (export module-source-location-test)

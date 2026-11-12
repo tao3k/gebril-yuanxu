@@ -4,7 +4,7 @@
 (import :std/test :clan/poo/object
         (only-in :std/make make)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture))
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export module-incremental-make-test)
 (def (write-source root name content)
   (call-with-output-file (list path: (path-expand name root) truncate: #t)

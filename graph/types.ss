@@ -56,5 +56,5 @@
         yuanxu-graph-loop-analysis?
         yuanxu-graph-loop-analysis->alist)
 
-(import :yuanxu/graph/types-core
-        :yuanxu/graph/types-contracts)
+(import :tao3k/yuanxu/graph/types-core
+        :tao3k/yuanxu/graph/types-contracts)

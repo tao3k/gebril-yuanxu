@@ -6,8 +6,8 @@
         (only-in :std/encoding/json json->string)
         (only-in :std/io/tempfile make-temporary-file-name current-temporary-directory)
         (only-in :std/misc/ports read-all-as-string read-all-as-u8vector)
-        (only-in :yuanxu/ops/func run-script)
-        (only-in :yuanxu/ops/process-script ProcessScript.))
+        (only-in :tao3k/yuanxu/ops/func run-script)
+        (only-in :tao3k/yuanxu/ops/process-script ProcessScript.))
 (export verify-build-input-mutations)
 
 (def (gerbil-test-arguments runtime-options file)
@@ -83,7 +83,7 @@
       (create-directory* library)
       (call-with-output-file path
         (lambda (port)
-          (display "package: yuanxu/module-system/building\n" port)
+          (display "package: tao3k/yuanxu/module-system/building\n" port)
           (display (substring text 0 offset) port)
           (display replacement port)
           (display (substring text end (string-length text)) port)))

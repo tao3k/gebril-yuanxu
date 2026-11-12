@@ -1,11 +1,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
         (only-in :std/make make)
-        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
+        (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
-        (only-in :yuanxu/module-system/source/preparation
+        (only-in :tao3k/yuanxu/module-system/source/preparation
                  yuanxu-prepare-module-retained-source call-with-module-compiler-inputs)
-        (only-in :yuanxu/module-system/building/products
+        (only-in :tao3k/yuanxu/module-system/building/products
                  current-build-output-directory current-build-source-directory
                  repair-build-products! require-build-products! call-with-selected-output-lock))
 

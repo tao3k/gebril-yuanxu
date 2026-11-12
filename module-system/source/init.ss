@@ -4,10 +4,10 @@
 ;;; Read-only lowering of the bounded init declaration, never eval/import.
 (import (runtime: :clan/poo/object)
         (only-in :std/list/list any)
-        (only-in :yuanxu/module-system/source/role-forms
+        (only-in :tao3k/yuanxu/module-system/source/role-forms
                  init-name? parse-module-init module-init-export-name module-interface-form?
                  module-feature-declaration?)
-        (only-in :yuanxu/module-system/selection/objects yuanxu-user-module-selection))
+        (only-in :tao3k/yuanxu/module-system/selection/objects yuanxu-user-module-selection))
 (export module-init-intent module-init-export-name module-interface-tags module-init-source-root
         module-init-compiler-source-roots
         module-interface-declaration?)

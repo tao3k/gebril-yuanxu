@@ -4,12 +4,12 @@
 (import :std/test
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  call-with-module-source-read-cache)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context)
         (only-in :clan/poo/object .get)
-        (only-in :yuanxu/module-system/source/preparation
+        (only-in :tao3k/yuanxu/module-system/source/preparation
                  yuanxu-prepare-module-retained-source))
 (export module-retained-source-test)
 (def (write-source path text)

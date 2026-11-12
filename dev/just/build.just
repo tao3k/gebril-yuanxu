@@ -47,7 +47,7 @@ build-mop-store-boundary-runtime directory:
     export GERBIL_PATH="${GERBIL_PATH:-$(pwd)/.gerbil}"
     export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$GERBIL_PATH/lib"
     shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
-    shasum -a 256 "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/precompiled-stores~0.scm" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/precompiled-stores~0.o1" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/unlowered-store~0.scm" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/unlowered-store~0.o1" > "$CORE_STORE_ROOT/callback-artifacts.sha256"
+    shasum -a 256 "$CORE_STORE_ROOT/lib/tao3k/yuanxu/t/qualification/mop-state/precompiled-stores~0.scm" "$CORE_STORE_ROOT/lib/tao3k/yuanxu/t/qualification/mop-state/precompiled-stores~0.o1" "$CORE_STORE_ROOT/lib/tao3k/yuanxu/t/qualification/mop-state/unlowered-store~0.scm" "$CORE_STORE_ROOT/lib/tao3k/yuanxu/t/qualification/mop-state/unlowered-store~0.o1" > "$CORE_STORE_ROOT/callback-artifacts.sha256"
     gerbil_home="$(cat "$CORE_STORE_ROOT/gerbil-home")"
     export GAMBOPT="${GAMBOPT:+$GAMBOPT,}~~=$gerbil_home,~~bin=$gerbil_home/bin,~~lib=$gerbil_home/lib"
     gsc_features=()

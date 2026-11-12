@@ -7,11 +7,11 @@
         (only-in :std/list/list delete-duplicates/hash)
         (only-in :gerbil/expander core-read-module/sexp syntax->datum)
         (only-in "../testing/directory.ss" DirectoryFixture)
-        (only-in :yuanxu/module-system/source/role-forms
+        (only-in :tao3k/yuanxu/module-system/source/role-forms
                  module-publication-role-imports module-regular-role-file?)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-private-source)
-        (only-in :yuanxu/module-system/source/reader module-prepared-source-binding)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-private-source)
+        (only-in :tao3k/yuanxu/module-system/source/reader module-prepared-source-binding)
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-read module-source-admit-current!))
 (export ProjectionFixture project-metadata load-role scope-context)
 (def sources (path-expand "sources" (path-directory (this-source-file))))
@@ -112,9 +112,9 @@
   (def wrapper (path-expand "projected.ss" root))
   (write-forms wrapper
     `((import (except-in :clan/poo/object .def)
-              (only-in :yuanxu/module-system/source/declaration .def)
-              (only-in :yuanxu/t/qualification/module-demand/projection-syntax include-projected-interface)
-              (only-in :yuanxu/t/qualification/module-demand/fixture load-role))
+              (only-in :tao3k/yuanxu/module-system/source/declaration .def)
+              (only-in :tao3k/yuanxu/t/qualification/module-demand/projection-syntax include-projected-interface)
+              (only-in :tao3k/yuanxu/t/qualification/module-demand/fixture load-role))
       (def core 'outer-core-must-not-be-used)
       (def SourceRows ',rows)
       (def (make-role-bindings)

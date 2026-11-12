@@ -3,9 +3,9 @@
 (import :std/test :clan/poo/object
         (only-in :clan/poo/mop call-with-slot-read-observer replay-slot-reads! slot-read-receiver)
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer module-source-read)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer module-source-read)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture)
         "qualification/mop-state/snapshot.ss")

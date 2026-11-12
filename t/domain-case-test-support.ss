@@ -4,9 +4,9 @@
 
 (import :std/test
         :clan/poo/object
-        :yuanxu/object-family/role-syntax
-        :yuanxu/module-system/feature/domain-case/interface
-        :yuanxu/module-system/feature/domain-case/syntax)
+        :tao3k/yuanxu/object-family/role-syntax
+        :tao3k/yuanxu/module-system/feature/domain-case/interface
+        :tao3k/yuanxu/module-system/feature/domain-case/syntax)
 
 
 (export #t)

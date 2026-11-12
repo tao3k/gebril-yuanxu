@@ -6,8 +6,8 @@
         (only-in :gerbil/expander core-import-module current-expander-module-import
                  make-module-context expander-context-id module-context-path
                  core-context-prelude syntax-e)
-        (only-in :yuanxu/module-system/source/reader module-publication-reader)
-        (only-in :yuanxu/module-system/building/source-closure
+        (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure
                  yuanxu-bootstrap-contexts yuanxu-reader-contexts for-each-build-module)
         (only-in "./qualification/module-publication/fixtures.ss" with-publication-source))
 (export module-compiler-context-test)
@@ -38,14 +38,14 @@
     (test-case "the reader captures its own Context without admitting build entry roots"
       (def contexts (yuanxu-reader-contexts void))
       (check-equal?
-        (eq? (hash-get contexts 'yuanxu/module-system/source/reader)
-             (core-import-module ':yuanxu/module-system/source/reader)) #t)
-      (check-equal? (hash-get contexts 'yuanxu/module-system/building/build-projection) #f)
-      (check-equal? (hash-get contexts 'yuanxu/module-system/building/script) #f))
+        (eq? (hash-get contexts 'tao3k/yuanxu/module-system/source/reader)
+             (core-import-module ':tao3k/yuanxu/module-system/source/reader)) #t)
+      (check-equal? (hash-get contexts 'tao3k/yuanxu/module-system/building/build-projection) #f)
+      (check-equal? (hash-get contexts 'tao3k/yuanxu/module-system/building/script) #f))
     (test-case "captured source resolution does not delegate to a same-name replacement"
       (with-publication-source
         (lambda (_root _module-root source _view)
-          (def target ':yuanxu/object-types/contracts)
+          (def target ':tao3k/yuanxu/object-types/contracts)
           (def canonical (core-import-module target))
           (def forged
             (make-module-context (expander-context-id canonical)

@@ -5,22 +5,22 @@
         (only-in :std/error Error? Error-message)
         (only-in :gerbil/expander core-import-module module-context-path)
         (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file)
-        (only-in :yuanxu/modules/funflow/control-plane/task TaskContract)
-        (only-in :yuanxu/modules/funflow/control-plane/flow FlowContract)
-        (only-in :yuanxu/modules/funflow/scenario Scenario)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/reader module-publication-reader)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-publication)
-        (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
-        (only-in :yuanxu/module-system/source/directory module-directory-context)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/task TaskContract)
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/flow FlowContract)
+        (only-in :tao3k/yuanxu/modules/funflow/scenario Scenario)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-publication)
+        (only-in :tao3k/yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
+        (only-in :tao3k/yuanxu/module-system/source/directory module-directory-context)
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-read yuanxu-default-module-style-policy
                  current-module-source-observer call-with-module-source-read-cache
                  call-with-module-source-operation-measurement)
-        (only-in :yuanxu/ops/progress current-execution-progress current-execution-progress-port
+        (only-in :tao3k/yuanxu/ops/progress current-execution-progress current-execution-progress-port
                  call-with-execution-progress execution-progress!
                  execution-progress-idle-milliseconds execution-progress-status)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-candidate-stage-test with-other-source)
 
 ;; Core qualification scaffolding only; authors retain the ordinary fixture.
@@ -83,9 +83,9 @@
               (lambda (port)
                 (for-each (lambda (form) (write form port) (newline port))
                   '((import (only-in :clan/poo/object .o)
-                            (only-in :yuanxu/modules/funflow/control-plane/task TaskContract)
-                            (only-in :yuanxu/modules/funflow/control-plane/flow FlowContract)
-                            (only-in :yuanxu/modules/funflow/scenario Scenario))
+                            (only-in :tao3k/yuanxu/modules/funflow/control-plane/task TaskContract)
+                            (only-in :tao3k/yuanxu/modules/funflow/control-plane/flow FlowContract)
+                            (only-in :tao3k/yuanxu/modules/funflow/scenario Scenario))
                     (def FixtureScope
                       (.o task-contract: TaskContract flow-contract: FlowContract scenario-type: Scenario))
                     (export FixtureScope)))))))
@@ -101,7 +101,7 @@
           (check-equal? (eq? (.get scope flow-contract) FlowContract) #t)
           (check-equal? (eq? (.get scope scenario-type) Scenario) #t)
           (check-equal? (.ref/cached (.get view modules custom) 'other) #f)
-          (def tool (core-import-module ':yuanxu/modules/funflow/control-plane/task))
+          (def tool (core-import-module ':tao3k/yuanxu/modules/funflow/control-plane/task))
           (def origin (module-context-path tool))
           ((.get view admit-current))
           (dynamic-wind

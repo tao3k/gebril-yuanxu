@@ -9,10 +9,10 @@
 
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop .defgeneric validate)
-        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit)
-        (only-in :yuanxu/object-family/syntax defpoo-object-family)
-        :yuanxu/observability/funcs
-        (only-in :yuanxu/observability/types
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-contract-admit)
+        (only-in :tao3k/yuanxu/object-family/syntax defpoo-object-family)
+        :tao3k/yuanxu/observability/funcs
+        (only-in :tao3k/yuanxu/observability/types
                  YuanxuObservationIdentityContract YuanxuObservationProvenanceContract
                  YuanxuObservationContextContract YuanxuAdmissionObservationContract
                  yuanxu-observability-diagnostic-contract?

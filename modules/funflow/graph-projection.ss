@@ -7,15 +7,15 @@
 ;;; Invariant: this file only declares maintained Funflow module rows.
 
 (import (only-in :clan/poo/object .ref object<-alist)
-        :yuanxu/utilities/final-projection-syntax
-        (only-in :yuanxu/modules/funflow/check-funs
+        :tao3k/yuanxu/utilities/final-projection-syntax
+        (only-in :tao3k/yuanxu/modules/funflow/check-funs
                  yuanxu-cicd-alist-ref
                  yuanxu-cicd-symbol-member?)
-        (only-in :yuanxu/modules/funflow/check-objects
+        (only-in :tao3k/yuanxu/modules/funflow/check-objects
                  yuanxu-cicd-check-map-name
                  yuanxu-cicd-check-map?)
-        :yuanxu/modules/funflow/config-prototypes
-        :yuanxu/modules/funflow/dependency-graph)
+        :tao3k/yuanxu/modules/funflow/config-prototypes
+        :tao3k/yuanxu/modules/funflow/dependency-graph)
 
 (export yuanxu-funflow-cicd-default-payload
         +yuanxu-funflow-workflow-agreement-contract+

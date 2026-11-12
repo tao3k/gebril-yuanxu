@@ -9,12 +9,12 @@
 ;;; Intent: keep the downstream surface focused on Yuanxu module activation.
 
 (import (runtime: :clan/poo/object)
-        (only-in :yuanxu/object-family/syntax
+        (only-in :tao3k/yuanxu/object-family/syntax
                  defpoo-object-family)
-        :yuanxu/utilities/final-projection-syntax
-        :yuanxu/module-system/source/imports
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/selection/flags)
+        :tao3k/yuanxu/utilities/final-projection-syntax
+        :tao3k/yuanxu/module-system/source/imports
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/selection/flags)
 
 (export current-module-selection-policy
         yuanxu-user-config-kind

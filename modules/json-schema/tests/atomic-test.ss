@@ -2,10 +2,10 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :yuanxu/modules/json-schema/func schema-contract)
-        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture))
+        (only-in :tao3k/yuanxu/modules/json-schema/func schema-contract)
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export json-schema-atomic-test)
 (.def Contracts
   .acquire: (lambda ()

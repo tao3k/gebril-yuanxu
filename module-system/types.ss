@@ -9,11 +9,11 @@
         (only-in :clan/poo/type Symbol List)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/validation-rebinding rebind-validation)
-        (only-in :yuanxu/object-family/read-projection owned-read-derived!)
-        (only-in :yuanxu/object-types/contracts
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-derived!)
+        (only-in :tao3k/yuanxu/object-types/contracts
                  YuanxuContract. YuanxuObjectContract.
                  yuanxu-classification-evidence)
-        (only-in :yuanxu/module-system/schema/relations
+        (only-in :tao3k/yuanxu/module-system/schema/relations
                  SemanticImports.
                  ModuleIdentityContract ModuleImportsContract
                  ModuleProfilesContract ModuleCapabilitiesContract))

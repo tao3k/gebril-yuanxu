@@ -6,7 +6,7 @@
 ;;; inheritance resolution remains owned by object.ss.
 (import (runtime: :gerbil/core) (only-in :gerbil/core object? make-object)
         (runtime: :clan/poo/object)
-        :yuanxu/module-system/schema/support/contracts)
+        :tao3k/yuanxu/module-system/schema/support/contracts)
 
 (export yuanxu-module-object-constant-slot
         +yuanxu-module-object-slot-missing+

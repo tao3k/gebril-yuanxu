@@ -2,11 +2,11 @@
 ;;; A diagnostic reachability control, not an alternative AWS acceptance mode.
 (import (only-in :clan/poo/type Record)
         :std/test :clan/poo/object
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/observability/testing-case
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-case
                  yuanxu-default-testing-case-profile yuanxu-test-checkpoint)
-        (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
-        (only-in :yuanxu/module-system/authoring/admission
+        (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
+        (only-in :tao3k/yuanxu/module-system/authoring/admission
                  yuanxu-module-authoring-admit-datum
                  yuanxu-module-authoring-admission-accepted?))
 (export authoring-retention-test)

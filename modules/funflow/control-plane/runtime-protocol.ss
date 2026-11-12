@@ -6,12 +6,12 @@
 ;;; Boundary: runtime request/response protocol data shared by adapters.
 ;;; Invariant: this module owns durable schemas and normalization only.
 
-(import :yuanxu/modules/funflow/control-plane/projection-syntax
-        :yuanxu/modules/funflow/control-plane/signatures
+(import :tao3k/yuanxu/modules/funflow/control-plane/projection-syntax
+        :tao3k/yuanxu/modules/funflow/control-plane/signatures
         (only-in :clan/poo/object .cc .get))
 
 (export AdapterResult RuntimeEnvelope RuntimeResponseLike RequestId ArtifactHandle
-        (import: :yuanxu/modules/funflow/control-plane/signatures)
+        (import: :tao3k/yuanxu/modules/funflow/control-plane/signatures)
         make-adapter-result
         adapter-result?
         adapter-result-request-id

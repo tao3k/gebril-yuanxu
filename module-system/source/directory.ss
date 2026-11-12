@@ -6,16 +6,16 @@
         (only-in :gerbil/runtime/mop class-of)
         (only-in :gerbil/runtime/error Error::t)
         (only-in :std/list/list delete-duplicates/hash any foldl length<=n?)
-        (only-in :yuanxu/module-system/source/preparation module-source-package-prefix)
-        (only-in :yuanxu/module-system/source/collection yuanxu-module-source-collection-optional-entrypoint)
-        (only-in :yuanxu/module-system/source/role-forms module-publication-role-imports)
+        (only-in :tao3k/yuanxu/module-system/source/preparation module-source-package-prefix)
+        (only-in :tao3k/yuanxu/module-system/source/collection yuanxu-module-source-collection-optional-entrypoint)
+        (only-in :tao3k/yuanxu/module-system/source/role-forms module-publication-role-imports)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
         (only-in :clan/poo/slot-observation slot-read-observers-compatible?)
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/source/admission
-        (only-in :yuanxu/module-system/source/observations module-source-object-policies
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-object-policies
                  module-source-text-guard)
-        :yuanxu/module-system/source/init)
+        :tao3k/yuanxu/module-system/source/init)
 (export module-directory-context directory-candidate-guard? directory-candidate-guard-invoke)
 (defstruct directory-source (value current?) final: #t)
 (defstruct directory-decision (value current?) final: #t)

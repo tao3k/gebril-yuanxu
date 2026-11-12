@@ -2,10 +2,10 @@
 ;;; Init-owned qualification discovery uses the existing selected test source.
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/building/test-projection module-test-projection)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/building/test-projection module-test-projection)
         (only-in :clan/poo/mop Type.)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture))
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export module-qualification-projection-test)
 
 (def (write-source path text)
@@ -16,7 +16,7 @@
               (let (root (make-temporary-file-name "qualification-projection-"))
                 (create-directory root)
                 (write-source (path-expand "gerbil.pkg" root)
-                  "(package: qualification-projection prelude: :yuanxu/module-system/source/module-prelude)\n")
+                  "(package: qualification-projection prelude: :tao3k/yuanxu/module-system/source/module-prelude)\n")
                 root))
   .release: (lambda (root)
               (clear-temporary-file! root)

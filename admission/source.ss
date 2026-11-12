@@ -6,10 +6,10 @@
         (only-in :clan/poo/object-contract diagnose)
         (prefix-in (only-in :clan/poo/method-combination
                            prepare-standard around primary) combination.)
-        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence
+        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence
                  yuanxu-validation-evidence call-with-contract-analysis-root)
-        (only-in :yuanxu/configuration/slot-origin admit-field-sources!)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/configuration/slot-origin admit-field-sources!)
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-admit-current! call-with-module-source-read-cache
                  call-with-module-source-fresh-reads call-with-collected-module-sources
                  current-module-source-phase))

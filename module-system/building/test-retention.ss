@@ -4,18 +4,18 @@
         (only-in :clan/poo/prototype-map prototype-map-length)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-key slot-read-receiver slot-read-instance slot-read-value slot-read-dependencies)
-        (only-in :yuanxu/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
+        (only-in :tao3k/yuanxu/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
         (only-in :gerbil/runtime/interface interface-instance? interface-instance-object)
         (only-in :gerbil/runtime/table raw-table? &raw-table-table &raw-table-count raw-table-for-each eq-hash)
         (rename-in (only-in :gerbil/runtime/gambit table?) (table? gambit-table?))
         (only-in :gerbil/expander current-expander-compile current-expander-context
                  current-expander-phi expander-context? module-context? module-context-path
                  module-context-code expander-context-table)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-observe)
-        (only-in :yuanxu/observability/memory yuanxu-debug-cpu-microseconds)
-        (only-in :yuanxu/ops/progress execution-progress!)
-        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-observe)
+        (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-cpu-microseconds)
+        (only-in :tao3k/yuanxu/ops/progress execution-progress!)
+        (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer))
 (export observe-read-dependencies)
 
 ;; Trace the existing runtime dependency records without retaining tokens,

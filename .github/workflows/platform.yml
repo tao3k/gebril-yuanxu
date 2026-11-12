@@ -128,7 +128,7 @@ jobs:
           while IFS= read -r file; do files+=("$file"); done <<< "$YUANXU_TEST_FILES"
           test "${#files[@]}" -gt 0
           if [[ -n "${CORE_SOURCE_TAIL_ROOT:-}" ]]; then
-            cd "$CORE_SOURCE_TAIL_ROOT/source/yuanxu"
+            cd "$CORE_SOURCE_TAIL_ROOT/source/tao3k/yuanxu"
           fi
           failed=0
           for file in "${files[@]}"; do

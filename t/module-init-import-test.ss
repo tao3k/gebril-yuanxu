@@ -7,11 +7,11 @@
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :gerbil/expander current-expander-context make-top-context
                  eval-syntax core-import-module expander-context-id)
-        (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-observe))
+        (only-in :tao3k/yuanxu/module-system/building/interface yuanxu-init-build)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-observe))
 (export module-init-import-test)
 (def Workspace
   (.o .acquire: (lambda ()
@@ -36,10 +36,10 @@
       (check-equal? calls 1))
     (test-case "standard linker import leaves the Reader outside its import closure"
       (def contexts '())
-      (for-each-build-module (core-import-module ':yuanxu/module-system/source/link)
+      (for-each-build-module (core-import-module ':tao3k/yuanxu/module-system/source/link)
         (lambda (context) (set! contexts (cons (expander-context-id context) contexts))))
-      (check-equal? (and (memq 'yuanxu/module-system/source/reader contexts) #t) #f)
-      (check-equal? (and (memq 'yuanxu/module-system/source/reader-session contexts) #t) #f))
+      (check-equal? (and (memq 'tao3k/yuanxu/module-system/source/reader contexts) #t) #f)
+      (check-equal? (and (memq 'tao3k/yuanxu/module-system/source/reader-session contexts) #t) #f))
     (yuanxu-test-fixture "runtime init import defers missing source and execution owners"
       (root Workspace)
       (def init (path-expand "init.ss" root))
@@ -48,7 +48,7 @@
       ;; Deliberately absent module root: importing a declaration is not demand.
       (call-with-output-file init
         (lambda (out)
-          (pretty-print '(import :yuanxu/module-system/selection/init-syntax) out)
+          (pretty-print '(import :tao3k/yuanxu/module-system/selection/init-syntax) out)
           (pretty-print '(yuanxu! source: "./modules" mode: explicit (missing)) out)))
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
@@ -60,12 +60,12 @@
         (yuanxu-test-observe 'init-import-contexts (length contexts))
         (for-each
           (lambda (identity) (check-equal? (and (memq identity contexts) #t) #f))
-          '(yuanxu/module-system/source/reader
-            yuanxu/module-system/source/link
-            yuanxu/module-system/source/build
-            yuanxu/module-system/building/build-projection
-            yuanxu/module-system/building/artifacts
-            yuanxu/observability/testing-script))
+          '(tao3k/yuanxu/module-system/source/reader
+            tao3k/yuanxu/module-system/source/link
+            tao3k/yuanxu/module-system/source/build
+            tao3k/yuanxu/module-system/building/build-projection
+            tao3k/yuanxu/module-system/building/artifacts
+            tao3k/yuanxu/observability/testing-script))
         (def tests (eval-syntax '(.get FixtureExports tests)))
         (check-equal? (.slot? tests '.run) #f)
         (check-equal? (.ref/cached tests 'execution) #f)
@@ -88,7 +88,7 @@
       (def init (path-expand "init.ss" root))
       (call-with-output-file init
         (lambda (out)
-          (pretty-print '(import :yuanxu/module-system/selection/init-syntax) out)
+          (pretty-print '(import :tao3k/yuanxu/module-system/selection/init-syntax) out)
           (pretty-print '(yuanxu! source: "./modules" mode: auto) out)))
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
@@ -126,14 +126,14 @@
         (def path (path-expand file directory))
         (call-with-output-file path
           (lambda (out)
-            (pretty-print '(import :yuanxu/module-system/selection/init-syntax) out)
+            (pretty-print '(import :tao3k/yuanxu/module-system/selection/init-syntax) out)
             (pretty-print '(yuanxu! :load-modules "./absent" mode: explicit
                                    rename: Modules (missing)) out)))
         path)
-      (def left-path (prepare! left ':yuanxu/prelude))
+      (def left-path (prepare! left ':tao3k/yuanxu/prelude))
       (def right-path (prepare! right ':gerbil/core))
       ;; A second declaration in the same package needs no init.ss suffix.
-      (def selection-path (prepare! left ':yuanxu/prelude "selection.ss"))
+      (def selection-path (prepare! left ':tao3k/yuanxu/prelude "selection.ss"))
       (def left-name (string->symbol (string-append (symbol->string left) ".init.exports")))
       (def right-name (string->symbol (string-append (symbol->string right) ".init.exports")))
       (def selection-name (string->symbol (string-append (symbol->string left) ".selection.exports")))

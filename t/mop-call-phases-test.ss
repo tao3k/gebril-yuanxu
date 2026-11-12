@@ -4,7 +4,7 @@
         (only-in :clan/poo/mop call-with-slot-read-observer replay-slot-reads!
                  slot-read-receiver)
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export mop-call-phases-test test-cleanup!)
 (def completed 0)
 (def (test-cleanup!)

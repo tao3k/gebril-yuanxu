@@ -1,18 +1,18 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :clan/poo/object (only-in :yuanxu/ops/interface Ops)
-        (only-in :yuanxu/ops/func run-script)
+(import :std/test :clan/poo/object (only-in :tao3k/yuanxu/ops/interface Ops)
+        (only-in :tao3k/yuanxu/ops/func run-script)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case
                  yuanxu-default-testing-case-profile)
-        (only-in :yuanxu/observability/memory YuanxuDebugDurationAnomaly?)
+        (only-in :tao3k/yuanxu/observability/memory YuanxuDebugDurationAnomaly?)
         (only-in :std/os/signal kill)
         (only-in :std/os/error os-error? OSError-errno ESRCH)
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/misc/ports read-all-as-string)
         (only-in :std/misc/process run-process process-error?)
-        (only-in :yuanxu/ops/progress copy-process-output))
+        (only-in :tao3k/yuanxu/ops/progress copy-process-output))
 (import (only-in "../ops/tests/atomic-test.ss" ops-watchdog-test))
 (export ops-process-script-test ops-watchdog-test)
 ;; Consume the Core publication directly; Ops has no OpenTofu fixture dependency.

@@ -6,7 +6,7 @@
 ;;; Boundary: public graph control analysis facade.
 ;;; Invariant: keep the stable import path light; implementation lives in control-core.
 
-(import :yuanxu/graph/control-core)
+(import :tao3k/yuanxu/graph/control-core)
 
 (export yuanxu-graph-entry-ids
         yuanxu-graph-finish-ids

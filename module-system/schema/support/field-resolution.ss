@@ -7,9 +7,9 @@
 
 (import (runtime: :gerbil/core) (only-in :gerbil/core object? make-object)
         (runtime: :clan/poo/object)
-        :yuanxu/graph/interface
-        :yuanxu/module-system/schema/support/contracts
-        :yuanxu/module-system/schema/support/slot-policy)
+        :tao3k/yuanxu/graph/interface
+        :tao3k/yuanxu/module-system/schema/support/contracts
+        :tao3k/yuanxu/module-system/schema/support/slot-policy)
 
 (export yuanxu-module-field-resolution-result
         yuanxu-module-field-resolution-result?

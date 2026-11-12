@@ -11,10 +11,10 @@
                  hash-ref
                  make-hash-table-eq)
         (runtime: :clan/poo/object)
-        :yuanxu/composition/roles
-        :yuanxu/module-system/feature/model
-        :yuanxu/module-system/feature/resolver
-        :yuanxu/utilities/functional)
+        :tao3k/yuanxu/composition/roles
+        :tao3k/yuanxu/module-system/feature/model
+        :tao3k/yuanxu/module-system/feature/resolver
+        :tao3k/yuanxu/utilities/functional)
 
 (export feature-manifest
         feature-manifest-bundle

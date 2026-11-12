@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source-only Core qualification: direct source targets, standard Gerbil macro.
 (import :std/test
-        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :clan/poo/object .get .call)
         (only-in "./qualification/module-testing/fixtures.ss" selection-fixture)
         (only-in :std/source this-source-file)
@@ -11,7 +11,7 @@
         (only-in :std/text/pregexp pregexp-match)
         (only-in :gerbil/expander eval-syntax current-expander-context
                  import-module core-read-module/sexp)
-        (only-in :yuanxu/module-system/source/admission module-source-read))
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read))
 (export module-source-spec-test test-setup! test-cleanup!)
 (def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
 (def resource #f)
@@ -36,7 +36,7 @@
   (parameterize ((current-expander-context (import-module path #t #t)))
     (def build (yuanxu-project-source-spec (path-expand "init.ss" root)
                   (eval-syntax 'core-spec) root path))
-    (values (eval-syntax 'main) (eval-syntax 'yuanxu.init.exports) build)))
+    (values (eval-syntax 'main) (eval-syntax 'tao3k/yuanxu.init.exports) build)))
 (def (spec-of run)
   (call-with-input-string
     (call-with-output-string
@@ -56,7 +56,7 @@
   (def module-source-spec-test
     (test-suite "User-owned standard build script consumes direct source spec"
       (test-case "real JsonSchema spec compile clean without source relocation"
-        (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)
+        (check-equal? (file-exists? (path-expand "lib/tao3k/yuanxu" (getenv "GERBIL_PATH"))) #f)
         ;; The author-facing declaration stays byte-for-byte unchanged.
         (check-equal? (module-source-read (path-expand "modules/json-schema/interface.ss" root))
                       (module-source-read (path-expand "modules/json-schema/interface.ss" owner)))

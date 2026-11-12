@@ -5,8 +5,8 @@
 
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        :yuanxu/module-system/loader/load-path)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        :tao3k/yuanxu/module-system/loader/load-path)
 
 (export module-load-path-test)
 

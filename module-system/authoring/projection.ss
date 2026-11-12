@@ -8,11 +8,11 @@
 
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
-        (only-in :yuanxu/module-system/authoring/observation
+        (only-in :tao3k/yuanxu/module-system/authoring/observation
                  yuanxu-scheme-inline-prototype-datum-observations
                  yuanxu-scheme-inline-prototype-port-observations
                  yuanxu-scheme-inline-prototype-file-observations)
-        (only-in :yuanxu/module-system/authoring/import-policy
+        (only-in :tao3k/yuanxu/module-system/authoring/import-policy
                  SourceInspectionPolicy.
                  yuanxu-module-owner-import-datum-observations
                  yuanxu-module-owner-import-port-observations
@@ -23,7 +23,7 @@
                  yuanxu-build-bootstrap-datum-observations
                  yuanxu-build-bootstrap-port-observations
                  yuanxu-build-bootstrap-file-observations)
-        (only-in :yuanxu/observability/types YuanxuAuthoringObservationContract))
+        (only-in :tao3k/yuanxu/observability/types YuanxuAuthoringObservationContract))
 
 (export YuanxuAuthoringObservationContract
         yuanxu-authoring-inline-prototype-datum-observations

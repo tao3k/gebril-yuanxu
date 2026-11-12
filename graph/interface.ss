@@ -5,15 +5,15 @@
 
 ;;; Public Graph mechanism: topology, pure analysis and POO operation values.
 
-(import :yuanxu/graph/algorithms
-        :yuanxu/graph/rooted
-        :yuanxu/graph/contribution
-        :yuanxu/graph/payload-operations
-        :yuanxu/graph/operation
-        :yuanxu/graph/apply)
+(import :tao3k/yuanxu/graph/algorithms
+        :tao3k/yuanxu/graph/rooted
+        :tao3k/yuanxu/graph/contribution
+        :tao3k/yuanxu/graph/payload-operations
+        :tao3k/yuanxu/graph/operation
+        :tao3k/yuanxu/graph/apply)
 
-(export (import: :yuanxu/graph/algorithms)
-        (import: :yuanxu/graph/rooted)
+(export (import: :tao3k/yuanxu/graph/algorithms)
+        (import: :tao3k/yuanxu/graph/rooted)
         yuanxu-graph-operation-kind
         yuanxu-graph-contribution-kind
         yuanxu-graph-result-kind

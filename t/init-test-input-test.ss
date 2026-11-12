@@ -5,10 +5,10 @@
 (import :std/test :clan/poo/object
         (only-in :gerbil/expander core-resolve-library-module-path __module-registry
                  core-import-module expander-context-id module-context-path)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/source this-source-file)
-        (only-in "../init.ss" yuanxu.init.exports))
+        (only-in "../init.ss" tao3k/yuanxu.init.exports))
 (export init-test-input-test)
 
 ;; Rewrite only fixture bytes; assertions stay outside the exception catcher.
@@ -17,7 +17,7 @@
     (lambda (port) (display text port))))
 (def (refuses? operation)
   (with-catch (lambda (_) #t) (lambda () (operation) #f)))
-(def tests (.get yuanxu.init.exports tests))
+(def tests (.get tao3k/yuanxu.init.exports tests))
 (def init-test-input-test
   (test-suite "Init-owned explicit test inputs"
     (test-case "support discovery expands generated imports without publishing Suite bodies"
@@ -73,14 +73,14 @@
         (lambda (directory)
           (def helper (path-expand "helper.ss" directory))
           (def file (path-expand "probe-test.ss" directory))
-          (put helper "(import (only-in :yuanxu/ops/interface Ops) (only-in :clan/poo/object .get)) (export answer) (def answer (.get Ops config timeout))\n")
+          (put helper "(import (only-in :tao3k/yuanxu/ops/interface Ops) (only-in :clan/poo/object .get)) (export answer) (def answer (.get Ops config timeout))\n")
           (put file "(import \"./helper.ss\") (export answer)\n")
           (def build (.get (.call tests .for-files (list file)) build))
           (def target (path-strip-extension
             (substring helper (string-length (string-append (path-strip-trailing-directory-separator root) "/"))
                               (string-length helper))))
           (check-equal? (.get build spec) (list (list 'gxc: target)))
-          (def interface (core-resolve-library-module-path ':yuanxu/ops/interface))
+          (def interface (core-resolve-library-module-path ':tao3k/yuanxu/ops/interface))
           (check-equal? (and (assoc interface (.get build source-inputs)) #t) #t)
           (put helper "(export answer) (def answer 'changed)\n")
           (check-equal? (refuses? (.get build admit-current)) #t))))
@@ -99,7 +99,7 @@
           ;; Each Suite retains its own source demand; neither projection executes assertions.
           (def (suite file name expected)
             (put file
-              (string-append "(import :std/test :yuanxu/" target ") (export " name "-test)\n"
+              (string-append "(import :std/test :tao3k/yuanxu/" target ") (export " name "-test)\n"
                 "(def " name "-test (test-suite \"" name "\" (test-case \"own verdict\" "
                 "(check-equal? value " (number->string expected) "))))\n")))
           (put support "(export value) (def value 7)\n")
@@ -158,7 +158,7 @@
           (put support
             "(import (only-in :std/ffi C-declare))\n(C-declare \"#ifndef YUANXU_RUNTIME_OPTIONS_PROBE\\n#error missing runtime compiler option\\n#endif\\n\")\n(export runtime-value) (def runtime-value 7)\n")
           (put file
-            (string-append "(import :std/test :yuanxu/" target
+            (string-append "(import :std/test :tao3k/yuanxu/" target
               ") (export probe-test)\n(def probe-test (test-suite \"runtime compiler options\" (test-case \"real compiled support\" (check-equal? runtime-value 7))))\n"))
           (put config "-DYUANXU_RUNTIME_OPTIONS_PROBE")
           (def demand

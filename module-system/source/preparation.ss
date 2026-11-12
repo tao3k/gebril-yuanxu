@@ -2,21 +2,21 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Prepare compiler input from selected local sources; never import or run them.
-(import (only-in :yuanxu/module-system/building/products
+(import (only-in :tao3k/yuanxu/module-system/building/products
                  build-output-directory current-build-source-directory current-build-compiler-options
                  invalidate-build-products! artifact-files static-product-path
                  call-with-selected-output-lock selected-output-source-directory)
-        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
+        (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path)
         (only-in :clan/poo/object .o .ref .ref/cached .slot? object? object-protocol
                  object-%instance object-%precedence-list object-construction-current?)
         (only-in :clan/poo/slot-observation without-observation)
         (only-in :clan/poo/read-route require-read-route!)
-        (only-in :yuanxu/module-system/source/deferred-declaration module-deferred-role-exports)
-        (only-in :yuanxu/module-system/source/role-forms module-publication-role-imports module-interface-form? module-role-file)
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-deferred-role-exports)
+        (only-in :tao3k/yuanxu/module-system/source/role-forms module-publication-role-imports module-interface-form? module-role-file)
         ;; Compiler bindings emitted by this preparer are real bootstrap inputs.
-        (only-in :yuanxu/module-system/source/declaration include-module-body)
-        (only-in :yuanxu/module-system/source/config-prelude)
-        (only-in :yuanxu/module-system/source/module-prelude)
+        (only-in :tao3k/yuanxu/module-system/source/declaration include-module-body)
+        (only-in :tao3k/yuanxu/module-system/source/config-prelude)
+        (only-in :tao3k/yuanxu/module-system/source/module-prelude)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :gerbil/runtime/gambit current-readtable)
         (only-in :gerbil/runtime/syntax __*readtable*)
@@ -25,9 +25,9 @@
                  core-resolve-library-module-path
                  module-context? module-context-path prelude-context? prelude-context-path)
         (only-in :gerbil/expander/module __module-registry)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module build-module-dependencies)
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/source/admission)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module build-module-dependencies)
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/source/admission)
 (export build-target-name module-source-package-prefix module-source-package-info
         yuanxu-prepare-module-publication yuanxu-write-module-publication
         yuanxu-prepare-module-build-source yuanxu-prepare-module-tool-source
@@ -126,13 +126,13 @@
   (cond
     ((not prelude) #t)
     ((or (module-context? prelude) (prelude-context? prelude))
-     (memq (expander-context-id prelude) '(gerbil/core yuanxu/prelude)))
+     (memq (expander-context-id prelude) '(gerbil/core tao3k/yuanxu/prelude)))
     ((string? prelude)
      (ormap (lambda (identity)
               (with-catch (lambda (_missing) #f)
                 (lambda () (equal? prelude (core-resolve-library-module-path identity)))))
-       '(:gerbil/core :yuanxu/prelude)))
-    (else (memq (syntax->datum prelude) '(:gerbil/core :yuanxu/prelude)))))
+       '(:gerbil/core :tao3k/yuanxu/prelude)))
+    (else (memq (syntax->datum prelude) '(:gerbil/core :tao3k/yuanxu/prelude)))))
 (def (read-module-compiler-identity path (text #f) (classify-role? #t))
   ;; Runtime package/header resolution, without core-import-module or expansion.
   (when (current-module-source-observer)
@@ -357,14 +357,14 @@
                                  (cdr row))) deferred))))
           (append
            (if shared-prelude?
-             '(prelude: :yuanxu/module-system/source/config-prelude)
+             '(prelude: :tao3k/yuanxu/module-system/source/config-prelude)
              (list 'prelude: (car compiler-info)))
            (list 'package: (substring id-text 0 (- (string-length id-text) (string-length suffix)))
                  'namespace: (caddr compiler-info)
                  `(import ,@(if shared-prelude? '() '((except-in :clan/poo/object .def)))
-                          (only-in :yuanxu/module-system/source/declaration .def define-module-build-binding)
+                          (only-in :tao3k/yuanxu/module-system/source/declaration .def define-module-build-binding)
                           ,@(if deferred
-                              '((only-in :yuanxu/module-system/source/deferred-declaration
+                              '((only-in :tao3k/yuanxu/module-system/source/deferred-declaration
                                          include-deferred-declaration))
                               '())
                           ,@(if (and deferred compiled? (pair? roles))
@@ -499,7 +499,7 @@
                           (member (path-strip-directory source-path)
                             '("types.ss" "objects.ss" "func.ss" "config.ss" "build.ss"))
                           default-prelude?)
-                     '(prelude: :yuanxu/module-system/source/module-prelude))
+                     '(prelude: :tao3k/yuanxu/module-system/source/module-prelude))
                     (prelude (list 'prelude: prelude))
                     (else '()))
                   (list 'package: (path-strip-trailing-directory-separator
@@ -508,12 +508,12 @@
                   (cond
                     ((and tool? header-free?) (list `(include ,source-path)))
                     ((string=? (path-strip-directory source-path) "config.ss")
-                    (list '(import (only-in :yuanxu/module-system/source/declaration
+                    (list '(import (only-in :tao3k/yuanxu/module-system/source/declaration
                                             include-module-body export-role-config))
                           `(include-module-body ,source-path)
                           '(export-role-config Config)))
                     (else
-                     (list '(import (only-in :yuanxu/module-system/bootstrap/body-inclusion include-module-body))
+                     (list '(import (only-in :tao3k/yuanxu/module-system/bootstrap/body-inclusion include-module-body))
                            `(include-module-body ,source-path)))))))
       (if capture
         (let ((checker (and construction-intact? (object-construction-current?)

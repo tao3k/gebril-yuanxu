@@ -8,8 +8,8 @@
 ;;; concrete module selections rather than category aliases or loose data.
 
 (import (runtime: :clan/poo/object)
-        :yuanxu/module-system/selection/objects
-        :yuanxu/utilities/final-projection-syntax)
+        :tao3k/yuanxu/module-system/selection/objects
+        :tao3k/yuanxu/utilities/final-projection-syntax)
 
 (export yuanxu-use-module-contract-validation-kind
         yuanxu-use-module-contract-validation-schema

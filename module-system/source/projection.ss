@@ -2,9 +2,9 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Pure source graph and existing lazy-plan projection; never forces a backend.
-(import :yuanxu/module-system/source/objects
-        :yuanxu/module-system/loader/objects
-        :yuanxu/graph/interface)
+(import :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/loader/objects
+        :tao3k/yuanxu/graph/interface)
 (export yuanxu-module-source-refs->lazy-load-plans
         yuanxu-module-auto-import-root-identity
         yuanxu-module-auto-import-entry-node

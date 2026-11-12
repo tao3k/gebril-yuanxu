@@ -14,23 +14,23 @@
         (only-in :clan/poo/slot-observation
                  call-with-slot-read-observer slot-read-key slot-read-receiver
                  %call-with-recorded-slot-reads slot-read-observers-compatible? without-observation)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
-        (only-in :yuanxu/object-family/read-projection
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :tao3k/yuanxu/object-family/read-projection
                  call-with-owned-source-reads owned-read-function-scope?)
-        (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
-        (only-in :yuanxu/module-system/authoring/admission
+        (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
+        (only-in :tao3k/yuanxu/module-system/authoring/admission
                  ModuleAuthoringAnalysisGeneric ModuleAuthoringAnalysisProtocol
                  YuanxuModuleAuthoringAdmission YuanxuModuleAuthoringDiagnostics
                  yuanxu-module-authoring-role
                  yuanxu-module-authoring-admit-datums
                  yuanxu-module-authoring-source-admit
                  yuanxu-module-authoring-admission-accepted?)
-        (only-in :yuanxu/module-system/authoring/roles ConfigSourceRole.)
-        (only-in :yuanxu/poo-clos/types
+        (only-in :tao3k/yuanxu/module-system/authoring/roles ConfigSourceRole.)
+        (only-in :tao3k/yuanxu/poo-clos/types
                  ClosGenericFunction ClosEffectiveMethod ClosInvocationFrame ClosMethod)
-        (only-in :yuanxu/poo-clos/objects %prepare-effective-method)
-        (only-in :yuanxu/poo-clos/dispatch
+        (only-in :tao3k/yuanxu/poo-clos/objects %prepare-effective-method)
+        (only-in :tao3k/yuanxu/poo-clos/dispatch
                  poo-clos-call poo-clos-compute-effective-method))
 (export module-authoring-dispatch-work-test)
 

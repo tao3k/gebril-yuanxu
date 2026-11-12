@@ -2,10 +2,10 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          :std/test :std/error
         (only-in :clan/poo/object .o .ref .put!)
-        :yuanxu/contribution/verification)
+        :tao3k/yuanxu/contribution/verification)
 (export verification-test)
 
 (def (snapshot value) (call-with-output-string (lambda (p) (write (.ref value 'claim) p))))

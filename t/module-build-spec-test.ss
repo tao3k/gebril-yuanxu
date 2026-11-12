@@ -10,14 +10,14 @@
         (only-in :std/text/pregexp pregexp-match)
         (only-in :clan/poo/object .get .o .+ .cc .call)
         (only-in :gerbil/expander core-import-module module-context-path)
-        (only-in :yuanxu/module-system/building/products current-build-source-directory
+        (only-in :tao3k/yuanxu/module-system/building/products current-build-source-directory
                  current-build-output-directory)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/build retained-build-entries BuildSpecContract)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/build retained-build-entries BuildSpecContract)
         (only-in :clan/poo/mop validate)
-        (only-in :yuanxu/module-system/source/admission module-source-read call-with-module-source-callback
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read call-with-module-source-callback
                  call-with-module-source-operation-measurement)
-        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
+        (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
 (export module-build-spec-test test-setup! test-cleanup!)
 (def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
 (def resource #f)
@@ -171,7 +171,7 @@
       (test-case "one selected Graph, retained overlaps, conflicts and stale entry"
         (call-with-temporary-directory "build-spec-boundaries"
           (lambda (temporary)
-            (def installed-core? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))))
+            (def installed-core? (file-exists? (path-expand "lib/tao3k/yuanxu" (getenv "GERBIL_PATH"))))
             (def view (yuanxu-load-modules (path-expand "init.ss" root)))
             (def selected (.get view build-graph))
             (def entry (path-expand "build.ss" root))
@@ -181,7 +181,7 @@
             ;; membership assumption that changes with the upstream closure.
             (def overlap
               (find (lambda (row)
-                      (and (string-prefix? "yuanxu/" (symbol->string (.get row compiler-identity)))
+                      (and (string-prefix? "tao3k/yuanxu/" (symbol->string (.get row compiler-identity)))
                            (string-prefix? (path-expand "modules/" root) (.get row path))))
                     (.get selected entries)))
             (unless overlap
@@ -213,7 +213,7 @@
                    (link (path-expand "object-types/contracts.ss" links))
                    (build (path-expand "build.ss" links)))
               (create-directory* (path-expand "object-types" links))
-              (write-source (path-expand "gerbil.pkg" links) "(package: yuanxu)\n")
+              (write-source (path-expand "gerbil.pkg" links) "(package: tao3k/yuanxu)\n")
               (write-source build "(export #t)")
               (dynamic-wind
                 (lambda () (create-symbolic-link (path-expand "object-types/contracts.ss" root) link))
@@ -264,10 +264,10 @@
               (set! foreign (path-expand "collision" temporary))
               (set! build (path-expand "build.ss" foreign))
               (write-source build "(export #t)")
-              (write-source (path-expand "gerbil.pkg" foreign) "(package: yuanxu)\n")
+              (write-source (path-expand "gerbil.pkg" foreign) "(package: tao3k/yuanxu)\n")
               (write-source (path-expand (string-append overlap-name ".ss") foreign)
                             (module-source-read (.get overlap path)))
               (check-equal? (rejects? "conflicting compiler inputs"
                               (lambda () (project (list overlap-spec) foreign build))) #t))
-            (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) installed-core?)))))
+            (check-equal? (file-exists? (path-expand "lib/tao3k/yuanxu" (getenv "GERBIL_PATH"))) installed-core?)))))
 )

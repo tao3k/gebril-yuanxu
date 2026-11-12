@@ -4,14 +4,14 @@
 (import :std/test :clan/poo/object
         (only-in :std/source this-source-file)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in "./qualification/service-publication/fixtures.ss" refused)
-        (only-in :yuanxu/module-system/source/link yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/admission module-source-read)
-        (only-in :yuanxu/admission/publication AdmissionPublication.)
-        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-local-source)
-        (only-in :yuanxu/module-system/loader/objects
+        (only-in :tao3k/yuanxu/module-system/source/link yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read)
+        (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
+        (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-local-source)
+        (only-in :tao3k/yuanxu/module-system/loader/objects
                  yuanxu-make-lazy-load-plan yuanxu-force-lazy-load-plan))
 (export module-loader-publication-test)
 
@@ -23,7 +23,7 @@
     (def root (.get workspace root))
     (write-source (path-expand "gerbil.pkg" root)
       (string-append "(package: " (symbol->string (gensym 'backend-fixture-))
-        " prelude: :yuanxu/module-system/source/module-prelude)"))
+        " prelude: :tao3k/yuanxu/module-system/source/module-prelude)"))
     (for-each
       (lambda (role)
         (def file (string-append role ".ss"))

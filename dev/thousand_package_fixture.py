@@ -16,7 +16,7 @@ def generate(root: Path, profile: bool = False) -> None:
         path.write_text(text)
 
     write(producer / "gerbil.pkg",
-          "(package: yuanxu-thousand-library prelude: :yuanxu/prelude)\n")
+          "(package: yuanxu-thousand-library prelude: :tao3k/yuanxu/prelude)\n")
     # This package supplies a source catalog, not a default selection of owners.
     write(producer / "build.ss",
           "#!/usr/bin/env gxi\n(import :std/build-script)\n(defbuild-script '())\n")
@@ -79,7 +79,7 @@ def generate(root: Path, profile: bool = False) -> None:
     write(consumer / "init.ss", f'(yuanxu! :load-modules {window} {selection})\n')
     control = root / "scope-control"
     write(control / "gerbil.pkg",
-          "(package: yuanxu-thousand-scope-control prelude: :yuanxu/prelude)\n")
+          "(package: yuanxu-thousand-scope-control prelude: :tao3k/yuanxu/prelude)\n")
     write(control / "init.ss",
           f'(yuanxu! :load-modules {window} mode: explicit rename: Corpus (module-0) (module-1) (module-2))\n')
     write(control / "use.ss", (templates / "scope-control.ss").read_text())

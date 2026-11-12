@@ -3,8 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Read one publication through its confined native imports and delayed roles.
 (import (only-in :std/list/list find)
-        (only-in :yuanxu/configuration/json current-configuration-input-observer)
-        (only-in :yuanxu/ops/progress execution-progress!)
+        (only-in :tao3k/yuanxu/configuration/json current-configuration-input-observer)
+        (only-in :tao3k/yuanxu/ops/progress execution-progress!)
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :gerbil/expander current-expander-context make-top-context
                  current-expander-module-import eval-syntax eval-module expander-context-id module-context-path
@@ -13,26 +13,26 @@
                  core-read-module/sexp core-resolve-module-path __module-registry)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/object .o .ref .slot?)
-        (only-in :yuanxu/module-system/source/collection
+        (only-in :tao3k/yuanxu/module-system/source/collection
                  yuanxu-module-source-collection-optional-entrypoint)
-        (only-in :yuanxu/module-system/source/role-forms module-feature-interface?)
-        :yuanxu/module-system/source/admission
-        :yuanxu/module-system/source/preparation
-        (only-in :yuanxu/module-system/source/declaration current-module-build-resolver
+        (only-in :tao3k/yuanxu/module-system/source/role-forms module-feature-interface?)
+        :tao3k/yuanxu/module-system/source/admission
+        :tao3k/yuanxu/module-system/source/preparation
+        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-resolver
                  current-module-feature-reader)
-        (only-in :yuanxu/module-system/source/deferred-declaration
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration
                  current-module-role-resolver module-role-values
                  wrapper-delivery? wrapper-delivery-value)
-        :yuanxu/module-system/source/objects
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
-        (only-in :yuanxu/module-system/building/source-package module-build-source-path))
-(import :yuanxu/module-system/source/reader-support
-        :yuanxu/module-system/source/reader-evaluation
-        :yuanxu/module-system/source/import-provenance
-        :yuanxu/module-system/source/configuration-reader
-        :yuanxu/module-system/source/reader-session
-        :yuanxu/module-system/source/reader-preparation
-        :yuanxu/module-system/source/reader-guards)
+        :tao3k/yuanxu/module-system/source/objects
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
+        (only-in :tao3k/yuanxu/module-system/building/source-package module-build-source-path))
+(import :tao3k/yuanxu/module-system/source/reader-support
+        :tao3k/yuanxu/module-system/source/reader-evaluation
+        :tao3k/yuanxu/module-system/source/import-provenance
+        :tao3k/yuanxu/module-system/source/configuration-reader
+        :tao3k/yuanxu/module-system/source/reader-session
+        :tao3k/yuanxu/module-system/source/reader-preparation
+        :tao3k/yuanxu/module-system/source/reader-guards)
 (export reader-read-publication)
 
 (def (reader-read-publication session source-value (source-prefix #f) (consume #f) (discovered #f))

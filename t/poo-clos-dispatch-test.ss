@@ -5,7 +5,7 @@
 
 ;;; CLOS specializer, multi-dispatch, and standard-combination conformance.
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  test-suite test-case check-equal? check-exception check)
         (only-in :clan/poo/object .o .ref .put! .all-slots object-slots $constant-slot-spec?
@@ -13,11 +13,11 @@
         (only-in :clan/poo/mop Type. element?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-key slot-read-receiver slot-read-dependencies)
-        (only-in :yuanxu/poo-clos/objects make-effective-method make-invocation-frame
+        (only-in :tao3k/yuanxu/poo-clos/objects make-effective-method make-invocation-frame
                  clos-call-carrier-policy-guard)
-        (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection owned-read-value!)
-        (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
-        :yuanxu/poo-clos/interface)
+        (only-in :tao3k/yuanxu/object-family/read-projection call-with-owned-read-projection owned-read-value!)
+        (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-memory-snapshot)
+        :tao3k/yuanxu/poo-clos/interface)
 
 (export poo-clos-dispatch-test)
 

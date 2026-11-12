@@ -2,9 +2,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :gerbil/expander core-import-module module-context-path current-expander-eval)
-        (only-in :yuanxu/ops/objects ProcessScript.)
-        (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/ops/objects ProcessScript.)
+        (only-in :tao3k/yuanxu/observability/testing-fixture with-yuanxu-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in "qualification/module-publication/fixtures.ss"
                  PublicLibraryFixture with-publication-source write-file gerbil-import-value))
 (export module-runtime-import-support-test)

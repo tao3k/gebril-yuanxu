@@ -5,8 +5,8 @@
         (only-in :clan/poo/mop TypeError?)
         (only-in :clan/poo/table table-styles)
         (only-in :clan/poo/rationaldict RationalDict)
-        :yuanxu/modules/funflow/control-plane/api
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        :tao3k/yuanxu/modules/funflow/control-plane/api
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export funflow-function-types-test)
 
 (def (local-run flow input)

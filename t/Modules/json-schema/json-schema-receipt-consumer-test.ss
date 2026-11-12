@@ -2,9 +2,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Regression control for existing Core receipt consumers after owner separation.
 (import :std/test
-        :yuanxu/modules/json-schema/json-schema-receipt
-        :yuanxu/modules/json-schema/json-schema-validate
-        (only-in :yuanxu/modules/json-schema/json-schema-emit-runtime yuanxu-json-schema-null?))
+        :tao3k/yuanxu/modules/json-schema/json-schema-receipt
+        :tao3k/yuanxu/modules/json-schema/json-schema-validate
+        (only-in :tao3k/yuanxu/modules/json-schema/json-schema-emit-runtime yuanxu-json-schema-null?))
 (export json-schema-receipt-consumer-test)
 
 (def json-schema-receipt-consumer-test

@@ -5,11 +5,11 @@
         (only-in :std/make make-clean)
         (rename-in (only-in :std/build-script defbuild-script)
                    (defbuild-script gerbil-defbuild-script))
-        (only-in :yuanxu/module-system/building/products
+        (only-in :tao3k/yuanxu/module-system/building/products
                  build-output-directory current-build-output-directory current-build-source-directory)
-        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
-        (only-in :yuanxu/module-system/building/artifacts
+        (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
+        (only-in :tao3k/yuanxu/module-system/building/artifacts
                  repair-build-products! require-build-products! test-build-publication)
         :clan/poo/object)
 (export build-product-recovery-test)
@@ -84,7 +84,7 @@
           (write-product root "build.ss")
           (call-with-output-file (path-expand "owned.ss" root) (cut display "(export)\n" <>))
           (call-with-output-file (path-expand "gerbil.pkg" root)
-            (cut display "(package: yuanxu prelude: :yuanxu/prelude)\n" <>))
+            (cut display "(package: tao3k/yuanxu prelude: :tao3k/yuanxu/prelude)\n" <>))
           (call-with-output-file (path-expand "prelude.ss" root)
             (cut display "prelude: :gerbil/core\npackage: yuanxu\n(import :gerbil/core)\n(export (import: :gerbil/core))\n" <>))
           (def graph (.o entries: '() compiler-inputs: '()
@@ -92,18 +92,18 @@
           (def projection
             (yuanxu-project-source-spec (.o build-graph: graph) '("prelude" "owned") root build))
           (check-equal? (.get projection spec) '("prelude" "owned"))
-          (write-product libdir "yuanxu/prelude.ssi")
-          (write-product libdir "yuanxu/owned.ssi")
+          (write-product libdir "tao3k/yuanxu/prelude.ssi")
+          (write-product libdir "tao3k/yuanxu/owned.ssi")
           (write-product libdir "unselected/prelude.ssi")
           (parameterize ((current-build-output-directory libdir))
             (.call projection .with-clean-outputs
               (lambda ()
                 (make-clean (.get projection spec) srcdir: root libdir: libdir))))
-          (check-equal? (file-exists? (path-expand "yuanxu/prelude.ssi" libdir)) #f)
-          (check-equal? (file-exists? (path-expand "yuanxu/owned.ssi" libdir)) #f)
+          (check-equal? (file-exists? (path-expand "tao3k/yuanxu/prelude.ssi" libdir)) #f)
+          (check-equal? (file-exists? (path-expand "tao3k/yuanxu/owned.ssi" libdir)) #f)
           (check-equal? (file-exists? (path-expand "unselected/prelude.ssi" libdir)) #t)
           (check-equal? (file-exists? (path-expand ".yuanxu-source.lock" libdir)) #t)
-          (write-product libdir "yuanxu/owned.ssi")
+          (write-product libdir "tao3k/yuanxu/owned.ssi")
           (call-with-output-file (list path: (path-expand "owned.ss" root) truncate: #t)
             (cut display "(export #t)\n" <>))
           (def entered? #f)
@@ -112,7 +112,7 @@
               (.call projection .with-clean-outputs (lambda () (set! entered? #t)))
               error?))
           (check-equal? entered? #f)
-          (check-equal? (file-exists? (path-expand "yuanxu/owned.ssi" libdir)) #t))))
+          (check-equal? (file-exists? (path-expand "tao3k/yuanxu/owned.ssi" libdir)) #t))))
     (test-case "product checks and Make agree on the default and explicit output directories"
       (call-with-temporary-directory "product-output-directory"
         (lambda (root)

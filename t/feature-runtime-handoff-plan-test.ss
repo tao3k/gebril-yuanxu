@@ -3,13 +3,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import (only-in :std/list/list map)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :yuanxu/composition/roles
-        :yuanxu/module-system/feature/interface
-        :yuanxu/module-system/feature/domain-case/interface
-        :yuanxu/utilities/functional)
+        :tao3k/yuanxu/composition/roles
+        :tao3k/yuanxu/module-system/feature/interface
+        :tao3k/yuanxu/module-system/feature/domain-case/interface
+        :tao3k/yuanxu/utilities/functional)
 
 (export feature-runtime-handoff-plan-test)
 
@@ -67,19 +67,19 @@
 
 (defpoo-feature-adapter-capability runtime-bundle-capability
   (capability-id 'runtime-bundle-capability)
-  (provider-module-id 'yuanxu/python-runtime-cffi)
+  (provider-module-id 'tao3k/yuanxu/python-runtime-cffi)
   (contract-id 'yuanxu.runtime-c.bundle)
   (contract-version +feature-runtime-c-bundle-version+))
 
 (defpoo-feature-adapter-capability cedar-input-capability
   (capability-id 'cedar-input-capability)
-  (provider-module-id 'yuanxu/cedar-adapter)
+  (provider-module-id 'tao3k/yuanxu/cedar-adapter)
   (contract-id 'yuanxu.cedar-input)
   (contract-version 1))
 
 (defpoo-feature-adapter-capability lean-evidence-capability
   (capability-id 'lean-evidence-capability)
-  (provider-module-id 'yuanxu/lean-evidence-adapter)
+  (provider-module-id 'tao3k/yuanxu/lean-evidence-adapter)
   (contract-id 'yuanxu.lean-evidence)
   (contract-version 1))
 
@@ -328,9 +328,9 @@
         (check (map
                 (lambda (handoff) (.ref handoff 'provider-module-id))
                 resolved)
-               => '(yuanxu/python-runtime-cffi
-                    yuanxu/cedar-adapter
-                    yuanxu/lean-evidence-adapter))
+               => '(tao3k/yuanxu/python-runtime-cffi
+                    tao3k/yuanxu/cedar-adapter
+                    tao3k/yuanxu/lean-evidence-adapter))
         (check (.ref (car resolved) 'contract-version) => 1)
         (check (.ref (cadr resolved) 'projection-schema-id)
                => 'cedar-input-schema-v1)

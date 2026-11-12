@@ -7,11 +7,11 @@
 ;;; Payloads belong to callers. All reachability uses the shared graph walker.
 (import (only-in :std/list/list find last)
         (runtime: :clan/poo/object)
-        :yuanxu/graph/types
-        :yuanxu/graph/algorithms
-        (only-in :yuanxu/graph/algorithms-list-support
+        :tao3k/yuanxu/graph/types
+        :tao3k/yuanxu/graph/algorithms
+        (only-in :tao3k/yuanxu/graph/algorithms-list-support
                  graph-adjacency-ref edge-pairs->outgoing-index walk-adjacency/indexed))
-(export (import: :yuanxu/graph/types)
+(export (import: :tao3k/yuanxu/graph/types)
         yuanxu-graph-rooted
         yuanxu-graph-root-id
         yuanxu-graph-root-payload

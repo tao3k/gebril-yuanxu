@@ -3,8 +3,8 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules))
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules))
 (export module-public-dependency-test)
 (.def Workspace
   .acquire: (lambda () (let (path (make-temporary-file-name "module-dependency-"))

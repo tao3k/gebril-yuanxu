@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source preparation shared by publication suites; no test suite is imported.
 (import (only-in :std/test test-suite)
-        (only-in :yuanxu/t/qualification/module-publication/controls
+        (only-in :tao3k/yuanxu/t/qualification/module-publication/controls
                  register-build-support-control-cases!))
 (export build-support-control-test)
 (def build-support-control-test

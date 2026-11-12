@@ -8,14 +8,14 @@
 ;;; cannot pass through a stale aggregate user-interface build.
 
 (import (only-in :clan/poo/object .o .cc)
-        (only-in :yuanxu/graph/operation yuanxu-graph-operation-prototype)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/graph/operation yuanxu-graph-operation-prototype)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  check-equal?
                  check-exception
                  test-suite)
-        :yuanxu/graph/interface
-        (only-in :yuanxu/graph/payload-operations yuanxu-graph-slots-merge))
+        :tao3k/yuanxu/graph/interface
+        (only-in :tao3k/yuanxu/graph/payload-operations yuanxu-graph-slots-merge))
 
 (export module-extension-resolution-test graph-unification-test graph-runtime-operation-test)
 

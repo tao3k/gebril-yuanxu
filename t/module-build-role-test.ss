@@ -9,18 +9,18 @@
         (only-in :gerbil/runtime/loader load-path set-load-path! add-load-path! load-module)
         (only-in :gerbil/expander core-read-module core-import-module import-module eval-syntax module-context-path expander-context-id
                  current-expander-context current-expander-module-import make-top-context __module-pkg-cache)
-        (only-in :yuanxu/module-system/building/products current-build-source-directory)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-write-module-publication
+        (only-in :tao3k/yuanxu/module-system/building/products current-build-source-directory)
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-write-module-publication
                  yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source
                  call-with-module-compiler-inputs module-compiler-source-input module-compiler-source-input-compatible?)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/admission module-source-read module-source-type
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read module-source-type
                  call-with-module-source-operation-measurement call-with-module-source-read-cache
                  call-with-module-source-callback current-module-source-observer)
-        (only-in :yuanxu/module-system/building/configuration-source yuanxu-configuration-source))
-(import (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
-        (only-in :yuanxu/module-system/building/artifacts current-build-output-directory))
+        (only-in :tao3k/yuanxu/module-system/building/configuration-source yuanxu-configuration-source))
+(import (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :tao3k/yuanxu/module-system/building/artifacts current-build-output-directory))
 (export module-build-role-test module-build-import-inference-test)
 (import (only-in "./qualification/module-init/fixture.ss" import-fixture-init!))
 (def (assert name value)
@@ -63,7 +63,7 @@
         (lambda (root)
           (fixture root "(def Build '())")
           (write-source (path-expand "init.ss" root)
-            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
           (write-source (path-expand "support.ss" root) "(def support 42) (export support)")
           (def exports (import-fixture-init! (path-expand "init.ss" root)))
           (def started (real-time))
@@ -117,9 +117,9 @@
           (write-source (path-expand "config.ss" owner)
             "(import :clan/poo/object) (def Config (.o value: 42)) (export Config)")
           (write-source (path-expand "interface.ss" owner)
-            "(import (only-in :clan/poo/object .o) (only-in :yuanxu/module-system/source/declaration .def)) (.def Example identity: 'app/example core: (.o requires: (.o) scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))")
+            "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Example identity: 'app/example core: (.o requires: (.o) scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))")
           (write-source (path-expand "init.ss" root)
-            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
           (write-source (path-expand "client.ss" owner) "(import \"../../../init.ss\") (export)")
           (def exports (import-fixture-init! (path-expand "init.ss" root)))
           (def spec (.get exports std-make-spec))
@@ -245,7 +245,7 @@
             (lambda (root)
               (fixture root build)
               (write-source (path-expand "init.ss" root)
-                "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
+                "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
               (def exports (import-fixture-init! (path-expand "init.ss" root)))
               (def before (load-path))
               ;; This fixture owns its output. The installed Core remains a
@@ -1058,7 +1058,7 @@
           (write-source (path-expand "config.ss" owner)
             "(import :clan/poo/object) (def Config (.o value: 42)) (export Config)")
           (write-source (path-expand "interface.ss" owner)
-            "(import (except-in :clan/poo/object .def) (only-in :yuanxu/module-system/source/declaration .def)) (.def Example identity: 'app/example core: (.o requires: (.o) scope-contract: Scope exports: (.o config: Config) configuration-build: Build) features: (.o))")
+            "(import (except-in :clan/poo/object .def) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Example identity: 'app/example core: (.o requires: (.o) scope-contract: Scope exports: (.o config: Config) configuration-build: Build) features: (.o))")
           (parameterize ((current-expander-context (make-top-context)))
             (core-import-module (path-expand "interface.ss" owner)))
           (assert 'raw-compiler-binds-build-without-executing-it (not (file-exists? marker))))))
@@ -1121,7 +1121,7 @@
         (lambda (root)
           (fixture root
             (string-append
-              "(import (only-in :yuanxu/module-system/interface yuanxu-load-modules)) "
+              "(import (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)) "
               "(def reload yuanxu-load-modules) (def Build (reload "
               (call-with-output-string (cut write (path-expand "init.ss" root) <>)) "))"))
           (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
@@ -1158,9 +1158,9 @@
           (def owner (fixture root "(def Build '())"))
           (delete-file (path-expand "build.ss" owner))
           (write-source (path-expand "init.ss" root)
-            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
           (write-source (path-expand "interface.ss" owner)
-            "(import (only-in :clan/poo/object .o) (only-in :yuanxu/module-system/source/declaration .def)) (.def Example identity: 'app/example core: (.o requires: (.o) scope-contract: Scope exports: Defaults) features: (.o))")
+            "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Example identity: 'app/example core: (.o requires: (.o) scope-contract: Scope exports: Defaults) features: (.o))")
           (write-source (path-expand "objects.ss" owner)
             "(import :clan/poo/object \"./helper.ss\") (.def Defaults) (export Defaults)")
           (write-source (path-expand "helper.ss" owner)

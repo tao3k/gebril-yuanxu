@@ -4,7 +4,7 @@
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/prototype-map prototype-map-ref)
         (only-in :std/list/list delete-duplicates/hash every)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-admit-current!
                  call-with-module-source-read-cache))
 (export source-object-slots field-slot-origins/value admit-field-sources!)

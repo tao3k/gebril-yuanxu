@@ -4,9 +4,9 @@
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
-        (only-in :yuanxu/module-system/building/configuration-source yuanxu-configuration-source))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
+        (only-in :tao3k/yuanxu/module-system/building/configuration-source yuanxu-configuration-source))
 (export module-config-role-test)
 (def (assert name value)
   (unless value (error "assertion failed" name))
@@ -47,7 +47,7 @@
           (assert 'explicit-runtime-header (= (.get (eval-syntax 'Config) answer) 7)))))
     (yuanxu-test-case "explicit POO extension imports retain their runtime binding"
       (with-config
-        "(import (only-in :yuanxu/object-syntax/path-slots .o)) (def Config (.o answer: 9))"
+        "(import (only-in :tao3k/yuanxu/object-syntax/path-slots .o)) (def Config (.o answer: 9))"
         (lambda (_source _prepared)
           (assert 'explicit-object-syntax (= (.get (eval-syntax 'Config) answer) 9)))))
     (yuanxu-test-case "runtime inclusion retains the original config source location"

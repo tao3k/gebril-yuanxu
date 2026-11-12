@@ -2,8 +2,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Selected Graph/runtime test demand -> observed compiler inputs. No compilation or execution.
-(import (only-in :yuanxu/module-system/source/link call-with-linked-prepared-guards)
-        (only-in :yuanxu/module-system/building/configuration-source configuration-request-current/owned)
+(import (only-in :tao3k/yuanxu/module-system/source/link call-with-linked-prepared-guards)
+        (only-in :tao3k/yuanxu/module-system/building/configuration-source configuration-request-current/owned)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
                  core-import-module __module-registry expander-context-id module-context-path
                  core-read-module core-expand-module-begin make-module-context
@@ -11,30 +11,30 @@
                  make-prelude-context current-expander-module-prelude
                  current-expander-path current-expander-marks current-expander-phi
                  current-import-expander-phi current-export-expander-phi raise-syntax-error)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module package-library-spec/source-context)
-        (only-in :yuanxu/module-system/building/source-package package-prelude-identity)
-        (only-in :yuanxu/module-system/building/program-products make-target-spec program-targets)
-        (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module package-library-spec/source-context)
+        (only-in :tao3k/yuanxu/module-system/building/source-package package-prelude-identity)
+        (only-in :tao3k/yuanxu/module-system/building/program-products make-target-spec program-targets)
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/string/path path-absolute? path-default-extension subpath?)
         (only-in :std/list/list find foldl)
         (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
         (only-in :clan/poo/read-route require-read-route!)
-        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/mop define-type Type.)
         (only-in :clan/poo/type List)
         (only-in :clan/poo/object-contract ObjectContract.)
-        (only-in :yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? module-source-admit-current! call-with-module-source-read-cache module-source-observe module-source-object-policy current-module-source-phase current-module-source-observer module-source-measure-operation call-with-module-source-callback)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source
+        (only-in :tao3k/yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? module-source-admit-current! call-with-module-source-read-cache module-source-observe module-source-object-policy current-module-source-phase current-module-source-observer module-source-measure-operation call-with-module-source-callback)
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source
                  build-target-name yuanxu-prepare-module-retained-source module-compiler-source-owner?
                  module-source-package-info)
-        (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
-        (only-in :yuanxu/module-system/source/publication requirement-option)
-        (only-in :yuanxu/module-system/feature/capability-model feature-projection-request?)
-        (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
-        (only-in :yuanxu/module-system/building/package write-selected-package))
+        (only-in :tao3k/yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
+        (only-in :tao3k/yuanxu/module-system/source/publication requirement-option)
+        (only-in :tao3k/yuanxu/module-system/feature/capability-model feature-projection-request?)
+        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
+        (only-in :tao3k/yuanxu/module-system/building/package write-selected-package))
 (export module-test-source-spec module-build-graph module-build-graph/linked unique-build-inputs retained-build-entries ExternalPackageContributionContract BuildSpecContract
         BuildPublicationContract module-build-admit-context!
         module-build-package-inputs-current! module-build-package-source-check
@@ -782,7 +782,7 @@
   (delay
     (parameterize ((current-expander-context (make-top-context)))
       (eval-syntax '(import :gerbil/core))
-      (eval-syntax '(import (only-in :yuanxu/module-system/building/artifacts test-build-projection)))
+      (eval-syntax '(import (only-in :tao3k/yuanxu/module-system/building/artifacts test-build-projection)))
       (eval-syntax 'test-build-projection))))
 
 ;; Discover only the demanded import closure. Never project production entries,
@@ -901,7 +901,7 @@
   (def compiler-targets (retained-build-entries retained root package-prefix '() programs?: #t))
   (def targets-by-identity (make-hash-table-eq))
   (def static-inputs-api
-    (module-binding-action "yuanxu/module-system/source/static-inputs" 'module-static-compiler-inputs))
+    (module-binding-action "tao3k/yuanxu/module-system/source/static-inputs" 'module-static-compiler-inputs))
   (def (input! path)
     (def normalized (path-normalize path))
     (def input

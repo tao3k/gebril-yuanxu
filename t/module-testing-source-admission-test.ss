@@ -3,12 +3,12 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/building/test-projection module-test-projection)
-        (only-in :yuanxu/module-system/source/reader module-publication-reader)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/building/test-projection module-test-projection)
+        (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  yuanxu-default-module-style-policy)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!))
 (export module-testing-source-admission-test)
 (.def Workspace

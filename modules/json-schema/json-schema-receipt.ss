@@ -5,14 +5,14 @@
 
 ;;; Contract: public receipt for JSON Schema to Yuanxu contract generation.
 
-(import (only-in :yuanxu/module-system/schema/slot-contracts
+(import (only-in :tao3k/yuanxu/module-system/schema/slot-contracts
                  yuanxu-object-contract->alist)
-        (only-in :yuanxu/object-types/facts
+        (only-in :tao3k/yuanxu/object-types/facts
                  yuanxu-type-fact-contract->alist
                  yuanxu-lean-fact-contract->alist
                  yuanxu-object-contract->type-facts
                  yuanxu-object-contract->lean-fact-contracts)
-        (only-in :yuanxu/observability/objects
+        (only-in :tao3k/yuanxu/observability/objects
                  yuanxu-observability-diagnostic-record
                  yuanxu-observability-diagnostic-severity
                  yuanxu-observability-diagnostic->alist)

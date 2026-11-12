@@ -11,12 +11,12 @@
                    module-context? expander-context-id module-context-path current-expander-compiling? stx-car datum->syntax
                    make-top-context current-expander-phi current-import-expander-phi
                    current-export-expander-phi current-expander-marks)
-          (only-in :yuanxu/module-system/source/role-forms module-init-mounts module-init-export-name)
+          (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-mounts module-init-export-name)
           (only-in :gerbil/compiler/base module-id->path-string)
-          (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)))
+          (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)))
 (import (only-in :clan/poo/object .ref .o .+)
         (only-in :std/source this-source-file)
-        (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
+        (only-in :tao3k/yuanxu/module-system/building/interface yuanxu-init-build)
 )
 (export expand-yuanxu-declaration expand-yuanxu-program-declaration)
 
@@ -111,7 +111,7 @@
                             (current-import-expander-phi #f)
                             (current-export-expander-phi #f)
                             (current-expander-marks '()))
-               (let (lower (module-binding-action "yuanxu/module-system/building/program-publication" 'init-compiler-forms))
+               (let (lower (module-binding-action "tao3k/yuanxu/module-system/building/program-publication" 'init-compiler-forms))
                  (lower (list path))))))
            (if (and (pair? forms) (keyword? (car forms)) (pair? (cdr forms)))
              (skip-header (cddr forms))

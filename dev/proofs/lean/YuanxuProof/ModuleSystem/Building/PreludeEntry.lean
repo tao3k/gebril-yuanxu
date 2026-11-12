@@ -134,9 +134,9 @@ theorem using_lookup_owner_changes_publication (caller lookup : Invocation)
   exact fun same => different (congrArg Prod.fst same)
 
 def kernel : PhaseNode := ⟨"gerbil/core", 0⟩
-def syntaxEntry : PhaseNode := ⟨"yuanxu/declaration-syntax", 0⟩
+def syntaxEntry : PhaseNode := ⟨"tao3k/yuanxu/declaration-syntax", 0⟩
 def prelude : PhaseNode := ⟨"tao3k/yuanxu/prelude", 0⟩
-def implementation : PhaseNode := ⟨"yuanxu/module-system", 0⟩
+def implementation : PhaseNode := ⟨"tao3k/yuanxu/module-system", 0⟩
 
 def exampleRank (node : PhaseNode) : Nat :=
   if node = kernel then 0 else if node = syntaxEntry then 1 else if node = prelude then 2 else 3

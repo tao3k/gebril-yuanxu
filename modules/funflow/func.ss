@@ -3,9 +3,9 @@
 ;;; Job projection reuses the functional Flow interpreter; Ops owns processes.
 (import :clan/poo/object
         (only-in :std/list/list delete-duplicates/hash)
-        (only-in :yuanxu/graph/types-core yuanxu-graph yuanxu-graph-node yuanxu-graph-edge)
-        (only-in :yuanxu/graph/algorithms yuanxu-graph-topological-order/acyclic)
-        (only-in :yuanxu/ops/func validate-script)
+        (only-in :tao3k/yuanxu/graph/types-core yuanxu-graph yuanxu-graph-node yuanxu-graph-edge)
+        (only-in :tao3k/yuanxu/graph/algorithms yuanxu-graph-topological-order/acyclic)
+        (only-in :tao3k/yuanxu/ops/func validate-script)
         (only-in "control-plane/runtime-command-descriptor.ss"
                  runtime-command-fields->manifest make-stdout-runtime-command-descriptor)
         (only-in "control-plane/agent-harness.ss"
@@ -14,7 +14,7 @@
                  make-yuanxu-agent-session yuanxu-agent-session->alist
                  make-yuanxu-agent-harness make-yuanxu-agent-profile
                  yuanxu-agent-harness->alist yuanxu-agent-profile->alist)
-        (only-in :yuanxu/ops/types ProcessResultContract)
+        (only-in :tao3k/yuanxu/ops/types ProcessResultContract)
         (only-in "control-plane/signatures.ss" Fun Function Record String Symbol List validate)
         (only-in "control-plane/runtime-protocol.ss" AdapterResult)
         (only-in "control-plane/flow.ss" flow-compose)

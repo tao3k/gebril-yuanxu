@@ -17,7 +17,7 @@
 ;; Snapshot current runtime sources as one coherent package. A single relocated
 ;; Core library mixed with live source imports is correctly refused by the reader.
 ;; Copy source/data roles, not compiled artifacts or a frozen older qualification.
-(def source-core (path-expand "source/yuanxu/" root))
+(def source-core (path-expand "source/tao3k/yuanxu/" root))
 (def (snapshot directory relative)
   (for-each
     (lambda (name)
@@ -37,7 +37,7 @@
     (directory-files directory)))
 (snapshot core "")
 (report-stage 'snapshot)
-(def path (path-expand "source/yuanxu/module-system/source/observations.ss" root))
+(def path (path-expand "source/tao3k/yuanxu/module-system/source/observations.ss" root))
 (def text (call-with-input-file (path-expand "module-system/source/observations.ss" core) read-all-as-string))
 (def offset (string-contains text original))
 (unless offset (error "source event gateway changed; re-audit before qualification"))
@@ -53,14 +53,11 @@
 (def original-import (current-expander-module-import))
 (def seen (make-hash-table-eq))
 (def skipped-optimizer-inputs 0)
-;; The package has one ordinary namespace and one explicitly named prelude.
-;; Route both to the same snapshot; never mix the host's prelude into its clone.
+;; The language and ordinary libraries are in the same source snapshot.
 (def (snapshot-source name)
-  (cond
-    ((equal? name "yuanxu/prelude") (path-expand "prelude.ss" source-core))
-    ((and name (string-prefix? "yuanxu/" name))
-     (path-expand (string-append (substring name (string-length "yuanxu/") (string-length name)) ".ss") source-core))
-    (else #f)))
+  (def prefix "tao3k/yuanxu/")
+  (and name (string-prefix? prefix name)
+       (path-expand (string-append (substring name (string-length prefix) (string-length name)) ".ss") source-core)))
 (def (source-import path (reload? #f))
   (def datum (syntax-e path))
   (def name (and (symbol? datum) (symbol->string datum)))
@@ -88,7 +85,7 @@
   (def visited (make-hash-table-eq))
   (def prelude-owners (make-hash-table-eq))
   (def affected (make-hash-table-eq))
-  (def edited 'yuanxu/module-system/source/observations)
+  (def edited 'tao3k/yuanxu/module-system/source/observations)
   (def edited-context #f)
   (def complete? #t)
   (def (walk node)

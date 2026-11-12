@@ -1,14 +1,14 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module-specific adapter of the existing Case policy, never a runner.
 (import (runtime: :clan/poo/object)
-        (only-in :yuanxu/module-system/source/deferred-declaration module-entry-action)
-        (only-in :yuanxu/observability/testing-case
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-entry-action)
+        (only-in :tao3k/yuanxu/observability/testing-case
                  yuanxu-default-testing-case-profile
                  yuanxu-test-checkpoint yuanxu-test-observe)
-        (only-in :yuanxu/observability/memory yuanxu-debug-cpu-microseconds)
-        (only-in :yuanxu/ops/progress execution-progress!)
-        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+        (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-cpu-microseconds)
+        (only-in :tao3k/yuanxu/ops/progress execution-progress!)
+        (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget))
 (export ModuleTestingProfile.)
 
@@ -313,8 +313,8 @@
 ;; Tracing is another explicit runtime entry, with fresh observation state
 ;; per Case. The shared action retains neither its procedure nor results.
 (def retention-observer
-  (module-entry-action 'yuanxu/module-system/building/test-observation "yuanxu/module-system/building/test-retention"
-    'yuanxu/module-system/building/test-retention#observe-read-dependencies))
+  (module-entry-action 'tao3k/yuanxu/module-system/building/test-observation "tao3k/yuanxu/module-system/building/test-retention"
+    'tao3k/yuanxu/module-system/building/test-retention#observe-read-dependencies))
 
 (def (observe-module-test run)
   (lambda (self description thunk)

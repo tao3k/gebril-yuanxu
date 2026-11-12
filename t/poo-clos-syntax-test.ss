@@ -5,7 +5,7 @@
 
 ;;; Hygienic CLOS declaration lowering and lambda-list conformance.
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  test-suite test-case check-equal? check-exception check)
         (only-in :clan/poo/object .def .o .ref)
@@ -13,13 +13,13 @@
         (only-in :gerbil/runtime/gambit
                  call-with-output-string display-exception
                  with-exception-catcher)
-        (only-in :yuanxu/poo-clos/declaration-ir
+        (only-in :tao3k/yuanxu/poo-clos/declaration-ir
                  parse-poo-clos-class-declaration-ir
                  parse-poo-clos-generic-declaration-ir
                  clos-lambda-declaration-ir-required
                  clos-parameter-declaration-ir-kind)
-        (only-in :yuanxu/poo-clos/declaration-ir-core parse-clos-lambda-list)
-        :yuanxu/poo-clos/interface)
+        (only-in :tao3k/yuanxu/poo-clos/declaration-ir-core parse-clos-lambda-list)
+        :tao3k/yuanxu/poo-clos/interface)
 
 (export poo-clos-syntax-test)
 

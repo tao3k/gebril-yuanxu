@@ -2,13 +2,13 @@
 ;;; Isolation experiment, NOT the production SourceAdmissionContract protocol.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence)
-        (only-in :yuanxu/admission/source SourceAdmissionContract.)
-        (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :tao3k/yuanxu/configuration/diagnostics config-diagnostic-locator)
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  current-module-source-observer current-module-source-phase module-source-read)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/t/qualification/mop-state/closed-tail probe on-file refuses)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/t/qualification/mop-state/closed-tail probe on-file refuses)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture))
 (export source-admission-closed-tail-test test-cleanup!)

@@ -17,8 +17,8 @@
 ;; | PooModuleSourceRefCandidate = Value
 
 (import (runtime: :clan/poo/object)
-        (only-in :yuanxu/module-system/config yuanxu-module-kind=?)
-        :yuanxu/module-system/source/objects)
+        (only-in :tao3k/yuanxu/module-system/config yuanxu-module-kind=?)
+        :tao3k/yuanxu/module-system/source/objects)
 
 (export make-yuanxu-module-custom-interface-source
         make-yuanxu-module-custom-collection-source

@@ -7,11 +7,11 @@
 ;;; Invariant: heavy execution remains in runner/runtime-adapter code.
 
 (import (only-in :clan/poo/object .o .cc .ref .slot? object?)
-        :yuanxu/modules/funflow/control-plane/projection-syntax
-        :yuanxu/modules/funflow/control-plane/flow
-        :yuanxu/modules/funflow/control-plane/failure
-        :yuanxu/modules/funflow/control-plane/graph
-        :yuanxu/modules/funflow/control-plane/task)
+        :tao3k/yuanxu/modules/funflow/control-plane/projection-syntax
+        :tao3k/yuanxu/modules/funflow/control-plane/flow
+        :tao3k/yuanxu/modules/funflow/control-plane/failure
+        :tao3k/yuanxu/modules/funflow/control-plane/graph
+        :tao3k/yuanxu/modules/funflow/control-plane/task)
 
 (export StrategyContract
         make-strategy

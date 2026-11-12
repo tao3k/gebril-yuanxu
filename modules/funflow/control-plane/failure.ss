@@ -9,7 +9,7 @@
 (import (only-in :clan/poo/object .cc .get .call)
         (only-in :clan/poo/mop Type. Function Fun Any validate element?)
         (only-in :clan/poo/type Sum)
-        :yuanxu/modules/funflow/control-plane/projection-syntax)
+        :tao3k/yuanxu/modules/funflow/control-plane/projection-syntax)
 
 (export ExecutionFailureType
         make-execution-failure

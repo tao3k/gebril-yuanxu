@@ -12,16 +12,16 @@
                  module-export-weak? module-export-key module-export-context core-module->prelude-context
                  make-prelude-context prelude-context-import)
         (only-in :std/list/list find)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
-        (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)
-        (only-in :yuanxu/module-system/source/admission call-with-module-source-operation-measurement)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/admission call-with-module-source-operation-measurement)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get .call .o .cc)
-        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules))
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules))
 (export module-bootstrap-test)
 (def root (path-expand ".." (path-directory (this-source-file))))
 (def module-bootstrap-test
@@ -99,7 +99,7 @@
                                 (resolve-identifier (datum->syntax #f name) 0 poo)) #t))
             '(object? make-object))
           (when (string=? name "module-prelude")
-            (let* ((declaration (core-import-module ':yuanxu/module-system/source/declaration))
+            (let* ((declaration (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
                    (declared (find (lambda (entry)
                                      (and (eq? (module-export-name entry) '.def)
                                           (= (module-export-phi entry) 0)))
@@ -139,9 +139,9 @@
             " added-phases=" (hash->list added-phases)
             " dependency-contexts=" (length after)))
         '(("config-prelude"
-           "prelude: :yuanxu/prelude\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) :clan/poo/object)\n(export (import: :gerbil/core :clan/poo/object))\n")
+           "prelude: :tao3k/yuanxu/prelude\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) :clan/poo/object)\n(export (import: :gerbil/core :clan/poo/object))\n")
           ("module-prelude"
-           "prelude: :gerbil/core\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) (except-in :clan/poo/object .def) (only-in :yuanxu/module-system/source/declaration .def) (phi: +1 :gerbil/core) (phi: +2 :gerbil/core))\n(export (import: :gerbil/core :clan/poo/object) (phi: +1 (import: :gerbil/core)) (phi: +2 (import: :gerbil/core)) (phi: 1 load-module) .def)\n"))))
+           "prelude: :gerbil/core\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) (except-in :clan/poo/object .def) (only-in :tao3k/yuanxu/module-system/source/declaration .def) (phi: +1 :gerbil/core) (phi: +2 :gerbil/core))\n(export (import: :gerbil/core :clan/poo/object) (phi: +1 (import: :gerbil/core)) (phi: +2 (import: :gerbil/core)) (phi: 1 load-module) .def)\n"))))
     (yuanxu-test-case "binding factories share the runtime language frame without copying aliases"
       (def before (current-expander-context))
       ;; A real higher-order library function observes the active factory
@@ -305,15 +305,15 @@
       ;; its compiler metadata from the existing explicit build owner.
       (def build-covered? #f)
       (for-each-build-module
-        (core-import-module ':yuanxu/module-system/building/build-projection)
+        (core-import-module ':tao3k/yuanxu/module-system/building/build-projection)
         (lambda (context)
-          (when (eq? (expander-context-id context) 'yuanxu/module-system/source/build)
+          (when (eq? (expander-context-id context) 'tao3k/yuanxu/module-system/source/build)
             (set! build-covered? #t))))
       (check-equal? build-covered? #t)
       (def roots
         (map core-import-module
-          '(:yuanxu/module-system/building/build-projection
-            :yuanxu/module-system/building/configuration-source)))
+          '(:tao3k/yuanxu/module-system/building/build-projection
+            :tao3k/yuanxu/module-system/building/configuration-source)))
       (def expected (make-hash-table))
       (def repeated 0)
       (for-each (lambda (root)
@@ -352,11 +352,11 @@
         (yuanxu-test-observe 'bound-source-reuses (hash-ref costs '(calls reader-bound-source-reuse) 0))
         (yuanxu-test-observe 'build-source-resolutions (hash-ref costs '(calls reader-source-resolution) 0))
         (check-equal? (.get view selected-graph module-order)
-                      '(yuanxu/modules/json-schema/interface
-                        yuanxu/modules/funflow/interface
-                        yuanxu/scenarios/gitea-postgresql/postgresql/interface
-                        yuanxu/scenarios/gitea-postgresql/gitea/interface
-                        yuanxu/scenarios/gitea-postgresql/interface))
+                      '(tao3k/yuanxu/modules/json-schema/interface
+                        tao3k/yuanxu/modules/funflow/interface
+                        tao3k/yuanxu/scenarios/gitea-postgresql/postgresql/interface
+                        tao3k/yuanxu/scenarios/gitea-postgresql/gitea/interface
+                        tao3k/yuanxu/scenarios/gitea-postgresql/interface))
         (check-equal? (> (length (.get graph entries)) 15) #t)
         (check-equal? (yuanxu-validation-evidence-accepted?
                        (yuanxu-contract-admit contract (.o value: "pass") #f)) #t)

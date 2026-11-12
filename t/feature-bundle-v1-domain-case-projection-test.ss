@@ -5,11 +5,11 @@
 (export feature-bundle-v1-domain-case-projection-test)
 
 (import (only-in :std/list/list find)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :yuanxu/utilities/functional
-        :yuanxu/module-system/feature/interface
+        :tao3k/yuanxu/utilities/functional
+        :tao3k/yuanxu/module-system/feature/interface
         "./fixtures/bundle-v1-domain-case-projection.ss")
 
 (def ready-runtime-handoff-plan
@@ -61,7 +61,7 @@
       (check (length edges) => 1)
       (check (length evidence) => 1)
       (check (.ref base 'capability-id) => 'bundle-runtime-capability-0)
-      (check (.ref base 'adapter-id) => 'yuanxu/python-runtime-cffi)
+      (check (.ref base 'adapter-id) => 'tao3k/yuanxu/python-runtime-cffi)
       (check (.ref base 'projection-id) => 'bundle-runtime-projection-0)
       (check (.ref child 'capability-id)
              => +feature-bundle-v1-no-capability-id+)
@@ -80,7 +80,7 @@
       (check (.ref (car evidence) 'evidence-type-id)
              => 'bundle-evidence-schema-0)
       (check (.ref (car evidence) 'proof-system-id)
-             => 'yuanxu/lean-evidence-adapter)
+             => 'tao3k/yuanxu/lean-evidence-adapter)
       (check (.ref lowering 'accepted?) => #t)
       (check (.ref descriptor 'arena-bytes) => 576)))
 

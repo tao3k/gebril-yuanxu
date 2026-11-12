@@ -4,9 +4,9 @@
 ;;; Declarative Ops scripts; each child establishes its own source context.
 (import :std/test :clan/poo/object
         (only-in :std/list/list delete-duplicates/hash)
-        (only-in :yuanxu/ops/func run-script)
-        (only-in :yuanxu/ops/progress execution-progress!)
-        (only-in :yuanxu/module-system/building/products selected-output-source-directory)
+        (only-in :tao3k/yuanxu/ops/func run-script)
+        (only-in :tao3k/yuanxu/ops/progress execution-progress!)
+        (only-in :tao3k/yuanxu/module-system/building/products selected-output-source-directory)
         (only-in :gerbil/expander core-read-module/sexp)
         "./qualification/module-bootstrap/objects.ss")
 (export module-build-process-test)
@@ -79,28 +79,31 @@
       (check-equal? (.slot? (.get Build environment) 'GERBIL_BUILD_CORES) #f)
       (displayln "BUILD-PROCESS-CORES " (getenv "GERBIL_BUILD_CORES" #f))
       (force-output)
-      (when (.get Fixture cold) (check-equal? (file-exists? (path-expand "yuanxu" lib)) #f))
+      (when (.get Fixture cold) (check-equal? (file-exists? (path-expand "tao3k/yuanxu" lib)) #f))
       (def spec (call-with-input-string (build-command Build "spec") read))
       (def names (map (lambda (target) (if (string? target) target (cadr target))) spec))
       ;; Every emitted source must build exactly once. Prerequisite library
       ;; imports do not need a second declaration in this selected package.
       (check-equal? (length names) (length (delete-duplicates/hash names)))
-      (check-equal? (and (member "prelude" names) #t) #t)
+      (for-each
+        (lambda (target) (check-equal? (and (member target names) #t) #t))
+        '("prelude" "modules/example/interface" "modules/example/types"
+          "modules/example/objects" "modules/example/config"))
       (check-equal? (member "module-system/building/artifacts" names) #f)
       (def cold-output (build-command Build "compile"))
       (def recorded-interface
-        (path-expand "yuanxu/modules/json-schema/interface.ss" (selected-output-source-directory lib)))
+        (path-expand "tao3k/yuanxu/modules/example/interface.ss" (selected-output-source-directory lib)))
       (check-equal? (file-exists? recorded-interface) #f)
       (def bootstrap-targets
         '("... compile module-system/selection/init-syntax" "... compile prelude"))
       (check-equal? (filter (cut member <> bootstrap-targets) (string-split cold-output #\newline))
                     bootstrap-targets)
       (def first-identities (output-identities root lib names))
-      ;; The language's declared identity is not the root package prefix.
-      ;; A fresh process must reuse its real products, without alias outputs.
+      ;; The language and libraries use one package prefix. A fresh process
+      ;; must reuse its real products without compiling an alias.
       (def prelude-products
-        (list (path-expand "yuanxu/prelude.ssi" lib)
-              (path-expand "static/yuanxu__prelude.scm" lib)))
+        (list (path-expand "tao3k/yuanxu/prelude.ssi" lib)
+              (path-expand "static/tao3k__yuanxu__prelude.scm" lib)))
       (def (product-times)
         (map (lambda (path)
                (time->seconds (file-info-last-modification-time (file-info path))))
@@ -111,14 +114,15 @@
       (check-equal? (string-contains hot-output "... compile ") #f)
       (check-equal? (string-contains hot-output "... execute compile job ") #f)
       (check-equal? (product-times) first-times)
+      (check-equal? (file-exists? (path-expand "yuanxu/prelude.ssi" lib)) #f)
       (check-equal? (file-exists? (path-expand "legacy/prelude.ssi" lib)) #f)
       (check-equal? (file-exists? (path-expand "static/legacy__prelude.scm" lib)) #f)
       ;; Ordinary Make cleans the declared static source. Keep a separate,
       ;; unselected sentinel so cleanup isolation is checked independently.
-      (def unselected (path-expand "yuanxu/object-family/unselected-output.scm" lib))
+      (def unselected (path-expand "tao3k/yuanxu/object-family/unselected-output.scm" lib))
       (call-with-output-file unselected (cut display "; unselected output\n" <>))
       (check-clean-output (build-command Build "clean") root lib names)
-      (check-equal? (file-exists? (path-expand "static/yuanxu__object-family__syntax.scm" lib)) #f)
+      (check-equal? (file-exists? (path-expand "static/tao3k__yuanxu__object-family__syntax.scm" lib)) #f)
       (check-equal? (call-with-input-file unselected read-line) "; unselected output")
       ;; This must compile again, not merely print a new-process specification.
       ;; The same Script retains the exact source directory and GERBIL_PATH.
@@ -126,6 +130,6 @@
       (check-equal? (output-identities root lib names) first-identities)
       (check-clean-output (build-command Build "clean") root lib names)
       (check-equal? (file-exists? (path-expand ".gerbil/module-build/build.ss" root)) #f)
-      (check-equal? (file-exists? (path-expand "static/yuanxu__object-family__syntax.scm" lib)) #f)
+      (check-equal? (file-exists? (path-expand "static/tao3k__yuanxu__object-family__syntax.scm" lib)) #f)
       (check-equal? (call-with-input-file unselected read-line) "; unselected output")
       (displayln "BUILD-PROCESS-REBUILD-OK targets=" (length spec)))))

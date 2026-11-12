@@ -6,11 +6,11 @@
 ;;; component closure semantics remain owned by module-system/domain-case.
 (import (only-in :std/list/list map filter-map)
         (runtime: :clan/poo/object)
-        :yuanxu/composition/roles
-        :yuanxu/module-system/feature/capability-model
-        :yuanxu/module-system/feature/composition
-        :yuanxu/module-system/feature/domain-case/interface
-        :yuanxu/utilities/functional)
+        :tao3k/yuanxu/composition/roles
+        :tao3k/yuanxu/module-system/feature/capability-model
+        :tao3k/yuanxu/module-system/feature/composition
+        :tao3k/yuanxu/module-system/feature/domain-case/interface
+        :tao3k/yuanxu/utilities/functional)
 
 (export feature-domain-case-assembly
         require-feature-domain-case-assembly

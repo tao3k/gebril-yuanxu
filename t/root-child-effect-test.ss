@@ -2,8 +2,8 @@
 (import :std/test :clan/poo/object
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-fixture with-yuanxu-fixture)
         (only-in "./qualification/testing/directory.ss" write-source)
         (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture))
 (export root-child-effect-test test-cleanup!)

@@ -2,14 +2,14 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module System init projections. Infrastructure, not a selected module.
-(import (only-in :yuanxu/module-system/building/products current-build-module-roots)
-        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path package-build-script-path)
+(import (only-in :tao3k/yuanxu/module-system/building/products current-build-module-roots)
+        (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path package-build-script-path)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
-        (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)
-        (only-in :yuanxu/module-system/building/source-closure
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure
                  call-with-build-expansion-accounting call-with-build-stage)
-        (only-in :yuanxu/module-system/source/observations module-source-type module-source-read module-source-admit-current!
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-type module-source-read module-source-admit-current!
                  call-with-module-source-read-cache call-with-module-source-callback
                  module-source-measure-operation))
 (export yuanxu-init-build)
@@ -18,18 +18,18 @@
 ;; retain whole runtime entry initialization. Both are inert at construction and
 ;; resolve every invocation without storing a procedure or admission result.
 (def module-linker
-  (module-binding-action "yuanxu/module-system/interface" 'yuanxu-load-modules))
+  (module-binding-action "tao3k/yuanxu/module-system/interface" 'yuanxu-load-modules))
 (def build-projector
-  (module-binding-action "yuanxu/module-system/building/build-projection" 'yuanxu-project-source-spec))
+  (module-binding-action "tao3k/yuanxu/module-system/building/build-projection" 'yuanxu-project-source-spec))
 (def init-compiler-roots
-  (module-binding-action "yuanxu/module-system/source/init" 'module-init-compiler-source-roots))
+  (module-binding-action "tao3k/yuanxu/module-system/source/init" 'module-init-compiler-source-roots))
 ;; Source discovery is demanded separately from compilation/signing.
 (def test-source-projector
-  (module-binding-action "yuanxu/module-system/source/build" 'module-test-source-spec))
+  (module-binding-action "tao3k/yuanxu/module-system/source/build" 'module-test-source-spec))
 (def test-discovery
-  (module-binding-action "yuanxu/module-system/building/test-projection" 'module-test-projection))
+  (module-binding-action "tao3k/yuanxu/module-system/building/test-projection" 'module-test-projection))
 (def test-file-source
-  (module-binding-action "yuanxu/module-system/building/test-projection" 'module-test-file-source))
+  (module-binding-action "tao3k/yuanxu/module-system/building/test-projection" 'module-test-file-source))
 
 ;; Init exports inert values. Source preparation begins only on demand.
 ;; One init module owns one source epoch; changed input requires a fresh session.

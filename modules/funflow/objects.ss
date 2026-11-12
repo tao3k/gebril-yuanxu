@@ -3,7 +3,7 @@
 (import :clan/poo/object
         (only-in "control-plane/agent-harness-vocabulary.ss"
                  +yuanxu-agent-operation-kinds+ +yuanxu-runtime-snapshot-statuses+)
-        (only-in :yuanxu/ops/process-script ProcessScript.)
+        (only-in :tao3k/yuanxu/ops/process-script ProcessScript.)
         (only-in "control-plane/signatures.ss" Fun String validate)
         (only-in "types.ss" JobResultContract)
         ;; This role publishes these combinators, not the aggregate control

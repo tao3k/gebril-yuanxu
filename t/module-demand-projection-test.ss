@@ -1,14 +1,14 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test (except-in :clan/poo/object .def .o)
-        :yuanxu/object-syntax/path-slots
+        :tao3k/yuanxu/object-syntax/path-slots
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-checkpoint)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-checkpoint)
         (only-in "./qualification/module-demand/fixture.ss" ProjectionFixture scope-context project-metadata)
-        (only-in :yuanxu/module-system/source/selection select-module-graph)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+        (only-in :tao3k/yuanxu/module-system/source/selection select-module-graph)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  admit-module-publication! module-source-admit-current!)
-        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
+        (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
         (only-in :clan/poo/slot-observation
                  call-with-slot-read-observer slot-read-receiver slot-read-key))
 (export module-demand-projection-test)

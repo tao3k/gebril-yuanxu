@@ -4,33 +4,33 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import (only-in :clan/poo/mop TypeError?))
-(import (only-in :yuanxu/modules/funflow/control-plane/signatures
+(import (only-in :tao3k/yuanxu/modules/funflow/control-plane/signatures
                  Fun Any Number Integer String Symbol List Pair Null Unit)
-        (only-in :yuanxu/modules/funflow/control-plane/flow flow-output-contract)
-        (only-in :yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/flow flow-output-contract)
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
 ;;; Boundary: Kleisli tests cover value-dependent Functional + Agentic AI Lab binding.
 ;;; Invariant: binders return ordinary flow declarations; runner owns execution.
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  check-exception
                  check-equal?
                  test-suite)
         "../modules/funflow/control-plane/flow-syntax.ss"
-        :yuanxu/modules/funflow/control-plane/flow
-        :yuanxu/modules/funflow/control-plane/flow-strand
-        :yuanxu/modules/funflow/control-plane/failure
-        :yuanxu/modules/funflow/control-plane/strategy
-        :yuanxu/modules/funflow/control-plane/runtime-adapter
-        :yuanxu/modules/funflow/control-plane/runtime-protocol
-        :yuanxu/modules/funflow/control-plane/runner
-        :yuanxu/modules/funflow/control-plane/config
-        :yuanxu/modules/funflow/control-plane/graph
-        :yuanxu/modules/funflow/control-plane/roles
-        :yuanxu/modules/funflow/control-plane/policy
-        :yuanxu/modules/funflow/control-plane/replay
-        :yuanxu/modules/funflow/control-plane/receipt
-        :yuanxu/modules/funflow/control-plane/task)
+        :tao3k/yuanxu/modules/funflow/control-plane/flow
+        :tao3k/yuanxu/modules/funflow/control-plane/flow-strand
+        :tao3k/yuanxu/modules/funflow/control-plane/failure
+        :tao3k/yuanxu/modules/funflow/control-plane/strategy
+        :tao3k/yuanxu/modules/funflow/control-plane/runtime-adapter
+        :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol
+        :tao3k/yuanxu/modules/funflow/control-plane/runner
+        :tao3k/yuanxu/modules/funflow/control-plane/config
+        :tao3k/yuanxu/modules/funflow/control-plane/graph
+        :tao3k/yuanxu/modules/funflow/control-plane/roles
+        :tao3k/yuanxu/modules/funflow/control-plane/policy
+        :tao3k/yuanxu/modules/funflow/control-plane/replay
+        :tao3k/yuanxu/modules/funflow/control-plane/receipt
+        :tao3k/yuanxu/modules/funflow/control-plane/task)
 
 (export functional-flow-kleisli-test)
 

@@ -6,8 +6,8 @@
 ;;; Invariant: model objects remain inert values; resolution and runtime effects live elsewhere.
 (import (only-in :std/list/list map)
         (runtime: :clan/poo/object)
-        :yuanxu/composition/roles
-        :yuanxu/utilities/functional)
+        :tao3k/yuanxu/composition/roles
+        :tao3k/yuanxu/utilities/functional)
 
 (export feature-descriptor-base
         feature-spec-compose

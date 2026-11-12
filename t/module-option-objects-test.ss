@@ -8,10 +8,10 @@
         (only-in :clan/poo/object .o .def .ref .cc object?)
         (only-in :clan/poo/type Record String)
         (only-in :clan/poo/mop Bool make-instance element? TypeError?)
-        :yuanxu/observability/testing-case
-        (only-in :yuanxu/module-system/config yuanxu-module-interface-schema-index)
-        :yuanxu/module-system/projection/option-objects
-        :yuanxu/module-system/projection/option-validation)
+        :tao3k/yuanxu/observability/testing-case
+        (only-in :tao3k/yuanxu/module-system/config yuanxu-module-interface-schema-index)
+        :tao3k/yuanxu/module-system/projection/option-objects
+        :tao3k/yuanxu/module-system/projection/option-validation)
 
 (export module-option-objects-test)
 

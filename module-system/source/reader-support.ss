@@ -5,11 +5,11 @@
 (import (only-in :clan/poo/object object-construction-current?
                  call-with-current-slot-reads replay-slot-reads!)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!)
-        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
-        (only-in :yuanxu/module-system/source/preparation module-compiler-source-input-compatible?)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :tao3k/yuanxu/module-system/source/preparation module-compiler-source-input-compatible?)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  module-source-measure-operation module-source-measure-replay)
-        (only-in :yuanxu/module-system/source/reader-evaluation observe-reader-work))
+        (only-in :tao3k/yuanxu/module-system/source/reader-evaluation observe-reader-work))
 (export (struct-out source-preparation)
         capture-source-preparation source-preparation-current? source-observation-rows
         publication-read-current require-publication-policy! publication-metadata-entry

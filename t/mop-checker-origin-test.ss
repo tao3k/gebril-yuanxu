@@ -8,10 +8,10 @@
         (only-in :clan/poo/mop make-slot-read slot-read-receiver slot-read-key
                  slot-read-revision slot-read-instance slot-read-value
                  slot-read-dependencies replay-slot-reads! %deliver-slot-read)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator)
-        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/configuration/diagnostics config-diagnostic-locator)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read)
         (only-in "./qualification/testing/directory.ss" write-source)
         (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture)
         (only-in "qualification/mop-state/closed-tail" probe)

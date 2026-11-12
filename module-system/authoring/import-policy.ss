@@ -7,7 +7,7 @@
 ;;; Invariant: this owner reads datums only; it never expands or evaluates them.
 
 (import (runtime: :clan/poo/object)
-        (only-in :yuanxu/utilities/algorithms
+        (only-in :tao3k/yuanxu/utilities/algorithms
                  yuanxu-read-datums/append-map
                  yuanxu-scheme-datum-find))
 

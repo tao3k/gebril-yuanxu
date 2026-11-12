@@ -7,8 +7,8 @@
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :gerbil/runtime/loader load-path set-load-path!)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
-        (only-in :yuanxu/module-system/source/admission module-source-type)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules))
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-type)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules))
 (export write-file remove-tree with-publication-source publication-feature-view
         domain-entry-count gerbil-import-value exception-message PublicLibraryFixture core-source-root)
 (def core-source-root (path-expand "../../.." (path-directory (this-source-file))))

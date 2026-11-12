@@ -10,12 +10,12 @@
                  current-expander-module-import core-import-module core-module->prelude-context
                  module-context-export module-export-name)
         (only-in :clan/poo/io module-action)
-        (only-in :yuanxu/module-system/source/compiled-role compiled-role-values)
+        (only-in :tao3k/yuanxu/module-system/source/compiled-role compiled-role-values)
         (only-in :std/list/list delete-duplicates/hash append-map)
-        (rename-in (only-in :yuanxu/module-system/source/declaration .def)
+        (rename-in (only-in :tao3k/yuanxu/module-system/source/declaration .def)
                    (.def publication-.def))
         (for-syntax :gerbil/expander (only-in :std/list/list append-map)
-                    (only-in :yuanxu/module-system/source/observations
+                    (only-in :tao3k/yuanxu/module-system/source/observations
                              module-source-measure-operation)))
 (export module-deferred-role-exports include-deferred-declaration module-role-values
         current-module-role-resolver module-entry-action module-binding-action deferred-role-values

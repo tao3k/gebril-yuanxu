@@ -7,13 +7,13 @@
 ;;; Invariant: graph objects describe topology; they never schedule or run it.
 
 (import (runtime: :clan/poo/object)
-        (only-in :yuanxu/module-system/schema/slot-contracts
+        (only-in :tao3k/yuanxu/module-system/schema/slot-contracts
                  yuanxu-contract-slot
                  yuanxu-contract-value-type
                  yuanxu-object-contract
                  yuanxu-object-contract->alist))
 
-(import :yuanxu/graph/types-core)
+(import :tao3k/yuanxu/graph/types-core)
 
 (export #t)
 

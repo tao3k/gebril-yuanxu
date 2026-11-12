@@ -6,7 +6,7 @@
         (only-in :clan/poo/object .get .call)
         (only-in :std/source this-source-file)
         (only-in :gerbil/expander core-import-module expander-context-id core-read-module/sexp)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in "./qualification/module-testing/fixtures.ss" selection-fixture))
 (export module-build-dependency-qualification-test test-setup! test-cleanup!)
 (def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
@@ -18,7 +18,7 @@
 (def module-build-dependency-qualification-test
   (test-suite "Prepared public dependencies remain separate from Core"
     (test-case "the actual compiler closure resolves to prepared POO units"
-      (def context (core-import-module ':yuanxu/module-system/building/build-projection))
+      (def context (core-import-module ':tao3k/yuanxu/module-system/building/build-projection))
       (def state (.get resource state))
       (def seen (make-hash-table-eq))
       (for-each-build-module context
@@ -34,5 +34,5 @@
           (let-values (((_prelude actual _namespace _body) (core-read-module/sexp path)))
             (check-equal? actual id))) seen)
       ;; This is readiness, not another partial gerbil-poo build or ABI proof.
-      (check-equal? (file-exists? (path-expand "lib/yuanxu" state)) #f)
+      (check-equal? (file-exists? (path-expand "lib/tao3k/yuanxu" state)) #f)
       (check-equal? (file-exists? (path-expand "lib/tao3k/yuanxu" state)) #f))))

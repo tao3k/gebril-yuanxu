@@ -4,10 +4,10 @@
 ;;; Bounded authoring syntax. The runtime object kernel keeps literal slot names.
 (import (prefix-in (only-in :clan/poo/object .o .def .o/ctx) runtime-)
         (prefix-in (only-in :clan/poo/brace @method) runtime-)
-        (only-in :yuanxu/profile-composition/selection-syntax use-module)
-        (only-in :yuanxu/configuration/slot-origin source-object-slots)
+        (only-in :tao3k/yuanxu/profile-composition/selection-syntax use-module)
+        (only-in :tao3k/yuanxu/configuration/slot-origin source-object-slots)
         (for-syntax :gerbil/expander
-                    :yuanxu/profile-composition/scope-declaration))
+                    :tao3k/yuanxu/profile-composition/scope-declaration))
 (export .def .o @method)
 
 (begin-syntax

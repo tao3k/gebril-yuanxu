@@ -3,13 +3,13 @@
 (import :std/test :clan/poo/object
         ;; Establish the real execution library before taking the reader's
         ;; immutable compiler-context snapshot. Importing does not execute it.
-        (only-in :yuanxu/observability/testing-script TestingScript.)
-        (only-in :yuanxu/admission/source SourceAdmissionContract.)
-        (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/observability/testing-script TestingScript.)
+        (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :tao3k/yuanxu/configuration/diagnostics config-diagnostic-locator)
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  current-module-source-observer current-module-source-phase module-source-read)
-        (only-in :yuanxu/t/qualification/mop-state/closed-tail probe on-file refuses)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/t/qualification/mop-state/closed-tail probe on-file refuses)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture))
 (export source-admission-gateway-test test-cleanup!)

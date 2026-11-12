@@ -1,11 +1,11 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :std/test test-suite check-equal?)
-        :yuanxu/graph/interface
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/source/projection)
+        :tao3k/yuanxu/graph/interface
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/source/projection)
 (export graph-source-projection-test)
 (def graph-source-projection-test
   (test-suite "SourceRef projection uses the unified Graph"

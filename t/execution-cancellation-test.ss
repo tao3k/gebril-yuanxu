@@ -6,9 +6,9 @@
         (only-in :std/os/pid getpid)
         (only-in :std/os/signal kill SIGTERM)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :yuanxu/ops/process-script ProcessScript.)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture))
+        (only-in :tao3k/yuanxu/ops/process-script ProcessScript.)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-fixture with-yuanxu-fixture))
 (export execution-cancellation-test)
 
 (def execution-cancellation-test

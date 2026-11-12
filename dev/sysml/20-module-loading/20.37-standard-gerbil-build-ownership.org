@@ -53,22 +53,19 @@ Migrated consumers and refusal controls still require complete qualification.
 
 All raw transcripts stay in ignored local cache storage.
 
-* Standard Make qualification still required
+* One native package identity
 
-The locked Gerbil toolchain's direct hot build recompiles =prelude=: its
-predicted outputs use the directory package prefix while that source declares
-a different native compiler identity. A successful build does not close that
-incrementality gap. Keep the original header-identity, no-op, cleanup and
-unselected-output controls. The correction belongs to Gerbil's =std/make=;
-do not restore a Yuanxu macro, output alias or custom artifact cleanup layer.
-The current toolchain remains pinned, and no uncommitted producer patch is
-adopted as downstream evidence.
+The implementation and the public =:tao3k/yuanxu/prelude= share the
+=tao3k/yuanxu= package prefix. This is a package declaration, so
+Gerbil can derive the same identity from the original source and its Make
+target. The root build uses the same native =defbuild-script= and one
+ordinary Make list. Independent consumers can choose the prelude or
+import =yuanxu!= from the declaration module.
 
-The unchanged complete source-bootstrap test confirms this failure after the
-standard-entry migration: spec returned in 11.050 seconds, cold compilation in
-30.195 seconds, and the supposed no-op compiled the Prelude again and took
-17.723 seconds. The original no-compile assertion rejected it. This is a failed
-incrementality check, not a qualified speedup or a reason to remove that check.
+The former mixed-prefix build predicted a different prelude output than
+the compiler emitted, causing a supposed no-op to compile it again.
+Keep the original cold, no-op, cleanup and unselected-output checks,
+including the actual compiled interface's native identity.
 
 The real program test passed through both the official package build and the
 explicit POO issuer. It rejects the first unissued program, accepts the scoped

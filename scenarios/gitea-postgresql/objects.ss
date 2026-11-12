@@ -1,6 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/object .get .o .cc)
-        (only-in :yuanxu/configuration/json config-defaults))
+        (only-in :tao3k/yuanxu/configuration/json config-defaults))
 (export application-scope)
 (def (application-scope database client defaults)
   (.o Scenario: ((.get client application)

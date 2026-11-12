@@ -3,13 +3,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import (only-in :std/list/list map)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :yuanxu/composition/roles
-        :yuanxu/module-system/feature/interface
-        :yuanxu/module-system/feature/domain-case/interface
-        :yuanxu/utilities/functional)
+        :tao3k/yuanxu/composition/roles
+        :tao3k/yuanxu/module-system/feature/interface
+        :tao3k/yuanxu/module-system/feature/domain-case/interface
+        :tao3k/yuanxu/utilities/functional)
 
 (export feature-adapter-projection-binding-test)
 
@@ -76,13 +76,13 @@
 
 (defpoo-feature-adapter-capability python-runtime-capability
   (capability-id 'python-runtime-v1)
-  (provider-module-id 'yuanxu/python-runtime)
+  (provider-module-id 'tao3k/yuanxu/python-runtime)
   (contract-id 'yuanxu.runtime-c)
   (contract-version 1))
 
 (defpoo-feature-adapter-capability cedar-policy-capability
   (capability-id 'cedar-policy-v1)
-  (provider-module-id 'yuanxu/cedar-adapter)
+  (provider-module-id 'tao3k/yuanxu/cedar-adapter)
   (contract-id 'yuanxu.cedar-policy)
   (contract-version 1))
 
@@ -388,7 +388,7 @@
         (check (map
                 (lambda (binding) (.ref binding 'provider-module-id))
                 adapter-bindings)
-               => '(yuanxu/python-runtime yuanxu/cedar-adapter))
+               => '(tao3k/yuanxu/python-runtime tao3k/yuanxu/cedar-adapter))
         (check (length projection-bindings) => 2)
         (check (eq? (.ref (car projection-bindings) 'projection)
                     adapter-projection-runtime-projection)

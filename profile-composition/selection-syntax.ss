@@ -6,9 +6,9 @@
 ;;; Hygienic bounded runtime scopes and indexed Core Module Profile selection.
 
 (import (runtime: :clan/poo/object)
-        (only-in :yuanxu/profile-composition/profile-bundle
+        (only-in :tao3k/yuanxu/profile-composition/profile-bundle
                  yuanxu-select-module-profiles)
-        (only-in :yuanxu/profile-composition/bindings yuanxu-module-scope)
+        (only-in :tao3k/yuanxu/profile-composition/bindings yuanxu-module-scope)
         (for-syntax "scope-declaration.ss"))
 
 (export use-module)

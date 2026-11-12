@@ -129,7 +129,7 @@ prelude: :gerbil/core
       (cond
        ((owned-source? bound-source) bound-source)
        ((let (properties (core-library-package-plist package-root))
-          (and (eq? (pgetq package: properties) 'yuanxu)
+          (and (eq? (pgetq package: properties) 'tao3k/yuanxu)
                (eq? (pgetq prelude: properties) library)))
         (path-expand yuanxu-language-file package-root))
        (else

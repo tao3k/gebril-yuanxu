@@ -9,11 +9,11 @@
         (only-in :clan/poo/type Record String)
         (only-in :clan/poo/object-contract checked-action)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        :yuanxu/module-system/schema/slot-contracts
-        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-contract-admit yuanxu-value-admit
+        :tao3k/yuanxu/module-system/schema/slot-contracts
+        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-contract-admit yuanxu-value-admit
                  yuanxu-validation-evidence-accepted?)
-        (only-in :yuanxu/ops/func validate-script preview-script)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/ops/func validate-script preview-script)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export contract-function-composition-test)
 
 (def Callback (Function (list Integer) (list Integer)))

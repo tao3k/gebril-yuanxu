@@ -5,8 +5,8 @@
 
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .all-slots .def .get .o)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/observability/slot-presentation
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/slot-presentation
                  yuanxu-slot-view
                  yuanxu-slot-presentation))
 
@@ -20,10 +20,10 @@
 
 (def sources
   (.o refined: (.o prototype: RefinedValue
-                   source-path: "yuanxu/t/slot-presentation-test.ss"
+                   source-path: "tao3k/yuanxu/t/slot-presentation-test.ss"
                    source-line: 17)
       root: (.o prototype: RootValue
-                source-path: "yuanxu/t/slot-presentation-test.ss"
+                source-path: "tao3k/yuanxu/t/slot-presentation-test.ss"
                 source-line: 14)))
 
 (def slot-presentation-test
@@ -44,7 +44,7 @@
          '(super-aware default))
         (check-equal?
          (.get (car (.get view declaration-sources)) source-path)
-         "yuanxu/t/slot-presentation-test.ss")))
+         "tao3k/yuanxu/t/slot-presentation-test.ss")))
 
     (yuanxu-test-case "missing provenance and unknown disclosure fail closed"
       (check-exception

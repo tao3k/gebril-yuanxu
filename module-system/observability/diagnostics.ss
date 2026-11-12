@@ -6,7 +6,7 @@
 ;;; Source-neutral Module diagnostic and DoctorReport POO values. Product
 ;;; owners decide which facts are findings and how to present them.
 
-(import (only-in :yuanxu/object-family/syntax defpoo-object-family)
+(import (only-in :tao3k/yuanxu/object-family/syntax defpoo-object-family)
         (only-in :std/list/list any))
 
 (export yuanxu-module-diagnostic-prototype

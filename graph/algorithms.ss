@@ -14,7 +14,7 @@
                  make-Queue
                  queue-empty?)
         (only-in :std/list/list filter)
-        :yuanxu/graph/types-core)
+        :tao3k/yuanxu/graph/types-core)
 
 (export yuanxu-graph-node-ids
         yuanxu-graph-edge-pairs
@@ -34,7 +34,7 @@
         yuanxu-graph-analysis-receipt
         yuanxu-graph-loop-analysis-receipt)
 
-(import :yuanxu/graph/algorithms-list-support)
+(import :tao3k/yuanxu/graph/algorithms-list-support)
 
 (def (ids->adjacency-map ids index)
   (map (lambda (id)

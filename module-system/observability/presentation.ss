@@ -8,12 +8,12 @@
 ;;; Intent: make recursive presentation paths visible without participating in them.
 
 (import
-        (only-in :yuanxu/utilities/algorithms
+        (only-in :tao3k/yuanxu/utilities/algorithms
                  yuanxu-read-datums/append-map
                  yuanxu-scheme-datum-find)
-        (only-in :yuanxu/object-family/syntax
+        (only-in :tao3k/yuanxu/object-family/syntax
                  defpoo-object-family)
-        :yuanxu/utilities/final-projection-syntax)
+        :tao3k/yuanxu/utilities/final-projection-syntax)
 
 (export yuanxu-module-observation-kind
         yuanxu-module-observation-prototype

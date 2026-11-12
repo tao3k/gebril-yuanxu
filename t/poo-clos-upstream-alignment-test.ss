@@ -4,7 +4,7 @@
 
 ;;; Public upstream controls, kept distinct from Core's CLOS calling grammar.
 (import (only-in :std/test test-suite check check-equal? check-exception)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/object .o .get .ref)
         (only-in :clan/poo/declaration .declare declaration-forms object<-declaration-forms)
         (only-in :clan/poo/mop .defgeneric Any)

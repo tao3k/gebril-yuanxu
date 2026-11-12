@@ -20,5 +20,5 @@
         yuanxu-json-schema-object-node->object-type-contract
         yuanxu-json-schema-node->object-type-contract)
 
-(import :yuanxu/modules/json-schema/json-schema-emit-runtime
-        :yuanxu/modules/json-schema/json-schema-emit-contracts)
+(import :tao3k/yuanxu/modules/json-schema/json-schema-emit-runtime
+        :tao3k/yuanxu/modules/json-schema/json-schema-emit-contracts)

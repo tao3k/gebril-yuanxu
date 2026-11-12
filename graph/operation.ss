@@ -11,8 +11,8 @@
 (import (runtime: :gerbil/core) (only-in :gerbil/core object? make-object)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/mop .defgeneric)
-        :yuanxu/graph/contribution
-        :yuanxu/graph/payload-operations)
+        :tao3k/yuanxu/graph/contribution
+        :tao3k/yuanxu/graph/payload-operations)
 
 (export yuanxu-graph-operation-prototype
         yuanxu-graph-slot-override-prototype

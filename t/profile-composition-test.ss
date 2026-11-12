@@ -5,8 +5,8 @@
 
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .ref)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        :yuanxu/profile-composition/profile-bundle)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        :tao3k/yuanxu/profile-composition/profile-bundle)
 
 (export profile-composition-test)
 

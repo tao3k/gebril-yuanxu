@@ -8,17 +8,17 @@
                  slot-read-receiver slot-read-key slot-read-dependencies)
         (only-in :std/error Error? Error-message)
         (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file)
-        (only-in :yuanxu/module-system/authoring/roles make-default-module-authoring-profile)
-        (only-in :yuanxu/module-system/source/reader module-publication-reader)
-        (only-in :yuanxu/module-system/source/admission module-source-read)
-        (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/types ModuleSourceRoleContract)
-        (only-in :yuanxu/object-family/read-projection
+        (only-in :tao3k/yuanxu/module-system/authoring/roles make-default-module-authoring-profile)
+        (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read)
+        (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/types ModuleSourceRoleContract)
+        (only-in :tao3k/yuanxu/object-family/read-projection
                  call-with-owned-read-projection current-owned-read-open-guard)
-        (only-in :yuanxu/object-types/contracts
+        (only-in :tao3k/yuanxu/object-types/contracts
                  yuanxu-classification-evidence yuanxu-validation-evidence)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-reader-effect-support-test)
 (def (find-issued-read roots matches?)
   (def seen (make-hash-table-eq))

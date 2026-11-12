@@ -7,19 +7,42 @@
         (only-in :std/error Error? Error-message)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :std/os/pid getpid)
-        (only-in :yuanxu/module-system/source/observations call-with-module-source-operation-measurement)
+        (only-in :tao3k/yuanxu/module-system/source/observations call-with-module-source-operation-measurement)
         (only-in :gerbil/expander core-import-module)
-        (only-in :yuanxu/module-system/building/source-package call-with-build-input-path)
-        (only-in :yuanxu/ops/progress call-with-execution-watchdog)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint)
-        (only-in :yuanxu/ops/process-script ProcessScript.)
-        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path)
+        (only-in :tao3k/yuanxu/ops/progress call-with-execution-watchdog current-execution-progress)
+        (only-in :tao3k/yuanxu/observability/testing-script make-compiler-progress-reader)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint)
+        (only-in :tao3k/yuanxu/ops/process-script ProcessScript.)
+        (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         "./qualification/module-init/fixture.ss")
 (export module-program-test build-script-options-test)
 (def (put root name text)
   (def path (path-expand name root))
   (create-directory* (path-directory path))
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
+(def (with-compiler-progress action)
+  (defvalues (reader writer) (open-string-pipe '(direction: input)))
+  (def output (current-output-port))
+  (def progress (current-execution-progress))
+  (def receive (make-compiler-progress-reader))
+  (def drain
+    (make-thread
+      (lambda ()
+        (parameterize ((current-execution-progress progress))
+          (let loop ((line (read-line reader #\newline #t)))
+            (unless (eof-object? line)
+              (receive line)
+              (display line output)
+              (force-output output)
+              (loop (read-line reader #\newline #t))))))))
+  (thread-start! drain)
+  (dynamic-wind void
+    (lambda () (parameterize ((current-output-port writer)) (action)))
+    (lambda ()
+      (close-output-port writer)
+      (dynamic-wind void (lambda () (thread-join! drain))
+        (lambda () (close-input-port reader))))))
 (def (demand root)
   (.call (prepared-package-tests root) .for-files
     (list (path-expand "probe.ss" root)) '()
@@ -66,7 +89,7 @@
       (def entry-pids (path-expand "entry-pids" root))
       (put root "rootlib.ss" "(def base 41) (export base)")
       (put root "init.ss"
-        (string-append "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit "
+        (string-append "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit "
           (string-join (map (lambda (name) (string-append "(" name ")")) modules) " ")
           " (poison disable: #t))"))
       (put root "modules/poison/interface.ss" "((unselected-source-must-not-be-expanded")
@@ -87,7 +110,7 @@
           (put root (string-append directory "build.ss")
             (string-append "(def Build '((exe: \"command\" bin: \"" name "-tool\")))"))
           (put root (string-append directory "interface.ss")
-            (string-append "(import (only-in :clan/poo/object .o) (only-in :yuanxu/module-system/source/declaration .def)) (.def Publication identity: '" name
+            (string-append "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Publication identity: '" name
               " core: (.o requires: (.o) scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))"))) modules)
       (def expected
         (append '("rootlib")
@@ -259,7 +282,7 @@
           (def scope-marker (path-expand "scope-evaluations" prefix))
           (put root "gerbil.pkg" "(package: module-build-program)\n")
           (put root "init.ss"
-            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
           (put root "modules/example/types.ss"
             "(import :clan/poo/object (only-in :clan/poo/mop Type.)) (def Scope (.cc Type. identity: 'program/scope .element?: object?)) (export Scope)")
           (put root "modules/example/objects.ss"
@@ -273,7 +296,7 @@
               (object->string build-marker)
               " append: #t) (lambda (out) (display \"x\" out))) '((exe: \"command\" bin: \"module-program\"))))"))
           (put root "modules/example/interface.ss"
-            "(import (only-in :clan/poo/object .o) (only-in :yuanxu/module-system/source/declaration .def)) (.def Example identity: 'example core: (.o requires: (.o) scope-contract: Scope exports: Config projections: (list Build)) features: (.o))")
+            "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Example identity: 'example core: (.o requires: (.o) scope-contract: Scope exports: Config projections: (list Build)) features: (.o))")
           (put root "modules/example/command.ss"
             "(import :clan/poo/object (only-in \"../../init.ss\" module-build-program.init.exports)) (export main) (def (main . args) (displayln \"MODULE-PROGRAM-OK \" (list (.get module-build-program.init.exports modules example value) (.get module-build-program.init.exports modules example value))))")
           (call-with-output-file
@@ -282,7 +305,7 @@
               "#!/usr/bin/env gxi\n(import (only-in :std/source this-source-file) (only-in :clan/poo/object .get) (only-in :std/build-script defbuild-script) (only-in \"./init.ss\" module-build-program.init.exports)) (defbuild-script (.get module-build-program.init.exports std-make-spec))" <>))
           ;; The same official package entry consumes the collected standard value.
           (def run (import-build-script! (path-expand "build.ss" root)))
-          (run "compile")
+          (with-compiler-progress (cut run "compile"))
           (check-equal? (call-with-input-file build-marker read-all-as-string) "x")
           (check-equal? (file-exists? scope-marker) #f)
           (def binary (path-expand "bin/module-program" prefix))
@@ -304,7 +327,7 @@
         (lambda (root)
           (put root "gerbil.pkg" "(package: build-library-fixture)\n")
           (put root "init.ss"
-            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
           (def source "(export answer) (def answer 42)\n")
           (put root "probe.ss" source)
           (put root "unrelated.ss" "(export spare) (def spare #t)\n")
@@ -328,7 +351,7 @@
         (lambda (root)
           (put root "gerbil.pkg" "(package: cached-build-consumer)\n")
           (put root "init.ss"
-            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
           (def manifest "(package: cached-build-foreign)\n")
           (put root "foreign/gerbil.pkg" manifest)
           (put root "foreign/sub/helper.ss" "(export answer) (def answer 42)\n")
@@ -371,12 +394,12 @@
           ;; never a package boundary below the repository's test directory.
           (put root "gerbil.pkg" "(package: program-fixture)\n")
           (put root "init.ss"
-            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
           (def source
             (string-append
               "(import (only-in :clan/poo/object .o .get))\n"
               "(import (only-in :std/func repeat) (for-template :std/func)\n"
-              " (only-in :yuanxu/module-system/source/compiled-role compiled-role-values))\n"
+              " (only-in :tao3k/yuanxu/module-system/source/compiled-role compiled-role-values))\n"
               "(export main) (def (main . args) "
               "(def role (compiled-role-values 'std/func '(repeat))) "
               "(displayln \"COMPILED-ROLE-OK \" ((.get role repeat) (lambda () 42) 1)) "
@@ -390,7 +413,7 @@
                 '((import :clan/poo/object
                     (only-in :std/source this-source-file)
                     (only-in :std/build-script defbuild-script)
-                    (only-in :yuanxu/module-system/building/products current-build-output-directory)
+                    (only-in :tao3k/yuanxu/module-system/building/products current-build-output-directory)
                     (only-in "./init.ss" program-fixture.init.exports))
                   (export main)
                   (def root (path-directory (this-source-file)))
@@ -425,7 +448,7 @@
           (check-exception ((.get pending admit-current)) error?)
           (check-exception (.call pending .program 'program-fixture/probe) error?)
           (def run (import-build-script! (path-expand "build.ss" root)))
-          (run "compile")
+          (with-compiler-progress (cut run "compile"))
           (yuanxu-test-checkpoint 'official-program-build-completed)
           (def build (.get (demand root) build))
           ;; Standard Gerbil compile is deliberately not publication authority.
@@ -442,7 +465,7 @@
                   (.call build .with-static-inputs
                     (lambda ()
                       (call-with-execution-watchdog 60000 120000
-                        (lambda () (package-main "compile"))))))
+                        (lambda () (with-compiler-progress (cut package-main "compile")))))))
                 make-source: root)))
           (def binary (.call build .program 'program-fixture/probe))
           (check-equal? (string-prefix? (path-expand "test-lib/" (path-normalize prefix))

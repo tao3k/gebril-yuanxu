@@ -2,14 +2,14 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence)
-        (only-in :yuanxu/admission/source SourceAdmissionContract.)
-        (only-in :yuanxu/configuration/diagnostics config-diagnostic-locator)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :tao3k/yuanxu/configuration/diagnostics config-diagnostic-locator)
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  call-with-module-source-read-cache module-source-read module-source-admit-current!)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export source-admission-test test-cleanup!)
 
 ;; Test-only instrumentation below the adapter in the runtime method chain.

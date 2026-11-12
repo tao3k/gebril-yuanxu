@@ -4,7 +4,7 @@
         (only-in :clan/poo/slot-observation call-with-slot-read-observer slot-read-key)
         (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.)
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export mop-replay-write-guard-test test-cleanup!)
 (def completed 0)
 (def (reads-of receiver key)

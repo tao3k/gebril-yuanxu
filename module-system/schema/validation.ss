@@ -9,7 +9,7 @@
 (import (runtime: :gerbil/core) (only-in :gerbil/core make-object)
         (runtime: :clan/poo/object)
         (only-in :std/list/list foldl)
-        :yuanxu/module-system/schema/interface)
+        :tao3k/yuanxu/module-system/schema/interface)
 
 (export yuanxu-module-object-validation-kind
         yuanxu-module-object-validation-schema

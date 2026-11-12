@@ -3,11 +3,11 @@
         (only-in :clan/poo/mop Type. NoApplicableMethod?)
         (only-in :clan/poo/object-contract ObjectContract. diagnose)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :yuanxu/module-system/source/directory module-directory-context)
-        (only-in :yuanxu/module-system/source/admission call-with-module-source-operation-measurement)
-        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-generated-source
+        (only-in :tao3k/yuanxu/module-system/source/directory module-directory-context)
+        (only-in :tao3k/yuanxu/module-system/source/admission call-with-module-source-operation-measurement)
+        (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-generated-source
                  yuanxu-module-source-ref-value)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules module-namespace-project))
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules module-namespace-project))
 (export namespace-projection-test)
 (def ObjectScope (.cc Type. identity: 'namespace/scope .element?: object?))
 (def (write-source path text)

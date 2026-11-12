@@ -3,9 +3,9 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error?)
         (only-in :std/db/interface sql-error?)
-        (only-in :yuanxu/ops/objects ProcessScript.)
-        (only-in :yuanxu/ops/func run-script)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/ops/objects ProcessScript.)
+        (only-in :tao3k/yuanxu/ops/func run-script)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture)
         "./qualification/build-publication/persistent-head")
 (export persistent-head-store-test)

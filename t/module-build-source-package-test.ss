@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :clan/poo/object .get .call .cc)
         (only-in :std/source this-source-file)
         (only-in "./qualification/module-testing/fixtures.ss" selection-fixture)
@@ -30,7 +30,7 @@
     (test-suite "Build-owned source package registration"
       (test-case "wrong package refuses registration without changing search order"
         (check-equal? (.get resource cold) #t)
-        (check-equal? (file-exists? (path-expand "lib/yuanxu" (.get resource state))) #f)
+        (check-equal? (file-exists? (path-expand "lib/tao3k/yuanxu" (.get resource state))) #f)
         (parameterize ((current-expander-context (make-top-context)))
           (eval-syntax '(import :gerbil/core))
           (eval-syntax '(import (only-in :clan/poo/object .get .cc)))
@@ -42,7 +42,7 @@
             (lambda (foreign)
               (write-source (path-expand "gerbil.pkg" foreign) "(package: foreign)\n")
               (def before (load-path))
-              (check-exception (register! foreign 'yuanxu) error?)
+              (check-exception (register! foreign 'tao3k/yuanxu) error?)
               (check-equal? (load-path) before)))))
       (test-case "build registration precedes init imports and guards tool drift"
         (parameterize ((current-expander-context (make-top-context)))
@@ -51,10 +51,10 @@
           (eval-syntax `(import
                          (only-in ,(path-expand "module-system/building/source-package.ss" root)
                                   register-module-build-source!)))
-          ((eval-syntax 'register-module-build-source!) root 'yuanxu)
+          ((eval-syntax 'register-module-build-source!) root 'tao3k/yuanxu)
           (eval-syntax `(import
-                         (only-in ,(path-expand "init.ss" root) yuanxu.init.exports )))
-          (check-equal? (core-resolve-library-module-path ':yuanxu/object-family/syntax)
+                         (only-in ,(path-expand "init.ss" root) tao3k/yuanxu.init.exports )))
+          (check-equal? (core-resolve-library-module-path ':tao3k/yuanxu/object-family/syntax)
                         (path-normalize (path-expand "object-family/syntax.ss" root)))
           ;; The Core package prefix must not capture public dependency imports.
           (check-equal? (string-prefix? (path-normalize root)

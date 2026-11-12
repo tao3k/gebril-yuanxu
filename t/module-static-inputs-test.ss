@@ -6,10 +6,10 @@
         (only-in :gerbil/expander make-module-context)
         (only-in :clan/poo/object .o .get)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/building/artifacts call-with-static-compiler-inputs)
-        (only-in :yuanxu/module-system/source/static-inputs module-static-compiler-inputs)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/building/artifacts call-with-static-compiler-inputs)
+        (only-in :tao3k/yuanxu/module-system/source/static-inputs module-static-compiler-inputs)
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-read module-source-admit-current!))
 (export module-static-inputs-test)
 

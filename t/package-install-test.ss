@@ -1,14 +1,14 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in "../init.ss" yuanxu.init.exports)
+        (only-in "../init.ss" tao3k/yuanxu.init.exports)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-string read-all-as-u8vector)
         (only-in :std/crypto/digest sha256)
-        (only-in :yuanxu/module-system/building/products artifact-files)
-        (only-in :yuanxu/ops/interface Ops)
-        (only-in :yuanxu/ops/func run-script)
-        (only-in :yuanxu/ops/progress execution-progress!)
-        (only-in :yuanxu/observability/testing-script make-compiler-progress-reader TestingScript.))
+        (only-in :tao3k/yuanxu/module-system/building/products artifact-files)
+        (only-in :tao3k/yuanxu/ops/interface Ops)
+        (only-in :tao3k/yuanxu/ops/func run-script)
+        (only-in :tao3k/yuanxu/ops/progress execution-progress!)
+        (only-in :tao3k/yuanxu/observability/testing-script make-compiler-progress-reader TestingScript.))
 (export package-install-test)
 (def producer-id "qualification.invalid/haumea/producer")
 (def consumer-id "qualification.invalid/haumea/consumer")
@@ -33,7 +33,7 @@
 (def package-install-test
   (test-suite "Gerbil dependency install and selected owner compilation"
     (test-case "pinned thousand-owner checkout has no default owner compilation"
-      (def source (.get yuanxu.init.exports tests source))
+      (def source (.get tao3k/yuanxu.init.exports tests source))
       (def command-root (.get source source-root))
       (def inherited (string-join (load-path) ":"))
       (def build-cores (getenv "GERBIL_BUILD_CORES"))

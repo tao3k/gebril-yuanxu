@@ -5,7 +5,7 @@
         (only-in :gerbil/compiler/base module-id->path-string)
         (only-in :std/ffi C-ffi-macrology C-include def-C-type/pointer def-C-lambda)
         (only-in :clan/poo/object .o .get object-revision)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-admit-current!))
 (export module-static-compiler-inputs)
 

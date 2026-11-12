@@ -1,2 +1,2 @@
 (package: yuanxu-prelude-consumer
- prelude: :yuanxu/prelude)
+ prelude: :tao3k/yuanxu/prelude)

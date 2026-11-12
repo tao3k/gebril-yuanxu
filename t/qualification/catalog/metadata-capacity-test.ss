@@ -3,9 +3,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import :std/test
-        :yuanxu/module-system/catalog/metadata
+        :tao3k/yuanxu/module-system/catalog/metadata
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 
 (export metadata-capacity-test)
 

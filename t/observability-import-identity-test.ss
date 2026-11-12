@@ -3,8 +3,8 @@
 ;;; Import the factory before its public descriptor: source and compiled owners
 ;;; must not replace a prototype after the factory has retained that reference.
 (import :std/test :clan/poo/object
-        (only-in :yuanxu/observability/funcs yuanxu-debug-memory-policy)
-        (only-in :yuanxu/observability/types YuanxuDebugMemoryPolicyContract))
+        (only-in :tao3k/yuanxu/observability/funcs yuanxu-debug-memory-policy)
+        (only-in :tao3k/yuanxu/observability/types YuanxuDebugMemoryPolicyContract))
 (export observability-import-identity-test)
 (def observability-import-identity-test
   (test-suite "public descriptor and retained factory prototype identity"

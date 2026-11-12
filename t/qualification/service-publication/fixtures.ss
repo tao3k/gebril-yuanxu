@@ -9,13 +9,13 @@
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in "../testing/directory.ss" DirectoryFixture write-source)
         (only-in :std/test check-equal?)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-checkpoint)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-checkpoint)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context
                  read-syntax-from-file syntax->list)
-        (only-in :yuanxu/admission/publication AdmissionPublication.)
-        (only-in :yuanxu/module-system/source/link yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/admission module-source-read))
+        (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
+        (only-in :tao3k/yuanxu/module-system/source/link yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read))
 (export ServicesFixture RepositoryServicesFixture RelocatedServicesFixture
         relocate-services read-overrides refused current-service-source-root)
 
@@ -36,7 +36,7 @@
   (def root (.get workspace root))
   (write-source (path-expand "gerbil.pkg" root)
     (string-append "(package: " (symbol->string (gensym 'service-test-))
-      " prelude: :yuanxu/module-system/source/module-prelude)"))
+      " prelude: :tao3k/yuanxu/module-system/source/module-prelude)"))
   ;; Real maintained roles, isolated only for destructive source controls.
   (for-each
     (lambda (name ports)
@@ -123,7 +123,7 @@
 (def (read-overrides path (names '(release explicit)))
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))
-    (eval-syntax '(import :yuanxu/object-syntax/path-slots))
+    (eval-syntax '(import :tao3k/yuanxu/object-syntax/path-slots))
     (for-each eval-syntax (syntax->list (read-syntax-from-file path)))
     (apply values (map eval-syntax names))))
 (def (cause failure)

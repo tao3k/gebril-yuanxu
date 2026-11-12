@@ -7,7 +7,7 @@
 ;;; Invariant: expansion produces POO selection values only; source discovery,
 ;;; descriptor realization, and runtime effects stay behind loader boundaries.
 
-(import (only-in :yuanxu/module-system/selection/objects
+(import (only-in :tao3k/yuanxu/module-system/selection/objects
                  yuanxu-user-module-bundle
                  yuanxu-user-custom-modules-selection
                  yuanxu-user-module-selection))

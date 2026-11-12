@@ -7,8 +7,8 @@
         (only-in :clan/poo/object .o .ref .cc .get .mix)
         (only-in :clan/poo/type Record String)
         (only-in :clan/poo/mop validate)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        :yuanxu/module-system/config)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        :tao3k/yuanxu/module-system/config)
 
 (export module-interface-test)
 

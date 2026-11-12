@@ -3,10 +3,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Exercise the actual source-only root entry without a whole Core compile.
 (import :std/test
-        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :clan/poo/object .get .call .o)
         (only-in :clan/poo/mop validate)
-        (only-in :yuanxu/module-system/source/build BuildSpecContract)
+        (only-in :tao3k/yuanxu/module-system/source/build BuildSpecContract)
         (only-in :std/source this-source-file)
         (only-in "./qualification/module-testing/fixtures.ss" selection-fixture)
         (only-in :std/error Error? Error-message)
@@ -14,7 +14,7 @@
         (only-in :gerbil/expander eval-syntax current-expander-context
                  import-module)
         (only-in "./qualification/module-init/fixture.ss" import-fixture-init!)
-        (only-in :yuanxu/module-system/source/admission module-source-read))
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read))
 (export core-build-entry-test test-setup! test-cleanup!)
 (def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
 (def resource #f)
@@ -52,7 +52,7 @@
   (def core-build-entry-test
     (test-suite "Actual Core entry delegates to Module System Building"
       (test-case "cold source entry selects JsonSchema and rechecks input bytes"
-        (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)
+        (check-equal? (file-exists? (path-expand "lib/tao3k/yuanxu" (getenv "GERBIL_PATH"))) #f)
         (check-equal? (file-exists? (path-expand "bootstrap.ss" root)) #f)
         (defvalues (run package) (script-main (path-expand "build.ss" root)))
         (displayln "ROOT-ENTRY-READY") (force-output)
@@ -113,5 +113,5 @@
         ;; after restoration. It cannot be revived by restoring bytes.
         (check-equal? (rejects? "module scope session was refused"
                                (.get fresh-package admit-current)) #t)
-        (check-equal? (file-exists? (path-expand "lib/yuanxu" (getenv "GERBIL_PATH"))) #f)
+        (check-equal? (file-exists? (path-expand "lib/tao3k/yuanxu" (getenv "GERBIL_PATH"))) #f)
         (displayln "ROOT-ENTRY-SELECTED-TARGETS " (length spec)))))

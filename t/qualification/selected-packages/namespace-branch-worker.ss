@@ -2,9 +2,9 @@
 ;;; Metadata-only paired measurement; never reads or materializes publications.
 (import :clan/poo/object :std/encoding/json
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax)
-        (only-in :yuanxu/module-system/source/directory module-directory-context)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
-        (only-in :yuanxu/observability/memory yuanxu-debug-cpu-microseconds))
+        (only-in :tao3k/yuanxu/module-system/source/directory module-directory-context)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-cpu-microseconds))
 (def (record fields) (list->hash-table fields))
 (def (main root implementation repetitions)
   (def constructor

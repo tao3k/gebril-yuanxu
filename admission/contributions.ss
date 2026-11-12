@@ -4,9 +4,9 @@
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop .defgeneric validate)
         (only-in :std/list/list every append-map)
-        (only-in :yuanxu/module-system/source/publication ContributionRouteContract)
-        (only-in :yuanxu/object-types/contracts yuanxu-context-contract-obligations)
-        (only-in :yuanxu/module-system/source/admission call-with-module-source-read-cache))
+        (only-in :tao3k/yuanxu/module-system/source/publication ContributionRouteContract)
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-context-contract-obligations)
+        (only-in :tao3k/yuanxu/module-system/source/admission call-with-module-source-read-cache))
 (export bind-publication-contributions yuanxu-contract-contribution-obligations)
 
 ;; The domain owns interpretation; the platform owns completeness/provenance.

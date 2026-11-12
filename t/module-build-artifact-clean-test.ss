@@ -3,7 +3,7 @@
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/error Error?)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in "../module-system/building/artifacts.ss" clean-build-artifacts!))
 (export module-build-artifact-clean-test)
 (def (write-fixture path)

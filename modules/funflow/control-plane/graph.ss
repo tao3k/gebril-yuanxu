@@ -6,9 +6,9 @@
 ;;; Boundary: planning produces inspectable control-plane artifacts.
 ;;; Invariant: execution stays in the runner/runtime-adapter layer.
 
-(import :yuanxu/modules/funflow/control-plane/projection-syntax
-        :yuanxu/modules/funflow/control-plane/flow
-        :yuanxu/modules/funflow/control-plane/task)
+(import :tao3k/yuanxu/modules/funflow/control-plane/projection-syntax
+        :tao3k/yuanxu/modules/funflow/control-plane/flow
+        :tao3k/yuanxu/modules/funflow/control-plane/task)
 
 (export make-plan-node
         plan-node?

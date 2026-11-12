@@ -8,9 +8,9 @@
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
         (only-in :std/list/list append-map)
-        (only-in :yuanxu/object-family/read-projection
+        (only-in :tao3k/yuanxu/object-family/read-projection
                  make-owned-method-check call-with-owned-read-method-checks)
-        (only-in :yuanxu/module-system/types ModuleAuthoringProfileContract
+        (only-in :tao3k/yuanxu/module-system/types ModuleAuthoringProfileContract
                  ModuleSourceRoleContract))
 
 (export yuanxu-module-kind=?

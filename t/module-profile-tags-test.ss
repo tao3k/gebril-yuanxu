@@ -1,11 +1,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object "./qualification/module-scale/fixture.ss"
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :yuanxu/module-system/source/directory module-directory-context)
-        (only-in :yuanxu/module-system/source/init module-interface-tags module-init-intent)
-        (only-in :yuanxu/module-system/source/admission call-with-module-source-operation-measurement
+        (only-in :tao3k/yuanxu/module-system/source/directory module-directory-context)
+        (only-in :tao3k/yuanxu/module-system/source/init module-interface-tags module-init-intent)
+        (only-in :tao3k/yuanxu/module-system/source/admission call-with-module-source-operation-measurement
                  current-module-source-observer)
-        (only-in :yuanxu/observability/output yuanxu-write-observation-line!))
+        (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!))
 (export module-profile-tags-test)
 
 (def (verify-profile-selection exports count root)

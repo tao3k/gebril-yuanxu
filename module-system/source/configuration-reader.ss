@@ -7,11 +7,11 @@
                  current-expander-module-import current-expander-compile
                  current-expander-eval eval-syntax syntax-e)
         (only-in :clan/poo/object .ref)
-        :yuanxu/module-system/source/admission
-        :yuanxu/module-system/source/preparation
-        :yuanxu/module-system/source/reader-evaluation
-        :yuanxu/module-system/source/import-provenance
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module))
+        :tao3k/yuanxu/module-system/source/admission
+        :tao3k/yuanxu/module-system/source/preparation
+        :tao3k/yuanxu/module-system/source/reader-evaluation
+        :tao3k/yuanxu/module-system/source/import-provenance
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module))
 (export module-prepared-source-binding)
 
 (def (module-prepared-source-binding prepared binding (related '())

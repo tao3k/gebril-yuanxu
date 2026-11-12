@@ -5,13 +5,13 @@
         (for-template :std/func :std/iter :gerbil/core)
         (rename-in (only-in :std/iter/iterators in-list) (in-list original-in-list))
         (only-in :clan/poo/object .get .o .cc .ref)
-        (only-in :yuanxu/modules/json-schema/interface JsonSchema)
-        (only-in :yuanxu/module-system/feature/model feature-descriptor)
-        (only-in :yuanxu/module-system/source/link module-program-namespace module-program-feature)
+        (only-in :tao3k/yuanxu/modules/json-schema/interface JsonSchema)
+        (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor)
+        (only-in :tao3k/yuanxu/module-system/source/link module-program-namespace module-program-feature)
         (only-in :gerbil/expander current-expander-module-import current-expander-context make-top-context eval-syntax datum->syntax)
         (only-in :gerbil/runtime/syntax SyntaxError? SyntaxError-message)
-        (only-in :yuanxu/module-system/source/compiled-role compiled-role-values)
-        (only-in :yuanxu/module-system/source/deferred-declaration module-deferred-role-exports))
+        (only-in :tao3k/yuanxu/module-system/source/compiled-role compiled-role-values)
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-deferred-role-exports))
 (export module-deferred-projection-test)
 (def test-context (current-expander-context))
 (def module-deferred-projection-test
@@ -20,21 +20,21 @@
       (def namespace
         (parameterize ((current-expander-module-import
                          (lambda _ (error "compiled publication must not import metadata"))))
-          (module-program-namespace 'yuanxu/init
-            (.o (yuanxu/modules/json-schema/interface
+          (module-program-namespace 'tao3k/yuanxu/init
+            (.o (tao3k/yuanxu/modules/json-schema/interface
                   (.o declaration: 'json-schema publication: JsonSchema features: (.o))))
-            (.o) '((yuanxu/modules/json-schema/interface))
-            '(((json-schema) . yuanxu/modules/json-schema/interface)))))
+            (.o) '((tao3k/yuanxu/modules/json-schema/interface))
+            '(((json-schema) . tao3k/yuanxu/modules/json-schema/interface)))))
       (parameterize ((current-expander-module-import
                        (lambda _ (error "compiled scope must not import metadata"))))
         (check-equal? (procedure? (.get (.get namespace json-schema) normalize)) #t)))
     (test-case "compiled namespace refuses relabeled declarations and undeclared dependencies"
       (def (consume value declared)
-        (.get (module-program-namespace 'yuanxu/init
-                (.o (yuanxu/modules/json-schema/interface
+        (.get (module-program-namespace 'tao3k/yuanxu/init
+                (.o (tao3k/yuanxu/modules/json-schema/interface
                       (.o declaration: declared publication: value features: (.o))))
-                (.o) '((yuanxu/modules/json-schema/interface))
-                '(((json-schema) . yuanxu/modules/json-schema/interface))) json-schema))
+                (.o) '((tao3k/yuanxu/modules/json-schema/interface))
+                '(((json-schema) . tao3k/yuanxu/modules/json-schema/interface))) json-schema))
       (check-exception (consume JsonSchema 'forged) error?)
       (check-exception
         (consume (.cc JsonSchema 'core

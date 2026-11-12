@@ -5,11 +5,11 @@
 
 ;;; POO CLOS class evolution, identity, and reflection conformance.
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  test-suite test-case check-equal? check-exception check)
         (only-in :clan/poo/object .ref)
-        :yuanxu/poo-clos/interface)
+        :tao3k/yuanxu/poo-clos/interface)
 
 (export poo-clos-evolution-test)
 

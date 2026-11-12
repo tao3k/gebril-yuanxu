@@ -5,18 +5,18 @@
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .+ .get .ref .slot? .ref/cached .all-slots/sort)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case
                  yuanxu-test-case/with yuanxu-default-testing-case-profile)
-        (only-in :yuanxu/module-system/source/observations
+        (only-in :tao3k/yuanxu/module-system/source/observations
                  module-source-text-guard module-source-read module-source-observe
                  call-with-module-source-read-cache current-module-source-observer module-source-type)
         (only-in :clan/poo/mop Type.)
-        :yuanxu/module-system/feature/model
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/source/init
+        :tao3k/yuanxu/module-system/feature/model
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/source/init
         "./qualification/module-directory/init.ss"
-        :yuanxu/module-system/selection/init-syntax
-        :yuanxu/module-system/interface)
+        :tao3k/yuanxu/module-system/selection/init-syntax
+        :tao3k/yuanxu/module-system/interface)
 (export module-directory-test)
 ;; Compiler declaration and filesystem preparation share the same pure lowering.
 (def Intent
@@ -57,8 +57,8 @@
 (def module-directory-test
   (test-suite "Directory and init source preparation without a runtime Loader"
     (yuanxu-test-case "hygienic init declaration lowers without filesystem access"
-      (check-equal? (.slot? yuanxu/t/qualification/module-directory.init.exports 'std-make-spec) #t)
-      (check-equal? (procedure? (.get yuanxu/t/qualification/module-directory.init.exports admit-current)) #t)
+      (check-equal? (.slot? tao3k/yuanxu/t/qualification/module-directory.init.exports 'std-make-spec) #t)
+      (check-equal? (procedure? (.get tao3k/yuanxu/t/qualification/module-directory.init.exports admit-current)) #t)
       (check-equal? (.get Intent mode) 'explicit)
       (check-equal? (.get Intent root) "./modules")
       (check-equal? (.get (.ref (car (.get Intent decisions)) 'selection) selection-flags) '(-smoke)))

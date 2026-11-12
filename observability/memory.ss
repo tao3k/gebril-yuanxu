@@ -3,17 +3,17 @@
 ;;; Existing Observability memory policies and Case watchdog, isolated from
 ;;; optional typed printers and slot tracing. No separate runner or sampler.
 (import (runtime: :clan/poo/object)
-        (only-in :yuanxu/ops/progress current-execution-progress execution-progress-status
+        (only-in :tao3k/yuanxu/ops/progress current-execution-progress execution-progress-status
                  current-execution-progress-check
                  execution-progress-idle-milliseconds execution-progress-limit)
         (only-in :clan/poo/mop validate)
         :gerbil/runtime/gambit
         (only-in :std/error deferror-class)
-        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
-        (only-in :yuanxu/observability/types
+        (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :tao3k/yuanxu/observability/types
                  YuanxuDebugMemoryPolicyContract YuanxuDebugMemorySampleContract
                  YuanxuDebugMemoryReceiptContract YuanxuDebugDurationReceiptContract)
-        (only-in :yuanxu/observability/funcs
+        (only-in :tao3k/yuanxu/observability/funcs
                  yuanxu-debug-memory-policy yuanxu-debug-memory-policy?
                  yuanxu-debug-memory-sample yuanxu-debug-memory-receipt
                  yuanxu-debug-memory-receipt-sexp yuanxu-debug-allocation-current?))

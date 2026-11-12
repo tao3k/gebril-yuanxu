@@ -5,7 +5,7 @@
 
 ;;; Contract: shared slot schemas and Contracts are POO Type values.
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          :std/test)
 
 (def (contract-schema-eval expr)

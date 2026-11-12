@@ -1,14 +1,14 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Real module qualifications share init selection and source guards; no executor.
-(import :std/test :yuanxu/object-syntax/path-slots
+(import :std/test :tao3k/yuanxu/object-syntax/path-slots
         (only-in :clan/poo/object .get .call .ref/cached)
-        (only-in "../init.ss" yuanxu.init.exports)
+        (only-in "../init.ss" tao3k/yuanxu.init.exports)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint
                  yuanxu-test-observe)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture with-yuanxu-fixture))
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture with-yuanxu-fixture))
 (export module-testing-isolation-test)
 (.def Workspace
   .acquire: (lambda ()
@@ -22,8 +22,8 @@
     (yuanxu-test-fixture "multi-owner selection and publication share one bounded Case"
       (workspace Workspace)
       (yuanxu-test-checkpoint 'selection-start)
-      (def json (.call (.get yuanxu.init.exports tests) .select '(json-schema)))
-      (def flow (.call (.get yuanxu.init.exports tests) .select '(funflow)))
+      (def json (.call (.get tao3k/yuanxu.init.exports tests) .select '(json-schema)))
+      (def flow (.call (.get tao3k/yuanxu.init.exports tests) .select '(funflow)))
       (def unused flow)
       (def reads 0)
       (def funflow-read? #f)
@@ -36,7 +36,7 @@
         (when previous-observer (previous-observer key amount)))
       (def all
         (parameterize ((current-module-source-observer observe))
-          (.get yuanxu.init.exports tests qualification)))
+          (.get tao3k/yuanxu.init.exports tests qualification)))
       (check-equal? reads 0)
       (check-equal? (.ref/cached all 'selected-graph) #f)
       (check-equal? (.ref/cached all 'execution) #f)
@@ -57,15 +57,15 @@
       (check-equal? (eq? (.get flow-tests selected-graph) (.get selected selected-graph)) #t)
       (check-equal? (.ref/cached unused 'integration) #f)
       (check-equal? (.get selected selected-graph module-order)
-                    '(yuanxu/modules/json-schema/interface
-                      yuanxu/modules/funflow/interface
-                      yuanxu/scenarios/gitea-postgresql/postgresql/interface
-                      yuanxu/scenarios/gitea-postgresql/gitea/interface
-                      yuanxu/scenarios/gitea-postgresql/interface))
+                    '(tao3k/yuanxu/modules/json-schema/interface
+                      tao3k/yuanxu/modules/funflow/interface
+                      tao3k/yuanxu/scenarios/gitea-postgresql/postgresql/interface
+                      tao3k/yuanxu/scenarios/gitea-postgresql/gitea/interface
+                      tao3k/yuanxu/scenarios/gitea-postgresql/interface))
       (check-equal? (.ref/cached selected 'execution) #f)
       (yuanxu-test-checkpoint 'selection-verified)
       (check-equal? (.ref/cached all 'spec) #f)
-      (for-each (lambda (owner) (check-equal? (.ref/cached (.get yuanxu.init.exports Modules) owner) #f))
+      (for-each (lambda (owner) (check-equal? (.ref/cached (.get tao3k/yuanxu.init.exports Modules) owner) #f))
         '(json-schema funflow))
       (check-equal?
         (eq? selected (.call all .select '(json-schema funflow))) #t)

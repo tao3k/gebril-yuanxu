@@ -6,9 +6,9 @@
 ;;; Boundary: construct values from prototypes owned by explicit Type declarations.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop validate)
-        :yuanxu/module-system/schema/relations
-        :yuanxu/module-system/types
-        (only-in :yuanxu/module-system/objects
+        :tao3k/yuanxu/module-system/schema/relations
+        :tao3k/yuanxu/module-system/types
+        (only-in :tao3k/yuanxu/module-system/objects
                  SemanticModule. ModuleSourceRole. ModuleAuthoringProfile.
                  make-semantic-module))
 (export SemanticModule. ModuleSourceRole.

@@ -6,7 +6,7 @@
                  resolve-identifier datum->syntax core-import-module expander-context-id
                  core-module->prelude-context module-context-export module-context-import
                  module-export-name module-export-phi import-set? import-set-source)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module))
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module))
 (export prelude-test)
 
 ;; The public root prelude supplies POO bindings without an explicit POO import.
@@ -26,9 +26,9 @@
 (def prelude-test
   (test-suite "Yuanxu package prelude"
     (test-case "grouped role imports preserve public binding identity and dedicated declaration"
-      (def language (core-import-module ':yuanxu/module-system/source/module-prelude))
+      (def language (core-import-module ':tao3k/yuanxu/module-system/source/module-prelude))
       (def poo (core-import-module ':clan/poo/object))
-      (def declaration (core-import-module ':yuanxu/module-system/source/declaration))
+      (def declaration (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
       (for-each
         (lambda (entry)
           (def name (module-export-name entry))
@@ -63,7 +63,7 @@
               (for-each (lambda (form) (write form port) (newline port))
                 '(prelude: :gerbil/core
                   (import :gerbil/core (except-in :clan/poo/object .def)
-                    (only-in :yuanxu/module-system/source/declaration .def)
+                    (only-in :tao3k/yuanxu/module-system/source/declaration .def)
                     (phi: +1 :gerbil/core) (phi: +2 :gerbil/core))
                   (export (except-out (import: :gerbil/core) object? make-object)
                     (import: :clan/poo/object)
@@ -77,7 +77,7 @@
                   (set! result (cons (expander-context-id dependency) result)))))
             (reverse result))
           (def former (core-import-module path))
-          (def grouped (core-import-module ':yuanxu/module-system/source/module-prelude))
+          (def grouped (core-import-module ':tao3k/yuanxu/module-system/source/module-prelude))
           (def expected (trace former))
           (check-equal? expected (trace grouped))
           (check-equal? (> (length (module-context-import former))
@@ -88,19 +88,19 @@
     (test-case "Prelude and explicit declaration import retain one terminal binding"
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
-        (eval-syntax '(import (only-in :yuanxu/prelude yuanxu!)))
+        (eval-syntax '(import (only-in :tao3k/yuanxu/prelude yuanxu!)))
         (def inherited (resolve-identifier (datum->syntax #f 'yuanxu!)))
         (check-equal? (and inherited #t) #t)
-        (eval-syntax '(import (only-in :yuanxu/module-system/selection/init-syntax yuanxu!)))
+        (eval-syntax '(import (only-in :tao3k/yuanxu/module-system/selection/init-syntax yuanxu!)))
         (check-equal? (eq? inherited (resolve-identifier (datum->syntax #f 'yuanxu!))) #t)))
     (test-case "language bootstrap has no semantic declaration implementation dependency"
       (def identities '())
-      (for-each-build-module (core-import-module ':yuanxu/prelude)
+      (for-each-build-module (core-import-module ':tao3k/yuanxu/prelude)
         (lambda (context) (set! identities (cons (expander-context-id context) identities))))
-      (check-equal? (and (memq 'yuanxu/module-system/selection/init-syntax identities) #t) #t)
+      (check-equal? (and (memq 'tao3k/yuanxu/module-system/selection/init-syntax identities) #t) #t)
       (for-each (lambda (identity) (check-equal? (and (memq identity identities) #t) #f))
-        '(yuanxu/module-system/selection/init-expansion yuanxu/module-system/source/init
-          yuanxu/module-system/building/interface)))
+        '(tao3k/yuanxu/module-system/selection/init-expansion tao3k/yuanxu/module-system/source/init
+          tao3k/yuanxu/module-system/building/interface)))
     (test-case "ordinary values and prototype refinement"
       (.def Baseline commands: '("gerbil" "build") port: 5432)
       (.def (Release @ Baseline) port: 5440)

@@ -8,9 +8,9 @@
 (import (runtime: :clan/poo/object)
 )
 
-(import :yuanxu/graph/rooted)
+(import :tao3k/yuanxu/graph/rooted)
 
-(export (import: :yuanxu/graph/rooted)
+(export (import: :tao3k/yuanxu/graph/rooted)
         yuanxu-graph-operation-kind
         yuanxu-graph-contribution-kind
         yuanxu-graph-result-kind

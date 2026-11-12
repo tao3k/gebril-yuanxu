@@ -12,19 +12,19 @@
                  object-slots $constant-slot-spec?)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/type String)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/mop Type.)
-        (only-in :yuanxu/module-system/feature/model feature-descriptor)
-        (only-in :yuanxu/module-system/feature/capability-model feature-projection-request)
-        (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
-        (only-in :yuanxu/module-system/source/admission module-source-type module-source-read current-module-source-observer
+        (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor)
+        (only-in :tao3k/yuanxu/module-system/feature/capability-model feature-projection-request)
+        (only-in :tao3k/yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-type module-source-read current-module-source-observer
                  call-with-module-source-read-cache module-source-admit-current!)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/link call-with-linked-prepared-guards)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
-        (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/link call-with-linked-prepared-guards)
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
+        (only-in :tao3k/yuanxu/module-system/building/interface yuanxu-init-build)
         (only-in "../core-spec.ss" core-spec)
-        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
+        (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
 (export module-build-graph-test)
 (def Scope (.cc Type. identity: 'test/build-scope .element?: object?))
 (def (write-file path text)
@@ -335,7 +335,7 @@
          (let (path (path-expand "modules/app/web/interface.ss" root))
            (write-file path
             (string-append
-             "(import (only-in :yuanxu/module-system/feature/model feature-descriptor)) "
+             "(import (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor)) "
              "(.def Published identity: 'app/web core: (.o requires: (.o Schema: (.o module-id: 'core/schema contract: Scope)) scope-contract: Scope exports: (error \"must not link while building\")) features: "
              "(.o early: (feature-descriptor (.o feature-id: 'app/web/early owner-module-id: 'app/web projections: (list '(\"extra/early\")))) "
              "late: (feature-descriptor (.o feature-id: 'app/web/late owner-module-id: 'app/web requires: '(app/web/early) projections: (list '(\"extra/late\")))) "
@@ -364,7 +364,7 @@
              ;; tools stay guarded, but must not become its compiler targets.
              (check-equal? (length (filter (lambda (name)
                                             (string-prefix? (string-append prefix "/") name)) names)) 10)
-             (check-equal? (ormap (cut string-prefix? "yuanxu/" <>) names) #f)
+             (check-equal? (ormap (cut string-prefix? "tao3k/yuanxu/" <>) names) #f)
              (def reads '())
              (parameterize ((current-module-source-observer
                              (lambda (key _amount)
@@ -373,7 +373,7 @@
                ((.get graph compiler-current)))
              (check-equal? (ormap (cut string-suffix? "/types.ss" <>) reads) #t)
              (check-exception (.get view modules app web) error?)
-             (let* ((tool (core-import-module ':yuanxu/module-system/source/declaration))
+             (let* ((tool (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
                     (origin (module-context-path tool)))
                (if (string=? (path-extension origin) ".ss")
                  (check-equal? (ormap (cut equal? (path-normalize origin) <>) reads) #t)

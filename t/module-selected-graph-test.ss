@@ -11,13 +11,13 @@
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
                  call-with-slot-read-observer slot-read-receiver slot-read-key slot-read-value)
         (prefix-in (only-in :gerbil/runtime/mop find-method bind-method!) runtime.)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/mop Type.)
-        :yuanxu/module-system/feature/model
-        :yuanxu/module-system/source/init
-        :yuanxu/module-system/source/objects
-        (only-in :yuanxu/module-system/source/selection select-module-graph)
-        :yuanxu/module-system/interface)
+        :tao3k/yuanxu/module-system/feature/model
+        :tao3k/yuanxu/module-system/source/init
+        :tao3k/yuanxu/module-system/source/objects
+        (only-in :tao3k/yuanxu/module-system/source/selection select-module-graph)
+        :tao3k/yuanxu/module-system/interface)
 (export module-selected-graph-test)
 (def Scope
   (.cc Type. identity: 'test/selected-scope .element?: (lambda (_value) #t)))
@@ -123,7 +123,7 @@
       (parameterize ((current-expander-context
                       (make-top-context
                         (core-module->prelude-context
-                          (core-import-module ':yuanxu/prelude)))))
+                          (core-import-module ':tao3k/yuanxu/prelude)))))
         (def name (gensym 'core-feature-origin))
         (def original (runtime.find-method object::t #f ':init!))
         (dynamic-wind

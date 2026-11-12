@@ -3,12 +3,12 @@
 (import :std/test :clan/poo/object
         (only-in :std/source this-source-file)
         (only-in :gerbil/expander core-import-module expander-context-id)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module)
-        (only-in :yuanxu/observability/testing-fixture
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
+        (only-in :tao3k/yuanxu/observability/testing-fixture
                  yuanxu-test-fixture with-yuanxu-fixture)
-        (only-in :yuanxu/observability/testing-case
+        (only-in :tao3k/yuanxu/observability/testing-case
                  yuanxu-default-testing-case-profile yuanxu-test-checkpoint)
-        (only-in :yuanxu/observability/memory yuanxu-debug-allocation-current?))
+        (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-allocation-current?))
 (export observability-test-import-test)
 
 (def released 0)
@@ -41,16 +41,16 @@
             (lambda (context)
               (set! contract-identities
                 (cons (expander-context-id context) contract-identities)))))
-        '(:clan/poo/object :yuanxu/observability/types))
+        '(:clan/poo/object :tao3k/yuanxu/observability/types))
       (for-each-build-module
-        (core-import-module ':yuanxu/observability/testing-fixture)
+        (core-import-module ':tao3k/yuanxu/observability/testing-fixture)
         (lambda (context)
           (set! identities (cons (expander-context-id context) identities))))
-      (check-equal? (and (memq 'yuanxu/observability/memory identities) #t) #t)
+      (check-equal? (and (memq 'tao3k/yuanxu/observability/memory identities) #t) #t)
       (for-each
         (lambda (id) (check-equal? (memq id identities) #f))
-        '(yuanxu/observability/debug yuanxu/observability/slot-debug
-          yuanxu/module-system/building/test-observation
+        '(tao3k/yuanxu/observability/debug tao3k/yuanxu/observability/slot-debug
+          tao3k/yuanxu/module-system/building/test-observation
           clan/poo/debug))
       ;; Memory policy/receipt Contracts use Types after the refactor.
       ;; No additional Type family may enter beyond those required contracts.

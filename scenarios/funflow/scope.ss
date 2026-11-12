@@ -3,10 +3,10 @@
 
 ;;; Local runtime publication. SourceRef is metadata, never authentication.
 (import (only-in :clan/poo/object .def .o)
-        (only-in :yuanxu/modules/funflow/objects FunflowModule.)
-        (only-in :yuanxu/module-system/source/objects
+        (only-in :tao3k/yuanxu/modules/funflow/objects FunflowModule.)
+        (only-in :tao3k/yuanxu/module-system/source/objects
                  make-yuanxu-module-local-source yuanxu-module-source-ref?)
-        (only-in :yuanxu/modules/funflow/config-prototypes
+        (only-in :tao3k/yuanxu/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline)
         (only-in "./gerbil-scheme.ss"
                  make-gerbil-scheme-ci-profile))

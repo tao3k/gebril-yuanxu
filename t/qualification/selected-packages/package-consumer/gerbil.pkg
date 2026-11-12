@@ -1,3 +1,3 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(package: yuanxu-package-consumer prelude: :yuanxu/prelude
+(package: yuanxu-package-consumer prelude: :tao3k/yuanxu/prelude
  depend: ("qualification.invalid/haumea/producer@v0.1.0"))

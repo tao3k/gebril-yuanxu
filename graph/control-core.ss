@@ -9,9 +9,9 @@
 ;;; Graph control analysis receipts and diagnostics.
 ;;; - Keep graph traversal evidence explicit before projecting bounded analysis receipts.
 (import (runtime: :clan/poo/object)
-        :yuanxu/graph/types-core
-        :yuanxu/graph/algorithms
-        :yuanxu/graph/control-utils)
+        :tao3k/yuanxu/graph/types-core
+        :tao3k/yuanxu/graph/algorithms
+        :tao3k/yuanxu/graph/control-utils)
 
 (export yuanxu-graph-entry-ids
         yuanxu-graph-finish-ids

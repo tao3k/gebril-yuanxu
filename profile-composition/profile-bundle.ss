@@ -11,10 +11,10 @@
         (only-in :clan/poo/mop Type. define-type element? validate)
         (only-in :std/error deferror-class)
         (only-in :std/list/list append-map delete-duplicates/hash every filter-map)
-        (only-in :yuanxu/module-system/types
+        (only-in :tao3k/yuanxu/module-system/types
                  SemanticModuleContract)
-        (only-in :yuanxu/module-system/schema/relations yuanxu-empty-profiles)
-        (only-in :yuanxu/profile-composition/bindings
+        (only-in :tao3k/yuanxu/module-system/schema/relations yuanxu-empty-profiles)
+        (only-in :tao3k/yuanxu/profile-composition/bindings
                  yuanxu-scenario-module-binding
                  yuanxu-scenario-profile-binding))
 

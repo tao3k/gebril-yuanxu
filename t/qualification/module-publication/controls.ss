@@ -16,24 +16,24 @@
                  core-import-module core-expand expander-context-id
                  current-expander-eval module-context? module-context-path module-context-code
                  core-context-prelude core-module->prelude-context expander-context-table)
-        (only-in :yuanxu/module-system/source/reader module-publication-reader)
-        (only-in :yuanxu/module-system/building/source-closure
+        (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure
                  for-each-build-module yuanxu-bootstrap-contexts)
-        (only-in :yuanxu/module-system/building/source-package module-build-source-path)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
-        (rename-in (only-in :yuanxu/module-system/source/declaration .def) (.def publication-definition))
-        (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
-        (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        :yuanxu/module-system/source/objects
-        (only-in :yuanxu/module-system/source/collection
+        (only-in :tao3k/yuanxu/module-system/building/source-package module-build-source-path)
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
+        (rename-in (only-in :tao3k/yuanxu/module-system/source/declaration .def) (.def publication-definition))
+        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        :tao3k/yuanxu/module-system/source/objects
+        (only-in :tao3k/yuanxu/module-system/source/collection
                  make-yuanxu-module-source-collection yuanxu-module-source-collection-locate)
-        :yuanxu/module-system/source/admission
-        (only-in :yuanxu/module-system/source/publication ModulePublicationContract
+        :tao3k/yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/source/publication ModulePublicationContract
                  module-publication-contract-current?)
-        :yuanxu/module-system/source/preparation
-        :yuanxu/module-system/interface)
+        :tao3k/yuanxu/module-system/source/preparation
+        :tao3k/yuanxu/module-system/interface)
 (import (only-in "./fixtures.ss" write-file remove-tree with-publication-source domain-entry-count gerbil-import-value exception-message PublicLibraryFixture core-source-root))
 (export register-reader-root-collection-cases! register-build-support-control-cases!)
 
@@ -153,7 +153,7 @@
       (with-publication-source
        (lambda (_root module-root source _view)
          (def projection-context
-           (core-import-module ':yuanxu/module-system/building/build-projection))
+           (core-import-module ':tao3k/yuanxu/module-system/building/build-projection))
          (def projection
            (path-normalize (module-build-source-path projection-context core-source-root)))
          (def projection-source?
@@ -182,7 +182,7 @@
          ;; register source contexts in the demanded standard closure. An SSI
          ;; retains standard identity checks, not authority over its checkout.
          (write-file (path-expand "build.ss" module-root)
-           "(import (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)) (.def Build function: yuanxu-project-source-spec)")
+           "(import (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)) (.def Build function: yuanxu-project-source-spec)")
          (write-file (path-expand "interface.ss" module-root)
            "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o (:: @ FixtureScope) greeting: Greeting) configuration-build: Build) features: (.o))")
          (def demanded (module-publication-reader))
@@ -195,7 +195,7 @@
              (procedure? (.get published core configuration-build function))) #t)
          (def paths (observed-paths demanded))
          (check-equal? (hash-key? paths projection) projection-source?)
-         (check-equal? (eq? (core-import-module ':yuanxu/module-system/building/build-projection)
+         (check-equal? (eq? (core-import-module ':tao3k/yuanxu/module-system/building/build-projection)
                             projection-context) #t)
          ;; Derive source support from actual runtime contexts. Mapping an SSI
          ;; back to SS describes a possible build input, not an imported source.

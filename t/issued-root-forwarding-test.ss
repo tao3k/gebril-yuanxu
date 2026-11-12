@@ -3,11 +3,11 @@
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
         %deliver-slot-read slot-read-dependencies slot-read-receiver make-slot-read)
-        (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection
+        (only-in :tao3k/yuanxu/object-family/read-projection call-with-owned-read-projection
                  owned-read-value! owned-read-derived!)
-        (only-in :yuanxu/poo-clos/objects clos-call-carrier-policy-guard)
-        (only-in :yuanxu/poo-clos/types ClosInvocationFrame)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/poo-clos/objects clos-call-carrier-policy-guard)
+        (only-in :tao3k/yuanxu/poo-clos/types ClosInvocationFrame)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export issued-root-forwarding-test)
 (def (issued-closure? roots)
   (def seen (make-hash-table-eq))

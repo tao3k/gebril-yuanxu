@@ -6,15 +6,15 @@
                  object-%instance object-construction-current?)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/slot-observation without-observation)
-        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
-        :yuanxu/module-system/source/admission
-        :yuanxu/module-system/source/preparation
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/source/reader-session
-        :yuanxu/module-system/source/reader-support
-        :yuanxu/module-system/source/import-provenance
-        (only-in :yuanxu/module-system/source/role-context transfer-role-context)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module))
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        :tao3k/yuanxu/module-system/source/admission
+        :tao3k/yuanxu/module-system/source/preparation
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/source/reader-session
+        :tao3k/yuanxu/module-system/source/reader-support
+        :tao3k/yuanxu/module-system/source/import-provenance
+        (only-in :tao3k/yuanxu/module-system/source/role-context transfer-role-context)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module))
 (export reader-enroll-candidate! reader-capture-input reader-input-origin
         reader-bind-input-state reader-input-state-current? reader-source-state-current?
         reader-add-input-guard! reader-derived-input reader-preparation-key

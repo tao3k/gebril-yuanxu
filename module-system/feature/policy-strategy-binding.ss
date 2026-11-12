@@ -6,9 +6,9 @@
 ;;; Invariant: contribution composition preserves declared precedence and provenance.
 (import (only-in :std/list/list fold map filter-map)
         (runtime: :clan/poo/object)
-        :yuanxu/composition/roles
-        :yuanxu/module-system/feature/domain-case-assembly
-        :yuanxu/utilities/functional)
+        :tao3k/yuanxu/composition/roles
+        :tao3k/yuanxu/module-system/feature/domain-case-assembly
+        :tao3k/yuanxu/utilities/functional)
 
 (export +feature-policy-contribution-kind+
         +feature-strategy-contribution-kind+

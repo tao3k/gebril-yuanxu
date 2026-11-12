@@ -6,14 +6,14 @@
         (only-in :gerbil/runtime/loader list-modules)
         (only-in :clan/poo/mop call-with-slot-read-observer)
         (only-in :clan/poo/slot-observation slot-read-key slot-read-receiver)
-        (only-in :yuanxu/module-system/building/test-observation ModuleTestingProfile.)
-        (only-in :yuanxu/ops/progress call-with-execution-progress
+        (only-in :tao3k/yuanxu/module-system/building/test-observation ModuleTestingProfile.)
+        (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress
                  execution-progress-status)
-        (only-in :yuanxu/poo-clos/objects poo-clos-generic-function poo-clos-method
+        (only-in :tao3k/yuanxu/poo-clos/objects poo-clos-generic-function poo-clos-method
                  poo-clos-any-specializer make-effective-method make-invocation-frame)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget)
-        (only-in :yuanxu/testing
+        (only-in :tao3k/yuanxu/testing
                  yuanxu-default-testing-case-profile yuanxu-test-observe
                  yuanxu-test-checkpoint yuanxu-test-fixture
                  with-yuanxu-fixture))
@@ -33,7 +33,7 @@
       (resource Resource)
       (check-equal?
         (ormap (lambda (entry)
-                 (string-prefix? "yuanxu/module-system/building/test-retention" (car entry)))
+                 (string-prefix? "tao3k/yuanxu/module-system/building/test-retention" (car entry)))
                (list-modules)) #t)
       (def active-profile 'author-value)
       (check-equal? (unbox (current-module-process-trace-budget)) 4)

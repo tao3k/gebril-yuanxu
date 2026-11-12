@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Structured diagnostics shared by pure node checks and Core receipt consumers.
-(import (only-in :yuanxu/object-family/syntax defpoo-object-family))
+(import (only-in :tao3k/yuanxu/object-family/syntax defpoo-object-family))
 (import (only-in "./json-schema-validation-core.ss" yuanxu-json-schema-path->symbol))
 (export #t)
 

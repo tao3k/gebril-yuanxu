@@ -2,22 +2,22 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import (only-in :std/test test-suite test-case check-equal? check-exception)
-        :yuanxu/object-syntax/path-slots
-        :yuanxu/profile-composition/selection-syntax
-        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-local-source)
+        :tao3k/yuanxu/object-syntax/path-slots
+        :tao3k/yuanxu/profile-composition/selection-syntax
+        (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-local-source)
         (only-in :clan/poo/object .get .ref .ref/cached .slot?)
-        (only-in :yuanxu/modules/funflow/config-adapter
+        (only-in :tao3k/yuanxu/modules/funflow/config-adapter
                  yuanxu-funflow-poo-pipeline->check-map)
-        (only-in :yuanxu/modules/funflow/graph-projection
+        (only-in :tao3k/yuanxu/modules/funflow/graph-projection
                  yuanxu-funflow-poo-pipeline->functional-dag)
-        (only-in :yuanxu/modules/funflow/check-objects
+        (only-in :tao3k/yuanxu/modules/funflow/check-objects
                  yuanxu-cicd-check yuanxu-cicd-check-map
                  yuanxu-cicd-check-map-name yuanxu-cicd-check-map-checks
                  yuanxu-cicd-check-compensation-refs)
-        (only-in :yuanxu/modules/funflow/dependency-graph yuanxu-cicd-check-map->dependency-graph)
+        (only-in :tao3k/yuanxu/modules/funflow/dependency-graph yuanxu-cicd-check-map->dependency-graph)
         (only-in "../../../scenarios/funflow/scope.ss"
                  FunflowProfiles. Funflow make-funflow-scope)
-        (only-in :yuanxu/modules/funflow/config-prototypes
+        (only-in :tao3k/yuanxu/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline
                  yuanxu-funflow-poo-check? yuanxu-funflow-poo-pipeline?))
 (export funflow-profile-test)

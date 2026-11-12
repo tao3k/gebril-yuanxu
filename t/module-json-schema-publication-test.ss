@@ -5,14 +5,14 @@
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get .ref .call .cc .o .+)
-        (only-in :yuanxu/object-types/contracts yuanxu-value-admit yuanxu-validation-evidence-accepted?)
-        (only-in :yuanxu/modules/json-schema/json-schema-validate
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-value-admit yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/modules/json-schema/json-schema-validate
                  yuanxu-json-schema-object-contract-validation?
                  yuanxu-json-schema-object-contract-validation-valid?
                  yuanxu-json-schema-object-contract-validation-diagnostics
                  yuanxu-json-schema-validation-diagnostic?)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-json-schema-publication-test)
 (def root (path-expand ".." (path-directory (this-source-file))))
 ;; Private-source drift/cycles require the complete source-only package, not a
@@ -28,11 +28,11 @@
                         '((type . "object") (required . ("port"))
                           (properties . ((port . ((type . "integer") (minimum . 1)))))))))
         (check-equal? (.get view selected-graph module-order)
-                      '(yuanxu/modules/json-schema/interface
-                        yuanxu/modules/funflow/interface
-                        yuanxu/scenarios/gitea-postgresql/postgresql/interface
-                        yuanxu/scenarios/gitea-postgresql/gitea/interface
-                        yuanxu/scenarios/gitea-postgresql/interface))
+                      '(tao3k/yuanxu/modules/json-schema/interface
+                        tao3k/yuanxu/modules/funflow/interface
+                        tao3k/yuanxu/scenarios/gitea-postgresql/postgresql/interface
+                        tao3k/yuanxu/scenarios/gitea-postgresql/gitea/interface
+                        tao3k/yuanxu/scenarios/gitea-postgresql/interface))
         (check-equal? (> (length (.get graph entries)) 15) #t)
         (def valid (.o port: 80))
         (check-equal? (eq? (validate contract valid) valid) #t)

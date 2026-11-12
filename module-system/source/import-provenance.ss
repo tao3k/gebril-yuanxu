@@ -8,13 +8,13 @@
         (only-in :clan/poo/object .ref)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/slot-observation without-observation)
-        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
-        :yuanxu/module-system/source/reader-support
-        :yuanxu/module-system/source/preparation
-        :yuanxu/module-system/source/admission
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        :tao3k/yuanxu/module-system/source/reader-support
+        :tao3k/yuanxu/module-system/source/preparation
+        :tao3k/yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module
                  yuanxu-reader-contexts call-with-build-stage)
-        (only-in :yuanxu/module-system/building/source-package module-build-source-path))
+        (only-in :tao3k/yuanxu/module-system/building/source-package module-build-source-path))
 (export public-dependency-input admit-compiler-inputs!
         compiler-tool-inputs compiler-tool-input record-source-observations!
         compiler-context-origin-current? captured-import-context? module-import-provenance)
@@ -261,5 +261,5 @@
   ;; The interpreter itself is always used, independently of author imports.
   ;; Preserve its exact runtime closure; later imports monotonically add demands.
   ;; The catalog grants import eligibility, never evidence of actual use.
-  (inputs-for (hash-ref tool-contexts 'yuanxu/module-system/source/reader))
+  (inputs-for (hash-ref tool-contexts 'tao3k/yuanxu/module-system/source/reader))
   (values tool-contexts tool-paths inputs-for tool-observations compiler-contexts))

@@ -4,8 +4,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import (only-in :std/test test-suite check-equal?)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        :yuanxu/module-system/source/objects)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        :tao3k/yuanxu/module-system/source/objects)
 
 (export module-source-test)
 

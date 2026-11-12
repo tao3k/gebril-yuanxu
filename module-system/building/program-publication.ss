@@ -1,11 +1,11 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Compiler projection of the admitted selection; no business scope execution.
-(import (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source module-compiler-init-forms)
+(import (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source module-compiler-init-forms)
         (runtime: :clan/poo/object)
         (only-in :std/list/list find delete-duplicates/hash)
-        (only-in :yuanxu/module-system/source/deferred-declaration module-binding-action)
-        (only-in :yuanxu/module-system/source/observations module-source-read))
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-read))
 (export project-program-init init-compiler-forms)
 
 (def (project-program-init view build entry)
@@ -118,8 +118,8 @@
       (def emitted
         (append headers
           `((import (only-in :clan/poo/object .o .cc .ref)
-                    (only-in :yuanxu/module-system/source/link module-program-namespace module-program-feature)
-                    (only-in :yuanxu/module-system/selection/init-expansion expand-yuanxu-program-declaration)
+                    (only-in :tao3k/yuanxu/module-system/source/link module-program-namespace module-program-feature)
+                    (only-in :tao3k/yuanxu/module-system/selection/init-expansion expand-yuanxu-program-declaration)
                     ,@(map (lambda (row)
                               `(rename-in (only-in ,(cadr row) ,(caddr row))
                                  (,(caddr row) ,(cadddr row))))
@@ -135,7 +135,7 @@
 ;; Both explicit publication and the official compiler use this same lowering.
 (def (init-compiler-forms path)
   (or (module-compiler-init-forms path)
-      (let* ((select (module-binding-action "yuanxu/module-system/source/link" 'yuanxu-load-modules))
+      (let* ((select (module-binding-action "tao3k/yuanxu/module-system/source/link" 'yuanxu-load-modules))
              (view (select (list path)))
              (graph (.get view build-graph))
              (input (yuanxu-prepare-module-retained-source path void))

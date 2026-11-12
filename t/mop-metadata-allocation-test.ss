@@ -8,7 +8,7 @@
         (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.)
         (only-in :std/encoding/json write-json)
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in "qualification/mop-state/reflection-surface"
                  make-private-cell private-cell-value))
 (export mop-metadata-allocation-test test-cleanup!)

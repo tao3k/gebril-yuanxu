@@ -2,8 +2,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; One reader's source associations and generation-local counters.
-(import (only-in :yuanxu/module-system/source/import-provenance module-import-provenance)
-        (only-in :yuanxu/module-system/source/reader-support source-observation-rows))
+(import (only-in :tao3k/yuanxu/module-system/source/import-provenance module-import-provenance)
+        (only-in :tao3k/yuanxu/module-system/source/reader-support source-observation-rows))
 (export (struct-out reader-session) (struct-out candidate-support) new-reader-session
         reader-session-guards reader-session-guard-count reader-session-add-guard!)
 

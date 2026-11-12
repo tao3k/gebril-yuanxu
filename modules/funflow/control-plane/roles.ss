@@ -4,7 +4,7 @@
 
 ;;; Product workflow/task/runtime roles. Shared composition lives in Core.
 (import (only-in :clan/poo/object .o)
-        (only-in :yuanxu/composition/roles control-plane-role))
+        (only-in :tao3k/yuanxu/composition/roles control-plane-role))
 
 (export flow-role
         branch-role

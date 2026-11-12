@@ -2,16 +2,16 @@
 (import :std/test :clan/poo/object :clan/poo/object-contract
         (only-in :clan/poo/number IntegerRange)
         (only-in :clan/poo/mop validate TypeError? element?)
-        (only-in :yuanxu/module-system/schema/relations SemanticSymbol)
-        (only-in :yuanxu/observability/types YuanxuObservationIdentityContract)
-        (only-in :yuanxu/modules/json-schema/contracts schema-value-contract ProjectionContract.)
-        (only-in :yuanxu/modules/json-schema/json-schema-diagnostics
+        (only-in :tao3k/yuanxu/module-system/schema/relations SemanticSymbol)
+        (only-in :tao3k/yuanxu/observability/types YuanxuObservationIdentityContract)
+        (only-in :tao3k/yuanxu/modules/json-schema/contracts schema-value-contract ProjectionContract.)
+        (only-in :tao3k/yuanxu/modules/json-schema/json-schema-diagnostics
                  yuanxu-json-schema-validation-diagnostic?)
         (only-in :std/error Error Error?)
-        (only-in :yuanxu/object-types/contracts
+        (only-in :tao3k/yuanxu/object-types/contracts
                  YuanxuContract. yuanxu-predicate-contract YuanxuValidationEvidence)
-        (only-in :yuanxu/admission/source SourceAdmissionContract.)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export contract-diagnostics-test)
 
 (def contract-diagnostics-test

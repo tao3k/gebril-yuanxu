@@ -4,7 +4,7 @@
           (only-in :std/source this-source-file)
           (only-in "../../../module-system/building/source-package.ss" register-module-build-source!)))
 (begin-syntax
-  (register-module-build-source! (path-expand "../../.." (path-directory (this-source-file))) 'yuanxu))
+  (register-module-build-source! (path-expand "../../.." (path-directory (this-source-file))) 'tao3k/yuanxu))
 
 (import (only-in "../../../prelude.ss")
         :gerbil/compiler :gerbil/compiler/compile

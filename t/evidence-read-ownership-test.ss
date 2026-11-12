@@ -3,20 +3,20 @@
 (import :std/test :clan/poo/object
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads replay-slot-reads!
                  slot-read-key slot-read-receiver slot-read-dependencies call-with-slot-read-observer)
-        (only-in :yuanxu/object-family/read-projection call-with-owned-read-projection
+        (only-in :tao3k/yuanxu/object-family/read-projection call-with-owned-read-projection
                  owned-read-copy! owned-read-derived! owned-read-leaf! owned-read-fields-present?
                  current-owned-read-open-guard)
         (only-in :clan/poo/prototype-map prototype-map)
         (only-in :clan/poo/validation-rebinding rebind-validation)
         (only-in :clan/poo/mop Slot Type. define-type validate object-read-issued?)
-        (only-in :yuanxu/module-system/types ModuleSourceRoleContract)
-        (only-in :yuanxu/module-system/authoring/roles TypesSourceRole.)
-        (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot)
-        (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence yuanxu-validation-evidence
+        (only-in :tao3k/yuanxu/module-system/types ModuleSourceRoleContract)
+        (only-in :tao3k/yuanxu/module-system/authoring/roles TypesSourceRole.)
+        (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-memory-snapshot)
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-classification-evidence yuanxu-validation-evidence
                  yuanxu-classification-evidence? yuanxu-validation-evidence?
                  YuanxuClassificationEvidence YuanxuValidationEvidence
                  YuanxuContract. yuanxu-contract-admit)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export evidence-read-ownership-test)
 (def (original-read-graph? reads)
   (def seen (make-hash-table-eq))

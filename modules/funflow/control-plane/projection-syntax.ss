@@ -7,7 +7,7 @@
 ;;; Invariant: generated functions are final boundary projections only; public
 ;;; object construction remains ordinary core code.
 
-(import :yuanxu/utilities/product-syntax)
+(import :tao3k/yuanxu/utilities/product-syntax)
 
 (export yuanxu-product-rows/tail
         yuanxu-product-rows-into/rev

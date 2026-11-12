@@ -5,7 +5,7 @@
 (import (only-in :clan/poo/object .o .ref)
         (only-in :clan/poo/mop define-type validate Bool)
         (only-in :clan/poo/type Record Symbol)
-        (only-in :yuanxu/profile-composition/profile-bundle YuanxuProfileBundle))
+        (only-in :tao3k/yuanxu/profile-composition/profile-bundle YuanxuProfileBundle))
 (export Scenario)
 
 (def scenario-kind 'yuanxu.funflow.scenario.v1)
@@ -36,10 +36,10 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :yuanxu/modules/funflow/control-plane/signatures
+(import (only-in :tao3k/yuanxu/modules/funflow/control-plane/signatures
                  Fun Any Number Integer String Symbol List Pair Null Unit)
-        (only-in :yuanxu/modules/funflow/control-plane/flow flow-output-contract)
-        (only-in :yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/flow flow-output-contract)
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
 ;;; Boundary: Funflow Scenario projection from a closed Case into its
 ;;; product-owned ExecutionPlan.
 ;;; Invariant: internal traversal records are compact structs; public Plan
@@ -49,7 +49,7 @@
         (only-in :gerbil/runtime/hash list->hash-table-eq)
         (only-in :std/list/list delete-duplicates/hash)
         (only-in :std/list/list append-map filter-map fold)
-        :yuanxu/modules/funflow/control-plane/graph)
+        :tao3k/yuanxu/modules/funflow/control-plane/graph)
 
 
 

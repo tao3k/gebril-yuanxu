@@ -27,11 +27,12 @@
     (directory-files source)))
 (def (source-build-fixture owner
                           (existing (getenv "CORE_QUALIFICATION_ROOT" #f))
-                          (installed (getenv "GERBIL_PATH" (path-expand ".gerbil" owner))))
+                          (installed (getenv "GERBIL_PATH" (path-expand ".gerbil" owner)))
+                          sample: (sample #f))
   (if existing
     (.o root: existing state: installed cold: #f)
     (let* ((scratch (make-temporary-file-name "core-source-build-"))
-           (fixture-root (path-expand "source/yuanxu" scratch))
+           (fixture-root (path-expand "source/tao3k/yuanxu" scratch))
            (fixture-state (path-expand "gerbil" scratch))
            (lib (path-expand "lib" installed)))
       ;; Keep failed fixtures for diagnosis. No source checkout is modified.
@@ -50,10 +51,16 @@
       (create-directory* (path-expand "lib" fixture-state))
       (when (file-exists? lib)
         (link-fixture-dependencies lib (path-expand "lib" fixture-state)))
+      ;; The native build smoke exercises one authored Module. Schema's
+      ;; complete import graph has separate build and selection gates.
+      (def selected (if sample (string->symbol (path-strip-directory sample)) 'json-schema))
+      (when sample
+        (copy-fixture-tree sample (path-expand (string-append "modules/" (symbol->string selected)) fixture-root)
+          (lambda (_path name kind) (and (eq? kind 'regular) (string-suffix? ".ss" name)))))
       ;; Narrow only fixture selection and retained roots, never build.ss.
       (call-with-output-file (list path: (path-expand "init.ss" fixture-root) truncate: #t)
         (lambda (port)
-          (write '(yuanxu! mode: explicit source: "./modules" (json-schema)) port)))
+          (write `(yuanxu! mode: explicit source: "./modules" (,selected)) port)))
       (call-with-output-file (list path: (path-expand "core-spec.ss" fixture-root) truncate: #t)
         (lambda (port)
           (write '(export core-spec) port) (newline port)

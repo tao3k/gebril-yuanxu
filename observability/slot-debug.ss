@@ -12,10 +12,10 @@
         (only-in :clan/poo/support/debug traced-function)
         (only-in :clan/poo/debug DDT)
         (only-in :std/error deferror-class)
-        (only-in :yuanxu/observability/types
+        (only-in :tao3k/yuanxu/observability/types
                  YuanxuDebugSlotPolicyContract
                  YuanxuDebugSlotReceiptContract)
-        (only-in :yuanxu/observability/funcs
+        (only-in :tao3k/yuanxu/observability/funcs
                  yuanxu-debug-slot-policy
                  yuanxu-debug-slot-receipt
                  yuanxu-debug-slot-receipt-sexp))

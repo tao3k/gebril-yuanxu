@@ -5,8 +5,8 @@
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/list/list find)
         (only-in :clan/poo/object .o .get .call)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (rename-in
           (only-in "qualification/module-publication/fixtures.ss"
                    with-publication-source write-file exception-message publication-feature-view)
@@ -18,7 +18,7 @@
 (def (feature-interface-roles root)
   (.o
     interface:
-    `((import (only-in :yuanxu/module-system/feature/model feature-descriptor))
+    `((import (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor))
       (.def Fixture
         identity: 'custom/example
         core:
@@ -112,7 +112,7 @@
           (def imported-source (path-expand "label.ss" (path-directory facade)))
           (create-directory* (path-directory facade))
           (write-file facade
-            "(import (only-in :yuanxu/module-system/source/declaration .def))
+            "(import (only-in :tao3k/yuanxu/module-system/source/declaration .def))
              (.def Feature refine: refine-memory contract: MemoryContract)")
           (write-file types
             "(import (only-in :clan/poo/object .o .cc)
@@ -301,7 +301,7 @@
             (call-with-output-string
               (lambda (port)
                 (write
-                  `(import (only-in :yuanxu/module-system/feature/model feature-descriptor)) port)
+                  `(import (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor)) port)
                 (write
                   `(.def Fixture identity: 'custom/example
                     core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope)

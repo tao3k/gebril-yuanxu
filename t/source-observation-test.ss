@@ -4,15 +4,15 @@
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/number IntegerRange)
-        (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence)
-        (only-in :yuanxu/admission/source SourceAdmissionContract. source-diagnose-at call-with-source-slot-reads)
-        (only-in :yuanxu/configuration/slot-origin field-slot-origins/value admit-field-sources!)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract. source-diagnose-at call-with-source-slot-reads)
+        (only-in :tao3k/yuanxu/configuration/slot-origin field-slot-origins/value admit-field-sources!)
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  current-module-source-observer call-with-module-source-read-cache
                  module-source-admit-current! module-source-type
                  call-with-module-source-operation-measurement call-with-collected-module-sources)
-        (only-in :yuanxu/observability/testing-case yuanxu-default-testing-case-profile)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-default-testing-case-profile)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in "./qualification/service-publication/fixtures.ss" read-overrides))
 (export source-observation-test test-cleanup!)

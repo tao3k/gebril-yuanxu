@@ -1,8 +1,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (only-in :yuanxu/module-system/graph/funs module-closure)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe))
+        (only-in :tao3k/yuanxu/module-system/graph/funs module-closure)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe))
 (export module-closure-work-test)
 
 ;; Independent finite saturation oracle; no DFS stack or production index.

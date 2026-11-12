@@ -7,7 +7,7 @@
 ;;; Invariant: facts are Scheme control-plane data; Lean and runtime payloads
 ;;; are final projections, not semantic owners.
 
-(import (only-in :yuanxu/module-system/schema/slot-contracts
+(import (only-in :tao3k/yuanxu/module-system/schema/slot-contracts
                  yuanxu-contract-slot-key
                  yuanxu-contract-slot-name
                  yuanxu-contract-slot-report-kind

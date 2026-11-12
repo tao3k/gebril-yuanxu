@@ -4,11 +4,11 @@
         (only-in :std/error Error? Error-message)
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :yuanxu/module-system/source/admission module-source-read module-source-observe
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read module-source-observe
                  module-source-admit-current! call-with-collected-module-sources
                  current-module-source-observer call-with-module-source-read-cache
                  call-with-module-source-operation-measurement module-source-measure-operation)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-source-cost-test)
 (def module-source-cost-test
   (test-suite "Source guard accounting"

@@ -16,7 +16,7 @@
         (only-in :std/text/pregexp
                  pregexp
                  pregexp-match)
-        (only-in :yuanxu/utilities/functional
+        (only-in :tao3k/yuanxu/utilities/functional
                  yuanxu-predicate-and
                  yuanxu-predicate-or
                  yuanxu-predicate-exactly-one)

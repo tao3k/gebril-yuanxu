@@ -4,9 +4,9 @@
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/admission module-source-read))
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read))
 (export module-configuration-build-test)
 (def (assert name value)
   (unless value (error "assertion failed" name))
@@ -42,7 +42,7 @@
         (shell root "app/two" "(def Config (.o value: 2))" requirement #f)
         (write-source (path-expand "build.ss" builder)
           (string-append
-            "(import (only-in :yuanxu/module-system/building/configuration-source yuanxu-configuration-source)) "
+            "(import (only-in :tao3k/yuanxu/module-system/building/configuration-source yuanxu-configuration-source)) "
             "(call-with-output-file (list path: "
             (call-with-output-string (cut write (path-expand "build-count" root) <>))
             " append: #t) (lambda (port) (display \"x\" port))) "

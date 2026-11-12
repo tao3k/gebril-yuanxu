@@ -6,14 +6,14 @@
         (only-in :std/encoding/json write-json)
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture with-yuanxu-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture with-yuanxu-fixture)
         (only-in "./qualification/testing/directory.ss" write-source)
         (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture)
-        (only-in :yuanxu/module-system/building/artifacts
+        (only-in :tao3k/yuanxu/module-system/building/artifacts
           call-with-build-artifact-issuance admit-build-artifacts!
           run-build-artifact-process)
         "./qualification/build-publication/projection"
-        (only-in :yuanxu/admission/publication AdmissionPublication.))
+        (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.))
 (export build-artifact-publication-test test-cleanup!)
 (def observations '())
 (def handoff-observations '())

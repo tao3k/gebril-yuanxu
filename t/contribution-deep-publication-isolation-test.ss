@@ -6,10 +6,10 @@
         (only-in :std/error Error? Error-message)
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        (only-in :yuanxu/admission/publication AdmissionPublication.)
-        (only-in :yuanxu/module-system/source/link yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/admission module-source-read module-source-type)
-        (only-in :yuanxu/module-system/source/objects
+        (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
+        (only-in :tao3k/yuanxu/module-system/source/link yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read module-source-type)
+        (only-in :tao3k/yuanxu/module-system/source/objects
           make-yuanxu-module-source-ref yuanxu-module-source-ref-value))
 (export contribution-deep-publication-isolation-test test-cleanup!)
 (def completed 0)
@@ -25,7 +25,7 @@
     (begin (for-each (lambda (name) (remove-tree (path-expand name path))) (directory-files path))
            (delete-directory path)) (delete-file path)))
 (def TypesSource
-  "(import :clan/poo/object (only-in :clan/poo/mop Type.) (only-in :yuanxu/object-types/contracts yuanxu-predicate-type YuanxuContract. yuanxu-classification-evidence))
+  "(import :clan/poo/object (only-in :clan/poo/mop Type.) (only-in :tao3k/yuanxu/object-types/contracts yuanxu-predicate-type YuanxuContract. yuanxu-classification-evidence))
 (def ScopeContract (.cc Type. identity: 'fixture/scope .element?: object?))
 (def ObjectValue (yuanxu-predicate-type 'fixture/object object?))
 (def ApplicationContract

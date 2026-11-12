@@ -2,7 +2,7 @@
 ;;; CI metadata only: no process execution, Harness or verdict interpretation.
 (import (only-in :std/encoding/json json->string)
         (only-in :clan/poo/object .get)
-        (only-in "../init.ss" yuanxu.init.exports))
+        (only-in "../init.ss" tao3k/yuanxu.init.exports))
 (export main)
 
 (def test-groups
@@ -94,7 +94,7 @@
           (cons "heap" (if (null? large) "2G" "4G")))))
 
 (def (published-files)
-  (def tests (.get yuanxu.init.exports tests))
+  (def tests (.get tao3k/yuanxu.init.exports tests))
   ((.get tests admit-current))
   (def files (.get tests spec))
   (unless (and (pair? files) (andmap string? files))

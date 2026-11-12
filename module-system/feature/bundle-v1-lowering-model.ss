@@ -8,7 +8,7 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/list/list fold-right)
         (runtime: :clan/poo/object)
-        :yuanxu/utilities/functional)
+        :tao3k/yuanxu/utilities/functional)
 
 (export (except-out #t define-poo-value))
 

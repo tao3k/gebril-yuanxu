@@ -10,7 +10,7 @@
         (only-in :clan/poo/mop validate)
         (only-in :std/list/list find)
         "types.ss"
-        :yuanxu/module-system/source/objects)
+        :tao3k/yuanxu/module-system/source/objects)
 
 (export ModuleSourceBinding ModuleCatalog
         yuanxu-module-catalog-entry->alist

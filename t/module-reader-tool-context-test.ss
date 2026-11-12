@@ -9,10 +9,10 @@
         (only-in :std/text/pregexp pregexp-match)
         (only-in :clan/poo/object .get .call)
         (only-in :gerbil/expander core-import-module module-context-path)
-        (only-in :yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
         (only-in "qualification/module-publication/fixtures.ss" with-publication-source)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/admission module-source-read current-module-source-observer
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read current-module-source-observer
                  call-with-module-source-operation-measurement))
 (export module-reader-tool-context-test test-setup! test-cleanup!)
 (def Fixture (selection-fixture (path-expand ".." (path-directory (this-source-file)))))
@@ -50,7 +50,7 @@
   (def module-reader-tool-context-test
     (test-suite "Compiler tool reuse preserves source confinement"
       (test-case "installed execution does not own an unrelated checkout"
-        (def tool (core-import-module ':yuanxu/module-system/source/declaration))
+        (def tool (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
         (check-equal? (path-extension (module-context-path tool)) ".ssi")
         (with-publication-source
           (lambda (_root _module-root _source view)
@@ -61,7 +61,7 @@
                 ((.get graph admit-current))
                 (check-equal? (.get graph selected-graph module-order) '(custom/example)))))))
       (test-case "captured installed artifact path remains part of runtime identity"
-        (def tool (core-import-module ':yuanxu/module-system/source/declaration))
+        (def tool (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
         (def path (module-context-path tool))
         (def reader (module-publication-reader))
         (dynamic-wind
@@ -71,7 +71,7 @@
                             (lambda () ((.get reader admit-current)))) #t))
           (lambda () (slot-set! tool 'path path))))
       (test-case "observer return cannot change installed tool identity"
-        (def tool (core-import-module ':yuanxu/module-system/source/declaration))
+        (def tool (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
         (def path (module-context-path tool))
         (def reader (module-publication-reader))
         (dynamic-wind
@@ -131,7 +131,7 @@
             (let ((path (path-expand "declaration.ss" foreign))
                   (marker (path-expand "evaluated" foreign)))
               (write-source path
-                (string-append "package: yuanxu/module-system/source\n"
+                (string-append "package: tao3k/yuanxu/module-system/source\n"
                   "(call-with-output-file "
                   (call-with-output-string (lambda (port) (write marker port)))
                   " (lambda (p) (display \"unexpected\" p)))\n"))
@@ -151,11 +151,11 @@
         (def identities (map (lambda (entry) (.get entry compiler-identity)) entries))
         (for-each
           (lambda (identity) (check-equal? (and (member identity identities) #t) #t))
-          '(yuanxu/modules/json-schema/types yuanxu/modules/json-schema/objects
-            yuanxu/modules/json-schema/func yuanxu/modules/json-schema/config
-            yuanxu/modules/json-schema/json-schema-source
-            yuanxu/modules/json-schema/json-schema-contract
-            yuanxu/modules/json-schema/contracts yuanxu/modules/json-schema/interface))
+          '(tao3k/yuanxu/modules/json-schema/types tao3k/yuanxu/modules/json-schema/objects
+            tao3k/yuanxu/modules/json-schema/func tao3k/yuanxu/modules/json-schema/config
+            tao3k/yuanxu/modules/json-schema/json-schema-source
+            tao3k/yuanxu/modules/json-schema/json-schema-contract
+            tao3k/yuanxu/modules/json-schema/contracts tao3k/yuanxu/modules/json-schema/interface))
         (let* ((base (path-expand "modules/json-schema" root))
                (first (path-expand "cycle-a.ss" base))
                (second (path-expand "cycle-b.ss" base)))

@@ -6,13 +6,13 @@
 ;;; A POO policy around runtime std/test cases.  This does not own test
 ;;; discovery, assertion semantics, or the gxtest runner.
 (import (only-in :std/test test-case)
-        (only-in :yuanxu/ops/progress call-with-execution-progress execution-progress!
+        (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress execution-progress!
                  execution-idle-seconds execution-total-seconds)
         (runtime: :clan/poo/object)
         (only-in :gerbil/expander core-resolve-identifier core-context-root
                  feature-binding? current-expander-context make-top-context eval-syntax)
-        (only-in :yuanxu/observability/output yuanxu-write-observation-line!)
-        (only-in :yuanxu/observability/memory
+        (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :tao3k/yuanxu/observability/memory
                  yuanxu-debug-memory-policy
                  yuanxu-debug-allocation-current?
                  yuanxu-debug-cpu-microseconds
@@ -224,7 +224,7 @@
     (let (trace? (feature-binding?
                   (core-resolve-identifier 'yuanxu-module-test-trace 0 (core-context-root))))
       (parameterize ((current-expander-context (make-top-context)))
-        (eval-syntax '(import :yuanxu/module-system/building/test-observation))
+        (eval-syntax '(import :tao3k/yuanxu/module-system/building/test-observation))
         (.cc (eval-syntax 'ModuleTestingProfile.) 'emit? #t 'trace-enabled? trace?)))))
 (def (yuanxu-selected-testing-case-profile)
   (let (profile (yuanxu-current-testing-case-profile))

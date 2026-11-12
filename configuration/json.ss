@@ -4,8 +4,8 @@
 (import (runtime: :clan/poo/object)
         (only-in :std/encoding/json JSONReadOptions current-json-read-options read-json)
         (only-in :std/list/walist PureAList? walist->list)
-        (only-in :yuanxu/configuration/slot-origin field-slot-origins/value)
-        (only-in :yuanxu/module-system/source/admission module-source-read module-source-admit-current!))
+        (only-in :tao3k/yuanxu/configuration/slot-origin field-slot-origins/value)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read module-source-admit-current!))
 (export config-json-file config-defaults config-field-origin current-configuration-input-observer)
 ;; A reader-local capability; ordinary callers do not maintain asset lists.
 (def current-configuration-input-observer (make-parameter #f))

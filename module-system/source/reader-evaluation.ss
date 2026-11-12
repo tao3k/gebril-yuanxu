@@ -11,8 +11,8 @@
                  module-import-phi import-set? import-set-source import-set-phi)
         (only-in :std/list/list append-map)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!)
-        (only-in :yuanxu/object-family/read-projection owned-read-function-scope?)
-        (only-in :yuanxu/module-system/source/admission current-module-source-observer
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  module-source-measure-operation module-source-type)
         (only-in :gerbil/runtime/loader list-modules))
 (export register-reader-wrapper! reader-evaluation-observers observe-reader-work release-reader-expansions!

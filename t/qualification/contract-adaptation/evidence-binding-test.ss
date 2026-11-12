@@ -5,8 +5,8 @@
         (only-in :clan/poo/mop element?)
         :clan/poo/object-contract
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        :yuanxu/modules/json-schema/contracts
-        (only-in :yuanxu/object-types/contracts
+        :tao3k/yuanxu/modules/json-schema/contracts
+        (only-in :tao3k/yuanxu/object-types/contracts
           YuanxuContract. yuanxu-contract-admit
           yuanxu-classification-evidence
           yuanxu-validation-evidence-accepted?))

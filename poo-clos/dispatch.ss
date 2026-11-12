@@ -10,7 +10,7 @@
         (only-in :std/list/list drop filter-map find flatten1)
         "types.ss" "objects.ss" "method-combination.ss"
         "funcs.ss"
-        (only-in :yuanxu/object-family/read-projection owned-read-open! owned-read-method! owned-read-hook-owner!))
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-open! owned-read-method! owned-read-hook-owner!))
 
 (export poo-clos-compute-applicable-methods poo-clos-call
         poo-clos-compute-effective-method

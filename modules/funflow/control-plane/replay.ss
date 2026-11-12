@@ -6,8 +6,8 @@
 ;;; Boundary: replay policy validates receipts against planned graph evidence.
 ;;; Invariant: replay validation never re-executes tasks or adapter requests.
 
-(import :yuanxu/modules/funflow/control-plane/graph
-        :yuanxu/modules/funflow/control-plane/receipt)
+(import :tao3k/yuanxu/modules/funflow/control-plane/graph
+        :tao3k/yuanxu/modules/funflow/control-plane/receipt)
 
 (export make-replay-report
         replay-report?

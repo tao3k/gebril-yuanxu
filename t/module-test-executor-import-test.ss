@@ -4,7 +4,7 @@
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :gerbil/expander current-expander-module-import)
-        (only-in :yuanxu/module-system/building/test-projection
+        (only-in :tao3k/yuanxu/module-system/building/test-projection
                  module-test-file-source))
 (export module-test-executor-import-test)
 

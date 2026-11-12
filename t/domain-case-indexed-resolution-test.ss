@@ -5,10 +5,10 @@
 
 ;;; Boundary: semantic equivalence checks for indexed DomainCase resolution.
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         (only-in :clan/poo/object .ref)
-        :yuanxu/module-system/feature/domain-case/contracts)
+        :tao3k/yuanxu/module-system/feature/domain-case/contracts)
 
 (export domain-case-indexed-resolution-test)
 

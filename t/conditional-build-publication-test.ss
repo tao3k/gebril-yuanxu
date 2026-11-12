@@ -2,10 +2,10 @@
 (import :std/test :clan/poo/object
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" write-source)
         (only-in "./qualification/service-publication/fixtures.ss" ServicesFixture)
-        (only-in :yuanxu/module-system/source/admission module-source-read)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read)
         "./qualification/build-publication/conditional-commit")
 (export conditional-build-publication-test)
 (def conditional-build-publication-test

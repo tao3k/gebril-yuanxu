@@ -2,9 +2,9 @@
 ;;; Minimal probe only; real service validation is separate in each test suite.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :yuanxu/object-types/contracts yuanxu-classification-evidence)
-        (only-in :yuanxu/admission/source SourceAdmissionContract.)
-        (only-in :yuanxu/module-system/source/admission current-module-source-phase))
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-phase))
 (export probe on-file refuses)
 (def (refuses result message)
   (check-equal? (Error? result) #t)

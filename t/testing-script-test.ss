@@ -6,9 +6,9 @@
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-string)
-        (only-in :yuanxu/testing TestingScript. admit-testing-result
+        (only-in :tao3k/yuanxu/testing TestingScript. admit-testing-result
                  admit-testing-process-result make-compiler-progress-reader)
-        (only-in :yuanxu/ops/progress call-with-execution-progress
+        (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress
                  execution-progress-idle-milliseconds))
 (export testing-script-test)
 ;; Synthetic wire receipts exercise policy, not runtime-harness qualification.
@@ -37,7 +37,7 @@
           (def cleanup (make-compiler-progress-reader))
           ;; Runtime clean removes real products between the hot and rebuild
           ;; invocations. Its fresh count=1 is work, not an idle heartbeat.
-          (cleanup "... remove lib/yuanxu/core-spec.ssi\n")
+          (cleanup "... remove lib/tao3k/yuanxu/core-spec.ssi\n")
           (check-equal? (execution-progress-idle-milliseconds state) 0)
           (set! now 20001)
           (cleanup "clean completed\n")

@@ -5,10 +5,10 @@
 
 ;;; Boundary: public facade for module object contracts and object-aware wrappers.
 
-(import :yuanxu/module-system/schema/support/contracts
-        :yuanxu/module-system/schema/support/slot-policy
-        :yuanxu/module-system/schema/support/field-resolution
-        :yuanxu/module-system/schema/support/object)
+(import :tao3k/yuanxu/module-system/schema/support/contracts
+        :tao3k/yuanxu/module-system/schema/support/slot-policy
+        :tao3k/yuanxu/module-system/schema/support/field-resolution
+        :tao3k/yuanxu/module-system/schema/support/object)
 
 (export yuanxu-module-object-kind
         yuanxu-module-field-contract-kind

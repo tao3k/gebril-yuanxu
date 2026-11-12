@@ -6,9 +6,9 @@
 ;;; Boundary: adapters normalize calls to heavy runtime implementations.
 ;;; Invariant: this module only defines the request-only placeholder adapter.
 
-(import :yuanxu/modules/funflow/control-plane/task
-        :yuanxu/modules/funflow/control-plane/runtime-protocol
-        :yuanxu/modules/funflow/control-plane/runtime-command-invocation)
+(import :tao3k/yuanxu/modules/funflow/control-plane/task
+        :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol
+        :tao3k/yuanxu/modules/funflow/control-plane/runtime-command-invocation)
 
 (export RuntimeAdapterContract
         make-runtime-adapter

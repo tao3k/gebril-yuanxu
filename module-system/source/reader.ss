@@ -3,22 +3,22 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Assemble the public reader over one generation-local source session.
 (import (only-in :clan/poo/object .o .ref object-construction-current?)
-        (only-in :yuanxu/object-family/read-projection current-owned-read-open-guard
+        (only-in :tao3k/yuanxu/object-family/read-projection current-owned-read-open-guard
                  call-with-owned-source-reads owned-read-function-scope?)
-        (only-in :yuanxu/module-system/source/directory
+        (only-in :tao3k/yuanxu/module-system/source/directory
                  directory-candidate-guard? directory-candidate-guard-invoke)
-        (only-in :yuanxu/module-system/source/observations module-source-measure-replay)
-        (only-in :yuanxu/module-system/source/publication module-publication-recorded-dependencies
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-measure-replay)
+        (only-in :tao3k/yuanxu/module-system/source/publication module-publication-recorded-dependencies
                  module-publication-contract-current?)
-        :yuanxu/module-system/source/admission
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/source/reader-session
-        :yuanxu/module-system/source/reader-support
-        :yuanxu/module-system/source/reader-preparation
-        :yuanxu/module-system/source/reader-guards
-        :yuanxu/module-system/source/reader-evaluation
-        :yuanxu/module-system/source/configuration-reader
-        :yuanxu/module-system/source/publication-reader)
+        :tao3k/yuanxu/module-system/source/admission
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/source/reader-session
+        :tao3k/yuanxu/module-system/source/reader-support
+        :tao3k/yuanxu/module-system/source/reader-preparation
+        :tao3k/yuanxu/module-system/source/reader-guards
+        :tao3k/yuanxu/module-system/source/reader-evaluation
+        :tao3k/yuanxu/module-system/source/configuration-reader
+        :tao3k/yuanxu/module-system/source/publication-reader)
 (export module-publication-reader module-prepared-source-binding call-with-publication-reads)
 
 (def (module-publication-reader (previous-context #f))

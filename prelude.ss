@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 prelude: :gerbil/core
-package: yuanxu
+package: tao3k/yuanxu
 
 ;; POO owns the ordinary language surface. Compile-time POO construction uses
 ;; an explicit for-syntax import rather than duplicating its entire closure.

@@ -10,22 +10,22 @@
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
                  slot-read-key slot-read-value slot-read-receiver)
         (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        :yuanxu/module-system/source/interface
-        :yuanxu/module-system/loader/load-path
-        :yuanxu/module-system/source/collection
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/source/projection
-        :yuanxu/module-system/loader/objects
-        :yuanxu/module-system/authoring/admission
-        (only-in :yuanxu/module-system/authoring/roles ModuleAuthoringExecutor.
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        :tao3k/yuanxu/module-system/source/interface
+        :tao3k/yuanxu/module-system/loader/load-path
+        :tao3k/yuanxu/module-system/source/collection
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/source/projection
+        :tao3k/yuanxu/module-system/loader/objects
+        :tao3k/yuanxu/module-system/authoring/admission
+        (only-in :tao3k/yuanxu/module-system/authoring/roles ModuleAuthoringExecutor.
                  yuanxu-default-module-authoring-profile)
-        (only-in :yuanxu/poo-clos/objects
+        (only-in :tao3k/yuanxu/poo-clos/objects
                  poo-clos-generic-protocol poo-clos-generic-function
                  poo-clos-compose-method-bundle poo-clos-add-method poo-clos-remove-method)
-        (only-in :yuanxu/poo-clos/dispatch poo-clos-call)
-        :yuanxu/module-system/authoring/import-policy
-        :yuanxu/module-system/authoring/projection)
+        (only-in :tao3k/yuanxu/poo-clos/dispatch poo-clos-call)
+        :tao3k/yuanxu/module-system/authoring/import-policy
+        :tao3k/yuanxu/module-system/authoring/projection)
 (export module-authoring-test)
 (def RepositoryPolicy
   (.o (:: @ SourceInspectionPolicy.)

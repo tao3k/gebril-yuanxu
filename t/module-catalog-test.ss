@@ -7,10 +7,10 @@
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/object .o .get .cc)
         (only-in :clan/poo/mop make-instance element?)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/catalog/metadata
-        :yuanxu/module-system/catalog/objects)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/catalog/metadata
+        :tao3k/yuanxu/module-system/catalog/objects)
 
 (export module-catalog-test)
 

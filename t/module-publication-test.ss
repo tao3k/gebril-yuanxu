@@ -20,24 +20,24 @@
                  core-import-module core-expand expander-context-id stx-source
                  current-expander-eval module-context? module-context-path module-context-code
                  core-context-prelude core-module->prelude-context expander-context-table)
-        (only-in :yuanxu/module-system/source/reader module-publication-reader)
-        (only-in :yuanxu/module-system/building/source-closure
+        (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure
                  for-each-build-module yuanxu-bootstrap-contexts)
-        (only-in :yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
-        (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
-        (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
-        (only-in :yuanxu/module-system/building/artifacts current-build-output-directory)
-        (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
-        (only-in :yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        :yuanxu/module-system/source/objects
-        (only-in :yuanxu/module-system/source/collection
+        (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
+        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
+        (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
+        (only-in :tao3k/yuanxu/module-system/building/artifacts current-build-output-directory)
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
+        :tao3k/yuanxu/module-system/source/objects
+        (only-in :tao3k/yuanxu/module-system/source/collection
                  make-yuanxu-module-source-collection yuanxu-module-source-collection-locate)
-        :yuanxu/module-system/source/admission
-        (only-in :yuanxu/module-system/source/publication ModulePublicationContract
+        :tao3k/yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/source/publication ModulePublicationContract
                  module-publication-contract-current?)
-        :yuanxu/module-system/source/preparation
-        :yuanxu/module-system/interface)
+        :tao3k/yuanxu/module-system/source/preparation
+        :tao3k/yuanxu/module-system/interface)
 (import (only-in "qualification/module-publication/fixtures.ss" write-file remove-tree with-publication-source domain-entry-count gerbil-import-value exception-message PublicLibraryFixture core-source-root)
         (only-in "qualification/module-publication/controls.ss" register-reader-root-collection-cases! register-build-support-control-cases!))
 (export module-publication-test)
@@ -280,7 +280,7 @@
           (def reader (module-publication-reader))
           (def prelude
             (core-module->prelude-context
-              (core-import-module ':yuanxu/module-system/source/config-prelude)))
+              (core-import-module ':tao3k/yuanxu/module-system/source/config-prelude)))
           (def gerbil-eval (current-expander-eval))
           (def interfaces (make-hash-table-eq))
           (parameterize

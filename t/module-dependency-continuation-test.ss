@@ -6,13 +6,13 @@
                  object-%reads object-%instance object-%all-slots object-read-issued?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer slot-read-value)
         (only-in :clan/poo/mop Type.)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-read current-module-source-observer admit-module-value!)
-        (only-in :yuanxu/module-system/source/publication ModulePublicationContract
+        (only-in :tao3k/yuanxu/module-system/source/publication ModulePublicationContract
                  module-publication-contract-current? module-publication-dependency-projection
                  module-publication-recorded-dependencies)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file))
 (export module-dependency-continuation-test)
 (def module-dependency-continuation-test

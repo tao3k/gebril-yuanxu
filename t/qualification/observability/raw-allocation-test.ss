@@ -1,7 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Runtime VM positive control before any Case watchdog has been terminated.
 (import :std/test :clan/poo/object
-        (only-in :yuanxu/observability/memory yuanxu-debug-memory-snapshot))
+        (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-memory-snapshot))
 (export raw-allocation-test)
 
 (def raw-allocation-test

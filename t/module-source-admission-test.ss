@@ -12,18 +12,18 @@
         (prefix-in :clan/poo/testing/property/test pbt.)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-receiver slot-read-key)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/object-family/read-projection
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/object-family/read-projection
                  call-with-owned-read-projection current-owned-read-open-guard)
-        (only-in :yuanxu/module-system/authoring/roles make-default-module-authoring-profile)
-        (only-in :yuanxu/module-system/source/interface yuanxu-module-interface)
-        (only-in :yuanxu/module-system/types ModuleSourceRoleContract)
-        (only-in :yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
-        :yuanxu/module-system/source/collection
-        :yuanxu/module-system/source/objects
-        :yuanxu/module-system/source/admission
-        (only-in :yuanxu/module-system/source/observations module-source-text-guard)
-        :yuanxu/module-system/interface)
+        (only-in :tao3k/yuanxu/module-system/authoring/roles make-default-module-authoring-profile)
+        (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
+        (only-in :tao3k/yuanxu/module-system/types ModuleSourceRoleContract)
+        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        :tao3k/yuanxu/module-system/source/collection
+        :tao3k/yuanxu/module-system/source/objects
+        :tao3k/yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-text-guard)
+        :tao3k/yuanxu/module-system/interface)
 (export module-source-admission-test)
 (def ScopeContract
   (.cc Type. identity: 'test/source-scope .element?: object?))

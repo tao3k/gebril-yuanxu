@@ -5,11 +5,11 @@
 ;;; Boundary: adapts module configuration into Funflow and CI/CD POO projections.
 ;;; Invariant: adapters reuse module contracts and do not execute workflow effects.
 (import (only-in :clan/poo/object .ref)
-        :yuanxu/module-system/selection/objects
-        :yuanxu/utilities/final-projection-syntax
-        :yuanxu/modules/funflow/check-types
-        :yuanxu/modules/funflow/check-objects
-        :yuanxu/modules/funflow/config-prototypes
+        :tao3k/yuanxu/module-system/selection/objects
+        :tao3k/yuanxu/utilities/final-projection-syntax
+        :tao3k/yuanxu/modules/funflow/check-types
+        :tao3k/yuanxu/modules/funflow/check-objects
+        :tao3k/yuanxu/modules/funflow/config-prototypes
 )
 
 (export yuanxu-funflow-require

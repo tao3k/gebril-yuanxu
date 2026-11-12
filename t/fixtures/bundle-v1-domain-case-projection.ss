@@ -2,9 +2,9 @@
 
 (import (only-in :std/list/list map)
         :clan/poo/object
-        :yuanxu/utilities/functional
-        :yuanxu/module-system/feature/domain-case/interface
-        :yuanxu/module-system/feature/interface)
+        :tao3k/yuanxu/utilities/functional
+        :tao3k/yuanxu/module-system/feature/domain-case/interface
+        :tao3k/yuanxu/module-system/feature/interface)
 
 (def (fixture-id prefix index)
   (string->symbol
@@ -77,21 +77,21 @@
 (def (runtime-capability index)
   (feature-adapter-capability
    (fixture-id "bundle-runtime-capability" index)
-   'yuanxu/python-runtime-cffi
+   'tao3k/yuanxu/python-runtime-cffi
    'yuanxu.runtime-c.bundle
    +feature-runtime-c-bundle-version+))
 
 (def (evidence-capability index)
   (feature-adapter-capability
    (fixture-id "bundle-evidence-capability" index)
-   'yuanxu/lean-evidence-adapter
+   'tao3k/yuanxu/lean-evidence-adapter
    'yuanxu.lean-evidence
    1))
 
 (def duplicate-runtime-capability
   (feature-adapter-capability
    'bundle-runtime-capability-duplicate
-   'yuanxu/rust-runtime
+   'tao3k/yuanxu/rust-runtime
    'yuanxu.runtime-c.bundle-duplicate
    1))
 

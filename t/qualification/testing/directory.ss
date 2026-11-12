@@ -5,7 +5,7 @@
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/test check-equal?)
-        (only-in :yuanxu/observability/testing-fixture with-yuanxu-fixture))
+        (only-in :tao3k/yuanxu/observability/testing-fixture with-yuanxu-fixture))
 (export DirectoryFixture DirectoryFailureFixture write-source)
 
 (def (write-source path text)

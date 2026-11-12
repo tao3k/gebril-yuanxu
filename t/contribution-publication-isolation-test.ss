@@ -6,13 +6,13 @@
         (only-in :clan/poo/mop define-type)
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        :yuanxu/poo-clos/interface
-        (only-in :yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence)
-        (only-in :yuanxu/admission/publication AdmissionPublication.)
-        (only-in :yuanxu/module-system/source/selection select-module-graph)
-        (only-in :yuanxu/module-system/source/build module-build-graph)
-        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
-        (only-in :yuanxu/module-system/source/admission module-source-read module-source-admit-current!))
+        :tao3k/yuanxu/poo-clos/interface
+        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
+        (only-in :tao3k/yuanxu/module-system/source/selection select-module-graph)
+        (only-in :tao3k/yuanxu/module-system/source/build module-build-graph)
+        (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-read module-source-admit-current!))
 (export contribution-publication-isolation-test test-cleanup!)
 
 (def completed 0)

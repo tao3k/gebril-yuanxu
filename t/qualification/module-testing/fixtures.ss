@@ -42,7 +42,7 @@
                   (dynamic-wind void
                     (lambda ()
                       (clear-temporary-file!
-                        (path-normalize (path-expand "../.." (.get fixture root)))))
+                        (path-normalize (path-expand "../../.." (.get fixture root)))))
                     (lambda ()
                       (set-load-path! (.get fixture previous-path))
                       (setenv "GERBIL_PATH" (.get fixture previous-prefix)))))))
@@ -53,7 +53,7 @@
   (def dependency (core-resolve-library-module-path ':clan/poo/object-state))
   (when (string-suffix? ".ss" dependency)
     (copy-fixture-tree (path-directory dependency)
-      (path-expand "../clan/poo" root)
+      (path-expand "../../clan/poo" root)
       (lambda (_path name kind)
         (and (not (string-prefix? "." name))
              (not (member name '("t" "tests" "doc" "docs")))
@@ -126,7 +126,7 @@
             (lambda (_path file _kind) (not (string-prefix? "." file)))))
         '("json-schema" "funflow"))
       (write-forms (path-expand "gerbil.pkg" root)
-        '((package: compiled-namespace-client prelude: :yuanxu/prelude)))
+        '((package: compiled-namespace-client prelude: :tao3k/yuanxu/prelude)))
       (write-forms (path-expand "init.ss" root)
         '((yuanxu! source: "./modules" mode: explicit (json-schema))))
       (call-with-output-file (list path: (path-expand "build.ss" root) permissions: #o755)
@@ -135,7 +135,7 @@
           (for-each (cut pretty-print <> port)
             '((import :clan/poo/object
                       (only-in :std/source this-source-file)
-                      (only-in :yuanxu/module-system/building/source-closure package-library-spec)
+                      (only-in :tao3k/yuanxu/module-system/building/source-closure package-library-spec)
                       (only-in :std/build-script defbuild-script)
                       (only-in "./init.ss" compiled-namespace-client.init.exports))
               (def consumer-spec

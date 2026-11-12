@@ -3,11 +3,11 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/object .o .mix .ref)
         (only-in :clan/poo/mop element? validate TypeError?)
         (only-in :std/test test-suite check-equal? check-exception)
-        :yuanxu/module-system/schema/relations)
+        :tao3k/yuanxu/module-system/schema/relations)
 (export module-schema-relations-test)
 
 (def module-schema-relations-test

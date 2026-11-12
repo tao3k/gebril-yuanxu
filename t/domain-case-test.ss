@@ -2,13 +2,13 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import :yuanxu/composition/roles
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import :tao3k/yuanxu/composition/roles
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :yuanxu/object-family/role-syntax
-        :yuanxu/module-system/feature/domain-case/interface
-        :yuanxu/module-system/feature/domain-case/syntax)
+        :tao3k/yuanxu/object-family/role-syntax
+        :tao3k/yuanxu/module-system/feature/domain-case/interface
+        :tao3k/yuanxu/module-system/feature/domain-case/syntax)
 
 
 (import "./domain-case-test-support")

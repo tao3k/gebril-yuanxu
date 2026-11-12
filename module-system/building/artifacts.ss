@@ -13,7 +13,7 @@
         (only-in :std/misc/process run-process)
         (only-in :std/os/flock open-output-file/lock)
         (only-in :std/os/device device-close)
-        (only-in :yuanxu/ops/progress copy-process-output make-test-progress-reader)
+        (only-in :tao3k/yuanxu/ops/progress copy-process-output make-test-progress-reader)
         (prefix-in :clan/poo/component-publication publication.)
         (prefix-in :clan/poo/component-revision revision.)
         (prefix-in :clan/poo/generalized-graph runtime-graph.)
@@ -25,7 +25,7 @@
         (only-in :clan/poo/feedback-graph publish-feedback-graph graph-cache-ref)
         (only-in :clan/poo/feedback-cache group-closed)
         (only-in :clan/poo/generalized-closure closed-raw)
-        (only-in :yuanxu/module-system/source/admission module-source-type module-source-read module-source-admit-current!))
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-type module-source-read module-source-admit-current!))
 (export call-with-build-artifact-issuance admit-build-artifacts! invalidate-build-artifacts! clean-build-artifacts!
         current-build-output-directory run-build-artifact-process
         accept-build-artifact-handoff! read-build-artifact-handoff

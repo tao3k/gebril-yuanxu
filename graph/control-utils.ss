@@ -7,8 +7,8 @@
 ;;; Invariant: no runtime execution; helpers only shape graph facts.
 
 (import (only-in :std/list/list any every filter fold)
-        :yuanxu/graph/types-core
-        :yuanxu/graph/algorithms)
+        :tao3k/yuanxu/graph/types-core
+        :tao3k/yuanxu/graph/algorithms)
 
 (export +yuanxu-graph-conditional-edge-kinds+
         +yuanxu-graph-loop-edge-kinds+

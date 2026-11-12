@@ -8,9 +8,9 @@
 
 (import
         (only-in :std/list/list any)
-        (only-in :yuanxu/utilities/algorithms
+        (only-in :tao3k/yuanxu/utilities/algorithms
                  yuanxu-read-datums/append-map)
-        (only-in :yuanxu/module-system/observability/presentation
+        (only-in :tao3k/yuanxu/module-system/observability/presentation
                  yuanxu-poo-slot-authoring-datum-bindings))
 
 (export yuanxu-scheme-lexical-call-shadow-observation-kind

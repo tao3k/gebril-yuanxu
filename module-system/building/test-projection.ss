@@ -4,8 +4,8 @@
 ;;; Test-source admission over the existing selection; Graph admission is lazy.
 (import (runtime: :clan/poo/object)
         (only-in :std/list/list delete-duplicates/hash any)
-        (only-in :yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-name? module-source-admit-current!
                  call-with-module-source-read-cache))
 (export module-test-projection module-test-file-source)

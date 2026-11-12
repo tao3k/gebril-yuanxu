@@ -4,10 +4,10 @@
 
 (export feature-bundle-v1-lowering-test)
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
         :clan/poo/object
-        :yuanxu/module-system/feature/bundle-v1-lowering)
+        :tao3k/yuanxu/module-system/feature/bundle-v1-lowering)
 
 (def (sample-component component-id composition-order)
   (feature-bundle-v1-component

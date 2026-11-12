@@ -6,13 +6,13 @@
 ;;; Boundary: configured entrypoints assemble strategies and runtime adapters.
 ;;; Invariant: config data selects components but never executes workflow tasks.
 
-(import :yuanxu/modules/funflow/control-plane/failure
-        :yuanxu/modules/funflow/control-plane/strategy
-        :yuanxu/modules/funflow/control-plane/runtime-adapter
-        :yuanxu/modules/funflow/control-plane/task
-        :yuanxu/modules/funflow/control-plane/flow
-        :yuanxu/modules/funflow/control-plane/runner
-        :yuanxu/modules/funflow/control-plane/projection-syntax)
+(import :tao3k/yuanxu/modules/funflow/control-plane/failure
+        :tao3k/yuanxu/modules/funflow/control-plane/strategy
+        :tao3k/yuanxu/modules/funflow/control-plane/runtime-adapter
+        :tao3k/yuanxu/modules/funflow/control-plane/task
+        :tao3k/yuanxu/modules/funflow/control-plane/flow
+        :tao3k/yuanxu/modules/funflow/control-plane/runner
+        :tao3k/yuanxu/modules/funflow/control-plane/projection-syntax)
 
 (export make-config-requirement
         config-requirement?

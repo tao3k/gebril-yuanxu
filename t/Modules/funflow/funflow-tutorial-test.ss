@@ -3,14 +3,14 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :yuanxu/modules/funflow/control-plane/signatures
+(import (only-in :tao3k/yuanxu/modules/funflow/control-plane/signatures
                  Fun Any Number Integer String Symbol List Pair Null Unit)
-        (only-in :yuanxu/modules/funflow/control-plane/flow flow-output-contract)
-        (only-in :yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/flow flow-output-contract)
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
 ;;; Boundary: tutorial result tests mirror Funflow's local/config outputs.
 ;;; Invariant: each stage proves a user-visible result, not only an API shape.
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  check
                  check-eq?
@@ -23,21 +23,21 @@
                  test-suite)
         ;; Import the maintained functional owners used by this tutorial, without
         ;; loading the aggregate facade's unrelated Agent/syntax libraries.
-        :yuanxu/modules/funflow/control-plane/flow
-        :yuanxu/modules/funflow/control-plane/flow-strand
-        :yuanxu/modules/funflow/control-plane/failure
-        :yuanxu/modules/funflow/control-plane/strategy
-        :yuanxu/modules/funflow/control-plane/runtime-adapter
-        :yuanxu/modules/funflow/control-plane/runtime-protocol
-        (only-in :yuanxu/modules/funflow/control-plane/runtime-command-invocation make-procedure-runtime-command)
-        :yuanxu/modules/funflow/control-plane/runner
-        :yuanxu/modules/funflow/control-plane/config
-        :yuanxu/modules/funflow/control-plane/graph
-        :yuanxu/modules/funflow/control-plane/roles
-        :yuanxu/modules/funflow/control-plane/policy
-        :yuanxu/modules/funflow/control-plane/replay
-        :yuanxu/modules/funflow/control-plane/receipt
-        :yuanxu/modules/funflow/control-plane/task)
+        :tao3k/yuanxu/modules/funflow/control-plane/flow
+        :tao3k/yuanxu/modules/funflow/control-plane/flow-strand
+        :tao3k/yuanxu/modules/funflow/control-plane/failure
+        :tao3k/yuanxu/modules/funflow/control-plane/strategy
+        :tao3k/yuanxu/modules/funflow/control-plane/runtime-adapter
+        :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/runtime-command-invocation make-procedure-runtime-command)
+        :tao3k/yuanxu/modules/funflow/control-plane/runner
+        :tao3k/yuanxu/modules/funflow/control-plane/config
+        :tao3k/yuanxu/modules/funflow/control-plane/graph
+        :tao3k/yuanxu/modules/funflow/control-plane/roles
+        :tao3k/yuanxu/modules/funflow/control-plane/policy
+        :tao3k/yuanxu/modules/funflow/control-plane/replay
+        :tao3k/yuanxu/modules/funflow/control-plane/receipt
+        :tao3k/yuanxu/modules/funflow/control-plane/task)
 
 (export funflow-tutorial-test)
 

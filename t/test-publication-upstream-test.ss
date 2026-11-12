@@ -13,8 +13,8 @@
         (prefix-in :clan/poo/construction-cache cache.)
         (prefix-in :clan/poo/generalized-graph graph.)
         (prefix-in :clan/poo/dependency-analysis code.)
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/source/admission
           module-source-read module-source-admit-current!))
 (export test-publication-upstream-test test-cleanup!)
 (def completed 0)

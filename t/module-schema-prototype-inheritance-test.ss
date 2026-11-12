@@ -6,12 +6,12 @@
 ;;; Boundary: focused runtime test for module-object POO ancestry.
 ;;; Invariant: field resolution is delegated to gerbil-poo supers and C4.
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          (only-in :std/test
                  check-equal?
                  test-suite)
-        :yuanxu/module-system/schema/interface
-        :yuanxu/graph/interface)
+        :tao3k/yuanxu/module-system/schema/interface
+        :tao3k/yuanxu/graph/interface)
 
 (export module-object-prototype-inheritance-test)
 

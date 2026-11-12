@@ -5,7 +5,7 @@
         (only-in "../core-spec.ss" core-spec)
         (only-in "./qualification/module-init/fixture.ss" import-build-script!)
         (only-in :gerbil/expander expander-context-id)
-        (only-in :yuanxu/module-system/building/source-closure package-library-spec))
+        (only-in :tao3k/yuanxu/module-system/building/source-closure package-library-spec))
 (export package-library-spec-test)
 (def (write-source root name text)
   (call-with-output-file (path-expand name root) (lambda (port) (display text port))))

@@ -8,9 +8,9 @@
 
 (import (runtime: :clan/poo/object)
         (only-in :std/list/list any filter filter-map)
-        (only-in :yuanxu/module-system/selection/objects
+        (only-in :tao3k/yuanxu/module-system/selection/objects
                  yuanxu-user-module-selection-key)
-        (only-in :yuanxu/profile-composition/user-profile
+        (only-in :tao3k/yuanxu/profile-composition/user-profile
                  yuanxu-user-profile-diagnostic-kind
                  yuanxu-user-profile-policy-receipt-kind
                  yuanxu-user-profile-set-policy-receipt-kind
@@ -24,9 +24,9 @@
                  yuanxu-user-profile-modules
                  yuanxu-user-profile-settings
                  yuanxu-user-profile-setting-keys)
-        (only-in :yuanxu/utilities/final-projection-syntax
+        (only-in :tao3k/yuanxu/utilities/final-projection-syntax
                  defpoo-final-projection)
-        (only-in :yuanxu/utilities/functional
+        (only-in :tao3k/yuanxu/utilities/functional
                  yuanxu-stable-duplicates))
 
 (export yuanxu-user-profile-policy-admit

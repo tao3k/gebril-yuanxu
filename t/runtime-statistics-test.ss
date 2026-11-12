@@ -1,8 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Installed-runtime accounting controls; no forced collection or RTS edits.
 (import :std/test
-        (only-in :yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :yuanxu/module-system/source/admission
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/source/admission
                  call-with-module-source-operation-measurement module-source-measure-operation))
 (export runtime-statistics-test)
 

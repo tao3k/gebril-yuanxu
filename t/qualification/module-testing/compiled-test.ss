@@ -18,7 +18,7 @@
     (lambda (port) (display text port))))
 (def (execution-library-loaded?)
   (ormap (lambda (row)
-           (string-prefix? "yuanxu/observability/testing-script" (car row)))
+           (string-prefix? "tao3k/yuanxu/observability/testing-script" (car row)))
          (list-modules)))
 (def compiled-binding-test
   (test-suite "Runtime compiled namespace binding"

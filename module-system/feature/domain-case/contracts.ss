@@ -13,9 +13,9 @@
         (only-in :std/list/list delete-duplicates/hash)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/list/list every)
-        :yuanxu/object-family/role-syntax
-        :yuanxu/composition/roles
-        (only-in :yuanxu/utilities/functional
+        :tao3k/yuanxu/object-family/role-syntax
+        :tao3k/yuanxu/composition/roles
+        (only-in :tao3k/yuanxu/utilities/functional
                  yuanxu-all?
                  yuanxu-stable-duplicates
                  yuanxu-member?

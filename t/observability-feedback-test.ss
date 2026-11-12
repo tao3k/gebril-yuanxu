@@ -7,11 +7,11 @@
 
 (export observability-feedback-test)
 
-(import (only-in :yuanxu/observability/testing-case yuanxu-test-case)
+(import (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
          :std/test
-        :yuanxu/observability/objects
-        :yuanxu/observability/types
-        (only-in :yuanxu/object-types/contracts
+        :tao3k/yuanxu/observability/objects
+        :tao3k/yuanxu/observability/types
+        (only-in :tao3k/yuanxu/object-types/contracts
                  yuanxu-validation-evidence-accepted?))
 
 (def (observability-test-ref row key)

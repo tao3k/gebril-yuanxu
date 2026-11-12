@@ -4,33 +4,33 @@
 ;;; Project selected sources to ordinary std/build-script specifications.
 ;;; std/make owns compilation, dependency scheduling and clean.
 (import (only-in :std/string/path path-absolute?)
-        (only-in :yuanxu/module-system/building/source-package package-prelude-identity)
-        (only-in :yuanxu/module-system/building/program-publication project-program-init)
+        (only-in :tao3k/yuanxu/module-system/building/source-package package-prelude-identity)
+        (only-in :tao3k/yuanxu/module-system/building/program-publication project-program-init)
         (only-in :gerbil/expander core-import-module expander-context-id module-context-path import-module current-expander-compiling?)
-        (only-in :yuanxu/module-system/building/source-closure for-each-build-module call-with-build-stage package-library-spec/source-context)
-        (only-in :yuanxu/module-system/building/products build-output-directory
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module call-with-build-stage package-library-spec/source-context)
+        (only-in :tao3k/yuanxu/module-system/building/products build-output-directory
                  current-build-source-directory current-build-module-roots call-with-selected-output-lock
                  selected-output-source-directory artifact-files clean-build-artifacts!)
-        (only-in :yuanxu/module-system/source/deferred-declaration module-entry-action)
-        (only-in :yuanxu/module-system/source/declaration current-module-build-phase?)
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-entry-action)
+        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
         (runtime: :clan/poo/object)
-        (only-in :yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :yuanxu/module-system/source/build unique-build-inputs module-test-source-spec retained-build-entries BuildSpecContract)
+        (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
+        (only-in :tao3k/yuanxu/module-system/source/build unique-build-inputs module-test-source-spec retained-build-entries BuildSpecContract)
         (only-in :clan/poo/mop validate)
-        (only-in :yuanxu/module-system/source/preparation build-target-name yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source
+        (only-in :tao3k/yuanxu/module-system/source/preparation build-target-name yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source
                  call-with-module-compiler-inputs call-with-module-compiler-input-bindings)
-        (only-in :yuanxu/module-system/source/admission module-source-type
+        (only-in :tao3k/yuanxu/module-system/source/admission module-source-type
                  module-source-name? module-source-admit-current! call-with-module-source-read-cache
                  module-source-measure-operation))
 (export yuanxu-project-source-spec)
 (def issue-build-artifacts
-  (module-entry-action 'yuanxu/module-system/building/build-projection
-    "yuanxu/module-system/building/artifacts"
-    'yuanxu/module-system/building/artifacts#call-with-build-artifact-issuance))
+  (module-entry-action 'tao3k/yuanxu/module-system/building/build-projection
+    "tao3k/yuanxu/module-system/building/artifacts"
+    'tao3k/yuanxu/module-system/building/artifacts#call-with-build-artifact-issuance))
 (def process-build-artifacts
-  (module-entry-action 'yuanxu/module-system/building/build-projection
-    "yuanxu/module-system/building/artifacts"
-    'yuanxu/module-system/building/artifacts#run-build-artifact-process))
+  (module-entry-action 'tao3k/yuanxu/module-system/building/build-projection
+    "tao3k/yuanxu/module-system/building/artifacts"
+    'tao3k/yuanxu/module-system/building/artifacts#run-build-artifact-process))
 (def (collect-build-entries selected kept retained library-source?)
   (def sources (make-hash-table-eq))
   (def libraries-seen (make-hash-table-eq))
@@ -335,7 +335,7 @@
                       recorded-entries:
                       (append
                         (filter (lambda (entry) (eq? (.ref entry 'kind) 'init-publication)) entries)
-                        (if (and record-selected-view? (not foreign?) (equal? package-prefix "yuanxu"))
+                        (if (and record-selected-view? (not foreign?) (equal? package-prefix "tao3k/yuanxu"))
                           module-entries '()))
                       source-reads: (.ref graph '.with-compiler-source-reads)
                       source-import: (.ref graph '.with-compiler-source-import)

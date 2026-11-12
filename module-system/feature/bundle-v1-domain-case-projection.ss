@@ -20,10 +20,10 @@
 (import (only-in :std/list/list map filter-map append-map)
         (only-in :std/list/list iota)
         (runtime: :clan/poo/object)
-        :yuanxu/utilities/functional
-        :yuanxu/module-system/feature/domain-case/interface
-        :yuanxu/module-system/feature/bundle-v1-lowering
-        :yuanxu/module-system/feature/runtime-handoff-plan)
+        :tao3k/yuanxu/utilities/functional
+        :tao3k/yuanxu/module-system/feature/domain-case/interface
+        :tao3k/yuanxu/module-system/feature/bundle-v1-lowering
+        :tao3k/yuanxu/module-system/feature/runtime-handoff-plan)
 
 (def +feature-bundle-v1-domain-case-projection-kind+
   'yuanxu.feature-bundle-v1-domain-case-projection.v1)

@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :yuanxu/module-system/source/declaration .def))
+(import (only-in :tao3k/yuanxu/module-system/source/declaration .def))
 (.def GiteaPostgreSQL
   identity: 'applications/gitea-postgresql
   core:

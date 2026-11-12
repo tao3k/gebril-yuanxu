@@ -3,8 +3,8 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :gerbil/expander core-import-module current-expander-context
                  make-top-context core-bind-root-syntax!)
-        (only-in :yuanxu/module-system/source/init module-init-compiler-source-roots)
-        (only-in :yuanxu/module-system/building/source-package module-build-source-path))
+        (only-in :tao3k/yuanxu/module-system/source/init module-init-compiler-source-roots)
+        (only-in :tao3k/yuanxu/module-system/building/source-package module-build-source-path))
 (export module-source-package-resolution-test)
 (def (write-source path text)
   (create-directory* (path-directory path))

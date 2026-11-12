@@ -3,17 +3,17 @@
 
 (import (only-in :gerbil/runtime/gambit with-exception-catcher
                  call-with-output-string display-exception)
-        :yuanxu/profile-composition/selection-syntax
-        :yuanxu/object-syntax/path-slots
-        (rename-in (only-in :yuanxu/profile-composition/selection-syntax use-module)
+        :tao3k/yuanxu/profile-composition/selection-syntax
+        :tao3k/yuanxu/object-syntax/path-slots
+        (rename-in (only-in :tao3k/yuanxu/profile-composition/selection-syntax use-module)
                    (use-module with-module))
-        (only-in :yuanxu/profile-composition/bindings yuanxu-module-scope)
-        (only-in :yuanxu/profile-composition/profile-bundle
+        (only-in :tao3k/yuanxu/profile-composition/bindings yuanxu-module-scope)
+        (only-in :tao3k/yuanxu/profile-composition/profile-bundle
                  yuanxu-profile-export yuanxu-module-profiles)
-        (only-in :yuanxu/module-system/objects
+        (only-in :tao3k/yuanxu/module-system/objects
                  make-semantic-module ModuleAuthoringProfile. ModuleSourceRole.)
-        (only-in :yuanxu/module-system/schema/relations yuanxu-semantic-identity)
-        (only-in :yuanxu/module-system/source/objects make-yuanxu-module-package-source)
+        (only-in :tao3k/yuanxu/module-system/schema/relations yuanxu-semantic-identity)
+        (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-package-source)
         (only-in :clan/poo/object .get .ref .+)
         (only-in :std/test test-suite test-case check-equal? check-exception)
         (only-in :gerbil/expander core-expand datum->syntax))
