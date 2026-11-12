@@ -1,0 +1,163 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Published predecessor lineage
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Published predecessor lineage
+
+** Predecessor-lineage requirement
+
+Binding the transition successor to the current checkpoint is necessary but
+not sufficient.  The artifact's =oldAuthority= MUST be the directly preceding
+published authority context.  Otherwise a caller can invent an old authority
+with an empty admitted set: admission monotonicity and projection stability
+then hold vacuously even when the real predecessor's admitted content changes
+digest.
+
+The predecessor requirement spans three existing owners and therefore cannot
+be inferred from any one name:
+
+- the transition artifact owns its prior and current contexts;
+- =SuccessorAdmissionClosure= owns fresh coordinator admission, distinct
+  execution identities, before/after context binding, and no authority
+  widening;
+- =AuthorityContextLineage= owns published positions and strictly increasing
+  generations;
+- the already closed current-checkpoint layer proves the successor context is
+  the authority-issued current head.
+
+A total =contextAt : Nat -> ReceiptValidationContext= is a mathematical
+lineage, not an assertion that every future position has already been
+published.  The checkpoint publication domain therefore MUST equal the lineage
+prefix ending at the current position.  Merely passing a lineage and a domain
+with the same authority identity leaves them logically independent.
+
+** Vacuous-predecessor counterexample
+
+=fabricatedEmptyOldMakesCompatibilityVacuous= constructs generation =2= with
+the right authority and semantic identity but with =admitted = False=.  It is
+formally compatible with the drifting generation =4= because both monotonicity
+obligations have empty premises.  The actual published generation =3= admits
+content =7=, and its digest differs from generation =4=; therefore the
+fabricated old state bypasses the real compatibility obligation.
+
+=independentLineageAllowsUnpublishedFabricatedPredecessor= exposes the second
+hole: an arbitrary adjacent lineage can contain generations =2 -> 4= and share
+the real current head =4= even though the actual publication domain contains
+only generations =3= and =4=.  Adjacency inside an unbound lineage is not
+publication evidence.
+
+#+begin_export typst
+$
+  "PublishedPredecessorClosed"(t, s, l, i, j, h) :=
+    t.prior-context = s.before.context
+    and t.current-context = s.after.context
+    and l(i) = t.prior-context
+    and l(j) = t.current-context
+    and j = i + 1
+    and t.current-context = h.current-head.context
+$
+
+$
+  "NoVacuousOld"(t, l, i) :=
+    t.old.generation = l(i).generation
+    and t.old.authority = l(i).authority
+$
+
+$
+  "PublishedPrefix"(d, l, h) :=
+    forall c: d."published"(c)
+      <=> exists i: i <= h and l(i) = c
+$
+#+end_export
+
+#+begin_export mermaid
+flowchart LR
+    P["Published lineage position i"] -->|"status: exact prior context"| T["Validated transition evidence"]
+    T -->|"status: successor admission before/after"| S["Fresh coordinator successor admission"]
+    S -->|"status: adjacent position i + 1"| C["Published current context"]
+    C -->|"status: authority-issued current head"| H["Current checkpoint"]
+    F["Fabricated empty old authority"] -.->|"rejected: not published predecessor"| X["Typed lineage rejection"]
+    K["Skipped intermediate position"] -.->|"rejected: positions not adjacent"| X
+    U["Stale coordinator admission"] -.->|"rejected: admission epoch not fresh"| X
+    D["Independent arbitrary lineage"] -.->|"rejected: domain is not exact prefix"| X
+    G["Lineage position after current head"] -.->|"rejected: outside published prefix"| X
+#+end_export
+
+** Predecessor-lineage decision
+
+The transition evidence now carries a prior =ReceiptValidationContext= bound
+to the old authority identity and generation.  The outer
+=PublishedPredecessorCedarInputIdentityTransitionClosed= contract then:
+
+1. binds prior/current evidence contexts to the exact
+   =SuccessorAdmissionClosure= before/after contexts;
+2. binds both contexts to one =AuthorityContextLineage=;
+3. requires the current position to equal =priorPosition + 1=;
+4. binds the lineage authority through the injective identity encoding;
+5. requires the checkpoint publication predicate to equal exactly the lineage
+   prefix whose upper bound is the current position;
+6. retains the inner authority-issued artifact, snapshot projection, trusted
+   watermark, and current-checkpoint closure.
+
+Generation inequality alone is no longer treated as predecessor evidence.
+Likewise, =SuccessorAdmissionClosure= is reused for its actual coordinator and
+execution contract, not misrepresented as proof of publication adjacency by
+itself.
+
+** Predecessor-lineage verification checklist
+
+- [X] Construct an empty-admission old authority that makes compatibility
+  obligations vacuously true.
+- [X] Prove that construction bypasses a digest mismatch on the actual
+  admitted predecessor input.
+- [X] Commit prior context identity and generation inside validated transition
+  evidence.
+- [X] Bind prior/current contexts to the exact successor admission.
+- [X] Bind both contexts to one published authority lineage.
+- [X] Require adjacent lineage positions rather than mere generation increase.
+- [X] Separate a total mathematical lineage from its already-published prefix.
+- [X] Bind the checkpoint publication domain to the exact lineage prefix ending
+  at the current position.
+- [X] Retain fresh coordinator admission and distinct execution identity via
+  the existing successor-admission owner.
+- [X] Prove an unpublished prior context cannot close the transition.
+- [X] Prove non-adjacent lineage positions cannot close the transition.
+- [X] Prove the bound domain publishes the exact predecessor context.
+- [X] Prove every lineage position after the current head is rejected by the
+  bound publication domain.
+- [ ] Implement and publish the runtime prior-context/successor-admission
+  witness at the executable owner; Lean does not synthesize it.
+
+** Predecessor-lineage Lean and AXLE receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionPredecessorModel=
+  exited 0 for 3 jobs with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionLineageClosure=
+  exited 0 for 413 jobs with no warning or error.
+- =lake build AgenticAILabProof.Enterprise.ReceiptContextLineagePrefixClosure= exited
+  0 for 5 jobs with no warning or error.
+- AXLE verified all 4 predecessor-model roots: 18 declarations, 11 source
+  declarations, 11 environment declarations, 0 proof-base
+  declarations/imports, no failed declaration, and no Lean diagnostic.
+  Closure digest:
+  =sha256:14af8728a191f98320d7964c733851667b9d9a13e6ec6e01392689c46f3c010d=;
+  bundle digest:
+  =sha256:ce02b4f8ef057af1a588ab8cf772a898092268f9400bd1d975c3fefec26df8d2=;
+  canonical source digest:
+  =sha256:c2baf2ab43ea281516ebd33d9d4125e4987e2aaa901f517e25df8db5e4fcaa49=;
+  independent bundle digest:
+  =sha256:a0ede22c09a1986025a4de255b6d4acfcfa63e4b55d85879700510dbdf95259f=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 514 jobs and =lake build=
+  exited 0 for 586 jobs.  Both emitted only the pre-existing
+  =AgentRedTeamProofRegressionClosure.lean:194 unnecessarySimpa= warning.
+- Focused RFC45-07 Orgize Org/Typst/Mermaid lint returned =[ok] orgize lint=
+  and exit 0.  =git diff --check= and =git diff --cached --check= both
+  returned exit 0 with no diagnostic after the final write-back.
+

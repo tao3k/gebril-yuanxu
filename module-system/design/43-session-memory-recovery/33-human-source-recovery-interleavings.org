@@ -1,0 +1,96 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.33 Human Source Change And Recovery Interleavings
+:PROPERTIES:
+:ID: agentic-ai-lab-context-source-recovery-interleavings
+:STATUS: module-protocol-local-verification
+:END:
+
+* Ownership and observation
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] remains the lifecycle owner; this refines
+[[file:31-controlled-human-source-change.org][the independently authorized source-change protocol]]. A source binding is not
+Project knowledge. Changing its generation withdraws pending eligibility but
+does not delete ORG Elements, Context history or a completed recovery.
+
+=Modules/ai-agentic-context/installation.ss= owns binding and recovery
+publication. =human-decision.ss= owns issued source/decision identities, epochs,
+issuance floors, withdrawal and consumption. Proofs supplies inputs and observes
+these Modules; its models do not become an alternative authority. Assurance
+continues to qualify actual Host evidence/grants and Governance policy. A
+display name, Query result, ASCENT fact or copied POO object cannot issue either
+authorization. The trusted host configures the independent operator verifier;
+this protocol does not establish a remote Human identity.
+
+* Linearization and precedence
+
+The lock order is installation then Human. Recovery publication holds the
+installation lock, rechecks the actual Core receipt and captured binding, then
+uses Human's final accept boundary to check the exact live source/decision,
+epoch, target and issuance floor. Publication and decision consumption happen
+before those locks are released. Source-change publication uses that same order
+and atomically validates both source epochs and installs source/generation/floor.
+Retirement takes only the Human lock and advances its epoch. There is no inverse
+Human-to-installation acquisition, and no external callback in final publication.
+Configured verification/policy callbacks must remain bounded, non-reentrant and
+consistent with their Host's ownership rules.
+
+| First final publication | Interleaved operation | Result / obligation |
+|-------------------------+-----------------------+---------------------|
+| Source replacement | Old recovery commit | Refuse old binding/receipt; owned pending obligation reopens |
+| Current-source retirement | Old recovery commit | Final Human accept refuses; obligation reopens |
+| Recovery | Source replacement | Replacement may succeed; completed recovery remains recorded, not reopened |
+| Recovery | Current-source retirement | Completed installation remains current unless its own root is revoked |
+| Target-source retirement | Pending source change | Refuse captured target epoch; old live source remains usable |
+| Old-source retirement | Pending source change | Refuse old captured epoch; a fresh independent permit may replace the retired source |
+
+Concurrent recovery and replacement need not have exactly one winner. If
+recovery publishes first, both may succeed in that order. If replacement
+publishes first, recovery must fail. In neither order may a stale recovery
+authorization publish after replacement. Retrying the old permit or recovery
+receipt does not create another installation. A fresh decision is required after
+binding publication, including when a still-live source returns through ABA.
+
+No fairness or eventual completion claim follows from this local serialization.
+It neither implements distributed consensus nor revokes a previously completed
+controller merely because its historical Human source changes.
+
+* Coherent evaluation, not authority
+
+=org-context-recovery-evaluate= now reads binding generation, current candidate
+and completed-predecessor history under one installation lock. Previously the
+entry lookup alone was locked; a concurrent publication could occur between
+the component reads. The POO result must not combine =completed=true= with
+=eligible=true=, or with =obligation-reopened=true=. Human retirement may linearize before or after its
+currentness check; it cannot turn a Query result into an authorization. As with
+every snapshot, a later mutation can make it stale. Final commit always checks
+again. Foreign proposals are not owned obligations; completed proposals do not
+reopen solely on a binding change. Pending stale proposals do reopen.
+
+* Executable correspondence and limits
+
+| Projection | Exact responsibility |
+|------------+----------------------|
+| =ContextSourceRecoveryRace.qnt= | Bounded callback-check/final-commit interleavings, replacement, both retirements, fresh independent permit, sticky completion and coherent Query |
+| =SourceRecoveryRace.lean= | LeanPOO Focus-based completion, conditional generation/liveness/issued refusal, retention and reopening laws |
+| =source-recovery-race-controls.ss= | Real Module/Core/Governance objects and ORG-derived Context; bounded worker interleavings and an uncontrolled concurrent pair plus Query reader |
+| Existing Assurance controls | Actual owner-thread Host receipts and grants; not replaced by thread-safe fixture policies |
+| Existing ASCENT relations | Candidate/support inference only; no issuer, commit lock or effect authorization |
+
+The Quint initial cut assumes genuinely issued root/Human/operator receipts and
+valid Governance premises. It models an old recovery and one source transition,
+not every lifecycle or ABA (covered separately in 31/32). Negative controls
+deliberately omit final binding/liveness checks, replay a consumed authorization,
+produce a torn Query or erase history; these must yield actual TLC violations.
+Reachability controls exercise recovery followed by replacement/retirement,
+pending reopening and fresh replacement after retirement. Completion is retained
+history, not a requirement that the original source remain live forever.
+
+Lean laws are conditional pure projections, not proofs of Scheme mutexes, host
+authentication, callbacks or persistence. Scheme workers consume actual Modules,
+never a proof-owned acceptance rule. Their Host policies are thread-safe local
+fixtures; the serialized Assurance effect Host is not moved to worker threads or
+weakened. The unchanged ORG parser/Contract consumer supplies Context to them.
+No effect delivery, storage executor, bindings or old Memory is changed.
+
+[[file:34-source-recovery-interleaving-verification.org][34 records executable outcomes and exact input identities]].

@@ -1,0 +1,298 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Reader query keys and compiler-tool provenance
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+* Reader query-key refinement and complete EVAL replay (2026-11-04)
+
+The measured expression remains exactly
+=(.get FixtureExports modules module-1 plan)= after namespace enumeration but
+before any declaration Graph or business scope has been demanded. All 1000
+declarations are required; only module-0 and module-1 may construct business
+scopes. The other 998 Objects/Config initializers remain poisoned. Instrumented
+16/64-owner attribution is a separate workload and is never substituted for
+that complete uninstrumented EVAL.
+
+The old frozen-source replay reached the unchanged 180000 ms Case watchdog.
+Its interrupted cold-EVAL frame reported 200.965814 s wall, 127.073694 s CPU,
+24.810968 s included GC wall and 185 collections. This is a failure receipt,
+not a new successful latency. The large wall/CPU gap prevents interpreting the
+historical 113.170463 s result as the current machine's baseline. Sampling after
+the failure found native dynamic-library teardown and did not profile the EVAL
+itself; it therefore does not attribute the failed computation to teardown.
+
+The current source cohort was independently frozen before measurement. The
+candidate changes only =reader.ss:check-current/closed!= and its call site in
+that cohort: a pure query no longer hashes the full guard payload list. Its
+existing source-row producer procedure identifies the private support owner;
+guard and source counts distinguish append-only support generations. The actual
+check still traverses every original guard and observation. Computing the guard
+count traverses the spine; no retained count, approval or new index is added.
+Open observers keep the original argument and callback sequence. Effects and
+independent calls still invalidate/end the existing observation window.
+
+Lean =SourceClosureWork.prepend_only_same_size_same_rows= covers the cons-only
+guard spine, alongside the existing append-only table theorem. SysML
+=ReaderGuardQueryWork= records the immutable membership and observation-window
+premises. The existing SourceClosureWork Quint qualification retains all 22
+expected outcomes, including same-count replacement, dropped support and stale
+approval counterexamples. Lean's aggregate gate completed 218 jobs, auditing
+8987 declarations with standard axioms only. These prove bounded semantic
+properties under their premises, not native running-time bounds.
+
+** Fixed-cohort executable comparison
+
+The control and candidate have identical production inputs except the bounded
+reader query-key change; unchanged fixture templates create independent fresh
+temporary source trees. Both complete uninstrumented one-get runs passed the
+three harness markers with natural status 0. They admit all 1000 declarations,
+construct only the two required scopes, return =(5432)=, compute the value once
+and keep the other 998 Objects/Config bodies cold.
+
+| Complete cold business EVAL | Wall seconds | CPU user + system seconds | Included GC wall seconds | Collections |
+|----------------------------+--------------+---------------------------+--------------------------+-------------|
+| Control | 149.636221 | 138.380257 | 19.155990 | 186 |
+| Bounded query key | 145.449673 | 133.178676 | 17.930902 | 186 |
+
+This single local comparison is a 2.8% wall/3.8% CPU reduction, not a stable
+latency distribution or closure of the performance problem. The earlier
+113-second source cut and the failed old-cohort replay are not matched controls
+for this change. Both hot hits were about 6 microseconds and are not fresh
+source-currentness evidence. Signed native VM accounting remains unqualified;
+it is not a physical allocation measurement.
+
+The separate 16/64-owner attribution suites also passed. In the 64-owner
+declaration phase, reader CPU was 3.306973 -> 2.458493 s; its wall time was
+7.310510 -> 2.575827 s, with a large change in wall/CPU gap. Do not attribute
+that entire wall difference to the code. Physical reads remained 20738,
+query misses/hits 33843/3111, and metadata replay visits 537210. The independent
+currentness phase retained 301 physical reads and 18080 metadata visits; scope
+construction retained 5426 physical reads and 253120 metadata visits. Counts
+were equal before and after in all three phases at both fixture sizes. Nested
+stage times overlap and must not be summed into an EVAL total.
+
+Source-observation, ambient-effect support and candidate-stage controls passed
+serially, retaining conflicting same-path observations, exception unwind,
+callback entry/return checks, source edits, location kinds and open-policy
+fallback. No source guard, negative control, Case deadline, heap fence or
+public expression was removed. Raw logs and exact source hashes remain local
+qualification artifacts.
+
+** Thousand-owner attribution: completed phases and failed Case
+
+The existing =module-runtime-attribution-1000-test.ss= was attempted without
+changing its workload, 180000 ms Case watchdog or heap fence. Its declaration
+phase completed, followed by the independent full-currentness phase. The
+subsequent scope phase was interrupted; the full Case exited 70 and is NOT a
+passing qualification. The uninstrumented complete business-EVAL pass above
+remains separate evidence.
+
+| Diagnostic phase | Wall s | CPU user + system s | Physical reads | Replay visits | Outcome |
+|------------------+--------+---------------------+----------------+---------------+---------|
+| Declaration admission | 164.284578 | 123.313282 | 321201 | 8340702 | Phase returned |
+| Independent currentness | 0.822920 | 0.820134 | 4045 | 255848 | Phase returned |
+| Scope after admission | 12.379884 | 12.254565 | 60683 | 3965807 | Interrupted; partial counts |
+
+Admission opened 19015 read windows, with 524270 query misses and 47319 hits.
+Its nested reader-current span was 53.851531 s, metadata replay 24.231151 s,
+Interface interpretation 74.900494 s and physical source reads 28.327414 s.
+Those spans overlap, include different execution gaps, and are not additive
+phase costs. The separate currentness check used ONE fresh read window. The
+failed scope phase had reached 21 windows; neither its duration nor its counts
+represent completed scope construction.
+
+These observations distinguish a repeated-boundary problem from one expensive
+full-source scan. IdentityDFS/SourceClosureWork bounds one finite identity
+walk; a complete EVAL can execute many fresh walks and observation windows.
+The relevant work is the sum of those actual boundary walks, not a single
+=O(V+E)= label for the entire EVAL. Callback/effect boundaries still require
+fresh authentication. The next refinement must reduce unnecessary native
+bookkeeping or prove an adjacent segment effect-free before sharing its
+observations; it cannot reuse a successful check across a real effect, discard
+issued roots, or treat a hot POO slot as fresh source evidence. No failed
+diagnostic was replaced with a smaller selection or a larger budget.
+
+
+** Protected fixed checkpoints, not effect-wide approval
+
+Repeated validation is not one indivisible effect boundary. Gerbil expansion,
+module initialization, public callbacks and unknown observers remain opaque
+boundaries: validate their original source and metadata support on entry and
+return. No accepted verdict survives one of those operations. Directory
+selection still admits all declared owners and keeps unreached scope bodies
+cold; it does not silently reduce the declared workload.
+
+A fixed internal checkpoint that only checks source observations and policy is
+different. =module-source-measure-replay= now uses native POO
+=reobserve-slot-reads!= for that checkpoint: authenticate the complete original
+read DAG, retain the native selected-receiver write protection while executing
+the checkpoint exactly once, then authenticate again on successful return.
+=without-observation= prevents native synthetic read delivery from recursively
+adding the same metadata support; it does not disable filesystem observation.
+A checkpoint exception is preserved. Failed preflight follows the original
+split path for its refusal diagnostic and cannot turn into acceptance.
+Arbitrary user code is never executed in this protected checkpoint.
+
+The selected Build Graph and its prepared inputs can enter one such frame
+when the linker owns the exact selection receiver and the cached guard is
+still the original linker procedure. The guard runs first, followed by each
+prepared-input guard in its existing order. A replacement guard, an open
+observer, or unsupported receiver state keeps the independent route. Every
+effect boundary starts fresh, and the native replay still authenticates the
+issued records at frame exit.
+
+Within that frame, the paired Reader and directory check is one observation
+in the existing source window. Each frame has its own query identity even
+when several frames share an enclosing source window. The publication
+checkpoints still run in order against the original issued roots.
+
+The indexed publication check previously authenticated the same metadata both
+before and after a fixed batch. It now uses one protected operation. The
+compatible observer-free publication tail replays the original preparation
+and admission roots together; incompatible or unknown observers retain the
+original split checks. Neither change substitutes cardinality for freshness.
+
+| Thousand-owner diagnostic on protected-checkpoint cut | Wall s | CPU s | Physical reads | Replay calls | Replay visits |
+|------------------------------------------------------+--------+-------+----------------+--------------+---------------|
+| Declaration admission | 120.228855 | 115.871599 | 321201 | 8004 | 7936854 |
+| Independent currentness | 0.545704 | 0.536399 | 4045 | 1 | 127924 |
+| Completed scope construction | 9.546117 | 9.006883 | 72818 | 14 | 1790936 |
+
+This whole diagnostic Case passed naturally under its unchanged 180-second
+watchdog. Its completed scope counts are not directly comparable to the
+previous interrupted scope counts. Source reads did not decrease: this change
+reduces redundant metadata authentication, not source observation demand.
+The separate complete business EVAL on this cut FAILED: interruption after
+177.523766 s (64.731931 CPU s), before all declarations returned. Preserve that
+failure separately from the passing diagnostic; neither model proofs nor a
+partial run establish full-EVAL acceptance. Concurrent host activity was
+observed, but its causal contribution to the failure is not established.
+
+** Tool execution provenance and owner build demand
+
+A captured Gerbil tool context has three identities: its actual object, module
+ID and artifact path. A loaded installed =.ssi= is not executed again merely
+because its checkout =.ss= changes. Treating that mutable checkout as every
+Module's execution input conflates package ownership with running code and
+multiplies unrelated reads. A fresh or mutated native context must still be
+refused; runtime context identity is not inferred from a matching module name.
+
+Actual source-executed tools retain their byte guards. Selecting an owner's
+build source is a separate demand: project the existing native import closure
+through that owner's declared source boundary, retain module identities and
+source observations, and include the resulting inputs in the original build
+projection. Installed prerequisites do not acquire ownership of checkout
+source. This distinction changes neither namespace membership nor the
+=yuanxu! / Interface / .get= user expression. Gerbil remains responsible for
+package resolution and installed artifacts; Yuanxu owns selected Module
+admission and projection.
+
+The same reader dependency index stores native context topology, rather than
+repeatedly reconstructing execution and build support from projected tool
+source objects. It stores neither a successful currentness verdict nor an
+initializer result. Optional source aliases cannot replace the actual
+installed context; mandatory owner build inputs must still be resolved and
+checked. Public checks and open callbacks reauthenticate native bindings on return,
+including an observer which removes itself. Closed candidates use only the
+existing fixed source checks within their pure window; they do not retain an
+approval across an initializer. A native negative control mutates the artifact
+path on =publication-guard-end= and clears the observer. It fails against the
+entry-only implementation and must be refused after the return refinement.
+Model success alone must not be reported as a runtime performance result.
+
+
+** Native receipt after tool-origin and return-boundary refinement
+
+The final matched implementation of the reader and current owner-build
+constructors passed the complete cold business EVAL naturally: *93.813670 s
+wall, 89.691915 s user + system CPU*, including 9.544904 s GC wall and 117
+collections. It admitted all 1000 declarations, constructed module-1 and its
+module-0 provider scopes, returned =(5432)= once and kept the other 998 Objects
+and Config initializers cold. The expression remains
+=(.get FixtureExports modules module-1 plan)=. The hot cached hit is not a new
+currentness check. Signed native VM accounting remains unqualified.
+
+| Final independent diagnostic | Wall s | CPU s | Physical reads | Replay calls | Replay visits |
+|------------------------------+--------+-------+----------------+--------------+---------------|
+| Declaration admission | 85.534339 | 82.537808 | 50008 | 8004 | 7927812 |
+| Full currentness | 0.507249 | 0.504687 | 4002 | 1 | 125909 |
+| Completed scope construction | 9.541105 | 9.194743 | 72040 | 14 | 1762726 |
+
+All three phases returned in the SAME diagnostic Case, with natural harness
+exit and final success markers. The 180000 ms Case watchdog, 600-second file
+watchdog and pre-import 2G heap fence were unchanged. Phase timings come from
+an independent instrumented run; do not sum them to replace the uninstrumented
+complete EVAL measurement. Raw logs, source hashes and structured receipts are
+local artifacts, not tracked source.
+
+Admission still opens 19015 observation windows: this optimization did not
+bridge arbitrary effects. Physical reads fell from 321201 to 50008 (84.4%) by
+removing incorrectly projected installed-tool checkout support. These are the
+instrumented source-reader physical-read counters, not a syscall trace of
+every read inside Gerbil/compiler internals. The independent
+currentness read count is 4002: all 4000 owner role files plus the actual init
+and package observations; installed prerequisites contribute no mutable
+checkout source. Necessary selected owner checks remain. The scale fixture's
+package name now uses Gerbil's symbol representation accepted by its native
+library-prefix resolver, with the same package/module identity and all 4000
+role sources retained.
+
+This is not a claim that a 94-second first EVAL is a finished latency target.
+The final diagnostic's nested Interface span is 49.038026 s and metadata
+replay 16.651593 s; physical reads are 1.733829 s and native context identity
+checks 0.689616 s. These overlapping spans must not be added. Native Interface
+expansion/evaluation and the remaining required read DAG authentication are
+now the principal measured work. Earlier successful full runs on intermediate
+cuts were 130.799313 s and 104.318361 s; host activity and constructor changes
+prevent treating this sequence as a controlled wall-time speedup distribution.
+The earlier 177.523766-second interrupted EVAL remains a failed receipt.
+
+The targeted native controls cover installed checkout independence, actual
+artifact-path changes, self-removing observer return, owned tool byte edits,
+foreign same-name tool refusal, private cycles and reversed role imports.
+Metadata-index, source-observation, candidate-stage and ambient-effect support
+controls retain their original refusals and scope laziness. Lean completed
+218 jobs / 9068 declarations with standard axioms only; the targeted Quint
+families comprise 22 SourceClosureWork, 5 ReplayCheckpoint and 7 ToolOrigin
+cases, including all expected negative counterexamples. These are scoped
+qualifications, not a claim about the entire test or model catalog.
+
+
+*** Product integration remains unqualified
+
+The final Core performance receipt does NOT qualify the current entire Lab
+integration suite. Its actual =t/yuanxu-package-integration-test.ss= exited 70
+naturally after 96.33 seconds. The default Lab namespace case refused
+=modules/workflow/scenario/configuration/presentation-config.ss= imported by
+=user-interface/scenarios/developer/objects.ss=: the file lies under another
+declared window, with no admitted Module owner in that view. The broad
+window-boundary exclusion and ordinary-library ownership declaration must be
+reconciled; do not weaken confinement or use package metadata to invent a
+Module owner. The native consumer compile action also exceeded its unchanged
+60-second idle budget. Cold/hot/two-environment clean isolation is therefore
+NOT accepted from this run.
+
+A separate direct production =gerbil pkg build .= on the real Nix consumer,
+with explicit installed prerequisites and a fresh downstream environment,
+returned naturally within a stricter 60-second wall fence and compiled the ten
+selected Lab/consumer targets. That is limited native build evidence, not a
+replacement for the failed integration suite or its remaining lifecycle
+assertions. The cause of the suite's idle failure remains unresolved.
+
+The current workspace independence gate also fails on
+=core/dev/d2/architecture.ss= importing Lab's =dev/d2/init.ss=. That file was
+not changed by this performance refinement. No package-independence pass or
+complete Lab acceptance is claimed. Core's source/runtime qualification keeps
+its independent fixtures; product integration remains in Lab's test folder.
+
+
+At final review the shared workspace had additional edits in =source/link.ss=
+(compiler metadata preflight instrumentation), =source/preparation.ss= and
+=source/build.ss= (compiler entry/import association). The final runtime receipt
+binds their captured versions by hash; it does NOT qualify these later edits.
+The admission/reader implementation and protected checkpoint behavior measured
+here are retained. Do not conflate a fixed cohort result with acceptance of an
+actively changing shared checkout.

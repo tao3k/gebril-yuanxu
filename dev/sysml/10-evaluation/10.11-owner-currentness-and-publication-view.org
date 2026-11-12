@@ -1,0 +1,199 @@
+#+title: 10.11 Owner Currentness and Publication View
+#+language: en
+#+property: STATUS design-review
+
+* Required separation
+
+The current =source/link.ss= merges every known publication's preparation and
+admission roots. [[file:10.10-first-demand-implementation-obligations.org][10.10]] records the measured scope replay multiplication and
+the rejected fixed-collector experiment. This document specifies the evidence
+needed to change the replay domain, not a replacement loader or cache.
+
+Keep three relations separate:
+
+| Relation | Existing mechanism | Meaning |
+|----------+--------------------+---------|
+| Module owner to Module provider | Selected dependency graph | Which owners a requested scope/Build/Test actually needs |
+| Certificate receiver to POO read receiver | POO observation and native reverse dependencies | Which Type, policy, source or method state can invalidate a certificate |
+| Published snapshot to certificate and registration | POO component publication | Which immutable view and ticket authorize that read |
+
+A Module =requires= index does not register every POO Type/policy input.
+A publication head pointer does not certify the mutable metadata it refers to.
+Copying that metadata into another table does not create either authority.
+
+* Selected root projection
+
+=PublicationReads.ScopeProjection.ScopeCurrent= requires current shared
+source-policy facts plus the original receipt of every owner in the selected
+Module dependency closure. =scopeRoots= appends their roots to the shared roots.
+=projected_current_exact= proves that replaying this projection is equivalent
+to this scoped contract when the indexed walk supplies exactly that closure.
+
+The existing =merge-publication-read-roots= may normalize root identities when
+constructing the receipt. Retain its spine for later native topology lookup.
+Each actual independent effect boundary still authenticates original records
+and their signed dependencies; no previous success is restored. Construction
+must read already admitted source/publication evidence and create zero business
+scopes. The closure includes required providers and mandatory branches, not just
+the tags that chose the initial roots.
+
+This contract deliberately does not claim the entire selected graph is current.
+=local_scope_does_not_certify_unselected_owner= proves a counterexample: one
+selected owner remains current while an unrelated owner's receipt is stale.
+Whole-graph build/test/certification keeps its whole requested proof. The
+existing global link guard is therefore not interchangeable with the scoped
+contract without an explicit integration change and regression controls.
+
+Every genuinely global policy fact must remain in shared support. A narrower
+root list chosen by its consumer cannot decide that a collision, source-cut or
+Contract obligation is irrelevant. The source/Contract producer must issue the
+projection against the actual immutable view.
+
+* Controlled edit transport
+
+=PublicationReads.TrackedEdit.Covers= requires native registration of every
+receiver in a certificate's transitive original read support. These are actual
+POO receiver identities, including shared Type/policy inputs, not matching names
+or nominal owner labels. Conservative extra registration is permitted.
+
+=clean_owner_has_no_changed_read= proves that an owner outside the affected
+old reverse closure has no support receiver in the changed set. Combined with
+the native writer frame, =retain_current_after_tracked_edit= preserves that
+owner's existing currentness. The runtime may then retain its evidence through
+the existing publication path without rewalking the directory or its proof.
+The law does not itself execute a reverse traversal. The existing
+=IncrementalRoles.recheck_owners_exact= supplies the indexed affected set.
+
+The writer frame is essential: it must cover every changed freshness fact,
+including issuance, route, value/state and source effects. It is derived from
+the real producer/write operation, never a caller-supplied purity Boolean.
+The proof retains the captured root identity and signed dependency lists.
+Dependency declaration changes use the old reverse index for invalidation and
+the new forward graph for admission, as in the existing publication model.
+
+Two new constructive counterexamples constrain the implementation:
+
+- =incomplete_index_can_miss_stale_support=: an omitted shared provider edge
+  makes an affected owner appear clean even with a correct writer frame.
+- =untracked_write_cannot_transport_currentness=: a complete index and unchanged
+  reported roots cannot transport approval after an untracked freshness change.
+
+Raw read-table edits, route replacement, unknown callbacks and filesystem
+mutation retain ordinary checking unless the real issuer supplies that full
+frame. A witness revision alone cannot substitute for these premises.
+
+* Bind the same publication view
+
+=DependencyPublication.successful_read_keeps_view= strengthens the existing
+concurrent-read law: a successful read retains the complete captured state,
+not just its returned certificate/index fields. Root projections are functions
+of that same immutable bundle. =TrackedEdit.publication_read_keeps_current_roots=
+composes this view binding with controlled-edit currentness transport.
+
+Native correspondence must bind generation, ticket, owner certificate,
+forward/reverse registration and receipt roots together. A callback that
+commits a rival generation cannot release a mixture. Retired tickets and failed
+admissions retain the existing refusal/fencing behavior. No new epoch store or
+parallel certificate registry is needed.
+
+POO already has =schedule-invalidation= continuation, weak dependency stamps,
+witness trees, construction caches and coordinated component snapshots. Their
+preconditions still matter. =component-publication:call-with-snapshot= currently
+calls =graph-cache-current!= on the complete graph; wrapping a scope in it does
+not magically provide a scoped proof. Likewise witness-tree freshness covers
+registered supported writes, not arbitrary raw metadata mutation. The actual
+source certificate and its write coverage must be connected before using these
+mechanisms to avoid the global replay.
+
+The current directory =.refresh= constructs a new Context and offers native
+reader contexts for checked transfer. It does not submit a Module source delta
+through component publication. The build-artifact completion issuer uses that
+publication API for a different, single-completion domain; it is not the Module
+certificate publisher. Reusing either fact as proof of this integration would
+be incorrect.
+
+* Correspondence and gates
+
+The producer audit found a separate upstream handoff gap at POO =6446abe=.
+=component-publication= retains a lineage invalidation continuation, but
+=feedback-graph:%feedback-component-revision-action= passes it only through
+the non-owned branch. =owned-component-revision= calls
+=cache:%revise-with-builder=, whose schedule revision walks the successor
+reverse index afresh. Existing continuation tests therefore do not prove reuse
+on the main owned-source publication path.
+
+The new local LeanPoo =GraphRevision= draft proves
+=Revision.apply_reads_frame= and =StrongComponents.edited_root_closure_exact=:
+with stable node identity/support, editing rows only at invalidation roots
+preserves the affected set between old and successor graphs. The proof allows
+cycles. =missing_edited_consumer_is_unsound= shows why every edited consumer
+must be a root. =retained_root_count_exact= certifies retention of every old
+root using distinct native keys; =accumulated_roots_exact= permits continuing
+the old work in that case. A dropped root requires restarting from the exact
+replacement roots on the same old reverse index. The focused 78-job build
+passed; these are structural laws, not a Scheme refinement or latency proof.
+
+Connect that continuation through the existing owned schedule/cache path before
+claiming append-only native work. Do not reuse the old traversal across changed
+SCC group identities without their mapping proof. =restage= replaces a complete
+proposal, so dropped roots also need explicit handling: a previous cumulative
+visited set is not automatically the exact closure of the replacement's roots.
+The issuer must derive these conditions from its real revision ticket; a caller
+must not provide a clean-owner predicate. Existing complete paths remain the
+safe fallback while those premises are unavailable.
+
+The native change at POO =e1a6f4c= (policy follow-up =b3cb0e08=) connects the continuation through
+the owned schedule/cache path. It derives roots from the private revision
+ticket, reuses traversal for retained roots, restarts for removed roots, and
+keeps the original fallback for changed support/SCC identities. In local native
+Just runs, graph-order repair passed 18 Cases, component membership/publication
+passed 49, and the feedback Graph suite passed. The owned fixture exercises a
+rival restage during admission, refused predecessor tickets, failed admission,
+exact replacement and retirement after commit.
+
+Two isolated implementation faults demonstrate that these controls distinguish
+the handoff: disconnecting the owned continuation fails the work-presence
+assertion; reverting non-owned replacement to cumulative invalidation fails
+the removed-root assertion. Both fail with test exit 42, not a timeout or
+compiler failure. Restoring the unmodified candidate passes the 49-Case
+component suite again with normal Module/Harness/OK markers. The first
+matched 100K/1M schedule study reports no new
+bucket expansion on repeated identical edits after the initial 1,000-node
+closure, but still copies/orders the reached result. Its million-node capture
+takes about 1.69 seconds CPU and is charged separately. This incremental result
+does not solve the seconds-scale first Module request, nor qualify Core or
+downstream acceptance. The change is published on the existing POO PR #17;
+the first CI build caught the timed kernel's stale =-Og= expectation. The
+policy follow-up retains =-O2= for exactly the two timed kernels and =-Og=
+for other roots, with one compiler-policy pair each. All 10 existing build
+Cases passed locally after supplying the declared OpenSSL pkg-config input.
+Exact-head Scheme CI remains a separate gate. The native source-certificate and
+scoped-publication integration described above remains unimplemented.
+
+The =b3cb0e08= CI build subsequently passed. POO =72128c46= adds the owned
+inverse pairs to that same existing CI command and the independent method
+semantics controls described in [[file:10.10-first-demand-implementation-obligations.org][10.10]]. Its runtime code is unchanged from
+=e1a6f4c=. The update followed successful shared-build/cache preparation;
+the final exact-head workflow must still pass before any promotion.
+
+The proof owner is the existing =Graph/PublicationReads.lean= together with
+=Loading/DependencyPublication.lean=. Eight new critical laws are registered
+in Core's existing axiom audit. The complete local Core proof build passed
+225 jobs, with model-shape and standard-axiom audits passing. This includes the
+current shared checkout's other changes and does not qualify the public head.
+
+SysML =ScopedPublicationEvidence= and =TrackedOwnerCertificateTransport= in
+[[file:10.01-efficient-caching.sysml][10.01]] allocate the native source obligations. Existing Quint
+=ReadRetention=, =IssuedRootForwarding= and =RoleFunction= remain the temporal
+owners for unknown-effect fallback, capture forwarding and per-datum effects;
+the new structural projection is not duplicated as another finite graph model.
+No new Quint qualification or Scheme source-certificate/publication integration
+is claimed. The native schedule continuation qualification above covers that
+upstream handoff only.
+
+Before changing the guard, the existing Scheme suites must demonstrate exact
+closure, shared-policy invalidation, effects before/after callbacks, source and
+ticket substitution, old-generation refusal and failed admission. Source
+projection stays scope-free. Then measure the original first business request,
+full 10K/180-second/4-GiB acceptance and downstream120-second isolation gates.
+No budget increase or scope prewarming follows from these proofs.

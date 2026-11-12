@@ -1,0 +1,1101 @@
+#+title: 20.21 Build Execution Cost
+
+* Workload boundary
+
+This investigation concerns the Core package's ordinary =gerbil build=, with
+the existing 300-second build deadline, 2 GiB heap and two runtime compiler
+workers. It does not change Module namespace acquisition or Loader semantics.
+The previous 52.55-second zero-compilation receipt did not contain phase
+measurements, so attributing all of it to source checks would be unsupported.
+
+The source cohort is the unpublished coordinated Core/runtime-POO qualification
+used by 20.20; the declared dependency pin is not advanced. Runtime compiler
+and runtime sources are unchanged. All raw receipts remain local artifacts.
+
+* Actual execution and authority
+
+1. The installed package tool starts the package's source build entry.
+2. =build.ss= registers its package/prelude, imports its library consumers and
+   discovers the ordinary library specification through runtime import metadata.
+3. =init.exports.std-make-spec= projects the selected Module compiler inputs
+   and combines them with those ordinary library targets.
+4. The existing =.with-compiler-inputs= checks current sources, installs the
+   role-input association, and calls the official build-script consumer.
+5. Product repair precedes runtime Make. Product completeness and a fresh source
+   check follow it, before returning.
+
+This path does NOT issue a publication approval. Explicit =.compile= owns
+=call-with-build-artifact-issuance=. Avoid timing ordinary product checks as
+though they were that separate signing path.
+
+The installed =std/make:make-build= first imports each target to establish
+completion identities. Its coordinator imports the target, considers actual
+imports, checks target and dependency timestamps, and posts completion even
+when it queues no compilation. =module-id= can import the same target again.
+Those are runtime operations; the Core input hook's checks before/after runtime
+import are not replaceable by a saved successful admission.
+
+* Weaver hot-build attribution
+
+The public =weaver-module-selection-baseline-2026-11-06= tag identifies the
+38-target Weaver build, with 13 Lab targets. The following fresh-process runs
+reuse its installed prerequisites and output products. Verbosity 2 uses the
+existing scalar counters without installing a source observer. The direct
+script is an attribution control for the package command's process boundary.
+Every row has zero compile events and a normal exit.
+
+| Command | Before Yuanxu main | Yuanxu main | After Yuanxu main | Total wall seconds |
+|---------+--------------------+-------------+-------------------+--------------------|
+| =gerbil build= | 3.20 | 7.69 | 4.48 | 15.37 |
+| =./build.ss compile= | 1.84 | 8.22 | 3.81 | 13.87 |
+| =./build.ss compile= | 1.94 | 7.22 | 3.59 | 12.75 |
+| =gerbil build= | 2.99 | 7.21 | 4.30 | 14.50 |
+
+The child markers include epoch timestamps, so the outer portions compare
+the same wall clock. A post-main process sample finds the main thread in
+Gambit =___cleanup_dyn_module= → =dlclose= → macOS =dyld= unload processing
+for all 182 samples. The sample includes debugger notification overhead.
+Use the unsampled rows for exit duration. Native shutdown and Scheme
+currentness have separate owners and separate costs.
+
+A separate specification-entry sample finds 351 of 365 main-thread samples
+in =___dynamic_load= and =dlopen=. The debugger perturbs that sample too.
+In a separate dynamic-image trace, the reference child loaded 339 =.o1=
+images before the specification and another 291 during it. Those are native
+image loads, not business scopes or compiler jobs. Gerbil's package tool
+imports its HTTP library; an init window only needs its checkout location.
+
+** Deferred Interface import control
+
+An isolated candidate admitted an explicit import of the exact =.def= binding
+already supplied by the wrapper. Other imports, re-exports and callbacks
+retained their existing path. All three rows below use the same disposable
+prefix. Each arm first regenerates products affected by its changed compiler
+inputs, then measures the zero-compilation run. The two arm switches each
+recompiled the three Weaver Interface targets, so their times are excluded.
+
+| Hot arm | Total wall s | User + system s | Specification s | Native Make s | Reader evaluations | POO replay visits |
+|---------+--------------+-----------------+-----------------+---------------+--------------------+-------------------|
+| Reference | 13.45 | 13.34 | 4.63 | 1.72 | 35 | 306571 |
+| Candidate | 14.10 | 13.86 | 4.92 | 1.73 | 20 | 366839 |
+| Reference restored | 15.93 | 14.57 | 6.78 | 1.77 | 35 | 306571 |
+
+The candidate reduces interpreter evaluations but still expands the private
+import closure. Native role-import time was 3.08 s versus 3.02 s in the first
+reference, and replay visits increased by 60268. The wall and CPU result falls
+inside reference variation, so the candidate is discarded. Role-import spans
+are inclusive of nested imports and checks. Build-current checks occupy about
+0.4 s in these runs and must not absorb the inclusive role-import time.
+
+The build-side optimization boundary is the native Context traversal reached
+from a selected Interface. A proposed shortcut must preserve the actual
+phase-specific import graph and ordered source obligations and must retain
+independent checks on both sides of expansion and author callbacks. Prove
+support preservation against the existing =SourceClosureWork= model and
+compare native Context visits, POO replay visits and end-to-end time together.
+The Gambit/dyld shutdown cost is a separate runtime investigation. Keep the
+ordinary package CLI and its natural exit in acceptance.
+
+** Resolve the native package location through its public binding
+
+The source window asks Gerbil for =pkg-root-dir= via the existing
+=module-binding-action=. The native export still owns location and any
+initialization required by the binding. There is no reconstructed package
+layout, saved procedure or approval. =Inputs.narrowed_import_edge= and
+=Inputs.narrowed_binding_identity= cover the native import projection under
+its binding observations. The downstream tests exercise actual Gerbil
+resolution rather than treating those theorems as runtime evidence.
+
+Using the same disposable installed prefix, both candidate invocations and
+all three reference invocations had zero compiler jobs. The reference wall
+times were 18.18, 16.93 and 15.68 s. The candidate took 12.00 and 12.62 s.
+Process-tree CPU was 15.44–16.25 s for the reference and 11.83–12.33 s for the
+candidate. Specification wall time fell from 5.48–6.64 s to 3.98–4.35 s,
+and main CPU from 7.48–8.58 s to 6.02–6.39 s. Both arms evaluated 35 reader
+bodies and visited 306571 replay nodes per run. In the paired image traces,
+startup still loaded 339 =.o1= images. Specification loads fell from 291 to
+184. This measures the installed hot path and holds the currentness
+work constant. It is separate from the effect of the discarded Interface
+candidate.
+
+The unchanged public cohort reran its A/B gate in 48.19 s under the original
+120 s aggregate limit, using the already installed environment. Both isolated
+outputs covered the same 38 targets, hot B compiled zero targets, and cleaning
+A preserved B. The independent runtime first =.get= built one scope and the
+repeat built none. The runtime confirmed Governance, Cedar and Gateway and
+reported its own products. This rerun is separate from the fresh-install
+baseline and is not a candidate speedup.
+
+The binding candidate passes the Weaver A/B gate in 55.36 s with the same
+38 targets and one first-read scope. Core's publication, test source
+admission, package resolution and window suites pass. The input-context
+gate rejects all four injected faults and passes the original implementation
+before and after injection. Lab's first 120 s attempt expires after the
+specification consumes 70.45 s wall and 7.08 s CPU. Its two local windows do
+not call =pkg-root-dir=. The same 120 s gate then passes in 68.15 s, with
+5.91 s specification wall, 45 targets, zero hot compiler jobs, B-owned
+runtime products and clean isolation. The initial timeout remains a failed
+receipt and the wall/CPU gap remains unattributed.
+
+* Measurements and their limits
+
+Temporary build-entry probes were removed after measurement; the original
+=build.ss= bytes were restored. Production retains only named envelopes in
+the existing optional source-operation measurement facility. Disabled envelopes
+perform the original action without creating an accounting table. Enabled
+envelopes report existing Gambit wall/CPU/GC statistics after the action, never
+installing a source observer. No process/procedure/approval cache is added.
+
+A zero-compilation instrumented hot run reports:
+
+| Envelope | Wall seconds | CPU user + system | GC wall, included |
+|----------+--------------+-------------------+-------------------|
+| Bootstrap to completed entry imports | 4.331 | not separately measured | not separately measured |
+| Library-spec discovery | .931 | not separately measured | not separately measured |
+| Compiler specification projection | 11.043 | 5.780 + .805 | 1.849 |
+| Runtime std/make dispatch, both prefixes | 14.748 | 6.344 + 2.948 | 2.046 |
+| Four compiler-current checks, inclusive subset | .295 | .166 + .055 | included in enclosing phases |
+| Product repair / product require | .278 / .020 | recorded separately | included in main |
+| Main | 26.615 | not a sum of independent CPU samples | nested |
+| Whole command | 36.58 | 20.99 + 5.05, process-tree accounting | not separately measured |
+
+The bootstrap and imported endpoints are .321 and 4.652 in the child build VM,
+not the package tool's
+whole command clock. Inclusive child envelopes and process-tree CPU cannot be
+summed as exclusive stages. Main starts at 6.058 and ends at 32.673 in that VM.
+No source or runtime compile job is queued in this hot run. It physically reads
+12692 source inputs totaling 104060127 decoded characters; their aggregate wall
+observation in this run is 1.073 s, not the whole projection/Make cost. Decoded
+characters are not allocated or retained bytes. The measured GC time does not
+by itself attribute allocations to file strings rather than importer, expander
+or POO structures.
+
+Other local receipts differ substantially: a zero-compilation entry probe took
+22.91 s whole-command time; another took 46.00 s (20.40 user, 4.86 system).
+The latter observed host load averages 34.36/19.05/14.49. This establishes
+variation and a wall/CPU gap, not a measured fraction caused by scheduling.
+The CPU-envelope preparation run rebuilt 50 changed source units and took
+59.18 s; it is explicitly excluded from the zero-compilation baseline.
+One accidental invocation from the product root rejected missing product
+dependencies in the private Core-only package environment; it is retained as a
+failed setup receipt and excluded from Core build measurements.
+
+After removing the entry probes, the ordinary final build also queues zero
+compilation jobs and takes 48.26 s (21.19 user, 5.44 system). This is not an
+accepted speedup over 52.55 s. The remaining cost is still open; neither the
+smaller instrumented wall time nor source-read counts close it.
+
+* Convergence decision
+
+The four compiler-current calls and the two product checks are not the dominant
+cost. Their identities remain distinct: projection return, init specification
+consumption, compiler-entry and compiler-return. Imports and compilation may
+run code between them. Do not remove them or extend a byte window across them.
+
+The dominant open questions concern compiler projection construction and runtime
+Make dependency/import work, including GC and wall/CPU variation. Module-load
+benchmarks are not substitutes for either measurement. Reusing an import's
+context is not by itself proof that its source association remains current.
+Reusing an existing POO value must preserve its receiver/revision, complete
+dependencies, first failure and observer order. The initial accounting slice
+only attributed these costs. The production import convergence below then
+reduces duplicate runtime binding/dependency representations; it does not reuse
+approval results or replace Make's coordinator.
+
+* Assurance allocation
+
+SysML =BuildExecutionAccounting= owns these phase/authority boundaries.
+Existing Lean =Admission.SourceWindows.check_exact= and =fetch_sound= prove
+complete competing requirements under the stated stable-window premise;
+=changed_source_rejected= and =child_misses_parent= retain refusal and receiver
+separation. They do not prove runtime importer purity or allocation cost.
+Existing QNT =SourceWindows= owns fresh windows across effects, both requirements,
+receiver separation and final-check negative controls. =CoreBuildHandoff= owns
+selected source/output binding and callback-to-return refusal. No duplicate
+model or manual purity label is introduced. Actual build and consumer gates
+remain the runtime correspondence obligation.
+
+* Qualification of this source cohort
+
+The existing default =just test-file= gates pass for retention census, real
+Gitea/PostgreSQL publication (eleven cases) and build Graph/refusal. Each receipt
+contains MODULE-OK, HARNESS-OK and final OK; none contains a skipped Case,
+harness error, undefined binding or overflow. The census observes:
+
+| Modules | Cold wall / CPU | Hot wall / CPU | Cold / hot expansion | Cold / hot physical reads |
+|---------+-----------------+----------------+----------------------+---------------------------|
+| 16 | 10.722 / 4.366 s | .0920 / .0908 s | 32 / 0 | 5414 / 106 |
+| 32 | 12.732 / 5.754 s | .3265 / .1771 s | 64 / 0 | 10352 / 170 |
+
+These Module workload controls protect the unchanged semantics; they are not
+the package build benchmark. Their slower cold wall times do not establish a
+speedup. Parent/child isolation, competing port requirements, source edits,
+missing/substituted contributions and stale plan rejection retain their actual
+existing tests, rather than a new abbreviated test roster.
+
+Lean SourceWindows/Building.Inputs completes (48 runtime proof build jobs).
+QNT SourceWindows and CoreBuildHandoff qualify eight cases each, including their
+expected negative counterexamples. They do not prove importer purity or remove
+the filesystem-stability premise. No new cache protocol, Builder, compiler
+change, budget relaxation, ten-thousand-module run, commit or push is made.
+
+* Intermediate comparison: explicit POO import inventories
+
+The following slice changes production owners, not only their measurement.
+Seventeen compiler, Contract and Scenario owners now select the POO exports
+they actually need instead of making a full strong import beside the existing
+package/role prelude. The two Scenario ObjectContract imports are also bounded
+to ObjectContract./diagnose/refine as used. Preludes and import reexports are
+not narrowed. There is no source-rewriting rule imposed on contributor files.
+
+The fixed POO inventory has 218 exports. The seventeen explicit alias
+inventories change from 3706 requested aliases to 96. This is a structural
+declaration count, not measured live bytes or a claim that every owner is
+expanded exactly once. The runtime export inventory only assists review: quoted
+names overapproximate lexical uses, and dynamic macro uses require runtime
+compilation. Review also removes the duplicate replay-slot-reads! import where
+the same runtime function remains explicitly provided by mop.
+
+All actual predicates, responsibilities, generic registrations, source guards,
+receiver construction and publication methods remain. This reduces repeated
+binding-environment construction through the official expander; it does not
+memoize a Contract result or replace runtime Make's dependency scheduler.
+Building.Inputs.narrowed_import_edge/narrowed_binding_identity prove the
+source/phase and retained binding-identity projection. Coverage of this concrete
+import inventory remains an actual compiler/consumer obligation.
+
+The first runtime compile exposed missing diagnose and refine in an initially
+over-narrow ObjectContract import. Those failures are retained and the used
+exports restored; no failed compile is treated as a performance result.
+
+The installed module-sugar only-in transformer projects individual runtime
+module-import nodes. Consequently a smaller binding inventory does not imply
+one Make timestamp query per original owner. It may still cause repeated runtime
+dependency visits. Import-set packing would require a separate correspondence
+for binding order, phase, reexports, initialization and callback boundaries.
+This slice does not mutate shared expander contexts, wrap Make, or suppress
+those visits under a claimed purity flag.
+
+The read-only upstream audit sees gerbil-poo PR 13 at
+=aae71683a0e4499b2de49a07636109516eaaf02b=. This does not silently replace the
+qualified runtime: its unpublished issuance/construction changes must not be
+lost by changing a REV. The comparison keeps one dependency cohort throughout.
+
+** std/make boundary found during the comparison
+
+The installed =std/make.ss:build-dependent?= recursively normalizes each runtime
+module-import/export/import-set node, then calls =dependency-timestamp= for
+every encountered owner. =only-in= emits individual aliases; a zero-compilation
+coordinator must visit all of them because no newer dependency short-circuits
+the traversal. Repeated aliases can therefore repeat the same library-path
+resolution and output timestamp comparisons. Runtime =core-import-module=
+already has a module registry: adding another Core procedure/context cache is
+not a fix for this repeated runtime dependency work.
+
+A potential standard-library change would scope identity reuse to ONE
+=build-dependent?= invocation after its completion waits, never to a build
+session or accepted plan. It must retain every import edge, the first failure,
+and fresh observations at the next target/callback/return boundary. Sharing a
+timestamp requires a stable observation window; the existing SourceWindows
+proof does not establish filesystem stability or runtime compiler immutability.
+
+Core has no public std/make dependency-query hook. Mutating shared expander
+contexts, rebinding installed Gerbil procedures, copying Make into a Core Builder,
+or trusting a manually marked pure callback are rejected approaches. A runtime
+standard-library fix would need separate qualification and authorization. None
+is installed. Instead, the final production change below uses the existing
+runtime import representation, without changing Gerbil sources.
+
+* Final production convergence: runtime dependencies
+
+The Core package has a fixed POO prelude. In 113 internal library owners, runtime
+=runtime:= imports now retain the actual POO module-context dependency while
+ordinary POO operators resolve through that existing prelude. They no longer
+construct an additional strong alias table or one dependency node per alias.
+This is Gerbil's existing import syntax, not a new loader, macro, Builder or
+cache protocol. Runtime initialization and std/make dependency edges remain.
+Reusable Scenario roles keep explicit bounded imports; custom preludes,
+renamed/phase imports, public reexports and contributor modules are excluded.
+
+For example, a fixed-prelude Core consumer now writes:
+
+#+begin_src scheme
+(import (runtime: :clan/poo/object)
+        (only-in :clan/poo/mop define-type call-with-slot-read-observer replay-slot-reads!)
+        (only-in :clan/poo/object-contract diagnose))
+;; Existing POO expressions still use the package prelude's .get/.o bindings.
+#+end_src
+
+This is the import-ownership portion of =admission/source.ss=, not an additional
+public entry; its other consumer-specific imports remain in that owner.
+
+Runtime metadata audit of the additional 102 owners checks all 398 previously
+requested bindings against canonical export identities, and checks that the
+POO module-context edge remains. Strong context-table entries change
+from 23889 to 6939 in that set. These are table entries, not exclusive retained
+bytes or a measurement of the weak shared prelude counted per owner.
+
+The complete remaining lexical environment matters. A real intermediate build
+failed because a strong =:gerbil/core= import selected its =make-object= over
+the weak POO constructor. Nine owners now retain a Gerbil Core runtime
+edge and only their deliberate strong constructor/predicate imports. For
+example =schema/support/object.ss= keeps both POO bindings; =graph/operation.ss=
+keeps both Gerbil Core bindings. Bootstrap regression checks those identities.
+The failed arity build and the earlier missing =diagnose=/=refine= failures
+remain local failure receipts, not accepted performance samples.
+
+Lean =Building.Inputs= proves runtime import source/phase retention, prelude
+binding identity, and =remaining_bindings_preserve_identity= under the complete
+remaining-lookup premise. =remaining_shadow_blocks_removal= records why merely
+comparing prelude bindings is insufficient. Actual runtime compilation and
+consumer tests supply the concrete correspondence; no theorem asserts arbitrary
+import rewrites safe. Existing QNT effect/currentness models retain their
+sequencing responsibility rather than duplicating this binding proof.
+
+** Controlled observations and qualification limits
+
+| Source variant | Projection wall / CPU | std/make wall / CPU | Whole command |
+|----------------+-----------------------+---------------------+---------------|
+| A: original broad 17 imports | 5.112 / 5.094 s | 11.336 / 8.049 s | 29.35 s |
+| B: bounded aliases only | 6.233 / 5.695 s | 8.319 / 7.962 s | 27.70 s |
+| C: final runtime imports, sample 1 | 4.917 / 4.905 s | 6.924 / 6.920 s | 20.85 s |
+| C: final runtime imports, sample 2 | 5.056 / 4.970 s | 7.037 / 7.028 s | 21.09 s |
+
+These exploratory samples all queue zero compilation and keep the same runtime
+dependency cohort. B alone does not demonstrate a CPU win. C reduces measured
+Make CPU about 13 percent against A; its much larger wall-time difference is
+not wholly attributable to code. An unrelated scoped proof check overlapped
+sample C1 startup; C2 had no competing local proof run. The original 11.043 s
+projection and 14.748 s Make sample had a larger wall/CPU gap and must not be
+used as a causal before/after speedup claim. Four independent currentness calls
+and 12692 physical source reads remain in C: approval has not been cached.
+
+The final uninstrumented ordinary hot build takes 20.13 s (16.60 user, 3.42
+system), with zero compile jobs and the original build.ss restored byte for
+byte. The final invocation propagates the existing 2 GiB limit through runtime
+=GAMBOPT=max-heap=2G,debug=q= to runtime child VMs as well as the invoking VM.
+Earlier A/B/C samples did not independently certify the child VM heap setting;
+they are cost observations, not process-tree resource qualification. A per-VM
+limit is not an aggregate two-worker memory claim. No timeout or heap budget is
+increased. This result does not close ten-thousand-module capacity or remote CI.
+
+Build projection and runtime Make remain separate from module-loading census
+and real Scenario admission. No source association, source check, observer,
+policy callback, competing requirement or parent/child receiver boundary is
+removed. Explicit =.compile= still owns signing; an ordinary library build does
+not issue publication approval. No commit or push is made in this slice.
+
+** Final consumer receipts
+
+The existing default =just test-file= gates pass for bootstrap (including both
+new binding-identity cases), compiler contexts, build Graph/refusal, real
+Gitea/PostgreSQL publication (all eleven cases), retention census, authoring
+dispatch work and evidence-read ownership. Receipts contain MODULE-OK,
+HARNESS-OK and final OK with no Case/Harness failure or overflow. The first
+bootstrap shadow assertion compared a resolved extern binding with its runtime
+import-binding wrapper; that failed test is retained. The corrected assertion
+resolves both sides through Gerbil before testing identity, without weakening
+the expected constructor/predicate origin.
+
+| Modules | Cold wall / CPU | Hot wall / CPU | Cold / hot expansion | Cold / hot physical reads | VM live bytes after GC |
+|---------+-----------------+----------------+----------------------+---------------------------+------------------------|
+| 16 | 3.3068 / 2.8997 s | .06975 / .06974 s | 32 / 0 | 5414 / 106 | 186321520 |
+| 32 | 4.0718 / 4.0660 s | .13965 / .13964 s | 64 / 0 | 10352 / 170 | 201706696 |
+
+The unchanged query returns the same Graph in the hot phase and performs
+independent authentication; an unused scope and the Build producer remain
+unconstructed. Live bytes include shared runtime libraries, both census cases
+in one VM, compiler contexts and instrumentation. They are not per-module
+exclusive retained bytes; neither their difference nor container counts prove
+capacity at ten thousand modules. These are module-loading observations, not
+the separate 20.13-second package build receipt. No competing proof workload
+runs during this final census.
+
+Final scoped Lean build completes 48 jobs (=Building.Inputs= and
+=Admission.SourceWindows=). The existing QNT =SourceWindows= and
+=CoreBuildHandoff= qualifications pass eight cases each, including their
+expected counterexamples. They retain distinct ownership: lexical identity
+and import-edge properties in Lean; callback/currentness/return ordering in
+QNT. Neither formal result proves runtime filesystem stability or exclusive
+memory cost. The actual seven default consumer gates provide the runtime
+correspondence for this qualified cohort; remote CI and release-pin migration
+are not claimed.
+
+* Follow-on: remaining construction and dependency traversal
+
+This follow-on uses the same qualified runtime dependency cohort and unchanged
+limits. The 5/7-second envelopes remain build measurements; they are not
+Module-loading times. No Gerbil/Make source, shared runtime context or release
+dependency pin is changed.
+
+** One production data flow, three representation fixes
+
+1. =source/build.ss= constructs selected and retained Build Entries with runtime
+   lexical slots: =(.o kind path compiler-identity input options owner contributor)=.
+   These bindings are immutable local values, not receiver formulas. The
+   original entry, input and read identities are not merged. All conflict
+   checks and guard calls remain. =source/preparation.ss= similarly captures
+   path, compiler identity and the SAME admission procedure directly. Its
+   compiler forms and source-input formulas remain demand-computed. Runtime
+   reflection gates check direct constant specifications and retained lazy forms.
+2. Completed Make groups capture =prefix= and =spec= as runtime values. A spec
+   getter no longer retains the entire mutable grouping table after assembly.
+   Grouping still occurs only on demand, after all contributions are present;
+   no live receiver formula or user callback is frozen.
+3. =building/source-closure.ss= keeps the live DFS cursor in tail arguments,
+   saving suspended frames only when descending into a new runtime context.
+   The old walker allocated a replacement pair/spine for EVERY candidate,
+   including duplicate aliases of an already visited context. The new walker
+   keeps the same identity table, normalization, prelude checks, postorder and
+   callback boundaries. It mutates neither import metadata nor private frames,
+   and retains nothing across independent traversals.
+
+For T normalized candidates and D descents, the explicit pair/spine allocation
+sites change from =2 + 2T + 2D= to =2D=, excluding the common root-pending list.
+This is a source-level allocation count on the same trace, not measured VM
+allocation or exclusive live bytes. Lean =cursor_frame_cells_saved= states this
+bound. =Admission.DFSFrames.cursor_enter_refines= and =cursor_return_refines=
+connect the hoisted cursor to the EXISTING identity/frontier model. Its order
+field tracks entry order; runtime tests, rather than that field, check postorder
+callbacks, pruning, shared nodes, cycles and original exception identity.
+
+** Keep the runtime prelude import-set
+
+The prelude previously used import filtering to remove two constructor names.
+Runtime =except-in= flattened Gerbil Core into thousands of import nodes, each
+of which runtime Make can normalize and timestamp independently. The production
+prelude now uses the existing import/export forms:
+
+#+begin_src scheme
+(import :gerbil/core
+        :clan/poo/object
+        (phi: +1 :gerbil/core)
+        (phi: +2 :gerbil/core))
+(export (except-out (import: :gerbil/core) object? make-object)
+        (import: :clan/poo/object)
+        (phi: +1 (import: :gerbil/core))
+        (phi: +2 (import: :gerbil/core)))
+#+end_src
+
+Gerbil Core reexports are weak; direct POO constructor bindings win. Moving the
+filter is qualified for THIS interface, not an arbitrary import rewrite. A
+runtime same-process control loads the original declaration and current prelude,
+then checks all 20891 export entries by name, phase, weakness, multiplicity and
+resolved binding =eq?=. It also checks the SAME 96 dependency contexts in the
+SAME postorder. Top-level import nodes change from 6890 to 4. Aliases remain
+inside runtime import-sets, not discarded or represented by a manual source table.
+Bootstrap regression checks the complete Core import-set and POO constructor
+identity. No replacement only-in macro or alternative loader is introduced.
+
+The control is an isolated runtime metadata audit, not Module admission. The
+existing SourceWindows/CoreBuildHandoff/IdentityDFS QNT models own independent
+authentication, effects and return ordering. Lean proves same-owner reachability
+and immutable value capture; runtime export/phase/initialization correspondence
+and external filesystem stability are not inferred from those small equalities.
+
+** Honest cost comparison
+
+| Cohort/sample | Projection wall / CPU | Make wall / CPU | Whole command |
+|---------------+-----------------------+-----------------+---------------|
+| Follow-on baseline | 5.251 / 5.124 s | 7.602 / 7.552 s | 23.00 s |
+| Lexical fields only, sample 1 | 5.231 / 5.035 s | 7.320 / 7.244 s | 22.48 s |
+| Runtime import-set during load spike, sample 2 | 8.537 / 6.440 s | 14.135 / 8.722 s | 38.95 s |
+| Old import representation, later control | 7.377 / 6.561 s | 11.624 / 9.717 s | 33.57 s |
+| Final cursor, sample 1 | 4.909 / 4.891 s | 6.632 / 6.599 s | 20.80 s |
+| Final cursor, sample 2 | 5.339 / 5.158 s | 6.809 / 6.613 s | 21.44 s |
+
+Lexical captures alone do not establish a timing win. The import-set experiment
+initially regressed in BOTH wall and CPU; those receipts are retained. Host load
+29.67/15.93/10.37 was observed near that run; it is not a measured attribution
+of the regression. The later old-representation control also slowed down, so
+neither wall sample isolates the code change. Final Make CPU is lower in these
+local observations, but this is not statistical or scale performance acceptance.
+Projection time remains roughly five seconds and is not declared solved.
+
+Final hot samples retain four build-current calls, 12692 physical source reads
+and 414339 runtime metadata replay visits. Independent policies, return checks,
+issuance and dependency authentication remain; no admission verdict is cached.
+Preparing changed production units caused actual recompilation, excluded from
+the zero-compilation table. After removing the temporary probe and restoring
+the original build.ss bytes, ordinary runtime build completes in 19.72 seconds
+(16.47 user, 3.15 system), with zero compilation. Module census and real Scenario
+receipts are qualified separately below, without competing local proof jobs.
+
+** Final independent Module and assurance gates
+
+All seven existing =just test-file= gates pass: bootstrap, build Graph,
+compiler-context ownership, real Gitea/PostgreSQL publication (eleven cases),
+retention census, open authoring dispatch and issued-read ownership. Each has
+MODULE-OK, HARNESS-OK and final OK; none has an error Case/Check/Harness,
+overflow or skipped Case. The added runtime metadata fixture covers shared
+aliases, cycles, postorder, pruning, exception identity and a fresh traversal
+after failure. It is explicitly not a Module publication or Loader fixture.
+
+| Modules | Cold wall / CPU | Hot wall / CPU | Cold / hot expansion | Cold / hot physical reads | VM live bytes |
+|---------+-----------------+----------------+----------------------+---------------------------+---------------|
+| 16 | 3.1880 / 3.1674 s | .07121 / .07084 s | 32 / 0 | 5414 / 106 | 185970976 |
+| 32 | 4.5287 / 4.4620 s | .15000 / .14848 s | 64 / 0 | 10352 / 170 | 201350872 |
+
+These Module results preserve hot Graph identity, unselected-scope laziness and
+independent authentication. They do NOT establish a loading speedup: the
+32-module cold run is slower than the preceding 4.0718-second observation, and
+both cold CPU observations increased. VM live bytes include shared libraries,
+compiler contexts, both cases and measurement roots; their small decrease is
+not exclusive per-module savings or capacity evidence. Build and Module costs
+remain separate, with the mixed timing results retained.
+
+Final Lean qualification completes 84 build jobs for Building.Inputs,
+Admission.DFSFrames and SourceWindows. Existing QNT IdentityDFS passes nine
+cases; SourceWindows and CoreBuildHandoff pass eight each, including their
+expected negative counterexamples. The source-level structural simulation is
+not a proof of the installed expander, external atomicity or stable host load.
+Immutable lexical captures preserve the same value references, not a deep
+freeze of referenced objects. Runtime MOP invalidation and source authentication
+continue to own changes to those objects and sources.
+
+The build entry is restored byte-for-byte. Raw receipts and runtime control
+sources remain local artifacts. No new cache/approval protocol, Builder,
+replacement import macro, budget change, ten-thousand-module run, commit or
+push is made. Remaining projection latency and scale acceptance are open.
+
+* GC attribution and adjacent runtime authentication
+
+** Entry ownership
+
+Production build.ss remains a thin consumer. =yuanxu!= owns declaration/role
+lowering and links init-owned lazy objects/functions to
+=init.exports.std-make-spec=. Runtime discovery and source guards stay in the
+Module System; issuance stays in POO MOP. Neither authentication nor execution
+moves into macro expansion. Core library inventory remains independent of
+selected Modules. Temporary probes are removed and build.ss restored exactly;
+no extra entry, dispatcher or Builder is introduced.
+
+** Cold regression: CPU, GC and runtime cache lifetime
+
+The preceding 32-module samples have identical 64 expansions, 10352 physical
+reads, 589 replay calls and 508121 replay visits. CPU rises from 4.0660 to
+4.4620 seconds. GC CPU rises from .5278 to .5909: about .0631 of the .3959-second
+CPU increase. Non-GC CPU grows .3328 seconds. Graph wall rises from 3.7522 to
+4.1711 seconds; nested interface/preparation/admission spans grow too, but they
+are inclusive and cannot be summed into an exclusive attribution.
+
+A fresh SAME-source control observes 17.1034 wall / 6.4126 CPU seconds with
+12 collections, GC wall 2.5491 but GC CPU .8432 seconds, and zero major faults.
+Wall/CPU gaps and minor faults are observations, not proof of a scheduler/disk
+cause. This slow receipt and the earlier CPU regression are both retained.
+Negative signed runtime allocation counters are not reported as allocated bytes.
+
+A runtime GC probe keeps roots alive and observes the same warm traversal list,
+but a new list after collection: the existing weak-key/weak-value index permits
+eviction. A second control leaves one cyclic entry alive with weak keys/strong
+values; the weak-key/weak-value control drops it. Strong values are therefore
+not a safe shortcut. No cache lifetime change, retention pool or cache protocol
+is added. This proves an eviction mechanism in one runtime case, not the number
+of full-Scenario rebuilds.
+
+** Production kernel fix
+
+Runtime =object.ss:require-current!= authenticated a record, then called public
+=object-read-current?=, which immediately authenticated it again. The existing
+private helpers already provide the remaining callback-free work:
+
+#+begin_src scheme
+(def (require-current! read)
+  (require-issued! read)
+  (require-object-read-route! read)
+  (unless (object-issued-read-current? read)
+    (error "stale slot dependency" (slot-read-key read))))
+#+end_src
+
+The public entry still authenticates independent callers. Full preflight,
+each visit and the final visit remain; nothing is reused across an observer.
+Route checks inspect actual runtime class/backend/procedure identities, without
+a caller purity flag. The premise is the supported serial kernel, not a
+sandbox against arbitrary global kernel replacement, raw FFI or external races.
+
+A compiled runtime control counts 5 authentications for one genuine token in
+the old code against expected 3, and fails as intended. Revised code counts 3:
+preflight, visit and independent final visit. Mutating the record in the
+observer still fails with =unissued slot dependency= at return. The test-only
+counter wrapper restores the original procedure with dynamic-wind. All 18
+issued-read cases pass, retaining forged/transient/route/constructor/GC controls.
+Runtime compilation uses installed std/make, bounded heap/deadline and two workers.
+
+Lean =IssuedRead.adjacent_authentication_same_result_and_diagnostic= and
+=current_once_rejects_unissued_first= preserve same-read results/error order.
+=callback_authentication_cannot_be_eliminated= demonstrates post-effect refusal.
+Existing QNT IssuedRead/SourceWindows own effects/refusal, without another model.
+Runtime source correspondence, rather than a manual purity label, is required.
+
+The existing unpublished runtime source retains its other changes. Recompilation
+also exposes its pre-existing construction query and uses a different compiled
+SSI prelude from the old overlay. Old-overlay/rebuilt-overlay timing is NOT an
+isolated attribution to this edit. The 5-to-3 runtime count uses the same compiler
+and source cohort. No release REV, commit or push is changed.
+
+** Validation and remaining cost
+
+The uninstrumented default build completes in 21.31 seconds with zero compile
+targets. Separate temporary measurements observe spec projection at 5.01/5.18
+seconds and std/make at 6.67/6.55 seconds; these are build costs, not Module
+loading times. No measurement code remains in build.ss.
+
+The current 16/32-module cold samples are 3.947/4.322 seconds wall and
+3.362/4.280 CPU; hot samples are .061/.131 seconds. Cold expansion counts remain
+32/64, with 5414/10352 reads and 245865/508121 replay visits. The 32-module
+sample still performs 12 collections. Whole-VM live memory is not attributed
+as exclusive per-module retention. These observations do not close the
+five-second projection cost, the GC attribution or scale acceptance.
+
+All seven Core gates pass: retention census, Gitea/PostgreSQL publication,
+build graph, bootstrap, compiler context, authoring dispatch and read ownership.
+Each completes through the default test-file entry with MODULE-OK, HARNESS-OK
+and final OK. The runtime issued-read suite completes 18 cases. The scoped Lean
+build completes 103 jobs; existing QNT IssuedRead, MetadataRoute and SourceWindows
+qualifications complete 10, 9 and 8 cases, including expected counterexamples.
+These are local results; they are not remote CI or ten-thousand-module acceptance.
+
+* Init-owned manifest projection: runtime language frames
+
+** Actual ownership and attribution
+
+The unchanged build entry consumes the init-owned spec. The real route is
+=yuanxu!= in selection/init-syntax.ss → =yuanxu-init-build= → its lazy selection
+and =std-make-spec= → =project-selected-source-spec= → the selected publication
+Graph. Macro expansion supplies hygienic identifiers and inert projections;
+runtime checks do not move into macro expansion or build.ss.
+
+Existing operation accounting now distinguishes =build-entry-header=,
+=build-selected-graph= and =build-retained-entries=. These are nested spans,
+not additive exclusive costs. An initial local sample projects 256 targets in
+6.036 seconds: selected Graph 4.796, retained entries .145, entry header .000649.
+The main cost is first publication construction/admission, not list formatting
+or repeated parsing of all retained library headers. That sample has 156 reader
+currentness calls, 18163 physical reads and 433840 runtime replay visits.
+
+** Production change and semantic boundary
+
+=source/deferred-declaration.ss:module-binding-action= previously created a new
+top context and strongly imported all gerbil/core bindings on EVERY factory
+invocation, before importing its one public target. It now uses Gerbil's own
+=core-module->prelude-context= as the language parent for fresh target names.
+Every call still creates a fresh top context and resolves the target through
+runtime import/eval. No procedure, successful check or new cache index is retained.
+Names colliding with actual gerbil/core export metadata retain the original
+strong-import path, including runtime duplicate-binding behavior. This is an
+internal name-resolution choice, not a user strategy or a second entrypoint.
+
+The existing bootstrap suite uses std/func's real higher-order =repeat= function
+to observe that active context; no synthetic library or new Fixture is needed.
+It compares every language export at its actual phase against a real strong
+public import, requires actual resolved bindings, exercises the collision path,
+checks distinct invocation contexts and verifies restoration after failed import.
+Two intermediate test failures are retained: defining-module private spelling
+was an invalid oracle for renamed public exports, and current-expander-context
+was incorrectly assumed to be a fresh language name. The final test uses public
+import resolution and an actually fresh std/func binding. These failures do not
+justify dropping an export/phase or changing runtime collision behavior.
+
+Lean Building.Inputs.factory_language_storage_independent and
+factory_target_identity describe lookup equivalence under actual name/phase
+identity correspondence; the runtime suite supplies that correspondence. The
+scoped build completes 38 jobs. Existing QNT SourceWindows completes all 8
+positive/negative cases; lexical lookup is not duplicated as another temporal
+model. Its first attempt was blocked by the sandbox's local socket restriction;
+the retry uses the unchanged checker and deadlines.
+
+** Final-source results and remaining gap
+
+Five default test-file gates pass: bootstrap, build Graph, compiler context,
+16/32 retention census and real Gitea/PostgreSQL publication (11 Cases).
+Every gate has MODULE-OK, HARNESS-OK and final OK, with no skipped/failing Case
+or overflow marker. Source mutation refusal, parent isolation, both port
+requirements and unselected-branch controls remain in those suites.
+
+| Demand | Cold wall / CPU seconds | Hot wall / CPU seconds | Cold / hot reads |
+|--------+-------------------------+------------------------+------------------|
+| 16 Modules | 3.943 / 2.952 | .062 / .062 | 5414 / 106 |
+| 32 Modules | 4.054 / 4.037 | .126 / .125 | 10352 / 170 |
+
+Expansions remain 32/64 cold and zero hot. Whole-VM live bytes are
+185941000/201320800; these are not exclusive Module retention. Cold collections
+remain 8/12. Signed negative VM accounts are not allocated-byte measurements.
+
+Two fresh processes of the final manifest source observe 10.894 and 5.369
+seconds wall, with 6.220 and 5.365 CPU. Selected Graph takes 9.380/4.613 seconds;
+retained entries take .105/.077 seconds. Both retain all 256 targets, 18163
+physical reads and 433840 replay visits; hot requests still read 260 inputs and
+perform 6995 replay visits. The second sample spends 1.570 seconds in reader
+currentness and .585 in metadata replay; these inclusive costs overlap.
+An intermediate implementation also produced a 15.260-second sample; it is
+retained, not discarded as host noise.
+
+The unmodified default build completes with ZERO compile targets but takes
+27.20 wall / 22.59 CPU seconds, versus the preceding 21.31 / 20.96 sample.
+The language-frame construction reduction is verified; end-to-end performance
+improvement is NOT established. In particular, the approximately five-second
+projection is still open, and the wall/CPU regression is not explained merely
+by claiming host load. Future work must address the publication/reader chain
+and its required effect boundaries, not widen a read window across evaluation
+or hide costs in build.ss. No admission result is cached. The 2 GiB limit and
+watchdogs are unchanged; no ten-thousand-module run, commit or push is made.
+
+* Role preludes: binding audit and actual source-entry measurements
+
+** Correct measurement cohort
+
+The preceding manifest probe imports compiled Core before importing init and
+discovering library roots. It is not the default source build entry. In a first
+whole-entry probe that preloaded compiled admission, the source entry's helper
+initialization replaced the measurement parameter; only entry-load survived in
+the table. That incomplete receipt is retained but cannot attribute main costs.
+
+The corrected local probe starts with Gerbil only, uses the installed gxi-main's
+actual script-load/main-dispatch operations on unchanged build.ss, and resolves
+the source cohort's existing measurement function AFTER entry initialization.
+It defines no spec or build policy. Default gerbil build is also run separately.
+The corrected pre-change source-entry sample has Graph 4.194 seconds, projection
+4.928, Make 6.509 and main 11.758. It has 85 reader guards and 12692 reads across
+main, versus 156/18163 in the earlier compiled-library probe. Neither difference
+may be reported as a production optimization.
+
+** Runtime representation and explicit language-surface correction
+
+Both role preludes still flattened Gerbil Core through except-in. They now keep
+the complete runtime import-set and filter object?/make-object at export instead.
+The Module role retains its bounded POO exclusion and Source declaration .def.
+The implementation changes only the two maintained prelude owners; build.ss,
+publication/Contract checks and source-window lifetimes are unchanged.
+
+| Prelude | Top-level import entries before / after | Exports before / after | Dependency contexts |
+|---------+-----------------------------------------+------------------------+---------------------|
+| config-prelude | 6888 / 2 | 2297 / 7105 | 97 |
+| module-prelude | 7107 / 221 | 20892 / 20892 | 100 |
+
+This is NOT wholly export-equivalent for Config: runtime import: filters flattened
+aliases by current export phase and original owner; grouped imports preserve
+child phases. The observed difference is EXACTLY 2650 phase +1 and 2158 phase +2
+public Core exports. There are NO added phase-0 runtime exports; this is an
+explicit gate assertion. Completion is restricted to public Core name/phase pairs, the original effective
+binding (including POO shadows), and weak reexports. Programs that deliberately
+test whether formerly omitted identifiers are unbound can observe this correction.
+No compatibility export macro, replacement import transformer or hand-maintained
+language-name list is added.
+
+The bootstrap gate expands the former source forms in a DirectoryFixture in the
+SAME process as the new files. It consumes every original export occurrence by
+name, phase, weakness and terminal binding identity. Extra Config occurrences must
+satisfy the runtime-language rule above. It checks POO constructors, specialized
+.def, lexical overrides and the entire runtime dependency DFS order by actual
+context identity, not merely equal module names. All original dependency visits
+and their callback order remain. The import-set still contains all Core aliases.
+
+The initial exact export-count assertion exposed the Config phase completion. Subsequent
+binding checks exposed an oracle error: core-resolve-module-export may return an
+intermediate import/alias binding, notably for @make-object. Terminal identifier
+resolution in the exporting context at its actual phase is the correct comparison.
+A later test-only conditional-definition syntax error was fixed with a lexical
+let; none of these failures is discarded or turned into a production pass.
+
+** Work reduced, boundaries retained
+
+| Operation | Treatment |
+|-----------+-----------|
+| Runtime dependency traversal within one prelude import | Group the same owner with runtime import-set; retain aliases and DFS callbacks |
+| Make dependency timestamp processing | std/make handles the grouped owner rather than thousands of flattened entries |
+| Import, role expansion/evaluation, Contract callbacks | Preserve their independent guards; no byte window crosses these effects |
+| MOP issuance/currentness replay | Authenticate original records on every required visit |
+| Return from compilation/publication | Preserve the existing final currentness checks |
+
+Lean reuses Building.Inputs.grouped_runtime_owner_reachability and the existing
+strong/prelude lookup results. Runtime controls establish export and ordered-DFS
+correspondence; the theorem does not certify arbitrary timestamp callbacks as pure.
+The scoped Inputs/SourceWindows build passes 48 jobs. Existing QNT SourceWindows
+and CoreBuildHandoff each qualify 8 positive/negative cases; no duplicate lexical
+or temporal model is introduced.
+
+** Final local results and limits
+
+| Corrected source-entry phase | Before seconds | After seconds |
+|------------------------------+----------------+---------------|
+| Entry load/initialization | 5.430 | 4.959 |
+| Selected Graph | 4.194 | 3.950 |
+| Full compiler projection | 4.928 | 4.667 |
+| std/make wall / CPU | 6.509 / 6.476 | 4.354 / 4.339 |
+| Whole main | 11.758 | 9.342 |
+
+Both source-entry samples retain 12692 physical reads, 414339 replay visits,
+85 reader currentness calls and four build currentness calls. The reduction is
+in representation/traversal work, not cached acceptance or removed guards.
+The installed gerbil build --help control takes 2.21 wall / 2.00 CPU seconds;
+it establishes CLI startup cost, not an exact decomposition of a previous run.
+The earlier 27.20-second default build has no full phase trace, so its entire
+excess cannot be retroactively assigned to one cause. New default gerbil build
+runs take 17.71 and 19.77 seconds, BOTH with zero compile targets; their CPU is
+17.63/18.88 seconds. Raw slow and failed receipts remain local artifacts.
+
+| Real Module census | Cold wall / CPU | Hot wall / CPU | Physical reads cold / hot |
+|--------------------+-----------------+----------------+---------------------------|
+| 16 | 3.120 / 3.114 | .059 / .059 | 5414 / 106 |
+| 32 | 4.402 / 4.394 | .119 / .119 | 10352 / 170 |
+
+Expansions stay 32/64 cold and zero hot. The 32-module cold CPU/wall result is
+worse than the preceding 4.037/4.054 sample; this is not a universal loading-speed
+win. Collections rise from 8/12 to 10/14. Whole-VM live is 187815096/203196032,
+about 1.875 MB above each preceding sample, consistent with a shared language
+inventory cost but not proof of an exclusive dominator attribution. Per-module
+growth and ten-thousand-module acceptance are not established by these figures.
+
+Eight default test-file gates pass: bootstrap, build Graph, exact compiler context,
+role context, deferred projection, source admission, 16/32 census and real
+Gitea/PostgreSQL publication (11 Cases). Each completes MODULE-OK, HARNESS-OK and
+OK without failed/skipped Case or overflow markers. Parent-cache isolation,
+competing requirements, source-change refusal and unselected-branch controls stay
+enabled. Overall performance remains open. No cache protocol, Builder, budget
+change, compiler-source edit, ten-thousand-module run, commit or push is made.
+
+* Compiler support versus per-Module environments: identity census
+
+The existing retained-read census now opens ONLY already allocated context-to-
+context fields (=super/prelude/up/down=). It does not force phase contexts,
+initializers, role slots or procedures. Runtime context and table identities are
+deduplicated independently. Runtime closure code parents are counted by procedure
+identity; their allocator size, table backing sizes and collector dominance are
+still unknown. These are strong-path witnesses, not exclusive byte ownership.
+
+| Surviving support, cold and hot identical | 16 Modules | 32 Modules |
+|-----------------------------------------+------------+------------|
+| Closure references in the payload union | 12651 | 21288 |
+| Runtime code-parent identities | 54 | 54 |
+| Rooted context/table identities | 722 | 738 |
+| Module contexts / binding entries | 394 / 200795 | 410 / 200875 |
+| Already allocated phi contexts / entries | 322 / 94943 | 322 / 94943 |
+| Prelude contexts / entries | 5 / 10175 | 5 / 10175 |
+| Root contexts / entries | 1 / 78 | 1 / 78 |
+| Counted receiver/environment body bytes | 8253348 | 10895928 |
+| Whole-VM live bytes after collection | 187816408 | 203196128 |
+
+The extra sixteen Modules add sixteen directly rooted private contexts and
+eighty bindings, not sixteen independent copies of all compiler support. More
+closures do NOT imply the same number of independent code allocations. However,
+their environments and receiving POO objects really grow. Neither this support
+projection nor the near-constant 1.875 MB delta against the previous representation
+proves exclusive ownership of that delta. In particular, subtracting VM totals
+cannot justify removing a source record or sharing mutable runtime tables.
+
+The first census overlapped proof-tool execution and is retained as a diagnostic
+receipt, NOT a timing baseline. The final run is serial with the same current
+source and runtime dependency cohort:
+
+| Phase | 16 wall / CPU seconds | 32 wall / CPU seconds |
+|-------+-----------------------+-----------------------|
+| Cold | 3.254 / 3.227 | 4.583 / 4.565 |
+| Hot | .059 / .059 | .120 / .120 |
+
+Cold physical reads remain 5414/10352; hot reads 106/170; cold expansions 32/64
+and hot expansions zero. The 32-Module cold decomposition is source .214 s,
+Graph 4.262 s and explicit authenticate .107 s. GC takes .648 s wall and .646 s
+CPU. Against the old 4.037 s cold CPU sample, approximately .107 s of the .528 s
+increase is additional GC CPU; the remaining .421 s is NOT explained by GC.
+This is an attribution bound, not a controlled causal claim about the complete
+prelude change. The cold regression is still OPEN; no production performance
+fix is claimed from these identity counts.
+
+SysML =CompilerSupportAttribution= assigns finite identity accounting to Lean
+=PayloadSharing.sharedNodeAccountedOnce= and =weightedSupportPartition=. The
+105-job scoped Lean dependency build passes. Existing QNT SourceWindows qualifies
+all eight positive/negative cases; it owns callback/freshness/order refusal, not
+a second memory model. The Scheme projection supplies the actual graph
+correspondence. The models do not establish VM allocator sizes or GC ownership.
+
+Both default =just test-file= gates (the 16/32 census and real Gitea/PostgreSQL
+publication, eleven Cases) finish MODULE-OK, HARNESS-OK and OK with no failure or
+overflow marker. Source-change refusal, competing requirements, parent isolation
+and unselected branches remain exercised. Build entry and production admission
+code are unchanged in this slice. The next production decision must identify a
+concrete duplicated environment in the Graph/interface path, with an unexposed,
+immutable sharing boundary; reducing imports or code-parent counts alone is not
+sufficient. No acceptance cache, new Builder, budget change or push is introduced.
+
+* PR 13 index alignment and the names-snapshot migration
+
+The reviewed producer head is =670146317f844ae78b3d5261a3f6805584730046=,
+not the older declared Core release pin. Its persistent declaration catalogs,
+ordinal-index composition/traversal and super-independent SlotSpec compaction
+are relevant production changes. Qualification retains the earlier unpublished
+constructor-currentness query, observer/precheck identity queries, adjacent
+authentication and bounded constructor-storage changes in a separate producer
+checkout. The IO printer uses the installed Gambit macro header as before.
+Gerbil compiler/runtime sources are unchanged. This is a qualified BASE plus
+local source changes, not a reproducible release of the bare PR revision.
+Do not update the release pin to claim those missing producer APIs are published.
+
+** Concrete consumer repairs
+
+1. =object-family/read-projection.ss= uses =prototype-map-length= for declaration
+   membership. =null?= and =pair?= do not describe runtime persistent catalogs.
+   Empty catalogs retain closed eligibility; nonempty catalogs retain the open
+   boundary before descriptor demand. =configuration/slot-origin.ss= uses the
+   public owned declaration snapshot. Existing retention diagnostics migrate too.
+2. The maintained authoring body/primary sites request runtime demand filling
+   (=make-slot-cache ... eager?: #f=). Runtime full specification preparation,
+   hooks, issued reads and receiver/revision/layout guards remain. MOP eligibility
+   and Generic fallback are unchanged. No two-shape policy is added without
+   evidence that a second shape is needed.
+3. =module-publication-dependency-projection= stops assuming that a structural
+   names record shares its list spine with the receiver's cached directory.
+   New runtime names records own a copy. All ordinary values still require
+   identity; this one structural field compares finite ordered symbol sequences.
+   Original observed tokens, revision and instance checks remain mandatory.
+   Final issuer/currentness authentication stays outside the metadata probe.
+
+The third repair is causal, not a proposed speedup: the existing dependency
+continuation test failed with =#f= instead of =(custom/other)= before the repair.
+The name-spine mismatch sent every non-root Module through the guarded public
+fallback: two extra whole-link checks per Module. At 32 Modules, calls rose
+13 -> 75 and physical reads 10352 -> 17172. No candidate open-boundary event
+occurred; the extra checks were NOT evidence that user callbacks became pure.
+
+The repaired test also checks public-copy mutation, a cyclic observed snapshot,
+a fresh real producer's recovery, invalidity of the old token and validity of
+the new token. Missing observations still refuse projection. Replacing the
+module-id with a cold thunk still refuses projection without evaluating it.
+No record is synthesized, repaired by Core, or removed from a runtime read frame.
+
+The pinned POO public =slot-read-value= accessor now returns a defensive copy
+for structural names. Mutating that copy cannot inject a malformed issuer
+snapshot. The control uses Gerbil's existing native =slot-ref= to corrupt the
+actual =value= field, while retaining the public-copy isolation control.
+The closed metadata probe likewise inspects that native field before checking
+its finite ordered symbol spine; it must refuse a cycle before calling any
+copying accessor. Existing MetadataRoute/ReadOnlyEntry Lean laws and the
+DependencyContinuation Quint family retain the no-callback and next-boundary
+obligations. Native regression establishes this specific representation mapping;
+the finite models do not prove arbitrary reflective mutation safe.
+
+** Scoped final observations
+
+| Current aligned source | 16 Modules | 32 Modules |
+|------------------------+------------+------------|
+| Cold wall / CPU seconds | 3.460 / 3.032 | 4.220 / 4.217 |
+| Hot wall / CPU seconds | .058 / .058 | .115 / .115 |
+| Cold physical reads | 5414 | 10352 |
+| Hot physical reads | 106 | 170 |
+| Whole-link checks cold | 13 | 13 |
+| Cold / hot expansions | 32 / 0 | 64 / 0 |
+| Whole-VM live bytes | 187750080 | 203279592 |
+
+The same producer candidate before the names repair took 8.176 seconds at 32,
+including 3.995 seconds in 75 link guards. After repair the guards take .339
+seconds in 13 calls. This removes the API-migration regression. It does NOT
+close the approximately 1.9 MB shared-support delta or overall scale memory.
+The earlier 4.583-second sample used a different runtime cohort; do not assign
+its entire difference to demand-filled access or claim a controlled A/B result.
+
+Runtime entry-code fingerprints now distinguish real binding constructors from
+module code parents. At 32 Modules, 21774 closures comprise 9105 issuer-birth
+code closures, 6134 bound-self, 1437 bound-constant, 64 bound-computed and 5034
+other closures. The issuer path is an original read/dependency -> birth closure
+-> signed receiver/instance/value/dependency snapshot. Bound functions are held
+through receiver -> slot-funs backing -> runtime bound closure. Entry-code
+grouping is NOT proof of another record's issuance or exclusive byte ownership.
+These private authentication snapshots cannot be eliminated by merging read
+identities. Receiver-bound functions cannot be pooled across parents/children.
+The covered environment union is 10971764 body bytes; opaque table/code/context
+storage and GC headers remain excluded. The memory objective is still OPEN.
+
+** Direct captures: identities are not copies (2026-10-28)
+
+The existing retention qualification now records, per runtime entry-code family,
+closure body bytes and a direct-capture identity union. Capture classes report
+=(unique identities, reference occurrences, direct body bytes)=. No checker or
+getter executes. This diagnostic runs AFTER the measured operation; it neither
+changes production delivery nor retains another published graph. Family unions
+overlap: do not add them or charge transitive support once per capture edge.
+
+| Family | 16 body bytes | 32 body bytes | Concrete 32 direct captures |
+|--------+---------------+---------------+-----------------------------|
+| Issuer birth | 406608 | 701184 | 8619 read identities / 14869 edges; 1297 receiver identities / 9420 edges |
+| Bound self | 88896 | 147216 | 1128 receiver identities / 6134 edges; 4285 procedure identities / 6134 edges |
+
+The 9105 issuer closures include structural-name wrappers. These are not 9105
+independent full receiver copies. The two closure BODY deltas total 352896 bytes.
+This is not exclusive retention: changing a capture can change reachability;
+headers, generated code and opaque runtime roots are excluded. Pooling closures
+is neither justified by this measurement nor allowed by identity/issuance laws.
+
+The =other= family directly reaches 4453032 string-body bytes at 16 and 4513772
+at 32. Most of this support already spans widths; do not bill it per module.
+The context graph grows from 394 to 410 module contexts and from 200852 to 200932
+bindings; phi/prelude counts stay unchanged. This does not identify exclusive
+runtime roots or explain remaining VM growth. A production sharing change needs
+a concrete write/escape/invalidation argument for a repeated payload. Instruction
+pooling or a new weak registry cannot substitute for that argument.
+
+*** Build and loading evidence are separate
+
+Library build preparation is outside these measurements. The census measures
+the real init/module path's selected-graph construction and admission:
+types/interface roles expand, business exports and build producers stay cold.
+It does NOT measure AOT compilation, demand of all business scopes, or complete
+compiled-module loading. The ten-thousand-module loading gate remains required
+at 2 GiB and the existing timeout. A small pass does not discharge it; do not
+rerun its known structural failure yet. Future receipts must separate selection,
+first scope demand and compiled loading, with build preparation outside them.
+
+This repeat uses qualified =6701463= plus the documented local producer guards:
+
+| Width | Cold wall / CPU seconds | Hot wall / CPU seconds | Physical reads cold / hot | VM live bytes |
+|-------+-------------------------+------------------------+---------------------------+---------------|
+| 16 | 3.494255 / 3.448961 | .063510 / .063380 | 5414 / 106 | 187750720 |
+| 32 | 9.133448 / 5.605966 | .250412 / .153014 | 10352 / 170 | 203280264 |
+
+At 32, Graph accounts for 8.615458 wall seconds, source .328851, authentication
+.189098. GC wall is 1.327813 versus GC CPU .722643 seconds. The residual does
+not establish a scheduling or IO cause. Signed allocation counters remain
+unqualified. This sample does NOT establish a performance improvement. VM live
+growth of 15529544 bytes is not automatically exclusive per-module payload.
+
+Default =just test-file= passes the census and eleven real Gitea/PostgreSQL
+cases: MODULE-OK, HARNESS-OK, OK and no error/skip/overflow markers. Lean
+=PayloadSharing= passes 105 jobs; existing QNT =ReadRetention= qualifies seven
+cases, including its required counterexamples. SysML =DirectCaptureOwnership=
+reuses =sharedNodeAccountedOnce=, =distinctEnvironmentRetained= and
+=weightedSupportPartition=. There is no duplicate QNT memory model or theorem
+that opaque captures are immutable. Production payload reduction remains open.
+
+*** Latest index audit is not a runtime qualification
+
+PR #13 was checked at =3ba1b34879bd5dd41336b72d43167abe3ba48c8b=. Since
+=6701463=, =8e2fad9= adds effective/visible declaration indexes, followed by
+upstream build/progress fixes. Source audit confirms =clear-object-cache!= clears
+the index. Observed reflection retains ordered visibility reads and revision
+refusal; unobserved reflection reuses the structural map. This runtime boundary
+does not authorize cached admission or shared receiver/function identities.
+
+The table above is NOT a result for this newer head. The release pin stays put
+until its object layout, required unpublished guards and Core consumers qualify
+together. This step does not commit, push, rerun scale or modify Gerbil sources.
+
+** Assurance and qualification boundaries
+
+Lean reuses LeanPoo SlotSpec/Method and Representation rather than a new object
+model. =independentSpecificationDropsPrior= is extensional, not a Scheme process
+identity theorem. =catalogInspectionPreserved= and =copiedNamesPreserveProjection=
+state ordered data observations; =namesEqualityDoesNotSupplyObservation= prevents
+treating content equality as evidence. Runtime controls supply the missing concrete
+correspondence. The scoped build passes 105 jobs. Existing QNT RoleFunction
+qualifies six cases and ReadRetention seven, including their required negative
+counterexamples. Runtime observer and final currentness boundaries remain separate.
+
+Default test-file gates pass evidence ownership, module authoring, issued-root
+forwarding, dependency continuation, 16/32 census and real Gitea/PostgreSQL
+publication (eleven Cases). Each has MODULE-OK, HARNESS-OK and OK, without a
+failure/skip/overflow marker. A fresh Core build passes against this development
+cohort. Failed ABI mixing and partial runtime-build attempts remain local receipts.
+The upstream all-target build and a separate 120-second library preparation were
+interrupted; their partial phase products were not accepted as ready. A complete
+library preparation consumes the upstream declared library spec with std/make,
+inside the existing 300-second build bound; no test timeout or manifest is reduced.
+This preparation is not upstream full CI acceptance. Project 60-second idle,
+600-second total and 2 GiB test bounds are unchanged. No commit/push or scale run.

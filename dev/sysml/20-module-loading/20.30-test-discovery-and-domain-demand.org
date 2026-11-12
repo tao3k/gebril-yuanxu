@@ -1,0 +1,674 @@
+#+title: 20.30 Test Discovery and Domain Demand
+#+language: en
+
+* System boundary
+
+Official =std/test= owns discovery, TestSuite registration, execution and
+assertions. The existing Just entry fences the process before imports. Product
+tests now default to 2 GiB, explicitly requested by the maintainer; this is a
+capacity setting, not an optimization or a passing performance result. Source,
+Case and build deadlines remain unchanged.
+
+| Phase | Owner | Permitted demand |
+|-------+-------+------------------|
+| Discover source tests | Gerbil gxtest | Import files and obtain TestSuite values |
+| Register Cases | std/test | Create TestCase descriptions and deferred bodies |
+| Execute a Case | Existing Case Profile | Resolve the current method and enforce its policy |
+| Import a workflow composition | Scenario Type and prototype | Construct a lazy POO value |
+| Read a composition field | POO/MOP | Compute the field using the final receiver |
+| Prepare a plan | Scenario input Contract and existing projector | Validate final inputs before deriving the plan |
+| Publish a selected Module | Existing publication protocol | Independently authenticate source and obligations |
+
+Test discovery must not activate Profiles merely because a composition library
+is imported. Explicit namespace access inside a demanded field remains an
+ordinary Module System operation, with its complete source admission. Moving
+that expression into a lazy field neither grants missing dependencies nor
+memoizes publication approval.
+
+* Source correspondence
+
+Core's =modules/funflow/scenario.ss= defines one =Scenario= using
+native =define-type=, =Record= and =proto=. The Record owns the name,
+configuration and constant tags. Its prototype owns derived fields and behavior.
+This is the existing workflow composition value, not a special Module kind or a
+new Scenario loader. Ordinary =def= and native =.new= name the composition.
+There is no ProfileBundle-to-intermediate-Case factory chain.
+
+Scenario libraries bind required Module values inside the computed configuration
+expression, rather than top-level =.get init.exports Profiles ...= definitions.
+Planning invokes native =validate= on the final receiver. Cached parent fields
+do not supply the child's configuration, and malformed final configuration must
+refuse before a plan is produced.
+
+The shared Case invocation lives in =observability/testing-case.ss=. It keeps
+the current Profile lookup and original body; only common executable code is
+shared. Methods, Type checks, receipts and admission conclusions are not cached.
+The product no longer publishes a second testing macro facade. Ordinary tests
+import the Core owner; optional ASP policy composition stays in the existing
+development package.
+
+* Assurance allocation
+
+Lean =Observability.TestingCase.factoring_preserves_invocation= establishes
+ordered functional factoring, including arbitrary monadic effects. Native
+Scheme gates establish correspondence of actual macro evaluation, receiver and
+exception identity. The theorem does not prove Scheme's GC behavior.
+
+Existing =Loading.MetadataProjection.constructAtFinalContext=,
+=parentCannotHitChild= and =changedContextMiss= delimit receiver-bound demand.
+Their input/identity hypotheses are checked by native cold-demand and inherited
+configuration tests; a Type name alone is not such a correspondence proof.
+No new Quint state machine is needed for pure expression factoring. Existing
+source/publication lifecycle models retain independent currentness, obligation
+and refusal boundaries. Do not duplicate those transitions here.
+
+* Reproduction and acceptance
+
+Use =just test-file t/profile-binding-syntax-test.ss= for cold composition,
+repeated demand, cached-parent refinement and malformed input controls.
+=just test-core-file t/module-case-profile-test.ss= checks the actual shared
+Case invocation. Run the real Gitea/PostgreSQL controls before =just test-root=.
+Run builds separately through =just build=; they do not measure Module loading.
+
+Keep raw import probes and process samples outside source control. The temporary
+import callback is diagnostic only and must not remain in the normal test
+adapter. VM heap and last-GC live counters are process observations, not exclusive
+ownership estimates. A small reduction in expanded Case code is not a solution
+to whole-process retention; complete Harness entry and unchanged negative
+controls are the acceptance gates.
+
+* One typed composition, one plan demand
+
+The workflow value has no separate Session state machine, intermediate Bundle
+factory, predicate wrapper or family of slot accessors. Consumers read ordinary
+POO slots; native =element? Scenario= owns membership. The configuration is an
+ordinary lazy =.new Scenario= slot, with no additional declaration macro.
+
+Bundle serialization demands the receiver's =execution-plan= slot. It must not
+invoke the internal projector directly: that would bypass the final descriptor's
+validation and rebuild a second plan. The internal projector remains a pure
+domain algorithm used by that slot, not a parallel user admission API.
+
+This cached value is a pure plan, not a publication receipt or cached admission
+conclusion. Source authentication and independent publication obligations retain
+their existing owners. In particular, demanding a plan does not establish that
+external sources remain current at a later effect boundary.
+
+The existing Bundle writer suite verifies that serialization returns the same
+plan object as the demanded slot, a child of a cached parent obtains its own
+plan, and a derived Record obligation refuses before serialization. It exports
+one Suite binding, so the official Harness does not discover the same Suite
+again through an alias. Reproduce with
+=just test-file t/feature-bundle-v1-composition-writer-test.ss= and the
+existing composition consumers in =t/scenarios/=. No new execution dispatcher
+or cache protocol is involved.
+
+* Funflow ownership convergence
+
+The generic Scenario Type and private plan projection belong to
+=modules/funflow/scenario.ss=. Bundle serialization and workload indexing have
+the same Core owner. Product policies, Sandbox/Marlin handoff and concrete
+Profiles remain in Agentic AI Lab. Core must not import a product implementation.
+
+Ordinary =def= and native =.new Scenario= replace the former declaration macro.
+The configuration expression remains a
+lazy slot, evaluated for the effective receiver; it is not extracted into a
+top-level eager binding. There is one descriptor and one plan demand, without
+compatibility reexports of the former Workflow constructors or accessors.
+
+This ownership refactor changes no publication lifecycle transition. Existing
+Lean final-context and parent-isolation laws delimit reuse; existing Quint
+publication/currentness models retain independent obligations and effect
+boundaries. Executable correspondence checks must cover final receiver,
+derived Record obligations, source rejection and both contributors. Moving
+source files alone proves none of these properties and is not scale evidence.
+
+Lambda production builds consume the existing =package-library-spec= import
+closure and official =defbuild-script=. Test-policy/observer libraries are not
+production roots. Standard test discovery and its existing pre-import heap
+fence remain authoritative; no new Runner or Builder is introduced.
+
+* Build projection audit: expansion is not a cheap manifest operation
+
+** Package bootstrap must not initialize application selection
+
+The Lab package's library root inventory previously called the application
+=agentic-ai-lab-module-system-source-refs= query and discarded all Interface
+rows. The remaining row was one fixed ordinary declaration library. Importing
+that registry to execute this query also initialized its source-collection and
+policy dependencies, before library discovery or selected Module projection.
+That initialization is not a prerequisite of describing the package library.
+
+The package inventory now owns that ordinary root directly. It still calls
+the same Gerbil import-closure traversal with the same root order and production
+policy callback. No directory scan, installed-source substitution or selected
+Module inventory replaces it. Legacy ordinary import/export facades are not
+removed merely because their filename is =interface.ss=; managed Module roots
+remain exclusively published by =yuanxu!.exports.std-make-spec=.
+
+=InterfaceRoots.literal_front_end_replaces_registry_query= proves the concrete
+metadata projection shape; =front_end_refactor_preserves_demands= keeps the full
+selected plus library dependency demands. The native
+=just test-file t/production-build-boundary-test.ss= control compares the root
+with the real publisher and requires the build entry's actual import closure
+to exclude the application registry, collections and policy. This removes an
+initialization dependency, not a source check or an admission obligation.
+Existing =CoreBuildHandoff= checks remain responsible for callback/return source
+changes, both requirements, parent isolation and non-vacuous acceptance. No
+new Quint transition system is needed for a constant metadata projection.
+
+Qualification must compare a stable production-source cohort. Concurrent
+reader/admission edits invalidate a claim about the final workspace; preserve
+those edits and complete independent gates first. Report a failed cold build
+and a subsequent recovery separately, even if the next process compiles zero
+targets. Stage accounting is not a source observer: its presence alone does
+not select the reader's open-observer branch.
+
+** Source routing and phase ownership
+
+The ownership partition proposed below is not a closed production result.
+Parallel downstream qualification identified that selected Graph entries are
+SOURCE obligations, including entries outside the consumer's package prefix.
+That prefix is an output-naming fact, not evidence that the source has become an
+installed prerequisite. Retain the complete selected obligations. The canonical
+library routing control is separate from a completed, source-identical product
+cold/hot build. Do not describe the latter as qualified while sources change or
+a build is incomplete. The earlier local-only partition
+tests do not replace the independent downstream source-build control.
+
+The current =package-library-spec= is not a metadata-only projection. It calls
+=core-import-module= on each public root before walking the resulting expander
+contexts. Cold requests therefore include macro expansion and compile-time
+initialization. A shared visited set bounds the subsequent context traversal;
+it does not eliminate the preceding expansion cost. Do not report this interval
+as ordinary list projection, native Make scheduling, or Module runtime loading.
+
+The installed Gerbil source separates the responsibilities:
+
+| Owner | Actual operation |
+|-------+------------------|
+| Yuanxu =building/source-closure.ss:package-library-spec= | Expand roots, traverse contexts, enforce the production dependency policy, enumerate targets |
+| Yuanxu =building/build-projection.ss:project-selected-source-spec= | Merge selected and retained entries, prepare source observations and compiler inputs |
+| Yuanxu =source/preparation.ss:call-with-selected-source-view= | Materialize owner-qualified source paths when the projection contains foreign owners |
+| Gerbil =std/make.ss:make-build= | Import targets, establish dependency completions, check freshness, schedule compilation |
+
+Gerbil's =expander/module.ss:core-import-module= caches contexts by requested
+and normalized source paths. The same module identity at a different source
+path is not sufficient to reuse the original path's context. Consequently,
+expanding original sources for enumeration and later compiling a generated
+source view can duplicate expansion. The previous foreign-owner branch routed
+all entries through that view, including ordinary retained libraries. A foreign
+role must not silently turn every unrelated library into a new source instance.
+This is a source-routing design issue, not grounds for another cache protocol.
+
+Native Make still needs a target inventory: its coordinator waits on dependencies
+whose identities occur in that inventory. Supplying only public roots can omit
+private compilation targets. Deleting the closure walk without replacing that
+inventory responsibility is therefore not a valid repair. Similarly, absolute
+source paths are not a drop-in replacement for target names: Make also derives
+library and static output paths from those names.
+
+The repair must preserve one effective compiler source per target within a build
+invocation, apply role lowering only where required, and let Make own dependency
+scheduling. The source-policy callback must still inspect every reachable
+dependency, including excluded output targets; enumeration is not permission to
+skip policy checks. Input currentness, compiler-entry/return checks and separate
+publication issuance remain independent obligations.
+
+The required boundary keeps =yuanxu!= as the only selected-module spec export.
+The package entry independently produces its library spec and passes that value
+to =init.exports.std-make-spec= for the existing native build consumer. Inside
+the projection, module targets are derived from the selected entries; library
+targets retain their original native strings/options. Identical overlaps are
+checked and emitted once. Ordinary library inputs must retain canonical source
+identity rather than acquire a second role-source identity.
+
+The compiler-input owner now derives the role inventory from admitted
+publication inputs. Only those inputs emit role forms. A selected ordinary
+library retains the existing Make input descriptor (a comment binding source
+bytes, options and tools), but no Scheme module body is emitted there. The
+existing extent-owned compiler-input association routes that descriptor to the
+original Gerbil source path. It is neither a new public source registry nor an
+approval cache. The real importer keeps its original context cache; source
+admission still runs before and after import. Actual roles reuse their one
+stable generated frame instead of another temporary copy in the same build.
+
+The =module-build-role-test.ss= control requires the descriptor to read as EOF,
+the resulting Context to be =eq?= to the original-path Context, and an original
+source mutation to be refused even with that Context hot. Existing lifecycle
+and downstream controls must additionally verify real compilation, equal-mtime
+changes, interrupted retry, output isolation and complete foreign source input
+coverage. These are separate gates; a canonical Context assertion alone does
+not establish a complete product cold/hot result.
+
+Run =just test-core-file t/module-build-role-test.ss=, then
+=just test-core-file t/selected-source-view-lifecycle-test.ss=. The real
+cross-package consumer is =YUANXU_SELECTED_RUNTIME="$PWD/.gerbil" just
+test-core-file t/selected-package-downstream-test.ss= from the Lab workspace.
+It requires the already qualified Core runtime, builds every selected Lab
+source into independent downstream outputs, verifies fresh-process zero
+compilation and refuses both empty-string and named Make prefixes for full
+identities. It also checks that installed Core/POO prerequisites and upstream
+source bytes remain unchanged. This is a source-build gate, not just a spec
+shape assertion or an installed-only consumer.
+
+Foreign selected entries remain in the complete Graph/source footprint AND the
+selected source compilation inventory. They cannot be treated as installed
+prerequisites solely because their compiler identity has another package prefix.
+The explicit publication path continues to refuse unsupported cross-owner issuance;
+ordinary compilation does not grant approval. The lower-level source-view
+lifecycle tests do not establish acceptance of this changed package path.
+
+=BuildSpecContract= uses upstream =ObjectContract= and =List= Types to check
+native target shape and exact composition. The actual spec is checked on export
+and consumption, without saving an admission verdict. The existing init consumer
+still checks the produced value's identity; source authentication/currentness
+remain outside the pure shape contract. A typed record claiming an origin does
+not authenticate that origin. Scheme remains a general-purpose language: these
+checks constrain framework publication/consumption, not arbitrary calls outside
+the framework or unsafe mutation of process memory.
+
+=SelectedPackages.package_target_exact=, =package_partition_complete= and
+=package_partition_disjoint= establish abstract filtering without changing Entry
+identity or deleting the full support set. They do not justify reclassifying an
+admitted SourceRef as a prerequisite by name. Existing source/publication lifecycle models
+remain authoritative; this pure partition adds no new Quint lifecycle. Native
+tests must separately establish compiler identity/path correspondence, refusal
+of unselected target substitution, retained source guards and actual build
+behavior.
+
+=SourceView.ordinary_path_preserved= and
+=SourceView.admitted_role_uses_frame= state the routing distinction using the
+existing Entry model. The Scheme bridge must establish authentic role membership
+and canonical Context identity; the theorems do not prove Gerbil's importer.
+The existing =SourceWindows= and =CoreBuildHandoff= state transitions remain
+unchanged: routing introduces no permission to skip callback-boundary checks.
+
+With the existing =GERBIL_BUILD_VERBOSE= level 2, =BUILD-EXPANSION= counts new
+distinct module contexts registered by Gerbil during each phase. It does not
+count repeated import requests as expansions, count every macro invocation, or
+include contexts created before the measured phase. Native compiler invocations
+are counted separately from =... compile= events. This diagnostic census grants
+no authority and is absent from ordinary verbosity-1 builds.
+
+** Independent import and measurement convergence
+
+The role language retains a grouped POO import. The dedicated declaration is
+privately renamed and reexported as =.def=, while the base =.def= is filtered at
+the export boundary. Native tests derive the expected public names and phases
+from the actual POO module, check terminal binding identity and strong-over-weak
+lookup, and compare the complete ordered dependency callback trace with an
+executable control of the former language. No handwritten field table, additional
+loader or cached admission conclusion is introduced. Existing Lean
+=Building.Inputs.grouped_runtime_owner_reachability= and binding-identity laws
+delimit the pure representation argument; the native trace is the concrete
+correspondence obligation. No additional Quint lifecycle is needed.
+
+The build's existing timing envelope selects =accounting?: #f=. This preserves
+phase clocks, physical-read attribution, replay counting and source checks,
+without calling full VM accounting for every read. Explicit qualification keeps
+the existing detailed mode. =t/module-session-metadata-index-test.ss= checks
+both modes against real admission, including mutation/restoration refusal;
+the lighter mode is not a different source-check window or permission to reuse
+an old verdict. Whole-command CPU still comes from the command's process-tree
+accounting. Do not sum nested clocks or claim an ordinary-runtime speedup from
+removing instrumentation alone.
+
+Reproduce independent controls serially with =just test-core-file
+t/prelude-test.ss=, =just test-core-file t/module-session-metadata-index-test.ss=
+and =just test-core-file t/gitea-postgresql-publication-test.ss=. Actual build
+cohort acceptance additionally requires unchanged source manifests before and
+after clean, cold compile and the separate successful hot invocation. Store
+per-file source hashes and raw receipts in local artifacts, not in this Org.
+
+Acceptance must distinguish fresh-process import/expansion, target projection,
+selected-role lowering, native Make scheduling and actual compilation. Count
+expansions by original source and effective compiler path as well as compiler
+invocations. A zero-compile run with repeated full expansion is not the desired
+hot path. The current build has not closed this gate; there is no established
+five-second bound and no Module-loading capacity result from this build audit.
+Keep timings and failed runs in local artifacts, not in this design document.
+
+** Publication guard: pure work versus callback boundaries
+
+The existing operation measurement reports inclusive =(read-attempts stage)=
+counters for reader preparation, currentness, role imports, selected-graph
+construction and Make. Nested spans overlap: adding their counts double-counts
+work. A read attempt counts entry into content I/O, including failures; it is
+not every logical read request, a guaranteed completed read, a compiler invocation
+or a macro expansion. The counters do not install a source observer or change
+read windows.
+
+The current import input authenticates its owning publication before and after
+Gerbil import, including repeated imports of an already registered Context.
+Whole-graph checks around Make do not justify deleting these guards: an import
+callback could change an earlier dependency and restore it before Make returns.
+Source-window bytes cannot cross that callback. A future hot-import convergence
+must establish the actual callback-free native branch and guard correspondence;
+neither a source label nor a claimed pure function establishes this premise.
+
+Within the existing closed synchronous guard, positive validation already checks
+regular-file kind. Its private content reader reuses that check and the existing
+byte table, avoiding the second kind query and a separate cache-membership lookup.
+Public reads retain their regular-file check. An active source observer retains
+the former query/callback sequence, even if it removes itself at the first event.
+No observations survive an independent admission or effect boundary.
+
+Lean =SourceWindows.pure_window_preserves_first_issue= proves ordered diagnostic
+preservation under a sound stable-world byte table; =positive_bytes_imply_kind=
+states the positive-observation implication. Native file-kind correspondence,
+I/O exception identity and observer entry extraction remain Scheme obligations,
+not consequences of that abstract theorem. Existing Quint =SourceWindows=
+controls cover cross-effect reuse, omitted requirements, competing contributions,
+parent isolation and laziness; no second lifecycle model is introduced.
+
+Reproduce with =just test-core-file t/source-observation-test.ss=,
+=just test-core-file t/module-source-cost-test.ss= and
+=just test-core-file t/gitea-postgresql-publication-test.ss=. The observer control
+checks self-removal, and a directory used as a positive source retains the
+admission owner's error. Build attribution uses the existing verbosity-2 build
+entrypoint. Compare cold and separate-process hot invocations only when their
+selected source bytes match; prerequisites, recovery compiles and changed-source
+cohorts must be reported separately. This change does not establish that the
+full publication source closure can be authenticated just once.
+
+** Functional library identity precedes guard coalescing
+
+Core's Task/Flow Contracts and Scenario Type are public functional kernel definitions, independently
+of selecting or activating the Funflow Module. The reader's existing kernel
+catalogue includes their defining Flow and Scenario libraries and real import closures.
+Otherwise a confined source import can take the private-wrapper route and
+reconstruct shared definitions during publication. Reducing those duplicate
+initializations is different from suppressing their observation callbacks.
+
+The catalogue is eligibility, not approval. =inputs-for= still enrolls only an
+actual import demand; every reuse authenticates its source support. Exact Context
+instance and origin association remain mandatory. Module role files remain
+ineligible as implicit compiler capabilities. No runner, Module scope, acceptance
+verdict, additional registry or process-wide source-byte cache is introduced.
+
+Lean =Inputs.registered_extension_preserves_tool=,
+=catalog_extension_keeps_source_refusal= and
+=catalog_extension_keeps_role_refusal= delimit this extension. The existing Quint
+=SourceWindows= lifecycle still rejects cross-callback byte reuse, incomplete
+requirements and a parent-context plan. These laws do not establish native
+initializer equivalence or a wall-time gain: native tests must check actual
+binding identity, demanded source enrollment, role confinement and lazy scopes.
+
+=just test-core-file t/module-candidate-stage-test.ss= exercises a real explicit
+=init.ss=, imports Task/Flow/Scenario definitions through a selected Module, compares them
+with the ordinary library bindings using =eq?=, verifies Task source reads at the
+return guard, and keeps the unselected Module cold. The fixture's directory-only
+legacy path cannot stand in for this shared-reader qualification. Reproduce the
+domain obligations with =just test-core-file
+t/gitea-postgresql-publication-test.ss= before comparing stable-source builds.
+
+The existing measurement additionally partitions =reader-current= by its calling
+source phase. Distinct =reader-current= invocations partition at that level;
+outer reader/import/Make spans still overlap them. Full linked guards and open
+candidate boundaries must be attributed separately. A native import cache hit
+does not alone certify that an arbitrary surrounding =admit-current= procedure is
+callback-free. Retain its independent boundaries until the actual producer and
+runtime observation route establish that correspondence.
+
+** Prepared input checks are not compiler invocations
+
+=link.prepare= binds a publication-local source preparation to the selected
+link generation. Its =admit-current= first authenticates the link, invokes the
+base preparation guard, and authenticates the link again. Thus a compiler input
+lookup can reach the Reader's complete observed support; counting that work as
+another compiler process would misidentify both its owner and its remedy.
+
+The existing invocation-local measurement distinguishes the following sites:
+
+| Producer site | Measured boundary | Work retained |
+|---------------+-------------------+---------------|
+| =link.prepare= wrapper | =prepared-input-before= / =prepared-input-after= | Link metadata and Reader support surrounding the base guard |
+| =module-compiler-source-input= | =compiler-input-lookup= | Admission before exposing an enrolled input |
+| =call-with-role-compiler-inputs= | =compiler-role-inventory= | Admission before materializing a role frame |
+| Native import handoff | =compiler-import-before= / =compiler-import-after= | Independent checks surrounding import/initialization |
+| Selected source view | =compiler-view-before= / =compiler-view-after= | Independent checks surrounding metadata demand and writes |
+
+These are nested, inclusive spans, not disjoint filesystem totals. Reader
+subspans identify which linked boundary actually read bytes. Repeated calls
+within an existing pure window may already share bytes; a repeated call count
+does not establish repeated physical I/O. Measurements retain only scalar
+counters and do not install a source observer, extend a window, or authorize
+skipping a guard.
+
+Lean =Admission.BoundaryComposition.composition_equivalent= requires passive
+guards and an extracted closed interval. Its repair counterexample prohibits
+carrying approval across an opaque callback, even when the next callback
+restores the source. Existing Quint =SourceWindows= supplies independent
+lifecycle controls for cross-effect reuse, missing requirements, conflicting
+requirements, parent plans, eager demand and omitted return checks. Neither
+model proves that a native import cache hit makes the surrounding extensible
+input guard passive. Preparation policy callbacks and source-view writes
+therefore remain boundaries until that production correspondence is established.
+
+Reproduce the call-site attribution with =GERBIL_BUILD_VERBOSE=2 just
+build-library= after =just build-core=. Qualify callback preservation with
+=just test-core-file t/module-build-role-test.ss= and domain behavior with
+=just test-core-file t/gitea-postgresql-publication-test.ss=. A changed-source
+build is a currentness control or recovery run, never a matched cold/hot sample.
+
+** Native context identity and callback resumption
+
+The preparation constructors receive the owning context procedure itself.
+Only =eq?= with native =void= establishes that this particular context step
+cannot call author code. It does not classify a procedure by name, SourceRef
+label, warm cache state or a claimed purity flag. A native =void= context keeps
+the existing pure source-byte window; byte/package checks still execute and a
+new independent window still reads both inputs. The constructors bind their
+no-context admission directly to =check-source!= once, avoiding two callback
+wrappers or repeated runtime classification on each native guard call. This
+local specialization does not remove any source comparison. The stable-world premise of an
+existing pure window remains explicit: this does not supply an atomic snapshot
+against another process changing files concurrently.
+
+Every other context procedure passes through
+=call-with-module-source-callback=. This suspends the existing byte window and
+clears its observations before the call and on resumption using =dynamic-wind=.
+The latter includes exception unwinding and continuation reentry. Suspending
+alone is insufficient: restoring an enclosing table can expose its pre-callback
+bytes even after the prepared input itself has rejected. The helper neither
+adds an admission check nor changes its order; it invalidates the existing
+observation table, including query/comparison entries, without touching source
+collectors, contribution requirements or the exception being propagated.
+
+Lean =SourceWindows.context_resume_sound= proves the identity/opaque split;
+=context_resume_checks_all= retains every requirement and
+=context_resume_preserves_first_issue= retains diagnostic order. Quint's
+existing =SourceWindows_cross= counterexample rejects cross-effect byte reuse.
+The Quint lifecycle does not model Scheme continuation machinery or establish
+exception identity. The native =module-build-role-test= supplies those required
+controls for normal failure and callback exception unwinding, and verifies two
+independent native-void windows rather than caching an admission result.
+
+This is a prerequisite correctness repair, not a proof that all linked guards
+are passive or that whole-closure authentication may be removed. In particular,
+=link.current!= still reaches Reader guards, native MOP replay, and potentially
+extensible context/observation routes. Keep its checks at callback boundaries
+until those remaining paths have their own production correspondence.
+
+The remaining audit separates concrete callees, not a broad native/extension
+label:
+
+| Actual route | Callback boundary | Consequence |
+|--------------+-------------------+-------------|
+| Preparation's native =void= context | No procedure body beyond =void= | Bind =check-source!= directly; retain the existing byte window |
+| =check-source!= byte/package reads | Source observer delivery when installed | The context proof alone does not certify this entire guard |
+| Reader's public dependency guard | =module-compiler-source-input= invokes the selected input's =admit-current= | A native resolver path can still reach an extensible procedure |
+| Link's complete metadata check | General publication fallback versus gated issued-read replay | Replay qualification does not prove the Reader's source guards passive |
+| Compiler =import-input= | Input admission, then the captured Gerbil importer, then input admission | A native registry hit does not classify the surrounding admissions |
+
+In particular, this repair does not mark a prepared object pure because it was
+created by Core. It specializes only the constructor branch whose actual
+context procedure is =void=. Source observers, selected compiler inputs and
+general publication fallbacks retain their original open-route checks.
+
+
+* Official test execution boundary
+
+=gerbil test= is the sole test executor. Test suites live under =t/= and use
+=std/test=. There is no =dev/test-file.ss= or =dev/test-directory-report.ss=
+execution adapter. Just recipes may supply process resource limits and invoke
+the official command; they do not load suites or reinterpret its verdict.
+
+=dev/ci-inventory.ss= is metadata only: it partitions direct =t/*-test.ss=
+files exactly once, rejects omissions and duplicates, and projects the published
+Module test file selection. It cannot execute tests. Empty inventory is an
+error at the CI boundary. Build-input fault controls are ordinary test cases
+under =t/=, not a separate development test CLI.
+
+CI builds each platform once and restores that run's package artifact for
+independent domain jobs. It does not append a redundant full-suite run. Domain
+logs remain temporary CI artifacts; console output shows completion or bounded
+failure context. Existing Case deadlines and per-file heap classes remain
+acceptance constraints. Repartitioning is not evidence that the existing dense
+construction performance failures are fixed.
+
+** Complete coverage and preparation
+
+The partition retains every direct =t/*-test.ss= file exactly once. The sole
+execution-path substitution is the existing store-boundary facade, which loads
+the issued compiled suite; interpreting that suite's source is not acceptance.
+
+| Domain | Preparation and preserved evidence |
+|--------+-----------------------------------|
+| Store callbacks | Existing 120-second compiler and runtime stages; compiled boundary facade; callback, source and compiler-input SHA-256 checks after testing |
+| Artifact authority | Private authority directory; existing test-owned compiler acquisition and cleanup |
+| Source loader | Private authority directory; existing source-loader fixture acquisition and cleanup |
+| Source gateway | Existing 120-second compiler stage; tests run from the compiled source snapshot with that snapshot first in the load path |
+| Build-input mutations | Four compiled faults; correct implementation before and after faults; exact expected rejection rather than timeout or compiler failure |
+| Published modules | Currentness admission followed by the published file specification; one independent official Harness |
+
+The CI matrix keeps 4 GiB dense fixtures separate from ordinary 2 GiB fixtures.
+Case duration and idle policies remain in the existing Case Profiles, including
+the 180-second declaration acceptance gate. Native CLI exit status owns the
+result; no startup receipt, output scanner or second verdict is required.
+
+Just 1.56.0 =--quiet= suppresses child stdout as well as recipe presentation,
+so metadata-producing recipes must not use it. Empty matrix output is rejected
+before publication. Build logs, failed mutation transcripts and observation
+files remain ignored local cache or expiring CI artifacts, never source files.
+
+The callback closure and issued boundary reuse one prepared fixture but run in
+separate official CLI processes. Gerbil prepares all Harness modules before
+running Cases; importing the compiled boundary would otherwise load callbacks
+before the closure-before-load control. Both processes and the final digest
+checks remain independent CI steps, including after an earlier assertion fails.
+
+** Fresh-process correspondence
+
+Semantic domains share the platform build, not a Scheme VM. The official
+Harness imports all selected files before running any Case. An experimental
+shared-Harness module run exposed both an already-loaded execution library and
+a retained build-source binding into a released fixture. These failed samples
+are retained in ignored cache; they are not accepted scheduling evidence.
+
+CI therefore invokes the official CLI once per file, retaining its 600-second
+process ceiling and all Case budgets, and attempts the remaining files after a
+failure. It does not scan stdout for a replacement verdict. Domains follow the
+authoring, loading, testing, graph/selection, MOP and workflow owners; the full
+compiled-module integration test has its own job. This retains the previous
+fresh-process assertions without reintroducing a development runner.
+
+** Compiled consumer and source bootstrap are distinct obligations
+
+The compiled namespace qualification must be a downstream package using the
+already-built public Core dependency. Its build owns only selected business
+modules and compiled import consumers. Rebuilding a source-only Core inside
+this qualification repeats the independent bootstrap obligation and measures
+that repetition against the consumer's 60-second process budget.
+
+Keep the source-only bootstrap fixture unchanged. The consumer qualification
+retains only-in/rename-in identity, lazy values, read-only exports, actual SSI
+and runtime-object loading, and changed init/test-input refusal. Inspect the
+real runtime loader to prove the execution library stays cold; do not edit a
+production library to manufacture a file marker. No deadline or concurrency
+setting changes.
+
+** Remaining acceptance obligations
+
+The completed =f26a566= platform run retained all 58 jobs: 52 succeeded;
+the two 10,000-owner gates failed on both OSes at the unchanged 180-second
+Case ceiling, Linux package indexing lost liveness, and Darwin's compiled
+consumer repeated a Core source build. The consumer refactor removes that
+duplicate bootstrap, with the independent source-only control retained.
+This is not a claim that the two dense performance gates are resolved.
+
+The failed Linux selection sample completed 6,844 declarations before refusal.
+Its partial first-Graph span was about 176 seconds, including about 159 seconds
+of user CPU. Inclusive metadata replay was about 72 seconds and init-source
+currentness about 26 seconds, with 39,388,999 metadata visits and repeated
+checks of the roughly 139k-character init. These overlapping spans must not be
+summed as disjoint costs. This is incomplete failure attribution, not a passing
+benchmark or proof that host contention caused the regression.
+
+Do not cache an admission across callbacks, remove live metadata checks, shrink
+the corpus, or move fixture work outside the frozen Case to pass the gate.
+Existing SourceWindows/ReaderEffects contracts delimit any subsequent
+optimization; an additional state model is not justified by these measurements.
+
+The pinned Gerbil =pkg-retag= calls =run-process= and discards its captured
+stdout. =run-process/batch= forwards real completed-file TAG progress instead.
+An isolated compiled tool module passed the unchanged complete 1,000-owner
+package test, including default indexing, exact binding counts, selective
+compilation, hot build and clean isolation. Its index stage took about 83 seconds
+without exceeding the existing idle or total policy. A tiny native comparison
+also produced byte-identical TAGS. This producer fix is not adopted by Yuanxu:
+it belongs to the toolchain owner, and deployment requires an authorized
+single toolchain update rather than a consumer wrapper or fake heartbeat.
+
+All failed attempts and candidate logs remain ignored local artifacts. The
+public source tree contains neither transcripts nor compiled candidate tools.
+
+** Temporary CI timing run without the dense 180-second performance ceiling
+
+At the maintainer's explicit request on 2026-11-11, only
+=module-declaration-10000-test.ss= and
+=module-runtime-selection-10000-test.ss= disable their 180-second performance
+ceiling. They inherit the ordinary 600-second Case resource watchdog. Both
+10,000-owner corpora, every semantic/currentness assertion, the 4 GiB heap and
+live-growth envelope, and the existing 60-second idle policy remain intact.
+The outer 600-second official-CLI timeout and 15-minute job limit also remain.
+Other scale tests retain their existing performance policy. No dependency pin
+or compiler concurrency setting changes.
+
+This run measures CI completion with that performance acceptance criterion
+disabled. A green result cannot qualify the original 180-second requirement.
+Report queue delay, environment preparation, package build, test execution and
+artifact publication separately; aggregate completion is not a runtime benchmark.
+
+** Completed metadata work belongs to the existing scale observer
+
+The gate-disabled Ubuntu declaration failure completed all 10,000 publications
+before the retained idle watchdog fired in the final retained-publication
+validation pass. Publication completion alone does not witness progress in
+this later phase. A real candidate measurement found 206 preparation roots
+and 229 admission roots; root width is not the number of transitive visits.
+Do not add a root-width threshold or a second replay path in Core.
+
+The existing declaration observer accumulates the existing
+=metadata-replay-visits= event into one monotonic Case progress counter.
+These are completed native validations, including an actually validated prefix
+on refusal, rather than timer heartbeats. Progress is not an admission verdict;
+a refusal remains a refusal, and the authoritative stop is checked before any
+counter advances. Keep the native fixed-result path, original observer trace,
+full currentness checks and the 60-second idle policy unchanged.
+
+The earlier protected-visitor candidate passed focused controls but did not
+address this actual multi-publication loop. It is removed rather than retained
+as an unused alternate mechanism. The local complete 1,000-owner declaration
+Case passed that candidate; the complete 10,000-owner attempt reached 8,524
+publications and ended under the existing outer watchdog with status 137.
+Neither result qualifies the corrected observer or the remaining Darwin scale
+budget. Publication, source-admission, reader-effect/tool-context and all four
+build-input mutation controls also passed and remain separate evidence.
+
+The gate-disabled platform run finished with 55 of 58 jobs successful. Darwin
+resource failures remain algorithmic acceptance work, not permission to remove
+the workload or increase limits. Raw failed attempts remain ignored local
+artifacts. Existing formal models retain their responsibilities; no new semantic
+model is needed for a test-owned liveness counter.

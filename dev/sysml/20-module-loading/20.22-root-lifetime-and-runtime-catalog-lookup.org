@@ -1,0 +1,413 @@
+#+title: 20.22 Retained Entry Roots and Runtime Catalog Lookup
+#+language: en
+#+filetags: :modules:retention:ownership:measurement:
+
+* Question and fixed source cohort
+
+Which captured objects are duplicated storage, and which remain reachable from
+an intentionally live imported entry? Closure count, weak-container count and VM
+live bytes cannot answer this question independently.
+
+The initial development cohort was gerbil-poo
+=3ba1b34879bd5dd41336b72d43167abe3ba48c8b=; final qualification advances to
+=96ab90b0653a43636fddc2c157927e105ad16d7c= with the same existing constructor,
+issuer/route and observer protections. The private port changes only =object.ss=,
+=slot-observation.ss= and =io.ss=. The release pin remains unchanged: the bare PR
+revision does not export every protection API this worktree requires. Gerbil
+compiler/runtime sources and other sessions' checkouts are unchanged.
+
+* Actual strong path and runtime entry lifetime
+
+The existing 16/32 census keeps weak values only for its Graph, publication and
+module namespace. After the sixteen-module Fixture releases and its Case returns,
+the next Case collects twice before its cold window. It then inspects existing
+runtime instance cells, without a getter, checker, import or role activation:
+
+#+begin_src scheme
+(cached-path previous-namespace '(module-0 tests source selected-graph))
+;; eq? to the Graph obtained during the previous measured admission.
+#+end_src
+
+Observed result:
+
+#+begin_example
+RETENTION-RELEASED-COHORT modules=16 graph-live=#t publication-live=#t namespace-live=#t namespace-cached-graph=#t
+#+end_example
+
+The weak table does not own any of these values. This proves an observed cached
+namespace-to-Graph path; it is not a whole-heap dominator or collector proof.
+The runtime root has a separate source explanation:
+
+1. =t/qualification/module-init/fixture.ss= imports the generated entry through
+   its actual Gerbil package identity and returns its exports.
+2. =selection/init-syntax.ss= emits runtime top-level =exports-base= and
+   =exports-value= bindings. The public syntax alias denotes that global value.
+3. The demanded namespace has the exact cached path shown above.
+4. =DeclarationFixture.release= deletes its temporary source tree; it does not
+   unload a runtime module or clear its global exports.
+
+Consequently Fixture directory removal does not establish imported-entry death.
+Do not reset globals, suppress dependencies or introduce an unload/cache protocol
+to produce a smaller number. The file hosting =yuanxu!= need not be named init;
+this fixture happens to use that conventional name.
+
+The sixteen-module cohort is still present when the thirty-two-module Case runs.
+Their VM difference is not thirty-two-module exclusive ownership. This does NOT
+explain away the existing 10000-module failure: its runtime worker imports its own
+entry in a fresh process. That performance Case remains required and unqualified.
+
+* Necessary identities and demand observations
+
+The 32-module covered union still has 9105 issuer closures and 6134 bound-self
+closures. Original read IDs, signed payloads, receiver-local functions, dependency
+edges and observer order remain intact. No equivalent-looking records are pooled.
+
+For methods belonging to receivers actually observed by this census, 4522
+bound-self binding edges have cached values and 1555 have no cached value. This
+6077-edge domain is smaller than the whole reachable closure union: do not treat
+the remaining 57 closures as missing measurements of the same domain. Cached
+false is present. Absence is NOT evidence that a method never executed, that its
+preparation hook can be skipped, or that its identity may change after reflection.
+Thus deferring all 6134 bindings is not supported by this observation.
+
+The matched source-root comparison follows ORIGINAL cached =selected-graph=
+records from both namespaces and performs identity DFS without invoking a
+checker. It neither fabricates a bundle nor admits the deleted old sources.
+The 32 source-root slice covers 7952072 body bytes and 1099 read receivers;
+its union with the prior 16 source-root covers 10759008 bytes and 1580 receivers.
+The old slice therefore contributes 2806936 additional covered body bytes.
+Shared source/compiler support is charged once. These narrower roots exclude
+other outer-query reads, opaque tables/code and headers; the difference does not
+explain the entire VM residual or establish exclusive process ownership.
+
+The final control explicitly calls the OLD Graph's actual =admit-current= after
+its files are deleted: it refuses. The new independent 32 entry then admits
+normally, and the old/new cached read records remain distinct. Live runtime
+exports are not a cached source-approval result. No global or original edge is
+deleted to achieve this refusal or make the weak witness disappear.
+
+The producer's new declaration index is included in raw owner traversal together
+with declaration catalogs. These are existing allocations only; the probe does
+not force a cold index, descriptor, method, initializer or business scope.
+
+* Production change: one source-attribution data flow
+
+=configuration/slot-origin.ss= previously reflected all direct specifications
+into owned entry lists before each =assq=. Source annotation repeated this for
+each row, and inherited attribution repeated it for each parent and field.
+The resulting pairs were temporary copies, not necessary source identities.
+
+The producer already owns a persistent ordered name index. Source attachment,
+method lookup and declaration-barrier lookup now consume =prototype-map-ref=
+directly. No second field table, lookup cache or admission verdict is introduced.
+Compact maps keep bounded lookup; larger maps use the runtime indexed backend.
+An explicit private missing identity distinguishes absence from a present =#f=.
+
+Unchanged behavior includes first contribution, actual SlotSpec/descriptor identity,
+row/C3 order, conservative ancestor source requirements, opaque barriers, nested
+getter/effect boundaries and independent currentness checks before return. The
+new negative control checks false method and declaration metadata without forcing
+or admitting either invalid value. It cannot borrow the parent's locator.
+
+This removes repeated reflection allocation. It is not a repair of every retained
+receiver, does not lower the 9105/6134 counts, and has not closed the memory goal.
+
+* Assurance allocation
+
+SysML =OriginPointLookup= and =DirectCaptureOwnership= allocate the boundary.
+Lean reuses LeanPoo's ordered Storage refinement through
+=catalogInspectionPreserved=, =metadataPresencePreserved= and
+=falseMetadataIsPresent=. It preserves first lookup and presence; it does not
+prove a concrete GC lifetime or runtime RBTree implementation by itself.
+
+Existing QNT =ReadRetention= owns mutation/return checks, separate receiver/record
+identities, both requirements and lazy branches. Its seven cases pass, including
+the required counterexamples. No duplicate heap or lookup QNT model is added.
+Runtime correspondence is checked through the actual Core reader/link path.
+
+* Build and loading evidence
+
+Runtime library preparation consumes the upstream declared library inputs through
+std/make, after the independent property-testing library. This is preparation,
+not an upstream full-CI receipt. Runtime =gerbil clean= and =gerbil build= then pass
+for Core in the fresh ABI-coherent development environment; the successful cold
+Core build emits 256 source compile messages. That is not a process-count or
+elapsed-time estimate. These operations are outside all loading windows.
+
+The first attempt to import upstream =build.ss= as a library refused an unbound
+=this-source-file=; the partial preparation also exposed the independent property
+library prerequisite. Both failed attempts remain local artifacts. One Core
+build correctly refused a source edit made during construction. After source
+stabilization and runtime cleanup, reconstruction passed without changing a
+fingerprint, deadline or assertion.
+
+The 3ba1b34-cohort census before adding the released-root witness measured:
+
+| Modules | Cold wall / CPU seconds | Hot wall / CPU seconds | Physical reads cold / hot | VM live bytes |
+|---------+-------------------------+------------------------+---------------------------+---------------|
+| 16 | 3.509284 / 3.066887 | .060802 / .060642 | 5414 / 106 | 187840296 |
+| 32 | 4.254335 / 4.247684 | .112275 / .112276 | 10352 / 170 | 203388464 |
+
+The final root-path probe is a DIFFERENT diagnostic regime: forced collection
+precedes its 32 cold window, outside the measured operation. Preserve its slower
+first sample rather than selecting the best number:
+
+| Modules | Cold wall / CPU seconds | Hot wall / CPU seconds | VM live bytes |
+|---------+-------------------------+------------------------+---------------|
+| 16 | 5.833317 / 3.769037 | .072133 / .069447 | 188109608 |
+| 32 | 4.462879 / 4.429031 | .117515 / .117373 | 203658832 |
+
+These are Graph-cold/hot in one runtime test process, not fresh-process A/B results.
+No production speedup or exclusive-memory saving is attributed to the point lookup
+from these samples. Business scopes/build producers stay cold and hot expansion
+count stays zero. There is no 10000-module rerun or capacity-pass claim.
+
+Default test-file gates pass the census, seven slot-origin cases, eleven real
+Gitea/PostgreSQL publication cases, four relocation cases, six source-observation
+cases and evidence ownership. MODULE-OK, HARNESS-OK and final OK are required;
+no error/skip/overflow markers occur. Source-change, parent-cache, two-requirement
+and lazy-branch controls remain. Scoped Lean builds 105 jobs. No commit or push.
+
+The final source-root union control also passes. Its 16 cold/hot wall/CPU seconds
+are 3.194608/3.179675 and .058867/.058788; 32 are 4.600154/4.424325 and
+.159348/.159029. The independent old-entry refusal is outside the 32 cold window.
+Physical reads remain 5414/106 and 10352/170; expansion remains 32/0 and 64/0.
+VM live is 188823544/204371824, inclusive of imported entry roots and the changed
+diagnostic module. Keep the slower prior root-path run above as well. These are
+not controlled point-lookup A/B speedup or memory-saving claims.
+
+* Final upstream alignment and stricter refusal
+
+While qualification ran, PR #13 advanced to =96ab90b=. Its changes since 3ba1b34
+share immutable tree backends across large policy conversions and reuse distinct
+sole catalog roots/all-visible roots. These are producer-owned structural
+representations, not shared receiver cells or an approval cache. =merge-first=
+is for keyed metadata catalogs: do not apply it to method chains or erase
+independent contribution requirements. Observed visibility still follows its
+original delivery path; private filtering retains right-to-left callback order,
+owned public snapshots and owner-revision refusal.
+
+The same private producer checkout advances without dropping any of its three
+protected source edits. Existing std/make refreshes the runtime library and Core's
+affected dependencies; the runtime object layout is unchanged by this later delta.
+Directory names containing the earlier short hash are output locations, not
+version authority: actual Git HEAD and the package manager's own manifest record
+the new revision. No hand-written source fingerprints are used.
+
+The upstream runtime =declaration-index-test= passes twelve Cases through its
+existing bounded Just runner. An initial attempt correctly refused its missing
+benchmark/example support inputs. Those two inputs are selected from the upstream
+declared spec and prepared with std/make before rerunning; no test or check is
+removed. Core's default test-file gates then pass slot origins, real publication,
+relocation, source observation, evidence ownership, dependency continuation and
+issued-root forwarding. All three Harness success markers are present, without
+error/skip/overflow markers.
+
+The old-entry refusal is now specific. A guessed generation-message assertion
+failed and its result is retained. The actual first error is
+=module role must be a regular file= from the existing source policy. The final
+control requires this exact Error message and an irritant path beneath the
+previous Fixture's actual =modules/= root ending in =/types.ss=. Only a copied
+path string is strongly retained by the expectation; object witnesses stay weak.
+This preserves the first diagnostic instead of forcing a different checker order
+or accepting any unrelated exception. The independent new entry still admits.
+
+The final 96ab90b census, including this stronger control, measures:
+
+| Modules | Cold wall / CPU seconds | Hot wall / CPU seconds | Physical reads cold / hot | VM live bytes |
+|---------+-------------------------+------------------------+---------------------------+---------------|
+| 16 | 3.580255 / 2.954387 | .058647 / .058631 | 5414 / 106 | 188883512 |
+| 32 | 4.190346 / 4.180011 | .113117 / .113091 | 10352 / 170 | 204432192 |
+
+The source-root body union remains 7952072 -> 10759008 bytes, preserving the
+2806936-byte extra old-root slice. The full covered union still retains 9105
+issuer and 6134 bound-self closures; no original identity or edge is merged.
+These samples are not a controlled producer-version or point-lookup A/B claim.
+The earlier slower samples and failed controls are retained. Core hot-build
+verification also returned zero source compile messages; its timed run overlapped
+formal checking and is NOT a qualified build timing comparison.
+
+The principal scale-retention problem remains OPEN. No ten-thousand-module
+performance Case, weakened budget/assertion, release-pin change, commit or push
+is claimed. Runtime Gerbil source and other sessions' working trees remain intact.
+
+Build accounting is separate. The 96ab90b dependency refresh compiled 219 Core
+source targets through existing std/make dependency rules. The final standalone
+hot build returned with zero source compile messages: 25.89 s wall, 16.86 s user,
+2.35 s system. Its 6.68-second wall/CPU residual remains unattributed; zero
+compilation does not establish that hot build overhead is solved. This sample
+followed formal/test completion. Target inventory and budgets are unchanged.
+
+* Existing ten-thousand-module loading Case: bounded failure
+
+On 2026-10-28 the same qualified producer cohort was exercised through the
+existing entry, without a new runner or a reduced declaration inventory:
+
+#+begin_src sh
+just test-file t/module-declaration-10000-test.ss
+#+end_src
+
+The maintained pre-import 2 GiB heap fence, 60-second idle policy and 600-second
+outer total timeout remain unchanged. The outer timeout terminated the run with
+exit 124. The worker never reached =runtime-graph-ready=, and there are no final
+Case, Module or Harness success markers. This is a failed capacity/performance
+Case, not a heap-overflow result or an extrapolated ten-thousand-module pass.
+
+The parent reported =init-import= at 0.459104 seconds, =module-namespace= at
+1.392821 seconds and =test-source= at 0.884030 seconds. These are individual
+parent spans; their sum is not the worker's Graph-construction duration. The
+worker entered =runtime-graph-start= and emitted these existing scalar checkpoints:
+
+| Completed declarations | Heap bytes | Last-GC live bytes |
+|------------------------+------------+--------------------|
+| Graph-start baseline | 618066600 | 269543448 |
+| 100 | 815506664 | 356578744 |
+| 1000 | 1638676840 | 718128952 |
+| 2000 | 2146962504 | 1122059304 |
+| 3000 | 2146475048 | 1531257192 |
+| 3100 | 2146861152 | 1567607056 |
+
+3100 is the last complete hundred-declaration checkpoint, not an exact final
+publication count. The snapshots describe this worker's last-GC state, not
+exclusive ownership or peak RSS. The allocation counter becomes negative and
+is excluded from allocation conclusions. No terminal forced-GC measurement was
+obtained. Logs remain local artifacts under
+=/private/tmp/yuanxu-entry-local-20261026/index-96ab90b-scale10000{,-worker}.log=.
+
+The worker is an independent process; the previous census's retained imported
+entry cannot explain this failure. Continued live growth during declaration
+construction also prevents attributing the result to a fixed startup cost.
+The 16/32 cases remain diagnostic tools for locating ownership and preserving
+semantics; they do not establish scale acceptance. Further production changes
+must address the per-declaration construction and retention path, then return
+to this same capacity Case. Build timings remain a separate measurement.
+
+The refusal/currentness, parent-cache, two-contribution and lazy-branch controls
+from the focused qualification remain independently passed; this timed-out
+capacity run did not reach its own terminal source-change assertions. No new
+semantic proof, production fix, release-pin update, commit or push is claimed
+by this measurement.
+
+** Withdrawn resource-configuration attempt
+
+The subsequent 3 GiB diagnostic was interrupted before completion. Reading
+=GERBIL_TEST_MAX_HEAP= inside the Fixture added an unnecessary configuration
+coupling and has been removed. The existing Case Profile is restored. Neither
+interrupted attempt establishes a 3 GiB capacity result. A diagnostic resource
+change belongs in the existing POO execution Profile, with its runtime Script
+runtime-options projection, rather than another ambient Fixture input.
+
+* Investigation after the capacity failure
+
+** Current producer and evidence separation
+
+The next development cohort is upstream PR 13 at
+=b5cf9e89a1b132b02026fa8525a22a2d64f13df3= (checked 2026-10-28), retaining the
+three existing local protection files. Its new prototype-map change admits
+finite list carriers before choosing storage; it does not eliminate publication
+construction or certify Core's diagnostic order. The private runtime map was
+rebuilt through =std/make= and Core through =gerbil build=. The release dependency
+pin is unchanged. The first runtime Make invocation omitted required =srcdir:=
+and failed; the corrected invocation passed. Build preparation is not a loading
+performance result.
+
+** Rejected shared-catalog implementation
+
+=reader.ss:read-candidate= currently constructs a private tool-source table from
+=interpreter-observations= for every candidate. This is demonstrable structural
+allocation; its survival after the candidate returns has not been established.
+It must not be called the dominant retained payload without a strong-path witness.
+
+A proposed change shared one private baseline and copied it before a write. It
+preserved missing versus present-false entries and distinguished identical byte
+objects from equal-text replacements. A runtime test rejected its remaining
+premise: separately constructed runtime tables with the same initial rows and
+updates returned these different traversal sequences:
+
+#+begin_example
+candidate: absent.ss, private.ss, core.ss
+control:   core.ss, private.ss, absent.ss
+#+end_example
+
+Equal maps and equal insertion sequences therefore do not establish equal
+currentness callback order or equal first diagnostics. The test was not weakened
+to set equality. The unqualified production change, its private test plumbing,
+and its counters were removed. Existing working-tree changes were preserved.
+Initial failed controls also exposed a missing real runtime import before an
+=extern= reference; those failures remain local artifacts. No capacity or memory
+improvement is attributed to the withdrawn change.
+
+=PayloadSharing.identicalToolWritePreservesLookup= proves only lookup
+equivalence. =PayloadSharing.equalLookupCanChangeFirstDiagnostic= provides the
+explicit finite counterexample to extending that proof to a schedule. Existing
+ReadRetention QNT gates still check fresh authentication, both requirements,
+parent/child isolation and laziness. They do not prove a particular HashTable
+traversal order. SysML assigns runtime table correspondence to Scheme and ordered
+semantics to Lean; no second temporal model or approval cache was added.
+
+** Construction boundaries that need redesign
+
+The source audit identifies two different mechanisms which must stay distinct:
+
+1. =authoring/admission.ss:yuanxu-module-authoring-admit-datums= obtains and
+   validates an admission object for each datum, reads its diagnostics, then
+   builds and validates an aggregate object. The current recording region
+   forwards every original read. A previously measured current-root census
+   included 403 authoring-admission receiver frontiers for 32 selected Modules.
+   This establishes a path into the retained read support; it is not exclusive
+   heap attribution. Removing these records afterwards is not an optimization.
+   A future default functional analysis path must avoid unnecessary intermediate
+   construction, preserve per-datum diagnostics/Type obligations, and retain the
+   public Generic path whenever live methods, Types, protocols or observation
+   can alter the result. The existing method-policy guard alone does not prove
+   all of those Type conditions. No such bypass is enabled by this investigation.
+2. Source indexes and diagnostic schedules have different semantics. A path
+   lookup index can share immutable structure, but a check schedule needs its
+   own justified order from actual observed support. Replacing a hash table with
+   another representation without that correspondence can change a refusal.
+   Approval, source snapshots, callback frames and receiver instances remain
+   separately owned.
+
+Additional algorithmic candidates are visible in production:
+=link.ss:scope-tree= filters a complete row list per demanded name;
+=publication.ss:module-scope-context?= tests each selected member with =memq=;
+=link.ss:eligible!= repeats list membership. These are potentially quadratic
+across many demands. Their contribution to the 600-second failure is not yet
+timed. A cached index over a publicly mutable list is unsafe without the actual
+source/revision correspondence; ordinary receiver revision alone cannot justify
+it. These sites must be measured alongside construction rather than assumed to
+be the dominant cost or patched with another cache protocol.
+
+** Bounded complete-declaration control
+
+The existing 256-declaration Case passed on the development cohort through
+=just test-file t/module-declaration-retention-test.ss=. Its worker reached
+=runtime-graph-ready= at 35.534 seconds elapsed / 35.379 seconds CPU from Case
+entry, and reported 294115128 live bytes after its explicit held-Graph GC.
+Parent =test-execution= was 41.687 seconds; =init-import= was 0.108 seconds,
+=module-namespace= 0.230 seconds and =test-source= 0.773 seconds. The internal
+worker and outer file both returned Module/Harness/final-OK markers. The source
+change negative control, unlinked business scopes, and unselected Feature control
+remained active. Invalid allocation counters remain excluded.
+
+This is a bounded semantic/control result, not a new scale gate, a 32-module
+substitute, a producer-version speedup, or a ten-thousand-module pass. The last
+capacity result remains the 600-second failure at the 3100 checkpoint. The next
+production experiment must close one of the construction/index correspondences
+above before repeating that same capacity Case. No commit or push was made.
+
+Final qualification after removing the rejected change: the existing four
+deferred-reader controls and eleven Gitea/PostgreSQL publication controls passed
+through the default heap-fenced test entry. The upstream declaration-index suite
+passed all sixteen Cases on the qualified runtime cohort. Lean PayloadSharing
+built successfully (105 jobs), and the existing seven ReadRetention QNT gates
+included their expected counterexamples. The first diagnostic-order proof attempt
+had an incomplete contradictory-string branch; the corrected proof passed.
+These results do not constitute full CI or ten-thousand-module acceptance.
+SysML changes allocate proof responsibilities; no SysML parser/model-checker
+qualification is claimed.
+
+The follow-up [[file:20.23-typed-functional-role-analysis.org][20.23]] implements the analysis/admission protocol split,
+rather than enabling a default-only bypass of existing receipt callbacks.
+Its runtime controls and measurements supersede the construction proposal above;
+the failed capacity result and rejected table-sharing result remain evidence.

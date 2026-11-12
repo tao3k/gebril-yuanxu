@@ -1,0 +1,225 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: RFC 0143: Bundle v1 Runtime Memory Contract
+#+status: accepted
+#+phase: 3H
+
+* Decision
+
+Bundle v1 defines the runtime memory contract for handoff from the Agentic AI
+Lab control plane. Its representation is a fixed-width memory layout with its
+own version boundary.
+
+- Scheme and POO own composition semantics for objects, types, contracts,
+  roles, capabilities, policies, strategies, adapters, and projections.
+- Lowering materializes these POO values once in a contiguous foreign arena.
+- The C boundary accepts fixed-width descriptors, typed regions, and compact IDs.
+- The runtime and downstream languages must keep pointers into Scheme, Python,
+  and other garbage-collected heaps outside this boundary.
+- Opening a Bundle validates it once in =O(n)=. Runtime component lookup takes
+  =O(log n)= and returns a read-only row backed by the original arena.
+- The existing =runtime_v0= ABI retains its draft status. Runtime v1 can be
+  frozen after Runtime, the Python adapter, Cedar, and Lean/Evidence all adopt
+  the new boundary and the old ABI is removed in one migration.
+
+* Why Bundle v1 needs an independent boundary
+
+The compiler and build audit confirmed that the existing C ABI already uses
+runtime structs, arenas, handles, and batch APIs. It declares =ABI_MAJOR=0=
+and =organization-bundle.draft.3=. The Gerbil benchmark reports
+=payload-zero-copy=false= and =abi-v1-frozen=false=.
+
+The draft namespace combines the Bundle layout, runtime lifecycle, batching,
+and evidence mediation. Changing the major version macro alone would leave
+those contracts unresolved. Phase 3H fixes the Bundle v1 memory contract first
+so Runtime v1 can consume it directly.
+
+* Architecture
+
+#+begin_src mermaid
+flowchart LR
+  POO["POO Domain Case<br/>object + type + contract"]
+  ALG["Functional composition<br/>role + capability + policy + strategy"]
+  LOWER["Scheme lowering<br/>pure plan + one arena materialization"]
+  ARENA["Registered foreign arena<br/>immutable typed regions"]
+  BUNDLE["Bundle v1 descriptor<br/>256 bytes"]
+  RUNTIME["Future Runtime v1<br/>Rust kernel or downstream runtime"]
+  PY["Python production adapter<br/>CFFI"]
+  OTHER["Rust / TypeScript adapters<br/>downstream-owned"]
+  CEDAR["Cedar input projection"]
+  LEAN["Lean / Evidence obligations"]
+
+  POO --> ALG --> LOWER
+  LOWER --> ARENA
+  LOWER --> BUNDLE
+  BUNDLE --> RUNTIME
+  ARENA --> RUNTIME
+  RUNTIME --> PY
+  RUNTIME --> OTHER
+  RUNTIME --> CEDAR
+  RUNTIME --> LEAN
+#+end_src
+
+Users produce lowering plans through POO objects, prototype composition, slot
+operators, functional combinators, and declarative macros. The C layout belongs
+exclusively to the runtime handoff boundary.
+
+* Fixed layout
+
+| Type | Size | Purpose |
+|------+--------+--------------------------------------------------|
+| =compact_id= | 16 B | Stable cross-language identity independent of symbol and string pointers |
+| =region= | 24 B | Arena offset, length, stride, and alignment |
+| =symbol_entry= | 32 B | Maps an interned ID to a UTF-8 metadata slice |
+| =component_entry= | 200 B | Complete Domain Case composition identity columns |
+| =edge_entry= | 80 B | Component relations and order within a case |
+| =evidence_entry= | 96 B | Maps a contract to a proof or evidence obligation |
+| =descriptor= | 256 B | Bundle identity, digest, epoch, and five regions |
+
+Use =uint16_t/uint32_t/uint64_t= and fixed arrays for the layout. Exclude
+=size_t=, C bitfields, language object pointers, implicit enum widths, and
+flexible array members. The header's =_Static_assert= checks enforce the ABI
+layout at compile time.
+
+* Scheme values and runtime types
+
+| Scheme / POO value | Bundle v1 runtime projection |
+|--------------------+---------------------------------------------|
+| object identity | 128-bit =compact_id= |
+| symbol | Interned =compact_id=, with optional UTF-8 data confined to the metadata region |
+| fixnum / integer | Range-checked during lowering, then written as a fixed-width unsigned integer |
+| boolean / option | Declared flag bits with rejection of unknown bits |
+| object/type/contract binding | Separate identity columns in one =component_entry= |
+| role/capability | Fixed columns in the same component row |
+| policy/strategy | Fixed columns in the same component row |
+| adapter/projection | Fixed columns in the same component row |
+| composition relation | =edge_entry= sorted by case, source, and order |
+| proof obligation | =evidence_entry= sorted by case and obligation |
+
+Scheme computes ordered immutable rows through functional traversal and writes
+them to the foreign arena in one materialization step. The descriptor and arena
+view cross the FFI boundary together.
+
+* Ownership and lifecycle
+
+#+begin_src mermaid
+stateDiagram-v2
+  [*] --> Planned: "POO lowering plan"
+  Planned --> Materialized: "allocate foreign arena once"
+  Materialized --> Registered: "register arena and generation"
+  Registered --> Open: "validate descriptor and sorted tables"
+  Open --> Open: "O(log n) read-only lookup"
+  Open --> Released: "last Bundle/session handle released"
+  Released --> Recycled: "arena generation advances"
+  Recycled --> [*]
+
+  Open --> Rejected: "bounds / layout / sort / duplicate failure"
+  Rejected --> Released
+#+end_src
+
+- The adapter allocates the arena in foreign or runtime memory and keeps moving
+  GC heaps private.
+- Descriptors and regions describe registered arenas without owning their memory.
+- The runtime borrows the arena read-only while Bundle or session handles live.
+- The adapter may free, resize, or mutate the arena only after release completes.
+- Recycling advances the generation. Access with an earlier generation fails
+  closed.
+- A 64-byte-aligned arena base is recommended. Each region still declares and
+  validates its actual type alignment.
+- Callbacks must keep arbitrary runtime worker threads outside Gerbil GC.
+  Release proceeds through the explicit lifecycle API.
+
+* Indexing and complexity
+
+The =component_entry= table is strictly ascending by =(case_id, component_id)=.
+Duplicate keys invalidate the Bundle. Opening checks the ordering in linear
+time. Subsequent lookups use lower-bound binary search.
+
+#+begin_src mermaid
+flowchart TD
+  KEY["case_id + component_id"] --> RANGE["components typed region"]
+  RANGE --> MID["lower-bound midpoint"]
+  MID -->|"key is smaller"| LEFT["left half"]
+  MID -->|"key is larger"| RIGHT["right half"]
+  MID -->|"equal"| VIEW["const arena-backed row"]
+  LEFT --> MID
+  RIGHT --> MID
+#+end_src
+
+Hundreds or thousands of agents can combine different roles, capabilities,
+policies, strategies, and adapters. The lookup path uses the typed index and
+keeps POO interpretation and language hash tables outside the hot path. The
+local benchmark performed 1,000,000 lookups over 65,536 rows in about 0.425
+seconds. That measurement qualifies the local engineering gate.
+
+* Constraints from the Gerbil and gerbil-mysql audit
+
+The audit used these local research checkouts.
+
+- =.data/gerbil= at =0618730d4e30bf3f48538d6b09722ad3b6056414=.
+- =.data/gerbil-mysql= at =847b4b61747152e505dfc72acee4438009302c5f=.
+
+=gerbil-mysql/db/_mysql.scm= is a Gambit FFI compilation unit. Compile it with
+=gsc -c= for Gambit C generation. The audit reproduced a zero exit status from
+an incorrect =gxc= invocation even though stderr contained =*** ERROR=. Scheme
+lowering and build macros must check the exit status, stderr error markers, and
+expected C or object artifacts together.
+
+Bundle v1 interns symbols and strings during materialization. The hot path
+reads compact IDs and typed rows, avoiding the per-call string conversion
+common in database bindings and the corresponding Gerbil FFI crossing cost.
+
+* Python production validation
+
+Python validates the production runtime adapter boundary. Phase 3H uses CFFI
+ABI mode to =dlopen= the Bazel-built Bundle v1 dylib and verifies the following.
+
+- The C validator accepts typed rows constructed in Python.
+- Lookup returns the address of the original row in the CFFI arena.
+- A missing key returns a stable status.
+- The full path uses CFFI and typed rows without =ctypes= or JSON encoding and
+  decoding.
+
+The runtime-v0 wheel still publishes =AGENTIC_AI_LAB_RUNTIME_V0_LIBRARY=,
+=_runtime_v0_cffi=, and =libagentic_ai_lab_runtime_v0= on its installation
+surface. The Runtime v1 migration must replace and remove all three names
+together without retaining aliases.
+
+* Fail-closed conditions
+
+Reject the Bundle immediately under any of these conditions.
+
+- The schema major is other than 1 or the minor exceeds the supported version.
+- The descriptor is undersized, flags are unknown, or a reserved field is nonzero.
+- The digest is all zeroes.
+- The arena length differs from the descriptor.
+- A region overflows, its stride is incorrect, its alignment is other than a
+  power of two, or its offset is misaligned.
+- Symbol metadata is out of bounds.
+- The component table is unsorted or contains duplicate keys.
+- Before lookup, the component region fails the fixed layout checks.
+
+* Phase 3H implementation and Runtime v1 freeze gates
+
+Phase 3H provides the following.
+
+- The runtime layout in =agentic_ai_lab/bundle_v1.h=.
+- Descriptor validation.
+- =O(log n)= component lookup.
+- A C harness, benchmark, and Python CFFI validation.
+- An independent Bazel package that preserves Scheme build ownership.
+
+The Runtime v1 freeze requires all six gates.
+
+1. Implement the POO Scheme lowering object and functional arena materializer.
+2. Have the Runtime v1 lifecycle consume Bundle v1 directly without a v0 wrapper.
+3. Consume Cedar typed inputs and the Lean/Evidence obligation table end to end.
+4. Migrate the Python wheel, loader, CFFI module, and environment variables together.
+5. Remove every runtime-v0 public header, symbol, test, document, and install
+   artifact.
+6. Pass the Gerbil AOT/RSS, ASan/UBSan, symbol surface, wheel installation, and
+   benchmark gates.
+
+Runtime can declare ABI v1 frozen once all six gates pass.

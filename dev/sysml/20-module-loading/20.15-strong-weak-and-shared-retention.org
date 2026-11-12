@@ -1,0 +1,122 @@
+#+title: 20.15 Strong, Weak and Shared Retention
+#+language: en
+#+filetags: :modules:retention:ownership:
+
+* Terminology and scope
+
+There is no additional SDK in this investigation. Earlier counters and notes
+used that word for installed Gerbil expander contexts, compiler bindings and
+runtime structures. These are different owners, not one per-module payload.
+Gerbil remains the installed compiler/runtime; its sources are read-only.
+
+The current producer candidate is gerbil-poo PR branch
+=feat/positive-closure-costs= at =63100a3db0ad939da14b74ba10266cd078abc4c8=,
+with the existing uncommitted constructor/snapshot/observation changes applied
+to a separate temporary source copy. Core's declared dependency is unchanged;
+this is qualification, not a published dependency update.
+
+* Source-owned edges
+
+| Path | Actual ownership | Consequence |
+|------+------------------+-------------|
+| Issued read -> captured receiver/instance/specification | Strong captures | Preserve original identity and each authentication; equal content is insufficient |
+| Receiver -> instance values / thunk environment | Strong, receiver-local | Do not pool parent/child cells or arbitrary closures |
+| Layout -> shape; global shape catalogue -> shape | Strong from live layout, weak value from catalogue | Sharing the index does not share receiver values |
+| Issuer registry -> read/birth | Weak keys and weak values | Registry membership does not by itself explain strong retention of all reads |
+| Replay owner catalogue -> root/projection | Weak keys and weak values | Structural reuse does not cache an admission result |
+| Parent state -> dependent child/child-state table | Weak key, value is child state | Do not label the value weak; child state has no direct owner field |
+| Gerbil module registry -> context | Strong runtime root | Absence from a closure census does not mean the context is unretained |
+| Reader -> imported contexts / prepared source guards | Strong and source-owned | Do not clear runtime bindings, imports or promises as a memory shortcut |
+
+Producer sources are =object.ss:337,426=, =object-state.ss:6-17= and
+=slot-layout.ss:7= in the candidate. Installed Gerbil's
+=expander/module.ss= registers contexts, while =expander/core.ss= defines
+their binding tables. These are source observations, not GC dominator proofs.
+
+* Assurance allocation
+
+[[file:20.04-payload-ownership.sysml][Payload ownership]] assigns conditional table-value projection and identity
+accounting to Lean. =PayloadSharing.tableValueRetained= distinguishes strong,
+weak-key, weak-value and weak-both policies. =keyLivenessMonotone= preserves
+the conservative liveness condition; =weakKeyIsNotWeakValue= rejects the
+incorrect inference that a weak-key table has weak values.
+
+This model does not prove the installed collector's ephemeron/finalization
+semantics. It cannot justify deleting any source dependency or infer exclusive
+heap bytes. QNT's existing =ReadRetention= family owns callback/source changes,
+both requirements, parent isolation and unselected laziness. No duplicate GC
+or structural QNT model is introduced.
+
+* Corrected measurement
+
+=t/qualification/retention/payload.ss= distinguishes actual Gambit tables
+from arbitrary weak tables. It reads the installed representation's flags and
+entry count without hashing, iterating entries, rehashing or invoking a slot.
+Unknown backing capacity stays unknown; zero measured backing slots must not
+be reported as zero storage. Private process-global registries not reachable
+from the recorded closure captures remain outside this projection.
+
+The preceding qualified 16/32 run found 395/411 distinct expander contexts and
+207,231/207,311 direct bindings. Thus the large captured binding universe is
+mostly shared; charging it once per module is incorrect. Four strong and ten
+weak-key table identities occurred at both sizes. Constant container count
+alone cannot establish constant entry count or capacity.
+
+At 32 modules, the covered environment union was 11,811,416 body bytes:
+5,325,400 string, 1,903,968 vector, 1,918,408 structure, 1,395,808 pair and
+1,115,552 closure bytes, plus 152,280 receiver-shell bytes. These categories
+are one identity union, excluding the declared frontiers and VM overhead.
+They are not exclusive ownership or a whole-VM scale bound. The 4,645
+self specifications are distinct, not permission to merge their receivers.
+The 16->32 covered-body increase is 3,097,220 bytes; neither this difference
+nor whole-VM live bytes can be extrapolated into a ten-thousand-module pass.
+
+* Repair decision
+
+Retain the existing production constructor lowering to runtime bounded
+=prototype-map= storage and persistent snapshot sharing. Validate it against
+the newer producer's demand-filled fixed-layout implementation rather than
+replacing it with a new Core cache. Do not silently opt every receiver into
+a second layout: ordinary cached values and layout cells have different costs.
+
+The next material repair requires a demonstrated producer-owned strong path
+whose payload is redundant. Large shared compiler contexts, weak table names,
+container counts and equal mutable strings do not supply that proof. No
+admission verdict, read edge or observer delivery may be removed to meet a
+memory target. The 2 GiB gate and all time limits remain unchanged.
+
+* Latest producer qualification
+
+On the =63100a3= candidate plus the preserved local producer changes, runtime
+representation tests and the existing 16/32 census pass through =just test-file=
+with MODULE-OK, HARNESS-OK and final OK. The new table-entry observation finds:
+
+| Measurement | 16 | 32 |
+|-------------+----+----|
+| Strong-table identities / entries | 4 / 497 | 4 / 512 |
+| Weak-key-table identities / entries | 10 / 15 | 10 / 15 |
+| Captured expander contexts / direct bindings | 395 / 207,243 | 411 / 207,323 |
+| Original dependency records | 6,330 | 11,274 |
+| Direct read receivers | 757 | 1,269 |
+| Covered environment body bytes | 8,714,844 | 11,812,064 |
+| Cold query wall / CPU (ms) | 3,221.550 / 3,169.404 | 4,370.593 / 4,335.449 |
+| Hot query wall / CPU (ms) | 73.795 / 73.619 | 133.937 / 133.663 |
+
+Hot queries have zero additional role expansions and reauthenticate their
+sources (106 / 170 physical reads). At this measured frontier, weak-key
+entries do not grow. The original records and receiver/specification captures
+do grow. This narrows the next ownership investigation; it does not identify
+an exclusive leak, account for process-global registry capacity, or license
+dropping any of those records. Table backing capacities remain unknown.
+
+Lean's scoped PayloadSharing build passes 105 jobs. Existing ReadRetention
+QNT qualification passes all seven gates, including the expected negative
+counterexamples. These are structural/temporal results, not measurements of
+collector reclamation or proof that the 2 GiB capacity goal is closed.
+
+The real Gitea/PostgreSQL publication suite also passes all eleven Cases,
+including the existing parent-cache, competing requirements, source-change
+and lazy-branch controls. The default Harness reports all three success markers
+and no Case/Check/Harness or heap/stack failure marker. The original runtime
+worktree and Core dependency pin were not replaced. No commit, push or
+ten-thousand-module test was run.

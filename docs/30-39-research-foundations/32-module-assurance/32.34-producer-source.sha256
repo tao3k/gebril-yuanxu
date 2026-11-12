@@ -1,0 +1,6 @@
+35b62ce31b2cb2a33d3be4cae96682c949f81d18270afe3c090780f123ebbc0c  ../.gerbil/pkg/github.com/tao3k/gerbil-poo/object.ss
+720d57b1848f830a734426cbc2369094b4adc535ba99dbf601a113bef9adc5f6  ../.gerbil/pkg/github.com/tao3k/gerbil-poo/object-state.ss
+8e45c3dc17172b9d65f2bfad5c40f32c7bf479fb7fbd66661097af01a4657d60  ../.gerbil/pkg/github.com/tao3k/gerbil-poo/read-route.ss
+38091191369bda10ec8f14bf22da8d1e7126cc1385cadb281ab9c27e8e6fb8cd  ../.gerbil/pkg/github.com/tao3k/gerbil-poo/slot-observation.ss
+f869564e0b62d68c245116e5374e39ca26defc40a900bc6faa36d60a5f1c717f  /opt/homebrew/Cellar/gerbil-scheme@0.19/0.19.20261009110849.1cfb032.patch618d76f9eb72/1cfb032/src/gerbil/runtime/mop.ss
+9c16a1878b6c820ce0ababde46dc181a61b4713d06857957177c60e828e267b1  /opt/homebrew/Cellar/gerbil-scheme@0.19/0.19.20261009110849.1cfb032.patch618d76f9eb72/1cfb032/src/gerbil/runtime/table.ss

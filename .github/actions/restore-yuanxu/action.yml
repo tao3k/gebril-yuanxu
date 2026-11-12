@@ -1,0 +1,17 @@
+name: Restore the built Yuanxu package
+description: Activate the pinned compiler and restore this run's immutable package build.
+inputs:
+  artifact:
+    description: Build artifact produced by this platform's build job.
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: ./.github/actions/setup-gerbil
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: ${{ inputs.artifact }}
+        path: ${{ runner.temp }}/yuanxu-build
+    - name: Restore the package build
+      shell: bash
+      run: tar -xzf "$RUNNER_TEMP/yuanxu-build/package.tar.gz" -C "$GITHUB_WORKSPACE"

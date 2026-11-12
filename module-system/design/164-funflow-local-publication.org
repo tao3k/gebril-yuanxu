@@ -1,0 +1,264 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Funflow Local Publication with Complete Defaults, Scopes, and Path Refinements
+#+date: [2026-10-15]
+#+property: STATUS local-runtime-publication-implemented-loader-not-connected
+
+* Interface comparison and implementation scope
+
+The later [[file:164-funflow-public-configuration-contract-design.org][public-configuration redesign]] specifies a separate target schema
+and selected-Check policy. This document remains the actual local implementation
+record: its fixed Check membership and current defaults are not silently changed
+by that design.
+
+The local publication follows the decision from the comparison of upstream
+maintenance and downstream authoring. It uses bounded =use-module= and the
+existing path slots. This path bypasses =module-owner-export= and Loader,
+issues no source authentication evidence, and uses the existing configuration
+syntax. [[file:164-module-interface-comparison.org][Upstream and downstream interface comparison]]
+
+The default module =interface.ss= re-exports the local value. Bootstrap and
+focused tests may import the precise =runtime-scope= owner. Both paths refer
+to the same module identity and semantics.
+
+* Implemented module scope
+
+Static imports bring in prototype owners and factory definitions. Evaluation of
+native getters and construction of their objects are lazy. The full product
+interface still has its existing static dependencies. This implementation
+provides no scale result for source loading across thousands of modules.
+
+#+begin_src scheme
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+;;; Local runtime publication. SourceRef is metadata, never authentication.
+(import (only-in :clan/poo/object .def .o)
+        (only-in :yuanxu/module-system/source/objects
+                 make-yuanxu-module-local-source yuanxu-module-source-ref?)
+        (only-in :agentic-ai-lab/modules/funflow/config-prototypes
+                 funflow-check funflow-pipeline)
+        (only-in :agentic-ai-lab/modules/funflow/profiles/gerbil-scheme
+                 make-gerbil-scheme-ci-profile))
+(export FunflowModule. Funflow make-funflow-scope)
+
+(.def FunflowModule.
+  source: #f
+
+  prototypes:
+  (.o check: funflow-check
+      pipeline: funflow-pipeline)
+
+  ;; Shared-slot capture is POO: values come from the outer receiver.
+  ;; This view deliberately has no profiles slot and no publishing parent.
+  prototype-scope:
+  (.o (source) (prototypes))
+
+  profiles:
+  (.o gerbil-scheme:
+      (make-gerbil-scheme-ci-profile prototype-scope)))
+
+(def (make-funflow-scope source-handle)
+  (unless (yuanxu-module-source-ref? source-handle)
+    (error "Funflow local publication requires a SourceRef" source-handle))
+  (.o (:: @ FunflowModule.)
+    source: source-handle))
+
+(def Funflow
+  (make-funflow-scope
+    (make-yuanxu-module-local-source "modules/funflow")))
+#+end_src
+
+=(source) (prototypes)= in =prototype-scope= captures shared POO slots.
+Demanding this view captures the source handle and prototype view from the
+effective outer module and avoids shadowing by same-named inner slots. The
+view excludes =profiles= and has no full Module parent. It and the full Scope
+are distinct native objects that share one source handle and prototype view.
+Object extension grants no authentication authority or sandbox isolation.
+
+* Complete upstream Profile factory
+
+The factory depends on Core's bounded scope and POO. It provides an internal,
+pure constructor and keeps =runtime-scope= downstream of its imports. User
+configuration remains data, with no new procedure-valued slot. Profile, Check,
+and Pipeline remain native objects. The owning scope retains their source
+identity without minting separate loading evidence for each object.
+
+#+begin_src scheme
+;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+;;; Runtime default Profile construction, with no import of the publishing scope.
+(import :yuanxu/profile-composition/selection-syntax
+        (only-in :clan/poo/object .o .get))
+(export make-gerbil-scheme-ci-profile)
+
+(def (make-gerbil-scheme-ci-profile prototype-scope)
+  (use-module prototype-scope as ff
+    (.o
+      build:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'build
+        profile-ref: 'ci/build
+        command-vector: '("gerbil" "build")
+        artifact-outputs: '(build-log)
+        cache-intents: '(gerbil-build-cache)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        durable-task-id: 'task/build
+        action-class: 'idempotent
+        artifact-retention: 'project-retained)
+
+      test:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'test
+        profile-ref: 'ci/check
+        command-vector: '("gerbil" "env" "./unit-tests.ss")
+        artifact-outputs: '(test-receipt)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        dependency-refs: '(build)
+        durable-task-id: 'task/test
+        action-class: 'idempotent)
+
+      package:
+      (.o (:: @ (.get ff prototypes check))
+        check-name: 'package
+        profile-ref: 'ci/check
+        command-vector: '("gerbil" "env" "./unit-tests.ss")
+        artifact-outputs: '(dependency-graph-receipt)
+        result-protocol: '(read :lines)
+        runtime-mode: 'manifest-handoff
+        dependency-refs: '(test)
+        durable-task-id: 'task/package
+        action-class: 'compensatable
+        compensation-refs: '(cleanup/package-artifacts)
+        artifact-retention: 'release-retained)
+
+      pipeline:
+      (.o (:: @ (.get ff prototypes pipeline))
+        pipeline-name: 'default
+        checks: (list build test package)
+        metadata: '((scenario . funflow-cicd)
+                    (authoring-style . gerbil-poo))))))
+#+end_src
+
+The factory preserves all 31 explicit attributes of the original build, test,
+and package Checks, along with the Pipeline configuration. The package Check
+retains the same default command as the test Check. =checks= uses lexical
+bindings from the outer slots. Each receiver can resolve its own values even
+with the parent's list cached, and the caller need not extract or reinsert
+the list.
+
+* Complete local downstream example
+
+This example uses the available local objects. A future domain Scenario can
+supply the same defaults for users to inherit and refine when CICDScenario
+and the complete CompositionContract are available. The existing user-root
+source-role admission policy still applies.
+
+#+begin_src scheme
+(import :yuanxu/object-syntax/path-slots
+        :yuanxu/profile-composition/selection-syntax
+        (only-in :clan/poo/object .get)
+        (only-in :agentic-ai-lab/modules/funflow/runtime-scope Funflow))
+
+(.def ProjectCI
+  funflow: (use-module Funflow as ff (.o (:: @ ff))))
+
+(.def (ReleaseCI @ ProjectCI)
+  funflow.profiles.gerbil-scheme.build: =>.+
+  {cache-intents: '(project-gerbil-cache)
+   artifact-outputs: '(release-build-log)}
+
+  funflow.profiles.gerbil-scheme.test: =>.+
+  {command-vector: '("gerbil" "env" "./project-tests.ss")
+   artifact-outputs: '(release-test-receipt)}
+
+  funflow.profiles.gerbil-scheme.package: =>.+
+  {command-vector: '("gerbil" "build" "release")
+   artifact-outputs: '(release-bundle)}
+
+  funflow.profiles.gerbil-scheme.pipeline: =>.+
+  {pipeline-name: 'release-ci})
+#+end_src
+
+The scope declaration expands to a hygienic =let= that evaluates the source
+once, preserves object identity, and performs no source discovery. =Funflow=
+and =funflow:= have distinct names. Native lexical scope controls lookup.
+The shared path prefix lowers to a single native
+=funflow/profiles/gerbil-scheme= refinement with ==>.+=, retaining all four
+leaf methods. [[file:164-funflow-cicd-user-authoring-design.org][Complete native expansion]]
+
+* Demand order and self-reference
+
+| Access | Local evaluation | Work kept outside this access |
+|--------+------------------+------------------------------|
+| import runtime-scope | Static prototypes, factory definitions, SourceRef metadata, and the root object | Gerbil Profile construction and command execution. Static files are imported. |
+| bounded use-module | Check =object?= and bind the same native Scope | Traversal of source, prototypes, and profiles |
+| prototypes.check | Prototype view and existing Check prototype | Profiles and the Profile factory |
+| profiles | Lazy directory object | Construction of the =gerbil-scheme= Profile |
+| profiles.gerbil-scheme | Prototype-only view and Profile object | Construction of build, test, package, and Pipeline or enumeration of other Profiles |
+| gerbil-scheme.build | This Check and its required prototype | Evaluation of other Checks |
+| pipeline.pipeline-name | Pipeline and its required prototype | Evaluation of =checks= |
+| pipeline.checks | Three Checks from the effective outer Profile | Command execution. Ordinary attributes still evaluate on demand. |
+| Existing list adapter | Read requested fields and project them into the existing check-map | Source admission, plan execution, and Session execution |
+
+The upstream factory receives only =prototype-scope=. Requesting =profiles=
+from that view fails with the native missing-slot diagnostic, closing that
+self-reference path. The full Module can still publish the Profile after the
+failure. This structural boundary applies to the default dependency graph.
+Recursion in arbitrary custom getters still needs general diagnostics. Loader
+cycle detection, concurrent loading, and retry handling remain future work.
+
+* Local verification and scope
+
+Eight tests exercise the real Funflow prototypes and factory. They verify
+prototype/Profile separation, deferred Check and Pipeline construction, source
+handle identity, failure of prototype-only self-reference, complete defaults,
+final values and =eq?= identity after four refinements on a warm parent, and
+warm, parent, and sibling isolation. They also verify that the existing list
+adapter reads refined artifacts and compensation references. A Profile can
+be inherited and reused independently of a Scenario.
+[[file:../../../t/funflow-runtime-publication-test.ss][Local publication tests]]
+
+The static prototype declaration macro now has its own owner, separate from
+the authoring helper that also contains selection. The previous owner
+re-exports the same binding and Funflow bootstrap imports the precise owner
+directly. Four existing prototype and direct, downstream, and error Pipeline
+regressions cover existing consumers.
+[[file:../../profile-composition/module-prototype-syntax.ss][Prototype declaration macro]]
+
+These are worktree source tests using pinned gerbil-poo
+=099b381588360a8a49fd772f666a1a00351366f5=. SourceRef supplies metadata for
+local publication. Authentication, revision and currentness checks, full
+domain Contract admission, directory indexing, and Loader integration remain
+outside this path. The full =module-owner-export= and Generic provider bridge
+remains future work. Published-package, runtime AOT, and remote CI
+qualification are separate.
+
+** Verification record
+
+| Independent local source lane | Passed cases |
+|-------------------------------+--------------|
+| Funflow local publication | 8 |
+| Existing prototype, direct, downstream, and error regressions | 4 |
+| Public Interface and native export identity | 3 |
+| Core bounded scope, path, and Bundle regressions | 24 |
+| Core CLOS declarations and method bundle regressions | 56 |
+| Total | 95 |
+
+Running the public Interface suite in the same process as other product source
+suites triggered the existing =YuanxuDebugMemoryAnomaly=. The failure logs
+remain in the temporary qualification directory. The three public suite tests
+passed in a separate process. The four other product regressions also ran
+separately. The existing memory policy and thresholds applied throughout.
+These runs show that source test process composition affects the guard.
+Performance and memory behavior at scale remain unqualified.
+
+New and modified modules, the public Interface, and tests passed =gxc -S=.
+That gate checks Scheme and SSI source compilation. Runtime C and AOT linking
+require separate qualification. The document's Scheme blocks passed reader
+checks. The full source-owner, Contract, and Loader proposal remains outside
+that evidence.

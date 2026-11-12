@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.18 Guarded Test Precompilation and Harness Execution
+#+language: en
+#+date: [2026-11-08]
+#+property: STATUS historical-superseded
+
+* Current boundary
+
+The runtime precompilation/=.run= facade described in the topic modules is
+retired. Ordinary =t/= inputs go directly to the installed Gerbil test tool;
+it owns directory and Suite discovery. =tests.compile=, =tests.run= and
+=tests.for-directory= are removed, along with the product batch driver.
+Build specifications and issuance remain at the independent build entry.
+See [[file:13.28-managed-dependency-and-activation-policy.org][13.28]] for the current ownership boundary.
+
+These modules retain the superseded experiment and its evidence; they do
+not define supported APIs or qualify the current implementation.
+
+* Topic modules
+
+| Topic | Document |
+|-------+----------|
+| Official Harness publication and source custody | [[file:13.18-guarded-test-precompilation/01-official-harness-publication.org][Read]] |
+| Export batching and original integration | [[file:13.18-guarded-test-precompilation/02-export-batching-and-original-integration.org][Read]] |
+| Build, issuance and focused consumer qualification | [[file:13.18-guarded-test-precompilation/03-build-and-issuance-boundaries.org][Read]] |
+| Same-receiver measurements and cross-process reuse | [[file:13.18-guarded-test-precompilation/04-runtime-and-cross-process-reuse.org][Read]] |
+| Cache ownership and forward discovery | [[file:13.18-guarded-test-precompilation/05-cache-ownership-and-forward-discovery.org][Read]] |
+
+* Maintenance
+
+Update the owning topic module. Keep this file as the short routing entry.
+Keep topic files below 1,000 lines; split by contract or owner before adding more experiments.
+Preserve rejected candidates and incomplete receipts with their original scope;
+a historical result does not qualify the current implementation.

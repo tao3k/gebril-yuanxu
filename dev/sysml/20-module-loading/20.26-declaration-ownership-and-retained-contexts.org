@@ -1,0 +1,367 @@
+#+title: 20.26 Declaration Ownership and Retained Contexts
+#+language: en
+#+filetags: :modules:ownership:reflection:research:
+
+* Question and source authority
+
+The runtime scope migration removed obsolete value-admission adapters but reduced
+the 256-module live measurement by only about 1%. It did not close the principal
+retention problem. The next step must distinguish permanent dependency support,
+runtime interpreter contexts and temporary preparation actions.
+
+On 2026-10-29, gerbil-poo PR 13 was checked at
+=22e83da917744cf8f52c2e1c1879ef46183c107c=, thirteen commits after the preceding
+=a3f197f= cohort. Source references below are fixed, not moving branch links:
+
+- [[https://github.com/tao3k/gerbil-poo/commit/08595ef5cdbe7a8e89b0980e28336e417c6f5e82][Common-constructor declaration source registration]].
+- [[https://github.com/tao3k/gerbil-poo/commit/d825c05157db644b43e1d8fdf4a44803ee421bc8][Complete C3 Type preparation before definition effects]].
+- [[https://github.com/tao3k/gerbil-poo/commit/ef984c431e7256c26a35337f669a53800be4aff9][Owned parent snapshots and checked topology setters]].
+- [[https://github.com/tao3k/gerbil-poo/commit/a615f78d7545c684fc4c59ad02a288ca8005e1e4][Finite replay-root admission before projection construction]].
+
+The qualification checkout integrates the existing three-file protection delta
+cleanly: =io.ss=, =object.ss= and =slot-observation.ss=, 43 insertions and 15
+deletions. This remains a development cohort, not a published dependency pin.
+Its object digest is
+=54306fd1c5d6d689c16ec9b807726c33ea40d64a1047238c5af69ee46459d5cd=;
+its prototype-map digest is
+=454c64afa14b051bb85212da7f45c8a1ab594fbe0ae9f4b1687bcd630dca2bdb=.
+The installed Gerbil compiler/runtime source is unchanged.
+
+* What the runtime implementation now owns
+
+** Declaration source edges belong to construction
+
+=:init!= registers every direct declaration descriptor as an actual source.
+This also covers =.cc= and =.+=, which use the same constructor. Core must not
+introduce a parallel descriptor-source registry to repair these paths. Descriptor
+identity remains necessary even if two descriptors have equal fields.
+
+Before any =.slot.define= hook, =prepare-declaration-specifications= resolves
+and registers actual Type identities across the whole C3 family. Only then are
+the per-catalog scratch receivers populated in order. Its one-shot actions are
+cold preparation costs; they are not stored as reusable approval or pending
+actions on the receiver. Counting every observed preparation closure as a live
+retained closure would therefore be wrong.
+
+This establishes a concrete invalidation path, not callback purity. Resolution
+may have effects or fail; those errors precede definition effects. Runtime tests
+must cover later-C3 Type changes and failed preparation without a published
+partial method table.
+
+** Public parent inspection owns its spine
+
+=object-supers= returns an owned list while preserving parent object identities.
+The checked setter installs topology through the normal invalidation boundary;
+runtime internal construction/lookup uses the private canonical list. Core's
+existing parent traversal must not assume that repeated public inspection is
+allocation-free or that mutating an inspection result edits topology.
+
+This is not permission to replace all Core reads with raw metadata access.
+Any such change must preserve callback ordering, revision fences and original
+parent occurrences. The number of allocated inspection pairs is distinct from
+retained record/receiver ownership. No Core raw-parent fast path is added here.
+
+* A rejected retention hypothesis
+
+=reader-evaluation-observers= records the exact context/body after successful
+evaluation. =release-reader-expansions!= clears matching private context code,
+then calls =hash-clear! completed=. Therefore this table is not, by itself, a
+remaining owner of all successfully released expanded bodies. Removing the
+table or weakening its exact-program/evaluation check would fix no established
+leak and could authorize premature release.
+
+The remaining runtime context, imports, bindings, phase data and initializer
+promise are deliberately preserved. Deferred role resolution reuses those
+contexts and the same confined import/source registry. A source-body count or
+whole-VM byte delta does not establish that these structures can be deleted.
+The existing publication regression, including exported macros and preserved
+compiler-tool contexts, remains the concrete release boundary.
+
+* Assurance allocation and acceptance boundary
+
+SysML =DirectCaptureOwnership= and =ImportedEntryLifetime= continue to own the
+research questions. Lean reuses =snapshotReflectionRoundtrip=,
+=snapshotParentsExact=, =snapshotPreservesEveryOccurrence= and
+=privateCatalogFoldOrder=; do not create a second immutable-list model.
+These theorems do not prove Gambit GC liveness or mutable Scheme non-aliasing.
+
+Existing ReadRetention Quint cases own mutation/return boundaries, both
+requirements, lazy branches and receiver isolation. Runtime inheritance-hook,
+declaration-index and issued-read tests own the concrete setter, registration,
+definition-order and finite-root correspondence. A new producer digest must
+not be installed in the source-bound proof gate before runtime qualification.
+
+Build preparation and module loading are separate measurements. First qualify
+the new producer, then rebuild its Core consumers through the original entry,
+then repeat the existing bounded census and real Gitea/PostgreSQL controls.
+The old source-bound receipts remain tied to the old cohort until replaced by
+new evidence. No approval cache, second Loader, automatic dependency-pin update,
+timeout increase, or ten-thousand-module rerun follows from this source audit.
+
+* Build qualification record
+
+The original 300-second runtime =just build-core= gate timed out (exit 124):
+302.42 s wall, 299.49 s user and 67.54 s system. Its log contains 217 source
+compile announcements; announcements are not proof of completed artifacts.
+This clone gives unchanged sources fresh filesystem timestamps, unlike the
+preceding in-place cohort update, so this is not a comparable incremental
+benchmark or evidence of a module-loading regression.
+
+The same official Make entry then completed incremental recovery in 33.34 s
+wall / 36.76 s user / 4.93 s system, under the unchanged 300-second limit.
+No inputs were removed, timestamps rewritten or limits increased. This permits
+subsequent runtime qualification of the resulting cohort; it does not turn the
+failed cold build into a passing cold-build receipt. Runtime and Core consumer
+results must be recorded separately before changing proof-source bindings.
+
+The first runtime issued-read gate printed all twenty completed Cases and Harness
+success but exceeded its original 90-second process deadline: exit 124, 90.22 s
+wall / 5.10 s user / 1.02 s system. Those markers are not external acceptance.
+That log does not timestamp individual lines, so it cannot establish how much
+of the wait preceded the Harness versus followed its final output.
+
+A sequential repeat kept the exact Just/official test command, fixed 90-second
+limit and assertions, adding an external stdout timestamp filter only. It
+completed normally: Harness at 3.646 s, final OK at 5.646 s, command completion
+at 8.109 s; the inner command reported 7.11 s wall / 5.34 s user / 1.01 s system.
+This supplies a successful runtime functional receipt but neither repairs nor
+explains the first whole-process timeout. Do not label the latter a proven
+shutdown hang, host-load effect or sandbox-only problem. Upstream's fixed
+[[https://github.com/tao3k/gerbil-poo/blob/22e83da917744cf8f52c2e1c1879ef46183c107c/doc/performance/test-loading-summary.org][CLI loading study]]
+also distinguishes preparation, Harness and natural exit; its measurements are
+reference evidence, not results of this local run.
+
+Runtime inheritance-hook (21 Cases) and declaration-index (25 Cases) focused
+gates then completed normally in 10.28 s and 4.60 s respectively. Together with
+the successful issued-read repeat, these are 66 runtime Cases, not upstream full
+CI or Core consumer acceptance. Core is rebuilt before its tests because the
+public parent accessor changed semantics even though the parent objects retain
+their identities; old compiled accessor inlining cannot serve as that check.
+
+* CPU policy correction and timing scopes
+
+The validation command had explicitly supplied =GERBIL_BUILD_CORES=2=.
+Separately, the product Justfile defaulted to two workers and Core capped its
+automatic default at four. These are not host-derived defaults. Both Justfile
+environment modules now use =env_var_or_default("GERBIL_BUILD_CORES",
+num_cpus())=: this host evaluates to 12; explicit caller/CI budgets still win.
+Tests remain serial and their heap/time fences are unchanged. Validation
+commands no longer inject the two-worker override and Core builds use =just
+build= to obtain that policy.
+
+The Core rebuild started under the old two-worker override ended at its own
+300-second build-script fence, surfaced by =gerbil build= as process status
+31744 (child exit 124). The outer 600-second diagnostic limit did not relax
+that inner fence. This failure is retained. Subsequent twelve-worker incremental
+recovery is a different measurement, not proof of a faster twelve-worker cold
+build. The 3.646-second signed-read Harness timestamp excludes both runtime and
+Core library builds and must never be presented as their end-to-end duration.
+
+The twelve-worker =just build= incremental recovery completed successfully in
+29.79 s wall / 19.53 s user / 2.95 s system. It emitted no source compile
+announcements: this is hot runtime-Make/currentness work, not a twelve-worker
+cold compilation benchmark. No 300-second fence was changed. Official
+=std/make.gerbil-build-cores= was checked in the installed Gerbil source: its
+default path reads =GERBIL_BUILD_CORES=. The build entry does not install a
+second explicit worker count.
+
+After runtime qualification and the successful Core rebuild, the object-source
+bindings in SelectionReplay and PayloadSharing were advanced to the qualified
+object digest above. Their selected Lean build completed successfully (114
+jobs); no parallel model was added. The actual Gitea/PostgreSQL publication
+consumer then passed all eleven Cases through the default Just test entry with
+all Harness markers. This preserves the separate source/producer/runtime/model
+claims; the dependency release pin remains unchanged because the three local
+protection deltas are not published as that upstream commit.
+
+* Current bounded retention evidence
+
+The existing 16/32 census passed after rebuilding against this cohort; no new
+measurement runner or retention cache was introduced. These are Graph-cold/hot
+windows inside the same test process, not cold compilation timings:
+
+| Modules | Cold wall / CPU s | Hot wall / CPU s | Cold / hot physical reads |
+|---------+-------------------+------------------+---------------------------|
+| 16 | 4.149714 / 3.613867 | .074193 / .064302 | 5350 / 106 |
+| 32 | 5.780490 / 5.200896 | .124763 / .121260 | 10224 / 170 |
+
+Cold expansion remained exactly two bodies per module; hot expansion was zero.
+The 32-module VM live observation was 200,008,992 bytes. The earlier imported
+16-module namespace/Graph remained live, as witnessed by weak references and
+the original cached path. That is not permission to attribute the whole VM
+difference to 32 modules or clear original dependencies.
+
+The environment-inclusive root census covered 7,667,336 / 9,750,980 body bytes
+for the 16/32 slices, excluding headers and opaque frontiers. It observed
+394/410 expander contexts and 201,036/201,116 binding entries. Those binding
+totals are not per-module independent copies: identities shared across the
+covered roots are counted once. Therefore a proposal to delete every compiler
+context table to save a repeated 201,000 bindings is unsupported.
+
+SelectionReplay source-bound Quint qualification passed all eleven cases,
+including expected broken-model counterexamples, with the actual qualified
+producer source. The successful Scenario and census gates retain source-change
+refusal, parent/child isolation, both requirements and cold unselected branches.
+No ten-thousand-module claim follows from these small diagnostics. Dominant
+retained-body ownership remains open; no speculative context pruning or raw
+metadata fast path was installed to obtain smaller numbers.
+
+** Preparation roots and validation-only replay
+
+The 16/32-owner census observed 15/31 preparation captures with
+3,450/7,130 original roots, or 230 roots per observed capture. These
+counts describe original issued roots, including roots shared between
+owners. They do not measure exclusive heap bytes. The receipt census
+also identifies per-role authoring admission receivers among the issued
+records. The closed source-only candidate reduced that census to 206 roots
+per capture and reduced the 32-owner issued identity union from 6,232 to
+5,176. It retains live Type and owner support through the original POO
+reads. The source guard and the public receipt validator keep their usual
+effect checks. The counts do not establish the dense heap or time limit.
+
+Publication admission combines three independent facts. The reader checks the
+selected source and native import context. POO authenticates the original
+ordered reads and live receivers. The Module Contract validates the candidate.
+Publication admission matches the checked receiver's owner to the selected
+source before the linker enrolls the publication. The selected Graph's final
+check covers the complete selected support.
+
+For validation without checkpoint work, Core asks the existing POO operation
+for a fixed result. It authenticates the same ordered traversal. Diagnostic
+accounting records the returned count after validation. Source or policy
+checkpoints retain protected entry and return. The publication reader delivers
+the same observer start, visit count and end events. Its native visitor only
+counted records, so a successful pass uses POO's fixed-result count between
+those events. A refusal recovers the original visited prefix in the same
+synchronous state and propagates the first failure. The equivalence in
+=PublicationReads.validation_only_same_state_needs_one_live_pass= assumes
+equal live observations within the supported serial replay. The existing
+=t/module-session-metadata-index-test.ss= checks both success and refusal,
+including an entry observer that mutates a receiver and removes itself.
+
+** Private interpreter result lifetime
+
+With the 64-owner directory fixture, retaining the admitted Module values
+while releasing eight Reader tables and guard lists freed about 0.33 MB.
+After dropping the result rows in a separate terminal probe, releasing the
+64 generated role-loader globals alone had no measurable effect. Releasing
+the 64 private Interface globals then freed 11.46 MB. That amount includes
+the reachable values and closures. Neither probe changes a live Reader or
+establishes an exclusive byte cost per object.
+
+The native wrapper still expands and evaluates the owner's declaration.
+When the stock expander proves every value reference comes from a bound
+role alias or the fixed grammar, no declaration can refer back to its
+generated Interface export. This permits the evaluator to deliver the
+same POO value to the Reader once, with the exact originating Context.
+The lazy role resolver is lexical. The temporary module promise retains
+void after the handoff, and the Reader consumes its local result before
+the independent post-evaluation check. Open and compiled declarations
+continue to use their regular Gerbil binding and export.
+
+=PublicationReads.wrapper_delivery_is_exact=, =foreign_wrapper_cannot_deliver=,
+=repeated_wrapper_cannot_deliver= and =closed_delivery_preserves_checks=
+state the result and refusal contract. They assume the owner and payload
+produced by native expansion. The Scheme tests check that concrete
+correspondence and the existing source and effect checks.
+
+** Ordered common reads in one checkpoint
+
+The 64-owner native fixture captured the original preparation and admission
+roots. Walking their signed dependency records by identity found 7,589 distinct
+records and 74,955 visits across the separate owner lanes. All 64 lanes
+contained the same 1,026 issued records. Receiver and slot equality alone
+would not establish this identity correspondence.
+
+The same-process comparison interleaved separate, batch, batch and separate
+replay of those unchanged root lists. Each measurement repeated the replay
+six times. The separate lanes took 0.930 to 0.934 seconds wall time and
+0.928 to 0.934 seconds CPU. Batch validation took 0.093 to 0.094 seconds
+wall time and CPU, and visited 7,589 records on each repeat. This is the
+existing pure POO checkpoint used for the final Graph, with source and
+owner checkpoints still inside their established boundaries.
+
+=PublicationReads.same_window_preserves_first_refusal= proves the ordered
+flattening law with a fixed authenticator. Its effect counterexample checks
+the same token before and after a changed observation and requires refusal.
+Native expansion and author callbacks keep independent validation on both
+sides. The capacity work is to reduce evidence produced by each admission
+before those checks, including shared authoring and validation support.
+
+** Maintained authoring Profile replay
+
+The 64-owner diagnostic split the original joined roots at the actual
+admission suffix. Preparation visited 58,624 records separately and 1,861
+in one native replay. Admission visited 25,931 separately and 6,193 in one
+replay. Some records appear in both stages. Each preparation contained the
+same signed =%authoring-interface= root with 728 reachable records.
+
+Six interleaved measurements repeated that exact root 256 times per lane.
+Visitor replay with a fresh spine took 0.489 and 0.610 seconds wall time.
+The validation-only primitive with a fresh spine took 0.591 and 0.614.
+With one stable spine it took 0.382 and 0.383. Changing the visitor alone
+does not establish a speedup. The maintained policy's native slot holds a
+closure over the private stable spine. It compares its token to the one
+actually observed this time. POO's original topology index owns reuse, and POO
+validates the complete record graph on every invocation.
+
+=PublicationReads.profile_checkpoint_preserves_issued_order= and
+=profile_checkpoint_keeps_fresh_refusal= model the identity match and
+rejection. Their premise is the exact signed record identity, never a
+matching receiver, slot name, or previous successful verdict.
+
+Splitting the Profile root out of each preparation lane was also tested on
+the same 64 owners. Separate Profile and remainder validation visited 60,544
+records per pass, compared with 58,624 in the original lanes. Both paths
+took about 0.71 to 0.72 seconds wall time for six repeats. Some Profile
+descendants are reachable through other preparation roots. Keep the original
+combined preparation replay and reduce evidence where it is produced.
+
+** Original root spines on the linked publication
+
+Each of 64 actual owners had 206 preparation roots. Of these, 194
+were the same signed records in the same order across all owners, with
+901 reachable native reads. Separating that entire common segment from
+owner-local roots visited the same 58,624 records as the original lanes.
+Six interleaved repeats took 0.723/0.733 seconds wall time with the
+original lanes and 0.736/0.732 seconds with the separated checks.
+
+The linked publication retains its two original spines. Its individual
+unobserved checkpoint joins them only for the native call. The selected
+Graph forwards the original two spines directly to its existing POO
+root index. Observed execution still uses preparation, admission and
+return checks in their original order. The Lean lemmas
+=PublicationReads.flatten_root_segments= and
+=segmented_roots_preserve_first_refusal= state the ordered equivalence.
+The change removes a second retained preparation spine per owner.
+
+At =3692135=, holding a copy of the former joined spine for each of the
+same 64 owners added 638,912 live bytes in the same process. Dropping
+those copies released 638,608 bytes. The preparation and admission
+native visit counts stayed identical. At 3,200 owners in the observed
+capacity run the sampled live heap was 1,286,353,768 bytes, compared with
+1,311,180,144 in the previous candidate. Both original dense Cases still
+reached the 180-second watchdog.
+
+** Initializer guard custody
+
+Transfer requires the same native Context to supply a private source input,
+owner and initialization guard. The Interface wrapper has its own publication
+return checks and forwards the original read trace. Its Context has no
+private role input or owner, so the reader omits its entry from the role
+initializer index. Actual role Contexts keep the same guard and call it at
+transfer. =SourceClosureWork.unowned_interface_has_no_initializer_transfer=
+and =owned_role_keeps_its_exact_initializer= cover the two cases.
+
+In the 128-owner local probe, each owner had one Interface entry without
+a role source or owner. Removing those 128 entries in the same process
+released 25,488 live bytes after collection. Source currentness still
+passed before the terminal part of the probe. The bounded retention census
+checks the installed rule by comparing the number of initializer entries
+with the private role Context count.
+
+In the terminal part, the same 128 publication rows held their Module
+values while the probe released their metadata guard columns and then
+their evidence references. The two steps released 4,082,016 and 3,624,528
+live bytes, respectively. Those deltas depend on release order. The
+metadata and evidence remain part of the live publication contract.

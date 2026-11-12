@@ -1,0 +1,753 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Profile support, replay and vector-route experiments
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+* Profile support, replay and vector-route experiments
+
+On 2026-11-08 the ten-thousand-module memory envelope was revised to
+4 GiB by explicit user instruction. Both the pre-import VM heap and the
+scale Case heap/live-growth limits use this value. The 180-second Case
+deadline remains in force. The existing Just and Scheme dispatchers apply
+the same per-file policy locally and in CI, and qualification receipts
+bind that policy to the checked source. Earlier 2 GiB runs below remain
+historical observations under their recorded envelope.
+
+The serial local platform qualification of =f2f7c34= used the original
+180-second Case and 2 GiB VM envelope. Dense selection enumerated the
+10,000 names in 1.37 s. Before the first graph timed out, 5,592 candidates
+reached admission. The 33,552 metadata checkpoint invocations accounted for
+32,179,816 completed native record visits and 80.22 s CPU. The checkpoint
+count includes all recorded lanes, so it is not a count of effect-free
+duplicates. Keep the before/after checks at native expansion and author
+effects distinct when reducing their support.
+
+The local reproduction of the Actions checkout =52809f5= used its native
+build, original dependency pin, two build workers and a temporary directory
+outside any checkout. Both 10,000-owner Cases reproduced the original
+failure. Dense declaration reached the 1,400-owner sample at 2,024,429,584
+heap bytes, then refused during graph admission. That phase measured
+150.43 s elapsed and 135.93 s CPU. Dense selection enumerated the namespace
+in 1.42 s and refused in the first graph after 173.84 s elapsed and 156.11 s
+CPU. These are the original checkout results, separate from =f2f7c34=.
+
+A closed native-capture candidate forwarded the same issued Profile root.
+The real source-admission Case confirmed its identity, and the authoring
+and reader-effect Cases passed. In the interleaved 20,000-call comparison,
+the original warm acquisition took 21.77–22.10 ms CPU and native capture
+took 29.58–57.24 ms CPU. Retain the original acquisition in production.
+The capture path can be reconsidered at a producer boundary that benefits
+from eliminating the temporary observer.
+
+An outer Profile =.validate= override can also construct and retain an
+enrolled receipt inside the active region. The probe emitted a read on
+that receipt while the existing inner Record and Slot guards remained
+closed. Projection therefore needs actual producer custody as well as
+receipt-method guards. An enrolled receiver and a closed region alone
+cannot establish non-escape.
+
+The Interface constructor now checks the actual delivered outer Profile
+validator in the existing owned-read scope. In the native Case the original
+path could invoke a replacement without consulting the guard. The revised
+path retains the original refusal before the callback, or invokes the same
+selected callback once after successful entry.
+
+The native read census of 64 real owners found 206 preparation roots and 916
+reachable records per owner. The same issued Profile root reached 728 records
+in each preparation. Of those, 698 were reachable only from that root. The
+other preparation roots reached 218 records including 30 also reached from
+the Profile. This separates shared record identity from independently checked
+currentness. Any compact representation must preserve the native Profile
+refusal at each effect boundary. Lean
+=PublicationReads.profile_omission_can_hide_native_refusal= covers the case
+where the rest of the preparation still authenticates.
+
+The native full/residual/residual/full replay comparison used the same 64
+owners and 512 checkpoints per lane. The full path visited 468,992 records
+and took 1.163–1.245 s CPU. The diagnostic residual path visited 111,616
+records and took 0.278–0.296 s CPU. It omits the Profile and supplies a cost
+counterfactual only. Removing the actual Profile token from its receiver's
+native read table made the complete checkpoint refuse while the residual
+checkpoint still succeeded. Restoring the token restored the complete check.
+
+An independent native comparison retained the entire Profile and nested the
+existing protected checks for the prefix, shared singleton root and suffix.
+Across 512 calls per lane the split visited 484,352 records, compared with
+468,992 in the full path. The extra 15,360 visits are the 30 overlapping
+records per checkpoint. CPU was 1.015–1.019 s for the split and 0.997–1.009 s
+for the original. Sharing the traversal shape this way did not lower the
+authentication cost. The native frames also return in reverse lane order.
+=PublicationReads.nested_lane_return_can_change_first_refusal= models why
+the split cannot be adopted solely on matching results for unchanged inputs.
+
+The merged =b2806f4= runtime attributes the producer of this support. Its
+actual issued Profile read visits 726 records. Calling the Profile Type on
+the same stock input visits 713 records, and constructing the Interface
+visits the same 713. Checking the checked Profile's output inventory visits
+26 records on its own. The combined constructor and output check visits
+723 distinct records. In this stock sample the Type preserves the Profile
+and all seven role identities. That equality does not establish freshness
+of the Type dependencies and cannot replace their checks.
+
+Of the Profile Type's 713 distinct records, 224 belong to 14 classification
+or validation receipts. The receipts account for 210 of the 573 Type roots.
+Filtering those roots leaves the same 489 external records as filtering the
+original traversal, in a different preorder. An open native read observer
+also retained a validation receipt. After its =accepted?= slot changed, the
+full checkpoint refused and the filtered checkpoint succeeded. These are
+independent reasons to retain the issued support.
+=PublicationReads.projected_private_read_window= requires the exact retained
+preorder and live authentication of omitted reads on both sides of an effect.
+Any production reduction must establish these premises at the producer.
+=OwnedReads.retained_replay_exact_support= separates support from order.
+When the projected root list contains every retained record, its native
+traversal has exactly that support if and only if every signed dependency
+of a retained record is also retained. A retained parent can otherwise
+reintroduce a removed record. The original external preorder and
+freshness remain independent requirements.
+
+A subsequent probe retained the actual Profile validation and used
+POO's issued traversal to order its external frontier. The recorded
+region owned 32 receivers. Its 720 native records included 224 owned
+receipt records. Replaying the remaining 496 records in their original
+external preorder took 0.536–0.537 s CPU per 512 checkpoints, compared
+with 0.778 s for the complete trace. A separate value-only probe
+retained 313 records, but incorrectly accepted when the validation
+evidence Type refused. Its numbers only bound the possible savings.
+
+Replacing the evidence Type's =.element?= method provided a second
+escape channel alongside explicit slot observers. The method retained
+an enrolled receipt without opening the recorded region. Mutating that
+receipt made the full replay refuse while the external-only replay
+accepted. The evidence predicates now resolve the actual method once
+and run the existing open boundary before handing a receipt to a
+replacement. Lean =PublicationReads.replacement_evidence_method_cannot_outrun_refusal=
+and the Scheme evidence ownership suite cover this dispatch point.
+The native Record also calls the classification Type through its Slot
+check. While running the maintained Record predicate in an owned region,
+its existing read observer checks the actual classifier method delivered
+by POO. It invokes the same open boundary for a replacement before the
+method can receive the receipt. Earlier field rejection and method
+resolution retain their original order, as modeled by
+=PublicationReads.checkNestedEvidence=. A second native probe replaced
+the Slot =.slot.check= method and received the whole validation Record
+while the classifier-only guard remained closed. The same delivery check
+must cover the actual Slot method selected by native dispatch. Lean
+=PublicationReads.replaced_slot_method_cannot_expose_evidence= puts this
+check before the nested classification decision. Further projection requires
+non-escape for the complete producer and the original external replay order.
+
+Splitting the stock Type call at its existing Generic protocol gives 691
+reachable records for =.admit=, 178 for checking the resulting evidence, and
+two for reading its candidate. These are overlapping traversals. The
+=.admit= call already reaches 205 receipt records on 13 receivers, compared
+with 224 on 14 receivers for complete =validate=. Optimizing only the
+outer receipt consumer would leave most of the issued receipt support.
+For the stock =types= role, its public value action returns the same role
+and reaches 149 records with no receipt receivers. Its complete child
+=.admit= reaches 229 records and its acceptance check reaches 178. These
+separate native traversals overlap. A smaller private proof must retain
+the child value action and the original checks for author-contributed
+descriptors or observers.
+
+=PublicationReads.projected_stock_profile_preserves_value_and_refusal=
+specifies a success-only lane. Every child must pass its actual value
+action and classification, and normalization must preserve the supplied
+role identity. Root and child evidence acceptance require separate native
+support. Identical normalized values alone can still accompany a rejected
+receipt. A declined lane keeps the complete original refusal path. The
+runtime still needs to establish producer custody and the evidence support
+before this projection can replace the existing constructor.
+
+The Interface guard checks the delivered producer methods of the stock
+Profile, executor Contract and source role Contract. In the native effect
+control, a replacement source role =.admit= issues and retains an actual
+validation receipt. A stale entry guard refuses before the callback runs.
+A successful control observes a fresh guard before each invocation.
+This covers the selected stock descriptors; arbitrary responsibility maps
+still require custody and exact replay support before a projection can omit
+reads.
+
+An independent native control replaced the source role value Contract's
+=.validation-fields= and retained the actual normalized receiver. The
+unchanged public Interface result still passed validation, even though
+the receiver was enrolled as temporary. Guard the delivered field and
+prepared normalization methods before handing control to a replacement.
+The entry-before-effect law is
+=PublicationReads.replacement_evidence_method_cannot_outrun_refusal=.
+
+A same-process probe retained the real value action for each child and
+checked three representative receipts with the original native evidence
+Type. With both lanes in the same ownership scope it reached all 424
+unowned records of the original, but reordered them. A role-specific
+replacement predicate still refused through the full path. Filtering the
+original native preorder in the same stock sample produced exactly 424
+reachable records and exposed no directly owned values in those records.
+For 512 checkpoints per lane, this filtered order took 0.449–0.457 s CPU,
+compared with 0.759–0.764 s for 720 original records. This measures the
+available replay reduction. A sample's ownership and exact order do not
+establish continued validity of omitted records, especially when a private
+normalized receiver still has external prototype dependencies.
+
+Changing an actual retained parent role's revision made 12 private reads
+stale without exposing their receiver. Both native traversals refused first
+at =(presence identity)=. A second projection required an earlier signed
+read of the recorded generation of every external ancestor. It retained
+426 records, including two owned records without such a prefix witness.
+Native replay preserved the 426-record order and returned the same first
+refusal. =PublicationReads.projected_prefix_guarded_read_window= permits an
+omitted refusal only if a retained check before it already refuses, with
+independent premises at both boundaries. The sample demonstrates a
+candidate witness relation and does not establish producer non-escape.
+
+An independent read census through the actual guarded Interface constructor
+found the same 720-record support as direct Profile validation. Passing the
+424 externally owned records to native replay produced exactly those records
+in the original order. In a 512-checkpoint sample the original used 0.730 s
+CPU and the external projection 0.418 s. The reduction depends on the
+retained records being closed over signed dependencies.
+=PublicationReads.closed_read_selection_demands_exactly= proves that closure
+preserves the selected demand set.
+=PublicationReads.filtering_roots_cannot_hide_a_retained_signed_dependency=
+shows how a removed root remains live when a retained record points to it.
+The separate entry/return and custody requirements still apply.
+
+A narrower experiment omitted only the owned bare leaves and kept all
+derived receivers. The real source-policy Interface retained 486 of 722
+records. Against the restored original, unobserved thousand-owner
+admission used 25.80 s versus 30.01 s CPU. Observed thousand-owner Graph
+construction used 35.20 s versus 42.40 s CPU. Collected live heap for the
+observed Graph was 482,398,632 versus 482,800,248 bytes. The shared Profile
+reduction therefore saved little retained memory.
+
+The candidate removed an original observation path. A cold Graph was
+published without a slot observer. A later native read of the existing
+Graph obtained its issued Profile root and a descendant validation
+receipt. Temporarily removing that token from its receiver's read index
+made Graph admission refuse with =stale slot dependency=, at the same
+receiver revision. The compact candidate made the receipt unreachable
+through that original path. Construction-time non-escape therefore does
+not establish publication-time custody.
+=PublicationReads.later_observation_can_invalidate_private_return= records
+the separate return obligation. The production source retains the full
+Profile support and the Reader regression exercises the late mutation.
+
+A separate warm-entry probe kept all 1,183 original native records and the
+same independent return sweep. It combined issuance and live checks only
+in the first sweep and restored the original split precedence on failure.
+Interleaved 512-checkpoint blocks took 1.341–1.351 s CPU with the split and
+1.204–1.235 s with the joined entry. A later unissued token still took
+precedence over an earlier stale route. A route removed after entry still
+refused on return. The probe isolates the sweeps and does not replace
+native topology acquisition.
+=PublicationReads.fused_entry_keeps_independent_return= assumes the same
+live observations for the first sweep. Runtime integration still needs
+to justify that premise and keep the original path for protected actions.
+The ordinary Reader now passes Gerbil's existing =void= action when it
+has neither accounting nor a checkpoint body. Accounting retains the
+native visit count, and effectful actions retain the protected callback.
+On an entry refusal, a diagnostic retry can restore the split refusal
+precedence. It cannot turn a transient restoration into approval.
+=PublicationReads.diagnostic_retry_cannot_approve= models that condition.
+
+The callback-free thousand-owner attribution measured 29.38 s wall and
+29.33 s CPU for declaration admission. The Init guard ran 10,006 times,
+including 8,006 physical read attempts and 103,981,928 decoded characters.
+Its measured cost was 0.63 s CPU and wall. Native metadata replay accounted
+for 6,004 calls, 5,961,075 completed record visits and 13.53 s CPU.
+The dedicated Profile checkpoint took 1.46 s CPU over 1,000 calls.
+These are inclusive spans. In particular, a protected replay can include a
+location check. The diagnostic records the separate Init and Profile costs
+without replacing either check or installing an observer.
+
+Two independent publications of the same fixture, from separate package
+origins in one process, each had 914 reachable preparation records, 899
+shared by issued identity. All 14 Profile receipt receivers were shared.
+Each publication's admission reached 356 records, of which 269 were
+shared. Of the 87 distinct records per origin, 32 belonged to two
+publication receipt receivers. The preparation Profile is therefore a
+shared replay cost in this sample. Per-owner heap attribution must count
+distinct retained state, following =ReadRetention.shared_record_once=.
+The two-source census does not measure exclusive bytes or predict the
+thousand-owner heap slope.
+
+The fresh receipt field candidate appends =responsibility-evidence= at
+construction instead of adding it with =.cc=. Lean's
+=PublicationReads.fresh_receipt_field_preserves_order= establishes the
+ordered direct-slot law for a new field. Both native lanes produced the
+same ordered fields, passed public evidence validation and issued four
+reachable read records for the three consumed fields. Each interleaved
+block constructed 8,192 receipts. In the same interpreter mode, cloning
+took 111–117 ms CPU in the constructor-only blocks and direct construction
+took 74–75 ms. Constructing and reading the receipt took 267–301 ms versus
+250–276 ms. These blocks overlap in cost and do not shorten the read
+traversal. An initializer replacement reported no calls from the installed
+compiled constructor and one call in each interpreted lane. The mixed
+compiled/interpreted comparison was discarded. The Scheme construction
+path is unchanged.
+
+The same runtime's cold dense selection stopped at the original limit after
+5,411 candidate-read calls. The incomplete first-graph phase recorded 79.37 s
+of metadata replay, 35.33 s of preparation, 47.46 s of value admission and
+5.82 s of wrapper expansion. These spans are nested, and the counts describe
+an interrupted run. The Profile checkpoint took 8.48 s within preparation.
+Reducing the read support created by the native Type is a distinct question
+from retaining and replaying its already-issued graph.
+
+A direct-value-slot candidate for the already determined preparation fields
+passed its focused regressions. It left the thousand-owner replay count at
+5,958,069 visits. Declaration admission took 34.13 s wall and 33.57 s CPU,
+compared with 32.67 s wall and 32.42 s CPU on the earlier unchanged run.
+These were separate process runs. The candidate was withdrawn because the
+measured replay work stayed the same and the full phase showed no gain.
+
+The directory factory issues the private candidate location guard. At the
+first Reader checkpoint, an unobserved closed candidate can use POO's
+protected authentication before and after that location check and its
+leading policy check. The trailing policy and full source check still run.
+This replaces the separate preparation replay and first checkpoint replay.
+The original root spine and later checks remain available without a
+retained verdict. A raw caller callback, an observer or a preparation
+which opened the candidate retains the split path.
+=PublicationReads.directory_entry_preserves_refusal= relates the original
+and combined order. =fused_directory_entry_cannot_bless_open_return=
+keeps independent post-effect refusal in the correspondence.
+
+The local observed dense-declarations run reached 3,300 declarations before
+the 180-second Case refusal. Its sampled live heap rose from 994,483,904
+bytes at 2,100 owners to 1,352,942,152 bytes at 3,300 owners, about 299,000
+bytes per additional owner over that interval. The allocated heap was near
+its 2 GiB fence. This interval alone does not attribute the growth to one
+runtime object family.
+
+On the separate unobserved dense-selection run, the watchdog interrupted
+the 3,206th candidate read. The retained diagnostics report these inclusive
+spans. Overlapping rows must not be added.
+
+| Operation | Wall seconds | CPU seconds where sampled |
+|-----------+--------------+---------------------------|
+| Publication preparation | 40.58 | |
+| Wrapper write | 1.72 | |
+| Interface source read during expansion | 0.34 | |
+| Native wrapper expansion | 23.88 | |
+| Declaration admission | 36.37 | |
+| Source read | 16.96 | 14.30 |
+| Metadata replay | 62.18 | 54.86 |
+
+Replay had 25,642 attempts and 24,306,667 visits. The partial totals follow
+the real work up to refusal and do not qualify a completed graph.
+
+The observed Case on the same local commit recorded its duration refusal at
+180.002 seconds and returned from the Harness at about 339.5 seconds, after
+5,085 completed declarations. The Case had preserved the original failure
+at return, but a caught asynchronous interruption allowed work to continue
+in the meantime. The watchdog now attaches its existing stop to progress
+on the same owner thread. The next genuine progress report raises the
+original condition before updating the relay. Its typed diagnostic is still
+rendered after unwind. =ProcessScript.caught_stop_refuses_progress_without_advancing=
+models this refusal, and =core-test= catches the interrupt and attempts one
+more report to exercise the runtime boundary.
+
+The next representation change must distinguish an original dependency
+from a locally owned scratch leaf. The original local check covers the
+entire capture. =RootCollection.private_leaf_removal_keeps_external_reach=
+preserves reachability from the remaining original roots when each omitted
+root is dependency-free. =private_leaf_removal_keeps_first_refusal= also
+requires that the omitted entries cannot supply a later refusal in the
+original traversal. =leaked_leaf_can_change_refusal= rejects using a leaf's
+shape alone as permission to discard it. The actual producer still needs
+to establish non-escape. Until then Scheme retains every original root.
+
+The 64-owner census on the current reader measured 58,624 preparation
+visits and 25,931 admission visits when traversed independently. The paired
+frontier had 74,955 visits, including 1,026 signed identities present in every
+owner's traversal. The owner-local authoring Interface accounted for seven
+records per owner. One was dependency-free, and no external read in this
+sample had a signed edge to those seven records. Even a proved projection of
+all 448 records would remove only 0.60% of the paired traversal. A census of
+edges alone cannot certify non-escape through an author callback.
+
+A separate 256-owner probe removed 512 native path and identity aliases
+for completed, export-free Interface wrappers after building the selected
+Graph. Two collected baseline samples were 273,744,000 and 273,780,448
+live bytes. The post-removal sample was 273,780,448 live bytes. Independent
+Graph currentness and the first business scope still returned. This
+measures registry custody in that fixture. It supplies neither a useful
+live-heap saving nor a general proof that a future native lookup cannot
+demand an alias. =PublicationReads.retire_wrapper_alias_preserves_replacement=
+specifies exact Context comparison, and
+=PublicationReads.retiring_a_live_wrapper_alias_changes_resolution=
+requires independent lifetime evidence before retirement.
+
+The 16/32-owner retention diagnostic now counts the exact private
+Interface and Types Contexts in Gerbil's registry. Each owner left one
+of each, with two aliases per Context, four Interface binding entries,
+and five Types entries. No completed Context held expanded code. The
+pinned Gambit promise state showed that all observed initializers were
+resolved to void and held no thunk. The census takes the prior Contexts
+by weak identity and reads the promise state without forcing it. These
+counts bound the observed direct Context fields. They do not account for
+global bindings, compiled code or the Reader's retained closure graph.
+
+The retention observer reads the width of the Reader's existing guard
+spine. Source preparation, configuration assets and transferred role
+initializers now append through one operation that replaces the spine and
+its count together. =PublicationReads.source_guard_push_keeps_count_and_order=
+proves the same LIFO sequence and exact width. The observer still receives
+the same scalar field at the same publication boundary. In an interleaved
+same-process diagnostic, two guards per owner for 10,000 owners produced
+the same sum of reported widths, 100,010,000. Recounting used 122–144 ms
+CPU, and the stored count used 1.68–1.70 ms. This removes quadratic work
+from that observation. Declaration admission and replay still dominate
+the capacity measurements.
+
+The macOS Contracts job for =bc532c2= failed the source-admission gateway
+before the Harness started. The original 120 s preparation returned
+status 124 during full native compilation, with unrelated JsonSchema jobs
+still running. The failed log named 110 distinct compile Contexts before
+interruption. The local candidate's existing affected-Context path
+visited 382 Contexts and compiled 35. On the same pinned toolchain, its
+native preparation completed in 27.039 s, and all seven gateway cases
+completed through the regular =just test-discovered-file= entrypoint.
+This is a local qualification of the replacement plan.
+=IncrementalRoles.reverse_index_reaches_exactly_affected= identifies the
+exact-edge premise for that reverse traversal. Runtime must supply the
+actual import and prelude-owner edges. The planner falls back to full
+preparation if it cannot establish that prelude ownership.
+
+* Native replay topology and live checks
+
+On the current thousand-owner fixture, declaration admission took 39.053 s
+wall and 37.716 s CPU. Its nested native replay took 14.160 s wall and had
+6,004 calls. Gerbil wrapper expansion used 6.058 s user CPU. Branch
+construction took 0.300 s wall, independent currentness 0.492 s and scope
+after admission 7.701 s. The declaration replay sites accounted for
+1,000 calls each at =declaration-before=, =declaration-inputs=,
+=role-entry=, =role-return=, =declaration-after= and the fused candidate
+return. Each site now records CPU as well as wall time in =stages= mode.
+The default Case and its observer policy are unchanged.
+
+On the same thousand-owner phase fixture at =ced2ea5=, the admission phase
+took 42.027 s wall and 35.621 s CPU. The entry and enrolled-input sites used
+2.622 s and 2.109 s CPU, respectively, over 1,000 calls each. The native
+checkpoint suspends the caller's slot read recording, observers and prechecks
+for its action. The prepared input enrollment explicitly reads its POO
+=admit-current= slot. A native probe using real prepared source and a
+nonempty Profile checkpoint observed that the two handoffs return the same
+checker but only the ordinary handoff records its read. Replacing that
+checker makes the ordinary captured support refuse, while replay of the
+protected handoff's support succeeds.
+=PublicationReads.closed_deferred_preparation_preserves_refusal= requires
+equal live intermediate verdicts, and
+=PublicationReads.deferred_handoff_preserves_read_delivery= requires an
+empty demand trace under this primitive. The existing handoff fails the
+second premise. Leave the Scheme checkpoints in place, including the
+independent native expansion and author effect checks.
+
+The installed POO internal frame can suppress observations during its
+authentication and run the action in the original recorder. On the real
+prepared input it delivered the original =admit-current= read once and
+retained it in the caller's capture. Replacing the checker made that
+captured record stale. A peer mutation of separate protected support
+refused the native return and the caller still captured the checker read.
+=PublicationReads.recorded_handoff_keeps_reads_when_return_refuses=
+and =recorded_handoff_keeps_author_refusal_and_reads= specify the different
+roles of native return authentication and already delivered reads. This
+capability addresses read delivery only. Sharing intermediate validation
+still requires the live-state premises above.
+
+The fused candidate return joins the preparation and admission roots into
+a fresh list for one invocation. A matched diagnostic borrowed POO's
+existing cold traversal without installing its weak topology owner. Each
+alternating 384-call block authenticated 430,080 records with the same
+entry and return passes. Across two batches the ordinary path took
+1.012–1.119 s CPU and the transient path took 1.010–1.091 s. Both retained the same issued coverage,
+and the transient path refused a forged root before the action and a
+peer mutation on return. The overlapping samples show no repeatable
+CPU benefit and the
+production path remains the public POO checkpoint.
+
+For 64 actual owners, the joined preparation and admission traversal
+visited 74,955 signed reads. 50,979 followed a read of the same receiver
+without an intervening receiver or bootstrap record. This is an upper bound
+on consecutive route reuse, before checking the native storage and key
+conditions. Keep each record's issuance, key and slot-state check in the
+original order. Start a fresh route at each native pass and after every
+effect. =PublicationReads.same_route_run_preserves_first_refusal= assumes
+the exact same route result for the run. =shared_route_keeps_later_slot_refusal=
+and =shared_route_refuses_after_independent_effect= show why a successful
+route check supplies neither a slot verdict nor a post-effect verdict.
+
+Same-process alternating sweeps authenticated 1,199,280 records per lane.
+Symbol-only reuse avoided 117,664 route checks, with CPU changing from
+1.324–1.326 s to 1.266–1.304 s. Including the existing supported structural
+keys avoided 815,664 route checks, with CPU changing from 1.362–1.375 s
+to 1.205–1.212 s. These scans use the existing native issuance, route and
+live-state routines on the captured traversal. They leave out topology
+selection, protected return and callbacks. The native production path
+keeps per-record routing. =receiver_identity_alone_does_not_authorize_route_reuse=
+shows the remaining obligation: establish the same live route even when the
+receiver identity has stayed the same.
+
+The probe instruments the existing generated Gambit Scheme for
+=clan/poo/object~0= in a private runtime. The first attempt to rebuild
+=object.ss= from the installed package source failed to load the existing
+Core prelude because that source did not export =with-slot-dependencies=.
+Its output is excluded. The successful probe preserved the original
+POO interface and sampled every eighth native replay.
+
+At the same 2176-call boundary, the baseline recorded 272 samples,
+240 topology hits and 32 cold builds. The weak-table lookup and root
+signature checks took about 0.29 ms and 0.52 ms cumulatively. Cold build
+took 38.31 ms inclusive. Issuance, route and live slot-state checks took
+205.69 ms, 250.34 ms and 208.15 ms. The final native validation pass
+took 447.63 ms inclusive. These buckets overlap. The totals are sampled
+wall time under instrumentation, so they rank work on this run without
+predicting end-to-end savings.
+
+=hash_route_reuse_preserves_refusal_order= specifies the native candidate:
+within one read-only hash-route check reuse the wrapper/backend observations
+already made by the vector-or-hash dispatch. Preserve method, backend,
+hash, test and lock checks in their original order. The candidate was built
+in a private Scheme runtime from the matching read-route source. The
+16/64 attribution and seven replay write-guard cases passed. The candidate
+changes the hash instance branch only; the default vector branch keeps
+the same route. All Reader effect boundaries stay independent.
+
+The candidate's uninstrumented thousand-owner cold business expression
+was interrupted at 174.075 s wall and 50.340 s CPU by the unchanged
+180-second Case budget. It did not return a business value. This is a
+failed capacity run, not an end-to-end improvement.
+
+A separate half-million-call route-only probe passed for both storage
+modes. Hash route CPU was 235.47 ms baseline and 221.50 ms candidate.
+Vector route CPU was 349.89 ms baseline and 401.21 ms candidate. The
+candidate refactors a helper shared by the vector index check, so the
+hash-only intent does not establish unchanged vector cost. With no
+verified benefit to the default vector path and no completed capacity
+run, the Scheme candidate remains in isolation. The production runtime
+and dependency pin retain their original implementations.
+
+* One live pass for validation without a caller action
+
+A diagnostic reuses POO's installed private topology lookup and issuance
+preflight. The native protected action returns the distinct record count
+and the final native pass authenticates every record. The ordinary
+checkpoint also authenticates the records before the action. For four
+actual publication traces, each alternating 512-call block covered the
+same 573,440 records. The ordinary blocks used 1.168–1.172 s CPU and the
+single-pass blocks used 0.639–0.645 s. Both reject forged and stale records
+with the same precedence on a fixed state.
+
+The same process then used four fresh 128-owner selected Graphs.
+The probe intercepted the installed generated unary and binary replay
+entry points, verified that every lane reached 512 validation-only calls
+and 261 protected calls, and restored both bindings after each lane.
+Only the validation-only calls used the candidate. Graph construction
+used 3.549–3.573 s CPU and 3.558–3.658 s wall with the ordinary path,
+compared with 3.074–3.085 s CPU and 3.090–3.360 s wall with the candidate.
+Module order was complete and the tested business scope remained cold.
+An initial probe intercepted only the binary entry and recorded no
+validation-only calls. Its measurements are excluded.
+
+=PublicationReads.validation_only_same_state_needs_one_live_pass= proves
+the equivalence under identical live observations.
+=PublicationReads.monotone_live_scan_has_common_entry= identifies the
+additional concurrent premise for a shared point of validity. A raw
+native route replacement and restoration made the same record refuse
+and then succeed at an unchanged receiver revision. Thus this revision
+alone cannot establish permanent invalidation. A separate Core regression
+makes a peer thread change the receiver during a real source checkpoint.
+The protected return must refuse even though the action itself returns.
+The production Scheme replay and dependency pin retain their current paths.
+
+The four publication traces contained 1,411 distinct native records.
+None belonged to a sealed receiver. Native invalidation also refused a
+previously issued record on a receiver whose seal remained set. A seal
+alone leaves cache invalidation and route authentication in the replay
+contract.
+
+The separate compiler-Context inventory check already receives the
+captured origin from each hash row. It now compares that row with the
+current Context identity and path without another hash lookup. Point
+queries still authenticate table membership. Lean's
+=PublicationReads.compiler_inventory_rows_preserve_refusal= requires the
+same entry and preserves the original traversal and refusal. Alternating
+scans of the same 350 installed Contexts visited 2,100,000 rows per lane.
+The lookup path used 0.514–0.587 s CPU and direct row use took
+0.413–0.489 s. Independent Context checks still surround the original
+effects.
+
+* Default vector route CPU
+
+The native batch probe selected 128 issued reads whose live instance
+uses the vector layout, inside the existing protected replay extent.
+Each phase ran 2048 iterations over the same selected reads and measured
+process CPU in one batch. The two probe batches ran in a private runtime
+built from the existing generated Gambit object source. Normal production
+and the independent thousand-owner run carry no instrumentation.
+
+| Native operation | CPU for 262144 checks, baseline | Accessor candidate |
+|------------------+----------------------------------+--------------------|
+| Loop control | 4–6 ms | 3–4 ms |
+| Issuance | 44–52 ms | 38–89 ms |
+| Vector route | 174–188 ms | 184–196 ms |
+| Live slot state | 56–62 ms | 64–65 ms |
+| Complete return sweep | 283–301 ms | 308–344 ms |
+
+The sweep includes issuance, route and slot state again. Its total is
+not an additional independent primitive cost. The vector route is the
+largest individual phase. The prototype replaced the symbolic live
+shape read with the existing native =slot-layout-shape= accessor after
+layout class classification. It retained the shape and index checks.
+Lean's =vector_live_shape_accessor_preserves_route= and
+=vector_shape_route_retains_index_refusal= state this conditional
+equivalence and refusal. The Scheme attribution and seven write-guard
+cases passed. The native CPU data did not support adopting this change,
+so the implementation remains a private candidate.
+
+A stronger candidate needs to remove redundant work between the
+authenticated route and the live value query within one record. It
+would reuse only the actual handles observed in that invocation and
+retain the original index/absence/refusal semantics. A candidate should
+separate pure hash or vector reads from author-visible callbacks before
+attempting to share any validation. No effect boundary grants a
+reusable successful result.
+
+The independent uninstrumented vector candidate hit the unchanged
+180-second Case budget. It recorded 170.266 s inside the cold business
+expression and 105.885 CPU seconds. No business value returned, so the
+complete thousand-owner demand remains unqualified.
+
+* Fuse route and slot state for one issued vector read
+
+Authenticate issuance first and preserve the existing route checks in
+their original order. For an ordinary symbolic read on vector storage,
+carry the live cells and shape indices from that route check into the
+state query. Compare receiver revision, instance and issued token before
+querying the authenticated index. A missing offset or an empty cell
+yields the existing absent sentinel. A stored false is a present value.
+Hash and structural reads retain their existing state checks.
+
+The cells and indices are invocation-local. Nothing from this operation
+can certify the next read, a Gerbil expansion or an author callback.
+The protected replay checks again on successful return.
+Lean models these conditions in =vector_fusion_preserves_result=,
+=vector_query_keeps_absence_and_false=,
+=vector_route_refusal_precedes_stale= and
+=vector_return_still_checks_changed_state=.
+
+The isolated candidate passed the 16- and 64-declaration attribution
+cases and all seven replay write-guard cases. Each CPU batch covered
+262,144 issued reads. CPU includes process user and system time.
+
+| Native operation | Split baseline | Fused candidate |
+|------------------+----------------+-----------------|
+| Issuance | 44–52 ms | 57–106 ms |
+| Route only | 174–188 ms | 230–234 ms |
+| Slot state only | 56–62 ms | 75–84 ms |
+| Full return sweep | 283–301 ms | 343–426 ms |
+
+The candidate removes the second wrapper lookup but introduces a
+multiple-value handoff. Issuance and standalone state also varied
+between runs, so these samples do not isolate the handoff cost.
+The measured return sweep gives no basis for adopting this candidate.
+
+The independent uninstrumented thousand-declaration run reached the
+unchanged 180-second Case limit in =publication-metadata-current=.
+The business expression consumed 174.821 wall seconds and 70.416
+process CPU seconds before interruption. It returned no value. These
+are partial costs from a contended host and do not establish an
+end-to-end speedup.
+
+* Same-process vector route attribution
+
+Both protected probe batches select 128 issued symbolic vector reads
+and perform 2,048 sweeps per measurement. Each batch runs the split,
+fused, fused and split sweeps in that order, with component probes
+between the two pairs. User and system CPU are summed.
+
+| Native operation | CPU per 262,144 checks |
+|------------------+------------------------|
+| Split complete check | 324–356 ms |
+| Fused complete check | 343–412 ms |
+| Route authentication | 170–177 ms |
+| Route with multiple-value handoff | 167–186 ms |
+| Native live slot state | 68–71 ms |
+| Authenticated index and cell query | 11.3–11.4 ms |
+
+The route-plus-handoff difference changes sign across the two batches.
+The probe includes argument setup and the multiple-value consumer, so
+it does not estimate the isolated cost of the primitive. Index and
+cell timing uses the same records with the authenticated handles
+prepared outside the timed interval. Route authentication is the
+largest measured component. With the source observer enabled, the 16
+and 64 declaration admission cases respectively visited 131,653 and
+520,405 replay records. These counts describe the diagnostic workload.
+
+The next candidate specializes only field access. It selects Gerbil's
+existing native accessor for the exact wrapper, layout and shape
+classes that the route already authenticates. It reads each live field
+after the corresponding class guard, preserving ref, backend,
+cells, sentinel, shape, index, hash/test and lock refusal checks.
+=route_pinned_field_preserves_validation= proves the replacement under
+the same-field premise.
+=route_foreign_class_refuses_before_field= preserves the rejected
+branch. Independent checks around Gerbil expansion, author callbacks
+and protected return remain in place.
+
+The paired candidate probe keeps issuance and slot-state lookup
+identical and switches only the route. It uses the same protected
+records and the same sweep count.
+
+| Native operation | Symbolic field access | Exact-class native access |
+|------------------+-----------------------+---------------------------|
+| Route authentication | 192–195 ms | 79–83 ms |
+| Complete read check | 351–402 ms | 263–281 ms |
+
+All four adjacent complete-check comparisons favor the exact-class
+route. This establishes a per-record CPU reduction on the measured
+runtime. It does not measure declaration admission wall time.
+
+The uninstrumented candidate run reached the original 180-second
+Case budget in Gerbil expansion. The business expression consumed
+169.097 seconds of wall time and 19.067 seconds of process CPU before
+interruption, with no returned business value. This run does not
+qualify complete thousand-module demand.
+
+* Live class offsets in native route authentication
+
+The fixed-accessor candidate skipped a real refusal. Retargeting the
+Gerbil wrapper class's symbolic =ref= slot to the =object= field left
+the class and receiver revision unchanged. The installed route refused
+with =changed metadata ref= and the fixed-offset route accepted. The
+live-offset candidate refused with the installed diagnostic. The
+mutation is restored after the check. The Core route mutation suite
+also exercises this through native replay and requires zero observer
+visits on refusal. Lean =SourceClosureWork.same_class_does_not_pin_route_offset=
+captures the failed same-field premise.
+
+The live-offset candidate uses the class already authenticated by the
+route, then resolves the field in the current Gerbil slot map at each
+access. The guarded hash, vector and structural-key branches keep
+their order. The private comparison compiled each lane and exercised
+the same production Graph entry in one process. With 128 owners,
+ordinary lanes used 3.32–3.54 s CPU and live-offset lanes 3.20–3.24 s.
+The thousand-owner pair made 16,272,150 route calls per lane and kept
+business scopes cold. The ordinary Graph used 27.43 s CPU and 27.90 s
+wall. The live-offset Graph used 25.71 s CPU and 25.78 s wall. These
+are Graph measurements, distinct from first business demand and
+unmodified capacity gates.
+
+The existing thousand-module business test then ran in four fresh
+processes against the installed route, an isolated compiled function
+variant, its inline variant and the installed route again. Both
+variants passed the native route and replay controls. All business
+tests admitted and constructed exactly two scopes at the first =.get=.
+The subsequent full-Graph wall times were 27.12, 26.93, 28.29 and
+28.04 seconds. The ranges overlap at this sample size and the paired
+Graph benefit did not carry through to the isolated module build.
+The production POO pin remains unchanged.

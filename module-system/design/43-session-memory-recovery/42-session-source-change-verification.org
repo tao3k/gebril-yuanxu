@@ -1,0 +1,260 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.42 Session Source Change Verification
+:PROPERTIES:
+:ID: agentic-ai-lab-context-session-source-change-verification
+:STATUS: composed-views-protocol-joint-pass-storage-open
+:DATE: 2026-10-15
+:END:
+
+* Correspondence before closure
+
+[[file:41-controlled-session-source-change.org][41]] binds typed D2 views to the Quint transition projection, LeanPOO local
+laws and Module-owned Scheme acceptance. The model's initial global epoch was
+refined to provider-indexed epochs/cursors after topology review; it is not
+retained as an equivalent implementation model.
+
+Sixteen focused Quint Cases passed: a complete safe exploration with 263,339
+generated / 35,030 distinct states; six reachability controls for replacement,
+retirement, rebind, return, current consumption and reopened obligations; nine
+deliberately unsafe controls for forged identity, stale snapshots/epochs/
+generations/grants, missing approval, reset cursor, old views and erased knowledge.
+The forged-identity control was subsequently strengthened to publish an identity
+outside the issued realm rather than only flip a checked flag; the complete
+first complete gate reran that strengthened cut successfully.
+
+The Context Lean target builds eighteen roots in 89 jobs. The new root adds
+fourteen theorems and nine guards (182 theorems / 145 guards in Context roots).
+Knowledge preservation uses no axioms; the printed old-permit refusal proof
+uses standard =propext=, =Classical.choice= and =Quot.sound=. Authentication,
+current Host permission and exact issuer/slot identity remain stated premises.
+
+The first real Scheme replay naturally exited 0 with 697 assertions: 59 new
+provider-change observations over the earlier 638. Additional copied-proposal
+and stale-controller-binding controls are part of the strengthened final cut,
+not retroactively attributed to that preliminary receipt.
+
+* Failed drafts and correction
+
+The first Lean build referred to an unavailable Boolean theorem method. A
+subsequent draft used an unavailable tactic. Both elaborations failed; neither
+their partially elaborated declarations nor the resulting =sorryAx= diagnostics
+were accepted. The corrected proof uses case analysis and the already proven
+stale-cut law; it builds with no =sorry= or disabled lint.
+
+The first D2 source used unquoted semicolons in edge labels. Compilation alone
+did not reject that syntax, but visual inspection showed unintended disconnected
+nodes. Labels were quoted, topology/lifecycle layouts made readable and the SVGs
+regenerated. Parser/render success is not treated as proof of graph meaning.
+Quick Look initially failed to initialize in the sandbox; an allowed local
+thumbnail render was used for visual review, not as a source or runtime SDK.
+
+* Reproduction and policy
+
+Use the current Scheme package and dependency pool. Compile Module consumers,
+session-source, session-source-change and interface, the optional Assurance
+adapter, then proof consumers/admission caller. The new authenticated event
+field =binding-generation= is explicit; no legacy-event inference path exists.
+Do not mutate or recompile the captured source/library pool during the gate.
+
+From the repository root, selecting the existing ASCENT package directory:
+
+#+begin_src sh
+CONTEXT_SCHEME_PACKAGE_PATH=packages/lambda-aitia/.gerbil \
+  python3 packages/proofs/context-lifecycle/verify.py
+#+end_src
+
+The current gate includes D2 source/SVG rerender parity, all twenty compiler-lifecycle
+controls, every declared Quint Case against one owned compiler service, all
+Context Lean roots, ASCENT relations, historical ORG regressions and fresh Scheme
+replay. TLC keeps 60 seconds total / 12 seconds useful-output silence, one worker
+and 512 MiB. Lean/Scheme keep 120 seconds; Scheme keeps five seconds silence and
+1 GiB. Existing thread joins and compiler cleanup retain their bounds. No timed
+keepalive, forced successful Scheme exit or policy relaxation is introduced.
+
+* Final complete gate
+
+The first complete protocol gate exited naturally 0: nineteen compiler lifecycle
+controls, all 191 Quint Cases, eighteen Lean roots / 89 jobs, 23 ASCENT assertions,
+90 historical ORG assertions and 702 fresh Scheme assertions. All 116 source
+inputs and the compiled Scheme pool were stable. The 702 include all 64 new
+provider-change controls, not only the earlier 59. No timeout or Case was relaxed.
+
+That cut contained two independent ELK diagrams. After review, D2 was reorganized
+into typed architecture/lifecycle/interaction Layers and inherited source-cut
+Scenarios, rendered with Dagre. That is a new diagram/verifier cut, not a claim
+that the first run qualified its later artifacts. A second complete gate is
+started with the nine-board manifest, link integrity and four standalone view
+rerender checks. Those diagram checks passed, but the startup-exit control failed:
+=service.process.returncode= was =None= rather than =17=. That attempt stopped
+before models and is not joint closure.
+
+Inspection identified an unhandled exit-between-=poll= and =killpg= cleanup
+path: =ProcessLookupError= could bypass =communicate= and leave the child
+unreaped. The original failure did not retain a syscall trace, so that path is
+not asserted as the uniquely observed OS event. A deterministic new control
+forces precisely this race; the shared signal helper tolerates only a missing
+owned process group and still requires bounded =wait/communicate=. Other signal
+errors propagate. Both the original startup-exit control and the new control
+pass. Cleanup keeps three seconds, and a forced cleanup is still a failure.
+
+A fresh complete gate including twenty compiler controls and the composed
+diagrams exited naturally 0. Four standalone render checks and all nine composed
+boards matched their sources, the exact board inventory and internal link
+targets passed. One owned installed compiler served all 191 serial Quint Cases.
+Lean built eighteen Context roots in 89 jobs, with 182 theorems / 145 guards;
+the new root contributes fourteen / nine respectively. ASCENT passed 23
+assertions, historical ORG 90 and fresh Scheme 702. Source and compiled inputs
+matched before/after. No forced successful Scheme exit, Case removal, keepalive
+or deadline/heap relaxation was used.
+
+This is process-local semantic and consumer evidence, not remote authentication,
+durable recovery, complete Query adaptation or storage/bindings qualification.
+Diagram render/link parity is not an independent proof of its relationships.
+The illustrative three-provider drawing retains the explicit boundary in 41.
+
+* Final source and tool identities
+
+The following receipt binds all declared sources/views, installed compiler
+artifacts and actual loaded Scheme pool. Paths are repository-relative; pool
+identity uses logical owner/ASCENT names, not a local SDK location.
+
+#+begin_src text
+D2 v0.9.0 layout=dagre standalone-views=4 composed-boards=9
+CONTEXT-COMPILER-INPUT-SHA256 f8d4643705369d0642d9345a479e7cc8b7929710dc966e7f9a374bf03e526fe4 apalache-mc
+CONTEXT-COMPILER-INPUT-SHA256 880c0b2b72354816f12e9a9755829f2907071e9a181ffea1937954c23d54739d apalache.jar
+CONTEXT-INPUT-SHA256 1acb82ae629e00291ce8d723ea186838b672570c2c38b130202eea2cb17d6e46 packages/proofs/context-lifecycle/ContextLifecycle.qnt
+CONTEXT-INPUT-SHA256 18917b00885b0cedf4a50e0359553edf2f613af1624eac3a9d110ec8ca6a9503 packages/proofs/context-lifecycle/ContextComposition.qnt
+CONTEXT-INPUT-SHA256 cd6353cb8204494b637765bd121583861a8e37bf2a24f2036efeb68d41e45195 packages/proofs/context-lifecycle/GraphContext.qnt
+CONTEXT-INPUT-SHA256 a8cfb43931ba6051409d512b1964aa31a4796016ce7e6781dfa42ba03bd8a963 packages/proofs/context-lifecycle/GitContext.qnt
+CONTEXT-INPUT-SHA256 412111ba64a26348c8754a571ba155dd4723fb9aa716080d0d0381e312d265eb packages/proofs/context-lifecycle/ContextHandoff.qnt
+CONTEXT-INPUT-SHA256 81feee5206c0f8f667c86865fc7aa3ed9726b5873a297482ebd1b753e44b3b3f packages/proofs/context-lifecycle/relations.ss
+CONTEXT-INPUT-SHA256 57045a612e844c6dbd567aeb5341458a9803c3df1f2ebdf64d019681d9e00355 packages/proofs/context-lifecycle/check_quint.py
+CONTEXT-INPUT-SHA256 089d35e28ba1fe25ac92a003408527c8e060a758ec185a132229415e27e4d487 packages/proofs/context-lifecycle/verify.py
+CONTEXT-INPUT-SHA256 080c5753f5321f32cd29cc140144a2d659b3dc6b7b1950c23a2ad59e981764b1 packages/proofs/context-lifecycle/tlc-config.json
+CONTEXT-INPUT-SHA256 a1627ec1c8ed8df8a1204319ff310c54d0221a0a23a86d0180773dac65ddebe3 packages/proofs/lean-poo/lakefile.lean
+CONTEXT-INPUT-SHA256 56538fae427d7c81fc6ae7812e3c12c43a9232af15eb6129a4f0b1a9a35f09fc packages/proofs/lean-poo/lake-manifest.json
+CONTEXT-INPUT-SHA256 8733782dc070a99b312039cda424f601b80f3be6f6f512627da5ba25adc27632 packages/proofs/lean-poo/lean-toolchain
+CONTEXT-INPUT-SHA256 2814d15e106b066ebc32fda370b94648d8ea6b39338e2bf72c0cd3dd56ad536b packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Lifecycle.lean
+CONTEXT-INPUT-SHA256 434aa485fedcb059cd928b69a724b4befba1bcc76662f290461d345bbe232793 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/FunctionalComposition.lean
+CONTEXT-INPUT-SHA256 ae9a12e947a85801c628559728727687742ebc9bd885e65b0868cc4d135a6785 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GraphContext.lean
+CONTEXT-INPUT-SHA256 708948b0ff7a4aec56de1dfc49a03d3f67e2a052a0ff1c1b4e28cc786a0d1630 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/GitContext.lean
+CONTEXT-INPUT-SHA256 4bc0f3062529655354fe3c7af26f59d784317f4a64746477cf881696bf798f43 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Handoff.lean
+CONTEXT-INPUT-SHA256 07c9c99d89825a5e22af1fabe28402f61c8f20a2c99cc1c824a5505195ca5611 scripts/temporal/run_with_progress.py
+CONTEXT-INPUT-SHA256 b0d65d51ed0690021c9b3d96a72298a4b38a69309d51db51e9e1c00ff089c3e2 gerbil.pkg
+CONTEXT-INPUT-SHA256 701c5fd545816c0309c250aef2db30d83730a1fc8cb6fa631f8c1e4f6e85bc9c modules/ai-agentic-context/admission.ss
+CONTEXT-INPUT-SHA256 d01f46c1a83603c5d5ac2aa7a8e4d115f88d616112b025e63d1bdc579b532b4c modules/ai-agentic-context/consumers.ss
+CONTEXT-INPUT-SHA256 b262609280ef8865afc478ca74e2e9821c64cafeead97b4e6dbc3fcc1d4cc072 modules/ai-agentic-context/contracts.ss
+CONTEXT-INPUT-SHA256 e8f954fe78172af4bb1271bfca6f47bc876cbaefd6754a71373b8ae866a6d1c9 modules/ai-agentic-context/funs.ss
+CONTEXT-INPUT-SHA256 e304431646ceb760aa0f0f77794e6826c074445ca8e3ee30e6e8b228fc92c26c modules/ai-agentic-context/human-decision.ss
+CONTEXT-INPUT-SHA256 290c1693d22b3300028c55c752e6c7aae2dd4b088b92842912b2794e36402440 modules/ai-agentic-context/installation.ss
+CONTEXT-INPUT-SHA256 d1297a8d33bb048c5bdfbc5347a861933ae03af96419c4c1a2b35d9930fb654e modules/ai-agentic-context/interface.ss
+CONTEXT-INPUT-SHA256 c68c1256ea302d75cae17f4d3fd9489836517829000237baec4f22f4caf6c19d modules/ai-agentic-context/objects.ss
+CONTEXT-INPUT-SHA256 3a9c844fba1fd2724260e85a2d638fbb9198521af2fd9282bf201f4ce9c26312 modules/ai-agentic-context/reasoning.ss
+CONTEXT-INPUT-SHA256 e842ba2407a0bc835ab7295d05a2cbfd1f7661a5fa09f3a565085bb49aad254c modules/ai-agentic-context/session-source-change.ss
+CONTEXT-INPUT-SHA256 6275fc418f427f0b2b58f14f5e583d27b8afd87e09945d776a2bb3304ca380da modules/ai-agentic-context/session-source.ss
+CONTEXT-INPUT-SHA256 298390a718dac282599afe5380c8e141347bb5e1c7f2cf5791a4b58736cd4037 modules/ai-agentic-context/source-control.ss
+CONTEXT-INPUT-SHA256 56c0a64f92d2b113d43b708f484e247116d3181bfd843a0e055a3c8a44dd1ad3 modules/ai-agentic-context/source.ss
+CONTEXT-INPUT-SHA256 a69cacd52b1f0cc95eb34847facf5e02d0abfbeb0cdb4afd04dc6b446cb9b629 packages/proofs/context-lifecycle/org-context.ss
+CONTEXT-INPUT-SHA256 b11cfcb19cec1efcfa85b44b233ed4447ceb75c8cc4e83b2504354bbd49e18a1 packages/proofs/context-lifecycle/context-source.org
+CONTEXT-INPUT-SHA256 9c4c6d09ef369e6cb0be65d1c89591cbf28d8db38c76e9dd23a0af54167ac600 packages/proofs/context-lifecycle/handoff-controls.ss
+CONTEXT-INPUT-SHA256 930edee10f8c16b5af7c44f73a636346796a41e3bcc4c4614ef5bdf13223236f packages/proofs/context-lifecycle/run_handoff.py
+CONTEXT-INPUT-SHA256 ef9abd5335f478d15b5b5a782be5ece07380995b009f504c3d5ae41a618281fb src/policy/authorized-effect-token.ss
+CONTEXT-INPUT-SHA256 316e922bcb1cdd1ffcb30b2fb20f168938b65c0574c9ec6d27950d0eaff15a00 src/graph/types-core.ss
+CONTEXT-INPUT-SHA256 eb3f890a3ee49d38ff2ee05c3733b28c999dc1bb8727e69ec619cc596f3428e7 packages/proofs/context-lifecycle/admission-controls.ss
+CONTEXT-INPUT-SHA256 d476ba5b782a9a858c114dfecf5909905813a746a37bafa72808f05552641624 packages/lambda-aitia/modules/assurance/context-consumer.ss
+CONTEXT-INPUT-SHA256 6b67f705ba963c484ad049724d238d06d383f4663f4a44a83c6bd3a9478cd8bd packages/lambda-aitia/t/formal/lifecycle-fixture.ss
+CONTEXT-INPUT-SHA256 e190bcb2d426f9d730d172facd417011b669c0c647e15b7db3056bf0b5b8456c core/contribution/verification.ss
+CONTEXT-INPUT-SHA256 633dd24e50ea80662d7a26e15d98f9419e3e79a867a4b5c2328009191548c5b1 modules/governance/types.ss
+CONTEXT-INPUT-SHA256 c81773a19f1248f081a80c39a00618908cd71e8ffaf785d4f787b6893368cba7 modules/governance/objects.ss
+CONTEXT-INPUT-SHA256 ea13ca72b85ac4c7635d0192242ac82771f82d75c6abcba27ba8c73f64c50419 packages/lambda-aitia/modules/assurance/types.ss
+CONTEXT-INPUT-SHA256 56f76d0ab65c1bee10524bc59944890df3c2e334a80b528a2ab1933c484f0e35 packages/lambda-aitia/modules/assurance/objects.ss
+CONTEXT-INPUT-SHA256 9f70e669e21fd349343539bea5b150362c799004f8c895ede62bf2b39e3200e2 packages/lambda-aitia/modules/assurance/funs.ss
+CONTEXT-INPUT-SHA256 a63a9b357d213f0273541744dff31b75f6a90b790a984efb0224c5b2e946b263 packages/lambda-aitia/modules/assurance/evidence-admission.ss
+CONTEXT-INPUT-SHA256 116b0d743f481d2cfde27e409b6719cee788f74d11d379f98bebf7d3f5a4ab26 packages/lambda-aitia/modules/assurance/host.ss
+CONTEXT-INPUT-SHA256 a274a81d4cc6331a8d5dfc9e56b3eb40a44b797a557f99731b8f55597152d569 packages/lambda-aitia/modules/assurance/effect-host.ss
+CONTEXT-INPUT-SHA256 6badb8eabcb67c64725623019f8e4b1cd1c2e17aaac82b39db2bd7bdeeed6d3e packages/lambda-aitia/modules/assurance/config.ss
+CONTEXT-INPUT-SHA256 c549a62b7d5d164ffea0a97bae9d4824e9197c29ce7a4d545f6d08b3ae7a0b9b src/graph/algorithms-list-support.ss
+CONTEXT-INPUT-SHA256 7dbcabe5d125ff292ae3cf709e3b5519c06ee35e0f5082b2533bac8d4df75f6a src/graph/algorithms.ss
+CONTEXT-INPUT-SHA256 25c7d63a39a9ce4372213fea7d9d249c3061bf4035631e0ff4a3ee02be6e3af5 src/graph/types-contracts.ss
+CONTEXT-INPUT-SHA256 70f2e2fc5dba0250ebf533b2cc356877a2db18e2655249442b810a45a4f765db modules/temporal-causality/types.ss
+CONTEXT-INPUT-SHA256 8dabf9c3655aa2ce59fb92d8a7dfbfb1ac2ea1ee16ea52d09d6898b986f35c63 modules/temporal-causality/objects.ss
+CONTEXT-INPUT-SHA256 42a16245370476cef379c85805320384831b379cf9068c0b5fdd394af45004f4 modules/temporal-causality/funs.ss
+CONTEXT-INPUT-SHA256 3f8499f1ff93a70b040e58c63229fc2a36009c5d4b7233e9da77daa42817d2d5 packages/lambda-aitia/modules/assurance/invalidation-projection.ss
+CONTEXT-INPUT-SHA256 7b65ebde0aa33b7f2861797b41d125c3e2a1ee2e4385e8d9d6f945c53e9286d1 packages/lambda-aitia/modules/assurance/verification-projection.ss
+CONTEXT-INPUT-SHA256 f2cbe4e4c7aa60f7a4ec9953b185e74db835fbc8a2f9d337edcb4d746b4846d0 src/core/roles.ss
+CONTEXT-INPUT-SHA256 c6d7c71cadaa1fe54efe211d5d0b93e7fe7203c1060696c2116443dee0d3e8d1 src/utilities/functional.ss
+CONTEXT-INPUT-SHA256 44d4b37e5baf1eda31af58b74629964b4039b7a9dffc40538e5b21ee2f04deb8 src/feature-system/model.ss
+CONTEXT-INPUT-SHA256 3b480b232c28ac9ef1932fe66115841e3eb82f26174dd31927014d6dbaeb62bd src/feature-system/source-lock-feature.ss
+CONTEXT-INPUT-SHA256 4f157fc03c7ca233bc566c44fd76b25130251d3ff783d46805998c70f1aee24d modules/authorization/providers/cedar/objects.ss
+CONTEXT-INPUT-SHA256 34416b636b699e75a5e99ff54e91ea3edb737d378e5f455ae23989cbc6b3f7d6 modules/authorization/types.ss
+CONTEXT-INPUT-SHA256 421c3dcec6c22419fc1ff65a7bea6fbc2ad8e909ebfdf0f879e12fefb6a05b43 modules/authorization/objects.ss
+CONTEXT-INPUT-SHA256 7617f1219f9ffc3e5a25b9a6273aceeeee26b1a591db83a54ce73477618ab77c modules/authorization/providers/cedar/config.ss
+CONTEXT-INPUT-SHA256 d878cb9c5e954074db574a777e04263f5692e1341e165a7442a1b5a308003039 modules/authorization/contracts.ss
+CONTEXT-INPUT-SHA256 1dc971992ebc7fe767c7af65bce98dd99b83347ad787c21c2f3d896be2dfda18 modules/authorization/providers/cedar/contracts.ss
+CONTEXT-INPUT-SHA256 1a84b41c34b8914321098d5bd544cd8b3cffab62a8bdb281845e021ba13a2bdd modules/authorization/providers/cedar/funs.ss
+CONTEXT-INPUT-SHA256 30a79e4c41df665c41e9db52617364d77ba8476da1ef7d1f1dccbd5815c5b29c modules/authorization/providers/cedar/decision.ss
+CONTEXT-INPUT-SHA256 faa99e7356b6c3f164ae1f224637c540c6e449bab5854212c58789be4dd6d1c3 packages/proofs/context-lifecycle/ContextRegistry.qnt
+CONTEXT-INPUT-SHA256 4595145078bb104a1c95bd192f76a7bc781ebd15cea6258feae0787ba9cab6e1 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Registry.lean
+CONTEXT-INPUT-SHA256 ef4023bb3079bdaeea18a70524350b16e8003de75f6c634f7e78a716dcf63062 packages/proofs/context-lifecycle/concurrency-controls.ss
+CONTEXT-INPUT-SHA256 a55788e4d93adc2aa6c95bb9614401f221343c428091956d2bbd0b2942e06904 packages/proofs/context-lifecycle/ContextConcurrent.qnt
+CONTEXT-INPUT-SHA256 385e94606bba3bed0c4b5009e5cc99dfdccd28b466e2d5bd0877df6c1ecb75a4 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Concurrency.lean
+CONTEXT-INPUT-SHA256 17df31a69307c4a53a9383ecacf97041c339476f4a0e75f0444c7869a0026ef9 packages/proofs/context-lifecycle/source-binding-controls.ss
+CONTEXT-INPUT-SHA256 f522a6be177a495bfe4b2898daf47d33e9901f57cdd01ee4cf02c4f0228c039c packages/proofs/context-lifecycle/ContextSourceBinding.qnt
+CONTEXT-INPUT-SHA256 6c6852741419137af76285b52adf12aa783e5ef40990428ff5e3116eabb63aea packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/SourceBinding.lean
+CONTEXT-INPUT-SHA256 790e9c415c15df913516978d81a8368e6a15a6014f42a80337ee279b6009699b packages/proofs/context-lifecycle/run_relations.py
+CONTEXT-INPUT-SHA256 c487b940bb09e2e623897b03df5e0d790ca09398ff2f4c6b867a35268e84b5a2 packages/proofs/context-lifecycle/bootstrap-controls.ss
+CONTEXT-INPUT-SHA256 9d830b5b77ace5792aa4cdf2480fe29d8899dbaf5c6b5d6d144b4d32770afc59 packages/proofs/context-lifecycle/ContextBootstrap.qnt
+CONTEXT-INPUT-SHA256 98dd3dbb4e6bc67580f39c3afeb6448b815a0ca5edbe198149b4179abba3d849 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Bootstrap.lean
+CONTEXT-INPUT-SHA256 f4cf609af6dd898e0478818a62d946a0842136348630d65858d18134e216ba51 packages/proofs/context-lifecycle/installation-fixture.ss
+CONTEXT-INPUT-SHA256 d693a49fea7c32cbc16fcabde43f5d9cdeabb935ff62054fbcbd4aea476d9e87 packages/proofs/context-lifecycle/installation-controls.ss
+CONTEXT-INPUT-SHA256 b3451081cb2afa72bb0d15032e863739d54161074306134a7459f0e6673e24c7 packages/proofs/context-lifecycle/ContextInstallation.qnt
+CONTEXT-INPUT-SHA256 b8977b023329c24f75e37175c454d7904ff301befa4fc3a300aad8483ac3cbd7 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Installation.lean
+CONTEXT-INPUT-SHA256 e490d849853a3c114a8e1c0463963b1db4fa9b1298dfd9bc93e75aa8dc682627 packages/proofs/context-lifecycle/recovery-controls.ss
+CONTEXT-INPUT-SHA256 f7a3dcee22129749750d1bda5aabe68f1f69854d1b7e26a3f4f6ddb115ef6c4f packages/proofs/context-lifecycle/ContextRecovery.qnt
+CONTEXT-INPUT-SHA256 3ac2b9ec5acae5e0482dc5ead7e6db2c705e522999e34e1e778eee7afdc4c6d2 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Recovery.lean
+CONTEXT-INPUT-SHA256 a85e1f712bc6cd169f5d54c17d82d025fecce8b6cae77dc0bdae06409e6ccd7d packages/proofs/context-lifecycle/ContextHumanDecision.qnt
+CONTEXT-INPUT-SHA256 1f8fc574d3c640ef002cb5db6ab17ef2afe1ced9b2ebc7eb40b9e5667dc75202 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/HumanDecision.lean
+CONTEXT-INPUT-SHA256 66d177caae5e2445cfedafdac47609d64a760ab7113768f81edd4f4bfc4f28ce packages/proofs/context-lifecycle/source-change-controls.ss
+CONTEXT-INPUT-SHA256 7d9e2664a46ad2d604a7e6d9324050c5b7c7d18282d4fc504edbea8688fd29c5 packages/proofs/context-lifecycle/ContextHumanSourceChange.qnt
+CONTEXT-INPUT-SHA256 d6765988e0db86a9408333722eb2a80f20af7609bd295a3fb90d5362dae7929b packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/HumanSourceChange.lean
+CONTEXT-INPUT-SHA256 82e907ebd18e4aec0ee86bd422d0c014befbcfcc8b0254a51826b9e4289b056d packages/proofs/context-lifecycle/source-recovery-race-controls.ss
+CONTEXT-INPUT-SHA256 ffe2dd6293ffba777d2072274cfa73942317ed138e1e1999c4a007cd31b6f0a6 packages/proofs/context-lifecycle/ContextSourceRecoveryRace.qnt
+CONTEXT-INPUT-SHA256 98aa2f6f84982f6e2631ce755d1bc561589b72cf82fadfacd238b686f83299db packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/SourceRecoveryRace.lean
+CONTEXT-INPUT-SHA256 af577c17539ec87c2ea33724564465b33df6e7f6fa7d25f6d8b6674d9736773f packages/proofs/context-lifecycle/reactivation-controls.ss
+CONTEXT-INPUT-SHA256 664fb3e6e845692bba09142cc1ce8c1b56a9737de8a3fe3949437f01e09400fa packages/proofs/context-lifecycle/ContextReactivation.qnt
+CONTEXT-INPUT-SHA256 dbd134b219e5018785396146529bdf1034d8b435e33f49f2a91735d9f0060198 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/Reactivation.lean
+CONTEXT-INPUT-SHA256 9d529628c44ea2662fbc02d701a2683f78b7d72b1b664119e3b725708bfca49c packages/proofs/context-lifecycle/rebinding-concurrency-controls.ss
+CONTEXT-INPUT-SHA256 383c206fa15be4a7daf908624d91b85aeea35da8ee55f817404104474dc9b6fc packages/proofs/context-lifecycle/ContextRebindingRace.qnt
+CONTEXT-INPUT-SHA256 a1a498a4cfe359bf23001f5588bae66f973cb149064f734dd6e0fafc81be4a09 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/RebindingConcurrency.lean
+CONTEXT-INPUT-SHA256 1c22c268f1f9d45d7058c570c4ff69b7e498018666eb018d915742c19db7e309 packages/proofs/context-lifecycle/session-source-controls.ss
+CONTEXT-INPUT-SHA256 3143ad7e365a10d3ecae0945a4fcdb322e77a73b35c6bc22b2f58b8c4f8edec1 packages/proofs/context-lifecycle/ContextSessionSourceAuth.qnt
+CONTEXT-INPUT-SHA256 b61ea72b6c3e9c183ec70986581fe37136773b623a3360d57e6a7cf363fb8b35 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/SessionSourceAuth.lean
+CONTEXT-INPUT-SHA256 897803cabaa137ed1946852b6c952aa5be6d9559fd6bad4306a7bcf6f5a1aec8 packages/proofs/context-lifecycle/compiler_service.py
+CONTEXT-INPUT-SHA256 6e24568d75dbeaa82e8b09717f02bf9eda127d3bd4454b647f3239e2992f292b packages/proofs/context-lifecycle/test_compiler_service.py
+CONTEXT-INPUT-SHA256 cc7f61ef533c60c139c3e613e3b8a6a00f2bd92cc92dc7b128efaaa8dd9b0233 packages/proofs/context-lifecycle/session-source-change-controls.ss
+CONTEXT-INPUT-SHA256 14ea83e97dae0fbc46d8ba4e29b6028fdc26b402137cfd10d88fe78c726f781c packages/proofs/context-lifecycle/ContextProviderChange.qnt
+CONTEXT-INPUT-SHA256 cba786457e294bd98fa06ab1bc5fe65fdf205bbc9af1a0c39b13ec4a4182bc10 packages/proofs/lean-poo/AgenticAILabContextLifecycleProof/ProviderChange.lean
+CONTEXT-INPUT-SHA256 f8fd1484b4dc79e6659377e7728da24cddf5f58d5dc339c980a1b0da3cd633b1 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change-topology.d2
+CONTEXT-INPUT-SHA256 8f8b6b4f0b1ea02a1cb2ff5dc366b8877ce943e13772ed32a3e113b0a3c9492c docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change-lifecycle.d2
+CONTEXT-INPUT-SHA256 3e564070bdd2c85634df3b91b6cf6943d0b61c1c661de0a94eba9e6a24a545b4 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change-sequence.d2
+CONTEXT-INPUT-SHA256 1f9133a23b31cf744ebffe6ac69eb5cf4305b57058e362c555cbd0e45e7a2f42 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change-race.d2
+CONTEXT-INPUT-SHA256 f80baf41ec38dffd8068d8e360ba27c6112976f6c43eb94c372f70b4dac873eb docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change-topology.svg
+CONTEXT-INPUT-SHA256 4c124a4b797d8fdc1e78d58c7991bbf887eaee5ce885e3763b5278da614a7759 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change-lifecycle.svg
+CONTEXT-INPUT-SHA256 770d3d510190b00a75d5aeff902e60be3ec3ee758bb73752d072f3778a7264d2 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change-sequence.svg
+CONTEXT-INPUT-SHA256 f28ba257c03dc749ee252ff793d9de99f4e9b9b81ab5b16ad8ea4ef90866ca0a docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change-race.svg
+CONTEXT-INPUT-SHA256 f87b66787b005b7b18db53aa27eb3e86f356a09ba21ba3f1a642d8ba06c5f523 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change.d2
+CONTEXT-INPUT-SHA256 170b791e7fad506044e436d48edd3cd70c44f734e966a2b1c3f4744e4df1bf36 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change/index.svg
+CONTEXT-INPUT-SHA256 2d83026300fa8955fb4508c7fb450859adbd42a14192a4ce477891b2899a1212 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change/architecture.svg
+CONTEXT-INPUT-SHA256 bf3bf27deadc17fccd7a9069a967a08a2c38fefb9200aa131288a96139dadae7 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change/lifecycle.svg
+CONTEXT-INPUT-SHA256 9fa4c4ee0c87b4d936ada3f2083ae1fc5f15d0c6ab87f0e5f77dad2dbba98547 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change/accepted_trace.svg
+CONTEXT-INPUT-SHA256 3093a161c394d3f3a246464ddeee909d35907494eb8411d5ae56c8fc5b0f830c docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change/competing_trace.svg
+CONTEXT-INPUT-SHA256 0dc5cbbeba21e2aed4296316f92a82b807a92d7f3ad091a008b4fee1404e41bd docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change/source_cuts/index.svg
+CONTEXT-INPUT-SHA256 ee6fea45bbfa9cf4634ee6346692c574f4243410c143f115d002b5e563573534 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change/source_cuts/replaced.svg
+CONTEXT-INPUT-SHA256 fb2fc243652d164d900776724f64f4cf168d6e03136e66087d4fee6e5e499820 docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change/source_cuts/forged_name.svg
+CONTEXT-INPUT-SHA256 333d615ba074b9e374ec3a1f75b2e1da97a974971a4177cdd5482431c82ffa5f docs/10-19-design/10.06-poo-module-system/43-session-memory-recovery/41-session-source-change/source_cuts/retired.svg
+CONTEXT-SCHEME-CUT inputs=31940 sha256=55b409dcd103064dfdff5c161ad35761b20e5a9302291bdcb48f4a83cdaf9c31
+CONTEXT-CONSUMER-SHA256 8becf9154b39e78a64724a1dac1c4d691b78a8cdf16029acbb0c89d6ac1849da
+CONTEXT-HANDOFF-INTERFACE-SHA256 f09e65f1fbd5ba10789f08544c39f018a072d0b00422813f7e85e5a1ed84a814
+CONTEXT-PROOF-PASS source-stable=true storage-bindings=not-executed
+#+end_src

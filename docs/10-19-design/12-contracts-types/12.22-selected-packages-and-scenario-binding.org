@@ -1,0 +1,192 @@
+#+title: 12.22 Selected Packages and Scenario Binding
+#+property: DOCUMENT_ID 12.22
+#+language: en
+#+date: [2026-10-17]
+#+property: STATUS source-audit-and-target-design-not-implemented
+
+* Decision and evidence boundary
+
+Provider package paths and OpenTofu commands are realization outputs, not ordinary
+Scenario configuration. The existing Graph/package/publication owners should
+associate them. An execution workspace remains an explicit runtime input.
+Do not add another user wrapper, directory scanner, package registry or Loader.
+
+The [[file:12.21-scenario-execution-and-configuration-validation.org][executed Scenario gate]] establishes real local Null execution and AWS validate,
+using test-prepared packages and rewritten config inputs. It does NOT establish
+init-to-realized-Scenario automatic binding. Its passing result must not be used
+to hide that missing integration. No new runtime implementation is claimed here.
+
+* What is actually connected today
+
+| Owner | Existing source | Established behavior |
+|-------+-----------------+----------------------|
+| Declaration | [[file:../../../module-system/source/declaration.ss][declaration.ss]] | core.requires aliases are hygienically bound to dependency scopes in generated core.link. |
+| Selection | [[file:../../../module-system/source/link.ss][link.ss]] | Owns immutable generation, selected records, dependency records and generation-local scope caches. |
+| Package demand | [[file:../../../module-system/source/build.ss][build.ss]] | A required provider's configuration-build prepares a consumer-qualified external package request. |
+| Realization | [[file:../../../ops/selected-packages.ss][SelectedPackages.]] | Runs existing external requests and returns packages, build-graph and currentness guards. |
+| OpenTofu package | [[file:../../../modules/opentofu/build.ss][OpenTofu build role]] | Returns a realized package publication with scope, configuration and admission. |
+| Nix provenance | [[file:../../../modules/nix/objects.ss][Nix Source]] | Retains derivation, artifact and source guards; realization is an explicit effect. |
+| Runtime | [[file:../../../modules/opentofu/execution.ss][OpenTofu execution]] | Uses an explicitly bound publication and command, then existing Ops processes. |
+
+SelectedPackages. already returns a realized OpenTofu scope. The ordinary
+selection.modules dependency scopes do not consume that result: link caches the
+baseline scopes in closures. Adding a slot to a copied selection with .cc cannot
+magically redirect those closed-over caches or supply realization identity.
+
+Current-source correction: selection now provides =.with-packages=. It checks
+the exact build-graph association and package currentness, then creates a fresh
+link context that resolves consumer-qualified dependencies from realized package
+scopes. The baseline observation above does not imply this operation is missing.
+The Scenario demand/configuration and same-package binding described below still
+need integration. See [[file:12.23-contract-mainline-resumption.org][the resumed Contract audit]] for the separate producer gap.
+
+The current Null/AWS validation interfaces have empty core.requires. Their Config
+contains provider-directory, not the resource-shaped Config consumed by OpenTofu's
+configuration-build. Merely adding a Tofu requirement therefore is insufficient:
+the consumer's demand projection also needs alignment. Today the test builds a
+package set, rewrites provider-directory and supplies an engine command separately.
+This is qualification scaffolding, not the desired public configuration surface.
+
+* Reuse the existing dependency declaration
+
+The target contribution uses the already-supported declaration shape below.
+OpenTofuScopeContract is the existing Contract; this does not define another one.
+The whole Scenario adaptation shown here is not yet installed.
+
+#+begin_src scheme
+requires:
+(.o Tofu: (.o module-id: 'opentofu
+              contract: OpenTofuScopeContract))
+#+end_src
+
+The generated link already binds Tofu lexically. Consumer factories should use
+its realized modules/provider Types rather than read a directory themselves.
+Package/source policy still belongs upstream: selected names cannot infer a
+version, platform, license choice or trusted Nix Source from nothing. Upstream
+maintains the source/default once; ordinary users inherit it. A custom package
+is an explicit advanced configuration change, not an unexplained executable path.
+
+Before realization, only package demand is required: known resource/provider
+identities projected from the maintained configuration. No Schema compilation,
+provider directory read or self-link of the root init is allowed to discover that
+demand. Preserve the existing configuration-build path; do not add a parallel
+Scenario package-list DSL. The Config projection must reference maintained
+Profile/Scenario values rather than duplicate their business defaults.
+
+* Publish the runtime and Schema from one package closure
+
+[[file:../../../modules/opentofu/nix/provider-schema.nix][provider-schema.nix]] exposes provider/engine as Nix passthru, while its output
+manifest describes Schema inputs. [[file:../../../modules/opentofu/nix/provider-artifacts.nix][provider-artifacts.nix]] currently publishes only
+provider directories. Passthru is not automatically a Scheme publication field.
+The engine association is therefore absent from the realized Scheme scope.
+
+One concrete target for that EXISTING package producer is this Nix result:
+
+#+begin_src nix
+{ lib, linkFarm, opentofu, schemas, selection }:
+let
+  names = selection.providers;
+  selected = lib.genAttrs names (name:
+    schemas.${name} or (throw "Selected provider has no locked package"));
+  providers = linkFarm "opentofu-provider-inputs"
+    (lib.mapAttrsToList (name: path: { inherit name path; }) selected);
+  runtime = opentofu.withPlugins (_:
+    map (name: selected.${name}.provider) names);
+in linkFarm "opentofu-package" [
+  { name = "providers"; path = providers; }
+  { name = "runtime"; path = runtime; }
+]
+#+end_src
+
+This is a proposed output-layout change, not current code. Retain the existing
+name/duplicate validation and package-source guards when implementing it. Existing
+provider Schema manifests stay authoritative. The producer binds all selected
+providers to one engine closure; runtime directories must not be enumerated as
+providers by artifact-modules. Schema inputs come from the providers subtree;
+the command comes from the same realized root's runtime/bin/tofu. Both are derived
+inside OpenTofu's existing build result/scope, never passed per Scenario by users.
+The old artifact-root convention and development injection must migrate explicitly;
+no compatibility directory or unchecked environment/PATH fallback is proposed.
+
+* Join realization to selected records, without another loader
+
+Use the existing external request fields build-owner, configuration-owner,
+dependency-alias and generated identity. Join each request to the packages member
+of the SAME SelectedPackages result. Check its build-graph, generation and guards.
+Do not take the first package, match only a display name, or invent a second map
+maintained by callers. Different consumers/versions retain different associations.
+
+The existing selection linker must accept those admitted realization bindings
+when producing the corresponding consumer records. Revalidate the required scope
+Contract and the consumer scope. Keep the base generation immutable; do not mutate
+already cached scopes or reuse a cache closed over the unresolved dependency map.
+Expose the resulting bound selection on the existing SelectedPackages result
+(a proposed result slot), rather than introducing another public load function.
+Reuse the same selected Graph and source observations, without another directory
+scan or a second provider-selection algorithm.
+
+Publication binding also needs a completion point. core.admissions already names
+the export and its actual Contract. After a consumer record is complete, the
+existing publication mechanism should bind the Scenario's admission lookup to
+that owner/generation. Do not call .for-export for the same owner while its
+core.exports is still being linked: that re-enters .selected-record and creates
+a bootstrap cycle. The deferred lookup runs at explicit execution, after the
+record exists. Core owns the general association; OpenTofu owns how its execution
+object consumes it. No per-Scenario manual publication object is user input.
+
+* Target downstream surface: ordinary objects, then explicit effect
+
+These are TARGET examples, not presently executable zero-setup snippets.
+Null, WebProfile and AWSValidation are exports from the completed bound selection.
+Working directories are arguments at the effect boundary; they are not package
+identity, module configuration or a user-maintained Context.
+
+#+begin_src scheme
+(.def (Hello @ Null) message: "hello from the user")
+(.call Hello .run-local "./work/null")
+
+(.def (Production @ WebProfile) instance_type: "t3.medium")
+(.def (Check @ AWSValidation) profile: Production)
+(.call Check .validate "./work/aws")
+#+end_src
+
+The directory arguments require an adaptation of the current zero-argument
+methods. Preserve fresh-workspace checks. Do not hide Nix builds inside slot
+access, .def, Contract discovery or an unannounced first execution. Platform
+preparation explicitly realizes selected packages through Ops; an unprepared
+execution reports build-required. No zero-cost startup or first-use claim is
+established by this design.
+
+* Make the maintained source chain readable
+
+| Source | Retain | Remove when the bridge is implemented |
+|--------+--------+---------------------------------------|
+| init.ss | Selected contributions and upstream library source mounts | Engine paths and provider-path injection |
+| objects.ss | Profile defaults, effective resource relationships, behavior inheritance | Repeated package selection or launch command construction |
+| types.ss | Domain relationships and actual provider Type adaptation | Duplicate provider field schemas |
+| config.ss | Ordinary maintained configuration feeding existing build demand | provider-directory as a user/package-location option |
+| func.ss | Pure domain projection consuming the supplied dependency scope | Directory reader wrappers repeated for each Scenario |
+| interface.ss | Actual requires, export and admission associations | Empty requires masking a real OpenTofu dependency |
+| OpenTofu build/scope | Package closure, Schema and command association | Separate externally supplied engine command |
+| Ops/selection | Realization, owner/generation binding and explicit effects | Caller-built descriptor/package association tables |
+
+A library contribution may own these roles. A user's derived .def does not need
+another five-file module, a wrapper, or its own interface Contract declaration.
+For the current experiment, publication plumbing is more visible than business
+intent; that is a real UX defect, not a benefit of dynamic typing or POO.
+
+* Ecosystem comparison and acceptance questions
+
+The [[file:../../20-29-ecosystem-research/21-devenv/21.04-service-package-and-command-ownership.org][devenv/NixOS source comparison]] shows maintained package-to-process ownership.
+Our own [[file:../../../../devenv.nix][devenv.nix]] already derives Schema and engine from awsSchema, but exposes the
+collection through an environment variable and the engine as a package. It is a
+development configuration, not proof of an automatic Scheme Graph join. It also
+currently selects AWS only; it cannot silently satisfy the Null example.
+
+Required checks for the missing bridge: init demand selects only required
+providers; realization and selected owner/generation match; two consumers cannot
+steal each other's package; Schema and engine revisions move together; no
+publication self-reference; field access stays inert; user value overrides survive
+parent caches; stale package/source evidence is refused; AWS remains validate-only.
+The previous local execution receipt covers only the last part of this chain.
+No new execution or performance result is claimed by this source audit.

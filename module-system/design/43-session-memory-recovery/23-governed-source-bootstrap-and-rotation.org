@@ -1,0 +1,124 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.23 Governed Source Bootstrap and Rotation
+:PROPERTIES:
+:ID: agentic-ai-lab-context-governed-source-bootstrap-rotation
+:STATUS: local-bootstrap-rotation-joint-pass-remote-root-open
+:END:
+
+[[file:24-source-bootstrap-verification.org][10.06.43.24]] records the complete source-stable joint gate: exit 0,
+82 Quint Cases, 71 Lean theorems/69 guards, ASCENT 23, historical ORG 90 and
+fresh Scheme 155 checks. It binds the actual local/compiled cut and distinguishes
+local governed bootstrap from still-open remote root authentication.
+
+* Ownership and trust root
+
+[[file:01-agent-context-lifecycle.org][10.06.43.01]] owns Context. The pin from
+[[file:20-designated-session-source-admission.org][10.06.43.20]] now requires an authorized configuration binding rather
+than unrestricted Profile construction. Modules owns controller/proposal,
+Core-backed signing/revocation, CAS commit and binding generation. Proofs
+only creates Cases and consumes Modules; RFC 0015 remains an SDLC consumer.
+
+Controller creation is privileged application DI with an explicit configured
+source policy. It is not authorized by submitted claims, matching schemas
+or a generic business grant. This local protocol does not implement remote
+root identity, credential exchange or permission to install arbitrary policies.
+Trusted controller setup remains a premise; bootstrap binding and subsequent
+source replacement underneath it are checked operations.
+
+* Proposal, authorization and publication
+
+=source-control.ss= issues exact POO proposals with target source, Governance,
+operation and payload. Private state captures controller, expected configuration
+generation and target source revision. Generation zero denotes bootstrap;
+later generations denote replacement. Copying a proposal/control or adding
+claimed authorized fields does not change issuance.
+
+Authorization uses the existing Core verification issuer. Its snapshot binds
+the exact proposal through a frozen sequence, operation, expected generation,
+target revision, Governance identity/revision/owner/threats and canonical
+domain payload. Governance assesses the actual proposal: unresolved high /
+critical exposed threats block signing. Changed target revision invalidates
+an outstanding proposal.
+
+The named Assurance source-control adapter requires current evidence at its
+verification Host, a current issued grant at its effect Host, and an explicit
+source-policy decision approving the target/action. Evidence/grant alone
+cannot approve arbitrary targets. Host validity is rechecked after the policy
+callback; callback-triggered revocation cannot mint approval. No service
+effect or delivery callback runs.
+
+Commit rechecks current proposal/generation, real Core receipt and expiry,
+current approval and target/Governance snapshot. Domain callbacks run outside
+the controller mutex. Expected generation and receipt are checked again in
+the CAS publication critical section; receipt revocation shares that lock.
+Success advances the integer generation and returns an exact issued binding.
+Competing stale-generation proposals cannot both publish. Missing, copied,
+expired, revoked and cross-proposal/controller receipts change no binding.
+
+The configured clock must be a pure trusted observation. Local CAS and receipt
+revocation are atomic; independent Host policy/grant observations are not a
+distributed transaction. Cross-authority concurrent policy updates require
+their Host's own ordering semantics. No arbitrary remote linearizability is
+established by this local protocol.
+
+* Source rotation and obligations
+
+Parent and named Assurance admission constructors require =authorization:=
+alongside source and Governance DI. The binding must be exact/current and
+agree with both referents. Missing/copied/fabricated bindings cannot create
+an admitted consumer Profile. Normal POO extension retaining the adapter
+still works; private adapter pins include the binding, not displayed fields.
+
+Replacement retires the old binding generation. Old Profiles cannot review
+or admit even if their old registry/content remains current. Obligations
+reopen and ASCENT candidates withdraw. The new binding requires a new
+Profile/review; old reviews cannot be used by the new adapter. A -> B -> A
+returns to source identity, not the old configuration subject. Old A Profiles
+and unexpired authorizations remain invalid. The Case keeps its bootstrap
+receipt unexpired to isolate ABA refusal from accidental expiry.
+
+Revoking a pending receipt prevents commit; it is not implicit rollback of
+historically committed configuration. Changing accepted configuration requires
+another governed proposal. Live consumption retains its own current source,
+review and permission requirements. Rotation does not delete historical ORG
+evidence, counterexamples or independent Project knowledge. Source approval
+is neither effect authority nor protected disclosure permission.
+
+* Formal and real consumer correspondence
+
+| Owner | Checked slice | Limit |
+|-------+---------------+-------|
+| Quint | Bootstrap/replacement/ABA, withdrawal, replay, expiry, revision and review reopening | Finite protocol, not concrete private issuance |
+| LeanPOO | Focus successor generation; unissued/revoked/stale/policy/revision/expiry refusal | Conditional laws, not credential verification |
+| Scheme Modules | Private subjects, Core receipts, CAS and real ORG/Assurance/Governance consumers | Local process, not durable/remote controller |
+| ASCENT | Reevaluated admission observations | No authorization or grant issuance |
+
+Focused Quint passed eleven Cases. Safe run: 12033 generated / 2516 distinct,
+zero queued. Bootstrap/replacement/ABA witnesses: 36/137/534 distinct states.
+Seven injected faults: 7/57/46/798/51/58/58 distinct, with checked failure
+exits and actual counterexamples. Renewed receipts are abstracted at one
+proposal in Quint; actual revoked concrete receipts stay invalid in Core.
+
+LeanPOO v0.1.1 supplies Focus. Seven new theorems/seven guards build with the
+other roots: 80 jobs, 71 theorems/69 guards, no sorry or added axiom.
+Real Scheme replay passed 155 checks (32 new, 123 reused), using actual ORG
+Elements/Contract, Sessions, Core seals and Assurance/Governance objects.
+Harness counts overlap and are not independent new obligations or refinement.
+
+The first blocked-Governance fixture lacked a required precondition and failed
+type validation, not the intended authorization property. The fixture now
+supplies a real precondition; the contract was not weakened. That failed run
+is not a governance-refusal receipt. Policy callback revocation prompted
+post-policy Host revalidation. Proposal sequence is frozen once, not a lazy
+slot observing the later global proposal count. No exit override is used.
+
+* Remaining integration
+
+The binding API is directly migrated; no unauthenticated Profile fallback
+remains. Trusted-root installation authorization, remote source credentials,
+Session reincarnation, durable identity/recovery, multi-process controllers,
+issuer reclamation and protected unified Query/GQL remain open. Storage
+executors, bindings, old Memory and delivery are unchanged. TLC retains
+60s/12s silence, one worker/512 MiB; Lean 120s; Scheme 120s/5s silence/1 GiB.
+No timeout, heap or failure expectation was relaxed.

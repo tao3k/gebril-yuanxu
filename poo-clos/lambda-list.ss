@@ -5,7 +5,7 @@
 
 ;;; Functional argument binding helpers for hygienically lowered CLOS methods.
 
-(import (only-in :clan/poo/object .ref)
+(import (runtime: :clan/poo/object)
         (only-in :std/list/list drop)
         "funcs.ss")
 

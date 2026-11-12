@@ -1,0 +1,82 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Successor/checkpoint publication-domain binding
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Successor/checkpoint publication-domain binding
+
+** Cross-domain requirement and counterexample
+
+=SuccessorAdmissionClosure= and the authority-issued checkpoint each carry a
+=TrustedCheckpointWatermark=.  Validating both against the same
+=ReceiptValidationContext= does not prove they refer to the same publication
+domain.  =independentWatermarksAllowCrossDomainContextMix= constructs domain
+=101= and domain =202= with identical authority =17=, minimum generation =4=,
+and the same admitted context.  Both validations succeed independently while
+their domain identities disagree.
+
+#+begin_export typst
+$
+  "CrossOwnerWatermarkClosed"(s, c, d) :=
+    s.verifier-watermark = c.verifier-watermark
+    and s.admission.publication-domain-id = d.domain-id
+$
+#+end_export
+
+#+begin_export mermaid
+flowchart LR
+    S["Successor admission"] -->|"verifier watermark"| W["One trusted watermark"]
+    C["Authority-issued current checkpoint"] -->|"checkpoint watermark"| W
+    W -->|"status: exact domain identity"| D["Checkpoint publication domain"]
+    A["Domain A admission"] -.->|"rejected: watermark differs"| X["Typed cross-domain rejection"]
+    B["Domain B checkpoint"] -.->|"same context is insufficient"| X
+#+end_export
+
+** Cross-domain decision
+
+The published-predecessor closure now requires
+=successorAdmission.verifierWatermark = checkpointWatermark=.  Together with
+the existing successor =checkpointBinding= and current-checkpoint
+=checkpointAcceptedByWatermark= proof, this derives exact equality between the
+successor admission's =publicationDomainIdentity= and
+=domain.domainIdentity=.  Context equality is no longer used as a substitute
+for domain identity.
+
+** Cross-domain verification checklist
+
+- [X] Construct two distinct publication-domain watermarks that independently
+  admit the same authority/generation context.
+- [X] Require exact successor/checkpoint watermark equality.
+- [X] Derive successor admission publication-domain identity equals the current
+  checkpoint domain identity.
+- [X] Prove mismatched watermarks cannot close the transition.
+- [ ] Emit the exact shared watermark from the runtime successor-admission and
+  checkpoint producers.
+
+** Cross-domain Lean and AXLE receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.UseCompositionCedarInputIdentityTransitionDomainMixModel=
+  exited 0 for 2 jobs with no warning or error.
+- Refined =UseCompositionCedarInputIdentityTransitionLineageClosure= exited 0
+  for 413 jobs with no warning or error.
+- AXLE verified both domain-mix roots: 21 declarations, 8 source declarations,
+  8 environment declarations, 0 proof-base declarations/imports, no failed
+  declaration, and no Lean diagnostic.  Closure digest:
+  =sha256:ccccc4c642554b1b00f1cfe79ea139270b6bf18fe6171da7de6b254d88e85168=;
+  bundle digest:
+  =sha256:60aead0038305356bf05d31f78315be6a3de046c3c0f30cbfd3e150ae78980a3=;
+  canonical source digest:
+  =sha256:ef72478e9700dfee9c235479a32fb7261e0fc0dc5437d21f21a7ed578a563cec=;
+  independent bundle digest:
+  =sha256:64ed704b468810370b1eddfb145a817696ca6975757a905f644e7146172a69b1=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs; =lake build=
+  exited 0 for 587 jobs.  Both reported only the already-known
+  =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
+- =asp org lint= accepted this RFC with =[ok] orgize lint=.
+- =git diff --check= and =git diff --cached --check= both exited 0.
+

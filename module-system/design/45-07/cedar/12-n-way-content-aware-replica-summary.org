@@ -1,0 +1,146 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: N-way content-aware replica summary
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* N-way content-aware replica summary
+
+** N-way content-evidence closure requirement
+
+Content-aware replica evidence MUST be closed under repeated join.  A binary
+join that carries its left and right obligations but returns only
+=ReplicaRegistryCheckpointKnowledge= cannot be used as a content-aware input to
+the next join; projecting to the maximum position discards the type-level owner
+of the origin dispositions.
+
+A reusable summary MUST retain every committed origin represented by the join,
+prove that each origin is no later than the summary position, and carry the
+descriptor disposition from every origin to that position.  Joining summaries
+MUST union origins, extend all dispositions to the maximum position, and return
+the same summary type.
+
+** Pairwise evidence non-closure observation
+
+=ContentAwareReplicaRegistryCheckpointJoinEvidence left right= is a proof about
+one pair.  Its only prior output projection,
+=positionKnowledgeOfContentAwareReplicaJoin=, returns the old position-only
+type.  It therefore cannot represent the three-way expression
+=(left join right) join third= without discarding content evidence.
+
+The arithmetic join already had associative, commutative, and idempotent laws;
+those theorems covered only =Nat.max=.  They did not prove the same laws for
+origin membership or descriptor obligations.
+
+** N-way summary Typst model
+
+#+begin_export typst
+$
+  "ReplicaSummary"(s) :=
+    (s."minimum-position", s."origins", s."dispositions")
+
+  "JoinSummary"(l, r)."minimum-position" :=
+    max(l."minimum-position", r."minimum-position")
+
+  "JoinSummary"(l, r)."origins" := l."origins" union r."origins"
+
+  forall o in "JoinSummary"(l, r)."origins":
+    "ExtendIntervalDisposition"(
+      o,
+      "source-summary"(o, l, r)."minimum-position",
+      "JoinSummary"(l, r)."minimum-position",
+    )
+$
+#+end_export
+
+** N-way summary Mermaid closure
+
+#+begin_src mermaid
+flowchart LR
+  A["Replica summary A<br/>origins + dispositions"]
+  B["Replica summary B<br/>origins + dispositions"]
+  J["Join summary<br/>max position + origin union"]
+  E["Interval extension theorem"]
+  C["Reusable content-aware summary"]
+  N["Repeated / N-way join"]
+  P["Position projection"]
+
+  A -->|"left origins"| J
+  B -->|"right origins"| J
+  E -->|"extend every obligation"| J
+  J -->|"status: same summary type"| C
+  C -->|"join again"| N
+  C -->|"exact Nat.max projection"| P
+#+end_src
+
+** N-way summary decision
+
+- Add =positionRecoveryValid= to content-aware replica knowledge; a manually
+  assembled knowledge value cannot claim a recovery interval without the
+  existing validity proof.
+- Add =extendDescriptorDispositionAcrossRegistryInterval=.  A disposition at an
+  intermediate position extends to any later position by composing governed
+  lineage evidence; an earlier retirement remains valid throughout the longer
+  interval.
+- Define =ContentAwareReplicaRegistryCheckpointSummary= with a minimum position,
+  an origin predicate, origin coverage, and per-origin descriptor dispositions.
+- Derive the singleton-origin summary canonically from content-aware recovery.
+- Define summary join as =Nat.max= plus origin union and disposition extension.
+  Its result is the same summary type and is therefore closed under arbitrary
+  repeated joins.
+- Prove observational associative, commutative, and idempotent laws for both
+  positions and origin membership.  Descriptor disposition remains mandatory
+  for every member of the resulting origin union.
+
+** N-way summary checklist
+
+- [X] Identify the pairwise join output type that dropped content-aware
+  reusability.
+- [X] Retain position recovery validity inside content-aware replica knowledge.
+- [X] Prove interval dispositions extend to later joined positions.
+- [X] Define an origin-indexed summary closed under join.
+- [X] Preserve every left and right origin and descriptor obligation.
+- [X] Preserve exact projection to the existing arithmetic join.
+- [X] Prove position and origin observational associativity.
+- [X] Prove position and origin observational commutativity.
+- [X] Prove position and origin observational idempotence.
+
+** N-way summary Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  9 jobs with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  for 10 jobs with no warning or error.
+- AXLE accepted all 13 recovery roots and 76 declarations through the exact
+  four-source envelope: 38 source declarations, 38 environment declarations, 0
+  proof-base declarations/imports, no failed declaration, and no Lean
+  diagnostic.  Recovery closure digest:
+  =sha256:6d745c1c876efc8eab22bf411a1b164b708d574b1e64b857864d5c06815326af=;
+  bundle digest:
+  =sha256:7eeb87a91df027084667837369bb35683621fdd6998312c6db4d60ba45db740c=;
+  canonical source digest:
+  =sha256:e922d9506cbc4e94e65c6afe2d1171a19fa6c6dc3c8ce73443509e44a12411f2=;
+  independent bundle digest:
+  =sha256:8ceeb69061f20ad65ce70ebd869ae25b4b9d9e60151f1fbfaf99b2272f36b14c=.
+- AXLE accepted all 23 replica roots, including every summary law, and 97
+  declarations through the exact five-source envelope: 56 source declarations,
+  56 environment declarations, 0 proof-base declarations/imports, no failed
+  declaration, and no Lean diagnostic.  Replica closure digest:
+  =sha256:9d9aa03d5d1f38fb5d048916562fb79f63018226e4d00f208343bcedaf0dd79f=;
+  bundle digest:
+  =sha256:09dd31d28f2dba4223f01477b5751d19781591cc671be43cc450dcdb386838f5=;
+  canonical source digest:
+  =sha256:6943dc728ae75eb1ea8dc3bddc905b18bb6ec7b372ea4595bb98736133a8c708=;
+  independent bundle digest:
+  =sha256:ee9b0ecf20c5c28dc25d04ff295a32ab065953c35d5aa7fc51caef45582d7aae=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
+  build= exited 0 for 587 jobs.  Both reported only the existing
+  =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
+- =asp org lint= accepted this RFC with =[ok] orgize lint=.
+- =git diff --check= and =git diff --cached --check= both exited 0.
+

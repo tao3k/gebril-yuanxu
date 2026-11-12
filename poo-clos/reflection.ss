@@ -5,7 +5,7 @@
 
 ;;; Read-only class and instance reflection over POO metaobjects.
 
-(import (only-in :clan/poo/object .ref)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop element?)
         (only-in :std/list/list find)
         "types.ss" "objects.ss" "classes.ss" "lifecycle.ss" "dispatch.ss")

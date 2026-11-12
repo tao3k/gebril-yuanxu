@@ -1,0 +1,10 @@
+1fc4b5f16848ac37c8ee00c171a7bb458271bb502a2451f26246f885b6e623dd  ../.gerbil/pkg/github.com/tao3k/gerbil-poo/object.ss
+720d57b1848f830a734426cbc2369094b4adc535ba99dbf601a113bef9adc5f6  ../.gerbil/pkg/github.com/tao3k/gerbil-poo/object-state.ss
+8e45c3dc17172b9d65f2bfad5c40f32c7bf479fb7fbd66661097af01a4657d60  ../.gerbil/pkg/github.com/tao3k/gerbil-poo/read-route.ss
+38091191369bda10ec8f14bf22da8d1e7126cc1385cadb281ab9c27e8e6fb8cd  ../.gerbil/pkg/github.com/tao3k/gerbil-poo/slot-observation.ss
+df78d7e6183740b16a5e98b164276dc36707decc7a1c9c0752bba33ffe62f90a  ../.gerbil/pkg/github.com/tao3k/gerbil-poo/t/slot-observation-test.ss
+3a0b802275048cc6b134db76add8e313df95a782ac071f3571f44a368c1e432f  ../.gerbil/pkg/github.com/tao3k/gerbil-poo/t/issued-read-test.ss
+1d28d26888e1c8a4a65ea2998ad16c4911e4b183699e116e604c5892db226eed  ../.gerbil/pkg/github.com/tao3k/gerbil-poo/doc/slot-observation.md
+10500b9e542c250d1b2fd9d9eeb24b5a040e76c644ca00ac96e8760fc27d0a58  t/mop-replay-write-guard-test.ss
+cd9434774d9bbca5e0233a78c72f866e212ae098175a6f410933fd3e7b88af60  t/issuer-projection-test.ss
+81fb7cd5d1d0fcc2f1111fa1b24a0fd1e6b136fb320cecc9b1e1fbcd4c7722d4  t/issued-read-admission-test.ss

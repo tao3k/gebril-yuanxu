@@ -1,0 +1,121 @@
+#+title: 20.20 Namespace Loading and Factory Boundaries
+#+language: en
+#+filetags: :modules:loading:factories:assurance:performance:
+
+* Locate the cost before changing representation
+
+20.19's first namespace demand took 2.607 seconds. A private diagnostic build
+separates the ORIGINAL IO action's operations and reports scalar statistics
+after the entry returns. The worker's first request measures 2.639 s loading,
+.000053 s binding resolution and .001609 s applying the linker. Later runtime
+loads are microseconds. Namespace tree construction is not the main cost.
+
+An additional diagnostic counts object initialization, actual missing-instance
+preparation and method-table completion without installing a MOP hook or source
+observer. Weak receiver keys hold only numeric revisions. Within this cohort
+the load creates six POO objects, prepares two method tables and sixteen thunks;
+outermost POO preparation takes about .000059 s. No successfully prepared receiver
+is prepared again at the same revision. This does not cover every Gambit/C
+allocation or all class initialization. It does not justify merging objects,
+weakening invalidation or pooling issued read identities.
+
+A read-only runtime sample synchronized to this load observes 842 of 852
+main-thread samples in Gambit's dynamic loader and dyld/dlopen, largely image
+bookkeeping and notifications. Sampling itself affects debugger notifications.
+These are observations of that window, not an unsampled percentage or grounds
+to disable OS notification/security behavior. Diagnostic code, counters, markers
+and logs remain outside Git. Final runtime tests use the ordinary runtime library.
+
+* Binding factories and runtime entries have different contracts
+
+Linking a namespace requests a FUNCTION BINDING that produces an inert POO value.
+It does not request initialization of a whole runtime facade and all imports in
+its generated loader. Core's linker, build/test source projectors and Script
+factory now share the existing deferred declaration owner's binding import:
+
+#+begin_src scheme
+(def (module-binding-action module binding)
+  (def specifier (string->symbol (string-append ":" module)))
+  (lambda (arguments)
+    (parameterize ((current-expander-context (make-top-context))
+                   (current-expander-module-import core-import-module))
+      (eval-syntax '(import :gerbil/core))
+      (eval-syntax `(import (only-in ,specifier ,binding)))
+      (apply (eval-syntax binding) arguments))))
+#+end_src
+
+The public binding is resolved afresh in a private context, in both source and
+compiled cases. Publication importers cannot capture built-in factories. No
+procedure, approval or loaded-state registry is saved. One candidate build failed
+because the fresh context lacked the =only-in= transformer; importing standard
+=:gerbil/core= fixes that runtime requirement. The failed receipt is retained.
+
+This follows runtime DEFINING-CONTEXT initialization and error semantics. It is
+not equivalent to WHOLE-FACADE runtime initialization or untrusted Module
+publication admission. Artifact effects and runtime tracing retain
+=module-entry-action=/upstream =module-action= and its full-load-before-lookup
+contract. Source-only runtime bootstrap retains 20.19's source path. No user
+configuration syntax, implementation flag, Builder or cache protocol is added.
+
+* Defer an unused producer, preserve actual build admission
+
+=source/link.ss= no longer statically initializes =source/build= just to expose
+names or a selected Graph. Its original lazy =build-graph= slot invokes the
+original producer through its public binding only on demand. An explicitly
+supplied original Graph still short-circuits that producer. The producer still
+admits the selected receiver after initialization and retains its obligations,
+preparation, signing and currentness checks.
+
+The existing build-projection bootstrap root still reaches source/build's runtime
+metadata; an explicit runtime DFS assertion checks this. Catalog membership is
+eligibility, not an admission receipt: actual observations remain demand-bound.
+The census checks BOTH real loader state and real public-procedure boundness,
+so an uninitialized facade cannot hide an initialized defining context. No
+generated fragment filename is used as a rule. Actual build/publication gates
+exercise the demanded producer and refusal paths. Two duplicate expander and
+source-closure import groups in source/build are also removed. No live API,
+dependency requirement or required read edge is deleted as an optimization.
+
+* Assurance allocation
+
+SysML =BindingFactoryVersusRuntimeEntry= and =NamespaceBuildProducerDemand= state
+the boundaries. Existing Lean DemandMaterialization laws cover unrelated-demand
+preservation, installed identity and receiver separation. They do not prove
+dyld performance or Gerbil import evaluation. Existing ModuleDemand and
+ReadRetention QNT families cover demand, actual observation, source effects,
+both obligations and parent isolation. Interpreter/loader correspondence remains
+a Scheme acceptance obligation. No duplicate model or manual purity flag is added.
+
+* Ordinary production observations
+
+The strengthened final census without the diagnostic runtime overlay reports:
+
+| Modules | Namespace demand | Cold wall / CPU | Hot wall / CPU | Issued records |
+|---------+------------------+-----------------+----------------+----------------|
+|      16 | .1922 s          | 3.091 / 3.067 s | .0774 / .0730 s |           4985 |
+|      32 | .0057 s          | 4.277 / 4.223 s | .2216 / .2003 s |           8600 |
+
+Cold role expansions stay 32/64 and hot expansions zero. Physical reads remain
+5414/10352 cold and 106/170 hot. Record counts stay unchanged relative to
+20.19's final ordinary cohort. This is a local observed first-namespace change,
+not multiple paired trials, a statistical speedup or capacity qualification.
+The earlier ordinary post-change run was .1870 s first namespace, 3.679 s full
+16-module cold and .0730 s hot; at 32 it was 4.478 s cold and .1798 s hot. Both
+receipts are retained. The 32-module hot result does not establish a speedup.
+No authentication result
+is cached and no callback is suppressed.
+
+The new empty-output build passes through unchanged =gerbil build= (256 source
+compiles, 549 runtime jobs). Its same-output hot build performs zero compilation
+jobs; its 52.55 s wall time is still separate unresolved build-entry overhead,
+not a namespace or test performance result. All seven final Just gates pass, including the
+strengthened runtime/procedure-laziness census, actual bootstrap DFS coverage,
+source/compiled executor, build/signing and refusal, deferred roles, relocated
+source currentness and all eleven real Gitea/PostgreSQL cases. Tests use
+=just test-file= and require MODULE-OK, HARNESS-OK and OK, without skips,
+undefined bindings, harness errors or overflows. Strengthened census,
+source/compiled factories, bootstrap metadata DFS, build/signing, relocated
+currentness and real Gitea/PostgreSQL have separate local receipts. The 2 GiB
+and existing deadlines are unchanged. No ten-thousand-module run, compiler-source
+change, commit or push is part of this slice. Overall capacity and remote CI
+closure remain open.

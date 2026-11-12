@@ -1,0 +1,33 @@
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+;;; Separate source selection: three admitted declarations, only two demanded
+;;; scopes. This selection never changes the standard build consumer's init.
+(import (only-in "./init.ss" yuanxu-thousand-scope-control.init.exports)
+        (only-in :clan/poo/object .get .all-slots/sort .ref/cached)
+        (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer))
+(def window (.get yuanxu-thousand-scope-control.init.exports Corpus))
+(unless (equal? (.all-slots/sort window) '(module-0 module-1 module-2))
+  (error "wrong scope-control declaration domain"))
+(def factories (make-hash-table-eq))
+(def declarations 0)
+(def (observe key amount)
+  (when (eq? (if (pair? key) (car key) key) 'publication-start)
+    (set! declarations (+ declarations amount)))
+  (when (and (pair? key) (eq? (car key) 'link-stage-start)
+             (pair? (cadr key)) (eq? (caadr key) 'scope-factory))
+    (hash-update! factories (cadadr key) (cut + <> amount) 0)))
+(def graph
+  (parameterize ((current-module-source-observer observe))
+    (.get yuanxu-thousand-scope-control.init.exports tests selected-graph)))
+(unless (and (= declarations 3) (= (length (.get graph module-order)) 3)
+             (= (hash-length factories) 0))
+  (error "scope-control declaration admission forced a factory" declarations))
+(def plan
+  (parameterize ((current-module-source-observer observe))
+    (.get yuanxu-thousand-scope-control.init.exports Corpus module-1 plan)))
+(unless (and (equal? plan '(5432)) (= (hash-length factories) 2)
+             (eqv? (hash-get factories 'yuanxu-thousand-library/modules/module-0/interface) 1)
+             (eqv? (hash-get factories 'yuanxu-thousand-library/modules/module-1/interface) 1)
+             (not (.ref/cached window 'module-2)))
+  (error "demand constructed an unrelated admitted scope" (hash->list factories)))
+((.get graph admit-current))
+(displayln "THOUSAND-SCOPE catalog=1000 declarations=3 scopes=2 unrelated-admitted-scope=cold")

@@ -1,0 +1,148 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Haumea and POO Namespace Projection
+#+language: en
+#+date: [2026-11-08]
+#+property: STATUS modular-design-and-qualification
+
+* Current contract and reading order
+
+Keep =yuanxu!=, Interface configuration, Gerbil =import= and POO =.get=.
+Gerbil owns package installation and compilation; Yuanxu projects selected
+owners and their dependency closure into one init-owned =std-make-spec=.
+No additional loader, cache layer or compatibility interface is introduced.
+
+Start with modules 01 and 03 for the contracts and user surface, module 05
+for the algorithm audit, module 13 for directed graph repair research,
+and module 07 for incremental publication. Modules
+02, 04, 06 and 09--11 preserve experiments and failure evidence. Modules
+08 and 12 describe downstream selection and package boundaries.
+
+Lean operation-count proofs do not establish native throughput. The required
+10,000-owner Cases retain 180 seconds and 4 GiB; rejected and incomplete
+runs remain visible in the owning measurement documents.
+
+* Topic modules
+
+| Topic | Document |
+|-------+----------|
+| Contracts, owner mapping and initial qualification | [[file:13.35-haumea-and-poo-namespace-projection/01-contracts-and-initial-qualification.org][Read]] |
+| Business EVAL and selected-source ownership | [[file:13.35-haumea-and-poo-namespace-projection/02-business-eval-and-source-ownership.org][Read]] |
+| Branch projection, build integration and leaf expression | [[file:13.35-haumea-and-poo-namespace-projection/03-projection-build-and-leaf-expression.org][Read]] |
+| Reader expansion and retained read support | [[file:13.35-haumea-and-poo-namespace-projection/04-reader-expansion-and-retention.org][Read]] |
+| Graph libraries, algorithm contracts and Scheme correspondence | [[file:13.35-haumea-and-poo-namespace-projection/05-indexed-graph-algorithms.org][Read]] |
+| Profile support, replay and vector-route experiments | [[file:13.35-haumea-and-poo-namespace-projection/06-profile-replay-and-vector-routes.org][Read]] |
+| Incremental admission, certificate publication and index retirement | [[file:13.35-haumea-and-poo-namespace-projection/07-incremental-publication.org][Read]] |
+| Profiles, downstream selection and user authoring | [[file:13.35-haumea-and-poo-namespace-projection/08-profiles-and-user-authoring.org][Read]] |
+| Rejected tagging experiments and process qualification | [[file:13.35-haumea-and-poo-namespace-projection/09-historical-tagging-and-process-experiments.org][Read]] |
+| Reader query keys and compiler-tool provenance | [[file:13.35-haumea-and-poo-namespace-projection/10-reader-query-and-tool-provenance.org][Read]] |
+| Cross-window libraries and build lifecycle | [[file:13.35-haumea-and-poo-namespace-projection/11-cross-window-and-build-lifecycle.org][Read]] |
+| Weaver identities and package installation | [[file:13.35-haumea-and-poo-namespace-projection/12-weaver-and-package-installation.org][Read]] |
+| Directed graph algorithms and local order repair | [[file:13.35-haumea-and-poo-namespace-projection/13-dynamic-graph-repair.org][Read]] |
+| Complete Graph Goal, properties, Benchmark and CI acceptance | [[file:13.35-haumea-and-poo-namespace-projection/14-graph-qualification.org][Read]] |
+
+* Maintenance
+
+Update the owning topic module. Keep this file as the short routing entry.
+Keep topic files below 1,000 lines; split by contract or owner before adding more experiments.
+Preserve rejected candidates and incomplete receipts with their original scope;
+a historical result does not qualify the current implementation.
+
+* Algorithm decision before another Scheme change
+
+The earlier real 10,000-Module sparse run took 2.356 s wall / 2.260 s CPU
+to return its first business value, with two Interface admissions and two
+scope factories. Its hot read took 6.914 μs wall. A separate diagnostic
+run charged 1.233 s CPU to directory Context construction, including
+0.519 s for source-owner indexing and 0.229 s for Feature root extraction.
+These are inclusive spans from the diagnostic run. The full-selection
+gate has a different contract and requires a separate result.
+
+The POO benchmark also has two different boundaries. A million-node ring
+takes 39.7–40.5 ms CPU for SCC discovery over the already captured index.
+The public typed-source ring partition takes 28.327 s wall in the recorded
+run, including declaration getters, capture, normalization and certification.
+The 2.923 s million-owner DAG-band result measures ordered reachability
+including capture and uses no SCC discovery. Report those boundaries as
+separate results. The shared cost to investigate is rebuilding or reading
+all owner rows before the requested operation can use an index.
+
+** Ownership and algorithm
+
+- POO should build the structural plan from an exact, sealed declaration
+  publication. Intern owner identities once in that publication, share its
+  ordered rows and existing forward/reverse indexes, and address private
+  traversal state by compact ranks where the selected representation allows
+  it. A generic source that supplies arbitrary getters retains full capture
+  and authentication wherever the operation promises a global result.
+- Yuanxu should consume that structural publication through its existing
+  Context. Today the build-artifact path imports POO graph scheduling, while
+  directory linking prepares owner routes and selection separately. Explicit
+  selection already supplies paths and decisions. Check
+  their global declaration rules once and derive the owner and branch routes
+  and Feature roots during that pass, preserving refusal order. Resolve
+  source evidence on the requested paths and reached owners where the
+  contract allows it. Preserve the signed Feature roots required by the
+  sparse selection policy. Enumeration, Profile discovery and full
+  certification can each require wider evidence. A global filesystem
+  policy remains due at the same boundary unless the producer supplies an
+  exact listing and kind witness for that generation.
+- After preparation, a sparse request should charge path segments and the
+  reached owner and edge set, plus actual Gerbil expansion, guards and
+  business evaluation. An exact producer edit can reuse the old reverse
+  index to invalidate consumers and repair scheduling locally. Keep the
+  full certification path for uncontrolled input changes. For SCC, use
+  the existing certified rank path when applicable and the measured
+  packed traversal for general cycles. Deletion can split a component and
+  needs a separate completeness argument before enabling local SCC repair.
+
+For POOF, the actionable distinction is sharing an inherited method plan
+and retaining receiver-local lazy values. C4 orders inheritance and =sup=
+must continue from the correct contribution with the final =self=. It has
+its own input and observable order. Keep that plan separate from the
+Module dependency graph. A fixed slot layout can reuse indexed access
+for the exact shape, while a value or failure is still governed by the
+receiver and the original action protocol. A custom getter, type check or
+hook retains its invocation and authentication boundaries. See
+[[https://fare.tunes.org/files/cs/poof.pdf][POOF, sections 1, 4.2.2 and 6]],
+[[https://fare.tunes.org/files/cs/poof/ltuo.html][Faré, chapters 7 and 10]],
+[[https://arxiv.org/abs/2201.07197][Tarjan and Zwick]] and
+[[https://www.doc.ic.ac.uk/~phjk/Publications/DynamicTopoSortAlg-JEA-07.pdf][Pearce and Kelly]].
+
+** Lean obligations and acceptance
+
+Prove that a projected route returns the same owner, absence or first
+refusal as the ordered reference. An unobserved unrelated path can be
+changed into a symlink or collision with the same demanded observations.
+For a global policy, that counterexample requires a global witness or a
+scan. For a sealed publication, prove that its evidence covers every fact
+used by the policy, that the read belongs to one generation, and that
+stale, missing or substituted evidence cannot admit a result. Prove sparse
+closure and scope identity separately from full certification. Check the
+existing independent guards on both sides of Gerbil expansion and author
+callbacks. Reuse the existing LeanPoo graph revision, construction and
+slot semantics, with Yuanxu proving source evidence and route ownership.
+
+The source-policy boundary is checked in =Admission.SourceWindows=.
+=missing_fact_precludes_global_decision= constructs a second world with
+identical sparse observations and a different global decision.
+=DirectoryCut.use_exact= preserves the first refusal under pointwise
+coverage for the active generation. The cut is indexed by the exact ordered
+policy. A different authority or generation refuses before returning the
+summary. =repair_firstIssue= composes the changed segment with unchanged
+ordered summaries when the producer establishes both frame conditions.
+The SysML allocation is =DirectoryPublicationCoverage=. The existing Quint
+=SourceWindows= model retains fresh return checks after effects. These
+results establish neither a filesystem generation oracle nor a Scheme
+representation for the cut.
+
+Gate the Scheme change first on work counts. An already admitted sparse
+request must not iterate unrelated owners, expand unrelated Interfaces or
+construct their scopes. Charge the one-time work to the cold init-through-
+first-value measurement and also report the admitted first request and
+warm request separately. Graph measurements report capture, SCC discovery
+and certified return for 100K and 1M nodes, with graph shape and edge
+counts. Use the existing real 10K sparse and full-selection cases after
+the upstream path is qualified. Their original limits and negative
+controls remain in force. The Scheme bridge and composed graph/route
+refinement remain pending.

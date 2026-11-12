@@ -1,0 +1,29 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+* 10.06.14.01 Decision
+=agentic-ai-lab= is the brand and module-system identity. Bare =poo= is not retained as a module-system namespace.
+This distinction keeps the public surface clear:
+- Brand name: =agentic-ai-lab=
+- Default module group: =agentic-ai-lab=
+- Scheme owner field: =agentic-ai-lab.scheme=
+- Module-system owner field: =agentic-ai-lab.modules=
+- Runtime owner field: =marlin-agent-core=
+* 10.06.14.02 Code Rules
+Use =agentic-ai-lab= in user-visible data:
+- presentation =brand-name=;
+- default descriptor =group=;
+- user config =boundary= metadata;
+- doctor and source-doctor metadata;
+- documentation and downstream templates.
+Canonical public API names use =agentic-ai-lab= or =agenticAiLab=:
+- =agentic-ai-lab-module=;
+- =agenticAiLabModules=;
+- =yuanxuModuleCatalog=;
+- =agentic-ai-lab-module-active?=;
+- =agenticAiLabEvalModules=;
+- =agenticAiLabModuleSystemPresentation=;
+- =yuanxu-user-profile?=;
+- =yuanxu-user-config?=.
+Old =poo*= spellings are not compatibility aliases for the module system. Public and internal module-system code uses the branded names to avoid split ownership.

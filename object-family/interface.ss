@@ -6,8 +6,7 @@
 ;;; Boundary: public indexed POO object-family feature interface.
 ;;; Invariant: hygienic family syntax expands to ordinary POO objects.
 
-(import "funcs.ss"
-        "indexed.ss"
+(import "indexed.ss"
         "syntax.ss")
 
 (export (import: "indexed.ss")

@@ -1,0 +1,107 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.29 Human Recovery Decision Source and Concurrent Admission
+:PROPERTIES:
+:ID: agentic-ai-lab-context-human-recovery-decision-source
+:STATUS: module-protocol-local-joint-pass-remote-durable-open
+:DATE: 2026-10-15
+:END:
+
+* Authentication before policy
+
+[[file:31-controlled-human-source-change.org][10.06.43.31]] refines the previously separate replacement obligation with an
+independent source-change authority and generation/cut-bound rebind protocol.
+
+[[file:../../../../modules/ai-agentic-context/human-decision.ss][Modules Human decision]] owns authenticated source registration, decision
+issuance, expiry, withdrawal and one-shot admission. A recovery authority now
+requires an exact issued =human-source:= dependency. Its business-policy callback
+is no longer the only boundary between an agent's declaration and Human authority.
+
+The host configures a source with an actual Core verification adapter operation,
+clock and canonical event snapshot. Registration is trusted application DI.
+Submitted =actor=, =source=, =approved= or schema strings do not register a source.
+A copied source presentation is not an issued source; a different issued source
+with the same name does not satisfy the recovery authority's pinned referent.
+The host authenticator must validate the source event, its subject and requested
+validity interval, not just
+extract keywords from its title. The local Case uses an exact host capability;
+this is not a browser login, OIDC signature or deployed identity-provider proof.
+
+After successful Core verification, the Module issues a POO decision with
+private bindings to source generation, exact event, verification receipt,
+actor/decision identity, operation, prior installation, successor root and
+configuration. Exact target pins supplement the host snapshot: equal names or
+a copied configuration cannot substitute another referent. The event and
+decision's declared fields must continue to match those private bindings.
+Issuance rechecks source liveness and receipt validity before publication.
+
+* Lifecycle and replay boundary
+
+| State/transition | Required consequence |
+|------------------+----------------------|
+| Authenticated current decision | Candidate for a scoped recovery proposal, not a recovery grant |
+| Decision withdrawn | Existing recovery authorizations no longer permit publication |
+| Source retired | All its decisions become unusable and it cannot issue new ones |
+| Decision expired | Refuse even when the recovery authorization has a later deadline |
+| Decision consumed | Only its winning successor exists; no second use |
+| Installation already committed | Later decision withdrawal is not an implicit uninstall |
+
+Actor/decision identifiers cannot be issued twice at one source. Replaying an
+authenticated event after withdrawal, expiry or consumption therefore cannot
+mint another decision with the same identity. A fresh identity requires fresh
+source authentication and business approval. Clock observations must be
+nonnegative and monotonic; rollback raises a refusal rather than reviving expiry.
+Callbacks and snapshots are trusted bounded/pure host functions and must not
+reenter the installation or Human admission locks.
+
+Withdrawal invalidates pending use permanently. It does not erase historical
+evidence or retroactively roll back a completed installation. Revoking the
+installed root remains the explicit mechanism for live controller invalidation.
+Source replacement/re-anchoring is not implemented as name reuse: a retired
+pinned source stays retired. Controlled replacement is now specified separately
+in 10.06.43.31; it does not reset this retired source's lifetime.
+
+* Linearization of withdrawal and publication
+
+Recovery still checks source/root epochs, Governance readiness, actual
+Assurance evidence/grant, successor installation policy and Human business
+approval. It rechecks after callbacks. The final publication holds the
+installation mutex, then enters Human admission under the source mutex, checks
+current authentication/expiry/withdrawal/consumption again and publishes the
+successor before consuming the decision in the same critical section.
+
+The lock order is installation -> Human. Source withdrawal takes only the Human
+lock. The internal publication handoff performs no external callbacks; it is
+not exported through the normal Context interface. Thus withdrawal ordered
+before acceptance prevents publication, while withdrawal ordered after an
+already completed publication does not undo it. Publication also consumes the
+predecessor under the installation lock, preserving one successor per head.
+
+Multiple prepared candidates remain possible. Two scoped recovery proposals may
+both hold actual Core authorizations; that is not two admissible publications.
+The Scheme concurrency Case starts two Gerbil threads against one predecessor
+and one authenticated decision, requires both to join within two seconds and
+observes exactly one winner and one generation increment. This is local process
+linearization, not durable/distributed consensus or multi-process CAS.
+
+* Assurance owner and proof allocation
+
+The existing effect Host requires its exact serialized owner. The Assurance
+integration Case performs its real Host checks on that owner. The independent
+concurrency Case uses real Module/Core/Human/Governance objects with configured
+thread-safe policies and the real ORG-derived Context; it does not invoke an
+Assurance effect Host from arbitrary threads or replace its owner guard.
+
+Quint explores finite authentication/withdrawal/time/two-proposal interleavings
+and unsafe transitions. LeanPOO Focus proves conditional structural refusal and
+one-publication laws for arbitrary decision/proposal identifiers. Neither proves
+the trusted authenticator or OS mutex implementation. Scheme checks actual
+private issuance and thread behavior; Proofs constructs inputs and observes
+Modules, without another issuer or a duplicated admission predicate.
+
+ASCENT remains relational inference over admitted projections and cannot issue
+Human decisions, sources, recovery grants or effect authority. Its existing gate
+is a regression, not a new recovery-specific rule set. ORG Elements/Contract
+still owns the Context content consumed by these Cases. No storage executor,
+bindings, old Memory, remote authentication service or timeout policy is changed.
+[[file:30-human-decision-verification.org][10.06.43.30]] records actual results and remaining qualification boundaries.

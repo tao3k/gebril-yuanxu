@@ -5,7 +5,7 @@
 
 ;;; Generic-function creation and binding-owned configuration evolution.
 
-(import (only-in :clan/poo/object .ref .put!)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop element?)
         "types.ss" "objects.ss")
 

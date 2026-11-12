@@ -1,0 +1,183 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Programming Style 06 - Import Build And Performance
+
+* Import ownership
+
+** Build input context is an init projection invariant
+
+The init-owned =std-make-spec= establishes =call-with-build-input-path= around
+source projection and Make dispatch. Prerequisites retain their order. The
+invocation's output directory is the native fallback, including when an
+explicit output is absent from the caller's path. A generated compiler source
+view goes before prerequisites within the same guarded boundary. A =package:=
+window contributes its native checkout from the bound init declaration ahead
+of ordinary prerequisites, so
+installed copies cannot hide selected source dependencies. The source
+reader still admits each reached library through its native identity and
+source guards. Native Make separately owns its output
+directory and hot/currentness checks. Restore the caller's exact path on every
+exit. If a callback changes the input path, reject the prepared result and
+latch refusal for this init build epoch, including when the callback throws
+after mutation. Restore before reporting refusal. A retry cannot use old prepared
+evidence. Native compilation failures after admission retain the existing
+recovery contract.
+
+Gerbil Make prepends its own source directory. Each native compile dispatch
+admits that exact path transition and restores the compiler path before the
+next source check. A different resulting path refuses the init epoch.
+
+Do not repair this invariant by changing downstream =GERBIL_LOADPATH= flags,
+warming business scopes, bypassing canonical Context checks, or increasing a
+watchdog. =build-input-context-test.ss= covers input order, output fallback,
+nesting, multiple values and exception restoration. =module-build-role-test.ss=
+covers an author initializer that mutates the path and a later evidence-reuse
+attempt, including mutation followed by an author exception. These suites and
+the source-admission control run in the existing default =just test= list.
+Real package acceptance stays in the owning product's tests.
+
+The existing CI platform build also runs
+=just test-build-input-context-mutations <artifact-dir>=. It compiles isolated
+native variants with output-first lookup, reversed prerequisites, omitted
+restoration and accepted input mutation. Each must fail the corresponding
+order/admission assertion with a nonzero exit; compilation failure, timeout
+and heap/stack exhaustion do not qualify. Correct-code suites pass before and
+after the variants, and the checkout source digest must remain unchanged.
+Keep the receipt and raw logs in local/CI artifacts, never source control.
+
+The Lab deployment gate deliberately passes an output-first environment to
+every action. It checks stable compiler prerequisite Context paths, zero
+business scopes during source projection, and native B product initialization
+in an independent qualification harness. First =.get= and selected owner suites
+execute in that process without warming scopes in the parent.
+Lab's runtime CI invokes the deployment file separately through its 240-second
+aggregate =just test-file= gate, validates its complete receipt, and retains its
+output. Its action and idle limits are 120 and 60 seconds, respectively.
+The broad runtime unit batch cannot substitute its longer aggregate deadline.
+
+** Source and native imports
+
+Managed Module consumers use the owning =init.exports= namespace and ordinary
+POO =.get= demand. =modules/<name>/interface.ss= is the Module System's loading
+configuration, not a second native-import application API. Ordinary library
+facades remain native Gerbil imports, including built-ins such as Ops. Backend
+compiler imports and explicit authoring inspection do not replace scope linking.
+Module roles use relative imports for their own owners. Cross-domain implementations import a
+precise public owner and use =only-in= for a bounded symbol set.  Global
+facades deliberately export a stable surface and never wildcard-reexport
+concrete Profiles, Scenarios or test owners.
+
+The Core package's fixed prelude already owns the normal POO bindings. An
+internal library may keep an explicit runtime =(runtime: :clan/poo/object)=
+dependency instead of copying those same strong bindings again. Runtime
+resolution must identify the inherited binding with the original export;
+matching symbol spelling is insufficient. This also keeps one runtime context
+edge for Make instead of one edge per only-in alias. Do not apply this rule to
+custom preludes, renamed/phase imports, import reexports or reusable Module
+roles whose caller may choose another package language. Those retain explicit
+binding imports. No public macro or alternative dependency inventory is added.
+Check the remaining strong imports too: plain =:gerbil/core= can shadow the
+prelude's POO =object?=/=make-object=. Preserve deliberate Gerbil constructor or
+predicate imports explicitly, and never replace a POO constructor with the
+similarly named runtime constructor. Binding identity after migration is the
+criterion; equality with the prelude before migration alone is insufficient.
+
+When a prelude must reexport a filtered runtime interface, prefer a complete
+runtime import-set followed by export filtering, provided actual weak-binding
+precedence is verified. =except-in= flattens the import-set into aliases and
+can make Make revisit one owner thousands of times. This is not permission to
+move arbitrary filters: compare every published binding, phase and weakness,
+keep initialization/phase dependencies, and test constructor shadows.
+
+This rule also applies to the maintained Module/Config role preludes. Runtime
+=import:= treats grouped imports and flattened aliases differently by phase and
+export owner. Do not assume identical public
+inventories: retain all prior bindings, and describe any completion of the
+runtime language surface explicitly. The audited Config completion is at
+phase +1/+2 only; runtime exports remain unchanged. Added names must already be public Core
+names, expose the same effective POO-shadowed binding, and remain weak. Audit
+renamed exports with runtime terminal identifier resolution, not raw export
+resolution (which can return an intermediate import/alias binding). The role
+prelude's specialized =.def= remains owned by Source declaration lowering.
+
+The Module role prelude imports the complete POO owner and renames its dedicated
+declaration binding privately. Export filtering substitutes that binding as
+=.def= without flattening all other POO names into import aliases. The private
+name is not exported. =t/prelude-test.ss= checks real terminal bindings/phases,
+explicit-over-weak precedence and the complete ordered dependency callback trace
+against the former import form; export-name equality alone is insufficient.
+
+Build phase timing uses the existing scalar accounting mode. Full VM/GC sampling
+around every physical source read is qualification instrumentation, not an
+ordinary build latency measurement. Keep actual authentication, replay visitors
+and source observers intact in both modes, and never report a partial recovery
+as a zero-compilation hot build.
+
+Build verbosity 2 retains aggregate work counters and stage clocks. Per-file
+=reader-initialization= and =reader-initializer-body= attribution belongs to
+explicit detailed accounting (=#t= or =stages=, build verbosity 3); scalar
+acceptance must not allocate/emit those rows. This removes diagnostic work,
+never the actual initializer or any entry/return guard. Owner-qualified
+=scope-factory= counters remain active in scalar mode.
+
+Cross-process attribution uses the init build's =epoch= timestamps together
+with the caller's spawn, return-line receipt and completed-operation timestamps.
+=real-time= origins are process-local: subtracting a child's timestamp from a
+parent's elapsed duration cannot establish a shutdown delay. Report CPU clocks
+separately. A native timing wrapper is a diagnostic only; final acceptance keeps
+the original CLI, watchdogs, natural exit and all selected-product assertions.
+
+Compiler entries whose fields are immutable lexical values use runtime lexical
+slot shorthand, such as =(.o kind path input options owner contributor)=.
+Do not wrap each captured value in a computed getter. Receiver-dependent
+formulas, defaults, compiler forms and effectful methods remain explicit lazy
+slots; never freeze those just to reduce closures.
+
+* Build roots and laziness
+
+Gerbil's =make-prelude-context= constructor is valid without the reverse cache
+entry installed by =core-module->prelude-context=. Compilation dependency
+projection must accept both Gerbil paths. Prefer an exact registered association;
+otherwise verify the constructor's complete ordered import/export payload,
+including the same module identity, source path and export object identities.
+One matching export or a matching name alone is insufficient. An incomplete
+payload is rejected. An empty payload still needs an exact registered owner;
+it cannot establish a missing origin. Do not import a language during this
+metadata walk, guess a source filename, or introduce a second registry.
+The regression lives in =t/module-bootstrap-test.ss= and uses the actual Gerbil
+constructor, with an omitted-export negative control.
+
+A production library root is a separately required public artifact,
+not a source inventory. Runtime Gerbil imports close dependencies. Do not list
+both facade and internals, or production and test owners, as independent roots.
+Profiles, Scenarios, contribution modules and advanced authoring owners remain
+lazy until an explicit consumer demands them.
+
+Use the existing import-closure projection and upstream =std/make=. ASP remains
+a development policy dependency, not a production build prerequisite. Do not add a scheduler,
+currentness cache, source expander or duplicate graph.  Diagnose root count,
+compile count, first-event latency, wall time, peak process-tree memory and
+saturation separately.
+
+* Performance law
+
+Avoid repeated list scans and repeated closure/index construction.  Reuse
+stable prototypes and derived indexes.  Do not lower concurrency to hide a
+regression.  Performance changes require an A/B scenario with the same source
+and semantic result; an optimization without a receipt is not project style.
+
+** Built-in library ownership
+
+Ops is an ordinary Core library, not an optional Module selected through root
+init. Import its published Ops object from =:yuanxu/ops/interface=; functions
+and runtime Script methods share one executor. Core owns compilation through
+its ordinary library roots. Module =core.requires= lists selectable Module
+publications, not built-in library imports. No bootstrap selection or second
+interface registry is required to execute an explicitly declared Script.
+
+A Module must publish the inert vocabulary that its public consumers need.
+Funflow's runtime vocabulary is part of its default object facade; consumers
+need not import an implementation file that is absent from the compiled public
+closure. Scope acquisition and vocabulary reads never start a runtime.

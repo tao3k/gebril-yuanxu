@@ -1,0 +1,312 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: 13.37 Feature Composition And Withdrawal Through The Module System
+#+property: DOCUMENT_ID 13.37
+#+property: STATUS implemented-module-scope-and-context-memory
+
+* Decision and ownership
+
+A Feature is an optional contribution to a selected Module instance. Gerbil
+owns code identity, import/export phases, initialization and code loading.
+The existing Module System owns selection, dependency binding, composition,
+Contract admission and publication. Runtime consumes the resulting capabilities;
+it does not run a second Feature selector or decorate accepted selections.
+
+This refines [[file:13.28-managed-dependency-and-activation-policy.org][13.28]] and the separation in
+[[file:../../../module-system/design/136-gerbil-module-feature-layering.org][RFC 136]]. Historical standalone Profile syntax and plugin-loader adapters
+are not a second public entry. Profiles and Scenarios use the same =yuanxu!=
+directory windows; =rename:= changes their access namespace, not their authority.
+
+* What the current source establishes
+
+- [[file:../../../module-system/source/selection.ss][selection.ss]] already validates Feature identity/owner, explicit negative
+  selections, dependency/conflict resolution and deterministic order. Its
+  synthetic Core nodes are private ordering inputs, not user-selectable Features.
+  Negative decisions check names without forcing contribution payloads.
+- [[file:../../../module-system/feature/resolver.ss][resolver.ss]] owns required/optional/conflicting edges and cycle detection.
+- [[file:../../../module-system/feature/composition.ss][composition.ss]] collects the existing manifest contribution categories in
+  resolver order, preserving each declaration's order with linear accumulation.
+  This is an ordered plan, not proof of final Module scope composition.
+- [[file:../../../module-system/source/link.ss][link.ss]] constructs the Core scope, applies that owner's ordered Feature
+  refinements, binds published exports and admits the final scope. It retains
+  the effective native Type so a downstream dependency refinement must satisfy
+  selected Feature obligations as well as Core. Existing manifest contribution
+  categories retain their domain-specific assembly semantics.
+
+Correct selection alone does not establish composable/removable Module behavior.
+The final-scope integration is now implemented in
+[[file:../../../module-system/feature/scope.ss][feature/scope.ss]]; product migration and the broader package gates below are
+separate acceptance obligations.
+
+The downstream Agentic Context declares Memory in its owning =interface.ss=.
+Its =core= publishes the baseline profile; the selected =memory= refinement and
+Type add obligations to the final receiver. Init selects =+memory= or =-memory=.
+Lab's =t/yuanxu-context-memory-downstream-test.ss= owns the independent package
+build, first compiled reads, consumer refinement and withdrawal qualification.
+Core's synthetic domain values cannot substitute for that product gate.
+
+* Current Interface declaration and native lowering boundary
+
+The following uses ordinary POO declarations. The Module System supplies the
+Feature ID, owner and existing descriptor defaults from the enclosing Module
+identity and the =memory= slot. Authors need no descriptor factory/import or
+second selection manifest. Existing explicit Feature descriptors still serve
+the Feature component's domain assembly APIs; their declared owners are validated.
+
+#+begin_src scheme
+(.def Context
+  identity: 'ai-agentic-context
+  core: (.o requires: (.o)
+            scope-contract: ContextScopeContract
+            exports: (.o (:: self ContextBase.) config: Config))
+  features:
+  (.o memory: (.o refine: EnableMemory contract: MemoryScopeContract)))
+#+end_src
+
+=EnableMemory= is a named native function in the object's implementation role;
+it returns a derived POO scope. =MemoryScopeContract= is a native Type from the
+type role. The Interface wrapper still owns role imports and Core export
+binding. =selection.ss= supplies inert Feature metadata on selected demand;
+=link.ss= supplies graph/owner routing and supported callback guards. This is
+not a new macro, a Runtime registry or a component-to-prototype coercion.
+
+For a Feature with its own source directory, the Module Interface can declare
+=features: '(memory)=. Selecting =+memory= reads the =Feature= export from
+=features/memory/interface.ss=. Its single =.def Feature= declaration
+references the Contract in =types.ss= and the refinement in =objects.ss=.
+Yuanxu imports the adjacent roles through the standard role convention.
+The selected entry and its native
+imports enter the existing =std-make-spec= graph under the Feature contributor.
+An unselected or withdrawn Feature does not load its interface. A selected name
+without an interface fails admission.
+Gerbil's Module declaration captures the reader bound to that owner when
+the Interface is initialized. Named Features use this declaration path.
+The private assembly for inline Feature objects has no named Feature reader
+to capture.
+
+The publication Type accepts either a POO Feature object or a proper list of
+symbols. It rejects false, strings, non-symbol members and improper lists
+before selection. This check belongs to =source/publication.ss= and uses the
+native =Or= and =List Symbol= Types. The public Feature import path is
+=:yuanxu/module-system/feature/interface=; the existing namespace gate refuses
+the retired standalone and repeated =feature-system= paths.
+
+Feature Contracts are additional obligations on the final Core-normalized
+receiver. Native =validate= runs their obligations, but a Feature Contract's
+returned wrapper does not replace that receiver. The final receiver must itself
+be an element of each Type. Defaults and transformations belong in =refine=.
+The composite Type is retained on the linked record; later dependency-edge
+refinements cannot silently fall back to the Core-only Type. Candidate read
+support belongs to the invoking admission, not the provider's original cache.
+
+* One complete dataflow
+
+1. The existing =yuanxu!= window selects Module IDs and their Feature decisions.
+   The Interface wrapper discovers role declarations through the existing source
+   mechanism. No Runtime registry supplies additional decisions afterward.
+2. Resolve mandatory Module dependencies and selected Feature constraints once
+   through the existing graph owners. A selected dependent with a disabled or
+   absent requirement is rejected; an optional edge does not enable its target.
+3. Bind each selected contributor to its actual Module/Feature source and to the
+   dependency instances from that owner's =requires=. A global Module with the
+   same name must not replace an edge-local derived dependency.
+4. Assemble demanded scopes from the base, ordered selected contributions and
+   downstream POO refinements. The common operation belongs in Module System;
+   Interface authors do not write resolver calls, manifest assembly or adapters.
+5. Admit the final receiver against the provider scope Contract, selected Feature
+   obligations and consumer refinements. Publish through existing =.for-export=/
+   =.publish= ownership. Runtime effects remain explicit calls on that result.
+6. Project selected source owners into the existing init-owned =std-make-spec=.
+   Native =defbuild-script= owns compilation and cleaning of those same targets.
+
+Feature-specific extra dependencies must enter this selected graph, not an
+application-owned import resolver. Existing =requires= names only Feature IDs;
+the mapping of optional contributors to additional Module requirements remains
+an integration obligation, not an already supported new field or syntax.
+
+** Selected Feature facade
+
+The Module System collects the optional =features/<feature>/interface.ss=
+only for a selected Feature. Its observed absence is part of the selection.
+Build projects the facade through Gerbil's normal import closure, recording the
+Module owner and Feature contributor. Withdrawal removes exclusive targets and
+keeps targets also reached by retained roots. Projection does not construct
+business scopes. The same collected targets flow to build and clean.
+
+* Composition, downstream override and withdrawal
+
+The following is an algebra illustration using existing POO operators, not a
+new Feature declaration API. Uppercase bindings denote inert domain prototypes.
+Leftmost overrides have precedence; the resolver determines contribution order.
+
+#+begin_src scheme
+;; Selection without Memory. No previously extended object is an ancestor.
+(def CoreOnly (.mix UserOverrides ContextBase))
+
+;; Selection with Memory, before final Contract admission/publication.
+(def WithMemory (.mix UserOverrides MemoryContribution ContextBase))
+
+;; A later selection withdraws Memory by composing from the same base again.
+(def WithoutMemory (.mix UserOverrides ContextBase))
+#+end_src
+
+Do not construct =WithoutMemory= by overriding =WithMemory=: Memory's supers,
+methods and lazy slots would remain reachable. Withdrawal changes the inputs to
+composition. It does not mutate the base, the parent selection, or another
+consumer's instance. Removing an extension also removes its contributed
+requirements; requirements from retained contributors remain independent.
+
+Dependency order is not automatically override precedence. The integration must
+define their mapping once, using existing POO precedence, and reject inconsistent
+prototype composition. It must not flatten every contribution into a dictionary
+where the last value silently erases a conflicting obligation.
+
+User overrides replace/refine ordinary values through POO. They do not erase
+Core or selected Feature Contracts. For example, two independently contributed
+port requirements must both survive before the final port is validated. A valid
+override cannot turn contradictory requirements into a successful publication.
+
+The existing manifest categories must retain their semantics: policy and
+strategy contributions are not all automatically scope prototypes. Adapt the
+existing domain assembly owners once; do not reinterpret arbitrary =components=
+as slot overrides or add a parallel contribution inventory.
+
+* Gerbil loading and laziness
+
+Use ordinary =import=, =only-in= and =rename-in= for code binding. Use the
+existing Module System's demand boundary when a selected source must be loaded;
+delegate code loading to Gerbil. A Feature change must not force native module
+=reload= to obtain a fresh business instance.
+
+An unconditional import remains an unconditional dependency. Gerbil cannot make
+an imported Memory implementation lazy merely because a descriptor is disabled.
+Keep selection metadata separate from heavy implementation imports through the
+existing role wrapper, and test the actual import graph. Do not promise that
+disabled code is absent when another selected source imports it directly.
+
+Loading an implementation may initialize inert module constants. It must not
+open a session, spawn a process or start a service. Such effects require explicit
+runtime operations. Removing a Feature from a new configuration does not revoke
+already returned objects or stop already started resources. Resource teardown
+needs the owning lifecycle operation; arbitrary Scheme references are not
+revocable capabilities.
+
+The no-execution regression qualifies the declared inert implementations; it is
+not a general Scheme effect system. Opaque refinements remain callback boundaries.
+A source refusal prevents the returned scope from being accepted; it does not
+roll back arbitrary I/O already performed by a callback.
+
+* Native POO cache and currentness boundaries
+
+The base and contributor prototypes may share immutable data. Cached slot values
+remain owned by their final receiver. Repeated demand on an unchanged receiver
+uses native POO slot/index caches; do not maintain a separate Feature cache.
+
+Changing selection, options, a dependency binding or source support invalidates
+the relevant composition input. Re-evaluate affected receiver slots using native
+dependency support. Reuse across selected generations requires the existing
+reader/linker to establish complete input/support equivalence, including actual
+transitive imports and their enable/binding state. A shared Feature ID or equal
+flags alone is insufficient. This document does not claim that proof is complete.
+
+Fresh graphs independently admit their selected instances. Cached computation
+does not cache an admission verdict. Preserve currentness before and after open
+refinement/Contract callbacks, and before publication returns. Do not reuse a
+source-check result across an effect boundary or weaken rejection of changed
+sources to preserve an object's =eq?= identity.
+
+* Build and clean
+
+Use the same selected source owners for runtime publication and build projection.
+Deduplicate identical target contributions through existing ownership logic;
+Module ID alone cannot merge different source identities, phases or compiler
+options. A shared dependency is not compiled twice merely because two Features
+reference it. Conflicting ownership is rejected rather than silently collapsed.
+
+Build and clean consume one complete =std-make-spec=. Collecting target identity
+must not evaluate business exports, run Feature effects or execute Build roles
+just to clean. Clean removes the admitted target set through Gerbil; it neither
+unloads in-process modules nor implements Feature withdrawal. Core library spec
+and selected Module spec remain separate inputs to the ordinary build script.
+
+* Proof allocation and a single integration acceptance
+
+Follow [[file:../../../dev/sysml/README.org][the existing SysML responsibility allocation]]. SysML specifies the
+base/selection/composition/publication/effect boundaries. Lean/LeanPoo owns the
+structural laws: precedence correspondence, retained obligations, withdrawal
+from base, parent isolation and identity-preserving sharing under equal support.
+QNT owns temporal counterexamples: disable a required Feature, mutate support in
+a callback, restore after mutation, or use a prior generation after a revision.
+Do not copy the same structural assertion into a second temporal model.
+
+The next implementation is one vertical Agentic Context / Memory migration:
+
+- [ ] Publish the Module and optional Memory contribution through its Interface,
+  using existing typed POO values and role wrapping; no new public DSL.
+- [ ] Integrate selected contributions at the existing linker scope-construction
+  boundary and keep independent obligations through final publication.
+- [ ] Migrate consumers and delete the Boolean factory, post-selection decorator
+  and duplicate manifest-selection path together. No forwarding compatibility API.
+- [ ] In one process compare base, enabled, downstream-overridden and withdrawn
+  instances. Confirm parent/hot-slot isolation, missing/cyclic/conflicting
+  requirements, changed source, and effect-free load. Exercise the real publisher.
+- [ ] Verify build-target deduplication and identical build/clean ownership without
+  evaluating Feature runtime behavior during projection or cleaning.
+
+Existing Feature resolver/composition tests are supporting evidence, not a pass
+for this migration. Run the existing Just/Harness acceptance entrypoints; preserve
+their budgets, observer controls and exact diagnostics. Report actual construction,
+admission and effect counts separately; no additional Runner or cache protocol.
+
+An independent downstream build uses the revisions installed by
+=gerbil pkg deps --install= from the declared package dependencies. Gerbil
+owns the installed manifests and reads them to generate the downstream's
+=manifest.ss= before entering =build.ss=. The Lab test can share that installed
+package set across isolated output directories. Core acceptance and CI apply to
+the Core revision before consumers update their dependency declarations.
+
+* Executable Interface selection boundary
+
+[[file:../../../t/module-feature-interface-test.ss][The Interface regression suite]] writes actual
+=types/objects/config/interface.ss= roles using the existing publication Fixture.
+The production role wrapper reads the Feature declarations from the Module's
+=features= slot. The init source contains only selection decisions; it never
+constructs descriptors or decorates an accepted selection afterward.
+
+The suite covers absent/negative selections without forcing descriptors,
+dependency ordering and stable component identity on hot reads, explicit effect
+invocation, independent parent/withdrawn selections, dependency/conflict/cycle/
+unknown-name diagnostics, and source mutation inside a lazy contribution before
+it can return. Reproduce through the existing entry:
+
+#+begin_src sh
+just test-file t/module-feature-interface-test.ss
+#+end_src
+
+These Cases exercise real source reading and selection, with synthetic
+domain values. Final behavior is covered separately by
+[[file:../../../t/module-feature-scope-test.ss][the scope integration suite]]: refinements, explicit execution, parent/hot-slot
+isolation, withdrawal, independent final port obligations, retained provider
+Types, downstream override refusal and native write/source guards.
+
+#+begin_src sh
+just test-file t/module-feature-scope-test.ss
+#+end_src
+
+Source mutation inside scope construction retains the native first diagnostic
+for the owning stale prepared Interface. The regression also reads the changed
+Config bytes to establish that the callback really ran. It does not reorder
+guards to manufacture a leaf-file diagnostic. The mapping and proof limits are
+[[file:../../../dev/sysml/20-module-loading/20.35-feature-scope-composition.org][allocated in 20.35]]. These source Fixtures are not the actual Lab Context/Memory
+consumer migration, full package build or capacity qualification.
+
+* Official references
+
+- [[https://gerbil.scheme.org/reference/gerbil/runtime/misc-procedures.html][Gerbil runtime procedures]]: =load-module= accepts =reload= (default false);
+  an already loaded module is only reloaded when requested. This is code loading,
+  not composition rollback or resource teardown.
+- [[https://gerbil.scheme.org/reference/std/make.html][Gerbil std/make]]: ordinary target specifications, detected dependencies and
+  =defbuild-script=; the framework contributes targets instead of another builder.
+- [[https://gerbil.scheme.org/guide/package-manager.html][Gerbil package manager]]: the build script's =spec= action returns the Make
+  specifications used for package cleaning. No second Feature cleanup inventory.

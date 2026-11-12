@@ -1,0 +1,136 @@
+#+title: 26.02 Pulumi Dependency Values and Our Module Assurance Claims
+#+language: en
+#+property: DOCUMENT_ID 26.02
+#+date: [2026-10-17]
+#+property: STATUS primary-documents-reviewed-matched-case-not-executed
+
+* Research scope and references
+
+This note uses Pulumi, the platform already owned by [[file:26.01-index.org][26.01]]. The user's name
+"Plumr" remains unconfirmed; no separate product or capability is inferred.
+
+Primary references checked on 2026-10-17:
+
+- [[https://www.pulumi.com/docs/iac/concepts/inputs-outputs/][Inputs and Outputs]]: resource Output-to-Input relationships retain dependency
+  edges used by the engine. This is more than a plain value transformation.
+- [[https://www.pulumi.com/docs/iac/concepts/inputs-outputs/apply/][Apply]]: transformations operate on resolved outputs. The documentation warns
+  that creating resources inside apply can omit them from preview when the
+  output is not yet known, and recommends passing Outputs as resource inputs.
+
+This is source/document evidence, not a local reproduction, current issue-state
+refresh or Pulumi deployment. The separately recorded GitHub reports and their
+reproduction gaps remain in 26.01; no new defect is asserted here.
+
+* Relating the real service workload without inventing parity
+
+The local Core Gitea/PostgreSQL Scenario has known JSON input ports. Its default
+client endpoint reads the final database object. It can validate equality and
+produce a pure plan before any process runs. Our candidate/plan identity check
+rejects a cached parent plan attached to the changed child.
+
+A Pulumi version might instead consume a database endpoint that is unknown
+until provider execution. That endpoint is a dependency-bearing value, not
+merely an integer waiting for a lazy slot to be forced. The following is an
+analyst's workload sketch, not an executable Pulumi case:
+
+#+begin_example
+provider database endpoint -> Gitea connection input
+known configuration port -> local field and policy checks
+unknown endpoint          -> deferred decision with dependency retained
+#+end_example
+
+Comparing only known local values would hide the harder case. A Scheme lambda
+must not turn an unknown endpoint into null or discard its dependency. A POO
+plan cache must not conceal whether a field was known. Secret propagation also
+requires a specified adapter and redacted diagnostics; a raw object graph does
+not provide that security property by itself.
+
+* Reflection: candidate difference and cost
+
+Our candidate contribution is one selected-module publication boundary carrying
+source association, complete requirements, domain admission and final plan
+identity. Ordinary users should still assign values; module maintainers own
+those mechanisms. Pulumi already demonstrates rich dependency semantics and
+preview/execution machinery, so claiming that adding Contracts alone makes us
+more trustworthy would be unsupported.
+
+The cost for our system includes an explicit external-value protocol, a policy
+for deferred admission and a consumer that binds an admitted plan to authorized
+effects. None is demonstrated by the Fixture recovery tests or by the current
+pure Gitea endpoint equality check. No runtime, performance or UX superiority
+claim is made by this comparison.
+
+* Issues and Engineering Limitations
+
+The apply preview restriction above is DOCUMENTED-LIMITATION, not a newly
+reproduced defect. Read the existing issue register in 26.01 separately; issue
+reports must not be generalized to all components. We have not run a matched
+Pulumi Gitea/database stack, changed its provider outputs, or compared saved-plan
+behavior with our candidate publication path.
+
+* Conclusion, questions and onwards
+
+Can an unknown nested endpoint remain inspectable without pretending it is a
+known valid value? Which relationship checks can run before provider resolution?
+Does a late value change force a fresh admission and preview before effects?
+Can diagnostics preserve dependency origin while hiding secrets?
+
+Use the same workload to answer these questions through matched controls.
+[[file:../../10-19-design/10-configuration/10.20-module-system-assurance.org][10.20]] owns the cross-platform assurance model and concrete existing Core
+path; this dossier owns Pulumi-specific evidence and counterevidence.
+
+* Concrete issue evidence follow-up
+
+On 2026-10-17 the rendered [[https://github.com/pulumi/pulumi/issues/20536][#20536]] body was inspected again. It specifies
+Pulumi 3.197.0, AWS plugin 7.7.0 and Python 3.13.7. The author reports a nested
+mapping validation failure when a component-package transform is combined with
+an Output, and links a reproduction repository. This fills the version gap in
+the initial 26.01 notes; it is still ISSUE-REPORTED and NOT-REPRODUCED here.
+No resolving PR was verified. The report is not a Gitea port test and does not
+establish that all Pulumi configuration transformations fail.
+
+Our existing known-value port admission does not qualify as a fix for that
+reported RPC/Output interaction. A comparison needs the same unknown nested
+field and transform across the component boundary; absent such a consumer our
+response remains a design obligation, not demonstrated superiority.
+
+* Known-port comparison fragment
+
+The following is analyst-written TypeScript using the documented
+[[https://www.pulumi.com/docs/iac/concepts/config/][Config API]], not an official Gitea component, provider resource or executed
+stack. It deliberately uses known values so the comparison stays within our
+current local Scenario's boundary:
+
+#+begin_src typescript
+const config = new pulumi.Config();
+const databasePort = config.getNumber("databasePort") ?? 5432;
+const giteaPort = config.getNumber("giteaDatabasePort") ?? databasePort;
+if (giteaPort !== databasePort) {
+  throw new Error("Gitea database port must match PostgreSQL");
+}
+export const connection = {
+  postgresql: { port: databasePort },
+  gitea: { databasePort: giteaPort },
+};
+#+end_src
+
+This demonstrates why endpoint equality is not a unique Scheme capability.
+A maintainer can encapsulate the same check in a Pulumi component. This fragment
+neither validates the full port range nor provisions a service. A fair advantage
+experiment must compare independently supplied requirements, source association
+and publication behavior, not this hand-written equality alone.
+
+* Stopped installation attempt: not platform evidence
+
+On 2026-10-17 a planned local engine campaign was stopped when the user clarified
+that documentation/source evidence should be used without installing each
+platform. The Pulumi CLI download was interrupted. The exact =3.228.0= Node SDK
+had already been downloaded into a temporary directory; no Pulumi engine preview,
+provider RPC or deployment was run. An unexecuted candidate adapter was removed
+from the repository and retained only in the local attempt directory. Download
+success/failure is not evidence about Pulumi's configuration semantics.
+
+This article remains documentation/source and Issue research. No three-platform
+runtime comparison, verified superiority, or maintenance-code ranking follows.
+Use the primary references and versioned reports above for bounded conclusions;
+propose a minimal reproduction only for a question they do not already answer.

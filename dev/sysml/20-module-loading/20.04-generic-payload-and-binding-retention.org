@@ -1,0 +1,294 @@
+#+title: 20.04 Generic Payload and Private Binding Retention
+#+filetags: :modules:retention:lean:quint:source:
+
+* Question and source correspondence
+
+Do not equate a Generic frame count, a captured-cell count, a binding-table
+entry count, or a read count with retained physical bytes. The current runtime
+constructors in =poo-clos/objects.ss= create a distinct checked effective method
+and invocation receiver. =poo-clos/dispatch.ss:invoke= passes the SAME argument
+list to the frame and the method. That is already sharing, not two copies of
+all argument values. Different calls may have different receivers, arguments,
+continuations, qualifiers, method generations and external effects.
+
+Each issued read has a separate runtime registry identity and private birth
+closure. At gerbil-poo =40c61fe6afc8313f297599da0e511f96e3a23dcf=,
+=object-record-read= privately snapshots dependency identities in a vector;
+=call-with-issued-reads= owns traversal projection reuse. Core must not replace
+those records with reconstructed bundles or cache their successful approval.
+
+The previous 32-Module receipt retains 298 Generic frames, 297 distinct argument
+lists and 7724 frame-related read records. Its weak Gerbil-context census also
+reports 32 private role contexts with 7104 local bindings: 222 bindings per role.
+The outer reader's zero-private-context index is therefore not a complete
+retention census. The resolver's role helper is another actual retention route.
+
+* Structures and permitted sharing
+
+** Computed environment census and bounded constructor storage
+
+The current post-admission probe attributes all 4645 direct self SlotSpecs at
+32 modules: diagnostics/accepted? contribute 509 each, module/role 429 each,
+and compiler-identity/compiler-forms/source-inputs 160 each. These are distinct
+specification identities, not distinct code families or exclusive byte owners.
+The expanded environment walk follows closure capture fields, never executable
+code at offset zero. It stops at POO receiver, Gerbil context/record, class,
+continuation and weak/GC-table frontiers. No closure is invoked. Source values
+are not logged; content-equal strings are counted only to bound duplication.
+
+At 32 modules the previously covered union is 8122944 bytes; opening ordinary
+closure environments reaches 12097596 bytes. It reaches 1496 receiver frontiers,
+227 without a direct read in the selected projection. Those referents are NOT
+charged as owned contents. Duplicate string bodies account for 557912 bytes,
+which neither dominates the graph nor authorizes sharing mutable strings.
+
+The candidate changes runtime object/init lowering to pass new method/default
+lists through the EXISTING prototype-map compact policy. Its bound of eight
+contributions and standard RBTree promotion remain upstream-owned. Existing
+snapshots keep their selected policy through the runtime constructor; primitive
+prototype-map still defaults to tree. Every SlotSpec, receiver and read remains
+distinct where it was distinct. This is representation selection, not a cache
+of values, approval or purity. No public module option or new DSL is added.
+
+Lean constructorStorageObservations proves both ordered lists unchanged using
+LeanPoo entries_packWith, with arbitrary SlotSpec identity values. Existing
+ReadRetention QNT continues to own callback/currentness and joint admission;
+no structural QNT copy is introduced. Runtime tests must check promotion,
+reflection, inherited computation, false defaults, supported edits and actual
+hook traversal. Gerbil's make-hash-table allocates a random seed per table:
+two fresh receivers are NOT guaranteed the same hook order. Exact per-receiver
+runtime table order and absence of repeat hot-read hooks are the runtime laws.
+The compute-slot-funs traversal algorithm is unchanged. Global deterministic
+hook ordering is an unresolved semantic question, not silently asserted.
+
+** Constructor-value and snapshot correspondence at PR13 =8024904=
+
+The ordinary-route 32-module census reaches 2460 distinct specification roots
+from 2538 receiver metadata references. Its identity union includes 11720 runtime
+RBTree nodes (562560 body bytes), 4887 RBTree containers (117288 bytes) and 4741
+self-slot specifications (75856 bytes). These are reachable unions, not separate
+exclusive ownership charges. Their shared SlotSpecs and cached receivers cannot
+be merged merely because they print the same value.
+
+Two source paths must be distinguished. Runtime =.cc= already passes persistent
+specification snapshots directly. Runtime =.+= still reflects its override maps
+to fresh list/entry pairs and reconstructs trees, despite the constructor already
+accepting runtime snapshots. Separately, Core's existing =defpoo-object-family=
+constructors emit self computations for already evaluated Scheme arguments.
+Runtime lexical shorthand =(slot)= instead emits a constant SlotSpec without
+the extra receiver-binding wrapper. Arbitrary computed slots remain computed.
+
+Lean owns =constructorValueMethod= and =constructorValueInComposition= against
+LeanPoo's actual SlotSpec interpreter, and =snapshotReflectionRoundtrip= against
+its actual representation model. These prove value/composition observation,
+not physical closure identity or arbitrary reflection safety. Runtime tests must
+check argument evaluation once, prototype ancestry, effective thunk identity
+stability within a receiver, hook order and independent derived receivers.
+
+QNT reuses ReadRetention for source changes across callbacks, both requirements,
+parent/child isolation and lazy unused values. No structural snapshot model is
+duplicated in QNT. Persistent runtime map operations replace snapshots; they do
+not mutate a shared snapshot's entries. Generated/raw reflective setters remain
+outside that runtime protocol and are not certified by these theorems.
+
+| Structure | Rule | Status |
+|-----------+------+--------|
+| Exact canonical Gerbil Module/context | Reference the same existing runtime context and its source closure; retain all actual source checks | Existing reader owns this catalogue |
+| Generated role's local binding index | Bind only its private constructor; preserve original source bindings and the runtime import dependency | Narrow reader candidate |
+| One call's argument list | Effective method and invocation may point to the same existing list | Already implemented; measure identities |
+| Arguments/continuations across calls | No sharing inferred from a method name, equal printed data or equal Type labels | Remain distinct |
+| Immutable private dependency snapshot | Equal COMPLETE ordered identity sequences may share immutable storage, including repeated edges | Value theorem only; Core has no authority to intern runtime private payloads |
+| Runtime records/births | Preserve every original identity, receiver and signature association | Never merged |
+| Approval/currentness | Recompute at existing use/callback/return boundaries | Never shared as a cached verdict |
+
+A snapshot-interning table is NOT introduced. Its ownership, eviction and actual
+immutability would need a producer-side proof; a persistent strong table could
+increase retention. The Lean value theorem does not prove those properties or
+justify sharing exposed mutable Scheme lists.
+
+* Default role function boundary
+
+The new work avoids constructing private carriers; it does not filter signed
+reads after construction. The existing public Generic and its method bundles
+remain the open path. Only the two maintained, non-next primary bodies qualify
+for direct functional invocation, after ordinary applicability checks for the
+actual executor, role, interface and datum. Every datum still constructs and
+validates its domain receipt. No acceptance or returned value is memoized.
+
+The gate must inspect actual runtime observer/precheck scope and authenticate
+the original Generic/Method/Type policy support. Unknown observers, prechecks,
+method edits (including restoration), qualifiers and protocol hooks require
+the public Generic path. A Profile label or an ancestry-only test is insufficient.
+The isolated MOP candidate adds actual scope-compatibility and active
+precheck queries. Core's maintained source precheck remains installed: it runs
+the original boundary callbacks for protocol-bearing receivers. The callback
+stack preserves inner-before-outer order and exception restoration; runtime
+=without-observation= must not resurrect a disabled outer callback. Unknown
+observers or prechecks still require Generic dispatch. These queries do not
+constitute a purity annotation or permission to disable observation.
+
+| Claim | Owner | Boundary |
+|-------+-------+----------|
+| Non-next primary equals its function with the same monadic effects | =PooClos/Dispatch.closed_primary_is_function= using LeanPoo's actual combination | Requires empty before/after/around and the exact maintained body |
+| A rejected next datum cannot reuse a previous result | =PooClos/Dispatch.rejected_datum_is_not_reused= | Validation occurs per invocation |
+| Unknown runtime callback excludes the function path | =PooClos/Dispatch.unknown_observer_requires_generic= | Runtime must extract the actual scope, not a claimed purity bit |
+| Registration/restoration and newly installed observers invalidate routing | =RoleFunction.qnt= | Two invocations, finite revision/observer transitions; matched negative controls |
+| Open carrier validation and callback return | Existing =CarrierAdmission= / =CarrierReturn= | Not duplicated in RoleFunction |
+| Sources, both requirements, parent isolation and lazy branches | Existing =ReadRetention= plus real Scenario regression | No change to return-time admission |
+
+These statements do not establish runtime scope extraction or authorize merging
+different frame identities. Runtime correspondence and measured retention remain
+separate gates. The dependency audit found PR13 at =6232e11=; its object/MOP/read
+scope sources are unchanged from Core's =e281ad2= pin. Its later collection and
+build changes are not evidence that a scope query already exists.
+
+* Fixed layout within the complete loading data flow
+
+At that same runtime revision, =object-layout= interns the slot-name shape and
+creates receiver-local cells from the existing instance hash table. The hash
+table remains live. =.ref/inline= authenticates receiver, revision and layout;
+its observed hit still delivers the original issued read. Its miss takes the
+normal lazy =.ref= route. This is a hybrid representation, not a vector-only
+instance store. Replacing every read with inline access can materialize more
+layouts and cannot by itself establish a retained-memory reduction.
+
+The candidate has two access sites for the two maintained method descriptors,
+not one cache per selected module. LeanPoo's =SlotAccessSite.read_sound= owns
+the lookup-equivalence claim. Runtime regressions separately check original read
+identity and parent/child receiver isolation. Neither proves a heap bound.
+
+The intended data-flow boundary is:
+
+1. Selection retains declaration metadata and required source identities without
+   forcing business roles or binding all methods.
+2. Actual role access constructs its receiver using POO invalidation;
+   stable descriptors may reuse shared shapes and access sites.
+3. Default analysis avoids unnecessary Generic carriers only when actual runtime
+   state qualifies; open methods, hooks and observers retain Generic dispatch.
+4. Every datum retains Type checking and every independent admission retains
+   currentness. Successful admission is never a reusable cached conclusion.
+
+The fresh-prefix runtime boundary suite passes eight cases, including inline
+read identity and nested source-precheck restoration. The instrumented reader
+census retains 154 effective methods/frames at 16 modules and 298 at 32. A real
+16-module route probe confirms compatible runtime scope, warm hook-free dispatch
+arguments, current issued support and unchanged carrier predicates. The earlier
+census installs an arbitrary live read observer: that observer intentionally
+forces Generic fallback. Its frame counts cannot establish the ordinary
+production route's cost. Preserve this open-observer control; measure the
+ordinary route with a runtime capture frame and inspect its issued dependency
+projection AFTER the operation, outside its timed window. This is not permission
+to suppress or whitelist an arbitrary observer.
+
+Closing the uninstrumented retention measurement remains a gate before further
+scale testing or a claim of ten-thousand-module support. Counts of shared shapes,
+vectors, hash instances and reachable closure
+payloads must be measured by identity union rather than charged independently
+to every module.
+
+* Model and controls before the reader change
+
+[[file:../../proofs/lean/YuanxuProof/ModuleSystem/Loading/PayloadSharing.lean][PayloadSharing.lean]]
+proves that injection under a fresh private identifier leaves other source
+bindings unchanged and selects the canonical constructor. Binding projection
+retains the exact context, read identity list, adjacency function and observation
+sequence. The immutable-snapshot theorem requires full ordered equality; equal
+contents do not justify merging different read identities. Fresh currentness is
+reused from the existing admission theorem, not replaced by a cached result.
+
+The former =PayloadSharing.qnt= family duplicated these structural properties
+and has been removed. Structural sharing now has one formal owner, Lean.
+Callback/currentness transitions reference the existing =IssuedRootForwarding=,
+=ReadRetention= and =IncrementalRoles= QNT models. The earlier ten-case receipts
+below are retained as historical runs, not an additional current gate.
+
+These are mathematical environment/support projections. Gerbil hygiene,
+source-to-model extraction, runtime metadata authenticity and actual heap sizes
+still require the runtime controls. Compiler-table reflection into generated
+private bindings is not a preserved public interface.
+
+* Reader change
+
+The old generated role tail imported the entire =:clan/poo/object= interface to
+build one runtime export tuple. This creates strong local aliases for names the
+generated tail never uses; it can also interfere with the original role's own
+bindings. The new generated tail is structurally:
+
+#+begin_src scheme
+(import (rename-in (only-in :clan/poo/object .o)
+                   (.o private-constructor)))
+(def private-values (private-constructor bind-these: #f ExportedValue))
+#+end_src
+
+The actual names are fresh private identifiers. The original role include,
+prelude, explicit imports and exports remain authoritative. The canonical runtime
+Module/context and demanded source closure are still imported, authenticated and
+observed. No record, edge, MOP callback or replay boundary is pruned. No Core
+cache, Builder, public macro or compiler modification is added.
+
+* Bounded runtime evidence
+
+Use the existing =ModuleTestingProfile.= and default serial =just test-file=.
+The extended weak diagnostic census inspects cached frame fields only: distinct
+argument-spine cells, whether a frame shares its effective method's argument
+pointer, distinct next-closure identities and shallow captured-cell counts.
+It neither executes those closures nor traverses argument values. Diagnostic
+tables are local to reporting and do not become retained graph owners.
+
+The source-owned-binding case in =t/module-deferred-reader-test.ss= checks that a
+role's =object?= value survives the synthetic tuple construction. Existing tests
+retain Type preflight, delayed business roles, unselected Features, source
+refusal, both requirements and parent-cache isolation. The capacity limit remains
+two GiB. No unchanged ten-thousand-module run is scheduled by this investigation.
+
+Measurements and final qualification results follow after the serial run. A
+smaller private binding table alone is not a claim that the capacity gate passes.
+
+** Final bounded results (2026-10-24)
+
+All four default serial commands complete naturally with MODULE-OK, HARNESS-OK
+and final OK, with no error/overflow markers: deferred reader (four cases),
+16/32 retention census, Gitea/PostgreSQL publication (11 cases), and 16-declaration
+calibration. Source-owned binding, invalid Type preflight and unused Feature
+controls remain effective. Build succeeds with the installed Gerbil; compiler
+sources and the gerbil-poo revision are unchanged. The final source-bound
+PayloadSharing receipt qualifies all ten cases.
+
+| Quantity | Previous deferred candidate | Narrow private binding candidate |
+|----------+-----------------------------+----------------------------------|
+| Private role bindings, N=16 | 3552 (222 per role) | 112 (7 per role) |
+| Private role bindings, N=32 | 7104 (222 per role) | 224 (7 per role) |
+| Live bytes, N=16 | 194157056 | 193099176 |
+| Live bytes, N=32 | 224211296 | 221033896 |
+| Runtime role body expansions | 2N | 2N |
+| Generic frames/effective methods, N=32 | 298 / 298 | 298 / 298 |
+
+The canonical Gerbil context count stays 376. The narrow candidate observes 297
+argument-list identities / 1188 distinct cons cells at N=32. Of the frames with
+cached argument values, all 297 share the argument pointer of their own
+effective method; zero have a separate argument list. It observes 66 cached
+next closures / 132 shallow captured cells. These are cache-only lower bounds:
+unforced fields and transitive callback payloads are not measured as zero.
+The extra Generic frame with no cached argument list is not forced by profiling.
+
+The complete original selected-graph support contains 18159 runtime records,
+1691 receivers and 42923 dependency occurrences; its widest direct dependency
+list has 22166 entries. The source-bound issuer census observes 18159 birth
+closures / 145272 shallow captured cells. Edges and repeated identities in these
+actual records are forwarded unchanged. The constructor/import change avoids
+unnecessary binding work; no code suppresses observer events or rewrites an
+issued record's dependency list.
+
+This repair demonstrates a smaller private binding index and preserves the
+bounded safety controls. The roughly 3.18 MB difference at N=32 is not a matched
+CPU benchmark, attributable object-byte proof or capacity qualification. It does
+not justify claiming the two-GiB ten-thousand-Module gate is fixed. Do not merge
+calls, intern mutable argument lists, shorten recorded edges, introduce a
+persistent snapshot pool, or trigger another known-failing scale run on that
+basis. Automatic read-edge enrollment remains gated on complete CI.
+
+The remaining question is the transitive payload retained by original record
+receivers, their instance/slot metadata and callback environments, not duplicated
+argument-list spines. Runtime issuer payload sharing remains a producer-side
+proof obligation. The Core reader may share canonical lexical bindings; it
+cannot certify a replacement for private runtime issuance metadata.

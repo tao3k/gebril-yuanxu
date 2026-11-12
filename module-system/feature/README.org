@@ -1,0 +1,22 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Module Features
+
+Import =:yuanxu/module-system/feature/interface= to use the public
+[[file:interface.ss][Feature interface]]. This component of the Module System
+owns POO descriptors, dependency and conflict resolution, manifests, composition,
+capabilities, generic DomainCase closure and inert runtime/Bundle projections.
+The linker uses [[file:scope.ss][scope composition]] internally to refine and
+admit selected Features on the final Module receiver.
+
+Module authors declare Features in their owning =interface.ss=; init selects
+=+memory= or =-memory=. The ordinary =just test-files modules= inventory discovers
+the =t/feature-*-test.ss= suites and =t/module-feature-interface-test.ss=.
+The latter checks named Feature publication, malformed declaration rejection,
+withdrawal, source changes and lazy evaluation. =t/module-feature-scope-test.ss=
+checks the final receiver and the retained Core and Feature obligations.
+
+[[file:bundle-v1-writer.ss][Byte output]] consumes an already validated frozen image. Scenario planning,
+guard policy and execution Plan conversion belong to the consuming package.
+See [[file:design/README.org][the ownership and validation boundary]].

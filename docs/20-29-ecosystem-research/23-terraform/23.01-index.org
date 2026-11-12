@@ -1,0 +1,53 @@
+#+title: 23.01 Terraform: Independent Module-System Research
+#+language: en
+#+property: DOCUMENT_ID 23.01
+#+date: [2026-10-17]
+#+property: STATUS pinned-source-audit-not-a-plan-or-deployment-receipt
+
+* Research purpose and result
+
+Understand a real maintained module interface and the engine that consumes it,
+then identify requirements for our Module System. HCL expressiveness, module
+composition, provider Schema, instance expansion, planning and execution have
+separate owners. Choosing Scheme does not collapse these responsibilities.
+
+This source study finds useful dependency inversion and small public interfaces,
+as well as concrete tradeoffs in object conversion, graph granularity and phase
+visibility. These are architectural findings, not a claim of POO superiority.
+
+* Independent reading modules
+
+| Study | Evidence and result |
+|-------+---------------------|
+| [[file:23.02-real-aws-module-source.org][01 Real AWS module and connected configuration]] | VPC v5.21.0 example, inputs, resources, outputs; complete analyst-derived network/group/instance root; relation to the user's Omnibus corpus |
+| [[file:23.03-arguments-types-and-phase-boundaries.org][02 Arguments, types and phases]] | HCL context versus Terraform engine; dependency inversion, object conversion and known instance identities |
+| [[file:23.04-schema-plan-and-execution.org][03 Schema, plan and execution]] | Retained AWS 5.100.0 artifact; provider source and Terraform v1.9.8 reference/plan/apply owners |
+| [[file:23.05-issues-and-user-costs.org][04 Issues and engineering limitations]] | Four qualified records: dependency breadth, object strictness, lifecycle phases and a resolved historical limitation |
+| [[file:23.06-module-system-reflection.org][05 Module-system reflection and Onwards]] | Publication, contextual instances, uniform args, dependency semantics, cache identity and boundaries Scheme cannot erase |
+| [[file:23.07-practitioner-experience-and-restrictions.org][06 Practitioner experience and restrictions]] | First-person articles, recursive merge request, dependency amplification and lifecycle maintenance costs |
+
+* Issues and Engineering Limitations
+
+The [[file:23.05-issues-and-user-costs.org][dedicated issue register]] and [[file:23.07-practitioner-experience-and-restrictions.org][practitioner study]] own original references, report versions, observation
+states, user cost and reproduction status. Marks distinguish reported behavior,
+maintainer explanation, documented restriction, open enhancement and historical
+resolution. A bug label alone is not confirmation and a closed issue can still
+expose an important design tradeoff.
+
+* Evidence boundary
+
+The study reads identified sources and recomputes one existing Schema digest.
+It does not run terraform init/validate/plan/apply, authenticate a new artifact,
+reproduce an issue, deploy AWS or benchmark the engine. The connected root is
+complete source for its stated infrastructure case but still needs user AMI,
+credentials/access decisions and runtime verification. Historical pins are
+research controls, not recommended current releases.
+
+* Conclusion
+
+Design stable interfaces and phase-aware dependency semantics before making args
+shorter. Do not expose every private slot to gain extension, or turn a uniform
+namespace into global coupling. The wider comparison belongs to
+[[file:../../10-19-design/10-configuration/10.04-module-system-design-questions.org][the module-system architecture study]], including official NixOS modules,
+devenv and Flox as independent research subjects.
+

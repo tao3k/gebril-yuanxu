@@ -1,0 +1,145 @@
+#+title: 30.01 Independent Platform Research and Evidence Protocol
+#+language: en
+#+property: DOCUMENT_ID 30.01
+#+date: [2026-10-17]
+#+property: STATUS research-organization-no-runtime-change
+
+* Unit of research
+
+A platform is an independent research subject. Its dossier must explain its own
+inputs, language/library use, module/publication mechanism, evaluation model,
+Contract/type boundaries, planning/state behavior, execution and user experience
+before contributing conclusions to a comparison. Similar product positioning
+is not grounds for merging the research records.
+
+Each platform has an Org entrypoint and owns its substantive articles. NixOS,
+devenv and Terraform already have separate source/reflection articles; other
+dossiers remain initial notes and must not inherit their completion status.
+Split a growing dossier along actual research responsibilities, for example:
+
+#+begin_example
+20-29-ecosystem-research/
+  20-nixos/
+    20.01-index.org
+    20.02-official-service-module.org
+    20.04-discovery-and-dependency-injection.org
+    20.07-issues-and-evidence.org
+    20.08-real-service-composition-and-design-decisions.org
+#+end_example
+
+This is a growth pattern, not a requirement to create empty files. A completed
+source audit or case reproduction may need several modules of its own. Keep a
+clear source owner for each finding rather than duplicating prose across files.
+
+* Required content of an independent dossier
+
+1. Research questions and scope: distinguish language, library, engine, hosted
+   service and provider. Identify maintainers and ordinary-user responsibilities.
+2. Real configuration corpus: upstream file paths, repository/release identity,
+   complete required inputs and the expected consumer/output. Excerpts retain
+   enough enclosing structure to compare the same data types and meanings.
+3. Mechanism analysis: publication/import, argument passing, dependency discovery,
+   merging, identity, caching/invalidation and phase boundaries. Separate facts
+   from architecture inferred from documentation.
+4. Types/Contracts and diagnostics: what is checked, what remains unknown, how
+   requirements survive composition, and where the user sees an error.
+5. Operational semantics: plan, state, locking, effects, readiness, partial failure
+   and versioned rollout, where the platform owns these responsibilities.
+6. Issue records: one issue per subsection or document with source, report date,
+   affected version, observation, status/check date and reproduction status.
+   A closed historical report is not evidence of a current unfixed bug.
+7. User-experience comparison: ordinary values, inherited extension and contribution
+   maintenance. Count repeated definitions and concepts the author must know.
+8. Reflection: strengths worth retaining, weaknesses, tradeoffs, counterexamples
+   to our preferred design, and what Scheme/POO does not solve.
+9. Conclusion and Onwards: bounded findings, unanswered questions, design candidates,
+   and concrete next observations that could support or refute them.
+10. Human-Agent horizon: identify whether the inspected source explicitly studies
+    Agent-assisted authoring (EXPLICIT), does not discuss it in the inspected
+    material (NOT-DISCUSSED), or has not been checked (UNKNOWN). Record the material
+    actually inspected. Revisit authoring-cost assumptions without dismissing
+    semantic results or inferring an author's intent from publication date.
+
+* Claim and status vocabulary
+
+| Claim class | Meaning | Insufficient substitute |
+|-------------+---------+-------------------------|
+| Documented | Specific primary reference describes behavior | Product positioning or search snippet |
+| Source-observed | Identified source files/revision support the finding | A guessed implementation mechanism |
+| Issue-reported | Reporter describes a case on an identified version | Confirmed universal platform behavior |
+| Reproduced | Executable case and recorded environment/result | Merely copying a reproduction into a document |
+| Design inference | Our proposed response or interpretation | Already implemented or formally proved behavior |
+| Open | Evidence or design decision still missing | A placeholder marked complete |
+
+Each platform updates its own evidence status; completion is not inherited from
+another platform. Record inaccessible references and unknown versions. A citation
+can motivate investigation but does not replace inspecting its actual contents.
+Do not manufacture issue IDs for products whose relevant issue corpus has not
+been examined; official documented limits may suffice for the specific claim.
+
+* Issues and Engineering Limitations: mandatory article section
+
+Each substantive research article must contain this heading. It may link to its
+platform's detailed issue owner instead of duplicating records. Keep an Issues
+topic even when no relevant GitHub defect has been verified; say what is known
+from documentation and what remains unexamined. A References link without an
+interpretation is insufficient.
+
+Every record carries:
+
+- Stable local ID and an original GitHub issue/discussion, official source or
+  article URL; identify the source kind. An external article is a research lead
+  until its particular claims are checked against primary evidence.
+- Report/publication date, affected version/revision and observation date. Use
+  UNKNOWN or NOT-REFRESHED explicitly instead of inferring a current status.
+- Marks for DOCUMENTED-LIMITATION, ISSUE-REPORTED, MAINTAINER-EXPLAINED,
+  CONFIRMED-DEFECT, HISTORICAL-RESOLVED, DESIGN-TRADEOFF or DESIGN-INFERENCE, as
+  supported. These marks are not synonyms and can be combined.
+- Upstream state and our reproduction state separately. CONFIRMED-DEFECT needs
+  confirmation evidence; a GitHub bug label or an unhappy report alone is not it.
+- Owning layer, actual user/engineering cost, and the design question or negative
+  control motivated by the observation. Preserve counterevidence and later fixes.
+
+An article is not complete merely because it contains this section. Initial
+dossiers may still have an unreviewed issue corpus; label that gap rather than
+inventing a report. A design risk in our proposal is not an upstream defect.
+
+* Matched cases and review
+
+AWS and Guestbook provide shared questions but do not impose identical execution
+engines. Compare final input/resource semantics, then explicitly identify what
+cannot be made equivalent. Keep deployed behavior, local admission and static
+source inspection as separate evidence. Preserve failed and stale controls.
+
+Research completion means the important questions have defensible answers or
+explicit unresolved boundaries. It does not mean a directory exists. Runtime,
+macro or Loader implementation remains deferred while the design is reviewed.
+
+
+* Evidence proportionality: documentation and source before installation
+
+Installing every reviewed platform is not the default research workflow.
+Start from official user documentation, configuration examples, versioned source,
+upstream tests, Issues and relevant fixing PRs. An explicitly documented interface
+or inspected merge implementation can establish that bounded finding without
+installing the platform locally. Source study is a substantive result, not an
+incomplete installation task.
+
+Only select a local reproduction when a specific unanswered claim requires it:
+version-dependent diagnostics, disputed behavior, performance, runtime/provider
+interaction or an ambiguous source path. State the question and the smallest
+necessary runtime before fetching dependencies. Do not fetch all providers or
+an entire platform suite to inspect a configuration API. Performance and actual
+effect claims still require execution evidence; source analysis must not be
+reclassified as a locally reproduced failure or speed advantage.
+
+For every comparison record what the reference guarantees, what its code does,
+what a report alleges, and what we infer separately. Absence from a manual does
+not prove lack of capability. A proposed stronger framework guarantee needs a
+mechanism and counterexample, but not an indiscriminate installation campaign.
+
+On 2026-10-17 the broad Gitea/PostgreSQL runtime campaign was stopped in favor
+of this source-first scope. One existing-host NixOS evaluation completed and
+remains a narrow local observation; Pulumi engine execution did not occur.
+Temporary package acquisition is not platform validation. No three-platform
+result, maintenance-cost ranking or new superiority conclusion is established.

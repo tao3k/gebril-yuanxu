@@ -1,0 +1,529 @@
+#+title: 10.13 Admission Knowledge and Demand Work
+#+language: en
+#+property: STATUS design-review
+
+* Decision and scope
+
+The historical 2.355719-second first business request is unresolved. It is not
+a new measurement of the current head. Do not substitute SCC timing, a warm
+hash hit, a batch average or a watchdog pass for that request. Do not repeat
+the capacity gate until a producer change removes identified work.
+
+The next algorithm change belongs in gerbil-poo's source preparation, beginning
+with the existing =object<-fun= producer used by Yuanxu's directory and scope
+trees. It must address admission, source representation and receiver binding
+together. Merely deferring wrappers after a whole-source capture is insufficient.
+No public action, Module syntax, loader, cache or evaluator is added.
+
+This note specifies the implementation cut. [[file:10.10-first-demand-implementation-obligations.org][10.10]] retains timings and failed
+candidates; [[file:10.12-composite-source-registration.org][10.12]] owns exact shared-storage registration and publication.
+
+* What the current code actually does
+
+The source audit is against POO =b54bc560=, whose =object.ss=,
+=prototype-map.ss= and =slot-layout.ss= are unchanged from =81447d16=.
+The latest change detaches canonical name evidence; it does not implement
+sparse preparation. Yuanxu call sites are the current local source, not a
+claim that a downstream pin already exercises a new producer.
+
+| Stage | Existing owner | Work still present |
+|-------+----------------+--------------------|
+| Finite functional source | =object.ss:object<-fun= | Allocate one closure and RawSpec per declared occurrence before any demand |
+| Ordered source admission | =prototype-map.ss:tree-map= | Insert each occurrence into the ordinal tree and name/position tree; keep duplicate contributions |
+| First receiver preparation | =object.ss:instantiate-object!= / =compute-slot-funs!= | Select C4, prepare declarations, traverse all defaults and contributions, compile all retained chains, install all effective methods |
+| Value directory | =slot-layout.ss:make-slot-values= | Enumerate effective keys and construct the default full vector layout |
+| Warm request | =object.ss= / =read-route.ss= | Use existing receiver values and authenticate actual read support; this is different work from first preparation |
+| Module namespace | Yuanxu =source/directory.ss:tree= and =source/link.ss:scope-tree= | Build functional branch objects through =object<-fun=; their keyed source does not currently avoid whole receiver preparation |
+
+The three relevant graphs have different semantics. C4 orders prototype
+contributions. Module edges select owners for admission/build. Observed slot
+reads determine runtime support and invalidation. POO's Graph indexes can
+maintain the latter dependencies, but SCC order cannot replace C4 and cannot
+erase the source traversals above.
+
+*.mix* constructs a composition; it is not itself evidence that its later
+first read is sparse. *.cc* already shares persistent source roots and replaces
+the first matching ordinal, but its fresh receiver still prepares all methods.
+The required improvement covers that subsequent demand, not just clone creation.
+
+* The boundary that must be proved
+
+An arbitrary unknown source can contain a malformed required sibling. Skipping
+it changes whole-preparation acceptance even when the requested key is valid.
+Changing its order can change the first error. A mutable raw source can also
+change a payload after an earlier check without advancing its receiver revision.
+An index hit does not resolve any of these facts.
+
+=LeanPoo.Object.AdmissionBoundary= strengthens the existing finite
+counterexamples to a general adaptive-query theorem:
+
+- =trace_frame=: agreement on the actually executed reads preserves both the
+  result and all subsequent adaptive read choices.
+- =accepted_unknown_reads_every_required=: a sound accepting audit of N
+  independently unknown required facts must read every one of them.
+- =accepted_unknown_read_lower_bound=: that successful trace has at least N
+  reads, even if it includes repetitions.
+- =generated_classification_needs_no_probe=: actual typed constructor recipes
+  already establish installation callability without reading arbitrary raw
+  siblings or running any business body.
+- =no_probe_is_not_universal_admission=: that generated-domain argument cannot
+  be relabeled as a certificate for arbitrary input.
+
+This is a lower bound in an oracle-read model. It is not a CPU bound or a
+native correspondence proof. Only the original producer's required admission
+facts belong to N. The generated-domain theorem covers constructor
+classification, not capture time, mutable class metadata, declarations, author
+hooks or first-error order; those retain the existing separate proofs/guards.
+
+For =object<-fun=, the generated thunk =(cut f key)= is a procedure even if
+=f= will fail when invoked. Certification must not call =f= early or turn its
+deferred business error into an installation error.
+
+* One representation change, with explicit authority
+
+1. The existing constructor creates a private source-owned recipe and ordered
+   name/ordinal structure. Its identity comes from allocation and the existing
+   issuer, not a package revision, digest or caller's purity declaration.
+   Preserve duplicate contributions and their first-ordinal replacement.
+2. Retained source views share that structure. An actual overlay updates the
+   affected paths and owner counts as specified in 10.12. It must not build a
+   new whole-directory index or retain every shadowed payload through an old
+   grouped dispatcher.
+3. The receiver obtains an authenticated source cut, checked C4 order and the
+   demanded key's ordered contribution chain. Bind final =self= and delayed
+   =sup= in the existing method store. Receiver values and issued reads remain
+   owned by that receiver; they are not inherited or shared between receivers.
+4. A point request must not build an all-key method table or all-key value
+   vector. Preserve the public layout/inline-access protocol through a proved
+   representation handoff. The previously attempted default hash switch
+   failed those controls; it is not an implementation of this step.
+5. Reflecting a RawSpec fences its actual shared storage owner BEFORE it
+   escapes. Future capture through any alias uses ordinary certification.
+   Already prepared recipes retain their original payloads. Ordinary supported
+   edits still use normal invalidation; reflection does not invalidate old
+   receiver methods merely to simplify the representation.
+
+The private custody mechanism must survive the ordinary Gerbil MOP routes
+already exercised by the representation tests. A record field named private
+or an escape bit around =object-slots= is insufficient. Authenticate an alleged
+capsule before invoking it. Do not expose canonical key/index storage through
+MOP or a public traversal callback. Preserve the identity of reflected
+RawSpecs and thunk procedures, including clone aliases and later duplicates.
+Unsafe host-runtime heap surgery is outside this contract; standard MOP is not.
+
+Shared class/protocol/write-route metadata remains independently checked.
+Declaration hooks and author callbacks keep their original order and their
+entry/return checks. A successful closed-interval verdict does not cross an
+effect boundary. Unknown raw sources and unsupported routes retain the full
+ordinary preparation path.
+
+* Work contract and implementation gate
+
+Let A be newly required source occurrences, H reached C4 layers, D retained
+contributions for demanded keys, Q distinct demanded method bindings, and Rb
+actual authentication support at boundary b. These quantities are not all
+the number of catalog owners.
+
+- A new unknown source pays its required ordered certification and index
+  construction. Existing two-tree insertion is not an O(1) operation.
+- A constructor-owned source derives supported facts from construction, builds
+  its source structure once, and charges that work in the complete first
+  request. Moving it into import/init does not make it free.
+- A current shared source pays reached-layer/index lookup, D contributions,
+  Q bindings and actual business work. It does not traverse A again for each
+  receiver, bind unrelated siblings or allocate unrelated value cells.
+- Currentness adds actual Rb at each required boundary. Keeping a whole-catalog
+  receipt in that support would preserve the original defect even after
+  method preparation improves. Core owns that separate receipt projection.
+- A controlled edit pays changed paths and the affected old/new dependency
+  closure. Full names/reflection pays the requested output enumeration.
+
+First validate the single existing functional producer and its actual escape
+routes. Reuse existing issued-read, representation, inheritance and inline
+controls; add a case only for a genuinely uncovered law. Require actual
+unrelated-binding/index-build counts to fall before a matched cold/warm/clone/
+edit benchmark. Charge preparation and retained memory, use the same compiled
+source cohort, and preserve failed observations. Only then rerun Core 10K
+and the real downstream gates with their original budgets.
+
+This is not a promise that one POO change removes the entire 2.355719 seconds.
+Earlier measurements also found filesystem/context and currentness work.
+Their contribution must be measured in the same end-to-end run after the
+producer implements this contract. No fresh performance win is claimed here.
+
+* Verification status
+
+The local Lean root build completed with 407 jobs after adding
+=AdmissionBoundary=. All seven new laws were checked for axioms: only standard
+Lean axioms occur; the universal-admission counterexample is axiom-free.
+The original POOF audit passed with 45 review units, 90 headings, 24 source
+checks and 388 local evidence files. All 99 LeanPoo Org files and this Core
+Org file parsed successfully. The existing Org-reader negative controls remain.
+
+The proof module is published at [[https://github.com/tao3k/lean-poo/actions/runs/42775731688][Lean 1c12d39e]], whose CI passed.
+The preceding =27f2ff41= CI passed. The structural-index/issuer relocation in
+10.12 is published at [[https://github.com/tao3k/gerbil-poo/actions/runs/42775748193][POO 48ae82f4]], with CI running at publication.
+The preceding =b54bc560= Scheme CI passed all 30 jobs. The new local source
+and optimized tests cover the changed dependency boundaries, not a shared
+source point path. No consumer pin accompanies this design revision.
+
+* Review decision after the first binding experiment
+
+** The request still pays for the width of the directory
+
+The staged Core comparison in [[file:10.12-composite-source-registration.org][10.12]] measured 2.324 s wall / 1.598 s CPU
+before the functional method cut and 2.538 s wall / 1.619 s CPU with it.
+Both arms admitted two owners and constructed two scopes. An independent
+probe on the final cut counted zero materialized methods and 10,000 value
+cells in the same branch. The cut eliminates a whole-key pass in POO, but
+this comparison does not establish an end-to-end improvement. Its diagnostic
+subphases were separate executions and cannot be summed to explain the full
+request. The real Core qualification and dependency update remain open.
+
+The current Core code still does whole-width work before reaching an owner:
+
+- =source/directory.ss:snapshot= sorts immediate names, classifies child
+  directories, checks case collisions and rejects symlinks, including
+  names excluded from module membership. The Context invokes it on roots
+  before returning. A guard over a complete directory listing can cause a
+  subsequent comparison to enumerate that listing again.
+- =source/directory.ss:tree= and =source/link.ss:scope-tree= group all rows of
+  the reached branch into an ordered map, then =object<-fun= builds its own
+  ordered source index. =make-slot-values= still builds the default complete
+  value layout. A hash lookup at the end does not remove these producers.
+- =source/selection.ss:select-module-graph= walks dependency declarations
+  reachable from the request. This is where owner closure belongs. The fact
+  that a separate captured-graph SCC benchmark is fast does not eliminate
+  discovery, owner admission, Gerbil expansion or currentness.
+
+** Define the certification boundary before changing the algorithm
+
+The existing directory-policy case checks that an excluded sibling symlink
+fails on =yuanxu-load-modules= and checks which name is reported first. A
+lookup of a valid leaf cannot preserve that observation on a fresh mutable
+root if it skips an unobserved sibling. Consider two roots identical on
+the requested path and every observation made so far, with an excluded
+symlink in just one root. The lookup trace is identical and the required
+whole-window verdict differs. The same issue applies to a case-fold
+collision with an unobserved name. A file timestamp, hash hit or version
+string does not certify that window. This is the filesystem instance of
+=LeanPoo.Object.AdmissionBoundary.trace_frame= and the unknown-facts
+lower bound. The filesystem-to-oracle correspondence still needs proof.
+
+Keep three distinct operations in the contract:
+
+| Operation | What it may claim | Work that remains charged |
+|-----------+-------------------+---------------------------|
+| First use of an unknown source window with whole-window policy | Complete ordered verdict for the observed window | Required names and kinds, original refusal order, independent rechecks when crossing effects |
+| Point demand in an admitted view | One owner's visibility, exact ordered slot contributions and required dependency closure | Reached paths and layers, authenticated evidence and current demanded inputs, demanded receiver slots |
+| Explicit complete enumeration or certification | All names, all required admission facts or full Graph output as requested | Complete enumeration or inspection, including global conflicts |
+
+Apply the second operation inside the existing source Context/publication
+boundary. It needs a view owned and authenticated by the actual producer.
+The view cannot claim global filesystem currentness after an uncontrolled
+change. Preserve the current first-error behavior on raw source until a
+supported producer supplies the same complete verdict. If raw first demand
+must become sublinear even on an unknown mutable window, that requires an
+explicit decision to make whole-window policy a separate operation. It would
+change the existing sibling-refusal contract. This review does not make
+that change.
+
+** Apply the papers to the owning algorithms
+
+1. In gerbil-poo, preserve POOF's distinction between a composed prototype and
+   the instance fixed point. Source-owned structure represents the ordered
+   contributions. The receiver binds the demanded contribution to final
+   =self= and its delayed =sup=. Share the source structure between eligible
+   receivers and compose edits over the affected index paths. Publish only
+   demanded values in the existing receiver store. The same division applies
+   after =.mix= and =.cc=, where a fresh receiver must bind its own =self=
+   without rebuilding unchanged source structure. An exclusively owned
+   construction can fill its index in place before publication, as POOF 6.1
+   motivates. Its illustrative =fix!= copies the base table, so reproducing
+   that example for each receiver would still charge whole-table work.
+   A shared or exposed source needs its existing snapshot and admission
+   rules. POOF 6.2 gives the reason to retain independent checks across
+   Gerbil expansion and author callbacks.
+2. In Yuanxu, feed the existing namespace and Graph owners from admitted
+   branch and Interface rows. Build the branch index once per admitted view
+   and reuse it for keyed slot preparation. A bulk build must preserve
+   original occurrence order and duplicate policy, including absent keys.
+   A complete lexical listing still pays sorting if the producer supplies
+   no order. Establish which index paths are genuinely shared before
+   choosing between a bulk ordered build and hash-based grouping.
+3. In POO Graph, consume authenticated row deltas using existing forward
+   and reverse indexes. Reuse the existing =repair-order= path for DAG
+   order and =revise-partition= for feedback/SCC. A single inserted edge
+   from U to V in the condensation graph merges the intersection of nodes
+   reachable from V and nodes that reach U, when V already reaches U.
+   A pure deletion can split an old SCC only within that old group.
+   Mixed edits need the union-graph affected region or a verified
+   split-then-insert equivalent, not independent single-edge conclusions
+   against a stale snapshot. Reverse invalidation includes consumers
+   outside the repaired interval. A touched giant SCC may still require
+   linear work. Tarjan–Zwick's Algorithm T belongs on the captured induced
+   graph or the full fallback. Insertion-only order algorithms do not
+   cover deletion, source admission or snapshot publication. Choose the
+   kernel by touched vertices, edges and output work, not catalog size alone.
+
+** Proof and implementation cut
+
+- LeanPoo's =Object.AdmissionBoundary= and =Object.SlotPreparation= cover
+  adaptive observations and selected contribution laws. Prove the remaining
+  representation handoff preserves native slot status, inline/layout
+  observations, duplicate and missing-key behavior, and an old receiver's
+  previously undemanded key. Treat an unissued or exposed source as an
+  actual fallback case. The first native cut must show zero unrelated
+  method bindings and value cells.
+- =Functional.GraphRevision.edited_root_closure_exact= and
+  =Functional.StableOrderRepair.sparse_repair_complete= cover the affected
+  closure and order laws. =Functional.StrongComponents= specifies
+  reachability and clean-component preservation. These do not prove that
+  the Scheme producer emitted all and only the required dependency changes.
+  Bind the actual Interface-row delta and reverse buckets to the same
+  generation, prove cold/incremental equivalence under mixed changes and
+  require a failed or superseded candidate to publish neither rows nor
+  certificates. Check the native refinement with existing fault controls.
+- For Core, discharge the source-window obligation with the existing
+  directory policy and import-provenance tests, including a hidden sibling
+  fault for the complete operation and a demanded-path mutation for point
+  currentness. Use work counts in the existing first-business case for
+  directory entries classified, branch rows indexed, unrelated value
+  cells, owners admitted, and actual Graph rows and edges traversed. Retest
+  the unchanged cold end-to-end request only after those counts fall.
+  Account for required work done before the first =.get= as well. Keep the
+  sparse business request, full 10K admission, and captured 100K/1M Graph
+  benchmarks as separate gates. A timeout fence is not a latency target.
+
+** Lean result for the single receiver value store
+
+The local =LeanPoo.Object.Layout.PointLayout= proof models the primary
+payload as one of populated point cells and the exposed canonical vector.
+It uses the existing key-to-offset correspondence as a premise. A point
+request does not have to construct that vector or its full offset table.
+
+| Lean law | Native correspondence |
+|----------+-----------------------|
+| =expose_status= and =successful_false_is_present= | The admitted name index distinguishes an absent name from a known cold slot. Receiver storage distinguishes the absent sentinel from a computed =#f=. |
+| =expose_write_at= | Moving an admitted named write or eviction across layout exposure preserves the value at every original offset. The proof uses one-to-one canonical offsets. |
+| =writes_population_bound= and =writes_leave_unrelated_cell= | An empty sparse store retains only slots actually written. Its population is bounded by write count, independently of namespace width. This does not bound allocated bytes. |
+| =Primary.exposeLive_observe=, =Primary.exposeLive_origin= and =Primary.exposeLive_idempotent= | Exposure consumes the live payload and keeps the same receiver, revision and primary identity. Exposing again does not construct a new primary store. |
+| =completion_frame=, =failure_preserves_cells= and =foreign_receiver_cannot_commit= | A failed demand or stale or foreign commit cannot write a slot. Matching shape evidence permits borrowing an offset only. |
+| =early_exposure_loses_same_origin_write= | Computing a vector from a cold snapshot, then publishing it after a successful same-revision demand, discards that new value. Receiver/revision/store identity alone cannot validate such a prepared vector. |
+
+Use the existing =slot-layout.ss= owner for the native handoff. Start with
+the protected generated =object<-fun= receiver without overrides, defaults,
+protocols or author hooks. Preserve the sole =HashTable= wrapper and its
+receiver identity. Named demand uses the populated payload and the existing
+=object.ss:.ref= evaluation and observation path. Explicit layout exposure
+and the existing inline access path can request the canonical offsets and
+vector. This cut does not claim a sparse inline/layout request. Every route
+that exposes the layout must consume the live payload in the native
+callback-free, sequential transition. A supported operation that changes
+the original dense shape must retain its ordinary semantics. Reject a
+stale result before changing the receiver, or complete the exposure and
+replacement under its owning write boundary.
+
+=read-route.ss:require-read-route!= currently recognizes a vector and
+its shape or the stock symbolic table. The new payload cannot pass that
+check by label. Any native refinement must authenticate its actual store,
+constructor and lookup routes before invoking them, and preserve the issued
+slot status across exposure. That authentication and the actual exposure
+boundary remain native implementation obligations. Independent Gerbil
+expansion and author-callback checks still apply. The proof does not extend
+the current receiver mutation protocol to unsupported concurrent writes.
+
+** Native prototype and first-request qualification
+
+The isolated Scheme prototype uses the existing layout fields and one
+receiver-owned =HashTable=. In point state the value payload contains populated
+cells only, and the source evidence authorizes the exact layout and payload.
+The checker and name producer are authenticated before invocation. Dense
+exposure prepares the canonical shape before reading the live cells and
+retains the existing primary identity. The issuance owner is below both
+layout and replay in =slot-observation.ss=, so the runtime can load either
+consumer without a reverse initialization dependency.
+
+Optimized representation, issuance and hook tests passed 153 cases. The
+two point-layout cases cover cold and false values, exact identity, read replay
+after exposure, eviction, a foreign layout/store pair, a changed lookup
+route and ordinary dense growth. A diagnostic on the real staged Core 10K
+business fixture confirmed zero materialized methods and one populated value
+cell after the request. That probe runs outside the timed demand.
+
+An earlier matched timing of the point-layout prototype against the method-cut
+baseline used the unchanged 180-second and 4-GiB sparse business fixture.
+Both arms admitted two owners and built two scopes. The first order measured
+1.538 s baseline and 1.184 s candidate wall, and the reverse order measured
+1.158 s candidate and 1.034 s baseline. The corresponding CPU pairs were
+1.261/1.159 s and 1.103/1.033 s. Major page faults varied with process order.
+The change in receiver work is established. A reproducible improvement of
+the entire first business request remains open, as do complete admission,
+incremental and downstream acceptance. Keep these prototype timings separate
+from the original historical 2.355719 s and from the public Core/POO pins.
+
+** Bulk construction of the generated prototype indexes
+
+The protected functional producer already owns its fresh row sequence.
+Inserting those rows one at a time into two persistent trees reconstructs
+search paths before any snapshot needs them. The local POO candidate groups
+name ordinals in an unpublished symbolic table and sorts the distinct
+name buckets with the existing symbol-identity comparator. It creates the
+ordinary ordinal RBTree from chronological rows and the ordinary name
+RBTree from the sorted buckets. The scratch table and vectors are not
+published. Edits still use the original persistent insert/remove paths.
+
+For N rows and K names the two trees contain N+K nodes. The builder creates
+each of these nodes once. Grouping has expected linear lookup work, and
+ordering the K names still pays the sort. No pre-sorted premise is made
+about filesystem names. Equal-spelling symbols with a hash collision
+retain exact identity. Raw reflection, first-ordinal replacement and
+chronological duplicate folds keep their original semantics. The smallest
+sources stay on the existing path, using its current eight-row bound.
+
+=LeanPoo.Prototype.Representation.BulkOrder= gives equal black height by
+construction and proves that every input position appears once in order.
+The root is black for nonempty input under the doubling loop's interval.
+The existing =OrderedContributions= laws establish the order and choice of
+same-name ordinals. Scheme tests check the stock tree's ordinary edits on
+both sides of height boundaries. Omitting the extra red leaves from the
+middle ordinal duplicated rows, and the matching native test rejected it.
+The prototype uses the existing private Tree constructor from the pinned
+Gerbil source. Portability to other Gerbil revisions still needs qualification.
+
+The four-process POO comparison held point value storage constant. Protected
+10K source construction took 13.6–54.4 ms CPU on the old builder and
+5.6–6.5 ms on the bulk builder. Samples with qualified allocation measured
+39.37 MB and 6.01 MB respectively. Protected 100K construction took
+345–435 ms CPU on the old builder and 99–108 ms on the bulk builder.
+The old 100K allocation numbers were unqualified when GC ran. Peak RSS is
+for the entire process including all sizes. These are source-construction
+measurements, separate from the cold Module demand and its directory policy.
+
+In staged Core's unchanged sparse 10K test, the old/bulk first-request wall
+times were 1.478/2.264 s. Reversing order gave 6.602/6.431 s bulk/old.
+The corresponding CPU times were 1.253/1.777 s and 1.958/1.928 s.
+Both orders retain two owner admissions and two scopes. This comparison
+does not qualify the bulk candidate as a whole-request speedup. In
+=directory.ss= the original sorted listing serves both ordered initial
+refusals and repeated exact membership comparisons. The next cut should
+prove where that sorting can be skipped during currentness without
+changing listing multiplicity, independent effects or the ordered
+initial refusals. The required name and kind checks remain separately
+accounted.
+
+The index builder was published independently of the point-value prototype
+on [[https://github.com/tao3k/gerbil-poo/commit/ca2bbb2560c2b256bb8fc04a9ec867ba40c5939e][gerbil-poo ca2bbb2]] in PR #17. The paired
+measurement at that cut kept the public receiver implementation. At 10K,
+the old/generated construction CPU ranges were 20.7–52.3 and 6.9–8.5 ms.
+Qualified allocations were 38.88 and 5.53 MB. At 100K the CPU ranges were
+406–450 and 162–207 ms. Slot evaluation was outside that comparison.
+The focused native suites passed 150 representation, issued-read and hook
+cases and 39 Graph and publication cases. The isolated wrong-middle fault
+still failed ordered row validation. [[https://github.com/tao3k/gerbil-poo/actions/runs/42787894968][Exact-commit Scheme CI]]
+completed successfully with all 30 jobs passing. Complete Core request
+qualification remains separate.
+
+** Exact directory listing replay without repeated lexical sort
+
+The existing directory Context retains a fresh raw listing in the candidate.
+First admission still sorts that listing before inspecting names, collisions
+and symlinks. Later comparisons read through the original source-observation
+window. An identical raw sequence succeeds without sorting. A changed length
+refuses. A different order at the same length uses the original exact sorted
+comparison, preserving multiplicities even if an enumeration supplies
+duplicate entries. Only the raw listing is retained by this guard. The
+existing directory-kind and selected path guards keep their own authority.
+
+=SourceWindows.sameDirectoryListing_eq_sorted= proves equality of the
+acceptance decision with the previous sorted comparison for any
+length-preserving sort. =sameDirectoryListing_permutation= states that
+acceptance preserves the complete multiset when the sort permutes its input.
+The matching native control replaces the comparison with length equality.
+It accepts a same-length rename of an unselected directory, and the
+assertion fails. Independent revalidation observes restoration. A previously
+refused linked scope session is still retired. A direct native comparison
+also checks reorder acceptance, changed multiplicity and intact inputs.
+
+Separate callback-free accounting on the staged 10K sparse fixture measured
+79 directory reads in each cold arm. Sorts fell from 79 to 4, with 75 raw
+sequence hits. The independent currentness action still made four directory
+reads and fell from four sorts to zero. The candidate removes repeated
+sorting work while retaining every observed directory read in this workload.
+
+The uninstrumented staged pair used the same published POO construction cut
+and the original 180-second and 4-GiB sparse gate. Both arms admitted two
+owners and constructed two scopes. Independent currentness used 18.34 ms
+baseline and 10.73 ms candidate CPU, with 19.37 and 37.70 ms wall. The
+complete cold request used 1.295 and 1.355 s CPU, with 5.102 and 2.364 s wall.
+Peak RSS for the whole commands was 591952 and 578464 KiB. This pair
+establishes the limits of the measured result. The deterministic sort-count
+reduction is established, and complete cold latency remains unqualified.
+The staged candidate still needs the current Core build-input and Lab
+projection gates before a source promotion.
+
+** Physical directory observations by effect window
+
+The 79-read run used 19 source windows for 71 reads and made another
+eight outside those windows. Five scope/Contract invocations generated
+ten before/after checkpoints and accounted for 40 reads. The remaining
+checkpoints account for 8 eligibility, 4 post-policy, 2 pre-Graph,
+8 Graph-current, 8 scope-linked, 8 initial and 1 other link read.
+There were no active collectors during the listing reads. This rules
+out changing the collector key as a way to reduce this workload.
+
+The full path trace found two spellings of the same selected leaf,
+=..././modules/module-1= and =.../modules/module-1/=. Both were read
+in 17 of the same windows. The isolated candidate keeps the kind check
+on each raw path and shares only the native directory listing in the
+existing closed read window. Its key simplifies lexical dot and trailing
+separator spelling. Relative paths, parent traversal and POSIX double
+slash prefixes retain their original spelling. It does not resolve
+symlinks for this key or reuse an approval. Initial admission and open
+observers retain their original read route.
+
+=SourceWindows.directoryAlias_keeps_raw_kind= and =directoryAlias_value=
+separate the raw kind predicate from the normalized listing key. The
+native bridge requires listing equality after the raw directory check,
+inside the existing stable window. =directoryAlias_repeat= proves the
+second spelling hits the existing observation. Native controls compare
+the raw and shared routes on a symlink and exercise an actual directory
+edit across a callback. Removing the raw kind check made a bare symlink
+pass, and the corresponding test rejected the mutation.
+
+The instrumented candidate kept 19 windows, all ten effect checkpoints,
+and all eight outside-window reads. Cold physical listings fell from 79
+to 62 and independent currentness from four to three. At the ten effect
+checkpoints, reads fell from 40 to 30 by sharing inside each checkpoint.
+The wide root was still listed 22 times. In the separate uninstrumented
+candidate run, the cold business request used 3.555 s wall and 1.623 s CPU.
+Independent currentness used 10.12 ms wall and 9.75 ms CPU. This is
+a single candidate run, so the change in work does not establish a
+whole-request speedup. A future cut needs to distinguish
+adjacent trusted source-only guards from checks on opposite sides of
+an effect before changing any root observation cadence.
+
+* Paper correspondence
+
+[[https://fare.tunes.org/files/cs/poof.pdf][POOF]] 4.1.3 distinguishes sharing a suspended computation from rebuilding
+its dictionary; 4.1.4 permits a richer prototype representation with unchanged
+instance semantics. Its 6.2 explicitly limits automatic invalidation when
+mutation is not tracked throughout the language. These jointly motivate
+source-owned structure and a real write/exposure boundary, not blind cache reuse.
+
+[[https://fare.tunes.org/files/cs/poof/ltuo.html][Lambda: The Ultimate Object]] 10.2.3--10.2.5 distinguishes finite maps,
+representation, shape and staging. Apply those distinctions before the first
+key lookup: retaining known structure matters more than replacing the final
+lookup primitive. Its complexity discussion does not promise constant native
+cost for a full directory or millisecond latency on arbitrary I/O.
+
+[[https://arxiv.org/abs/2201.07197][Tarjan and Zwick, Finding Strong Components Using Depth-First Search]]
+analyzes SCC on an already supplied graph. [[https://arxiv.org/abs/1112.0784][Bender, Fineman, Gilbert and Tarjan]]
+analyzes different sparse and dense algorithms for insertions. Neither
+provides a cutoff by vertex count for our persistent mixed-edit workload.
+
+[[https://arxiv.org/abs/1106.0478][A Consistent Semantics of Self-Adjusting Computation]] couples reuse with
+tracked changes and proves consistency with fresh evaluation. POO's existing
+observation/index/publication paths are the implementation owners here. None
+of these sources supplies a license to cache arbitrary effects or add a
+second evaluator.

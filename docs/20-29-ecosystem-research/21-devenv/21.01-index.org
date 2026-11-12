@@ -1,0 +1,39 @@
+#+title: 21.01 devenv: Independent Module-System Research
+#+language: en
+#+property: DOCUMENT_ID 21.01
+#+date: [2026-10-17]
+#+property: STATUS documentation-and-service-source-reviewed-not-executed
+
+* Reading map
+
+1. [[file:21.02-composition-and-postgres.org][Composition and actual PostgreSQL integration; DV issue records]].
+2. [[file:21.03-maintainer-and-user-interface-reflection.org][Maintainer/user boundaries, default evolution and measurable design gates]].
+
+* Research purpose
+
+Study how a maintained Nix module ecosystem gives developers small configuration
+interfaces while owning package, environment and process details. This is a
+module-system case, not a claim that Nix syntax is better or worse than Scheme.
+
+Read [[file:21.02-composition-and-postgres.org][composition, PostgreSQL source, issue evidence and reflection]]. The scope is
+one real service plus documented composition, not a completed audit of every
+devenv module, evaluator or cache. Source/document access date: 2026-10-17.
+Runtime, service readiness and performance have not been validated here.
+
+* Issues and Engineering Limitations
+
+The [[file:21.02-composition-and-postgres.org][study's issue register]] owns DV-01 (PostgreSQL PGHOST regression report) and
+DV-02 (configuration merge versus operational relationships). Marks distinguish
+the historical user report from current source and our design inferences.
+
+* Conclusion
+
+The research target is lifecycle and compatibility work hidden by ordinary values.
+Reusing a rich host language does not remove that work. Compare these findings
+with [[file:../20-nixos/20.02-official-service-module.org][NixOS's official service module]] and [[file:../22-flox/22.01-index.org][Flox's environment composition]].
+
+
+* Package-to-process ownership
+
+[[file:21.04-service-package-and-command-ownership.org][Redis and NixOS nginx package/command ownership]] compares maintained service
+implementations with Core's incomplete package-to-Scenario binding.

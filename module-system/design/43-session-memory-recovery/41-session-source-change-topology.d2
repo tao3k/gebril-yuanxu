@@ -1,0 +1,63 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+direction: down
+classes: {
+  boundary: {style: {fill: "#F3F6FA"; stroke: "#B8C6D5"; border-radius: 12}; style.font-size: 20}
+  source: {shape: document; style: {fill: "#E6F3EF"; stroke: "#277D66"}}
+  control: {style: {fill: "#E9EDFA"; stroke: "#5367A2"; border-radius: 7}}
+  cut: {shape: hexagon; style: {fill: "#FFF2D9"; stroke: "#AB7727"}}
+  pending: {style: {fill: "#FFFFFF"; stroke: "#8B96A5"; stroke-dash: 5; border-radius: 7}}
+  data: {style: {stroke: "#277D66"; stroke-width: 2}}
+  authority: {style: {stroke: "#5367A2"; stroke-width: 2}}
+}
+project: "PROJECT · Context persists beyond a Session" {
+  class: boundary
+  direction: right
+  org: "ORG Elements + Contract\nsource identity / structural validity" {class: source}
+  accepted: "Accepted Project knowledge\nevidence + counterexamples" {class: source}
+  query: "Unified Query / GQL\nContext adapter OPEN" {class: pending}
+  org -> accepted: source-bound content {class: data}
+  accepted -> query: content window {style.stroke-dash: 5}
+}
+management: "CONTROL PLANE · permission is independent of shared content" {
+  class: boundary
+  direction: right
+  gov: "Assurance / Governance\ncurrent evidence + grant + policy" {class: control}
+  change: "Change authority\nissued old / target + captured cut" {class: control}
+  sync: "Sync approval\nauthenticated report ≠ permission" {class: control}
+  gov -> change: change grant {class: authority}
+  gov -> sync: sync grant {class: authority}
+}
+scope: "SESSION CONSUMPTION SCOPE · one of many independent scopes" {
+  class: boundary
+  direction: right
+  providers: "Issued sources · names are not identity" {
+    class: boundary
+    direction: down
+    a: "A · SELECTED\nepoch A / retained cursor A" {class: control}
+    b: "B · CANDIDATE\nepoch B / retained cursor B" {class: pending}
+  }
+  registry: "Authority / registry cut\nexact manager pin + local revision\ncollection generation + lease" {class: cut}
+  consumers: "Session collection consumers" {
+    class: boundary
+    direction: down
+    one: "Session α · current Query / review" {class: control}
+    two: "Session β · current Query / review" {class: control}
+  }
+  providers.a -> registry: authenticated snapshot {class: data}
+  providers.b -> registry: "not selected\nno observations" {style.stroke-dash: 5}
+  registry -> consumers.one: cut-bound admission {class: data}
+  registry -> consumers.two: cut-bound admission {class: data}
+}
+project.accepted -> scope.consumers: "shared knowledge\nNO inherited grant" {class: data}
+management.change -> scope.registry: "atomic replace / retire / rebind\nadvance epochs + cut · clear lease" {class: authority}
+management.sync -> scope.registry: "strict newer cursor\nretirement-only membership" {class: authority}
+legend: |md
+  **Reading this view**
+
+  Green = content / evidence · Blue = authority / admission · Amber = versioned boundary
+
+  Dashed = candidate or unimplemented adapter, never an active permission path.
+
+  Project and Session boxes are responsibility scopes, not a one-owner containment tree.
+| {shape: text}

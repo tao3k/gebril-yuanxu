@@ -1,0 +1,134 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Recovery-authority registry-claim binding
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Recovery-authority registry-claim binding
+
+** Recovery-authority identity requirement
+
+The durable content-aware recovery authority MUST bind its issuer identity to
+the canonical =PublicationDomainRegistryTrustClaim= selected by the governed
+lineage at the durable committed position.  Retaining an =issued= predicate and
+durable checkpoint positions does not identify which registry authority or
+registry semantics authorized the recovery.
+
+Because registry authority and registry semantics are stable across the
+governed lineage, the same validated claim MUST also equal the canonical claim
+at the recovered checkpoint.  Replica provenance origins expose this equality
+directly and reject either identity mismatch.
+
+** Claim-unbound recovery-authority counterexample
+
+=RegistryClaimUnboundDurableContentAwareRecoveryAuthority= preserves the former
+position-only authority shape.  Given any position evidence already issued by
+its position authority,
+=claimUnboundRecoveryAuthorityPermitsRegistryClaimSubstitution= constructs an
+authority that issues the content-aware evidence while an independently chosen
+registry claim carries different authority and semantic identities.
+
+The recovery positions remain durable and valid in this counterexample.  The
+failure is specifically that their issuer is not identified by the registry
+trust root.
+
+** Recovery-authority claim Typst model
+
+#+begin_export typst
+$
+  "RecoveryAuthorityClosed"(a, g) :=
+    a."validated-registry-claim"
+      = "RegistryClaim"(g(a."durable-position")."trust-root")
+
+  "RecoveryAuthorityClosed"(a, g)
+  and "RegistryIdentitiesStable"(g)
+  implies
+  a."validated-registry-claim"
+    = "RegistryClaim"(g(a."recovered-position")."trust-root")
+$
+#+end_export
+
+** Recovery-authority claim Mermaid closure
+
+#+begin_src mermaid
+flowchart LR
+  D["Durable committed root"]
+  C["Canonical registry trust claim"]
+  A["Content-aware recovery authority"]
+  R["Recovered checkpoint root"]
+  O["Authority-issued replica origin"]
+  X["Authority / semantics mismatch rejected"]
+
+  D -->|"project canonical claim"| C
+  C -->|"status: exact durable binding"| A
+  A -->|"lineage identities stable"| R
+  A -->|"authority + evidence + issued proof"| O
+  O -->|"export recovered-root binding"| X
+#+end_src
+
+** Recovery-authority claim decision
+
+- Preserve
+  =RegistryClaimUnboundDurableContentAwareRecoveryAuthority= as the weak model
+  and metadata-substitution counterexample owner.
+- Strengthen =DurableContentAwareRegistryCheckpointRecoveryAuthority= with
+  =validatedRegistryClaim= and =claimMatchesDurableRoot=.  Reuse the existing
+  canonical registry claim; do not introduce another authority identity type.
+- Derive registry authority and registry semantic identity equality at the
+  durable root from exact claim equality.
+- Derive the same equalities at the recovered root from governed-lineage
+  authority/semantic stability.
+- Project both equalities through =AuthorityIssuedReplicaRecoveryOrigin= and
+  prove that either mismatch prevents the provenance origin from closing.
+
+** Recovery-authority claim checklist
+
+- [X] Distinguish position issuance from registry-authority identity binding.
+- [X] Construct an issued position recovery paired with a substituted registry
+  claim.
+- [X] Bind safe recovery authority to the canonical durable-root claim.
+- [X] Prove durable-root registry authority and semantics equality.
+- [X] Propagate those equalities to the recovered root through lineage
+  stability.
+- [X] Expose the bindings at the authority-issued replica origin.
+- [X] Prove registry authority or semantic mismatch cannot close the origin.
+
+** Recovery-authority claim Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  9 jobs with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  for 10 jobs with no warning or error.
+- AXLE accepted all 18 recovery roots and 90 declarations through the exact
+  recovery source envelope: 44 source declarations, 44 environment
+  declarations, 0 proof-base declarations/imports, no failed declaration, and
+  no Lean diagnostic.  Recovery closure digest:
+  =sha256:d6927a67a1900aae1b92c172bc7d07577a0d2f197b630d5a795516af57433355=;
+  bundle digest:
+  =sha256:7fd111c4e8d47ce3b29f20c681fb96ed1886a8621d359833defa7b7574a759bf=;
+  canonical source digest:
+  =sha256:243d2e076b6b4d8a0ed97e1615307154e63b1ffd3e8eae2493d4e3169e0afac1=;
+  independent bundle digest:
+  =sha256:ea650cbe6a194ffeabf797cd52ef80a17fd1d63552c0bb7fdc5148aaff35e25d=.
+- AXLE accepted all 38 replica roots and 141 declarations through the exact
+  replica source envelope: 81 source declarations, 81 environment declarations,
+  0 proof-base declarations/imports, no failed declaration, and no Lean
+  diagnostic.  Replica closure digest:
+  =sha256:a3c91ff52f5b37d453a83edb1429ef796b552324973af3db3068b6d59fd7d9ac=;
+  bundle digest:
+  =sha256:2bd6b6442d1c3d32ef878a178b19f25f85a1d0cddbf2d90d71f4cc045d028e7f=;
+  canonical source digest:
+  =sha256:3eba58127e7d95cf3740da8d34ec091c068420dc72b85f425801acdbf3bb7ca3=;
+  independent bundle digest:
+  =sha256:2585ca0e6835bb69b2d699309fc7dd1c5f71a5c26b6a766a02065186ef6a5e38=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs and =lake
+  build= exited 0 for 587 jobs.  Both reported only the existing
+  =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa= warning.
+- =asp org lint= accepted this RFC with =[ok] orgize lint=.
+- =git diff --check= and =git diff --cached --check= both exited 0.
+

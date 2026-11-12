@@ -1,0 +1,166 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Successor descriptor admission and same-domain rotation
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Successor descriptor admission and same-domain rotation
+
+** Successor-side admission requirement
+
+A content-governed registry transition MUST govern both sides of the transition.
+The predecessor side requires exact preservation or authority-issued retirement.
+The successor side requires exact pre-existence or authority-issued admission.
+
+Admission evidence MUST bind the descriptor to the canonical successor registry
+claim and the successor generation.  When a successor descriptor reuses a
+predecessor descriptor's =domainIdentity= with different authority or semantic
+identity, admission alone is insufficient: every predecessor descriptor with
+that domain identity MUST also carry authority-issued retirement evidence.
+Thus a genuinely new domain can be admitted without inventing a predecessor,
+while a same-domain semantic rotation has an explicit two-sided disposition.
+
+** Vacuous-predecessor injection counterexample
+
+=retirementOnlyTransitionPermitsUnissuedSuccessorInjection= constructs an empty
+predecessor registry and a singleton successor registry.  Identity and
+generation transition rules hold, while every predecessor disposition
+obligation is vacuous.  The retirement-only contract therefore accepts a
+successor descriptor that was neither previously registered nor authority
+issued.
+
+This counterexample proves that predecessor preservation-or-retirement cannot
+own successor admission.  A separate successor-indexed obligation is required.
+
+** Successor admission Typst model
+
+#+begin_export typst
+$
+  "SuccessorDisposition"(d, p, n) :=
+    "registered"(p."registry", d)
+    or "AuthorityIssuedAdmission"(
+      d,
+      "RegistryClaim"(n."root"),
+      n."generation",
+    )
+
+  "SameDomainRotation"(d_old, d_new, p, n) :=
+    d_old."domainIdentity" = d_new."domainIdentity"
+    and d_old != d_new
+    and "AuthorityIssuedRetirement"(d_old, p, n)
+    and "AuthorityIssuedAdmission"(d_new, p, n)
+
+  "ContentGovernedTransition"(p, n) :=
+    "ValidIdentityTransition"(p, n)
+    and forall d in p."registry":
+      "registered"(n."registry", d)
+      or "AuthorityIssuedRetirement"(d, p, n)
+    and forall d in n."registry": "SuccessorDisposition"(d, p, n)
+$
+#+end_export
+
+** Successor admission Mermaid closure
+
+#+begin_src mermaid
+flowchart LR
+  P["Predecessor registry"]
+  N["Successor registry"]
+  E["Exact descriptor pre-exists"]
+  A["Authority-issued admission<br/>successor claim + generation"]
+  R["Authority-issued retirement<br/>predecessor claim + successor generation"]
+  G["Content-governed transition"]
+  I["Unissued successor injection"]
+  S["Same-domain semantic rotation"]
+
+  P -->|"status: predecessor disposition"| G
+  N -->|"status: successor disposition"| G
+  E -->|"accepted: preserved descriptor"| G
+  A -->|"accepted: new descriptor"| G
+  I -.->|"missing admission; rejected"| G
+  S -->|"requires new descriptor"| A
+  S -->|"requires old descriptor"| R
+  R -->|"rotation retirement closed"| G
+#+end_src
+
+** Successor admission decision
+
+- Keep =RetirementOnlyContentGovernedRegistryTrustRootTransition= only as the
+  named weak contract that owns the vacuous-predecessor counterexample.
+- Add =AuthorityValidatedDescriptorAdmissionEvidence= to bind successor
+  registration, the canonical successor trust claim, successor generation, and
+  retirement of every predecessor descriptor sharing the admitted domain
+  identity.
+- Add =DescriptorAdmissionAuthority= and
+  =AuthorityIssuedDescriptorAdmissionEvidence=.  Lean models the semantic
+  =issued= relation; executable signature and commitment validation remain at
+  the registry acceptance authority.
+- Strengthen =ContentGovernedRegistryTrustRootTransition= with an independent
+  =successorDisposition= obligation.  Exact pre-existence and authority-issued
+  admission are the only successor branches.
+- Prove that an unissued successor injection cannot close the strengthened
+  transition, and that a distinct same-domain successor necessarily exposes an
+  authority-issued retirement witness for its predecessor.
+
+** Successor admission checklist
+
+- [X] Construct a retirement-only transition with a vacuous predecessor and an
+  unissued successor descriptor.
+- [X] Bind descriptor admission to successor registration, canonical registry
+  claim, successor generation, and an explicit authority issuance relation.
+- [X] Require preservation-or-issued-admission for every successor descriptor.
+- [X] Require issued predecessor retirement for distinct same-domain rotation.
+- [X] Prove unissued successor injection cannot close the strengthened
+  transition.
+- [X] Reverify the lineage, recovery, and replica-join AXLE envelopes.
+- [X] Reverify enterprise/full Lean aggregates and Org/diff gates.
+
+** Successor admission Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryLineageClosure= exited 0 for
+  8 jobs with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  9 jobs; =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  for 10 jobs.  The first run propagated one unused-binder warning from the new
+  counterexample; renaming that existential binder to =_transition= removed it,
+  and the focused lineage rerun is warning-free.
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI accepted the
+  parser-required three-source lineage envelope with 26 roots and 100
+  declarations: 49 source and 49 environment declarations, no proof-base
+  declaration, failed declaration, or Lean diagnostic.  Closure digest:
+  =sha256:14797f2f9f334d535eeec153b84301f1fc9a9c138fe1b8920232a521e0df61c1=;
+  bundle digest:
+  =sha256:659734fe53fc9e9dbbde38842f82c883bab377ae379cd3cef59337dd0430d585=;
+  canonical source digest:
+  =sha256:6965ebeb37011c63ae6f72b2c40c6391998fefccf51082de11ef664e3bc575e0=;
+  independent bundle digest:
+  =sha256:b9c92973806e2aa83bcc693ea04a5ae5dca280ae72bd3e75edffcf477b752065=.
+- The exact four-source recovery envelope accepted 18 roots and 99
+  declarations: 49 source and 49 environment declarations, with closure,
+  bundle, canonical-source, and independent-bundle digests
+  =sha256:610c1523c2ad55fab4d5d480c5e202284fc014adde562810b6654aed3c43e2e6=,
+  =sha256:99b6d596c21d9bee66990afb8790b7ff701689f349cc45d7f5460810f4277f02=,
+  =sha256:2f772755b2af55120cc84f6b6fa49eefc85fa16c31b4e969bdbc05594c8e69da=,
+  and
+  =sha256:4528805092fe15afc92e04703616e96b382fde2765d07247c980394f9b0046ab=.
+- The exact five-source replica-join envelope accepted 39 roots and 150
+  declarations: 86 source and 86 environment declarations, with closure,
+  bundle, canonical-source, and independent-bundle digests
+  =sha256:868d6d1fb5198bd158fbe979b91f631cfc062eceeccd966d5eb82be820ebe615=,
+  =sha256:b4c7ced9feae5dd9afab84d90af25ff27e19cc8113a806a708b6332a82f4b7ce=,
+  =sha256:c64f92df1e466bf73a6cdcaaf5ea0279706a85a155b6cf21f08d542b6078787b=,
+  and
+  =sha256:9a3ef05d42fa90e72af067b7a44139fe4793083c6759c3ddbda4107f6cd6760c=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs in 6.0 seconds;
+  =lake build= exited 0 for 587 jobs in 3.7 seconds.  Both reported only the
+  existing =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa=
+  warning and no error.
+- =asp org lint= accepted this RFC with =[ok] orgize lint=, including its
+  embedded Typst and Mermaid blocks.  =git diff --check= and
+  =git diff --cached --check= both exited 0.
+

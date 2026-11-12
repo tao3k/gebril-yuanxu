@@ -1,0 +1,185 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Graph libraries, algorithm contracts and Scheme correspondence
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+Detailed local-order certificates and the complete POO pipeline audit are in
+[[file:13-dynamic-graph-repair.org][Directed graph algorithms and local order repair]].
+
+* Profile support within owner preparation
+
+** Indexed Graph algorithm and library correspondence
+
+*** Directed graph libraries and the production call paths
+
+The 2026-11-08 source audit distinguishes mathematical specifications from
+the algorithms actually reached by Module admission. The pinned POO source
+is =cd4de644385a591b879e3de5795418b5b7e9d767=; the LeanPoo source is
+=da273cdc75c9d65409e3d4979a6e9856c384809f=.
+
+| Owner | Existing implementation | Capacity obligation |
+|-------+-------------------------+---------------------|
+| Core =graph/funs.ss:module-closure= | Shared hash visited set and sibling frames | One dependency bucket per reached owner; owner preparation and admission remain separate work |
+| Core =feature/resolver.ss= | Three-state hash DFS | Deterministic dependency-first order and cycle diagnostics |
+| POO =generalized-graph.ss:schedule= | Supported-key index and three-state hash DFS | Reuse this scheduling owner; do not introduce another Core graph representation |
+| POO =strong-components.ss:partition= | Forward/reverse reachability intersection for unassigned groups, with a predecessor shortcut | This is not Tarjan's algorithm; footprint validation uses list membership, and group discovery can scan all keys repeatedly |
+| POO =object-state.ss:invalidate-state!= | Weak reverse dependency buckets, an identity visited set, then closure preflight before clearing | Keep late-edge refusal and one invalidation per affected receiver |
+| LeanPoo =IncrementalClosure=, =ChunkedClosure=, =HybridClosure= and =QueueSelection=; POO =closure.ss= | Vector-backed positive Boolean equations, reverse watchers, append/chunked/hybrid engines and a prepared queue selector | Reuse exact adjacency and scheduling laws where the Module frontier has the required semantics; this is not arbitrary Scheme effect analysis |
+| POO =component-publication.ss= | Locked expected-head comparison and guarded installation | Publication atomicity alone does not provide an incremental topology or an affected-owner frontier |
+| LeanPoo =GeneralizedGraph= | Checked rank, restriction/rebase laws, inferred value/presence dependencies | Its semantic schedule certificate is reusable; executable =order.idxOf= rank checks are not a constant-time rank index |
+| LeanPoo =StrongComponents= | Bounded reachability and a complete reachability table | A specification/reference oracle; a full matrix must not become the sparse Module admission algorithm |
+
+In the current Core path, =select-module-graph= calls =module-closure= before
+Core/Feature projection and the Feature resolver. It does not call POO's
+=strong-components.partition=. A timeout during an owner read cannot be
+attributed to that unrelated SCC implementation. The three callback-free
+stage labels =selected-owner-closure=, =selected-core-projection= and
+=selected-topological-resolution= expose that distinction without changing
+selection, admission order or effects.
+
+=HybridClosure.schedule_queue= preserves the exact flattened queue, while
+=local_minimum= and =execute_bounds= bound scheduling charges under explicit
+primitive prices. =QueueSelection.run_core= preserves the selected solver's
+store and operation statistics. These are stronger than a claim that hashing
+is fast, but the prices are model premises rather than hardware calibration.
+The Scheme =closure.ss= already implements all three queues, compiles reverse
+watchers and degrees once, and uses dense integer indices internally. Its
+=reconfigure-closure= can retain the watcher index when dependency syntax is
+unchanged; this does not permit reusing it after a dependency edit.
+
+The current positive solver allocates fresh bits and begins with =iota size=.
+It therefore has whole-plan startup work even for an eventual sparse result.
+It must not replace first sparse Module demand by solving the entire catalog.
+Reuse a watcher/frontier strategy only after binding it to the selected
+publication, preserving native owner identities and proving that queue entries
+are precisely changed/reached owners. Positive monotone propagation also does
+not model removal by simply flipping a retained bit: withdrawal and changed
+dependency edges retain the separate publication-generation and old-index laws.
+Any adapter must preserve those conditions before choosing queue prices.
+
+Mathlib's [[https://leanprover-community.github.io/mathlib4_docs/Mathlib/Combinatorics/SimpleGraph/Basic.html][SimpleGraph]]
+models undirected simple graphs. Module reads are directed and may include
+self reads. The [[https://leanprover-community.github.io/mathlib4_docs/Mathlib/Logic/Relation.html][relation closure laws]]
+are relevant specifications for directed reachability; an undirected
+connected-component theorem does not prove a dependency closure or a valid
+compilation schedule. No Mathlib dependency is added to the Core build by
+this audit.
+
+The algorithm research has concrete candidate owners and obligations:
+
+1. Cold sparse closure keeps the existing indexed DFS/worklist. Its work
+   target is proportional to reached vertices and edges, including repeated
+   edge occurrences. Hash primitive cost and author execution are measured
+   separately.
+2. Cyclic component graphs in POO should evaluate a linear SCC algorithm
+   against the existing mutual-reachability specification.
+   [[https://epubs.siam.org/doi/abs/10.1137/0201010][Tarjan 1972]] provides the DFS/lowlink route.
+   Preserve source-order representatives, singleton self loops and rejection
+   of unsupported reads. A 10,000-node disjoint-cycle corpus must expose the
+   current repeated all-key scans; chains and shared hubs alone are inadequate.
+3. Dynamic DAG scheduling can use the existing checked-rank restriction law
+   for removed edges. For insertion, first test the new edge against the
+   retained rank. A violating edge needs cycle detection and a checked repair;
+   it is not itself proof of a cycle.
+   [[https://www.doc.ic.ac.uk/~phjk/Publications/DynTopoSortWEA2004.pdf][Pearce and Kelly 2004]] is a candidate
+   for repairing the affected order interval. This is an upstream algorithm
+   candidate, not a completed Scheme implementation or a new acceptance rule.
+4. Incremental Module publication keeps the exact old reverse index and
+   publication ticket while extending the affected frontier. Check new
+   dependencies in the new graph, reject expired results, and retire the old
+   index only after atomic commit. Native invalidation and publication supply
+   mechanisms; the Module-specific proof does not imply that the pinned POO
+   publication API already implements this entire workflow.
+
+Algorithm qualification must separate discovery/index construction, cold
+whole-graph work, hot point lookup, one-owner edits, allocation/GC and effect
+authentication. Test chains, wide roots, shared providers, diamonds, disjoint
+cycles and one large cycle; preserve exact owner keys and deterministic order.
+The unchanged required gates remain 10,000 real declarations, 180 seconds,
+4 GiB, and their existing negative controls. A topology microbenchmark or a
+Lean operation-count fixture does not substitute for those gates.
+
+*** Indexed work and Scheme correspondence
+
+The =selected-graph= measurement includes source preparation, Gerbil
+expansion, publication admission, source guards and signed-record replay.
+The current dependency closure already uses a hash visited set and sibling
+frames in =module-system/graph/funs.ss=. The Feature resolver also uses
+an indexed three-state dependency traversal. Improving the Graph requires
+accounting for both structural traversal and the work of each admitted owner.
+
+=Graph/IndexedWork= instruments the existing =TestAdmission.discoverIndexed=
+algorithm. It proves that a completed walk performs one membership probe
+per root or emitted edge occurrence and one adjacency bucket read per
+distinct reached owner. A same-publication continuation preserves the visited
+set and charges only new buckets. The counter is an executable operation
+count. It places no constant-time bound on a hash probe.
+When a change arrives during traversal, =continueFrom= retains pending work
+and appends the new roots. =continuation_preserves_pending= and
+=continuation_balanced= bind this behavior to the same work accounting.
+The runtime publication ticket supplies the graph-generation boundary.
+
+The module uses =LeanPoo.Functional.KeyIndex= directly to intersect the
+reached reverse-index closure with retained owners. Its correctness is
+connected to =IncrementalRoles.Affected=, with exact dependency registration
+as the premise. Construct the retained index once with its native publication.
+Subsequent change handling point-checks only reached owners. A constant-hash
+negative control retains distinct keys, and no digest is treated as identity.
+Runtime source and module keys retain their existing fully qualified identity.
+
+| Operation | Existing algorithm or library | Scheme owner and contract |
+|-----------+-------------------------------+---------------------------|
+| Demand closure | =TestAdmission.discoverIndexed= and =SourceClosureWork.Frames= | =graph/funs.ss= and =source/selection.ss= retain one visited set across roots and deterministic traversal order |
+| Selected-owner membership | =LeanPoo.Functional.KeyIndex= | The selected publication owns the exact root index, without per-demand roster scans |
+| Changed-owner propagation | =IncrementalRoles= and =DependencyPublication= | POO reverse dependency buckets find affected consumers, then the new dependency graph admits required additions |
+| Topological rank reuse | =LeanPoo.Functional.GeneralizedGraph.Scheduled.restrict= | =feature/resolver.ss= can reuse a checked rank after edge removal when publication and roster bindings hold |
+| Cycles | Existing three-state DFS and library reachability laws | Module cycle refusal and diagnostics remain part of selected Graph admission |
+
+The first and last rows already have Scheme traversal implementations.
+The point-membership rule is implemented in =source/selection.ss=, while
+=source/link.ss= still has list membership at its root dispatch. Connecting
+the library's retained-root and rank-restriction witnesses to those runtime
+consumers remains pending. The new reverse-walk operation counts are proved
+over the existing model; native bucket counters must still establish their
+correspondence in the publication/refresh path.
+
+The checked scheduling library already preserves order and rank under an
+edge restriction. =removed_edges_preserve_library_schedule= reuses that
+implementation. =new_edge_cannot_reuse_a_violated_rank= rejects an added edge
+that violates the retained rank. This condition is independent of source
+admission. The library's finite SCC relation can support cycle specifications,
+but its all-pairs reachability table is not a capacity implementation for the
+Module admission path.
+
+The executable 10,000-owner fixture uses a shared provider. Sparse demand
+reads 2 buckets. A single full traversal reads 10,000 buckets and processes
+19,999 queue entries. Restarting traversal for every root reads 19,999 buckets.
+A shared cycle terminates with 4 bucket reads. An edit rooted at owner 11
+reaches only owners 11, 12 and 13. Merging roots 11 and 21 into the completed
+old-generation walk adds only 2 bucket reads. The existing publication model
+continues to reject stale tickets and require exact registration at commit.
+The unfinished-walk fixture keeps its queued consumers and completes the
+merged closure with 5 bucket reads in total.
+
+These laws specify the algorithm to preserve when optimizing Scheme.
+They do not remove the per-effect currentness obligations. In particular,
+sharing the Profile's topology does not establish that its signed records
+remain current after Gerbil expansion or an author callback.
+
+* Scheme refinement and qualification scope
+
+=t/module-graph-test.ss= now counts real dependency accessor calls through
+=module-closure=: a sparse demand in 10,000 owners reads two buckets; the
+full shared-provider walk and a 10,000-owner chain each read 10,000 buckets
+and 9,999 edges. A cycle and duplicate roots preserve one expansion per
+owner. These structural Cases passed; they do not replace Interface admission.
+
+The Reader retains its joined original root spine with the metadata guard so
+POO can reuse topology by identity. Every invocation retains native issuance,
+route and live-value authentication, along with independent effect boundaries.
+The publication, reader-effect, source-admission and build-input mutation
+controls passed. Full 10,000-owner admission remains unqualified; no native
+capacity improvement or green PR result is inferred from these focused gates.

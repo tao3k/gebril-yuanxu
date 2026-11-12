@@ -1,0 +1,2 @@
+// SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+module GraphSnapshot_interval { import GraphSnapshotModel(BUG = "interval").* from "./GraphSnapshot" }

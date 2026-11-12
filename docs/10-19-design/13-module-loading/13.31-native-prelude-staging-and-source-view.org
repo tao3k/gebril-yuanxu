@@ -1,0 +1,202 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 13.31 Native Prelude Staging and Source View Correspondence
+#+language: en
+#+date: [2026-11-03]
+#+property: STATUS refinement-research-production-unimplemented
+
+* Prelude allocation: staged native syntax
+
+Implementation follow-up: [[file:13.32-interface-entry-and-compilation-authority.org][13.32]] records the subsequent production changes,
+corrected Interface/init.exports contract and native acceptance. The research
+status and negative probes below remain historical evidence, not a statement
+that the staged Prelude and selected source view are still unimplemented.
+
+This follow-up to [[file:13.29-prelude-ecosystem-and-selected-package-builds.org][13.29]] and [[file:13.30-selected-package-build-refinement.org][13.30]] refines the bootstrap, physical output
+and incremental-input contracts. Production Scheme remains unchanged. Native
+test-only probes are distinct from delivered Prelude/build projection APIs.
+
+Keep =selection/init-syntax= as the canonical owner of =yuanxu!=. Make its base
+closure explicitly Gerbil-only and reexport the same binding through the existing
+Prelude. At an explicit declaration invocation, expand into a native import of
+the semantic implementation followed by its internal syntax application with
+the original declaration syntax. This adds the implementation dependency to
+the consumer Context at declaration demand, not to eager Prelude bootstrap.
+
+Prefer this over dynamically looking up a helper procedure using =eval= or
+=core-import-module=: an imperative lookup alone does not necessarily add the
+helper to the consumer's compiler dependency inventory. The native import must
+remain represented for Make and source currentness. Use hygienic native import
+renaming, no helper cache, private registry or second public macro family.
+The helper identifier and exact emitted syntax still require native qualification.
+
+| Stage | Native owner | Preservation requirement |
+|-------+--------------+--------------------------|
+| Import declaration syntax | Existing =init-syntax= with base =:gerbil/core= and necessary Gerbil syntax helpers | No eager source/init parser, business publications or building/interface |
+| Import Prelude | Ordinary reexport plus existing POO vocabulary | Same terminal declaration binding; no init, scopes, compile or installation |
+| Invoke declaration | Native implementation import and internal syntax application in the consumer | Observable compiler/phase edge; original caller syntax |
+| Expand implementation | Existing literal parser and qualified exports construction | Caller module Context, source locations and existing generation/guards |
+| Consume exports | Existing selected Graph and Gerbil build consumer | No new loader or selection graph |
+
+The semantic implementation may import the Prelude after its bootstrap has
+completed. The prohibited eager edge is canonical syntax -> implementation
+during Prelude initialization. Source-only expansion must establish the actual
+phase graph. =PreludeEntry.staged_import_preserves_stratification= checks this
+allocation; it does not establish the Scheme graph by assumption.
+
+Gerbil =resolve-identifier= follows import/alias bindings to terminal bindings;
+=core-apply-user-macro= owns native mark introduction. Do not manually reapply
+macro-expander objects or make a helper lookup frame the publication owner.
+Retain original syntax for hygiene and location while the existing parser
+normalizes literal declaration data. Nested native macro expansions may add
+marks: terminal binding/lexical meaning, not equality of final mark lists, is
+the acceptance criterion. =handoff_preserves_invocation= models retaining the
+caller record; =using_lookup_owner_changes_publication= exposes the wrong-owner
+case. Native hygiene remains unproved by those pure laws.
+
+* Full-identity source view and physical output collisions
+
+One native Make graph uses full-identity relative targets, an absent Make prefix
+and downstream-owned view/output roots. The existing prepared compiler forms
+retain original include locations and relative imports. Reuse
+=Admission.TestMakeLayout=; [[file:../../../dev/proofs/lean/YuanxuProof/ModuleSystem/Building/SourceView.lean][SourceView]] proves the corresponding relative path
+equation. This does not authorize a source alias scheme or second expander.
+
+The absent prefix must be native =#f=, with no =gerbil.pkg= at the view root for
+=read-package-prefix= to use as a fallback. It is not =""=: the Gerbil's =prefix/=
+treats that string as true and concatenates ="/"= before the identity. This
+changes the static marker prediction (a leading empty component encodes as
+=__=), while the compiler emits the original identity. The native probe first
+exposed repeated hot compilation under =""=. The formal
+=absent_prefix_preserves_identity= law and a concrete empty-string counterexample
+make this distinction explicit. Earlier references to an "empty prefix" in
+13.29/13.30 mean absence, not an empty Scheme string; this refines that wording.
+
+Logical identity uniqueness does not establish physical output uniqueness.
+The inspected Gerbil's =std/make.ss:static-path= joins components with =__= and
+applies extension handling. Thus =a/b__c= and =a__b/c= share =a__b__c=. Existing
+Core =products.ss:artifact-files= already rejects shared static output. Preserve
+that check and apply it before conflicting writes in the cross-package plan.
+SourceView records the concrete counterexample and output-injectivity check.
+
+The model's separator encoding does not cover every extension rule or host
+filesystem alias. Native admission must enumerate dynamic/static/metadata and
+runtime-section outputs, account for target filesystem case/path aliases and
+reject distinct producer collisions. Mount names do not disambiguate products;
+do not change Gerbil naming or restrict unrelated packages merely to hide a case.
+
+* Native Make metadata and incremental association
+
+The inspected Gerbil reads metadata from the first list after a target and strips
+it before passing string compiler options onward:
+
+#+begin_src scheme
+;; Internal generated Make data, not another public declaration DSL.
+(gxc: "full/package/identity"
+      (extra-inputs: ("/original/source.ss" "/observed/asset"))
+      "-cc-options" "owner-options")
+#+end_src
+
+=spec-plist=, =spec-extra-inputs= and =gsc-compile-opts= establish this lane.
+The existing public build contribution still admits string options, not arbitrary
+nested metadata. Lower metadata internally from admitted POO owner inputs.
+
+Stable wrapper contents and extra inputs are necessary but insufficient.
+=build?= / =build-dependent?= compare newer-than timestamps. Changed bytes with
+equal/backdated timestamps, changed FFI options or a different toolchain need
+not trigger Make. Source admission validates new bytes, not the association of
+old products with those bytes. SourceView proves these timestamp counterexamples.
+
+The candidate internal materialization uses a deterministic input descriptor
+containing complete source/package/asset observations (including negative
+metadata), prepared forms, options, platform and toolchain. It is generated
+compiler data, not a passing admission or a new cache layer. Unknown prior
+association cannot bless an existing output. Reuse the existing input checks,
+product repair and artifact issuer.
+
+For changed input association, invalidate the exact owned std/make completion marker before
+replacing the descriptor or wrapper. Core already invalidates markers in
+=repair-build-products!=; extend that responsibility. Native Make still decides
+and performs compilation. Do not rewrite unchanged data to force a rebuild.
+
+The reference orders invalidation, descriptor materialization, native compiler
+execution, and complete output admission after successful return/final checks.
+=invalidation_before_descriptor_is_safe= proves correspondence through the first
+two stages; =write_first_can_leave_stale_product= exposes the reversed-order
+failure. =interrupted_preparation_rebuilds= covers local serialized preparation
+interruption, not arbitrary filesystem or native compiler crash recovery.
+
+=raw_marker_reappearance_is_insufficient= explicitly rejects interpreting a
+reappearing marker alongside old products as successful compilation. Existing
+ordinary completion checks are distinct from issued publication. The existing
+=artifacts.ss= issuer observes action return, inputs/products and uses separate
+staging for nonreusable builds. Preserve that complete boundary across selected
+packages; do not replace it with a new sidecar approval cache. Failure during
+native output generation and subsequent recovery remain native acceptance gates.
+
+* Native probe and additional acceptance
+
+The new Case in =t/module-source-location-test.ss= uses two independent package
+roots and an original relative consumer -> producer import. It materializes
+identity-relative ordinary include frames, lists the consumer first in one
+Make spec and supplies original extra inputs. It checks SSI/object products,
+unchanged hot build, original-source preservation and cleanup leaving unrelated
+downstream files. Only =just test-file t/module-source-location-test.ss= runs it,
+with the existing heap fence and budgets.
+
+Native =make-clean= removes its declared =spec-outputs= (SSI/static outputs for
+these targets), leaving dynamic object families. The Case therefore uses the
+existing Core =clean-build-artifacts!= after native clean and verifies complete
+selected SSI/object removal plus preservation of an unrelated file. It does not
+duplicate the cleanup inventory or infer that std/make clean alone owns every output.
+Compile events are captured from native Make's existing output: cold identities
+must equal the two expected full identities and hot events must be empty.
+
+This probe does not establish Module role lowering, fresh-process runtime import,
+the unified Prelude, package-source selection or a real Lab consumer. Required
+follow-ups remain:
+
+- Source-only bootstrap, same terminal macro via Prelude/explicit imports,
+  observable generated phase imports, two packages' qualified init exports,
+  capture-avoidance and original source locations.
+- Existing prepared Module roles, custom prelude, generated imports and a
+  fresh-process value check from the downstream installed products.
+- Actual compiler-event counts, changed source/options/tools with equal or
+  backdated timestamps, preserved static collision controls and full physical
+  product inventory before writes.
+- Failures before/after invalidation and descriptor writes, during native output
+  generation and before issuance, including next-invocation refusal/recovery.
+- Two isolated downstream output environments, a pinned real Lab Module and a
+  community package; native cold install without the Lab's broad default build
+  masking missing targets. The Lab bootstrap migration remains separate work.
+
+* Verification receipt
+
+The final refined Lean aggregate passes 215 jobs and audits 8,670 declarations under
+the unchanged standard-axiom and no-arbitrary-Prop-field rules, using Lean 4.34.0.
+The final raw local log is =/private/tmp/yuanxu-source-view-lean-20261103-final.log=.
+An earlier aggregate passed 8,667 declarations before the prefix distinction;
+=/private/tmp/yuanxu-source-view-lean-20261103.log= records the subsequent
+prefix-model syntax failure from using a Lean keyword as a parameter name.
+The corrected prefix model is included in the final successful aggregate,
+without changed gates.
+This is model verification, not a SysML parser/typechecker or native acceptance.
+Native probe results are recorded below after completion. No production loader,
+Prelude or build projection has been changed.
+
+The final native source-location suite passed on 2026-11-03 through its existing
+Just entry: =MODULE-OK=, =HARNESS-OK= and final =OK=, no error/overflow markers,
+natural exit zero. The new Case reports =cold=2 hot=0 upstream=unchanged
+selected-clean=complete unrelated=preserved=. It ran alongside the four existing
+source-root limitation controls. The raw log is
+=/private/tmp/yuanxu-source-view-native-20261103.log=.
+
+Earlier probe attempts remain local as =...-attempt1.log= through
+=...-attempt5.log=. The first had malformed generated header spacing, corrected
+in the fixture. The following attempts exposed repeated hot compilation with
+the empty-string prefix and helped isolate that Gerbil path mismatch; numeric time
+comparison and output-path diagnostics did not waive the hot expectation. After
+using =#f=, hot reuse passed, while the full-clean expectation still failed under
+std/make clean alone. Reusing Core's existing cleanup completed that obligation.
+These failed receipts are not passing native acceptance. The final Case retains
+both hot-zero and complete-selected-clean assertions.

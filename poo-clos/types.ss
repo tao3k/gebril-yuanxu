@@ -3,13 +3,12 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; POO-native CLOS descriptor family.
+;;; POO CLOS descriptor family.
 ;;;
 ;;; This factor owns values and validation only.  Dispatch and mutation policy
 ;;; remain in their dedicated factors.
 
-(import (only-in :clan/poo/object
-                 .o .ref .slot? object? compute-precedence-list!)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop define-type Type. element?)
 )
 
@@ -19,7 +18,7 @@
         ClosInvocationFrame ClosFailure ClosUnboundSlotFailure
         ClosDirectSlotDefinition
         ClosEffectiveSlotDefinition ClosClass ClosInstanceState ClosSlotCell
-        ClosMopProfile clos-instance?)
+        ClosMopProfile clos-instance? clos-carrier-policy-guard)
 
 (def ClosType. Type.)
 
@@ -175,11 +174,11 @@
        (fields? candidate
                 '(identity kind operator order identity-with-one-argument?
                            groups effective-builder configurer configuration
-                           documentation)
+                           documentation .admits-qualifier?)
                 (list symbol? combination-kind? operator-or-false?
                       combination-order? boolean? method-groups?
                       procedure-or-false? procedure-or-false? list?
-                      string-or-false?))))
+                      string-or-false? procedure?))))
 
 ;;; A method-combination descriptor is inert POO policy data.  Dispatch owns
 ;;; invocation, and a long-form builder can only return a checked effective method.
@@ -270,6 +269,36 @@
   proto: (clos-prototype ClosInvocationFrame 'poo-clos/invocation-frame)
   .element?: clos-invocation-frame-element?)
 
+;; This certificate belongs to the private declarations above, not to whatever
+;; public policy a caller installs later. A replaced/edited policy remains
+;; usable through ordinary CLOS, but is not silently certified as our code.
+(def carrier-declaration-owners
+  (list ClosEffectiveMethod ClosInvocationFrame
+        (.ref ClosEffectiveMethod 'proto) (.ref ClosInvocationFrame 'proto)))
+(def carrier-declaration-revisions (map object-revision carrier-declaration-owners))
+
+;; Certify only our two original, hook-free carrier predicates/prototypes for
+;; ONE dynamic operation. Revisions reject mutate-and-restore callbacks too.
+;; This does not certify contributor methods or arbitrary Type predicates.
+(def (clos-carrier-policy-guard effective-proto frame-proto)
+  (def owners (list ClosEffectiveMethod ClosInvocationFrame effective-proto frame-proto))
+  (def revisions (map object-revision owners))
+  (def closed?
+    (and (andmap eq? owners carrier-declaration-owners)
+         (equal? revisions carrier-declaration-revisions)
+         (eq? (.ref ClosEffectiveMethod '.element?) clos-effective-method-element?)
+         (eq? (.ref ClosInvocationFrame '.element?) clos-invocation-frame-element?)
+         (eq? (.ref ClosEffectiveMethod 'proto) effective-proto)
+         (eq? (.ref ClosInvocationFrame 'proto) frame-proto)
+         (andmap (lambda (owner)
+                   (compute-precedence-list! owner)
+                   (not (object-protocol owner))) owners)))
+  (lambda ()
+    ;; Runtime names queries retain these exact owner revisions in an enclosing
+    ;; read frame, without forcing policy fields or minting application records.
+    (for-each .all-slots owners)
+    (and closed? (equal? revisions (map object-revision owners)))))
+
 (def (allocation? value)
   (if (memq value '(instance class)) #t #f))
 
@@ -306,7 +335,7 @@
                       function-name-list? function-name-list? list? string-or-false?
                       class-references? class-reference?))))
 
-;;; Effective slots are immutable projections over the native POO class CPL.
+;;; Effective slots are immutable projections over the POO class CPL.
 (define-type (ClosEffectiveSlotDefinition @ ClosType.)
   proto: (clos-prototype ClosEffectiveSlotDefinition
                          'poo-clos/effective-slot-definition)
@@ -335,7 +364,7 @@
                       procedure-or-false? procedure-or-false?
                       string-or-false? any-value?))))
 
-;;; Class metaobjects own lazy native prototypes and class-allocated storage;
+;;; Class metaobjects own lazy runtime prototypes and class-allocated storage;
 ;;; they do not replace gerbil-poo's inheritance or C4 implementation.
 (define-type (ClosClass @ ClosType.)
   proto: (clos-prototype ClosClass 'poo-clos/class)

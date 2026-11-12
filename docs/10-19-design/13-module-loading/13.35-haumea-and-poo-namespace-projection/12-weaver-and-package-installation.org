@@ -1,0 +1,219 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Weaver identities and package installation
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+* Root-qualified Module identity: Lab and Weaver
+
+The native identities =agentic-ai-lab/modules/governance/interface= and
+=hardenedlinux/weaver/scheme/governance/interface= are different. Both
+Interfaces may declare the relative name =governance=. A namespace mount
+does not rename the owner, and a same-named leaf in another root is not a
+publication conflict. Checkout relocation and downstream output relocation
+must preserve the native identity.
+
+User declarations retain =(governance)=. Once the roots are mounted, the
+intended access paths are ordinary POO reads:
+
+#+begin_src scheme
+(.get hardenedlinux/weaver.init.exports Lab governance)
+(.get hardenedlinux/weaver.init.exports Weaver governance)
+#+end_src
+
+Each route selects the owning complete Module ID before native POO scope
+lookup. Local =requires= resolve in the declaring owner's root; an explicit
+foreign dependency retains its complete Module ID. Missing local dependencies
+must fail, even if another root contains the same leaf name. Two mount aliases
+of one complete owner retain the same native scope object. Existing POO slot
+and dependency indexes remain the implementation mechanism.
+
+Lean =SelectedPackages.ScopedModuleId= now states distinct-root separation,
+local dependency rooting, explicit dependency identity, alias scope identity,
+missing-local refusal and isolation of updates to another root. This is a
+model of native identity/slot lookup, not a new runtime registry or cache.
+
+Scheme now carries the complete native key across mounted runtime roots:
+
+- =source/directory.ss= projects declaration rows into the existing source,
+  decision and owner indexes. Native namespace derivation uses Gerbil's package
+  lookup plus the existing source snapshots, without directory-wide Module
+  admission. A single-root Context retains its implicit root in its private
+  index; mounted roots carry it explicitly. Mount names never enter the key.
+- SourceRef =declaration-id= retains the authored relative name. Publication
+  admission binds the full key to the actual Gerbil source identity as well as
+  to the SourceRef owner. Copying a declaration label cannot certify a foreign
+  source. Prepared inputs retain the same full key and source/currentness guards.
+- =source/selection.ss= resolves local requirements within the owner's root and
+  preserves absolute native references. Core/Feature edges and Feature metadata
+  carry those resolved keys. The selected Graph publishes the same resolver to
+  =source/build.ss=, so a configuration-build provider cannot revert to a short
+  name. Test selection uses that same selected Graph and bounded root resolver.
+- Native POO slots still construct and retain scopes. No =.get= action, loader,
+  cache layer or public module alias is added. Two real sources claiming the
+  same native root are rejected, including with auto discovery.
+
+Directory/tag inspection with no publication reader is inert metadata. It
+requires no package marker and cannot admit a runtime publication. Repeated
+unqualified metadata names require a root-qualified reader instead of silent
+hash replacement. This is the existing reader capability boundary, not a
+second runtime or a compatibility entry.
+
+=module-windows-test.ss= exercises two native roots with an =engine= leaf,
+separate scope values, repeated-read identity, explicit cross-root requirements,
+missing-local refusal, duplicate native-root refusal and forged owner metadata.
+Its existing unvisited-sibling and mutation controls remain active. No
+=weaver-governance= rename is required or retained.
+
+** Actual Weaver consumer
+
+Weaver's real =init.ss= declares the Lab source window through the native
+package checkout and keeps its existing local names:
+
+#+begin_src scheme
+(yuanxu!
+  :load-modules "modules" package: "github.com/tao3k/agentic-ai-lab"
+  mode: explicit rename: Lab
+  (governance)
+  :load-modules "./scheme" mode: explicit rename: Weaver
+  (governance)
+  (policy)
+  (gateway))
+#+end_src
+
+Its existing =build.ss= owns the Cedar FFI compiler/linker options and the
+cross-language fixture library roots. The init build input boundary resolves
+declared =package:= checkouts through Gerbil, after existing prerequisites
+and before downstream output. It restores the caller path at each exit.
+Native imports admit the demanded Lab Cedar and loop-engine/control sources
+into the same build graph. Each imported source retains its original compiler
+identity and source checks. Module declarations, compiler library imports and
+external Rust/C prerequisites retain distinct owners.
+
+Weaver directly uses the public =:tao3k/yuanxu/prelude=. Its three structural
+scope Types are native POO =Record= values with the original Function signatures
+and identities. The redundant outer =YuanxuContract= with default classification
+and empty obligations is removed, not retained behind an adapter or alias.
+=SelectedPackages.native_record_preserves_default_structural_admission= keeps
+the exact underlying normalization/error result; the actual Type correspondence
+is checked by native Module publication and business tests.
+
+Acceptance lives in Weaver's =t/qualification/module-selection/module-selection-test.ss= and
+=t/qualification/module-selection/use.ss=, invoked through the existing
+heap-fenced Just test entry. Private A/B environments use native =gerbil pkg
+link= to the actual Lab checkout; no source copy, generated package manifest,
+checkout edit or installer replacement is used. The gate requires:
+
+| Boundary | Acceptance |
+|----------+-----------------|
+| Real specification | 40 targets, 4 selected declarations, zero business scopes. Lab contributes exactly 5 Governance roles, 1 Cedar library and 7 loop-engine/control libraries. |
+| A and B cold builds | Every compiler event and installed =.ssi= matches that specification |
+| Hot B | Zero compilation events |
+| Clean A | Only A's selected products removed; unrelated sentinel survives; B hashes unchanged |
+| First Lab business =.get= | Four selected declarations admitted, one Lab scope, no Weaver scope; repeat reads and constructs zero candidates/scopes and reuses its POO slot |
+| Independent B business | Distinct Lab/Weaver Governance scopes, ready Weaver assessment, real Cedar FFI validation, Gateway entry |
+| Product/source ownership | Native public types and FFI load from B; installed prerequisites and original selected sources unchanged |
+
+The full native process must exit successfully within the existing 120-second
+outer gate and the existing 120/60-second action/idle limits. A receipt before
+natural exit does not qualify. As in the Lab deployment gate, B's cold
+build reuses the measured init plan with an empty native output directory.
+The A build, B hot build and B business process start independently. The
+2026-11-06 gate passed and exited naturally under the original deadline.
+This is local source-linked consumer acceptance;
+released pins and native dependency-install acceptance remain separate gates.
+
+An independent native build used private source snapshots and the existing
+Gerbil prerequisite manifests. Its input search path contained compiled
+prerequisites and downstream output. The Lab checkout was resolved by the
+init package window. The native =gerbil pkg build github.com/tao3k/agentic-ai-lab=
+produced only =agentic-ai-lab/services=. Weaver's =gerbil build= then compiled
+exactly the 40 targets above. The 13 Lab targets matched the native output
+interfaces. Hot =gerbil build= compiled zero targets, and the isolated
+business process consumed the selected products successfully. The final
+source snapshot completed this sequence in 71.64 seconds under the
+120-second gate. A preceding 32-target build omitted
+ordinary foreign libraries and failed independent use at Cedar. The exact
+foreign target inventory now guards that regression.
+
+Weaver's released dependency declaration still pins Lab at =aeac4f4c=.
+That revision uses the broad application build. Its installed prefix contains
+516 Lab interfaces, including Nix. Release qualification must first align
+Parser and Ascent on the same Yuanxu revision, then update Orgize's Parser pin,
+Lab's dependency pins and Core gitlink, and Weaver's Lab pin. Run native
+=gerbil pkg deps --install= in a fresh prefix and compare the products before
+and after Weaver's build. Existing installed products cannot establish what
+the new install produced.
+
+The deployment-profile regression also completed within its unchanged
+120-second outer gate: 61 native targets, four owners reached from one
+=deployment= root, three selected owner Suites and one runtime qualification.
+Both cold builds, zero-compilation hot B, A/B cleanup isolation and native
+business =.get= passed. Its measured runtime-test return was 114.585 seconds
+from the enclosing case start. A preceding run timed out after entering the
+runtime-test phase; that failure is retained. Phase timing alone does not
+establish a fix for the remaining approximately three-second native child
+return delay.
+
+** Package installation and selected builds are separate declarations
+
+The observations below describe the earlier build adapter. After its removal,
+Lab must express selection through its existing Module/Profile data and consume
+=:std/build-script= directly before adopting this Yuanxu revision. No previous
+CLI-flag result qualifies the new standard entry.
+
+Lab's =build.ss= now consumes =build-modules.ss=, whose catalog is eligible
+for explicit =--modules= requests. With no flag, the build supplies an empty
+root request. It does not import the application =init.exports=.
+The default library request is empty as well. Lab has no compiled base
+targets. Gerbil builds declared dependencies, including Yuanxu, under their
+own package declarations. Explicit callers can request retained public
+libraries as their owner declarations migrate.
+Special compiler options follow targets actually reached by the requested
+native import closure, including transitive special targets.
+
+The Lab Governance gate exercises this actual producer build entry cold and
+hot, then independent downstream A/B selections, the selected Suite and a
+first native business =.get=. The base specification contains no targets,
+with zero candidate reads and zero business scopes. Both cold and hot
+default builds must emit no compilation events or products. The same gate
+then verifies seven Governance/consumer targets, hot zero and A/B clean
+isolation within the unchanged 120-second outer deadline. This is build-entry
+acceptance, not a claim that native dependency installation has passed.
+
+Native =gerbil build= also performs package-manifest work. A deliberately
+empty output environment lacks dependency manifests, so invoking that CLI
+there failed before the build entry. The successful isolated build-entry gate
+uses =gxi build.ss compile= and does not fabricate package manifests or mutate
+the upstream checkout's =manifest.ss=. Native installation remains a separate
+gate; the investigation is tracked at
+[[https://github.com/tao3k/gerbil/issues/3][Gerbil issue 3]].
+
+Package source windows may now declare an installed/linked native repository
+with =package:= and a confined relative source path. Resolution calls Gerbil's
+existing =pkg-root-dir=; it neither fetches a dependency nor scans package
+metadata to discover Modules. Tags and Interface configuration still define
+Module selection. =SourceAddress= proves anchoring and absence of a local
+fallback in the bounded model. The grammar/window tests and real Weaver
+same-leaf, different-root build/runtime gate exercise the corresponding Scheme
+paths. Gerbil still owns checkout installation and pinning.
+
+** Package probe channels and liveness
+
+The public =pkg-root-dir= probe returns a Scheme string on stdout. Its caller
+uses the existing Ops =stderr-redirection: #f= boundary, so a deprecation warning
+cannot become the first datum through stdout/stderr scheduling. Ordinary package
+commands retain their merged diagnostic capture and all failure checks. The
+existing =t/ops-process-script-test.ss= exercises this channel distinction;
+=t/package-install-test.ss= exercises the real package manager and complete
+thousand-owner index, selected compilation, hot build and clean isolation.
+
+Package children inherit their Case heap policy and Gambit's standard =1n,2n=
+stdio settings. Newline buffering exposes actual tool output during execution;
+it is not a heartbeat or an additional progress protocol. Total and idle
+budgets, worker capacity and final index assertions are unchanged. A completed
+package run does not establish that every host meets the idle deadline: paired
+runs also failed in source indexing. Likewise, debugger/dynamic-loader waiting
+seen in a local worker sample does not establish the cause of Linux failures.

@@ -1,0 +1,23 @@
+#+title: Maintained Scenarios and Profiles
+#+language: en
+
+| Source | Maintained purpose | Publication |
+|--------+--------------------+-------------|
+| [[file:gitea-postgresql/README.org][Gitea / PostgreSQL]] | JSON defaults, effective ports, independent requirements and plan admission | Module roles selected by the root =Scenarios= window |
+| [[file:funflow/gerbil-scheme.ss][Funflow Gerbil CI Profile]] | Reusable build/test/package defaults and receiver-relative Pipeline | Standalone Profile source; not a Core library build root |
+
+[[file:../init.ss][The root init]] selects the Gitea/PostgreSQL application and both service
+dependencies through the existing Module System. Its =rename: Scenarios= mount
+exposes =Scenarios.services.postgresql=, =Scenarios.services.gitea= and
+=Scenarios.applications.gitea-postgresql=. Namespace reflection leaves business
+scopes cold. Scenario public behavior tests live beside their module roles;
+Core provenance, relocation and runtime-boundary controls live under =t/=.
+
+=core-spec.ss= owns library roots only. Scenario compiler inputs come from the
+same init-owned selected Graph and =init.exports.std-make-spec= consumed by
+=build.ss=. Selecting or compiling a Scenario does not start a service or process.
+The standalone Funflow Profile controls import their explicit source; they do not
+add hidden Scenario targets back to =core-spec.ss=.
+
+AWS, OpenTofu and Nix implementation/qualification belong to Agentic AI Lab, not
+this pure Core library. They are not implicitly restored as Core dependencies.

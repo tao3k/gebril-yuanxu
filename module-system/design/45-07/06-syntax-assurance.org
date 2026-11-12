@@ -1,0 +1,240 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Syntax assurance and projection proofs
+#+language: en
+
+[[file:../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Checklist
+
+** Proof-discovered binding, identity, and demand constraints
+
+=UseCompositionBindingIdentityDemandGapModel= separates constraints that the
+previous prose had conflated.  The public macro head, lexical binding, runtime
+lineage identity, profile coordinate, provenance identity, demand generation,
+and mutable demand state are different semantic dimensions.
+
+The current expression macro requires
+=(def my-system (use-composition my-system ...))=.  The Lean countermodel proves
+that this does not satisfy the RFC's direct-binding contract even though its
+parser head is canonical.  Reintroducing =user-composition= would repair the
+binding only by violating the single-head contract, so it is not an admissible
+solution.
+
+Alias spelling cannot own profile identity: renaming an alias would change an
+alias-derived identity for the same module profile.  Slot name alone is also
+insufficient because two modules may export the same slot.  The candidate
+identity for an exported profile must therefore contain module semantic
+identity and slot identity, while the fresh =gerbil-poo= lineage root remains
+explicit and alias independent.
+
+That coordinate is not valid for every profile origin.  A local POO Profile,
+Mix, or prior composition has no intrinsic module-export coordinate.  The
+current mandatory =use-module= syntax can wrap such a value in a presentation
+module, but the wrapper identity MUST NOT become the local value's semantic
+identity: renaming =local-profiles= would otherwise rename the same POO object.
+The proof model therefore uses an origin sum: =moduleExport(module, slot)= or
+=localLineage(lineage-root)=.  Both alternatives retain the explicit fresh
+lineage root.  This is a proof constraint, not yet the selected concrete Gerbil
+prototype or a decision to keep/remove the mandatory module clause.
+
+The current lowerer already supplies the necessary distinction.  An imported
+=(profiles NAME ...)= object retains its source module identity.  An existing
+or locally declared =(profile NAME)= value does not receive the enclosing
+wrapper module or alias as object fields; those values survive only in the
+composition-level module-binding and profile-binding metadata.  The future
+identity prototype MUST derive local identity from the local POO value and
+lineage, never from that lookup metadata.
+
+Consequently wrapped and direct local syntax form one semantic equivalence
+class.  Two wrapper spellings may be syntactically different yet elaborate to
+the same local identity; a direct local reference is the normal form of that
+class.  This quotient does not apply to imported profiles: changing a real
+source module changes =moduleExport(module, slot)= and therefore changes
+identity.  The proof makes the two interface options comparable without
+prematurely selecting one.
+
+Demand state cannot participate in profile identity because a normal
+=pending -> realizing -> realized= transition would mutate identity.  Demand
+lookup also cannot use profile identity alone: the same profile in two runtime
+generations would alias a stale realization.  The candidate demand key must
+bind profile identity and runtime generation while keeping mutable demand state
+outside semantic identity.
+
+#+begin_src typst :file ../../../.data/45-07-binding-identity-demand-constraints.svg
+#set page(width: auto, height: auto, margin: 8pt)
+#table(
+  columns: (auto, auto),
+  inset: 6pt,
+  align: (left, left),
+  [Constraint], [Formal relation],
+  [Single macro head], [$H = "use-composition"$],
+  [Direct binding], [$B and not R_n$],
+  [Export origin], [$O_p = "Export"(M, S)$],
+  [Local origin], [$O_p = "Local"(L)$],
+  [Profile identity], [$I_p = (O_p, L)$],
+  [Alias exclusion], [$"AliasExcluded"(A, I_p)$],
+  [Synthetic wrapper exclusion], [$"Local"(L, W_0) = "Local"(L, W_1)$],
+  [Local erasure], [$E_l("Wrapped"(W, I_p)) = I_p$],
+  [Local normal form], [$E_l("Wrapped"(W, I_p)) = E_l("Direct"(I_p))$],
+  [Imported non-erasure], [$M_0 != M_1 => E_m(M_0, S, L) != E_m(M_1, S, L)$],
+  [Demand key], [$K_d = (I_p, G)$],
+  [State separation], [$I_p(q_0) = I_p(q_1)$],
+  [Freshness], [$G_0 != G_1 => K_d(I_p, G_0) != K_d(I_p, G_1)$],
+)
+#+end_src
+
+#+begin_src mermaid
+flowchart LR
+  U["use-composition"] -->|"required: binds once"| B["Lexical prototype binding"]
+  E["Current expression macro"] -.->|"counterexample: repeated name"| D["Outer def duplication"]
+  UC["user-composition alias"] -.->|"rejected: second macro head"| U
+  M["Module semantic identity"] --> PI["Profile identity"]
+  S["Profile slot identity"] --> PI
+  L["Fresh gerbil-poo lineage root"] --> PI
+  LP["Local POO Profile or Mix"] -->|"localLineage origin"| PI
+  W["Synthetic local module wrapper"] -.->|"presentation only"| PI
+  W -->|"local lowering erases wrapper"| QL["Local semantic quotient"]
+  LP -->|"direct normal form"| QL
+  QL --> PI
+  IM["Imported module export"] -->|"module identity retained"| PI
+  A["Hygienic alias"] -.->|"presentation only"| PI
+  PI --> DK["Demand key"]
+  G["Runtime generation"] -->|"prevents stale reuse"| DK
+  Q["Demand state"] -.->|"mutable; excluded from identity"| PI
+  DK -->|"exact witness"| R["Runtime realization"]
+#+end_src
+
+- Binding/identity/demand Gap Model AXLE: status =accepted=; 20 roots; 112
+  declarations; 0 failed declarations; closure digest
+  =sha256:6e7fa8c67c8e3cfabd862ccc0af711f0977cb7327c4bac36fd52dd3e8d146325=;
+  source digest
+  =sha256:7654464b2db945c50b2b31a3f916eaf9b7c925cfc11f7c0debbff180b3d16f20=;
+  bundle digest
+  =sha256:a8485cea29fbf14d48b397bbeccae367959c9e56e14df7aa0bd102d96a8c672a=;
+  canonical source digest
+  =sha256:5695809bb6621ee8d6fb77923b1b8ecaeee4846d6066c057d106241c2092ffec=;
+  independent bundle digest
+  =sha256:3805101ffcb132fb5928a3543cc6dbce61ac982d2020d0f49d5ff33164182d80=;
+  source/environment declarations =54/54=; roundtrip and theorem proof
+  status =accepted=.
+- Focused Lean Gap Model: 2 jobs completed with no Lean warnings or errors.
+- Enterprise Lean aggregate: 496 jobs completed successfully; the only warning
+  is the pre-existing =unnecessarySimpa= suggestion in
+  =AgentRedTeamProofRegressionClosure.lean=.
+- Full Lean aggregate: 568 jobs completed successfully with the same existing
+  warning.
+
+- [X] Prove that the current expression-macro surface violates direct binding.
+- [X] Prove that a second =user-composition= head is not an admissible repair.
+- [X] Prove alias-derived and slot-only identity counterexamples.
+- [X] Prove that synthetic module-wrapper renaming cannot own local identity.
+- [X] Model exported and local profile origins as a disjoint sum.
+- [X] Prove wrapped and direct local syntax elaborate to one semantic normal
+  form.
+- [X] Prove imported module identity is not erased by the local quotient.
+- [X] Prove demand-state identity drift and generation-stale demand reuse.
+- [ ] Convert =use-composition= to direct binding without a second public macro.
+- [X] Preserve current public grammar.
+- [X] Keep the existing canonical parser as sole parser owner.
+- [X] Keep Profile authoring directly POO.
+- [X] Keep module-object slots internal.
+- [ ] Define and implement named POO predicates for every internal projection,
+  including Mix-to-Profile reserved-slot projection.
+- [X] Validate container declarations without eager forcing.
+- [X] Prove the required module-identity preservation and local-wrapper quotient.
+- [ ] Enforce module-identity preservation in the concrete POO projection and
+  composition owner.
+- [X] Define compile-time versus runtime responsibilities.
+- [ ] Map expansion to the concrete =compose-proto*= and explicit-base
+  =instantiate-proto=.
+- [X] Keep aliases non-semantic.
+- [X] Make alias binding hygienic and composition-local.
+- [X] Support arbitrary nested module objects.
+- [X] Keep G0 and capability resolution out of compile time.
+- [X] Define bounded invalid-module-object reasons.
+- [X] Select the canonical macro head and hygienic generated identifiers.
+- [ ] Select concrete POO identity and demand prototypes.
+- [X] Test parser, alias, composition, and nested-module cases.
+
+** Reserved-slot projection and authority noninterference
+
+The parser currently admits =(profile NAME)= when =NAME= is merely an
+identifier.  The lowering path passes the resolved value through unchanged and
+does not prove that it is a POO Profile object.  A higher-order Mix therefore
+enters the ordered profile list as the whole Mix value; no concrete projection
+currently strips its =identity=, =imports=, or granted =capabilities= slots.
+Semantic prototype composition is still deferred, so this is an admission and
+future-composition gap rather than evidence of a currently executed takeover.
+
+=UseCompositionReservedSlotProjectionGapModel= makes the unsafe future path
+explicit.  Directly composing a complete Mix object with an ordinary
+right-biased prototype operator lets the Mix replace the target module
+identity, import closure, and granted capabilities.  The counterexample changes
+=identity= from 42 to 99, =imports= from 5 to 77, and grants from 1 to 255.
+
+The safe path is a named POO projection from Mix to =ProfileContribution=.
+That contribution contains ordinary domain refinements and /requested/
+capabilities only.  Composition preserves the target's sealed authority slots;
+requested capabilities remain evidence for a later policy decision and never
+become granted capabilities by prototype composition.  Existing operands must
+fail closed unless the identifier resolves to a POO object with an admitted
+Profile projection.
+
+#+begin_src typst :file ../../../.data/45-07-reserved-slot-projection.svg
+#set page(width: auto, height: auto, margin: 8pt)
+#table(
+  columns: (auto, auto),
+  inset: 6pt,
+  align: (left, left),
+  [Constraint], [Formal relation],
+  [Authority slots], [$A = (I, M, C_g)$],
+  [Profile contribution], [$P = (V, C_r)$],
+  [Unsafe whole-Mix composition], [$"Compose"(A_t, "Mix"(A_m, P)) => A_m$],
+  [Safe projection], [$"Compose"(A_t, "ProjectProfile"("Mix"(A_m, P))) => A_t$],
+  [Capability separation], [$C_g' = C_g and C_r != C_g$],
+  [Operand admission], [$R and O and "HasProfileProjection"$],
+)
+#+end_src
+
+#+begin_src mermaid
+flowchart LR
+  MIX["Whole Mix POO object"] -->|"unsafe direct compose"| TAKE["Identity/import/grant takeover"]
+  MIX -->|"named Profile projection"| PC["ProfileContribution"]
+  PC -->|"domain refinement"| TARGET["Target runtime prototype"]
+  ID["Sealed module identity"] --> TARGET
+  IM["Sealed import closure"] --> TARGET
+  GC["Policy-granted capabilities"] --> TARGET
+  RC["Requested capabilities"] -->|"evidence only"| POLICY["Later policy admission"]
+  POLICY -->|"separate authority decision"| GC
+  RAW["Resolved identifier only"] -.->|"not sufficient"| BLOCK["Typed projection rejection"]
+  POO["POO object + admitted projection"] -->|"accepted"| PC
+#+end_src
+
+- Reserved-slot Projection Model AXLE: status =accepted=; 10 roots; 49
+  declarations; 0 failed declarations; closure digest
+  =sha256:8726fd32c8180e534c18a639fb5df02189973e1f5e7924616e5f2f981ea6ae85=;
+  source digest
+  =sha256:d1d5e2fcf10c778da74149fbd9d69222dae1599bb42cf4369ad0bf04ca4af36c=;
+  bundle digest
+  =sha256:a30f5c07aeea76219baa3a51852d6513c55be76cb4afaa79811975cade038f15=;
+  canonical source digest
+  =sha256:3c81584bc85978f37cc02440da34aac7612737c2446507dc62e1a5109275bfdf=;
+  independent bundle digest
+  =sha256:3b1e6fdab15a200bda13ee9291cb8ff4a68a93a1038e9e9337a7180fedc2c881=;
+  source/environment declarations =31/31=; roundtrip and theorem proof
+  status =accepted=.
+- Focused Lean Reserved-slot Model: 2 jobs completed with no Lean warnings or
+  errors.
+
+- [X] Prove whole-Mix composition can take over identity, imports, and grants.
+- [X] Prove Profile projection preserves all target authority slots.
+- [X] Separate requested capabilities from policy-granted capabilities.
+- [X] Prove identifier-only admission accepts a non-POO counterexample.
+- [ ] Implement the POO Mix-to-Profile projection and named predicate.
+- [ ] Reject non-POO or whole-Mix operands without an admitted projection.
+- [ ] Bind the future =compose-proto*= owner exclusively to projected Profile
+  contributions.
+

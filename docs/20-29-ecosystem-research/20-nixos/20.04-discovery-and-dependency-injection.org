@@ -1,0 +1,100 @@
+#+title: 20.04 NixOS Module Discovery and Dependency Injection
+#+language: en
+#+property: DOCUMENT_ID 20.04
+#+date: [2026-10-17]
+#+property: STATUS pinned-source-analysis-no-local-evaluation
+
+* Research question and source boundary
+
+What must be known before a module can contribute configuration, and what may
+remain deferred? This separates module-system architecture from Nix syntax.
+All release-source references in this article use nixpkgs commit
+=50ab793786d9de88ee30ec4e4c24fb4236fc2674=, resolved from nixos-24.11 through
+GitHub during this study. This historical release is a controlled source baseline,
+not a recommendation or a claim about the newest NixOS implementation.
+
+Sources: [[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/nixos/modules/module-list.nix][module-list.nix]] and
+[[https://github.com/NixOS/nixpkgs/blob/50ab793786d9de88ee30ec4e4c24fb4236fc2674/lib/modules.nix][lib/modules.nix]], particularly evalModules, collectModules,
+collectStructuredModules, filterModules and applyModuleArgs. Names are source
+locators; this article does not claim to have run them.
+
+* Catalogue, import closure and enabled contributions
+
+The inspected catalogue has 1,766 relative-path entries, counted from source
+lines beginning with =./=. This is a count of catalogue paths, not active services,
+built derivations or runtime processes. PostgreSQL and Gitea are both present.
+The collector loads/normalizes imported modules, follows imports, filters disabled
+keys and deduplicates through genericClosure. It does not discover dependencies
+by scanning an arbitrary user's machine or infer them from systemd ordering.
+
+** Why this organization works
+
+Official modules can contribute to each other's declared options without users
+manually importing every service implementation. The shared option namespace
+makes integration cheap: a web application can enable PostgreSQL and request a
+database through normal configuration. Documentation and unknown-option checks
+also have a broad declaration universe available.
+
+** What selective discovery would change in our system
+
+A source catalogue must be cheap without evaluating every interface body. However,
+selecting only a few source files creates a new responsibility: a module that
+contributes to another module needs a discoverable, versioned requirement for it.
+Merely reading final configuration cannot bootstrap the producer of that same
+configuration. Explicit root selection must reject a required-but-undeclared or
+disabled module; automatic selection needs a traceable closure rule.
+
+Thus a small selected graph is not a free optimization over the NixOS catalogue.
+It trades ambient option availability for explicit publication and dependency
+ownership. A metadata index must remain current with the source, or discovery
+can be fast and wrong. Field discovery should read declarations without forcing
+all default values or provider resources.
+
+* Injection is a phase-sensitive function application
+
+The library constructs built-in arguments and overlays specialArgs. For declared
+function parameters, applyModuleArgs forwards either an existing argument or a
+value from config._module.args, adding evaluation context. _module.args itself
+uses lazyAttrsOf raw. This preserves deferred values; it does not make the
+structure of imports freely dependent on the final configuration.
+
+An alias names a binding, not a provider identity. In our system a mount rename
+must not silently select another provider or grant a new capability. A reusable
+module should request a published interface and let the composition root bind
+the intended instance. Lexical dependency bindings can remove a public global
+args object, but still require declared interfaces, phases and source identities.
+
+* Same dependency name, different architectural meaning
+
+| Edge | What it requires | What it must not imply |
+|------+------------------+-----------------------|
+| Source availability | Locate an eligible publication | Execute or build every export |
+| Interface binding | Obtain an admitted dependency scope | Wait for all provider effects |
+| Configuration read | Obtain a particular effective value | Recompute unrelated instances |
+| Build input | Produce an artifact needed by a selected consumer | Start the service |
+| Runtime relationship | Apply ordering, readiness or recovery rules | Change module import order |
+
+NixOS encodes these in different mechanisms rather than one universal dependency
+graph. Our system should expose their explanations together without collapsing
+their meanings. This table is a proposed analysis model, not a new public DSL.
+
+* Issues and Engineering Limitations
+
+[[file:20.07-issues-and-evidence.org][NX-01]] owns the _module.args conditional report; NX-03 owns historical
+evaluation-cost observations. A top-level conditional can force module structure
+too early even when it does not syntactically change imports. Our diagnosis must
+identify the premature demand and dependency chain, not merely say "cycle".
+
+* Reflection and conclusion
+
+Preserve NixOS's maintained integration and declaration discoverability. Avoid
+copying its ambient global interface into a magical Scheme root object. Our
+candidate is source metadata for graph selection and bounded lexical interface
+bindings for configuration. The costs are maintaining that metadata, diagnosing
+bindings and specifying legal deferred relationships. POO alone supplies none of
+those policies automatically.
+
+Acceptance question: can Gitea's equivalent request a database, move between
+directory windows, and still explain the selected provider, disabled-provider
+failure and exact demanded port without loading unrelated service implementations?
+

@@ -1,0 +1,158 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.33 Selected Input Retry and Incremental Acceptance
+#+language: en
+#+date: [2026-11-03]
+#+property: STATUS native-lifecycle-and-lab-gates-verified
+
+* Scope and authority
+
+[[file:13.32-interface-entry-and-compilation-authority.org][13.32]] established the Prelude declaration, native POO exit and real Lab
+downstream cold/hot/clean handoff. The next acceptance boundary concerns reuse
+of the downstream-owned generated compiler inputs. This work changes neither
+the public declaration nor Interface/init.exports lookup. It introduces no
+loader, product cache, source registry or alternate compiler scheduler.
+
+The existing preparer observes original source bytes and package metadata.
+The selected source-view adapter binds those observations, compiler forms,
+owner options and toolchain/configuration data into generated input text. It
+checks currentness on entry and return. Descriptor equality is input equality
+under these observations, never a stored admission verdict.
+
+* Retry contract
+
+1. Changed input data invalidates the exact owner's native completion marker
+   before replacing the descriptor, even if the original source mtime is equal
+   to or older than its previous mtime.
+2. Returning from input preparation does not establish compilation success.
+   An exception in the callback leaves the changed owner's marker absent.
+3. Repeating preparation with the same descriptor does not recreate that
+   marker. Native Make must compile the affected unit and its actual native
+   dependants; independent unchanged units remain reusable.
+4. Retrying or switching selection affects only the chosen output environment.
+   Existing products in a second environment retain their own input association.
+5. Switching the selected input set removes previous generated source frames
+   outside the current selection. This concerns compiler-source fallback, not
+   removal of every previously installed Gerbil product or runtime unloading.
+6. An unknown file or nonregular entry in the owned source view refuses the
+   operation. It is not adopted, overwritten or deleted. Previously completed
+   products cannot turn that refusal into success.
+
+These are serialized, exception-boundary contracts under the existing native
+advisory lock. They do not prove power-loss durability, arbitrary compiler-crash
+atomicity, malicious-checkout isolation or a filesystem sandbox.
+
+* Correspondence and native gate
+
+SysML allocates this to InputAssociationBeforeReuse and SelectedInputRetry.
+Lean SourceView reuses its invalidation-first laws and adds preparation
+idempotence and retry-without-success laws. Input completeness, native output
+observation and filesystem behavior remain bridge premises. No second graph or
+symbolic native compiler is introduced into Lean.
+
+The native gate calls production retained-source preparation and the production
+unified compiler-input adapter, followed by installed std/make. Two small real
+Gerbil source packages isolate this boundary from business dependencies. Fresh
+worker processes prevent expander/import state from masking a changed product.
+The existing real Lab test remains the separate end-to-end selection gate.
+
+The second environment's old library value is an isolation observation of
+ordinary native products, not permission to admit a stale managed Module scope.
+An explicit new build in that environment would observe changed source bytes;
+managed runtime source/Contract checks retain their existing refusal semantics.
+
+The gate must cover backdated equal-mtime byte changes, downstream identity and
+value after native rebuild, callback interruption followed by retry, independent
+environment preservation, stale generated-source pruning and unowned-file
+refusal. It uses heap-fenced Just entrypoints and existing per-process budgets.
+No exception, compiler event count or model check alone grants publication.
+
+An independently selected library has no edge to the changed library. The gate
+requires it to stay hot while the changed library and its native dependant
+rebuild. Two consecutive interrupted preparations test retry idempotence before
+native success. The unknown-file control requires both a nonzero worker status
+and the expected refusal diagnostic, with no compiler events and preserved
+unknown bytes. Expected negative diagnostics are captured in that result,
+separate from the parent harness's successful output.
+
+The repeatable combined gate is:
+
+#+begin_src sh
+# Prerequisites and Core already built in this explicit private environment.
+just test-selected-package-builds /absolute/private-runtime
+#+end_src
+
+It runs the production adapter lifecycle test and then the real Lab downstream
+test serially. Each still uses the existing 600-second test-file fence and
+180-second child-operation timeout with the pre-import heap fence. No aggregate
+parallel memory allowance or enlarged timeout is introduced.
+
+* Verification receipt (2026-11-03)
+
+The combined serial gate passed in the previously built private Core runtime:
+
+#+begin_example
+SELECTED-SOURCE-VIEW equal-mtime=rebuild interrupted-retry=rebuild independent=hot fresh-values=1,2,3 hot=0 other-environment=unchanged prune=ok unowned=refused
+MODULE-OK t/selected-source-view-lifecycle-test.ss
+HARNESS-OK ("t/selected-source-view-lifecycle-test.ss")
+OK
+LAB-DOWNSTREAM selected-targets=10 hot=0 fresh-use=ok clean-isolation=ok upstream=unchanged
+MODULE-OK t/selected-package-downstream-test.ss
+HARNESS-OK ("t/selected-package-downstream-test.ss")
+OK
+#+end_example
+
+The process exited zero and the parent log contains no ERROR CASE, ERROR CHECK,
+ERROR HARNESS, heap/stack overflow or unexpected error diagnostic. The negative
+unowned-file worker returned nonzero with the required diagnostic; the parent
+asserted that result explicitly. Actual imported values were 1, 2 and 3 in fresh
+processes while environment B retained value 1. The independent selected unit
+did not recompile during either changed-input rebuild.
+
+The complete Lean build passed 216 jobs, including shape and axiom audits of
+8682 declarations with standard Lean axioms only. Both new retry laws are in
+the audited theorem list. Native adapter input completeness and filesystem
+semantics remain bridge assumptions, not Lean conclusions.
+
+No production adapter repair was required by these controls. This change adds
+the explicit lifecycle contract, proof correspondence, Scheme qualification and
+serial Just gate. The earlier full Core suite receipt belongs to 13.32; it was
+not rerun or promoted to a new full-suite result here. Raw logs remain local.
+Package-symbol source windows, minimal default Lab installation and cross-owner
+issued publication retain the outstanding status documented in 13.32.
+
+* Next implementation boundary
+
+The subsequent [[file:13.34-owner-library-declarations-and-root-migration.org][13.34]] begins package-confined owner declarations and one
+retained-root migration, while preserving the installation/publication gaps.
+
+Package source publication must extend the existing collection and source
+association mechanisms, not add a community registry/loader. The existing
+=source/init.ss= intent parser is read-only and currently expands window roots
+as literal filesystem paths. A package reference must remain a distinct inert
+reference through intent parsing; it cannot be coerced into a path or evaluated
+there. Resolution belongs to the existing admitted source-context boundary.
+Its original package metadata, source binding and collection identity must join
+currentness observations before selection/build projection can consume it.
+
+Minimal Lab installation follows owner migration, not deletion of the global
+root list alone. Audit ordinary libraries and the three existing special
+compiler targets (=nono=, runtime FFI and semantic) against selected owner
+declarations before removing roots. Dedicated resource/external consumers and
+cross-owner issued publication remain separate gates. The accepted literal
+windows and native POO exit remain usable throughout this migration.
+
+The current source audit distinguishes these retained special targets:
+
+| Native target | Current declaration authority | Migration obligation |
+|---------------+-------------------------------+----------------------|
+| =modules/nono-sandbox/_nono= | Lab =build-spec.ss= supplies owner-relative C include and platform link options | Preserve the include dependency and Darwin/Linux linker choices with the admitted owner contribution |
+| =modules/workflow/runtime/runtime-v0-ffi= | Lab =build-spec.ss= supplies platform link options | Preserve the final-link runtime-symbol boundary and selected native options |
+| =modules/workflow/runtime/semantic= | Lab =build-spec.ss= supplies platform link options | Preserve the same final-link boundary and actual source import closure |
+
+At this audit, =nono-sandbox/interface.ss= and =workflow/interface.ss= are ordinary
+Gerbil import/reexport facades, unlike Nix's declarative managed publication.
+Their directory names alone do not establish selected Module ownership. The
+migration must first establish an admitted compilation owner for these ordinary
+libraries, or retain their explicit package-library declarations. Deleting the
+global roots and inventing ownership from their paths would lose real targets.

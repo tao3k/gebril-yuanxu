@@ -1,0 +1,209 @@
+name: Platform
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  build:
+    name: Build package
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 120
+    outputs:
+      matrix: ${{ steps.inventory.outputs.matrix }}
+    env:
+      GERBIL_PATH: ${{ github.workspace }}/.gerbil
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: ./.github/actions/setup-gerbil
+        id: gerbil
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        id: restore-dependencies
+        # Only the pinned POO dependency namespace crosses CI runs. Archiving
+        # lib itself would recursively include test approvals; a negative
+        # top-level glob does not remove descendants of an archived directory.
+        with:
+          path: |
+            .gerbil/pkg
+            .gerbil/lib/clan
+            .gerbil/lib/static/clan__poo*.scm
+            .gerbil/bin
+          key: yuanxu-gerbil-v3-${{ runner.os }}-${{ runner.arch }}-${{ steps.gerbil.outputs.archive-sha256 }}-${{ hashFiles('gerbil.pkg') }}
+      - name: Install pinned dependencies
+        run: |
+          echo "BUILD-WORKERS $GERBIL_BUILD_CORES"
+          GERBIL_BUILD_VERBOSE=1 gerbil deps --install
+      # Publish the exact dependency cohort after its native install succeeds.
+      # A later Core failure should not require another cold dependency build.
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        if: steps.restore-dependencies.outputs.cache-hit != 'true'
+        with:
+          path: |
+            .gerbil/pkg
+            .gerbil/lib/clan
+            .gerbil/lib/static/clan__poo*.scm
+            .gerbil/bin
+          key: ${{ steps.restore-dependencies.outputs.cache-primary-key }}
+      - name: Check Yuanxu package namespace
+        run: just check-package-namespace
+      - name: Build Yuanxu
+        id: build-core
+        run: GERBIL_BUILD_VERBOSE=1 just build
+      - name: Validate the domain partition
+        id: inventory
+        run: |
+          matrix=$(just test-ci-groups)
+          test -n "$matrix"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+      - name: Archive the package build
+        run: tar -czf "$RUNNER_TEMP/package.tar.gz" .gerbil
+      - uses: actions/upload-artifact@v7
+        with:
+          name: yuanxu-build-${{ inputs.os }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/package.tar.gz
+          compression-level: 0
+          retention-days: 1
+
+  tests:
+    name: Test ${{ matrix.group }}
+    needs: build
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.build.outputs.matrix) }}
+    env:
+      GERBIL_PATH: ${{ github.workspace }}/.gerbil
+      YUANXU_TEST_FILES: ${{ matrix.files }}
+      YUANXU_TEST_HEAP: ${{ matrix.heap }}
+      YUANXU_TEST_BATCH: ${{ matrix.batch }}
+      YUANXU_TEST_DEADLINE: ${{ matrix.deadline }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: ./.github/actions/restore-yuanxu
+        with:
+          artifact: yuanxu-build-${{ inputs.os }}-${{ github.run_attempt }}
+      - name: Set temporary report paths
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "YUANXU_TEST_REPORT_DIR=$RUNNER_TEMP/test-report" >> "$GITHUB_ENV"
+          echo "GERBIL_LOADPATH=$GERBIL_PATH/lib:$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+      - name: Prepare the compiled callback fixture
+        id: callbacks
+        if: matrix.group == 'store-callbacks'
+        run: |
+          mkdir -p "$YUANXU_TEST_REPORT_DIR"
+          just compile-mop-store-boundary "$RUNNER_TEMP/store-fixture" > "$YUANXU_TEST_REPORT_DIR/prepare.log" 2>&1
+          echo "CORE_STORE_ROOT=$RUNNER_TEMP/store-fixture" >> "$GITHUB_ENV"
+          echo "GERBIL_LOADPATH=$RUNNER_TEMP/store-fixture/lib:$GERBIL_PATH/lib:$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+      - name: Prepare isolated authority directories
+        if: matrix.group == 'artifact-authority' || matrix.group == 'source-loader'
+        run: echo "CORE_STORE_ROOT=$RUNNER_TEMP/test-report/authority-fixture" >> "$GITHUB_ENV"
+      - name: Prepare the source gateway snapshot
+        if: matrix.group == 'source-gateway'
+        run: |
+          mkdir -p "$YUANXU_TEST_REPORT_DIR"
+          just compile-source-tail-gateway "$RUNNER_TEMP/source-fixture" > "$YUANXU_TEST_REPORT_DIR/prepare.log" 2>&1
+          echo "CORE_SOURCE_TAIL_ROOT=$RUNNER_TEMP/source-fixture" >> "$GITHUB_ENV"
+          echo "GERBIL_LOADPATH=$RUNNER_TEMP/source-fixture/lib:$RUNNER_TEMP/source-fixture/source:$GITHUB_WORKSPACE:$GERBIL_PATH/lib" >> "$GITHUB_ENV"
+      - name: Inspect the callback closure before loading
+        if: matrix.group == 'store-callbacks'
+        run: |
+          env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s \
+            gerbil -:max-heap=2G,debug=q test -v 0 t/artifact-closure-test.ss \
+            > "$YUANXU_TEST_REPORT_DIR/closure.log" 2>&1
+      - name: Execute the issued callback boundary in a fresh process
+        if: ${{ !cancelled() && matrix.group == 'store-callbacks' && steps.callbacks.outcome == 'success' }}
+        run: |
+          env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s \
+            gerbil -:max-heap=2G,debug=q test -v 0 t/qualification/mop-state/store-boundary-driver.ss \
+            > "$YUANXU_TEST_REPORT_DIR/boundary.log" 2>&1
+      - name: Run only this domain's standard Gerbil tests
+        if: matrix.group != 'store-callbacks'
+        shell: bash
+        run: |
+          mkdir -p "$YUANXU_TEST_REPORT_DIR"
+          files=()
+          while IFS= read -r file; do files+=("$file"); done <<< "$YUANXU_TEST_FILES"
+          test "${#files[@]}" -gt 0
+          if [[ -n "${CORE_SOURCE_TAIL_ROOT:-}" ]]; then
+            cd "$CORE_SOURCE_TAIL_ROOT/source/tao3k/yuanxu"
+          fi
+          run_tests() {
+            env -u SDKROOT timeout --signal=TERM --kill-after=5s "$YUANXU_TEST_DEADLINE" \
+              gerbil "-:max-heap=$YUANXU_TEST_HEAP,debug=q" test -v 0 "$@"
+          }
+          if [[ "$YUANXU_TEST_BATCH" == true ]]; then
+            if run_tests "${files[@]}" > "$YUANXU_TEST_REPORT_DIR/domain.log" 2>&1; then
+              printf 'PASS %s\n' "${files[@]}"
+              exit 0
+            else
+              result=$?
+              echo "FAIL shared Gerbil harness exit=$result"
+              exit 1
+            fi
+          fi
+          failed=0
+          for file in "${files[@]}"; do
+            log="$YUANXU_TEST_REPORT_DIR/${file##*/}.log"
+            if run_tests "$file" > "$log" 2>&1; then
+              echo "PASS $file"
+            else
+              result=$?
+              echo "FAIL $file exit=$result"
+              failed=1
+            fi
+          done
+          exit "$failed"
+      - name: Verify the compiled fixture is unchanged
+        if: ${{ !cancelled() && matrix.group == 'store-callbacks' && steps.callbacks.outcome == 'success' }}
+        run: |
+          shasum -a 256 -c "$CORE_STORE_ROOT/callback-artifacts.sha256"
+          shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
+          shasum -a 256 -c "$CORE_STORE_ROOT/gerbil-inputs.sha256"
+      - name: Show failure context
+        if: failure()
+        run: tail -n 80 "$YUANXU_TEST_REPORT_DIR"/*.log
+      - name: Retain this domain's complete report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: yuanxu-tests-${{ inputs.os }}-${{ matrix.group }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/test-report/
+            ${{ runner.temp }}/declaration-scale-observation-*
+            ${{ runner.temp }}/store-fixture/*.json
+            ${{ runner.temp }}/store-fixture/*.sha256
+          if-no-files-found: ignore
+          retention-days: 7
+
+  published:
+    name: Published module suites
+    needs: build
+    runs-on: ${{ inputs.os }}
+    timeout-minutes: 15
+    env:
+      GERBIL_PATH: ${{ github.workspace }}/.gerbil
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+      - uses: ./.github/actions/restore-yuanxu
+        with:
+          artifact: yuanxu-build-${{ inputs.os }}-${{ github.run_attempt }}
+      - name: Set temporary report paths
+        run: |
+          echo "TMPDIR=$RUNNER_TEMP" >> "$GITHUB_ENV"
+          echo "YUANXU_TEST_REPORT_DIR=$RUNNER_TEMP/published-module-suites" >> "$GITHUB_ENV"
+      - name: Run the published Module TestSuites once
+        run: just test-selected-modules > "$RUNNER_TEMP/published-module-suites.log" 2>&1
+      - name: Retain published module reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: yuanxu-published-${{ inputs.os }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/published-module-suites.log
+            ${{ runner.temp }}/published-module-suites/
+          retention-days: 7

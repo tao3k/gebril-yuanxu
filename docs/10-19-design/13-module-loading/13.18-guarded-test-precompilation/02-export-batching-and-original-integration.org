@@ -1,0 +1,577 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.18 Export batching and original integration
+#+language: en
+#+property: STATUS historical-superseded
+
+[[file:../13.18-guarded-test-precompilation.org][13.18 index]]
+
+Historical experiment; its APIs are retired. The current boundary is
+[[file:../13.28-managed-dependency-and-activation-policy.org][13.28]].
+
+* .for-export boundaries and closed requirement batching
+
+The next attribution follows the actual calls, rather than classifying the
+whole Fixture as preparation. The existing observer now keeps bounded scalar
+effect/read and effect/check-time rows in ordinary observation mode; deep
+receiver/retention tracing remains separately lazy. =export-entry= and
+=publication-base= label existing calls without granting reuse authority.
+
+| Boundary | Actual operation | Why the boundary remains |
+|----------+------------------+--------------------------|
+| export-entry | =admit-build-artifact-publication!=, including the demanded build Graph | Before export scopes may execute author code; artifact recovery is an effect |
+| selected-record | =selection .selected-record=, runtime linking, dependency/scope Contracts | Scope factories and validators are open calls |
+| publication-base | =module-admission-publication=, descriptor/value paths | Recheck after scope resolution; lazy export getters can run code |
+| bind-contributions | route index, guarded =collect=, Context assembly and final =current!= | Before/after exported payload getters, complete provenance and return certification |
+| contract-admit | direct or published Contract invocation | Fresh root admission, including contextual child obligations |
+| entry-current / meaning-current | publication entry / dependent return meaning | Independent calls and post-effect return checks cannot inherit earlier bytes |
+
+An instrumented intermediate snapshot attributed 16,830 reads to export entry,
+3,894 to selected records, and 2,596 to publication-base over eleven fresh
+Fixtures. Thus the warm Just process still constructs eleven independent
+source-backed selections: it is not eleven accesses to one warm receiver.
+Read windows include metadata traversal, file queries and comparisons, not
+just disk I/O. Nested operation times are not additive to parent spans.
+
+An attempted schema-free Context deferral removed 649 reads, but was withdrawn.
+=compiler-current= is replaceable and is not implied merely by checking an
+equal list of source files at return. The existing Lean
+=ReturnWindows.defer_covered_check= theorem covers actual byte requirements,
+not arbitrary Scheme policy procedures. The expanded existing admission
+regression now covers Schema/no-Schema paths and custom compiler/request
+refusals; it must preserve their execution before cold handlers and at return.
+All original Context/compiler guards remain in the production implementation.
+
+The retained production change is narrower: when collectors are active,
+=module-source-admit-current!= uses the existing pure window's runtime identity
+tables to avoid traversing the same requirement-list object twice for the same
+active collectors. Metadata-only checks without collectors keep their existing
+per-source index, rather than allocate an ineffective batch index. It shares
+neither a Context, a Contract verdict nor an issued read record. The table is
+owned by the existing dynamic window and disappears at its end. Equal but
+distinct list objects are not merged; nested collectors use different keys;
+only a successfully checked batch is indexed. The collector's original first
+diagnostic remains authoritative.
+
+This applies only when no source observer is installed. Open observers retain
+the original checks/callback order; no observer is disabled or suppressed.
+The closed action reads filesystem inputs and the fixed private collectors,
+without calling domain methods. It relies on the existing documented window
+condition: bytes and input requirements remain stable, and callers end the
+window before writes or callbacks. It does not extend a window over a getter,
+obligation, package process or independent admission. An implementation using
+structural query keys was rejected because it rehashed source text; the final
+index uses runtime identity, as the existing expected-text index already does.
+
+The existing six-Case source-observation suite now exercises this closed path
+under the runtime default Case/resource Profile, without installing or removing
+a source observer. Its private operation counters prove two independent
+windows read twice, a repeated batch avoids another enumeration, and a nested
+collector still enrolls its requirements. Conflicting expectations reject;
+editing the file makes both enclosing and nested collectors refuse with their
+own first diagnostic. The remaining Cases continue to exercise open observers,
+parent caching, nested obligations, source mutation and unselected branches.
+These are executable Scheme controls; no new Lean or QNT theorem was added.
+
+This distinction also limits the performance claim: the collector optimization
+does not remove the cold selected-Graph/role work in eleven fresh Fixtures.
+Neither the rejected 649-read deferral nor its intermediate timing is a landed
+improvement. Custom =compiler-current= refusal is tested independently of
+request refusal and source-file equality, including the no-Schema path. Those
+policies and both sides of open callbacks remain executable requirements.
+
+The producer now participates in that data flow: =source-object-slots= creates
+one private input batch per file *within one fresh object construction*, and
+each located specification retains that batch. Previously it reboxed the same
+input row separately for every field. Specifications, locations and procedures
+remain distinct; parent/child constructions do not share a mutable snapshot
+registry. The existing Gerbil-expansion regression verifies distinct port/client
+specifications, one physical read, and no repeated per-source comparison when
+their actual macro-produced batches are enrolled together. This qualifies the
+producer/consumer association, rather than only a synthetic shared-list fixture.
+
+** Final local benchmark
+
+Source was frozen for these runs. A fresh private =GERBIL_PATH= supplied an
+empty test-product/approval namespace; the same compiled dependency load path
+and pinned package sources were reused explicitly. No production cache or other
+session's package tree was cleaned. The default entry and resource limits were
+unchanged, with two runtime Make workers:
+
+#+begin_src sh
+just test-file t/gitea-postgresql-publication-test.ss
+#+end_src
+
+| Invocation | Whole wall (s) | User (s) | System (s) |
+|------------+----------------+----------+------------|
+| Cold selected support products | 44.94 | 38.00 | 6.55 |
+| Independent warm process 1 | 39.73 | 30.48 | 5.90 |
+| Independent warm process 2 | 39.78 | 29.55 | 5.58 |
+
+The selected support contains two runtime modules (four =.o1= files including
+their named runtime sections). A separate final observation run restored the
+same issuance with =compile-count=0= and =make-seconds=0=: whole wall/user/system
+41.87/33.70/5.52 seconds, Harness 27.666 seconds. All eleven domain Cases and
+all three completion markers passed in every run, with no harness or overflow
+failure. Cold here does not mean flushed Gerbil, filesystem or Store caches.
+The four runtime support outputs also retained their cold-run modification
+times throughout both warm runs and the attributed run; none was rewritten.
+
+That final observation run attributes actual reads and complete source-check
+windows as follows (nested source-window times must not be added to parent
+operation durations):
+
+| Actual boundary | Reads | Source-check window seconds |
+|-----------------+-------+-----------------------------|
+| export-entry | 16,830 | 4.271 |
+| selected-record | 3,894 | 1.518 |
+| publication-base | 2,596 | 0.942 |
+| bind-contributions | 8,437 | 3.124 |
+| contract-admit | 749 | 0.346 |
+| publication entry-current | 704 | 0.242 |
+| publication meaning-current | 236 | 0.233 |
+| Scope factory | 236 | 0.018 |
+| Source imports, combined | 3,003 | 0.589 |
+| Outside these operation brackets | 652 | 0.148 |
+
+These sum to the original 37,337 physical reads: independent policy checks,
+callback boundaries and return certification were preserved. The retained
+optimization removes duplicate collector enumeration inside a pure window;
+it does not manufacture a physical-read reduction by skipping compiler policy.
+The source-observation controls passed after producer sharing (36.05 seconds),
+and runtime slot-origin controls passed (25.34 seconds). Earlier policy controls
+also passed (11.36 seconds); subsequent production changes affect private data
+sharing and collector indexing, not compiler/request dispatch.
+
+There is no demonstrated whole-Harness speedup over the earlier 26-second
+receipt, and these samples are not a statistically controlled A/B latency claim.
+The remaining dominant work is cold selected-Graph/publication construction,
+not support compilation. Establishing a narrower callback-free metadata path
+requires actual runtime ownership/dispatch evidence; neither byte coverage nor
+a manual purity label suffices. Full CI and scale qualification were not run.
+
+** Same-selection export-entry attribution
+
+The next qualification separates the existing =export-entry= bracket into
+=build-graph= (the actual runtime slot demand) and
+=artifact-publication-current= (the unchanged artifact admission call).
+Only scalar observer events were added. In particular, =.ref/cached= is not
+used as a passive cold/hot probe: it can issue a transient miss and demand
+runtime metadata. No observer, dependency edge or policy call is suppressed.
+
+The existing first real service Case now calls =.for-export= a second time on
+the same selection, before its original publication assertions. It checks
+that Graph, Contract and exported configuration identities are shared, while
+the admission Context is fresh. The other ten Cases still own fresh selections.
+This is distinct from reusing compiled support in a new Just process.
+
+#+begin_src scheme
+(def rebound
+  (.call AdmissionPublication. .for-export selection
+    'applications/gitea-postgresql 'Application))
+(check-equal? (eq? (.get publication graph) (.get rebound graph)) #t)
+(check-equal? (eq? (.get publication contract) (.get rebound contract)) #t)
+(check-equal? (eq? (.get publication value) (.get rebound value)) #t)
+(check-equal? (eq? (.get publication context) (.get rebound context)) #f)
+#+end_src
+
+The initial observed run reports the following exact read attribution:
+
+| Demand | Physical reads |
+|--------+----------------|
+| Eleven cold Graph demands, excluding nested import brackets | 16,830 |
+| Nested source imports inside those demands | 2,963 |
+| Eleven cold Graph demands, inclusive | 19,793 |
+| Repeated Graph demand on the same selection | 0 |
+| Artifact-publication checks in this source-only Scenario | 0 |
+
+Thus the original 16,830 count is entirely cold construction, not repeated
+certification of one warm Graph. Inclusive and exclusive brackets must not be
+compared as a source-version change or added twice. The first cold Graph demand
+took 2,609 ms wall / 1,723 ms CPU; its repeated demand rounded to 0 ms / 0 ms.
+These timings concern the slot demand, not the complete export or admission.
+The repeated full export still performed 944 physical reads after the first
+export completed: source eligibility, selected-record guards, independent
+compiler/request policies, contribution collection and final certification
+remain separate from Graph construction. These are not a cached verdict.
+
+The owning implementation is already the receiver-local =build-graph= slot in
+=link-module-context=. Cold =module-build-graph= first checks the selection,
+prepares each owner once in its private =prepared= index, collects original
+role inputs and projections, and finalizes with its two guarded checks. Its
+prepared-publication callbacks can be overridden; the source and policy guards
+cannot be replaced by a previously equal byte list. No wider window was placed
+around preparation, lazy getters, imports or package callbacks. The earlier
+private per-construction input-batch sharing and collector-window indexing
+remain the only retained sharing changes in this slice; this attribution does
+not establish a further production speedup.
+
+The same frozen Scheme sources were run through the unchanged heap-fenced
+=just test-file= entry. The table distinguishes support-product reuse from
+the warm receiver demand *inside* the first Case. Observation mode was the same
+for the first two rows; neither uses deep retention tracing.
+
+| Invocation | Wall / user / system (s) | Support compile count | Harness (s) |
+|------------+--------------------------+-----------------------+-------------|
+| Observed, stale support rebuilt | 61.24 / 45.09 / 7.20 | 2 | 35.394 |
+| Observed, independent process reusing issuance | 58.78 / 37.83 / 6.86 | 0 | 34.757 |
+| Default, observation disabled, run 1 | 112.43 / 38.80 / 8.98 | Not instrumented | Not instrumented |
+| Default, observation disabled, run 2 | 55.53 / 34.30 / 6.90 | Not instrumented | Not instrumented |
+
+The observed warm process restored the existing issuer with =issuer-reused=#t=,
+=make-seconds=0= and =compile-count=0=; restoration/admission took 1.252 seconds,
+versus 12.346 seconds including cold compilation. Both observed invocations
+retain exactly 19,793 inclusive Graph-construction reads, 16,830 exclusive
+Graph reads, and zero repeated-Graph reads. In the second run, its first Graph
+demand took 1,663 ms wall / 1,575 ms CPU; the repeated demand again rounded to
+zero milliseconds. The first Case's ready-to-rebound checkpoint interval was
+523 ms wall / 402 ms CPU, including the intervening Fixture acquisition return;
+this is an upper bracket, not an exact isolated export timer. The complete
+rebound adds 944 reads while constructing a fresh Context.
+
+All four invocations completed the original eleven domain Cases, =MODULE-OK=,
+=HARNESS-OK= and final =OK=, without error/overflow markers. The Cases retain
+cached-parent/final-child checks, two independently published requirements,
+explicit client mismatch, stale-plan rejection, source edits and an unselected
+branch. Local qualification uses the private validation prefix with the exact
+declared POO revision =e281ad2e33784cfb9951c684b6be78bd2f4b7fca=; unchanged compiled
+Core dependencies remain on the explicit project load path. This is not a
+clean full-library rebuild, remote CI result or scale qualification.
+The separate current =admission-publication-test.ss= regression also passed
+all three completion markers with no harness/overflow failure (40.39 seconds
+wall, 11.73 user, 2.52 system). Its compiler/request refusal controls remain
+independent of source equality and of the structural Graph cache.
+
+The 112.43-second default sample is retained, not discarded or rerun until a
+preferred number appears. Its wall-minus-process-CPU gap is 64.65 seconds;
+these measurements do not attribute that gap to GC, filesystem waiting or host
+scheduling. The same-source runs qualify runtime structural reuse and unchanged
+refusal behavior, but do not prove that cold Graph construction or the complete
+Harness has become fast. No wider pure window, cached admission conclusion,
+new cache protocol or timeout change was introduced to improve these numbers.
+
+** Cold Graph algorithm and Gerbil loading ownership
+
+The next source-attribution pass keeps the existing observation mode and adds
+bounded scalar =(phase, guard-origin)= counters only while =build-graph= is the
+innermost admission bracket. It does not record source contents, cache a
+verdict, install a new loader or change a check window. The actual Scenario
+again completed eleven Cases and all completion markers (65.46 s wall,
+39.36 user, 6.76 system).
+
+Of the 16,830 exclusive cold Graph reads, 14,267 (84.77%) occur under
+=publication-current=. The largest return/caller labels are:
+
+| Caller of the reader guard | Reads |
+|----------------------------+-------|
+| source | 1,999 |
+| link-current | 1,911 |
+| eligibility | 1,911 |
+| declaration-after | 1,548 |
+| candidate-admitted | 1,548 |
+| declaration-inputs | 1,482 |
+| declaration-before | 1,320 |
+| graph-current | 1,274 |
+| graph-current/build-entry | 637 |
+| graph-current/build-finalize | 637 |
+
+These sum to 14,267, not the complete 16,830. They identify guard invocation
+sites, not ten interchangeable approvals. In particular, declaration expansion,
+the authoring-policy validator and scope factories are open boundaries. A
+single large byte-read window around all of Graph construction is invalid.
+
+The graph under investigation is =link-module-context='s selected build Graph:
+=select-module-graph= resolves Module/Feature dependencies, then
+=module-build-graph= projects source/build inputs and their guards. It is not
+the business execution graph. The underlying =module-closure= already marks
+each module key before traversing its imports using a visited table. The
+selected-publication index also reuses each publication within the candidate.
+There is no evidence here that replacing DFS with another traversal algorithm
+alone removes the 14,267 reader-guard reads. Separate list scans and per-role
+input lookups still require a complexity audit, but must not be presented as
+the measured source-I/O cause without a matching receipt.
+
+The installed Gerbil source was inspected, without changing it:
+
+- =gerbil/runtime/loader.ss=, =load-module=: process-local runtime lookup,
+  loading/error states, mutex/condition-variable coordination and reuse of an
+  already loaded module. In this installed version reload is a separate
+  =reload-module!= procedure; do not infer its signature from another release.
+- =gerbil/expander/module.ss=, =import-module= / =core-eval-module=: runtime
+  expansion contexts and memoized module evaluation. Import also supplies
+  lexical and macro-phase bindings; =load-module= alone does not.
+- =gerbil/runtime/init.ss=, =__eval-import=: runtime per-context import state
+  and evaluation coordination. Yuanxu must not implement another runtime
+  ready/loading registry.
+
+The source version is the installed
+=0.19.20261009110849.1cfb032.patch618d76f9eb72= Gerbil. Current Yuanxu
+=reader.ss= already delegates imports to the captured runtime importer and
+evaluation to =eval-syntax= / =eval-module=. The remaining cost is not evidence
+that Yuanxu wrote the whole runtime loader again. Its outer layer does create
+fresh private wrapper filenames/packages, expansion contexts and guarded
+dependency projections. Runtime caching is scoped to those actual identities;
+replacing one call with =load-module= cannot merge distinct wrappers safely.
+
+The ownership target is therefore:
+
+| Responsibility | Existing owner to retain |
+|----------------+--------------------------|
+| Lexical/macro imports and expansion identity | Gerbil expander |
+| Compilation and incremental outputs | public =std/make= |
+| Compiled runtime loading and loaded-state coordination | Gerbil loader |
+| Selected Module/Feature requirements and role injection | Yuanxu selection and hygienic role lowering |
+| Derived configuration values and receiver-local structural reuse | POO |
+| Source association, independent policy calls and final currentness | existing Core publication/admission protocol |
+
+Before changing the reader, compare its interpreted and compiled role paths.
+Today =preparation.ss= emits deferred role bindings in
+=deferred-reader-forms=, but =compiler-forms= still imports its role list.
+Eagerly loading that compiled interface could initialize roles which the
+source reader leaves cold. This asymmetry is a concrete prerequisite for a
+runtime compiled-consumption refactor, rather than permission to load all roles
+or silently bypass the authoring/currentness checks. =load-module= loads and
+initializes code; it is not an inert metadata discovery API.
+
+No loading semantic was changed in this attribution pass. Reusing official
+loading requires preserving actual artifact/module identity, hygienic bindings,
+role demand and source generation. An already-loaded flag cannot establish
+currentness, completeness of two contributions or applicability of a cached
+parent plan to a final child. No cache protocol or larger timeout was added.
+
+** Unified role demand on the current PR baseline
+
+The implementation was integrated onto existing PR #19 at
+=7251473b3da157ddbcbbf4a41bc2b7e0ad0fbafc=. The twelve upstream commits were
+retained, including exact runtime-context ownership, selected compiler-source
+association, package compiler options and cross-Suite support sharing. Rebase
+reported the existing branch up to date after integration. Other working-tree
+changes were preserved in recoverable Git snapshots, not overwritten.
+
+The runtime-role projection now recognizes POO =define-type= declarations.
+It does not interpret Type definitions as a metadata purity assertion: real
+role initialization and Contract admission still run at their existing demand
+and policy boundaries. Both source and compiled interfaces use
+=include-deferred-declaration= and POO role slots. The source resolver
+keeps its admitted runtime contexts and source guards. The compiled resolver
+uses Gerbil's actual module identity and public APIs:
+
+#+begin_src scheme
+(def (module-import-role-values path names)
+  (def context (import-module path))
+  (load-module (symbol->string (expander-context-id context)))
+  (parameterize ((current-expander-context context))
+    (module-role-values names)))
+#+end_src
+
+Import acquires lexical/export metadata. =load-module= owns compiled-code
+initialization and loaded-state coordination. In particular, a source context
+left by runtime Make is not evaluated again merely to obtain a role's values.
+The helper has no loaded-state table, artifact cache or admission conclusion.
+The existing macro accepts the compiled resolver expression hygienically;
+its private bindings and original declaration locations remain under Gerbil's
+syntax machinery. Source forms requiring their actual macro/initialization
+phases keep those runtime phases; they are not relabeled as closed runtime data.
+
+Compiled interfaces carry =for-template= imports of the role files. This is
+Gerbil's existing phase-minus-one import, not another dependency manifest.
+It retains runtime Make dependency/timestamp edges without introducing a
+phase-zero role initializer into interface loading. The compiler-input owner
+also recognizes the actual generated target path, so relative template imports
+pass the same selected-input admission and identity checks as original paths.
+Source/build projection remains the owner of temporary compile frames; ordinary
+compiled-role consumption creates no new wrapper directory or expansion top
+context. The guarded source reader has not been removed or replaced by a new
+runtime loader.
+
+The public name is =std-make-spec=. The per-demand input declaration uses that
+same spelling; its optional value refines only actually selected support
+targets. The prepared package's internal grouped view is =std-make-specs=.
+There is no parallel public runtime-build vocabulary or compatibility alias.
+The test-source owner retains package options and the actual compiler closure;
+the Suite's own currentness remains independently checked. A corrupt retained
+approval raises instead of silently invoking Make to repair or hide it.
+
+The AOT controls run inside the already heap-fenced official Harness. They
+invoke public =std/make= through the existing =.compile= issuance boundary,
+then import the produced =.ssi= and use public =load-module= in that same VM.
+No extra interpreter command, copied heap argument, consumer process or Builder
+is declared in the test. An unused role contains a failing initializer; Config
+appends to an initializer marker. Runtime loading leaves both cold until demand,
+Config records exactly one initialization, and repeated loads preserve its
+value. Editing Config source then refuses the old projection even though the
+already loaded value remains structurally cached. Runtime Type/Contract roles
+are exercised, rather than only parser strings or an old predicate wrapper.
+
+The original materialized-interface Case also now compiles the real explicitly
+selected nonempty Graph. Merely preparing an owner in an auto namespace does
+not select it for build: an initial empty-Graph fixture exposed that distinction
+and was corrected, without bypassing selection. Its cleanup now delegates to
+standard =clear-temporary-file!=, as the existing directory Fixture does;
+signed hidden files must not survive a hand-written visible-file traversal.
+The failed attempts are retained as local artifacts, never committed raw logs.
+
+The final observation pair used frozen implementation sources, the same two
+Make workers and the unchanged default =just test-file= resource limits. A fresh
+private Gerbil prefix supplied an empty support-product/approval namespace and
+reused the exact existing package dependencies; no Gerbil or shared cache was
+deleted. Both invocations used the installed Gerbil and POO revision
+=e281ad2e33784cfb9951c684b6be78bd2f4b7fca=. The explicit library path keeps compiled
+dependencies first and includes this package's source root for normal runtime
+symbol imports, matching Gerbil package initialization.
+
+| Same-source invocation | Wall / user / system (s) | Compile count | Preparation (s) | Harness (s) |
+|------------------------+--------------------------+---------------+-----------------+-------------|
+| Cold support products, fresh selection | 48.75 / 41.31 / 6.61 | 2 | 9.666 | 26.288 |
+| New process, retained support, fresh selection | 40.58 / 33.51 / 5.51 | 0 | 1.217 | 26.623 |
+
+Both complete eleven Gitea/PostgreSQL Cases and all three completion markers.
+The warm run reports =reused=#t= and =make-seconds=0=. These are support-product
+and fresh-Graph measurements, not a whole-VM cold-cache experiment. Current
+exclusive cold Graph source reads total 16,972; the earlier 16,830 receipt is
+from a different snapshot. There is no demonstrated reduction of cold Graph
+source I/O or complete Harness latency. The structural/phase correction must
+not be advertised as closure of that remaining performance problem.
+
+Focused final controls additionally qualified Type AOT demand and
+source-change refusal (20.78 s), package compiler declarations and cross-Suite
+sharing (43.07 s), and the production selected-Graph/std-make-spec adapter
+(29.55 s). The temporary validation prefix initially lacked the current package
+source search path; the runtime symbol-import failure was retained, then the
+environment was corrected rather than adding a Loader special case. Source
+and artifact currentness, independent policy calls, both requirements and
+cached-parent/final-child isolation remain separate executable obligations.
+Full CI, a clean full-library rebuild and the scale gate are not implied by
+these focused results.
+
+* Original integration boundary
+
+** Root-package CI repair
+
+Removing =t/gerbil.pkg= remains the intended package architecture. The default
+test entry now exposes the actual package source root after compiled support
+and library paths. Official runtime symbol resolution can therefore locate
+=:yuanxu/t/...= and generated support without a nested package or a parallel
+resolver. Both source and compiled-role controls keep the same role inventory:
+the source-only control uses the existing guarded reader, while =std/make=
+qualifies compiler frames and the runtime compiled-role loader.
+
+Explicit =GERBIL_LOADPATH= overlays precede the host library fallback. The
+isolated source-tail gateway depends on that runtime lookup order: putting the
+host first silently selects its dispatcher instead of the compiled isolation
+dispatcher. Its refusal controls exposed this ordering error in Linux CI;
+the repair changes lookup precedence, not the assertions or admission policy.
+The maintained =test-discovered-file= gateway completed all seven Cases with
+=MODULE-OK=, =HARNESS-OK= and final =OK= after that repair. Its local 156.44 s
+includes compiling the isolated dispatcher and its source import closure;
+it is not an atomic Case or warm-path benchmark. Remote CI remains a separate
+qualification boundary.
+
+Cold-source Fixtures preserve installed dependency namespaces, excluding Core's
+own namespaces. They do not replace every dependency artifact with a leaf
+symlink or choose copying rules by artifact suffix. Compiled interfaces are
+still real compiler inputs and remain covered by currentness checks; runtime
+code identity and dependency layout are preserved without editing any product.
+
+The JSON Schema adapter now applies its Schema Type through the existing
+=value-contract= protocol instead of returning private backend diagnostics
+from a custom classifier. Runtime admission returns rejected evidence, while
+admitted Function invocations retain their TypeError boundary. Lexical
+=value-type= binding also keeps a derived Contract's effective Type independent
+of a previously cached parent. Ownership controls use real Contracts and POO
+diagnostics and explicitly reject the old malformed values.
+
+These repairs retain the 2 GiB heap, independent source checks, compilation
+issuance and the existing watchdogs. Focused passes are recorded separately
+from remote CI; a successful platform build is not a successful complete suite.
+The root-source fallback was qualified without injecting a source root through
+the caller's =GERBIL_LOADPATH=: shared test inputs (59.75 s), deferred roles
+(29.36 s), demanded-role projection (30.89 s), the closed source tail (37.89 s)
+and root collection (24.16 s) completed with all Harness markers. Further
+controls passed runtime evidence ownership (8.92 s), optional-printer laziness
+(13.43 s), source-role projection (19.68 s), the final Schema/derived-Type
+bootstrap (16.58 s) and the module's own Schema tests (11.04 s).
+The composite source-build/compiled-import integration completed in 134.65 s;
+this includes building the isolated Core, compiling import consumers and running
+the selected module tests. It is not an atomic Case performance receipt.
+
+** Local prepared-source checks in cold Graph construction
+
+The remaining cold Graph work was traced through =.for-export=, selected-Graph
+resolution, publication preparation and compiler-input admission. Source checks
+on opposite sides of a policy, initializer, import or independent admission are
+not duplicate approvals. They remain independent, including the return guard.
+The POO Graph cache retains structural values and their read dependencies;
+runtime =std/make= decides compilation. Neither retains an admission conclusion.
+
+One smaller duplication is inside a prepared source's local byte/package guard:
+the positive package entry explicitly probes regular-file status, then its byte
+reader probes the same status again. The guard now uses the existing bounded
+source-read window for that local segment only:
+
+#+begin_src scheme
+(def (current!)
+  (context-current!)
+  (call-with-module-source-read-cache
+    (lambda ()
+      (unless (equal? text (module-source-read source-path))
+        (error "stale prepared build source" source-path 'source-bytes-changed))
+      (unless (package-snapshot-current? packages)
+        (error "stale prepared build source" source-path 'package-metadata-changed))))
+  (context-current!))
+#+end_src
+
+Both owning Context calls retain their order and remain outside this newly
+bounded segment. No window is extended over their callbacks. An independent
+guard opens a fresh window unless it is already inside the caller's existing
+pure check. No result survives that window, and no guard is removed.
+
+The existing =module-build-role-test= suite compares an unwindowed local-probe
+reference with the actual production prepared-source guard. Across two calls,
+the reference performs four byte reads and six physical stats; the production
+guard performs four byte reads and four stats, with all four Context calls.
+Changing source bytes in the owning callback refuses before the second Context
+call. Changing package metadata also refuses. This is a local probe reduction,
+not evidence that the large cold Graph source-read count has been solved.
+
+The resulting frozen-source pair used another fresh private support prefix,
+the same installed Gerbil/POO revision, two Make workers and the default bounded
+=just test-file t/gitea-postgresql-publication-test.ss true= entry. Both runs
+completed eleven real Cases with =MODULE-OK=, =HARNESS-OK= and final =OK=.
+
+| Invocation | Wall / user / system (s) | Support compilations | Preparation (s) | Harness (s) | Exclusive cold Graph reads |
+|------------+--------------------------+----------------------+-----------------+-------------+----------------------------|
+| Fresh support namespace, fresh process | 49.13 / 41.99 / 6.81 | 2 | 9.996 | 26.870 | 16,972 |
+| Retained support, new process | 40.48 / 33.41 / 5.63 | 0 | 1.312 | 26.730 | 16,972 |
+
+The second run reports =reused=#t= and =make-seconds=0=. This confirms runtime
+Make hot reuse, independent fresh selection and the original rejection controls.
+The read totals sum the exclusive Graph-attribution rows across the eleven
+Cases; they are not a claim that one individual Graph performs 16,972 reads.
+It does not demonstrate an overall speedup over the preceding 48.75/40.58 pair:
+the graph byte-read count is unchanged. The remaining cold construction and
+Harness work is explicitly open; deleting independent guards to improve these
+numbers would violate the qualification boundary. The local reference/production
+probe assertions passed through the complete build-role suite (23.72 s).
+The final source-observation suite passed all six Cases (37.89 s), including
+independent source windows, nested collection and cached-slot source refusal.
+The installed =std/make= incrementality control also passed (36.07 s): three
+cold compilations, zero hot compilations, two affected compilations after one
+source edit, the unrelated artifact unchanged, and zero on the next hot call.
+
+Final focused controls before this local change also passed the real eleven-Case
+Gitea/PostgreSQL publication suite (36.92 s), publication admission (10.57 s),
+source observation (18.19 s), source/AOT publication (41.24 s), service Fixture
+publication (26.77 s), runtime build roles (19.24 s) and Contract diagnostics
+(8.40 s). These gates do not replace complete CI or the scale qualification.
+
+This implements the =yuanxu.init.exports.tests= path in
+[[file:../13.17-init-exports-and-gerbil-consumers.org][13.17]]. The existing test execution owner consumes a demanded runtime Make
+specification through Core's existing artifact-issuance boundary, then invokes
+the existing TestingScript/Ops/runtime Harness path. No Builder object, build
+command dispatcher, worker source file, dependency resolver or result cache is
+added. The executable owners are linked below; the qualification section distinguishes prior upstream controls from integration results.
+
+The parent process retains the SAME init publication, selection, demanded
+source and issuance authority throughout both phases. A compiler subprocess
+receives runtime Make data; it neither reloads init nor issues its own approval.

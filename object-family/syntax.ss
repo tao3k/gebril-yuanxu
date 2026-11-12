@@ -3,10 +3,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Boundary: generates the approved POO object-family predicate and accessor surface.
-;;; Invariant: expansion produces ordinary POO-native bindings with no runtime registry.
+;;; Invariant: expansion produces ordinary POO bindings with no runtime registry.
 (export defpoo-object-family)
 
-(import (only-in :clan/poo/object .o .ref .slot? object?))
+(import (runtime: :clan/poo/object))
 
 ;; defpoo-object-family
 ;;   : (-> Identifier Identifier Clauses ObjectFamilyBindings)
@@ -48,8 +48,8 @@
      (def prototype-name
        (.o (marker-slot #t)))
      (def (constructor-name argument-name ...)
-       (.o (:: @ prototype-name)
-           (slot-name argument-name) ...))
+       (let ((parent prototype-name) (slot-name argument-name) ...)
+         (.o (:: @ parent) (slot-name) ...)))
      (def (predicate-name value)
        (and (object? value)
             (.slot? value 'marker-slot)
@@ -73,8 +73,8 @@
        (.o (marker-slot #t)
            (prototype-slot prototype-value) ...))
      (def (constructor-name argument-name ...)
-       (.o (:: @ prototype-name)
-           (slot-name argument-name) ...))
+       (let ((parent prototype-name) (slot-name argument-name) ...)
+         (.o (:: @ parent) (slot-name) ...)))
      (def (predicate-name value)
        (and (object? value)
             (.slot? value 'marker-slot)

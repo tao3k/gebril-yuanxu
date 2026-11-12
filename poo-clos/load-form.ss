@@ -3,7 +3,7 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-;;; Two-phase functional load forms for POO-native CLOS objects.
+;;; Two-phase functional load forms for POO CLOS objects.
 ;;;
 ;;; Common Lisp hands creation and initialization forms to the file compiler,
 ;;; which substitutes reconstructed objects for literal source objects.  The
@@ -11,7 +11,7 @@
 ;;; raw data DSL: a creation form is a thunk, and an initialization form is a
 ;;; procedure accepting an optional reference resolver.
 
-(import (only-in :clan/poo/object .ref)
+(import (runtime: :clan/poo/object)
         (only-in :std/list/list duplicates)
         (only-in :std/list/list every filter filter-map)
         "types.ss" "objects.ss" "classes.ss" "lifecycle.ss"

@@ -1,0 +1,30 @@
+#+TITLE: Core architecture diagrams
+#+LANGUAGE: en
+
+Core owns =architecture.ss=: POO Diagram, Node and Relation inputs. The host's
+published D2 Module owns ASCENT endpoint validation, reachability, visual rows
+and D2 serialization. Core copies no rules, graph algorithm or TypeScript toolchain.
+The host driver imports these facts; Core has no import of the host package.
+
+* Generate through the existing host entrypoints
+
+Run from the Agentic AI Lab workspace. The existing =d2-export= driver accepts a
+source consumer; its default remains the maintained Context example.
+
+#+begin_src sh
+just d2-export core/dev/d2/20-module-loading dev/d2/yuanxu-architecture.ss
+bun dev/d2/render.ts --title 'Publication guard boundaries' --out /private/tmp/yuanxu-core-d2/publication-boundaries core/dev/d2/20-module-loading/20.24-publication-boundaries.d2
+bun dev/d2/render.ts --title 'Core assurance ownership' --out /private/tmp/yuanxu-core-d2/assurance-ownership core/dev/d2/20-module-loading/20.24-assurance-ownership.d2
+cp /private/tmp/yuanxu-core-d2/publication-boundaries.svg core/dev/d2/20-module-loading/20.24-publication-boundaries.svg
+cp /private/tmp/yuanxu-core-d2/assurance-ownership.svg core/dev/d2/20-module-loading/20.24-assurance-ownership.svg
+#+end_src
+
+D2 files are generated outputs of =infer= then =source=, not a second authored
+graph. The consumer checks the init source context before writing. The renderer
+checks its captured inputs and minimum text size. Inspect its PNG preview before
+replacing SVGs; PNG/HTML/receipts stay local. Org embeds SVG file links directly.
+
+The POO architecture inputs are authored design facts, not automatic extraction
+from Scheme implementation or measured performance. ASCENT derives which declared
+nodes and relations are visible; a successful render does not prove those facts
+or imply that the performance problem is solved.

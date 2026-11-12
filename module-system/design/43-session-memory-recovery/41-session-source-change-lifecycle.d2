@@ -1,0 +1,23 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+direction: down
+classes: {
+  state: {style: {fill: "#E8F3F0"; stroke: "#297962"; border-radius: 12}}
+  gate: {shape: diamond; style: {fill: "#FFF1D6"; stroke: "#A8782D"}}
+  refuse: {style: {fill: "#FBECEC"; stroke: "#AB4646"; border-radius: 9}}
+  edge: {style: {stroke: "#297962"; stroke-width: 2}}
+}
+candidate: "CANDIDATE\nissued identity only" {class: state}
+change: "Current change authority?\nexact old / target\nreceipt + captured cut" {class: gate}
+selected: "SELECTED · no lease\nnew epoch / local cut\nconsumption not yet admitted" {class: state}
+fresh: "FRESH\nauthenticated newer snapshot\ncurrent Query / review / permission" {class: state}
+retired: "RETIRED\nmanager pin retained\nno observation or lease" {class: state}
+refused: "REFUSE publication\nno state change\nstale pending obligation reopens" {class: refuse}
+candidate -> change: replace / rebind proposal
+retired -> change: fresh rebind proposal
+change -> selected: accepted {class: edge}
+change -> refused: "forged / expired / stale\nor missing grant" {style.stroke: "#AB4646"}
+selected -> fresh: "newer external generation\nseparate sync approval + review" {class: edge}
+fresh -> selected: "lease expiry\nreopen consumption obligation"
+selected -> retired: governed retire / replace
+fresh -> retired: governed retire / replace

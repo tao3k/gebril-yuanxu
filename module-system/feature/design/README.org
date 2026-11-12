@@ -1,0 +1,96 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Module System Feature Ownership and Integration Boundary
+#+date: [2026-10-16]
+#+property: STATUS implemented
+
+* Shared mechanism and product adapter
+
+Feature is a component of Yuanxu's Module System. Its public Gerbil module is
+=:yuanxu/module-system/feature/interface=. Public declarations use POO objects
+and the existing bounded defrules forms.
+
+| Owner | Contents |
+|-------+----------|
+| [[file:../interface.ss][Module System Feature]] | descriptors, selections, dependency/conflict resolution, manifests, composition |
+| [[file:../domain-case/interface.ss][Core DomainCase]] | generic closure, Contract projection, instance overlay and method/projection binding |
+| Core capability/policy/adapter binding | provider identity/version matching, requirements and inert handoff values |
+| Core Bundle v1 | lowering, validated foreign arena images, DomainCase projection and explicit byte-file writing |
+| [[file:../../../../modules/workflow/scenario/bundle-v1-projection.ss][Product Scenario adapter]] | Scenario -> execution Plan; node identities, guard policy, graph edges and environment handoff |
+
+** Selected Module Features
+
+Module System owns Feature selection. A module's Interface declares its
+Feature descriptors. The selected graph records each enabled Feature with
+its owning Module ID, dependencies and optional native Interface entry.
+The resolver orders the selected contributions, then Module System checks
+the core and selected Feature Contracts on the final receiver. Withdrawal
+validates the Feature name without collecting its Interface or forcing its
+contribution.
+
+The build projection uses the enabled Feature's Interface as a source
+root. Gerbil follows that root's native imports, including imports made
+solely to re-export bindings. A product facade that re-exports multiple
+capabilities makes all their imports part of the selected build. A
+separately selectable capability needs its own Feature declaration and
+dependency edges. Core cannot infer that a Gerbil export is optional from
+whether a particular consumer happened to read it. The selected build and
+clean use the same target projection.
+
+The adapter reference identifies a downstream integration, not a Core import.
+Core never imports its Plan types or Scenario syntax. Wire IDs, Bundle layout,
+source-lock IDs and feature resolution precedence are unchanged.
+
+The extracted [[file:../../../composition/roles.ss][runtime role algorithms]] retain the existing constant-slot fast lane
+and runtime .mix fallback semantics. Computed/self/super slots are not silently
+flattened into constants. Product flow/task/runtime roles remain product objects.
+[[file:../../../utilities/functional.ss][Pure functions]] and [[file:../../../object-family/role-syntax.ss][existing role-object syntax]] have a single shared owner.
+The public function names are retained as definitions at that owner, not aliases
+from deleted product modules.
+
+* Core versus Feature
+
+A selected Module's mandatory baseline is a Module System responsibility.
+The Feature component resolves optional descriptors and projects their
+contributions.
+Feature selection uses the existing init and publication path described in
+[[file:../../design/03-publication-selection.org][the publication and selection protocol]].
+The linker calls [[file:../scope.ss][scope composition]] internally. Downstream
+Gerbil imports use =:yuanxu/module-system/feature/interface= and module authors
+declare Features in their owning Module's Interface.
+
+* Product source organization
+
+Agentic AI Lab's former src tree is removed. Product workflow/runtime policy, authoring
+conventions, UI, Scenario planning and qualification now live in named modules.
+Shared Graph primitives, JSON Schema Contracts, type-fact projection and pure
+utilities moved into Core with their actual dependencies. No arbitrary all-src
+copy was put into Core and no Core -> product import is introduced.
+
+The maintained product source declaration is root =init.ss=, beside =modules/=.
+A contributing package may instead use =modules/init.ss=. These are alternative
+source locations, not two copies of one configuration. The future source adapter
+must take the declared init source explicitly and resolve its module root from
+that declaration; it must not infer an extra object layer from a file location.
+Only one product init object is currently declared. It performs no discovery or
+module initialization. The existing load-modules collection API is unchanged.
+
+* Original source migration validation
+
+The Core-only source environment contains Core and the immutable gerbil-poo
+099b381 dependency, with no Agentic AI Lab namespace. All 17 relocated Feature/DomainCase/
+functional/overlay suites pass there. A separate fresh runtime build of the full
+Core build graph also completes. Installed product .ssi files were not used as
+an import fallback; incompatible older runtime artifacts were excluded.
+
+Product Plan/Scenario and Funflow tests are separate consumer controls. The
+existing gxtest entry could not load interpreted test modules on this installed
+runtime, so the local source controls use runtime std/test/base test-suite! and
+fail the process on any failed TestResult. This is test execution through the
+existing test library, not a production harness or a new configuration DSL.
+
+The pending published-Module role shell is still a coordinated admission change,
+not a reason to add empty types/objects/configs files. Natural exit, accepted
+Contract evidence and runtime effects remain separate from lazy declaration.
+No Loader adapter or performance claim is added by this source migration.

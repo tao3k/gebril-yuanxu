@@ -1,0 +1,259 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Reader expansion and retained read support
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+* Native projection attribution and qualification
+
+The separated baseline kept one alias in the sparse case and 10000 in the
+dense case. The sparse phase probe spent 14.25 ms enumerating names,
+59.03 ms in metadata getters, and 0.003 ms building its alias index.
+The dense phase probe spent 13.26 ms enumerating, 22.48 ms in metadata
+getters, 46.57 ms authorizing and indexing permitted targets, 78.78 ms
+in the separate alias index, and 22.93 ms constructing the POO object.
+Phase instrumentation adds work and the host load varied.
+
+The candidate replaces the separate alias tree with direct native slot
+specifications, and uses a construction-local symbol hash for the
+permission check. In the dense phase probe, direct slot-spec construction
+took 6.79 ms and POO construction 29.45 ms. Every run retained 10000
+metadata reads and one provider read. Both implementations completed
+the namespace suite and preserved the existing identity and visibility
+controls. In two interleaved runs per implementation, uninstrumented
+dense CPU time was 240–274 ms before and 127–136 ms after. The native VM
+allocation count was 193–195 MB before and about 102 MB after. Sparse CPU
+was 50–58 ms before and 49 ms after, with VM allocation essentially
+unchanged. These receipts establish a dense construction CPU improvement.
+Wall time varied with host contention. Most samples of 10000 hot slot
+reads were near 2.5 ms, with one 68 ms candidate sample.
+
+The thousand-owner independent phase case completed first branch acquisition
+in 1.073 s and name enumeration in 1.762 ms. Declaration admission was
+interrupted after 175.069 s and 28.48 CPU seconds by the unchanged 180 s
+Case budget. Scope construction did not start. The independent cold business
+expression was interrupted after 177.123 s and 69.45 CPU seconds by that
+same Case budget. Both cases remain unqualified. No completed scope time
+or returned business value is inferred from either partial run.
+
+* Reader work on the first business demand
+
+The interrupted thousand-owner phase run entered 229 candidate reads and
+recorded 1826 metadata replays and about 1.79 million visits. Its inclusive
+Interface import span was about 104 seconds, metadata replay about 32
+seconds, and reader currentness about 30 seconds. These spans may overlap
+and the host was contended. The numbers guide attribution and do not
+establish a completed latency or an exclusive CPU breakdown.
+
+The Reader now passes its original joined preparation/admission root spine
+to Link. POO's replay topology is keyed by the actual spine. Copying an
+equal spine loses that reuse opportunity. This shares structure and never
+stores a successful currentness verdict. Preparation replay, candidate
+checkpoint replay and candidate return replay are separately labeled.
+Open hooks, source observations, and fresh return checks preserve their
+original order and scope. The existing Lean joined-support law applies
+to the same ordered roots. Any larger reduction in replay must establish
+which repeated reads lie within one effect-free interval, including
+Gerbil expansion, author callbacks, and continuation reentry.
+
+The native 16/64-owner attribution suite completed. The 64-owner run
+measured 27.19 s inclusive declaration admission and 4.18 s scope
+demand after admission. It counted 64 preparation replays, 384 candidate
+checkpoint replays, and 64 candidate return replays. Their inclusive
+spans were 0.65 s, 3.61 s, and 0.73 s respectively. The effect-support
+suite also completed. This identifies the six recurring checkpoints per
+candidate in this fixture, but does not establish that any of them can
+be removed. The next comparison needs to authenticate identical read
+support within a proven effect-free interval and preserve the old
+diagnostic order when that interval is open.
+
+* Six native candidate replay sites
+
+The large-file location guard compares equal-length decoded character ranges
+through Gambit's bounded =string-prefix?=. Both the exact character count at
+EOF and later decoder or I/O errors still determine the result. The retained
+input, buffer, port, observation window and independent caller checks remain
+the same. =SelectionReplay.native_decoded_ranges_keep_eof_and_faults= covers
+the range substitution over the original read transcript, and the source
+admission test exercises the large guard with Unicode, a changed character
+after the first range, and both shorter and longer input.
+
+A single process ran the two compiled loops in interleaved blocks, with
+480 fresh reads per lane of the same 138,988-character explicit Init. The
+original loop took 223 ms CPU and 232 ms wall. The native range operation
+took 220 ms CPU and 230 ms wall. This isolates the comparison substitution
+and does not establish a capacity improvement. In the separate 1,000-owner
+runtime graph, five checkpoints already account for 64,940,000 characters
+of repeated Init reads. They still need their own boundary analysis before
+any source observation can be shared.
+
+The current POO implementation indexes replay topology by a weak, identity
+keyed root spine. A warm hit checks the root signature and token issuance.
+The replay then checks the actual native read route, receiver revision,
+instance and slot value, and checks them again on return. A hit can skip
+building the traversal, but does not grant freshness. The weak topology
+owner can be collected even when the next invocation has an equal spine.
+
+| Candidate site | Work boundary | 64-owner calls | Inclusive seconds |
+|----------------+---------------+----------------+-------------------|
+| declaration-before | Source entry before Interface setup | 64 | 0.641 |
+| declaration-inputs | Prepared input enrolled before wrapper expansion | 64 | 0.426 |
+| role-entry | Entry to the demanded role resolver | 64 | 0.498 |
+| role-return | Native role evaluation and role value projection returned | 64 | 0.393 |
+| declaration-after | Interface expansion and evaluation returned | 64 | 0.816 |
+| candidate-admitted | Publication Contract returned | 64 | 0.734 |
+
+The site labels do not change source phases, observer order or the
+preparation and candidate-return replays that sit outside this table.
+The 16/64 attribution and Reader effect-support controls passed. The
+six-site count is for the current fixture, not a constant for every
+Interface. =replay_share_of_unchanged_support= proves when equal live
+observations over the complete checked support allow one validation.
+=replay_cannot_share_across_changed_read= provides the changed-read
+counterexample. Matching an index entry alone is insufficient. None of
+the six production checks were collapsed in this pass.
+
+The independent thousand-owner cold business demand hit the unchanged
+180-second Case budget. It measured 177.502 seconds inside the expression
+and 96.878 CPU seconds, without returning a business value. The per-site
+attribution came from the separate 64-owner run. No completed thousand
+scope or replay speedup is inferred from the timeout.
+
+* Fixed imports and the private Gerbil wrapper
+
+The exact local 4,257-owner partial capacity receipt records 31.750 seconds
+inside native wrapper expansion and 0.620 seconds in Interface rewriting.
+Replacing the syntax rewrite cannot remove the rest of the native expansion
+span. Both measurements are inclusive.
+
+The native expansion probe used the same prepared Interface and unique
+wrapper Contexts. One lane kept the ordinary explicit imports. The second
+placed their fixed bindings in one Gerbil prelude. The sampled resolved
+binding IDs matched at phases zero through two. Direct wrapper imports
+changed from three to zero. Each lane expanded two interleaved 240-owner
+blocks after warmup. The explicit lane took 2.190 seconds user CPU and
+2.368 seconds wall. The prelude lane took 2.173 seconds user CPU and
+2.320 seconds wall. The ordering of the faster lane reversed between
+blocks. This probe covers native expansion with the same source and no
+business scope evaluation.
+
+The reader uses explicit imports so each wrapper carries its own import
+edges. Compare those edges separately from resolved binding IDs.
+=PublicationReads.shared_wrapper_bindings_preserve_resolution= states the
+lookup premise, including phase and local precedence.
+=PublicationReads.same_wrapper_binding_does_not_preserve_owner_import=
+separates that premise from native import custody.
+=just measure-thousand-eval-stages PREFIX= uses the existing thousand-owner
+fixture and native stage accounting with no source observer. Its detailed
+CPU counters are opt-in. The required CI case keeps its existing mode.
+
+The first detailed run returned the selected Graph and the business value.
+Declaration admission took 39.279 seconds wall and 38.289 seconds CPU.
+These nested spans must not be added to obtain the total.
+
+| Native stage within declaration admission | Calls | Wall s | CPU s |
+|-------------------------------------------+-------+--------+-------|
+| Preparation                               |  1000 |  7.079 | 7.041 |
+| Wrapper write                             |  1000 |  0.282 | 0.216 |
+| Wrapper expansion                         |  1000 |  6.451 | 6.425 |
+| Interface source read inside expansion    |  1000 |  0.089 | 0.089 |
+| Interface rewrite inside expansion        |  1000 |  0.067 | 0.067 |
+| Publication value admission               |  1000 |  8.207 | 7.949 |
+| Admission evidence check                  |  1000 |  0.188 | 0.187 |
+| Native POO metadata replay                |  6004 | 14.000 | 13.927 |
+
+Replay counted 5,958,069 native preflight visits. The separate Graph
+currentness phase took 0.503 seconds wall and 0.501 seconds CPU. Scope
+demand after admission took 7.328 seconds wall and 7.316 seconds CPU.
+The default wall-only case passed in a separate process with 34.965 seconds
+in declaration admission. Use the detailed run for stage attribution and
+the default case for ordinary qualification.
+
+* Retained read frontier
+
+Lowering immediate literals and symbols under the resolved Gerbil =quote=
+to native constant SlotSpecs passed the private-wrapper and deferred-role
+checks. The 256-owner live sample changed from 265.37 MB to 265.69 MB.
+The emitter keeps the original lowering. The literal and empty-read
+premises remain modeled by
+=PublicationReads.closed_literal_slot_preserves_owner_read=.
+
+The terminal 256-owner cut first removed checkpoints, evidence, derived
+root caches and Reader tables. With the literal candidate installed,
+removing either =core= or =features= first released about 22 KB. Removing
+the other specification released 32.23 MB in both orders. In the restored
+emitter, both cuts released about 21 KB each and the remaining identity
+specification held the graph until the last cut, which released 31.99 MB.
+The two actual thunk closures shared a direct two-element vector
+containing a 21-cell closure. The measured bytes belong to a shared
+reachable graph, so the later marginal cut cannot be charged exclusively
+to either slot. =PublicationReads.frame_environment_survives_either_slot=
+models the two edges. Keep the role resolver's owner and all lazy
+computations while isolating the environment each thunk needs.
+
+With Reader tables still live, a terminal cut of the entire resolver edge
+released 3.07 MB for 256 owners. The next cut of the Reader tables released
+17.20 MB. The remaining specifications still released 12.96 MB at their
+last cut. These sequential marginals distinguish the resolver's exclusive
+cost from storage reachable through the tables or interpreter procedures.
+
+The direct private wrapper passes its actual resolver to the native frame
+constructor. Only the =core= SlotSpec retains it. Its Gerbil body receives
+that same resolver and the actual slot receiver when demanded. The other
+fields retain their existing computations. The compiled and open wrapper
+forms keep their lexical resolver binding.
+=PublicationReads.private_core_slot_preserves_owner_and_resolver= and
+=private_core_slot_keeps_independent_effect_refusal= model the handoff.
+The deferred-reader regression changes the ambient resolver after publication
+and still demands the original owner's role.
+
+In the stock assembly comparison, each lane imported 120 fresh Gerbil
+wrapper modules and checked its own role resolver and deferred scope. In
+the same process, the original/shared/shared/original import CPU totals
+were 0.620, 0.067, 0.064, and 0.615 s. The corresponding import wall totals
+were 0.623, 0.067, 0.065, and 0.618 s. Writing the wrappers took 0.013–0.015 s
+per lane. Native evaluation took 0.043–0.044 s CPU for the original and
+about 0.0033 s for the shared assembly. The shared lane is a diagnostic
+implementation of one fixed fixture. It bypasses the original Interface
+rewrite and does not measure full source admission or currentness.
+
+For each demanded computation, the shared assembly may encode the ordered
+native reads but must supply the actual owner and captured resolver at
+invocation. Acquiring the role receiver, looking up an alias, and reading
+a dependency remain distinct operations. The recipe keeps each occurrence
+and the first refusal. After Gerbil expansion and again after an author
+callback, authenticate the live state at that boundary before delivering
+the result. Lean =PublicationReads.shared_stock_reads_preserve_owner_and_first_refusal=
+and =shared_stock_interface_refuses_mutation_at_each_effect= model this
+contract. The private Scheme emitter now lowers only this Gerbil-checked
+grammar to data for =stock-interface-publication=. The native helper creates
+fresh POO SlotSpecs per owner and invokes the actual role receiver on demand.
+The Reader accepts the same Context-bound delivery and keeps its existing
+currentness and admission checks. Compiled exports and open Interface syntax
+still use Gerbil's declaration expansion.
+
+An ordered role-path capture is equivalent only while the original path
+binding holds. In the alternating 256-owner role-check probe, captured
+paths took 0.289–0.308 s CPU per 2,048 checks, compared with 0.267–0.285 s
+for the original guard. An open observer also changed the SourceRef root
+while checking =types.ss=. The captured-path candidate admitted a later
+=objects.ss= check against the former root. The Reader keeps the original
+live path resolution. =PublicationReads.retargeted_role_cannot_reuse_prepared_path=
+and the candidate-stage control preserve the distinction.
+
+Once the live role path is resolved, the prepared text table returns
+its optional text in one lookup. The checker still reads current bytes
+for a present role and tests for a newly created file for an absent role.
+The table stores only strings, so an empty string remains distinct from
+absence. =PublicationReads.role_text_lookup_preserves_live_check= keeps
+the original source operation for either case.
+
+The 256-owner terminal heap probe released 1,717,904 bytes after replacing
+the private delayed-role slot and invalidating its attached state. This
+includes cache invalidation and gives no exclusive closure size. The
+64-owner read census found 704 records reachable only through the
+forwarded roots, eleven per owner, in addition to all 74,955 records
+reached by the two retained checkpoints. These measurements leave most of
+the observed per-owner heap growth unexplained.

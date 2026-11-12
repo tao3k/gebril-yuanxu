@@ -1,0 +1,200 @@
+#+title: 10.12 Composite Source Registration and Capture Authority
+#+language: en
+#+property: STATUS design-review
+
+* Ownership and observable behavior
+
+Keep three identities separate: a namespace/clone view, the allocation owning
+raw SlotSpecs, and a prepared receiver's immutable methods. None is a package
+revision or a new source digest. =yuanxu!=, Interface, Gerbil import and =.get=
+remain the user interface. These changes belong to POO's source preparation.
+
+An unchanged SlotSpec may be shared by source and clone. Reflecting it through
+the clone exposes the actual storage owner. Its later raw write changes NEW
+captures through both views, even when neither object revision advances.
+Already prepared methods retain their original captured payloads. Supported
+POO edits still use their existing invalidation rules; this is not permission
+to preserve stale values after an ordinary supported mutation.
+
+The native control also exercises repeated contributions to one key. Starting
+with =constant 1; sup + 2= yields 3. =.cc value: 10= replaces the FIRST native
+ordinal and yields 12, not 10. The later contribution still shares its original
+RawSpec. Changing that raw function to =sup + 5= yields 6/15 in fresh source/clone
+receivers while their prepared counterparts retain 3/12. Tree and compact
+policies agree. A key override is therefore not evidence of owner retirement.
+
+* One admission; exact local registration updates
+
+The source plan retains its ordered key/ordinal index and registers the actual
+raw-storage owners. Initial admission derives owner multiplicity in one fold.
+Do not build an effective-key set and infer raw ownership from it. C4 resolution
+and callable preflight remain separate from this raw-storage registration.
+
+For an actual first-ordinal replacement:
+
+1. Authenticate the expected source/view generation and exact selected ordinal.
+   Bind its key and old handle to that source cut. A payload handle's storage
+   index is distinct from its occurrence's view ordinal.
+2. Fork the existing persistent registration index, decrement the old storage
+   owner's count, and increment the new owner's count. Other counters stay
+   unchanged. Retire an edge only when its last occurrence disappears.
+3. Preserve every other ordinal and original RawSpec identity. Batch removal
+   and addition update only the actual removed/added buckets. The retained
+   catalog is not enumerated again by this operation.
+4. Publish the new program, registration and generation in one existing POO
+   publication view. Never edit an index still owned by an old snapshot.
+
+Counts are not provenance. A duplicated view ordinal can pass the multiplicity
+guard when two different contributions share one storage owner. The native
+issuer must authenticate distinct selected VIEW ordinals and their original
+contents; an old count or a caller's changed-owner list is insufficient.
+Bounds, constructor coverage and shared class/protocol metadata also remain
+actual checked facts. A private marker alone does not establish them.
+
+Native =prototype-map-put= already uses its first name/ordinal entry; the Lean
+list functions specify that operation rather than replacing it with a scan.
+POO's existing =%index-fork= / =%index-write!= support sparse persistent updates.
+[[https://github.com/tao3k/gerbil-poo/commit/48ae82f47bf03810363bbdab4f474d7e70df5555][The Scheme dependency change]] moves that single implementation from
+=generalized-graph.ss= to =support/index.ss=, below =object.ss=. Graph imports
+and reexports its established five operations; no second implementation or
+source cache is introduced. The underlying sparse tree still forks before
+writes, distinguishes missing from false, and retains projection callbacks
+as actual operations rather than caching their result. The existing Graph
+suite passes its local-update controls. A deliberately shared mutable fork
+fails both snapshot and SCC controls. This is a dependency-boundary change,
+not an implemented source capsule or a performance result.
+
+* Local fencing and pending admission
+
+Exposure revokes permission for NEW private capture through every view retaining
+the exposed storage owner. Another owner's views remain eligible. Source
+eligibility is not a parent dependency of an already captured method: do not
+clear old receiver methods merely because reflection exposed raw storage.
+Existing runtime value/read ownership stays with its receiver.
+
+On a view's structural edit, mark the edited consumer as an invalidation root
+even when its provider set stays equal. Merge any actually changed storage
+owners into those roots. =SourceViews.old_inverse_closure_exact= derives the
+row frame and applies POO's existing old-inverse theorem, including cycles.
+Unchanged support/ordinal mapping is required; unknown or unsupported support
+changes retain ordinary certification rather than assuming this premise.
+
+Capture the exact registered owner frontier in a staged admission's guard.
+An exposure during admission changes that guard and the existing
+=installChecked= rejects the pending result, even if the head did not change.
+Exposure outside the frontier preserves its stamp. Across Gerbil expansion
+and author callbacks, perform independent entry/return checks; no successful
+currentness verdict crosses that boundary.
+
+* Canonical evidence must own its contents
+
+The read issuer's structural names snapshot must be detached from BOTH the
+producer's mutable name cache and the public record. A native fault control
+changes both lists together; the previous implementation still authenticated
+the changed record because its alleged canonical list aliased the producer.
+=Object.NameCapture= proves that counterexample and the detached-snapshot
+refusal/frame laws. Native issuance must create its own private spine before
+creating the presentation. Restoring the presentation restores issuance;
+live receiver/route currentness remains a separate mandatory check.
+
+This applies to structural name evidence, not deep copying arbitrary business
+values or introducing a second result store. The existing weak issuer owns
+authentication. Do not add a source registry, cache or alternate evaluator.
+
+* Verification scope and remaining implementation
+
+=LeanPoo.Object.SourceViews= derives admission counts, replacement/batch frames,
+first-ordinal preservation, owner retirement, alias exposure, old-inverse reuse
+and pending-capture rejection. Its counterexamples reject key-only retirement
+and using counts as an ordinal certificate. =SourcePreparation.View= supplies
+the actual shared-owner exposure transition. These are source contracts;
+they do not assert that a source capsule already exists in Scheme.
+
+The native representation suite exercises real RawSpec sharing and duplicate
+contributions through both current backends. Existing =MetadataAllocation=
+Quint controls cover the bounded shared-authority/raw-write and old-cache
+distinctions; they do not prove multiplicity or the new source issuer. Keep
+those finite results distinct from the universal Lean laws and runtime gates.
+
+The next implementation must provide compiler-owned source custody, exact
+ordinal issuance and shared plan handoff without leaking raw storage through
+ordinary Gerbil MOP. Keep public reflection and stable RawSpec identities.
+Unknown caller-supplied sources retain full preparation. Borrow only genuine
+source records; do not invoke alleged authentication callbacks before their
+identity is checked by the existing issuer.
+
+The same change moves the existing live issuer allocation from
+=object/observation.scm= into =read-route.ss=. Object retains its existing
+bindings; lower source code can use that same checking authority. The writer
+stays out of the public exports and no second weak registry is allocated.
+Foreign factories must still reject this authority's records and vice versa.
+The published change provides the shared issuer. The local functional source
+candidate uses separate source and prepared-method kinds. Ordinary value
+replay admits its original value kind.
+
+Gerbil's =defstruct= expansion generates a constructor through
+=make-instance=. That runtime checks the actual class constructor and
+metaclass routes before taking the ordinary fixed-field struct allocation.
+Class syntax alone therefore cannot establish a closed allocation interval.
+Before admitting a generated functional source, check the relevant live
+class layout and constructor routes. When those differ, preserve ordinary
+allocation and preparation. Do not defer a potentially effectful constructor
+to reflection or invoke the provider to classify its thunk.
+
+The first implementation target is the finite thunk family produced by
+=object<-fun=. Its stock thunks already have stable procedure identities and
+do not bind receiver =self=; repeated keys still retain all original raw
+ordinals. Keep raw specifications behind the protected source owner and
+retain the original thunk payloads in its prepared cut. A public reflection
+must expose the original RawSpec only after fencing that owner. An earlier
+receiver can still resolve a previously undemanded key from its old cut.
+The shared issuer must authenticate the exact view and source kind before any
+dispatcher is called; generic value replay must refuse that kind. The wider
+four-form source and C4 paths must retain the existing ordered capture,
+=self= and =sup= laws. None of these source or receiver routes is enabled by
+the dependency change alone.
+
+* Local functional source candidate
+
+The generated leaf owns its original RawSpecs and their thunk identities in
+the existing ordered map. The issuer authenticates the exact public view
+before dispatch. Reflecting a raw payload fences the shared storage owner.
+Prepared receivers retain their captured thunk procedures, including keys
+that were cold when the raw payload escaped. The prepared-method signature
+binds the exact receiver, revision and sole value store.
+
+=LeanPoo.Object.OrderedContributions.newest_position_exact= proves that the
+selected newest ordinal is the last chronological contribution.
+=LeanPoo.Object.SlotPreparation.CapturedBinding.bind_chain_thunk_tail_exact=
+proves that binding an admitted tail thunk preserves its procedure. These
+laws apply to the closed functional producer under the actual constructor
+guards. Arbitrary raw replacements and inherited scopes retain ordinary
+preparation. Explicit method reflection materializes the original HashTable
+in the same method field. Consumers that compiled the earlier field accessor
+need a rebuild against the candidate export.
+
+In the final paired POO diagnostic, 10,000 default-vector slots took
+8.7–9.1 ms CPU for ordinary first demand and 4.7–5.4 ms with the method cut. The cut
+materialized zero methods and the default layout still allocated 10,000 value
+cells. At 100,000 slots, the explicitly selected hash layout took 66–69 µs
+CPU after source construction and retained one value cell. The source
+constructor still builds both trees, taking about 253–257 ms CPU in those
+samples. Charge construction separately when interpreting the demand result.
+
+The isolated Core sparse 10,000 Module diagnostic passed its two-owner
+business oracle on both arms with the original 180-second and 4-GiB fences.
+The first request took 2.324 s wall and 1.598 s CPU on the baseline, and
+2.538 s wall and 1.619 s CPU on the candidate. The pair used the same staged
+Core sources and explicit POO overlays. This timing predates the candidate's
+final private iteration change. A separate probe on the final candidate
+confirmed zero materialized methods and 10,000 receiver value cells. Neither
+run establishes a whole-request benefit or qualifies a dependency pin.
+Keep the candidate local while the whole-key value directory and source
+construction remain on the cold path.
+
+The standalone deferred-method backend was not selected; it still rebuilt the
+source plan and its timing did not establish a reproducible gain. The attempted
+default hash value backend failed inline/layout controls and was withdrawn.
+Neither is a substitute for this source ownership work. Historical 2.355719 s
+first business demand, Core 10K/180 s/4 GiB, downstream 120 s and Catalog
+qualification remain open; Graph kernel speed and these proofs do not close them.

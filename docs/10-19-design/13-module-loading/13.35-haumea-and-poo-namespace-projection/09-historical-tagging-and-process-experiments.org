@@ -1,0 +1,211 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.35 Rejected tagging experiments and process qualification
+#+language: en
+#+property: STATUS modular-design-and-qualification
+
+[[file:../13.35-haumea-and-poo-namespace-projection.org][13.35 index]]
+
+* Historical rejected opt-out experiment (2026-11-04)
+
+The installed Gerbil source confirms an unconditional automatic =pkg-retag=
+after dependency changes, and no existing CLI opt-out. A source catalog cannot
+control that whole-package-directory walk through its selected Module owners.
+Therefore the repair belongs to Gerbil's package tool. The bounded native
+candidate in =dev/gerbil/gxpkg-no-auto-tags.patch= adds =deps --install --no-tags=;
+the normal dependency/install/default-build path is unchanged, and the default
+automatic index and explicit =retag= remain available. No custom loader,
+installer, PATH interception or extra environment switch is involved.
+
+SysML =PackageEditorIndexIsolation= states the effect boundary. Lean
+=NamespaceProjection.packageInstallTrace= models only the optional editor suffix;
+=no_tags_preserves_required_effects= and =default_retains_editor_effect= prove
+that narrow trace contract. Native Git, package builds and tool behavior remain
+executable correspondence obligations. The shared native install fixture has an
+opt-in CLI entry and a tiny default/explicit indexing control. Preparation,
+native source identity, tool overlay and commands are recorded in
+[[file:../../../../dev/gerbil/README.org][the native tool patch notes]]. Installation of this
+candidate into the system Gerbil distribution is a separate delivery boundary.
+
+The same pinned candidate uses =gerbil tags= for editor indexing. A native
+entrypoint control found that the installed standalone =gxtags= skipped a tiny
+ordinary source and produced an empty index; the unified native driver indexed
+the same file and its exported symbol. This is an observed cohort/entrypoint
+discrepancy, not a source-parser replacement or a claim about every tool version.
+
+The complete opt-in CLI suite passed MODULE-OK, HARNESS-OK and final OK with
+natural exit 0 and no check/harness/overflow markers. It fetched all 1000 owner
+directories at the declared tag, verified native HEAD/manifest provenance,
+compiled 0 default owner targets and exactly 11 downstream targets for 2 owners,
+then compiled 0 hot targets. A/B cleanup and fresh-process use preserved source
+and original scope identity/currentness. A separate tiny native package passed
+default automatic indexing with an actual source entry and explicit =retag=.
+The original 180-second child/60-second idle and heap/file fences were retained.
+The failed empty-index control was corrected and the complete suite rerun;
+success is not based on an isolated retry or an empty TAGS file.
+
+The native patch and complete qualification source hashes were stable across
+the final run. Lean passed all 218 jobs with 8831 declarations audited using
+standard axioms and no arbitrary Prop-valued model fields; package namespace
+and independence gates passed. These receipts qualify the native source
+candidate, not deployment into the user's Gerbil installation. They do not
+establish a faster complete runtime EVAL.
+
+The shared native install gate was then strengthened to use the maintained
+=building/products:artifact-files= inventory for every generated product family,
+rather than only checking =.ssi= and =.o1=. Its complete CLI replay passed again:
+A's selected inventory is empty after clean, B's entire selected-product SHA-256
+snapshot is unchanged, and the installation environment contains no downstream
+selected artifacts. Existing per-target required products and fresh B use are
+still checked. This reuses native product ownership; no new artifact registry
+or cleanup implementation is introduced.
+The complete public-API suite was also rerun with the strengthened inventory
+assertions against the unmodified installed Gerbil tool, without the candidate
+overlay. It passed the same three success markers and natural exit 0. The
+ordinary package path therefore does not acquire a hidden dependency on the
+new CLI option or on a locally patched installation.
+
+* Complete thousand-name runtime replay (2026-11-04)
+
+The existing =module-runtime-values-1000-test.ss= now passes its complete
+unchanged 180000-ms Case on the regular independent frozen source/runtime
+cohort. MODULE-OK, HARNESS-OK and final OK were present, with natural exit 0
+and no check/harness/overflow markers. The source fingerprint was unchanged
+before/after the run. No runtime algorithm changed in this native-tool patch;
+this qualifies the previously optimized cohort rather than attributing a new
+runtime improvement to the package CLI change.
+
+| Actual existing phase | Wall seconds |
+|-----------------------+--------------|
+| First namespace enumeration | 0.242064 |
+| First scope, including cold declaration admission | 123.418851 |
+| First business value after the scope/unrelated-scope controls | 0.307095 |
+| Hot value | 0.000005 |
+| Incremental value after config mutation | 0.000104 |
+| Independent selected-Source currentness, its Graph remaining cold | 0.792356 |
+
+The Case verifies one recomputation, refusal of the old issued read evidence,
+unchanged unrelated scope value/identity and cold unselected values. The
+post-GC retained-graph observation reported 570595952 live bytes; the signed
+native VM-account values remain unqualified and are not physical allocation.
+
+These phases are not the single-expression business-EVAL benchmark: the Case
+requests an additional unrelated scope before its first value and performs
+mutation/currentness controls afterwards. In particular, do not add phase
+times and label them a new one-get result. The independent Source check is not
+the detailed breakdown of repeated guards inside the first admission. The
+earlier 113.170463-second complete one-get receipt remains separately identified.
+First declaration evaluation/admission still needs optimization; neither a
+passing 180-second watchdog nor a fast hot value closes that latency gap.
+
+* Native TAGS and loading-window authority (2026-11-04; candidate withdrawn)
+
+The user rejected the editor-index opt-out. =--no-tags=, its native parameter,
+its Just action, the API/CLI install-action selector and separate CLI test-suite
+wrapper were removed. User installation has one normal native command:
+=gerbil pkg deps --install=. The retained integration test exercises that command;
+it is not another installer or user entrypoint.
+
+The local package-tool patch and its candidate setup are withdrawn. Installation
+uses the original =gerbil pkg deps --install= with the native
+=GERBIL_BUILD_CORES= setting; no tagger override or local batching is installed.
+The existing Ops reader recognizes completed =TAG= events; skips and diagnostics
+are not progress or acceptance. Earlier candidate receipts below are historical,
+not installed-tool acceptance. Native installation/indexing uncertainty is
+reported upstream rather than repaired in Yuanxu. See
+[[file:../../../../dev/gerbil/README.org][the native command and acceptance boundary]].
+
+Module membership and role interpretation belong to the =yuanxu!= loading
+window. The attempted =modules/gerbil.pkg= and Config-export fixture changes
+were withdrawn; native editor indexing cannot dictate those Module semantics.
+Gerbil's default TAGS records native exported bindings. A window's Interface
+configuration or private Config does not become a standalone native public
+library merely because its source is visited by an editor indexer.
+
+Acceptance distinguishes the two indexes: the actual producer =yuanxu!= window
+must expose all 1000 logical Module names with every scope cold; its declared
+downstream selection constructs only two scopes. The native editor index must
+contain every one of the 1000 public =ScopeContract= and 1000 public =Scope.=
+bindings. Both are required. There is no fabricated native export for Interface
+configuration, no package-metadata Module registry and no change to compile
+owner selection or artifact identity. Unrelated Objects/Config initializers are
+poisoned to make eager runtime initialization fail.
+
+The public user expressions, with runnable native POO receiver/inheritance
+examples, are collected in [[file:../13.35-user-expressions.org][the user-layer companion]].
+Native =.get=, Interface, lexical =self= and inherited-slot =sup=/=super:= remain
+the expression surface. Haumea's containing-directory =super= remains a distinct
+spatial capability and does not replace POO inheritance.
+
+* Declaration-only module tests (2026-11-04)
+
+The directory module test no longer creates package metadata markers. Its
+inputs are actual =yuanxu!= declarations and module role sources. The directory
+preparer also no longer widens source ownership by testing a parent package
+marker: provenance comes from the declared source window. Gerbil continues to
+own package metadata and compiler module identity. There is no additional
+Yuanxu package registry or package-manager validation in this module test.
+
+The focused directory and leaf-expression suites passed with natural exit and
+all three harness markers. The full package-install gate retained automatic
+TAGS, exposed 1000 cold logical modules, compiled the two selected owners into
+11 targets, and verified hot-build and cleanup isolation (install phase
+75.236760 seconds). This is package-install evidence, not a business-EVAL timing.
+
+The latest real Lab downstream replay emitted the success markers but reached
+the unchanged 120-second outer test deadline (exit 124). It is not an accepted
+run. Process completion within that budget remains an executable obligation;
+successful assertions alone do not close it.
+
+* Lab process completion and remaining package-boundary audit (2026-11-04)
+
+A timestamped full replay emitted =OK= at 109.987 seconds and exited naturally
+at 114.921 seconds. A two-second sample after =OK= found the main thread in
+=___cleanup_dyn_module -> dlclose -> dyld garbageCollectInner=; it was native
+dynamic-library teardown, not a waiting scope or a demonstrated watchdog
+deadlock. This identifies the sampled exit phase, not all earlier timing
+variance. The 120-second outer fence includes that teardown.
+
+The integration test repeated a standalone =spec= command after its hot build
+and business use despite unchanged declarations and sources. That duplicate
+projection process was removed. The initial projection remains the independent
+oracle for BOTH cold builds. Both business-use processes, the zero-compile hot
+build, original identity/currentness, complete product inventories, unchanged
+prerequisites and producer sources, and A-clean/B-preservation controls remain.
+No timeout, heap limit, runner, loader, cache or forced exit was added or changed.
+The full replay with this correction emitted =OK= at 99.576 seconds and exited
+naturally at 103.406 seconds. These are complete process measurements, not a
+matched benchmark of the Module EVAL algorithm.
+
+The loading-chain audit also removed the reader's fallback from declared source
+origin to compiler package root. A declaration inside its collection retains
+that same root; lack of window provenance grants no wider source authority.
+The directory regression uses actual =yuanxu!= declarations and no package
+metadata markers. The existing Lean =declared_window_supplies_kernel= allows
+equal declaration/collection roots; SysML =DeclaredWindowAuthority= and the
+Scheme reader now make that boundary explicit.
+
+Remaining package metadata references have compiler/build responsibilities:
+
+| Owner | Remaining responsibility |
+|-------+--------------------------|
+| =source/preparation.ss= | Observe actual Gerbil header/package identity and source currentness; reject a prefix in a generated full-identity compiler view |
+| =source/publication-reader.ss= and =source/reader-preparation.ss= | Associate selected compiler contexts with their original package sources |
+| =source/build.ss= | Project owner-declared public libraries and native compiler targets |
+| =building/source-package.ss= | Check explicitly registered compiler source package identity |
+| =building/package.ss= | Preserve native package/prelude identity when emitting selected source packages |
+
+None of these selects Module membership, chooses a =yuanxu!= window, or grants
+a broader namespace. Interface remains the configuration entry and applications
+consume the lazy POO namespace through native =.get=.
+
+Final replay with the corrected reader and the same full Lab test emitted all
+three success markers at 99.480 seconds and exited naturally with status 0 at
+102.864 seconds, inside the unchanged 120-second fence. Both focused suites
+=module-directory-test.ss= and =module-deferred-reader-test.ss= also passed
+with natural exit. The shared publication fixture now supplies its actual
+=yuanxu!= declaration instead of relying on the removed headless fallback.
+Package-independence/namespace checks passed. The current Lean gate completed
+218 jobs and audited 8962 declarations with standard axioms only. These receipts
+qualify this source-origin and process-completion correction; they do not close
+the separate thousand-declaration first-business-EVAL latency work.

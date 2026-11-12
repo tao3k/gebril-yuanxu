@@ -1,0 +1,84 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+#+title: 10.06.43.25 Controller Installation Trust and Governance
+:PROPERTIES:
+:ID: agentic-ai-lab-context-controller-installation-trust
+:STATUS: module-protocol-local-joint-pass-remote-durable-open
+:DATE: 2026-10-15
+:END:
+
+* Finite trust boundary
+
+The application selects an actual Core verification adapter and configured
+Governance profile as its installation trust anchor. A submitted root name,
+verified flag, ORG property or ASCENT fact cannot install a controller. The
+anchor is not proved by another infinitely recursive root: trusted application
+composition is the explicit premise. A compromised host that can replace its
+configured verifier is outside this local protocol.
+
+The Assurance adapter additionally requires current real evidence and effect
+permission, an explicit root policy, and an explicit installation policy.
+An ordinary grant is necessary in this adapter but is not itself permission to
+install arbitrary controllers. Eligibility and evidence sharing remain neither
+installation authority nor permission to execute an effect.
+
+* Declarations, authorization and publication
+
+[[file:../../../../modules/ai-agentic-context/installation.ss][Modules installation]] owns issuance and revocation. An inert
+[[file:../../../../modules/ai-agentic-context/source-control.ss][source configuration]] declares identity, Governance, clock, approval and snapshot
+functions plus its installation root. It is not a running controller.
+
+Root attestation binds the exact issued root, exact claim and captured root
+epoch to a real Core receipt. An installation proposal binds that attestation,
+exact configuration and installation payload. The verifier snapshots the
+proposal sequence, root epoch, controller identity, Governance revision, owner,
+threats/preconditions and actual Assurance payload. It rechecks premises after
+policy callbacks. Commit checks the current decision again before publication.
+
+The issued installation ticket can activate that exact configuration once.
+Replaying a ticket must not reconstruct a controller and reset its source epoch.
+Controller names remain owned process-wide; another root cannot claim an
+already installed controller name. A copied claim, receipt, ticket or root
+presentation is not its private issued identity.
+
+Attestation/installation receipt expiry bounds pending publication; expiry is
+not an implicit uninstall of an already committed controller. Explicit root
+revocation is the live invalidation mechanism. The configured clock and snapshot
+functions must be pure, bounded host functions, not reentrant mutation hooks.
+
+* Revocation and reopening
+
+Root revocation is terminal for that registered identity in the current process.
+It advances its epoch and invalidates installed controllers, source bindings,
+Profiles and live review admission. Pending installation receipts cannot publish,
+and a new root object with the old name cannot reset the epoch. Previously
+accepted Project content and historical evidence are not erased. Current
+consumer obligations reopen; fresh authority cannot be inferred from retained
+knowledge. Revoking a pending installation receipt is distinct from revoking
+an already installed root. Recovery/re-anchoring after terminal revocation is
+not silently implemented as reinitialization.
+
+[[file:27-controlled-root-reanchoring.org][10.06.43.27]] refines recovery through a separately preconfigured Human
+authority and a new root/ticket. It does not relax this terminal old-root rule.
+
+* Proof allocation and remaining boundary
+
+Quint checks finite installation/activation/revocation interleavings, reachability
+controls and deliberately unsafe transitions. LeanPOO Focus expresses a pure
+activation update with refusal and knowledge-preservation laws. Neither proves
+arbitrary Scheme execution or authenticates remote principals. Scheme controls
+use real ORG Elements/Contract-derived Context, actual Core issuers and existing
+Assurance/Governance objects. Proof fixtures supply configured policy inputs;
+they do not maintain a second implementation of authority checks.
+
+ASCENT consumes Module admission projections: root revocation withdraws
+candidate support; relational inference cannot mint an installation ticket,
+grant or review. The existing relational gate remains a regression, not a new
+remote identity proof. Full Query/GQL disclosure, durable root registry,
+cross-process CAS, remote credentials, host compromise and deployed Cedar
+policy qualification remain separate obligations. This protocol is local
+control-plane semantics; storage executors, bindings and old Memory are unchanged.
+
+[[file:26-controller-installation-verification.org][Verification evidence]] distinguishes focused checks, the complete stable-input
+gate and historical failed attempts. Earlier receipts retain their older trust
+premises and are not retroactively upgraded by this design.

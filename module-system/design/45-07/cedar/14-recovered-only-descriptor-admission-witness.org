@@ -1,0 +1,147 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Recovered-only descriptor admission witness
+#+language: en
+
+[[file:../../45-07-user-composition-and-mix-module-interface.org][45-07 index]]
+
+* Recovered-only descriptor admission witness
+
+** Interval admission requirement
+
+Recovery MUST distinguish a descriptor already registered at the committed
+position from a descriptor that first appears before the recovered position.
+When a descriptor is absent at the committed position and registered at the
+recovered position, the governed lineage MUST expose a concrete adjacent
+position inside that interval carrying authority-issued descriptor admission.
+
+Position ordering, final registration, and predecessor descriptor disposition
+do not by themselves expose this provenance.  The witness is derived from every
+adjacent transition's =successorDisposition= obligation, not invented by the
+recovery authority or stored as an unrelated mutable summary field.
+
+** Position-only recovered descriptor counterexample
+
+=positionOnlyRecoveryPermitsUnattributedRecoveredDescriptor= constructs an
+identity-stable lineage whose committed registry is empty and whose recovered
+registry contains a descriptor.  The recovery positions are ordered, so the
+position-only recovery predicate accepts the event while requiring no
+descriptor-admission witness.
+
+This does not contradict the strengthened governed lineage.  It demonstrates
+that position-only recovery is the weak counterexample owner and cannot support
+the enterprise admission claim.
+
+** Interval admission Typst model
+
+#+begin_export typst
+$
+  "AdmissionAcrossInterval"(d, g, c, r) :=
+    exists k:
+      c <= k and k < r
+      and "AuthorityIssuedAdmission"(d, g(k), g(k + 1))
+
+  "RecoveredOnly"(d, g, c, r) :=
+    not "registered"(g(c)."registry", d)
+    and "registered"(g(r)."registry", d)
+
+  "GovernedRecovery"(g, c, r) and "RecoveredOnly"(d, g, c, r)
+    implies "AdmissionAcrossInterval"(d, g, c, r)
+$
+#+end_export
+
+** Interval admission Mermaid closure
+
+#+begin_src mermaid
+flowchart LR
+  C["Committed position<br/>descriptor absent"]
+  S["Adjacent governed transitions"]
+  A["Concrete step k<br/>authority-issued admission"]
+  R["Recovered position<br/>descriptor registered"]
+  P["Position-only recovery"]
+  X["Unattributed recovered descriptor"]
+  O["Authority-issued replica origin"]
+
+  C -->|"status: absent"| S
+  S -->|"backward induction over successorDisposition"| A
+  A -->|"k lies in [committed, recovered)"| R
+  P -.->|"orders positions but carries no admission"| X
+  X -.->|"rejected as enterprise evidence"| O
+  O -->|"position validity + governed lineage"| A
+  A -->|"status: provenance exposed"| O
+#+end_src
+
+** Interval admission decision
+
+- Keep =RegistryTrustRootRecoveryEvidence= as the weak position-only surface and
+  counterexample owner.
+- Define =DescriptorAdmissionAcrossRegistryInterval= as an existential
+  proposition over a concrete adjacent position, rather than as another stored
+  recovery record.
+- Prove
+  =governedLineageRequiresIssuedAdmissionForRecoveredOnlyDescriptor= by
+  induction over =committedPosition <= recoveredPosition=.  The reflexive case
+  contradicts simultaneous absence and presence; each successor case either
+  walks backward through exact preservation or returns the step's
+  authority-issued admission.
+- Project the same witness from =AuthorityIssuedReplicaRecoveryOrigin=.  The
+  canonical provenance summary therefore retains the authority-issued recovery
+  owner while the shared governed lineage supplies the descriptor-admission
+  step.
+- Do not require an admission witness for a descriptor already registered at
+  the committed position; its obligation remains preservation-or-issued
+  retirement.
+
+** Interval admission checklist
+
+- [X] Construct ordered position-only recovery with a recovered-only descriptor
+  and no admission field.
+- [X] Model a concrete authority-issued admission step inside the recovery
+  interval.
+- [X] Prove the base case rejects simultaneous committed absence and presence.
+- [X] Prove preservation walks backward and admission returns the exact adjacent
+  witness.
+- [X] Project the witness from an authority-issued replica recovery origin.
+- [X] Reverify the recovery and replica-join AXLE envelopes.
+- [X] Reverify enterprise/full Lean aggregates and Org/diff gates.
+
+** Interval admission Lean receipt
+
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryRecoveryClosure= exited 0 for
+  9 jobs with no warning or error.
+- =lake build
+  AgenticAILabProof.Enterprise.PublicationDomainRegistryReplicaJoinClosure= exited 0
+  for 10 jobs in 2.2 seconds with no warning or error after the counterexample
+  addition.
+- The standard =uv run --extra axle agentic-ai-lab-axle-verify= CLI accepted the exact
+  four-source recovery envelope with 20 roots and 103 declarations: 52 source
+  and 52 environment declarations, no proof-base declaration/import, failed
+  declaration, or Lean diagnostic.  Closure digest:
+  =sha256:738d48f9e6f1a65d20934f82b8fef12827868b3389df56710a05685823d9c7ec=;
+  bundle digest:
+  =sha256:e3824365b40434d22e21cd838ebb9f2446abbfb5e854b3f960d64b7915e899df=;
+  canonical source digest:
+  =sha256:3ee3a38de78cca52605d50310b2e0543b4f99881d0639dad0fef446504f31fee=;
+  independent bundle digest:
+  =sha256:cbeac4801a77f2ef10d0d6667a45ea44b61e2855fdd00c63c456a29a4c968f58=.
+- The exact five-source replica-join envelope accepted 40 roots and 154
+  declarations: 89 source and 89 environment declarations, no proof-base
+  declaration/import, failed declaration, or Lean diagnostic.  Closure digest:
+  =sha256:434bfa9eda16d3dc656e3a631dadadb4a9a60027b95fe074013a99488f555de3=;
+  bundle digest:
+  =sha256:95f3afa5664b66f804776d3cbbae341b2f1bed153c7ffc23aeb9095b2839b9ad=;
+  canonical source digest:
+  =sha256:b342cd3e7e2406ee8892121c74f53a6ad12aa39c68fde16bfede678aac11361c=;
+  independent bundle digest:
+  =sha256:db9071f721e51f0742a878186bb687d37f8ea1040db4de1b5a5d798cf91264a7=.
+- =lake build AgenticAILabProof.Enterprise= exited 0 for 515 jobs in 2.8 seconds;
+  =lake build= exited 0 for 587 jobs in 1.8 seconds.  Both reported only the
+  existing =AgentRedTeamProofRegressionClosure.lean:194:2 unnecessarySimpa=
+  warning and no error.
+- =asp org lint= accepted this RFC with =[ok] orgize lint=, including the
+  embedded Typst and Mermaid blocks.  =git diff --check= and
+  =git diff --cached --check= both exited 0.
+

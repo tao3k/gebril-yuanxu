@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+direction: down
+init: "init.ss\nsource directory + selections + retained denials"
+source: "Core directory Contract\nrole/source admission"
+roles: "types / objects / configs / optional func\ninterface declaration"
+wrapper: "Bounded hygienic wrapper\ncompiler imports + exports + scope factory"
+selection: "Core selected Module/Feature graph\none source/selection generation"
+product: "Agentic AI Lab Loader facade\nproduct policy + delegation"
+scope: "Core scope projection\ndependency admission + injection"
+build: "Core build projection\nselected roots + compiler closure"
+script: "build.ss / defbuild-script\nexplicit build invocation"
+init -> source: directory value; no implementation activation
+source -> roles: selected metadata
+roles -> wrapper: admitted syntax and phase edges
+wrapper -> selection: publication and dependencies
+product -> selection: delegates; Core never calls product
+selection -> scope: scope view
+selection -> build: build view
+build -> script: build-spec
+cold: "Unselected implementations / disabled smoke\nnot imported by discovery"
+selection -> cold: excluded by retained policy {
+  style.stroke-dash: 4
+}

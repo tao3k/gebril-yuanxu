@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+# One Core Lake project; LeanPoo is its immutable dependency.
+proofs: proofs-quint proofs-lean
+
+proofs-lean:
+    cd dev/proofs/lean && timeout 120s lake build
+
+# Tool/backend bootstrap is preparation, never an accepted proof receipt.
+prepare-quint:
+    npm ci --prefix dev/proofs/quint --no-audit --no-fund
+    node dev/proofs/quint/prepare.cjs
+
+# All maintained finite models are Quint; receipts remain local artifacts.
+proofs-quint receipt=".cache/proofs/quint/receipt.ss":
+    node --test dev/proofs/quint/runtime.test.cjs
+    node dev/proofs/quint/qualify.cjs --receipt "{{ receipt }}"

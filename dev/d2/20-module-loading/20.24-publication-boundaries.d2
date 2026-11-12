@@ -1,0 +1,22 @@
+# ASCENT Scheme projection; no layout coordinates.
+direction: right
+classes: {
+"boundary": {}
+"effect": {}
+"entry": {}
+"fallback": {}
+"qualification": {}
+"qualified": {}
+}
+"checked": "Guard DAG" {class: "qualified"}
+"effects": "Effects" {class: "effect"}
+"fresh": "Fresh tail" {class: "boundary"}
+"guard": "Guard" {class: "entry"}
+"independent": "Independent" {class: "fallback"}
+"state": "Origin" {class: "qualification"}
+"checked" -> "fresh": "close"
+"fresh" -> "effects": "end"
+"guard" -> "state": "inspect"
+"independent" -> "fresh": "check"
+"state" -> "checked": "qualified"
+"state" -> "independent": "fallback"

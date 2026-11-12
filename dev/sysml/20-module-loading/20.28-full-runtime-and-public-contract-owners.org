@@ -1,0 +1,151 @@
+#+title: 20.28 Full Runtime Integration and Public Contract Owners
+#+language: en
+#+filetags: :modules:runtime:contracts:pbt:qualification:
+
+* Frozen source and release boundary
+
+Publication and the subsequent Core pin are recorded in
+[[file:20.29-published-issuer-and-core-alignment.org][20.29]]. This document retains
+the earlier qualification cohort; its unpublished-release boundary is historical.
+
+PR 13 was resolved to =780e66928c2f73aee6ab356dcb7a625c37123973= before
+qualification. This study supersedes the independent-PBT-kernel experiment in
+[[file:20.27-build-prelude-boundaries.org][20.27]]. All runtime modules, typed
+PBT, FUN, ObjectContract and MOP now come from the same complete source cohort.
+The installed Gerbil compiler/runtime sources are unchanged.
+
+This is upstream 780e669 plus the three previously retained source deltas,
+not the bare published commit. Only =io.ss=, =object.ss= and
+=slot-observation.ss= differ: 43 inserted and 15 removed lines. The deltas
+retain constructor-state inspection, actual dynamic observer/precheck identity
+queries, per-visit issuance/route/currentness authentication, runtime compact
+specification construction, and the installed compiler's write-environment
+ABI bridge. They introduce no Core cache or admission-result memo.
+
+| Actual source | SHA-256 |
+|---------------+---------|
+| object.ss | 0f894153950b67aee773ecaceea94547f06e215be964142720b34b501b82f877 |
+| slot-observation.ss | 94a3cdd2047b83d7db1175e04bf3f7ea01815af1118a8393cc98a9f372f845aa |
+| io.ss | 27419cf7c47439204b0c32f765762669bdb7bd8c785ccdaf56eb4c6b2ef20dc9 |
+| prototype-map.ss, unchanged | 454c64afa14b051bb85212da7f45c8a1ab594fbe0ae9f4b1687bcd630dca2bdb |
+
+The bare commit does not export =object-construction-current?=,
+=slot-read-observers-compatible?= or =slot-read-precheck-active?=. Core still
+uses those producer-owned inspections. Publishing a dependency pin to bare
+780e669 would therefore misrepresent the tested runtime. No commit or push is
+authorized in this slice; =gerbil.pkg= retains its previous pin until an actual
+publishable commit contains the tested protection changes. The working Core
+migration is not claimed independently installable from that older pin.
+
+* Package ownership and absence of old-runtime fallback
+
+The complete producer passes its existing =just build-core= entry with the
+unchanged 300-second fence. Runtime build wall time was 145.74 seconds; this is
+a qualification observation, not a performance comparison.
+
+The first fresh Core prefix was correctly refused by official package
+management because it had no dependency manifest. The source was then linked
+and built through =gerbil pkg link --global-env= and =gerbil pkg build= in a
+private prefix. No old manifest was copied and no package check was bypassed.
+Package version metadata describes its Git base; the source hashes above are
+also necessary because the protection deltas are not committed.
+
+An attempted external-library overlay exposed obsolete POO artifacts from the
+old installation. Its import failure was retained, and that entire overlay was
+removed. Final Core builds/tests resolve POO and Core exclusively in the new
+prefix, not by borrowing missing modules from an earlier runtime. The default
+Core build compiles all 256 selected library targets through its existing
+runtime Make entry. Module loading and build execution remain separate.
+
+* Direct public-owner migration
+
+| Retired dependency | Current public owner |
+|--------------------+----------------------|
+| object-contract-flow / checked-action | object-contract |
+| object-diagnostics / checked-issues, diagnostic-then | object-contract |
+| object-contract-validation / validation-fields | ObjectContract .validation-fields method |
+| inheritance-hooks / with-inheritance-hooks | mop |
+| generalized-prototype / Observation. | fun |
+
+Consumers are migrated directly; none of those retired modules is recreated.
+The runtime issuer source inventory used by the existing Quint checker follows
+the actual =mop.ss= hook owner instead of requiring deleted
+=inheritance-hooks.ss=. Lean projection bindings name the actual object source
+digest, independently of the still-unchanged release dependency pin.
+
+Role value validation now selects the descriptor's public
+=.validation-fields= method with the actual candidate. Core decorates only the
+selected field validators to enroll the checked receiver before validation;
+runtime ObjectContract still owns field selection, normalization, diagnostics
+and final obligations. No second field table is introduced. A regression warms
+the parent validator, derives a method through runtime slot refinement, and
+checks the real argument, one method invocation and unchanged result identity.
+
+The JSON Schema emission facade no longer copies implementation imports.
+The runtime and structural emitter remove their unused inherited dependencies;
+the three files delete 70 import/comment lines and add four lines. Existing
+export names and implementing owners remain the same. Runtime Schema Types use
+=validate=; explicit evidence assertions use the existing =yuanxu-value-admit=
+boundary rather than trying to call contextual =.admit= on a plain Type.
+
+* Assurance responsibilities
+
+The existing SysML split is retained: Lean owns representation, identity and
+reuse laws; Quint owns observable schedules and refusal counterexamples;
+Scheme gates own actual MOP construction, normalization, callback behavior,
+runtime issuance and source currentness. No parallel PBT runner, new formal
+semantics or duplicate proof project is added. Updating a source digest alone
+does not establish runtime acceptance or callback purity.
+
+Runtime qualification uses the upstream default =just test-file= entry,
+including its original 1 GiB/90-second limits. Core uses its default
+=just test-file= entry, 2 GiB/600-second/60-second-idle limits, serially.
+The scopes remain explicit: focused runtime qualification is not whole-suite
+CI, ten-thousand-module acceptance or a publishable dependency closure.
+
+* Validation ledger
+
+Results are recorded after each gate completes; raw failure/build logs remain
+outside source control. Initial failed manifest/import/consumer attempts are
+not overwritten or counted as passes. No timeout, heap budget, negative
+control or existing test manifest is weakened.
+
+| Final gate | Observed result |
+|------------+-----------------|
+| Producer default build-core | Pass; complete runtime, not only independent PBT |
+| Producer issued-read | 20 Case-OK; finite/cyclic roots, forgery, route/callback mutation controls |
+| Producer inheritance hooks | 22 Case-OK, including the public protocol owner |
+| Producer declaration index | 25 Case-OK |
+| Producer generated batches | 8 Case-OK; PropertyConfiguration, FUN, dependent generation, shrinking, replay |
+| Core default build | Pass; 256 library compilation targets |
+| Core subsequent default build | Pass; zero compilation targets |
+| Core source admission / runtime PBT | 18 Cases, including two 32-trial properties |
+| Real Gitea/PostgreSQL | 11 completed Cases |
+| SourceAdmissionContract | 6 completed Cases; once-only inherited admission, preflight short circuit, child obligations, independent source checks |
+| Semantic Module | 3 Cases; cached-parent/derived validation method receives the exact candidate once |
+| Contract/Function composition | 10 Cases; defaults, result wrappers, normalized subject and contextual evidence |
+| Public JsonSchema Module | 1 Case; real root selection, runtime Scope checks, result wrapping and refusal paths |
+| JsonSchema value contracts | 8 Cases; field paths, inherited effective values and projections |
+| JsonSchema receipt consumer | 1 Case; structured diagnostics and original receipt API |
+| Default proofs-lean | Pass, 210 jobs; no arbitrary Prop fields, standard Lean axioms only |
+| Source-bound SelectionReplay Quint | 11 matched cases, including expected counterexamples |
+
+All four producer and eight Core test logs contain =MODULE-OK=,
+=HARNESS-OK= and final =OK= without error/overflow/skip markers. Runtime totals
+are 75 Cases; Core totals are 58 Cases, with 64 requested PBT trials inside the
+source-admission suite. These are focused gates, not the entire upstream or
+Core test catalog. The first Quint invocation was sandbox-refused while binding
+a localhost backend port; the unchanged checker and budgets passed with that
+local-backend permission. No model assertion was weakened to obtain a pass.
+
+The failed public JsonSchema consumer still attempted contextual =.admit= on
+a plain Type. It was migrated to runtime =validate= for pure checks and
+the existing =yuanxu-value-admit= for explicit refusal evidence; its negative
+Function result and malformed Scope controls remain. This is a consumer
+migration, not a compatibility module restoring the retired API.
+
+The release pin is intentionally NOT updated: no retrievable upstream commit
+currently represents this exact qualified tree. A future pin change must refer
+to such a commit and check that its runtime source owners match this receipt
+(or qualify further changes). The old pin is not presented as acceptance of
+the migrated working tree, and the Git base alone is not an admission receipt.

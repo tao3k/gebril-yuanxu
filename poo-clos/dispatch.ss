@@ -5,12 +5,12 @@
 
 ;;; Multi-argument applicability, specificity and standard method combination.
 
-(import (only-in :clan/poo/object
-                 .ref .slot? object? compute-precedence-list!)
+(import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop element?)
         (only-in :std/list/list drop filter-map find flatten1)
-        "types.ss" "objects.ss" "classes.ss" "method-combination.ss"
-        "funcs.ss")
+        "types.ss" "objects.ss" "method-combination.ss"
+        "funcs.ss"
+        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-open! owned-read-method! owned-read-hook-owner!))
 
 (export poo-clos-compute-applicable-methods poo-clos-call
         poo-clos-compute-effective-method
@@ -22,7 +22,7 @@
         poo-clos-call-next-method poo-clos-next-method?
         poo-clos-funcall poo-clos-setf)
 
-;;; Native memq preserves identity comparison; length difference yields its
+;;; Runtime memq preserves identity comparison; length difference yields its
 ;;; position in the finite C4 precedence list without a project-local walker.
 ;; : (forall (a) (-> a [a] (Maybe Natural)))
 (def (identity-index target values)
@@ -36,7 +36,7 @@
        (element? ClosInstanceState (.ref value '%poo-clos-state))))
 
 ;;; Logical class precedence follows the identity-preserved class generation;
-;;; native POO prototypes remain the sole source of its C4 order.
+;;; POO prototypes remain the sole source of its C4 order.
 ;; : (-> SchemeValue (Maybe ClosClass))
 (def (argument-clos-class argument)
   (and (clos-instance-state-bearing? argument)
@@ -61,7 +61,7 @@
                      (compute-precedence-list! argument))))
          0)))
 
-;;; Eql ranks before every class; a class rank is its native C4 distance; the
+;;; Eql ranks before every class; a class rank is its runtime C4 distance; the
 ;;; universal specializer follows every applicable class.
 ;; : (-> ClosSpecializer SchemeValue (Maybe Natural))
 (def (specializer-distance specializer argument)
@@ -218,10 +218,12 @@
 ;;        [(Pair ClosMethod [Natural])])
 (def (protocol-ranked-methods generic arguments)
   (let* ((ranked (applicable-ranked-methods generic arguments))
-         (hook (.ref (.ref generic 'protocol) 'compute-applicable-methods)))
+         (protocol (.ref generic 'protocol))
+         (hook (.ref protocol 'compute-applicable-methods)))
+    (owned-read-hook-owner! protocol)
     (if (not hook)
       ranked
-      (let ((methods (hook generic arguments (map car ranked)))
+      (let ((methods (begin (owned-read-open!) (hook generic arguments (map car ranked))))
             (ranked-index (poo-clos-leftmost-index-by car ranked)))
         (unless (and (list? methods)
                      (andmap
@@ -233,28 +235,30 @@
                      generic: (.ref generic 'identity)))
         (map (lambda (method) (hash-get ranked-index method)) methods)))))
 
-;;; Standard and short combinations share the immutable effective-method carrier. A
-;;; short combination uses the primary field for methods bearing its name.
+;;; Prepare one private admission continuation for standard/short/long carriers.
+;;; A short combination uses the primary field for methods bearing its name.
 ;; : (-> ClosGenericFunction [SchemeValue]
-;;        [(Pair ClosMethod [Natural])] ClosEffectiveMethod)
-(def (default-effective-method generic arguments ranked)
+;;        [(Pair ClosMethod [Natural])] (-> ClosEffectiveMethod))
+(def (prepare-default-effective-method generic arguments ranked)
   (let (combination (.ref generic 'method-combination))
     (case (.ref combination 'kind)
       ((standard)
-       (make-effective-method
+       (%prepare-effective-method
         generic arguments
         (poo-clos-methods-with-qualifier ranked 'around)
         (poo-clos-methods-with-qualifier ranked 'before)
         (poo-clos-methods-with-qualifier ranked 'primary)
         (poo-clos-methods-with-qualifier ranked 'after)))
       ((short)
-       (make-effective-method
+       (owned-read-open!)
+       (%prepare-effective-method
         generic arguments
         (poo-clos-methods-with-qualifier ranked 'around)
         '()
         (poo-clos-methods-with-qualifier ranked (.ref combination 'identity))
         '()))
       ((long)
+       (owned-read-open!)
        (let ((builder (.ref combination 'effective-builder))
              (groups (poo-clos-partition-long-methods generic ranked)))
          (unless builder
@@ -264,7 +268,7 @@
            (unless (procedure? executor)
              (clos-fail 'invalid-effective-method-result
                         generic: (.ref generic 'identity)))
-           (make-effective-method generic arguments '() '() '() '()
+           (%prepare-effective-method generic arguments '() '() '() '()
                                 groups: groups executor: executor))))
       (else
        (clos-fail 'unsupported-method-combination
@@ -282,13 +286,22 @@
       (make-effective-method generic arguments '() '() '() '())
       (begin
         (keyword-arguments-valid! generic ranked arguments)
-        (let* ((default-method (default-effective-method generic arguments ranked))
-               (hook (.ref (.ref generic 'protocol) 'compute-effective-method))
+        (let* ((admit-default (prepare-default-effective-method generic arguments ranked))
+               (protocol (.ref generic 'protocol))
+               (hook (.ref protocol 'compute-effective-method))
                (effective-method
-                (if hook
-                  (hook generic arguments (map car ranked) default-method)
-                  default-method)))
-          (unless (and (element? ClosEffectiveMethod effective-method)
+                (begin
+                 (owned-read-hook-owner! protocol)
+                 (if hook
+                  (begin (owned-read-open!)
+                    ;; An open hook receives a checked default and its return
+                    ;; is checked again below, even if it returns that object.
+                    (hook generic arguments (map car ranked)
+                      (admit-default)))
+                  ;; All protocol lookup has completed. There is no public
+                  ;; callback between this check and the identity assertion.
+                  (admit-default)))))
+          (unless (and (or (not hook) (element? ClosEffectiveMethod effective-method))
                        (eq? (.ref effective-method 'generic) generic))
             (clos-fail 'invalid-effective-method-result
                        generic: (.ref generic 'identity)))
@@ -313,6 +326,7 @@
 ;;; method identity.
 ;; : (-> ClosGenericFunction [SchemeValue] SchemeValue)
 (def (poo-clos-no-applicable-method generic arguments)
+  (owned-read-open!)
   (let (hook (.ref (.ref generic 'protocol) 'no-applicable-method))
     (if hook
       (hook generic arguments)
@@ -321,6 +335,7 @@
 
 ;; : (-> ClosGenericFunction ClosMethod [SchemeValue] SchemeValue)
 (def (poo-clos-no-next-method generic method arguments)
+  (owned-read-open!)
   (let (hook (.ref (.ref generic 'protocol) 'no-next-method))
     (if hook
       (hook generic method arguments)
@@ -481,7 +496,9 @@
 ;; : (-> ClosMethod ClosEffectiveMethod [SchemeValue] (Maybe Procedure)
 ;;        MethodQualifier SchemeValue)
 (def (invoke method effective-method arguments next qualifier)
-  (apply (.ref method 'body)
+  (def body (.ref method 'body))
+  (owned-read-method! body method)
+  (apply body
          (make-invocation-frame effective-method arguments next qualifier method)
          arguments))
 
@@ -584,6 +601,7 @@
 ;; : (-> ClosGenericFunction SchemeValue... SchemeValue)
 (def (poo-clos-call generic-source . arguments)
   (let (generic-value (require-clos-generic generic-source))
+    (owned-read-hook-owner! generic-value)
     (let (effective-method (compute-effective-method generic-value arguments))
       (if (effective-method-empty? effective-method)
         (poo-clos-no-applicable-method generic-value arguments)
