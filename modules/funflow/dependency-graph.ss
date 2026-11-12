@@ -6,18 +6,13 @@
 ;;; Boundary: indexed dependency analysis for workflow CI/CD checks.
 ;;; Invariant: graph algorithms emit report facts and never schedule commands.
 
-(import (only-in :clan/poo/object .ref)
+(import (only-in :clan/poo/object .o)
         (only-in :std/hash/misc hash-ensure-modify!)
         (only-in :std/struct/queue dequeue! enqueue! make-Queue queue-empty?)
-        (only-in :yuanxu/graph/types-core
-                 yuanxu-graph
-                 yuanxu-graph-edge
-                 yuanxu-graph-node)
-        (only-in :yuanxu/graph/algorithms
-                 yuanxu-graph-loop-analysis-receipt)
+        (prefix-in :clan/poo/strong-components scc.)
         (only-in :yuanxu/utilities/functional
                  yuanxu-stable-duplicates)
-        (only-in :std/list/list filter-map)
+        (only-in :std/list/list filter filter-map)
         :yuanxu/modules/funflow/check-types
         :yuanxu/modules/funflow/check-objects
         :yuanxu/modules/funflow/projection-syntax)
@@ -87,30 +82,23 @@
            (reverse (or (hash-get dependents name) '())))
           (loop (cons name order-rev)))))))
 
-(def (yuanxu-cicd-index-generic-graph check-map index)
-  (let ((node-index (yuanxu-cicd-graph-index-node-index index)))
-    (yuanxu-graph
-     (yuanxu-cicd-check-map-name check-map)
-     (map (lambda (name) (yuanxu-graph-node name))
-          (yuanxu-cicd-graph-index-node-names index))
-     (filter-map
-      (lambda (edge)
-        (and (hash-key? node-index (car edge))
-             (yuanxu-graph-edge (car edge) (cdr edge))))
-      (yuanxu-cicd-graph-index-edges index)))))
-
-(def (yuanxu-cicd-index-cycle-nodes check-map index)
-  (let* ((analysis
-          (yuanxu-graph-loop-analysis-receipt
-           (yuanxu-cicd-index-generic-graph check-map index)))
-         (cycle-index (make-hash-table-eq)))
-    (for-each
-     (lambda (component)
-       (for-each (lambda (name) (hash-put! cycle-index name #t)) component))
-     (.ref analysis 'cyclic-components))
-    (filter-map
-     (lambda (name) (and (hash-key? cycle-index name) name))
-     (yuanxu-cicd-graph-index-node-names index))))
+(def (yuanxu-cicd-index-cycle-nodes index)
+  ;; Reuse the declared dependency rows. There is no second Yuanxu graph,
+  ;; node/edge allocation or generic analysis receipt on this path.
+  (def names (yuanxu-cicd-graph-index-node-names index))
+  (def dependents (yuanxu-cicd-graph-index-dependents index))
+  (def partition
+    (scc.partition
+      (.o keys: names
+        .code: (lambda (name)
+                 (let (row (hash-get dependents name))
+                   (and (pair? row) (.o reads: row)))))))
+  (def reads (scc.partition-reads partition))
+  (filter
+    (lambda (name)
+      (or (> (scc.partition-group-size partition name) 1)
+          (memq name (reads name))))
+    names))
 
 (def (yuanxu-cicd-index-edge-rows index)
   (map (lambda (edge)
@@ -139,17 +127,18 @@
          (node-names (yuanxu-cicd-graph-index-node-names index))
          (duplicate-nodes (yuanxu-stable-duplicates node-names))
          (unresolved (reverse (yuanxu-cicd-graph-index-unresolved-rev index)))
-         (cycle-nodes
-          (if (null? duplicate-nodes)
-            (yuanxu-cicd-index-cycle-nodes check-map index)
-            '()))
-         (diagnostics
-          (yuanxu-cicd-dependency-graph-diagnostics
-           duplicate-nodes unresolved cycle-nodes))
          (ready-order
           (if (null? duplicate-nodes)
             (yuanxu-cicd-index-ready-order index)
             '()))
+         (cycle-nodes
+          (if (and (null? duplicate-nodes)
+                   (< (length ready-order) (length node-names)))
+            (yuanxu-cicd-index-cycle-nodes index)
+            '()))
+         (diagnostics
+          (yuanxu-cicd-dependency-graph-diagnostics
+           duplicate-nodes unresolved cycle-nodes))
          (unordered (yuanxu-cicd-index-unordered-nodes index ready-order)))
     (yuanxu-cicd-field-rows
      (kind 'yuanxu.workflow.cicd.dependency-graph)

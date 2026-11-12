@@ -11,8 +11,10 @@
         (only-in :yuanxu/modules/funflow/graph-projection
                  yuanxu-funflow-poo-pipeline->functional-dag)
         (only-in :yuanxu/modules/funflow/check-objects
+                 yuanxu-cicd-check yuanxu-cicd-check-map
                  yuanxu-cicd-check-map-name yuanxu-cicd-check-map-checks
                  yuanxu-cicd-check-compensation-refs)
+        (only-in :yuanxu/modules/funflow/dependency-graph yuanxu-cicd-check-map->dependency-graph)
         (only-in "../../../scenarios/funflow/scope.ss"
                  FunflowProfiles. Funflow make-funflow-scope)
         (only-in :yuanxu/modules/funflow/config-prototypes
@@ -33,6 +35,24 @@
       (check-equal? (.get graph nodes) '(build test package))
       (check-equal? (.get graph ready-order) '(build test package))
       (check-equal? (.get graph runtime-executed) #f))
+    (test-case "dependency reports distinguish cycles from missing prerequisites"
+      (def (check name refs)
+        (yuanxu-cicd-check name 'test '("true") '() '() '() '() '() '() 'test
+          (list (cons 'dependency-refs refs))))
+      (def graph
+        (yuanxu-cicd-check-map->dependency-graph
+          (yuanxu-cicd-check-map 'blocked
+            (list (check 'right '(left))
+                  (check 'ready '())
+                  (check 'left '(right))
+                  (check 'self '(self))
+                  (check 'missing-user '(absent))))))
+      (check-equal? (cdr (assq 'ready-order graph)) '(ready))
+      (check-equal? (cdr (assq 'cycle-nodes graph)) '(right left self))
+      (check-equal? (cdr (assq 'unresolved-dependency-refs graph)) '(absent))
+      (check-equal? (cdr (assq 'unordered-nodes graph)) '(right left self missing-user))
+      (check-equal? (cdr (assq 'valid? graph)) #f)
+      (check-equal? (cdr (assq 'runtime-executed graph)) #f))
     (test-case "prototypes are available without constructing a Profile"
       (def profile-demands 0)
       (.def (Scope @ FunflowProfiles.)
