@@ -23,8 +23,11 @@ Module Build declarations and the selected dependency Graph own targets,
 compiler parameters and dependencies. =std-make-spec= is their projection to
 Gerbil Make data. It does not define a separate target policy or another
 command dispatcher. Production =exe:= targets do not require a test demand.
-Only the init-owned build entry contributes its native init publication; a
-generic source Graph projection does not silently add an init compile target.
+Native imports and the retained package-library closure select the declaration
+that contains =yuanxu!=, regardless of its filename. The admitted projection
+lowers that reached declaration into its compiled publication. Obtaining a
+specification from an init-owned selection does not itself add another compile
+target; generic Graph projection must preserve the selected native closure.
 The projection preserves their native target kind, binary name and compiler
 options, including in a cross-package source view. A source shared with a
 library has one compiler-input identity and two distinct Make products.

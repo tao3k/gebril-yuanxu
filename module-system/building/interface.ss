@@ -298,8 +298,7 @@
             (lambda ()
               (call-with-build-expansion-accounting 'module-projection
                 (lambda ()
-                  (build-projector (list (selected!) roots root entry-source
-                                         init-source: init-file)))))))
+                  (build-projector (list (selected!) roots root entry-source)))))))
         (set! retained request)))
     (call-with-build-stage 'spec-current check-prepared!)
     (def value (.ref/inline prepared source-spec-site))

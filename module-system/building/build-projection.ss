@@ -86,13 +86,12 @@
       kept retained))
   (values modules libraries (hash-get seen 'tao3k/yuanxu/prelude)))
 
-(def (yuanxu-project-source-spec source retained root entry-source demand: (demand #f)
-                                 init-source: (init-source #f))
+(def (yuanxu-project-source-spec source retained root entry-source demand: (demand #f))
   (if demand
     (module-test-source-spec source demand root entry-source retained)
-    (project-selected-source-spec source retained root entry-source init-source)))
+    (project-selected-source-spec source retained root entry-source)))
 
-(def (project-selected-source-spec source retained root entry-source init-source)
+(def (project-selected-source-spec source retained root entry-source)
   (when (current-module-build-phase?)
     (error "Module build phase cannot recursively project the root specification"))
   (unless (and (string? root) (path-absolute? root)
@@ -118,22 +117,9 @@
                             ((.ref view '.build-graph-for) roots)
                             (.ref view 'build-graph))))))))
          (graph-entries (.ref graph 'entries))
-         ;; Init is the native publication of this selected closure. A package
-         ;; need not repeat the infrastructure target in its ordinary libraries.
-         (init-input
-           (and init-source
-             (begin
-               (unless (and (.slot? view 'context)
-                            (equal? init-source (.ref (.ref view 'context) 'init-source)))
-                 (error "init publication differs from the selected Graph owner" init-source))
-               (yuanxu-prepare-module-retained-source init-source void))))
-         (init-target (and init-input
-                          (build-target-name (.ref init-input 'compiler-identity) package-prefix)))
-         (retained
-           (if (or (not init-target)
-                   (ormap (lambda (target)
-                            (equal? init-target (if (string? target) target (cadr target)))) retained))
-             retained (append retained (list init-target))))
+         ;; Native imports and the retained package closure own the targets.
+         ;; Lower a reached yuanxu! declaration below; do not manufacture a
+         ;; target merely because this selection was obtained from init.
          (retained-states (make-hash-table-eq))
          ;; Preparing retained headers only observes source and package metadata.
          ;; Share the existing pure read window across their own source guards.
