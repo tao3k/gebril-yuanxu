@@ -277,8 +277,10 @@ ephemeral loopback endpoint for the entire invocation. Readiness requires
 successful gRPC reflection of the CmdExecutor service. [[file:backend.cjs][The shared backend helper]]
 also serves the product proof runner. Each model receives a fresh compilation
 request and a fresh TLC exploration using the available CPU count (at least four workers). The backend and TLC each have
-a 1 GiB heap; startup and cases retain five-second real-output and 45-second
-total deadlines. Normal exit, failure and TERM clean up the owned backend.
+a 1 GiB heap. Startup has a 45-second wall deadline and a five-second idle
+deadline starting at the first JVM output. Each model has its own 45-second
+wall and five-second idle deadlines. Normal exit, failure and TERM clean up
+the owned backend.
 An explicitly supplied =--server-endpoint= retains caller-owned lifecycle.
 The final Core source cut includes the helper itself.
 

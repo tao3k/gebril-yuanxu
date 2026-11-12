@@ -56,6 +56,7 @@ jobs:
       - name: Prepare pinned backend
         run: node dev/proofs/quint/prepare.cjs
       - name: Check runtime CLI isolation and deadlines
+        if: matrix.shard == 0
         run: node --test dev/proofs/quint/runtime.test.cjs
       - name: Check finite models and matched faults
         run: node dev/proofs/quint/qualify.cjs --shard-count 8 --shard-index ${{ matrix.shard }} --receipt "$RUNNER_TEMP/yuanxu-quint-proof.ss"

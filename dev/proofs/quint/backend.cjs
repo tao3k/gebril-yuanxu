@@ -61,7 +61,7 @@ async function startBackend(executable) {
   if(!fs.existsSync(program))throw Error('Prepare pinned Apalache 0.62.1 first');
   const port=await availablePort();
   const started=performance.now();
-  let lastOutput=started,output='';
+  let lastOutput,output='';
   // HotSpot reports completed VM initialization stages before Apalache can log.
   const child=spawn(program,['server',`--port=${port}`],{detached:true,
     env:{...process.env,JVM_ARGS:'-Xmx1G -XX:TieredStopAtLevel=1 -Xlog:startuptime=info'},stdio:['ignore','pipe','pipe']});
@@ -70,7 +70,11 @@ async function startBackend(executable) {
   child.once('error',error=>{spawnError=error;});
   const consume=chunk=>{lastOutput=performance.now();output+=chunk.toString();process.stdout.write(chunk);};
   child.stdout.on('data',consume);child.stderr.on('data',consume);
-  const remaining=()=>Math.min(45000-(performance.now()-started),5000-(performance.now()-lastOutput));
+  const remaining=()=> {
+    const now=performance.now(),wall=45000-(now-started);
+    // Before the first JVM output, only the startup wall deadline applies.
+    return lastOutput===undefined?wall:Math.min(wall,5000-(now-lastOutput));
+  };
   try {
     while(!output.includes('The Apalache server is running')) {
       if(spawnError)throw spawnError;
