@@ -147,12 +147,17 @@
                                 (set! ids
                                   (module-publication-recorded-dependencies (cadar results) roots)))
                               (unless fused-return? (project-dependencies!))
-                              ;; Retain only the two original spines. The native
-                              ;; return checkpoint borrows a temporary join.
+                              ;; Aggregate projection keeps the original segments.
+                              ;; The closed return and its guard share one ordered
+                              ;; spine. Observed candidates already replay the two
+                              ;; original sequences and need no additional copy.
                               (def root-segments (cons preparation-roots roots))
+                              (def publication-roots
+                                (and (or fused-return? (not (current-module-source-observer)))
+                                     (append preparation-roots roots)))
                               (def guard
                                 (publication-metadata-current policy-current? preparation-current! admission-current! location-current!
-                                  root-segments))
+                                  publication-roots))
                               (def entry! (publication-metadata-entry policy-current? location-current!))
                               (def tail! (publication-metadata-tail policy-current?))
                               (module-source-measure-operation 'reader-candidate-return-replay
@@ -160,28 +165,35 @@
                                   (lambda ()
                                     (def entered? #f)
                                     (def completed? #f)
-                                    (entry!)
-                                    (with-catch
-                                      (lambda (cause)
-                                        ;; A union refusal may precede a source
-                                        ;; refusal that originally came first.
-                                        (unless entered?
-                                          (check-admitted!)
-                                          (project-dependencies!))
-                                        (when (or (not entered?) completed?) (guard))
-                                        (raise cause))
+                                    (call-with-module-source-read-cache
                                       (lambda ()
-                                        (module-source-measure-operation 'reader-candidate-fused-return-replay
-                                          (lambda ()
-                                            (module-source-measure-replay (append preparation-roots roots)
+                                        (entry!)
+                                        (with-catch
+                                          (lambda (cause)
+                                            ;; Recover the original source refusal in
+                                            ;; an independent window after a replay refusal.
+                                            (call-with-module-source-fresh-reads
                                               (lambda ()
-                                                (set! entered? #t)
-                                                (tail!)
-                                                (check-admitted! #f)
-                                                (project-dependencies!)
-                                                (entry!)
-                                                (set! completed? #t)))))))
-                                    (tail!))
+                                                (unless entered?
+                                                  (check-admitted!)
+                                                  (project-dependencies!))
+                                                (when (or (not entered?) completed?) (guard))))
+                                            (raise cause))
+                                          (lambda ()
+                                            ;; The fixed directory and source checks
+                                            ;; share one observation window around native
+                                            ;; replay. Open candidates use the guard below.
+                                            (module-source-measure-operation 'reader-candidate-fused-return-replay
+                                              (lambda ()
+                                                (module-source-measure-replay publication-roots
+                                                  (lambda ()
+                                                    (set! entered? #t)
+                                                    (tail!)
+                                                    (check-admitted! #f)
+                                                    (project-dependencies!)
+                                                    (entry!)
+                                                    (set! completed? #t)))))))
+                                        (tail!))))
                                   guard))
                               ;; Fixed source-only checkpoints and ORIGINAL
                               ;; issued roots for the linker's POO topology

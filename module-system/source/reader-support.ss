@@ -96,14 +96,12 @@
   roots)
 (def (publication-metadata-current policy-current? preparation-current!
                                    (admission-current! void) (location-current! void)
-                                   (root-segments #f))
+                                   (roots #f))
   ;; Only the fixed producer's semantic reads, plus the actual pre-role
   ;; policy identities. Preserve open producer traces without replaying Gerbil
   ;; constructor scratch reads as if they were enduring Graph requirements.
-  ;; POO's topology index keys the original root spine by identity. Retain
-  ;; that structure with its guard, instead of copying it at every use.
-  ;; Each invocation still authenticates issuance, routes and live values.
-  (def roots (and root-segments (append (car root-segments) (cdr root-segments))))
+  ;; POO's topology index keys the ordered root spine by identity. Use
+  ;; the same spine as the native return, and reauthenticate each invocation.
   (lambda ()
     (location-current!)
     (require-publication-policy! policy-current?)
@@ -121,7 +119,7 @@
             (admission-current!)
             (require-publication-policy! policy-current?)
             (when observed? (preparation-current!)))))
-      (if (and root-segments (not observed?) (object-construction-current?)
+      (if (and roots (not observed?) (object-construction-current?)
                (owned-read-function-scope?))
         (begin
           (with-catch
