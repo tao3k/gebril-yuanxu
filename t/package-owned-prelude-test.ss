@@ -65,6 +65,12 @@
             (yuanxu-project-source-spec (yuanxu-load-modules (path-expand "modules" root))
                                        '() root (path-expand "init.ss" root)))
           (check-equal? (and (memq identity (.get projection compiler-identities)) #t) #t)
+          (def targets (map (lambda (target) (if (string? target) target (cadr target)))
+                               (.get projection spec)))
+          (check-equal? (and (member "prelude" targets) #t) #t)
+          (for-each (lambda (target)
+                      (check-equal? (file-exists? (path-expand (string-append target ".ss") root)) #t))
+                    targets)
           ;; An executable has its own source; STD Make rejects a second
           ;; target for the same source even when it would name another product.
           (call-with-output-file (path-expand "run.ss" root)
@@ -78,7 +84,7 @@
           (check-equal?
             (filter (lambda (target) (and (pair? target) (eq? (car target) exe:)))
               (.get program-projection spec))
-            (list `(exe: ,build-name bin: "consumer-program")))
+            '((exe: "run" bin: "consumer-program")))
           (check-equal?
             (length (filter (cut eq? <> (string->symbol build-name))
                             (.get program-projection compiler-identities))) 1)
@@ -89,7 +95,7 @@
           (check-equal?
             (filter (lambda (target) (and (pair? target) (eq? (car target) exe:)))
               (.get default-bin spec))
-            (list `(exe: ,build-name)))
+            '((exe: "run")))
           (check-exception
             (yuanxu-project-source-spec program-view
               '((exe: "run" bin: "../escape")) root (path-expand "init.ss" root)) error?)

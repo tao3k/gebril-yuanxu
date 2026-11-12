@@ -81,9 +81,20 @@
   (def package-prefix
     (path-strip-trailing-directory-separator
       (path-directory (symbol->string (.ref entry-input 'compiler-identity)))))
+  (def identity-prefix (string-append package-prefix "/"))
+  (def language (package-prelude-identity root))
+  ;; A separately named language needs this ownership check. The ordinary
+  ;; package prelude is already part of the package's retained libraries.
+  (def owned-prelude
+    (and language (not (string-prefix? identity-prefix (symbol->string language)))
+         (path-normalize (path-expand "prelude.ss" root))))
+  (def (package-prelude-entry? entry)
+    (and owned-prelude (equal? (.ref entry 'path) owned-prelude)
+         (eq? (.ref entry 'compiler-identity) language)))
   (def (local-entry? entry)
-    (let (identity (.ref entry 'compiler-identity))
-      (string-prefix? (string-append package-prefix "/") (symbol->string identity))))
+    (or (package-prelude-entry? entry)
+        (string-prefix? identity-prefix
+                        (symbol->string (.ref entry 'compiler-identity)))))
   (let* ((view (if (string? source) (yuanxu-load-modules source) source))
          (graph (module-source-measure-operation 'build-selected-graph
                   (lambda ()
@@ -100,8 +111,6 @@
                (filter (lambda (entry) (eq? (.ref entry 'kind) 'publication)) graph-entries)))
          (init-source
           (and (.slot? view 'context) (.ref (.ref view 'context) 'init-source)))
-         (language (package-prelude-identity root))
-         (owned-prelude (and language (path-normalize (path-expand "prelude.ss" root))))
          (output-prefix
           (string-append (path-strip-trailing-directory-separator
                            (path-normalize (path-expand (build-output-directory)))) "/"))
@@ -120,14 +129,12 @@
           (lambda (entry)
             (def path (.ref entry 'path))
             (or (null? module-roots) (equal? path init-source)
+                (package-prelude-entry? entry)
                 (ormap (lambda (directory) (string-prefix? directory path)) module-roots)
                 ;; Gerbil resolves package libraries imported by foreign roles.
                 ;; Products in this consumer's output still need their source
                 ;; targets for hot builds and clean.
-                (and (not (local-entry? entry))
-                     (or (and (equal? path owned-prelude)
-                              (eq? (.ref entry 'compiler-identity) language))
-                         (not (installed-library? entry)))))))
+                (and (not (local-entry? entry)) (not (installed-library? entry))))))
          (native-target-index
           (and (.slot? graph 'std-make-targets)
             (let (index (make-hash-table))
@@ -217,7 +224,7 @@
           (foldr append '() (map (lambda (entry)
                  (let* ((name (if foreign?
                                 (symbol->string (.ref entry 'compiler-identity))
-                                (build-target-name (.ref entry 'compiler-identity) package-prefix)))
+                                (build-target-name (.ref entry 'compiler-identity) package-prefix language)))
                         (expected (path-expand (string-append name ".ss") root)))
                    ;; A multi-package projection uses native compiler identities
                    ;; in its owned prefix-free source view. Absolute author paths
