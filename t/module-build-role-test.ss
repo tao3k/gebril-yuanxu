@@ -942,6 +942,14 @@
           (def paths (map (lambda (entry) (path-normalize (.get entry path))) (.get graph entries)))
           (assert 'build-public-root-enrolled (member (path-normalize (path-expand "public.ss" owner)) paths))
           (assert 'build-public-helper-enrolled (member (path-normalize (path-expand "kernel-helper.ss" root)) paths))
+          (def consumer (path-expand "consumer" root))
+          (write-source (path-expand "gerbil.pkg" consumer) "(package: build-role-consumer)")
+          (def script (path-expand "build.ss" consumer))
+          (write-source script "(import :std/build-script) (defbuild-script '())")
+          (def projection (yuanxu-project-source-spec (path-expand "init.ss" root) '() consumer script))
+          (def helper (yuanxu-prepare-module-build-source (path-expand "kernel-helper.ss" root) void))
+          (assert 'foreign-package-kernel-target
+            (member (list gxc: (symbol->string (.get helper compiler-identity))) (.get projection spec)))
           (write-source (path-expand "kernel-helper.ss" root) "(def answer 43) (export answer)")
           (check-exception ((.get graph compiler-current)) error?))))
     (yuanxu-test-case "Module public entries reject package escapes and missing sources"

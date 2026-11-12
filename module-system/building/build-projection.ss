@@ -6,7 +6,8 @@
 (import (only-in :std/string/path path-absolute?)
         (only-in :tao3k/yuanxu/module-system/building/source-package package-prelude-identity)
         (only-in :tao3k/yuanxu/module-system/building/program-publication project-program-init)
-        (only-in :gerbil/expander core-import-module expander-context-id module-context-path import-module current-expander-compiling?)
+        (only-in :gerbil/expander core-import-module core-resolve-library-module-path
+                 expander-context-id module-context-path import-module current-expander-compiling?)
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module call-with-build-stage package-library-spec/source-context)
         (only-in :tao3k/yuanxu/module-system/building/products build-output-directory
                  current-build-source-directory current-build-module-roots call-with-selected-output-lock
@@ -100,17 +101,33 @@
          (init-source
           (and (.slot? view 'context) (.ref (.ref view 'context) 'init-source)))
          (language (package-prelude-identity root))
+         (owned-prelude (and language (path-normalize (path-expand "prelude.ss" root))))
+         (output-prefix
+          (string-append (path-strip-trailing-directory-separator
+                           (path-normalize (path-expand (build-output-directory)))) "/"))
+         (installed-libraries (make-hash-table-eq))
+         (installed-library?
+          (lambda (entry)
+            (def id (.ref entry 'compiler-identity))
+            (def name (string->symbol (string-append ":" (symbol->string id))))
+            (def resolved
+              (with-catch (lambda (failure) (if (syntax-error? failure) #f (raise failure)))
+                (lambda () (core-resolve-library-module-path name))))
+            (and (string? resolved) (string=? (path-extension resolved) ".ssi")
+                 (not (string-prefix? output-prefix resolved))
+                 (begin (hash-put! installed-libraries id #t) #t))))
          (module-source?
           (lambda (entry)
             (def path (.ref entry 'path))
             (or (null? module-roots) (equal? path init-source)
-                ;; A prelude in this package is an ordinary package target.
-                ;; A reached language with its own identity needs the
-                ;; selected source view to preserve its compiler namespace.
-                (and language (not (local-entry? entry))
-                     (eq? (.ref entry 'compiler-identity) language)
-                     (equal? path (path-normalize (path-expand "prelude.ss" root))))
-                (ormap (lambda (directory) (string-prefix? directory path)) module-roots))))
+                (ormap (lambda (directory) (string-prefix? directory path)) module-roots)
+                ;; Gerbil resolves package libraries imported by foreign roles.
+                ;; Products in this consumer's output still need their source
+                ;; targets for hot builds and clean.
+                (and (not (local-entry? entry))
+                     (or (and (equal? path owned-prelude)
+                              (eq? (.ref entry 'compiler-identity) language))
+                         (not (installed-library? entry)))))))
          (native-target-index
           (and (.slot? graph 'std-make-targets)
             (let (index (make-hash-table))
@@ -165,12 +182,9 @@
          ;; A declared package library may itself reach init. Project that
          ;; same native owner once, regardless of which edge discovered it.
          (graph-entries (map (lambda (entry) (project-program-init view graph entry)) graph-entries))
-         ;; Graph entries are already admitted selected-owner SOURCE obligations.
-         ;; A package prefix names a target; it cannot demote a selected source
-         ;; to an installed prerequisite. Native imports outside this set remain
-         ;; Gerbil prerequisites and never enter the compiler source view.
+         (selected-entries (filter module-source? graph-entries))
          ((values module-entries library-entries)
-          (collect-build-entries (filter module-source? graph-entries) kept retained
+          (collect-build-entries selected-entries kept retained
             (lambda (entry)
               (or (not native-target-index)
                   (ormap (lambda (target) (or (string? target) (eq? (car target) gxc:)))
@@ -187,6 +201,9 @@
             (filter (lambda (entry)
                       (def id (.ref entry 'compiler-identity))
                       (and (not (hash-key? seen id))
+                           ;; The graph still observes the prerequisite's
+                           ;; original source. Leave its native binding intact.
+                           (not (hash-key? installed-libraries id))
                            (begin (hash-put! seen id #t) #t)))
                     (append graph-entries kept))))
          (native-init-entries
