@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Declarative Ops scripts; each child establishes its own source context.
 (import :std/test :clan/poo/object
+        (only-in :std/list/list delete-duplicates/hash)
         (only-in :yuanxu/ops/func run-script)
         (only-in :yuanxu/ops/progress execution-progress!)
         (only-in :yuanxu/module-system/building/products selected-output-source-directory)
@@ -79,20 +80,12 @@
       (displayln "BUILD-PROCESS-CORES " (getenv "GERBIL_BUILD_CORES" #f))
       (force-output)
       (when (.get Fixture cold) (check-equal? (file-exists? (path-expand "yuanxu" lib)) #f))
-      (check-equal?
-        (call-with-input-file (path-expand "core-spec.ss" root) read-all)
-        '((export core-spec)
-          (def core-spec '("prelude" "module-system/selection/init-syntax"
-                           "utilities/algorithms" "object-types/contracts"
-                           "object-types/ports" "core-spec"))))
       (def spec (call-with-input-string (build-command Build "spec") read))
       (def names (map (lambda (target) (if (string? target) target (cadr target))) spec))
-      ;; Module types now import the owned-read projection in addition to
-      ;; JsonSchema receipt facts. Both libraries belong to the selected closure;
-      ;; build-only tooling must not become an ordinary Module target.
-      (check-equal? (length (filter (cut equal? <> "prelude") names)) 1)
-      (check-equal? (length (filter (cut equal? <> "object-family/read-projection") names)) 1)
-      (check-equal? (length (filter (cut equal? <> "object-types/facts") names)) 1)
+      ;; Every emitted source must build exactly once. Prerequisite library
+      ;; imports do not need a second declaration in this selected package.
+      (check-equal? (length names) (length (delete-duplicates/hash names)))
+      (check-equal? (and (member "prelude" names) #t) #t)
       (check-equal? (member "module-system/building/artifacts" names) #f)
       (def cold-output (build-command Build "compile"))
       (def recorded-interface
@@ -120,12 +113,12 @@
       (check-equal? (product-times) first-times)
       (check-equal? (file-exists? (path-expand "legacy/prelude.ssi" lib)) #f)
       (check-equal? (file-exists? (path-expand "static/legacy__prelude.scm" lib)) #f)
-      ;; Core clean owns selected generated .scm files too. Keep a separate,
+      ;; Ordinary Make cleans the declared static source. Keep a separate,
       ;; unselected sentinel so cleanup isolation is checked independently.
       (def unselected (path-expand "yuanxu/object-family/unselected-output.scm" lib))
       (call-with-output-file unselected (cut display "; unselected output\n" <>))
       (check-clean-output (build-command Build "clean") root lib names)
-      (check-equal? (file-exists? (path-expand "yuanxu/object-family/syntax.scm" lib)) #f)
+      (check-equal? (file-exists? (path-expand "static/yuanxu__object-family__syntax.scm" lib)) #f)
       (check-equal? (call-with-input-file unselected read-line) "; unselected output")
       ;; This must compile again, not merely print a new-process specification.
       ;; The same Script retains the exact source directory and GERBIL_PATH.
@@ -133,6 +126,6 @@
       (check-equal? (output-identities root lib names) first-identities)
       (check-clean-output (build-command Build "clean") root lib names)
       (check-equal? (file-exists? (path-expand ".gerbil/module-build/build.ss" root)) #f)
-      (check-equal? (file-exists? (path-expand "yuanxu/object-family/syntax.scm" lib)) #f)
+      (check-equal? (file-exists? (path-expand "static/yuanxu__object-family__syntax.scm" lib)) #f)
       (check-equal? (call-with-input-file unselected read-line) "; unselected output")
       (displayln "BUILD-PROCESS-REBUILD-OK targets=" (length spec)))))

@@ -57,9 +57,18 @@
       (call-with-output-file (list path: (path-expand "core-spec.ss" fixture-root) truncate: #t)
         (lambda (port)
           (write '(export core-spec) port) (newline port)
-          (write '(def core-spec '("prelude" "module-system/selection/init-syntax"
-                                  "utilities/algorithms" "object-types/contracts"
-                                  "object-types/ports" "core-spec")) port)))
+          ;; These package libraries are separate from the selected Module.
+          ;; Keep their compiled interfaces in the cold fixture too, so Make
+          ;; can distinguish a hot build from one with missing imports.
+          (write '(def core-spec '("prelude" "core-spec"
+                                  "module-system/selection/init-syntax"
+                                  "module-system/bootstrap/body-inclusion"
+                                  "module-system/schema/slot-contracts"
+                                  "module-system/source/declaration" "module-system/source/role-forms"
+                                  "object-family/read-projection" "object-family/syntax"
+                                  "object-types/contracts" "object-types/facts" "object-types/ports"
+                                  "observability/funcs" "observability/objects" "observability/types"
+                                  "utilities/algorithms" "utilities/functional")) port)))
       (.o root: fixture-root state: fixture-state cold: #t))))
 
 (def (link-fixture-dependencies source target)
