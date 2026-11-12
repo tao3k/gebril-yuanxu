@@ -90,3 +90,18 @@ request all constructed zero tree nodes. A conflicting batch still
 constructed provisional nodes for its first edit, then left the
 published snapshot unchanged. The instrumentation remained outside
 the production runtime and supplied no timing samples.
+
+* Ordered edit differential
+
+The functional Catalog Suite checks every prefix of one deterministic
+replacement, insertion, deletion and reinsertion sequence. It compares
+one-edit publication and batched publication with a cold reconstruction,
+including missing versions, missing names and release identity. It checks
+that the original snapshot still resolves the original row after a conflicting
+suffix. This exercises the ordered publication and conflict contracts in
+=CatalogPublication.publish_append= and =conflict_discards_provisional_result=.
+
+An isolated fault used the original version bucket to refuse a valid
+reinsertion after that version had been removed from the provisional root.
+The differential Case failed at that conflict with exit 42. The restored
+functional Suite passed through the same Gerbil entry.
